@@ -1,8 +1,8 @@
 {
   "name": "pjcone",
   "version": "0.0.1",
-  "author": "Ionic Framework",
-  "homepage": "http://ionicframework.com/",
+  "author": "liss22",
+  "homepage": "https://is2you2.github.io/pjcone",
   "private": true,
   "scripts": {
     "start": "ionic-app-scripts serve",
@@ -23,8 +23,10 @@
     "@ionic-native/splash-screen": "4.20.0",
     "@ionic-native/status-bar": "4.20.0",
     "@ionic/storage": "2.2.0",
+    "@types/p5": "^0.9.0",
     "ionic-angular": "3.9.9",
     "ionicons": "3.0.0",
+    "p5": "^0.10.2",
     "rxjs": "5.5.11",
     "sw-toolbox": "3.6.0",
     "zone.js": "0.8.29"
