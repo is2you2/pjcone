@@ -20,7 +20,10 @@ export class HomePage {
       p5.setup = () => {
         p5.loadStrings('assets/data/notice.txt', v => {
           this.notice = v;
-        })
+          p5.remove();
+        }, e => {
+          console.error('공지 실패 :(', e);
+        });
       }
     }
     new p5(sketch);
