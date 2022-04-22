@@ -5,5 +5,16 @@
 </ion-header>
 
 <ion-content>
-
+  <div class="login_panel">
+    <ion-item>
+      <ion-label>이메일 주소</ion-label>
+      <ion-input [(ngModel)]="email"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>비밀번호</ion-label>
+      <ion-input [(ngModel)]="password" type="password"></ion-input>
+    </ion-item>
+    <ion-button expand="block" fill="outline" (click)='try_login()'>로그인</ion-button>
+    <ion-button expand="block" fill="outline" (click)='create_account()'>회원가입</ion-button>
+  </div>
 </ion-content>

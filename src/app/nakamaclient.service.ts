@@ -18,7 +18,6 @@ export class NakamaclientService {
    */
   client_init(): void {
     this.client = new Client("defaultkey", "172.30.1.29", '7350');
-    console.log('클라이언트 연결: ', this.client);
   }
   /**
    * ### 이메일 주소로 로그인
