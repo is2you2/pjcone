@@ -17,7 +17,7 @@ export class NakamaclientService {
    * 서버연결 시도를 합니다. 연결실패시 false 반환
    */
   client_init(): void {
-    this.client = new Client("defaultkey", "172.30.1.29", '7350');
+    this.client = new Client("defaultkey", "192.168.0.25", '7350');
   }
   /**
    * ### 이메일 주소로 로그인

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular';
 import { NakamaclientService } from '../nakamaclient.service';
 
 @Component({
@@ -10,12 +10,19 @@ import { NakamaclientService } from '../nakamaclient.service';
 export class LoginPage implements OnInit {
 
   constructor(public nakama: NakamaclientService,
-    public alert: AlertController) { }
+    public alert: AlertController,
+    public navCtrl:NavController,
+    ) { }
 
   ngOnInit() { }
 
-  email: string
-  password: string
+  email: string = '';
+  password: string = '';
+
+  isProgreessing:boolean = false;
+
+  email_placeholder:string = ''
+  passwd_placeholder:string = ''
 
   ionViewDidEnter() {
     this.nakama.client_init();
@@ -25,30 +32,33 @@ export class LoginPage implements OnInit {
    */
   try_login() {
     console.log('이 자리에서 입력된 정보 검토처리');
-    this.login();
+    let checker:boolean = true;
+    if(this.email.trim().length == 0){
+      this.email_placeholder = '이메일을 입력해주세요';
+      checker = false;
+    }
+    if(this.password.length == 0){
+      this.passwd_placeholder = '비밀번호를 입력해주세요';
+      checker = false;
+    }
+    if (checker)
+      this.login();
   }
   /** 입력된 정보로 로그인하기 */
   login() {
+    this.isProgreessing = true;
     this.nakama.session_login(
       this.email,
       this.password,
     ).then((_session) => {
-      console.log('세션 접속 정보: ', _session);
       if (_session) { // 로그인 성공시
-        this.alert.create({
-          header: '로그인 성공',
-          subHeader: 'sub-header',
-          message: 'msg',
-          buttons: ['확인'],
-          backdropDismiss: true,
-          translucent: true,
+        this.navCtrl.navigateRoot('home',
+        {
           animated: true,
-          keyboardClose: true,
-          id: 'id',
-        }).then(v => {
-          v.present();
+          animationDirection: 'forward',
         });
       } else { // 로그인 실패시
+        this.isProgreessing = false;
         this.alert.create({
           header: '로그인 실패',
           subHeader: 'sub-header',
@@ -67,6 +77,8 @@ export class LoginPage implements OnInit {
   }
   /** 회원가입 페이지로 이동 */
   create_account() {
+    this.isProgreessing = true;
     console.log('회원가입 페이지로 이동하기');
+    this.navCtrl.navigateForward('register');
   }
 }

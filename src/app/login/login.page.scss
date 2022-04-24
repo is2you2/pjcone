@@ -1,3 +1,7 @@
 .login_panel {
     position: absolute;
 }
+
+.input_field::placeholder {
+    color: rebeccapurple;
+}
