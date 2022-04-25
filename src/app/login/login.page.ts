@@ -11,33 +11,57 @@ export class LoginPage implements OnInit {
 
   constructor(public nakama: NakamaclientService,
     public alert: AlertController,
-    public navCtrl:NavController,
-    ) { }
+    public navCtrl: NavController,
+  ) { }
 
   ngOnInit() { }
+
+  isServerOnline: boolean = false;
 
   email: string = '';
   password: string = '';
 
-  isProgreessing:boolean = false;
+  isProgreessing: boolean = false;
 
-  email_placeholder:string = ''
-  passwd_placeholder:string = ''
+  email_placeholder: string = '';
+  passwd_placeholder: string = '';
 
   ionViewDidEnter() {
-    console.warn('클라이언트 init을 포털 페이지에서 해야합니다');
-    this.nakama.client_init();
+    this.initialized_client();
+  }
+  async initialized_client() {
+    if (await this.nakama.client_init()) {
+      console.log('initialize 정상 로그, 이제 로그인할 수 있도록 입력을 해제하세요');
+      this.isServerOnline = true;
+    } else {
+      this.alert.create({
+        header: '서버 휴가중',
+        message: '활동할 수는 없지만 마지막 기록들을 토대로 페이지를 돌아다닐 수 있습니다.',
+        backdropDismiss: false,
+        buttons: [{
+          handler: v => {
+            this.navCtrl.navigateRoot('portal', {
+              animated: true,
+              animationDirection: 'forward',
+            });
+          },
+          text: '오케이~',
+        }]
+      }).then(v => {
+        v.present();
+      });
+    }
   }
   /** ### 로그인 시도  
    * 이 함수에서 입력된 정보를 검토해본다
    */
   try_login() {
-    let checker:boolean = true;
-    if(this.email.trim().length == 0){
+    let checker: boolean = true;
+    if (this.email.trim().length == 0) {
       this.email_placeholder = '이메일을 입력해주세요';
       checker = false;
     }
-    if(this.password.length == 0){
+    if (this.password.length == 0) {
       this.passwd_placeholder = '비밀번호를 입력해주세요';
       checker = false;
     }
@@ -52,23 +76,18 @@ export class LoginPage implements OnInit {
       this.password,
     ).then((_session) => {
       if (_session) { // 로그인 성공시
-        this.navCtrl.navigateRoot('pjcone',
-        {
-          animated: true,
-          animationDirection: 'forward',
-        });
-      } else { // 로그인 실패시
+        this.navCtrl.navigateRoot('portal',
+          {
+            animated: true,
+            animationDirection: 'forward',
+          });
+      } else { // 어떠한 이유로든 로그인 실패시
         this.isProgreessing = false;
         this.alert.create({
           header: '로그인 실패',
-          subHeader: 'sub-header',
-          message: 'msg',
-          buttons: ['이런!'],
+          message: '일치하는 정보를 찾을 수 없습니다.',
           backdropDismiss: true,
-          translucent: true,
-          animated: true,
-          keyboardClose: true,
-          id: 'id',
+          buttons: ['저런']
         }).then(v => {
           v.present();
         });
@@ -78,7 +97,6 @@ export class LoginPage implements OnInit {
   /** 회원가입 페이지로 이동 */
   create_account() {
     this.isProgreessing = true;
-    console.log('회원가입 페이지로 이동하기');
     this.navCtrl.navigateForward('register');
   }
 }

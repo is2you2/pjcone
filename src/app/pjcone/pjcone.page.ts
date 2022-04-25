@@ -9,7 +9,6 @@ export class PjconePage implements OnInit {
 
   constructor() { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
 }

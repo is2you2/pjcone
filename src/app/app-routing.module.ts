@@ -4,7 +4,7 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'portal', // 시작하는 페이지
+    redirectTo: 'login', // 시작하는 페이지
     pathMatch: 'full'
   },
   {
@@ -26,6 +26,10 @@ const routes: Routes = [
   {
     path: 'portal',
     loadChildren: () => import('./portal/portal.module').then( m => m.PortalPageModule)
+  },
+  {
+    path: 'starcraft-custom',
+    loadChildren: () => import('./starcraft-custom/starcraft-custom.module').then( m => m.StarcraftCustomPageModule)
   },
 ];
 

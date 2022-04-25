@@ -8,7 +8,6 @@ export class NakamaclientService {
 
   client: Client;
   session: Session;
-  /** 운영서버에 연결되었는지 여부 */
   isConnected: boolean = false;
   socket: Socket;
 
@@ -18,8 +17,23 @@ export class NakamaclientService {
    * ### 클라이언트 연결
    * 서버연결 시도를 합니다. 연결실패시 false 반환
    */
-  client_init(): void {
+  client_init(): Promise<boolean> {
     this.client = new Client("defaultkey", "192.168.0.25", '7350');
+    return this.check_if_server_available();
+  }
+  /** 서버가 운영중인지 검토해봅시다 */
+  async check_if_server_available(): Promise<boolean> {
+    let checker_session;
+    try {
+      checker_session = await this.client.authenticateDevice('CheckerSession', true, 'CheckerSession');
+    } catch (e) { // 어째뜬 제대로 동작하지 않았다
+      return false;
+    }
+    return this.client.getAccount(checker_session).then(v => {
+      return true; // timeout 없이 동작해주었다
+    }).catch(e => {
+      return false; // 이 쉬운걸 동작시키지 못한거면 이건 이거대로 문제가 있다
+    });
   }
   /**
    * ### 이메일 주소로 로그인
@@ -38,12 +52,8 @@ export class NakamaclientService {
   async session_login(email: string, password: string, _create: boolean = false, _username?: string, _vars?: any): Promise<boolean> {
     try {
       this.session = await this.client.authenticateEmail(email, password, _create, _username, _vars);
-      console.log('로그인 성공! ', this.session);
-      this.isConnected = true;
       return true;
     } catch (e) {
-      console.error('로그인 시도 실패: ', e);
-      this.isConnected = false;
       return false;
     }
   }
