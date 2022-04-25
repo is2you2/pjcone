@@ -4,7 +4,7 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'login', // 시작하는 페이지
+    redirectTo: 'portal', // 시작하는 페이지
     pathMatch: 'full'
   },
   {
@@ -18,6 +18,14 @@ const routes: Routes = [
   {
     path: 'register',
     loadChildren: () => import('./register/register.module').then( m => m.RegisterPageModule)
+  },
+  {
+    path: 'pjcone',
+    loadChildren: () => import('./pjcone/pjcone.module').then( m => m.PjconePageModule)
+  },
+  {
+    path: 'portal',
+    loadChildren: () => import('./portal/portal.module').then( m => m.PortalPageModule)
   },
 ];
 

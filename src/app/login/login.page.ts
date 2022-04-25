@@ -25,13 +25,13 @@ export class LoginPage implements OnInit {
   passwd_placeholder:string = ''
 
   ionViewDidEnter() {
+    console.warn('클라이언트 init을 포털 페이지에서 해야합니다');
     this.nakama.client_init();
   }
   /** ### 로그인 시도  
    * 이 함수에서 입력된 정보를 검토해본다
    */
   try_login() {
-    console.log('이 자리에서 입력된 정보 검토처리');
     let checker:boolean = true;
     if(this.email.trim().length == 0){
       this.email_placeholder = '이메일을 입력해주세요';
@@ -52,7 +52,7 @@ export class LoginPage implements OnInit {
       this.password,
     ).then((_session) => {
       if (_session) { // 로그인 성공시
-        this.navCtrl.navigateRoot('home',
+        this.navCtrl.navigateRoot('pjcone',
         {
           animated: true,
           animationDirection: 'forward',

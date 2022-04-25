@@ -8,6 +8,8 @@ export class NakamaclientService {
 
   client: Client;
   session: Session;
+  /** 운영서버에 연결되었는지 여부 */
+  isConnected: boolean = false;
   socket: Socket;
 
   constructor() { }
@@ -37,9 +39,11 @@ export class NakamaclientService {
     try {
       this.session = await this.client.authenticateEmail(email, password, _create, _username, _vars);
       console.log('로그인 성공! ', this.session);
+      this.isConnected = true;
       return true;
     } catch (e) {
       console.error('로그인 시도 실패: ', e);
+      this.isConnected = false;
       return false;
     }
   }

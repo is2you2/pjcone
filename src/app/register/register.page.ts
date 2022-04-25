@@ -10,8 +10,6 @@ export class RegisterPage implements OnInit {
 
   constructor(public nakama: NakamaclientService) { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
-  
 }
