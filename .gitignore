@@ -1,32 +1,45 @@
-# Specifies intentionally untracked files to ignore when using Git
-# http://git-scm.com/docs/gitignore
-
-*~
-*.sw[mnpcod]
-.tmp
+*.import
+import/*
+*.blend1
+*.translation
+android/*
 *.tmp
-*.tmp.*
-*.sublime-project
-*.sublime-workspace
-.DS_Store
-Thumbs.db
-UserInterfaceState.xcuserstate
-$RECYCLE.BIN/
+html/*
+*.bak
+result/*
 
-*.log
-log.txt
-npm-debug.log*
+# FileEdit 읽은파일 무시
+addons/file-editor/lastopenedfiles.lastcfg
 
-/.angular
-/.idea
-/.ionic
-/.sass-cache
-/.sourcemaps
-/.versions
-/.vscode
-/coverage
-/dist
-/node_modules
-/platforms
-/plugins
-/www
+# git_api 무시
+git_api.*
+libgitapi.*
+.github/
+
+# Mono-specific ignores
+.mono/
+data_*/
+mono_crash.*.json
+
+# Text editor related
+test_files/
+.trash/
+.trash.json
+.text_editor_state.json
+word_skip_list.txt
+
+# NakamaClient ignores
+*.swp
+test_suite/addons
+test_suite/addons/*
+test_suite/.import/*
+
+# System/tool-specific ignores
+.directory
+*~
+
+# Plugin specific ignores
+icons.pngs/
+fonts/
+file.samples/
+icon.png
