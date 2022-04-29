@@ -18,7 +18,7 @@ export class NakamaclientService {
    * 서버연결 시도를 합니다. 연결실패시 false 반환
    */
   client_init(): Promise<boolean> {
-    this.client = new Client("defaultkey", "192.168.0.25", '7350');
+    this.client = new Client("defaultkey", "192.168.0.20", '7350');
     return this.check_if_server_available();
   }
   /** 서버가 운영중인지 검토해봅시다 */
