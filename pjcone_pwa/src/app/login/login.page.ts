@@ -26,32 +26,6 @@ export class LoginPage implements OnInit {
   email_placeholder: string = '';
   passwd_placeholder: string = '';
 
-  ionViewDidEnter() {
-    this.initialized_client();
-  }
-  async initialized_client() {
-    if (await this.nakama.client_init()) {
-      console.log('initialize 정상 로그, 이제 로그인할 수 있도록 입력을 해제하세요');
-      this.isServerOnline = true;
-    } else {
-      this.alert.create({
-        header: '서버 휴가중',
-        message: '활동할 수는 없지만 마지막 기록들을 토대로 페이지를 돌아다닐 수 있습니다.',
-        backdropDismiss: false,
-        buttons: [{
-          handler: v => {
-            this.navCtrl.navigateRoot('portal', {
-              animated: true,
-              animationDirection: 'forward',
-            });
-          },
-          text: '오케이~',
-        }]
-      }).then(v => {
-        v.present();
-      });
-    }
-  }
   /** ### 로그인 시도  
    * 이 함수에서 입력된 정보를 검토해본다
    */

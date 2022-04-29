@@ -17,7 +17,7 @@ export class NakamaclientService {
    * ### 클라이언트 연결
    * 서버연결 시도를 합니다. 연결실패시 false 반환
    */
-  client_init(): Promise<boolean> {
+  initialize(): Promise<boolean> {
     this.client = new Client("defaultkey", "192.168.0.20", '7350');
     return this.check_if_server_available();
   }
@@ -27,6 +27,7 @@ export class NakamaclientService {
     try {
       checker_session = await this.client.authenticateDevice('CheckerSession', true, 'CheckerSession');
     } catch (e) { // 어째뜬 제대로 동작하지 않았다
+      this.isConnected = false;
       return false;
     }
     return this.client.getAccount(checker_session).then(v => {
