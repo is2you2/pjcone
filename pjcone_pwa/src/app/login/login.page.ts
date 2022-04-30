@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, NavController } from '@ionic/angular';
+import { AlertController, ModalController, NavController } from '@ionic/angular';
 import { NakamaclientService } from '../nakamaclient.service';
+import { RegisterPage } from '../register/register.page';
 
 @Component({
   selector: 'app-login',
@@ -12,9 +13,14 @@ export class LoginPage implements OnInit {
   constructor(public nakama: NakamaclientService,
     public alert: AlertController,
     public navCtrl: NavController,
+    public modalCtrl: ModalController,
   ) { }
 
-  ngOnInit() { }
+  ngOnInit(): void { }
+
+  ionViewWillEnter() {
+    this.isProgreessing = false;
+  }
 
   isServerOnline: boolean = false;
 
@@ -71,6 +77,17 @@ export class LoginPage implements OnInit {
   /** 회원가입 페이지로 이동 */
   create_account() {
     this.isProgreessing = true;
-    this.navCtrl.navigateForward('register');
+    this.modalCtrl.create({
+      component: RegisterPage,
+    }).then(v => {
+      v.onDidDismiss().then((v) => {
+        this.isProgreessing = false;
+        this.email = v.data.email;
+        this.password = v.data.password;
+      }).catch(e => {
+        console.error('LoginFromRegisterModalDismiss 오류: ', e);
+      });
+      v.present();
+    });
   }
 }
