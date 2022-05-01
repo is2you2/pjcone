@@ -40,6 +40,5 @@ test_suite/.import/*
 
 # Plugin specific ignores
 icons.pngs/
-fonts/
 file.samples/
 icon.png
