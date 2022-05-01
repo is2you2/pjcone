@@ -1,13 +1,14 @@
 <ion-content>
   <div class="login_panel">
-  <ion-label>로그인</ion-label>
+    <ion-label>로그인</ion-label>
     <ion-item>
       <ion-label>이메일 주소</ion-label>
       <ion-input [(ngModel)]="email" [placeholder]="email_placeholder" class="input_field"></ion-input>
     </ion-item>
     <ion-item>
       <ion-label>비밀번호</ion-label>
-      <ion-input [(ngModel)]="password" type="password" [placeholder]="passwd_placeholder" class="input_field"></ion-input>
+      <ion-input [(ngModel)]="password" type="password" [placeholder]="passwd_placeholder" class="input_field">
+      </ion-input>
     </ion-item>
     <ion-button expand="block" fill="outline" (click)='try_login()' [disabled]="isProgreessing">로그인</ion-button>
     <ion-button expand="block" fill="outline" (click)='create_account()' [disabled]="isProgreessing">회원가입</ion-button>
