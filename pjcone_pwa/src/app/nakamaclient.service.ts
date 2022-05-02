@@ -8,6 +8,7 @@ export class NakamaclientService {
 
   client: Client;
   session: Session;
+  /** 서버가 온라인 상태입니까? */
   isConnected: boolean = false;
   socket: Socket;
 
@@ -23,30 +24,20 @@ export class NakamaclientService {
   }
   /** 서버가 운영중인지 검토해봅시다 */
   async check_if_server_available(): Promise<boolean> {
-    let checker_session;
     try {
-      checker_session = await this.client.authenticateDevice('CheckerSession', false);
-      this.isConnected = true;
-    } catch (e) { // 어째뜬 제대로 동작하지 않았다
+      await this.client.authenticateEmail('CheckerSession', '');
+    } catch (e) {
       switch (e.status) {
-        case 404: // 세션 만들기에 실패함 .... 서버는 활동중이다
-          this.isConnected = true;
-          break;
         case undefined: // 서버는 휴가중
           this.isConnected = false;
           break;
-        default: // 상태 검토가 안되니 일단 막아둠
-          console.warn('예상하지 못한 서버 체크 상태값: ', e.status);
-          this.isConnected = false;
+        default: // 휴가중이 아니라면 일하는 것으로 간주
+          console.warn('서버 체크 결과: ', e.status);
+          this.isConnected = true;
           break;
       }
       return this.isConnected;
     }
-    return this.client.getAccount(checker_session).then(v => {
-      return true; // timeout 없이 동작해주었다
-    }).catch(e => {
-      return false; // 이 쉬운걸 동작시키지 못한거면 이건 이거대로 문제가 있다
-    });
   }
   /**
    * ### 이메일 주소로 로그인
@@ -62,12 +53,13 @@ export class NakamaclientService {
    * @param _vars 기타 자료들 추가 {}
    * @returns 정상 로그인 여부
    */
-  async session_login(email: string, password: string, _create: boolean = false, _username?: string, _vars?: any): Promise<boolean> {
+  async session_login(email: string, password: string, _create: boolean = false, _username?: string, _vars?: any): Promise<number> {
     try {
       this.session = await this.client.authenticateEmail(email, password, _create, _username, _vars);
-      return true;
+      return 0;
     } catch (e) {
-      return false;
+      console.warn('로그인 안됨 사유: ', e);
+      return e.status;
     }
   }
 }
