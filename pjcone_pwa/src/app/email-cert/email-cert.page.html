@@ -1,0 +1,15 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>이메일 인증</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item>
+    <ion-label>이메일 주소</ion-label>
+    <ion-input type="text" [(ngModel)]="email"></ion-input>
+  </ion-item>
+  <ion-button (click)="OnCertClicked()" expand="block" fill="clear" shape="round">
+    인증 메일 발송
+  </ion-button>
+</ion-content>

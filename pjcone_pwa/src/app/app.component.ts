@@ -18,12 +18,10 @@ export class AppComponent {
 
   async initialized_client() {
     if (await this.nakama.initialize()) {
-      console.log('이 자리에서 로그인 화면으로 옮겨줍니다, 또는 효과 넣어주기');
       this.navCtrl.navigateRoot('login', {
         animated: true,
         animationDirection: 'forward',
       });
-      console.log('initialize 정상 로그, 이제 로그인할 수 있도록 입력을 해제하세요');
     } else {
       this.alert.create({
         header: '서버 휴가중',

@@ -18,17 +18,29 @@ export class NakamaclientService {
    * 서버연결 시도를 합니다. 연결실패시 false 반환
    */
   initialize(): Promise<boolean> {
-    this.client = new Client("defaultkey", "192.168.0.20", '7350');
+    this.client = new Client("defaultkey", "is2you2.iptime.org", '7350');
     return this.check_if_server_available();
   }
   /** 서버가 운영중인지 검토해봅시다 */
   async check_if_server_available(): Promise<boolean> {
     let checker_session;
     try {
-      checker_session = await this.client.authenticateDevice('CheckerSession', true, 'CheckerSession');
+      checker_session = await this.client.authenticateDevice('CheckerSession', false);
+      this.isConnected = true;
     } catch (e) { // 어째뜬 제대로 동작하지 않았다
-      this.isConnected = false;
-      return false;
+      switch (e.status) {
+        case 404: // 세션 만들기에 실패함 .... 서버는 활동중이다
+          this.isConnected = true;
+          break;
+        case undefined: // 서버는 휴가중
+          this.isConnected = false;
+          break;
+        default: // 상태 검토가 안되니 일단 막아둠
+          console.warn('예상하지 못한 서버 체크 상태값: ', e.status);
+          this.isConnected = false;
+          break;
+      }
+      return this.isConnected;
     }
     return this.client.getAccount(checker_session).then(v => {
       return true; // timeout 없이 동작해주었다

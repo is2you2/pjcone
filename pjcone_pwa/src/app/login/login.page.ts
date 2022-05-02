@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, ModalController, NavController } from '@ionic/angular';
+import { EmailCertPage } from '../email-cert/email-cert.page';
 import { NakamaclientService } from '../nakamaclient.service';
-import { RegisterPage } from '../register/register.page';
 
 @Component({
   selector: 'app-login',
@@ -78,7 +78,7 @@ export class LoginPage implements OnInit {
   create_account() {
     this.isProgreessing = true;
     this.modalCtrl.create({
-      component: RegisterPage,
+      component: EmailCertPage,
     }).then(v => {
       v.onDidDismiss().then((v) => {
         this.isProgreessing = false;

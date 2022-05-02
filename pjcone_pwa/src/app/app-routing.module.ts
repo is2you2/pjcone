@@ -35,6 +35,10 @@ const routes: Routes = [
     path: 'logo',
     loadChildren: () => import('./logo/logo.module').then( m => m.LogoPageModule)
   },
+  {
+    path: 'email-cert',
+    loadChildren: () => import('./email-cert/email-cert.module').then( m => m.EmailCertPageModule)
+  },
 ];
 
 @NgModule({
