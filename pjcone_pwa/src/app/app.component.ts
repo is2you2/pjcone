@@ -18,10 +18,12 @@ export class AppComponent {
 
   async initialized_client() {
     if (await this.nakama.initialize()) {
-      this.navCtrl.navigateRoot('login', {
-        animated: true,
-        animationDirection: 'forward',
-      });
+      setTimeout(() => {
+        this.navCtrl.navigateRoot('login', {
+          animated: true,
+          animationDirection: 'forward',
+        });
+      }, 700);
     } else {
       this.alert.create({
         header: '서버 휴가중',
