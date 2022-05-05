@@ -288,6 +288,13 @@
   dependencies:
     "@types/cordova" "latest"
 
+"@awesome-cordova-plugins/local-notifications@^5.41.0":
+  "integrity" "sha512-lDEaOVv28aqmIJQNNCe5suCbLwWRE6akgkEYcxbZg5Zu9k3SDz+VduRJASAqyeNmFFqeb13ahPjVTguqx8iBrQ=="
+  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/local-notifications/-/local-notifications-5.41.0.tgz"
+  "version" "5.41.0"
+  dependencies:
+    "@types/cordova" "latest"
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.16.7":
   "integrity" "sha512-iAXqUn8IIeBTNd72xsFlgaXHkMBMt6y4HJp1tIaK465CWLT/fG1aqB7ykr95gHHmlBdGbFeWWfyB4NJJ0nmeIg=="
   "resolved" "https://registry.npmjs.org/@babel/code-frame/-/code-frame-7.16.7.tgz"
@@ -3158,6 +3165,11 @@
   "integrity" "sha512-LsU1v7EgTUROaks+tcQ8TnMzVUcU/TwjDVwj2O/4e4aI2q2ldLGsiZorqKqfqvwh2HoIssmY73OwJk91hQi62w=="
   "resolved" "https://registry.npmjs.org/cordova-plugin-background-mode/-/cordova-plugin-background-mode-0.7.3.tgz"
   "version" "0.7.3"
+
+"cordova-plugin-local-notification@^0.9.0-beta.2":
+  "integrity" "sha512-63n77K1pt8dnbWnNR8QWETi9Glezi1bvNHvHWmGNIOv0xCb0phZnm+Ku49BQ+omwe8Z5voMvrA4I03SYPpv38w=="
+  "resolved" "https://registry.npmjs.org/cordova-plugin-local-notification/-/cordova-plugin-local-notification-0.9.0-beta.2.tgz"
+  "version" "0.9.0-beta.2"
 
 "core-js-compat@^3.20.2", "core-js-compat@^3.21.0":
   "integrity" "sha512-CWbNqTluLMvZg1cjsQUbGiCM91dobSHKfDIyCoxuqxthdjGuUlaMbCsSehP3CBiVvG0C7P6UIrC1v0hgFE75jw=="
