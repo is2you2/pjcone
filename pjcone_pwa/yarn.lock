@@ -309,6 +309,13 @@
   dependencies:
     "@types/cordova" "latest"
 
+"@awesome-cordova-plugins/text-to-speech-advanced@^5.41.0":
+  "integrity" "sha512-4/SHr7+AgPHMauYJYOoMacQcqsuUjFhOWEZhs8SH85y7FeG6lyFpxP0ymu/hT0jHRMc1MERg5t9NzKs7J8c99g=="
+  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/text-to-speech-advanced/-/text-to-speech-advanced-5.41.0.tgz"
+  "version" "5.41.0"
+  dependencies:
+    "@types/cordova" "latest"
+
 "@awesome-cordova-plugins/web-socket-server@^5.41.0":
   "integrity" "sha512-p9XHVK/sk+2we2Irdg4r6K95FwJnKizZVJcjBiocv+2M5etrBmisuasNXr9ieVs8gbpH/BZnc7k5OKZGNJnuZQ=="
   "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/web-socket-server/-/web-socket-server-5.41.0.tgz"
@@ -3196,6 +3203,11 @@
   "integrity" "sha512-63n77K1pt8dnbWnNR8QWETi9Glezi1bvNHvHWmGNIOv0xCb0phZnm+Ku49BQ+omwe8Z5voMvrA4I03SYPpv38w=="
   "resolved" "https://registry.npmjs.org/cordova-plugin-local-notification/-/cordova-plugin-local-notification-0.9.0-beta.2.tgz"
   "version" "0.9.0-beta.2"
+
+"cordova-plugin-tts-advanced@^0.5.2":
+  "integrity" "sha512-2PGa6GMjPeWMz06xJrEyZHLJXdkfm03n8UX2MTTd9/4iepY+PXOGRZK/nfNEbVDrzg+8bH9c2w70vEOoIL9X5g=="
+  "resolved" "https://registry.npmjs.org/cordova-plugin-tts-advanced/-/cordova-plugin-tts-advanced-0.5.2.tgz"
+  "version" "0.5.2"
 
 "cordova-plugin-websocket-server@^1.6.0":
   "integrity" "sha512-41FUXWGOa+jUcft8PUBuibv1AhUT1wRnIt9TIQVFcjV1oDySGZ1oDmGzjtRi//UNEOvTGUPzkHeZfJKJs0TMpA=="
