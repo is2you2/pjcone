@@ -27,7 +27,3 @@ test_suite/.import/*
 # System/tool-specific ignores
 .directory
 *~
-# Plugin specific ignores
-icons.pngs/
-file.samples/
-icon.png
