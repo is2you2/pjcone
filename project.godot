@@ -17,7 +17,7 @@ _global_script_classes=[ {
 "base": "",
 "class": "GitAPI",
 "language": "NativeScript",
-"path": "res://git_api.gdns"
+"path": "res://addons/godot-git-plugin/git_api.gdns"
 }, {
 "base": "HTTPRequest",
 "class": "GoogleTranslateAPI",
@@ -53,7 +53,7 @@ enabled=PoolStringArray( "res://addons/file-editor/plugin.cfg", "res://addons/te
 
 [gdnative]
 
-singletons=[ "res://git_api.gdnlib" ]
+singletons=[ "res://addons/godot-git-plugin/git_api.gdnlib" ]
 
 [physics]
 
