@@ -20,7 +20,7 @@ logger:
 console:
 #    address: ["127.0.0.1"] # 접속 가능한 주소 제한, 프로덕션시 구성필요
 #    port: 7351
-    username: "pjcone "
+    username: "pjcone"
     password: "nfyfamf3hduf?"
     signing_key: "test-key"
     token_expiry_sec: 7200
