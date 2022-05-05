@@ -102,7 +102,8 @@ export class LoginPage implements OnInit {
     }).then(v => {
       v.onDidDismiss().then((v) => {
         this.isProgreessing = false;
-        this.email = v.data.email;
+        if (v.data && v.data['email'])
+          this.email = v.data.email;
       }).catch(e => {
         console.error('LoginFromRegisterModalDismiss 오류: ', e);
       });

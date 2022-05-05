@@ -1,0 +1,51 @@
+name: project_cone
+data_dir: "./data/"
+#shutdown_grace_sec: 0 # 서버 종료 요청시 작업을 기다려주는 최대 시간
+#cluster:
+#    rpc_port: 7353
+#    local_priority: true # 가능하면 로컬 리소스를 사용함
+database:
+    address: ["postgres:localdb@postgres:5432/nakama"]
+#    max_idle_conns: 100 # 사용하지는 않지만 연결될 수 있는 최대수
+#    max_open_conns: 0 # 데이터베이스 최대 동시접속자 제한
+logger:
+    stdout: false
+#    max_age: 0 # 로그 파일 보관 최대 일수
+    level: "debug"
+    file: "/nakama/data/logfile.log"
+#session: # 접속과 관련됨
+#    encryption_key: "test-key-text" # 이건 필수임, 출시할 때 반드시 조정
+#    refresh_encryption_key: "test-refresh-key-text"
+#    token_expiry_sec: 7200
+console:
+#    address: ["127.0.0.1"] # 접속 가능한 주소 제한, 프로덕션시 구성필요
+#    port: 7351
+    username: "pjcone "
+    password: "nfyfamf3hduf?"
+    signing_key: "test-key"
+    token_expiry_sec: 7200
+#runtime: # modules/ 액션에 관한 것
+#    event_queue_workers: 8 # 작업 스레드 수
+#    http_key: "defaultkey" # http 호출 인증키
+    
+#match:
+#    call_queue_size: 128 # 검토 필
+#    deferred_queue_size: 128 # 검토 필
+#    input_queue_size: 128 # 검토 필
+#    join_attempt_queue_size: 128 # 검토 필
+#    label_update_interval_ms: 1000 # 매칭처리 새로고침 (ms)
+#    join_marker_deadline_ms: 5 # 클라이언트 매치 참여여부 검토시간
+#    max_empty_sec: 0 # 매칭이 안되는 시간을 제한
+#leaderboard:
+#    callback_queue_size: 65536 # 콜백 대기열 수
+#    callback_queue_workers: 8 # 리더보드에 투입될 쓰레드 수
+# 인앱 결제 관련 정보
+#apple:
+#    shared_password: ""
+#google:
+#    client_email: ""
+#    private_key: ""
+#huawei:
+#    public_key: ""
+#    client_id: ""
+#    client_secret: ""
