@@ -1292,7 +1292,7 @@
     "tslib" "^2.1.0"
     "xml2js" "^0.4.23"
 
-"@capacitor/core@^3.0.0", "@capacitor/core@3.4.3":
+"@capacitor/core@^3.0.0", "@capacitor/core@^3.4.3":
   "integrity" "sha512-drfu0IiDMyeJtL4QALQgNFqdgN19DZJkbKh945eXyK44Sk2YkFXUs7Ewq1ZlVI30QF79mHGuM13oZeki0gv5Tw=="
   "resolved" "https://registry.npmjs.org/@capacitor/core/-/core-3.4.3.tgz"
   "version" "3.4.3"
