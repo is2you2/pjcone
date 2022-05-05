@@ -81,7 +81,7 @@ export class LoginPage implements OnInit {
             break;
           case undefined: // 서버는 휴가중
             opt['header'] = '서버가 휴가중?';
-            opt['message'] = '그럴리가 없습니다. 인터넷 상태를 한 번 더 확인해주세요.'
+            opt['message'] = '그럴리가 없습니다. 인터넷 상태를 다시 확인해주세요.'
             opt['buttons'] = ['그래요']
             break;
           default: // 휴가중이 아니라면 일하는 것으로 간주

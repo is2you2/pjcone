@@ -17,13 +17,14 @@ export class EmailCertPage implements OnInit {
 
   email: string = '';
   email_placeholder: string = '';
+  is_send_button_disabled: boolean = false;
 
   OnCertClicked() {
     if (this.email == '') {
       this.email_placeholder = '이메일 주소를 입력해주세요';
       return;
     }
-    console.log('이메일 인증 눌림');
+    this.is_send_button_disabled = true;
     this.nakama.session_login(this.email, 'password').then(v => {
       switch (v) {
         case 400: // 누락된 정보가 있음 (비밀번호를 안썼거나 등등)
@@ -59,13 +60,24 @@ export class EmailCertPage implements OnInit {
           console.log('아이디가 없음, 이 때 email 발송처리를 하면 됨');
           this.modal.dismiss();
           break;
+        case undefined: // 연결 끊김
+          this.alert.create({
+            header: '서버와 연결 끊김',
+            message: '서버가 반응하지 않아요..',
+            buttons: ['왜 하필 지금..']
+          }).then(v => {
+            v.present();
+          });
+          break;
         case 0: // 정상 로그인? 어림도 없지
         default: // 기타 검토되지 않은 사유
           console.warn('예상하지 못한 세션로그인 반환값: ', v);
           break;
       }
+      this.is_send_button_disabled = false;
     }).catch(e => {
       console.error('세션 로그인 오류: ', e);
+      this.is_send_button_disabled = false;
     });
   }
 }

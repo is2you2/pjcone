@@ -58,7 +58,6 @@ export class NakamaclientService {
       this.session = await this.client.authenticateEmail(email, password, _create, _username, _vars);
       return 0;
     } catch (e) {
-      console.warn('로그인 안됨 사유: ', e);
       return e.status;
     }
   }
