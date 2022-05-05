@@ -288,6 +288,13 @@
   dependencies:
     "@types/cordova" "latest"
 
+"@awesome-cordova-plugins/deeplinks@^5.41.0":
+  "integrity" "sha512-/X0CpOxyIrA15m+ggzL1fWe4cUbMnB5Q+l/DRguUxFMc5QAJkqVf5bnlvLkF5dNdm2hTg0HKshDYz49bdTEYeg=="
+  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/deeplinks/-/deeplinks-5.41.0.tgz"
+  "version" "5.41.0"
+  dependencies:
+    "@types/cordova" "latest"
+
 "@awesome-cordova-plugins/local-notifications@^5.41.0":
   "integrity" "sha512-lDEaOVv28aqmIJQNNCe5suCbLwWRE6akgkEYcxbZg5Zu9k3SDz+VduRJASAqyeNmFFqeb13ahPjVTguqx8iBrQ=="
   "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/local-notifications/-/local-notifications-5.41.0.tgz"
@@ -4927,6 +4934,16 @@
     "has" "^1.0.3"
     "side-channel" "^1.0.4"
 
+"ionic-plugin-deeplinks@^1.0.24":
+  "integrity" "sha512-fdJonEWybxwSvt3+LzEMTqSPSVuzRxedhJSMTkHUrx/NkTAipkztzcCRj8CHvbQwQMlTUYrMO2fris9ZYytKow=="
+  "resolved" "https://registry.npmjs.org/ionic-plugin-deeplinks/-/ionic-plugin-deeplinks-1.0.24.tgz"
+  "version" "1.0.24"
+  dependencies:
+    "mkpath" ">=1.0.0"
+    "node-version-compare" ">=1.0.1"
+    "plist" ">=1.2.0"
+    "xml2js" ">=0.4"
+
 "ionicons@^6.0.0":
   "integrity" "sha512-xQekOJsxH82O7oB+3F60zeRggCdND9pJ/k0E6IJDVUGGlCj5mlyFqNgxUimytKgstPGv3S+3EmCxjefvtGgWUg=="
   "resolved" "https://registry.npmjs.org/ionicons/-/ionicons-6.0.1.tgz"
@@ -5943,6 +5960,11 @@
   "resolved" "https://registry.npmjs.org/mkdirp/-/mkdirp-1.0.4.tgz"
   "version" "1.0.4"
 
+"mkpath@>=1.0.0":
+  "integrity" "sha1-67Opd+evHGg65v2hK1Raa6bFhT0="
+  "resolved" "https://registry.npmjs.org/mkpath/-/mkpath-1.0.0.tgz"
+  "version" "1.0.0"
+
 "ms@^2.0.0", "ms@^2.1.1", "ms@2.1.2":
   "integrity" "sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w=="
   "resolved" "https://registry.npmjs.org/ms/-/ms-2.1.2.tgz"
@@ -6065,6 +6087,11 @@
   "integrity" "sha512-maHFz6OLqYxz+VQyCAtA3PTX4UP/53pa05fyDNc9CwjvJ0yEh6+xBwKsgCxMNhS8taUKBFYxfuiaD9U/55iFaw=="
   "resolved" "https://registry.npmjs.org/node-releases/-/node-releases-2.0.3.tgz"
   "version" "2.0.3"
+
+"node-version-compare@>=1.0.1":
+  "integrity" "sha512-unO5GpBAh5YqeGULMLpmDT94oanSDMwtZB8KHTKCH/qrGv8bHN0mlDj9xQDAicCYXv2OLnzdi67lidCrcVotVw=="
+  "resolved" "https://registry.npmjs.org/node-version-compare/-/node-version-compare-1.0.3.tgz"
+  "version" "1.0.3"
 
 "nopt@^5.0.0":
   "integrity" "sha512-Tbj67rffqceeLpcRXrT7vKAN8CwfPeIBgM7E6iBkmKLV7bEMwpGgYLGv0jACUsECaa/vuxP0IjEont6umdMgtQ=="
@@ -6611,7 +6638,7 @@
   dependencies:
     "find-up" "^4.0.0"
 
-"plist@^3.0.2", "plist@^3.0.4":
+"plist@^3.0.2", "plist@^3.0.4", "plist@>=1.2.0":
   "integrity" "sha512-83vX4eYdQp3vP9SxuYgEM/G/pJQqLUz/V/xzPrzruLs7fz7jxGQ1msZ/mg1nwZxUSuOp4sb+/bEIbRrbzZRxDA=="
   "resolved" "https://registry.npmjs.org/plist/-/plist-3.0.5.tgz"
   "version" "3.0.5"
@@ -8646,7 +8673,7 @@
   "resolved" "https://registry.npmjs.org/ws/-/ws-8.2.3.tgz"
   "version" "8.2.3"
 
-"xml2js@^0.4.17", "xml2js@^0.4.23":
+"xml2js@^0.4.17", "xml2js@^0.4.23", "xml2js@>=0.4":
   "integrity" "sha512-ySPiMjM0+pLDftHgXY4By0uswI3SPKLDw/i3UXbnO8M/p28zqexCUoPmQFrYD+/1BzhGJSs2i1ERWKJAtiLrug=="
   "resolved" "https://registry.npmjs.org/xml2js/-/xml2js-0.4.23.tgz"
   "version" "0.4.23"

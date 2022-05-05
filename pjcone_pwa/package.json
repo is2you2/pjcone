@@ -20,6 +20,7 @@
     "@angular/platform-browser-dynamic": "~13.2.2",
     "@angular/router": "~13.2.2",
     "@awesome-cordova-plugins/background-mode": "^5.41.0",
+    "@awesome-cordova-plugins/deeplinks": "^5.41.0",
     "@awesome-cordova-plugins/local-notifications": "^5.41.0",
     "@awesome-cordova-plugins/web-socket-server": "^5.41.0",
     "@capacitor/app": "1.1.1",
@@ -32,6 +33,7 @@
     "cordova-plugin-background-mode": "^0.7.3",
     "cordova-plugin-local-notification": "^0.9.0-beta.2",
     "cordova-plugin-websocket-server": "^1.6.0",
+    "ionic-plugin-deeplinks": "^1.0.24",
     "rxjs": "~6.6.0",
     "tslib": "^2.2.0",
     "zone.js": "~0.11.4"
