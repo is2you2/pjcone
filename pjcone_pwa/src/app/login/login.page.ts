@@ -51,7 +51,7 @@ export class LoginPage implements OnInit {
   /** 입력된 정보로 로그인하기 */
   login() {
     this.isProgreessing = true;
-    this.nakama.session_login(
+    this.nakama.AuthSessionLogin(
       this.email,
       this.password,
     ).then((_status) => {

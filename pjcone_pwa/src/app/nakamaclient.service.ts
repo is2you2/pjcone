@@ -7,9 +7,10 @@ import { Client, Session, Socket } from "@heroiclabs/nakama-js";
 export class NakamaclientService {
 
   client: Client;
-  session: Session;
-  /** 서버가 온라인 상태입니까? */
-  isConnected: boolean = false;
+  /** 손님계정 (계정 전 행동요청용) */
+  GuestSession: Session;
+  /** 사용자 인증 세션 */
+  AuthSession: Session;
   socket: Socket;
 
   constructor() { }
@@ -20,23 +21,21 @@ export class NakamaclientService {
    */
   initialize(): Promise<boolean> {
     this.client = new Client("defaultkey", "is2you2.iptime.org", '7350');
-    return this.check_if_server_available();
+    return this.CheckIfServerAvailable();
   }
   /** 서버가 운영중인지 검토해봅시다 */
-  async check_if_server_available(): Promise<boolean> {
+  async CheckIfServerAvailable(): Promise<boolean> {
     try {
-      await this.client.authenticateEmail('CheckerSession', '');
+      this.GuestSession = await this.client.authenticateDevice('GuestSession', true);
+      return true;
     } catch (e) {
       switch (e.status) {
         case undefined: // 서버는 휴가중
-          this.isConnected = false;
-          break;
+          return false;
         default: // 휴가중이 아니라면 일하는 것으로 간주
           console.warn('서버 체크 결과: ', e.status);
-          this.isConnected = true;
-          break;
+          return true;
       }
-      return this.isConnected;
     }
   }
   /**
@@ -53,9 +52,9 @@ export class NakamaclientService {
    * @param _vars 기타 자료들 추가 {}
    * @returns 정상 로그인 여부
    */
-  async session_login(email: string, password: string, _create: boolean = false, _username?: string, _vars?: any): Promise<number> {
+  async AuthSessionLogin(email: string, password: string, _create: boolean = false, _username?: string, _vars?: any): Promise<number> {
     try {
-      this.session = await this.client.authenticateEmail(email, password, _create, _username, _vars);
+      this.AuthSession = await this.client.authenticateEmail(email, password, _create, _username, _vars);
       return 0;
     } catch (e) {
       return e.status;

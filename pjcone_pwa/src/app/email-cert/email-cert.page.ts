@@ -25,7 +25,7 @@ export class EmailCertPage implements OnInit {
       return;
     }
     this.is_send_button_disabled = true;
-    this.nakama.session_login(this.email, 'password').then(v => {
+    this.nakama.AuthSessionLogin(this.email, 'password').then(v => {
       switch (v) {
         case 400: // 누락된 정보가 있음 (비밀번호를 안썼거나 등등)
           this.alert.create({
@@ -48,7 +48,7 @@ export class EmailCertPage implements OnInit {
             v.present();
           });
           break;
-        case 404: // 존재하지 않는 이메일
+        case 404: // 존재하지 않는 이메일 아이디
           this.alert.create({
             header: '가입 메일 발송 요청됨',
             message: '인증 메일을 발송했습니다. 높은 확률로 스팸 편지함에 분류됩니다.',
@@ -58,6 +58,7 @@ export class EmailCertPage implements OnInit {
             v.present();
           });
           console.log('아이디가 없음, 이 때 email 발송처리를 하면 됨');
+          this.nakama.client.rpc(this.nakama.GuestSession, 'send_cert_email', { email: this.email });
           this.modal.dismiss();
           break;
         case undefined: // 연결 끊김
