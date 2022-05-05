@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { NakamaclientService } from '../nakamaclient.service';
+import { NakamaclientService } from '../../nakamaclient.service';
 
 @Component({
   selector: 'app-register',

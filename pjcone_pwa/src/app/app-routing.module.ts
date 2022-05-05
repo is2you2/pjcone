@@ -8,36 +8,36 @@ const routes: Routes = [
     pathMatch: 'full'
   },
   {
-    path: 'home',
-    loadChildren: () => import('./home/home.module').then(m => m.HomePageModule)
+    path: 'logo',
+    loadChildren: () => import('./logo/logo.module').then( m => m.LogoPageModule)
+  },
+  {
+    path: 'email-cert',
+    loadChildren: () => import('./account/email-cert/email-cert.module').then( m => m.EmailCertPageModule)
   },
   {
     path: 'login',
-    loadChildren: () => import('./login/login.module').then(m => m.LoginPageModule)
+    loadChildren: () => import('./account/login/login.module').then(m => m.LoginPageModule)
   },
   {
     path: 'register',
-    loadChildren: () => import('./register/register.module').then( m => m.RegisterPageModule)
-  },
-  {
-    path: 'pjcone',
-    loadChildren: () => import('./pjcone/pjcone.module').then( m => m.PjconePageModule)
+    loadChildren: () => import('./account/register/register.module').then( m => m.RegisterPageModule)
   },
   {
     path: 'portal',
     loadChildren: () => import('./portal/portal.module').then( m => m.PortalPageModule)
   },
   {
+    path: 'home',
+    loadChildren: () => import('./home/home.module').then(m => m.HomePageModule)
+  },
+  {
     path: 'starcraft-custom',
     loadChildren: () => import('./starcraft-custom/starcraft-custom.module').then( m => m.StarcraftCustomPageModule)
   },
   {
-    path: 'logo',
-    loadChildren: () => import('./logo/logo.module').then( m => m.LogoPageModule)
-  },
-  {
-    path: 'email-cert',
-    loadChildren: () => import('./email-cert/email-cert.module').then( m => m.EmailCertPageModule)
+    path: 'pjcone',
+    loadChildren: () => import('./pjcone/pjcone.module').then( m => m.PjconePageModule)
   },
   {
     path: 'user-privacy',

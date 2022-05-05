@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
-import { NakamaclientService } from '../nakamaclient.service';
+import { NakamaclientService } from '../../nakamaclient.service';
 
 @Component({
   selector: 'app-email-cert',

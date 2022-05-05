@@ -19,7 +19,7 @@ export class NakamaclientService {
    * ### 클라이언트 연결
    * 서버연결 시도를 합니다. 연결실패시 false 반환
    */
-  initialize(): Promise<boolean> {
+  initialize(): Promise<boolean> { // 아래에서 서버 주소 검토하기
     this.client = new Client("defaultkey", "is2you2.iptime.org", '7350');
     return this.CheckIfServerAvailable();
   }

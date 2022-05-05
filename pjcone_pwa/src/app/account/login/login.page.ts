@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, AlertOptions, ModalController, NavController } from '@ionic/angular';
 import { EmailCertPage } from '../email-cert/email-cert.page';
-import { NakamaclientService } from '../nakamaclient.service';
+import { NakamaclientService } from '../../nakamaclient.service';
 
 @Component({
   selector: 'app-login',
