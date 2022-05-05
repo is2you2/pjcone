@@ -39,6 +39,10 @@ const routes: Routes = [
     path: 'email-cert',
     loadChildren: () => import('./email-cert/email-cert.module').then( m => m.EmailCertPageModule)
   },
+  {
+    path: 'user-privacy',
+    loadChildren: () => import('./user-privacy/user-privacy.module').then( m => m.UserPrivacyPageModule)
+  },
 ];
 
 @NgModule({
