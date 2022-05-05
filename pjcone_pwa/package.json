@@ -26,6 +26,7 @@
     "@awesome-cordova-plugins/speech-recognition": "^5.41.0",
     "@awesome-cordova-plugins/text-to-speech-advanced": "^5.41.0",
     "@awesome-cordova-plugins/web-socket-server": "^5.41.0",
+    "@capacitor/android": "^3.5.1",
     "@capacitor/app": "1.1.1",
     "@capacitor/core": "^3.4.3",
     "@capacitor/haptics": "1.1.4",
