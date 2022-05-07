@@ -26,7 +26,7 @@ export class NakamaclientService {
   /** 서버가 운영중인지 검토해봅시다 */
   async CheckIfServerAvailable(): Promise<boolean> {
     try {
-      this.GuestSession = await this.client.authenticateDevice('GuestSession', true);
+      this.GuestSession = await this.client.authenticateDevice('GuestSession', false, 'GuestSession');
       return true;
     } catch (e) {
       switch (e.status) {
