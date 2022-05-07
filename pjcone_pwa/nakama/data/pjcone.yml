@@ -9,10 +9,10 @@ database:
 #    max_idle_conns: 100 # 사용하지는 않지만 연결될 수 있는 최대수
 #    max_open_conns: 0 # 데이터베이스 최대 동시접속자 제한
 logger:
-    stdout: false
+    stdout: true
 #    max_age: 0 # 로그 파일 보관 최대 일수
     level: "debug"
-    file: "/nakama/data/logfile.log"
+#    file: "/nakama/data/logfile.log"
 #session: # 접속과 관련됨
 #    encryption_key: "test-key-text" # 이건 필수임, 출시할 때 반드시 조정
 #    refresh_encryption_key: "test-refresh-key-text"
