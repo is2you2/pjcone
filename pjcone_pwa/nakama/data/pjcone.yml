@@ -9,7 +9,7 @@ database:
 #    max_idle_conns: 100 # 사용하지는 않지만 연결될 수 있는 최대수
 #    max_open_conns: 0 # 데이터베이스 최대 동시접속자 제한
 logger:
-    stdout: true
+    stdout: true # 출시할 때 바꾸기
 #    max_age: 0 # 로그 파일 보관 최대 일수
     level: "debug"
 #    file: "/nakama/data/logfile.log"

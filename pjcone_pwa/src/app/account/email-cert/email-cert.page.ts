@@ -26,6 +26,7 @@ export class EmailCertPage implements OnInit {
     }
     this.is_send_button_disabled = true;
     this.nakama.AuthSessionLogin(this.email, 'password').then(v => {
+      console.log('뭔가 받았습니다: ', v);
       switch (v) {
         case 400: // 누락된 정보가 있음 (비밀번호를 안썼거나 등등)
           this.alert.create({
