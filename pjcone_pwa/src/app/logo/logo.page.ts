@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-logo',
@@ -7,9 +8,16 @@ import { Component, OnInit } from '@angular/core';
 })
 export class LogoPage implements OnInit {
 
-  constructor() { }
+  constructor(public navCtrl: NavController,
+  ) { }
 
   ngOnInit() {
+    setTimeout(() => {
+      this.navCtrl.navigateRoot('portal', {
+        animated: true,
+        animationDirection: 'forward',
+      });
+    }, 1400);
   }
 
 }

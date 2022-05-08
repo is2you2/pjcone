@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { AlertController, NavController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
+import { LoginPage } from './account/login/login.page';
 import { NakamaclientService } from './nakamaclient.service';
 
 @Component({
@@ -10,32 +11,25 @@ import { NakamaclientService } from './nakamaclient.service';
 export class AppComponent {
   constructor(public nakama: NakamaclientService,
     public alert: AlertController,
-    public navCtrl: NavController,
+    public modal: ModalController,
   ) {
     this.initialized_client();
   }
 
-
   async initialized_client() {
     if (await this.nakama.initialize()) {
       setTimeout(() => {
-        this.navCtrl.navigateRoot('login', {
-          animated: true,
-          animationDirection: 'forward',
+        this.modal.create({
+          component: LoginPage,
+        }).then(v => {
+          v.present();
         });
       }, 700);
     } else {
       this.alert.create({
         header: '서버 휴가중',
         message: '활동할 수는 없지만 마지막 기록들을 토대로 페이지를 돌아다닐 수 있습니다.',
-        backdropDismiss: false,
         buttons: [{
-          handler: v => {
-            this.navCtrl.navigateRoot('portal', {
-              animated: true,
-              animationDirection: 'forward',
-            });
-          },
           text: '오케이~',
         }]
       }).then(v => {

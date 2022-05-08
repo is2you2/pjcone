@@ -43,6 +43,10 @@ const routes: Routes = [
     path: 'user-privacy',
     loadChildren: () => import('./user-privacy/user-privacy.module').then( m => m.UserPrivacyPageModule)
   },
+  {
+    path: 'before-register',
+    loadChildren: () => import('./before-register/before-register.module').then( m => m.BeforeRegisterPageModule)
+  },
 ];
 
 @NgModule({
