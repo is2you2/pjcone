@@ -4,7 +4,7 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'logo', // 시작하는 페이지
+    redirectTo: 'blog', // 시작하는 페이지
     pathMatch: 'full'
   },
   {
@@ -28,7 +28,7 @@ const routes: Routes = [
     loadChildren: () => import('./portal/portal.module').then( m => m.PortalPageModule)
   },
   {
-    path: 'home',
+    path: 'blog', // 블로그 페이지로 사용
     loadChildren: () => import('./home/home.module').then(m => m.HomePageModule)
   },
   {
