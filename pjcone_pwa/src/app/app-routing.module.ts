@@ -4,8 +4,9 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'blog', // 시작하는 페이지
-    pathMatch: 'full'
+    loadChildren: () => import('./home/home.module').then(m => m.HomePageModule)
+    // redirectTo: 'blog', // 시작하는 페이지
+    // pathMatch: 'full'
   },
   {
     path: 'logo',
@@ -32,7 +33,7 @@ const routes: Routes = [
     loadChildren: () => import('./home/home.module').then(m => m.HomePageModule)
   },
   {
-    path: 'starcraft-custom',
+    path: 'starcraft_custom',
     loadChildren: () => import('./starcraft-custom/starcraft-custom.module').then( m => m.StarcraftCustomPageModule)
   },
   {
