@@ -24,4 +24,23 @@ export class LocalNotiService {
       console.warn('모바일 액션 준비중: LocalNotification 예정');
     }
   }
+  /**
+   * 로컬 푸쉬 알림을 동작시킵니다
+   * @param _title 알림 타이틀
+   * @param _opt 알림 옵션
+   * @param _action 클릭시 행동
+   */
+  PushLocal(_title: string, _opt: NotificationOptions = null, _action: Function = null) {
+    if (isPlatform == 'Browser') {
+      /** 기본 알림 옵션 (교체될 수 있음) */
+      const _default_opt: NotificationOptions = {
+        icon: 'assets/icon/favicon.png',
+      }
+      const _noti = new Notification(_title, { ..._default_opt, ..._opt });
+      _noti.onclick = () => {
+        _action;
+        window.focus();
+      };
+    }
+  }
 }
