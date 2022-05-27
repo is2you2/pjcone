@@ -12,15 +12,19 @@ export class P5ToastService {
   constructor() { }
   /** 현재 보여지는 알림 */
   private CurrentToast: p5;
-
-  /** 토스트 만들기 */
-  CreateToast(_msg: string) {
-    if (this.CurrentToast != null) return; // 이미 토스트가 있다면 누적시키기
-    let toast = (p: p5) => {
+  /**
+   * 토스트 알림을 보여줍니다
+   * @param _Msg 문자열 메시지
+   * @param _duration 보여지는 시간
+   * @param _img 이미지 경로
+   */
+  CreateToast(_Msg: string, _duration: number = 6, _img: string = '') {
+    let _toast = (p: p5) => {
       p.setup = () => {
-        p.remove();
+        console.log('p5 동작 로그');
+        this.CurrentToast.remove();
       }
     }
-    this.CurrentToast = new p5(toast);
+    this.CurrentToast = new p5(_toast);
   }
 }
