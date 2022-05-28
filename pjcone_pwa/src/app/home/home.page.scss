@@ -1,27 +1,30 @@
-#container {
-  text-align: center;
-
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+// 창이 지정된 픽셀보다 크면 크기를 고정시킴
+@media screen and (min-width: 840px) {
+  .main_div {
+    width: 840px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+// 그게 아니라면 유동 처리해줌
+.main_div {
+  width: 840px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
 }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
+// 전체 화면을 가운데로 맞춤처리
+.display_full {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
+// 가운데 배치되는 테이블
+.main_table {
+  width: 100%;
+  border: 0;
 }
