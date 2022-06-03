@@ -21,18 +21,7 @@ export class LocalNotiService {
       }, e => {
         console.error('지원하지 않는 브라우저:', e);
       });
-    } else {
-      console.warn('모바일 액션 준비중: LocalNotification 예정');
-      LocalNotifications.schedule({
-        notifications: [
-          {
-            title: 'title',
-            body: 'text',
-            id: 0
-          }
-        ]
-      });
-    }
+    } // 모바일은 별도 초기화 과정 없음
   }
   /**
    * 로컬 푸쉬 알림을 동작시킵니다
@@ -51,8 +40,15 @@ export class LocalNotiService {
         _action;
         window.focus();
       };
-    } else {
+    } else { // 모바일 로컬 푸쉬
       console.log('모바일 알림 준비중');
+      LocalNotifications.schedule({
+        notifications: [{
+          id: 0,
+          title: '로컬 푸쉬 준비중',
+          body: 'LocalNoti에서 구성하세요',
+        }]
+      });
     }
   }
 }
