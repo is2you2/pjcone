@@ -302,13 +302,6 @@
   dependencies:
     "@types/cordova" "latest"
 
-"@awesome-cordova-plugins/local-notifications@^5.41.0":
-  "integrity" "sha512-lDEaOVv28aqmIJQNNCe5suCbLwWRE6akgkEYcxbZg5Zu9k3SDz+VduRJASAqyeNmFFqeb13ahPjVTguqx8iBrQ=="
-  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/local-notifications/-/local-notifications-5.41.0.tgz"
-  "version" "5.41.0"
-  dependencies:
-    "@types/cordova" "latest"
-
 "@awesome-cordova-plugins/speech-recognition@^5.41.0":
   "integrity" "sha512-WlTy5D6u5TeMfLB9XQxXc6ea/bmmlzHvg76mJ4Qjp6aSIbEof5Mdc4AFsHXGL5uh1deMqhVSjST+vQyx6QSnGA=="
   "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/speech-recognition/-/speech-recognition-5.41.0.tgz"
@@ -3215,11 +3208,6 @@
   "integrity" "sha512-FTFKep8HZI/2HkX+Gc/dUACfZGV9+k9waXlgoEOKXOiPPR/1zBw29Mw+adcz4FQUpdWyAgYDxNiaPUnP0P+H2Q=="
   "resolved" "https://registry.npmjs.org/cordova-plugin-camera/-/cordova-plugin-camera-6.0.0.tgz"
   "version" "6.0.0"
-
-"cordova-plugin-local-notification@^0.9.0-beta.2":
-  "integrity" "sha512-63n77K1pt8dnbWnNR8QWETi9Glezi1bvNHvHWmGNIOv0xCb0phZnm+Ku49BQ+omwe8Z5voMvrA4I03SYPpv38w=="
-  "resolved" "https://registry.npmjs.org/cordova-plugin-local-notification/-/cordova-plugin-local-notification-0.9.0-beta.2.tgz"
-  "version" "0.9.0-beta.2"
 
 "cordova-plugin-speechrecognition@^1.2.0":
   "integrity" "sha1-AF8QyJb9kpPYWH/lUiorZC3qlwo="
