@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { isPlatform } from './app.component';
+import { LocalNotifications } from "@capacitor/local-notifications";
 
 /** ### 로컬 알림
  * 알림 신호를 받으면 로컬 알림을 생성함
@@ -22,6 +23,15 @@ export class LocalNotiService {
       });
     } else {
       console.warn('모바일 액션 준비중: LocalNotification 예정');
+      LocalNotifications.schedule({
+        notifications: [
+          {
+            title: 'title',
+            body: 'text',
+            id: 0
+          }
+        ]
+      });
     }
   }
   /**
@@ -41,6 +51,8 @@ export class LocalNotiService {
         _action;
         window.focus();
       };
+    } else {
+      console.log('모바일 알림 준비중');
     }
   }
 }

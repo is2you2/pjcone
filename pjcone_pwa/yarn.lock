@@ -1258,10 +1258,10 @@
     "@babel/helper-validator-identifier" "^7.16.7"
     "to-fast-properties" "^2.0.0"
 
-"@capacitor/android@3.5.1":
-  "integrity" "sha512-rjehS0+BQBlwoN8hUyrMuzexn/9QJsONb1kmN5uXcL8JuTEbv35fa7z0tSD4x1LKwUFd+3Zeuwt60QRuwijlmw=="
-  "resolved" "https://registry.npmjs.org/@capacitor/android/-/android-3.5.1.tgz"
-  "version" "3.5.1"
+"@capacitor/android@3.4.3":
+  "integrity" "sha512-G/6+mbOde9LMWl5KvA5rB/xEQF05sKrQFMBwo8y3C8pYF+axtcrS0Dgze9rOB7nCjH4NXv/bLw58E9+q8/sQUA=="
+  "resolved" "https://registry.npmjs.org/@capacitor/android/-/android-3.4.3.tgz"
+  "version" "3.4.3"
 
 "@capacitor/app@1.1.1":
   "integrity" "sha512-8ADkldHnoE1xkWvPUsGlERVGm6/Zvcxy6hCI80AxydIKyaCG7kbDAvUclebbnw/eFRxj2zBoVatGLjmJNvTbYw=="
@@ -1290,7 +1290,7 @@
     "tslib" "^2.1.0"
     "xml2js" "^0.4.23"
 
-"@capacitor/core@^3.0.0", "@capacitor/core@^3.4.3", "@capacitor/core@^3.5.0":
+"@capacitor/core@^3.0.0", "@capacitor/core@^3.4.0", "@capacitor/core@^3.4.3":
   "integrity" "sha512-UTROxB7q/hZBnhDLcCN7mVsAX3SxXNMhVuPbtddsDOUCm4hExLXN62gPD7rjgmumhfHMjeXmkw/EfRzSjttL1g=="
   "resolved" "https://registry.npmjs.org/@capacitor/core/-/core-3.5.1.tgz"
   "version" "3.5.1"
@@ -1306,6 +1306,11 @@
   "integrity" "sha512-dOZSXJTY/tTbRQ+Neiny72BIXN2Hvf/2AgPpMdTErDfaQM7C2MMgtJrm+Mi+YUeT6AnJFmt68nHJGImAL4lzmA=="
   "resolved" "https://registry.npmjs.org/@capacitor/keyboard/-/keyboard-1.2.2.tgz"
   "version" "1.2.2"
+
+"@capacitor/local-notifications@^1.1.0":
+  "integrity" "sha512-l6S9rBylxGPq/U+xpJzZcOL4l2s8I2Igq7uDTidR4imIxxX3bLRz9nDSQREWsbQkFx7ALFm/5Y8PJGz2C6qKPw=="
+  "resolved" "https://registry.npmjs.org/@capacitor/local-notifications/-/local-notifications-1.1.0.tgz"
+  "version" "1.1.0"
 
 "@capacitor/status-bar@1.0.8":
   "integrity" "sha512-lhxa70K6vg0QjdddbT9RqFLfQ9a0Fk1OVE54MhUH30DWymv4h2LrC+mJgH6JS46WQbR2UCHRymfmVCq1PS2Qiw=="
