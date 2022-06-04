@@ -20,7 +20,8 @@ services:
     entrypoint:
       - "/bin/sh"
       - "-ecx"
-      - /nakama/nakama --config /nakama/data/pjcone.yml
+      - /nakama/nakama migrate up --database.address postgres:localdb@postgres:5432/nakama &&
+         /nakama/nakama --config /nakama/data/pjcone.yml
     restart: always
     links:
       - "postgres:db"
