@@ -24,3 +24,40 @@
 @import "~@ionic/angular/css/text-alignment.css";
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
+
+// 전체 화면을 가운데로 맞춤처리
+.display_width_full {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+// 창이 지정된 픽셀보다  작다면 유동 처리해줌
+.main_div {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+}
+
+// 창이 지정된 픽셀보다 크면 크기를 고정시킴
+@media screen and (min-width: 840px) {
+    .main_div {
+        width: 840px;
+        display: flex;
+        justify-content: center;
+        align-content: center;
+    }
+}
+
+// 보통 가운데 배치되는 테이블
+.main_table {
+    width: 100%;
+    border: 0;
+}
+
+// 전면 차지식 구성 (보통 p5 판넬용으로)
+.fullsize_panel {
+    width: 100%;
+    height: 100%;
+}

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import * as p5 from "p5";
 
 @Component({
   selector: 'app-starcraft-custom',
@@ -9,7 +10,6 @@ export class StarcraftCustomPage implements OnInit {
 
   constructor() { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
 }
