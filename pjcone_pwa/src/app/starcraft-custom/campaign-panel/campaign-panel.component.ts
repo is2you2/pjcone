@@ -1,6 +1,14 @@
 import { Component, Input, OnInit } from '@angular/core';
 import * as p5 from "p5";
 
+/** 고도 파일 리스트로 뽑은 json 파일 */
+export interface FileList {
+  /** 대상 폴더 위치 */
+  root: string;
+  /** 대상 폴더로부터 파일 이름 */
+  files: string[];
+}
+
 @Component({
   selector: 'app-campaign-panel',
   templateUrl: './campaign-panel.component.html',
