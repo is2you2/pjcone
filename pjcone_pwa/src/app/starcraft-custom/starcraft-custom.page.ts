@@ -11,4 +11,8 @@ export class StarcraftCustomPage implements OnInit {
 
   ngOnInit() { }
 
+  link_youtube() {
+    window.location.href = 'https://www.youtube.com/watch?v=Ieqh27v29xI';
+  }
+
 }
