@@ -1,14 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-
-/** 캠페인 정보 일람 */
-export interface CampaignData {
-  /** 보여지는 제목 */
-  title: string,
-  /** 캠페인 설명 */
-  desc: string,
-  /** 이미지 상대경로 */
-  _rel_path: string,
-}
+import * as p5 from "p5";
 
 @Component({
   selector: 'app-campaign-panel',
@@ -17,10 +8,55 @@ export interface CampaignData {
 })
 export class CampaignPanelComponent implements OnInit {
 
-  @Input() data: CampaignData;
-
   constructor() { }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.draw_selector()
+  }
 
+  draw_selector() {
+    let selector = (p: p5) => {
+      p.setup = () => {
+        const TARGET_DIV = document.getElementById('Campaigns');
+        let canvas = p.createCanvas(TARGET_DIV.clientWidth, TARGET_DIV.clientHeight);
+        canvas.parent(TARGET_DIV);
+
+        p.noLoop();
+        draw_background();
+      }
+      p.draw = () => {
+
+      }
+      let draw_background = () => {
+        p.background(200);
+        p.redraw();
+      }
+      class ImageButton {
+        /** 선택된 배경 이미지 */
+        img: p5.Image;
+        /**
+         * 유동적 슬라이드식 이미지 버튼
+         * @param _json_path json 리스트 경로
+         */
+        constructor(_json_path: string) {
+
+        }
+        display() {
+
+        }
+        OnClick() {
+
+        }
+      }
+      p.windowResized = () => {
+        const TARGET_DIV = document.getElementById('Campaigns');
+        if (window.innerWidth < 768)
+          p.resizeCanvas(window.innerWidth, TARGET_DIV.clientHeight);
+        else p.resizeCanvas(768, TARGET_DIV.clientHeight);
+
+        draw_background();
+      }
+    }
+    new p5(selector);
+  }
 }

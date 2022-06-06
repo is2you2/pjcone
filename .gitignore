@@ -27,3 +27,5 @@ test_suite/.import/*
 # System/tool-specific ignores
 .directory
 *~
+# 파생결과물 무시
+exports/*
