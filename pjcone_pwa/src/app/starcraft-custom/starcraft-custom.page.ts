@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as p5 from "p5";
+import { CampaignData } from './campaign-panel/campaign-panel.component';
 
 @Component({
   selector: 'app-starcraft-custom',
@@ -7,6 +8,9 @@ import * as p5 from "p5";
   styleUrls: ['./starcraft-custom.page.scss'],
 })
 export class StarcraftCustomPage implements OnInit {
+
+  /** 캠페인 관련 정보들 */
+  infos: CampaignData[] = [];
 
   constructor() { }
 
