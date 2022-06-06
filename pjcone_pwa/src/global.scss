@@ -41,9 +41,9 @@
 }
 
 // 창이 지정된 픽셀보다 크면 크기를 고정시킴
-@media screen and (min-width: 840px) {
+@media screen and (min-width: 768px) {
     .main_div {
-        width: 840px;
+        width: 768px;
         display: flex;
         justify-content: center;
         align-content: center;
