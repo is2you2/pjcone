@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
+import { AppComponent } from 'src/app/app.component';
 import { NakamaclientService } from '../../nakamaclient.service';
 
 @Component({
@@ -11,6 +12,8 @@ export class RegisterPage implements OnInit {
 
   constructor(public nakama: NakamaclientService,
     public modalCtrl: ModalController,
+    public deeplink: AppComponent,
+    public alert: AlertController,
   ) { }
 
   /** 사용자 입력 데이터 */
@@ -29,7 +32,35 @@ export class RegisterPage implements OnInit {
     'nickname': '',
   };
 
-  ngOnInit() { }
+  ngOnInit() {
+    let GETs = this.deeplink.CatchGETs();
+    if (GETs['target']) {
+      try {
+        this.user.email = atob(GETs['target']);
+      } catch (error) {
+        this.UnexceptedAccess();
+      }
+    } else {
+      this.UnexceptedAccess();
+    }
+  }
+
+  /** 정상적인 접근이 아니라면 알려주고 메인 페이지로 날림 */
+  UnexceptedAccess() {
+    this.alert.create({
+      header: '잘못된 접근',
+      message: '올바른 경로로 접근하지 않았습니다',
+      backdropDismiss: false,
+      buttons: [{
+        handler: () => {
+          location.href = 'http://172.30.1.49:8100/';
+        },
+        text: '확인',
+      }]
+    }).then(v => {
+      v.present();
+    });
+  }
 
   OnClickRegister() {
     console.log('정보 입력됨: ', this.user);

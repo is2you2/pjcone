@@ -25,4 +25,22 @@ export class AppComponent {
     this.nakama.initialize();
     noti.initialize();
   }
+
+  /** 브라우저에서 딥 링크마냥 행동하기
+   * @returns GET 으로 작성된 key-value 쌍
+  */
+  CatchGETs() {
+    /** 입력된 주소 */
+    const ADDRESS = location.href;
+    const sepElement = ADDRESS.split('?');
+    if (sepElement.length > 1) {
+      const CatchGETs = sepElement[1].split('&');
+      let gets = {};
+      for (let i = 0, j = CatchGETs.length; i < j; i++) {
+        const KeyVal = CatchGETs[i].split('=');
+        gets[KeyVal[0]] = KeyVal[1];
+      }
+      return gets;
+    }
+  }
 }
