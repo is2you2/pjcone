@@ -22,9 +22,6 @@ export class AppComponent {
     else if (platform.is('iphone'))
       isPlatform = 'iOS';
     console.log('시작할 때 플랫폼은', isPlatform);
-    // if (isPlatform == 'Android')
-    //   statusBar.styleLightContent();
-    // else if (isPlatform == 'iOS') statusBar.styleDefault();
     this.nakama.initialize();
     noti.initialize();
   }

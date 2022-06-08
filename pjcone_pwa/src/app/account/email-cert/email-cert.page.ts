@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
+import { WscService } from 'src/app/wsc.service';
 import { NakamaclientService } from '../../nakamaclient.service';
 
 @Component({
@@ -12,6 +13,7 @@ export class EmailCertPage implements OnInit {
   constructor(public nakama: NakamaclientService,
     public alert: AlertController,
     public modal: ModalController,
+    public client: WscService,
   ) { }
   ngOnInit() { }
 
@@ -25,9 +27,8 @@ export class EmailCertPage implements OnInit {
       return;
     }
     this.is_send_button_disabled = true;
-    this.nakama.AuthSessionLogin(this.email, 'password').then(v => {
-      console.log('뭔가 받았습니다: ', v);
-      switch (v) {
+    this.nakama.client.authenticateEmail(this.email, 'password', false).catch(e => {
+      switch (e.status) {
         case 400: // 누락된 정보가 있음 (비밀번호를 안썼거나 등등)
           this.alert.create({
             header: '이메일 형식 오류',
@@ -35,6 +36,7 @@ export class EmailCertPage implements OnInit {
             buttons: ['어라?']
           }).then(v => {
             v.present();
+            this.is_send_button_disabled = false;
           });
           break;
         case 401: // 비밀번호가 틀림
@@ -47,20 +49,26 @@ export class EmailCertPage implements OnInit {
               email: this.email,
             });
             v.present();
+            this.is_send_button_disabled = false;
           });
           break;
         case 404: // 존재하지 않는 이메일 아이디
-          this.alert.create({
-            header: '가입 메일 발송 요청됨',
-            message: '인증 메일을 발송했습니다. 높은 확률로 스팸 편지함에 분류됩니다.',
-            backdropDismiss: false,
-            buttons: ['확인해볼께요']
-          }).then(v => {
-            v.present();
-          });
-          console.log('아이디가 없음, 이 때 email 발송처리를 하면 됨');
-          this.nakama.client.rpc(this.nakama.GuestSession, 'send_cert_email', { email: this.email });
-          this.modal.dismiss();
+          let closeCall = {
+            4000: () => {
+              this.alert.create({
+                header: '가입 메일 발송 요청됨',
+                message: '인증 메일을 발송했습니다. 높은 확률로 스팸 편지함에 분류됩니다.',
+                backdropDismiss: false,
+                buttons: ['확인해볼께요']
+              }).then(v => {
+                console.log('아이디가 없음, 이 때 email 발송처리를 하면 됨');
+                this.modal.dismiss();
+                v.present();
+                this.is_send_button_disabled = false;
+              });
+            }
+          }
+          this.client.initialize('is2you2.iptime.org', 8888, this.email, closeCall);
           break;
         case undefined: // 연결 끊김
           this.alert.create({
@@ -69,17 +77,14 @@ export class EmailCertPage implements OnInit {
             buttons: ['왜 하필 지금..']
           }).then(v => {
             v.present();
+            this.is_send_button_disabled = false;
           });
           break;
         case 0: // 정상 로그인? 어림도 없지
         default: // 기타 검토되지 않은 사유
-          console.warn('예상하지 못한 세션로그인 반환값: ', v);
+          console.warn('예상하지 못한 세션로그인 반환값: ', e);
           break;
       }
-      this.is_send_button_disabled = false;
-    }).catch(e => {
-      console.error('세션 로그인 오류: ', e);
-      this.is_send_button_disabled = false;
     });
   }
 }
