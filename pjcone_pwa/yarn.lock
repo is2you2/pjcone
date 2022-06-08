@@ -316,10 +316,10 @@
   dependencies:
     "@types/cordova" "latest"
 
-"@awesome-cordova-plugins/web-socket-server@^5.41.0":
-  "integrity" "sha512-p9XHVK/sk+2we2Irdg4r6K95FwJnKizZVJcjBiocv+2M5etrBmisuasNXr9ieVs8gbpH/BZnc7k5OKZGNJnuZQ=="
-  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/web-socket-server/-/web-socket-server-5.41.0.tgz"
-  "version" "5.41.0"
+"@awesome-cordova-plugins/web-socket-server@^5.43.0":
+  "integrity" "sha512-npNyU4YEm0RanTWTs8mgx7eU/Yb/vAW8kb/fl6KuaLhF5d/XO2iO3i6xD+9zxyzoagV7GpZOQbC43AOuyfq16g=="
+  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/web-socket-server/-/web-socket-server-5.43.0.tgz"
+  "version" "5.43.0"
   dependencies:
     "@types/cordova" "latest"
 

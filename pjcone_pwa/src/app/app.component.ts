@@ -3,7 +3,7 @@ import { Platform } from '@ionic/angular';
 import { LocalNotiService } from './local-noti.service';
 import { NakamaclientService } from './nakamaclient.service';
 
-export var isPlatform: 'Android' | 'iOS' | 'Browser' = 'Browser';
+export var isPlatform: 'Android' | 'iOS' | 'Desktop' = 'Desktop';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +16,7 @@ export class AppComponent {
     public noti: LocalNotiService,
   ) {
     if (platform.is('desktop') || platform.is('mobileweb'))
-      isPlatform = 'Browser';
+      isPlatform = 'Desktop';
     else if (platform.is('android'))
       isPlatform = 'Android';
     else if (platform.is('iphone'))
