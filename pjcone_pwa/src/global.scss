@@ -48,6 +48,12 @@
         justify-content: center;
         align-content: center;
     }
+
+    .header_center {
+        width: 768px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
 }
 
 // 보통 가운데 배치되는 테이블
