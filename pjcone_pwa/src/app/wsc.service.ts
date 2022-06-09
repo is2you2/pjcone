@@ -24,17 +24,13 @@ export class WscService {
         this.client.send(_initialSend);
     }
     this.client.onclose = (ev) => {
-      if (ev.wasClean) {
-        console.log('정상적으로 연결 끊김: ', ev.code, '/', ev.reason);
-        let keys = Object.keys(_closeCall);
-        for (let i = 0, j = keys.length; i < j; i++)
-          if (ev.code.toString() == keys[i]) {
-            _closeCall[keys[i]]();
-            break;
-          }
-      } else {
-        console.warn('불안정하게 연결 끊김');
-      }
+      console.log('연결 끊김: ', ev.code, '/', ev.reason);
+      let keys = Object.keys(_closeCall);
+      for (let i = 0, j = keys.length; i < j; i++)
+        if (ev.code.toString() == keys[i]) {
+          _closeCall[keys[i]]();
+          break;
+        }
     }
     this.client.onmessage = (ev) => {
       console.log('메시지 수신함: ', ev.data);

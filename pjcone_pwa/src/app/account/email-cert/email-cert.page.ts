@@ -54,6 +54,22 @@ export class EmailCertPage implements OnInit {
           break;
         case 404: // 존재하지 않는 이메일 아이디
           let closeCall = {
+            1006: () => {
+              console.log('제대로 연결 안됨');
+              this.alert.create({
+                header: '메일 서버 점검중',
+                message: '관리자에게 문의해주세요.',
+                backdropDismiss: false,
+                buttons: [{
+                  handler: () => {
+                    this.modal.dismiss();
+                  },
+                  text: '창 닫기'
+                }]
+              }).then(v => {
+                v.present();
+              })
+            },
             4000: () => {
               this.alert.create({
                 header: '가입 메일 발송 요청됨',
