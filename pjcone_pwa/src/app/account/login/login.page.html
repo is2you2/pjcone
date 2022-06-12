@@ -10,7 +10,10 @@
       <ion-input [(ngModel)]="password" type="password" [placeholder]="passwd_placeholder" class="input_field">
       </ion-input>
     </ion-item>
-    <ion-button expand="block" fill="outline" (click)='try_login()' [disabled]="isProgreessing">로그인</ion-button>
-    <ion-button expand="block" fill="outline" (click)='create_account()' [disabled]="isProgreessing">회원가입</ion-button>
+    <ion-button expand="block" fill="outline" (click)='try_login()' [disabled]="isProgreessing || !email || !password">
+      로그인
+    </ion-button>
+    <ion-button expand="block" fill="outline" (click)='create_account()' [disabled]="isProgreessing || !email">
+      회원가입</ion-button>
   </div>
 </ion-content>

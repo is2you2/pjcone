@@ -13,10 +13,6 @@ const routes: Routes = [
     loadChildren: () => import('./logo/logo.module').then(m => m.LogoPageModule)
   },
   {
-    path: 'email-cert',
-    loadChildren: () => import('./account/email-cert/email-cert.module').then(m => m.EmailCertPageModule)
-  },
-  {
     path: 'login',
     loadChildren: () => import('./account/login/login.module').then(m => m.LoginPageModule)
   },
