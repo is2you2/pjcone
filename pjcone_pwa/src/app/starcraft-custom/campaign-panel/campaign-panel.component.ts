@@ -33,16 +33,18 @@ export class CampaignPanelComponent implements OnInit {
         Buttons.push(new ImageButton('Multi(R)', 'assets/data/Multi(R)/list.json'));
         Buttons.push(new ImageButton('Mixed(O)', 'assets/data/Mixed(O)/list.json'));
         Buttons.push(new ImageButton('Beta', 'assets/data/Beta/list.json'));
+        p.imageMode(p.CENTER);
         p.noLoop();
         draw_background();
       }
       p.draw = () => {
         for (let i = 0, j = Buttons.length; i < j; i++) {
-          Buttons[i].display();
+          Buttons[i].display(p.width / 2, p.height / 2);
         }
       }
       let draw_background = () => {
-        p.background(200);
+        p.clear(255, 255, 255, 255);
+        p.background(80);
         p.redraw();
       }
       class ImageButton {
@@ -63,10 +65,10 @@ export class CampaignPanelComponent implements OnInit {
               this.info = v;
               this.info.root = _json_path.substring(0, _json_path.length - 9) + 'Screenshots/';
               this.index = p.floor(p.random(this.info.files.length));
-              console.log(this.index);
               this.loadImage(this.info.root + this.info.files[this.index]);
             });
-          this.pg = p.createGraphics(140, 140);
+          this.pg = p.createGraphics(300, 200);
+          this.pg.imageMode(p.CENTER);
           this.pg.noLoop();
         }
         /** 바깥에서 경로로 이미지 지정할 수 있도록 */
@@ -77,11 +79,18 @@ export class CampaignPanelComponent implements OnInit {
             p.redraw();
           });
         }
-        display() {
+        display(_x: number, _y: number) {
           if (this.img) {
-            this.pg.image(this.img, 0, 0);
+            p.push();
+            p.translate(_x, _y);
+            this.pg.image(this.img, this.pg.width / 2, this.pg.height / 2);
             p.image(this.pg, 0, 0);
+            p.pop();
           }
+        }
+        resize(_x: number, _y: number) {
+          this.pg.resizeCanvas(_x, _y);
+          this.pg.redraw();
         }
         OnClick() {
 
@@ -90,8 +99,8 @@ export class CampaignPanelComponent implements OnInit {
       p.windowResized = () => {
         const TARGET_DIV = document.getElementById('Campaigns');
         if (window.innerWidth < 768)
-          p.resizeCanvas(window.innerWidth, TARGET_DIV.clientHeight);
-        else p.resizeCanvas(768, TARGET_DIV.clientHeight);
+          p.resizeCanvas(window.innerWidth - 24, TARGET_DIV.clientHeight);
+        else p.resizeCanvas(768 - 24, TARGET_DIV.clientHeight);
 
         draw_background();
       }
