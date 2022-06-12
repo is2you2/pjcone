@@ -34,11 +34,13 @@ services:
       - "7350"
       - "7351"
       - "8888" # exim4 이메일 반응자
+      - "25" # exim4 smtp
     ports:
       - "7349:7349"
       - "7350:7350"
       - "7351:7351"
       - "8888:8888"
+      - "25:25"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7350/"]
       interval: 10s
