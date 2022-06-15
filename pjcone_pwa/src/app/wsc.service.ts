@@ -19,7 +19,6 @@ export class WscService {
   initialize(_Address: string, _Port: number = 12000, _initialSend: string = '', _closeCall = {}) {
     this.client = new WebSocket('ws://' + _Address + ':' + _Port);
     this.client.onopen = (_ev) => {
-      console.log('연결 수립됨: ', _ev);
       if (_initialSend != '')
         this.client.send(_initialSend);
     }

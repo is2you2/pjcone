@@ -32,6 +32,18 @@ export class LoginPage implements OnInit {
   email_placeholder: string = '';
   passwd_placeholder: string = '';
 
+  /**
+   * 입력칸에서 엔터를 눌러 행동하기
+   * @param ev 키값
+   */
+  inputs(ev: number) {
+    if (ev == 13 && this.email) { // 엔터키를 누르면
+      if (this.password)
+        this.try_login();
+      else this.create_account();
+    }
+  }
+
   /** ### 로그인 시도  
    * 이 함수에서 입력된 정보를 검토해본다
    */
@@ -125,7 +137,6 @@ export class LoginPage implements OnInit {
         case 404: // 존재하지 않는 이메일 아이디, 회원가입 가능
           let closeCall = {
             1006: () => {
-              console.log('제대로 연결 안됨');
               this.alert.create({
                 header: '메일 서버 점검중',
                 message: '관리자에게 문의해주세요.',

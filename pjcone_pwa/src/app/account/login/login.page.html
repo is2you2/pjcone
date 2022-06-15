@@ -3,11 +3,13 @@
     <ion-label>로그인</ion-label>
     <ion-item>
       <ion-label>이메일 ID</ion-label>
-      <ion-input [(ngModel)]="email" [placeholder]="email_placeholder" class="input_field"></ion-input>
+      <ion-input [(ngModel)]="email" [placeholder]="email_placeholder" class="input_field"
+        (keypress)="inputs($event.keyCode)"></ion-input>
     </ion-item>
     <ion-item>
       <ion-label>비밀번호</ion-label>
-      <ion-input [(ngModel)]="password" type="password" [placeholder]="passwd_placeholder" class="input_field">
+      <ion-input [(ngModel)]="password" type="password" [placeholder]="passwd_placeholder" class="input_field"
+        (keypress)="inputs($event.keyCode)">
       </ion-input>
     </ion-item>
     <ion-button expand="block" fill="outline" (click)='try_login()' [disabled]="isProgreessing || !email || !password">
