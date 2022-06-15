@@ -35,7 +35,7 @@ _global_script_class_icons={
 config/name="Project: Cone"
 config/description="블로그와 Project: Cone을 동시 운영하는 위엄으로 진화한 앱
 고도 엔진은 엔진 캔버스 등의 역할을 위해 준비되었고 버전컨트롤러 구조상 가장 하위를 맡고 있다"
-run/main_scene="res://Canvas.tscn"
+run/main_scene="res://SingleAct.tscn"
 config/icon="res://icon.png"
 config/name_ko="프로젝트: 콘텐츠"
 
