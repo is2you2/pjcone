@@ -19,7 +19,7 @@ export class WssService {
       console.log('소켓 서버는 비어있어: ', this.server);
 
       // start websocket server
-      this.server.start(8888, {}).subscribe({
+      this.server.start(12000, {}).subscribe({
         next: server => console.log(`서버 Listening on ${server.addr}:${server.port}`),
         error: error => console.log(`ws생성 오류 발생: `, error)
       });

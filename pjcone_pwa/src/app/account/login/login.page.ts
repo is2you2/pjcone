@@ -158,7 +158,7 @@ export class LoginPage implements OnInit {
               });
             }
           }
-          this.client.initialize('is2you2.iptime.org', 8888, this.email, closeCall);
+          this.client.initialize('is2you2.iptime.org', 11000, this.email, closeCall);
           break;
         case undefined: // 연결 끊김
           this.alert.create({
