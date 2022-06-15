@@ -37,7 +37,7 @@ export class LoginPage implements OnInit {
    * @param ev 키값
    */
   inputs(ev: number) {
-    if (ev == 13 && this.email) { // 엔터키를 누르면
+    if (ev == 13 && !this.isProgreessing && this.email) { // 엔터키를 누르면
       if (this.password)
         this.try_login();
       else this.create_account();
@@ -122,6 +122,7 @@ export class LoginPage implements OnInit {
             message: '뭔가 잘못 적으신거 같아요',
             buttons: ['어라?']
           }).then(v => {
+            this.isProgreessing = false;
             v.present();
           });
           break;
@@ -131,6 +132,7 @@ export class LoginPage implements OnInit {
             message: '그렇습니다.',
             buttons: ['그렇습니까?']
           }).then(v => {
+            this.isProgreessing = false;
             v.present();
           });
           break;
@@ -143,6 +145,7 @@ export class LoginPage implements OnInit {
                 backdropDismiss: false,
                 buttons: ['창 닫기']
               }).then(v => {
+                this.isProgreessing = false;
                 v.present();
               })
             },
@@ -153,7 +156,7 @@ export class LoginPage implements OnInit {
                 backdropDismiss: false,
                 buttons: ['확인해볼께요']
               }).then(v => {
-                console.log('아이디가 없음, 이 때 email 발송처리를 하면 됨');
+                this.isProgreessing = false;
                 v.present();
               });
             }
@@ -166,15 +169,16 @@ export class LoginPage implements OnInit {
             message: '서버가 반응하지 않아요..',
             buttons: ['왜 하필 지금..']
           }).then(v => {
+            this.isProgreessing = false;
             v.present();
           });
           break;
         case 0: // 정상 로그인? 어림도 없지
         default: // 기타 검토되지 않은 사유
           console.warn('예상하지 못한 세션로그인 반환값: ', e);
+          this.isProgreessing = false;
           break;
       }
-      this.isProgreessing = false;
     });
   }
 }
