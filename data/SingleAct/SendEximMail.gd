@@ -1,6 +1,5 @@
 extends Node
-# 회원기입 처리 후 이메일 발송을 위해 돌고 있는 임시 서버
-# 향후에 다른 방식으로 사용하긴 해야할텐데 말이지..
+# 회원기입 처리 후 이메일 발송용
 
 var server:= WebSocketServer.new()
 # 미리 구성된 이메일 안내 폼을 기억하고 있기
@@ -9,7 +8,7 @@ var msg:= '안녕하세요.\n\n직접 회원가입을 요청한 적이 없다면
 
 func _ready():
 	server.connect("data_received", self, '_received')
-	var err:= server.listen(11000)
+	var err:= server.listen(12000)
 	if err != OK:
 		printerr('서버 생성 오류: ', err)
 

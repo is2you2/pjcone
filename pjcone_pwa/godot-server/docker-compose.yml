@@ -1,15 +1,13 @@
 version: '3'
 services:
-  godot-servercd:
+  godot-server:
     container_name: godot-server
     image: ubuntu
     volumes:
       - ./data:/server/
     expose:
-      - "8080"
-      - "5432"
+      - "12000"
     ports:
-      - "5432:5432"
-      - "8080:8080"
+      - "12000:12000"
     command: /server/Godot-3.4.4-stable.64 --main-pack /server/single_act.pck
     # command: tail -F anything
