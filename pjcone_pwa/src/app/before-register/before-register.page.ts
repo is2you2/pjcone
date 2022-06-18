@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
-import { NakamaclientService } from '../nakamaclient.service';
 
 @Component({
   selector: 'app-before-register',
@@ -10,7 +9,6 @@ import { NakamaclientService } from '../nakamaclient.service';
 export class BeforeRegisterPage implements OnInit {
 
   constructor(public navCtrl: NavController,
-    public nakama: NakamaclientService,
   ) { }
 
   ngOnInit() {

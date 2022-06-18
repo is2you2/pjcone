@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { LocalNotiService } from './local-noti.service';
-import { NakamaclientService } from './nakamaclient.service';
 
 export var isPlatform: 'Android' | 'iOS' | 'Desktop' = 'Desktop';
 
@@ -12,7 +11,6 @@ export var isPlatform: 'Android' | 'iOS' | 'Desktop' = 'Desktop';
 })
 export class AppComponent {
   constructor(platform: Platform,
-    public nakama: NakamaclientService,
     public noti: LocalNotiService,
   ) {
     if (platform.is('desktop') || platform.is('mobileweb'))
@@ -22,7 +20,6 @@ export class AppComponent {
     else if (platform.is('iphone'))
       isPlatform = 'iOS';
     console.log('시작할 때 플랫폼은', isPlatform);
-    this.nakama.initialize();
     noti.initialize();
   }
 

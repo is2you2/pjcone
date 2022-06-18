@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
-import { NakamaclientService } from '../nakamaclient.service';
 
 @Component({
   selector: 'app-portal',
@@ -9,7 +8,7 @@ import { NakamaclientService } from '../nakamaclient.service';
 })
 export class PortalPage implements OnInit {
 
-  constructor(public nakama: NakamaclientService,
+  constructor(
     public alert: AlertController,
   ) { }
 

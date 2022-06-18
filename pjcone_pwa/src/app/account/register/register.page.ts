@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { AppComponent } from 'src/app/app.component';
-import { NakamaclientService } from '../../nakamaclient.service';
 
 @Component({
   selector: 'app-register',
@@ -10,7 +9,7 @@ import { NakamaclientService } from '../../nakamaclient.service';
 })
 export class RegisterPage implements OnInit {
 
-  constructor(public nakama: NakamaclientService,
+  constructor(
     public modalCtrl: ModalController,
     public deeplink: AppComponent,
     public alert: AlertController,
