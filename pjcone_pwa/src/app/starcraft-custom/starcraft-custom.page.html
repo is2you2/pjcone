@@ -12,11 +12,11 @@
     <div class="main_div">
       <table class="main_table">
         <tr>
-          <h4>타이틀 영상</h4>
-        </tr>
-        <tr>
-          <div>
-            <img id="main_video" src="" alt="Youtube에서 보기" (click)="link_youtube()">
+          <div id="main_video_form" style="position: relative;" (click)="link_youtube()">
+            <img id="main_video" src="assets/data/starcraft_custom.png" alt="Youtube 영상 보기" (click)="link_youtube()">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: fit-content;">
+              <b style="font-size: 32px; word-break: keep-all;">Youtube 영상 보기</b>
+            </div>
           </div>
         </tr>
         <tr style="height: 16px;"></tr>

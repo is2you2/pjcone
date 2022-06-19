@@ -1,6 +1,11 @@
 #main_video {
+    text-align: center;
     width: 100%;
     height: auto;
+}
+
+#main_video_form:hover {
+    cursor: pointer;
 }
 
 ion-content {
