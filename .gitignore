@@ -29,3 +29,5 @@ test_suite/.import/*
 *~
 # 파생결과물 무시
 exports/*
+# 테스트용 데이터베이스 폴더 무시
+gd_database/*

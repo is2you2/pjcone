@@ -1,16 +1,54 @@
 extends Node
 # 회원기입 처리 후 이메일 발송용
+# 별도 서버로 관리됨 (게스트 모드용)
 
 var server:= WebSocketServer.new()
 # 미리 구성된 이메일 안내 폼을 기억하고 있기
 var title:= 'Project: Cone | 회원가입 본인 확인용 메일'
 var msg:= '안녕하세요.\n\n직접 회원가입을 요청한 적이 없다면 이 메일을 무시해주세요.\n\n http://is2you2.iptime.org/register?target=%s\n\n위 링크를 눌러 커뮤니티 등록을 마무리해주세요 :)\n\nProject: Cone'
+const PORT:= 12010
+
+# 메일 인증 토큰 필요
+# 발송된 메일들을 관리하고 발송 후 5분이 지나서 진행할 수 없음
+var token:= {}
+
+
+func initialize():
+	var _path:String = get_parent().root_path + 'exim4_send_content.cfg'
+	var dir:= Directory.new()
+	# 설정 파일이 없으면 기본 정보로 파일 생성하기
+	if not dir.file_exists(_path):
+		var file:= File.new()
+		var err:= file.open(_path, File.WRITE)
+		if err == OK:
+			file.store_string(title + '\n' + msg)
+		else: # 정말 극단적으로 왜인지 오류가 난다면
+			printerr('Exim send cfg initialize error: ', err)
+		file.flush()
+		file.close()
+	var file:= File.new()
+	var err:= file.open(_path, File.READ)
+	if err == OK:
+		file.seek(0)
+		var line:= file.get_line()
+		title = line
+		msg = ''
+		while file.eof_reached():
+			line = file.get_line()
+			msg += line
+	else: # 열람 오류
+		printerr('Load Exim send cfg failed: ', err)
+	file.close()
+
 
 func _ready():
 	server.connect("data_received", self, '_received')
-	var err:= server.listen(12000)
+	var err:= server.listen(PORT)
 	if err != OK:
-		printerr('서버 생성 오류: ', err)
+		printerr('SendMail server init error: ', err)
+	else:
+		print('SendMail server opened: ', PORT)
+		initialize()
 
 ## email 멘트를 바깥 폴더에서 구성할 수 있어야 함
 ## 인증 메일 발송과 동시에 인증 제한시간을 측정하여 오랜 시간이 지났을 경우
@@ -22,7 +60,7 @@ func _received(id:int):
 		var data:= raw_data.get_string_from_utf8()
 		# 해당 입력값으로 이메일 발송처리하기 (Exim4)
 		var _time:= OS.get_datetime()
-		var _stamp:= '[%04d-%02d-%02d %02d:%02d:%02d]' % [
+		var _stamp:= '[%04d-%02d-%02d %02d:%02d:%02d] ' % [
 			_time['year'],
 			_time['month'],
 			_time['day'],
@@ -30,7 +68,7 @@ func _received(id:int):
 			_time['minute'],
 			_time['second'],
 		]
-		print(_stamp, ' 이메일 발송처리: ', data)
+		print(_stamp, 'send mail to: ', data)
 		var file:= File.new()
 		if file.open('user://sendmail_%s.sh' % [data], File.WRITE) == OK:
 			file.store_string('echo -e "%s" | mail -s %s %s' % [msg % [Marshalls.utf8_to_base64(data).trim_suffix('=')], '=?utf-8?b?%s?=' % [Marshalls.utf8_to_base64(title)], data])
@@ -42,7 +80,7 @@ func _received(id:int):
 		# 메시지를 처리한 후 소켓 닫기
 		server.disconnect_peer(id, 4000, '이메일 발송 요청 성공함')
 	else:
-		printerr('패킷 에러: ', err)
+		printerr('MailServer Packet error: ', err)
 
 
 func _process(_delta):

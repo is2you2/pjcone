@@ -1,4 +1,4 @@
-extends Control
+extends Node
 # 폴더를 올려 내부 파일 리스트를 json으로 돌려줍니다.
 # Starcraft-custom 에서 이미지 리스트를 받기위해 생성됨
 
