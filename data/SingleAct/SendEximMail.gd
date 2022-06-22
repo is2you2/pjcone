@@ -64,9 +64,19 @@ func _received(id:int):
 	if err == OK:
 		var raw_data:= server.get_peer(id).get_packet()
 		var data:= raw_data.get_string_from_utf8()
-		var terr:= thread.start(self, 'execute_send_mail', [id, data])
-		if terr != OK:
-			execute_send_mail([id, data])
+		var json = JSON.parse(data).result
+		if json is Dictionary:
+			match(json):
+				{ 'act': 'request' }: # 이메일 발송 요청
+					var terr:= thread.start(self, 'execute_send_mail', [id, json['email']])
+					if terr != OK:
+						execute_send_mail([id, json['email']])
+				{ 'act': 'register' }: # 회원가입 페이지 진입시 검토
+					print_debug('회원가입 화면에서 진입함: ', json['email'])
+				_: # 여기서는 지원하지 않음
+					Root.log(HEADER, str('MailServer data mismatch: ', data), Root.LOG_ERR)
+		else: # 여기서는 지원하지 않음
+			Root.log(HEADER, str('MailServer data mismatch: ', data), Root.LOG_ERR)
 	else:
 		Root.log(HEADER, str('MailServer Packet error: ', err), Root.LOG_ERR)
 
