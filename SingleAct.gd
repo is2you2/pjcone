@@ -7,6 +7,7 @@ var server:= WebSocketServer.new()
 const PORT:= 12000
 # 데이터베이스 폴더 경로 with '/'
 var root_path:String
+const HEADER:= 'MainServer'
 
 
 func _init():
@@ -26,9 +27,9 @@ func _ready():
 	server.connect('client_close_request', self, '_disconnected')
 	var err:= server.listen(PORT)
 	if err != OK:
-		printerr('MainServer init error: ', err)
+		Root.log(HEADER, str('MainServer init error: ', err), Root.LOG_ERR)
 	else:
-		print('MainServer Opened: ', PORT)
+		Root.log(HEADER, str('MainServer Opened: ', PORT))
 
 # esc를 눌러 끄기
 func _input(event):
@@ -37,11 +38,11 @@ func _input(event):
 
 # 사이트에 연결 확인됨
 func _connected(id:int, _proto:= 'EMPTY'):
-	Root.log('MainServer', str('PeerConnected: ', id, ' / proto: ', _proto))
+	Root.log(HEADER, str('PeerConnected: ', id, ' / proto: ', _proto))
 
 # 사이트로부터 연결 끊어짐
 func _disconnected(id:int, _was_clean = null, _reason:= 'EMPTY'):
-	Root.log('MainServer', str('PeerDisconnected: ', id, ' / was_clean: ', _was_clean, ' / reason: ', _reason))
+	Root.log(HEADER, str('PeerDisconnected: ', id, ' / was_clean: ', _was_clean, ' / reason: ', _reason))
 
 # 자료를 받아서 행동 코드별로 자식 노드에게 일처리 넘김
 func _received(id:int, _try_left:= 5):
@@ -54,17 +55,17 @@ func _received(id:int, _try_left:= 5):
 			var _act:int = json['act']
 			match(_act):
 				_: # 준비되지 않은 행동
-					Root.log('MainServer', str('UnExpected Act: ', data), Root.LOG_ERR)
+					Root.log(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)
 		else: # 형식 오류
-			Root.log('MainServer', str('UnExpected form: ', data), Root.LOG_ERR)
+			Root.log(HEADER, str('UnExpected form: ', data), Root.LOG_ERR)
 	else: # 패킷 오류
-		Root.log('MainServer', str('MainServer packet error: ', err), Root.LOG_ERR)
+		Root.log(HEADER, str('MainServer packet error: ', err), Root.LOG_ERR)
 		if _try_left > 0:
-			Root.log('MainServer', str('MainServer receive packet error with _try_left: ', _try_left))
+			Root.log(HEADER, str('MainServer receive packet error with _try_left: ', _try_left))
 			yield(get_tree(), 'idle_frame')
 			_received(id, _try_left - 1)
 		else:
-			Root.log('MainServer', str('MainServer receive packet error and try left out.'), Root.LOG_ERR)
+			Root.log(HEADER, str('MainServer receive packet error and try left out.'), Root.LOG_ERR)
 			server.disconnect_peer(id, 1011, 'MainServer packet receive try left out.')
 
 
@@ -73,10 +74,13 @@ func send_to(id:int, msg:PoolByteArray, _try_left:= 5):
 	var err:= server.get_peer(id).put_packet(msg)
 	if err != OK:
 		if _try_left > 0:
-			Root.log('MainServer', str(stamp_log(), 'MainServer send packet error with _try_left: ', _try_left))
+			Root.log(HEADER, str('MainServer send packet error with _try_left: ', _try_left))
+			yield(get_tree(), 'idle_frame')
+			send_to(id, msg)
 		else:
-			Root.log('MainServer', str(stamp_log(), 'MainServer send packet error and try left out.'), Root.LOG_ERR)
+			Root.log(HEADER, str('MainServer send packet error and try left out.'), Root.LOG_ERR)
 			server.disconnect_peer(id, 1011, 'MainServer packet send try left out.')
+
 
 
 func _process(_delta):

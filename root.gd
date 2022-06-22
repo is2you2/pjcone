@@ -17,13 +17,16 @@ func log(header:String, content:String, _con_col:= 'bbb'):
 		time['minute'],
 		time['second'],
 	] # 로그 생성
-	var result:= '%s[color=#%s]%s[/color]: %s' % [
-        stamp, header, content
-    ]
-    # 로그 노드가 있으면 추가하기
-	if log_node != null:
-		log_node.bbcode_text += '\n' + result
+	var result:= '%s%s| %s' % [
+		stamp, header, content
+	]
 	if _con_col == LOG_ERR:
 		printerr(result)
 	else: # 일반 로그
 		print(result)
+	# 로그 노드가 있으면 추가하기
+	if log_node != null:
+		var result_gui:= '%s[color=#%s]%s[/color]| %s' % [
+			stamp, header, _con_col, content
+		]
+		log_node.bbcode_text += '\n' + result_gui

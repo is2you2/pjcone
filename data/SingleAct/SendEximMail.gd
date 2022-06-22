@@ -7,6 +7,7 @@ var server:= WebSocketServer.new()
 var title:= 'Project: Cone | 회원가입 본인 확인용 메일'
 var msg:= '안녕하세요.\n\n직접 회원가입을 요청한 적이 없다면 이 메일을 무시해주세요.\n\n http://is2you2.iptime.org/register?target=%s\n\n위 링크를 눌러 커뮤니티 등록을 마무리해주세요 :)\n\nProject: Cone'
 const PORT:= 12010
+const HEADER:= 'Exim4Server'
 
 # 메일 인증 토큰 필요
 # 발송된 메일들을 관리하고 발송 후 5분이 지나서 진행할 수 없음
@@ -37,7 +38,7 @@ func initialize(_null = null):
 			line = file.get_line()
 			msg += line
 	else: # 열람 오류
-		Root.log('Exim4', str('Load Exim send cfg failed: ', err), Root.LOG_ERR)
+		Root.log(HEADER, str('Load Exim send cfg failed: ', err), Root.LOG_ERR)
 	file.close()
 
 
@@ -47,10 +48,10 @@ var thread:= Thread.new()
 func _ready():
 	server.connect("data_received", self, '_received')
 	var err:= server.listen(PORT)
-	if err != OK:
-		Root.log('Exim4', str('SendMail server init error: ', err), Root.LOG_ERR)
-	else:
-		Root.log('Exim4', str('SendMail server opened: ', PORT))
+	if err != OK: # 서버 구성 오류
+		Root.log(HEADER, str('SendMail server init error: ', err), Root.LOG_ERR)
+	else: # 정상적으로 서버 열림
+		Root.log(HEADER, str('SendMail server opened: ', PORT))
 		var ferr:= thread.start(self, 'initialize')
 		if ferr != OK:
 			initialize()
@@ -63,29 +64,27 @@ func _received(id:int):
 	if err == OK:
 		var raw_data:= server.get_peer(id).get_packet()
 		var data:= raw_data.get_string_from_utf8()
-		# 해당 입력값으로 이메일 발송처리하기 (Exim4)
-		var _time:= OS.get_datetime()
-		var _stamp:= '[%04d-%02d-%02d %02d:%02d:%02d] ' % [
-			_time['year'],
-			_time['month'],
-			_time['day'],
-			_time['hour'],
-			_time['minute'],
-			_time['second'],
-		]
-		print(_stamp, 'send mail to: ', data)
-		var file:= File.new()
-		if file.open('user://sendmail_%s.sh' % [data], File.WRITE) == OK:
-			file.store_string('echo -e "%s" | mail -s %s %s' % [msg % [Marshalls.utf8_to_base64(data).trim_suffix('=')], '=?utf-8?b?%s?=' % [Marshalls.utf8_to_base64(title)], data])
-		file.flush()
-		file.close()
-		OS.execute('bash', [OS.get_user_data_dir() + '/sendmail_%s.sh' % [data]], true)
-		var dir:= Directory.new()
-		dir.remove('user://sendmail_%s.sh' % [data])
-		# 메시지를 처리한 후 소켓 닫기
-		server.disconnect_peer(id, 4000, '이메일 발송 요청 성공함')
+		var terr:= thread.start(self, 'execute_send_mail', [id, data])
+		if terr != OK:
+			execute_send_mail([id, data])
 	else:
-		printerr('MailServer Packet error: ', err)
+		Root.log(HEADER, str('MailServer Packet error: ', err), Root.LOG_ERR)
+
+
+# 메일 발송하기
+func execute_send_mail(_data:Array):
+	# 해당 입력값으로 이메일 발송처리하기 (Exim4)
+	Root.log(HEADER, str('send mail to: ', _data[1]))
+	var file:= File.new()
+	if file.open('user://sendmail_%s.sh' % [_data[1]], File.WRITE) == OK:
+		file.store_string('echo -e "%s" | mail -s %s %s' % [msg % [Marshalls.utf8_to_base64(_data[1]).trim_suffix('=')], '=?utf-8?b?%s?=' % [Marshalls.utf8_to_base64(title)], _data[1]])
+	file.flush()
+	file.close()
+	Root.log(HEADER, str('ExecSend_Exim4', OS.execute('bash', [OS.get_user_data_dir() + '/sendmail_%s.sh' % [_data[1]]], true)))
+	var dir:= Directory.new()
+	dir.remove('user://sendmail_%s.sh' % [_data[1]])
+	# 메시지를 처리한 후 소켓 닫기
+	server.disconnect_peer(_data[0], 4000, 'SendMail Successful')
 
 
 func _process(_delta):
