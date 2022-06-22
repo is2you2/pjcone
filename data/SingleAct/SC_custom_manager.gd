@@ -47,5 +47,10 @@ func catch_all_files(path:String, target:String):
 
 # 메시지를 수신받아서 이미지 리스트 액션 취하기
 func received(id:int, data:Dictionary):
-	print_debug('sc1_custom receive: ', id, '/', data)
-	get_parent().send_to(id, 'Hello'.to_utf8())
+	match(data):
+		{'type': 'one', ..}: # 랜덤한 한장 받기
+			get_parent().send_to(id, 'RandomOne'.to_utf8())
+		{'type': 'all', ..}: # 모든 이미지 리스트
+			get_parent().send_to(id, 'AllList'.to_utf8())
+		_: # 무관한 액션
+			Root.log(HEADER, str('Unexpected data: ', data), Root.LOG_ERR)

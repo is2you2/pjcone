@@ -63,7 +63,8 @@ export class CampaignPanelComponent implements OnInit {
           client.onopen = (ev) => {
             let json = {
               'act': 'sc1_custom',
-              'req': _title
+              'req': _title,
+              'type': 'one',
             }
             client.send(JSON.stringify(json));
           }
