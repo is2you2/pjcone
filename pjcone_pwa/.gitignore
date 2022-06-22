@@ -31,6 +31,6 @@ npm-debug.log*
 /plugins
 /www
 
-# 출력 결과물 무시 (capacitor-mobileAn Ionic project)
+# 출력 결과물 무시 (capacitor-mobile-Android Ionic project)
 /android
 html/
