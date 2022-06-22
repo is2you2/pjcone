@@ -31,3 +31,5 @@ test_suite/.import/*
 exports/*
 # 테스트용 데이터베이스 폴더 무시
 gd_database/*
+# vscode debug 설정 무시
+.vscode/*

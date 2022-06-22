@@ -34,9 +34,9 @@ func initialize(_null = null):
 		var line:= file.get_line()
 		title = line
 		msg = ''
-		while file.eof_reached():
+		while not file.eof_reached():
 			line = file.get_line()
-			msg += line
+			msg += '\n' + line
 	else: # 열람 오류
 		Root.log(HEADER, str('Load Exim send cfg failed: ', err), Root.LOG_ERR)
 	file.close()
@@ -80,7 +80,7 @@ func execute_send_mail(_data:Array):
 		file.store_string('echo -e "%s" | mail -s %s %s' % [msg % [Marshalls.utf8_to_base64(_data[1]).trim_suffix('=')], '=?utf-8?b?%s?=' % [Marshalls.utf8_to_base64(title)], _data[1]])
 	file.flush()
 	file.close()
-	Root.log(HEADER, str('ExecSend_Exim4', OS.execute('bash', [OS.get_user_data_dir() + '/sendmail_%s.sh' % [_data[1]]], true)))
+	Root.log(HEADER, str('ExecSend_Exim4: ', OS.execute('bash', [OS.get_user_data_dir() + '/sendmail_%s.sh' % [_data[1]]], true)))
 	var dir:= Directory.new()
 	dir.remove('user://sendmail_%s.sh' % [_data[1]])
 	# 메시지를 처리한 후 소켓 닫기
