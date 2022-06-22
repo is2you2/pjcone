@@ -9,6 +9,11 @@ onready var _path:String = get_parent().root_path + 'users.csv'
 # 현재 접속된 사용자, 유저 세션
 var users:= []
 
+var thread:= Thread.new()
+
+func _ready():
+	pass
+
 
 # 사용자 생성
 func create_user(server:WebSocketServer, id:int):
@@ -24,4 +29,4 @@ func remove_user(server:WebSocketServer, id:int):
 
 # 서버가 종료될 때 모든 파일 정상 종료 후 닫기
 func _exit_tree():
-	pass
+	thread.wait_to_finish()

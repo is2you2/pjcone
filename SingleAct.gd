@@ -2,7 +2,7 @@ extends Node
 # 웹 소켓으로 DB 운용
 # 계정 활동류 행동은 전부 이걸로 관리
 
-
+# 가입된 계정으로 행동하는 서버
 var server:= WebSocketServer.new()
 const PORT:= 12000
 # 데이터베이스 폴더 경로 with '/'
@@ -21,14 +21,30 @@ func _init():
 
 func _ready():
 	server.connect("data_received", self, '_received')
+	server.connect('client_connected', self, '_connected')
+	server.connect('client_disconnected', self, '_disconnected')
+	server.connect('client_close_request', self, '_disconnected')
 	var err:= server.listen(PORT)
 	if err != OK:
 		printerr('MainServer init error: ', err)
 	else:
 		print('MainServer Opened: ', PORT)
 
+# esc를 눌러 끄기
+func _input(event):
+	if event.is_action_pressed("ui_cancel"):
+		get_tree().quit()
+
+# 사이트에 연결 확인됨
+func _connected(id:int, _proto:= 'EMPTY'):
+	Root.log('MainServer', str('PeerConnected: ', id, ' / proto: ', _proto))
+
+# 사이트로부터 연결 끊어짐
+func _disconnected(id:int, _was_clean = null, _reason:= 'EMPTY'):
+	Root.log('MainServer', str('PeerDisconnected: ', id, ' / was_clean: ', _was_clean, ' / reason: ', _reason))
+
 # 자료를 받아서 행동 코드별로 자식 노드에게 일처리 넘김
-func _received(id:int):
+func _received(id:int, _try_left:= 5):
 	var err:= server.get_peer(id).get_packet_error()
 	if err == OK:
 		var raw_data:= server.get_peer(id).get_packet()
@@ -38,24 +54,29 @@ func _received(id:int):
 			var _act:int = json['act']
 			match(_act):
 				_: # 준비되지 않은 행동
-					printerr(stamp_log(), 'UnExpected Act: ', data)
+					Root.log('MainServer', str('UnExpected Act: ', data), Root.LOG_ERR)
 		else: # 형식 오류
-			printerr(stamp_log(), 'UnExpected form: ', data)
+			Root.log('MainServer', str('UnExpected form: ', data), Root.LOG_ERR)
 	else: # 패킷 오류
-		printerr(stamp_log(), 'MainServer packet error: ', err)
+		Root.log('MainServer', str('MainServer packet error: ', err), Root.LOG_ERR)
+		if _try_left > 0:
+			Root.log('MainServer', str('MainServer receive packet error with _try_left: ', _try_left))
+			yield(get_tree(), 'idle_frame')
+			_received(id, _try_left - 1)
+		else:
+			Root.log('MainServer', str('MainServer receive packet error and try left out.'), Root.LOG_ERR)
+			server.disconnect_peer(id, 1011, 'MainServer packet receive try left out.')
 
-# 로그 남기기
-func stamp_log() -> String:
-	var _time:= OS.get_datetime()
-	var _stamp:= '[%04d-%02d-%02d %02d:%02d:%02d] ' % [
-		_time['year'],
-		_time['month'],
-		_time['day'],
-		_time['hour'],
-		_time['minute'],
-		_time['second'],
-	]
-	return _stamp
+
+# 특정 사용자에게 보내기
+func send_to(id:int, msg:PoolByteArray, _try_left:= 5):
+	var err:= server.get_peer(id).put_packet(msg)
+	if err != OK:
+		if _try_left > 0:
+			Root.log('MainServer', str(stamp_log(), 'MainServer send packet error with _try_left: ', _try_left))
+		else:
+			Root.log('MainServer', str(stamp_log(), 'MainServer send packet error and try left out.'), Root.LOG_ERR)
+			server.disconnect_peer(id, 1011, 'MainServer packet send try left out.')
 
 
 func _process(_delta):

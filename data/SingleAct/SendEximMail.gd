@@ -12,15 +12,15 @@ const PORT:= 12010
 # 발송된 메일들을 관리하고 발송 후 5분이 지나서 진행할 수 없음
 var token:= {}
 
-
-func initialize():
+# 시작할 때 설정 파일을 불러오거나 만들어냄
+func initialize(_null = null):
 	var _path:String = get_parent().root_path + 'exim4_send_content.cfg'
 	var dir:= Directory.new()
 	# 설정 파일이 없으면 기본 정보로 파일 생성하기
 	if not dir.file_exists(_path):
 		var file:= File.new()
 		var err:= file.open(_path, File.WRITE)
-		if err == OK:
+		if err == OK: # 파일이 없다면 기본값으로 파일 생성하기
 			file.store_string(title + '\n' + msg)
 		else: # 정말 극단적으로 왜인지 오류가 난다면
 			printerr('Exim send cfg initialize error: ', err)
@@ -37,22 +37,27 @@ func initialize():
 			line = file.get_line()
 			msg += line
 	else: # 열람 오류
-		printerr('Load Exim send cfg failed: ', err)
+		Root.log('Exim4', str('Load Exim send cfg failed: ', err), Root.LOG_ERR)
 	file.close()
+
+
+var thread:= Thread.new()
 
 
 func _ready():
 	server.connect("data_received", self, '_received')
 	var err:= server.listen(PORT)
 	if err != OK:
-		printerr('SendMail server init error: ', err)
+		Root.log('Exim4', str('SendMail server init error: ', err), Root.LOG_ERR)
 	else:
-		print('SendMail server opened: ', PORT)
-		initialize()
+		Root.log('Exim4', str('SendMail server opened: ', PORT))
+		var ferr:= thread.start(self, 'initialize')
+		if ferr != OK:
+			initialize()
 
-## email 멘트를 바깥 폴더에서 구성할 수 있어야 함
-## 인증 메일 발송과 동시에 인증 제한시간을 측정하여 오랜 시간이 지났을 경우
-## 진행할 수 없도록 구성되어야 함 (내 프로젝트에 맞는 방침인지 검토 필요)
+# email 멘트를 바깥 폴더에서 구성할 수 있어야 함
+# 인증 메일 발송과 동시에 인증 제한시간을 측정하여 오랜 시간이 지났을 경우
+# 진행할 수 없도록 구성되어야 함 (내 프로젝트에 맞는 방침인지 검토 필요)
 func _received(id:int):
 	var err:= server.get_peer(id).get_packet_error()
 	if err == OK:
@@ -88,4 +93,5 @@ func _process(_delta):
 
 
 func _exit_tree():
+	thread.wait_to_finish()
 	server.stop()
