@@ -29,10 +29,9 @@ export class CampaignPanelComponent implements OnInit {
         const TARGET_DIV = document.getElementById('Campaigns');
         let canvas = p.createCanvas(TARGET_DIV.clientWidth, TARGET_DIV.clientHeight);
         canvas.parent(TARGET_DIV);
-
-        Buttons.push(new ImageButton('Multi(R)', 'assets/data/Multi(R)/list.json'));
-        Buttons.push(new ImageButton('Mixed(O)', 'assets/data/Mixed(O)/list.json'));
-        Buttons.push(new ImageButton('Beta', 'assets/data/Beta/list.json'));
+        Buttons.push(new ImageButton('Multi(R)'));
+        Buttons.push(new ImageButton('Mixed(O)'));
+        Buttons.push(new ImageButton('Beta'));
         p.imageMode(p.CENTER);
         p.noLoop();
         draw_background();
@@ -59,14 +58,21 @@ export class CampaignPanelComponent implements OnInit {
          * 유동적 슬라이드식 이미지 버튼
          * @param _json_path json 리스트 경로
          */
-        constructor(_title: string, _json_path?: string) {
-          if (_json_path)
-            p.loadJSON(_json_path, {}, 'FileList', v => {
-              this.info = v;
-              this.info.root = _json_path.substring(0, _json_path.length - 9) + 'Screenshots/';
-              this.index = p.floor(p.random(this.info.files.length));
-              this.loadImage(this.info.root + this.info.files[this.index]);
+        constructor(_title: string) {
+          let client: WebSocket = new WebSocket('ws://localhost:12000');
+          client.onopen = (ev) => {
+            let json = {
+              'act': 'sc1_custom',
+              'req': _title
+            }
+            client.send(JSON.stringify(json));
+          }
+          client.onmessage = (ev) => {
+            ev.data.text().then(v=>{
+              console.log(v);
             });
+            client.close(1000,'received');
+          }
           this.pg = p.createGraphics(300, 200);
           this.pg.imageMode(p.CENTER);
           this.pg.noLoop();

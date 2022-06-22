@@ -6,21 +6,19 @@ extends Node
 onready var _path:String = get_parent().root_path + 'users.csv'
 
 const HEADER:= 'UserManager'
-# 현재 접속된 사용자, 유저 세션
+# 현재 접속된 사용자, 유저 세션, { pid: id-token (0: 게스트, 이외: 회원) }
 var users:= []
 
 
-var thread:= Thread.new()
-
-# 파일 포인팅
+# 파일 포인팅, 등록된 모든 사용자
 var file:= File.new()
 
 
 func _ready():
 	var dir:= Directory.new()
 	read_user_list(dir.file_exists(_path))
-	
-	
+
+
 # 사용자 파일 지정해두기
 func read_user_list(_is_new:= false):
 	var err:int
@@ -29,6 +27,7 @@ func read_user_list(_is_new:= false):
 	else: # 파일이 없으면 생성하기
 		err = file.open(_path, File.WRITE)
 	if err == OK:
+		Root.log(HEADER, str('OpenUserList Well'))
 		file.seek_end()
 	else: # 파일 열기 오류시
 		Root.log(HEADER, str('OpenUserList Error: ', err), Root.LOG_ERR)
@@ -48,6 +47,5 @@ func remove_user(id:int):
 
 # 서버가 종료될 때 모든 파일 정상 종료 후 닫기
 func _exit_tree():
-	thread.wait_to_finish()
 	file.flush()
 	file.close()

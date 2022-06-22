@@ -38,7 +38,7 @@ func initialize(_null = null):
 			line = file.get_line()
 			msg += '\n' + line
 	else: # 열람 오류
-		Root.log(HEADER, str('Load Exim send cfg failed: ', err), Root.LOG_ERR)
+		Root.log(HEADER, str('Load send cfg failed: ', err), Root.LOG_ERR)
 	file.close()
 
 
@@ -49,9 +49,9 @@ func _ready():
 	server.connect("data_received", self, '_received')
 	var err:= server.listen(PORT)
 	if err != OK: # 서버 구성 오류
-		Root.log(HEADER, str('SendMail server init error: ', err), Root.LOG_ERR)
+		Root.log(HEADER, str('server init error: ', err), Root.LOG_ERR)
 	else: # 정상적으로 서버 열림
-		Root.log(HEADER, str('SendMail server opened: ', PORT))
+		Root.log(HEADER, str('server opened: ', PORT))
 		var ferr:= thread.start(self, 'initialize')
 		if ferr != OK:
 			initialize()
@@ -74,23 +74,23 @@ func _received(id:int):
 				{ 'act': 'register' }: # 회원가입 페이지 진입시 검토
 					print_debug('회원가입 화면에서 진입함: ', json['email'])
 				_: # 여기서는 지원하지 않음
-					Root.log(HEADER, str('MailServer data mismatch: ', data), Root.LOG_ERR)
+					Root.log(HEADER, str('data mismatch: ', data), Root.LOG_ERR)
 		else: # 여기서는 지원하지 않음
-			Root.log(HEADER, str('MailServer data mismatch: ', data), Root.LOG_ERR)
+			Root.log(HEADER, str('data mismatch: ', data), Root.LOG_ERR)
 	else:
-		Root.log(HEADER, str('MailServer Packet error: ', err), Root.LOG_ERR)
+		Root.log(HEADER, str('Packet error: ', err), Root.LOG_ERR)
 
 
 # 메일 발송하기
 func execute_send_mail(_data:Array):
 	# 해당 입력값으로 이메일 발송처리하기 (Exim4)
-	Root.log(HEADER, str('send mail to: ', _data[1]))
+	Root.log(HEADER, str('send to: ', _data[1]))
 	var file:= File.new()
 	if file.open('user://sendmail_%s.sh' % [_data[1]], File.WRITE) == OK:
 		file.store_string('echo -e "%s" | mail -s %s %s' % [msg % [Marshalls.utf8_to_base64(_data[1]).trim_suffix('=')], '=?utf-8?b?%s?=' % [Marshalls.utf8_to_base64(title)], _data[1]])
 	file.flush()
 	file.close()
-	Root.log(HEADER, str('ExecSend_Exim4: ', OS.execute('bash', [OS.get_user_data_dir() + '/sendmail_%s.sh' % [_data[1]]], true)))
+	Root.log(HEADER, str('Send_result: ', OS.execute('bash', [OS.get_user_data_dir() + '/sendmail_%s.sh' % [_data[1]]], true)))
 	var dir:= Directory.new()
 	dir.remove('user://sendmail_%s.sh' % [_data[1]])
 	# 메시지를 처리한 후 소켓 닫기
