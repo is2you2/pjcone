@@ -5,28 +5,49 @@ extends Node
 # 사용자 DB 메인 경로 (uid 모음)
 onready var _path:String = get_parent().root_path + 'users.csv'
 
-
+const HEADER:= 'UserManager'
 # 현재 접속된 사용자, 유저 세션
 var users:= []
 
+
 var thread:= Thread.new()
 
+# 파일 포인팅
+var file:= File.new()
+
+
 func _ready():
-	pass
+	var dir:= Directory.new()
+	read_user_list(dir.file_exists(_path))
+	
+	
+# 사용자 파일 지정해두기
+func read_user_list(_is_new:= false):
+	var err:int
+	if _is_new: # 파일 있으면 읽기쓰기 모드
+		err = file.open(_path, File.READ_WRITE)
+	else: # 파일이 없으면 생성하기
+		err = file.open(_path, File.WRITE)
+	if err == OK:
+		file.seek_end()
+	else: # 파일 열기 오류시
+		Root.log(HEADER, str('OpenUserList Error: ', err), Root.LOG_ERR)
 
 
 # 사용자 생성
-func create_user(server:WebSocketServer, id:int):
+func create_user(id:int):
 	pass
 
 # 사용자 정보 수정
-func modify_user(server:WebSocketServer, id:int):
+func modify_user(id:int):
 	pass
 
 # 사용자 삭제
-func remove_user(server:WebSocketServer, id:int):
+func remove_user(id:int):
 	pass
 
 # 서버가 종료될 때 모든 파일 정상 종료 후 닫기
 func _exit_tree():
 	thread.wait_to_finish()
+	file.flush()
+	file.close()
