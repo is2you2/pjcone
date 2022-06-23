@@ -27,10 +27,10 @@ func read_user_list(_is_new:= false):
 	else: # 파일이 없으면 생성하기
 		err = file.open(_path, File.WRITE)
 	if err == OK:
-		Root.log(HEADER, str('OpenUserList Well'))
+		Root.logging(HEADER, str('OpenUserList Well'))
 		file.seek_end()
 	else: # 파일 열기 오류시
-		Root.log(HEADER, str('OpenUserList Error: ', err), Root.LOG_ERR)
+		Root.logging(HEADER, str('OpenUserList Error: ', err), Root.LOG_ERR)
 
 
 # 사용자 생성

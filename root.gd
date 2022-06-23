@@ -7,7 +7,7 @@ const LOG_ERR:= 'faa'
 var log_node:RichTextLabel
 
 # 로그처리
-func log(header:String, content:String, _con_col:= 'bbb'):
+func logging(header:String, content:String, _con_col:= 'bbb'):
 	var time:= OS.get_datetime()
 	var stamp:= '[%04d-%02d-%02d %02d:%02d:%02d] ' % [
 		time['year'],

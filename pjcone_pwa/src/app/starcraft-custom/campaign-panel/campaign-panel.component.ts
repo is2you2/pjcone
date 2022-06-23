@@ -69,10 +69,11 @@ export class CampaignPanelComponent implements OnInit {
             client.send(JSON.stringify(json));
           }
           client.onmessage = (ev) => {
-            ev.data.text().then(v=>{
+            ev.data.text().then(v => {
               console.log(v);
+              this.loadImage(`assets/data/sc1_custom/${_title}/Screenshots/${v}`);
             });
-            client.close(1000,'received');
+            client.close(1000, 'received');
           }
           this.pg = p.createGraphics(300, 200);
           this.pg.imageMode(p.CENTER);

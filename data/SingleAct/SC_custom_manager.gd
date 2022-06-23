@@ -27,7 +27,7 @@ func refresh_list():
 				catch_all_files(_path + target + '/Screenshots/', target)
 			_file = dir.get_next()
 	else: # 폴더찾기 실패시
-		Root.log(HEADER, str('list dir failed: ', err), Root.LOG_ERR)
+		Root.logging(HEADER, str('list dir failed: ', err), Root.LOG_ERR)
 
 # 폴더를 올리면 내부 파일을 리스트화 시켜서 돌려줌 (직접 생성시)
 func catch_all_files(path:String, target:String):
@@ -42,15 +42,16 @@ func catch_all_files(path:String, target:String):
 			_file = dir.get_next()
 		dir.list_dir_end()
 	else:
-		Root.log(HEADER, str('catch_all_files failed: ', err))
+		Root.logging(HEADER, str('catch_all_files failed: ', err))
 
 
 # 메시지를 수신받아서 이미지 리스트 액션 취하기
 func received(id:int, data:Dictionary):
 	match(data):
 		{'type': 'one', ..}: # 랜덤한 한장 받기
-			get_parent().send_to(id, 'RandomOne'.to_utf8())
+			var rindex:int = rand_range(0, lists[data['req']].size())
+			get_parent().send_to(id, (lists[data['req']][rindex]).to_utf8())
 		{'type': 'all', ..}: # 모든 이미지 리스트
 			get_parent().send_to(id, 'AllList'.to_utf8())
 		_: # 무관한 액션
-			Root.log(HEADER, str('Unexpected data: ', data), Root.LOG_ERR)
+			Root.logging(HEADER, str('Unexpected data: ', data), Root.LOG_ERR)
