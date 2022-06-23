@@ -1,21 +1,14 @@
 extends Node
-# 폴더를 올려 내부 파일 리스트를 json으로 돌려줍니다.
-# Starcraft-custom 에서 이미지 리스트를 받기위해 생성됨
-# 게스트 액션 허용
+# 폴더를 올려 내부 파일 리스트를 json으로 출력합니다
 
 const HEADER:= 'SC1_custom'
-# 캠페인별 스크린샷 파일 리스트 일람
-var lists:= {}
-
 
 func _ready():
 	refresh_list()
 
-
 # 이미지 리스트 업데이트
 func refresh_list():
 	var dir:= Directory.new()
-	lists.clear()
 	var _path:String = get_parent().html_path + 'assets/data/sc1_custom/'
 	var err:= dir.open(_path)
 	if err == OK:
@@ -24,7 +17,7 @@ func refresh_list():
 		while _file:
 			if dir.current_is_dir():
 				var target:= str(_file)
-				catch_all_files(_path + target + '/Screenshots/', target)
+				catch_all_files(_path, target)
 			_file = dir.get_next()
 	else: # 폴더찾기 실패시
 		Root.logging(HEADER, str('list dir failed: ', err), Root.LOG_ERR)
@@ -32,26 +25,23 @@ func refresh_list():
 # 폴더를 올리면 내부 파일을 리스트화 시켜서 돌려줌 (직접 생성시)
 func catch_all_files(path:String, target:String):
 	var dir:= Directory.new()
-	var err:= dir.open(path)
+	var err:= dir.open(path + target + '/Screenshots/')
+	var lists:= {}
 	if err == OK: # 폴더일 때
-		lists[target] = []
+		lists['files'] = []
 		dir.list_dir_begin(true, true)
 		var _file:= dir.get_next()
 		while _file:
-			lists[target].push_back(_file)
+			lists['files'].push_back(_file)
 			_file = dir.get_next()
 		dir.list_dir_end()
+		var file:= File.new()
+		var fer:= file.open(path + target + '/list.json', File.WRITE)
+		if fer == OK:
+			file.store_string(JSON.print(lists))
+		else:
+			Root.logging(HEADER, str('create %s list.json failed: ' % target, fer), Root.LOG_ERR)
+		file.flush()
+		file.close()
 	else:
 		Root.logging(HEADER, str('catch_all_files failed: ', err))
-
-
-# 메시지를 수신받아서 이미지 리스트 액션 취하기
-func received(id:int, data:Dictionary):
-	match(data):
-		{'type': 'one', ..}: # 랜덤한 한장 받기
-			var rindex:int = rand_range(0, lists[data['req']].size())
-			get_parent().send_to(id, (lists[data['req']][rindex]).to_utf8())
-		{'type': 'all', ..}: # 모든 이미지 리스트
-			get_parent().send_to(id, 'AllList'.to_utf8())
-		_: # 무관한 액션
-			Root.logging(HEADER, str('Unexpected data: ', data), Root.LOG_ERR)

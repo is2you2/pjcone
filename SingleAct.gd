@@ -15,7 +15,7 @@ const HEADER:= 'MainServer'
 func _init():
 	if OS.is_debug_build():
 		root_path = 'res://gd_database/'
-		html_path = 'res://pjcone_pwa/www/'
+		html_path = 'res://pjcone_pwa/src/'
 	else: # 서버 실행파일이 위치한 경로로부터
 		root_path = OS.get_executable_path() + '/gd_database/'
 		html_path = OS.get_executable_path() + '/'
@@ -58,7 +58,7 @@ func _received(id:int, _try_left:= 5):
 		if json is Dictionary:
 			match(json):
 				{ 'act': 'sc1_custom', .. }: # SC1_custom 폴더 리스트 받아오기
-					$SC_custom_manager.received(id, json)
+					$SC_custom_manager.refresh_list()
 				_: # 준비되지 않은 행동
 					Root.logging(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)
 		else: # 형식 오류

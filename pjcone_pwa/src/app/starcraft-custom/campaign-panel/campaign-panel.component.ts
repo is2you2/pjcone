@@ -59,22 +59,14 @@ export class CampaignPanelComponent implements OnInit {
          * @param _json_path json 리스트 경로
          */
         constructor(_title: string) {
-          let client: WebSocket = new WebSocket('ws://localhost:12000');
-          client.onopen = (ev) => {
-            let json = {
-              'act': 'sc1_custom',
-              'req': _title,
-              'type': 'one',
-            }
-            client.send(JSON.stringify(json));
-          }
-          client.onmessage = (ev) => {
-            ev.data.text().then(v => {
-              console.log(v);
-              this.loadImage(`assets/data/sc1_custom/${_title}/Screenshots/${v}`);
-            });
-            client.close(1000, 'received');
-          }
+          p.loadJSON(`assets/data/sc1_custom/${_title}/list.json`, {}, 'FileList', v => {
+            this.info = v;
+            this.info.root = `assets/data/sc1_custom/${_title}/Screenshots/`;
+            this.index = p.floor(p.random(this.info.files.length));
+            this.loadImage(this.info.root + this.info.files[this.index]);
+          }, e => {
+            console.error('loadJSON: ', e);
+          });
           this.pg = p.createGraphics(300, 200);
           this.pg.imageMode(p.CENTER);
           this.pg.noLoop();
