@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, AlertOptions, NavController } from '@ionic/angular';
-import { WscService } from 'src/app/wsc.service';
+import { AlertController, NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-login',
@@ -12,7 +11,6 @@ export class LoginPage implements OnInit {
   constructor(
     public alert: AlertController,
     public nav: NavController,
-    public client: WscService,
   ) { }
 
   ngOnInit(): void { }

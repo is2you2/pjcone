@@ -18,7 +18,7 @@ export class P5ToastService {
    * @param _duration 보여지는 시간
    * @param _img 이미지 경로
    */
-  CreateToast(_Msg: string, _duration: number = 6, _img: string = '') {
+  show(_Msg: string, _duration: number = 5, _img: string = '') {
     let _toast = (p: p5) => {
       p.setup = () => {
         console.log('p5 동작 로그');

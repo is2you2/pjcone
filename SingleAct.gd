@@ -11,6 +11,12 @@ var root_path:String
 var html_path:String
 const HEADER:= 'MainServer'
 
+# 현재 접속한 사용자들 { pid: { token, linked[pid] }, .. , current: 현재 접속자 수, maximum: 최대 동접자 수 }
+# linked 는 추가 관리만 하다가 동작 안하는게 검토될 때 삭제
+var users:= {
+	'current': 0,
+	'maximum': 0,
+}
 
 func _init():
 	if OS.is_debug_build():

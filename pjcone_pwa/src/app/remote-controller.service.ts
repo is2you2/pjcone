@@ -3,33 +3,26 @@ import { Injectable } from '@angular/core';
 @Injectable({
   providedIn: 'root'
 })
-export class WscService {
+export class RemoteControllerService {
 
   constructor() { }
 
   client: WebSocket;
+  /** 현재 조종중인 페이지 */
+  target: any;
 
   /**
-   * 클라이언트를 생성합니다.
+   * 휴대폰으로 간단하게 조종할 수 있는 웹 소켓 기반 리모콘을 운용합니다.
    * @param _Address ws주소, 주소부분만
    * @param _Port 포트
-   * @param _initialSend 연결 수립시 바로 보내는 메시지가 있는 경우 기입
-   * @param _closeCall 종료 코드 지정하기 (string-Function dict)
    */
-  initialize(_Address: string, _Port: number = 12000, _initialSend: string = '', _closeCall = {}) {
+  initialize(_Address: string, _Port: number = 12020) {
     this.client = new WebSocket('ws://' + _Address + ':' + _Port);
     this.client.onopen = (_ev) => {
-      if (_initialSend != '')
-        this.client.send(_initialSend);
+      console.log('리모콘 연결됨: ', _ev);
     }
     this.client.onclose = (ev) => {
       console.log('연결 끊김: ', ev.code, '/', ev.reason);
-      let keys = Object.keys(_closeCall);
-      for (let i = 0, j = keys.length; i < j; i++)
-        if (ev.code.toString() == keys[i]) {
-          _closeCall[keys[i]]();
-          break;
-        }
     }
     this.client.onmessage = (ev) => {
       console.log('메시지 수신함: ', ev.data);
