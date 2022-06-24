@@ -6,18 +6,15 @@ extends Node
 onready var _path:String = get_parent().root_path + 'users.csv'
 
 const HEADER:= 'UserManager'
-# 현재 접속된 사용자, 유저 세션, { pid: id-token (0: 게스트, 이외: 회원) }
-var users:= []
-
 
 # 파일 포인팅, 등록된 모든 사용자
 var file:= File.new()
-
+# 사용자 파일 오류 방지용
+var mutex:= Mutex.new()
 
 func _ready():
 	var dir:= Directory.new()
 	read_user_list(dir.file_exists(_path))
-
 
 # 사용자 파일 지정해두기
 func read_user_list(_is_new:= false):

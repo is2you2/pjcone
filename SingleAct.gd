@@ -12,6 +12,7 @@ var html_path:String
 const HEADER:= 'MainServer'
 
 # 현재 접속한 사용자들 { pid: { token, linked[pid] }, .. , current: 현재 접속자 수, maximum: 최대 동접자 수 }
+# Token: Guest = 0, Registered != 0 (string)
 # linked 는 추가 관리만 하다가 동작 안하는게 검토될 때 삭제
 var users:= {
 	'current': 0,
