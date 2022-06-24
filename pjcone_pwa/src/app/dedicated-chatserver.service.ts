@@ -2,11 +2,11 @@ import { Injectable } from '@angular/core';
 import { WebSocketServer } from "@awesome-cordova-plugins/web-socket-server/ngx";
 import { isPlatform } from './app.component';
 
+/** 사설 채팅 서버 */
 @Injectable({
   providedIn: 'root'
 })
-export class WssService {
-
+export class DedicatedChatserverService {
 
   constructor() { }
   server: WebSocketServer;
@@ -15,11 +15,12 @@ export class WssService {
 
   initialize() {
     if (isPlatform != 'Desktop' && !this.server) { // 서버가 없을 때만 구성 시도
+      const PORT: number = 12011;
       this.server = new WebSocketServer();
       console.log('소켓 서버는 비어있어: ', this.server);
 
       // start websocket server
-      this.server.start(12000, {}).subscribe({
+      this.server.start(PORT, {}).subscribe({
         next: server => console.log(`서버 Listening on ${server.addr}:${server.port}`),
         error: error => console.log(`ws생성 오류 발생: `, error)
       });
