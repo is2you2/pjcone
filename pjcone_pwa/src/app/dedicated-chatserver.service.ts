@@ -19,7 +19,6 @@ export class DedicatedChatserverService {
       this.server = new WebSocketServer();
       console.log('소켓 서버는 비어있어: ', this.server);
 
-      // start websocket server
       this.server.start(PORT, {}).subscribe({
         next: server => console.log(`서버 Listening on ${server.addr}:${server.port}`),
         error: error => console.log(`ws생성 오류 발생: `, error)
@@ -27,23 +26,39 @@ export class DedicatedChatserverService {
 
       console.log(this.server);
 
-      // 새 사용자 받기
       this.server.watchOpen().subscribe(v => {
         console.log('watchOpen: ', v);
       });
 
-      // 메시지 받기
+      this.server.watchClose().subscribe(v => {
+        console.log('watchClose: ', v);
+      });
+
+      this.server.watchFailure().subscribe(e => {
+        console.error('watchFailure: ', e);
+      });
+
       this.server.watchMessage().subscribe(v => {
         console.log(`watchMessage: ${v}`);
       });
 
-      // 서버 멈출 때
-      this.server.stop().then(server => {
-        console.log(`Stop listening on ${server.addr}:${server.port}`);
+      // local_addresses
+      this.server.getInterfaces().then(v => {
+        console.log('getInterfaces: ', v);
       });
+
+      // 서버 멈출 때
     } else {
       console.warn('wss가 이미 구성되어 있음: 검토필', this.server);
     }
+
+  }
+
+  /** 사설 서버 종료 */
+  stop() {
+    this.server.stop().then(server => {
+      console.log(`채팅서버 종료 ${server}`);
+    });
   }
 
   /**
