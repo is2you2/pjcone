@@ -1,5 +1,12 @@
 import { Injectable } from '@angular/core';
 
+/** 리모콘 조작 가능한 페이지임 */
+export interface RemotePage {
+  /** 웹소켓으로 받은 텍스트를 행동명령으로 바꾸기 위한 함수 링크 묶음 */
+  remote_act: any;
+}
+
+/** 화면 리모콘, 휴대폰에서 서버를 열고 데스크탑을 연결하여 원격 제어할 수 있다. */
 @Injectable({
   providedIn: 'root'
 })
@@ -9,11 +16,11 @@ export class RemoteControllerService {
 
   client: WebSocket;
   /** 현재 조종중인 페이지 */
-  target: any;
+  target: RemotePage;
 
   /**
    * 휴대폰으로 간단하게 조종할 수 있는 웹 소켓 기반 리모콘을 운용합니다.
-   * @param _Address ws주소, 주소부분만
+   * @param _Address 핸드폰 서버의 주소부분만
    * @param _Port 포트
    */
   initialize(_Address: string, _Port: number = 12020) {

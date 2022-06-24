@@ -1,6 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { NavController } from '@ionic/angular';
-import { RemoteControllerService } from '../remote-controller.service';
 
 @Component({
   selector: 'app-starcraft-custom',
@@ -9,14 +7,12 @@ import { RemoteControllerService } from '../remote-controller.service';
 })
 export class StarcraftCustomPage implements OnInit {
 
-  constructor(
-  ) {
+  constructor() { }
+
+  ngOnInit() {
   }
 
-  ngOnInit() { }
+  connectSample() {
 
-  link_youtube() {
-    window.location.href = 'https://www.youtube.com/watch?v=Ieqh27v29xI';
   }
-
 }

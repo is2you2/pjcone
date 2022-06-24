@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { LocalNotiService } from './local-noti.service';
+import { WscService } from './wsc.service';
 
 export var isPlatform: 'Android' | 'iOS' | 'Desktop' = 'Desktop';
+export const SERVER_ADDRESS: string = '172.30.1.49';
 
 @Component({
   selector: 'app-root',
@@ -12,6 +14,7 @@ export var isPlatform: 'Android' | 'iOS' | 'Desktop' = 'Desktop';
 export class AppComponent {
   constructor(platform: Platform,
     public noti: LocalNotiService,
+    public client: WscService,
   ) {
     if (platform.is('desktop') || platform.is('mobileweb'))
       isPlatform = 'Desktop';
@@ -21,6 +24,7 @@ export class AppComponent {
       isPlatform = 'iOS';
     console.log('시작할 때 플랫폼은', isPlatform);
     noti.initialize();
+    client.initialize(SERVER_ADDRESS);
   }
 
   /** 브라우저에서 딥 링크마냥 행동하기

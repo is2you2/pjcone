@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, NavController } from '@ionic/angular';
+import { RemoteControllerService } from 'src/app/remote-controller.service';
 
 @Component({
   selector: 'app-login',
@@ -11,6 +12,7 @@ export class LoginPage implements OnInit {
   constructor(
     public alert: AlertController,
     public nav: NavController,
+    public remote: RemoteControllerService,
   ) { }
 
   ngOnInit(): void { }

@@ -46,12 +46,24 @@ func _input(event):
 	if event.is_action_pressed("ui_cancel"):
 		get_tree().quit()
 
+# 연결과 관련된 행동 쓰레드 충돌 방지용
+var linked_mutex:= Mutex.new()
 # 사이트에 연결 확인됨
 func _connected(id:int, _proto:= 'EMPTY'):
+	linked_mutex.lock()
+	users[str(id)] = { 'token': 0, 'linked': [] }
+	users.current += 1
+	if users.maximum < users.current:
+		users.maximum = users.current
+	linked_mutex.unlock()
 	Root.logging(HEADER, str('PeerConnected: ', id, ' / proto: ', _proto))
 
 # 사이트로부터 연결 끊어짐
 func _disconnected(id:int, _was_clean = null, _reason:= 'EMPTY'):
+	linked_mutex.lock()
+	users.erase(str(id))
+	users.current -= 1
+	linked_mutex.unlock()
 	Root.logging(HEADER, str('PeerDisconnected: ', id, ' / was_clean: ', _was_clean, ' / reason: ', _reason))
 
 # 자료를 받아서 행동 코드별로 자식 노드에게 일처리 넘김
@@ -65,6 +77,8 @@ func _received(id:int, _try_left:= 5):
 			match(json):
 				{ 'act': 'sc1_custom', .. }: # SC1_custom 폴더 리스트 받아오기
 					$SC_custom_manager.refresh_list()
+				{ 'act': 'link_remote', .. }: # 같은 토큰을 사용하는 사용자에 대해, 휴대폰이 데스크탑을 지휘할 권한을 검토시킴
+					pass
 				_: # 준비되지 않은 행동
 					Root.logging(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)
 		else: # 형식 오류
