@@ -1368,6 +1368,20 @@
   "resolved" "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   "version" "1.2.1"
 
+"@ionic-native/core@^5.1.0":
+  "integrity" "sha512-lOrkktadlKYbYf1LrDyAtsu1JnQ0oCCdkOU7iHQ8oXnNOkMwobFfD2m62F1CoOr0u9LIkpYnZSPjng8lZbmbNw=="
+  "resolved" "https://registry.npmjs.org/@ionic-native/core/-/core-5.36.0.tgz"
+  "version" "5.36.0"
+  dependencies:
+    "@types/cordova" "latest"
+
+"@ionic-native/web-socket-server@^5.36.0":
+  "integrity" "sha512-6+9CPsTD/2t/TQ+KoXjzzesR2+rmFj8twJBlk1TEFVajE9oxdsrT6V142e6bV49vXdWbB3jO9lUxYq5VROrhag=="
+  "resolved" "https://registry.npmjs.org/@ionic-native/web-socket-server/-/web-socket-server-5.36.0.tgz"
+  "version" "5.36.0"
+  dependencies:
+    "@types/cordova" "latest"
+
 "@ionic/angular-toolkit@^6.0.0":
   "integrity" "sha512-QZkoNdXej4MQqKGdm+suzTK39R0iRGpBFhOzP+f75v4ZGgEQ+ntA213UdaTa6EvsvS7n14p0zbHiBroLUOCNzQ=="
   "resolved" "https://registry.npmjs.org/@ionic/angular-toolkit/-/angular-toolkit-6.1.0.tgz"
@@ -3662,11 +3676,11 @@
   "version" "1.1.1"
 
 "ejs@^3.1.5":
-  "integrity" "sha512-9lt9Zse4hPucPkoP7FHDF0LQAlGyF9JVpnClFLFH3aSSbxmyoqINRpp/9wePWJTUl4KOQwRL72Iw3InHPDkoGw=="
-  "resolved" "https://registry.npmjs.org/ejs/-/ejs-3.1.6.tgz"
-  "version" "3.1.6"
+  "integrity" "sha512-/sXZeMlhS0ArkfX2Aw780gJzXSMPnKjtspYZv+f3NiKLlubezAHDU5+9xz6gd3/NhG3txQCo6xlglmTS+oTGEQ=="
+  "resolved" "https://registry.npmjs.org/ejs/-/ejs-3.1.8.tgz"
+  "version" "3.1.8"
   dependencies:
-    "jake" "^10.6.1"
+    "jake" "^10.8.5"
 
 "electron-to-chromium@^1.4.84":
   "integrity" "sha512-gRwLpVYWHGbERPU6o8pKfR168V6enWEXzZc6zQNNXbgJ7UJna+9qzAIHY94+9KOv71D/CH+QebLA9pChD2q8zA=="
@@ -5297,7 +5311,7 @@
     "html-escaper" "^2.0.0"
     "istanbul-lib-report" "^3.0.0"
 
-"jake@^10.6.1":
+"jake@^10.8.5":
   "integrity" "sha512-sVpxYeuAhWt0OTWITwT98oyV0GsXyMlXCF+3L1SuafBVUIr/uILGRB+NqwkzhgXKvoJpDIpQvqkUALgdmQsQxw=="
   "resolved" "https://registry.npmjs.org/jake/-/jake-10.8.5.tgz"
   "version" "10.8.5"
@@ -7415,7 +7429,7 @@
   "resolved" "https://registry.npmjs.org/rxjs-for-await/-/rxjs-for-await-0.0.2.tgz"
   "version" "0.0.2"
 
-"rxjs@^5.5.0 || ^6.5.0 || ^7.3.0", "rxjs@^6.0.0", "rxjs@^6.5.3 || ^7.4.0", "rxjs@^6.5.4", "rxjs@>=6.6.0", "rxjs@~6.6.0", "rxjs@6.6.7":
+"rxjs@^5.5.0 || ^6.5.0", "rxjs@^5.5.0 || ^6.5.0 || ^7.3.0", "rxjs@^6.0.0", "rxjs@^6.5.3 || ^7.4.0", "rxjs@^6.5.4", "rxjs@>=6.6.0", "rxjs@~6.6.0", "rxjs@6.6.7":
   "integrity" "sha512-hTdwr+7yYNIT5n4AMYp85KA6yw2Va0FLa3Rguvbpa4W3I5xynaBZo41cM3XM+4Q6fRMj3sBYIR1VAmZMXYJvRQ=="
   "resolved" "https://registry.npmjs.org/rxjs/-/rxjs-6.6.7.tgz"
   "version" "6.6.7"
