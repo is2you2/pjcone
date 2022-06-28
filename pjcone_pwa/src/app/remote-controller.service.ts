@@ -2,7 +2,13 @@ import { Injectable } from '@angular/core';
 
 /** 리모콘 조작 가능한 페이지임 */
 export interface RemotePage {
-  /** 웹소켓으로 받은 텍스트를 행동명령으로 바꾸기 위한 함수 링크 묶음 */
+  /** 웹소켓으로 받은 텍스트를 행동명령으로 바꾸기 위한 함수 링크 묶음
+   * ```javascript
+   * {
+   *   'key': () => Function(), ..
+   * }
+   * ```
+   */
   remote_act: any;
 }
 
