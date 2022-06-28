@@ -1,15 +1,16 @@
 import { Injectable } from '@angular/core';
-import { WebSocketServer } from '@awesome-cordova-plugins/web-socket-server/ngx';
 import { isPlatform } from './app.component';
 
+declare var cordova: any;
+
+/** 사설 서버 운영 */
 @Injectable({
   providedIn: 'root'
 })
 export class DedicatedServerService {
 
-  constructor(
-    public server: WebSocketServer,
-  ) { }
+  constructor() { }
+  server: any;
   /** 연결된 사용자 리스트 */
   users = {};
 
@@ -25,47 +26,61 @@ export class DedicatedServerService {
    */
   initialize(PORT: number) {
     if (isPlatform != 'Desktop') {
-      console.log('소켓 서버는 비어있어: ', this.server);
 
-      this.server.start(PORT, {}).subscribe({
-        next: (server: any) => console.log(`서버 Listening on ${server.addr}:${server.port}`),
-        error: (error: any) => console.log(`ws생성 오류 발생: `, error)
+      this.server = cordova.plugins.wsserver;
+      this.server.start(PORT, {
+        // WebSocket Server handlers
+        'onFailure': function (addr, port, reason) {
+          console.log('Stopped listening on %s:%d. Reason: %s', addr, port, reason);
+        },
+        // WebSocket Connection handlers
+        'onOpen': function (conn) {
+          /* conn: {
+           'uuid' : '8e176b14-a1af-70a7-3e3d-8b341977a16e',
+           'remoteAddr' : '192.168.1.10',
+           'httpFields' : {...},
+           'resource' : '/?param1=value1&param2=value2'
+           } */
+          console.log('A user connected from %s', conn.remoteAddr);
+        },
+        'onMessage': function (conn, msg) {
+          console.log(conn, msg); // msg can be a String (text message) or ArrayBuffer (binary message)
+        },
+        'onClose': function (conn, code, reason, wasClean) {
+          console.log('A user disconnected from %s', conn.remoteAddr);
+        },
+        // Other options
+        'origins': [], // validates the 'Origin' HTTP Header.
+        'protocols': [], // validates the 'Sec-WebSocket-Protocol' HTTP Header.
+        'tcpNoDelay': true // disables Nagle's algorithm.
+      }, function onStart(addr, port) {
+        console.log('서버 Listening on %s:%d', addr, port);
+      }, function onDidNotStart(reason) {
+        console.log('Did not start. Reason: %s', reason);
       });
 
-      console.log(this.server);
-
-      this.server.watchOpen().subscribe((v: any) => {
-        console.log('watchOpen: ', v);
-      });
-
-      this.server.watchClose().subscribe((v: any) => {
-        console.log('watchClose: ', v);
-      });
-
-      this.server.watchFailure().subscribe((e: any) => {
-        console.error('watchFailure: ', e);
-      });
-
-      this.server.watchMessage().subscribe((v: any) => {
-        console.log(`watchMessage: ${v}`);
-      });
-
-      // local_addresses
-      this.server.getInterfaces().then((v: any) => {
-        console.log('getInterfaces: ', v);
-      });
-
-      // 서버 멈출 때
     } else {
-      console.warn('플랫폼 불일치: ', this.server);
+      console.warn('플랫폼 불일치: 사설 서버 구축 취소');
     }
+  }
 
+  /** 로컬 주소 리스트 */
+  getInterfaces() {
+    this.server.getInterfaces(function (result: any) {
+      // 활용방법 필요
+      console.log('local-addresses: ', result);
+    });
+  }
+
+  /** 사용자 끊기 */
+  disconnect_peer(id: string, code: number = 4000, reason: string = 'NULL') {
+    this.server.close({ 'uuid': id }, code, reason);
   }
 
   /** 사설 서버 종료 */
   stop() {
-    this.server.stop().then((server: any) => {
-      console.log(`채팅서버 종료 ${server}`);
+    this.server.stop(function onStop(addr, port) {
+      console.log('Stopped listening on %s:%d', addr, port);
     });
   }
 
@@ -74,7 +89,8 @@ export class DedicatedServerService {
    * @param _id 발송받는 id 특정
    * @param _msg 메시지
    */
-  send(_id: string, _msg: string) {
-    this.server.send({ uuid: _id }, _msg);
+  send(id: string, msg: string) {
+    this.server.send({ 'uuid': id }, msg);
   }
+  
 }
