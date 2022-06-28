@@ -21,10 +21,10 @@ export class RemoteControllerService {
   /**
    * 휴대폰으로 간단하게 조종할 수 있는 웹 소켓 기반 리모콘을 운용합니다.
    * @param _Address 핸드폰 서버의 주소부분만
-   * @param _Port 포트
    */
-  initialize(_Address: string, _Port: number = 12020) {
-    this.client = new WebSocket('ws://' + _Address + ':' + _Port);
+  initialize(_Address: string) {
+    const _PORT: number = 12020;
+    this.client = new WebSocket('ws://' + _Address + ':' + _PORT);
     this.client.onopen = (_ev) => {
       console.log('리모콘 연결됨: ', _ev);
     }
