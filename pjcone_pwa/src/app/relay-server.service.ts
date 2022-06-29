@@ -3,11 +3,11 @@ import { isPlatform } from './app.component';
 
 declare var cordova: any;
 
-/** 사설 서버 운영 */
+/** 다목적 릴레이 서버 운영 */
 @Injectable({
   providedIn: 'root'
 })
-export class DedicatedServerService {
+export class RelayServerService {
 
   constructor() { }
   server: any;
@@ -92,5 +92,4 @@ export class DedicatedServerService {
   send(id: string, msg: string) {
     this.server.send({ 'uuid': id }, msg);
   }
-  
 }
