@@ -10,9 +10,9 @@ import { AppComponent } from 'src/app/app.component';
 export class RegisterPage implements OnInit {
 
   constructor(
-    public modalCtrl: ModalController,
-    public deeplink: AppComponent,
-    public alert: AlertController,
+    private modalCtrl: ModalController,
+    private deeplink: AppComponent,
+    private alert: AlertController,
   ) { }
 
   /** 사용자 입력 데이터 */

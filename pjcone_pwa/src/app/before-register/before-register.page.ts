@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-before-register',
@@ -8,8 +7,7 @@ import { NavController } from '@ionic/angular';
 })
 export class BeforeRegisterPage implements OnInit {
 
-  constructor(public navCtrl: NavController,
-  ) { }
+  constructor() { }
 
   ngOnInit() {
   }

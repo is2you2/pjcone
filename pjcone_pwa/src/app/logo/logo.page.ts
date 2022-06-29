@@ -8,7 +8,7 @@ import { NavController } from '@ionic/angular';
 })
 export class LogoPage implements OnInit {
 
-  constructor(public navCtrl: NavController,
+  constructor(private navCtrl: NavController,
   ) { }
 
   ngOnInit() {

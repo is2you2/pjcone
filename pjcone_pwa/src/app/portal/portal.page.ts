@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-portal',
@@ -8,9 +7,7 @@ import { AlertController } from '@ionic/angular';
 })
 export class PortalPage implements OnInit {
 
-  constructor(
-    public alert: AlertController,
-  ) { }
+  constructor() { }
 
   ngOnInit() { }
 

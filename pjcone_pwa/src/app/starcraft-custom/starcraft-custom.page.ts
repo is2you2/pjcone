@@ -18,10 +18,13 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
 
   remote_act = {};
 
-  ngOnInit() {
+  ngOnInit() { }
+
+  ionViewDidEnter() {
     this.title.setTitle('스타크래프트 1: 캠페인식 컴까기');
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', 'assets/icon/sc1-custom.png');
+    this.remote.target = this;
   }
 
   link_youtube() {
