@@ -4,7 +4,7 @@ import { LocalNotiService } from './local-noti.service';
 import { WscService } from './wsc.service';
 
 export var isPlatform: 'Android' | 'iOS' | 'Desktop' = 'Desktop';
-export const SERVER_ADDRESS: string = '172.30.1.49';
+export const SERVER_ADDRESS: string = '192.168.0.3'; // http:// 와 같은 헤더 없이 주소만
 
 @Component({
   selector: 'app-root',

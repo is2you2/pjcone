@@ -7,7 +7,6 @@ import { IonicModule } from '@ionic/angular';
 import { StarcraftCustomPageRoutingModule } from './starcraft-custom-routing.module';
 
 import { StarcraftCustomPage } from './starcraft-custom.page';
-import { CampaignPanelComponent } from './campaign-panel/campaign-panel.component';
 
 @NgModule({
   imports: [
@@ -16,7 +15,6 @@ import { CampaignPanelComponent } from './campaign-panel/campaign-panel.componen
     IonicModule,
     StarcraftCustomPageRoutingModule
   ],
-  declarations: [StarcraftCustomPage,
-  CampaignPanelComponent]
+  declarations: [StarcraftCustomPage]
 })
-export class StarcraftCustomPageModule {}
+export class StarcraftCustomPageModule { }
