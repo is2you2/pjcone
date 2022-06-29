@@ -1,23 +1,31 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
-import { RemoteControllerService } from 'src/app/remote-controller.service';
+import { RemoteControllerService, RemotePage } from 'src/app/remote-controller.service';
 
 @Component({
   selector: 'app-test',
   templateUrl: './test.page.html',
   styleUrls: ['./test.page.scss'],
 })
-export class TestPage implements OnInit {
+export class TestPage implements OnInit, RemotePage {
 
   constructor(
     public nav: NavController,
     public remote: RemoteControllerService,
   ) { }
 
+  remote_act = {
+    'blog': () => this.nav.navigateForward('remote/login')
+  };
+
   ngOnInit() { }
 
+  ionViewWillEnter() {
+    this.remote.target = this;
+  }
+
   go_to_login() {
-    console.log('컴퓨터 화면 변경시키기');
+    this.remote.client.send('blog');
   }
 
 }

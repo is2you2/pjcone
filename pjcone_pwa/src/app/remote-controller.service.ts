@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { NavController } from '@ionic/angular';
+import { isPlatform } from './app.component';
 
 /** 리모콘 조작 가능한 페이지임 */
 export interface RemotePage {
@@ -12,7 +14,9 @@ export interface RemotePage {
 })
 export class RemoteControllerService {
 
-  constructor() { }
+  constructor(
+    private nav: NavController,
+  ) { }
 
   client: WebSocket;
   /** 현재 조종중인 페이지 */
@@ -27,12 +31,19 @@ export class RemoteControllerService {
     this.client = new WebSocket('ws://' + _Address + ':' + _PORT);
     this.client.onopen = (_ev) => {
       console.log('리모콘 연결됨: ', _ev);
+      if (isPlatform != 'Desktop') { // 모바일인 경우 모바일용으로
+        this.nav.navigateRoot('remote/test', {
+          animated: true,
+          animationDirection: 'forward',
+        })
+      }
     }
     this.client.onclose = (ev) => {
       console.log('연결 끊김: ', ev.code, '/', ev.reason);
     }
     this.client.onmessage = (ev) => {
       console.log('메시지 수신함: ', ev.data);
+      this.target.remote_act[ev.data]();
     }
     this.client.onerror = (e) => {
       // 시작 연결 실패시에도 여기로 접근함

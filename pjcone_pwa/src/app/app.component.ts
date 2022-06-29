@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { Platform } from '@ionic/angular';
+import { DedicatedServerService } from './dedicated-server.service';
 import { LocalNotiService } from './local-noti.service';
+import { RemoteControllerService } from './remote-controller.service';
 import { WscService } from './wsc.service';
 
 export var isPlatform: 'Android' | 'iOS' | 'Desktop' = 'Desktop';
@@ -15,6 +17,8 @@ export class AppComponent {
   constructor(platform: Platform,
     public noti: LocalNotiService,
     public client: WscService,
+    public dedi: DedicatedServerService,
+    public remote: RemoteControllerService,
   ) {
     if (platform.is('desktop') || platform.is('mobileweb'))
       isPlatform = 'Desktop';
@@ -25,6 +29,10 @@ export class AppComponent {
     console.log('시작할 때 플랫폼은', isPlatform);
     noti.initialize();
     client.initialize(SERVER_ADDRESS);
+    dedi.initialize(12020);
+    setTimeout(() => {
+      remote.initialize('172.30.1.25');
+    }, 5000);
   }
 
   /** 브라우저에서 딥 링크마냥 행동하기

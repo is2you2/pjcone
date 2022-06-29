@@ -15,17 +15,16 @@ export class TestPage implements OnInit, RemotePage {
   ) { }
 
   remote_act = {
-    'blog': () => {
-      this.go_to_login();
-    }
+    'blog': () => this.go_to_login()
   }
 
   go_to_login() {
     this.nav.navigateForward('login');
   }
 
-  ngOnInit() {
+  ngOnInit() { }
+
+  ionViewWillEnter() {
     this.remote.target = this;
   }
-
 }

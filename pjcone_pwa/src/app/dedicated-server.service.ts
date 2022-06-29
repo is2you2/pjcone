@@ -11,7 +11,11 @@ export class DedicatedServerService {
 
   constructor() { }
   server: any;
-  /** 연결된 사용자 리스트 */
+  /** 연결된 사용자 리스트  
+   * ```js
+   * { uuid: { addr } }
+   * ```
+   */
   users = {};
 
   /**
@@ -30,24 +34,30 @@ export class DedicatedServerService {
       this.server = cordova.plugins.wsserver;
       this.server.start(PORT, {
         // WebSocket Server handlers
-        'onFailure': function (addr, port, reason) {
-          console.log('Stopped listening on %s:%d. Reason: %s', addr, port, reason);
+        'onFailure': (addr, port, reason) => {
+          console.log('서버 Stopped listening on %s:%d. Reason: %s', addr, port, reason);
         },
         // WebSocket Connection handlers
-        'onOpen': function (conn) {
+        'onOpen': (conn) => {
           /* conn: {
            'uuid' : '8e176b14-a1af-70a7-3e3d-8b341977a16e',
            'remoteAddr' : '192.168.1.10',
            'httpFields' : {...},
            'resource' : '/?param1=value1&param2=value2'
            } */
-          console.log('A user connected from %s', conn.remoteAddr);
+          console.log('서버에 연결됨: ', conn);
+          this.users[conn.uuid] = { 'addr': conn.remoteAddr };
+          console.log(this.users);
         },
-        'onMessage': function (conn, msg) {
-          console.log(conn, msg); // msg can be a String (text message) or ArrayBuffer (binary message)
+        'onMessage': (conn, msg) => {
+          console.log('서버 메시지 받음: ', conn, msg); // msg can be a String (text message) or ArrayBuffer (binary message)
+          // 릴레이 역할 수행
+          this.send_to_all(msg);
         },
-        'onClose': function (conn, code, reason, wasClean) {
-          console.log('A user disconnected from %s', conn.remoteAddr);
+        'onClose': (conn, code, reason, wasClean) => {
+          console.log('서버에서 끊김:', conn, '/', code, '/', reason, '/', wasClean);
+          delete this.users[conn.uuid];
+          console.log(this.users);
         },
         // Other options
         'origins': [], // validates the 'Origin' HTTP Header.
@@ -56,7 +66,7 @@ export class DedicatedServerService {
       }, function onStart(addr, port) {
         console.log('서버 Listening on %s:%d', addr, port);
       }, function onDidNotStart(reason) {
-        console.log('Did not start. Reason: %s', reason);
+        console.log('서버 Did not start. Reason: %s', reason);
       });
 
     } else {
@@ -66,7 +76,7 @@ export class DedicatedServerService {
 
   /** 로컬 주소 리스트 */
   getInterfaces() {
-    this.server.getInterfaces(function (result: any) {
+    this.server.getInterfaces((result: any) => {
       // 활용방법 필요
       console.log('local-addresses: ', result);
     });
@@ -89,8 +99,24 @@ export class DedicatedServerService {
    * @param _id 발송받는 id 특정
    * @param _msg 메시지
    */
-  send(id: string, msg: string) {
-    this.server.send({ 'uuid': id }, msg);
+  send_to(uuid: string, msg: string) {
+    this.server.send({ 'uuid': uuid }, msg);
   }
-  
+
+  /**
+   * 지정 사용자 외 모든 이에게 메시지 보내기
+   * @param uuid 이 아이디 제외
+   * @param msg 메시지
+   */
+  send_except(uuid: string, msg: string) {
+    for (let user in this.users)
+      if (user != uuid)
+        this.send_to(user, msg);
+  }
+
+  send_to_all(msg: string) {
+    for (let user in this.users)
+      this.send_to(user, msg);
+  }
+
 }
