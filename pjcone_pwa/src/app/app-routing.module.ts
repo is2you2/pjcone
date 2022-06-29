@@ -4,44 +4,12 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'starcraft_custom', // 시작하는 페이지
+    redirectTo: 'starcraft_custom',
     pathMatch: 'full'
-  },
-  {
-    path: 'logo',
-    loadChildren: () => import('./logo/logo.module').then(m => m.LogoPageModule)
-  },
-  {
-    path: 'login',
-    loadChildren: () => import('./account/login/login.module').then(m => m.LoginPageModule)
-  },
-  {
-    path: 'register',
-    loadChildren: () => import('./account/register/register.module').then(m => m.RegisterPageModule)
-  },
-  {
-    path: 'portal',
-    loadChildren: () => import('./portal/portal.module').then(m => m.PortalPageModule)
-  },
-  {
-    path: 'blog', // 블로그 페이지로 사용
-    loadChildren: () => import('./home/home.module').then(m => m.HomePageModule)
   },
   {
     path: 'starcraft_custom',
     loadChildren: () => import('./starcraft-custom/starcraft-custom.module').then(m => m.StarcraftCustomPageModule)
-  },
-  {
-    path: 'pjcone',
-    loadChildren: () => import('./pjcone/pjcone.module').then(m => m.PjconePageModule)
-  },
-  {
-    path: 'user-privacy',
-    loadChildren: () => import('./user-privacy/user-privacy.module').then(m => m.UserPrivacyPageModule)
-  },
-  {
-    path: 'before-register',
-    loadChildren: () => import('./before-register/before-register.module').then(m => m.BeforeRegisterPageModule)
   },
   {
     path: 'remote/starcraft-custom',
