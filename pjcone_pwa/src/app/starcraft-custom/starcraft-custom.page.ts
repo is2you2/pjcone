@@ -16,7 +16,9 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
   ) {
   }
 
-  remote_act = {};
+  remote_act = {
+    'youtube': () => this.link_youtube()
+  };
 
   ngOnInit() { }
 
