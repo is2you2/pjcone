@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { NavController } from '@ionic/angular';
+import { SERVER_PATH_ROOT } from '../app.component';
 import { RemoteControllerService, RemotePage } from '../remote-controller.service';
 
 @Component({
@@ -13,6 +14,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
   constructor(
     private title: Title,
     private remote: RemoteControllerService,
+    private nav: NavController,
   ) {
   }
 

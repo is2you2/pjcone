@@ -11,10 +11,6 @@ const routes: Routes = [
     path: 'starcraft_custom',
     loadChildren: () => import('./starcraft-custom/starcraft-custom.module').then(m => m.StarcraftCustomPageModule)
   },
-  {
-    path: 'remote/starcraft-custom',
-    loadChildren: () => import('./remote/starcraft-custom/starcraft-custom.module').then( m => m.StarcraftCustomPageModule)
-  },
 ];
 
 @NgModule({
