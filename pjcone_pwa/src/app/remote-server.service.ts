@@ -10,44 +10,40 @@ declare var cordova: any;
 export class RemoteServerService {
 
   constructor() { }
-  server: any;
-  /** 연결된 사용자 리스트 */
+  server = cordova.plugins.wsserver;
+  /** 연결된 사용자 리스트
+   * ```javascript
+   * {
+   *   uuid: { addr }, ..
+   * }
+   * ```
+   */
   users = {};
 
   /**
-   * 사설 서버 개설, ionic에서는 기기당 1대로 제한된다
+   * 리모콘용 서버 개설  
+   * 사설 서버의 일종이나 주로 메인 서버와의 교류로 연결되므로  
+   * 연결된 모든 사용자에게 자료가 릴레이된다.
    * @param PORT 서비스별 포트번호, 리스트 참조
    * ```markdown
-   * - 12000: 메인 서버
-   * - 12010: 이메일 서버
    * - 12011: 채팅 서버
-   * - 12020: 리모콘 서버
    * ```
    */
   initialize() {
     if (isPlatform != 'Desktop') {
-
-      this.server = cordova.plugins.wsserver;
       this.server.start(12020, {
-        // WebSocket Server handlers
-        'onFailure': function (addr, port, reason) {
-          console.log('Stopped listening on %s:%d. Reason: %s', addr, port, reason);
+        'onFailure': (addr, port, reason) => {
+          console.error('Stopped listening on %s:%d. Reason: %s', addr, port, reason);
         },
-        // WebSocket Connection handlers
-        'onOpen': function (conn) {
-          /* conn: {
-           'uuid' : '8e176b14-a1af-70a7-3e3d-8b341977a16e',
-           'remoteAddr' : '192.168.1.10',
-           'httpFields' : {...},
-           'resource' : '/?param1=value1&param2=value2'
-           } */
+        'onOpen': (conn) => {
           console.log('A user connected from %s', conn.remoteAddr);
+          this.users[conn.uuid] = { 'addr': conn.remoteAddr };
         },
-        'onMessage': function (conn, msg) {
-          console.log(conn, msg); // msg can be a String (text message) or ArrayBuffer (binary message)
+        'onMessage': (_conn, msg) => {
+          this.send_to_all(msg);
         },
-        'onClose': function (conn, code, reason, wasClean) {
-          console.log('A user disconnected from %s', conn.remoteAddr);
+        'onClose': (conn, _code, _reason, _wasClean) => {
+          delete this.users[conn.uuid]
         },
         // Other options
         'origins': [], // validates the 'Origin' HTTP Header.
@@ -56,9 +52,8 @@ export class RemoteServerService {
       }, function onStart(addr, port) {
         console.log('서버 Listening on %s:%d', addr, port);
       }, function onDidNotStart(reason) {
-        console.log('Did not start. Reason: %s', reason);
+        console.error('Did not start. Reason: %s', reason);
       });
-
     } else {
       console.warn('플랫폼 불일치: 사설 서버 구축 취소');
     }
@@ -66,7 +61,7 @@ export class RemoteServerService {
 
   /** 로컬 주소 리스트 */
   getInterfaces() {
-    this.server.getInterfaces(function (result: any) {
+    this.server.getInterfaces((result: any) => {
       // 활용방법 필요
       console.log('local-addresses: ', result);
     });
@@ -91,5 +86,12 @@ export class RemoteServerService {
    */
   send(id: string, msg: string) {
     this.server.send({ 'uuid': id }, msg);
+  }
+
+  /** 모든 연결된 피어들에게 발송 */
+  send_to_all(msg: string) {
+    for (let user in this.users) {
+      this.send(user, msg);
+    }
   }
 }

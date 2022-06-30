@@ -10,7 +10,7 @@ declare var cordova: any;
 export class RelayServerService {
 
   constructor() { }
-  server: any;
+  server = cordova.plugins.wsserver;
   /** 연결된 사용자 리스트 */
   users = {};
 
@@ -26,15 +26,13 @@ export class RelayServerService {
    */
   initialize(PORT: number) {
     if (isPlatform != 'Desktop') {
-
-      this.server = cordova.plugins.wsserver;
       this.server.start(PORT, {
         // WebSocket Server handlers
-        'onFailure': function (addr, port, reason) {
-          console.log('Stopped listening on %s:%d. Reason: %s', addr, port, reason);
+        'onFailure': (addr, port, reason) => {
+          console.error('Stopped listening on %s:%d. Reason: %s', addr, port, reason);
         },
         // WebSocket Connection handlers
-        'onOpen': function (conn) {
+        'onOpen': (conn) => {
           /* conn: {
            'uuid' : '8e176b14-a1af-70a7-3e3d-8b341977a16e',
            'remoteAddr' : '192.168.1.10',
@@ -43,10 +41,10 @@ export class RelayServerService {
            } */
           console.log('A user connected from %s', conn.remoteAddr);
         },
-        'onMessage': function (conn, msg) {
+        'onMessage': (conn, msg) => {
           console.log(conn, msg); // msg can be a String (text message) or ArrayBuffer (binary message)
         },
-        'onClose': function (conn, code, reason, wasClean) {
+        'onClose': (conn, code, reason, wasClean) => {
           console.log('A user disconnected from %s', conn.remoteAddr);
         },
         // Other options
@@ -56,7 +54,7 @@ export class RelayServerService {
       }, function onStart(addr, port) {
         console.log('서버 Listening on %s:%d', addr, port);
       }, function onDidNotStart(reason) {
-        console.log('Did not start. Reason: %s', reason);
+        console.error('Did not start. Reason: %s', reason);
       });
 
     } else {
@@ -66,7 +64,7 @@ export class RelayServerService {
 
   /** 로컬 주소 리스트 */
   getInterfaces() {
-    this.server.getInterfaces(function (result: any) {
+    this.server.getInterfaces((result: any) => {
       // 활용방법 필요
       console.log('local-addresses: ', result);
     });
