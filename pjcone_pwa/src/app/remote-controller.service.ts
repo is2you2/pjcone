@@ -35,14 +35,14 @@ export class RemoteControllerService {
       console.log('리모콘 연결됨: ', _ev);
     }
     this.client.onclose = (ev) => {
-      console.log('연결 끊김: ', ev.code, '/', ev.reason);
+      console.log('리모콘 끊김: ', ev.code, '/', ev.reason);
     }
     this.client.onmessage = (ev) => {
-      console.log('메시지 수신함: ', ev.data);
+      this.target.remote_act[ev.data]();
     }
     this.client.onerror = (e) => {
       // 시작 연결 실패시에도 여기로 접근함
-      console.error('wsc 오류: ', e);
+      console.error('리모콘 오류: ', e);
     }
   }
 }

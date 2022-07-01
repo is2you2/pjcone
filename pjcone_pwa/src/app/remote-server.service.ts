@@ -3,7 +3,10 @@ import { isPlatform } from './app.component';
 
 declare var cordova: any;
 
-/** 리모콘 셀프 서버 운용시 생성 */
+/** 리모콘 셀프 서버 운용시 생성  
+ * 연결된 사용자는 전부 동일한 사람이라고 간주되므로, 전원 릴레이 처리를 한다.  
+ * plain-text 기반 페이지 정보 공유
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -32,20 +35,10 @@ export class RemoteServerService {
   initialize() {
     if (isPlatform != 'Desktop') {
       this.server.start(12020, {
-        'onFailure': (addr, port, reason) => {
-          console.error('Stopped listening on %s:%d. Reason: %s', addr, port, reason);
-        },
-        'onOpen': (conn) => {
-          console.log('A user connected from %s', conn.remoteAddr);
-          this.users[conn.uuid] = { 'addr': conn.remoteAddr };
-        },
-        'onMessage': (_conn, msg) => {
-          this.send_to_all(msg);
-        },
-        'onClose': (conn, _code, _reason, _wasClean) => {
-          delete this.users[conn.uuid]
-        },
-        // Other options
+        'onFailure': (addr, port, reason) => console.error('Stopped listening on %s:%d. Reason: %s', addr, port, reason),
+        'onOpen': (conn) => this.users[conn.uuid] = { 'addr': conn.remoteAddr },
+        'onMessage': (_conn, msg) => this.send_to_all(msg),
+        'onClose': (conn, _code, _reason, _wasClean) => delete this.users[conn.uuid],
         'origins': [], // validates the 'Origin' HTTP Header.
         'protocols': [], // validates the 'Sec-WebSocket-Protocol' HTTP Header.
         'tcpNoDelay': true // disables Nagle's algorithm.
