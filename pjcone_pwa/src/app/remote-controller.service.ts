@@ -31,12 +31,6 @@ export class RemoteControllerService {
   initialize(_Address: string) {
     const _PORT: number = 12020;
     this.client = new WebSocket('ws://' + _Address + ':' + _PORT);
-    this.client.onopen = (_ev) => {
-      console.log('리모콘 연결됨: ', _ev);
-    }
-    this.client.onclose = (ev) => {
-      console.log('리모콘 끊김: ', ev.code, '/', ev.reason);
-    }
     this.client.onmessage = (ev) => {
       this.target.remote_act[ev.data]();
     }

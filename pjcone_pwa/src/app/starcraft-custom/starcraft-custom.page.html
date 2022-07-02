@@ -1,26 +1,20 @@
-<ion-header class="header_center">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
-    </ion-buttons>
-    <ion-title>SC1: 캠페인식 컴까기</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content>
   <div class="display_width_full">
     <div class="main_div">
       <table class="main_table">
         <tr>
           <div id="main_video_form" style="position: relative;" (click)="link_youtube()">
-            <img id="main_video" src="assets/data/sc1_custom/video_thumb.png" alt="Youtube 영상 보기" (click)="link_youtube()">
+            <img id="main_video" src="assets/data/sc1_custom/video_thumb.png" alt="Youtube 영상 보기"
+              (click)="link_youtube()">
             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: fit-content;">
-              <b style="font-size: 32px; word-break: keep-all;">Youtube 영상 보기</b>
+              <b style="font-size: 32px; word-break: keep-all;">Youtube에서 타이틀 영상보기</b>
             </div>
           </div>
         </tr>
         <tr style="height: 16px;"></tr>
         <tr>
+          <div id="sc1_list" style="width: 100%; height: 380px;"></div>
+          <div id="test" class="CampaignImgs"></div>
         </tr>
       </table>
     </div>
