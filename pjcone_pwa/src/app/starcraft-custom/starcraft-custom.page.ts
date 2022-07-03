@@ -58,7 +58,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
         const CAMPAIGNS: string[] = [
           'Multi(R)',
           'Mixed(O)',
-          'Beta',
+          'Alpha',
         ];
         // 캠페인 페이지
         for (let i = 0, j = CAMPAIGNS.length; i < j; i++)
@@ -72,8 +72,8 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
           campaign_eles[i].display();
       }
 
-      let OutBoundAction = (target: string) => {
-        this.go_to_detail(target);
+      let OutBoundAction = (target: string, list: string[]) => {
+        this.go_to_detail(target, list);
       }
 
       class CampaignButton {
@@ -90,6 +90,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
           notSel: p.createVector(280, 120),
           selected: p.createVector(480, 280),
         };
+        fileList: string[];
         /** 이 클래스 준비 여부 */
         isReady: boolean = false;
         /** 캠페인 버튼 개체
@@ -102,6 +103,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
           this.div = p.createDiv();
           this.div.parent(tmp)
           p.loadJSON(json_path, v => {
+            this.fileList = v.files;
             let randomOne: number = p.floor(p.random(0, v.files.length - 1));
             let img_path = `${SERVER_PATH_ROOT}assets/data/sc1_custom/${target}/Screenshots/${v.files[randomOne]}`;
             this.div.style('width:100% - 24px; border-radius: 16px; object-fit: cover; overflow: hidden;');
@@ -115,7 +117,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
             // 클릭하여 주목받기 -> 주목받은 후 상세보기
             this.img.mouseClicked(_v => {
               if (CampaignButton.isTitle == this)
-                OutBoundAction(target);
+                OutBoundAction(target, this.fileList);
               else CampaignButton.isTitle = this;
               campaign_eles.forEach(ele => {
                 ele.lerp_set = true
@@ -187,7 +189,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
   }
 
   /** 캠페인 상세 페이지로 이동 */
-  go_to_detail(target: string) {
+  go_to_detail(target: string, list: string[]) {
     console.log('자세한 설명 페이지로 이동: ', target);
   }
 
