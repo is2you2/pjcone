@@ -59,14 +59,15 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
           'Beta',
         ];
         const ButtonPos: p5.Vector[] = [
-          p.createVector(-10, 20), // Multi
-          p.createVector(-40, 120), // Mixed
-          p.createVector(120, 40), // Beeta
+          p.createVector(-50, 20), // Multi
+          p.createVector(-40, 160), // Mixed
+          p.createVector(220, 40), // Beeta
         ];
 
         for (let i = 0, j = CAMPAIGNS.length; i < j; i++)
           campaign_eles.push(new CampaignButton(CAMPAIGNS[i], ButtonPos[i]))
-        guestbook = p.createDiv();
+
+        // campaign_eles.push(new CampaignButton('Guest', p.createVector(100, 100), true));
       }
 
       p.draw = () => {
@@ -81,8 +82,6 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
       class CampaignButton {
         /** 지금 주목받고 있는 버튼인지 */
         static isTitle: CampaignButton;
-        /** width에 따른 lerp 변수 */
-        static windowLerp: number;
         div: p5.Element;
         /** 대표 이미지 */
         img: p5.Element;
@@ -91,8 +90,8 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
         /** 선택 아닐 때 위치 */
         home_pos: p5.Vector;
         lerpSize = {
-          notSel: p.createVector(120, 80),
-          selected: p.createVector(360, 240),
+          notSel: p.createVector(280, 120),
+          selected: p.createVector(480, 280),
         };
         /** 이 클래스 준비 여부 */
         isReady: boolean = false;
@@ -100,12 +99,9 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
          * @param target 캠페인 이름
          * @param pos 상호작용시 양 끝 위치 (lerp용)
          */
-        constructor(target: string, pos: p5.Vector) {
-          let r_pos = div_calc.position(); // 화면대비 상대 위치
-          this.home_pos = pos.add(p.createVector(r_pos['x'], r_pos['y']));
-          this.currentPos = pos;
-          this.currentSize = this.lerpSize.notSel;
-
+        constructor(target: string, pos: p5.Vector, isGuest: boolean = false) {
+          this.home_pos = pos;
+          this.lastFontSize = this.fontSize.notSel;
           let json_path: string = `${SERVER_PATH_ROOT}assets/data/sc1_custom/${target}/list.json`;
           p.loadJSON(json_path, v => {
             let randomOne: number = p.floor(p.random(0, v.files.length - 1));
@@ -150,6 +146,14 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
         /** 선택된 위치는 고정되어야 함 */
         targetPos: p5.Vector;
         targetSize: p5.Vector;
+        /** 마지막 지정 폰트 크기 기억 */
+        lastFontSize: number;
+        currentFontSize: number;
+        targetFontSize: number;
+        fontSize = {
+          notSel: 24,
+          selected: 40,
+        };
         /** 선택여부에 따른 변화 */
         private lerpSelected() {
           if (this.lerp_set) { // 상호작용으로 상태 변경됨
@@ -158,27 +162,35 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
             this.currentPos = p.createVector(c_pos['x'], c_pos['y']);
             let c_size = this.div.size(); // 현 크기
             this.currentSize = p.createVector(c_size['width'], c_size['height']);
+            this.currentFontSize = this.lastFontSize;
             if (CampaignButton.isTitle == this) { // 선택됨
               this.targetPos = p.createVector(0, 0).add(p.createVector(r_pos['x'], r_pos['y']));
               this.targetSize = this.lerpSize.selected;
+              this.targetFontSize = this.fontSize.selected;
             } else { // 선택 아님
-              this.targetPos = this.home_pos;
+              this.targetPos = p.createVector(r_pos['x'], r_pos['y']).add(this.home_pos);
               this.targetSize = this.lerpSize.notSel;
+              this.targetFontSize = this.fontSize.notSel;
             }
             CampaignButton.selectedLerp = 0;
+            this.lastFontSize = this.targetFontSize;
             this.lerp_set = false;
           }
           let pos = this.currentPos.lerp(this.targetPos, CampaignButton.selectedLerp);
           this.div.position(pos.x, pos.y);
           let size = this.currentSize.lerp(this.targetSize, CampaignButton.selectedLerp);
           this.div.size(size.x, size.y);
+          this.currentFontSize = p.lerp(this.currentFontSize, this.targetFontSize, CampaignButton.selectedLerp);
+          this.header.style('font-size', `${this.currentFontSize}px`);
           CampaignButton.selectedLerp += .01;
           if (CampaignButton.selectedLerp > 1)
             CampaignButton.selectedLerp = 1;
         }
       }
       p.windowResized = () => {
-        CampaignButton.windowLerp = p.map(window.innerWidth, 320, 840, 0, 1, true);
+        campaign_eles.forEach(ele => {
+          ele.lerp_set = true;
+        });
       }
     }
     new p5(sketch);
