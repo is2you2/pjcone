@@ -49,6 +49,8 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
       let div_calc: p5.Element = p.createDiv();
 
       p.setup = () => {
+        p.print('이 페이지는 p5js로 만들어졌습니다: https://p5js.org/');
+
         div_calc.position(0, 0, 'relative');
         div_calc.parent(tmp);
 
@@ -58,15 +60,10 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
           'Mixed(O)',
           'Beta',
         ];
-        const ButtonPos: p5.Vector[] = [
-          p.createVector(-50, 20), // Multi
-          p.createVector(-40, 160), // Mixed
-          p.createVector(220, 40), // Beeta
-        ];
-
+        // 캠페인 페이지
         for (let i = 0, j = CAMPAIGNS.length; i < j; i++)
-          campaign_eles.push(new CampaignButton(CAMPAIGNS[i], ButtonPos[i]))
-
+          campaign_eles.push(new CampaignButton(CAMPAIGNS[i]))
+        // 방명록 페이지
         // campaign_eles.push(new CampaignButton('Guest', p.createVector(100, 100), true));
       }
 
@@ -82,13 +79,13 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
       class CampaignButton {
         /** 지금 주목받고 있는 버튼인지 */
         static isTitle: CampaignButton;
+        /** 메인 틀 */
         div: p5.Element;
         /** 대표 이미지 */
         img: p5.Element;
         /** 머릿글 */
         header: p5.Element;
         /** 선택 아닐 때 위치 */
-        home_pos: p5.Vector;
         lerpSize = {
           notSel: p.createVector(280, 120),
           selected: p.createVector(480, 280),
@@ -99,22 +96,22 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
          * @param target 캠페인 이름
          * @param pos 상호작용시 양 끝 위치 (lerp용)
          */
-        constructor(target: string, pos: p5.Vector, isGuest: boolean = false) {
-          this.home_pos = pos;
+        constructor(target: string, isGuest: boolean = false) {
           this.lastFontSize = this.fontSize.notSel;
           let json_path: string = `${SERVER_PATH_ROOT}assets/data/sc1_custom/${target}/list.json`;
+          this.div = p.createDiv();
+          this.div.parent(tmp)
           p.loadJSON(json_path, v => {
             let randomOne: number = p.floor(p.random(0, v.files.length - 1));
             let img_path = `${SERVER_PATH_ROOT}assets/data/sc1_custom/${target}/Screenshots/${v.files[randomOne]}`;
-            this.div = p.createDiv();
-            this.div.parent(tmp)
-            this.div.style('border-radius: 16px; object-fit: cover; overflow: hidden;');
+            this.div.style('width:100% - 24px; border-radius: 16px; object-fit: cover; overflow: hidden;');
+            this.div.style('margin', '0px 12px 24px 12px');
+            this.div.style('height', '240px');
             this.div.position(0, 0, 'relative');
-            this.div.size(360, 240);
             this.img = p.createImg(img_path, `CampaignImg_${target}`);
-            this.img.id(`CampaignImg`);
+            this.img.id(`CampaignImg_${target}`);
             this.img.parent(this.div);
-            this.img.style('width: auto; height: auto; min-width: 100%; min-height: 100%; display: inline-block; margin: 0 auto; vertical-align: middle;');
+            this.img.style('width: auto; height: auto; min-width: 100%; min-height: 100%;');
             // 클릭하여 주목받기 -> 주목받은 후 상세보기
             this.img.mouseClicked(_v => {
               if (CampaignButton.isTitle == this)
@@ -139,12 +136,9 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
         }
         /** 선택 여부에 따라 변하는 수 */
         static selectedLerp: number = 0;
-        currentPos: p5.Vector;
         currentSize: p5.Vector;
         /** setget 구성하기 귀찮아 */
         lerp_set: boolean = true;
-        /** 선택된 위치는 고정되어야 함 */
-        targetPos: p5.Vector;
         targetSize: p5.Vector;
         /** 마지막 지정 폰트 크기 기억 */
         lastFontSize: number;
@@ -152,23 +146,18 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
         targetFontSize: number;
         fontSize = {
           notSel: 24,
-          selected: 40,
+          selected: 48,
         };
         /** 선택여부에 따른 변화 */
         private lerpSelected() {
           if (this.lerp_set) { // 상호작용으로 상태 변경됨
-            let c_pos = this.div.position(); // 현 위치
-            let r_pos = div_calc.position(); // 화면대비 상대 위치
-            this.currentPos = p.createVector(c_pos['x'], c_pos['y']);
             let c_size = this.div.size(); // 현 크기
             this.currentSize = p.createVector(c_size['width'], c_size['height']);
             this.currentFontSize = this.lastFontSize;
             if (CampaignButton.isTitle == this) { // 선택됨
-              this.targetPos = p.createVector(0, 0).add(p.createVector(r_pos['x'], r_pos['y']));
               this.targetSize = this.lerpSize.selected;
               this.targetFontSize = this.fontSize.selected;
             } else { // 선택 아님
-              this.targetPos = p.createVector(r_pos['x'], r_pos['y']).add(this.home_pos);
               this.targetSize = this.lerpSize.notSel;
               this.targetFontSize = this.fontSize.notSel;
             }
@@ -176,12 +165,13 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
             this.lastFontSize = this.targetFontSize;
             this.lerp_set = false;
           }
-          let pos = this.currentPos.lerp(this.targetPos, CampaignButton.selectedLerp);
-          this.div.position(pos.x, pos.y);
           let size = this.currentSize.lerp(this.targetSize, CampaignButton.selectedLerp);
-          this.div.size(size.x, size.y);
+          this.div.style('height', `${size.y}px`);
           this.currentFontSize = p.lerp(this.currentFontSize, this.targetFontSize, CampaignButton.selectedLerp);
           this.header.style('font-size', `${this.currentFontSize}px`);
+          // 이미지 가운데 정렬
+          this.img.style('transform', `translateY(-${(this.img.elt.clientHeight - size.y) / 3}px)`);
+
           CampaignButton.selectedLerp += .01;
           if (CampaignButton.selectedLerp > 1)
             CampaignButton.selectedLerp = 1;
