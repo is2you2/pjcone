@@ -23,6 +23,10 @@ func _init():
 	if OS.is_debug_build():
 		root_path = 'res://gd_database/'
 		html_path = 'res://pjcone_pwa/src/'
+		var file:= File.new() # 이 폴더를 프로젝트로부터 무시합니다
+		if file.open(root_path + '.gdignore', File.WRITE):
+			file.store_string('gdignore')
+		file.close()
 	else: # 서버 실행파일이 위치한 경로로부터
 		root_path = OS.get_executable_path() + '/gd_database/'
 		html_path = OS.get_executable_path() + '/'

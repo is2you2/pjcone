@@ -5,14 +5,6 @@ import { SERVER_PATH_ROOT } from '../app.component';
 import { RemoteControllerService, RemotePage } from '../remote-controller.service';
 import * as p5 from "p5";
 
-/** 동작에 따른 위치값 */
-interface LerpInfo {
-  min_pos: p5.Vector;
-  max_pos: p5.Vector;
-  start_pos: p5.Vector;
-  end_pos: p5.Vector;
-}
-
 @Component({
   selector: 'app-starcraft-custom',
   templateUrl: './starcraft-custom.page.html',
@@ -49,71 +41,75 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
     let sketch = (p: p5) => {
       /** 각 캠페인 HTML 버튼개체 */
       let campaign_eles: CampaignButton[] = [];
-      /** 각 캠페인 목록 */
-      const CAMPAIGNS: string[] = [
-        'Multi(R)',
-        // 'Mixed(O)',
-        // 'Beta',
-      ];
       /** 방명록 */
       let guestbook: p5.Element;
       /** 최상위 부모 div개체 */
       const tmp = document.getElementById('sc1_list');
+      /** div 정보 검토용 */
+      let div_calc: p5.Element = p.createDiv();
 
       p.setup = () => {
-        let ButtonPos: LerpInfo[] = [
-          { // Multi
-            min_pos: p.createVector(0, 0),
-            max_pos: p.createVector(0, 0),
-            start_pos: p.createVector(0, 0),
-            end_pos: p.createVector(0, 0),
-          },
-          { // Mixed
-            min_pos: p.createVector(0, 0),
-            max_pos: p.createVector(0, 0),
-            start_pos: p.createVector(0, 0),
-            end_pos: p.createVector(0, 0),
-          },
-          { // Beta
-            min_pos: p.createVector(0, 0),
-            max_pos: p.createVector(0, 0),
-            start_pos: p.createVector(0, 0),
-            end_pos: p.createVector(0, 0),
-          },
+        div_calc.position(0, 0, 'relative');
+        div_calc.parent(tmp);
+
+        /** 각 캠페인 목록 */
+        const CAMPAIGNS: string[] = [
+          'Multi(R)',
+          'Mixed(O)',
+          'Beta',
+        ];
+        const ButtonPos: p5.Vector[] = [
+          p.createVector(-10, 20), // Multi
+          p.createVector(-40, 120), // Mixed
+          p.createVector(120, 40), // Beeta
         ];
 
         for (let i = 0, j = CAMPAIGNS.length; i < j; i++)
           campaign_eles.push(new CampaignButton(CAMPAIGNS[i], ButtonPos[i]))
         guestbook = p.createDiv();
       }
+
       p.draw = () => {
-        p.background(100);
+        for (let i = 0, j = campaign_eles.length; i < j; i++)
+          campaign_eles[i].display();
       }
+
       let OutBoundAction = (target: string) => {
         this.go_to_detail(target);
       }
+
       class CampaignButton {
         /** 지금 주목받고 있는 버튼인지 */
         static isTitle: CampaignButton;
         /** width에 따른 lerp 변수 */
-        static displayLerp: number;
+        static windowLerp: number;
         div: p5.Element;
         /** 대표 이미지 */
         img: p5.Element;
         /** 머릿글 */
         header: p5.Element;
-        lerp_info: LerpInfo;
+        /** 선택 아닐 때 위치 */
+        home_pos: p5.Vector;
+        lerpSize = {
+          notSel: p.createVector(120, 80),
+          selected: p.createVector(360, 240),
+        };
+        /** 이 클래스 준비 여부 */
+        isReady: boolean = false;
         /** 캠페인 버튼 개체
          * @param target 캠페인 이름
          * @param pos 상호작용시 양 끝 위치 (lerp용)
          */
-        constructor(target: string, pos: LerpInfo) {
-          this.lerp_info = pos;
+        constructor(target: string, pos: p5.Vector) {
+          let r_pos = div_calc.position(); // 화면대비 상대 위치
+          this.home_pos = pos.add(p.createVector(r_pos['x'], r_pos['y']));
+          this.currentPos = pos;
+          this.currentSize = this.lerpSize.notSel;
+
           let json_path: string = `${SERVER_PATH_ROOT}assets/data/sc1_custom/${target}/list.json`;
           p.loadJSON(json_path, v => {
             let randomOne: number = p.floor(p.random(0, v.files.length - 1));
             let img_path = `${SERVER_PATH_ROOT}assets/data/sc1_custom/${target}/Screenshots/${v.files[randomOne]}`;
-            console.log('img_path: ', img_path);
             this.div = p.createDiv();
             this.div.parent(tmp)
             this.div.style('border-radius: 16px; object-fit: cover; overflow: hidden;');
@@ -128,16 +124,61 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
               if (CampaignButton.isTitle == this)
                 OutBoundAction(target);
               else CampaignButton.isTitle = this;
+              campaign_eles.forEach(ele => {
+                ele.lerp_set = true
+              });
             });
             this.header = p.createP(`<b>${target}</b>`);
             this.header.parent(this.div);
-            this.header.style('position: absolute; top: 50%; left: 50%; font-size: 48px; margin: 0; transform: translate(-50%, -50%)');
+            this.header.style('position: absolute; top: 50%; left: 50%; font-size: 48px; margin: 0; transform: translate(-50%, -50%); pointer-events: none');
+            this.isReady = true;
           }, e => {
             console.error('json 불러오기 오류: ', e);
           });
         }
         display() {
+          if (this.isReady) {
+            this.lerpSelected();
+          }
         }
+        /** 선택 여부에 따라 변하는 수 */
+        static selectedLerp: number = 0;
+        currentPos: p5.Vector;
+        currentSize: p5.Vector;
+        /** setget 구성하기 귀찮아 */
+        lerp_set: boolean = true;
+        /** 선택된 위치는 고정되어야 함 */
+        targetPos: p5.Vector;
+        targetSize: p5.Vector;
+        /** 선택여부에 따른 변화 */
+        private lerpSelected() {
+          if (this.lerp_set) { // 상호작용으로 상태 변경됨
+            let c_pos = this.div.position(); // 현 위치
+            let r_pos = div_calc.position(); // 화면대비 상대 위치
+            this.currentPos = p.createVector(c_pos['x'], c_pos['y']);
+            let c_size = this.div.size(); // 현 크기
+            this.currentSize = p.createVector(c_size['width'], c_size['height']);
+            if (CampaignButton.isTitle == this) { // 선택됨
+              this.targetPos = p.createVector(0, 0).add(p.createVector(r_pos['x'], r_pos['y']));
+              this.targetSize = this.lerpSize.selected;
+            } else { // 선택 아님
+              this.targetPos = this.home_pos;
+              this.targetSize = this.lerpSize.notSel;
+            }
+            CampaignButton.selectedLerp = 0;
+            this.lerp_set = false;
+          }
+          let pos = this.currentPos.lerp(this.targetPos, CampaignButton.selectedLerp);
+          this.div.position(pos.x, pos.y);
+          let size = this.currentSize.lerp(this.targetSize, CampaignButton.selectedLerp);
+          this.div.size(size.x, size.y);
+          CampaignButton.selectedLerp += .01;
+          if (CampaignButton.selectedLerp > 1)
+            CampaignButton.selectedLerp = 1;
+        }
+      }
+      p.windowResized = () => {
+        CampaignButton.windowLerp = p.map(window.innerWidth, 320, 840, 0, 1, true);
       }
     }
     new p5(sketch);
@@ -145,7 +186,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
 
   /** 캠페인 상세 페이지로 이동 */
   go_to_detail(target: string) {
-    console.log('자세한: ', target);
+    console.log('자세한 설명 페이지로 이동: ', target);
   }
 
   ionViewWillLeave() {
