@@ -7,7 +7,7 @@ var server:= WebSocketServer.new()
 var title:= 'Project: Cone | 회원가입 본인 확인용 메일'
 var msg:= '안녕하세요.\n\n직접 회원가입을 요청한 적이 없다면 이 메일을 무시해주세요.\n\n http://is2you2.iptime.org/register?target=%s\n\n위 링크를 눌러 커뮤니티 등록을 마무리해주세요 :)\n\nProject: Cone'
 const PORT:= 12010
-const HEADER:= 'Exim4Server'
+const HEADER:= 'Exim4'
 
 # 메일 인증 토큰 필요
 # 발송된 메일들을 관리하고 발송 후 5분이 지나서 진행할 수 없음
@@ -49,9 +49,9 @@ func _ready():
 	server.connect("data_received", self, '_received')
 	var err:= server.listen(PORT)
 	if err != OK: # 서버 구성 오류
-		Root.logging(HEADER, str('server init error: ', err), Root.LOG_ERR)
+		Root.logging(HEADER, str('init error: ', err), Root.LOG_ERR)
 	else: # 정상적으로 서버 열림
-		Root.logging(HEADER, str('server opened: ', PORT))
+		Root.logging(HEADER, str('header opened: ', PORT))
 		var ferr:= thread.start(self, 'initialize')
 		if ferr != OK:
 			initialize()

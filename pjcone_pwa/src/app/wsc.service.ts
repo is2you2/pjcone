@@ -13,6 +13,11 @@ export class WscService {
 
   client: WebSocket;
 
+  /**
+   * 서버와 반드시 연결시도하는 메인 소켓 클라이언트  
+   * 다른 서버, 클라이언트를 생성하는 등의 다양한 역할을 수행할 수 있다.
+   * @param _Address 서버 주소, 포트 12000 고정
+   */
   initialize(_Address: string) {
     const PORT: number = 12000;
     this.client = new WebSocket(`ws://${_Address}:${PORT}`);
