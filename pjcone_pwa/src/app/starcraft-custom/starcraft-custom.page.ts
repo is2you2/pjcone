@@ -72,8 +72,8 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
           campaign_eles[i].display();
       }
 
-      let OutBoundAction = (target: string, list: string[]) => {
-        this.go_to_detail(target, list);
+      let OutBoundAction = (target: string, list: string[], picked: number) => {
+        this.go_to_detail(target, list, picked);
       }
 
       class CampaignButton {
@@ -91,6 +91,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
           selected: p.createVector(480, 280),
         };
         fileList: string[];
+        picked: number;
         /** 이 클래스 준비 여부 */
         isReady: boolean = false;
         /** 캠페인 버튼 개체
@@ -104,8 +105,8 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
           this.div.parent(tmp)
           p.loadJSON(json_path, v => {
             this.fileList = v.files;
-            let randomOne: number = p.floor(p.random(0, v.files.length - 1));
-            let img_path = `${SERVER_PATH_ROOT}assets/data/sc1_custom/${target}/Screenshots/${v.files[randomOne]}`;
+            this.picked = p.floor(p.random(0, v.files.length - 1));
+            let img_path = `${SERVER_PATH_ROOT}assets/data/sc1_custom/${target}/Screenshots/${v.files[this.picked]}`;
             this.div.style('width:100% - 24px; border-radius: 16px; object-fit: cover; overflow: hidden;');
             this.div.style('margin', '0px 12px 24px 12px');
             this.div.style('height', '240px');
@@ -117,7 +118,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
             // 클릭하여 주목받기 -> 주목받은 후 상세보기
             this.img.mouseClicked(_v => {
               if (CampaignButton.isTitle == this)
-                OutBoundAction(target, this.fileList);
+                OutBoundAction(target, this.fileList, this.picked);
               else CampaignButton.isTitle = this;
               campaign_eles.forEach(ele => {
                 ele.lerp_set = true
@@ -189,7 +190,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
   }
 
   /** 캠페인 상세 페이지로 이동 */
-  go_to_detail(target: string, list: string[]) {
+  go_to_detail(target: string, list: string[], picked: number) {
     console.log('자세한 설명 페이지로 이동: ', target);
   }
 

@@ -43,7 +43,9 @@ export class AppComponent {
       let gets = {};
       for (let i = 0, j = CatchGETs.length; i < j; i++) {
         const KeyVal = CatchGETs[i].split('=');
-        gets[KeyVal[0]] = KeyVal[1];
+        if (!gets[KeyVal[0]])
+          gets[KeyVal[0]] = [];
+        gets[KeyVal[0]].push(KeyVal[1]);
       }
       return gets;
     }
