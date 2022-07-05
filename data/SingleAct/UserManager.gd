@@ -3,7 +3,7 @@ extends Node
 # 사용자 생성, 검토, 편집, 삭제
 
 # 사용자 DB 메인 경로 (uid 모음)
-onready var _path:String = get_parent().root_path + 'users.csv'
+var _path:String = get_parent().get_parent().root_path + 'users.csv'
 
 const HEADER:= 'UserManager'
 

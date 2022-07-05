@@ -3,8 +3,8 @@ extends Node
 
 # 이 색깔로 로그 발생시 오류로 처리
 const LOG_ERR:= 'faa'
-# 로그 노드
-var log_node:RichTextLabel
+# 이번 부팅의 로그 기록
+var rich_log:= 'Logging Ready'
 
 # 로그처리
 func logging(header:String, content:String, _con_col:= 'bbb'):
@@ -25,8 +25,8 @@ func logging(header:String, content:String, _con_col:= 'bbb'):
 	else: # 일반 로그
 		print(result)
 	# 로그 노드가 있으면 추가하기
-	if log_node != null:
+	if rich_log != null:
 		var result_gui:= '%s[color=#%s]%s[/color] | %s' % [
 			stamp, header, _con_col, content
 		]
-		log_node.bbcode_text += '\n' + result_gui
+		rich_log += '\n' + result_gui

@@ -1,5 +1,5 @@
 extends Node
-# 폴더를 올려 내부 파일 리스트를 json으로 출력합니다
+# 폴더를 올려 내부 파일 리스트를 새로고침하여 json으로 출력합니다
 
 const HEADER:= 'SC1_custom'
 

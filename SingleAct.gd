@@ -10,8 +10,7 @@ var root_path:String
 var html_path:String
 const HEADER:= 'Counter'
 
-# 현재 접속한 사용자들 { pid: { token }, .. , current: 현재 접속자 수, maximum: 최대 동접자 수 }
-# Token: Guest = 0, Registered != 0 (string)
+# 현재 접속한 사용자들 { pid: { Account.pid }, .. , current: 현재 접속자 수, maximum: 최대 동접자 수 }
 # linked 는 추가 관리만 하다가 동작 안하는게 검토될 때 삭제
 var users:= {}
 # 오늘 서버에 몇명이 다녀갔어
@@ -77,11 +76,11 @@ func _disconnected(id:int, _was_clean = null, _reason:= 'EMPTY'):
 	users.erase(str(id))
 	counter.current = users.keys().size()
 	linked_mutex.unlock()
-	if _was_clean is int:
-		if _was_clean != 1001:
-			Root.logging(HEADER, str('Disconnected: ', counter, ' was_clean: ', _was_clean, ' / ', _reason))
-	else:
-		Root.logging(HEADER, str('Disconnected: ', counter, ' was_clean: ', _was_clean, ' / ', _reason))
+	# 일반 종료가 아닐 때 로그 남김
+	if _was_clean is int and _was_clean != 1001:
+		Root.logging(HEADER, str('Disconnected: ', counter, ' was_clean: ', _was_clean))
+	else: # 상시 로그
+		Root.logging(HEADER, str('Disconnected: ', counter, ' code: ', _was_clean, ' / ', _reason))
 		
 # 자료를 받아서 행동 코드별로 자식 노드에게 일처리 넘김
 func _received(id:int, _try_left:= 5):
