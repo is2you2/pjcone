@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { NavController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { SERVER_PATH_ROOT } from '../app.component';
 import { RemoteControllerService, RemotePage } from '../remote-controller.service';
 import * as p5 from "p5";
+import { DetailPage } from './detail/detail.page';
 
 @Component({
   selector: 'app-starcraft-custom',
@@ -14,7 +15,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
   constructor(
     private title: Title,
     private remote: RemoteControllerService,
-    private nav: NavController,
+    private modal: ModalController,
   ) {
   }
 
@@ -191,7 +192,16 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
 
   /** 캠페인 상세 페이지로 이동 */
   go_to_detail(target: string, list: string[], picked: number) {
-    console.log('자세한 설명 페이지로 이동: ', target);
+    this.modal.create({
+      component: DetailPage,
+      componentProps: {
+        title: target,
+        list: list,
+        picked: picked,
+      },
+    }).then(v => {
+      v.present();
+    });
   }
 
   ionViewWillLeave() {

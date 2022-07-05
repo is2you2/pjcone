@@ -17,8 +17,8 @@ export const SERVER_PATH_ROOT: string = 'http://localhost:8100/';
 })
 export class AppComponent {
   constructor(platform: Platform,
-    public noti: LocalNotiService,
-    public client: WscService,
+    noti: LocalNotiService,
+    client: WscService,
   ) {
     if (platform.is('desktop') || platform.is('mobileweb'))
       isPlatform = 'DesktopPWA';
