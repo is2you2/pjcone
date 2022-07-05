@@ -33,7 +33,7 @@ export class RemoteServerService {
    * ```
    */
   initialize() {
-    if (isPlatform != 'Desktop') {
+    if (isPlatform != 'DesktopPWA') {
       this.server.start(12020, {
         'onFailure': (addr, port, reason) => console.error('Stopped listening on %s:%d. Reason: %s', addr, port, reason),
         'onOpen': (conn) => this.users[conn.uuid] = { 'addr': conn.remoteAddr },

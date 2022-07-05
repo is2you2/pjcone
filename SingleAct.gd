@@ -10,7 +10,7 @@ var root_path:String
 var html_path:String
 const HEADER:= 'Counter'
 
-# 현재 접속한 사용자들 { pid: { token, linked[pid] }, .. , current: 현재 접속자 수, maximum: 최대 동접자 수 }
+# 현재 접속한 사용자들 { pid: { token }, .. , current: 현재 접속자 수, maximum: 최대 동접자 수 }
 # Token: Guest = 0, Registered != 0 (string)
 # linked 는 추가 관리만 하다가 동작 안하는게 검토될 때 삭제
 var users:= {}
@@ -63,7 +63,7 @@ var linked_mutex:= Mutex.new()
 # 사이트에 연결 확인됨
 func _connected(id:int, _proto:= 'EMPTY'):
 	linked_mutex.lock()
-	users[str(id)] = { 'token': 0, 'linked': [] }
+	users[str(id)] = { 'token': 0 }
 	counter.current = users.keys().size()
 	counter.stack += 1;
 	if counter.maximum < counter.current:
@@ -116,7 +116,7 @@ func send_to(id:int, msg:PoolByteArray, _try_left:= 5):
 		if _try_left > 0:
 			Root.logging(HEADER, str('send packet error with _try_left: ', _try_left))
 			yield(get_tree(), 'idle_frame')
-			send_to(id, msg)
+			send_to(id, msg, _try_left - 1)
 		else:
 			Root.logging(HEADER, str('send packet error and try left out.'), Root.LOG_ERR)
 			server.disconnect_peer(id, 1011, 'MainServer packet send try left out.')

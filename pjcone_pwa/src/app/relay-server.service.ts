@@ -18,14 +18,12 @@ export class RelayServerService {
    * 사설 서버 개설, ionic에서는 기기당 1대로 제한된다
    * @param PORT 서비스별 포트번호, 리스트 참조
    * ```markdown
-   * - 12000: 메인 서버
-   * - 12010: 이메일 서버
    * - 12011: 채팅 서버
    * - 12020: 리모콘 서버
    * ```
    */
   initialize(PORT: number) {
-    if (isPlatform != 'Desktop') {
+    if (isPlatform != 'DesktopPWA') {
       this.server.start(PORT, {
         // WebSocket Server handlers
         'onFailure': (addr, port, reason) => {

@@ -59,7 +59,7 @@ func _ready():
 # email 멘트를 바깥 폴더에서 구성할 수 있어야 함
 # 인증 메일 발송과 동시에 인증 제한시간을 측정하여 오랜 시간이 지났을 경우
 # 진행할 수 없도록 구성되어야 함 (내 프로젝트에 맞는 방침인지 검토 필요)
-func _received(id:int):
+func _received(id:int, _try_left:= 5):
 	var err:= server.get_peer(id).get_packet_error()
 	if err == OK:
 		var raw_data:= server.get_peer(id).get_packet()
@@ -78,7 +78,13 @@ func _received(id:int):
 		else: # 여기서는 지원하지 않음
 			Root.logging(HEADER, str('data mismatch: ', data), Root.LOG_ERR)
 	else:
-		Root.logging(HEADER, str('Packet error: ', err), Root.LOG_ERR)
+		if _try_left > 0:
+			Root.logging(HEADER, str('receive error with try left: ', _try_left))
+			yield(get_tree(), "idle_frame")
+			_received(id, _try_left -1)
+		else:
+			Root.logging(HEADER, str('Packet error: ', err), Root.LOG_ERR)
+			server.disconnect_peer(id, 1011, 'receive try left out')
 
 
 # 메일 발송하기

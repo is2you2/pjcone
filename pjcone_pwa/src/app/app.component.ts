@@ -3,7 +3,7 @@ import { Platform } from '@ionic/angular';
 import { LocalNotiService } from './local-noti.service';
 import { WscService } from './wsc.service';
 /** 페이지가 돌고 있는 플렛폼 구분자 */
-export var isPlatform: 'Android' | 'iOS' | 'Desktop' = 'Desktop';
+export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' = 'DesktopPWA';
 /** 소켓서버용 */
 export const SOCKET_SERVER_ADDRESS: string = '192.168.0.3'; // http:// 와 같은 헤더 없이 주소만
 // /** 이미지 등 자료 링크용 */
@@ -21,7 +21,7 @@ export class AppComponent {
     public client: WscService,
   ) {
     if (platform.is('desktop') || platform.is('mobileweb'))
-      isPlatform = 'Desktop';
+      isPlatform = 'DesktopPWA';
     else if (platform.is('android'))
       isPlatform = 'Android';
     else if (platform.is('iphone'))

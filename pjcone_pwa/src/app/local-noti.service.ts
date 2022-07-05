@@ -14,7 +14,7 @@ export class LocalNotiService {
 
   /** 권한 요청 처리 */
   initialize() {
-    if (isPlatform == 'Desktop') {
+    if (isPlatform == 'DesktopPWA') {
       Notification.requestPermission().then(v => {
         if (v != 'granted')
           console.warn('알림 거절', v);
@@ -30,7 +30,7 @@ export class LocalNotiService {
    * @param _action 클릭시 행동
    */
   PushLocal(_title: string, _opt: NotificationOptions = null, _action: Function = null) {
-    if (isPlatform == 'Desktop') {
+    if (isPlatform == 'DesktopPWA') {
       /** 기본 알림 옵션 (교체될 수 있음) */
       const _default_opt: NotificationOptions = {
         icon: 'assets/icon/favicon.png',
