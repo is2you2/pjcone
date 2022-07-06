@@ -302,6 +302,13 @@
   dependencies:
     "@types/cordova" "latest"
 
+"@awesome-cordova-plugins/device@^5.44.0":
+  "integrity" "sha512-Fq+yv3JXBv8RCoekNuMRhXmPCWE+UAPllTK2/xKQRHTnz/goNcvmFFCtFUCljWAnxHMuItWjhKuyh1iAcjhvAw=="
+  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/device/-/device-5.44.0.tgz"
+  "version" "5.44.0"
+  dependencies:
+    "@types/cordova" "latest"
+
 "@awesome-cordova-plugins/speech-recognition@^5.41.0":
   "integrity" "sha512-WlTy5D6u5TeMfLB9XQxXc6ea/bmmlzHvg76mJ4Qjp6aSIbEof5Mdc4AFsHXGL5uh1deMqhVSjST+vQyx6QSnGA=="
   "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/speech-recognition/-/speech-recognition-5.41.0.tgz"
@@ -3219,6 +3226,11 @@
   "integrity" "sha512-FTFKep8HZI/2HkX+Gc/dUACfZGV9+k9waXlgoEOKXOiPPR/1zBw29Mw+adcz4FQUpdWyAgYDxNiaPUnP0P+H2Q=="
   "resolved" "https://registry.npmjs.org/cordova-plugin-camera/-/cordova-plugin-camera-6.0.0.tgz"
   "version" "6.0.0"
+
+"cordova-plugin-device@^2.1.0":
+  "integrity" "sha512-FU0Lw1jZpuKOgG4v80LrfMAOIMCGfAVPumn7AwaX9S1iU/X3OPZUyoKUgP09q4bxL35IeNPkqNWVKYduAXZ1sg=="
+  "resolved" "https://registry.npmjs.org/cordova-plugin-device/-/cordova-plugin-device-2.1.0.tgz"
+  "version" "2.1.0"
 
 "cordova-plugin-speechrecognition@^1.2.0":
   "integrity" "sha1-AF8QyJb9kpPYWH/lUiorZC3qlwo="

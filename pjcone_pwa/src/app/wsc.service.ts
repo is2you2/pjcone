@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { RemoteControllerService } from './remote-controller.service';
 
 /** 앱 시작과 동시에 서버에 연결을 시도하여 실시간 상호작용하는 메인 클라이언트 */
 @Injectable({
@@ -8,7 +7,6 @@ import { RemoteControllerService } from './remote-controller.service';
 export class WscService {
 
   constructor(
-    public remote: RemoteControllerService,
   ) { }
 
   client: WebSocket;
