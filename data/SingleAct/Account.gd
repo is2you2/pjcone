@@ -40,8 +40,11 @@ func _received(id:int, _try_left:= 5):
 			match(json):
 				{ 'act': 'login', ..}: # 로그인 시도
 					print_debug('로그인 시도: ', json)
-				{ 'act': 'register', ..}: # 회원가입 (기기 추가)
-					print_debug('회원가입 시도: ', json)
+				{ 'act': 'register', 'email': var email, 'uuid': var uuid}: # 회원가입 (기기 추가)
+					if $UserManager.create_user(email, uuid):
+						$SendExim4Mail.execute_send_mail(email)
+					else: # 생성하기 실패 (이미 있는 계정)
+						send_to(id, ('register_failed').to_utf8())
 				{ 'act': 'remove', ..}: # 회원삭제
 					print_debug('회원삭제 시도: ', json)
 				_:
@@ -70,6 +73,10 @@ func send_to(id:int, msg:PoolByteArray, _try_left:= 5):
 		else:
 			Root.logging(HEADER, str('send packet try left out.'), Root.LOG_ERR)
 			server.disconnect_peer(id, 1011, 'send try left out')
+
+
+func _process(_delta):
+	server.poll()
 
 
 func _exit_tree():

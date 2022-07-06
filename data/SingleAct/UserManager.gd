@@ -29,24 +29,25 @@ func read_user_list(_is_new:= false):
 	else: # 파일 열기 오류시
 		Root.logging(HEADER, str('OpenUserList Error: ', err), Root.LOG_ERR)
 
-# 사용자 찾기
-func find_user(id:String) -> bool:
+# 사용자 찾기 / return 사용자유무
+func find_user(email:String) -> bool:
 	return false
 
-# 사용자 검토
-func login_user(id:String) -> bool:
+# 사용자 검토 / return 성공여부
+func login_user(email:String) -> bool:
 	return false
 
-# 사용자 생성
-func create_user(info:String) -> bool:
+# 사용자 생성 / return 성공여부
+func create_user(email:String, uuid:String) -> bool:
+	find_user(email)
 	return false
 
-# 사용자 정보 수정
-func modify_user(id:int) -> bool:
+# 사용자 정보 수정 / return 수정여부
+func modify_user(email:int) -> bool:
 	return false
 
-# 사용자 삭제
-func remove_user(id:int) -> bool:
+# 사용자 삭제 / return 삭제여부
+func remove_user(email:int) -> bool:
 	return false
 
 # 서버가 종료될 때 모든 파일 정상 종료 후 닫기

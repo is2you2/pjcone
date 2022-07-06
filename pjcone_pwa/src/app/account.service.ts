@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { SOCKET_SERVER_ADDRESS } from './app.component';
 
 /** 회원로그인시 사용하는 소켓 클라이언트 */
@@ -8,6 +9,7 @@ import { SOCKET_SERVER_ADDRESS } from './app.component';
 export class AccountService {
 
   constructor(
+    private device: Device,
   ) { }
 
   client: WebSocket;
@@ -29,7 +31,22 @@ export class AccountService {
       console.error('오류 발생: ', e);
     }
     this.client.onmessage = (ev) => {
-      console.log('메시지 받음: ', ev);
+      ev.data.text().then(v => {
+        console.log('메시지 받음: ', v);
+      });
     }
+  }
+
+  /**
+   * 회원가입 요청보내기
+   * @param email 사용자 이메일 주소
+   */
+  register(email: string) {
+    let reg = {
+      act: 'register',
+      email: email,
+      uuid: this.device.uuid,
+    }
+    this.client.send(JSON.stringify(reg));
   }
 }

@@ -70,7 +70,9 @@ func _received(id:int, _try_left:= 5):
 				{ 'act': 'request' }: # 이메일 발송 요청
 					var terr:= thread.start(self, 'execute_send_mail', [id, json['email']])
 					if terr != OK:
-						execute_send_mail([id, json['email']])
+						execute_send_mail(json['email'])
+					# 메시지를 처리한 후 소켓 닫기
+					server.disconnect_peer(id, 4000, 'SendMail Successful')
 				{ 'act': 'register' }: # 회원가입 페이지 진입시 검토
 					print_debug('회원가입 화면에서 진입함: ', json['email'])
 				_: # 여기서는 지원하지 않음
@@ -88,19 +90,17 @@ func _received(id:int, _try_left:= 5):
 
 
 # 메일 발송하기
-func execute_send_mail(_data:Array):
+func execute_send_mail(email:String):
 	# 해당 입력값으로 이메일 발송처리하기 (Exim4)
-	Root.logging(HEADER, str('send to: ', _data[1]))
+	Root.logging(HEADER, str('send to: ', email))
 	var file:= File.new()
-	if file.open('user://sendmail_%s.sh' % [_data[1]], File.WRITE) == OK:
-		file.store_string('echo -e "%s" | mail -s %s %s' % [msg % [Marshalls.utf8_to_base64(_data[1]).trim_suffix('=')], '=?utf-8?b?%s?=' % [Marshalls.utf8_to_base64(title)], _data[1]])
+	if file.open('user://sendmail_%s.sh' % [email], File.WRITE) == OK:
+		file.store_string('echo -e "%s" | mail -s %s %s' % [msg % [Marshalls.utf8_to_base64(email).trim_suffix('=')], '=?utf-8?b?%s?=' % [Marshalls.utf8_to_base64(title)], email])
 	file.flush()
 	file.close()
-	Root.logging(HEADER, str('Send_result: ', OS.execute('bash', [OS.get_user_data_dir() + '/sendmail_%s.sh' % [_data[1]]], true)))
+	Root.logging(HEADER, str('Send_result: ', OS.execute('bash', [OS.get_user_data_dir() + '/sendmail_%s.sh' % [email]], true)))
 	var dir:= Directory.new()
-	dir.remove('user://sendmail_%s.sh' % [_data[1]])
-	# 메시지를 처리한 후 소켓 닫기
-	server.disconnect_peer(_data[0], 4000, 'SendMail Successful')
+	dir.remove('user://sendmail_%s.sh' % [email])
 
 
 func _process(_delta):

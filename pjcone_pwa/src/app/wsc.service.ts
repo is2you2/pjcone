@@ -30,7 +30,9 @@ export class WscService {
       console.error('오류 발생: ', e);
     }
     this.client.onmessage = (ev) => {
-      console.log('메시지 받음: ', ev);
+      ev.data.text().then(v => {
+        console.log('메시지 받음: ', v);
+      });
     }
   }
 
