@@ -3,9 +3,9 @@ extends Node
 # 사용자 생성, 검토, 편집, 삭제
 
 # 사용자 DB 메인 경로 (uid 모음)
-var _path:String = get_parent().get_parent().root_path + 'users.csv'
-
+onready var _path:String = get_parent().get_parent().root_path + 'users.csv'
 const HEADER:= 'UserManager'
+const separater:= '§'
 
 # 파일 포인팅, 등록된 모든 사용자
 var file:= File.new()
@@ -29,18 +29,25 @@ func read_user_list(_is_new:= false):
 	else: # 파일 열기 오류시
 		Root.logging(HEADER, str('OpenUserList Error: ', err), Root.LOG_ERR)
 
+# 사용자 찾기
+func find_user(id:String) -> bool:
+	return false
+
+# 사용자 검토
+func login_user(id:String) -> bool:
+	return false
 
 # 사용자 생성
-func create_user(id:int):
-	pass
+func create_user(info:String) -> bool:
+	return false
 
 # 사용자 정보 수정
-func modify_user(id:int):
-	pass
+func modify_user(id:int) -> bool:
+	return false
 
 # 사용자 삭제
-func remove_user(id:int):
-	pass
+func remove_user(id:int) -> bool:
+	return false
 
 # 서버가 종료될 때 모든 파일 정상 종료 후 닫기
 func _exit_tree():

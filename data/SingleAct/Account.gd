@@ -5,9 +5,9 @@ extends Node
 var server:= WebSocketServer.new()
 const PORT:= 12001
 const HEADER:= 'Account'
-# 토큰별 사용자 관리
-# { token: { pid: [SingleAct.peer, ..] } }
-var token:= {}
+# 계정별 사용자 관리
+# { email: { pid: [SingleAct.peer, ..] } }
+var users:= {}
 
 
 func _ready():
@@ -15,6 +15,11 @@ func _ready():
 	server.connect('client_disconnected', self, '_disconnected')
 	server.connect('client_close_request', self, '_disconnected')
 	server.connect('data_received', self, '_received')
+	var err:= server.listen(PORT)
+	if err == OK:
+		Root.logging(HEADER, str('Opened: ', PORT))
+	else:
+		Root.logging(HEADER, str('init error: ', err), Root.LOG_ERR)
 
 
 func _connected(id:int, _proto:= 'EMPTY'):
@@ -33,6 +38,12 @@ func _received(id:int, _try_left:= 5):
 		var json = JSON.parse(data).result
 		if json is Dictionary:
 			match(json):
+				{ 'act': 'login', ..}: # 로그인 시도
+					print_debug('로그인 시도: ', json)
+				{ 'act': 'register', ..}: # 회원가입 (기기 추가)
+					print_debug('회원가입 시도: ', json)
+				{ 'act': 'remove', ..}: # 회원삭제
+					print_debug('회원삭제 시도: ', json)
 				_:
 					pass
 		else:

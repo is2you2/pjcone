@@ -10,7 +10,7 @@ var root_path:String
 var html_path:String
 const HEADER:= 'Counter'
 
-# 현재 접속한 사용자들 { pid: { Account.pid }, .. , current: 현재 접속자 수, maximum: 최대 동접자 수 }
+# 현재 접속한 사용자들 { pid: { token: Account.pid }, .. , current: 현재 접속자 수, maximum: 최대 동접자 수 }
 # linked 는 추가 관리만 하다가 동작 안하는게 검토될 때 삭제
 var users:= {}
 # 오늘 서버에 몇명이 다녀갔어

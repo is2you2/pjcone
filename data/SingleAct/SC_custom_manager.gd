@@ -19,6 +19,7 @@ func refresh_list():
 				var target:= str(_file)
 				catch_all_files(_path, target)
 			_file = dir.get_next()
+		Root.logging(HEADER, str('list_refreshed'))
 	else: # 폴더찾기 실패시
 		Root.logging(HEADER, str('list dir failed: ', err), Root.LOG_ERR)
 
