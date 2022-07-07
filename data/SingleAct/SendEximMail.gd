@@ -5,7 +5,7 @@ extends Node
 var server:= WebSocketServer.new()
 # 미리 구성된 이메일 안내 폼을 기억하고 있기
 var title:= 'Project: Cone | 회원가입 본인 확인용 메일'
-var msg:= '안녕하세요.\n\n직접 회원가입을 요청한 적이 없다면 이 메일을 무시해주세요.\n\n http://is2you2.iptime.org/register?target=%s\n\n위 링크를 눌러 커뮤니티 등록을 마무리해주세요 :)\n\nProject: Cone'
+var msg:= '안녕하세요.\n\n직접 회원가입을 요청한 적이 없다면 이 메일을 무시해주세요.\n\n http://is2you2.iptime.org/register?target=%s&token=%s\n\n위 링크를 눌러 커뮤니티 등록을 마무리해주세요 :)\n\nProject: Cone'
 const PORT:= 12010
 const HEADER:= 'Exim4'
 
@@ -67,14 +67,14 @@ func _received(id:int, _try_left:= 5):
 		var json = JSON.parse(data).result
 		if json is Dictionary:
 			match(json):
-				{ 'act': 'request' }: # 이메일 발송 요청
-					var terr:= thread.start(self, 'execute_send_mail', [id, json['email']])
+				{ 'act': 'request', 'email': var email, .. }: # 이메일 발송 요청
+					var terr:= thread.start(self, 'execute_send_mail', [id, email])
 					if terr != OK:
-						execute_send_mail(json['email'])
+						execute_send_mail(email)
 					# 메시지를 처리한 후 소켓 닫기
-					server.disconnect_peer(id, 4000, 'SendMail Successful')
-				{ 'act': 'register' }: # 회원가입 페이지 진입시 검토
-					print_debug('회원가입 화면에서 진입함: ', json['email'])
+					server.disconnect_peer(id, 4000, 'SendMzail Successful')
+				{ 'act': 'register', 'email': var email, 'token': var token, .. }: # 회원가입 페이지 진입시 검토
+					print_debug('회원가입 화면에서 진입함: ', email, '/', token)
 				_: # 여기서는 지원하지 않음
 					Root.logging(HEADER, str('data mismatch: ', data), Root.LOG_ERR)
 		else: # 여기서는 지원하지 않음
@@ -93,14 +93,27 @@ func _received(id:int, _try_left:= 5):
 func execute_send_mail(email:String):
 	# 해당 입력값으로 이메일 발송처리하기 (Exim4)
 	Root.logging(HEADER, str('send to: ', email))
+	var _token:= create_token()
+	token[_token] = email
 	var file:= File.new()
 	if file.open('user://sendmail_%s.sh' % [email], File.WRITE) == OK:
-		file.store_string('echo -e "%s" | mail -s %s %s' % [msg % [Marshalls.utf8_to_base64(email).trim_suffix('=')], '=?utf-8?b?%s?=' % [Marshalls.utf8_to_base64(title)], email])
+		file.store_string('echo -e "%s" | mail -s %s %s' % [msg % [Marshalls.utf8_to_base64(email).trim_suffix('='), _token], '=?utf-8?b?%s?=' % [Marshalls.utf8_to_base64(title)], email])
 	file.flush()
 	file.close()
 	Root.logging(HEADER, str('Send_result: ', OS.execute('bash', [OS.get_user_data_dir() + '/sendmail_%s.sh' % [email]], true)))
 	var dir:= Directory.new()
 	dir.remove('user://sendmail_%s.sh' % [email])
+	yield(get_tree().create_timer(300), 'timeout')
+	token.erase(_token)
+
+
+# 인증 토큰 생성
+func create_token() -> String:
+	randomize()
+	var result:= str(randi())
+	if token.has(result):
+		return create_token()
+	return result
 
 
 func _process(_delta):

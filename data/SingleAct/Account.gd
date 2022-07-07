@@ -40,11 +40,11 @@ func _received(id:int, _try_left:= 5):
 			match(json):
 				{ 'act': 'login', ..}: # 로그인 시도
 					print_debug('로그인 시도: ', json)
-				{ 'act': 'register', 'email': var email, 'uuid': var uuid}: # 회원가입 (기기 추가)
-					if $UserManager.create_user(email, uuid):
-						$SendExim4Mail.execute_send_mail(email)
-					else: # 생성하기 실패 (이미 있는 계정)
+				{ 'act': 'register', 'email': var email, ..}: # 회원가입 (기기 추가)
+					if $UserManager.find_user(email): # 이미 있는 계정
 						send_to(id, ('register_failed').to_utf8())
+					else: # 이메일로 회원가입 안내 메시지 발송
+						$SendExim4Mail.execute_send_mail(email)
 				{ 'act': 'remove', ..}: # 회원삭제
 					print_debug('회원삭제 시도: ', json)
 				_:
