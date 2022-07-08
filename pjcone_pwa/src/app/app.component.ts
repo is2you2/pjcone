@@ -7,7 +7,7 @@ export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' = 'DesktopPWA';
 /** 소켓서버용 */
 export const SOCKET_SERVER_ADDRESS: string = '192.168.0.3'; // http:// 와 같은 헤더 없이 주소만
 // /** 이미지 등 자료 링크용(웹 사이트 host) */
-export const SERVER_PATH_ROOT: string = 'http://localhost:8100/';
+export const SERVER_PATH_ROOT: string = 'http://192.168.0.3:8100/';
 // export const SERVER_PATH_ROOT: string = 'https://is2you2.github.io/';
 
 @Component({

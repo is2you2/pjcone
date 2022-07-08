@@ -37,24 +37,23 @@ export class DetailPage implements OnInit {
     this.load_details();
   }
 
-  details: string = 'details';
-  version_log: string = 'log';
+  details: string[] = [];
+  version_log: string[] = [];
 
   load_details() {
     let detail = (p: p5) => {
       p.setup = () => {
         p.loadStrings(`${SERVER_PATH_ROOT}assets/data/sc1_custom/${this.title}/detail.txt`, v => {
-          this.details = v.join('\n');
+          this.details = v;
         }, e => {
           console.error('load detail failed: ', e);
         });
         p.loadStrings(`${SERVER_PATH_ROOT}assets/data/sc1_custom/${this.title}/version_log.txt`, v => {
-          this.version_log = v.join('\n');
+          this.version_log = v;
         }, e => {
           console.error('load version_log failed: ', e);
         });
         p.loadStrings(`${SERVER_PATH_ROOT}assets/data/sc1_custom/${this.title}/list.txt`, v => {
-          console.log(v);
           this.download_list = v.filter(n => n);
         }, e => {
           console.error('load map list failed: ', e);

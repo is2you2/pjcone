@@ -53,16 +53,23 @@ func catch_downloads(path:String, target:String):
 	var dir:= Directory.new()
 	var err:= dir.open(path + target)
 	if err == OK:
-		var file:= File.new()
-		var fer:= file.open(path + target + '/list.txt', File.WRITE)
 		dir.list_dir_begin(true, true)
+		var list:= []
 		var _file:= dir.get_next()
 		while _file:
 			if (_file.find_last('.scx') + 1) or (_file.find_last('.scm') + 1):
-				file.store_line(_file)
+				list.push_back(_file)
 			_file = dir.get_next()
 		dir.list_dir_end()
-		file.flush()
-		file.close()
+		list.sort()
+		var file:= File.new()
+		var fer:= file.open(path + target + '/list.txt', File.WRITE)
+		if fer == OK:
+			for line in list:
+				file.store_line(line)
+			file.flush()
+			file.close()
+		else:
+			Root.logging(HEADER, str('create %s list failed: ' % target, fer), Root.LOG_ERR)
 	else:
 		Root.logging(HEADER, str('catch download error: ', err), Root.LOG_ERR)

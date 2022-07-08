@@ -38,7 +38,10 @@
       <td></td>
       <td>
         <div class="text-padding">
-          {{details}}
+          <p style="color: #888;">내용 상세</p>
+          <p style="word-break: keep-all;" *ngFor="let line of details">
+            {{line}}
+          </p>
         </div>
       </td>
     </tr>
@@ -46,7 +49,10 @@
       <td></td>
       <td>
         <div class="text-padding">
-          {{version_log}}
+          <p style="color: #888;">버전 기록</p>
+          <p *ngFor="let line of version_log">
+            {{line}}
+          </p>
         </div>
       </td>
     </tr>
