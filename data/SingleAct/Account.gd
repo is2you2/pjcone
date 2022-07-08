@@ -45,6 +45,7 @@ func _received(id:int, _try_left:= 5):
 						send_to(id, ('register_failed').to_utf8())
 					else: # 이메일로 회원가입 안내 메시지 발송
 						$SendExim4Mail.execute_send_mail(email)
+						server.disconnect_peer(id, 4000, 'SendMail Successful')
 				{ 'act': 'remove', ..}: # 회원삭제
 					print_debug('회원삭제 시도: ', json)
 				_:

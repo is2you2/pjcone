@@ -5,7 +5,7 @@ extends Node
 var server:= WebSocketServer.new()
 # 미리 구성된 이메일 안내 폼을 기억하고 있기
 var title:= 'Project: Cone | 회원가입 본인 확인용 메일'
-var msg:= '안녕하세요.\n\n직접 회원가입을 요청한 적이 없다면 이 메일을 무시해주세요.\n\n http://is2you2.iptime.org/register?token=%s&list=%s\n\n위 링크를 눌러 커뮤니티 등록을 마무리해주세요 :)\n\nProject: Cone'
+var content:= '안녕하세요.\n\n직접 회원가입을 요청한 적이 없다면 이 메일을 무시해주세요.\n\n http://is2you2.iptime.org/register?token=%s&list=%s\n\n위 링크를 눌러 커뮤니티 등록을 마무리해주세요 :)\n\nProject: Cone'
 const PORT:= 12010
 const HEADER:= 'Exim4'
 
@@ -22,7 +22,7 @@ func initialize(_null = null):
 		var file:= File.new()
 		var err:= file.open(_path, File.WRITE)
 		if err == OK: # 파일이 없다면 기본값으로 파일 생성하기
-			file.store_string(title + '\n' + msg)
+			file.store_string(title + '\n' + content)
 		else: # 정말 극단적으로 왜인지 오류가 난다면
 			printerr('Exim send cfg initialize error: ', err)
 		file.flush()
@@ -33,10 +33,10 @@ func initialize(_null = null):
 		file.seek(0)
 		var line:= file.get_line()
 		title = line
-		msg = ''
+		content = ''
 		while not file.eof_reached():
 			line = file.get_line()
-			msg += '\n' + line
+			content += '\n' + line
 	else: # 열람 오류
 		Root.logging(HEADER, str('Load send cfg failed: ', err), Root.LOG_ERR)
 	file.close()
@@ -72,13 +72,20 @@ func _received(id:int, _try_left:= 5):
 					if terr != OK:
 						execute_send_mail(email)
 					# 메시지를 처리한 후 소켓 닫기
-					server.disconnect_peer(id, 4000, 'SendMzail Successful')
-				{ 'act': 'register', 'email': var email, 'token': var token, .. }: # 회원가입 페이지 진입시 검토
-					print_debug('회원가입 화면에서 진입함: ', email, '/', token)
+					server.disconnect_peer(id, 4000, 'SendMail Successful')
+				{ 'act': 'register', 'token': var email, 'list': var _token, .. }: # 회원가입 페이지 진입시 검토
+					var decoded:= Marshalls.base64_to_utf8(email + '=')
+					if token.has(_token) and token[_token] == decoded:
+						token.erase(_token)
+						server.disconnect_peer(id, 4000, decoded)
+					else:
+						server.disconnect_peer(id, 1011, 'data mismatch')
 				_: # 여기서는 지원하지 않음
 					Root.logging(HEADER, str('data mismatch: ', data), Root.LOG_ERR)
+					server.disconnect_peer(id, 1011, 'data mismatch')
 		else: # 여기서는 지원하지 않음
 			Root.logging(HEADER, str('data mismatch: ', data), Root.LOG_ERR)
+			server.disconnect_peer(id, 1011, 'data mismatch')
 	else:
 		if _try_left > 0:
 			Root.logging(HEADER, str('receive error with try left: ', _try_left))
@@ -89,6 +96,18 @@ func _received(id:int, _try_left:= 5):
 			server.disconnect_peer(id, 1011, 'receive try left out')
 
 
+func send_to(id:int, msg:PoolByteArray, _try_left:= 5):
+	var err:= server.get_peer(id).put_packet(msg)
+	if err != OK:
+		if _try_left > 0:
+			Root.logging(HEADER, str('send try left: ', _try_left))
+			yield(get_tree(), "idle_frame")
+			send_to(id, msg, _try_left - 1)
+		else:
+			Root.logging(HEADER, str('send try left out.'), Root.LOG_ERR)
+			server.disconnect_peer(id, 1011, 'send try left out.')
+
+
 # 메일 발송하기
 func execute_send_mail(email:String):
 	# 해당 입력값으로 이메일 발송처리하기 (Exim4)
@@ -97,10 +116,12 @@ func execute_send_mail(email:String):
 	token[_token] = email
 	var file:= File.new()
 	if file.open('user://sendmail_%s.sh' % [email], File.WRITE) == OK:
-		file.store_string('echo -e "%s" | mail -s %s %s' % [msg % [Marshalls.utf8_to_base64(email).trim_suffix('='), _token], '=?utf-8?b?%s?=' % [Marshalls.utf8_to_base64(title)], email])
+		file.store_string('echo -e "%s" | mail -s %s %s' % [content % [Marshalls.utf8_to_base64(email).trim_suffix('='), _token], '=?utf-8?b?%s?=' % [Marshalls.utf8_to_base64(title)], email])
 	file.flush()
 	file.close()
-	Root.logging(HEADER, str('Send_result: ', OS.execute('bash', [OS.get_user_data_dir() + '/sendmail_%s.sh' % [email]], true)))
+	var err:= OS.execute('bash', [OS.get_user_data_dir() + '/sendmail_%s.sh' % [email]])
+	if err != 0:
+		Root.logging(HEADER, str('Send_result: ', err, true))
 	var dir:= Directory.new()
 	dir.remove('user://sendmail_%s.sh' % [email])
 	yield(get_tree().create_timer(300), 'timeout')
