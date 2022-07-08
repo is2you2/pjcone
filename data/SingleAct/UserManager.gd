@@ -8,7 +8,7 @@ const HEADER:= 'UserManager'
 const SEP_CHAR:= '§'
 
 # 파일 포인팅, 등록된 모든 사용자
-# csv form: 이메일, [uuid]
+# csv form: 이메일, uuid, uuid2, ...
 var file:= File.new()
 # 사용자 파일 오류 방지용
 var mutex:= Mutex.new()
@@ -31,14 +31,18 @@ func read_user_list(_is_new:= false):
 		Root.logging(HEADER, str('OpenUserList Error: ', err), Root.LOG_ERR)
 
 # 사용자 찾기 / return 사용자유무
-func find_user(email:String) -> bool:
+func find_user(email:String, uuid:= '') -> bool:
 	file.seek(0)
-	var line:= Array(file.get_csv_line(SEP_CHAR))
+	var line:= file.get_csv_line(SEP_CHAR)
+	var has_email:bool
 	while not file.eof_reached():
-		if line.find(email) + 1:
-			return true
+		if Array(line).find(email) + 1:
+			has_email = true
+			break
 		line = file.get_csv_line(SEP_CHAR)
-	return false
+	if has_email and not uuid:
+		return true
+	return bool(Array(line).find(uuid) + 1)
 
 # 사용자 검토 / return 성공여부
 func login_user(email:String) -> bool:

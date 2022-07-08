@@ -25,6 +25,8 @@ export class AccountService {
     private device: Device,
   ) { }
 
+  /** 로그인 성공시 사용하게 되는 uuid 기억 */
+  uuid: string;
   client: WebSocket;
 
   /**
@@ -46,7 +48,13 @@ export class AccountService {
     }
     this.client.onmessage = (ev) => {
       ev.data.text().then(v => {
-        console.log('메시지 받음: ', v);
+        let data = JSON.parse(v);
+        console.log('데이터 받음: ', data);
+        switch (data['act']) {
+          case 'get_uuid': // 로그인 성공
+            this.uuid = data['uuid'];
+            break;
+        }
       });
     }
   }
@@ -64,10 +72,22 @@ export class AccountService {
     this.client.send(JSON.stringify(reg));
   }
 
+  /** 회원 정보로 로그인
+   * @param email 이메일 주소
+   */
+  login(email: string) {
+    let data = {
+      act: 'login',
+      email: email,
+      uuid: this.device.uuid,
+    }
+    this.client.send(JSON.stringify(data));
+  }
+
   /** 사용자 정보 교체하기 */
   change_userInfo(_data: UserInfo) {
     let data = {
-      'act': 'profile',
+      act: 'profile',
       ..._data
     }
     this.client.send(JSON.stringify(data));

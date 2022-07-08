@@ -6,7 +6,7 @@ var server:= WebSocketServer.new()
 const PORT:= 12001
 const HEADER:= 'Account'
 # 계정별 사용자 관리
-# { email: { pid: [SingleAct.peer, ..] } }
+# { uuid: {} }
 var users:= {}
 
 
@@ -38,8 +38,18 @@ func _received(id:int, _try_left:= 5):
 		var json = JSON.parse(data).result
 		if json is Dictionary:
 			match(json):
-				{ 'act': 'login', ..}: # 로그인 시도
-					print_debug('로그인 시도: ', json)
+				{ 'act': 'login', 'email': var email, 'uuid': var uuid}: # 로그인 시도
+					if $UserManager.find_user(email, str(uuid)):
+						var _uuid:= {
+							'act': 'get_uuid',
+							'uuid': id,
+						}
+						send_to(id, JSON.print(_uuid).to_utf8())
+					else:
+						var _failed:= {
+							'act': 'login_failed',
+						}
+						send_to(id, JSON.print(_failed).to_utf8())
 				{ 'act': 'register', 'email': var email, ..}: # 회원가입 (최초 계정 생성)
 					if $UserManager.find_user(email): # 이미 있는 계정
 						send_to(id, ('register_failed').to_utf8())

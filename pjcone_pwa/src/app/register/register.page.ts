@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
-import { NavController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular';
 import { AccountService } from '../account.service';
 import { AppComponent, isPlatform, SOCKET_SERVER_ADDRESS } from '../app.component';
 
@@ -23,6 +23,7 @@ export class RegisterPage implements OnInit {
     private nav: NavController,
     private device: Device,
     private account: AccountService,
+    private alert: AlertController,
   ) { }
 
   ngOnInit() {
@@ -47,6 +48,20 @@ export class RegisterPage implements OnInit {
         if (v.code == 4000) {
           let l = v.reason.length;
           this.userInfo.email = v.reason.substring(0, l - 1);
+        } else {
+          this.alert.create({
+            header: '정보 없음',
+            backdropDismiss: false,
+            message: '일치하는 정보가 없습니다',
+            buttons: [{
+              handler: () => {
+                this.nav.navigateRoot('');
+              },
+              text: '확인',
+            }]
+          }).then(v => {
+            v.present();
+          });
         }
       }
     } else { // 필수 요건에 맞지 않으면 돌려보내기
