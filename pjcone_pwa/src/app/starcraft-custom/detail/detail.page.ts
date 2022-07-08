@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NavParams } from '@ionic/angular';
+import { ModalController, NavParams } from '@ionic/angular';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import * as p5 from "p5";
 
@@ -23,6 +23,7 @@ export class DetailPage implements OnInit {
 
   constructor(
     params: NavParams,
+    private modal: ModalController,
   ) {
     let data = params.data;
     if (!data['list'])
@@ -93,5 +94,9 @@ export class DetailPage implements OnInit {
     a.href = path;
     a.download = map;
     a.click();
+  }
+
+  go_to_back() {
+    this.modal.dismiss();
   }
 }
