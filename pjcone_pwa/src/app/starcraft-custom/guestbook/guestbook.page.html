@@ -1,0 +1,41 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/" (click)="go_to_back()"></ion-back-button>
+    </ion-buttons>
+    <ion-title>방명록</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <table class="image-table">
+    <tr>
+      <td style="text-align: center;" (click)="image_change_to(-1)">
+        A
+      </td>
+      <td style="width: 83%;">
+        <img style="width: 100%; height: auto;"
+          [src]="root+'assets/data/sc1_custom/'+title+'/Screenshots/'+list[picked]" [alt]='title + "_img"'>
+      </td>
+      <td style="text-align: center;" (click)="image_change_to(1)">
+        D
+      </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>
+        <div class="text-padding">
+          작성 폼
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>
+        <div class="text-padding">
+          방명록 리스트
+        </div>
+      </td>
+    </tr>
+  </table>
+</ion-content>

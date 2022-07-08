@@ -11,6 +11,10 @@ const routes: Routes = [
   {
     path: 'detail',
     loadChildren: () => import('./detail/detail.module').then( m => m.DetailPageModule)
+  },
+  {
+    path: 'guestbook',
+    loadChildren: () => import('./guestbook/guestbook.module').then( m => m.GuestbookPageModule)
   }
 ];
 

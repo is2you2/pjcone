@@ -5,6 +5,7 @@ import { SERVER_PATH_ROOT } from '../app.component';
 import { RemoteControllerService, RemotePage } from '../remote-controller.service';
 import * as p5 from "p5";
 import { DetailPage } from './detail/detail.page';
+import { GuestbookPage } from './guestbook/guestbook.page';
 
 @Component({
   selector: 'app-starcraft-custom',
@@ -68,7 +69,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
         for (let i = 0, j = CAMPAIGNS.length; i < j; i++)
           campaign_eles.push(new CampaignButton(CAMPAIGNS[i]))
         // 방명록 페이지
-        // campaign_eles.push(new CampaignButton('Guest', p.createVector(100, 100), true));
+        campaign_eles.push(new CampaignButton('Guest', true));
       }
 
       p.draw = () => {
@@ -76,8 +77,22 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
           campaign_eles[i].display();
       }
 
+      /** 캠페인 버튼 전용 */
       let OutBoundAction = (target: string, list: string[], picked: number) => {
         this.go_to_detail(target, list, picked);
+      }
+
+      /** 방명록 버튼 전용 */
+      let GuestButtonAction = (list: string[], picked: number) => {
+        this.modal.create({
+          component: GuestbookPage,
+          componentProps: {
+            list: list,
+            picked: picked,
+          },
+        }).then(v => {
+          v.present();
+        });
       }
 
       class CampaignButton {
@@ -101,6 +116,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
         /** 캠페인 버튼 개체
          * @param target 캠페인 이름
          * @param pos 상호작용시 양 끝 위치 (lerp용)
+         * @param isGuest 방명록 특수
          */
         constructor(target: string, isGuest: boolean = false) {
           this.lastFontSize = this.fontSize.notSel;
@@ -109,7 +125,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
           this.div.parent(tmp)
           p.loadJSON(json_path, v => {
             this.fileList = v.files;
-            this.picked = p.floor(p.random(0, v.files.length - 1));
+            this.picked = p.floor(p.random(0, v.files.length));
             let img_path = `${SERVER_PATH_ROOT}assets/data/sc1_custom/${target}/Screenshots/${v.files[this.picked]}`;
             this.div.style('width:100% - 24px; border-radius: 16px; object-fit: cover; overflow: hidden;');
             this.div.style('margin', '0px 12px 24px 12px');
@@ -121,8 +137,11 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
             this.img.style('width: auto; height: auto; min-width: 100%; min-height: 100%;');
             // 클릭하여 주목받기 -> 주목받은 후 상세보기
             this.img.mouseClicked(_v => {
-              if (CampaignButton.isTitle == this)
-                OutBoundAction(target, this.fileList, this.picked);
+              if (CampaignButton.isTitle == this) {
+                if (isGuest)
+                  GuestButtonAction(this.fileList, this.picked);
+                else OutBoundAction(target, this.fileList, this.picked);
+              }
               else CampaignButton.isTitle = this;
               campaign_eles.forEach(ele => {
                 ele.lerp_set = true
