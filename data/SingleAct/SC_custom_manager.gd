@@ -49,7 +49,6 @@ func catch_all_files(path:String, target:String):
 
 # 다운로드 가능한 맵 파일 추려내기
 func catch_downloads(path:String, target:String):
-	print_debug('읽어보기: ', path,' /t: ',target)
 	var dir:= Directory.new()
 	var err:= dir.open(path + target)
 	if err == OK:

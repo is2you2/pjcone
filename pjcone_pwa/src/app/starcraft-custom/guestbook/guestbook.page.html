@@ -21,19 +21,64 @@
         D
       </td>
     </tr>
-    <tr>
+    <tr *ngIf="wsc.client.readyState == wsc.client.OPEN">
       <td></td>
-      <td>
+      <td class="form-align">
         <div class="text-padding">
           작성 폼
         </div>
       </td>
     </tr>
-    <tr>
+    <tr *ngIf="wsc.client.readyState != wsc.client.OPEN">
       <td></td>
-      <td>
+      <td class="form-align">
         <div class="text-padding">
-          방명록 리스트
+          <p> 지금은 서버에 연결되어있지 않아 작성할 수 없습니다. </p>
+          <p> 보통 제가 퇴근한 이후 또는 주말에 놀고 있을 때 등 개인 컴퓨터를 사용할 때 서버가 켜집니다. </p>
+          <p> 관심과 발걸음에 감사드리며 오늘도 좋은 하루 보내세요 :) </p>
+        </div>
+      </td>
+    </tr>
+    <tr *ngFor="let part of guest_id">
+      <td></td>
+      <td class="form-align">
+        <div class="text-padding">
+          <div class="form" style="background-color: #333;">
+            <table class="image-table">
+              <tr>
+                <td style="width: 100%;">{{guest_history[part].writer}}</td>
+                <td align="center">
+                  <table style="margin: 4px 8px 4px 8px;">
+                    <tr>
+                      <table *ngIf="guest_history[part].is_showing">
+                        <tr style="padding-top: 12px;">
+                          <td>
+                            <ion-button style="width: 52px;" (click)="modify_data(part)" shape="round">
+                              수정
+                            </ion-button>
+                          </td>
+                          <td>
+                            <ion-button style="width: 52px;" (click)="delete_data(part)" shape="round">
+                              삭제
+                            </ion-button>
+                          </td>
+                        </tr>
+                      </table>
+                    </tr>
+                    <tr>
+                      <td align="center" style="padding-top: 4px;">{{guest_history[part].date_format}}</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div class="form">
+            <textarea *ngIf="guest_history[part].is_showing" name="" id="" style="width: 100%; resize: none;" rows="8"
+              disabled>{{guest_history[part].content}}</textarea>
+            <textarea *ngIf="!guest_history[part].is_showing" name="" id="" style="width: 100%; resize: none;" rows="2"
+              disabled>관리자인 제가 이 게시물을 좀 가려놨습니다.</textarea>
+          </div>
         </div>
       </td>
     </tr>
