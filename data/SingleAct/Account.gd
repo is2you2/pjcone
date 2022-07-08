@@ -40,12 +40,16 @@ func _received(id:int, _try_left:= 5):
 			match(json):
 				{ 'act': 'login', ..}: # 로그인 시도
 					print_debug('로그인 시도: ', json)
-				{ 'act': 'register', 'email': var email, ..}: # 회원가입 (기기 추가)
+				{ 'act': 'register', 'email': var email, ..}: # 회원가입 (최초 계정 생성)
 					if $UserManager.find_user(email): # 이미 있는 계정
 						send_to(id, ('register_failed').to_utf8())
 					else: # 이메일로 회원가입 안내 메시지 발송
 						$SendExim4Mail.execute_send_mail(email)
 						server.disconnect_peer(id, 4000, 'SendMail Successful')
+				{ 'act': 'device', 'email': var email, 'uuid': var uuid }: # 기기 등록
+					print_debug('기기 등록 시도: ', json, '/ ', email, '/', uuid)
+				{ 'act': 'profile', .. }: # 프로필 수정하기
+					print_debug('프로필 행동: ', json)
 				{ 'act': 'remove', ..}: # 회원삭제
 					print_debug('회원삭제 시도: ', json)
 				_:
