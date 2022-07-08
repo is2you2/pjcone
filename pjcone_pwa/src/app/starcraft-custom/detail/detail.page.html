@@ -25,11 +25,12 @@
       <td></td>
       <td style="text-align: center;">{{picked + 1}} / {{list_len}}</td>
     </tr>
-    <tr *ngFor="let scx of download_list">
+    <tr style="height: 16px;"></tr>
+    <tr *ngFor="let map of download_list">
       <td></td>
       <td>
-        <ion-button (click)="click_download(scx)" expand="block" shape="round">
-          <b>Download</b>
+        <ion-button (click)="click_download(map)" expand="block" shape="round">
+          <b>다운로드: {{map}}</b>
         </ion-button>
       </td>
     </tr>

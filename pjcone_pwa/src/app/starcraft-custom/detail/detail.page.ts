@@ -53,6 +53,12 @@ export class DetailPage implements OnInit {
         }, e => {
           console.error('load version_log failed: ', e);
         });
+        p.loadStrings(`${SERVER_PATH_ROOT}assets/data/sc1_custom/${this.title}/list.txt`, v => {
+          console.log(v);
+          this.download_list = v.filter(n => n);
+        }, e => {
+          console.error('load map list failed: ', e);
+        })
       }
       p.keyPressed = () => {
         switch (p.keyCode) {
@@ -82,7 +88,11 @@ export class DetailPage implements OnInit {
   }
 
   download_list: string[] = [];
-  click_download(i: number) {
-    console.log('파일 다운받기: ', this.title);
+  click_download(map: string) {
+    let path = `${SERVER_PATH_ROOT}assets/data/sc1_custom/${this.title}/${map}`
+    const a = document.createElement('a');
+    a.href = path;
+    a.download = map;
+    a.click();
   }
 }

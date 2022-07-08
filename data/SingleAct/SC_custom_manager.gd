@@ -16,8 +16,8 @@ func refresh_list():
 		var _file:= dir.get_next()
 		while _file:
 			if dir.current_is_dir():
-				var target:= str(_file)
-				catch_all_files(_path, target)
+				catch_all_files(_path, str(_file))
+				catch_downloads(_path, str(_file))
 			_file = dir.get_next()
 		Root.logging(HEADER, str('list_refreshed'))
 	else: # 폴더찾기 실패시
@@ -46,3 +46,23 @@ func catch_all_files(path:String, target:String):
 		file.close()
 	else:
 		Root.logging(HEADER, str('catch_all_files failed: ', err))
+
+# 다운로드 가능한 맵 파일 추려내기
+func catch_downloads(path:String, target:String):
+	print_debug('읽어보기: ', path,' /t: ',target)
+	var dir:= Directory.new()
+	var err:= dir.open(path + target)
+	if err == OK:
+		var file:= File.new()
+		var fer:= file.open(path + target + '/list.txt', File.WRITE)
+		dir.list_dir_begin(true, true)
+		var _file:= dir.get_next()
+		while _file:
+			if (_file.find_last('.scx') + 1) or (_file.find_last('.scm') + 1):
+				file.store_line(_file)
+			_file = dir.get_next()
+		dir.list_dir_end()
+		file.flush()
+		file.close()
+	else:
+		Root.logging(HEADER, str('catch download error: ', err), Root.LOG_ERR)

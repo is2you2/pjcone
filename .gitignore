@@ -33,5 +33,3 @@ exports/*
 gd_database/*
 # vscode debug 설정 무시
 .vscode/*
-# 스크린샷 리스트 제외 (어차피 자동생성됨)
-**/list.json
