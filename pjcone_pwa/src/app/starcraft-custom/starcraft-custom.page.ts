@@ -12,6 +12,9 @@ import { DetailPage } from './detail/detail.page';
   styleUrls: ['./starcraft-custom.page.scss'],
 })
 export class StarcraftCustomPage implements OnInit, RemotePage {
+
+  root = SERVER_PATH_ROOT;
+
   constructor(
     private title: Title,
     private remote: RemoteControllerService,
@@ -187,8 +190,9 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
         });
       }
     }
-    new p5(sketch);
+    this.p5canvas = new p5(sketch);
   }
+  p5canvas: p5;
 
   /** 캠페인 상세 페이지로 이동 */
   go_to_detail(target: string, list: string[], picked: number) {
@@ -208,6 +212,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
     this.title.setTitle('Project: Cone');
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', 'assets/icon/favicon.png');
+    this.p5canvas.remove();
   }
 
 }
