@@ -10,9 +10,8 @@ var root_path:String
 var html_path:String
 const HEADER:= 'Counter'
 
-# 현재 접속한 사용자들 { pid: { token: Account.pid }, .. , current: 현재 접속자 수, maximum: 최대 동접자 수 }
-# linked 는 추가 관리만 하다가 동작 안하는게 검토될 때 삭제
-var users:= {}
+# 사용자 pid로 접속 카운트
+var users:= []
 # 오늘 서버에 몇명이 다녀갔어
 var counter:= {
 	# 현재 접속중인 인원
@@ -62,26 +61,26 @@ var linked_mutex:= Mutex.new()
 # 사이트에 연결 확인됨
 func _connected(id:int, _proto:= 'EMPTY'):
 	linked_mutex.lock()
-	users[str(id)] = { 'token': 0 }
-	counter.current = users.keys().size()
+	users.push_back(str(id))
+	counter.current = users.size()
 	counter.stack += 1;
 	if counter.maximum < counter.current:
 		counter.maximum = counter.current
 	linked_mutex.unlock()
 	Root.logging(HEADER, str('Connected: ', counter))
-	
+
 # 사이트로부터 연결 끊어짐
 func _disconnected(id:int, _was_clean = null, _reason:= 'EMPTY'):
 	linked_mutex.lock()
 	users.erase(str(id))
-	counter.current = users.keys().size()
+	counter.current = users.size()
 	linked_mutex.unlock()
 	# 일반 종료가 아닐 때 로그 남김
 	if _was_clean is int and _was_clean != 1001:
 		Root.logging(HEADER, str('Disconnected: ', counter, ' was_clean: ', _was_clean))
 	else: # 상시 로그
 		Root.logging(HEADER, str('Disconnected: ', counter, ' code: ', _was_clean, ' / ', _reason))
-		
+
 # 자료를 받아서 행동 코드별로 자식 노드에게 일처리 넘김
 func _received(id:int, _try_left:= 5):
 	var err:= server.get_peer(id).get_packet_error()
