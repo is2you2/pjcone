@@ -4,19 +4,7 @@ import * as p5 from "p5";
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { WscService } from 'src/app/wsc.service';
 
-/** 방명록 양식 */
-interface GuestBookData {
-  content?: string;
-  date?: number;
-  /** 눈에 보여지는 날짜 */
-  date_format?: string;
-  id?: string;
-  is_showing?: boolean;
-  password?: string;
-  writer?: string;
-  reply?: GuestBookData[];
-}
-
+/** 방명록 페이지 */
 @Component({
   selector: 'app-guestbook',
   templateUrl: './guestbook.page.html',
@@ -30,9 +18,10 @@ export class GuestbookPage implements OnInit {
   list_len: number;
   picked: number;
 
+  /** csv 분할자 */
+  SEPERATOR = '，';
   /** 방명록 일체 */
-  guest_id = [];
-  guest_history: { [id: string]: GuestBookData } = {};
+  guest_history: string[][] = [];
 
   constructor(
     params: NavParams,
@@ -52,20 +41,28 @@ export class GuestbookPage implements OnInit {
   load_details() {
     let detail = (p: p5) => {
       p.setup = () => {
-        p.loadJSON(`${SERVER_PATH_ROOT}assets/data/sc1_custom/${this.title}/guest_history.json`, v => {
-          this.guest_history = v;
-          this.guest_id = Object.keys(v).sort().reverse();
-          for (let i = 0, j = this.guest_id.length; i < j; i++) {
-            let get_date = new Date(this.guest_history[this.guest_id[i]].date);
-            console.log(get_date);
+        p.loadStrings(`${SERVER_PATH_ROOT}assets/data/sc1_custom/${this.title}/guest_history.txt`, v => {
+          // 데이터형식: id, name, content, password, is_showing
+          for (let i = 0, j = v.length; i < j; i++) {
+            let csv_line: string[] = v[i].split(this.SEPERATOR);
+            // 마지막 공백자 무시
+            if (csv_line.length < 5) continue;
+            // 엔터처리를 엔터로 바꾸기
+            csv_line[2] = csv_line[2].split('\\n').join('\n');
+            // 보여지는 날짜 생성기
+            let get_date = new Date(parseInt(csv_line[0].split('-')[0]));
             let year = get_date.getFullYear();
             let month = ('0' + (get_date.getMonth() + 1)).slice(-2);
             let day = ('0' + get_date.getDay()).slice(-2);
             let hour = ('0' + get_date.getHours()).slice(-2);
             let minute = ('0' + get_date.getMinutes()).slice(-2);
             let second = ('0' + get_date.getSeconds()).slice(-2);
-            this.guest_history[this.guest_id[i]].date_format = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+            csv_line.push(`${year}-${month}-${day} ${hour}:${minute}:${second}`);
+            console.log('csv_line: ', csv_line);
+            this.guest_history.push(csv_line);
           }
+          this.guest_history = this.guest_history.reverse();
+          console.log(this.guest_history);
         }, e => {
           console.error('load detail failed: ', e);
         });
@@ -98,7 +95,7 @@ export class GuestbookPage implements OnInit {
   }
 
   /** 현재 작성/수정중인 게시물 내용물 */
-  write_data: GuestBookData;
+  write_data: string[] = [];
   /** 방명록 작성 */
   apply_data() {
     let now = new Date().getTime();

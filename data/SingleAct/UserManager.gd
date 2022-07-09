@@ -5,7 +5,7 @@ extends Node
 # 사용자 DB 메인 경로 (uid 모음)
 onready var _path:String = get_parent().get_parent().root_path + 'users.csv'
 const HEADER:= 'UserManager'
-const SEP_CHAR:= '§'
+const SEP_CHAR:= '，'
 
 # 파일 포인팅, 등록된 모든 사용자
 # csv form: 이메일, uuid, uuid2, ...

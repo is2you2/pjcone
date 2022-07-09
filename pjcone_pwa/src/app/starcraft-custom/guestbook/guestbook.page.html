@@ -39,18 +39,19 @@
         </div>
       </td>
     </tr>
-    <tr *ngFor="let part of guest_id">
+    <tr *ngFor="let part of guest_history">
       <td></td>
       <td class="form-align">
         <div class="text-padding">
           <div class="form" style="background-color: #333;">
             <table class="image-table">
               <tr>
-                <td style="width: 100%;">{{guest_history[part].writer}}</td>
+                <!-- 데이터형식: id, name, content, password, is_showing, date-formatted -->
+                <td style="width: 100%;">{{part[1]}}</td>
                 <td align="center">
                   <table style="margin: 4px 8px 4px 8px;">
                     <tr>
-                      <table *ngIf="guest_history[part].is_showing">
+                      <table *ngIf="part[4]">
                         <tr style="padding-top: 12px;">
                           <td>
                             <ion-button style="width: 52px;" (click)="modify_data(part)" shape="round">
@@ -66,7 +67,7 @@
                       </table>
                     </tr>
                     <tr>
-                      <td align="center" style="padding-top: 4px;">{{guest_history[part].date_format}}</td>
+                      <td align="center" style="padding-top: 4px;">{{part[5]}}</td>
                     </tr>
                   </table>
                 </td>
@@ -74,9 +75,9 @@
             </table>
           </div>
           <div class="form">
-            <textarea *ngIf="guest_history[part].is_showing" name="" id="" style="width: 100%; resize: none;" rows="8"
-              disabled>{{guest_history[part].content}}</textarea>
-            <textarea *ngIf="!guest_history[part].is_showing" name="" id="" style="width: 100%; resize: none;" rows="2"
+            <textarea *ngIf="part[4]" name="" id="" style="width: 100%; resize: none;" rows="8"
+              disabled>{{part[2]}}</textarea>
+            <textarea *ngIf="!part[4]" name="" id="" style="width: 100%; resize: none;" rows="2"
               disabled>관리자인 제가 이 게시물을 좀 가려놨습니다.</textarea>
           </div>
         </div>
