@@ -11,6 +11,13 @@ export class WscService {
   ) { }
 
   client: WebSocket;
+  /** 받았을 때 취할 행동
+   * 1개 변수에서 메시지를 받아야 함
+   * ```javascript
+   * received(msg: string);
+   * ```
+   */
+  received: Function = (v: string) => console.log('Default receive func: ', v);
 
   /**
    * 서버와 반드시 연결시도하는 메인 소켓 클라이언트  
@@ -31,7 +38,7 @@ export class WscService {
     }
     this.client.onmessage = (ev) => {
       ev.data.text().then(v => {
-        console.log('메시지 받음: ', v);
+        this.received(v);
       });
     }
   }

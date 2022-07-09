@@ -26,9 +26,45 @@
     </tr>
     <tr *ngIf="wsc.client.readyState == wsc.client.OPEN">
       <td></td>
+      <!-- 데이터형식: id, name, content, password, is_showing, date-formatted -->
       <td class="form-align">
         <div class="text-padding">
-          작성 폼
+          <div class="form" style="background-color: #333;">
+            <table class="image-table">
+              <tr>
+                <td style="width: 100%;">
+                  <table style="margin: 0 auto 0 auto;">
+                    <tr>
+                      <td style="padding-right: 16px;">
+                        <input type="text" placeholder="이 자리에 닉네임 입력" [(ngModel)]="write_data[1]">
+                      </td>
+                      <td>
+                        <input type="text" placeholder="이 자리에 비밀번호 입력" [(ngModel)]="write_data[3]">
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td align="center">
+                  <table style="margin: 4px 8px 4px 8px;">
+                    <tr>
+                      <table>
+                        <tr style="padding-top: 12px;">
+                          <td>
+                            <ion-button style="width: 52px;" (click)="apply_data()" shape="round">
+                              작성
+                            </ion-button>
+                          </td>
+                        </tr>
+                      </table>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div class="form">
+            <textarea name="" id="" style="width: 100%; resize: none;" rows="8" [(ngModel)]="write_data[2]"></textarea>
+          </div>
         </div>
       </td>
     </tr>
@@ -54,7 +90,7 @@
                 <td align="center">
                   <table style="margin: 4px 8px 4px 8px;">
                     <tr>
-                      <table *ngIf="part[4]">
+                      <table *ngIf="part[3] && wsc.client.readyState == wsc.client.OPEN">
                         <tr style="padding-top: 12px;">
                           <td>
                             <ion-button style="width: 52px;" (click)="modify_data(part)" shape="round">
@@ -78,8 +114,10 @@
             </table>
           </div>
           <div class="form">
-            <textarea *ngIf="part[4]" name="" id="" style="width: 100%; resize: none;" rows="8"
+            <textarea *ngIf="part[4] && part[2]" name="" id="" style="width: 100%; resize: none;" rows="8"
               disabled>{{part[2]}}</textarea>
+            <textarea *ngIf="part[4] && !part[2]" name="" id="" style="width: 100%; resize: none;" rows="2"
+              disabled>{{part[1]}}, 발자국 남기고 갑니다</textarea>
             <textarea *ngIf="!part[4]" name="" id="" style="width: 100%; resize: none;" rows="2"
               disabled>관리자인 제가 이 게시물을 좀 가려놨습니다.</textarea>
           </div>
