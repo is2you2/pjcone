@@ -136,21 +136,38 @@ export class GuestbookPage implements OnInit {
       let rand = Math.floor(Math.random() * ID_STR.length);
       id += ID_STR.charAt(rand);
     }
-    console.log('현재 내용 작성하기: ', this.write_data);
+    // 기본 데이터 배정
+    this.write_data[0] = id;
+    this.write_data[4] = 'true';
+    let json = {
+      act: 'sc1_custom',
+      target: this.isModifyMode ? 'modify_guestbook' : 'write_guestbook',
+      form: this.write_data.join(this.SEPERATOR),
+    }
+    this.wsc.send(JSON.stringify(json));
+    this.isModifyMode = false;
   }
   /** 수정중인 게시물 표기 */
   selected_modifying: string;
+  isModifyMode: boolean = false;
   /** 방명록 수정 진입 */
   modify_data(id: string) {
     // 비밀번호 검토하기
     // 비밀번호가 맞으면 작성하기로 연동
+    // this.isModifyMode = true;
     console.log('이 아이디로 수정 진행: ', id);
   }
 
   /** 방명록 삭제 */
   delete_data(id: string) {
     // 게시물 삭제 요청
-    console.log('방명록 삭제: ', id);
+    let json = {
+      act: 'sc1_custom',
+      target: 'remove_guestbook',
+      form: id
+    }
+    console.log('방명록 삭제: ', json);
+    // this.wsc.send(JSON.stringify(json));
   }
 
   go_to_back() {

@@ -90,8 +90,15 @@ func _received(id:int, _try_left:= 5):
 		var json = JSON.parse(data).result
 		if json is Dictionary:
 			match(json):
-				{ 'act': 'sc1_custom', .. }: # SC1_custom 폴더 리스트 새로고침
+				{ 'act': 'sc1_custom' }: # SC1_custom 폴더 리스트 새로고침
+					print_debug('혹시라도 오게되면 로그남김')
 					$SC_custom_manager.refresh_list()
+				{ 'act': 'sc1_custom', 'target': 'write_guestbook', 'form': var _data }: # 방명록 작성
+					$SC_custom_manager/GuestBook.write_content(_data)
+				{ 'act': 'sc1_custom', 'target': 'modify_guestbook', 'form': var _data }: # 방명록 수정
+					$SC_custom_manager/GuestBook.modify_content(_data)
+				{ 'act': 'sc1_custom', 'target': 'remove_guestbook', 'form': var _data }: # 방명록 작성
+					$SC_custom_manager/GuestBook.remove_content(_data)
 				_: # 준비되지 않은 행동
 					Root.logging(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)
 		else: # 형식 오류

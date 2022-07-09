@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://data/SingleAct/SendEximMail.gd" type="Script" id=1]
 [ext_resource path="res://data/SingleAct/SC_custom_manager.gd" type="Script" id=2]
@@ -6,12 +6,16 @@
 [ext_resource path="res://data/SingleAct/UserManager.gd" type="Script" id=4]
 [ext_resource path="res://data/SingleAct/ChatServer.gd" type="Script" id=5]
 [ext_resource path="res://data/SingleAct/Account.gd" type="Script" id=6]
+[ext_resource path="res://data/SingleAct/GuestBook.gd" type="Script" id=7]
 
 [node name="SingleAct" type="Node"]
 script = ExtResource( 3 )
 
 [node name="SC_custom_manager" type="Node" parent="."]
 script = ExtResource( 2 )
+
+[node name="GuestBook" type="Node" parent="SC_custom_manager"]
+script = ExtResource( 7 )
 
 [node name="ChatServer" type="Node" parent="."]
 script = ExtResource( 5 )
