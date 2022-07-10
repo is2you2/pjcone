@@ -33,29 +33,14 @@
             <table class="image-table">
               <tr>
                 <td style="width: 100%;">
-                  <table style="margin: 0 auto 0 auto;">
+                  <table style="margin: 16px auto 16px auto;">
                     <tr>
-                      <td style="padding-right: 16px;">
-                        <input type="text" placeholder="이 자리에 닉네임 입력" [(ngModel)]="write_data[1]">
+                      <td>
+                        <input style="width: 90%;" type="text" placeholder="닉네임 입력" [(ngModel)]="write_data[1]">
                       </td>
                       <td>
-                        <input type="password" placeholder="이 자리에 비밀번호 입력" [(ngModel)]="write_data[3]">
+                        <input style="width: 90%;" type="password" placeholder="비밀번호 입력" [(ngModel)]="write_data[3]">
                       </td>
-                    </tr>
-                  </table>
-                </td>
-                <td align="center">
-                  <table style="margin: 4px 8px 4px 8px;">
-                    <tr>
-                      <table>
-                        <tr style="padding-top: 12px;">
-                          <td>
-                            <ion-button style="width: 52px;" (click)="apply_data()" shape="round">
-                              작성
-                            </ion-button>
-                          </td>
-                        </tr>
-                      </table>
                     </tr>
                   </table>
                 </td>
@@ -65,8 +50,15 @@
           <div class="form">
             <textarea name="" id="" style="width: 100%; resize: none;" rows="8" [(ngModel)]="write_data[2]"></textarea>
           </div>
+          <div>
+            <ion-button style="max-width: 560px; width: 100%;" (click)="apply_data()">
+              작성
+            </ion-button>
+          </div>
         </div>
       </td>
+    </tr>
+    <tr>
     </tr>
     <tr *ngIf="wsc.client.readyState != wsc.client.OPEN">
       <td></td>
