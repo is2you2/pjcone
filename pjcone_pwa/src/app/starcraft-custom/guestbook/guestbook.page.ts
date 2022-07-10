@@ -48,9 +48,29 @@ export class GuestbookPage implements OnInit {
       switch (json['act']) {
         case 'refresh':
           let caches: string[][] = [];
-          for (let i = 0, j = json['data'].length; i < j; i++)
-            caches.push(json['data'][i].split(this.SEP_CHAR));
-          this.total_history = [...caches.reverse(), ...this.guest_history];
+          // 작성된 방명록 추가
+          for (let i = 0, j = json['wrote'].length; i < j; i++)
+            caches.push(json['wrote'][i].split(this.SEP_CHAR));
+          // 수정된 방명록 반영
+          let apply_caches = [...caches.reverse(), ...this.guest_history];
+          for (let i = 0, j = apply_caches.length; i < j; i++)
+            for (let k = 0, l = json['modified'].length; k < l; k++) {
+              let modified: string[] = json['modified'][k].split(this.SEP_CHAR);
+              if (apply_caches[i][0] == modified[0]) {
+                apply_caches[i] = modified;
+                break;
+              }
+            }
+          // 삭제된 방명록 제거
+          for (let k = 0, l = json['removed'].length; k < l; k++)
+            for (let i = 0, j = apply_caches.length; i < j; i++) {
+              if (apply_caches[i][0] == json['removed'][k]) {
+                apply_caches.splice(i, 1);
+                break;
+              }
+            }
+          // 결과물 반영
+          this.total_history = [...apply_caches];
           break;
         default:
           break;
@@ -81,8 +101,7 @@ export class GuestbookPage implements OnInit {
             csv_line.push(`${year}-${month}-${day} ${hour}:${minute}:${second}`);
             this.guest_history.push(csv_line);
           }
-          this.guest_history = this.guest_history.reverse();
-          this.total_history = [...this.guest_history];
+          this.total_history = [...this.guest_history.reverse()];
         }, e => {
           console.error('load detail failed: ', e);
         });
@@ -195,7 +214,7 @@ export class GuestbookPage implements OnInit {
       return;
     }
     // 비밀번호 검토
-    if (this.rewrite_data[3] != this.guest_history[i][3]) {
+    if (this.rewrite_data[3] != this.total_history[i][3]) {
       this.rewrite_data[3] = '';
       this.alert.create({
         header: '비밀번호 불일치',
@@ -231,11 +250,12 @@ export class GuestbookPage implements OnInit {
       header: '비밀번호 확인',
       inputs: [{
         name: 'pwd',
+        type: 'password',
         placeholder: '게시물 비밀번호 입력',
       }],
       buttons: [{
         handler: (v) => {
-          if (v['pwd'] == this.guest_history[index][3]) {
+          if (v['pwd'] == this.total_history[index][3]) {
             // 게시물 삭제 요청
             let json = {
               act: 'sc1_custom',

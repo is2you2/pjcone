@@ -6,7 +6,7 @@
 [ext_resource path="res://data/SingleAct/UserManager.gd" type="Script" id=4]
 [ext_resource path="res://data/SingleAct/ChatServer.gd" type="Script" id=5]
 [ext_resource path="res://data/SingleAct/Account.gd" type="Script" id=6]
-[ext_resource path="res://data/SingleAct/GuestBook.gd" type="Script" id=7]
+[ext_resource path="res://data/SingleAct/SC_GuestBook.gd" type="Script" id=7]
 
 [node name="SingleAct" type="Node"]
 script = ExtResource( 3 )

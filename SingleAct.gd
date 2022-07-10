@@ -101,7 +101,9 @@ func _received(id:int, _try_left:= 5):
 					Root.logging(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)
 			var caches = {
 				'act': 'refresh',
-				'data': $SC_custom_manager/GuestBook.caches,
+				'wrote': $SC_custom_manager/GuestBook.wrote,
+				'modified': $SC_custom_manager/GuestBook.modified,
+				'removed': $SC_custom_manager/GuestBook.removed,
 			}
 			send_to(id, JSON.print(caches).to_utf8())
 		else: # 형식 오류
