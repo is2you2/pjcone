@@ -25,16 +25,11 @@ export class WscService {
    * @param _Address 서버 주소, 포트 12000 고정
    */
   initialize() {
+    if (location.href.includes('https://')) return;
     const PORT: number = 12000;
     this.client = new WebSocket(`ws://${SOCKET_SERVER_ADDRESS}:${PORT}`);
-    this.client.onopen = (ev) => {
-      console.log('연결됨: ', ev);
-    }
-    this.client.onclose = (ev) => {
-      console.log('연결 끊김: ', ev);
-    }
     this.client.onerror = (e) => {
-      console.error('오류 발생: ', e);
+      console.error('메인소켓 오류 발생: ', e);
     }
     this.client.onmessage = (ev) => {
       ev.data.text().then(v => {
@@ -44,7 +39,7 @@ export class WscService {
   }
 
   send(msg: string) {
-    if (this.client.readyState == this.client.OPEN)
+    if (this.client && this.client.readyState == this.client.OPEN)
       this.client.send(msg);
   }
 }
