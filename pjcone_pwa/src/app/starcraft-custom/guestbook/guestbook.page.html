@@ -91,7 +91,7 @@
                               </ion-button>
                             </td>
                             <td>
-                              <ion-button style="width: 52px;" (click)="delete_data(part)" shape="round">
+                              <ion-button style="width: 52px;" (click)="delete_data(part[0], i)" shape="round">
                                 삭제
                               </ion-button>
                             </td>
@@ -128,7 +128,8 @@
                           <input style="width: 90%;" type="text" placeholder="닉네임 입력" [(ngModel)]="rewrite_data[1]">
                         </td>
                         <td>
-                          <input style="width: 90%;" type="password" placeholder="비밀번호 입력" [(ngModel)]="rewrite_data[3]">
+                          <input style="width: 90%;" type="password" placeholder="비밀번호 입력"
+                            [(ngModel)]="rewrite_data[3]">
                         </td>
                       </tr>
                     </table>
@@ -141,9 +142,20 @@
                 [(ngModel)]="rewrite_data[2]"></textarea>
             </div>
             <div>
-              <ion-button style="max-width: 560px; width: 100%;" (click)="apply_rewrite_data(i)">
-                수정
-              </ion-button>
+              <table style="max-width: 560px; width: 100%; margin: 0 auto 0 auto;">
+                <tr>
+                  <td>
+                    <ion-button style="width: 100%;" (click)="apply_rewrite_data(i)">
+                      수정
+                    </ion-button>
+                  </td>
+                  <td>
+                    <ion-button style="width: 100%;" (click)="cancel_rewrite()">
+                      취소
+                    </ion-button>
+                  </td>
+                </tr>
+              </table>
             </div>
           </div>
         </div>

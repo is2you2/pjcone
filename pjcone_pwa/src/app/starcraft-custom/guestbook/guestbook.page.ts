@@ -29,10 +29,9 @@ export class GuestbookPage implements OnInit {
     public alert: AlertController,
     public wsc: WscService,
   ) {
-    let data = params.data;
-    this.list = data['list'];
+    this.list = params.data['list'];
     this.list_len = this.list.length;
-    this.picked = data['picked'];
+    this.picked = params.data['picked'];
   }
 
   ngOnInit() {
@@ -199,19 +198,44 @@ export class GuestbookPage implements OnInit {
       form: this.rewrite_data.join(this.SEPERATOR),
     }
     this.wsc.send(JSON.stringify(json));
+    this.rewrite_data.length = 0;
+    this.isModifyMode = -1;
+  }
+
+  cancel_rewrite() {
+    this.rewrite_data.length = 0;
     this.isModifyMode = -1;
   }
 
   /** 방명록 삭제 */
-  delete_data(id: string) {
-    // 게시물 삭제 요청
-    let json = {
-      act: 'sc1_custom',
-      target: 'remove_guestbook',
-      form: id
-    }
-    console.log('방명록 삭제: ', json);
-    // this.wsc.send(JSON.stringify(json));
+  delete_data(id: string, index: number) {
+    this.alert.create({
+      header: '비밀번호 확인',
+      inputs: [{
+        name: 'pwd',
+        placeholder: '게시물 비밀번호 입력',
+      }],
+      buttons: [{
+        handler: (v) => {
+          if (v['pwd'] == this.guest_history[index][3]) {
+            // 게시물 삭제 요청
+            let json = {
+              act: 'sc1_custom',
+              target: 'remove_guestbook',
+              form: id
+            }
+            this.wsc.send(JSON.stringify(json));
+          } else { // 향후 p5toast로 변경할 것
+            this.alert.create({
+              header: '비밀번호 불일치',
+              message: '틀렸어요',
+              buttons: ['헉']
+            }).then(v => v.present());
+          }
+        },
+        text: '삭제!',
+      }]
+    }).then(v => v.present());
   }
 
   go_to_back() {

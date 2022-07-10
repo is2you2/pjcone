@@ -26,7 +26,6 @@ func write_content(data:String):
 # 게시물 편집하기
 func modify_content(data:String):
 	var _id:String = data.split(Root.SEP_CHAR)[0]
-	print_debug(_id)
 	mutex.lock()
 	file.seek(0)
 	var modified:= File.new()
@@ -49,7 +48,20 @@ func modify_content(data:String):
 # 게시물 삭제하기
 func remove_content(id:String):
 	mutex.lock()
-	print_debug('데이터 받음: ', id)
+	file.seek(0)
+	var modified:= File.new()
+	modified.open(Root.root_path + 'guest_history_work_tmp.txt', File.WRITE)
+	var line:= file.get_csv_line(Root.SEP_CHAR)
+	while not file.eof_reached():
+		if id != line[0]:
+			modified.store_csv_line(line, Root.SEP_CHAR)
+		line = file.get_csv_line(Root.SEP_CHAR)
+	modified.flush()
+	modified.close()
+	file.close()
+	var dir:= Directory.new()
+	dir.rename(Root.root_path + 'guest_history_work_tmp.txt', _path)
+	_ready()
 	mutex.unlock()
 
 
