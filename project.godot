@@ -8,28 +8,6 @@
 
 config_version=4
 
-_global_script_classes=[ {
-"base": "Control",
-"class": "CSVEditor",
-"language": "GDScript",
-"path": "res://addons/file-editor/scripts/CSVEditor.gd"
-}, {
-"base": "",
-"class": "GitAPI",
-"language": "NativeScript",
-"path": "res://addons/godot-git-plugin/git_api.gdns"
-}, {
-"base": "HTTPRequest",
-"class": "GoogleTranslateAPI",
-"language": "GDScript",
-"path": "res://addons/file-editor/scripts/GoogleTranslatorAPI.gd"
-} ]
-_global_script_class_icons={
-"CSVEditor": "",
-"GitAPI": "",
-"GoogleTranslateAPI": ""
-}
-
 [application]
 
 config/name="Project: Cone"
@@ -53,11 +31,11 @@ window/stretch/aspect="expand"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/file-editor/plugin.cfg", "res://addons/terminal/plugin.cfg" )
+enabled=PoolStringArray(  )
 
 [gdnative]
 
-singletons=[ "res://addons/godot-git-plugin/git_api.gdnlib" ]
+singletons=[  ]
 
 [physics]
 
