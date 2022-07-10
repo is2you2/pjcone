@@ -15,7 +15,7 @@ var token:= {}
 
 # 시작할 때 설정 파일을 불러오거나 만들어냄
 func initialize(_null = null):
-	var _path:String = get_parent().get_parent().root_path + 'exim4_send_content.cfg'
+	var _path:String = Root.root_path + 'exim4_send_content.cfg'
 	var dir:= Directory.new()
 	# 설정 파일이 없으면 기본 정보로 파일 생성하기
 	if not dir.file_exists(_path):

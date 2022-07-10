@@ -4,10 +4,6 @@ extends Node
 # 사용자가 반드시 연결 시도하는 사용자 카운터 서버
 var server:= WebSocketServer.new()
 const PORT:= 12000
-# 데이터베이스 폴더 경로 with '/'
-var root_path:String
-# 웹 페이지 경로 with '/'
-var html_path:String
 const HEADER:= 'Counter'
 
 # 사용자 pid로 접속 카운트
@@ -24,20 +20,20 @@ var counter:= {
 
 func _init():
 	if OS.is_debug_build():
-		root_path = 'res://gd_database/'
-		html_path = 'res://pjcone_pwa/src/'
+		Root.root_path = 'res://gd_database/'
+		Root.html_path = 'res://pjcone_pwa/src/'
 		var file:= File.new() # 테스트 중인 경우 이 폴더를 프로젝트로부터 무시합니다
-		if file.open(root_path + '.gdignore', File.WRITE):
+		if file.open(Root.root_path + '.gdignore', File.WRITE):
 			file.store_string('gdignore')
 		file.flush()
 		file.close()
 	else: # 서버 실행파일이 위치한 경로로부터
-		root_path = OS.get_executable_path() + '/gd_database/'
-		html_path = OS.get_executable_path() + '/'
+		Root.root_path = OS.get_executable_path() + '/gd_database/'
+		Root.html_path = OS.get_executable_path() + '/'
 	# 폴더가 준비되어있지 않으면 생성하기
 	var dir:= Directory.new()
-	if not dir.dir_exists(root_path):
-		dir.make_dir_recursive(root_path)
+	if not dir.dir_exists(Root.root_path):
+		dir.make_dir_recursive(Root.root_path)
 
 
 func _ready():
@@ -91,8 +87,8 @@ func _received(id:int, _try_left:= 5):
 		if json is Dictionary:
 			match(json):
 				{ 'act': 'sc1_custom' }: # SC1_custom 폴더 리스트 새로고침
-					print_debug('혹시라도 오게되면 로그남김')
 					$SC_custom_manager.refresh_list()
+					return
 				{ 'act': 'sc1_custom', 'target': 'write_guestbook', 'form': var _data }: # 방명록 작성
 					$SC_custom_manager/GuestBook.write_content(_data)
 				{ 'act': 'sc1_custom', 'target': 'modify_guestbook', 'form': var _data }: # 방명록 수정
@@ -101,6 +97,7 @@ func _received(id:int, _try_left:= 5):
 					$SC_custom_manager/GuestBook.remove_content(_data)
 				_: # 준비되지 않은 행동
 					Root.logging(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)
+			send_to(id, 'sc1_refresh'.to_utf8())
 		else: # 형식 오류
 			Root.logging(HEADER, str('UnExpected form: ', data), Root.LOG_ERR)
 	else: # 패킷 오류

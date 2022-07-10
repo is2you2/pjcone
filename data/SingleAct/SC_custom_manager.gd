@@ -9,7 +9,7 @@ func _ready():
 # 이미지 리스트 업데이트
 func refresh_list():
 	var dir:= Directory.new()
-	var _path:String = get_parent().html_path + 'assets/data/sc1_custom/'
+	var _path:String = Root.html_path + 'assets/data/sc1_custom/'
 	var err:= dir.open(_path)
 	if err == OK:
 		dir.list_dir_begin(true, true)

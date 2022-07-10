@@ -70,48 +70,81 @@
         </div>
       </td>
     </tr>
-    <tr *ngFor="let part of guest_history">
+    <tr *ngFor="let part of guest_history; let i=index">
       <td></td>
       <td class="form-align">
-        <div class="text-padding">
-          <div class="form" style="background-color: #333;">
-            <table class="image-table">
-              <tr>
-                <!-- 데이터형식: id, name, content, password, is_showing, date-formatted -->
-                <td style="width: 100%;">{{part[1]}}</td>
-                <td align="center">
-                  <table style="margin: 4px 8px 4px 8px;">
-                    <tr>
-                      <table *ngIf="part[3] && wsc.client.readyState == wsc.client.OPEN">
-                        <tr style="padding-top: 12px;">
-                          <td>
-                            <ion-button style="width: 52px;" (click)="modify_data(part)" shape="round">
-                              수정
-                            </ion-button>
-                          </td>
-                          <td>
-                            <ion-button style="width: 52px;" (click)="delete_data(part)" shape="round">
-                              삭제
-                            </ion-button>
-                          </td>
-                        </tr>
-                      </table>
-                    </tr>
-                    <tr>
-                      <td align="center" style="padding-top: 4px;">{{part[5]}}</td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
+        <div *ngIf="i != isModifyMode">
+          <div class="text-padding">
+            <div class="form" style="background-color: #333;">
+              <table class="image-table">
+                <tr>
+                  <!-- 데이터형식: id, name, content, password, is_showing, date-formatted -->
+                  <td style="width: 100%;">{{part[1]}}</td>
+                  <td align="center">
+                    <table style="margin: 4px 8px 4px 8px;">
+                      <tr>
+                        <table *ngIf="part[3] && wsc.client.readyState == wsc.client.OPEN">
+                          <tr style="padding-top: 12px;">
+                            <td>
+                              <ion-button style="width: 52px;" (click)="modify_data(i)" shape="round">
+                                수정
+                              </ion-button>
+                            </td>
+                            <td>
+                              <ion-button style="width: 52px;" (click)="delete_data(part)" shape="round">
+                                삭제
+                              </ion-button>
+                            </td>
+                          </tr>
+                        </table>
+                      </tr>
+                      <tr>
+                        <td align="center" style="padding-top: 4px;">{{part[5]}}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="form">
+              <textarea *ngIf="part[4] && part[2]" name="" id="" style="width: 100%; resize: none;" rows="8"
+                disabled>{{part[2]}}</textarea>
+              <textarea *ngIf="part[4] && !part[2]" name="" id="" style="width: 100%; resize: none;" rows="2"
+                disabled>{{part[1]}}, 발자국 남기고 갑니다</textarea>
+              <textarea *ngIf="!part[4]" name="" id="" style="width: 100%; resize: none;" rows="2"
+                disabled>관리자인 제가 이 게시물을 좀 가려놨습니다.</textarea>
+            </div>
           </div>
-          <div class="form">
-            <textarea *ngIf="part[4] && part[2]" name="" id="" style="width: 100%; resize: none;" rows="8"
-              disabled>{{part[2]}}</textarea>
-            <textarea *ngIf="part[4] && !part[2]" name="" id="" style="width: 100%; resize: none;" rows="2"
-              disabled>{{part[1]}}, 발자국 남기고 갑니다</textarea>
-            <textarea *ngIf="!part[4]" name="" id="" style="width: 100%; resize: none;" rows="2"
-              disabled>관리자인 제가 이 게시물을 좀 가려놨습니다.</textarea>
+        </div>
+        <div *ngIf="i == isModifyMode">
+          <div class="text-padding">
+            <div class="form" style="background-color: #333;">
+              <table class="image-table">
+                <tr>
+                  <td style="width: 100%;">
+                    <table style="margin: 16px auto 16px auto;">
+                      <tr>
+                        <td>
+                          <input style="width: 90%;" type="text" placeholder="닉네임 입력" [(ngModel)]="rewrite_data[1]">
+                        </td>
+                        <td>
+                          <input style="width: 90%;" type="password" placeholder="비밀번호 입력" [(ngModel)]="rewrite_data[3]">
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="form">
+              <textarea name="" id="" style="width: 100%; resize: none;" rows="8"
+                [(ngModel)]="rewrite_data[2]"></textarea>
+            </div>
+            <div>
+              <ion-button style="max-width: 560px; width: 100%;" (click)="apply_rewrite_data(i)">
+                수정
+              </ion-button>
+            </div>
           </div>
         </div>
       </td>

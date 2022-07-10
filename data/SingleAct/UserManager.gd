@@ -3,9 +3,8 @@ extends Node
 # 사용자 생성, 검토, 편집, 삭제
 
 # 사용자 DB 메인 경로 (uid 모음)
-onready var _path:String = get_parent().get_parent().root_path + 'users.csv'
+onready var _path:String = Root.root_path + 'users.csv'
 const HEADER:= 'UserManager'
-const SEP_CHAR:= '，'
 
 # 파일 포인팅, 등록된 모든 사용자
 # csv form: 이메일, uuid, uuid2, ...
@@ -33,13 +32,13 @@ func read_user_list(_is_new:= false):
 # 사용자 찾기 / return 사용자유무
 func find_user(email:String, uuid:= '') -> bool:
 	file.seek(0)
-	var line:= file.get_csv_line(SEP_CHAR)
+	var line:= file.get_csv_line(Root.SEP_CHAR)
 	var has_email:bool
 	while not file.eof_reached():
 		if Array(line).find(email) + 1:
 			has_email = true
 			break
-		line = file.get_csv_line(SEP_CHAR)
+		line = file.get_csv_line(Root.SEP_CHAR)
 	if has_email and not uuid:
 		return true
 	return bool(Array(line).find(uuid) + 1)

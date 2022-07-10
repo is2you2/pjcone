@@ -5,6 +5,13 @@ extends Node
 const LOG_ERR:= 'faa'
 # 이번 부팅의 로그 기록
 var rich_log:= 'Logging Ready'
+# csv 분할자
+const SEP_CHAR:= '，'
+# 데이터베이스 폴더 경로 with '/'
+var root_path:String
+# 웹 페이지 경로 with '/'
+var html_path:String
+
 
 # 로그처리
 func logging(header:String, content:String, _con_col:= 'bbb'):

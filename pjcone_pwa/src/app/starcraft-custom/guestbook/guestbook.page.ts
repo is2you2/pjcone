@@ -37,12 +37,17 @@ export class GuestbookPage implements OnInit {
 
   ngOnInit() {
     this.load_details();
+    this.wsc.received = (v) => {
+      if (v == 'sc1_refresh')
+        this.p5canvas.setup();
+    }
   }
 
   load_details() {
     let detail = (p: p5) => {
       p.setup = () => {
         p.loadStrings(`${SERVER_PATH_ROOT}assets/data/sc1_custom/${this.title}/guest_history.txt`, v => {
+          this.guest_history.length = 0;
           // 데이터형식: id, name, content, password, is_showing
           for (let i = 0, j = v.length; i < j; i++) {
             let csv_line: string[] = v[i].split(this.SEPERATOR);
@@ -93,7 +98,7 @@ export class GuestbookPage implements OnInit {
     this.picked = calced;
   }
 
-  /** 현재 작성/수정중인 게시물 내용물 */
+  /** 현재 작성중인 게시물 내용물 */
   write_data: string[] = [];
   /** 비밀번호 없이 진행여부 */
   with_no_password: boolean = false;
@@ -114,7 +119,7 @@ export class GuestbookPage implements OnInit {
     if (!this.write_data[3] && !this.with_no_password) {
       this.write_data[3] = '';
       this.alert.create({
-        header: '비번 공란',
+        header: '비밀번호 공란',
         message: '비밀번호 없이 작성은 가능하나, 향후에 수정/삭제가 불가능합니다.',
         buttons: [{
           handler: () => {
@@ -136,26 +141,65 @@ export class GuestbookPage implements OnInit {
       let rand = Math.floor(Math.random() * ID_STR.length);
       id += ID_STR.charAt(rand);
     }
-    // 기본 데이터 배정
     this.write_data[0] = id;
+    // 기본 데이터 배정
     this.write_data[4] = 'true';
     let json = {
       act: 'sc1_custom',
-      target: this.isModifyMode ? 'modify_guestbook' : 'write_guestbook',
+      target: 'write_guestbook',
       form: this.write_data.join(this.SEPERATOR),
     }
     this.wsc.send(JSON.stringify(json));
-    this.isModifyMode = false;
   }
   /** 수정중인 게시물 표기 */
   selected_modifying: string;
-  isModifyMode: boolean = false;
+  /** 현재 수정중인 게시물 내용물 */
+  rewrite_data: string[] = [];
+  /** 수정중인 대상 (default: -1) */
+  isModifyMode: number = -1;
   /** 방명록 수정 진입 */
-  modify_data(id: string) {
-    // 비밀번호 검토하기
-    // 비밀번호가 맞으면 작성하기로 연동
-    // this.isModifyMode = true;
-    console.log('이 아이디로 수정 진행: ', id);
+  modify_data(i: number) {
+    this.isModifyMode = i;
+    let target = [...this.guest_history[i]];
+    target[3] = '';
+    this.rewrite_data = target;
+  }
+  /** 수정된 내용 반영 */
+  apply_rewrite_data(i: number) {
+    // 이름 작성 여부 검토
+    if (!this.rewrite_data[1]) {
+      this.alert.create({
+        header: '이름 공란',
+        message: '이름 자리를 비워두셨어요',
+        buttons: ['그러네']
+      }).then(v => {
+        v.present();
+      });
+      return;
+    }
+    // 비밀번호 검토
+    if (this.rewrite_data[3] != this.guest_history[i][3]) {
+      this.rewrite_data[3] = '';
+      this.alert.create({
+        header: '비밀번호 불일치',
+        message: '틀렸어요!',
+        buttons: [{
+          text: '앗..',
+        }],
+      }).then(v => {
+        v.present();
+      });
+      return;
+    }
+    if (!this.rewrite_data[2]) this.rewrite_data[2] = '';
+    this.rewrite_data.length = 5;
+    let json = {
+      act: 'sc1_custom',
+      target: 'modify_guestbook',
+      form: this.rewrite_data.join(this.SEPERATOR),
+    }
+    this.wsc.send(JSON.stringify(json));
+    this.isModifyMode = -1;
   }
 
   /** 방명록 삭제 */
@@ -172,6 +216,7 @@ export class GuestbookPage implements OnInit {
 
   go_to_back() {
     this.modal.dismiss();
+    this.wsc.received = () => { };
   }
 
 }
