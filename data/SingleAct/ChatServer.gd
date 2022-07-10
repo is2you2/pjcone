@@ -9,6 +9,7 @@ const PORT:= 12011
 
 # 연결된 사용자 { pid: { token } }
 var users:= {}
+
 # 구성된 그룹 { gid: { users: [uid], title, last_msg } }
 var groups:= {}
 

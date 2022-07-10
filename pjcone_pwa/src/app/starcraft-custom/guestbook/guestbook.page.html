@@ -48,7 +48,8 @@
             </table>
           </div>
           <div class="form">
-            <textarea name="" id="" style="width: 100%; resize: none;" rows="8" [(ngModel)]="write_data[2]"></textarea>
+            <textarea placeholder="방명록 남기기" style="width: 100%; resize: none;" rows="8"
+              [(ngModel)]="write_data[2]"></textarea>
           </div>
           <div>
             <ion-button style="max-width: 560px; width: 100%;" (click)="apply_data()">
@@ -70,7 +71,7 @@
         </div>
       </td>
     </tr>
-    <tr *ngFor="let part of guest_history; let i=index">
+    <tr *ngFor="let part of total_history; let i=index">
       <td></td>
       <td class="form-align">
         <div *ngIf="i != isModifyMode">
@@ -107,11 +108,11 @@
               </table>
             </div>
             <div class="form">
-              <textarea *ngIf="part[4] && part[2]" name="" id="" style="width: 100%; resize: none;" rows="8"
+              <textarea *ngIf="part[4] && part[2]" style="width: 100%; resize: none;" rows="8"
                 disabled>{{part[2]}}</textarea>
-              <textarea *ngIf="part[4] && !part[2]" name="" id="" style="width: 100%; resize: none;" rows="2"
+              <textarea *ngIf="part[4] && !part[2]" style="width: 100%; resize: none;" rows="2"
                 disabled>{{part[1]}}, 발자국 남기고 갑니다</textarea>
-              <textarea *ngIf="!part[4]" name="" id="" style="width: 100%; resize: none;" rows="2"
+              <textarea *ngIf="!part[4]" style="width: 100%; resize: none;" rows="2"
                 disabled>관리자인 제가 이 게시물을 좀 가려놨습니다.</textarea>
             </div>
           </div>
@@ -138,8 +139,7 @@
               </table>
             </div>
             <div class="form">
-              <textarea name="" id="" style="width: 100%; resize: none;" rows="8"
-                [(ngModel)]="rewrite_data[2]"></textarea>
+              <textarea placeholder="발자국 남기기" style="width: 100%; resize: none;" rows="8" [(ngModel)]="rewrite_data[2]"></textarea>
             </div>
             <div>
               <table style="max-width: 560px; width: 100%; margin: 0 auto 0 auto;">

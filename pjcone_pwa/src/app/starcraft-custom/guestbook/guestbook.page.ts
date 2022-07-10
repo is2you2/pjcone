@@ -19,7 +19,9 @@ export class GuestbookPage implements OnInit {
   picked: number;
 
   /** csv 분할자 */
-  SEPERATOR = '，';
+  SEP_CHAR = '，';
+  /** 종합 방명록 리스트 (file + cache) */
+  total_history: string[][] = [];
   /** 방명록 일체 */
   guest_history: string[][] = [];
 
@@ -36,9 +38,23 @@ export class GuestbookPage implements OnInit {
 
   ngOnInit() {
     this.load_details();
+    let refresh = {
+      act: 'sc1_custom',
+      target: 'cache_refresh'
+    }
+    this.wsc.send(JSON.stringify(refresh));
     this.wsc.received = (v) => {
-      if (v == 'sc1_refresh')
-        this.p5canvas.setup();
+      let json = JSON.parse(v);
+      switch (json['act']) {
+        case 'refresh':
+          let caches: string[][] = [];
+          for (let i = 0, j = json['data'].length; i < j; i++)
+            caches.push(json['data'][i].split(this.SEP_CHAR));
+          this.total_history = [...caches.reverse(), ...this.guest_history];
+          break;
+        default:
+          break;
+      }
     }
   }
 
@@ -49,7 +65,7 @@ export class GuestbookPage implements OnInit {
           this.guest_history.length = 0;
           // 데이터형식: id, name, content, password, is_showing
           for (let i = 0, j = v.length; i < j; i++) {
-            let csv_line: string[] = v[i].split(this.SEPERATOR);
+            let csv_line: string[] = v[i].split(this.SEP_CHAR);
             // 마지막 공백자 무시
             if (csv_line.length < 5) continue;
             // 엔터처리를 엔터로 바꾸기
@@ -66,6 +82,7 @@ export class GuestbookPage implements OnInit {
             this.guest_history.push(csv_line);
           }
           this.guest_history = this.guest_history.reverse();
+          this.total_history = [...this.guest_history];
         }, e => {
           console.error('load detail failed: ', e);
         });
@@ -146,9 +163,10 @@ export class GuestbookPage implements OnInit {
     let json = {
       act: 'sc1_custom',
       target: 'write_guestbook',
-      form: this.write_data.join(this.SEPERATOR),
+      form: this.write_data.join(this.SEP_CHAR),
     }
     this.wsc.send(JSON.stringify(json));
+    this.write_data.length = 0;
   }
   /** 수정중인 게시물 표기 */
   selected_modifying: string;
@@ -159,7 +177,7 @@ export class GuestbookPage implements OnInit {
   /** 방명록 수정 진입 */
   modify_data(i: number) {
     this.isModifyMode = i;
-    let target = [...this.guest_history[i]];
+    let target = [...this.total_history[i]];
     target[3] = '';
     this.rewrite_data = target;
   }
@@ -195,7 +213,7 @@ export class GuestbookPage implements OnInit {
     let json = {
       act: 'sc1_custom',
       target: 'modify_guestbook',
-      form: this.rewrite_data.join(this.SEPERATOR),
+      form: this.rewrite_data.join(this.SEP_CHAR),
     }
     this.wsc.send(JSON.stringify(json));
     this.rewrite_data.length = 0;

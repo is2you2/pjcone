@@ -86,9 +86,11 @@ func _received(id:int, _try_left:= 5):
 		var json = JSON.parse(data).result
 		if json is Dictionary:
 			match(json):
-				{ 'act': 'sc1_custom' }: # SC1_custom 폴더 리스트 새로고침
+				{ 'act': 'sc1_custom_refresh' }: # SC1_custom 폴더 리스트 새로고침
 					$SC_custom_manager.refresh_list()
 					return
+				{ 'act': 'sc1_custom', 'target': 'cache_refresh' }: # 서버에 있는 캐시 받아오기
+					pass
 				{ 'act': 'sc1_custom', 'target': 'write_guestbook', 'form': var _data }: # 방명록 작성
 					$SC_custom_manager/GuestBook.write_content(_data)
 				{ 'act': 'sc1_custom', 'target': 'modify_guestbook', 'form': var _data }: # 방명록 수정
@@ -97,7 +99,11 @@ func _received(id:int, _try_left:= 5):
 					$SC_custom_manager/GuestBook.remove_content(_data)
 				_: # 준비되지 않은 행동
 					Root.logging(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)
-			send_to(id, 'sc1_refresh'.to_utf8())
+			var caches = {
+				'act': 'refresh',
+				'data': $SC_custom_manager/GuestBook.caches,
+			}
+			send_to(id, JSON.print(caches).to_utf8())
 		else: # 형식 오류
 			Root.logging(HEADER, str('UnExpected form: ', data), Root.LOG_ERR)
 	else: # 패킷 오류

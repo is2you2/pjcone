@@ -44,6 +44,7 @@ export class WscService {
   }
 
   send(msg: string) {
-    this.client.send(msg);
+    if (this.client.readyState == this.client.OPEN)
+      this.client.send(msg);
   }
 }

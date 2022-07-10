@@ -3,6 +3,7 @@ extends Node
 # 별도 서버로 관리됨 (게스트 모드용)
 
 var server:= WebSocketServer.new()
+
 # 미리 구성된 이메일 안내 폼을 기억하고 있기
 var title:= 'Project: Cone | 회원가입 본인 확인용 메일'
 var content:= '안녕하세요.\n\n직접 회원가입을 요청한 적이 없다면 이 메일을 무시해주세요.\n\n http://is2you2.iptime.org/register?token=%s&list=%s\n\n위 링크를 눌러 커뮤니티 등록을 마무리해주세요 :)\n\nProject: Cone'

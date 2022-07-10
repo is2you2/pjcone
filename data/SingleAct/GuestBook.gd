@@ -6,6 +6,9 @@ onready var _path:String = Root.html_path + 'assets/data/sc1_custom/Guest/guest_
 # 방명록 파일
 var file:= File.new()
 
+# git에 반영되지 않은 정보 캐싱
+var caches:= []
+
 func _ready():
 	var err:= file.open(_path, File.READ_WRITE)
 	if err != OK:
@@ -15,12 +18,14 @@ func _ready():
 
 # 파일 관리용 뮤텍스
 var mutex:= Mutex.new()
+
 # 새 글 적기
 func write_content(data:String):
 	mutex.lock()
 	file.seek_end()
 	file.store_line(data)
 	file.flush()
+	caches.push_back(data)
 	mutex.unlock()
 
 # 게시물 편집하기
@@ -62,6 +67,8 @@ func remove_content(id:String):
 	var dir:= Directory.new()
 	dir.rename(Root.root_path + 'guest_history_work_tmp.txt', _path)
 	_ready()
+	# 캐시에서 수정
+	
 	mutex.unlock()
 
 
