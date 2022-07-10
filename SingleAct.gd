@@ -18,23 +18,6 @@ var counter:= {
 	'maximum': 0,
 }
 
-func _init():
-	if OS.is_debug_build():
-		Root.root_path = 'res://gd_database/'
-		Root.html_path = 'res://pjcone_pwa/src/'
-		var file:= File.new() # 테스트 중인 경우 이 폴더를 프로젝트로부터 무시합니다
-		if file.open(Root.root_path + '.gdignore', File.WRITE):
-			file.store_string('gdignore')
-		file.flush()
-		file.close()
-	else: # 서버 실행파일이 위치한 경로로부터
-		Root.root_path = OS.get_executable_path() + '/gd_database/'
-		Root.html_path = OS.get_executable_path() + '/'
-	# 폴더가 준비되어있지 않으면 생성하기
-	var dir:= Directory.new()
-	if not dir.dir_exists(Root.root_path):
-		dir.make_dir_recursive(Root.root_path)
-
 
 func _ready():
 	server.connect("data_received", self, '_received')

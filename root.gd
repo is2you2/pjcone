@@ -12,6 +12,26 @@ var root_path:String
 # 웹 페이지 경로 with '/'
 var html_path:String
 
+func _init():
+	if OS.is_debug_build():
+		root_path = 'res://gd_database/'
+		html_path = 'res://pjcone_pwa/src/'
+		var file:= File.new() # 테스트 중인 경우 이 폴더를 프로젝트로부터 무시합니다
+		if file.open(root_path + '.gdignore', File.WRITE):
+			file.store_string('gdignore')
+		file.flush()
+		file.close()
+	else: # 서버 실행파일이 위치한 경로로부터
+		var only_path:= OS.get_executable_path()
+		var index:= only_path.find_last('/')
+		only_path = only_path.substr(0, index)
+		root_path = only_path + '/gd_database/'
+		html_path = only_path + '/'
+	# 폴더가 준비되어있지 않으면 생성하기
+	var dir:= Directory.new()
+	if not dir.dir_exists(root_path):
+		dir.make_dir_recursive(root_path)
+
 
 # 로그처리
 func logging(header:String, content:String, _con_col:= 'bbb'):
