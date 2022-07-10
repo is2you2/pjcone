@@ -19,7 +19,6 @@ config/name_ko="프로젝트: 콘텐츠"
 
 [autoload]
 
-LastOpenedFiles="*res://addons/file-editor/scripts/LastOpenedFiles.gd"
 Root="*res://root.gd"
 
 [display]
