@@ -39,7 +39,7 @@ func modify_content(data:String):
 	_modified.open(Root.root_path + 'guest_history_work_tmp.txt', File.WRITE)
 	var line:= file.get_csv_line(Root.SEP_CHAR)
 	while not file.eof_reached():
-		if _id == line[0]:
+		if _id == line[0]: # 수정 대상이면 교체
 			var _data:= data.split(Root.SEP_CHAR)
 			_modified.store_csv_line(_data, Root.SEP_CHAR)
 			for i in range(modified.size()):
@@ -47,12 +47,11 @@ func modify_content(data:String):
 				if check[0] == _data[0]:
 					modified.remove(i)
 			modified.push_back(data)
-		else:
+		else: # 수정 대상이 아니면 기존 데이터 사용
 			_modified.store_csv_line(line, Root.SEP_CHAR)
 		line = file.get_csv_line(Root.SEP_CHAR)
 	_modified.flush()
 	_modified.close()
-	file.close()
 	var dir:= Directory.new()
 	dir.rename(Root.root_path + 'guest_history_work_tmp.txt', _path)
 	_ready()
@@ -74,7 +73,6 @@ func remove_content(id:String):
 		line = file.get_csv_line(Root.SEP_CHAR)
 	modified.flush()
 	modified.close()
-	file.close()
 	var dir:= Directory.new()
 	dir.rename(Root.root_path + 'guest_history_work_tmp.txt', _path)
 	_ready()

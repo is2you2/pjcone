@@ -22,7 +22,7 @@ export class GuestbookPage implements OnInit {
   SEP_CHAR = '，';
   /** 종합 방명록 리스트 (file + cache) */
   total_history: string[][] = [];
-  /** 방명록 일체 */
+  /** 저장된 방명록 일체 */
   guest_history: string[][] = [];
 
   constructor(
@@ -69,6 +69,17 @@ export class GuestbookPage implements OnInit {
                 break;
               }
             }
+          // 보여지는 날짜 생성기
+          for (let i = 0, j = apply_caches.length; i < j; i++) {
+            let get_date = new Date(parseInt(apply_caches[i][0].split('-')[0]));
+            let year = get_date.getFullYear();
+            let month = ('0' + (get_date.getMonth() + 1)).slice(-2);
+            let day = ('0' + get_date.getDate()).slice(-2);
+            let hour = ('0' + get_date.getHours()).slice(-2);
+            let minute = ('0' + get_date.getMinutes()).slice(-2);
+            let second = ('0' + get_date.getSeconds()).slice(-2);
+            apply_caches[i].push(`${year}-${month}-${day} ${hour}:${minute}:${second}`);
+          }
           // 결과물 반영
           this.total_history = [...apply_caches];
           break;
@@ -94,7 +105,7 @@ export class GuestbookPage implements OnInit {
             let get_date = new Date(parseInt(csv_line[0].split('-')[0]));
             let year = get_date.getFullYear();
             let month = ('0' + (get_date.getMonth() + 1)).slice(-2);
-            let day = ('0' + get_date.getDay()).slice(-2);
+            let day = ('0' + get_date.getDate()).slice(-2);
             let hour = ('0' + get_date.getHours()).slice(-2);
             let minute = ('0' + get_date.getMinutes()).slice(-2);
             let second = ('0' + get_date.getSeconds()).slice(-2);
