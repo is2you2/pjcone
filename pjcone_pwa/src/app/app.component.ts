@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
+import { Router } from '@angular/router';
+import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { Platform } from '@ionic/angular';
 import { LocalNotiService } from './local-noti.service';
 import { WscService } from './wsc.service';
@@ -16,6 +18,8 @@ export const SERVER_PATH_ROOT: string = 'https://is2you2.github.io/';
 })
 export class AppComponent {
   constructor(platform: Platform,
+    router: Router,
+    ngZone: NgZone,
     noti: LocalNotiService,
     client: WscService,
   ) {
@@ -30,6 +34,19 @@ export class AppComponent {
     console.log('시작할 때 플랫폼은: ', isPlatform);
     noti.initialize();
     client.initialize();
+    if (isPlatform == 'Android' || isPlatform == 'iOS')
+      App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
+        ngZone.run(() => {
+          // Example url: https://beerswift.app/tabs/tab2
+          // slug = /tabs/tab2
+          const slug = event.url.split(".app").pop();
+          if (slug) {
+            router.navigateByUrl(slug);
+          }
+          // If no match, do nothing - let regular routing
+          // logic take over
+        });
+      });
   }
 
   /** 브라우저에서 딥 링크마냥 행동하기
