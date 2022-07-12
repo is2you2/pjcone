@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { ModalController } from '@ionic/angular';
+import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
 
 /** 메시지 받기 폼 */
@@ -22,11 +24,17 @@ export class MinimalChatPage implements OnInit {
     private client: MiniranchatClientService,
     private modal: ModalController,
     private device: Device,
+    private noti: LocalNotiService,
+    private title: Title,
   ) { }
 
   uuid = this.device.uuid;
 
   ngOnInit() {
+    this.title.setTitle('커뮤니티 내 랜덤채팅');
+    const favicon = document.getElementById('favicon');
+    favicon.setAttribute('href', 'assets/icon/miniranchat.png');
+
     this.client.initialize();
     this.client.funcs.onmessage = (v: any) => {
       try {
@@ -98,5 +106,11 @@ export class MinimalChatPage implements OnInit {
     }
     console.warn('modal.dismiss() 설정 필요');
     this.client.disconnect();
+  }
+
+  ionViewWillLeave() {
+    this.title.setTitle('Project: Cone');
+    const favicon = document.getElementById('favicon');
+    favicon.setAttribute('href', 'assets/icon/favicon.png');
   }
 }
