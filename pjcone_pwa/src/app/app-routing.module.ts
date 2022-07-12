@@ -4,7 +4,7 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'starcraft_custom',
+    redirectTo: 'minimal-chat',
     pathMatch: 'full'
   },
   {
@@ -22,6 +22,10 @@ const routes: Routes = [
   {
     path: 'privacy',
     loadChildren: () => import('./privacy/privacy.module').then( m => m.PrivacyPageModule)
+  },
+  {
+    path: 'minimal-chat',
+    loadChildren: () => import('./minimal-chat/minimal-chat.module').then( m => m.MinimalChatPageModule)
   },
 ];
 

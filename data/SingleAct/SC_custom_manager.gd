@@ -36,6 +36,7 @@ func catch_all_files(path:String, target:String):
 			lists['files'].push_back(_file)
 			_file = dir.get_next()
 		dir.list_dir_end()
+		lists['files'].sort()
 		var file:= File.new()
 		var fer:= file.open(path + target + '/list.json', File.WRITE)
 		if fer == OK:

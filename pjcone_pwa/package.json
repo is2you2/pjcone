@@ -19,7 +19,7 @@
     "@angular/platform-browser": "~13.2.2",
     "@angular/platform-browser-dynamic": "~13.2.2",
     "@angular/router": "~13.2.2",
-    "@awesome-cordova-plugins/background-mode": "^5.41.0",
+    "@awesome-cordova-plugins/background-mode": "^5.44.0",
     "@awesome-cordova-plugins/camera": "^5.41.0",
     "@awesome-cordova-plugins/deeplinks": "^5.41.0",
     "@awesome-cordova-plugins/device": "^5.44.0",

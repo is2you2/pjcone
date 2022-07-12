@@ -13,7 +13,8 @@ declare var cordova: any;
 export class RemoteServerService {
 
   constructor() { }
-  server = cordova.plugins.wsserver;
+
+  server: any;
   /** 연결된 사용자 리스트
    * ```javascript
    * {
@@ -33,7 +34,10 @@ export class RemoteServerService {
    * ```
    */
   initialize() {
-    if (isPlatform != 'DesktopPWA') {
+    if (isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA') {
+      if (this.server)
+        this.server = cordova.plugins.wsserver
+
       this.server.start(12020, {
         'onFailure': (addr, port, reason) => console.error('Stopped listening on %s:%d. Reason: %s', addr, port, reason),
         'onOpen': (conn) => this.users[conn.uuid] = { 'addr': conn.remoteAddr },
@@ -42,9 +46,9 @@ export class RemoteServerService {
         'origins': [], // validates the 'Origin' HTTP Header.
         'protocols': [], // validates the 'Sec-WebSocket-Protocol' HTTP Header.
         'tcpNoDelay': true // disables Nagle's algorithm.
-      }, function onStart(addr, port) {
+      }, (addr, port) => { // 서버 시작할 떄
         console.log('서버 Listening on %s:%d', addr, port);
-      }, function onDidNotStart(reason) {
+      }, (reason) => { // 서버 종료할 떄
         console.error('Did not start. Reason: %s', reason);
       });
     } else {

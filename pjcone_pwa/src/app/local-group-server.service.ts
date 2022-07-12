@@ -3,14 +3,15 @@ import { isPlatform } from './app.component';
 
 declare var cordova: any;
 
-/** 다목적 릴레이 서버 운영 */
+/** 기존 MiniRanchat에 내장된 릴레이 서버와 동일한 서버  
+ * 동작 방식 역시 동일하게 구현되어있다
+ */
 @Injectable({
   providedIn: 'root'
 })
-export class RelayServerService {
+export class LocalGroupServerService {
 
-  constructor() { }
-  server = cordova.plugins.wsserver;
+  server: any;
   /** 연결된 사용자 리스트 */
   users = {};
 
@@ -19,11 +20,14 @@ export class RelayServerService {
    * @param PORT 서비스별 포트번호, 리스트 참조
    * ```markdown
    * - 12011: 채팅 서버
-   * - 12020: 리모콘 서버
    * ```
    */
-  initialize(PORT: number) {
-    if (isPlatform != 'DesktopPWA') {
+  initialize() {
+    const PORT = 12011;
+    if (isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA') {
+      if (!this.server)
+        this.server = cordova.plugins.wsserver;
+
       this.server.start(PORT, {
         // WebSocket Server handlers
         'onFailure': (addr, port, reason) => {
@@ -49,9 +53,9 @@ export class RelayServerService {
         'origins': [], // validates the 'Origin' HTTP Header.
         'protocols': [], // validates the 'Sec-WebSocket-Protocol' HTTP Header.
         'tcpNoDelay': true // disables Nagle's algorithm.
-      }, function onStart(addr, port) {
+      }, (addr, port) => { // 시작할 때
         console.log('서버 Listening on %s:%d', addr, port);
-      }, function onDidNotStart(reason) {
+      }, (reason) => { // 종료될 때
         console.error('Did not start. Reason: %s', reason);
       });
 

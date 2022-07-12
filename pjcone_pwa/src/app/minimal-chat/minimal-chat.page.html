@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start" (click)="quit_chat()">
+      <ion-back-button defaultHref=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>작은 랜덤 채팅</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="main">
+    <p *ngFor="let msg of userInput.logs">
+      <font *ngIf="!msg.target" color="#{{msg.color}}">{{msg.text}}</font>
+      <font *ngIf="msg.target" color="#ddd">
+        <font color="#{{msg.color}}"><b *ngIf="msg.target">{{msg.target}}:</b></font> {{' ' + msg.text}}
+      </font>
+    </p>
+  </div>
+  <div class="inputbar">
+    <table style="width: 100%; background-color: black;">
+      <tr>
+        <td *ngIf="status == 'idle'">
+          <ion-button (click)="join_ranchat()" expand="block">
+            대화 시작하기
+          </ion-button>
+        </td>
+        <td *ngIf="status == 'linked'">
+          <ion-button (click)="join_ranchat()" expand="block">
+            나가기
+          </ion-button>
+        </td>
+        <td *ngIf="status == 'unlinked'">
+          <ion-button (click)="join_ranchat()" expand="block">
+            새 대화
+          </ion-button>
+        </td>
+        <td *ngIf="status == 'linked' || status == 'custom'" style="width: 100%;">
+          <ion-input type="text" placeholder="메시지 입력..." (keyup.enter)="send_to()" [(ngModel)]="userInput.text">
+          </ion-input>
+        </td>
+        <td *ngIf="status == 'linked' || status == 'custom'">
+          <ion-button (click)="send_to()" expand="block">
+            보내기
+          </ion-button>
+        </td>
+      </tr>
+    </table>
+  </div>
+</ion-content>

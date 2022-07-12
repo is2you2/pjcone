@@ -113,5 +113,26 @@ Godot 엔진이 현재 가지고 있는 서비스 상의 한계를 뛰어넘기 
 - [ ] 게시물을 페이지화 시키고 필요한 만큼만 자료 불러오기 (pagenation)
 - [ ] 게시물 그룹 처리 (카테고리, 태그) / nakama
 - [ ] 게시물 id 관리를 진행하고 id로 게시물 들어가기 기능 구성
+
+## Android 빌드 작업보조 정보글
+- Application에 추가 작성
+  - android:usesCleartextTraffic="true"
+- [백그라운드 모드 안드로이드 권한 설정](https://stackoverflow.com/questions/69101863/background-mode-not-quite-working-ionic-app-sleeps-after-5-minutes)
+```xml
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>  
+<uses-permission android:name="android.permission.ACCESS_BACKGROUND_SERVICE"/>  
+<uses-permission android:name="android.permission.WAKE_LOCK" />  
+<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />  
+```
+- icon-mono 이미지 등록하기
+
+## 사용중인 포트
+12000: SingleAct_카운터
+12001: Account
+12010: Exim4
+12011: Minichat 병합
+
 ## License
 MIT
+### 사용된 주 프로그램 고지
+Ionic 6, Capacitor, Godot engine, p5js

@@ -1,5 +1,6 @@
 import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
+import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { Platform } from '@ionic/angular';
 import { LocalNotiService } from './local-noti.service';
@@ -22,6 +23,7 @@ export class AppComponent {
     ngZone: NgZone,
     noti: LocalNotiService,
     client: WscService,
+    bgmode: BackgroundMode,
   ) {
     if (platform.is('desktop'))
       isPlatform = 'DesktopPWA';
@@ -31,10 +33,10 @@ export class AppComponent {
       isPlatform = 'Android';
     else if (platform.is('iphone'))
       isPlatform = 'iOS';
-    console.log('시작할 때 플랫폼은: ', isPlatform);
     noti.initialize();
     client.initialize();
-    if (isPlatform == 'Android' || isPlatform == 'iOS')
+    // 모바일 기기 특정 설정
+    if (isPlatform == 'Android' || isPlatform == 'iOS') {
       App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
         ngZone.run(() => {
           // Example url: https://beerswift.app/tabs/tab2
@@ -47,6 +49,14 @@ export class AppComponent {
           // logic take over
         });
       });
+    }
+    bgmode.setDefaults({
+      title: '대화 대기중',
+      text: '아직 대화를 주고받을 수 있습니다 :)',
+      icon: 'icon_mono',
+      color: 'ffd94e', // 모자 밑단 노란색
+    });
+    bgmode.enable();
   }
 
   /** 브라우저에서 딥 링크마냥 행동하기

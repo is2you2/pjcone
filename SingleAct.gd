@@ -18,7 +18,6 @@ var counter:= {
 	'maximum': 0,
 }
 
-
 func _ready():
 	server.connect("data_received", self, '_received')
 	server.connect('client_connected', self, '_connected')
@@ -29,6 +28,8 @@ func _ready():
 		Root.logging(HEADER, str('init error: ', err), Root.LOG_ERR)
 	else:
 		Root.logging(HEADER, str('Opened: ', PORT))
+	Root.rich_node = $m/c/m/log
+	Root.rich_node.bbcode_text = Root.rich_log
 
 # esc를 눌러 끄기
 func _input(event):
@@ -56,9 +57,9 @@ func _disconnected(id:int, _was_clean = null, _reason:= 'EMPTY'):
 	linked_mutex.unlock()
 	# 일반 종료가 아닐 때 로그 남김
 	if _was_clean is int and _was_clean != 1001:
+		Root.logging(HEADER, str('Disconnected: ', counter, ' code: ', _was_clean, ' / ', _reason), '8bb')
+	elif _was_clean is bool: # 상시 로그
 		Root.logging(HEADER, str('Disconnected: ', counter, ' was_clean: ', _was_clean))
-	else: # 상시 로그
-		Root.logging(HEADER, str('Disconnected: ', counter, ' code: ', _was_clean, ' / ', _reason))
 
 # 자료를 받아서 행동 코드별로 자식 노드에게 일처리 넘김
 func _received(id:int, _try_left:= 5):

@@ -1,12 +1,19 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://data/SingleAct/SendEximMail.gd" type="Script" id=1]
 [ext_resource path="res://data/SingleAct/SC_custom_manager.gd" type="Script" id=2]
 [ext_resource path="res://SingleAct.gd" type="Script" id=3]
 [ext_resource path="res://data/SingleAct/UserManager.gd" type="Script" id=4]
-[ext_resource path="res://data/SingleAct/ChatServer.gd" type="Script" id=5]
+[ext_resource path="res://data/SingleAct/MiniRanchat.gd" type="Script" id=5]
 [ext_resource path="res://data/SingleAct/Account.gd" type="Script" id=6]
 [ext_resource path="res://data/SingleAct/SC_GuestBook.gd" type="Script" id=7]
+[ext_resource path="res://data/fonts/Noto_Sans_KR/NotoSansKR-Regular.otf" type="DynamicFontData" id=8]
+
+[sub_resource type="DynamicFont" id=1]
+font_data = ExtResource( 8 )
+
+[sub_resource type="Theme" id=2]
+default_font = SubResource( 1 )
 
 [node name="SingleAct" type="Node"]
 script = ExtResource( 3 )
@@ -17,7 +24,7 @@ script = ExtResource( 2 )
 [node name="GuestBook" type="Node" parent="SC_custom_manager"]
 script = ExtResource( 7 )
 
-[node name="ChatServer" type="Node" parent="."]
+[node name="MiniRanchat" type="Node" parent="."]
 script = ExtResource( 5 )
 
 [node name="Account" type="Node" parent="."]
@@ -28,3 +35,35 @@ script = ExtResource( 4 )
 
 [node name="SendExim4Mail" type="Node" parent="Account"]
 script = ExtResource( 1 )
+
+[node name="m" type="MarginContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_constants/margin_right = 8
+custom_constants/margin_top = 8
+custom_constants/margin_left = 8
+custom_constants/margin_bottom = 8
+
+[node name="c" type="ColorRect" parent="m"]
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 632.0
+margin_bottom = 352.0
+color = Color( 0.192157, 0.192157, 0.192157, 1 )
+
+[node name="m" type="MarginContainer" parent="m/c"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_constants/margin_right = 8
+custom_constants/margin_top = 8
+custom_constants/margin_left = 8
+custom_constants/margin_bottom = 8
+
+[node name="log" type="RichTextLabel" parent="m/c/m"]
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 616.0
+margin_bottom = 336.0
+theme = SubResource( 2 )
+bbcode_enabled = true
+scroll_following = true
