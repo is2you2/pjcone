@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { Channel } from '@capacitor/local-notifications';
 import { ModalController } from '@ionic/angular';
@@ -27,6 +28,7 @@ export class MinimalChatPage implements OnInit {
     private device: Device,
     private noti: LocalNotiService,
     private title: Title,
+    private bgmode: BackgroundMode,
   ) { }
 
   uuid = this.device.uuid;
@@ -51,6 +53,9 @@ export class MinimalChatPage implements OnInit {
   };
 
   ngOnInit() {
+    this.bgmode.on('deactivate').subscribe(() => {
+      this.noti.CancelNoti({ notifications: [{ id: this.lnId }] });
+    })
     this.noti.Current = this.Header;
     this.noti.create_channel(this.NotiChannelInfo);
     this.noti.register_action({
@@ -60,9 +65,6 @@ export class MinimalChatPage implements OnInit {
           id: 'send',
           title: '답장',
           input: true,
-        }, {
-          id: 'read',
-          title: '읽음',
         }]
       }, {
         id: 'reconn',
@@ -84,13 +86,12 @@ export class MinimalChatPage implements OnInit {
         case 'send': // 입력값 보내기
           this.send_to(v['inputValue']);
           break;
-        case 'read':
-          this.noti.CancelNoti({ notifications: [{ id: this.lnId }] });
-          break;
         case 'reconn':
+          this.bgmode.moveToBackground();
           this.join_ranchat();
           break;
         case 'exit':
+          this.bgmode.moveToBackground();
           this.quit_chat();
         default:
           console.warn('준비하지 않은 행동: ', type);
@@ -113,6 +114,7 @@ export class MinimalChatPage implements OnInit {
         this.noti.PushLocal({
           id_ln: this.lnId,
           title: target,
+          body: data['msg'],
           largeBody_ln: data['msg'],
           iconColor_ln: this.iconColor,
           summaryText_ln: this.summaryText,
@@ -129,11 +131,13 @@ export class MinimalChatPage implements OnInit {
             this.noti.PushLocal({
               id_ln: this.lnId,
               title: '누군가를 만났습니다.',
+              actionTypeId_ln: 'reply',
               largeBody_ln: '',
               iconColor_ln: this.iconColor,
               summaryText_ln: this.summaryText,
               smallIcon_ln: this.Header,
               channelId_ln: this.Header,
+              autoCancel_ln: true,
             }, this.Header);
             break;
           case 'PARTNER_OUT':
@@ -151,9 +155,10 @@ export class MinimalChatPage implements OnInit {
             }, this.Header);
             break;
           default:
-            this.userInput.logs.push({ color: '888', text: '대화 상대를 기다립니다..' });
             let sep = v.split(':');
             this.ConnectedNow = parseInt(sep[1]);
+            if (sep[0] == 'LONG_TIME_NO_SEE')
+              this.userInput.logs.push({ color: '888', text: '대화 상대를 기다립니다..' });
             break;
         }
       }
