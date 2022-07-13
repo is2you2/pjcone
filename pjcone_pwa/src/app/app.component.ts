@@ -57,6 +57,7 @@ export class AppComponent {
       color: 'ffd94e', // 모자 밑단 노란색
     });
     bgmode.enable();
+    bgmode.disableBatteryOptimizations();
   }
 
   /** 브라우저에서 딥 링크마냥 행동하기
