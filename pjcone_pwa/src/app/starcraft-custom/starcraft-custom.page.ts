@@ -23,6 +23,8 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
   ) {
   }
 
+  Header = 'sc1-custom';
+
   remote_act = {
     'youtube': () => this.link_youtube()
   };
@@ -34,7 +36,7 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
   ionViewDidEnter() {
     this.title.setTitle('스타크래프트 1: 캠페인식 컴까기');
     const favicon = document.getElementById('favicon');
-    favicon.setAttribute('href', 'assets/icon/sc1-custom.png');
+    favicon.setAttribute('href', `assets/icon/${this.Header}.png`);
     this.remote.target = this;
   }
 

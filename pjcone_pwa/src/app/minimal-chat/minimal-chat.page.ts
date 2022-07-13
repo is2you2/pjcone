@@ -33,15 +33,17 @@ export class MinimalChatPage implements OnInit {
   Header = 'simplechat';
   /** 지금 연결된 사람 수 */
   ConnectedNow = 0;
+  content_panel: HTMLElement;
 
   ionViewDidEnter() {
     this.noti.Current = this.Header;
   }
 
   ngOnInit() {
+    this.content_panel = document.getElementById('content');
     this.title.setTitle('커뮤니티 랜덤채팅');
     const favicon = document.getElementById('favicon');
-    favicon.setAttribute('href', 'assets/icon/miniranchat.png');
+    favicon.setAttribute('href', `assets/icon/${this.Header}.png`);
 
     this.client.initialize();
     this.client.funcs.onmessage = (v: string) => {
@@ -61,8 +63,6 @@ export class MinimalChatPage implements OnInit {
             this.userInput.logs.push({ color: 'b88', text: '상대방이 나갔습니다.' });
             this.status = 'unlinked';
             break;
-          case 'LONG_TIME_NO_SEE':
-            break;
           default:
             this.userInput.logs.push({ color: '888', text: '대화 상대를 기다립니다..' });
             let sep = v.split(':');
@@ -70,13 +70,16 @@ export class MinimalChatPage implements OnInit {
             break;
         }
       }
+      this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     this.client.funcs.onclose = (v: any) => {
       this.userInput.logs.push({ color: 'faa', text: '채팅 참가에 실패했습니다.' });
+      this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     this.client.funcs.onopen = (v: any) => {
       this.client.funcs.onclose = (v: any) => {
         this.userInput.logs.push({ color: 'faa', text: '저런!! 팅겼어요.. ㅜㅜ' });
+        this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
   }
@@ -93,9 +96,15 @@ export class MinimalChatPage implements OnInit {
 
   /** 랜덤채팅에 참여하기, 대화 끊고 다시 연결 */
   join_ranchat() {
-    this.client.send('REQ_REGROUPING');
-    this.userInput.logs.length = 0;
-    this.userInput.logs.push({ color: 'bbb', text: '새로운 상대를 기다립니다..' });
+    if (this.client.client.readyState == this.client.client.OPEN) {
+      this.client.send('REQ_REGROUPING');
+      this.userInput.logs.length = 0;
+      this.userInput.logs.push({ color: 'bbb', text: '새로운 상대를 기다립니다..' });
+      this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else { // 서버 연결중 아닐 때
+      this.userInput.logs.push({ color: 'faa', text: '시작할 수 없어요..' });
+      this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   /** 메시지 보내기 */
@@ -112,6 +121,7 @@ export class MinimalChatPage implements OnInit {
   quit_chat() {
     this.client.funcs.onclose = () => {
       this.userInput.logs.push({ color: 'ffa', text: '랜덤채팅에서 벗어납니다.' });
+      this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     console.warn('modal.dismiss() 설정 필요');
     this.client.disconnect();
