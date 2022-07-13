@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { isPlatform } from './app.component';
-import { Attachment, LocalNotifications, LocalNotificationSchema, Schedule } from "@capacitor/local-notifications";
+import { Attachment, Channel, LocalNotifications, LocalNotificationSchema, RegisterActionTypesOptions, Schedule } from "@capacitor/local-notifications";
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 
 /** 웹에서도, 앱에서도 동작하는 요소로 구성된 알림폼 재구성  
@@ -11,21 +11,29 @@ interface TotalNotiForm {
   id_ln: number,
   /** 타이틀 */
   title: string;
-  /** 주 내용자리 */
+  /** LocalNoti: 경우가 좀 있다.  
+   * 1. body만 쓰는 경우: 알림이 접혀있든 펴져있든 보인다.
+   * 2. largeBody와 같이 쓰는 경우: 접혀있을 때만 보인다.
+   */
   body?: string;
-  /** LocalNoti: 큰 텍스트 블럭용 자리, 미확인 */
+  /** LocalNoti: 알림을 펼쳤을 때 보여지는 내용.  
+   * body 없이 얘만 설정하면 알림이 접힌 상태에서 내용이 없다.
+   */
   largeBody_ln?: string;
-  /** LocalNoti:안드로이드 전용: 큰 텍스트 알림 스타일의 요약 텍스트 세부정보 표시용, 미확인 */
+  /** LocalNoti: 안드로이드 전용: 최상단 제목 옆 추가 글귀  
+   * *body, largeBody가 사용되지 않는다면 동작하지 않음
+   */
   summaryText_ln?: string;
   /** LocalNoti: 나중에 이 알림을 예약하세요 */
   schedule_ln?: Schedule;
   /** 알림 펼치면 있는 아이콘, 칼라임 */
-  icon?: string;
+  icon_wm?: string;
   /** LocalNoti: 상태바 들어가는 아이콘, 기본 아이콘보다 우선처리  
    * res/drawable 폴더에 포함되어 있는 이름. 안드로이드 전용
    */
   smallIcon_ln?: string;
   /** LocalNoti: 알림에 사용되는 큰 아이콘  
+   * 우측에 좀 더 큰 모양으로 뜬다.  
    * res/drawable 폴더에 포함되어 있는 이름. 안드로이드 전용
    */
   largeIcon_ln?: string;
@@ -82,12 +90,12 @@ interface TotalNotiForm {
   extra_ln?: any;
   /** Web.Noti: 미확인 */
   badge_wn?: string;
-  /** 이미지 첨부, 겁나크게 보여잠 */
-  image?: string;
+  /** Web.Noti: 이미지 첨부, 가로폭에 맞추어 보여짐 */
+  image_wn?: string;
   /** Web.Noti: 미확인 */
   renotify_wn?: boolean;
   /** Web.Noti: 미확인 */
-  actions_nw?: NotificationAction[];
+  actions_wn?: NotificationAction[];
   /** Web.Noti: 미확인 */
   data_wn?: any;
   /** Web.Noti: 미확인 */
@@ -131,24 +139,23 @@ export class LocalNotiService {
   /**
    * 로컬 푸쉬 알림을 동작시킵니다
    * @param header 지금 바라보고 있는 화면의 이름
-   * @param opt 알림 옵션
-   * @param _action 클릭시 행동
+   * @param opt 알림 옵션s
+   * @param _action_wm 클릭시 행동 (Web.Noti)
    */
-  PushLocal(opt: TotalNotiForm, header: string = 'favicon', _action: Function = () => { }) {
-    if (this.Current == header) return; // 이미 그 화면에 있다면 굳이 알림을 보내지 않음
+  PushLocal(opt: TotalNotiForm, header: string = 'favicon', _action_wm: Function = () => { }) {
     if (isPlatform == 'DesktopPWA') {
-      // 창일 바라보는 중이라면 무시됨
-      if (document.hasFocus()) return;
+      // 창을 바라보는 중이라면 무시됨, 바라보는 중이면서 같은 화면이면 무시됨
+      if (document.hasFocus() && this.Current == header) return;
       /** 기본 알림 옵션 (교체될 수 있음) */
       const input: NotificationOptions = {
         badge: opt.badge_wn,
         body: opt.body,
-        icon: opt.icon || `assets/icon/${header}.png`,
-        image: opt.image,
+        icon: opt.icon_wm || `assets/icon/${header}.png`,
+        image: opt.image_wn,
         lang: opt.lang_wn,
         silent: opt.silent_wn,
         tag: opt.tag_wn,
-        actions: opt.actions_nw,
+        actions: opt.actions_wn,
         data: opt.data_wn,
         renotify: opt.renotify_wn,
         requireInteraction: opt.requireInteraction_wn,
@@ -157,11 +164,12 @@ export class LocalNotiService {
       const _noti = new Notification(opt.title, { ...input });
 
       _noti.onclick = () => {
-        _action();
+        _action_wm();
         window.focus();
       };
     } else { // 모바일 로컬 푸쉬
-      if (!this.bgmode.isActive()) return; // 포어그라운드일 때 동작 안함
+      // 포어그라운드일 때 동작 안함, 포어그라운드면서 해당 화면이면 동작 안함
+      if (!this.bgmode.isActive() && this.Current == header) return;
       const input: LocalNotificationSchema = {
         id: opt.id_ln,
         title: opt.title,
@@ -179,7 +187,7 @@ export class LocalNotiService {
         largeIcon: opt.largeIcon_ln,
         ongoing: opt.ongoing_ln,
         schedule: opt.schedule_ln,
-        smallIcon: opt.smallIcon_ln || header || 'logo_mono',
+        smallIcon: opt.smallIcon_ln || header || 'icon_mono',
         summaryText: opt.summaryText_ln,
         summaryArgument: opt.summaryText_ln,
       };
@@ -189,5 +197,20 @@ export class LocalNotiService {
         }]
       });
     }
+  }
+
+  /** 채널 만들기_안드로이드 */
+  create_channel(channel_info: Channel) {
+    LocalNotifications.createChannel(channel_info);
+  }
+
+  /** 채널 삭제 */
+  remove_channel(channel_info: Channel) {
+    LocalNotifications.deleteChannel(channel_info);
+  }
+
+  /** 액션 설정 */
+  register_action(_action: RegisterActionTypesOptions) {
+    LocalNotifications.registerActionTypes(_action);
   }
 }

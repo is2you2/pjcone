@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
+import { Channel } from '@capacitor/local-notifications';
 import { ModalController } from '@ionic/angular';
 import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
@@ -31,15 +32,26 @@ export class MinimalChatPage implements OnInit {
   uuid = this.device.uuid;
   /** 페이지 구분자는 페이지에 사용될 아이콘 이름을 따라가도록 */
   Header = 'simplechat';
+  iconColor = '#dddddd';
   /** 지금 연결된 사람 수 */
   ConnectedNow = 0;
   content_panel: HTMLElement;
-
-  ionViewDidEnter() {
-    this.noti.Current = this.Header;
-  }
+  NotiChannelInfo: Channel = {
+    id: this.Header,
+    name: 'Project: 랜덤채팅',
+    description: 'desc',
+    lightColor: this.iconColor,
+    lights: true,
+    visibility: 0,
+    importance: 3,
+    vibration: false,
+    // sound: '',
+  };
 
   ngOnInit() {
+    this.noti.Current = this.Header;
+    this.noti.create_channel(this.NotiChannelInfo);
+
     this.content_panel = document.getElementById('content');
     this.title.setTitle('커뮤니티 랜덤채팅');
     const favicon = document.getElementById('favicon');
@@ -123,6 +135,7 @@ export class MinimalChatPage implements OnInit {
       this.userInput.logs.push({ color: 'ffa', text: '랜덤채팅에서 벗어납니다.' });
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    this.noti.remove_channel(this.NotiChannelInfo);
     console.warn('modal.dismiss() 설정 필요');
     this.client.disconnect();
   }
