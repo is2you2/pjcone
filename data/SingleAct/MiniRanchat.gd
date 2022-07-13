@@ -62,6 +62,9 @@ func _connected(id:int, _proto:='EMPTY_PROTO'):
 	if counter.maximum < counter.current:
 		counter.maximum = counter.current
 	Root.logging(HEADER, str('Conntected: %s' % counter))
+	var _count:= str('Current:%d' % counter.current).to_utf8()
+	for user in pid_list:
+		send_to(user, _count)
 	mutex.unlock()
 
 func _disconnected(id:int, _was_clean = null, _reason:= 'EMPTY_REASON'):
@@ -74,6 +77,9 @@ func _disconnected(id:int, _was_clean = null, _reason:= 'EMPTY_REASON'):
 	matched.erase(id)
 	waiting.erase(id)
 	counter.current = pid_list.size()
+	var _count:= str('Current:%d' % counter.current).to_utf8()
+	for user in pid_list:
+		send_to(user, _count)
 	mutex.unlock()
 	# 일반 종료가 아닐 때 로그 남김
 	if _was_clean is int and _was_clean != 1001:
