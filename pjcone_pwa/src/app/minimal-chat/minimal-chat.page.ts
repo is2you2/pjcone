@@ -33,6 +33,8 @@ export class MinimalChatPage implements OnInit {
   /** 페이지 구분자는 페이지에 사용될 아이콘 이름을 따라가도록 */
   Header = 'simplechat';
   iconColor = '#dddddd';
+  lnId = 11;
+  summaryText = '미니랜챗';
   /** 지금 연결된 사람 수 */
   ConnectedNow = 0;
   content_panel: HTMLElement;
@@ -51,9 +53,53 @@ export class MinimalChatPage implements OnInit {
   ngOnInit() {
     this.noti.Current = this.Header;
     this.noti.create_channel(this.NotiChannelInfo);
+    this.noti.register_action({
+      types: [{
+        id: 'reply',
+        actions: [{
+          id: 'send',
+          title: '답장',
+          input: true,
+        }, {
+          id: 'read',
+          title: '읽음',
+        }]
+      }, {
+        id: 'reconn',
+        actions: [{
+          id: 'reconn',
+          title: '새 연결',
+        }],
+      }, {
+        id: 'exit',
+        actions: [{
+          id: 'exit',
+          title: '종료하기',
+        }]
+      }]
+    });
+    this.noti.addNotiListener('Performed', (v: any) => {
+      let type: string = v['actionId'];
+      switch (type) {
+        case 'send': // 입력값 보내기
+          this.send_to(v['inputValue']);
+          break;
+        case 'read':
+          this.noti.CancelNoti({ notifications: [{ id: this.lnId }] });
+          break;
+        case 'reconn':
+          this.join_ranchat();
+          break;
+        case 'exit':
+          this.quit_chat();
+        default:
+          console.warn('준비하지 않은 행동: ', type);
+          break;
+      }
+    });
 
     this.content_panel = document.getElementById('content');
-    this.title.setTitle('커뮤니티 랜덤채팅');
+    this.title.setTitle('Project: 랜덤채팅');
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', `assets/icon/${this.Header}.png`);
 
@@ -64,16 +110,45 @@ export class MinimalChatPage implements OnInit {
         let isMe = this.uuid == data['uid'];
         let target = isMe ? '나' : '상대방';
         this.userInput.logs.push({ color: isMe ? 'bbf' : data['uid'] ? data['uid'].substring(0, 3) : '888', text: data['msg'], target: target });
+        this.noti.PushLocal({
+          id_ln: this.lnId,
+          title: target,
+          largeBody_ln: data['msg'],
+          iconColor_ln: this.iconColor,
+          summaryText_ln: this.summaryText,
+          actionTypeId_ln: 'reply',
+          smallIcon_ln: this.Header,
+          channelId_ln: this.Header,
+        }, this.Header);
       } catch (e) {
         switch (v) {
           case 'GOT_MATCHED':
             this.userInput.logs.length = 0;
             this.userInput.logs.push({ color: '8bb', text: '누군가를 만났습니다.' });
             this.status = 'linked';
+            this.noti.PushLocal({
+              id_ln: this.lnId,
+              title: '누군가를 만났습니다.',
+              largeBody_ln: '',
+              iconColor_ln: this.iconColor,
+              summaryText_ln: this.summaryText,
+              smallIcon_ln: this.Header,
+              channelId_ln: this.Header,
+            }, this.Header);
             break;
           case 'PARTNER_OUT':
             this.userInput.logs.push({ color: 'b88', text: '상대방이 나갔습니다.' });
             this.status = 'unlinked';
+            this.noti.PushLocal({
+              id_ln: this.lnId,
+              title: '상대방이 나갔습니다.',
+              largeBody_ln: '',
+              actionTypeId_ln: 'reconn',
+              iconColor_ln: this.iconColor,
+              summaryText_ln: this.summaryText,
+              smallIcon_ln: this.Header,
+              channelId_ln: this.Header,
+            }, this.Header);
             break;
           default:
             this.userInput.logs.push({ color: '888', text: '대화 상대를 기다립니다..' });
@@ -87,16 +162,36 @@ export class MinimalChatPage implements OnInit {
     this.client.funcs.onclose = (v: any) => {
       this.userInput.logs.push({ color: 'faa', text: '채팅 참가에 실패했습니다.' });
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      this.noti.PushLocal({
+        id_ln: this.lnId,
+        title: '채팅 참가에 실패했습니다.',
+        largeBody_ln: '',
+        actionTypeId_ln: 'reconn',
+        iconColor_ln: this.iconColor,
+        summaryText_ln: this.summaryText,
+        smallIcon_ln: this.Header,
+        channelId_ln: this.Header,
+      }, this.Header);
     }
     this.client.funcs.onopen = (v: any) => {
       this.client.funcs.onclose = (v: any) => {
         this.userInput.logs.push({ color: 'faa', text: '저런!! 팅겼어요.. ㅜㅜ' });
         this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        this.noti.PushLocal({
+          id_ln: this.lnId,
+          title: '저런!! 팅겼어요.. ㅜㅜ',
+          largeBody_ln: '',
+          actionTypeId_ln: 'reconn',
+          iconColor_ln: this.iconColor,
+          summaryText_ln: this.summaryText,
+          smallIcon_ln: this.Header,
+          channelId_ln: this.Header,
+        }, this.Header);
       }
     }
   }
 
-  /** 사용자 상태 */
+  /** 사용자 상태: 키보드 종류 노출 제어용 */
   status: 'idle' | 'linked' | 'unlinked' = 'idle';
   /** 사용자 입력과 관련된 것들 */
   userInput = {
@@ -116,14 +211,24 @@ export class MinimalChatPage implements OnInit {
     } else { // 서버 연결중 아닐 때
       this.userInput.logs.push({ color: 'faa', text: '시작할 수 없어요..' });
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      this.noti.PushLocal({
+        id_ln: this.lnId,
+        title: '시작할 수 없어요..',
+        largeBody_ln: '',
+        actionTypeId_ln: 'exit',
+        iconColor_ln: this.iconColor,
+        summaryText_ln: this.summaryText,
+        smallIcon_ln: this.Header,
+        channelId_ln: this.Header,
+      }, this.Header);
     }
   }
 
   /** 메시지 보내기 */
-  send_to() {
+  send_to(text?: string) {
     let data = {
       uid: this.uuid,
-      msg: this.userInput.text,
+      msg: text || this.userInput.text,
     }
     this.client.send(JSON.stringify(data));
     this.userInput.text = '';
@@ -135,7 +240,9 @@ export class MinimalChatPage implements OnInit {
       this.userInput.logs.push({ color: 'ffa', text: '랜덤채팅에서 벗어납니다.' });
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    this.noti.CancelNoti({ notifications: [{ id: this.lnId }] });
     this.noti.remove_channel(this.NotiChannelInfo);
+    this.noti.removeNotiListener();
     console.warn('modal.dismiss() 설정 필요');
     this.client.disconnect();
   }
@@ -144,5 +251,6 @@ export class MinimalChatPage implements OnInit {
     this.title.setTitle('Project: Cone');
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', 'assets/icon/favicon.png');
+    this.quit_chat();
   }
 }

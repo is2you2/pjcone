@@ -36,11 +36,11 @@
             새 대화
           </ion-button>
         </td>
-        <td *ngIf="status == 'linked' || status == 'custom'" style="width: 100%;">
+        <td *ngIf="status == 'linked'" style="width: 100%;">
           <ion-input type="text" placeholder="메시지 입력..." (keyup.enter)="send_to()" [(ngModel)]="userInput.text">
           </ion-input>
         </td>
-        <td *ngIf="status == 'linked' || status == 'custom'">
+        <td *ngIf="status == 'linked'">
           <ion-button (click)="send_to()" expand="block">
             보내기
           </ion-button>

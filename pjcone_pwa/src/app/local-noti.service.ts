@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { isPlatform } from './app.component';
-import { Attachment, Channel, LocalNotifications, LocalNotificationSchema, RegisterActionTypesOptions, Schedule } from "@capacitor/local-notifications";
+import { ActionPerformed, Attachment, CancelOptions, Channel, LocalNotifications, LocalNotificationSchema, RegisterActionTypesOptions, Schedule } from "@capacitor/local-notifications";
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 
 /** 웹에서도, 앱에서도 동작하는 요소로 구성된 알림폼 재구성  
@@ -79,11 +79,15 @@ interface TotalNotiForm {
    */
   ongoing_ln?: boolean;
   /** LocalNoti: 안드로이드 전용.  
-   * 알림을 클릭해서 알림이 취소됩니다.
+   * 알림을 클릭해서 알림이 취소됩니다.  
+   * 근데 안되더라 ㅡㅡ
    */
   autoCancel_ln?: boolean;
   /** LocalNoti: 안드로이드 전용.  
-   * 받은 편지함 스타일 알림에 표시할 문자열 목록 표기
+   * 받은 편지함 스타일 알림에 표시할 문자열 목록 표기....라는데  
+   * 그냥 문자열 최대 5개가 줄줄줄 적히는 스타일이다..  
+   * 이 녀석도 largeBody와 동일하게 동작하는 것 같다. summartText가 살아남
+   * 실시간으로 리스트를 변경시킬 수 있는 녀석은 아니다
    */
   inboxList_ln?: string[];
   /** LocalNoti: 알림에 저장될 추가 데이터, 미확인 */
@@ -199,6 +203,10 @@ export class LocalNotiService {
     }
   }
 
+  CancelNoti(opt:CancelOptions) {
+    LocalNotifications.cancel(opt);
+  }
+
   /** 채널 만들기_안드로이드 */
   create_channel(channel_info: Channel) {
     LocalNotifications.createChannel(channel_info);
@@ -212,5 +220,25 @@ export class LocalNotiService {
   /** 액션 설정 */
   register_action(_action: RegisterActionTypesOptions) {
     LocalNotifications.registerActionTypes(_action);
+  }
+
+  /**
+   * Listener를 추가하여 알림과 상호작용한다
+   * @param evType Listener 타입: 알림이 떳을 때(Received)와 알림으로 행동했을 때(Performed)
+   * @param act 등록하는 행동
+   */
+  addNotiListener(evType: 'Received' | 'Performed', act: Function = () => { }) {
+    if (evType == 'Received')
+      LocalNotifications.addListener('localNotificationReceived', (v: LocalNotificationSchema) => {
+        act(v);
+      });
+    else if (evType == 'Performed')
+      LocalNotifications.addListener('localNotificationActionPerformed', (v: ActionPerformed) => {
+        act(v);
+      });
+  }
+
+  removeNotiListener() {
+    LocalNotifications.removeAllListeners();
   }
 }
