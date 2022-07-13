@@ -114,6 +114,9 @@ export class LocalNotiService {
     private bgmode: BackgroundMode,
   ) { }
 
+  /** 현재 바라보고 있는 화면 이름, 비교하여 같으면 알림을 보내지 않음 */
+  Current: string;
+
   /** 권한 요청 처리 */
   initialize() {
     if (isPlatform == 'DesktopPWA') {
@@ -127,10 +130,12 @@ export class LocalNotiService {
   }
   /**
    * 로컬 푸쉬 알림을 동작시킵니다
+   * @param header 지금 바라보고 있는 화면의 이름
    * @param opt 알림 옵션
    * @param _action 클릭시 행동
    */
-  PushLocal(opt: TotalNotiForm, _action: Function = () => { }) {
+  PushLocal(opt: TotalNotiForm, header: string = 'favicon', _action: Function = () => { }) {
+    if (this.Current == header) return; // 이미 그 화면에 있다면 굳이 알림을 보내지 않음
     if (isPlatform == 'DesktopPWA') {
       // 창일 바라보는 중이라면 무시됨
       if (document.hasFocus()) return;
@@ -138,7 +143,7 @@ export class LocalNotiService {
       const input: NotificationOptions = {
         badge: opt.badge_wn,
         body: opt.body,
-        icon: opt.icon || 'assets/icon/favicon.png',
+        icon: opt.icon || `assets/icon/${header}.png`,
         image: opt.image,
         lang: opt.lang_wn,
         silent: opt.silent_wn,
@@ -174,7 +179,7 @@ export class LocalNotiService {
         largeIcon: opt.largeIcon_ln,
         ongoing: opt.ongoing_ln,
         schedule: opt.schedule_ln,
-        smallIcon: opt.smallIcon_ln,
+        smallIcon: opt.smallIcon_ln || header || 'logo_mono',
         summaryText: opt.summaryText_ln,
         summaryArgument: opt.summaryText_ln,
       };

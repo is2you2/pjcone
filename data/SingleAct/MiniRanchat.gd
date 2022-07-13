@@ -144,8 +144,9 @@ func matching_system():
 			send_to(_parter2, 'GOT_MATCHED'.to_utf8())
 			counter.matched += 1
 	yield(get_tree().create_timer(5), "timeout")
+	var for_idle:= str('LONG_TIME_NO_SEE:%d' % counter.current).to_utf8()
 	for pid in waiting:
-		send_to(pid, 'LONG_TIME_NO_SEE'.to_utf8())
+		send_to(pid, for_idle)
 	matching_system()
 
 func _exit_tree():

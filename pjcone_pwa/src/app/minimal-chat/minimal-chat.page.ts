@@ -29,14 +29,22 @@ export class MinimalChatPage implements OnInit {
   ) { }
 
   uuid = this.device.uuid;
+  /** 페이지 구분자는 페이지에 사용될 아이콘 이름을 따라가도록 */
+  Header = 'simplechat';
+  /** 지금 연결된 사람 수 */
+  ConnectedNow = 0;
+
+  ionViewDidEnter() {
+    this.noti.Current = this.Header;
+  }
 
   ngOnInit() {
-    this.title.setTitle('커뮤니티 내 랜덤채팅');
+    this.title.setTitle('커뮤니티 랜덤채팅');
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', 'assets/icon/miniranchat.png');
 
     this.client.initialize();
-    this.client.funcs.onmessage = (v: any) => {
+    this.client.funcs.onmessage = (v: string) => {
       try {
         let data = JSON.parse(v);
         let isMe = this.uuid == data['uid'];
@@ -54,10 +62,11 @@ export class MinimalChatPage implements OnInit {
             this.status = 'unlinked';
             break;
           case 'LONG_TIME_NO_SEE':
-            this.userInput.logs.push({ color: '888', text: '대화 상대를 기다립니다..' });
             break;
           default:
-            console.error('예상하지 못한 입력값: ', v);
+            this.userInput.logs.push({ color: '888', text: '대화 상대를 기다립니다..' });
+            let sep = v.split(':');
+            this.ConnectedNow = parseInt(sep[1]);
             break;
         }
       }
