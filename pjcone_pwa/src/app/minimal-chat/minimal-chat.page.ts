@@ -209,8 +209,6 @@ export class MinimalChatPage implements OnInit {
           default:
             let sep = v.split(':');
             this.ConnectedNow = parseInt(sep[1]);
-            if (sep[0] == 'LONG_TIME_NO_SEE')
-              this.userInput.logs.push({ color: '888', text: '대화 상대를 기다립니다..' });
             break;
         }
       }
