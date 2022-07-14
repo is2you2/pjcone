@@ -21,9 +21,9 @@ export class MiniranchatClientService {
    * 클라이언트 연결 시도
    * @param _Address 기본값: 메인 소켓 서버, 사설 서버 주소로 변경 가능
    */
-  initialize(_Address = SOCKET_SERVER_ADDRESS) {
+  initialize(_Address?: string) {
     const PORT: number = 12011;
-    this.client = new WebSocket(`ws://${_Address}:${PORT}`);
+    this.client = new WebSocket(`ws://${_Address || SOCKET_SERVER_ADDRESS}:${PORT}`);
     this.client.onopen = (ev) => {
       this.funcs.onopen(ev);
     }

@@ -3,7 +3,7 @@ import { Title } from '@angular/platform-browser';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { Channel } from '@capacitor/local-notifications';
-import { ModalController } from '@ionic/angular';
+import { ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
 
@@ -29,6 +29,7 @@ export class MinimalChatPage implements OnInit {
     private noti: LocalNotiService,
     private title: Title,
     private bgmode: BackgroundMode,
+    private params: NavParams,
   ) { }
 
   uuid = this.device.uuid;
@@ -110,7 +111,7 @@ export class MinimalChatPage implements OnInit {
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', `assets/icon/${this.Header}.png`);
 
-    this.client.initialize();
+    this.client.initialize(this.params.get('address'));
     this.client.funcs.onmessage = (v: string) => {
       try {
         let data = JSON.parse(v);
@@ -128,6 +129,7 @@ export class MinimalChatPage implements OnInit {
             actionTypeId_ln: 'reply',
             smallIcon_ln: this.Header,
             channelId_ln: this.Header,
+            autoCancel_ln: true,
           }, this.Header);
           this.content_panel.style.height = '32px';
         }
@@ -161,6 +163,7 @@ export class MinimalChatPage implements OnInit {
               summaryText_ln: this.summaryText,
               smallIcon_ln: this.Header,
               channelId_ln: this.Header,
+              autoCancel_ln: true,
             }, this.Header);
             break;
           default:
@@ -186,6 +189,7 @@ export class MinimalChatPage implements OnInit {
         summaryText_ln: this.summaryText,
         smallIcon_ln: this.Header,
         channelId_ln: this.Header,
+        autoCancel_ln: true,
       }, this.Header);
     }
     this.client.funcs.onopen = (v: any) => {
@@ -202,6 +206,7 @@ export class MinimalChatPage implements OnInit {
           summaryText_ln: this.summaryText,
           smallIcon_ln: this.Header,
           channelId_ln: this.Header,
+          autoCancel_ln: true,
         }, this.Header);
       }
     }
@@ -242,6 +247,7 @@ export class MinimalChatPage implements OnInit {
         summaryText_ln: this.summaryText,
         smallIcon_ln: this.Header,
         channelId_ln: this.Header,
+        autoCancel_ln: true,
       }, this.Header);
     }
   }
@@ -278,8 +284,8 @@ export class MinimalChatPage implements OnInit {
     this.noti.CancelNoti({ notifications: [{ id: this.lnId }] });
     this.noti.remove_channel(this.NotiChannelInfo);
     this.noti.removeNotiListener();
-    console.warn('modal.dismiss() 설정 필요');
     this.client.disconnect();
+    this.modal.dismiss();
   }
 
   ionViewWillLeave() {

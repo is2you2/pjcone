@@ -114,9 +114,7 @@ interface TotalNotiForm {
   tag_wn?: string;
 }
 
-/** ### 로컬 알림
- * 알림 신호를 받으면 로컬 알림을 생성함
- */
+/** 로컬 알림 */
 @Injectable({
   providedIn: 'root'
 })

@@ -4,8 +4,7 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'minimal-chat',
-    pathMatch: 'full'
+    loadChildren: () => import('./portal/portal.module').then( m => m.PortalPageModule)
   },
   {
     path: 'starcraft_custom',
@@ -13,19 +12,19 @@ const routes: Routes = [
   },
   {
     path: 'login',
-    loadChildren: () => import('./login/login.module').then( m => m.LoginPageModule)
+    loadChildren: () => import('./login/login.module').then(m => m.LoginPageModule)
   },
   {
     path: 'register',
-    loadChildren: () => import('./register/register.module').then( m => m.RegisterPageModule)
+    loadChildren: () => import('./register/register.module').then(m => m.RegisterPageModule)
   },
   {
     path: 'privacy',
-    loadChildren: () => import('./privacy/privacy.module').then( m => m.PrivacyPageModule)
+    loadChildren: () => import('./privacy/privacy.module').then(m => m.PrivacyPageModule)
   },
   {
     path: 'minimal-chat',
-    loadChildren: () => import('./minimal-chat/minimal-chat.module').then( m => m.MinimalChatPageModule)
+    loadChildren: () => import('./minimal-chat/minimal-chat.module').then(m => m.MinimalChatPageModule)
   },
 ];
 
