@@ -213,7 +213,8 @@ export class LocalNotiService {
 
   CancelNoti(opt: CancelOptions) {
     if (isPlatform == 'DesktopPWA') {
-      this.WebNoties[opt.notifications[0].id].close();
+      if (this.WebNoties[opt.notifications[0].id])
+        this.WebNoties[opt.notifications[0].id].close();
     } else if (isPlatform != 'MobilePWA')
       LocalNotifications.cancel(opt);
   }

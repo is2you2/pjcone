@@ -33,6 +33,7 @@ export class MinimalChatPage implements OnInit {
   ) { }
 
   uuid = this.device.uuid;
+  header_title: string;
   /** 페이지 구분자는 페이지에 사용될 아이콘 이름을 따라가도록 */
   Header = 'simplechat';
   iconColor = '#dddddd';
@@ -58,19 +59,32 @@ export class MinimalChatPage implements OnInit {
     this.bgmode.on('deactivate').subscribe(() => {
       this.noti.CancelNoti({ notifications: [{ id: this.lnId }] });
     })
+    let get_address = this.params.get('address');
+    let name = this.params.get('name');
+    let reply_act = [{
+      id: 'send',
+      title: '답장',
+      input: true,
+    }, {
+      id: 'reconn',
+      title: '새 대화'
+    }];
+    if (get_address) {
+      this.status = 'custom';
+      this.summaryText = '그룹채팅';
+      reply_act = [{
+        id: 'send',
+        title: '답장',
+        input: true,
+      }];
+    }
+    this.userInput.logs.push({ color: 'bbb', text: this.status == 'custom' ? '그룹채팅에 참가합니다.' : '랜덤채팅에 참가합니다.' });
     this.noti.Current = this.Header;
     this.noti.create_channel(this.NotiChannelInfo);
     this.noti.register_action({
       types: [{
         id: 'reply',
-        actions: [{
-          id: 'send',
-          title: '답장',
-          input: true,
-        }, {
-          id: 'reconn',
-          title: '새 대화'
-        }]
+        actions: reply_act,
       }, {
         id: 'reconn',
         actions: [{
@@ -91,7 +105,7 @@ export class MinimalChatPage implements OnInit {
         case 'send': // 입력값 보내기
           this.noti.CancelNoti({ notifications: [{ id: this.lnId }] });
           this.bgmode.moveToBackground();
-          this.send_to(v['inputValue']);
+          this.send(v['inputValue']);
           break;
         case 'reconn':
           this.bgmode.moveToBackground();
@@ -107,30 +121,56 @@ export class MinimalChatPage implements OnInit {
     });
 
     this.content_panel = document.getElementById('content');
-    this.title.setTitle(this.params.get('address') ? 'Project: 그룹채팅' : 'Project: 랜덤채팅');
+    this.title.setTitle(get_address ? 'Project: 그룹채팅' : 'Project: 랜덤채팅');
+    this.header_title = get_address ? '작은 그룹 채팅' : '작은 랜덤 채팅';
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', `assets/icon/${this.Header}.png`);
 
-    this.client.initialize(this.params.get('address'));
+    this.client.initialize(get_address);
     this.client.funcs.onmessage = (v: string) => {
       try {
         let data = JSON.parse(v);
         let isMe = this.uuid == data['uid'];
-        let target = isMe ? '나' : '상대방';
-        this.userInput.logs.push({ color: isMe ? 'bbf' : data['uid'] ? data['uid'].substring(0, 3) : '888', text: data['msg'], target: target });
+        let target = isMe ? (name || '나') : (data['name'] || (this.status == 'custom' ? '참여자' : '상대방'));
+        let color = data['uid'] ? data['uid'].substring(0, 3) : '888';
+        if (data['msg'])
+          this.userInput.logs.push({ color: color, text: data['msg'], target: target });
+        else if (data['type']) {
+          console.log(data);
+          if (data['type'] == 'join')
+            this.userInput.logs.push({ color: color, text: '그룹에 참여했습니다.', target: target });
+          else
+            this.userInput.logs.push({ color: color, text: '그룹을 떠났습니다.', target: target });
+        }
+        if (data['count']) this.ConnectedNow = data['count'];
         if (!isMe) {
-          this.noti.PushLocal({
-            id: this.lnId,
-            title: target,
-            body: data['msg'],
-            largeBody_ln: data['msg'],
-            iconColor_ln: this.iconColor,
-            summaryText_ln: this.summaryText,
-            actionTypeId_ln: 'reply',
-            smallIcon_ln: this.Header,
-            channelId_ln: this.Header,
-            autoCancel_ln: true,
-          }, this.Header);
+          if (data['msg'])
+            this.noti.PushLocal({
+              id: this.lnId,
+              title: target,
+              body: data['msg'],
+              largeBody_ln: data['msg'],
+              iconColor_ln: this.iconColor,
+              summaryText_ln: this.summaryText,
+              actionTypeId_ln: 'reply',
+              smallIcon_ln: this.Header,
+              channelId_ln: this.Header,
+              autoCancel_ln: true,
+            }, this.Header);
+          else if (data['type']) {
+            let isJoin = data['type'] == 'join';
+            this.noti.PushLocal({
+              id: this.lnId,
+              title: isJoin ? '사용자 참여' : '사용자 떠남',
+              body: target,
+              largeBody_ln: target + ` | ${isJoin ? '그룹에 참여했습니다.' : '그룹을 떠났습니다.'}`,
+              iconColor_ln: this.iconColor,
+              summaryText_ln: this.summaryText,
+              smallIcon_ln: this.Header,
+              channelId_ln: this.Header,
+              autoCancel_ln: true,
+            }, this.Header);
+          }
           this.content_panel.style.height = '32px';
         }
       } catch (e) {
@@ -193,13 +233,22 @@ export class MinimalChatPage implements OnInit {
       }, this.Header);
     }
     this.client.funcs.onopen = (v: any) => {
+      if (get_address) {
+        let count = {
+          uid: this.uuid,
+          name: name,
+          type: 'join',
+        }
+        this.client.send(JSON.stringify(count));
+      }
       this.client.funcs.onclose = (v: any) => {
-        this.userInput.logs.push({ color: 'faa', text: '저런!! 팅겼어요.. ㅜㅜ' });
+        let text = '서버 운영이 종료되었습니다.';
+        this.userInput.logs.push({ color: 'faa', text: text });
         this.content_panel.style.height = '32px';
         this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.noti.PushLocal({
           id: this.lnId,
-          title: '저런!! 팅겼어요.. ㅜㅜ',
+          title: text,
           largeBody_ln: '',
           actionTypeId_ln: 'exit',
           iconColor_ln: this.iconColor,
@@ -213,11 +262,11 @@ export class MinimalChatPage implements OnInit {
   }
 
   /** 사용자 상태: 키보드 종류 노출 제어용 */
-  status: 'idle' | 'linked' | 'unlinked' = 'idle';
+  status: 'idle' | 'linked' | 'unlinked' | 'custom' = 'idle';
   /** 사용자 입력과 관련된 것들 */
   userInput = {
     /** 채팅, 로그 등 대화창에 표기되는 모든 것 */
-    logs: [{ color: 'bbb', text: this.params.get('address') ? '그룹채팅에 참가합니다.' : '랜덤채팅에 참가합니다.' } as ReceivedTextForm],
+    logs: [],
     /** 작성 텍스트 */
     text: '',
   }
@@ -235,12 +284,13 @@ export class MinimalChatPage implements OnInit {
         this.req_refreshed = false;
       }, 5000);
     } else { // 서버 연결중 아닐 때
-      this.userInput.logs.push({ color: 'faa', text: '시작할 수 없어요..' });
+      let text = '시작할 수 없어요..';
+      this.userInput.logs.push({ color: 'faa', text: text });
       this.content_panel.style.height = '32px';
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       this.noti.PushLocal({
         id: this.lnId,
-        title: '시작할 수 없어요..',
+        title: text,
         largeBody_ln: '',
         actionTypeId_ln: 'exit',
         iconColor_ln: this.iconColor,
@@ -264,12 +314,14 @@ export class MinimalChatPage implements OnInit {
   }
 
   /** 메시지 보내기 */
-  send_to(text?: string) {
+  send(text?: string) {
     let data = {
       uid: this.uuid,
       msg: text || this.userInput.text,
     }
     if (!data.msg.trim()) return;
+    let name = this.params.get('name');
+    if (name) data['name'] = name;
     this.client.send(JSON.stringify(data));
     this.userInput.text = '';
     this.focus_on_input();
@@ -278,7 +330,7 @@ export class MinimalChatPage implements OnInit {
   /** 채팅 앱 종료하기 */
   quit_chat() {
     this.client.funcs.onclose = () => {
-      this.userInput.logs.push({ color: 'ffa', text: this.params.get('address') ? '그룹채팅에서 나옵니다.' : '랜덤채팅에서 벗어납니다.' });
+      this.userInput.logs.push({ color: 'ffa', text: this.status == 'custom' ? '그룹채팅에서 나옵니다.' : '랜덤채팅에서 벗어납니다.' });
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     this.noti.CancelNoti({ notifications: [{ id: this.lnId }] });
@@ -286,6 +338,7 @@ export class MinimalChatPage implements OnInit {
     this.noti.removeNotiListener();
     this.client.disconnect();
     this.modal.dismiss();
+    this.params.get('onQuit')();
   }
 
   ionViewWillLeave() {

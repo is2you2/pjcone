@@ -34,9 +34,12 @@ export class MiniranchatClientService {
       console.error('오류 발생: ', e);
     }
     this.client.onmessage = (ev) => {
-      ev.data.text().then((v: any) => {
-        this.funcs.onmessage(v);
-      });
+      if (typeof ev.data == 'string')
+        this.funcs.onmessage(ev.data);
+      else
+        ev.data.text().then((v: any) => {
+          this.funcs.onmessage(v);
+        });
     }
   }
 

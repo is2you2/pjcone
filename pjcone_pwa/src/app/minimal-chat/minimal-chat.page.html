@@ -1,9 +1,9 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start" (click)="quit_chat()">
+    <ion-buttons slot="start" (click)="modal.dismiss()">
       <ion-back-button defaultHref=""></ion-back-button>
     </ion-buttons>
-    <ion-title>작은 랜덤 채팅</ion-title>
+    <ion-title>{{header_title}}</ion-title>
     <div style="margin: 8px 16px;" slot="end">동시접속자: {{ConnectedNow}}명</div>
   </ion-toolbar>
 </ion-header>
@@ -36,13 +36,13 @@
             새 대화
           </ion-button>
         </td>
-        <td *ngIf="status == 'linked'" style="width: 100%;">
-          <ion-input type="text" placeholder="메시지 입력..." (ionFocus)="focus_on_input()" (keyup.enter)="send_to()"
+        <td *ngIf="status == 'linked' || status == 'custom'" style="width: 100%;">
+          <ion-input type="text" placeholder="메시지 입력..." (ionFocus)="focus_on_input()" (keyup.enter)="send()"
             [(ngModel)]="userInput.text">
           </ion-input>
         </td>
-        <td *ngIf="status == 'linked'">
-          <ion-button (click)="send_to()" expand="block">
+        <td *ngIf="status == 'linked' || status == 'custom'">
+          <ion-button (click)="send()" expand="block">
             보내기
           </ion-button>
         </td>

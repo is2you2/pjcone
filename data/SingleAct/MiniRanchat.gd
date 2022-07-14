@@ -94,8 +94,12 @@ func _received(id:int, _try_left:= 5):
 		var data:= raw_data.get_string_from_utf8()
 		var json = JSON.parse(data).result
 		if json is Dictionary:
-			send_to(id, raw_data)
-			send_to(matched[id], raw_data)
+			match(json):
+				{'name', 'type', ..}: # 그룹채팅용 폼 무시
+					pass				
+				_:
+					send_to(id, raw_data)
+					send_to(matched[id], raw_data)
 		else:
 			match(data):
 				'REQ_REGROUPING':
