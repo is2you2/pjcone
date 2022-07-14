@@ -107,7 +107,7 @@ export class MinimalChatPage implements OnInit {
     });
 
     this.content_panel = document.getElementById('content');
-    this.title.setTitle('Project: 랜덤채팅');
+    this.title.setTitle(this.params.get('address') ? 'Project: 그룹채팅' : 'Project: 랜덤채팅');
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', `assets/icon/${this.Header}.png`);
 
@@ -120,7 +120,7 @@ export class MinimalChatPage implements OnInit {
         this.userInput.logs.push({ color: isMe ? 'bbf' : data['uid'] ? data['uid'].substring(0, 3) : '888', text: data['msg'], target: target });
         if (!isMe) {
           this.noti.PushLocal({
-            id_ln: this.lnId,
+            id: this.lnId,
             title: target,
             body: data['msg'],
             largeBody_ln: data['msg'],
@@ -140,7 +140,7 @@ export class MinimalChatPage implements OnInit {
             this.userInput.logs.push({ color: '8bb', text: '누군가를 만났습니다.' });
             this.status = 'linked';
             this.noti.PushLocal({
-              id_ln: this.lnId,
+              id: this.lnId,
               title: '누군가를 만났습니다.',
               actionTypeId_ln: 'reply',
               largeBody_ln: '',
@@ -155,7 +155,7 @@ export class MinimalChatPage implements OnInit {
             this.userInput.logs.push({ color: 'b88', text: '상대방이 나갔습니다.' });
             this.status = 'unlinked';
             this.noti.PushLocal({
-              id_ln: this.lnId,
+              id: this.lnId,
               title: '상대방이 나갔습니다.',
               largeBody_ln: '',
               actionTypeId_ln: 'reconn',
@@ -181,7 +181,7 @@ export class MinimalChatPage implements OnInit {
       this.content_panel.style.height = '32px';
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       this.noti.PushLocal({
-        id_ln: this.lnId,
+        id: this.lnId,
         title: '채팅 참가에 실패했습니다.',
         largeBody_ln: '',
         actionTypeId_ln: 'exit',
@@ -198,7 +198,7 @@ export class MinimalChatPage implements OnInit {
         this.content_panel.style.height = '32px';
         this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.noti.PushLocal({
-          id_ln: this.lnId,
+          id: this.lnId,
           title: '저런!! 팅겼어요.. ㅜㅜ',
           largeBody_ln: '',
           actionTypeId_ln: 'exit',
@@ -217,7 +217,7 @@ export class MinimalChatPage implements OnInit {
   /** 사용자 입력과 관련된 것들 */
   userInput = {
     /** 채팅, 로그 등 대화창에 표기되는 모든 것 */
-    logs: [{ color: 'bbb', text: '랜덤채팅에 참가합니다.' } as ReceivedTextForm],
+    logs: [{ color: 'bbb', text: this.params.get('address') ? '그룹채팅에 참가합니다.' : '랜덤채팅에 참가합니다.' } as ReceivedTextForm],
     /** 작성 텍스트 */
     text: '',
   }
@@ -239,7 +239,7 @@ export class MinimalChatPage implements OnInit {
       this.content_panel.style.height = '32px';
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       this.noti.PushLocal({
-        id_ln: this.lnId,
+        id: this.lnId,
         title: '시작할 수 없어요..',
         largeBody_ln: '',
         actionTypeId_ln: 'exit',
@@ -278,7 +278,7 @@ export class MinimalChatPage implements OnInit {
   /** 채팅 앱 종료하기 */
   quit_chat() {
     this.client.funcs.onclose = () => {
-      this.userInput.logs.push({ color: 'ffa', text: '랜덤채팅에서 벗어납니다.' });
+      this.userInput.logs.push({ color: 'ffa', text: this.params.get('address') ? '그룹채팅에서 나옵니다.' : '랜덤채팅에서 벗어납니다.' });
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     this.noti.CancelNoti({ notifications: [{ id: this.lnId }] });

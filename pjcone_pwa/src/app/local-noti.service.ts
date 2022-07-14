@@ -7,8 +7,10 @@ import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
  * 실험을 거쳐 차례로 병합해가기
  */
 interface TotalNotiForm {
-  /** LocalNoti: 알림 아이디 */
-  id_ln: number,
+  /** LocalNoti: 알림 아이디  
+   * 웹에서도 활용하는 구조로 변경됨
+   */
+  id: number,
   /** 타이틀 */
   title: string;
   /** LocalNoti: 경우가 좀 있다.  
@@ -126,10 +128,17 @@ export class LocalNotiService {
 
   /** 현재 바라보고 있는 화면 이름, 비교하여 같으면 알림을 보내지 않음 */
   Current: string;
+  /** 웹에서 앱 아이디를 따라 알림 관리  
+   * { id: Notification }
+   */
+  WebNoties = {} as { [id: string]: Notification };
 
   /** 권한 요청 처리 */
   initialize() {
     if (isPlatform == 'DesktopPWA') {
+      if (!("Notification" in window)) {
+        console.error('Notification 미지원 브라우저입니다');
+      }
       Notification.requestPermission().then(v => {
         if (v != 'granted')
           console.warn('알림 거절', v);
@@ -152,7 +161,7 @@ export class LocalNotiService {
       const input: NotificationOptions = {
         badge: opt.badge_wn,
         body: opt.body,
-        icon: opt.icon_wm || `assets/icon/${header}.png`,
+        icon: opt.icon_wm || `assets/icon/${header}.png` || `assets/icon/favicon.png`,
         image: opt.image_wn,
         lang: opt.lang_wn,
         silent: opt.silent_wn,
@@ -163,17 +172,18 @@ export class LocalNotiService {
         requireInteraction: opt.requireInteraction_wn,
         dir: opt.dir_wn,
       }
-      const _noti = new Notification(opt.title, { ...input });
+      this.WebNoties[opt.id] = new Notification(opt.title, { ...input });
 
-      _noti.onclick = () => {
+      this.WebNoties[opt.id].onclick = () => {
         _action_wm();
         window.focus();
       };
-    } else { // 모바일 로컬 푸쉬
+      this.WebNoties[opt.id].onshow = (e) => console.error(`WebNoties 동작 오류_${opt.id}: ${e}`)
+    } else if (isPlatform != 'MobilePWA') { // 모바일 로컬 푸쉬
       // 포어그라운드일 때 동작 안함, 포어그라운드면서 해당 화면이면 동작 안함
       if (!this.bgmode.isActive() && this.Current == header) return;
       const input: LocalNotificationSchema = {
-        id: opt.id_ln,
+        id: opt.id,
         title: opt.title,
         body: opt.body,
         actionTypeId: opt.actionTypeId_ln,
@@ -201,23 +211,29 @@ export class LocalNotiService {
     }
   }
 
-  CancelNoti(opt:CancelOptions) {
-    LocalNotifications.cancel(opt);
+  CancelNoti(opt: CancelOptions) {
+    if (isPlatform == 'DesktopPWA') {
+      this.WebNoties[opt.notifications[0].id].close();
+    } else if (isPlatform != 'MobilePWA')
+      LocalNotifications.cancel(opt);
   }
 
   /** 채널 만들기_안드로이드 */
   create_channel(channel_info: Channel) {
-    LocalNotifications.createChannel(channel_info);
+    if (isPlatform == 'Android' || isPlatform == 'iOS')
+      LocalNotifications.createChannel(channel_info);
   }
 
   /** 채널 삭제 */
   remove_channel(channel_info: Channel) {
-    LocalNotifications.deleteChannel(channel_info);
+    if (isPlatform == 'Android' || isPlatform == 'iOS')
+      LocalNotifications.deleteChannel(channel_info);
   }
 
   /** 액션 설정 */
   register_action(_action: RegisterActionTypesOptions) {
-    LocalNotifications.registerActionTypes(_action);
+    if (isPlatform == 'Android' || isPlatform == 'iOS')
+      LocalNotifications.registerActionTypes(_action);
   }
 
   /**
@@ -226,17 +242,19 @@ export class LocalNotiService {
    * @param act 등록하는 행동
    */
   addNotiListener(evType: 'Received' | 'Performed', act: Function = () => { }) {
-    if (evType == 'Received')
-      LocalNotifications.addListener('localNotificationReceived', (v: LocalNotificationSchema) => {
-        act(v);
-      });
-    else if (evType == 'Performed')
-      LocalNotifications.addListener('localNotificationActionPerformed', (v: ActionPerformed) => {
-        act(v);
-      });
+    if (isPlatform == 'Android' || isPlatform == 'iOS')
+      if (evType == 'Received')
+        LocalNotifications.addListener('localNotificationReceived', (v: LocalNotificationSchema) => {
+          act(v);
+        });
+      else if (evType == 'Performed')
+        LocalNotifications.addListener('localNotificationActionPerformed', (v: ActionPerformed) => {
+          act(v);
+        });
   }
 
   removeNotiListener() {
-    LocalNotifications.removeAllListeners();
+    if (isPlatform == 'Android' || isPlatform == 'iOS')
+      LocalNotifications.removeAllListeners();
   }
 }
