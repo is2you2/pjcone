@@ -14,8 +14,9 @@ export class SettingsPage implements OnInit {
 
   ngOnInit() { }
 
-  go_to_licenses() {
-    this.nav.navigateForward('settings/licenses', {
+  /** ios 애니메이션 페이지 이동 */
+  go_to_page(_page: string) {
+    this.nav.navigateForward(`settings/${_page}`, {
       animation: iosTransitionAnimation,
     })
   }

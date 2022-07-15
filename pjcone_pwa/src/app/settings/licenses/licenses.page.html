@@ -9,12 +9,48 @@
 
 <ion-content>
   <ion-list-header>
-    <ion-label>Program</ion-label>
+    <ion-label>Ionic 6</ion-label>
     <ion-button>보기</ion-button>
   </ion-list-header>
   <ion-item-divider>
-    <ion-label>License name</ion-label>
+    <ion-label>Ionic CLI</ion-label>
   </ion-item-divider>
-  <textarea class="license" disabled>Loading..</textarea>
-  ionic 6, capacitor, Godot engine_sub, p5js, noto font
+  <textarea id="ionic" class="license" disabled [(ngModel)]="licenses['ionic']['cli']"></textarea>
+  <ion-item-divider>
+    <ion-label>Capacitor</ion-label>
+  </ion-item-divider>
+  <textarea id="capacitor" class="license" disabled [(ngModel)]="licenses['ionic']['capacitor']"></textarea>
+
+  <ion-list-header>
+    <ion-label>Godot engine</ion-label>
+    <ion-button>보기</ion-button>
+  </ion-list-header>
+  <ion-item-divider>
+    <ion-label>Godot engine</ion-label>
+  </ion-item-divider>
+  <textarea id="godot" class="license" disabled [(ngModel)]="licenses['godot']['engine']"></textarea>
+  <ion-item-divider>
+    <ion-label>FreeType</ion-label>
+  </ion-item-divider>
+  <textarea id="freetype" class="license" disabled [(ngModel)]="licenses['godot']['freetype']"></textarea>
+  <ion-item-divider>
+    <ion-label>E Net</ion-label>
+  </ion-item-divider>
+  <textarea id="enet" class="license" disabled [(ngModel)]="licenses['godot']['enet']"></textarea>
+  <ion-item-divider>
+    <ion-label>mbed TLS</ion-label>
+  </ion-item-divider>
+  <textarea id="mbedtls" class="license" disabled [(ngModel)]="licenses['godot']['mbedtls']"></textarea>
+
+  <ion-list-header>
+    <ion-label>p5js</ion-label>
+    <ion-button>보기</ion-button>
+  </ion-list-header>
+  <textarea id="p5js" class="license" disabled [(ngModel)]="licenses['p5js']"></textarea>
+
+  <ion-list-header>
+    <ion-label>Noto Sans</ion-label>
+    <ion-button>보기</ion-button>
+  </ion-list-header>
+  <textarea id="notosans" class="license" disabled [(ngModel)]="licenses['notosans']"></textarea>
 </ion-content>

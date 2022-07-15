@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { SOCKET_SERVER_ADDRESS } from '../app.component';
 import { LocalGroupServerService } from '../local-group-server.service';
 import { MinimalChatPage } from '../minimal-chat/minimal-chat.page';
 
