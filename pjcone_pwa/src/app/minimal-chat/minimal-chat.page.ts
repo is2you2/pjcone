@@ -122,7 +122,7 @@ export class MinimalChatPage implements OnInit {
 
     this.content_panel = document.getElementById('content');
     this.title.setTitle(get_address ? 'Project: 그룹채팅' : 'Project: 랜덤채팅');
-    this.header_title = get_address ? '작은 그룹 채팅' : '작은 랜덤 채팅';
+    this.header_title = get_address ? '그룹 채팅' : '미니랜챗';
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', `assets/icon/${this.Header}.png`);
 
@@ -240,7 +240,7 @@ export class MinimalChatPage implements OnInit {
         this.client.send(JSON.stringify(count));
       }
       this.client.funcs.onclose = (v: any) => {
-        let text = '서버 운영이 종료되었습니다.';
+        let text = '채팅에 참가할 수 없습니다.';
         this.userInput.logs.push({ color: 'faa', text: text });
         this.content_panel.style.height = '32px';
         this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
