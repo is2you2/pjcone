@@ -120,11 +120,11 @@ Godot 엔진이 현재 가지고 있는 서비스 상의 한계를 뛰어넘기 
 - [백그라운드 모드 안드로이드 권한 설정](https://stackoverflow.com/questions/69101863/background-mode-not-quite-working-ionic-app-sleeps-after-5-minutes)
 ```xml
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>  
-<uses-permission android:name="android.permission.ACCESS_BACKGROUND_SERVICE"/>  
+<!-- <uses-permission android:name="android.permission.ACCESS_BACKGROUND_SERVICE"/>   -->
 <uses-permission android:name="android.permission.WAKE_LOCK" />  
 <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />  
 ```
-- icon-mono 이미지 등록하기
+- Godot-html은 백그라운드가 켜져있더라도 액션이 멈춤, 통신을 ionic에 의존해야함 
 
 ## 사용중인 포트
 12000: SingleAct_카운터
