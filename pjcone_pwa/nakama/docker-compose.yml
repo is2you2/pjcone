@@ -1,0 +1,57 @@
+version: '3'
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:9.6-alpine
+    environment:
+      - POSTGRES_DB=nakama
+      - POSTGRES_PASSWORD=localdb
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    expose:
+      - "8080"
+      - "5432"
+    ports:
+      - "5432:5432"
+      - "8080:8080"
+  nakama:
+    container_name: nakama
+    image: registry.heroiclabs.com/heroiclabs/nakama:3.12.0
+    entrypoint:
+      - "/bin/sh"
+      - "-ecx"
+      - >
+        /nakama/nakama migrate up --database.address postgres:localdb@postgres:5432/nakama &&
+        /nakama/nakama --config /nakama/data/pjcone.yml
+    restart: always
+    links:
+      - "postgres:db"
+    depends_on:
+      - postgres
+    volumes:
+      - ./data/:/nakama/data
+    expose:
+      - "7349"
+      - "7350"
+      - "7351"
+    ports:
+      - "7349:7349"
+      - "7350:7350"
+      - "7351:7351"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7350/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  godot:
+    container_name: godot
+    image: ubuntu
+    volumes:
+      - ./godot:/root/shared
+    ports:
+      - "12000:12000" # Counter
+      - "12010:12010" # Exim
+      - "12011:12011" # MiniChat
+    command: tail -F anything
+volumes:
+  data:

@@ -5,6 +5,7 @@ import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { Platform } from '@ionic/angular';
 import { LocalNotiService } from './local-noti.service';
 import { WscService } from './wsc.service';
+import { NamakaClientService } from "./namaka-client.service";
 /** 페이지가 돌고 있는 플렛폼 구분자 */
 export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'DesktopPWA';
 /** 소켓서버용 */
@@ -24,6 +25,7 @@ export class AppComponent {
     noti: LocalNotiService,
     client: WscService,
     bgmode: BackgroundMode,
+    nakama: NamakaClientService,
   ) {
     if (platform.is('desktop'))
       isPlatform = 'DesktopPWA';
@@ -35,6 +37,7 @@ export class AppComponent {
       isPlatform = 'iOS';
     noti.initialize();
     client.initialize();
+    nakama.initialize();
     // 모바일 기기 특정 설정
     if (isPlatform == 'Android' || isPlatform == 'iOS') {
       App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {

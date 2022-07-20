@@ -1,0 +1,15 @@
+name: pjcone
+data_dir: "./data/"
+
+database:
+    address:
+      - 'postgres:localdb@postgres:5432/nakama'
+
+logger:
+    stdout: true
+    # level: "warn"
+    file: "/nakama/data/logfile.log"
+
+console:
+    username: "pjcone"
+    password: "nfyfamf3hduf?"
