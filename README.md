@@ -127,11 +127,11 @@ Godot 엔진이 현재 가지고 있는 서비스 상의 한계를 뛰어넘기 
 - Godot-html은 백그라운드가 켜져있더라도 액션이 멈춤, 통신을 ionic에 의존해야함 
 
 ## 사용중인 포트
-12000: SingleAct_카운터
-12010: Exim4
-12011: Minichat 병합
+- 12000: SingleAct_카운터
+- 12010: Exim4
+- 12011: Minichat 병합
 
 ## License
 MIT
 ### 사용된 주 프로그램 고지
-Ionic 6, Capacitor, Godot engine, p5js
+Ionic 6, Capacitor, Godot engine, p5js, Nakama
