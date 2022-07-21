@@ -1328,11 +1328,6 @@
   "resolved" "https://registry.npmjs.org/@capacitor/keyboard/-/keyboard-1.2.2.tgz"
   "version" "1.2.2"
 
-"@capacitor/local-notifications@^1.1.0":
-  "integrity" "sha512-l6S9rBylxGPq/U+xpJzZcOL4l2s8I2Igq7uDTidR4imIxxX3bLRz9nDSQREWsbQkFx7ALFm/5Y8PJGz2C6qKPw=="
-  "resolved" "https://registry.npmjs.org/@capacitor/local-notifications/-/local-notifications-1.1.0.tgz"
-  "version" "1.1.0"
-
 "@capacitor/status-bar@1.0.8":
   "integrity" "sha512-lhxa70K6vg0QjdddbT9RqFLfQ9a0Fk1OVE54MhUH30DWymv4h2LrC+mJgH6JS46WQbR2UCHRymfmVCq1PS2Qiw=="
   "resolved" "https://registry.npmjs.org/@capacitor/status-bar/-/status-bar-1.0.8.tgz"
