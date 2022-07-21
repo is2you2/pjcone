@@ -281,6 +281,13 @@
   dependencies:
     "@types/cordova" "latest"
 
+"@awesome-cordova-plugins/badge@^5.44.0":
+  "integrity" "sha512-tli5zSum7mMY37lNb9Xv9/seo0+r50qPKa3efsApahvLeJLbeNVnBPwAP+Lk1/1EMvvdT6kTjHYC7NVBsgOQFQ=="
+  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/badge/-/badge-5.44.0.tgz"
+  "version" "5.44.0"
+  dependencies:
+    "@types/cordova" "latest"
+
 "@awesome-cordova-plugins/camera@^5.41.0":
   "integrity" "sha512-Awzs4Khf4lJqPN8DeJQA9AqlT66o2L2PuixCh4xPSYS1BI2l2t0LUkR3XwPFAtz2HbGvnHUk9jr6yXbl0M3AHA=="
   "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/camera/-/camera-5.41.0.tgz"
@@ -305,6 +312,13 @@
 "@awesome-cordova-plugins/device@^5.44.0":
   "integrity" "sha512-Fq+yv3JXBv8RCoekNuMRhXmPCWE+UAPllTK2/xKQRHTnz/goNcvmFFCtFUCljWAnxHMuItWjhKuyh1iAcjhvAw=="
   "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/device/-/device-5.44.0.tgz"
+  "version" "5.44.0"
+  dependencies:
+    "@types/cordova" "latest"
+
+"@awesome-cordova-plugins/local-notifications@^5.44.0":
+  "integrity" "sha512-w96OMJOauCGUIoZV/JSm56rpmt7lUODAjf8DcaIlaS3HJ2JMKpR0FeGGocaGW61Cvamhjo/Ce9OsyZtWFeQRvA=="
+  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/local-notifications/-/local-notifications-5.44.0.tgz"
   "version" "5.44.0"
   dependencies:
     "@types/cordova" "latest"
@@ -3230,6 +3244,11 @@
   "resolved" "https://registry.npmjs.org/cordova-plugin-background-mode/-/cordova-plugin-background-mode-0.7.3.tgz"
   "version" "0.7.3"
 
+"cordova-plugin-badge@^0.8.8":
+  "integrity" "sha512-RhIBtd5xhD/iLnxjt35jvOae28oNW/wtMZBOmQR3Rf0y4wirvA1bpAZEhBoFqL+rZGhsd6ddOdQXdex1T0DRyQ=="
+  "resolved" "https://registry.npmjs.org/cordova-plugin-badge/-/cordova-plugin-badge-0.8.8.tgz"
+  "version" "0.8.8"
+
 "cordova-plugin-camera@^6.0.0":
   "integrity" "sha512-FTFKep8HZI/2HkX+Gc/dUACfZGV9+k9waXlgoEOKXOiPPR/1zBw29Mw+adcz4FQUpdWyAgYDxNiaPUnP0P+H2Q=="
   "resolved" "https://registry.npmjs.org/cordova-plugin-camera/-/cordova-plugin-camera-6.0.0.tgz"
@@ -3239,6 +3258,11 @@
   "integrity" "sha512-FU0Lw1jZpuKOgG4v80LrfMAOIMCGfAVPumn7AwaX9S1iU/X3OPZUyoKUgP09q4bxL35IeNPkqNWVKYduAXZ1sg=="
   "resolved" "https://registry.npmjs.org/cordova-plugin-device/-/cordova-plugin-device-2.1.0.tgz"
   "version" "2.1.0"
+
+"cordova-plugin-local-notification@^0.9.0-beta.2":
+  "integrity" "sha512-63n77K1pt8dnbWnNR8QWETi9Glezi1bvNHvHWmGNIOv0xCb0phZnm+Ku49BQ+omwe8Z5voMvrA4I03SYPpv38w=="
+  "resolved" "https://registry.npmjs.org/cordova-plugin-local-notification/-/cordova-plugin-local-notification-0.9.0-beta.2.tgz"
+  "version" "0.9.0-beta.2"
 
 "cordova-plugin-speechrecognition@^1.2.0":
   "integrity" "sha1-AF8QyJb9kpPYWH/lUiorZC3qlwo="
@@ -5380,6 +5404,11 @@
     "@types/node" "*"
     "merge-stream" "^2.0.0"
     "supports-color" "^8.0.0"
+
+"jetifier@^2.0.0":
+  "integrity" "sha512-J4Au9KuT74te+PCCCHKgAjyLlEa+2VyIAEPNCdE5aNkAJ6FAJcAqcdzEkSnzNksIa9NkGmC4tPiClk2e7tCJuQ=="
+  "resolved" "https://registry.npmjs.org/jetifier/-/jetifier-2.0.0.tgz"
+  "version" "2.0.0"
 
 "js-base64@^3.6.0":
   "integrity" "sha512-NnRs6dsyqUXejqk/yv2aiXlAvOs56sLkX6nUdeaNezI5LFFLlsZjOThmwnrcwh5ZZRwZlCMnVAY3CvhIhoVEKQ=="
