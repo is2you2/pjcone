@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ModalController } from '@ionic/angular';
 import { SERVER_PATH_ROOT } from '../app.component';
-import { RemoteControllerService, RemotePage } from '../remote-controller.service';
 import * as p5 from "p5";
 import { DetailPage } from './detail/detail.page';
 import { GuestbookPage } from './guestbook/guestbook.page';
@@ -12,22 +11,17 @@ import { GuestbookPage } from './guestbook/guestbook.page';
   templateUrl: './starcraft-custom.page.html',
   styleUrls: ['./starcraft-custom.page.scss'],
 })
-export class StarcraftCustomPage implements OnInit, RemotePage {
+export class StarcraftCustomPage implements OnInit {
 
   root = SERVER_PATH_ROOT;
 
   constructor(
     private title: Title,
-    private remote: RemoteControllerService,
     private modal: ModalController,
   ) {
   }
 
   Header = 'sc1-custom';
-
-  remote_act = {
-    'youtube': () => this.link_youtube()
-  };
 
   ngOnInit() {
     this.draw_p5();
@@ -37,7 +31,6 @@ export class StarcraftCustomPage implements OnInit, RemotePage {
     this.title.setTitle('스타크래프트 1: 캠페인식 컴까기');
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', `assets/icon/${this.Header}.png`);
-    this.remote.target = this;
   }
 
   link_youtube() {
