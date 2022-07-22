@@ -5,6 +5,8 @@ import * as p5 from 'p5';
 interface ToastInfo {
   /** 보여지는 문구 */
   text?: string;
+  /** 보여지는 시간 강제, 초 단위 */
+  duration?: number;
   /** 이미지 경로 */
   img?: string;
 }
@@ -104,8 +106,11 @@ export class P5ToastService {
                 borderLerp -= .03;
               else {
                 borderLerp = 0;
-                let duration = new TextEncoder().encode(AlertNow.text).length;
-                WillReadEndAt = p.millis() + duration * 96 + 960;
+                let duration;
+                if (AlertNow.duration)
+                  duration = AlertNow.duration * 1000;
+                else duration = new TextEncoder().encode(AlertNow.text).length * 96;
+                WillReadEndAt = p.millis() + duration + 960;
                 this.status = Status.Reading;
               }
               break;
@@ -115,8 +120,7 @@ export class P5ToastService {
                   this.stack.push(AlertNow);
                   AlertNow = this.alert.shift();
                   content.html(AlertNow.text);
-                  borderLerp = 1;
-                  this.status = Status.BorderAlert;
+                  this.status = Status.DivFadeIn;
                 } else this.status = Status.FadeOut;
               }
               break;
@@ -151,6 +155,8 @@ export class P5ToastService {
       }
       this.CurrentToast = new p5(_toast);
       this.isShowing = true;
+    } else if (this.status == Status.FadeOut) {
+      this.status = Status.DivFadeIn;
     }
   }
 
