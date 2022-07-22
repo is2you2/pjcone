@@ -68,8 +68,6 @@ interface TotalNotiForm {
   number_ln?: number;
   /** 알림 아이콘의 색상. 안드로이드 전용 */
   iconColor_ln?: string;
-  /** 첨부파일, 이미지 링크 (url 확인됨) */
-  attachments_ln?: string[];
   /** 안드로이드 전용. 그룹알림시 그룹 이름. 테스트 안됨  
    * Used to group multiple notifications.
    *
@@ -101,8 +99,8 @@ interface TotalNotiForm {
    * Mobile: 알림에 같이 보여지는 뱃지 숫자
    */
   badge?: number;
-  /** Web.Noti: 이미지 첨부, 가로폭에 맞추어 보여짐 */
-  image_wn?: string;
+  /** 이미지 첨부, 가로폭에 맞추어 보여짐 */
+  image?: string;
   /** Web.Noti: 미확인 */
   renotify_wn?: boolean;
   /** Web.Noti: 미확인 */
@@ -172,7 +170,7 @@ export class LocalNotiService {
         badge: `${opt.badge}`,
         body: opt.body,
         icon: opt.icon || `assets/icon/${header}.png` || `assets/icon/favicon.png`,
-        image: opt.image_wn,
+        image: opt.image,
         lang: opt.lang_wn,
         silent: opt.silent,
         tag: opt.tag_wn,
@@ -193,10 +191,8 @@ export class LocalNotiService {
       // 포어그라운드일 때 동작 안함, 포어그라운드면서 해당 화면이면 동작 안함
       if (!this.bgmode.isActive() && this.Current == header) return;
       let input: ILocalNotification = {};
-      if (opt.id)
-        input['id'] = opt.id;
-      if (opt.title)
-        input['title'] = opt.title;
+      input['id'] = opt.id;
+      input['title'] = opt.title;
       if (opt.body)
         input['text'] = opt.body;
       if (opt.actions_ln)
@@ -207,8 +203,8 @@ export class LocalNotiService {
         input['launch'] = opt.launch_ln;
       if (opt.badge)
         input['badge'] = opt.badge;
-      if (opt.attachments_ln)
-        input['attachments'] = opt.attachments_ln;
+      if (opt.image)
+        input['attachments'] = [opt.image];
       if (opt.clock_ln)
         input['clock'] = opt.clock_ln;
       if (opt.iconColor_ln)
