@@ -133,6 +133,7 @@ npx cap sync android
 ```
 
 ## 사용중인 포트
+- 7350-7352: Nakama
 - 12000: SingleAct_카운터
 - 12010: Exim4
 - 12011: Minichat 병합
