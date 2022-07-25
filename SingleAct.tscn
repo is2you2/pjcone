@@ -25,11 +25,7 @@ script = ExtResource( 7 )
 [node name="MiniRanchat" type="Node" parent="."]
 script = ExtResource( 5 )
 
-[node name="Account" type="Node" parent="."]
-
-[node name="UserManager" type="Node" parent="Account"]
-
-[node name="SendExim4Mail" type="Node" parent="Account"]
+[node name="SendExim4Mail" type="Node" parent="."]
 script = ExtResource( 1 )
 
 [node name="m" type="MarginContainer" parent="."]
