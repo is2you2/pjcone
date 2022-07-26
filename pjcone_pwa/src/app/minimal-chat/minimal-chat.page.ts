@@ -36,7 +36,7 @@ export class MinimalChatPage implements OnInit {
   header_title: string;
   /** 페이지 구분자는 페이지에 사용될 아이콘 이름을 따라가도록 */
   Header = 'simplechat';
-  iconColor = '#dddddd';
+  iconColor = 'd8d8d8';
   lnId = 11;
   summaryText = '미니랜챗';
   /** 지금 연결된 사람 수 */
