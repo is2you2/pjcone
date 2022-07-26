@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { NamakaClientService } from './namaka-client.service';
+import { NakamaService } from './nakama.service';
 
-describe('NamakaClientService', () => {
-  let service: NamakaClientService;
+describe('NakamaService', () => {
+  let service: NakamaService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(NamakaClientService);
+    service = TestBed.inject(NakamaService);
   });
 
   it('should be created', () => {

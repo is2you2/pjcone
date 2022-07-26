@@ -4,8 +4,8 @@ import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { Platform } from '@ionic/angular';
 import { LocalNotiService } from './local-noti.service';
+import { NakamaService } from './nakama.service';
 import { WscService } from './wsc.service';
-import { NamakaClientService } from "./namaka-client.service";
 /** 페이지가 돌고 있는 플렛폼 구분자 */
 export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'DesktopPWA';
 /** 소켓서버용 */
@@ -25,7 +25,7 @@ export class AppComponent {
     noti: LocalNotiService,
     client: WscService,
     bgmode: BackgroundMode,
-    nakama: NamakaClientService,
+    nakama: NakamaService,
   ) {
     if (platform.is('desktop'))
       isPlatform = 'DesktopPWA';

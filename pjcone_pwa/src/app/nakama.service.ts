@@ -1,16 +1,18 @@
 import { Injectable } from '@angular/core';
-import { Client, Session } from "@heroiclabs/nakama-js";
+import { Client, Session, Socket } from "@heroiclabs/nakama-js";
 import { SOCKET_SERVER_ADDRESS } from './app.component';
+
 
 @Injectable({
   providedIn: 'root'
 })
-export class NamakaClientService {
+export class NakamaService {
 
   constructor() { }
 
   client: Client;
-  AuthSession: Session;
+  session: Session;
+  socket: Socket;
 
   initialize() {
     this.client = new Client('defaultkey', SOCKET_SERVER_ADDRESS);
