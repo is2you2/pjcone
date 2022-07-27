@@ -136,6 +136,10 @@ npx cap sync android
     minSdkVersion = 22,
     cordovaAndroidVersion = '10.1.2',
 ```
+- Component 중복 링크 불가로 엔진 부르기를 할 때 아래 코드를 직접 사용하는 것으로 대체합니다
+```html
+<iframe id="godot" src="assets/html/index.html" frameborder="0" class="full_screen"></iframe>
+```
 
 ## 사용중인 포트
 - 7350-7352: Nakama
