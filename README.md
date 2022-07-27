@@ -131,6 +131,11 @@ npm install jetifier
 npx jetify
 npx cap sync android
 ```
+- Android 빌드 후 버전 정보 변경 (수동): android/variables.gradle
+```gradle
+    minSdkVersion = 22,
+    cordovaAndroidVersion = '10.1.2',
+```
 
 ## 사용중인 포트
 - 7350-7352: Nakama

@@ -316,6 +316,20 @@
   dependencies:
     "@types/cordova" "latest"
 
+"@awesome-cordova-plugins/file@^5.44.0":
+  "integrity" "sha512-O0agCnPSnCloVqPGalxtbRIow5jTQAkqC0HRaQ+wDdRnTLUXvjGGCPVa7F7JsKHAmle4/pFuxNsio1nxI0SOBQ=="
+  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/file/-/file-5.44.0.tgz"
+  "version" "5.44.0"
+  dependencies:
+    "@types/cordova" "latest"
+
+"@awesome-cordova-plugins/http@^5.44.0":
+  "integrity" "sha512-NQzAn6TPF+lr4Fu3F48ssbc3Jp+/2l441/3PhIBJ6AYCCB2ZtgBky1Bg722Pw0qV2TVxKoJqCKSI33odRZI8xg=="
+  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/http/-/http-5.44.0.tgz"
+  "version" "5.44.0"
+  dependencies:
+    "@types/cordova" "latest"
+
 "@awesome-cordova-plugins/local-notifications@^5.44.0":
   "integrity" "sha512-w96OMJOauCGUIoZV/JSm56rpmt7lUODAjf8DcaIlaS3HJ2JMKpR0FeGGocaGW61Cvamhjo/Ce9OsyZtWFeQRvA=="
   "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/local-notifications/-/local-notifications-5.44.0.tgz"
@@ -3234,6 +3248,11 @@
     "schema-utils" "^4.0.0"
     "serialize-javascript" "^6.0.0"
 
+"cordova-plugin-advanced-http@^3.3.1":
+  "integrity" "sha512-hESuB3mxIHCUrzb5lm7juda6PSNcC5N8Invizj5wGV2rSldCapiNxMTEpzKR1UVPDDP2XOtBzO0SAYS+3+g/ig=="
+  "resolved" "https://registry.npmjs.org/cordova-plugin-advanced-http/-/cordova-plugin-advanced-http-3.3.1.tgz"
+  "version" "3.3.1"
+
 "cordova-plugin-background-mode@^0.7.3":
   "integrity" "sha512-LsU1v7EgTUROaks+tcQ8TnMzVUcU/TwjDVwj2O/4e4aI2q2ldLGsiZorqKqfqvwh2HoIssmY73OwJk91hQi62w=="
   "resolved" "https://registry.npmjs.org/cordova-plugin-background-mode/-/cordova-plugin-background-mode-0.7.3.tgz"
@@ -3253,6 +3272,11 @@
   "integrity" "sha512-FU0Lw1jZpuKOgG4v80LrfMAOIMCGfAVPumn7AwaX9S1iU/X3OPZUyoKUgP09q4bxL35IeNPkqNWVKYduAXZ1sg=="
   "resolved" "https://registry.npmjs.org/cordova-plugin-device/-/cordova-plugin-device-2.1.0.tgz"
   "version" "2.1.0"
+
+"cordova-plugin-file@^7.0.0":
+  "integrity" "sha512-mSwy9GE5pHq2ZHhu/wYk/VhrwR5VLk+XQsk3+IiiFmDgcPsrVIyELkM2FZKX09cC6i+bJVTFVKUlwteSStj3ow=="
+  "resolved" "https://registry.npmjs.org/cordova-plugin-file/-/cordova-plugin-file-7.0.0.tgz"
+  "version" "7.0.0"
 
 "cordova-plugin-local-notification@^0.9.0-beta.2":
   "integrity" "sha512-63n77K1pt8dnbWnNR8QWETi9Glezi1bvNHvHWmGNIOv0xCb0phZnm+Ku49BQ+omwe8Z5voMvrA4I03SYPpv38w=="

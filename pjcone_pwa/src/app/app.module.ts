@@ -9,6 +9,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { LocalNotifications } from '@awesome-cordova-plugins/local-notifications/ngx';
+import { File } from "@awesome-cordova-plugins/file/ngx";
+import { HTTP } from "@awesome-cordova-plugins/http/ngx";
 
 @NgModule({
   declarations: [AppComponent],
@@ -19,6 +21,8 @@ import { LocalNotifications } from '@awesome-cordova-plugins/local-notifications
     BackgroundMode,
     NavParams,
     LocalNotifications,
+    File,
+    HTTP,
   ],
   bootstrap: [AppComponent],
 })
