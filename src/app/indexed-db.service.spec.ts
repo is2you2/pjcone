@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { RemoteServerService } from './remote-server.service';
+import { IndexedDBService } from './indexed-db.service';
 
-describe('RemoteServerService', () => {
-  let service: RemoteServerService;
+describe('IndexedDBService', () => {
+  let service: IndexedDBService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(RemoteServerService);
+    service = TestBed.inject(IndexedDBService);
   });
 
   it('should be created', () => {

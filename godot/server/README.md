@@ -125,8 +125,24 @@ Godot 엔진이 현재 가지고 있는 서비스 상의 한계를 뛰어넘기 
 <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />  
 ```
 - Godot-html은 백그라운드가 켜져있더라도 액션이 멈춤, 통신을 ionic에 의존해야함 
+- 최초 Android 플랫폼 설치 후 오류시 다음 코드 진행
+```bash
+npm install jetifier
+npx jetify
+npx cap sync android
+```
+- Android 빌드 후 버전 정보 변경 (수동): android/variables.gradle
+```gradle
+    minSdkVersion = 22,
+    cordovaAndroidVersion = '10.1.2',
+```
+- Component 중복 링크 불가로 엔진 부르기를 할 때 아래 코드를 직접 사용하는 것으로 대체합니다
+```html
+<iframe id="godot" src="assets/html/index.html" frameborder="0" class="full_screen"></iframe>
+```
 
 ## 사용중인 포트
+- 7350-7352: Nakama
 - 12000: SingleAct_카운터
 - 12010: Exim4
 - 12011: Minichat 병합

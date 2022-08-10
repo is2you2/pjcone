@@ -1,51 +1,74 @@
 import { Injectable } from '@angular/core';
 import { isPlatform } from './app.component';
-import { ActionPerformed, Attachment, CancelOptions, Channel, LocalNotifications, LocalNotificationSchema, RegisterActionTypesOptions, Schedule } from "@capacitor/local-notifications";
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
+import { ILocalNotification, ILocalNotificationAction, ILocalNotificationProgressBar, ILocalNotificationTrigger, LocalNotifications } from '@awesome-cordova-plugins/local-notifications/ngx';
+
+declare var cordova: any;
 
 /** 웹에서도, 앱에서도 동작하는 요소로 구성된 알림폼 재구성  
  * 실험을 거쳐 차례로 병합해가기
  */
 interface TotalNotiForm {
-  /** LocalNoti: 알림 아이디  
+  /** 알림 아이디  
    * 웹에서도 활용하는 구조로 변경됨
    */
   id: number,
   /** 타이틀 */
   title: string;
-  /** LocalNoti: 경우가 좀 있다.  
-   * 1. body만 쓰는 경우: 알림이 접혀있든 펴져있든 보인다.
-   * 2. largeBody와 같이 쓰는 경우: 접혀있을 때만 보인다.
+  /** 내용 글귀  
+   * ~~1. body만 쓰는 경우: 알림이 접혀있든 펴져있든 보인다.~~  
+   * ~~2. largeBody와 같이 쓰는 경우: 접혀있을 때만 보인다.~~
    */
   body?: string;
-  /** LocalNoti: 알림을 펼쳤을 때 보여지는 내용.  
-   * body 없이 얘만 설정하면 알림이 접힌 상태에서 내용이 없다.
+  /** 하단 행동 추가용 (예를 들어 답장, 읽기 등) */
+  actions_ln?: ILocalNotificationAction[];
+  /** 알림 중요도. -2 ~ 2 */
+  priority_ln?: number;
+  /** 안드로이드 전용.  
+   * 잠금화면에서 보이기 여부
    */
-  largeBody_ln?: string;
-  /** LocalNoti: 안드로이드 전용: 최상단 제목 옆 추가 글귀  
-   * *body, largeBody가 사용되지 않는다면 동작하지 않음
+  lockscreen_ln?: boolean;
+  /** 앱을 클릭하여 포어그라운드로 넘어갈지 여부 */
+  launch_ln?: boolean;
+  /** 미확인  
+   * ANDROID ONLY If and how the notification shall show the when date. Possbile values: boolean: true equals 'clock', false disable a watch/counter 'clock': Show the when date in the content view 'chronometer': Show a stopwatch
    */
-  summaryText_ln?: string;
-  /** LocalNoti: 나중에 이 알림을 예약하세요 */
-  schedule_ln?: Schedule;
-  /** 알림 펼치면 있는 아이콘, 칼라임 */
-  icon_wm?: string;
-  /** LocalNoti: 상태바 들어가는 아이콘, 기본 아이콘보다 우선처리  
+  clock_ln?: boolean;
+  /** 진행바 표기 */
+  progressBar_ln?: boolean | ILocalNotificationProgressBar;
+  /** 알림 펼치면 있는 아이콘, 칼라임  
+   * 모바일은 안드로이드 전용. 우측에 대형을 들어가는 아이콘
+   */
+  icon?: string;
+  /** 상단바와 알림 좌측에 보이는 작은 아이콘  
    * res/drawable 폴더에 포함되어 있는 이름. 안드로이드 전용
    */
   smallIcon_ln?: string;
-  /** LocalNoti: 알림에 사용되는 큰 아이콘  
-   * 우측에 좀 더 큰 모양으로 뜬다.  
-   * res/drawable 폴더에 포함되어 있는 이름. 안드로이드 전용
+  /** 안드로이드 전용. 알림에 화면이 켜지는지 여부  
+   * 기본적으로 켜지게 되어있으나 false로 끌 수 있음
+  */
+  wakeup_ln?: boolean;
+  /** 안드로이드 전용. 테스트 안됨  
+   * ANDROID ONLY Define the blinking of the LED on the device. If set to true, the LED will blink in the default color with timings for on and off set to 1000 ms. If set to a string, the LED will blink in this ARGB value with timings for on and off set to 1000 ms. If set to an array, the value of the key 0 will be used as the color, the value of the key 1 will be used as the 'on' timing, the value of the key 2 will be used as the 'off' timing
    */
-  largeIcon_ln?: string;
-  /** LocalNoti: 알림 아이콘의 색상 */
+  led_ln?: string | boolean | any[] | {
+    color: string;
+    on: number;
+    off: number;
+  }
+  /** 안드로이드 전용, 테스트 안됨  
+   * ANDROID ONLY Set the token for the media session
+   */
+  mediaSesion_ln?: string;
+  /** 언제 발동할까요? */
+  triggerWhen_ln?: ILocalNotificationTrigger;
+  /** 안드로이드 전용. 테스트 안됨  
+   * 이 알림이 나타내는 항목 수
+   */
+  number_ln?: number;
+  /** 알림 아이콘의 색상. 안드로이드 전용 */
   iconColor_ln?: string;
-  /** LocalNoti: 첨부파일, 미확인 */
-  attachments_ln?: Attachment[];
-  /** LocalNoti: 알림과 작업유형 연결 ID, 미확인 */
-  actionTypeId_ln?: string;
-  /** LocalNoti: 안드로이드 전용. 그룹알림  
+  /** 안드로이드 전용. 그룹알림시 그룹 이름. 테스트 안됨  
    * Used to group multiple notifications.
    *
    * Calls `setGroup()` on
@@ -54,50 +77,30 @@ interface TotalNotiForm {
    * @since 1.0.0
    */
   group_ln?: string;
-  /** LocalNoti: 안드로이드 전용, 그룹을 사용할 때 그룹 요약  
-   * If true, this notification becomes the summary for a group of
-   * notifications.
-   *
-   * Calls `setGroupSummary()` on
-   * [`NotificationCompat.Builder`](https://developer.android.com/reference/androidx/core/app/NotificationCompat.Builder)
-   * with the provided value.
-   *
-   * Only available for Android when using `group`.
-   */
+  /** 안드로이드 전용, 그룹 요약 사용여부 */
   groupSummary_ln?: boolean;
-  /** LocalNoti: 알림 채널 설정  
-   * Specifies the channel the notification should be delivered on.
-   *
-   * If channel with the given name does not exist then the notification will
-   * not fire. If not provided, it will use the default channel.
-   *
-   * Calls `setChannelId()` on
-   * [`NotificationCompat.Builder`](https://developer.android.com/reference/androidx/core/app/NotificationCompat.Builder)
-   * with the provided value.
-   */
-  channelId_ln?: string;
-  /** LocalNoti: 안드로이드 전용.  
+  /** 안드로이드 전용: 그룹요약 사용시 요약내용 */
+  groupSummaryText_ln?: string;
+  /** 안드로이드 전용.  
    * 알림을 밀어서 제거할 수 있는지 여부
    */
   ongoing_ln?: boolean;
-  /** LocalNoti: 안드로이드 전용.  
+  /** 안드로이드 전용.  
    * 알림을 클릭해서 알림이 취소됩니다.  
-   * 근데 안되더라 ㅡㅡ
    */
   autoCancel_ln?: boolean;
-  /** LocalNoti: 안드로이드 전용.  
-   * 받은 편지함 스타일 알림에 표시할 문자열 목록 표기....라는데  
-   * 그냥 문자열 최대 5개가 줄줄줄 적히는 스타일이다..  
-   * 이 녀석도 largeBody와 동일하게 동작하는 것 같다. summartText가 살아남
-   * 실시간으로 리스트를 변경시킬 수 있는 녀석은 아니다
-   */
-  inboxList_ln?: string[];
-  /** LocalNoti: 알림에 저장될 추가 데이터, 미확인 */
+  /** 소리 설정 */
+  sound_ln?: string;
+  /** 안드로이드 전용. 알아서 꺼지기 시간 */
+  timeoutAfter_ln?: number | false;
+  /** 알림에 저장될 추가 데이터, Json 형태로 저장됩니다 */
   extra_ln?: any;
-  /** Web.Noti: 미확인 */
-  badge_wn?: string;
-  /** Web.Noti: 이미지 첨부, 가로폭에 맞추어 보여짐 */
-  image_wn?: string;
+  /** Web.Noti: 미확인  
+   * Mobile: 알림에 같이 보여지는 뱃지 숫자
+   */
+  badge?: number;
+  /** 이미지 첨부, 가로폭에 맞추어 보여짐 */
+  image?: string;
   /** Web.Noti: 미확인 */
   renotify_wn?: boolean;
   /** Web.Noti: 미확인 */
@@ -110,10 +113,14 @@ interface TotalNotiForm {
   lang_wn?: string;
   /** Web.Noti: 미확인 */
   requireInteraction_wn?: boolean;
-  /** Web.Noti: 미확인 */
-  silent_wn?: boolean;
+  /** Web.Noti: 미확인  
+   * 모바일: 미확인, 조용한 알림 여부
+   */
+  silent?: boolean;
   /** Web.Noti: 미확인 */
   tag_wn?: string;
+  /** 기본 진동 모드 여부 */
+  vibrate_ln?: boolean;
 }
 
 /** 로컬 알림 */
@@ -123,6 +130,7 @@ interface TotalNotiForm {
 export class LocalNotiService {
 
   constructor(
+    private noti: LocalNotifications,
     private bgmode: BackgroundMode,
   ) { }
 
@@ -159,12 +167,12 @@ export class LocalNotiService {
       if (document.hasFocus() && this.Current == header) return;
       /** 기본 알림 옵션 (교체될 수 있음) */
       const input: NotificationOptions = {
-        badge: opt.badge_wn,
+        badge: `${opt.badge}`,
         body: opt.body,
-        icon: opt.icon_wm || `assets/icon/${header}.png` || `assets/icon/favicon.png`,
-        image: opt.image_wn,
+        icon: opt.icon || `assets/icon/${header}.png` || `assets/icon/favicon.png`,
+        image: opt.image,
         lang: opt.lang_wn,
-        silent: opt.silent_wn,
+        silent: opt.silent,
         tag: opt.tag_wn,
         actions: opt.actions_wn,
         data: opt.data_wn,
@@ -182,80 +190,85 @@ export class LocalNotiService {
     } else if (isPlatform != 'MobilePWA') { // 모바일 로컬 푸쉬
       // 포어그라운드일 때 동작 안함, 포어그라운드면서 해당 화면이면 동작 안함
       if (!this.bgmode.isActive() && this.Current == header) return;
-      const input: LocalNotificationSchema = {
-        id: opt.id,
-        title: opt.title,
-        body: opt.body,
-        actionTypeId: opt.actionTypeId_ln,
-        autoCancel: opt.autoCancel_ln,
-        attachments: opt.attachments_ln,
-        channelId: opt.channelId_ln,
-        extra: opt.extra_ln,
-        group: opt.group_ln,
-        groupSummary: opt.groupSummary_ln,
-        iconColor: opt.iconColor_ln,
-        inboxList: opt.inboxList_ln,
-        largeBody: opt.largeBody_ln,
-        largeIcon: opt.largeIcon_ln,
-        ongoing: opt.ongoing_ln,
-        schedule: opt.schedule_ln,
-        smallIcon: opt.smallIcon_ln || header || 'icon_mono',
-        summaryText: opt.summaryText_ln,
-        summaryArgument: opt.summaryText_ln,
-      };
-      LocalNotifications.schedule({
-        notifications: [{
-          ...input
-        }]
+      let input: ILocalNotification = {};
+      input['id'] = opt.id;
+      input['title'] = opt.title;
+      if (opt.body)
+        input['text'] = opt.body;
+      if (opt.actions_ln)
+        input['actions'] = opt.actions_ln;
+      if (opt.autoCancel_ln)
+        input['autoClear'] = opt.autoCancel_ln;
+      if (opt.launch_ln)
+        input['launch'] = opt.launch_ln;
+      if (opt.badge)
+        input['badge'] = opt.badge;
+      if (opt.image)
+        input['attachments'] = [opt.image];
+      if (opt.clock_ln)
+        input['clock'] = opt.clock_ln;
+      if (opt.iconColor_ln)
+        input['color'] = opt.iconColor_ln;
+      if (opt.extra_ln)
+        input['data'] = opt.extra_ln;
+      if (opt.group_ln)
+        input['group'] = opt.group_ln;
+      if (opt.groupSummary_ln)
+        input['groupSummary'] = opt.groupSummary_ln;
+      if (opt.groupSummaryText_ln)
+        input['summary'] = opt.groupSummaryText_ln;
+      if (opt.led_ln)
+        input['led'] = opt.led_ln;
+      if (opt.lockscreen_ln)
+        input['lockscreen'] = opt.lockscreen_ln;
+      if (opt.mediaSesion_ln)
+        input['mediaSession'] = opt.mediaSesion_ln;
+      if (opt.number_ln)
+        input['number'] = opt.number_ln;
+      if (opt.progressBar_ln)
+        input['progressBar'] = opt.progressBar_ln;
+      if (opt.priority_ln)
+        input['priority'] = opt.priority_ln;
+      if (opt.silent)
+        input['silent'] = opt.silent;
+      if (opt.timeoutAfter_ln)
+        input['timeoutAfter'] = opt.timeoutAfter_ln;
+      if (opt.wakeup_ln)
+        input['wakeup'] = opt.wakeup_ln;
+      if (opt.ongoing_ln)
+        input['sticky'] = opt.ongoing_ln;
+      if (opt.triggerWhen_ln)
+        input['trigger'] = opt.triggerWhen_ln;
+      if (opt.vibrate_ln)
+        input['vibrate'] = opt.vibrate_ln;
+      if (opt.icon)
+        input['icon'] = `res://${opt.icon}`;
+      input['smallIcon'] = `res://${opt.smallIcon_ln || header || 'icon_mono'}`;
+      input['sound'] = `res://${opt.sound_ln || 'platform_default'}`;
+      input['foreground'] = true;
+      this.noti.schedule(input);
+    }
+  }
+
+  /** 알림 제거하기 */
+  ClearNoti(id: any) {
+    if (isPlatform == 'DesktopPWA') {
+      if (this.WebNoties[id])
+        this.WebNoties[id].close();
+    } else if (isPlatform != 'MobilePWA')
+      this.noti.clear(id);
+  }
+
+  /** 알림 행동 받기  
+   * eventName — The name of the event. Available events: schedule(예약됨), trigger(발생됨), click(눌렀을 때), update, clear, clearall, cancel, cancelall. Custom event names are possible for actions 
+   */
+  SetListener(ev: string, subscribe: Function = (v: any, eopts: any) => console.warn(`${ev}: ${v}/${eopts}`)) {
+    if (isPlatform == 'DesktopPWA') {
+    } else if (isPlatform != 'MobilePWA') {
+      cordova.plugins.notification.local.on(ev, (v: any, eopts: any) => {
+        subscribe(v, eopts);
       });
     }
   }
 
-  CancelNoti(opt: CancelOptions) {
-    if (isPlatform == 'DesktopPWA') {
-      if (this.WebNoties[opt.notifications[0].id])
-        this.WebNoties[opt.notifications[0].id].close();
-    } else if (isPlatform != 'MobilePWA')
-      LocalNotifications.cancel(opt);
-  }
-
-  /** 채널 만들기_안드로이드 */
-  create_channel(channel_info: Channel) {
-    if (isPlatform == 'Android' || isPlatform == 'iOS')
-      LocalNotifications.createChannel(channel_info);
-  }
-
-  /** 채널 삭제 */
-  remove_channel(channel_info: Channel) {
-    if (isPlatform == 'Android' || isPlatform == 'iOS')
-      LocalNotifications.deleteChannel(channel_info);
-  }
-
-  /** 액션 설정 */
-  register_action(_action: RegisterActionTypesOptions) {
-    if (isPlatform == 'Android' || isPlatform == 'iOS')
-      LocalNotifications.registerActionTypes(_action);
-  }
-
-  /**
-   * Listener를 추가하여 알림과 상호작용한다
-   * @param evType Listener 타입: 알림이 떳을 때(Received)와 알림으로 행동했을 때(Performed)
-   * @param act 등록하는 행동
-   */
-  addNotiListener(evType: 'Received' | 'Performed', act: Function = () => { }) {
-    if (isPlatform == 'Android' || isPlatform == 'iOS')
-      if (evType == 'Received')
-        LocalNotifications.addListener('localNotificationReceived', (v: LocalNotificationSchema) => {
-          act(v);
-        });
-      else if (evType == 'Performed')
-        LocalNotifications.addListener('localNotificationActionPerformed', (v: ActionPerformed) => {
-          act(v);
-        });
-  }
-
-  removeNotiListener() {
-    if (isPlatform == 'Android' || isPlatform == 'iOS')
-      LocalNotifications.removeAllListeners();
-  }
 }

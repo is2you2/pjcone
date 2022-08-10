@@ -4,7 +4,7 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    loadChildren: () => import('./portal/portal.module').then( m => m.PortalPageModule)
+    loadChildren: () => import('./portal/portal.module').then(m => m.PortalPageModule)
   },
   {
     path: 'starcraft_custom',
@@ -28,7 +28,7 @@ const routes: Routes = [
   },
   {
     path: 'settings',
-    loadChildren: () => import('./settings/settings.module').then( m => m.SettingsPageModule)
+    loadChildren: () => import('./settings/settings.module').then(m => m.SettingsPageModule)
   },
 ];
 
