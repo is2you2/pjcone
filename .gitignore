@@ -1,35 +1,36 @@
-*.import
-import/*
-*.blend1
-*.translation
-android/*
-*.tmp
-html/*
-*.bak
-result/*
-# FileEdit 읽은파일 무시
-addons/file-editor/lastopenedfiles.lastcfg
-# Mono-specific ignores
-.mono/
-data_*/
-mono_crash.*.json
-# Text editor related
-test_files/
-.trash/
-.trash.json
-.text_editor_state.json
-word_skip_list.txt
-# NakamaClient ignores
-*.swp
-test_suite/addons
-test_suite/addons/*
-test_suite/.import/*
-# System/tool-specific ignores
-.directory
+# Specifies intentionally untracked files to ignore when using Git
+# http://git-scm.com/docs/gitignore
+
 *~
-# 파생결과물 무시
-exports/*
-# 테스트용 데이터베이스 폴더 무시
-gd_database/*
-# vscode debug 설정 무시
-.vscode/*
+*.sw[mnpcod]
+.tmp
+*.tmp
+*.tmp.*
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+UserInterfaceState.xcuserstate
+$RECYCLE.BIN/
+
+*.log
+log.txt
+npm-debug.log*
+
+/.angular
+/.idea
+/.ionic
+/.sass-cache
+/.sourcemaps
+/.versions
+/.vscode
+/coverage
+/dist
+/node_modules
+/platforms
+/plugins
+/www
+
+# 출력 결과물 무시 (capacitor-mobile-Android Ionic project)
+/android
+html/
