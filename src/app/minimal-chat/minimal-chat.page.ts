@@ -131,7 +131,7 @@ export class MinimalChatPage implements OnInit {
               id: this.lnId,
               title: '누군가를 만났습니다.',
               actions_ln: [{
-                id: 'reply',
+                id: 'send',
                 type: ILocalNotificationActionType.INPUT,
                 title: '인사'
               }],
