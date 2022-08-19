@@ -1,1 +1,5 @@
 .cookie
+
+# godot에 생성되는 심볼릭 링크 무시
+godot/public.pem
+godot/private.pem
