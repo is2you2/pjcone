@@ -33,3 +33,5 @@ exports/*
 gd_database/*
 # vscode debug 설정 무시
 .vscode/*
+# 에디터에서 에셋 링크 무시
+assets

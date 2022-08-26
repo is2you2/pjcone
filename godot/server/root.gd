@@ -3,20 +3,24 @@ extends Node
 
 # 이 색깔로 로그 발생시 오류로 처리
 const LOG_ERR:= 'faa'
+
 # 이번 부팅의 로그 기록
 var rich_log:= '-- Server program started.'
 var rich_node:RichTextLabel
+
 # csv 분할자
 const SEP_CHAR:= '，'
+
 # 데이터베이스 폴더 경로 with '/'
 var root_path:String
+
 # 웹 페이지 경로 with '/'
 var html_path:String
 
 func _init():
 	if OS.is_debug_build():
 		root_path = 'res://gd_database/'
-		html_path = 'res://pjcone_pwa/src/'
+		html_path = 'res://'
 		var file:= File.new() # 테스트 중인 경우 이 폴더를 프로젝트로부터 무시합니다
 		if file.open(root_path + '.gdignore', File.WRITE):
 			file.store_string('gdignore')
