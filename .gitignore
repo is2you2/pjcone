@@ -34,3 +34,5 @@ npm-debug.log*
 # 출력 결과물 무시 (capacitor-mobile-Android Ionic project)
 /android
 html/
+# 고도엔진 파일 무시
+Godot_v*

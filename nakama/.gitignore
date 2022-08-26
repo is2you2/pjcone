@@ -5,6 +5,5 @@ godot/public.pem
 godot/private.pem
 
 # 고도서버 무시
-godot/Godot_v*
 godot/assets
 godot/gd_database/exim4_send_content.cfg
