@@ -47,11 +47,13 @@ func logging(header:String, content:String, _con_col:= 'bbb'):
 		time['minute'],
 		time['second'],
 		sys_time.substr(sys_time.length() - 3)
-	] # 로그 생성
-	var result:= '%s%s | %s' % [
-		stamp, header, content
+	] # 오류 여부 검토
+	var is_alert:= _con_col == LOG_ERR
+	# 로그 생성
+	var result:= '%s%s%s | %s' % [
+		'*' if is_alert else '', stamp, header, content
 	]
-	if _con_col == LOG_ERR:
+	if is_alert:
 		printerr(result)
 	else: # 일반 로그
 		print(result)
