@@ -43,15 +43,5 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  godot:
-    container_name: godot
-    image: ubuntu
-    volumes:
-      - ./godot:/root/shared
-    ports:
-      - "12000:12000" # Counter
-      - "12010:12010" # Exim
-      - "12011:12011" # MiniChat
-    command: tail -F anything
 volumes:
   data:
