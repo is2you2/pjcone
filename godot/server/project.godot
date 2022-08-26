@@ -37,6 +37,10 @@ enabled=PoolStringArray(  )
 
 singletons=[  ]
 
+[network]
+
+ssl/certificates="res://data/ca-certificates.crt"
+
 [physics]
 
 common/enable_pause_aware_picking=true
