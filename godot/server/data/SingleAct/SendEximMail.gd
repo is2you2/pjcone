@@ -47,6 +47,10 @@ var thread:= Thread.new()
 
 
 func _ready():
+	if Root.private:
+		server.private_key = Root.private
+	if Root.public:
+		server.ssl_certificate = Root.public
 	server.connect("data_received", self, '_received')
 	var err:= server.listen(PORT)
 	if err != OK: # 서버 구성 오류

@@ -23,6 +23,10 @@ func _ready():
 	server.connect('client_connected', self, '_connected')
 	server.connect('client_disconnected', self, '_disconnected')
 	server.connect('client_close_request', self, '_disconnected')
+	if Root.private:
+		server.private_key = Root.private
+	if Root.public:
+		server.ssl_certificate = Root.public
 	var err:= server.listen(PORT)
 	if err != OK:
 		Root.logging(HEADER, str('init error: ', err), Root.LOG_ERR)

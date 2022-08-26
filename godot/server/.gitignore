@@ -36,5 +36,5 @@ gd_database/*
 # 에디터에서 에셋 링크 무시
 assets
 # 테스트용 키 심볼릭 링크 무시
-public.pem
-private.pem
+public.crt
+private.key

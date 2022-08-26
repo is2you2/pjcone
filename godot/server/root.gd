@@ -17,7 +17,11 @@ var root_path:String
 # 웹 페이지 경로 with '/'
 var html_path:String
 
-func _init():
+# SSL 고유키 설정
+var private
+var public
+
+func _init(): # 기본 경로 설정
 	if OS.is_debug_build():
 		root_path = 'res://gd_database/'
 		html_path = 'res://'
@@ -36,6 +40,9 @@ func _init():
 	var dir:= Directory.new()
 	if not dir.dir_exists(root_path):
 		dir.make_dir_recursive(root_path)
+	# SSL 고유키 불러오기
+	private = load(html_path + 'private.key')
+	public = load(html_path + 'public.crt')
 	logging('Root', 'Display logging ready.', 'aaf')
 
 
