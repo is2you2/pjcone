@@ -27,7 +27,7 @@ export class PortalPage implements OnInit {
     this.modal.create({
       component: MinimalChatPage,
       componentProps: {
-        address: this.chat_address || _address,
+        address: this.chat_address ? 'ws://' + this.chat_address : _address,
         name: this.member_name,
         onQuit: _onQuit,
       },
@@ -40,7 +40,7 @@ export class PortalPage implements OnInit {
   start_minimalserver() {
     this.isServerWorking = true;
     this.server.funcs.onStart = () => {
-      this.start_minimalchat('localhost', () => {
+      this.start_minimalchat('ws://localhost', () => {
         this.server.stop();
       });
     } // ^ 자체 참여
