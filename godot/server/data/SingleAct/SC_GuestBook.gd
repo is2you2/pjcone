@@ -3,6 +3,7 @@ extends Node
 
 const HEADER:= 'SC1_GuestBook'
 onready var _path:String = Root.html_path + 'assets/data/sc1_custom/Guest/guest_history.txt'
+onready var _tmp_path:String = Root.html_path + 'assets/data/sc1_custom/Guest/guest_history.tmp'
 # 방명록 파일
 var file:= File.new()
 
@@ -36,24 +37,27 @@ func modify_content(data:String):
 	mutex.lock()
 	file.seek(0)
 	var _modified:= File.new()
-	_modified.open(Root.root_path + 'guest_history_work_tmp.txt', File.WRITE)
-	var line:= file.get_csv_line(Root.SEP_CHAR)
-	while not file.eof_reached():
-		if _id == line[0]: # 수정 대상이면 교체
-			var _data:= data.split(Root.SEP_CHAR)
-			_modified.store_csv_line(_data, Root.SEP_CHAR)
-			for i in range(modified.size()):
-				var check:PoolStringArray = modified[i].split(Root.SEP_CHAR)
-				if check[0] == _data[0]:
-					modified.remove(i)
-			modified.push_back(data)
-		else: # 수정 대상이 아니면 기존 데이터 사용
-			_modified.store_csv_line(line, Root.SEP_CHAR)
-		line = file.get_csv_line(Root.SEP_CHAR)
+	var err:= _modified.open(_tmp_path, File.WRITE)
+	if err == OK:
+		var line:= file.get_csv_line(Root.SEP_CHAR)
+		while not file.eof_reached():
+			if _id == line[0]: # 수정 대상이면 교체
+				var _data:= data.split(Root.SEP_CHAR)
+				_modified.store_csv_line(_data, Root.SEP_CHAR)
+				for i in range(modified.size()):
+					var check:PoolStringArray = modified[i].split(Root.SEP_CHAR)
+					if check[0] == _data[0]:
+						modified.remove(i)
+				modified.push_back(data)
+			else: # 수정 대상이 아니면 기존 데이터 사용
+				_modified.store_csv_line(line, Root.SEP_CHAR)
+			line = file.get_csv_line(Root.SEP_CHAR)
+	else:
+		Root.logging(HEADER, str('modify guestbook content failed: ', err), Root.LOG_ERR)
 	_modified.flush()
 	_modified.close()
 	var dir:= Directory.new()
-	dir.rename(Root.root_path + 'guest_history_work_tmp.txt', _path)
+	dir.rename(_tmp_path, _path)
 	_ready()
 	mutex.unlock()
 
@@ -62,19 +66,22 @@ func remove_content(id:String):
 	mutex.lock()
 	file.seek(0)
 	var modified:= File.new()
-	modified.open(Root.root_path + 'guest_history_work_tmp.txt', File.WRITE)
-	var line:= file.get_csv_line(Root.SEP_CHAR)
-	while not file.eof_reached():
-		if id == line[0]:
-			if not removed.has(id):
-				removed.push_back(id)
-		else:
-			modified.store_csv_line(line, Root.SEP_CHAR)
-		line = file.get_csv_line(Root.SEP_CHAR)
+	var err:= modified.open(_tmp_path, File.WRITE)
+	if err == OK:
+		var line:= file.get_csv_line(Root.SEP_CHAR)
+		while not file.eof_reached():
+			if id == line[0]:
+				if not removed.has(id):
+					removed.push_back(id)
+			else:
+				modified.store_csv_line(line, Root.SEP_CHAR)
+			line = file.get_csv_line(Root.SEP_CHAR)
+	else:
+		Root.logging(HEADER, str('remove guestbook content failed: ', err), Root.LOG_ERR)
 	modified.flush()
 	modified.close()
 	var dir:= Directory.new()
-	dir.rename(Root.root_path + 'guest_history_work_tmp.txt', _path)
+	dir.rename(_tmp_path, _path)
 	_ready()
 	# 캐시에서 수정
 	
