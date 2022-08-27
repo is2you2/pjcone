@@ -1,9 +1,10 @@
 .cookie
 
 # godot에 생성되는 심볼릭 링크 무시
-godot/public.pem
-godot/private.pem
+godot/public.crt
+godot/private.key
 
 # 고도서버 무시
 godot/assets
 godot/gd_database/exim4_send_content.cfg
+godot/*.pck
