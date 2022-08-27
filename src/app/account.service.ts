@@ -35,7 +35,7 @@ export class AccountService {
    */
   initialize(inited?: Function) {
     const PORT: number = 12001;
-    this.client = new WebSocket(`ws://${SOCKET_SERVER_ADDRESS}:${PORT}`);
+    this.client = new WebSocket(`wss://${SOCKET_SERVER_ADDRESS}:${PORT}`);
     this.client.onopen = (ev) => {
       console.log('연결됨: ', ev);
       inited();

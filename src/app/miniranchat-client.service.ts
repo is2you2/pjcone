@@ -23,7 +23,7 @@ export class MiniranchatClientService {
    */
   initialize(_Address?: string) {
     const PORT: number = 12011;
-    this.client = new WebSocket(`ws://${_Address || SOCKET_SERVER_ADDRESS}:${PORT}`);
+    this.client = new WebSocket(`wss://${_Address || SOCKET_SERVER_ADDRESS}:${PORT}`);
     this.client.onopen = (ev) => {
       this.funcs.onopen(ev);
     }

@@ -35,7 +35,7 @@ export class RegisterPage implements OnInit {
     let data: any = this.get.CatchGETs();
     // 데이터 형식 검토하기, 일단은 필수요건 검토로 진행
     if ('list' in data && 'token' in data) {
-      let CertSocket = new WebSocket(`ws://${SOCKET_SERVER_ADDRESS}:12010`);
+      let CertSocket = new WebSocket(`wss://${SOCKET_SERVER_ADDRESS}:12010`);
       CertSocket.onopen = (_v) => {
         let cert = {
           act: 'register',

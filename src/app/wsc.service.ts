@@ -27,7 +27,7 @@ export class WscService {
   initialize() {
     if (location.href.includes('https://')) return;
     const PORT: number = 12000;
-    this.client = new WebSocket(`ws://${SOCKET_SERVER_ADDRESS}:${PORT}`);
+    this.client = new WebSocket(`wss://${SOCKET_SERVER_ADDRESS}:${PORT}`);
     this.client.onerror = (e) => {
       console.error('메인소켓 오류 발생: ', e);
     }
