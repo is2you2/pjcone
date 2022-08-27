@@ -25,7 +25,6 @@ export class WscService {
    * @param _Address 서버 주소, 포트 12000 고정
    */
   initialize() {
-    if (location.href.includes('https://')) return;
     const PORT: number = 12000;
     this.client = new WebSocket(`wss://${SOCKET_SERVER_ADDRESS}:${PORT}`);
     this.client.onerror = (e) => {
