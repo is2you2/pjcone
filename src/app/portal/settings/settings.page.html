@@ -12,14 +12,18 @@
     <ion-label>서버 상태</ion-label>
   </ion-item-divider>
   <ion-item button>
-    <ion-label>커뮤니티 서버</ion-label>
+    <div class="additional_form status_bar" style="background-color: #888;"></div>
+    <ion-label class="form_margin">그룹 서버</ion-label>
+    <ion-label class="ion-text-right" color="medium">눌러서 서버 설정</ion-label>
   </ion-item>
   <ion-item button>
-    <ion-label>메인 서버</ion-label>
-    <ion-label class="ion-text-right" color="medium">설정되지 않음</ion-label>
+    <div class="additional_form status_bar" style="background-color: #dddd0c;"></div>
+    <ion-label class="form_margin">커뮤니티 서버</ion-label>
+    <ion-label class="ion-text-right" color="medium">128ms</ion-label>
   </ion-item>
   <ion-item button>
-    <ion-label>이 기기를 서버로</ion-label>
+    <div class="additional_form status_bar" style="background-color: #888;"></div>
+    <ion-label class="form_margin">이 기기를 기능 서버로</ion-label>
   </ion-item>
   <ion-item-divider>
     <ion-label>가입된 그룹</ion-label>
@@ -27,14 +31,25 @@
   <div>
     <ion-item button>
       <ion-label>가입된 그룹이 없습니다</ion-label>
-      <ion-label class="ion-text-right" color="medium">그룹 설정하기</ion-label>
+      <ion-label class="ion-text-right" color="medium">눌러서 그룹 설정</ion-label>
     </ion-item>
   </div>
   <div *ngFor="let i of [0,1]">
     <ion-item button>
-      <ion-label>그룹명-예시-여기서 그룹 상세보기 (조직도 같은 것)</ion-label>
+      <div class="additional_form status_bar" style="background-color: #888;"></div>
+      <div class="additional_form bg_img_form">
+        <img class="bg_img" style="filter: grayscale(0.9) contrast(1.4);" src="assets/icon/favicon.png">
+      </div>
+      <ion-label class="form_margin">그룹명-예시-여기서 그룹 상세보기 (조직도 등)</ion-label>
     </ion-item>
   </div>
+  <ion-item button>
+    <div class="additional_form status_bar" style="background-color: #4ff14f;"></div>
+    <div class="additional_form bg_img_form">
+      <img class="bg_img" style="filter: grayscale(0) contrast(1);" src="assets/icon/favicon.png">
+    </div>
+    <ion-label class="form_margin">활성 조직-활동 허가상태인 조직</ion-label>
+  </ion-item>
   <ion-item-divider>
     <ion-label>커뮤니티</ion-label>
   </ion-item-divider>
@@ -48,6 +63,21 @@
     <ion-label>사설 그룹채팅 참여</ion-label>
   </ion-item>
   <ion-item-divider>
+    <ion-label>인앱 도구 모음</ion-label>
+  </ion-item-divider>
+  <ion-item button [disabled]="true">
+    <ion-label>웹 페이지와 연동</ion-label>
+  </ion-item>
+  <ion-item-divider>
+    <ion-label>개인정보</ion-label>
+  </ion-item-divider>
+  <ion-item button [disabled]="true">
+    <ion-label>내 정보</ion-label>
+  </ion-item>
+  <ion-item button [disabled]="true">
+    <ion-label>다른 기기에서 로그인</ion-label>
+  </ion-item>
+  <ion-item-divider>
     <ion-label>개발정보</ion-label>
   </ion-item-divider>
   <ion-item button [disabled]="true">
@@ -57,7 +87,7 @@
     <ion-label>번역가</ion-label>
   </ion-item>
   <ion-item button (click)="go_to_dev_blog()">
-    <ion-label>개발자 블로그 바로가기</ion-label>
+    <ion-label>개발자 홈페이지 바로가기</ion-label>
   </ion-item>
   <ion-item button [disabled]="true">
     <ion-label>라이선스 고지</ion-label>

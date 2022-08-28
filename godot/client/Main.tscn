@@ -1,3 +1,25 @@
-[gd_scene format=2]
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://Main.gd" type="Script" id=1]
 
 [node name="Main" type="Node"]
+script = ExtResource( 1 )
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="ColorRect" type="ColorRect" parent="CenterContainer"]
+margin_left = 60.0
+margin_top = 60.0
+margin_right = 300.0
+margin_bottom = 300.0
+rect_min_size = Vector2( 240, 240 )
+color = Color( 0.203922, 0.203922, 0.203922, 1 )
+
+[node name="Label" type="Label" parent="CenterContainer/ColorRect"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+text = "Start"
+align = 1
+valign = 1

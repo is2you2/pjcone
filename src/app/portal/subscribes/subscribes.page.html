@@ -12,12 +12,13 @@
     <ion-label>참여중인 대화가 없습니다.</ion-label>
   </ion-item>
   <ion-item button>
-    <div class="bg_img_form">
+    <div class="additional_form status_bar" style="background-color: #888;"></div>
+    <div class="additional_form bg_img_form">
       <img class="bg_img" style="filter: grayscale(.9) contrast(1.4);" src="assets/icon/favicon.png">
     </div>
     <ion-label>
-      <div class="header"> 대화방 제목 </div>
-      <div class="content"> 마지막 대화 내용 </div>
+      <div class="form_margin header"> 대화방 제목 </div>
+      <div class="form_margin content"> 구 서버 연결 없음 색상 </div>
     </ion-label>
   </ion-item>
   <ion-item-divider>
@@ -27,12 +28,43 @@
     <ion-label>등록된 업무가 없습니다.</ion-label>
   </ion-item>
   <ion-item button>
-    <div class="bg_img_form">
+    <div class="additional_form status_bar" style="background-color: #880000;"></div>
+    <div class="additional_form bg_img_form">
+      <img class="bg_img" style="filter: grayscale(.9) contrast(1.4);" src="assets/icon/favicon.png">
+    </div>
+    <ion-label>
+      <div class="form_margin header"> 업무 이름 </div>
+      <div class="form_margin content"> 구 오프라인 색상 </div>
+    </ion-label>
+  </ion-item>
+  <ion-item button>
+    <div class="additional_form status_bar" style="background-color: #dddd0c;"></div>
+    <div class="additional_form bg_img_form">
       <img class="bg_img" style="filter: grayscale(0) contrast(1);" src="assets/icon/favicon.png">
     </div>
     <ion-label>
-      <div class="header"> 업무 이름 </div>
-      <div class="content"> 업무 요약 </div>
+      <div class="form_margin header"> 대화창 배경색은 오프라인/서버 연결 없을 때 </div>
+      <div class="form_margin content"> 구 부재중 색상 </div>
+    </ion-label>
+  </ion-item>
+  <ion-item button>
+    <div class="additional_form status_bar" style="background-color: #4ff14f;"></div>
+    <div class="additional_form bg_img_form">
+      <img class="bg_img" style="filter: grayscale(0) contrast(1);" src="assets/icon/favicon.png">
+    </div>
+    <ion-label>
+      <div class="form_margin header"> 온라인이라면 원본 색상 </div>
+      <div class="form_margin content"> 구 온라인 색상 </div>
+    </ion-label>
+  </ion-item>
+  <ion-item button>
+    <div class="additional_form status_bar" style="background-color: #00ffff;"></div>
+    <div class="additional_form bg_img_form">
+      <img class="bg_img" style="filter: grayscale(0) contrast(1);" src="assets/icon/favicon.png">
+    </div>
+    <ion-label>
+      <div class="form_margin header"> 업무 이름 </div>
+      <div class="form_margin content"> 구 인증됨 색상 </div>
     </ion-label>
   </ion-item>
 </ion-content>

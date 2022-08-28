@@ -1,0 +1,31 @@
+.form_margin {
+    margin-left: 16px;
+}
+
+.additional_form {
+    position: absolute;
+    z-index: -1;
+}
+
+// 그룹 이미지
+.bg_img_form {
+    overflow: hidden;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    mask-image: linear-gradient(to right, #0000, #bbbb);
+    mask-repeat: repeat-y;
+}
+
+.bg_img {
+    position: absolute;
+    top: 50%;
+    transform: translate(0%, -50%);
+    width: 100%;
+    height: auto;
+}
+
+.status_bar {
+    width: 4px;
+    height: 76%;
+}

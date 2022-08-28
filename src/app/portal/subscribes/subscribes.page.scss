@@ -1,3 +1,7 @@
+.form_margin {
+    margin-left: 16px;
+}
+
 .header {
     padding-bottom: 4px;
 }
@@ -6,15 +10,18 @@
     color: #888;
 }
 
+.additional_form {
+    position: absolute;
+    z-index: -1;
+}
+
 // 각 대화/업무의 이미지
 .bg_img_form {
-    position: absolute;
     overflow: hidden;
-    z-index: -1;
     right: 0;
     width: 50%;
     height: 100%;
-    mask-image: linear-gradient(to right, #0000, #ffff);
+    mask-image: linear-gradient(to right, #0000, #bbbb);
     mask-repeat: repeat-y;
 }
 
@@ -24,4 +31,9 @@
     transform: translate(0%, -50%);
     width: 100%;
     height: auto;
+}
+
+.status_bar {
+    width: 5px;
+    height: 76%;
 }
