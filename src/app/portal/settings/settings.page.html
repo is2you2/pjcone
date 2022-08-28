@@ -8,7 +8,9 @@
 </ion-header>
 
 <ion-content>
-  <div class="label">서버 상태</div>
+  <ion-item-divider>
+    <ion-label>서버 상태</ion-label>
+  </ion-item-divider>
   <ion-item button>
     <ion-label>커뮤니티 서버</ion-label>
   </ion-item>
@@ -19,19 +21,23 @@
   <ion-item button>
     <ion-label>이 기기를 서버로</ion-label>
   </ion-item>
-  <div class="label">가입된 그룹</div>
+  <ion-item-divider>
+    <ion-label>가입된 그룹</ion-label>
+  </ion-item-divider>
   <div>
     <ion-item button>
       <ion-label>가입된 그룹이 없습니다</ion-label>
       <ion-label class="ion-text-right" color="medium">그룹 설정하기</ion-label>
     </ion-item>
   </div>
-  <div *ngFor="let i of [0,1,2]">
+  <div *ngFor="let i of [0,1]">
     <ion-item button>
       <ion-label>그룹명-예시-여기서 그룹 상세보기 (조직도 같은 것)</ion-label>
     </ion-item>
   </div>
-  <div class="label">커뮤니티</div>
+  <ion-item-divider>
+    <ion-label>커뮤니티</ion-label>
+  </ion-item-divider>
   <ion-item button (click)="start_minimalchat()">
     <ion-label>랜덤채팅 참여</ion-label>
   </ion-item>
@@ -41,7 +47,9 @@
   <ion-item button>
     <ion-label>사설 그룹채팅 참여</ion-label>
   </ion-item>
-  <div class="label">개발정보</div>
+  <ion-item-divider>
+    <ion-label>개발정보</ion-label>
+  </ion-item-divider>
   <ion-item button [disabled]="true">
     <ion-label>제작자</ion-label>
   </ion-item>

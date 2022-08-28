@@ -1,9 +1,32 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>업무 참여</ion-title>
+    <ion-title>참여</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-
+  <ion-item-divider>
+    <ion-label>대화</ion-label>
+  </ion-item-divider>
+  <ion-item button [disabled]="true">
+    <ion-label>참여중인 대화가 없습니다.</ion-label>
+  </ion-item>
+  <ion-item button>
+    <ion-label>
+      <div class="header"> 대화방 제목 </div>
+      <div class="content"> 마지막 대화 내용 </div>
+    </ion-label>
+  </ion-item>
+  <ion-item-divider>
+    <ion-label>업무</ion-label>
+  </ion-item-divider>
+  <ion-item button [disabled]="true">
+    <ion-label>등록된 업무가 없습니다.</ion-label>
+  </ion-item>
+  <ion-item button>
+    <ion-label>
+      <div class="header"> 업무 이름 </div>
+      <div class="content"> 업무 요약 </div>
+    </ion-label>
+  </ion-item>
 </ion-content>
