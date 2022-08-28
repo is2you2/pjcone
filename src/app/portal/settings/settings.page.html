@@ -1,0 +1,57 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>설정</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="portal"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="label">서버 상태</div>
+  <ion-item button>
+    <ion-label>커뮤니티 서버</ion-label>
+  </ion-item>
+  <ion-item button>
+    <ion-label>메인 서버</ion-label>
+    <ion-label class="ion-text-right" color="medium">설정되지 않음</ion-label>
+  </ion-item>
+  <ion-item button>
+    <ion-label>이 기기를 서버로</ion-label>
+  </ion-item>
+  <div class="label">가입된 그룹</div>
+  <div>
+    <ion-item button>
+      <ion-label>가입된 그룹이 없습니다</ion-label>
+      <ion-label class="ion-text-right" color="medium">그룹 설정하기</ion-label>
+    </ion-item>
+  </div>
+  <div *ngFor="let i of [0,1,2]">
+    <ion-item button>
+      <ion-label>그룹명-예시-여기서 그룹 상세보기 (조직도 같은 것)</ion-label>
+    </ion-item>
+  </div>
+  <div class="label">커뮤니티</div>
+  <ion-item button (click)="start_minimalchat()">
+    <ion-label>랜덤채팅 참여</ion-label>
+  </ion-item>
+  <ion-item button (click)="start_minimalserver()" [disabled]="isServerWorking">
+    <ion-label>서버 개설-이 메뉴 제거 예정</ion-label>
+  </ion-item>
+  <ion-item button>
+    <ion-label>사설 그룹채팅 참여</ion-label>
+  </ion-item>
+  <div class="label">개발정보</div>
+  <ion-item button [disabled]="true">
+    <ion-label>제작자</ion-label>
+  </ion-item>
+  <ion-item button [disabled]="true">
+    <ion-label>번역가</ion-label>
+  </ion-item>
+  <ion-item button (click)="go_to_dev_blog()">
+    <ion-label>개발자 블로그 바로가기</ion-label>
+  </ion-item>
+  <ion-item button [disabled]="true">
+    <ion-label>라이선스 고지</ion-label>
+  </ion-item>
+</ion-content>

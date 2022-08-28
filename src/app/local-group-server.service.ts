@@ -91,7 +91,6 @@ export class LocalGroupServerService {
       }, (reason) => { // 종료될 때
         this.funcs.onFailed(`Did not start. Reason: ${reason}`);
       });
-
     } else {
       console.warn('플랫폼 불일치: 사설 서버 구축 취소');
     }

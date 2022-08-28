@@ -6,7 +6,26 @@ import { PortalPage } from './portal.page';
 const routes: Routes = [
   {
     path: '',
-    component: PortalPage
+    component: PortalPage,
+    children: [
+      {
+        path: '',
+        redirectTo: 'main',
+        pathMatch: 'full',
+      },
+      {
+        path: 'subscribes',
+        loadChildren: () => import('./subscribes/subscribes.module').then(m => m.SubscribesPageModule)
+      },
+      {
+        path: 'main',
+        loadChildren: () => import('./main/main.module').then(m => m.MainPageModule)
+      },
+    ],
+  },
+  {
+    path: 'settings',
+    loadChildren: () => import('./settings/settings.module').then(m => m.SettingsPageModule)
   }
 ];
 
@@ -14,4 +33,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class PortalPageRoutingModule {}
+export class PortalPageRoutingModule { }
