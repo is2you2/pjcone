@@ -144,6 +144,8 @@ npx cap sync android
 ```html
 <iframe id="godot" src="assets/html/index.html" frameborder="0" class="full_screen"></iframe>
 ```
+- 예상했던대로, modal 및 nav.push로 고도 HTML5 개체를 불렀다가 돌아가거나, nav.root으로 이전 기록을 삭제하는 경우 고도 HTML5 개체도 삭제됨
+  - 또한, nav.root 에서 페이지에 돌아올 수 있도록 구성된 경우 백그라운드에서 계속 운용
 
 ## 사용중인 포트
 - 7350-7352: Nakama
