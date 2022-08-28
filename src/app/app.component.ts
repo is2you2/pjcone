@@ -54,8 +54,8 @@ export class AppComponent {
       });
     }
     bgmode.setDefaults({
-      title: '대화 대기중',
-      text: '아직 대화를 주고받을 수 있습니다 :)',
+      title: '알림 대기중',
+      text: '앱에서 푸쉬 알림을 받을 수 있습니다.',
       icon: 'icon_mono',
       color: 'ffd94e', // 모자 밑단 노란색
     });
