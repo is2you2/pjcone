@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { AlertController, NavController } from '@ionic/angular';
-import { AccountService } from '../../account.service';
-import { AppComponent, isPlatform, SOCKET_SERVER_ADDRESS } from '../../app.component';
+import { AppComponent, isPlatform, SOCKET_SERVER_ADDRESS } from '../app.component';
 
 /** 회원가입 페이지, 이메일 인증을 통해서만 들어오게 되어있음 */
 @Component({
@@ -22,7 +21,6 @@ export class RegisterPage implements OnInit {
     private get: AppComponent,
     private nav: NavController,
     private device: Device,
-    private account: AccountService,
     private alert: AlertController,
   ) { }
 
@@ -71,16 +69,16 @@ export class RegisterPage implements OnInit {
 
   /** 회원가입 마무리시 */
   RegisterClick() {
-    this.account.initialize(() => {
-      this.account.change_userInfo({ nickname: this.userInfo.nickname });
-    });
-    // 계정 정보 등록 진행
-    if (isPlatform != 'DesktopPWA') {
-      let uuid = this.device.uuid;
-      // 연속적으로 기기 등록 진행
-    } else {
-      console.log('핸드폰에서 기기 등록이 우선됨 알림');
-    }
+    // this.account.initialize(() => {
+    //   this.account.change_userInfo({ nickname: this.userInfo.nickname });
+    // });
+    // // 계정 정보 등록 진행
+    // if (isPlatform != 'DesktopPWA') {
+    //   let uuid = this.device.uuid;
+    //   // 연속적으로 기기 등록 진행
+    // } else {
+    //   console.log('핸드폰에서 기기 등록이 우선됨 알림');
+    // }
     console.log('회원가입 완료 버튼 눌림');
   }
 }
