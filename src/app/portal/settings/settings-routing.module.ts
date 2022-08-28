@@ -7,11 +7,19 @@ const routes: Routes = [
   {
     path: '',
     component: SettingsPage
-  }
+  },
+  {
+    path: 'privacy',
+    loadChildren: () => import('./privacy/privacy.module').then(m => m.PrivacyPageModule)
+  },
+  {
+    path: 'licenses',
+    loadChildren: () => import('./licenses/licenses.module').then( m => m.LicensesPageModule)
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class SettingsPageRoutingModule {}
+export class SettingsPageRoutingModule { }

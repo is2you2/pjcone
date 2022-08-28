@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
 import { LocalGroupServerService } from 'src/app/local-group-server.service';
-import { MinimalChatPage } from 'src/app/minimal-chat/minimal-chat.page';
+import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 
 @Component({
   selector: 'app-settings',
@@ -13,6 +13,7 @@ export class SettingsPage implements OnInit {
   constructor(
     private server: LocalGroupServerService,
     private modal: ModalController,
+    private nav: NavController,
   ) { }
 
   ngOnInit() {
@@ -55,5 +56,12 @@ export class SettingsPage implements OnInit {
   /** 개발자 블로그로 연결 (github 홈페이지) */
   go_to_dev_blog() {
     window.open('https://is2you2.github.io', '_system')
+  }
+
+  go_to_page(_page: string) {
+    console.log('머야');
+    this.nav.navigateForward(`settings/${_page}`, {
+      animation: iosTransitionAnimation,
+    })
   }
 }

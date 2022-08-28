@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { AlertController, NavController } from '@ionic/angular';
-import { AccountService } from '../account.service';
-import { AppComponent, isPlatform, SOCKET_SERVER_ADDRESS } from '../app.component';
+import { AccountService } from '../../account.service';
+import { AppComponent, isPlatform, SOCKET_SERVER_ADDRESS } from '../../app.component';
 
 /** 회원가입 페이지, 이메일 인증을 통해서만 들어오게 되어있음 */
 @Component({

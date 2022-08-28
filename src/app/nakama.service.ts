@@ -14,7 +14,11 @@ export class NakamaService {
   session: Session;
   socket: Socket;
 
-  initialize() {
-    this.client = new Client('defaultkey', SOCKET_SERVER_ADDRESS);
+  /**
+   * Nakama 클라이언트 구성을 진행합니다.
+   * @param _address 사설 서버연결시 주소
+   */
+  initialize(_address: string = SOCKET_SERVER_ADDRESS) {
+    this.client = new Client('defaultkey', _address);
   }
 }
