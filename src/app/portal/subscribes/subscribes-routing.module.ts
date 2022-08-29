@@ -7,6 +7,14 @@ const routes: Routes = [
   {
     path: '',
     component: SubscribesPage
+  },
+  {
+    path: 'chat-room',
+    loadChildren: () => import('./chat-room/chat-room.module').then( m => m.ChatRoomPageModule)
+  },
+  {
+    path: 'task-info',
+    loadChildren: () => import('./task-info/task-info.module').then( m => m.TaskInfoPageModule)
   }
 ];
 

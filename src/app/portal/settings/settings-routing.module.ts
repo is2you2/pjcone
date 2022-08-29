@@ -16,6 +16,10 @@ const routes: Routes = [
     path: 'licenses',
     loadChildren: () => import('./licenses/licenses.module').then( m => m.LicensesPageModule)
   },
+  {
+    path: 'profile',
+    loadChildren: () => import('./profile/profile.module').then( m => m.ProfilePageModule)
+  },
 ];
 
 @NgModule({

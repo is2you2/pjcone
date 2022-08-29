@@ -21,7 +21,7 @@
     <ion-label class="form_margin">커뮤니티 서버</ion-label>
     <ion-label class="ion-text-right" color="medium">128ms</ion-label>
   </ion-item>
-  <ion-item button>
+  <ion-item button [disabled]="true">
     <div class="additional_form status_bar" style="background-color: #888;"></div>
     <ion-label class="form_margin">이 기기를 기능 서버로</ion-label>
   </ion-item>
@@ -71,7 +71,7 @@
   <ion-item-divider>
     <ion-label>개인정보</ion-label>
   </ion-item-divider>
-  <ion-item button [disabled]="true">
+  <ion-item button (click)="go_to_page('profile')">
     <ion-label>내 정보</ion-label>
   </ion-item>
   <ion-item button [disabled]="true">

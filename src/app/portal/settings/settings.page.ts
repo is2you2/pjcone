@@ -59,7 +59,6 @@ export class SettingsPage implements OnInit {
   }
 
   go_to_page(_page: string) {
-    console.log('머야');
     this.nav.navigateForward(`settings/${_page}`, {
       animation: iosTransitionAnimation,
     })
