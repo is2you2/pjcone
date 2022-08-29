@@ -81,4 +81,23 @@ export class AppComponent {
       return gets;
     }
   }
+
+  /** 실행중인 iframe-godot 개체를 기억하여 2개 이상 생성될 경우 이전에 진행중인 객체를 삭제, 마지막 실행기만 기억하기 */
+  private godot: HTMLIFrameElement;
+  /** 마지막에 기록된 프레임 id */
+  private last_frame_name: string;
+  /** 기억중인 iframe 개체에 대해서 */
+  CreateGodotIFrame(_frame_name: string) {
+    if (this.last_frame_name == _frame_name) return;
+    if (this.godot) this.godot.remove();
+    this.last_frame_name = _frame_name;
+    let _godot: HTMLIFrameElement = document.createElement('iframe');
+    _godot.id = 'godot';
+    _godot.setAttribute("src", "assets/html/index.html");
+    _godot.setAttribute("frameborder", "0");
+    _godot.setAttribute('class', 'full_screen');
+    let frame = document.getElementById(_frame_name);
+    frame.appendChild(_godot);
+    this.godot = _godot;
+  }
 }
