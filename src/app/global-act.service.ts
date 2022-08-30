@@ -40,7 +40,7 @@ export class GlobalActService {
    */
   CreateGodotIFrame(_act_name: string, _frame_name: string) {
     localStorage.setItem('godot', _act_name);
-    if (this.last_frame_name == _frame_name) return;
+    if (this.last_frame_name == _frame_name && this.godot.isConnected) return;
     if (this.godot) this.godot.remove();
     this.last_frame_name = _frame_name;
     let _godot: HTMLIFrameElement = document.createElement('iframe');
