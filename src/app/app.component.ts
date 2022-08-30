@@ -86,8 +86,13 @@ export class AppComponent {
   private godot: HTMLIFrameElement;
   /** 마지막에 기록된 프레임 id */
   private last_frame_name: string;
-  /** 기억중인 iframe 개체에 대해서 */
-  CreateGodotIFrame(_frame_name: string) {
+  /** 고도엔진이 시작하자마자 로딩할 내용과 고도 결과물을 담을 iframe id를 전달  
+   * 이 함수는 고도엔진이 실행되는 페이지의 ionViewWillEnter()에서 진행되어야 합니다
+   * @param _act_name 로딩할 pck 파일의 이름
+   * @param _frame_name 고도 결과물을 담으려는 div id
+   */
+  CreateGodotIFrame(_act_name: string, _frame_name: string) {
+    localStorage.setItem('godot', _act_name);
     if (this.last_frame_name == _frame_name) return;
     if (this.godot) this.godot.remove();
     this.last_frame_name = _frame_name;
