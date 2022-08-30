@@ -79,7 +79,7 @@ export class MinimalChatPage implements OnInit {
         launch: false,
       });
     }
-    this.userInput.logs.push({ color: 'bbb', text: this.status == 'custom' ? '그룹채팅에 참가합니다.' : '아래 버튼을 눌러 랜덤채팅에 참가합니다.' });
+    this.userInput.logs.push({ color: 'bbb', text: this.status == 'custom' ? '그룹채팅에 참가합니다.' : '랜덤채팅에 참가합니다.' });
     this.noti.Current = this.Header;
     this.content_panel = document.getElementById('content');
     this.title.setTitle(get_address ? 'Project: 그룹채팅' : 'Project: 랜덤채팅');

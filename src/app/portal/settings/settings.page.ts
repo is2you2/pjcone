@@ -16,15 +16,20 @@ export class SettingsPage implements OnInit {
     private nav: NavController,
   ) { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
+  /** 채팅방 이중진입 방지용 */
+  will_enter = false;
   /** 사설 서버 주소, 없으면 공식서버 랜덤채팅 */
   chat_address: string;
   /** 사설 그룹채팅에서 사용할 이름 */
   member_name: string;
   /** 최소한의 기능을 가진 채팅 시작하기 */
   start_minimalchat(_address?: string, _onQuit: Function = () => { }) {
+    this.will_enter = true;
+    setTimeout(() => {
+      this.will_enter = false;
+    }, 500);
     this.modal.create({
       component: MinimalChatPage,
       componentProps: {
