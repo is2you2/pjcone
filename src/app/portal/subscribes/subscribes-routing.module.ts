@@ -15,6 +15,10 @@ const routes: Routes = [
   {
     path: 'task-info',
     loadChildren: () => import('./task-info/task-info.module').then( m => m.TaskInfoPageModule)
+  },
+  {
+    path: 'projinfo',
+    loadChildren: () => import('./projinfo/projinfo.module').then( m => m.ProjinfoPageModule)
   }
 ];
 

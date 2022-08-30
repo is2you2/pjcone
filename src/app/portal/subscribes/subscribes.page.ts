@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ChatRoomPage } from './chat-room/chat-room.page';
+import { ProjinfoPage } from './projinfo/projinfo.page';
 import { TaskInfoPage } from './task-info/task-info.page';
 
 @Component({
@@ -21,6 +22,13 @@ export class SubscribesPage implements OnInit {
   go_to_chatroom() {
     this.modal.create({
       component: ChatRoomPage,
+      componentProps: {},
+    }).then(v => v.present());
+  }
+
+  go_to_projinfo() {
+    this.modal.create({
+      component: ProjinfoPage,
       componentProps: {},
     }).then(v => v.present());
   }
