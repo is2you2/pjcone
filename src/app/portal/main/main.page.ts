@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AppComponent } from 'src/app/app.component';
+import { GlobalActService } from 'src/app/global-act.service';
 
 @Component({
   selector: 'app-main',
@@ -9,7 +9,7 @@ import { AppComponent } from 'src/app/app.component';
 export class MainPage implements OnInit {
 
   constructor(
-    private app: AppComponent,
+    private app: GlobalActService,
   ) { }
 
   ngOnInit() { }

@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { AlertController, NavController } from '@ionic/angular';
-import { AppComponent, isPlatform, SOCKET_SERVER_ADDRESS } from '../app.component';
+import { SOCKET_SERVER_ADDRESS } from '../app.component';
+import { GlobalActService } from '../global-act.service';
 
 /** 회원가입 페이지, 이메일 인증을 통해서만 들어오게 되어있음 */
 @Component({
@@ -18,7 +19,7 @@ export class RegisterPage implements OnInit {
   }
 
   constructor(
-    private get: AppComponent,
+    private global: GlobalActService,
     private nav: NavController,
     private device: Device,
     private alert: AlertController,
@@ -30,7 +31,7 @@ export class RegisterPage implements OnInit {
 
   /** 이메일로 진입한 경우 대처하기 */
   CertificateEmail() {
-    let data: any = this.get.CatchGETs();
+    let data: any = this.global.CatchGETs();
     // 데이터 형식 검토하기, 일단은 필수요건 검토로 진행
     if ('list' in data && 'token' in data) {
       let CertSocket = new WebSocket(`wss://${SOCKET_SERVER_ADDRESS}:12010`);
