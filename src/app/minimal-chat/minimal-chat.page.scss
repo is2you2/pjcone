@@ -1,6 +1,9 @@
 .main {
-    margin: 8px;
-    overflow: hidden;
+    width: 100%;
+    padding: 8px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-behavior: smooth;
 }
 
 p {
@@ -9,12 +12,5 @@ p {
 
 .inputbar {
     overflow: hidden;
-    position: fixed;
-    bottom: 0;
     width: 100%;
-}
-
-ion-content {
-    --offset-bottom: 44px;
-    --padding-bottom: 44px;
 }

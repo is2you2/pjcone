@@ -6,6 +6,7 @@ import { ILocalNotificationAction, ILocalNotificationActionType } from '@awesome
 import { ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
+import * as p5 from 'p5';
 
 /** 메시지 받기 폼 */
 interface ReceivedTextForm {
@@ -120,7 +121,6 @@ export class MinimalChatPage implements OnInit {
             autoCancel_ln: true,
           }, this.Header);
         }
-        this.content_panel.style.height = '32px';
       } catch (e) {
         switch (v) {
           case 'GOT_MATCHED':
@@ -159,12 +159,11 @@ export class MinimalChatPage implements OnInit {
             break;
         }
       }
-      this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      this.focus_on_input();
     }
     this.client.funcs.onclose = (v: any) => {
       this.userInput.logs.push({ color: 'faa', text: '채팅 참가에 실패했습니다.' });
-      this.content_panel.style.height = '32px';
-      this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      this.focus_on_input();
       this.noti.PushLocal({
         id: this.lnId,
         title: '채팅 참가에 실패했습니다.',
@@ -189,8 +188,7 @@ export class MinimalChatPage implements OnInit {
       this.client.funcs.onclose = (v: any) => {
         let text = '채팅에 참가할 수 없습니다.';
         this.userInput.logs.push({ color: 'faa', text: text });
-        this.content_panel.style.height = '32px';
-        this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        this.focus_on_input();
         this.noti.PushLocal({
           id: this.lnId,
           title: text,
@@ -204,6 +202,27 @@ export class MinimalChatPage implements OnInit {
         }, this.Header);
       }
     }
+    this.follow_resize();
+  }
+
+  p5canvas: p5;
+  /** 창 조절에 따른 최대 화면 크기 조정 */
+  follow_resize() {
+    let sketch = (p: p5) => {
+      let mainTable = document.getElementById('main_table');
+      let mainDiv = document.getElementById('main_div');
+      let inputTable = document.getElementById('input_table');
+      p.setup = () => {
+        setTimeout(() => {
+          p.windowResized();
+        }, 100);
+        p.noLoop();
+      }
+      p.windowResized = () => {
+        mainDiv.setAttribute('style', `max-width: ${mainTable.offsetWidth}px; max-height: ${mainTable.offsetHeight - inputTable.offsetHeight}px`);
+      }
+    }
+    this.p5canvas = new p5(sketch);
   }
 
   /** 사용자 상태: 키보드 종류 노출 제어용 */
@@ -222,8 +241,8 @@ export class MinimalChatPage implements OnInit {
       this.client.send('REQ_REGROUPING');
       this.userInput.logs.length = 0;
       this.userInput.logs.push({ color: 'bbb', text: '새로운 상대를 기다립니다..' });
-      this.content_panel.style.height = '32px';
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      this.focus_on_input();
       this.req_refreshed = true;
       setTimeout(() => {
         this.req_refreshed = false;
@@ -231,8 +250,7 @@ export class MinimalChatPage implements OnInit {
     } else { // 서버 연결중 아닐 때
       let text = '시작할 수 없어요..';
       this.userInput.logs.push({ color: 'faa', text: text });
-      this.content_panel.style.height = '32px';
-      this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      this.focus_on_input();
       this.noti.PushLocal({
         id: this.lnId,
         title: text,
@@ -249,13 +267,9 @@ export class MinimalChatPage implements OnInit {
 
   /** 모바일 키보드 높이 맞추기용 */
   focus_on_input() {
-    this.content_panel.style.height = '0px';
-    let loop = setInterval(() => {
-      this.content_panel.scrollIntoView({ block: 'start' });
-    }, 1 / 24);
     setTimeout(() => {
-      clearInterval(loop);
-    }, 500);
+      this.content_panel.scrollIntoView({ block: 'start' });
+    }, 0);
   }
 
   /** 메시지 보내기 */
@@ -289,5 +303,6 @@ export class MinimalChatPage implements OnInit {
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', 'assets/icon/favicon.png');
     this.quit_chat();
+    this.p5canvas.remove();
   }
 }

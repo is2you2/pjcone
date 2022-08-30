@@ -9,44 +9,54 @@
 </ion-header>
 
 <ion-content>
-  <div class="main">
-    <p *ngFor="let msg of userInput.logs">
-      <font *ngIf="!msg.target" color="#{{msg.color}}">{{msg.text}}</font>
-      <font *ngIf="msg.target" color="#ddd">
-        <font color="#{{msg.color}}"><b *ngIf="msg.target">{{msg.target}}:</b></font> {{' ' + msg.text}}
-      </font>
-    </p>
-    <div id="content" style="height: 32px;"></div>
-  </div>
-  <div class="inputbar">
-    <table style="width: 100%; background-color: black;">
-      <tr>
-        <td *ngIf="status == 'idle'">
-          <ion-button (click)="join_ranchat()" expand="block">
-            대화 시작하기
-          </ion-button>
-        </td>
-        <td *ngIf="status == 'linked'">
-          <ion-button (click)="join_ranchat()" expand="block" [disabled]="req_refreshed">
-            나가기
-          </ion-button>
-        </td>
-        <td *ngIf="status == 'unlinked'">
-          <ion-button (click)="join_ranchat()" expand="block" [disabled]="req_refreshed">
-            새 대화
-          </ion-button>
-        </td>
-        <td *ngIf="status == 'linked' || status == 'custom'" style="width: 100%;">
-          <ion-input type="text" placeholder="메시지 입력..." (ionFocus)="focus_on_input()" (keyup.enter)="send()"
-            [(ngModel)]="userInput.text">
-          </ion-input>
-        </td>
-        <td *ngIf="status == 'linked' || status == 'custom'">
-          <ion-button (click)="send()" expand="block">
-            보내기
-          </ion-button>
-        </td>
-      </tr>
-    </table>
-  </div>
+  <table id="main_table" style="width: 100%; height: 100%;">
+    <tr style="height: 100%;">
+      <td style="vertical-align: top;">
+        <div id="main_div" class="main">
+          <p *ngFor="let msg of userInput.logs">
+            <font *ngIf="!msg.target" color="#{{msg.color}}">{{msg.text}}</font>
+            <font *ngIf="msg.target" color="#ddd">
+              <font color="#{{msg.color}}"><b *ngIf="msg.target">{{msg.target}}:</b></font> {{' ' + msg.text}}
+            </font>
+          </p>
+          <div id="content"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div class="inputbar">
+          <table id="input_table" style="width: 100%; background-color: black;">
+            <tr>
+              <td *ngIf="status == 'idle'">
+                <ion-button (click)="join_ranchat()" expand="block">
+                  대화 시작하기
+                </ion-button>
+              </td>
+              <td *ngIf="status == 'linked'">
+                <ion-button (click)="join_ranchat()" expand="block" [disabled]="req_refreshed">
+                  나가기
+                </ion-button>
+              </td>
+              <td *ngIf="status == 'unlinked'">
+                <ion-button (click)="join_ranchat()" expand="block" [disabled]="req_refreshed">
+                  새 대화
+                </ion-button>
+              </td>
+              <td *ngIf="status == 'linked' || status == 'custom'" style="width: 100%;">
+                <ion-input type="text" placeholder="메시지 입력..." (ionFocus)="focus_on_input()" (keyup.enter)="send()"
+                  [(ngModel)]="userInput.text">
+                </ion-input>
+              </td>
+              <td *ngIf="status == 'linked' || status == 'custom'">
+                <ion-button (click)="send()" expand="block">
+                  보내기
+                </ion-button>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </td>
+    </tr>
+  </table>
 </ion-content>
