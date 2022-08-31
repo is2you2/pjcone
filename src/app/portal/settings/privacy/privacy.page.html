@@ -8,7 +8,5 @@
 </ion-header>
 
 <ion-content>
-  <div style="margin: 8px 16px;">
-    <p *ngFor="let line of lines">{{line}}</p>
-  </div>
+  <textarea class="infobox" disabled [(ngModel)]="lines" style="height: 100%; display: block;"></textarea>
 </ion-content>

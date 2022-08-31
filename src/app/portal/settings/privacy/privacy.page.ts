@@ -15,22 +15,19 @@ export class PrivacyPage implements OnInit {
     this.read_privacy();
   }
 
-  lines: string[] = [];
+  lines: string;
 
   read_privacy() {
     let show = (p: p5) => {
-      p.loadStrings(`assets/privacy.txt`, v => {
-        this.lines = v;
-      }, e => {
-        console.error('개인정보 처리방침 파일 불러오기 실패: ', e);
-      });
+      p.setup = () => {
+        p.loadStrings(`assets/privacy.txt`, v => {
+          this.lines = v.join('\n');
+          p.remove();
+        }, e => {
+          console.error('개인정보 처리방침 파일 불러오기 실패: ', e);
+        });
+      }
     }
-    this.p5canvas = new p5(show);
+    new p5(show);
   }
-
-  p5canvas: p5;
-  ionViewWillLeave() {
-    this.p5canvas.remove();
-  }
-
 }

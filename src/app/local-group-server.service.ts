@@ -20,6 +20,8 @@ export class LocalGroupServerService {
   funcs = {
     /** 서버 시작할 때 */
     onStart: (v: any) => console.warn('onStart 함수 없음: ', v),
+    /** 주소 불러오기 시도시 */
+    onCheck: (v: any) => console.warn('onCheck 함수 없음: ', v),
     /** 서버 생성 실패시, 서버 닫을 때 */
     onFailed: (v: any) => console.error('onFailed 함수 없음: ', v),
   }
@@ -85,14 +87,23 @@ export class LocalGroupServerService {
         'protocols': [], // validates the 'Sec-WebSocket-Protocol' HTTP Header.
         'tcpNoDelay': true // disables Nagle's algorithm.
       }, (addr, port) => { // 시작할 때
-        this.server.getInterfaces((result: any) => {
-          this.funcs.onStart(result);
-        });
+        this.funcs.onStart('');
       }, (reason) => { // 종료될 때
         this.funcs.onFailed(`Did not start. Reason: ${reason}`);
       });
     } else {
       this.funcs.onFailed(`Did not start. Reason: 플랫폼 불일치: 사설 서버 구축 취소`);
+    }
+  }
+
+  /** 기기 주소 검토 */
+  check_addresses() {
+    if (isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA') {
+      if (!this.server)
+        this.server = cordova.plugins.wsserver;
+      this.server.getInterfaces((result: any) => {
+        this.funcs.onCheck(result);
+      });
     }
   }
 

@@ -9,15 +9,41 @@
 
 <ion-content>
   <ion-item-divider>
+    <ion-label>사용 유의사항</ion-label>
+  </ion-item-divider>
+  <textarea class="infobox" disabled [(ngModel)]="info" style="height: 250px;"></textarea>
+  <ion-list-header>
+    <ion-label color="medium">이 기기의 네트워크 주소</ion-label>
+    <ion-button (click)="server.check_addresses()">새로고침</ion-button>
+  </ion-list-header>
+  <textarea class="infobox" disabled [(ngModel)]="addresses" style="height: 80px;"></textarea>
+  <ion-item-divider>
     <ion-label>운용 가능한 사설 서버 목록</ion-label>
   </ion-item-divider>
   <ion-item>
-    <div class="additional_form status_bar" [style]="'background-color: ' + statusBar.colors[statusBar.dedicated['groupchat']]"></div>
+    <div class="additional_form status_bar"
+      [style]="'background-color: ' + statusBar.colors[statusBar.dedicated['groupchat']]"></div>
     <ion-label class="form_margin">그룹채팅 서버</ion-label>
-    <ion-button *ngIf="statusBar.dedicated['groupchat'] == 'offline'" (click)="start_minimalserver()" expand="block" [disabled]="block.chatserver">
+    <ion-button *ngIf="statusBar.dedicated['groupchat'] == 'offline'" (click)="start_minimalserver()" expand="block"
+      [disabled]="block.groupchat">
       시작
     </ion-button>
-    <ion-button *ngIf="statusBar.dedicated['groupchat'] != 'offline'" (click)="stop_minimalserver()" expand="block" [disabled]="block.chatserver">
+    <ion-button *ngIf="statusBar.dedicated['groupchat'] != 'offline'" (click)="stop_minimalserver()" expand="block"
+      [disabled]="block.groupchat">
+      종료
+    </ion-button>
+  </ion-item>
+
+  <ion-item [disabled]="true">
+    <div class="additional_form status_bar"
+      [style]="'background-color: ' + statusBar.colors[statusBar.dedicated['webremote']]"></div>
+    <ion-label class="form_margin">웹 페이지와 연동</ion-label>
+    <ion-button *ngIf="statusBar.dedicated['webremote'] == 'offline'" (click)="start_minimalserver()" expand="block"
+      [disabled]="block.webremote">
+      시작
+    </ion-button>
+    <ion-button *ngIf="statusBar.dedicated['webremote'] != 'offline'" (click)="stop_minimalserver()" expand="block"
+      [disabled]="block.webremote">
       종료
     </ion-button>
   </ion-item>

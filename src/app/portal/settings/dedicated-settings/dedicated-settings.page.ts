@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { LocalGroupServerService } from 'src/app/local-group-server.service';
 import { StatusManageService } from 'src/app/status-manage.service';
+import * as p5 from "p5";
 
 @Component({
   selector: 'app-dedicated-settings',
@@ -10,15 +11,40 @@ import { StatusManageService } from 'src/app/status-manage.service';
 export class DedicatedSettingsPage implements OnInit {
 
   constructor(
-    private server: LocalGroupServerService,
+    public server: LocalGroupServerService,
     public statusBar: StatusManageService,
   ) { }
 
-  ngOnInit() { }
+  info: string;
+  addresses = '이곳에 연결된 네트워크가 보여집니다.';
+
+  ngOnInit() {
+    new p5((p: p5) => {
+      p.setup = () => {
+        p.loadStrings('assets/data/infos/dedicated.txt', v => {
+          this.info = v.join('\n');
+          p.remove();
+        });
+      }
+    });
+    this.server.funcs.onCheck = (v: any) => {
+      let keys = Object.keys(v);
+      let results: string[] = [];
+      for (let i = 0, j = keys.length; i < j; i++)
+        if (v[keys[i]]['ipv4Addresses'].length)
+          for (let k = 0, l = v[keys[i]]['ipv4Addresses'].length; k < l; k++)
+            results.push(`${v[keys[i]]['ipv4Addresses'][k]} (${keys[i]})`);
+      if (results.length)
+        this.addresses = results.join('\n');
+      else this.addresses = '연결된 네트워크가 없습니다.';
+    }
+    this.server.check_addresses();
+  }
 
   /** 중복 클릭 방지용 토글 */
   block = {
-    chatserver: false,
+    groupchat: false,
+    webremote: false,
   }
 
   /**
@@ -34,7 +60,7 @@ export class DedicatedSettingsPage implements OnInit {
 
   /** 최소한의 기능을 가진 채팅 서버 만들기 */
   start_minimalserver() {
-    this.block_button('chatserver')
+    this.block_button('groupchat')
     this.statusBar.settings['dedicatedServer'] = 'pending';
     this.statusBar.dedicated['groupchat'] = 'pending';
     this.server.funcs.onStart = () => {
@@ -53,7 +79,7 @@ export class DedicatedSettingsPage implements OnInit {
   }
   /** 채팅서버 중지 */
   stop_minimalserver() {
-    this.block_button('chatserver')
+    this.block_button('groupchat')
     this.server.stop();
   }
 }

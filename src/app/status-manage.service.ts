@@ -43,11 +43,12 @@ export class StatusManageService {
   /** 설정-사설서버 관리 목록 */
   dedicated: PanelStatus = {
     groupchat: 'offline',
+    webremote: 'offline',
   };
   /** 설정에서 관리되는 그룹들 */
   groups: PanelStatus = {};
 
   constructor() {
-    setInterval(() => { }, 200); // services 개체 실시간 업데이트 유도용
+    setInterval(() => { }, 350); // services 개체 실시간 업데이트 유도용
   }
 }

@@ -28,6 +28,7 @@ export class LicensesPage implements OnInit {
       mbedtls: '',
     },
     p5js: '',
+    nakama: '',
     notosans: '',
   };
 
@@ -55,6 +56,9 @@ export class LicensesPage implements OnInit {
         });
         p.loadStrings('assets/data/docs/p5js.txt', (v: string[]) => {
           this.licenses.p5js = v.join('\n');
+        });
+        p.loadStrings('assets/data/docs/nakama.txt', (v: string[]) => {
+          this.licenses.nakama = v.join('\n');
         });
         p.loadStrings('assets/data/docs/OFL.txt', (v: string[]) => {
           this.licenses.notosans = v.join('\n');
