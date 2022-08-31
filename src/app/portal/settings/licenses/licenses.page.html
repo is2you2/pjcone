@@ -10,6 +10,7 @@
 <ion-content>
   <ion-list-header>
     <ion-label>Ionic 6</ion-label>
+    <ion-button (click)="open_link('https://ionicframework.com/')">열기</ion-button>
   </ion-list-header>
   <ion-item-divider>
     <ion-label>Ionic CLI</ion-label>
@@ -22,6 +23,7 @@
 
   <ion-list-header>
     <ion-label>Godot engine</ion-label>
+    <ion-button (click)="open_link('https://godotengine.org/')">열기</ion-button>
   </ion-list-header>
   <ion-item-divider>
     <ion-label>Godot engine</ion-label>
@@ -42,16 +44,19 @@
 
   <ion-list-header>
     <ion-label>p5js</ion-label>
+    <ion-button (click)="open_link('https://p5js.org/')">열기</ion-button>
   </ion-list-header>
   <textarea class="infobox" disabled [(ngModel)]="licenses['p5js']"></textarea>
 
   <ion-list-header>
     <ion-label>Nakama Server</ion-label>
+    <ion-button (click)="open_link('https://heroiclabs.com/')">열기</ion-button>
   </ion-list-header>
   <textarea class="infobox" disabled [(ngModel)]="licenses['nakama']"></textarea>
 
   <ion-list-header>
-    <ion-label>Noto Sans</ion-label>
+    <ion-label>Google Fonts</ion-label>
+    <ion-button (click)="open_link('https://fonts.google.com/noto')">열기</ion-button>
   </ion-list-header>
   <textarea class="infobox" disabled [(ngModel)]="licenses['notosans']"></textarea>
 </ion-content>

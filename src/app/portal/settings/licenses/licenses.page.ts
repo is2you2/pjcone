@@ -71,4 +71,9 @@ export class LicensesPage implements OnInit {
   ionViewWillLeave() {
     this.p5canvas.remove();
   }
+
+  /** 웹 사이트 주소 열기ind */
+  open_link(_link:string) {
+    window.open(_link, '_system')
+  }
 }
