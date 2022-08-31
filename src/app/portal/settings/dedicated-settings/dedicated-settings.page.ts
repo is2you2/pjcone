@@ -16,27 +16,44 @@ export class DedicatedSettingsPage implements OnInit {
 
   ngOnInit() { }
 
-  /** 서버 사용 가능 여부에 따라 버튼 조정 */
+  /** 중복 클릭 방지용 토글 */
+  block = {
+    chatserver: false,
+  }
+
+  /**
+   * 중복 클릭 방지를 위해 버튼을 막음
+   * @param _target block 내 key 값
+   */
+  block_button(_target: string) {
+    this.block[_target] = true;
+    setTimeout(() => {
+      this.block[_target] = false;
+    }, 2500);
+  }
+
   /** 최소한의 기능을 가진 채팅 서버 만들기 */
   start_minimalserver() {
+    this.block_button('chatserver')
     this.statusBar.settings['dedicatedServer'] = 'pending';
     this.statusBar.dedicated['groupchat'] = 'pending';
     this.server.funcs.onStart = () => {
       this.statusBar.settings['dedicatedServer'] = 'online';
       this.statusBar.dedicated['groupchat'] = 'online';
-      console.log(this.statusBar.colors[this.statusBar.dedicated['groupchat']]);
     }
     this.server.funcs.onFailed = () => {
       this.statusBar.settings['dedicatedServer'] = 'missing';
       this.statusBar.dedicated['groupchat'] = 'missing';
-      console.log(this.statusBar.colors[this.statusBar.dedicated['groupchat']]);
       setTimeout(() => {
         this.statusBar.settings['dedicatedServer'] = 'offline';
         this.statusBar.dedicated['groupchat'] = 'offline';
-        console.log(this.statusBar.colors[this.statusBar.dedicated['groupchat']]);
       }, 5000);
     }
     this.server.initialize();
   }
-
+  /** 채팅서버 중지 */
+  stop_minimalserver() {
+    this.block_button('chatserver')
+    this.server.stop();
+  }
 }

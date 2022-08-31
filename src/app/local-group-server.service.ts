@@ -103,9 +103,11 @@ export class LocalGroupServerService {
 
   /** 사설 서버 종료 */
   stop() {
-    this.server.stop((addr, port) => {
-      this.funcs.onFailed(`Stopped listening on ${port}`);
-    });
+    if (isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA') {
+      this.server.stop((addr, port) => {
+        this.funcs.onFailed(`Stopped listening on ${port}`);
+      });
+    }
   }
 
   /**
