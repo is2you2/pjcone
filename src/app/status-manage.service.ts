@@ -47,5 +47,7 @@ export class StatusManageService {
   /** 설정에서 관리되는 그룹들 */
   groups: PanelStatus = {};
 
-  constructor() { }
+  constructor() {
+    setInterval(() => { }, 200); // services 개체 실시간 업데이트 유도용
+  }
 }
