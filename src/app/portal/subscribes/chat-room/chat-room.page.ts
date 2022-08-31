@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
 
 @Component({
@@ -10,10 +11,10 @@ export class ChatRoomPage implements OnInit {
 
   constructor(
     private app: GlobalActService,
+    public modalCtrl: ModalController,
   ) { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
   /** 사용자 입력 */
   userInput = {

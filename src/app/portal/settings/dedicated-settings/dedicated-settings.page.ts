@@ -11,7 +11,7 @@ export class DedicatedSettingsPage implements OnInit {
 
   constructor(
     private server: LocalGroupServerService,
-    private statusBar: StatusManageService,
+    public statusBar: StatusManageService,
   ) { }
 
   ngOnInit() { }

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-projinfo',
@@ -7,9 +8,10 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ProjinfoPage implements OnInit {
 
-  constructor() { }
+  constructor(
+    public modalCtrl: ModalController,
+  ) { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
 }

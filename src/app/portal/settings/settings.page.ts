@@ -14,7 +14,7 @@ export class SettingsPage implements OnInit {
   constructor(
     private modal: ModalController,
     private nav: NavController,
-    private statusBar: StatusManageService,
+    public statusBar: StatusManageService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;

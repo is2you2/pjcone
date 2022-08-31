@@ -24,8 +24,8 @@ interface ReceivedTextForm {
 export class MinimalChatPage implements OnInit {
 
   constructor(
-    private client: MiniranchatClientService,
-    private modalCtrl: ModalController,
+    public client: MiniranchatClientService,
+    public modalCtrl: ModalController,
     private device: Device,
     private noti: LocalNotiService,
     private title: Title,

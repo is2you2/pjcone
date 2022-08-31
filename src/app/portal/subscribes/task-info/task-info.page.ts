@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-task-info',
@@ -7,9 +8,10 @@ import { Component, OnInit } from '@angular/core';
 })
 export class TaskInfoPage implements OnInit {
 
-  constructor() { }
+  constructor(
+    public modalCtrl: ModalController,
+  ) { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
 }
