@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 
+/** 어느 페이지에든 행동할 가능성이 있는 공용 함수 모음 */
 @Injectable({
   providedIn: 'root'
 })

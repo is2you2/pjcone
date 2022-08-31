@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
-import { LocalGroupServerService } from 'src/app/local-group-server.service';
+import { isPlatform } from 'src/app/app.component';
+import { StatusManageService } from 'src/app/status-manage.service';
 import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 
 @Component({
@@ -11,12 +12,16 @@ import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 export class SettingsPage implements OnInit {
 
   constructor(
-    private server: LocalGroupServerService,
     private modal: ModalController,
     private nav: NavController,
+    private statusBar: StatusManageService,
   ) { }
-
-  ngOnInit() { }
+  /** 사설 서버 생성 가능 여부: 메뉴 disabled */
+  cant_dedicated = false;
+  ngOnInit() {
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
+      this.cant_dedicated = true;
+  }
 
   /** 채팅방 이중진입 방지용 */
   will_enter = false;
@@ -37,22 +42,6 @@ export class SettingsPage implements OnInit {
         name: this.member_name,
       },
     }).then(v => v.present());
-  }
-
-  /** 서버 사용 가능 여부에 따라 버튼 조정 */
-  isServerWorking = false;
-  /** 최소한의 기능을 가진 채팅 서버 만들기 */
-  start_minimalserver() {
-    this.isServerWorking = true;
-    this.server.funcs.onStart = () => {
-      this.start_minimalchat('ws://localhost');
-    } // ^ 자체 참여
-    this.server.funcs.onFailed = () => {
-      setTimeout(() => {
-        this.isServerWorking = false;
-      }, 60000);
-    }
-    this.server.initialize();
   }
 
   /** 개발자 블로그로 연결 (github 홈페이지) */

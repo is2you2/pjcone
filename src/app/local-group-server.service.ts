@@ -92,7 +92,7 @@ export class LocalGroupServerService {
         this.funcs.onFailed(`Did not start. Reason: ${reason}`);
       });
     } else {
-      console.warn('플랫폼 불일치: 사설 서버 구축 취소');
+      this.funcs.onFailed(`Did not start. Reason: 플랫폼 불일치: 사설 서버 구축 취소`);
     }
   }
 

@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>이 기기를 기능 서버로</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="settings"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item-divider>
+    <ion-label>운용 가능한 사설 서버 목록</ion-label>
+  </ion-item-divider>
+  <ion-item>
+    <div class="additional_form status_bar" [style]="'background-color: ' + statusBar.colors[statusBar.dedicated['groupchat']]"></div>
+    <ion-label class="form_margin">그룹채팅 서버</ion-label>
+    <ion-button (click)="start_minimalserver()" expand="block">
+      시작
+    </ion-button>
+  </ion-item>
+</ion-content>

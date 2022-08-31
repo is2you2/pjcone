@@ -69,3 +69,14 @@
     width: 100%;
     height: 100%;
 }
+
+// 점등 판넬이 존재하는 경우 왼쪽 마진처리
+.form_margin {
+    margin-left: 16px;
+}
+
+// 점등 판넬에 사용되는 배경 구성 (이미지, 램프 등)
+.additional_form {
+    position: absolute;
+    z-index: -1;
+}
