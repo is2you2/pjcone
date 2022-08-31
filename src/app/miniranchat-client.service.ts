@@ -10,6 +10,21 @@ import { SOCKET_SERVER_ADDRESS } from './app.component';
 export class MiniranchatClientService {
 
   client: WebSocket;
+
+  /** 사용자 상태: 키보드 종류 노출 제어용 */
+  status: 'idle' | 'linked' | 'unlinked' | 'custom' = 'idle';
+
+  /** 사용자 입력과 관련된 것들 */
+  userInput = {
+    /** 채팅, 로그 등 대화창에 표기되는 모든 것 */
+    logs: [],
+    /** 작성 텍스트 */
+    text: '',
+  }
+
+  /** 지금 연결된 사람 수 */
+  ConnectedNow = 0;
+
   /** 상호작용 함수들 */
   funcs = {
     onopen: (v: any) => console.warn('OnOpen 설정 안됨: ', v),

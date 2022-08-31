@@ -186,7 +186,6 @@ export class LocalNotiService {
         _action_wm();
         window.focus();
       };
-      this.WebNoties[opt.id].onshow = (e) => console.error(`WebNoties 동작 오류_${opt.id}: ${e}`)
     } else if (isPlatform != 'MobilePWA') { // 모바일 로컬 푸쉬
       // 포어그라운드일 때 동작 안함, 포어그라운드면서 해당 화면이면 동작 안함
       if (!this.bgmode.isActive() && this.Current == header) return;
@@ -259,15 +258,29 @@ export class LocalNotiService {
       this.noti.clear(id);
   }
 
+  /** 알림 행동 등록시 기록 */
+  listeners = {};
   /** 알림 행동 받기  
    * eventName — The name of the event. Available events: schedule(예약됨), trigger(발생됨), click(눌렀을 때), update, clear, clearall, cancel, cancelall. Custom event names are possible for actions 
    */
   SetListener(ev: string, subscribe: Function = (v: any, eopts: any) => console.warn(`${ev}: ${v}/${eopts}`)) {
     if (isPlatform == 'DesktopPWA') {
     } else if (isPlatform != 'MobilePWA') {
-      cordova.plugins.notification.local.on(ev, (v: any, eopts: any) => {
+      this.listeners[ev] = (v: any, eopts: any) => {
         subscribe(v, eopts);
-      });
+      }
+      cordova.plugins.notification.local.on(ev, this.listeners[ev]);
+    }
+  }
+
+  /** 알림 행동 지우기  
+   * eventName — The name of the event. Available events: schedule(예약됨), trigger(발생됨), click(눌렀을 때), update, clear, clearall, cancel, cancelall. Custom event names are possible for actions 
+   */
+  RemoveListener(ev: string) {
+    if (isPlatform == 'DesktopPWA') {
+    } else if (isPlatform != 'MobilePWA') {
+      cordova.plugins.notification.local.un(ev, this.listeners[ev]);
+      delete this.listeners[ev];
     }
   }
 

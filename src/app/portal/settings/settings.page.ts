@@ -25,7 +25,7 @@ export class SettingsPage implements OnInit {
   /** 사설 그룹채팅에서 사용할 이름 */
   member_name: string;
   /** 최소한의 기능을 가진 채팅 시작하기 */
-  start_minimalchat(_address?: string, _onQuit: Function = () => { }) {
+  start_minimalchat(_address?: string) {
     this.will_enter = true;
     setTimeout(() => {
       this.will_enter = false;
@@ -35,7 +35,6 @@ export class SettingsPage implements OnInit {
       componentProps: {
         address: this.chat_address ? 'ws://' + this.chat_address : _address,
         name: this.member_name,
-        onQuit: _onQuit,
       },
     }).then(v => v.present());
   }
@@ -46,9 +45,7 @@ export class SettingsPage implements OnInit {
   start_minimalserver() {
     this.isServerWorking = true;
     this.server.funcs.onStart = () => {
-      this.start_minimalchat('ws://localhost', () => {
-        this.server.stop();
-      });
+      this.start_minimalchat('ws://localhost');
     } // ^ 자체 참여
     this.server.funcs.onFailed = () => {
       setTimeout(() => {
