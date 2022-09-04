@@ -60,26 +60,32 @@ export class DedicatedSettingsPage implements OnInit {
 
   /** 최소한의 기능을 가진 채팅 서버 만들기 */
   start_minimalserver() {
-    this.block_button('groupchat')
-    this.statusBar.settings['dedicatedServer'] = 'pending';
-    this.statusBar.dedicated.official['groupchat'] = 'pending';
-    this.server.funcs.onStart = () => {
-      this.statusBar.settings['dedicatedServer'] = 'online';
-      this.statusBar.dedicated.official['groupchat'] = 'online';
+    if (this.statusBar.dedicated.official['groupchat'] == 'offline') {
+      this.block_button('groupchat')
+      this.statusBar.settings['dedicatedServer'] = 'pending';
+      this.statusBar.dedicated.official['groupchat'] = 'pending';
+      this.server.funcs.onStart = () => {
+        this.statusBar.settings['dedicatedServer'] = 'online';
+        this.statusBar.dedicated.official['groupchat'] = 'online';
+      }
+      this.server.funcs.onFailed = () => {
+        this.statusBar.settings['dedicatedServer'] = 'missing';
+        this.statusBar.dedicated.official['groupchat'] = 'missing';
+        setTimeout(() => {
+          this.statusBar.settings['dedicatedServer'] = 'offline';
+          this.statusBar.dedicated.official['groupchat'] = 'offline';
+        }, 1500);
+      }
+      this.server.initialize();
+    } else {
+      this.block_button('groupchat')
+      this.server.stop();
     }
-    this.server.funcs.onFailed = () => {
-      this.statusBar.settings['dedicatedServer'] = 'missing';
-      this.statusBar.dedicated.official['groupchat'] = 'missing';
-      setTimeout(() => {
-        this.statusBar.settings['dedicatedServer'] = 'offline';
-        this.statusBar.dedicated.official['groupchat'] = 'offline';
-      }, 1500);
-    }
-    this.server.initialize();
   }
-  /** 채팅서버 중지 */
-  stop_minimalserver() {
-    this.block_button('groupchat')
-    this.server.stop();
+
+  /** 웹 페이지와 연동 시작하기 */
+  start_webremote() {
+    console.log('웹 페이지와 연동 함수 냉무');
+    this.block_button('webremote');
   }
 }

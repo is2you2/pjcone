@@ -15,28 +15,20 @@
   <ion-item-divider>
     <ion-label>서버 목록</ion-label>
   </ion-item-divider>
-  <ion-item>
+  <ion-item button (click)="link_official_group()">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[statusBar.groupServer.official['nakama']]"></div>
     <ion-label class="form_margin">공식서버</ion-label>
-    <ion-button *ngIf="statusBar.groupServer.official['nakama'] == 'offline'" (click)="link_official_group()"
-      expand="block">
-      연결
-    </ion-button>
-    <ion-button *ngIf="statusBar.groupServer.official['nakama'] != 'offline'" (click)="unlink_official_group()"
-      expand="block">
-      끊기
-    </ion-button>
   </ion-item>
 
   <ion-item-divider>
     <ion-label>사설 서버 등록하기</ion-label>
   </ion-item-divider>
-  <ion-item>
+  <ion-item button>
     <ion-label>서버 이름</ion-label>
     <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.name" [placeholder]="'사용자 사설 서버'"></ion-input>
   </ion-item>
-  <ion-item>
+  <ion-item button>
     <ion-label>서버 주소</ion-label>
     <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.address" [placeholder]="'www.example.com'"></ion-input>
   </ion-item>
