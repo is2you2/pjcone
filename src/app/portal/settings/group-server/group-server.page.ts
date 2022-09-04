@@ -33,7 +33,7 @@ export class GroupServerPage implements OnInit {
     console.log('공식 제공 서버 연결');
     this.statusBar.groupServer.official['nakama'] = 'pending';
     this.statusBar.settings['groupServer'] = 'pending';
-    localStorage.setItem('group-server', '설정됨');
+    localStorage.setItem('group-server', 'auto-on');
   }
 
   /** 공식 제공 서버로부터 연결 끊기 */

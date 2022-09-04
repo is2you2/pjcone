@@ -15,13 +15,11 @@
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[statusBar.settings['groupServer']]"></div>
     <ion-label class=" form_margin">그룹 서버</ion-label>
-    <ion-label class="ion-text-right" color="medium">{{group_server_tog}}</ion-label>
   </ion-item>
   <ion-item button>
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[statusBar.settings['communityServer']]"></div>
     <ion-label class=" form_margin">커뮤니티 서버</ion-label>
-    <ion-label class="ion-text-right" color="medium">{{community_server_tog}}</ion-label>
   </ion-item>
   <ion-item button (click)="go_to_page('dedicated-settings')" [disabled]="cant_dedicated">
     <div class="additional_form status_bar_single"

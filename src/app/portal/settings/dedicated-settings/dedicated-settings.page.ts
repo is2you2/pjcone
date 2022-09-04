@@ -55,7 +55,7 @@ export class DedicatedSettingsPage implements OnInit {
     this.block[_target] = true;
     setTimeout(() => {
       this.block[_target] = false;
-    }, 2500);
+    }, 2000);
   }
 
   /** 최소한의 기능을 가진 채팅 서버 만들기 */
@@ -73,7 +73,7 @@ export class DedicatedSettingsPage implements OnInit {
       setTimeout(() => {
         this.statusBar.settings['dedicatedServer'] = 'offline';
         this.statusBar.dedicated.official['groupchat'] = 'offline';
-      }, 1000);
+      }, 1500);
     }
     this.server.initialize();
   }
