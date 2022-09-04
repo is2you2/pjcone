@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>community-server</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="settings"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item-divider>
+    <ion-label>커뮤니티 서버에 대해서</ion-label>
+  </ion-item-divider>
+  <textarea class="infobox" disabled [(ngModel)]="info" style="height: 350px;"></textarea>
+
+  <ion-item-divider>
+    <ion-label>서버 상태</ion-label>
+  </ion-item-divider>
+  <ion-item button (click)="reconn_community_server()">
+    <div class="additional_form status_bar_single"
+      [style]="'background-color: ' + statusBar.colors[statusBar.settings['communityServer']]"></div>
+    <ion-label class="form_margin">커뮤니티 서버</ion-label>
+  </ion-item>
+</ion-content>

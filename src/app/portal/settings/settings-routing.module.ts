@@ -28,6 +28,10 @@ const routes: Routes = [
     path: 'group-server',
     loadChildren: () => import('./group-server/group-server.module').then( m => m.GroupServerPageModule)
   },
+  {
+    path: 'community-server',
+    loadChildren: () => import('./community-server/community-server.module').then( m => m.CommunityServerPageModule)
+  },
 ];
 
 @NgModule({

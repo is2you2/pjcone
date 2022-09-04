@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SOCKET_SERVER_ADDRESS } from './app.component';
+import { StatusManageService } from './status-manage.service';
 
 /** 앱 시작과 동시에 서버에 연결을 시도하여 실시간 상호작용하는 메인 클라이언트 */
 @Injectable({
@@ -8,6 +9,7 @@ import { SOCKET_SERVER_ADDRESS } from './app.component';
 export class WscService {
 
   constructor(
+    private statusBar: StatusManageService,
   ) { }
 
   client: WebSocket;
@@ -25,8 +27,18 @@ export class WscService {
    * @param _Address 서버 주소, 포트 12000 고정
    */
   initialize() {
+    this.statusBar.settings['communityServer'] = 'pending';
     const PORT: number = 12000;
     this.client = new WebSocket(`wss://${SOCKET_SERVER_ADDRESS}:${PORT}`);
+    this.client.onopen = (ev) => {
+      this.statusBar.settings['communityServer'] = 'online';
+    }
+    this.client.onclose = (ev) => {
+      this.statusBar.settings['communityServer'] = 'missing';
+      setTimeout(() => {
+        this.statusBar.settings['communityServer'] = 'offline';
+      }, 1500);
+    }
     this.client.onerror = (e) => {
       console.error('메인소켓 오류 발생: ', e);
     }
