@@ -59,8 +59,12 @@
   <ion-item button [disabled]="will_enter" (click)="start_minimalchat()">
     <ion-label>랜덤채팅 참여</ion-label>
   </ion-item>
-  <ion-item button [disabled]="true">
-    <ion-label>사설 그룹채팅 참여</ion-label>
+  <ion-item button [disabled]="will_enter">
+    <ion-label>사설 그룹채팅</ion-label>
+    <ion-input class="ion-text-center" [placeholder]="'기본: 127.0.0.1'" [(ngModel)]="chat_address"></ion-input>
+    <ion-button (click)="start_minimalchat(chat_address ? 'ws://' + chat_address : 'ws://127.0.0.1')">
+      참여
+    </ion-button>
   </ion-item>
   <ion-item-divider>
     <ion-label>인앱 도구 모음</ion-label>

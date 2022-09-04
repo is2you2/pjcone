@@ -4,7 +4,7 @@
       <ion-back-button defaultHref=""></ion-back-button>
     </ion-buttons>
     <ion-title>{{header_title}}</ion-title>
-    <div style="margin: 8px 16px;" slot="end">동시접속자: {{client.ConnectedNow}}명</div>
+    <div style="margin: 8px 16px;" slot="end">동시접속자: {{client.ConnectedNow[target]}}명</div>
   </ion-toolbar>
 </ion-header>
 
@@ -13,7 +13,7 @@
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
         <div id="main_div" class="main">
-          <p *ngFor="let msg of client.userInput.logs">
+          <p *ngFor="let msg of client.userInput[target].logs">
             <font *ngIf="!msg.target" color="#{{msg.color}}">{{msg.text}}</font>
             <font *ngIf="msg.target" color="#ddd">
               <font color="#{{msg.color}}"><b *ngIf="msg.target">{{msg.target}}:</b></font> {{' ' + msg.text}}
@@ -28,27 +28,27 @@
         <div style="width: 100%;">
           <table id="input_table" style="width: 100%; background-color: black;">
             <tr>
-              <td *ngIf="client.status == 'idle'">
+              <td *ngIf="client.status[target] == 'idle'">
                 <ion-button (click)="join_ranchat()" expand="block">
                   대화 시작하기
                 </ion-button>
               </td>
-              <td *ngIf="client.status == 'linked' || client.status == 'unlinked'">
+              <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'unlinked'">
                 <ion-button (click)="join_ranchat()" expand="block" [disabled]="req_refreshed">
                   새 대화
                 </ion-button>
               </td>
-              <td *ngIf="client.status == 'unlinked' || client.status == 'idle'">
+              <td *ngIf="client.status[target] == 'unlinked' || client.status[target] == 'idle' || client.status[target] == 'custom'">
                 <ion-button (click)="quit_chat()" expand="block">
                   대화 종료
                 </ion-button>
               </td>
-              <td *ngIf="client.status == 'linked' || client.status == 'custom'" style="width: 100%;">
+              <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'custom'" style="width: 100%;">
                 <ion-input type="text" placeholder="메시지 입력..." (ionFocus)="focus_on_input()" (keyup.enter)="send()"
-                  [(ngModel)]="client.userInput.text">
+                  [(ngModel)]="client.userInput[target].text">
                 </ion-input>
               </td>
-              <td *ngIf="client.status == 'linked' || client.status == 'custom'">
+              <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'custom'">
                 <ion-button (click)="send()" expand="block">
                   보내기
                 </ion-button>

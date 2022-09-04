@@ -73,7 +73,7 @@ export class DedicatedSettingsPage implements OnInit {
       setTimeout(() => {
         this.statusBar.settings['dedicatedServer'] = 'offline';
         this.statusBar.dedicated['groupchat'] = 'offline';
-      }, 5000);
+      }, 1000);
     }
     this.server.initialize();
   }

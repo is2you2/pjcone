@@ -9,62 +9,83 @@ import { SOCKET_SERVER_ADDRESS } from './app.component';
 })
 export class MiniranchatClientService {
 
-  client: WebSocket;
+  client: { [id: string]: WebSocket } = {};
 
-  /** 사용자 상태: 키보드 종류 노출 제어용 */
-  status: 'idle' | 'linked' | 'unlinked' | 'custom' = 'idle';
+  // 'idle' | 'linked' | 'unlinked' | 'custom'
+  status = {
+    'group': 'idle',
+    'ranchat': 'idle',
+  }
 
   /** 사용자 입력과 관련된 것들 */
   userInput = {
-    /** 채팅, 로그 등 대화창에 표기되는 모든 것 */
-    logs: [],
-    /** 작성 텍스트 */
-    text: '',
+    'group': {
+      /** 채팅, 로그 등 대화창에 표기되는 모든 것 */
+      logs: [],
+      /** 작성 텍스트 */
+      text: '',
+    },
+    'ranchat': {
+      /** 채팅, 로그 등 대화창에 표기되는 모든 것 */
+      logs: [],
+      /** 작성 텍스트 */
+      text: '',
+    },
   }
 
   /** 지금 연결된 사람 수 */
-  ConnectedNow = 0;
+  ConnectedNow = {
+    'group': 0,
+    'ranchat': 0,
+  };
 
   /** 상호작용 함수들 */
   funcs = {
-    onopen: (v: any) => console.warn('OnOpen 설정 안됨: ', v),
-    onclose: (v: any) => console.warn('OnClose 설정 안됨: ', v),
-    onmessage: (v: any) => console.warn('OnMessage 설정 안됨: ', v),
+    'group': {
+      onopen: (v: any) => console.warn('OnOpen 설정 안됨: ', v),
+      onclose: (v: any) => console.warn('OnClose 설정 안됨: ', v),
+      onmessage: (v: any) => console.warn('OnMessage 설정 안됨: ', v),
+    },
+    'ranchat': {
+      onopen: (v: any) => console.warn('OnOpen 설정 안됨: ', v),
+      onclose: (v: any) => console.warn('OnClose 설정 안됨: ', v),
+      onmessage: (v: any) => console.warn('OnMessage 설정 안됨: ', v),
+    },
   };
 
   /**
    * 클라이언트 연결 시도
    * @param _Address 기본값: 메인 소켓 서버, 사설 서버 주소로 변경 가능
    */
-  initialize(_Address?: string) {
+  initialize(_target?: string, _Address?: string) {
     const PORT: number = 12011;
-    this.client = new WebSocket(`${_Address || `wss://${SOCKET_SERVER_ADDRESS}`}:${PORT}`);
-    this.client.onopen = (ev) => {
-      this.funcs.onopen(ev);
+    this.client[_target] = new WebSocket(`${_Address || `wss://${SOCKET_SERVER_ADDRESS}`}:${PORT}`);
+    this.client[_target].onopen = (ev) => {
+      this.funcs[_target].onopen(ev);
     }
-    this.client.onclose = (ev) => {
-      this.funcs.onclose(ev);
+    this.client[_target].onclose = (ev) => {
+      this.funcs[_target].onclose(ev);
     }
-    this.client.onerror = (e) => {
+    this.client[_target].onerror = (e) => {
       console.error('오류 발생: ', e);
     }
-    this.client.onmessage = (ev) => {
+    this.client[_target].onmessage = (ev) => {
       if (typeof ev.data == 'string')
-        this.funcs.onmessage(ev.data);
+        this.funcs[_target].onmessage(ev.data);
       else
         ev.data.text().then((v: any) => {
-          this.funcs.onmessage(v);
+          this.funcs[_target].onmessage(v);
         });
     }
   }
 
-  send(msg: string) {
-    if (this.client) this.client.send(msg);
+  send(_target: string, msg: string) {
+    if (this.client) this.client[_target].send(msg);
     else console.warn('client 연결되어있지 않음: 메시지 발송 취소: ', msg);
   }
 
   /** 클라이언트 끊기 */
-  disconnect(code = 1000, reason = 'user_close') {
-    if (this.client) this.client.close(code, reason);
+  disconnect(_target: string, code = 1000, reason = 'user_close') {
+    if (this.client) this.client[_target].close(code, reason);
   }
 }

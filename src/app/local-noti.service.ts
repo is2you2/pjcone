@@ -158,7 +158,6 @@ export class LocalNotiService {
   /**
    * 로컬 푸쉬 알림을 동작시킵니다
    * @param header 지금 바라보고 있는 화면의 이름
-   * @param opt 알림 옵션s
    * @param _action_wm 클릭시 행동 (Web.Noti)
    */
   PushLocal(opt: TotalNotiForm, header: string = 'favicon', _action_wm: Function = () => { }) {

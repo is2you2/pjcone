@@ -31,6 +31,7 @@ export class SettingsPage implements OnInit {
   member_name: string;
   /** 최소한의 기능을 가진 채팅 시작하기 */
   start_minimalchat(_address?: string) {
+    if (this.will_enter) return;
     this.will_enter = true;
     setTimeout(() => {
       this.will_enter = false;
@@ -38,7 +39,7 @@ export class SettingsPage implements OnInit {
     this.modal.create({
       component: MinimalChatPage,
       componentProps: {
-        address: this.chat_address ? 'ws://' + this.chat_address : _address,
+        address: _address,
         name: this.member_name,
       },
     }).then(v => v.present());
