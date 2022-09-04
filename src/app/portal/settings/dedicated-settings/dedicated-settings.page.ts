@@ -62,17 +62,17 @@ export class DedicatedSettingsPage implements OnInit {
   start_minimalserver() {
     this.block_button('groupchat')
     this.statusBar.settings['dedicatedServer'] = 'pending';
-    this.statusBar.dedicated['groupchat'] = 'pending';
+    this.statusBar.dedicated.official['groupchat'] = 'pending';
     this.server.funcs.onStart = () => {
       this.statusBar.settings['dedicatedServer'] = 'online';
-      this.statusBar.dedicated['groupchat'] = 'online';
+      this.statusBar.dedicated.official['groupchat'] = 'online';
     }
     this.server.funcs.onFailed = () => {
       this.statusBar.settings['dedicatedServer'] = 'missing';
-      this.statusBar.dedicated['groupchat'] = 'missing';
+      this.statusBar.dedicated.official['groupchat'] = 'missing';
       setTimeout(() => {
         this.statusBar.settings['dedicatedServer'] = 'offline';
-        this.statusBar.dedicated['groupchat'] = 'offline';
+        this.statusBar.dedicated.official['groupchat'] = 'offline';
       }, 1000);
     }
     this.server.initialize();

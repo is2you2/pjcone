@@ -24,6 +24,10 @@ const routes: Routes = [
     path: 'dedicated-settings',
     loadChildren: () => import('./dedicated-settings/dedicated-settings.module').then( m => m.DedicatedSettingsPageModule)
   },
+  {
+    path: 'group-server',
+    loadChildren: () => import('./group-server/group-server.module').then( m => m.GroupServerPageModule)
+  },
 ];
 
 @NgModule({

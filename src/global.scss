@@ -87,5 +87,17 @@
     resize: none;
     padding: 16px;
     border: 0;
-    word-break: keep-all;
+    word-break: break-all;
+}
+
+// 한 줄 판넬에 사용
+.status_bar_single {
+    width: 4px;
+    height: 76%;
+}
+
+// 두 줄 판넬에 사용
+.status_bar_double {
+    width: 5px;
+    height: 76%;
 }

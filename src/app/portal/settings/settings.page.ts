@@ -18,9 +18,19 @@ export class SettingsPage implements OnInit {
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
+  /** 그룹서버 설정여부 표시 */
+  group_server_tog: string;
+  /** 커뮤니티서버 설정여부 표시 */
+  community_server_tog: string;
+
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
+  }
+
+  ionViewWillEnter() {
+    this.group_server_tog = localStorage.getItem('group-server') ?? '눌러서 설정';
+    this.community_server_tog = localStorage.getItem('community-server') ?? '눌러서 설정';
   }
 
   /** 채팅방 이중진입 방지용 */

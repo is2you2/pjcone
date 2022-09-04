@@ -24,26 +24,36 @@ export class StatusManageService {
     certified: '#00ffff',
   }
   /** 채팅방 리스트별 연결 상태
-   * { id: PanelStatus }
+   * { group-id: PanelStatus }
    */
-  chatroom: PanelStatus = {};
+  chatroom: { [id: string]: PanelStatus } = {};
   /** 관리중인 프로젝트 */
-  project: PanelStatus = {};
+  project: { [id: string]: PanelStatus } = {};
   /** 업무 리스트 */
-  task: PanelStatus = {};
-  /** 설정에 들어있는 램프판넬 */
+  task: { [id: string]: PanelStatus } = {};
+  /** 설정에 들어있는 램프판넬, 서버들의 전반적 동향 */
   settings: PanelStatus = {
-    /** 그룹 서버 */
+    /** 그룹 서버 전반적 동향 */
     groupServer: 'offline',
-    /** 커뮤니티 서버 */
+    /** 커뮤니티 서버 전반적 동향 */
     communityServer: 'offline',
     /** 사설서버 전반적 동향 */
     dedicatedServer: 'offline',
   };
+  /** 설정-그룹서버 관리 목록 */
+  groupServer: { [id: string]: PanelStatus } = {
+    official: {
+      nakama: 'offline',
+    },
+    unofficial: {},
+  }
   /** 설정-사설서버 관리 목록 */
-  dedicated: PanelStatus = {
-    groupchat: 'offline',
-    webremote: 'offline',
+  dedicated: { [id: string]: PanelStatus } = {
+    official: {
+      groupchat: 'offline',
+      webremote: 'offline',
+    },
+    unofficial: {},
   };
   /** 설정에서 관리되는 그룹들 */
   groups: PanelStatus = {};
