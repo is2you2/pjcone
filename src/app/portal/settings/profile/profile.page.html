@@ -8,5 +8,33 @@
 </ion-header>
 
 <ion-content>
-
+  <div class="profile_img_form">
+    <img id="profile_img" [src]="userInput.img" alt="프로필 이미지">
+    <div class="fore-gradient" (click)="change_img()"></div>
+    <div class="username">{{userInput.name ?? '이름 없는 사용자'}}</div>
+  </div>
+  <ion-item-divider>
+    <ion-label>사용자 정보</ion-label>
+  </ion-item-divider>
+  <ion-item>
+    <ion-label>이메일 주소</ion-label>
+    <ion-input class="ion-text-right" [(ngModel)]="userInput.email" [placeholder]="'test@example.com'"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label>사용자 표시명</ion-label>
+    <ion-input class="ion-text-right" [(ngModel)]="userInput.name" [placeholder]="'사용자 이름'"></ion-input>
+  </ion-item>
+  <ion-item button (click)="toggle_online()">
+    <ion-label>회원 로그인</ion-label>
+    <ion-toggle slot="end" [(ngModel)]="is_online" style="pointer-events: none;"></ion-toggle>
+  </ion-item>
+  <ion-item-divider>
+    <ion-label>표시 콘텐츠</ion-label>
+  </ion-item-divider>
+  <div (click)="change_content()">
+    <textarea class="infobox content_size" disabled>없음.</textarea>
+  </div>
+  <ion-item button>
+    <ion-label class="ion-text-center">저장하기</ion-label>
+  </ion-item>
 </ion-content>

@@ -1,0 +1,34 @@
+.profile_img_form {
+    position: relative;
+    width: 100%;
+    height: 42vw;
+    overflow: hidden;
+}
+
+.fore-gradient {
+    position: relative;
+    background-image: linear-gradient(to top, #000f, #0000);
+    width: 100%;
+    height: 100%;
+}
+
+.username {
+    position: absolute;
+    right: 32px;
+    bottom: 16px;
+    font-size: 32px;
+}
+
+.content_size{
+    height: 32vh;
+}
+
+#profile_img {
+    position: absolute;
+    top: 50%;
+    transform: translate(0%, -50%);
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+}

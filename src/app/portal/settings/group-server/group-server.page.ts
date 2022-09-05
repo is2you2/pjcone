@@ -35,7 +35,7 @@ export class GroupServerPage implements OnInit {
     if (this.statusBar.groupServer.official['nakama'] == 'offline') {
       this.statusBar.groupServer.official['nakama'] = 'pending';
       this.statusBar.settings['groupServer'] = 'pending';
-      localStorage.setItem('group-server', 'auto-on');
+      localStorage.setItem('group-server', 'yes');
     } else {
       this.statusBar.groupServer.official['nakama'] = 'offline';
       this.statusBar.settings['groupServer'] = 'offline';
