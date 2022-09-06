@@ -34,14 +34,18 @@ export class P5ToastService {
   /** 토스트가 보여지는 중인지 여부 */
   private isShowing = false;
   /** 앱 사용간 알림 기록 */
-  stack: ToastInfo[] = [];
-  alert: ToastInfo[] = [];
+  private stack: ToastInfo[] = [];
+  /** 현재 진행중인 알림 */
+  private AlertNow: ToastInfo;
+  private alert: ToastInfo[] = [];
 
-  status = Status.Idle;
+  private status = Status.Idle;
 
   /** 토스트 알림을 보여줍니다 */
   show(info: ToastInfo) {
-    this.alert.push(info);
+    if (this.AlertNow && this.AlertNow.text == info.text)
+      this.status = Status.DivFadeIn;
+    else this.alert.push(info);
     if (!this.isShowing) {
       let _toast = (p: p5) => {
         /** 사용하는 div개체 */
@@ -56,13 +60,11 @@ export class P5ToastService {
         let borderLerp = 0;
         /** 읽기 종료 시간 예측 */
         let WillReadEndAt = 0;
-        /** 현재 진행중인 알림 */
-        let AlertNow: ToastInfo;
         p.setup = () => {
           div = p.createDiv();
           div.style("position: absolute; left: 0; top: 0; z-index: 1");
           div.style("width: 100%; height: fit-content");
-          div.style("padding: 32px 16px;");
+          div.style("padding: 32px 32px;");
           div.style("display: flex; justify-content: center;");
           div.style("pointer-events: none");
           update_div();
@@ -79,14 +81,14 @@ export class P5ToastService {
           content.parent(border);
           content.style("display: flex; justify-content: center;");
           content.style("width: fit-content; height: fit-content");
-          content.style("word-break: keep-all");
+          content.style("word-break: break-all");
           content.style("background: #44a6fa88");
           content.style("border-radius: 20px");
           content.style("padding: 12px");
 
-          AlertNow = this.alert.shift();
+          this.AlertNow = this.alert.shift();
 
-          content.html(AlertNow.text);
+          content.html(this.AlertNow.text);
           update_border();
           this.status = Status.DivFadeIn;
         }
@@ -107,9 +109,9 @@ export class P5ToastService {
               else {
                 borderLerp = 0;
                 let duration;
-                if (AlertNow.duration)
-                  duration = AlertNow.duration * 1000;
-                else duration = new TextEncoder().encode(AlertNow.text).length * 96;
+                if (this.AlertNow.duration)
+                  duration = this.AlertNow.duration * 1000;
+                else duration = new TextEncoder().encode(this.AlertNow.text).length * 96;
                 WillReadEndAt = p.millis() + duration + 960;
                 this.status = Status.Reading;
               }
@@ -117,9 +119,9 @@ export class P5ToastService {
             case Status.Reading:
               if (p.millis() > WillReadEndAt) {
                 if (this.alert.length) {
-                  this.stack.push(AlertNow);
-                  AlertNow = this.alert.shift();
-                  content.html(AlertNow.text);
+                  this.stack.push(this.AlertNow);
+                  this.AlertNow = this.alert.shift();
+                  content.html(this.AlertNow.text);
                   this.status = Status.DivFadeIn;
                 } else this.status = Status.FadeOut;
               }
@@ -147,7 +149,8 @@ export class P5ToastService {
         }
         /** 토스트 숨기기 */
         let hide_toast = () => {
-          this.stack = [...this.stack, AlertNow, ...this.alert];
+          this.stack = [...this.stack, this.AlertNow, ...this.alert];
+          this.AlertNow = undefined;
           this.alert.length = 0;
           this.isShowing = false;
           this.CurrentToast.remove();
