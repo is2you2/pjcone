@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import * as p5 from "p5";
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import { StatusManageService } from 'src/app/status-manage.service';
 
 @Component({
   selector: 'app-profile',
@@ -12,6 +13,7 @@ export class ProfilePage implements OnInit {
 
   constructor(
     private nakama: NakamaService,
+    private statusBar: StatusManageService,
     private p5toast: P5ToastService,
   ) { }
 
@@ -29,7 +31,6 @@ export class ProfilePage implements OnInit {
   ngOnInit() {
     this.is_online = Boolean(localStorage.getItem('is_online'));
     this.userInput.email = localStorage.getItem('email');
-    this.check_onlineable();
     let sketch = (p: p5) => {
       let img = document.getElementById('profile_img');
       const LERP_SIZE = .025;
@@ -69,16 +70,16 @@ export class ProfilePage implements OnInit {
   lerpVal: number;
   toggle_online() {
     this.is_online = !this.is_online;
-    this.check_onlineable();
-    this.p5canvas.loop();
-  }
-
-  check_onlineable() {
     if (this.is_online) {
       if (this.userInput.email) {
         localStorage.setItem('email', this.userInput.email);
-        this.nakama.init_session(() => {
-          this.is_online = false;
+        this.nakama.init_all_sessions((v: boolean) => {
+          if (v) {
+            this.p5toast.show({
+              text: '로그인되었습니다.',
+              force: true,
+            });
+          } else this.is_online = false;
         });
         localStorage.setItem('is_online', 'yes');
       } else {
@@ -90,7 +91,20 @@ export class ProfilePage implements OnInit {
         localStorage.removeItem('is_online');
         return;
       }
-    } else localStorage.removeItem('is_online');
+    } else {
+      let IsOfficials = Object.keys(this.statusBar.groupServer);
+      IsOfficials.forEach(_is_official => {
+        let Targets = Object.keys(this.statusBar.groupServer[_is_official]);
+        Targets.forEach(_target => {
+          if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+            this.statusBar.groupServer[_is_official][_target] = 'pending';
+            this.statusBar.settings['groupServer'] = 'pending';
+          }
+        });
+      })
+      localStorage.removeItem('is_online');
+    }
+    this.p5canvas.loop();
   }
 
   ionViewWillLeave() {

@@ -3,6 +3,7 @@ import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { Client, Session, Socket } from "@heroiclabs/nakama-js";
 import { SOCKET_SERVER_ADDRESS } from './app.component';
 import { P5ToastService } from './p5-toast.service';
+import { StatusManageService } from './status-manage.service';
 
 
 @Injectable({
@@ -13,6 +14,7 @@ export class NakamaService {
   constructor(
     private device: Device,
     private p5toast: P5ToastService,
+    private statusBar: StatusManageService,
   ) { }
 
   /** 구성: this > Official > TargetKey > Client */
@@ -22,12 +24,20 @@ export class NakamaService {
   };
   /** 구성: this > Official > TargetKey > ActKey > Session */
   session: { [id: string]: { [id: string]: { [id: string]: Session } } } = {
-    'official': {},
+    'official': {
+      default: {
+        default: undefined,
+      }
+    },
     'unofficial': {},
   };
   /** 구성: this > Official > TargetKey > ActKey > Session */
   socket: { [id: string]: { [id: string]: { [id: string]: Socket } } } = {
-    'official': {},
+    'official': {
+      default: {
+        default: undefined,
+      }
+    },
     'unofficial': {},
   };
 
@@ -39,8 +49,29 @@ export class NakamaService {
   initialize(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _key = 'defaultkey') {
     this.client[_is_official][_target] = new Client(_key, SOCKET_SERVER_ADDRESS);
     if (localStorage.getItem('is_online')) {
-      this.init_session();
+      this.init_all_sessions();
     }
+  }
+
+  /** 모든 pending 세션 켜기 */
+  init_all_sessions(_CallBack = (v: boolean) => console.log(v)) {
+    let Targets = Object.keys(this.session['official']);
+    Targets.forEach(_target => {
+      let Acts = Object.keys(this.session['official'][_target])
+      Acts.forEach(_act => {
+        if (this.statusBar.groupServer['official'][_target] == 'pending')
+          this.init_session(_CallBack, 'official', _target, _act);
+      })
+    });
+
+    let unTargets = Object.keys(this.session['unofficial']);
+    unTargets.forEach(_target => {
+      let Acts = Object.keys(this.session['unofficial'][_target])
+      Acts.forEach(_act => {
+        if (this.statusBar.groupServer['unofficial'][_target] == 'pending')
+          this.init_session(_CallBack, 'unofficial', _target, _act);
+      })
+    });
   }
 
   /** 세션처리
@@ -48,30 +79,32 @@ export class NakamaService {
    * @param _target 대상 key
    * @param _act 세션 이름
    */
-  async init_session(_CallBack = () => { }, _is_official: 'official' | 'unofficial' = 'official', _target = 'default', _act = 'default') {
+  async init_session(_CallBack = (v: boolean) => console.log(v), _is_official: 'official' | 'unofficial' = 'official', _target = 'default', _act = 'default') {
     let uuid = this.device.uuid;
     try {
       if (!this.session[_is_official][_target]) this.session[_is_official][_target] = {};
       this.session[_is_official][_target][_act] = await this.client[_is_official][_target].authenticateEmail(localStorage.getItem('email'), uuid, false);
-      this.p5toast.show({
-        text: '로그인되었습니다.',
-        force: true,
-      });
+      _CallBack(true);
+      this.set_statusBar('online', _is_official, _target);
     } catch (e) {
       switch (e.status) {
         case 400: // 비번이 없거나 하는 등, 요청이 잘못됨
           this.p5toast.show({
-            text: '잘못된 요청입니다',
+            text: '웹 브라우저에서는 지원하지 않습니다.',
             force: true,
           });
-          _CallBack();
+          _CallBack(false);
+          localStorage.removeItem('is_online');
+          this.set_statusBar('missing', _is_official, _target);
           break;
         case 401: // 비밀번호 잘못됨
           this.p5toast.show({
             text: '기기 재검증 이메일 발송 필요! (아직 개발되지 않음)',
             force: true,
           });
-          _CallBack();
+          _CallBack(false);
+          localStorage.removeItem('is_online');
+          this.set_statusBar('missing', _is_official, _target);
           break;
         case 404: // 아이디 없음
           this.session[_is_official][_target][_act] = await this.client[_is_official][_target].authenticateEmail(localStorage.getItem('email'), uuid, true);
@@ -79,16 +112,24 @@ export class NakamaService {
             text: '회원가입이 완료되었습니다.',
             force: true,
           });
+          this.set_statusBar('online', _is_official, _target);
           break;
         default:
           this.p5toast.show({
             text: `준비되지 않은 오류 유형: ${e}`,
             force: true,
           });
-          _CallBack();
+          _CallBack(false);
+          localStorage.removeItem('is_online');
+          this.set_statusBar('missing', _is_official, _target);
           break;
       }
     }
+  }
+
+  set_statusBar(_status: 'offline' | 'missing' | 'pending' | 'online' | 'certified', _is_official: string, _target: string) {
+    this.statusBar.groupServer[_is_official][_target] = _status;
+    this.statusBar.settings['groupServer'] = _status;
   }
 
   /** 서버에 연결 */

@@ -28,18 +28,16 @@ export class GroupServerPage implements OnInit {
     });
   }
 
-  // <ion-button *ngIf="statusBar.groupServer.official['nakama'] == 'offline'" (click)="link_official_group()"
-
   /** 공식 제공 서버 연결하기 */
   link_official_group() {
-    if (this.statusBar.groupServer.official['nakama'] == 'offline') {
-      this.statusBar.groupServer.official['nakama'] = 'pending';
+    if (this.statusBar.groupServer.official['default'] == 'offline') {
+      this.statusBar.groupServer.official['default'] = 'pending';
       this.statusBar.settings['groupServer'] = 'pending';
-      localStorage.setItem('group-server', 'yes');
+      if (localStorage.getItem('is_online'))
+        this.nakama.init_session();
     } else {
-      this.statusBar.groupServer.official['nakama'] = 'offline';
+      this.statusBar.groupServer.official['default'] = 'offline';
       this.statusBar.settings['groupServer'] = 'offline';
-      localStorage.removeItem('group-server');
     }
   }
 

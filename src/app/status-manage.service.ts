@@ -43,7 +43,7 @@ export class StatusManageService {
   /** 설정-그룹서버 관리 목록 */
   groupServer: { [id: string]: PanelStatus } = {
     official: {
-      nakama: 'offline',
+      default: 'offline',
     },
     unofficial: {},
   }

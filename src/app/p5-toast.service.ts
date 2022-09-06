@@ -48,7 +48,6 @@ export class P5ToastService {
   /** 토스트 알림을 보여줍니다 */
   show(info: ToastInfo) {
     info.time = new Date().getTime();
-    console.log(info);
 
     if (info.force) { // 강제 처리 우선
       this.AlertNow = info;
