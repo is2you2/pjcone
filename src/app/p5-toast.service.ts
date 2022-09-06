@@ -3,12 +3,16 @@ import * as p5 from 'p5';
 
 /** 생성하는 토스트 정보 */
 interface ToastInfo {
+  /** 강제로 이 안내를 우선시함 */
+  force?: boolean;
   /** 보여지는 문구 */
   text?: string;
   /** 보여지는 시간 강제, 초 단위 */
   duration?: number;
   /** 이미지 경로 */
   img?: string;
+  /** 알림이 발생한 시간, 자동으로 생성됩니다 */
+  time?: number;
 }
 
 enum Status {
@@ -43,9 +47,17 @@ export class P5ToastService {
 
   /** 토스트 알림을 보여줍니다 */
   show(info: ToastInfo) {
+    info.time = new Date().getTime();
+    console.log(info);
+
+    if (info.force) { // 강제 처리 우선
+      this.AlertNow = info;
+      this.status = Status.DivFadeIn;
+    } // 아래, 동일 알람 누적 방지용
     if (this.AlertNow && this.AlertNow.text == info.text)
       this.status = Status.DivFadeIn;
     else this.alert.push(info);
+
     if (!this.isShowing) {
       let _toast = (p: p5) => {
         /** 사용하는 div개체 */
@@ -86,7 +98,8 @@ export class P5ToastService {
           content.style("border-radius: 20px");
           content.style("padding: 12px");
 
-          this.AlertNow = this.alert.shift();
+          if (!this.AlertNow)
+            this.AlertNow = this.alert.shift();
 
           content.html(this.AlertNow.text);
           update_border();
@@ -101,6 +114,7 @@ export class P5ToastService {
                 divLerp = 1;
                 borderLerp = 1;
                 this.status = Status.BorderAlert;
+                content.html(this.AlertNow.text);
               }
               break;
             case Status.BorderAlert:

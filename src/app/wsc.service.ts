@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SOCKET_SERVER_ADDRESS } from './app.component';
+import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 
 /** 앱 시작과 동시에 서버에 연결을 시도하여 실시간 상호작용하는 메인 클라이언트 */
@@ -10,6 +11,7 @@ export class WscService {
 
   constructor(
     private statusBar: StatusManageService,
+    private p5toast: P5ToastService,
   ) { }
 
   client: WebSocket;
@@ -38,6 +40,9 @@ export class WscService {
       setTimeout(() => {
         this.statusBar.settings['communityServer'] = 'offline';
       }, 1500);
+      this.p5toast.show({
+        text: '커뮤니티 서버로부터 연결이 끊어졌습니다.',
+      });
     }
     this.client.onerror = (e) => {
       console.error('메인소켓 오류 발생: ', e);
