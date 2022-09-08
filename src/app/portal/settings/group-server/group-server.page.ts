@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import * as p5 from "p5";
 import { NakamaService } from 'src/app/nakama.service';
+import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 
 @Component({
@@ -12,6 +13,7 @@ export class GroupServerPage implements OnInit {
 
   constructor(
     private nakama: NakamaService,
+    private p5toast: P5ToastService,
     public statusBar: StatusManageService,
   ) { }
 
@@ -43,17 +45,47 @@ export class GroupServerPage implements OnInit {
 
   /** 사설서버 주소 사용자 input */
   dedicated_info = {
-    name: '',
-    address: '',
+    name: undefined,
+    address: undefined,
+    port: undefined,
+    useSSL: undefined,
   }
   /** 사설서버 등록 중복 방지 토글 */
   add_custom_tog = false;
   /** 사설서버 등록하기 */
   add_custom_dedicated() {
     if (this.add_custom_tog) return;
+
+    if (!this.dedicated_info.name) {
+      this.p5toast.show({
+        text: '이름을 지정해주세요.',
+        duration: .5,
+        force: true,
+      });
+      return;
+    }
+
+    if (!this.dedicated_info.address) {
+      this.p5toast.show({
+        text: '주소를 입력해주세요.',
+        duration: .5,
+        force: true,
+      });
+      return;
+    }
+
     this.add_custom_tog = true;
-    this.dedicated_info.name = '';
-    this.dedicated_info.address = '';
-    console.log('사설서버 등록처리');
+
+    setTimeout(() => {
+      this.p5toast.show({
+        text: '사설 서버 등록 기능 준비중입니다.',
+        duration: .5,
+      });
+      this.dedicated_info.name = undefined;
+      this.dedicated_info.address = undefined;
+      this.dedicated_info.port = undefined;
+      this.dedicated_info.useSSL = undefined;
+      this.add_custom_tog = false;
+    }, 1500);
   }
 }

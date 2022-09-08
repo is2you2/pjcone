@@ -24,13 +24,22 @@
   <ion-item-divider>
     <ion-label>사설 서버 등록하기</ion-label>
   </ion-item-divider>
-  <ion-item button>
+  <ion-item button [disabled]="add_custom_tog">
     <ion-label>서버 이름</ion-label>
     <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.name" [placeholder]="'사용자 사설 서버'"></ion-input>
   </ion-item>
-  <ion-item button>
+  <ion-item button [disabled]="add_custom_tog">
     <ion-label>서버 주소</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.address" [placeholder]="'www.example.com'"></ion-input>
+    <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.address" [placeholder]="'192.168.0.1'"></ion-input>
+  </ion-item>
+  <ion-item button [disabled]="add_custom_tog">
+    <ion-label>포트</ion-label>
+    <ion-input disabled [(ngModel)]="dedicated_info.port" class="ion-text-right" type="number" [placeholder]="'7350'">
+    </ion-input>
+  </ion-item>
+  <ion-item button [disabled]="add_custom_tog">
+    <ion-label>SSL 적용여부</ion-label>
+    <ion-toggle [(ngModel)]="dedicated_info.useSSL" disabled slot="end"></ion-toggle>
   </ion-item>
   <ion-item button (click)="add_custom_dedicated()" [disabled]="add_custom_tog">
     <ion-label class="ion-text-center">등록하기</ion-label>
