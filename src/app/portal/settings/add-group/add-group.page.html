@@ -13,10 +13,10 @@
     <ion-accordion value="colors">
       <ion-item slot="header">
         <ion-label>서버 선택</ion-label>
-        <ion-label class="ion-text-right">{{server_list[selected_index].title}}</ion-label>
+        <ion-label class="ion-text-right">{{servers[index].title}}</ion-label>
       </ion-item>
       <ion-list slot="content">
-        <ion-item *ngFor="let server of server_list; index as i" button (click)="select_server(i)">
+        <ion-item *ngFor="let server of servers; index as i" button (click)="select_server(i)">
           <ion-label>{{server.title}}</ion-label>
         </ion-item>
       </ion-list>

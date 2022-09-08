@@ -22,21 +22,17 @@ export class NakamaService {
     'official': {},
     'unofficial': {},
   };
-  /** 구성: this > Official > TargetKey > ActKey > Session */
-  session: { [id: string]: { [id: string]: { [id: string]: Session } } } = {
+  /** 구성: this > Official > TargetKey > Session */
+  session: { [id: string]: { [id: string]: Session } } = {
     'official': {
-      default: {
-        default: undefined,
-      }
+      default: undefined,
     },
     'unofficial': {},
   };
-  /** 구성: this > Official > TargetKey > ActKey > Session */
-  socket: { [id: string]: { [id: string]: { [id: string]: Socket } } } = {
+  /** 구성: this > Official > TargetKey > Socket */
+  socket: { [id: string]: { [id: string]: Socket } } = {
     'official': {
-      default: {
-        default: undefined,
-      }
+      default: undefined,
     },
     'unofficial': {},
   };
@@ -57,33 +53,25 @@ export class NakamaService {
   init_all_sessions(_CallBack = (v: boolean) => console.log(v)) {
     let Targets = Object.keys(this.session['official']);
     Targets.forEach(_target => {
-      let Acts = Object.keys(this.session['official'][_target])
-      Acts.forEach(_act => {
-        if (this.statusBar.groupServer['official'][_target] == 'pending')
-          this.init_session(_CallBack, 'official', _target, _act);
-      })
+      if (this.statusBar.groupServer['official'][_target] == 'pending')
+        this.init_session(_CallBack, 'official', _target);
     });
 
     let unTargets = Object.keys(this.session['unofficial']);
     unTargets.forEach(_target => {
-      let Acts = Object.keys(this.session['unofficial'][_target])
-      Acts.forEach(_act => {
-        if (this.statusBar.groupServer['unofficial'][_target] == 'pending')
-          this.init_session(_CallBack, 'unofficial', _target, _act);
-      })
+      if (this.statusBar.groupServer['unofficial'][_target] == 'pending')
+        this.init_session(_CallBack, 'unofficial', _target);
     });
   }
 
   /** 세션처리
    * @param _CallBack 오류시 행동방침
    * @param _target 대상 key
-   * @param _act 세션 이름
    */
-  async init_session(_CallBack = (v: boolean) => console.log(v), _is_official: 'official' | 'unofficial' = 'official', _target = 'default', _act = 'default') {
+  async init_session(_CallBack = (v: boolean) => console.log(v), _is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
     let uuid = this.device.uuid;
     try {
-      if (!this.session[_is_official][_target]) this.session[_is_official][_target] = {};
-      this.session[_is_official][_target][_act] = await this.client[_is_official][_target].authenticateEmail(localStorage.getItem('email'), uuid, false);
+      this.session[_is_official][_target] = await this.client[_is_official][_target].authenticateEmail(localStorage.getItem('email'), uuid, false);
       _CallBack(true);
       this.set_statusBar('online', _is_official, _target);
     } catch (e) {
@@ -105,7 +93,7 @@ export class NakamaService {
           this.set_statusBar('missing', _is_official, _target);
           break;
         case 404: // 아이디 없음
-          this.session[_is_official][_target][_act] = await this.client[_is_official][_target].authenticateEmail(localStorage.getItem('email'), uuid, true);
+          this.session[_is_official][_target] = await this.client[_is_official][_target].authenticateEmail(localStorage.getItem('email'), uuid, true);
           this.p5toast.show({
             text: '회원가입이 완료되었습니다.',
             force: true,
@@ -130,14 +118,14 @@ export class NakamaService {
   }
 
   /** 서버에 연결 */
-  connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _act = 'default') {
-    this.socket[_is_official][_target][_act].connect(
-      this.session[_is_official][_target][_act], true
+  connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
+    this.socket[_is_official][_target].connect(
+      this.session[_is_official][_target], true
     );
   }
 
   /** 연결 끊기 */
-  disconnect(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _act = 'default') {
-    this.socket[_is_official][_target][_act].disconnect(true);
+  disconnect(_is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
+    this.socket[_is_official][_target].disconnect(true);
   }
 }

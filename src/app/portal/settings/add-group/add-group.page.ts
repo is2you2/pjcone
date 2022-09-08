@@ -48,7 +48,7 @@ export class AddGroupPage implements OnInit {
   }
 
   /** 서버 정보, 온라인 상태의 서버만 불러온다 */
-  server_list: ServerInfo[] = [{
+  servers: ServerInfo[] = [{
     title: '개발 테스트 서버_test',
     isOfficial: 'official',
     target: 'default',
@@ -59,12 +59,12 @@ export class AddGroupPage implements OnInit {
     target: 'default',
     key: 'default',
   }];
-  selected_index = 0;
+  index = 0;
   isExpanded = true;
 
   /** 아코디언에서 서버 선택하기 */
   select_server(i: number) {
-    this.selected_index = i;
+    this.index = i;
     this.isExpanded = false;
   }
 
@@ -77,7 +77,7 @@ export class AddGroupPage implements OnInit {
   /** 정상처리되지 않았다면 작성 중 정보 임시 저장 */
   isSavedWell = false;
   save() {
-    let client = this.nakama.client[this.server_list[this.selected_index].isOfficial][this.server_list[this.selected_index].target];
+    let client = this.nakama.client[this.servers[this.index].isOfficial][this.servers[this.index].target];
     if (!client) { // 클라이언트 존재 여부 검토
       this.p5toast.show({
         text: '선택한 서버를 사용할 수 없습니다.',
@@ -85,7 +85,7 @@ export class AddGroupPage implements OnInit {
       return;
     }
 
-    let session = this.nakama.session[this.server_list[this.selected_index].isOfficial][this.server_list[this.selected_index].target][this.server_list[this.selected_index].key];
+    let session = this.nakama.session[this.servers[this.index].isOfficial][this.servers[this.index].target];
 
     if (!session) { // 세션 검토
       // ## refreshToken 등 검토 필요
