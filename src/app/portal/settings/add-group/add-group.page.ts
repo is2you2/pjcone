@@ -4,11 +4,25 @@ import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import * as QRCode from "qrcode-svg";
 import { DomSanitizer } from '@angular/platform-browser';
+import { ServerInfo } from '../group-server/group-server.page';
 
-interface ServerInfo {
-  title: string;
-  isOfficial: string;
-  target: string;
+/** 읽었을 때 기기가 순차적으로 처리할 수 있는 양식  
+ * string[]: 해당 내용의 id값만 나열되어있음  
+ * 위부터 순차적으로 (서버 > 그룹 > ...) 처리하면 오류 없을 예정
+ */
+export interface QRCodeForm {
+  /** 이 서버에서만 처리한다, 대상 서버 */
+  server?: ServerInfo;
+  /** 그룹 아이디 전부 가입처리 */
+  groups?: string[];
+  /** 사용자 아이디 전부 친구추가 */
+  users?: string[];
+  /** 대화방 전부 가입처리 */
+  chats?: string[];
+  /** 프로젝트 전부 참여 */
+  projects?: string[];
+  /** 업무 전부 참여 */
+  tasks?:string[];
 }
 
 interface GroupInfo {
@@ -47,9 +61,13 @@ export class AddGroupPage implements OnInit {
   /** 그룹ID를 QRCode로 그려내기 */
   readasQRCodeFromId() {
     try {
+      let info: QRCodeForm = {
+        server: this.userInput.server,
+        groups: [this.userInput.id], // 그룹 아이디를 통해 서버에서 나머지 정보 받아오기
+      }
       let qr: string = new QRCode({
-        content: this.userInput.id,
-        padding: 2,
+        content: `[${JSON.stringify(info)}]`,
+        padding: 4,
         width: 16,
         height: 16,
         color: "#bbb",
@@ -76,13 +94,13 @@ export class AddGroupPage implements OnInit {
 
   /** 서버 정보, 온라인 상태의 서버만 불러온다 */
   servers: ServerInfo[] = [{
-    title: '개발 테스트 서버_test',
+    name: '개발 테스트 서버_test',
     isOfficial: 'official',
-    target: 'default',
+    address: 'pjcone.ddns.net',
   }, {
-    title: 'test2 (x) 동작 안함',
+    name: 'test2 (x) 동작 안함',
     isOfficial: 'unofficial',
-    target: 'default',
+    address: 'test.exe.com'
   }];
   index = 0;
   isExpanded = true;
@@ -103,7 +121,7 @@ export class AddGroupPage implements OnInit {
   /** 정상처리되지 않았다면 작성 중 정보 임시 저장 */
   isSavedWell = false;
   save() {
-    let client = this.nakama.client[this.servers[this.index].isOfficial][this.servers[this.index].target];
+    let client = this.nakama.client[this.servers[this.index].isOfficial][this.servers[this.index].name];
     if (!client) { // 클라이언트 존재 여부 검토
       this.p5toast.show({
         text: '선택한 서버를 사용할 수 없습니다.',
@@ -111,7 +129,7 @@ export class AddGroupPage implements OnInit {
       return;
     }
 
-    let session = this.nakama.session[this.servers[this.index].isOfficial][this.servers[this.index].target];
+    let session = this.nakama.session[this.servers[this.index].isOfficial][this.servers[this.index].name];
 
     if (!session) { // 세션 검토
       // ## refreshToken 등 검토 필요

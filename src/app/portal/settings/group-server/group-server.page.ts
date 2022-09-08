@@ -4,6 +4,14 @@ import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 
+export interface ServerInfo {
+  name: string;
+  address: string;
+  port?: number;
+  useSSL?: boolean;
+  isOfficial?: string;
+}
+
 @Component({
   selector: 'app-group-server',
   templateUrl: './group-server.page.html',
@@ -44,11 +52,12 @@ export class GroupServerPage implements OnInit {
   }
 
   /** 사설서버 주소 사용자 input */
-  dedicated_info = {
+  dedicated_info: ServerInfo = {
     name: undefined,
     address: undefined,
     port: undefined,
     useSSL: undefined,
+    isOfficial: undefined,
   }
   /** 사설서버 등록 중복 방지 토글 */
   add_custom_tog = false;

@@ -1,10 +1,16 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>참여</ion-title>
+    <ion-title>연결</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <ion-item-divider>
+    <ion-label>만능 참여 버튼</ion-label>
+  </ion-item-divider>
+  <ion-item button (click)="scanQRCode()" [disabled]="cant_scan">
+    <ion-label class="ion-text-center">참여 !</ion-label>
+  </ion-item>
   <ion-item-divider>
     <ion-label>대화</ion-label>
   </ion-item-divider>
