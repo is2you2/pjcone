@@ -29,15 +29,18 @@
     <ion-label>표시명</ion-label>
     <ion-input required class="ion-text-right" [(ngModel)]="userInput.title" [placeholder]="'그룹 이름'"></ion-input>
   </ion-item>
-  <ion-item disabled>
-    <ion-label>그룹 ID</ion-label>
-    <ion-label class="ion-text-right">{{userInput.id ?? '생성 후 발급'}}</ion-label>
+  <ion-item-divider>
+    <ion-label>그룹 참여</ion-label>
+  </ion-item-divider>
+  <ion-item *ngIf="!QRCodeSRC" disabled>
+    <ion-label>그룹을 생성하여 계속</ion-label>
   </ion-item>
+  <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="준비중">
   <ion-item-divider>
     <ion-label>그룹 상세</ion-label>
   </ion-item-divider>
-  <textarea class="infobox" [disabled]="isSaveClicked" [(ngModel)]="info" style="height: 240px;"
-    [(ngModel)]="userInput.desc" [placeholder]="'그룹 설명'"></textarea>
+  <textarea class="infobox" [disabled]="isSaveClicked" [(ngModel)]="info" [(ngModel)]="userInput.desc"
+    [placeholder]="'그룹 설명'"></textarea>
   <ion-item [disabled]="isSaveClicked" button>
     <ion-label>국가 태그</ion-label>
     <ion-input class="ion-text-right" [(ngModel)]="userInput.lang" [placeholder]="'ko'"></ion-input>

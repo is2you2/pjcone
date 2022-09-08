@@ -2,15 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import * as QRCode from "qrcode-svg";
+import { DomSanitizer } from '@angular/platform-browser';
 
 interface ServerInfo {
   title: string;
   isOfficial: string;
   target: string;
-  key: string;
 }
 
 interface GroupInfo {
+  server: ServerInfo;
   id: string;
   title: string;
   desc: string;
@@ -30,18 +32,43 @@ export class AddGroupPage implements OnInit {
     private navCtrl: NavController,
     private p5toast: P5ToastService,
     private nakama: NakamaService,
+    private sanitizer: DomSanitizer,
   ) { }
+
+  QRCodeSRC: any;
 
   ngOnInit() {
     let tmp = JSON.parse(localStorage.getItem('add-group'));
     if (tmp)
       this.userInput = tmp;
+    this.userInput.server = this.servers[this.index];
+  }
+
+  /** 그룹ID를 QRCode로 그려내기 */
+  readasQRCodeFromId() {
+    try {
+      let qr: string = new QRCode({
+        content: this.userInput.id,
+        padding: 2,
+        width: 16,
+        height: 16,
+        color: "#bbb",
+        background: "#111",
+        ecl: "M",
+      }).svg();
+      this.QRCodeSRC = this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);
+    } catch (e) {
+      this.p5toast.show({
+        text: `QRCode 생성 실패: ${e}`,
+      });
+    }
   }
 
   userInput: GroupInfo = {
+    server: undefined,
     id: undefined,
-    title: '',
-    desc: '',
+    title: undefined,
+    desc: undefined,
     max: undefined,
     lang: undefined,
     isPublic: false,
@@ -52,12 +79,10 @@ export class AddGroupPage implements OnInit {
     title: '개발 테스트 서버_test',
     isOfficial: 'official',
     target: 'default',
-    key: 'default',
   }, {
     title: 'test2 (x) 동작 안함',
     isOfficial: 'unofficial',
     target: 'default',
-    key: 'default',
   }];
   index = 0;
   isExpanded = true;
@@ -65,6 +90,7 @@ export class AddGroupPage implements OnInit {
   /** 아코디언에서 서버 선택하기 */
   select_server(i: number) {
     this.index = i;
+    this.userInput.server = this.servers[i];
     this.isExpanded = false;
   }
 
@@ -105,6 +131,7 @@ export class AddGroupPage implements OnInit {
       open: this.userInput.isPublic,
     }).then(v => {
       this.userInput.id = v.id;
+      this.readasQRCodeFromId();
       setTimeout(() => {
         this.p5toast.show({
           text: '그룹이 생성되었습니다.',
