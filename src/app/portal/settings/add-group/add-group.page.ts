@@ -118,19 +118,31 @@ export class AddGroupPage implements OnInit {
       console.error('그룹 생성 실패: ', e);
       switch (e.status) {
         case 400:
-          this.p5toast.show({
-            text: '잘못된 요청입니다.',
-            duration: .1,
-          });
-          this.isSaveClicked = false;
+          setTimeout(() => {
+            this.p5toast.show({
+              text: '잘못된 요청입니다.',
+              duration: .1,
+            });
+            this.isSaveClicked = false;
+          }, 500);
+          break;
         case 409:
-          this.p5toast.show({
-            text: '이미 같은 이름의 그룹이 존재합니다.',
-            duration: .1,
-          });
-          this.isSaveClicked = false;
+          setTimeout(() => {
+            this.p5toast.show({
+              text: '이미 같은 이름의 그룹이 존재합니다.',
+              duration: .1,
+            });
+            this.isSaveClicked = false;
+          }, 500);
           break;
         default:
+          setTimeout(() => {
+            this.p5toast.show({
+              text: `준비되지 않은 오류처리: ${e}`,
+              duration: .1,
+            });
+            this.isSaveClicked = false;
+          }, 500);
           break;
       }
     });

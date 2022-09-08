@@ -10,6 +10,15 @@
 <ion-content>
   <div id="advertise" class="advertise_banner"></div>
   <ion-item-divider>
+    <ion-label>개인정보</ion-label>
+  </ion-item-divider>
+  <ion-item button (click)="go_to_page('profile')">
+    <ion-label>내 정보</ion-label>
+  </ion-item>
+  <ion-item button [disabled]="true">
+    <ion-label>다른 기기에서 로그인</ion-label>
+  </ion-item>
+  <ion-item-divider>
     <ion-label>서버 관리</ion-label>
   </ion-item-divider>
   <ion-item button (click)="go_to_page('group-server')">
@@ -76,15 +85,6 @@
   </ion-item-divider>
   <ion-item button [disabled]="true">
     <ion-label>웹 페이지와 연동</ion-label>
-  </ion-item>
-  <ion-item-divider>
-    <ion-label>개인정보</ion-label>
-  </ion-item-divider>
-  <ion-item button (click)="go_to_page('profile')">
-    <ion-label>내 정보</ion-label>
-  </ion-item>
-  <ion-item button [disabled]="true">
-    <ion-label>다른 기기에서 로그인</ion-label>
   </ion-item>
   <ion-item-divider>
     <ion-label>앱 정보</ion-label>
