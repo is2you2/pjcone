@@ -32,6 +32,10 @@ const routes: Routes = [
     path: 'community-server',
     loadChildren: () => import('./community-server/community-server.module').then( m => m.CommunityServerPageModule)
   },
+  {
+    path: 'add-group',
+    loadChildren: () => import('./add-group/add-group.module').then( m => m.AddGroupPageModule)
+  },
 ];
 
 @NgModule({

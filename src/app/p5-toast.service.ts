@@ -108,7 +108,7 @@ export class P5ToastService {
           switch (this.status) {
             case Status.DivFadeIn:
               if (divLerp < 1)
-                divLerp += .08;
+                divLerp += 1;
               else {
                 divLerp = 1;
                 borderLerp = 1;
