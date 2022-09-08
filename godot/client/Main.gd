@@ -4,6 +4,8 @@ extends Node
 # 앱 시작과 동시에 동작하려는 pck 정보를 받아옴
 func _init():
 	if OS.has_feature('JavaScript'):
+		# ionic에게 IndexedDB가 생성되었음을 알림
+		JavaScript.eval('localStorage.setItem("IndexedDB", "godot")')
 		var act:String = JavaScript.eval('localStorage.getItem("godot")')
 		JavaScript.eval('localStorage.removeItem("godot")')
 		if not act: # 아무런 요청도 없이 프레임만 불러온 경우

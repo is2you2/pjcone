@@ -94,7 +94,6 @@ export class NakamaService {
             force: true,
           });
           _CallBack(false);
-          localStorage.removeItem('is_online');
           this.set_statusBar('missing', _is_official, _target);
           break;
         case 401: // 비밀번호 잘못됨
@@ -103,7 +102,6 @@ export class NakamaService {
             force: true,
           });
           _CallBack(false);
-          localStorage.removeItem('is_online');
           this.set_statusBar('missing', _is_official, _target);
           break;
         case 404: // 아이디 없음
@@ -120,7 +118,6 @@ export class NakamaService {
             force: true,
           });
           _CallBack(false);
-          localStorage.removeItem('is_online');
           this.set_statusBar('missing', _is_official, _target);
           break;
       }
