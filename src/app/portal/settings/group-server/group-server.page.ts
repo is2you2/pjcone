@@ -5,8 +5,11 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 
 export interface ServerInfo {
+  /** 표시명, 앱 내 구성키는 target 사용 */
   name: string;
   address: string;
+  /** 앱 내에서 구성하는 key 이름 */
+  target: string;
   port?: number;
   useSSL?: boolean;
   isOfficial?: string;
@@ -55,6 +58,7 @@ export class GroupServerPage implements OnInit {
   dedicated_info: ServerInfo = {
     name: undefined,
     address: undefined,
+    target: undefined,
     port: undefined,
     useSSL: undefined,
     isOfficial: undefined,
@@ -90,6 +94,7 @@ export class GroupServerPage implements OnInit {
       });
       this.dedicated_info.name = undefined;
       this.dedicated_info.address = undefined;
+      this.dedicated_info.target = undefined;
       this.dedicated_info.port = undefined;
       this.dedicated_info.useSSL = undefined;
       this.add_custom_tog = false;

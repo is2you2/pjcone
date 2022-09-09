@@ -68,7 +68,7 @@ export class NakamaService {
    * @param _CallBack 오류시 행동방침
    * @param _target 대상 key
    */
-  async init_session(_CallBack = (v: boolean) => console.log(v), _is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
+  async init_session(_CallBack = (_v: boolean) => { }, _is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
     let uuid = this.device.uuid;
     try {
       this.session[_is_official][_target] = await this.client[_is_official][_target].authenticateEmail(localStorage.getItem('email'), uuid, false);

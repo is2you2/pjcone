@@ -22,7 +22,7 @@ export interface QRCodeForm {
   /** 프로젝트 전부 참여 */
   projects?: string[];
   /** 업무 전부 참여 */
-  tasks?:string[];
+  tasks?: string[];
 }
 
 interface GroupInfo {
@@ -95,10 +95,12 @@ export class AddGroupPage implements OnInit {
   /** 서버 정보, 온라인 상태의 서버만 불러온다 */
   servers: ServerInfo[] = [{
     name: '개발 테스트 서버_test',
+    target: 'default',
     isOfficial: 'official',
     address: 'pjcone.ddns.net',
   }, {
     name: 'test2 (x) 동작 안함',
+    target: 'default',
     isOfficial: 'unofficial',
     address: 'test.exe.com'
   }];
@@ -121,7 +123,9 @@ export class AddGroupPage implements OnInit {
   /** 정상처리되지 않았다면 작성 중 정보 임시 저장 */
   isSavedWell = false;
   save() {
-    let client = this.nakama.client[this.servers[this.index].isOfficial][this.servers[this.index].name];
+    console.log(this.nakama.client);
+
+    let client = this.nakama.client[this.servers[this.index].isOfficial][this.servers[this.index].target];
     if (!client) { // 클라이언트 존재 여부 검토
       this.p5toast.show({
         text: '선택한 서버를 사용할 수 없습니다.',
@@ -129,7 +133,7 @@ export class AddGroupPage implements OnInit {
       return;
     }
 
-    let session = this.nakama.session[this.servers[this.index].isOfficial][this.servers[this.index].name];
+    let session = this.nakama.session[this.servers[this.index].isOfficial][this.servers[this.index].target];
 
     if (!session) { // 세션 검토
       // ## refreshToken 등 검토 필요
