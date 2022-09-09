@@ -3,8 +3,8 @@ import * as p5 from 'p5';
 
 /** 생성하는 토스트 정보 */
 interface ToastInfo {
-  /** 강제로 이 안내를 우선시함 */
-  force?: boolean;
+  /** 안내가 조금 늦어도 됩니까? */
+  lateable?: boolean;
   /** 보여지는 문구 */
   text?: string;
   /** 보여지는 시간 강제, 초 단위 */
@@ -49,7 +49,7 @@ export class P5ToastService {
   show(info: ToastInfo) {
     info.time = new Date().getTime();
 
-    if (info.force) { // 강제 처리 우선
+    if (!info.lateable) { // 강제가 아닌 메시지 선별
       this.AlertNow = info;
       this.status = Status.DivFadeIn;
     } // 아래, 동일 알람 누적 방지용

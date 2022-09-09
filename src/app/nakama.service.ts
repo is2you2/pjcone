@@ -79,7 +79,6 @@ export class NakamaService {
         case 400: // 비번이 없거나 하는 등, 요청이 잘못됨
           this.p5toast.show({
             text: '웹 브라우저에서는 지원하지 않습니다.',
-            force: true,
           });
           _CallBack(false);
           this.set_statusBar('missing', _is_official, _target);
@@ -87,7 +86,6 @@ export class NakamaService {
         case 401: // 비밀번호 잘못됨
           this.p5toast.show({
             text: '기기 재검증 이메일 발송 필요! (아직 개발되지 않음)',
-            force: true,
           });
           _CallBack(false);
           this.set_statusBar('missing', _is_official, _target);
@@ -96,14 +94,12 @@ export class NakamaService {
           this.session[_is_official][_target] = await this.client[_is_official][_target].authenticateEmail(localStorage.getItem('email'), uuid, true);
           this.p5toast.show({
             text: '회원가입이 완료되었습니다.',
-            force: true,
           });
           this.set_statusBar('online', _is_official, _target);
           break;
         default:
           this.p5toast.show({
             text: `준비되지 않은 오류 유형: ${e}`,
-            force: true,
           });
           _CallBack(false);
           this.set_statusBar('missing', _is_official, _target);

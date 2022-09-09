@@ -37,12 +37,11 @@ export class SubscribesPage implements OnInit {
     }).then(v => {
       this.p5toast.show({
         text: `스캔 성공 동작 없음: ${v}`,
-        force: true,
       });
     }).catch(e => {
       this.p5toast.show({
         text: `스캔 실패: ${e}`,
-        force: true,
+        lateable: true,
       });
     });
   }

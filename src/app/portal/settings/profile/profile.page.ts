@@ -77,7 +77,6 @@ export class ProfilePage implements OnInit {
           if (v) {
             this.p5toast.show({
               text: '로그인되었습니다.',
-              force: true,
             });
           } else this.is_online = false;
         });
@@ -85,7 +84,6 @@ export class ProfilePage implements OnInit {
       } else {
         this.p5toast.show({
           text: '이메일 주소가 있어야 온라인으로 전환하실 수 있습니다.',
-          force: true,
         });
         this.is_online = false;
         localStorage.removeItem('is_online');

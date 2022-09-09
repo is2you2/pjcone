@@ -69,7 +69,6 @@ export class GroupServerPage implements OnInit {
       this.p5toast.show({
         text: '이름을 지정해주세요.',
         duration: .5,
-        force: true,
       });
       return;
     }
@@ -78,7 +77,6 @@ export class GroupServerPage implements OnInit {
       this.p5toast.show({
         text: '주소를 입력해주세요.',
         duration: .5,
-        force: true,
       });
       return;
     }
