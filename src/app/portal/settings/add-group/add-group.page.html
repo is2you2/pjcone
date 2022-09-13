@@ -29,6 +29,13 @@
     <ion-label>표시명</ion-label>
     <ion-input class="ion-text-right" [(ngModel)]="userInput.title" [placeholder]="'그룹 이름'"></ion-input>
   </ion-item>
+  <ion-item button (click)="buttonClickLickInputFile()">
+    <div class="additional_form bg_img_form">
+      <img id="group_img" class="bg_img" style="filter: grayscale(0) contrast(1);" src="assets/icon/favicon.png">
+    </div>
+    <ion-label>대표 이미지</ion-label>
+  </ion-item>
+  <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
   <ion-item-divider>
     <ion-label>그룹 참여</ion-label>
   </ion-item-divider>

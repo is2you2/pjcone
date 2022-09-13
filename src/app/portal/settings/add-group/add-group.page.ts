@@ -123,8 +123,6 @@ export class AddGroupPage implements OnInit {
   /** 정상처리되지 않았다면 작성 중 정보 임시 저장 */
   isSavedWell = false;
   save() {
-    console.log(this.nakama.client);
-
     let client = this.nakama.client[this.servers[this.index].isOfficial][this.servers[this.index].target];
     if (!client) { // 클라이언트 존재 여부 검토
       this.p5toast.show({
@@ -136,7 +134,7 @@ export class AddGroupPage implements OnInit {
     let session = this.nakama.session[this.servers[this.index].isOfficial][this.servers[this.index].target];
 
     if (!session) { // 세션 검토
-      // ## refreshToken 등 검토 필요
+      console.warn('refreshToken 등 검토 필요');
       this.p5toast.show({
         text: '세션이 종료되었습니다.',
         duration: .1,
@@ -161,6 +159,8 @@ export class AddGroupPage implements OnInit {
         });
         this.isSavedWell = true;
         localStorage.removeItem('add-group');
+        this.nakama.save_group_list([],
+          this.servers[this.index].isOfficial, this.servers[this.index].target);
         this.navCtrl.back();
       }, 500);
     }).catch(e => {
@@ -169,7 +169,7 @@ export class AddGroupPage implements OnInit {
         case 400:
           setTimeout(() => {
             this.p5toast.show({
-              text: '잘못된 요청입니다.',
+              text: '그룹 이름을 작성해주세요.',
               duration: .1,
             });
             this.isSaveClicked = false;
@@ -200,5 +200,26 @@ export class AddGroupPage implements OnInit {
   ionViewWillLeave() {
     if (!this.isSavedWell)
       localStorage.setItem('add-group', JSON.stringify(this.userInput));
+  }
+
+  /** ionic 버튼을 눌러 input-file 동작 */
+  buttonClickLickInputFile() {
+    document.getElementById('file_sel').click();
+  }
+
+  /** 파일 선택시 로컬에서 반영 */
+  inputImageSelected(ev: any) {
+    let reader: any = new FileReader();
+    reader = reader._realReader ?? reader;
+    reader.onload = (ev: any) => {
+      let img: any = document.getElementById('group_img');
+      img.src = ev.target.result;
+    }
+    reader.readAsDataURL(ev.target.files[0]);
+  }
+
+  /** 선택된 그룹 이미지 업로드 필요 */
+  upload_image() {
+    console.error('이미지 업로드가 필요한데요');
   }
 }

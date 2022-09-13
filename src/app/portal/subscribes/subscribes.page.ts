@@ -32,8 +32,6 @@ export class SubscribesPage implements OnInit {
       disableSuccessBeep: true,
       disableAnimations: true,
       resultDisplayDuration: 0,
-      showTorchButton: true,
-      showFlipCameraButton: true,
     }).then(v => {
       this.p5toast.show({
         text: `스캔 성공 동작 없음: ${v}`,
