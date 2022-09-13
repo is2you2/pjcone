@@ -30,11 +30,16 @@ export class ProfilePage implements OnInit {
   p5canvas: p5;
   ngOnInit() {
     this.is_online = Boolean(localStorage.getItem('is_online'));
-    let anyClient = this.nakama.get_all_clients();
-    for (let i = 0, j = anyClient.length; i < j; i++) {
-      console.warn('기능 준비중');
-      break;
-    }
+    this.userInput.name = localStorage.getItem('name');
+    let anyServers = this.nakama.get_all_servers();
+    if (anyServers.length) // 연결된 서버 있음
+      for (let i = 0, j = anyServers.length; i < j; i++) {
+        anyServers[i].client.getAccount(anyServers[i].session)
+          .then(v => {
+            this.userInput.name = v.user.display_name;
+          });
+        break;
+      }
     this.userInput.email = localStorage.getItem('email');
     let sketch = (p: p5) => {
       let img = document.getElementById('profile_img');
@@ -115,10 +120,14 @@ export class ProfilePage implements OnInit {
     if (this.userInput.email)
       localStorage.setItem('email', this.userInput.email);
     else localStorage.removeItem('email');
-    console.warn('이 자리에서 프로필 이름이 기존과 다르면 서버에 업데이트하기');
-    if (this.userInput.name)
+    if (this.userInput.name) { // 이름이 있으면 모든 서버에 이름 업데이트
+      let servers = this.nakama.get_all_servers();
+      for (let i = 0, j = servers.length; i < j; i++)
+        servers[i].client.updateAccount(servers[i].session, {
+          display_name: this.userInput.name,
+        });
       localStorage.setItem('name', this.userInput.name);
-    else localStorage.removeItem('name');
+    } else localStorage.removeItem('name');
     this.p5canvas.remove();
   }
 }
