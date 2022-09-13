@@ -123,7 +123,7 @@ export class AddGroupPage implements OnInit {
   /** 정상처리되지 않았다면 작성 중 정보 임시 저장 */
   isSavedWell = false;
   save() {
-    let client = this.nakama.client[this.servers[this.index].isOfficial][this.servers[this.index].target];
+    let client = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].client;
     if (!client) { // 클라이언트 존재 여부 검토
       this.p5toast.show({
         text: '선택한 서버를 사용할 수 없습니다.',
@@ -131,7 +131,7 @@ export class AddGroupPage implements OnInit {
       return;
     }
 
-    let session = this.nakama.session[this.servers[this.index].isOfficial][this.servers[this.index].target];
+    let session = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session;
 
     if (!session) { // 세션 검토
       console.warn('refreshToken 등 검토 필요');

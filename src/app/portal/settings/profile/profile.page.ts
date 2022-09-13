@@ -30,6 +30,11 @@ export class ProfilePage implements OnInit {
   p5canvas: p5;
   ngOnInit() {
     this.is_online = Boolean(localStorage.getItem('is_online'));
+    let anyClient = this.nakama.get_all_clients();
+    for (let i = 0, j = anyClient.length; i < j; i++) {
+      console.warn('기능 준비중');
+      break;
+    }
     this.userInput.email = localStorage.getItem('email');
     let sketch = (p: p5) => {
       let img = document.getElementById('profile_img');
@@ -73,6 +78,7 @@ export class ProfilePage implements OnInit {
     if (this.is_online) {
       if (this.userInput.email) {
         localStorage.setItem('email', this.userInput.email);
+        localStorage.setItem('name', this.userInput.name);
         this.nakama.init_all_sessions((v: boolean) => {
           if (v) {
             this.p5toast.show({
@@ -109,6 +115,10 @@ export class ProfilePage implements OnInit {
     if (this.userInput.email)
       localStorage.setItem('email', this.userInput.email);
     else localStorage.removeItem('email');
+    console.warn('이 자리에서 프로필 이름이 기존과 다르면 서버에 업데이트하기');
+    if (this.userInput.name)
+      localStorage.setItem('name', this.userInput.name);
+    else localStorage.removeItem('name');
     this.p5canvas.remove();
   }
 }
