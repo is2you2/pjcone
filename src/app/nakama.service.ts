@@ -129,7 +129,7 @@ export class NakamaService {
   }
 
   /** 등록된 그룹 아이디들, 서버에 저장되어있고 동기화시켜야합니다 */
-  groups: { [id: string]: { [id: string]: { [id: string]: NakamaGroup } } } = {
+  groups: { [id: string]: { [id: string]: { [id: string]: any } } } = {
     'official': {},
     'unofficial': {},
   }

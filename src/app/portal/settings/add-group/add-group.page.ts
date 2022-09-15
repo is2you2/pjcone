@@ -33,6 +33,7 @@ interface GroupInfo {
   max: number;
   lang: string;
   isPublic: boolean;
+  owner?: string;
 }
 
 @Component({
@@ -151,6 +152,7 @@ export class AddGroupPage implements OnInit {
       open: this.userInput.isPublic,
     }).then(v => {
       this.userInput.id = v.id;
+      this.userInput.owner = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session.user_id;
       this.readasQRCodeFromId();
       this.nakama.save_group_list(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target, () => {
         this.isSavedWell = true;

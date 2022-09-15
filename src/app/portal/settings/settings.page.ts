@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
+import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 
@@ -15,6 +16,7 @@ export class SettingsPage implements OnInit {
     private modal: ModalController,
     private nav: NavController,
     public statusBar: StatusManageService,
+    private nakama: NakamaService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
@@ -22,6 +24,28 @@ export class SettingsPage implements OnInit {
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
+  }
+
+  /** 표시되는 그룹 리스트 */
+  groups: any[] = [];
+
+  ionViewWillEnter() {
+    this.groups.length = 0;
+    let isOfficial = Object.keys(this.nakama.groups);
+    isOfficial.forEach(_is_official => {
+      let server = Object.keys(this.nakama.groups[_is_official]);
+      server.forEach(_name => {
+        let group = Object.keys(this.nakama.groups[_is_official][_name]);
+        group.forEach(_group_name => {
+          this.groups.push({
+            isOfficial: _is_official,
+            server: _name,
+            group: this.nakama.groups[_is_official][_name][_group_name]['title'],
+            owner: this.nakama.groups[_is_official][_name][_group_name]['owner'],
+          });
+        });
+      });
+    });
   }
 
   /** 채팅방 이중진입 방지용 */
