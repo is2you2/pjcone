@@ -152,17 +152,17 @@ export class AddGroupPage implements OnInit {
     }).then(v => {
       this.userInput.id = v.id;
       this.readasQRCodeFromId();
-      setTimeout(() => {
+      this.nakama.save_group_list(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target, () => {
+        this.isSavedWell = true;
+        localStorage.removeItem('add-group');
         this.p5toast.show({
           text: '그룹이 생성되었습니다.',
           duration: .1,
         });
-        this.isSavedWell = true;
-        localStorage.removeItem('add-group');
-        this.nakama.save_group_list([],
-          this.servers[this.index].isOfficial, this.servers[this.index].target);
-        this.navCtrl.back();
-      }, 500);
+        setTimeout(() => {
+          this.navCtrl.back();
+        }, 500);
+      });
     }).catch(e => {
       console.error('그룹 생성 실패: ', e);
       switch (e.status) {

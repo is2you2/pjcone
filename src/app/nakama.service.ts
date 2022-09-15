@@ -7,9 +7,10 @@ import { StatusManageService } from './status-manage.service';
 
 /** 서버마다 구성 */
 interface NakamaGroup {
-  client?: Client,
-  session?: Session,
-  socket?: Socket,
+  userId?: string;
+  client?: Client;
+  session?: Session;
+  socket?: Socket;
 }
 
 @Injectable({
@@ -81,10 +82,12 @@ export class NakamaService {
    */
   async init_session(_CallBack = (_v: boolean) => { }, _is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
     let uuid = this.device.uuid;
+    uuid = 'test1234pass'
     try {
       if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
       this.servers[_is_official][_target].session = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), uuid, false);
       _CallBack(true);
+      this.get_group_list(_is_official, _target);
       this.set_statusBar('online', _is_official, _target);
     } catch (e) {
       switch (e.status) {
@@ -123,6 +126,46 @@ export class NakamaService {
           break;
       }
     }
+  }
+
+  /** 등록된 그룹 아이디들, 서버에 저장되어있고 동기화시켜야합니다 */
+  groups: { [id: string]: { [id: string]: { [id: string]: NakamaGroup } } } = {
+    'official': {},
+    'unofficial': {},
+  }
+
+  /** 그룹 리스트 로컬/리모트에 저장하기 */
+  save_group_list(_group: any, _is_official: string, _target: string, _CallBack = () => { }) {
+    delete _group['server'];
+    if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
+    this.groups[_is_official][_target][_group.id] = _group;
+    this.servers[_is_official][_target].client.writeStorageObjects(
+      this.servers[_is_official][_target].session, [{
+        collection: 'user_groups',
+        key: 'linked_group',
+        value: this.groups,
+        permission_read: 1,
+        permission_write: 1,
+      }]
+    ).then(_v => {
+      _CallBack();
+    }).catch(e => {
+      console.error('save_group_list: ', e);
+    });
+  }
+
+  /** 자신이 참여한 그룹 리모트에 가져오기 */
+  get_group_list(_is_official: string, _target: string) {
+    this.servers[_is_official][_target].client.listStorageObjects(
+      this.servers[_is_official][_target].session,
+      'user_groups',
+      this.servers[_is_official][_target].session.user_id,
+    ).then(v => {
+      if (!v.objects.length) return;
+      this.groups = { ...this.groups, ...v.objects[0].value as any };
+    }).catch(e => {
+      console.error('get_group_list: ', e);
+    });
   }
 
   set_statusBar(_status: 'offline' | 'missing' | 'pending' | 'online' | 'certified', _is_official: string, _target: string) {
