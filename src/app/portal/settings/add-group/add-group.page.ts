@@ -133,7 +133,6 @@ export class AddGroupPage implements OnInit {
     }
 
     let session = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session;
-
     if (!session) { // 세션 검토
       console.warn('refreshToken 등 검토 필요');
       this.p5toast.show({

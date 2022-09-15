@@ -38,9 +38,10 @@ export class AppComponent {
     else if (platform.is('iphone'))
       isPlatform = 'iOS';
     noti.initialize();
-    client.initialize();
-    nakama.initialize();
-    indexed.initialize();
+    indexed.initialize(() => {
+      client.initialize();
+      nakama.initialize();
+    });
     // 모바일 기기 특정 설정
     if (isPlatform == 'Android' || isPlatform == 'iOS') {
       App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {

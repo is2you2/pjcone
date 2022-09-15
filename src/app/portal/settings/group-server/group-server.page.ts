@@ -52,6 +52,7 @@ export class GroupServerPage implements OnInit {
       this.statusBar.groupServer.official['default'] = 'offline';
       this.statusBar.settings['groupServer'] = 'offline';
     }
+    this.nakama.saveUsingServers();
   }
 
   /** 사설서버 주소 사용자 input */
@@ -86,6 +87,8 @@ export class GroupServerPage implements OnInit {
     }
 
     this.add_custom_tog = true;
+
+    this.nakama.saveUsingServers();
 
     setTimeout(() => {
       this.p5toast.show({

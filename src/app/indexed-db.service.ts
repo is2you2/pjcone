@@ -14,21 +14,23 @@ export class IndexedDBService {
   /** 이 동작은 반드시 고도엔진 웹 페이지가 우선 작업한 후에 동작해줘야한다. 우선권을 뺏어가면 안됨
    * localStorage: IndexedDB 키에서 고도가 미리 준비한 경우 'godot'를 값으로 지정한다
    */
-  initialize() {
+  initialize(_CallBack = () => { }) {
     if (this.db) return;
     let check = localStorage.getItem('IndexedDB');
     if (check == 'godot') {
       let req = indexedDB.open('/userfs', 21);
       req.onsuccess = (_ev) => {
         this.db = req.result;
+        _CallBack();
       }
       req.onerror = (e) => {
         console.error('IndexedDB initialized failed: ', e);
+        _CallBack();
       }
     } else {
       console.warn('retry initialize..');
       setTimeout(() => {
-        this.initialize();
+        this.initialize(_CallBack);
       }, 1000);
     }
   }

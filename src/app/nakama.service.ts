@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { Client, Session, Socket } from "@heroiclabs/nakama-js";
-import { SOCKET_SERVER_ADDRESS } from './app.component';
+import { isPlatform, SOCKET_SERVER_ADDRESS } from './app.component';
+import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 
@@ -22,6 +23,7 @@ export class NakamaService {
     private device: Device,
     private p5toast: P5ToastService,
     private statusBar: StatusManageService,
+    private indexed: IndexedDBService,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -47,22 +49,30 @@ export class NakamaService {
     // 저장된 프로필 정보 불러오기
     if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
     this.servers[_is_official][_target].client = new Client(_key, SOCKET_SERVER_ADDRESS);
-    if (localStorage.getItem('is_online')) {
-      this.init_all_sessions();
-    }
+    this.indexed.loadTextFromUserPath('servers/settings_status.json', (v: any) => {
+      this.statusBar.settings = JSON.parse(v);
+    });
+    this.indexed.loadTextFromUserPath('servers/list.json', (v: any) => {
+      console.warn('unofficial 등 모든 서버에 대한 client 생성 단계 필요');
+      this.statusBar.groupServer = JSON.parse(v);
+      if (localStorage.getItem('is_online'))
+        this.init_all_sessions();
+    });
+    this.indexed.loadTextFromUserPath('servers/groups.json', (v: any) => {
+      this.groups = JSON.parse(v);
+    })
   }
 
   /** 모든 pending 세션 켜기 */
   init_all_sessions(_CallBack = (v: boolean) => console.log(v)) {
     let Targets = Object.keys(this.servers['official']);
     Targets.forEach(_target => {
-      if (this.statusBar.groupServer['official'][_target] == 'pending')
+      if (this.statusBar.groupServer['official'][_target] != 'offline')
         this.init_session(_CallBack, 'official', _target);
     });
-
     let unTargets = Object.keys(this.servers['unofficial']);
     unTargets.forEach(_target => {
-      if (this.statusBar.groupServer['unofficial'][_target] == 'pending')
+      if (this.statusBar.groupServer['unofficial'][_target] != 'offline')
         this.init_session(_CallBack, 'unofficial', _target);
     });
   }
@@ -85,13 +95,18 @@ export class NakamaService {
     return result;
   }
 
+  /** 사용중인 서버 기록하기 */
+  saveUsingServers() {
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.settings), 'servers/settings_status.json');
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
+  }
+
   /** 세션처리
    * @param _CallBack 오류시 행동방침
    * @param _target 대상 key
    */
   async init_session(_CallBack = (_v: boolean) => { }, _is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
     let uuid = this.device.uuid;
-    uuid = 'test1234pass'
     try {
       if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
       this.servers[_is_official][_target].session = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), uuid, false);
@@ -158,6 +173,7 @@ export class NakamaService {
       }]
     ).then(_v => {
       _CallBack();
+      this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
     }).catch(e => {
       console.error('save_group_list: ', e);
     });

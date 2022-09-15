@@ -67,7 +67,7 @@ export class ProfilePage implements OnInit {
       }
     }
     this.p5canvas = new p5(sketch);
-    this.indexed.loadTextFromUserPath('servers/self/profile.txt', (v: any) => {
+    this.indexed.loadTextFromUserPath('servers/self/profile.json', (v: any) => {
       this.userInput = { ...this.userInput, ...JSON.parse(v) };
     });
   }
@@ -82,7 +82,7 @@ export class ProfilePage implements OnInit {
     reader = reader._realReader ?? reader;
     reader.onload = (ev: any) => {
       this.userInput.img = ev.target.result;
-      this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.txt');
+      this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
     }
     reader.readAsDataURL(ev.target.files[0]);
   }
@@ -101,7 +101,7 @@ export class ProfilePage implements OnInit {
       if (this.userInput.email) {
         localStorage.setItem('email', this.userInput.email);
         localStorage.setItem('name', this.userInput.name);
-        this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.txt');
+        this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
         this.nakama.init_all_sessions((v: boolean) => {
           if (v) {
             this.p5toast.show({
@@ -135,7 +135,7 @@ export class ProfilePage implements OnInit {
   }
 
   ionViewWillLeave() {
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.txt');
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
     if (this.userInput.email)
       localStorage.setItem('email', this.userInput.email);
     else localStorage.removeItem('email');
