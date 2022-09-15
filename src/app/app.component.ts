@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { Platform } from '@ionic/angular';
+import { IndexedDBService } from './indexed-db.service';
 import { LocalNotiService } from './local-noti.service';
 import { NakamaService } from './nakama.service';
 import { WscService } from './wsc.service';
@@ -26,6 +27,7 @@ export class AppComponent {
     client: WscService,
     bgmode: BackgroundMode,
     nakama: NakamaService,
+    indexed: IndexedDBService,
   ) {
     if (platform.is('desktop'))
       isPlatform = 'DesktopPWA';
@@ -38,6 +40,7 @@ export class AppComponent {
     noti.initialize();
     client.initialize();
     nakama.initialize();
+    indexed.initialize();
     // 모바일 기기 특정 설정
     if (isPlatform == 'Android' || isPlatform == 'iOS') {
       App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {

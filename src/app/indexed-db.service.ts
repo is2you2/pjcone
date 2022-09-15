@@ -15,6 +15,7 @@ export class IndexedDBService {
    * localStorage: IndexedDB 키에서 고도가 미리 준비한 경우 'godot'를 값으로 지정한다
    */
   initialize() {
+    if (this.db) return;
     let check = localStorage.getItem('IndexedDB');
     if (check == 'godot') {
       let req = indexedDB.open('/userfs', 21);
@@ -25,7 +26,10 @@ export class IndexedDBService {
         console.error('IndexedDB initialized failed: ', e);
       }
     } else {
-      console.error('고도엔진이 먼저 동작해야합니다');
+      console.warn('retry initialize..');
+      setTimeout(() => {
+        this.initialize();
+      }, 1000);
     }
   }
 
@@ -34,7 +38,7 @@ export class IndexedDBService {
    * @param text 문서에 포함될 텍스트
    * @param path 저장될 상대 경로(user://~)
    */
-  saveTextFileToUserPath(text: string, path: string) {
+  saveTextFileToUserPath(text: string, path: string, _CallBack = (_v: any) => console.warn('saveTextFileToUserPath act null')) {
     if (!this.db) {
       console.warn('IndexedDB 지정되지 않음');
       return;
@@ -45,7 +49,7 @@ export class IndexedDBService {
       timestamp: new Date(),
     }, `/userfs/${path}`);
     put.onsuccess = (ev) => {
-      console.log('쓰기 성공: ', ev);
+      _CallBack(ev);
     }
     put.onerror = (e) => {
       console.error('IndexedDB saveFileToUserPath failed: ', e);
@@ -56,14 +60,15 @@ export class IndexedDBService {
    * @param path 'user://~'에 들어가는 사용자 폴더 경로
    * @param act 불러오기 이후 행동. 인자 1개 필요 (load-return)
    */
-  loadTextFromUserPath(path: string, act: Function = (r: string) => console.warn(`loadTextFromUserPath 불러오기 행동 없음: ${r}`)) {
+  loadTextFromUserPath(path: string, _CallBack: Function = (_r: string) => console.warn('loadTextFromUserPath act null')) {
     if (!this.db) {
       console.warn('IndexedDB 지정되지 않음');
       return;
     };
     let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
     data.onsuccess = (ev) => {
-      act(new TextDecoder().decode(ev.target['result']['contents']));
+      if (ev.target['result'])
+        _CallBack(new TextDecoder().decode(ev.target['result']['contents']));
     }
     data.onerror = (e) => {
       console.error('IndexedDB loadTextFromUserPath failed: ', e);

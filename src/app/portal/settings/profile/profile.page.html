@@ -9,8 +9,9 @@
 
 <ion-content>
   <div class="profile_img_form">
-    <img id="profile_img" [src]="userInput.img" alt="프로필 이미지">
+    <img [hidden]="!userInput.img" id="profile_img" [src]="userInput.img" alt="프로필 이미지">
     <div class="fore-gradient" (click)="change_img()"></div>
+    <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
     <div class="username">{{userInput.name ?? '이름 없는 사용자'}}</div>
   </div>
   <ion-item-divider>

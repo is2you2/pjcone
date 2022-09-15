@@ -24,6 +24,14 @@ export class NakamaService {
     private statusBar: StatusManageService,
   ) { }
 
+  /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
+  profile = {
+    content: {
+      type: undefined,
+      path: undefined,
+    },
+  };
+
   /** 구성: this > Official > TargetKey > Client */
   servers: { [id: string]: { [id: string]: NakamaGroup } } = {
     'official': {},
@@ -36,6 +44,7 @@ export class NakamaService {
    * @param _key 서버 key
    */
   initialize(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _key = 'defaultkey') {
+    // 저장된 프로필 정보 불러오기
     if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
     this.servers[_is_official][_target].client = new Client(_key, SOCKET_SERVER_ADDRESS);
     if (localStorage.getItem('is_online')) {

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as p5 from "p5";
+import { IndexedDBService } from 'src/app/indexed-db.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
@@ -15,12 +16,14 @@ export class ProfilePage implements OnInit {
     private nakama: NakamaService,
     private statusBar: StatusManageService,
     private p5toast: P5ToastService,
+    private indexed: IndexedDBService,
   ) { }
 
   userInput = {
+    /** nakama.display_name 에 해당함 */
     name: undefined,
     email: undefined,
-    img: 'assets/icon/favicon.png',
+    img: undefined,
     content: {
       type: undefined,
       path: undefined,
@@ -32,7 +35,7 @@ export class ProfilePage implements OnInit {
     this.is_online = Boolean(localStorage.getItem('is_online'));
     this.userInput.name = localStorage.getItem('name');
     let anyServers = this.nakama.get_all_servers();
-    if (anyServers.length) // 연결된 서버 있음
+    if (anyServers.length) // 연결된 서버 있으면 이름 받아오기
       for (let i = 0, j = anyServers.length; i < j; i++) {
         anyServers[i].client.getAccount(anyServers[i].session)
           .then(v => {
@@ -64,10 +67,24 @@ export class ProfilePage implements OnInit {
       }
     }
     this.p5canvas = new p5(sketch);
+    this.indexed.loadTextFromUserPath('servers/self/profile.txt', (v: any) => {
+      this.userInput = { ...this.userInput, ...JSON.parse(v) };
+    });
   }
 
   change_img() {
-    console.log('이미지 변경 클릭됨');
+    document.getElementById('file_sel').click();
+  }
+
+  /** 파일 선택시 로컬에서 반영 */
+  inputImageSelected(ev: any) {
+    let reader: any = new FileReader();
+    reader = reader._realReader ?? reader;
+    reader.onload = (ev: any) => {
+      this.userInput.img = ev.target.result;
+      this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.txt');
+    }
+    reader.readAsDataURL(ev.target.files[0]);
   }
 
   change_content() {
@@ -84,6 +101,7 @@ export class ProfilePage implements OnInit {
       if (this.userInput.email) {
         localStorage.setItem('email', this.userInput.email);
         localStorage.setItem('name', this.userInput.name);
+        this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.txt');
         this.nakama.init_all_sessions((v: boolean) => {
           if (v) {
             this.p5toast.show({
@@ -117,6 +135,7 @@ export class ProfilePage implements OnInit {
   }
 
   ionViewWillLeave() {
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.txt');
     if (this.userInput.email)
       localStorage.setItem('email', this.userInput.email);
     else localStorage.removeItem('email');
