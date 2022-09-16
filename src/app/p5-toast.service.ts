@@ -52,10 +52,16 @@ export class P5ToastService {
     if (!info.lateable) { // 강제가 아닌 메시지 선별
       this.AlertNow = info;
       this.status = Status.DivFadeIn;
-    } // 아래, 동일 알람 누적 방지용
+    }
+    // 아래, 동일 알람 누적 방지용
+    let last_stack: ToastInfo;
+    if (this.alert.length)
+      last_stack = this.alert[this.alert.length - 1];
     if (this.AlertNow && this.AlertNow.text == info.text)
-      this.status = Status.DivFadeIn;
-    else this.alert.push(info);
+      this.status = Status.DivFadeIn; // 현재알림과 같으면 재알림
+    else if (last_stack && last_stack.text == info.text) {
+      // 마지막 알림과 같으면 스택 무시
+    } else this.alert.push(info);
 
     if (!this.isShowing) {
       let _toast = (p: p5) => {
