@@ -109,9 +109,9 @@ export class NakamaService {
     try {
       if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
       this.servers[_is_official][_target].session = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), uuid, false);
-      _CallBack(true);
       this.get_group_list(_is_official, _target);
       this.set_statusBar('online', _is_official, _target);
+      _CallBack(true);
     } catch (e) {
       switch (e.status) {
         case 400: // 비번이 없거나 하는 등, 요청이 잘못됨

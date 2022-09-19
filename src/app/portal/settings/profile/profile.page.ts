@@ -34,15 +34,6 @@ export class ProfilePage implements OnInit {
   ngOnInit() {
     this.is_online = Boolean(localStorage.getItem('is_online'));
     this.userInput.name = localStorage.getItem('name');
-    let anyServers = this.nakama.get_all_servers();
-    if (anyServers.length) // 연결된 서버 있으면 이름 받아오기
-      for (let i = 0, j = anyServers.length; i < j; i++) {
-        anyServers[i].client.getAccount(anyServers[i].session)
-          .then(v => {
-            this.userInput.name = v.user.display_name;
-          });
-        break;
-      }
     this.userInput.email = localStorage.getItem('email');
     let sketch = (p: p5) => {
       let img = document.getElementById('profile_img');
@@ -70,6 +61,32 @@ export class ProfilePage implements OnInit {
     this.indexed.loadTextFromUserPath('servers/self/profile.json', (v: any) => {
       this.userInput = { ...this.userInput, ...JSON.parse(v) };
     });
+    this.receiveDataFromServer();
+  }
+
+  /** 서버 중 한곳으로부터 데이터 수신받기 */
+  receiveDataFromServer() {
+    let anyServers = this.nakama.get_all_servers();
+    if (anyServers.length) // 연결된 서버 있으면 이름 받아오기
+      for (let i = 0, j = anyServers.length; i < j; i++) {
+        anyServers[i].client.getAccount(anyServers[i].session)
+          .then(v => {
+            if (!this.userInput.name)
+              this.userInput.name = v.user.display_name;
+          });
+        anyServers[i].client.readStorageObjects(anyServers[i].session, {
+          object_ids: [{
+            collection: 'profile',
+            key: 'image',
+            user_id: anyServers[i].session.user_id,
+          }],
+        }).then(v => {
+          if (v.objects[0] && !this.userInput.img)
+            this.userInput.img = v.objects[0].value['dataURL'];
+          this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
+        });
+        break;
+      }
   }
 
   change_img() {
@@ -82,7 +99,35 @@ export class ProfilePage implements OnInit {
     reader = reader._realReader ?? reader;
     reader.onload = (ev: any) => {
       this.userInput.img = ev.target.result;
-      this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
+      new p5((p: p5) => {
+        p.setup = () => {
+          p.loadImage(this.userInput.img, v => {
+            v.resize(window.innerWidth, window.innerWidth * v.height / v.width);
+            if (v['canvas'].toDataURL().length > 250000) {
+              let rect_ratio = v.height / v.width * 1.05;
+              let ratio = p.pow(250000 / v['canvas'].toDataURL().length, rect_ratio);
+              v.resize(v.width * ratio, v.height * ratio);
+            }
+            this.userInput.img = v['canvas'].toDataURL();
+            this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
+            let servers = this.nakama.get_all_servers();
+            for (let i = 0, j = servers.length; i < j; i++) {
+              servers[i].client.writeStorageObjects(servers[i].session, [{
+                collection: 'profile',
+                key: 'image',
+                value: { dataURL: this.userInput.img },
+                permission_read: 2,
+                permission_write: 1,
+              }]).then(_v => {
+                p.remove();
+              }).catch(e => {
+                console.error('inputImageSelected_err: ', e);
+              });
+            }
+            p.remove();
+          });
+        }
+      });
     }
     reader.readAsDataURL(ev.target.files[0]);
   }
@@ -107,6 +152,7 @@ export class ProfilePage implements OnInit {
             this.p5toast.show({
               text: '로그인되었습니다.',
             });
+            this.receiveDataFromServer();
           } else this.is_online = false;
         });
         localStorage.setItem('is_online', 'yes');

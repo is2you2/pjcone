@@ -40,7 +40,7 @@ export class IndexedDBService {
    * @param text 문서에 포함될 텍스트
    * @param path 저장될 상대 경로(user://~)
    */
-  saveTextFileToUserPath(text: string, path: string, _CallBack = (_v: any) => console.warn('saveTextFileToUserPath act null')) {
+  saveTextFileToUserPath(text: string, path: string, _CallBack = (_v: any) => { }) {
     if (!this.db) {
       console.warn('IndexedDB 지정되지 않음');
       return;
