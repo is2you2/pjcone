@@ -8,7 +8,6 @@ import { StatusManageService } from './status-manage.service';
 
 /** 서버마다 구성 */
 interface NakamaGroup {
-  userId?: string;
   client?: Client;
   session?: Session;
   socket?: Socket;

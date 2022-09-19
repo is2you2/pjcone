@@ -127,10 +127,10 @@ export class P5ToastService {
                 borderLerp -= .03;
               else {
                 borderLerp = 0;
-                let duration;
+                let duration: number;
                 if (this.AlertNow.duration)
                   duration = this.AlertNow.duration * 1000;
-                else duration = new TextEncoder().encode(this.AlertNow.text).length * 96;
+                else duration = new TextEncoder().encode(this.AlertNow.text).length * 24;
                 WillReadEndAt = p.millis() + duration + 960;
                 this.status = Status.Reading;
               }

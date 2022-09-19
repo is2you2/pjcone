@@ -137,7 +137,6 @@ export class AddGroupPage implements OnInit {
       console.warn('refreshToken 등 검토 필요');
       this.p5toast.show({
         text: '세션이 종료되었습니다.',
-        duration: .1,
       });
       return;
     }
@@ -158,7 +157,6 @@ export class AddGroupPage implements OnInit {
         localStorage.removeItem('add-group');
         this.p5toast.show({
           text: '그룹이 생성되었습니다.',
-          duration: .1,
         });
         setTimeout(() => {
           this.navCtrl.back();
@@ -171,7 +169,6 @@ export class AddGroupPage implements OnInit {
           setTimeout(() => {
             this.p5toast.show({
               text: '그룹 이름을 작성해주세요.',
-              duration: .1,
             });
             this.isSaveClicked = false;
           }, 500);
@@ -180,7 +177,6 @@ export class AddGroupPage implements OnInit {
           setTimeout(() => {
             this.p5toast.show({
               text: '이미 같은 이름의 그룹이 존재합니다.',
-              duration: .1,
             });
             this.isSaveClicked = false;
           }, 500);
@@ -189,7 +185,6 @@ export class AddGroupPage implements OnInit {
           setTimeout(() => {
             this.p5toast.show({
               text: `준비되지 않은 오류처리: ${e}`,
-              duration: .1,
             });
             this.isSaveClicked = false;
           }, 500);

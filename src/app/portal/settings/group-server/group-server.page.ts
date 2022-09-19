@@ -73,7 +73,6 @@ export class GroupServerPage implements OnInit {
     if (!this.dedicated_info.name) {
       this.p5toast.show({
         text: '이름을 지정해주세요.',
-        duration: .5,
       });
       return;
     }
@@ -81,7 +80,6 @@ export class GroupServerPage implements OnInit {
     if (!this.dedicated_info.address) {
       this.p5toast.show({
         text: '주소를 입력해주세요.',
-        duration: .5,
       });
       return;
     }
@@ -93,7 +91,6 @@ export class GroupServerPage implements OnInit {
     setTimeout(() => {
       this.p5toast.show({
         text: '사설 서버 등록 기능 준비중입니다.',
-        duration: .5,
       });
       this.dedicated_info.name = undefined;
       this.dedicated_info.address = undefined;
