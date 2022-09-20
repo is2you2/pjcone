@@ -16,7 +16,7 @@ export class DedicatedSettingsPage implements OnInit {
   ) { }
 
   info: string;
-  addresses = '이곳에 연결된 네트워크가 보여집니다.';
+  addresses = '이곳에 이 기기의 네트워크 주소가 보여집니다.';
 
   ngOnInit() {
     new p5((p: p5) => {

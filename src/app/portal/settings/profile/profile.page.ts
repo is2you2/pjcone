@@ -153,9 +153,12 @@ export class ProfilePage implements OnInit {
               text: '로그인되었습니다.',
             });
             this.receiveDataFromServer();
-          } else this.is_online = false;
+            localStorage.setItem('is_online', 'yes');
+          } else {
+            this.is_online = false;
+            localStorage.removeItem('is_online');
+          }
         });
-        localStorage.setItem('is_online', 'yes');
       } else {
         this.p5toast.show({
           text: '이메일 주소가 있어야 온라인으로 전환하실 수 있습니다.',

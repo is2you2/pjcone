@@ -46,8 +46,7 @@
   <ion-item-divider>
     <ion-label>그룹 상세</ion-label>
   </ion-item-divider>
-  <textarea class="infobox" [disabled]="isSaveClicked" [(ngModel)]="info" [(ngModel)]="userInput.desc"
-    [placeholder]="'그룹 설명'"></textarea>
+  <textarea class="infobox" [disabled]="isSaveClicked" [(ngModel)]="userInput.desc" [placeholder]="'그룹 설명'"></textarea>
   <ion-item [disabled]="isSaveClicked" button>
     <ion-label>국가 태그</ion-label>
     <ion-input class="ion-text-right" [(ngModel)]="userInput.lang" [placeholder]="'ko'"></ion-input>

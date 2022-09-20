@@ -108,7 +108,8 @@ export class NakamaService {
     let uuid = this.device.uuid;
     try {
       if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
-      this.servers[_is_official][_target].session = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), uuid, false);
+      this.servers[_is_official][_target].session
+        = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), uuid, false);
       this.get_group_list(_is_official, _target);
       this.set_statusBar('online', _is_official, _target);
       _CallBack(true);
@@ -178,7 +179,7 @@ export class NakamaService {
     });
   }
 
-  /** 자신이 참여한 그룹 리모트에 가져오기 */
+  /** 자신이 참여한 그룹 리모트에서 가져오기 */
   get_group_list(_is_official: string, _target: string) {
     this.servers[_is_official][_target].client.listStorageObjects(
       this.servers[_is_official][_target].session,
