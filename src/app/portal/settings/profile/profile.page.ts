@@ -21,6 +21,9 @@ export class ProfilePage implements OnInit {
     private indexed: IndexedDBService,
   ) { }
 
+  /** 부드러운 이미지 교체를 위한 이미지 임시 배정 */
+  tmp_img: string;
+
   userInput = {
     /** nakama.display_name 에 해당함 */
     name: undefined,
@@ -40,6 +43,7 @@ export class ProfilePage implements OnInit {
     this.cant_use_clipboard = isPlatform != 'DesktopPWA';
     let sketch = (p: p5) => {
       let img = document.getElementById('profile_img');
+      let tmp_img = document.getElementById('profile_tmp_img');
       const LERP_SIZE = .025;
       p.draw = () => {
         if (this.is_online) {
@@ -58,6 +62,7 @@ export class ProfilePage implements OnInit {
           }
         }
         img.setAttribute('style', `filter: grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)});`);
+        tmp_img.setAttribute('style', `filter: grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)});`);
       }
     }
     this.p5canvas = new p5(sketch);
@@ -93,9 +98,43 @@ export class ProfilePage implements OnInit {
 
   /** 부드러운 이미지 변환 */
   change_img_smoothly(_url: string) {
-    console.warn('부드러운 이미지 교차 변환 처리 필요');
-    this.userInput.img = _url;
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
+    this.tmp_img = _url;
+    new p5((p: p5) => {
+      let tmp_img = document.getElementById('profile_tmp_img');
+      let file_sel = document.getElementById('file_sel');
+      const LERP_SIZE = .035;
+      let lerpVal = 0;
+      p.setup = () => {
+        file_sel['value'] = '';
+        tmp_img.setAttribute('style', `filter: grayscale(${this.is_online ? 0 : .9}) contrast(${this.is_online ? 1 : 1.4}) opacity(${lerpVal})`);
+      }
+      p.draw = () => {
+        if (lerpVal < 1) {
+          lerpVal += LERP_SIZE;
+        } else {
+          lerpVal = 1;
+          this.userInput.img = this.tmp_img;
+          this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
+          this.tmp_img = '';
+          // 아래, 서버 이미지 업로드
+          let servers = this.nakama.get_all_servers();
+          for (let i = 0, j = servers.length; i < j; i++) {
+            servers[i].client.writeStorageObjects(servers[i].session, [{
+              collection: 'profile',
+              key: 'image',
+              value: { dataURL: this.userInput.img },
+              permission_read: 2,
+              permission_write: 1,
+            }]).then(_v => {
+            }).catch(e => {
+              console.error('inputImageSelected_err: ', e);
+            });
+          }
+          p.remove();
+        }
+        tmp_img.setAttribute('style', `filter: grayscale(${this.is_online ? 0 : .9}) contrast(${this.is_online ? 1 : 1.4}) opacity(${lerpVal})`);
+      }
+    });
   }
 
   change_img_from_file() { document.getElementById('file_sel').click(); }
@@ -109,9 +148,9 @@ export class ProfilePage implements OnInit {
     reader.readAsDataURL(ev.target.files[0]);
   }
 
-  /** Nakama에서 허용하는 수준으로 이미지 크기 줄이기 */
+  /** base64 정보에 대해 Nakama에서 허용하는 수준으로 이미지 크기 줄이기 */
   limit_image_size(ev: any) {
-    const SIZE_LIMIT = 240000;
+    const SIZE_LIMIT = 245000;
     new p5((p: p5) => {
       p.setup = () => {
         p.loadImage(ev.target.result, v => {
@@ -122,21 +161,7 @@ export class ProfilePage implements OnInit {
             v.resize(v.width * ratio, v.height * ratio);
           }
           this.change_img_smoothly(v['canvas'].toDataURL());
-          let servers = this.nakama.get_all_servers();
-          for (let i = 0, j = servers.length; i < j; i++) {
-            servers[i].client.writeStorageObjects(servers[i].session, [{
-              collection: 'profile',
-              key: 'image',
-              value: { dataURL: this.userInput.img },
-              permission_read: 2,
-              permission_write: 1,
-            }]).then(_v => {
-              p.remove();
-            }).catch(e => {
-              console.error('inputImageSelected_err: ', e);
-            });
-            p.remove();
-          }
+          p.remove();
         }, _e => {
           this.p5toast.show({
             text: '유효한 이미지가 아닙니다.',
