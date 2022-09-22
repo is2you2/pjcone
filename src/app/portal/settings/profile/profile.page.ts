@@ -4,6 +4,7 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
+import clipboard from "clipboardy";
 
 @Component({
   selector: 'app-profile',
@@ -82,54 +83,66 @@ export class ProfilePage implements OnInit {
           }],
         }).then(v => {
           if (v.objects[0] && !this.userInput.img)
-            this.userInput.img = v.objects[0].value['dataURL'];
-          this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
+            this.change_img_smoothly(v.objects[0].value['dataURL']);
         });
         break;
       }
   }
 
-  change_img() {
-    document.getElementById('file_sel').click();
+  /** 부드러운 이미지 변환 */
+  change_img_smoothly(_url: string) {
+    console.warn('부드러운 이미지 교차 변환 처리 필요');
+    this.userInput.img = _url;
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
   }
 
+  change_img_from_file() { document.getElementById('file_sel').click(); }
   /** 파일 선택시 로컬에서 반영 */
   inputImageSelected(ev: any) {
     let reader: any = new FileReader();
     reader = reader._realReader ?? reader;
     reader.onload = (ev: any) => {
-      this.userInput.img = ev.target.result;
-      new p5((p: p5) => {
-        p.setup = () => {
-          p.loadImage(this.userInput.img, v => {
-            v.resize(window.innerWidth, window.innerWidth * v.height / v.width);
-            if (v['canvas'].toDataURL().length > 250000) {
-              let rect_ratio = v.height / v.width * 1.05;
-              let ratio = p.pow(250000 / v['canvas'].toDataURL().length, rect_ratio);
-              v.resize(v.width * ratio, v.height * ratio);
-            }
-            this.userInput.img = v['canvas'].toDataURL();
-            this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
-            let servers = this.nakama.get_all_servers();
-            for (let i = 0, j = servers.length; i < j; i++) {
-              servers[i].client.writeStorageObjects(servers[i].session, [{
-                collection: 'profile',
-                key: 'image',
-                value: { dataURL: this.userInput.img },
-                permission_read: 2,
-                permission_write: 1,
-              }]).then(_v => {
-                p.remove();
-              }).catch(e => {
-                console.error('inputImageSelected_err: ', e);
-              });
-            }
-            p.remove();
-          });
-        }
-      });
+      this.limit_image_size(ev);
     }
     reader.readAsDataURL(ev.target.files[0]);
+  }
+
+  /** Nakama에서 허용하는 수준으로 이미지 크기 줄이기 */
+  limit_image_size(ev: any) {
+    const SIZE_LIMIT = 240000;
+    new p5((p: p5) => {
+      p.setup = () => {
+        p.loadImage(ev.target.result, v => {
+          v.resize(window.innerWidth, window.innerWidth * v.height / v.width);
+          if (v['canvas'].toDataURL().length > SIZE_LIMIT) {
+            let rect_ratio = v.height / v.width * 1.05;
+            let ratio = p.pow(SIZE_LIMIT / v['canvas'].toDataURL().length, rect_ratio);
+            v.resize(v.width * ratio, v.height * ratio);
+          }
+          this.change_img_smoothly(v['canvas'].toDataURL());
+          let servers = this.nakama.get_all_servers();
+          for (let i = 0, j = servers.length; i < j; i++) {
+            servers[i].client.writeStorageObjects(servers[i].session, [{
+              collection: 'profile',
+              key: 'image',
+              value: { dataURL: this.userInput.img },
+              permission_read: 2,
+              permission_write: 1,
+            }]).then(_v => {
+              p.remove();
+            }).catch(e => {
+              console.error('inputImageSelected_err: ', e);
+            });
+            p.remove();
+          }
+        }, _e => {
+          this.p5toast.show({
+            text: '유효한 이미지가 아닙니다.',
+          });
+          p.remove();
+        });
+      }
+    });
   }
 
   change_content() {
@@ -146,6 +159,7 @@ export class ProfilePage implements OnInit {
       if (this.userInput.email) {
         localStorage.setItem('email', this.userInput.email);
         localStorage.setItem('name', this.userInput.name);
+        localStorage.setItem('is_online', 'yes');
         this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
         this.nakama.init_all_sessions((v: boolean) => {
           if (v) {
@@ -153,7 +167,6 @@ export class ProfilePage implements OnInit {
               text: '로그인되었습니다.',
             });
             this.receiveDataFromServer();
-            localStorage.setItem('is_online', 'yes');
           } else {
             this.is_online = false;
             localStorage.removeItem('is_online');
@@ -165,7 +178,6 @@ export class ProfilePage implements OnInit {
         });
         this.is_online = false;
         localStorage.removeItem('is_online');
-        return;
       }
     } else {
       let IsOfficials = Object.keys(this.statusBar.groupServer);
@@ -177,10 +189,46 @@ export class ProfilePage implements OnInit {
             this.statusBar.settings['groupServer'] = 'pending';
           }
         });
-      })
+      });
       localStorage.removeItem('is_online');
     }
     this.p5canvas.loop();
+  }
+
+  imageURL_disabled = false;
+  imageURL_placeholder = '눌러서 외부이미지 주소 붙여넣기';
+  /** 외부 주소 붙여넣기 */
+  imageURLPasted() {
+    this.imageURL_disabled = true;
+    clipboard.read().then(v => {
+      if (v.indexOf('http') == 0) {
+        new p5((p: p5) => {
+          p.setup = () => {
+            p.loadImage(v, (_v => {
+              this.imageURL_placeholder = '외부 이미지: ' + v;
+              this.change_img_smoothly(v);
+              p.remove();
+            }), (_e => {
+              this.p5toast.show({
+                text: '유효한 이미지가 아닙니다.',
+              });
+              p.remove();
+            }));
+          }
+        });
+      } else if (v.indexOf('data:image') == 0) {
+        this.limit_image_size({
+          target: { result: [v] },
+        });
+      } else {
+        this.p5toast.show({
+          text: '먼저 웹 페이지에서 이미지 주소를 복사해주세요',
+        });
+      }
+    });
+    setTimeout(() => {
+      this.imageURL_disabled = false;
+    }, 1500);
   }
 
   ionViewWillLeave() {
