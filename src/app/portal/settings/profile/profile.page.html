@@ -14,7 +14,7 @@
     <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
     <div class="username">{{userInput.name ?? '이름 없는 사용자'}}</div>
   </div>
-  <ion-item (click)="imageURLPasted()" [disabled]="imageURL_disabled">
+  <ion-item (click)="imageURLPasted()" [hidden]="cant_use_clipboard" [disabled]="imageURL_disabled">
     <ion-label color="medium">{{imageURL_placeholder}}</ion-label>
   </ion-item>
   <ion-item-divider>

@@ -5,6 +5,7 @@ import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import clipboard from "clipboardy";
+import { isPlatform } from 'src/app/app.component';
 
 @Component({
   selector: 'app-profile',
@@ -36,6 +37,7 @@ export class ProfilePage implements OnInit {
     this.is_online = Boolean(localStorage.getItem('is_online'));
     this.userInput.name = localStorage.getItem('name');
     this.userInput.email = localStorage.getItem('email');
+    this.cant_use_clipboard = isPlatform != 'DesktopPWA';
     let sketch = (p: p5) => {
       let img = document.getElementById('profile_img');
       const LERP_SIZE = .025;
@@ -195,10 +197,13 @@ export class ProfilePage implements OnInit {
     this.p5canvas.loop();
   }
 
+  /** 클립보드 사용가능 여부 */
+  cant_use_clipboard = false;
   imageURL_disabled = false;
   imageURL_placeholder = '눌러서 외부이미지 주소 붙여넣기';
   /** 외부 주소 붙여넣기 */
   imageURLPasted() {
+    if (isPlatform != 'DesktopPWA') return;
     this.imageURL_disabled = true;
     clipboard.read().then(v => {
       if (v.indexOf('http') == 0) {
