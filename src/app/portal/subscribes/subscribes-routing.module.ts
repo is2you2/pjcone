@@ -19,6 +19,10 @@ const routes: Routes = [
   {
     path: 'projinfo',
     loadChildren: () => import('./projinfo/projinfo.module').then( m => m.ProjinfoPageModule)
+  },
+  {
+    path: 'qrelse',
+    loadChildren: () => import('./qrelse/qrelse.module').then( m => m.QRelsePageModule)
   }
 ];
 
