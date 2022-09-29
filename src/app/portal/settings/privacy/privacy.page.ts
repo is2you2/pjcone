@@ -20,11 +20,12 @@ export class PrivacyPage implements OnInit {
   read_privacy() {
     let show = (p: p5) => {
       p.setup = () => {
-        p.loadStrings(`assets/privacy.txt`, v => {
+        p.loadStrings(`assets/data/infos/${'ko'}/privacy.txt`, v => {
           this.lines = v.join('\n');
           p.remove();
         }, e => {
           console.error('개인정보 처리방침 파일 불러오기 실패: ', e);
+          p.remove();
         });
       }
     }

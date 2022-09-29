@@ -21,8 +21,11 @@ export class DedicatedSettingsPage implements OnInit {
   ngOnInit() {
     new p5((p: p5) => {
       p.setup = () => {
-        p.loadStrings('assets/data/infos/dedicated.txt', v => {
+        p.loadStrings(`assets/data/infos/${'ko'}/dedicated.txt`, v => {
           this.info = v.join('\n');
+          p.remove();
+        }, e => {
+          console.error('사설서버 설정 파일 불러오기 실패: ', e);
           p.remove();
         });
       }
@@ -81,11 +84,5 @@ export class DedicatedSettingsPage implements OnInit {
       this.block_button('groupchat')
       this.server.stop();
     }
-  }
-
-  /** 웹 페이지와 연동 시작하기 */
-  start_webremote() {
-    console.log('웹 페이지와 연동 함수 냉무');
-    this.block_button('webremote');
   }
 }

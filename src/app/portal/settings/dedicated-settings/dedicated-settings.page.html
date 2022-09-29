@@ -25,13 +25,4 @@
       [style]="'background-color: ' + statusBar.colors[statusBar.dedicated.official['groupchat']]"></div>
     <ion-label class="form_margin">사설 그룹채팅 서버</ion-label>
   </ion-item>
-
-  <ion-item-divider>
-    <ion-label>기능 서버</ion-label>
-  </ion-item-divider>
-  <ion-item (click)="start_webremote()" [disabled]="true || block.webremote">
-    <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[statusBar.dedicated.official['webremote']]"></div>
-    <ion-label class="form_margin">웹 페이지와 연동</ion-label>
-  </ion-item>
 </ion-content>

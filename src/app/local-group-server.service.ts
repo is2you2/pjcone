@@ -67,7 +67,7 @@ export class LocalGroupServerService {
             this.send_to(user, msg);
           });
         },
-        'onClose': (conn, code, reason, wasClean) => {
+        'onClose': (conn, _code, _reason, _wasClean) => {
           let catch_uid = this.users[conn.uuid]['uid']
           let catch_name = this.users[conn.uuid]['name'];
           delete this.users[conn.uuid];
@@ -86,7 +86,7 @@ export class LocalGroupServerService {
         'origins': [], // validates the 'Origin' HTTP Header.
         'protocols': [], // validates the 'Sec-WebSocket-Protocol' HTTP Header.
         'tcpNoDelay': true // disables Nagle's algorithm.
-      }, (addr, port) => { // 시작할 때
+      }, (_addr, _port) => { // 시작할 때
         this.funcs.onStart('');
       }, (reason) => { // 종료될 때
         this.funcs.onFailed(`Did not start. Reason: ${reason}`);
@@ -115,7 +115,7 @@ export class LocalGroupServerService {
   /** 사설 서버 종료 */
   stop() {
     if (isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA') {
-      this.server.stop((addr, port) => {
+      this.server.stop((_addr, port) => {
         this.funcs.onFailed(`Stopped listening on ${port}`);
       });
     }

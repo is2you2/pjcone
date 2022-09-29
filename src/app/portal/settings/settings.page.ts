@@ -75,6 +75,29 @@ export class SettingsPage implements OnInit {
     window.open('https://is2you2.github.io', '_system')
   }
 
+  /** 중복 클릭 방지용 토글 */
+  block = {
+    groupchat: false,
+    webremote: false,
+  }
+
+  /**
+   * 중복 클릭 방지를 위해 버튼을 막음
+   * @param _target block 내 key 값
+   */
+  block_button(_target: string) {
+    this.block[_target] = true;
+    setTimeout(() => {
+      this.block[_target] = false;
+    }, 2000);
+  }
+
+  /** 웹 페이지와 연동 시작하기 */
+  start_webremote() {
+    console.log('웹 페이지와 연동 함수 냉무');
+    this.block_button('webremote');
+  }
+
   go_to_page(_page: string) {
     this.nav.navigateForward(`settings/${_page}`, {
       animation: iosTransitionAnimation,

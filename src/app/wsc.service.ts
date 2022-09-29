@@ -32,10 +32,10 @@ export class WscService {
     this.statusBar.settings['communityServer'] = 'pending';
     const PORT: number = 12000;
     this.client = new WebSocket(`wss://${SOCKET_SERVER_ADDRESS}:${PORT}`);
-    this.client.onopen = (ev) => {
+    this.client.onopen = (_ev) => {
       this.statusBar.settings['communityServer'] = 'online';
     }
-    this.client.onclose = (ev) => {
+    this.client.onclose = (_ev) => {
       this.statusBar.settings['communityServer'] = 'missing';
       setTimeout(() => {
         this.statusBar.settings['communityServer'] = 'offline';
