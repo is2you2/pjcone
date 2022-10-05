@@ -63,7 +63,7 @@ export class NakamaService {
   }
 
   /** 모든 pending 세션 켜기 */
-  init_all_sessions(_CallBack = (v: boolean) => console.log(v)) {
+  init_all_sessions(_CallBack = (v: boolean) => console.log('init_all_sessions: ', v)) {
     let Targets = Object.keys(this.servers['official']);
     Targets.forEach(_target => {
       if (this.statusBar.groupServer['official'][_target] != 'offline')
@@ -79,7 +79,7 @@ export class NakamaService {
   /** 모든 online 클라이언트 받아오기
    * @returns Nakama.Client[] == 'online'
    */
-  get_all_servers(_CallBack = (v: boolean) => console.log(v)): NakamaGroup[] {
+  get_all_servers(_CallBack = (v: boolean) => console.log('get_all_servers: ', v)): NakamaGroup[] {
     let result: NakamaGroup[] = [];
     let Targets = Object.keys(this.servers['official']);
     Targets.forEach(_target => {

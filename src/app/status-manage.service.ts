@@ -40,10 +40,10 @@ export class StatusManageService {
     /** 사설서버 전반적 동향 */
     dedicatedServer: 'offline',
   };
-  /** 설정에 준비된 공식 지원 툴 */
+  /** 설정에 준비된 공식 지원 툴, 직접 작성하여 관리 */
   tools: PanelStatus = {
-    /** 웹 리모콘 */
-    webremote: 'offline',
+    /** 엔진웍스 PPT */
+    engineppt: 'offline',
   }
   /** 설정-그룹서버 관리 목록 */
   groupServer: { [id: string]: PanelStatus } = {

@@ -13,7 +13,7 @@ import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 export class SettingsPage implements OnInit {
 
   constructor(
-    private modal: ModalController,
+    private modalCtrl: ModalController,
     private nav: NavController,
     public statusBar: StatusManageService,
     private nakama: NakamaService,
@@ -47,7 +47,6 @@ export class SettingsPage implements OnInit {
       });
     });
   }
-
   /** 채팅방 이중진입 방지용 */
   will_enter = false;
   /** 사설 서버 주소, 없으면 공식서버 랜덤채팅 */
@@ -61,7 +60,7 @@ export class SettingsPage implements OnInit {
     setTimeout(() => {
       this.will_enter = false;
     }, 500);
-    this.modal.create({
+    this.modalCtrl.create({
       component: MinimalChatPage,
       componentProps: {
         address: _address,
@@ -73,29 +72,6 @@ export class SettingsPage implements OnInit {
   /** 개발자 블로그로 연결 (github 홈페이지) */
   go_to_dev_blog() {
     window.open('https://is2you2.github.io', '_system')
-  }
-
-  /** 중복 클릭 방지용 토글 */
-  block = {
-    groupchat: false,
-    webremote: false,
-  }
-
-  /**
-   * 중복 클릭 방지를 위해 버튼을 막음
-   * @param _target block 내 key 값
-   */
-  block_button(_target: string) {
-    this.block[_target] = true;
-    setTimeout(() => {
-      this.block[_target] = false;
-    }, 2000);
-  }
-
-  /** 웹 페이지와 연동 시작하기 */
-  start_webremote() {
-    console.log('웹 페이지와 연동 함수 냉무');
-    this.block_button('webremote');
   }
 
   go_to_page(_page: string) {
