@@ -1,0 +1,20 @@
+services:
+  code-server:
+    image: ubuntu
+    container_name: code-server
+    volumes:
+      - ./pjcone:/root/pjcone
+    environment:
+      USER: root
+      DISPLAY: :1
+      PATH: $PATH:/root/Android/Sdk/platform-tools:/usr/local/sbin:/usr/sbin:/sbin
+      GODOT_SILENCE_ROOT_WARNING: 1
+    ports:
+      - "5901:5901"
+      - "8081:8081"
+      - "8100:8100"
+      - "12000:12000"
+      - "12010:12010"
+      - "12011:12011"
+      - "12020:12020"
+    command: tail -F /dev/null

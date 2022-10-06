@@ -173,5 +173,7 @@ ionViewWillEnter() {
 MIT
 - [ ] 제작자의 자랑글
 - [ ] 번역가의 짧은 글귀
+- [ ] 코드 라이선스 고지
+- [ ] 콘텐츠 라이선스 고지
 ### 사용된 주 프로그램 고지
 Ionic 6, Capacitor, Godot engine, p5js, Nakama
