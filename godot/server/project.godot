@@ -10,9 +10,9 @@ config_version=4
 
 [application]
 
-config/name="Project: Cone"
+config/name="Server"
 config/description="블로그와 Project: Cone을 동시 운영하는 위엄으로 진화한 앱
-이 프로젝트에서 각 기능마다 필요한 사설 서버를 제공함"
+이 프로젝트에서 각 기능마다 필요한 커뮤니티 서버를 제공함"
 run/main_scene="res://SingleAct.tscn"
 config/icon="res://icon.png"
 config/windows_native_icon="res://icon.ico"

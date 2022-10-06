@@ -161,12 +161,17 @@ ionViewWillEnter() {
 
 ## 사용중인 포트
 - 7350-7352: Nakama
+### 커뮤니티 서버 포트
 - 12000: SingleAct_카운터
 - 12010: Exim4
-- 12011: Minichat 병합
-- 12020: engineppt
+- 12011: Minichat 병합, 모바일 사설 그룹 서버
+- 12020: WebLink
+### 모바일 사설 서버 포트
+- 12021: engineppt
 
 ## License
 MIT
+- [ ] 제작자의 자랑글
+- [ ] 번역가의 짧은 글귀
 ### 사용된 주 프로그램 고지
 Ionic 6, Capacitor, Godot engine, p5js, Nakama

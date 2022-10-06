@@ -4,6 +4,7 @@ import { ModalController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { ToolServerService, UnivToolForm } from 'src/app/tool-server.service';
+import { WeblinkService } from 'src/app/weblink.service';
 import { ChatRoomPage } from './chat-room/chat-room.page';
 import { ProjinfoPage } from './projinfo/projinfo.page';
 import { QRelsePage } from './qrelse/qrelse.page';
@@ -29,6 +30,7 @@ export class SubscribesPage implements OnInit {
     private codescan: BarcodeScanner,
     private p5toast: P5ToastService,
     private tools: ToolServerService,
+    private weblink: WeblinkService,
   ) { }
 
   cant_scan = false;
@@ -71,15 +73,28 @@ export class SubscribesPage implements OnInit {
 
   /** 도구모음 서버 만들기 */
   create_tool_server(data: UnivToolForm) {
+    let PORT: number;
+    /** 메시지 받기 행동 구성 */
+    let onMessage = (_json: any) => console.warn(`${data.name}_create_tool_server_onMessage: ${_json}`);
     switch (data.name) {
       case 'engineppt':
-        this.tools.initialize(data.name, 12020, (json: any) => {
+        PORT = 12021;
+        onMessage = (json: any) => {
           console.log('engineppt init test: ', json);
-        });
+        };
         break;
       default:
         throw new Error(`지정된 툴 정보가 아님: ${data}`);
     }
+    this.tools.initialize(data.name, PORT, () => {
+      this.tools.check_addresses(data.name, (v: any) => {
+        let keys = Object.keys(v);
+        let local_addresses = [];
+        for (let i = 0, j = keys.length; i < j; i++)
+          local_addresses = [...local_addresses, ...v[keys[i]]['ipv4Addresses']];
+        this.weblink.initialize(data.client, local_addresses);
+      });
+    }, onMessage);
   }
 
   /** 채팅방으로 이동하기 */

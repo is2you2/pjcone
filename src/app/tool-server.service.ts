@@ -40,9 +40,9 @@ export class ToolServerService {
    * 사설 서버 개설, throwable
    * @param _target 일괄처리용 구분자
    * @param _PORT 사용을 위한 포트 입력
-   * @param _OnMessage 메시지를 받았을 때 행동 onMessage(json)
+   * @param onMessage 메시지를 받았을 때 행동 onMessage(json)
    */
-  initialize(_target: string, _PORT: number, _OnMessage: Function) {
+  initialize(_target: string, _PORT: number, onStart:Function, onMessage: Function) {
     if (!this.statusBar.tools[_target])
       throw new Error(`그런 툴은 없습니다: ${_target}`);
     this.statusBar.tools[_target] = 'pending';
@@ -71,7 +71,7 @@ export class ToolServerService {
         'onMessage': (_conn, msg) => {
           try {
             let json = JSON.parse(msg);
-            _OnMessage(json);
+            onMessage(json);
           } catch (e) {
             console.error(`Tool-server_json 변환 오류_${msg}: ${e}`);
           }
@@ -85,6 +85,7 @@ export class ToolServerService {
         'tcpNoDelay': true // disables Nagle's algorithm.
       }, (_addr, _port) => { // 시작할 때
         this.onServerOpen(_target);
+        onStart();
       }, (_reason) => { // 종료될 때
         this.onServerClose(_target);
       });

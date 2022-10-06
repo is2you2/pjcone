@@ -8,6 +8,7 @@ const HEADER:= 'Counter'
 
 # 사용자 pid로 접속 카운트
 var users:= []
+
 # 오늘 서버에 몇명이 다녀갔어
 var counter:= {
 	# 현재 접속중인 인원
