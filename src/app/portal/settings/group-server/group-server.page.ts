@@ -54,6 +54,13 @@ export class GroupServerPage implements OnInit {
     } else {
       this.statusBar.groupServer.official['default'] = 'offline';
       this.statusBar.settings['groupServer'] = 'offline';
+      if (this.nakama.servers.official['default'].session) {
+        this.nakama.servers.official['default'].client.sessionLogout(
+          this.nakama.servers.official['default'].session,
+          this.nakama.servers.official['default'].session.token,
+          this.nakama.servers.official['default'].session.refresh_token,
+        );
+      }
     }
     this.nakama.saveUsingServers();
   }

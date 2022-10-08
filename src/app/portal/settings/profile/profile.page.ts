@@ -214,6 +214,12 @@ export class ProfilePage implements OnInit {
           if (this.statusBar.groupServer[_is_official][_target] == 'online') {
             this.statusBar.groupServer[_is_official][_target] = 'pending';
             this.statusBar.settings['groupServer'] = 'pending';
+            if (this.nakama.servers[_is_official][_target].session)
+              this.nakama.servers[_is_official][_target].client.sessionLogout(
+                this.nakama.servers[_is_official][_target].session,
+                this.nakama.servers[_is_official][_target].session.token,
+                this.nakama.servers[_is_official][_target].session.refresh_token,
+              );
           }
         });
       });
