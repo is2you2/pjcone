@@ -26,6 +26,7 @@ export class SettingsPage implements OnInit {
       this.cant_dedicated = true;
   }
 
+  temporary_online_status = false;
   /** 표시되는 그룹 리스트 */
   groups: any[] = [];
 
@@ -46,6 +47,7 @@ export class SettingsPage implements OnInit {
         });
       });
     });
+    this.temporary_online_status = Boolean(localStorage.getItem('is_online'));
   }
   /** 채팅방 이중진입 방지용 */
   will_enter = false;
