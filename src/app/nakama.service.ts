@@ -1,13 +1,27 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { Client, Session, Socket } from "@heroiclabs/nakama-js";
-import { isPlatform, SOCKET_SERVER_ADDRESS } from './app.component';
+import { SOCKET_SERVER_ADDRESS } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 
+/** 서버 상세 정보 */
+export interface ServerInfo {
+  /** 표시명, 앱 내 구성키는 target 사용 */
+  name: string;
+  address: string;
+  /** 앱 내에서 구성하는 key 이름 */
+  target: string;
+  port?: number;
+  useSSL?: boolean;
+  isOfficial?: string;
+  key?: string;
+}
+
 /** 서버마다 구성 */
 interface NakamaGroup {
+  info?: ServerInfo;
   client?: Client;
   session?: Session;
   socket?: Socket;
@@ -39,27 +53,51 @@ export class NakamaService {
     'unofficial': {},
   };
 
+
+  initialize() {
+    // 공식서버 연결처리
+    this.init_server();
+    // 저장된 사설서버들 정보 불러오기
+    this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
+      if (e) { // 내용이 있을 때에만 동작
+        let list: string[] = v.split('\n');
+        for (let i = 0, j = list.length; i < j; i++) {
+          let sep = list[i].split(',');
+          let info: ServerInfo = {
+            isOfficial: sep[1],
+            name: sep[2],
+            target: sep[3],
+            address: sep[4],
+            port: +sep[5],
+            useSSL: Boolean(sep[6]),
+          }
+          this.servers['unofficial'][info.target] = {};
+          this.servers['unofficial'][info.target].info = info;
+          this.init_server(info.isOfficial as any, info.target, info.address, info.key);
+        }
+      }
+    });
+    // 마지막 상태바 정보 불러오기: 사용자의 연결 여부 의사가 반영되어있음
+    this.indexed.loadTextFromUserPath('servers/list.json', (e, v) => {
+      if (e)
+        this.statusBar.groupServer = JSON.parse(v);
+      if (localStorage.getItem('is_online'))
+        this.init_all_sessions();
+    });
+    // 서버별 그룹 정보 불러오기
+    this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
+      if (e)
+        this.groups = JSON.parse(v);
+    })
+  }
   /** 공식 테스트 서버를 대상으로 Nakama 클라이언트 구성을 진행합니다.
    * @param _is_official 공식 서버 여부
    * @param _target 대상 key
    * @param _key 서버 key
    */
-  initialize(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _key = 'defaultkey') {
-    // 저장된 프로필 정보 불러오기
+  init_server(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _address = SOCKET_SERVER_ADDRESS, _key = 'defaultkey') {
     if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
-    this.servers[_is_official][_target].client = new Client(_key, SOCKET_SERVER_ADDRESS);
-    this.indexed.loadTextFromUserPath('servers/settings_status.json', (v: any) => {
-      this.statusBar.settings = JSON.parse(v);
-    });
-    this.indexed.loadTextFromUserPath('servers/list.json', (v: any) => {
-      console.warn('unofficial 등 모든 서버에 대한 client 생성 단계 필요');
-      this.statusBar.groupServer = JSON.parse(v);
-      if (localStorage.getItem('is_online'))
-        this.init_all_sessions();
-    });
-    this.indexed.loadTextFromUserPath('servers/groups.json', (v: any) => {
-      this.groups = JSON.parse(v);
-    })
+    this.servers[_is_official][_target].client = new Client(_key, _address);
   }
 
   /** 모든 pending 세션 켜기 */
@@ -79,7 +117,7 @@ export class NakamaService {
   /** 모든 online 클라이언트 받아오기
    * @returns Nakama.Client[] == 'online'
    */
-  get_all_servers(_CallBack = (v: boolean) => console.log('get_all_servers: ', v)): NakamaGroup[] {
+  get_all_server(): NakamaGroup[] {
     let result: NakamaGroup[] = [];
     let Targets = Object.keys(this.servers['official']);
     Targets.forEach(_target => {
@@ -94,22 +132,30 @@ export class NakamaService {
     return result;
   }
 
-  /** 사용중인 서버 기록하기 */
-  saveUsingServers() {
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.settings), 'servers/settings_status.json');
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
+  /** 모든 서버 정보 받아오기
+   * @returns Nakama.ServerInfo[]
+   */
+  get_all_server_info(): ServerInfo[] {
+    let result: ServerInfo[] = [];
+    let unTargets = Object.keys(this.servers['unofficial']);
+    unTargets.forEach(_target => {
+      if (this.servers['unofficial'][_target])
+        result.push(this.servers['unofficial'][_target].info);
+    });
+    return result;
   }
 
+  uuid: string;
   /** 세션처리
    * @param _CallBack 오류시 행동방침
    * @param _target 대상 key
    */
-  async init_session(_CallBack = (_v: boolean) => { }, _is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
-    let uuid = this.device.uuid;
+  async init_session(_CallBack = (_v: boolean) => console.warn('nakama.init_session.callback null: ', _v), _is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
+    this.uuid = this.uuid || this.device.uuid;
     try {
       if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
       this.servers[_is_official][_target].session
-        = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), uuid, false);
+        = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), this.uuid, false);
       this.get_group_list(_is_official, _target);
       this.set_statusBar('online', _is_official, _target);
       _CallBack(true);
@@ -117,7 +163,7 @@ export class NakamaService {
       switch (e.status) {
         case 400: // 비번이 없거나 하는 등, 요청이 잘못됨
           this.p5toast.show({
-            text: '웹 브라우저에서는 지원하지 않습니다.',
+            text: '사용자를 연결한 후 사용하세요.',
           });
           _CallBack(false);
           this.set_statusBar('missing', _is_official, _target);
@@ -130,8 +176,7 @@ export class NakamaService {
           this.set_statusBar('missing', _is_official, _target);
           break;
         case 404: // 아이디 없음
-          this.servers[_is_official][_target].session = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'),
-            uuid, true);
+          this.servers[_is_official][_target].session = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), this.uuid, true);
           await this.servers[_is_official][_target].client.updateAccount(
             this.servers[_is_official][_target].session, {
             display_name: localStorage.getItem('name'),

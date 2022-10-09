@@ -51,6 +51,9 @@ export class IndexedDBService {
       timestamp: new Date(),
     }, `/userfs/${path}`);
     put.onsuccess = (ev) => {
+      if (ev.type == 'success')
+        console.log('저장 성공: ', path);
+      else console.error('저장 실패: ', path);
       _CallBack(ev);
     }
     put.onerror = (e) => {
@@ -62,7 +65,7 @@ export class IndexedDBService {
    * @param path 'user://~'에 들어가는 사용자 폴더 경로
    * @param act 불러오기 이후 행동. 인자 1개 필요 (load-return)
    */
-  loadTextFromUserPath(path: string, _CallBack: Function = (_r: string) => console.warn('loadTextFromUserPath act null')) {
+  loadTextFromUserPath(path: string, _CallBack = (_e: boolean, _v: string) => console.warn('loadTextFromUserPath act null')) {
     if (!this.db) {
       console.warn('IndexedDB 지정되지 않음');
       return;
@@ -70,7 +73,8 @@ export class IndexedDBService {
     let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
     data.onsuccess = (ev) => {
       if (ev.target['result'])
-        _CallBack(new TextDecoder().decode(ev.target['result']['contents']));
+        _CallBack(true, new TextDecoder().decode(ev.target['result']['contents']));
+      else _CallBack(false, `No file: , ${path}`);
     }
     data.onerror = (e) => {
       console.error('IndexedDB loadTextFromUserPath failed: ', e);

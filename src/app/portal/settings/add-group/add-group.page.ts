@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
-import { NakamaService } from 'src/app/nakama.service';
+import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import * as QRCode from "qrcode-svg";
 import { DomSanitizer } from '@angular/platform-browser';
-import { ServerInfo } from '../group-server/group-server.page';
 
 /** 읽었을 때 기기가 순차적으로 처리할 수 있는 양식  
  * string[]: 해당 내용의 id값만 나열되어있음  

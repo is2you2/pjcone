@@ -15,10 +15,21 @@
   <ion-item-divider>
     <ion-label>서버 목록</ion-label>
   </ion-item-divider>
-  <ion-item button (click)="link_official_group()">
+  <ion-item button (click)="link_group('official','default')">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[statusBar.groupServer.official['default']]"></div>
     <ion-label class="form_margin">개발 테스트 서버</ion-label>
+  </ion-item>
+  <ion-item *ngFor="let server of servers" button (click)="link_group(server.isOfficial, server.target)">
+    <div class="additional_form status_bar_single"
+      [style]="'background-color: ' + statusBar.colors[statusBar.groupServer[server.isOfficial][server.target]]"></div>
+    <ion-label class="form_margin">
+      <h2>{{server.name}}</h2>
+      <p>{{server.target}} ({{server.address}})</p>
+    </ion-label>
+    <ion-button (click)="remove_server(server.isOfficial, server.target)">
+      삭제
+    </ion-button>
   </ion-item>
 
   <ion-item-divider>
@@ -30,11 +41,17 @@
   </ion-item>
   <ion-item button [disabled]="add_custom_tog">
     <ion-label>구분자</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.target" [placeholder]="'표시명을 따라감'"></ion-input>
+    <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.target"
+      [placeholder]="dedicated_info.name || '표시명을 따라감'"></ion-input>
   </ion-item>
   <ion-item button [disabled]="add_custom_tog">
     <ion-label>서버 주소</ion-label>
     <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.address" [placeholder]="'192.168.0.1'"></ion-input>
+  </ion-item>
+  <ion-item button [disabled]="add_custom_tog">
+    <ion-label>서버 키</ion-label>
+    <ion-input disabled [(ngModel)]="dedicated_info.key" class="ion-text-right" [placeholder]="'defaultkey'">
+    </ion-input>
   </ion-item>
   <ion-item button [disabled]="add_custom_tog">
     <ion-label>포트</ion-label>

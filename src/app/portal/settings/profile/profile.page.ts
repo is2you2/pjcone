@@ -66,15 +66,17 @@ export class ProfilePage implements OnInit {
       }
     }
     this.p5canvas = new p5(sketch);
-    this.indexed.loadTextFromUserPath('servers/self/profile.json', (v: any) => {
-      this.userInput = { ...this.userInput, ...JSON.parse(v) };
+    this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
+      let addition = {};
+      if (e) addition = JSON.parse(v);
+      this.userInput = { ...this.userInput, ...addition };
     });
     this.receiveDataFromServer();
   }
 
   /** 서버 중 한곳으로부터 데이터 수신받기 */
   receiveDataFromServer() {
-    let anyServers = this.nakama.get_all_servers();
+    let anyServers = this.nakama.get_all_server();
     if (anyServers.length) // 연결된 서버 있으면 이름 받아오기
       for (let i = 0, j = anyServers.length; i < j; i++) {
         anyServers[i].client.getAccount(anyServers[i].session)
@@ -117,7 +119,7 @@ export class ProfilePage implements OnInit {
           this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
           this.tmp_img = '';
           // 아래, 서버 이미지 업로드
-          let servers = this.nakama.get_all_servers();
+          let servers = this.nakama.get_all_server();
           for (let i = 0, j = servers.length; i < j; i++) {
             servers[i].client.writeStorageObjects(servers[i].session, [{
               collection: 'profile',
@@ -194,9 +196,6 @@ export class ProfilePage implements OnInit {
               text: '로그인되었습니다.',
             });
             this.receiveDataFromServer();
-          } else {
-            this.is_online = false;
-            localStorage.removeItem('is_online');
           }
         });
       } else {
@@ -273,7 +272,7 @@ export class ProfilePage implements OnInit {
       localStorage.setItem('email', this.userInput.email);
     else localStorage.removeItem('email');
     if (this.userInput.name) { // 이름이 있으면 모든 서버에 이름 업데이트
-      let servers = this.nakama.get_all_servers();
+      let servers = this.nakama.get_all_server();
       for (let i = 0, j = servers.length; i < j; i++)
         servers[i].client.updateAccount(servers[i].session, {
           display_name: this.userInput.name,
