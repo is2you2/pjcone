@@ -21,7 +21,7 @@ export class CommunityServerPage implements OnInit {
   ngOnInit() {
     new p5((p: p5) => {
       p.setup = () => {
-        p.loadStrings('assets/data/infos/community-server.txt', v => {
+        p.loadStrings(`assets/data/infos/${'ko'}/community-server.txt`, v => {
           this.info = v.join('\n');
           p.remove();
         });
