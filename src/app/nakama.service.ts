@@ -59,7 +59,7 @@ export class NakamaService {
     this.init_server();
     // 저장된 사설서버들 정보 불러오기
     this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
-      if (e) { // 내용이 있을 때에만 동작
+      if (e && v) { // 내용이 있을 때에만 동작
         let list: string[] = v.split('\n');
         for (let i = 0, j = list.length; i < j; i++) {
           let sep = list[i].split(',');
@@ -79,14 +79,14 @@ export class NakamaService {
     });
     // 마지막 상태바 정보 불러오기: 사용자의 연결 여부 의사가 반영되어있음
     this.indexed.loadTextFromUserPath('servers/list.json', (e, v) => {
-      if (e)
+      if (e && v)
         this.statusBar.groupServer = JSON.parse(v);
       if (localStorage.getItem('is_online'))
         this.init_all_sessions();
     });
     // 서버별 그룹 정보 불러오기
     this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
-      if (e)
+      if (e && v)
         this.groups = JSON.parse(v);
     })
   }
@@ -143,6 +143,12 @@ export class NakamaService {
         result.push(this.servers['unofficial'][_target].info);
     });
     return result;
+  }
+
+  /** 전체 서버 상태를 검토하여 설정-그룹서버의 상태를 조율함 */
+  catch_group_server_header() {
+    // this.nakama.catch_group_server_header(); 이걸로 검색
+    console.warn('** 기능: 다중 서버 상태에 따른 설정-그룹 표시자 조건 필요');
   }
 
   uuid: string;
@@ -240,6 +246,7 @@ export class NakamaService {
 
   set_statusBar(_status: 'offline' | 'missing' | 'pending' | 'online' | 'certified', _is_official: string, _target: string) {
     this.statusBar.groupServer[_is_official][_target] = _status;
+    this.catch_group_server_header();
     this.statusBar.settings['groupServer'] = _status;
   }
 

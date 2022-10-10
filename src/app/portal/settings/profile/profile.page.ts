@@ -68,7 +68,7 @@ export class ProfilePage implements OnInit {
     this.p5canvas = new p5(sketch);
     this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
       let addition = {};
-      if (e) addition = JSON.parse(v);
+      if (e && v) addition = JSON.parse(v);
       this.userInput = { ...this.userInput, ...addition };
     });
     this.receiveDataFromServer();
@@ -212,6 +212,7 @@ export class ProfilePage implements OnInit {
         Targets.forEach(_target => {
           if (this.statusBar.groupServer[_is_official][_target] == 'online') {
             this.statusBar.groupServer[_is_official][_target] = 'pending';
+            this.nakama.catch_group_server_header();
             this.statusBar.settings['groupServer'] = 'pending';
             if (this.nakama.servers[_is_official][_target].session)
               this.nakama.servers[_is_official][_target].client.sessionLogout(

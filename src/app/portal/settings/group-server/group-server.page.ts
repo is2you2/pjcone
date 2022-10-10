@@ -41,12 +41,13 @@ export class GroupServerPage implements OnInit {
   link_group(_is_official: string, _target: string) {
     if (this.statusBar.groupServer[_is_official][_target] == 'offline') {
       this.statusBar.groupServer[_is_official][_target] = 'pending';
+      this.nakama.catch_group_server_header();
       this.statusBar.settings['groupServer'] = 'pending';
       if (localStorage.getItem('is_online'))
         this.nakama.init_session((_v) => { }, _is_official as any, _target);
     } else { // 활동중이면 로그아웃처리
       this.statusBar.groupServer[_is_official][_target] = 'offline';
-      console.warn('** 기능: 다중 서버 상태에 따른 설정-그룹 표시자 조건 필요');
+      this.nakama.catch_group_server_header();
       this.statusBar.settings['groupServer'] = 'offline';
       if (this.nakama.servers[_is_official][_target].session) {
         this.nakama.servers[_is_official][_target].client.sessionLogout(
@@ -109,7 +110,7 @@ export class GroupServerPage implements OnInit {
     line += `,${this.dedicated_info.useSSL}`;
     this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
       let list: string[] = [];
-      if (e) list = v.split('\n');
+      if (e && v) list = v.split('\n');
       list.push(line);
       this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv', (_v) => {
         this.nakama.init_server(this.dedicated_info.isOfficial as any, this.dedicated_info.target, this.dedicated_info.address, this.dedicated_info.key);
@@ -131,9 +132,28 @@ export class GroupServerPage implements OnInit {
   /** 사설 서버 삭제 */
   remove_server(_is_official: string, _target: string) {
     // 로그인 상태일 경우 로그오프처리
+    if (this.nakama.servers[_is_official][_target].session)
+      this.nakama.servers[_is_official][_target].client.sessionLogout(
+        this.nakama.servers[_is_official][_target].session,
+        this.nakama.servers[_is_official][_target].session.token,
+        this.nakama.servers[_is_official][_target].session.refresh_token,
+      )
     // 정보 일괄 삭제
+    delete this.nakama.servers[_is_official][_target];
+    this.servers = this.nakama.get_all_server_info();
     // 파일로부터 일치하는 정보 삭제
-    console.log('삭제처리: ', _is_official, _target);
-    console.log(this.nakama.servers);
+    this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
+      if (e) {
+        let lines = v.split('\n');
+        for (let i = 0, j = lines.length; i < j; i++) {
+          let sep = lines[i].split(',');
+          if (sep[3] == _target) {
+            lines.splice(i, 1);
+            break;
+          }
+        }
+        this.indexed.saveTextFileToUserPath(lines.join('\n'), 'servers/list_detail.csv');
+      }
+    });
   }
 }
