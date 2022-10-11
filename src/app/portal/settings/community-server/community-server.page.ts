@@ -33,5 +33,6 @@ export class CommunityServerPage implements OnInit {
   reconn_community_server() {
     if (!this.wsc.client || this.wsc.client.readyState != this.wsc.client.OPEN)
       this.wsc.initialize();
+    else this.wsc.client.close();
   }
 }

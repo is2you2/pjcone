@@ -55,6 +55,7 @@ export class AddGroupPage implements OnInit {
     let tmp = JSON.parse(localStorage.getItem('add-group'));
     if (tmp)
       this.userInput = tmp;
+    this.servers = [...this.servers, ...this.nakama.get_all_server_info()];
     this.userInput.server = this.servers[this.index];
   }
 
@@ -94,15 +95,10 @@ export class AddGroupPage implements OnInit {
 
   /** 서버 정보, 온라인 상태의 서버만 불러온다 */
   servers: ServerInfo[] = [{
-    name: '개발 테스트 서버_test',
+    name: '개발 테스트 서버',
     target: 'default',
     isOfficial: 'official',
     address: 'pjcone.ddns.net',
-  }, {
-    name: 'test2 (x) 동작 안함',
-    target: 'default',
-    isOfficial: 'unofficial',
-    address: 'test.exe.com'
   }];
   index = 0;
   isExpanded = true;

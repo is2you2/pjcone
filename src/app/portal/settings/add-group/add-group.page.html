@@ -8,7 +8,7 @@
 </ion-header>
 
 <ion-content>
-  <ion-accordion-group [disabled]="isSaveClicked" value="colors" expand="inset" [value]="isExpanded" #accordionGroup
+  <ion-accordion-group *ngIf="servers.length" [disabled]="isSaveClicked" value="colors" expand="inset" [value]="isExpanded" #accordionGroup
     (click)="isExpanded = true">
     <ion-accordion value="colors">
       <ion-item slot="header">
