@@ -41,14 +41,12 @@ export class GroupServerPage implements OnInit {
   link_group(_is_official: string, _target: string) {
     if (this.statusBar.groupServer[_is_official][_target] == 'offline') {
       this.statusBar.groupServer[_is_official][_target] = 'pending';
-      this.nakama.catch_group_server_header();
-      this.statusBar.settings['groupServer'] = 'pending';
+      this.nakama.catch_group_server_header('pending');
       if (localStorage.getItem('is_online'))
         this.nakama.init_session((_v) => { }, _is_official as any, _target);
     } else { // 활동중이면 로그아웃처리
       this.statusBar.groupServer[_is_official][_target] = 'offline';
-      this.nakama.catch_group_server_header();
-      this.statusBar.settings['groupServer'] = 'offline';
+      this.nakama.catch_group_server_header('offline');
       if (this.nakama.servers[_is_official][_target].session) {
         this.nakama.servers[_is_official][_target].client.sessionLogout(
           this.nakama.servers[_is_official][_target].session,

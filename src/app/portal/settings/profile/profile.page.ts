@@ -212,8 +212,7 @@ export class ProfilePage implements OnInit {
         Targets.forEach(_target => {
           if (this.statusBar.groupServer[_is_official][_target] == 'online') {
             this.statusBar.groupServer[_is_official][_target] = 'pending';
-            this.nakama.catch_group_server_header();
-            this.statusBar.settings['groupServer'] = 'pending';
+            this.nakama.catch_group_server_header('pending');
             if (this.nakama.servers[_is_official][_target].session)
               this.nakama.servers[_is_official][_target].client.sessionLogout(
                 this.nakama.servers[_is_official][_target].session,

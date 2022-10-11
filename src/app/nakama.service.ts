@@ -146,9 +146,54 @@ export class NakamaService {
   }
 
   /** 전체 서버 상태를 검토하여 설정-그룹서버의 상태를 조율함 */
-  catch_group_server_header() {
-    // this.nakama.catch_group_server_header(); 이걸로 검색
-    console.warn('** 기능: 다중 서버 상태에 따른 설정-그룹 표시자 조건 필요');
+  catch_group_server_header(_temporary: string) {
+    let finally_status: string;
+    this.statusBar.settings['groupServer'] = _temporary as any;
+    setTimeout(() => {
+      this.statusBar.settings['groupServer'] = finally_status as any;
+    }, 1500);
+    let Targets = Object.keys(this.statusBar.groupServer['official']);
+    Targets.forEach(_target => {
+      switch (this.statusBar.groupServer['official'][_target]) {
+        case 'online':
+          finally_status = this.statusBar.groupServer['official'][_target];
+          break;
+        case 'pending':
+          if (finally_status != 'online')
+            finally_status = this.statusBar.groupServer['official'][_target];
+          break;
+        case 'missing':
+          if (finally_status != 'online' && finally_status != 'pending')
+            finally_status = this.statusBar.groupServer['official'][_target];
+          break;
+        case 'offline':
+          if (finally_status != 'online' && finally_status != 'pending' && finally_status != 'missing')
+            finally_status = this.statusBar.groupServer['official'][_target];
+          break;
+      }
+    });
+    if (finally_status != 'online') {
+      let unTargets = Object.keys(this.statusBar.groupServer['unofficial']);
+      unTargets.forEach(_target => {
+        switch (this.statusBar.groupServer['unofficial'][_target]) {
+          case 'online':
+            finally_status = this.statusBar.groupServer['unofficial'][_target];
+            break;
+          case 'pending':
+            if (finally_status != 'online')
+              finally_status = this.statusBar.groupServer['unofficial'][_target];
+            break;
+          case 'missing':
+            if (finally_status != 'online' && finally_status != 'pending')
+              finally_status = this.statusBar.groupServer['unofficial'][_target];
+            break;
+          case 'offline':
+            if (finally_status != 'online' && finally_status != 'pending' && finally_status != 'missing')
+              finally_status = this.statusBar.groupServer['unofficial'][_target];
+            break;
+        }
+      });
+    }
   }
 
   uuid: string;
@@ -246,8 +291,7 @@ export class NakamaService {
 
   set_statusBar(_status: 'offline' | 'missing' | 'pending' | 'online' | 'certified', _is_official: string, _target: string) {
     this.statusBar.groupServer[_is_official][_target] = _status;
-    this.catch_group_server_header();
-    this.statusBar.settings['groupServer'] = _status;
+    this.catch_group_server_header(_status);
   }
 
   /** 소켓 서버에 연결 */
