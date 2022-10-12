@@ -12,7 +12,7 @@ export interface ServerInfo {
   name: string;
   address: string;
   /** 앱 내에서 구성하는 key 이름 */
-  target: string;
+  target?: string;
   port?: number;
   useSSL?: boolean;
   isOfficial?: string;
@@ -49,7 +49,16 @@ export class NakamaService {
 
   /** 구성: this > Official > TargetKey > Client */
   servers: { [id: string]: { [id: string]: NakamaGroup } } = {
-    'official': {},
+    'official': {
+      'default': {
+        info: {
+          name: '개발 테스트 서버',
+          address: SOCKET_SERVER_ADDRESS,
+          isOfficial: 'official',
+          target: 'default'
+        }
+      }
+    },
     'unofficial': {},
   };
 
@@ -133,13 +142,27 @@ export class NakamaService {
   }
 
   /** 모든 서버 정보 받아오기
+   * @param with_official 공식 서버 포함하여 카운트 여부
+   * @param online_only 온라인 여부를 사용할지
    * @returns Nakama.ServerInfo[]
    */
-  get_all_server_info(): ServerInfo[] {
+  get_all_server_info(with_official = false, online_only = false): ServerInfo[] {
     let result: ServerInfo[] = [];
+    let Target = Object.keys(this.servers['official']);
+    if (with_official)
+      Target.forEach(_target => {
+        if (online_only) {
+          if (this.statusBar.groupServer['official'][_target] == 'online')
+            result.push(this.servers['official'][_target].info);
+        } else if (this.servers['official'][_target])
+          result.push(this.servers['official'][_target].info);
+      });
     let unTargets = Object.keys(this.servers['unofficial']);
     unTargets.forEach(_target => {
-      if (this.servers['unofficial'][_target])
+      if (online_only) {
+        if (this.statusBar.groupServer['unofficial'][_target] == 'online')
+          result.push(this.servers['unofficial'][_target].info);
+      } else if (this.servers['unofficial'][_target])
         result.push(this.servers['unofficial'][_target].info);
     });
     return result;

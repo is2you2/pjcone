@@ -102,13 +102,13 @@ export class ProfilePage implements OnInit {
   change_img_smoothly(_url: string) {
     this.tmp_img = _url;
     new p5((p: p5) => {
-      let tmp_img = document.getElementById('profile_tmp_img');
+      let profile_tmp_img = document.getElementById('profile_tmp_img');
       let file_sel = document.getElementById('file_sel');
       const LERP_SIZE = .035;
       let lerpVal = 0;
       p.setup = () => {
         file_sel['value'] = '';
-        tmp_img.setAttribute('style', `filter: grayscale(${this.is_online ? 0 : .9}) contrast(${this.is_online ? 1 : 1.4}) opacity(${lerpVal})`);
+        profile_tmp_img.setAttribute('style', `filter: grayscale(${this.is_online ? 0 : .9}) contrast(${this.is_online ? 1 : 1.4}) opacity(${lerpVal})`);
       }
       p.draw = () => {
         if (lerpVal < 1) {
@@ -134,7 +134,7 @@ export class ProfilePage implements OnInit {
           }
           p.remove();
         }
-        tmp_img.setAttribute('style', `filter: grayscale(${this.is_online ? 0 : .9}) contrast(${this.is_online ? 1 : 1.4}) opacity(${lerpVal})`);
+        profile_tmp_img.setAttribute('style', `filter: grayscale(${this.is_online ? 0 : .9}) contrast(${this.is_online ? 1 : 1.4}) opacity(${lerpVal})`);
       }
     });
   }
@@ -267,6 +267,7 @@ export class ProfilePage implements OnInit {
   }
 
   ionViewWillLeave() {
+    this.userInput.img = this.tmp_img || this.userInput.img;
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
     if (this.userInput.email)
       localStorage.setItem('email', this.userInput.email);

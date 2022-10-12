@@ -39,7 +39,7 @@
       [style]="'background-color: ' + statusBar.colors[statusBar.settings['dedicatedServer']]"></div>
     <ion-label class="form_margin">이 기기를 기능 서버로</ion-label>
   </ion-item>
-  <div [hidden]="!temporary_online_status">
+  <div [hidden]="statusBar.settings['groupServer'] == 'offline'">
     <ion-item-divider>
       <ion-label>그룹 관리</ion-label>
     </ion-item-divider>
