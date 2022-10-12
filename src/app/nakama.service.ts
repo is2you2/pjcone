@@ -150,50 +150,44 @@ export class NakamaService {
     let finally_status: string;
     this.statusBar.settings['groupServer'] = _temporary as any;
     setTimeout(() => {
-      this.statusBar.settings['groupServer'] = finally_status as any;
-    }, 1500);
-    let Targets = Object.keys(this.statusBar.groupServer['official']);
-    Targets.forEach(_target => {
-      switch (this.statusBar.groupServer['official'][_target]) {
-        case 'online':
-          finally_status = this.statusBar.groupServer['official'][_target];
-          break;
-        case 'pending':
-          if (finally_status != 'online')
-            finally_status = this.statusBar.groupServer['official'][_target];
-          break;
-        case 'missing':
-          if (finally_status != 'online' && finally_status != 'pending')
-            finally_status = this.statusBar.groupServer['official'][_target];
-          break;
-        case 'offline':
-          if (finally_status != 'online' && finally_status != 'pending' && finally_status != 'missing')
-            finally_status = this.statusBar.groupServer['official'][_target];
-          break;
-      }
-    });
-    if (finally_status != 'online') {
-      let unTargets = Object.keys(this.statusBar.groupServer['unofficial']);
-      unTargets.forEach(_target => {
-        switch (this.statusBar.groupServer['unofficial'][_target]) {
+      let Targets = Object.keys(this.statusBar.groupServer['official']);
+      Targets.forEach(_target => {
+        switch (this.statusBar.groupServer['official'][_target]) {
           case 'online':
-            finally_status = this.statusBar.groupServer['unofficial'][_target];
+            finally_status = 'online';
             break;
           case 'pending':
             if (finally_status != 'online')
-              finally_status = this.statusBar.groupServer['unofficial'][_target];
+              finally_status = 'pending';
             break;
           case 'missing':
-            if (finally_status != 'online' && finally_status != 'pending')
-              finally_status = this.statusBar.groupServer['unofficial'][_target];
-            break;
           case 'offline':
-            if (finally_status != 'online' && finally_status != 'pending' && finally_status != 'missing')
-              finally_status = this.statusBar.groupServer['unofficial'][_target];
+            if (finally_status != 'online' && finally_status != 'pending')
+              finally_status = 'offline';
             break;
         }
       });
-    }
+      if (finally_status != 'online') {
+        let unTargets = Object.keys(this.statusBar.groupServer['unofficial']);
+        unTargets.forEach(_target => {
+          switch (this.statusBar.groupServer['unofficial'][_target]) {
+            case 'online':
+              finally_status = 'online';
+              break;
+            case 'pending':
+              if (finally_status != 'online')
+                finally_status = 'pending';
+              break;
+            case 'missing':
+            case 'offline':
+              if (finally_status != 'online' && finally_status != 'pending')
+                finally_status = 'offline';
+              break;
+          }
+        });
+      }
+      this.statusBar.settings['groupServer'] = finally_status as any;
+    }, 1500);
   }
 
   uuid: string;

@@ -53,8 +53,6 @@ export class SettingsPage implements OnInit {
   will_enter = false;
   /** 사설 서버 주소, 없으면 공식서버 랜덤채팅 */
   chat_address: string;
-  /** 사설 그룹채팅에서 사용할 이름 */
-  member_name: string;
   /** 최소한의 기능을 가진 채팅 시작하기 */
   start_minimalchat(_address?: string) {
     if (this.will_enter) return;
@@ -66,7 +64,7 @@ export class SettingsPage implements OnInit {
       component: MinimalChatPage,
       componentProps: {
         address: _address,
-        name: this.member_name,
+        name: localStorage.getItem('name'),
       },
     }).then(v => v.present());
   }
