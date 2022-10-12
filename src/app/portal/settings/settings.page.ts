@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
+import { IndexedDBService } from 'src/app/indexed-db.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
@@ -17,6 +18,7 @@ export class SettingsPage implements OnInit {
     private nav: NavController,
     public statusBar: StatusManageService,
     private nakama: NakamaService,
+    private indexed: IndexedDBService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
@@ -29,8 +31,18 @@ export class SettingsPage implements OnInit {
   temporary_online_status = false;
   /** 표시되는 그룹 리스트 */
   groups: any[] = [];
-
+  /** 프로필 썸네일 */
+  profile_img: string;
+  profile_filter: string;
   ionViewWillEnter() {
+    this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
+      let addition = {};
+      if (e && v) addition = JSON.parse(v);
+      this.profile_img = addition['img'];
+      if (Boolean(localStorage.getItem('is_online')))
+        this.profile_filter = "filter: grayscale(0) contrast(1);";
+      else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
+    });
     this.groups.length = 0;
     let isOfficial = Object.keys(this.nakama.groups);
     isOfficial.forEach(_is_official => {

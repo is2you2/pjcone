@@ -101,3 +101,21 @@
     width: 5px;
     height: 76%;
 }
+
+// 각 대화/업무의 이미지
+.bg_img_form {
+    overflow: hidden;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    mask-image: linear-gradient(to right, #0000, #bbbb);
+    mask-repeat: repeat-y;
+}
+
+.bg_img {
+    position: absolute;
+    top: 50%;
+    transform: translate(0%, -50%);
+    width: 100%;
+    height: auto;
+}
