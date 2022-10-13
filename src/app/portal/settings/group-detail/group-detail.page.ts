@@ -22,8 +22,6 @@ export class GroupDetailPage implements OnInit {
 
   QRCodeSRC: any;
   info: any;
-  img: string =
-    'https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fcdn101.picsart.com%2F208783124002202.jpg&f=1&nofb=1&ipt=7ab0fb0d214362f75417d113bbc15d8f9fe146f467e8b76950e30c547ea2e0ca&ipo=images';
   is_removable = false;
 
   ngOnInit() {

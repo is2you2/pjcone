@@ -337,8 +337,6 @@ export class NakamaService {
       this.servers[_is_official][_target].session, info['id'],
     ).then(v => {
       if (v) { // 서버에서 정상삭제하였을 때
-        delete this.groups[_is_official][_target][info['id']];
-        this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
         _CallBack();
         this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
@@ -356,6 +354,8 @@ export class NakamaService {
     }).catch(e => {
       console.error('remove_group_list: ', e);
     });
+    delete this.groups[_is_official][_target][info['id']];
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
   }
 
   /** 자신이 참여한 그룹 리모트에서 가져오기 */

@@ -49,7 +49,7 @@
     <ion-item button *ngFor="let group of groups; index as i" (click)="go_to_group_detail(i)">
       <div class="additional_form status_bar_single" style="background-color: #888;"></div>
       <div class="additional_form bg_img_form">
-        <img class="bg_img" style="filter: grayscale(0) contrast(1);" src="assets/icon/favicon.png">
+        <img class="bg_img" style="filter: grayscale(0) contrast(1);" [src]="group.img">
       </div>
       <ion-label class="form_margin">
         <p>{{group.server.name + ' (' + group.server.target + ')'}}</p>
