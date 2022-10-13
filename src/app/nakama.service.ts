@@ -317,9 +317,9 @@ export class NakamaService {
     this.groups[_is_official][_target][_group.id] = _group;
     this.servers[_is_official][_target].client.writeStorageObjects(
       this.servers[_is_official][_target].session, [{
-        collection: 'user_groups',
+        collection: 'user_private',
         key: 'linked_group',
-        value: this.groups,
+        value: this.groups[_is_official][_target],
         permission_read: 1,
         permission_write: 1,
       }]
@@ -342,9 +342,9 @@ export class NakamaService {
         _CallBack();
         this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
-            collection: 'user_groups',
+            collection: 'user_private',
             key: 'linked_group',
-            value: this.groups,
+            value: this.groups[_is_official][_target],
             permission_read: 1,
             permission_write: 1,
           }]
@@ -360,13 +360,20 @@ export class NakamaService {
 
   /** 자신이 참여한 그룹 리모트에서 가져오기 */
   get_group_list(_is_official: string, _target: string) {
-    this.servers[_is_official][_target].client.listStorageObjects(
-      this.servers[_is_official][_target].session,
-      'user_groups',
-      this.servers[_is_official][_target].session.user_id,
-    ).then(v => {
-      if (!v.objects.length) return;
-      this.groups = { ...this.groups, ...v.objects[0].value as any };
+    this.servers[_is_official][_target].client.readStorageObjects(
+      this.servers[_is_official][_target].session, {
+      object_ids: [{
+        collection: 'user_private',
+        key: 'linked_group',
+        user_id: this.servers[_is_official][_target].session.user_id,
+      }],
+    }).then(v => {
+      if (v.objects[0]) {
+        if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
+        let group_ids = Object.keys(v.objects[0].value);
+        for (let i = 0, j = group_ids.length; i < j; i++)
+          this.groups[_is_official][_target][group_ids[i]] = v.objects[0].value[group_ids[i]];
+      }
     }).catch(e => {
       console.error('get_group_list: ', e);
       this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {

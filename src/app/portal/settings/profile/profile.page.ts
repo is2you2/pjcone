@@ -86,8 +86,8 @@ export class ProfilePage implements OnInit {
           });
         anyServers[i].client.readStorageObjects(anyServers[i].session, {
           object_ids: [{
-            collection: 'profile',
-            key: 'image',
+            collection: 'user_public',
+            key: 'profile_image',
             user_id: anyServers[i].session.user_id,
           }],
         }).then(v => {
@@ -122,8 +122,8 @@ export class ProfilePage implements OnInit {
           let servers = this.nakama.get_all_server();
           for (let i = 0, j = servers.length; i < j; i++) {
             servers[i].client.writeStorageObjects(servers[i].session, [{
-              collection: 'profile',
-              key: 'image',
+              collection: 'user_public',
+              key: 'profile_image',
               value: { dataURL: this.userInput.img },
               permission_read: 2,
               permission_write: 1,
