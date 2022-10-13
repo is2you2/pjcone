@@ -80,50 +80,17 @@ export class GroupServerPage implements OnInit {
       });
       return;
     }
-
-    // 같은 이름 거르기
-    if (this.statusBar.groupServer['unofficial'][this.dedicated_info.target || this.dedicated_info.name]) {
-      this.p5toast.show({
-        text: '이미 같은 구분자를 쓰는 서버가 있습니다 있습니다.',
-      });
-      return;
-    }
-
-    this.dedicated_info.target = this.dedicated_info.target || this.dedicated_info.name;
-    // 기능 추가전 임시처리
-    this.dedicated_info.address = this.dedicated_info.address || '192.168.0.1';
-    this.dedicated_info.port = this.dedicated_info.port || 7350;
-    this.dedicated_info.useSSL = this.dedicated_info.useSSL || false;
-    this.dedicated_info.isOfficial = this.dedicated_info.isOfficial || 'unofficial';
-    this.dedicated_info.key = this.dedicated_info.key || 'defaultkey';
-
     this.add_custom_tog = true;
 
-    let line = new Date().getTime().toString();
-    line += `,${this.dedicated_info.isOfficial}`;
-    line += `,${this.dedicated_info.name}`;
-    line += `,${this.dedicated_info.target}`;
-    line += `,${this.dedicated_info.address}`;
-    line += `,${this.dedicated_info.port}`;
-    line += `,${this.dedicated_info.useSSL}`;
-    this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
-      let list: string[] = [];
-      if (e && v) list = v.split('\n');
-      list.push(line);
-      this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv', (_v) => {
-        this.nakama.init_server(this.dedicated_info.isOfficial as any, this.dedicated_info.target, this.dedicated_info.address, this.dedicated_info.key);
-        this.nakama.servers[this.dedicated_info.isOfficial][this.dedicated_info.target].info = { ...this.dedicated_info };
-        this.servers = this.nakama.get_all_server_info();
-        this.dedicated_info.name = undefined;
-        this.dedicated_info.address = undefined;
-        this.dedicated_info.target = undefined;
-        this.dedicated_info.port = undefined;
-        this.dedicated_info.useSSL = undefined;
-        this.dedicated_info.isOfficial = undefined;
-        this.add_custom_tog = false;
-      });
-      this.statusBar.groupServer[this.dedicated_info.isOfficial][this.dedicated_info.target] = 'offline';
-      this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
+    this.nakama.add_group_server(this.dedicated_info, () => {
+      this.servers = this.nakama.get_all_server_info();
+      this.dedicated_info.name = undefined;
+      this.dedicated_info.address = undefined;
+      this.dedicated_info.target = undefined;
+      this.dedicated_info.port = undefined;
+      this.dedicated_info.useSSL = undefined;
+      this.dedicated_info.isOfficial = undefined;
+      this.add_custom_tog = false;
     });
   }
 

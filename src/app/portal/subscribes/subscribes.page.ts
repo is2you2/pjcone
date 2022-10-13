@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { ModalController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
+import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { ToolServerService, UnivToolForm } from 'src/app/tool-server.service';
 import { WeblinkService } from 'src/app/weblink.service';
@@ -31,6 +32,7 @@ export class SubscribesPage implements OnInit {
     private p5toast: P5ToastService,
     private tools: ToolServerService,
     private weblink: WeblinkService,
+    private nakama: NakamaService,
   ) { }
 
   cant_scan = false;
@@ -40,6 +42,7 @@ export class SubscribesPage implements OnInit {
       this.cant_scan = true;
   }
 
+  // 웹에 있는 QRCode는 무조건 json[]로 구성되어있어야함
   scanQRCode() {
     this.codescan.scan({
       disableSuccessBeep: true,
@@ -48,14 +51,18 @@ export class SubscribesPage implements OnInit {
     }).then(v => {
       if (!v.cancelled) {
         try { // 양식에 맞게 끝까지 동작한다면 우리 데이터가 맞다
-          let json: UniversalCode = JSON.parse(v.text);
-          switch (json.type) {
-            case 'tools': // 도구모음, 단일 대상 서버 생성 액션시
-              this.create_tool_server(json.value);
-              break;
-            default: // 동작 미정 알림(debug)
-              throw new Error("지정된 틀 아님");
-          }
+          let json: UniversalCode[] = JSON.parse(v.text);
+          for (let i = 0, j = json.length; i < j; i++)
+            switch (json[i].type) {
+              case 'tools': // 도구모음, 단일 대상 서버 생성 액션시
+                this.create_tool_server(json[i].value);
+                break;
+              case 'servers': // 그룹 서버 자동등록처리
+                this.nakama.add_group_server(json[i].value);
+                break;
+              default: // 동작 미정 알림(debug)
+                throw new Error("지정된 틀 아님");
+            }
         } catch (_e) { // 양식에 맞춰 행동할 수 없다면 모르는 데이터다
           this.modalCtrl.create({
             component: QRelsePage,

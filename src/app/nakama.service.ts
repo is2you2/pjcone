@@ -10,7 +10,7 @@ import { StatusManageService } from './status-manage.service';
 export interface ServerInfo {
   /** 표시명, 앱 내 구성키는 target 사용 */
   name: string;
-  address: string;
+  address?: string;
   /** 앱 내에서 구성하는 key 이름 */
   target?: string;
   port?: number;
@@ -166,6 +166,45 @@ export class NakamaService {
         result.push(this.servers['unofficial'][_target].info);
     });
     return result;
+  }
+
+  /** 그룹 서버 추가하기 */
+  add_group_server(info: ServerInfo, _CallBack = () => { }) {
+    // 같은 이름 거르기
+    if (this.statusBar.groupServer['unofficial'][info.target || info.name]) {
+      this.p5toast.show({
+        text: `이미 같은 구분자를 쓰는 서버가 있습니다 있습니다: ${info.target || info.name}`,
+      });
+      return;
+    }
+
+    info.target = info.target || info.name;
+    // 기능 추가전 임시처리
+    info.address = info.address || '192.168.0.1';
+    info.port = info.port || 7350;
+    info.useSSL = info.useSSL || false;
+    info.isOfficial = info.isOfficial || 'unofficial';
+    info.key = info.key || 'defaultkey';
+
+    let line = new Date().getTime().toString();
+    line += `,${info.isOfficial}`;
+    line += `,${info.name}`;
+    line += `,${info.target}`;
+    line += `,${info.address}`;
+    line += `,${info.port}`;
+    line += `,${info.useSSL}`;
+    this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
+      let list: string[] = [];
+      if (e && v) list = v.split('\n');
+      list.push(line);
+      this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv', (_v) => {
+        this.init_server(info.isOfficial as any, info.target, info.address, info.key);
+        this.servers[info.isOfficial][info.target].info = { ...info };
+        _CallBack();
+      });
+      this.statusBar.groupServer[info.isOfficial][info.target] = 'offline';
+      this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
+    });
   }
 
   /** 전체 서버 상태를 검토하여 설정-그룹서버의 상태를 조율함 */
