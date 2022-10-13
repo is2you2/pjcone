@@ -5,6 +5,7 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
+import { GroupDetailPage } from './group-detail/group-detail.page';
 
 @Component({
   selector: 'app-settings',
@@ -49,12 +50,12 @@ export class SettingsPage implements OnInit {
       server.forEach(_name => {
         let group = Object.keys(this.nakama.groups[_is_official][_name]);
         group.forEach(_group_name => {
-          this.groups.push({
-            isOfficial: _is_official,
-            server: _name,
-            group: this.nakama.groups[_is_official][_name][_group_name]['title'],
-            owner: this.nakama.groups[_is_official][_name][_group_name]['owner'],
-          });
+          let group_and_server_info = {};
+          group_and_server_info['server'] = this.nakama.servers[_is_official][_name].info;
+          group_and_server_info['title'] = this.nakama.groups[_is_official][_name][_group_name]['title'];
+          group_and_server_info['owner'] = this.nakama.groups[_is_official][_name][_group_name]['owner'];
+          group_and_server_info['id'] = this.nakama.groups[_is_official][_name][_group_name]['id'];
+          this.groups.push(group_and_server_info);
         });
       });
     });
@@ -75,6 +76,16 @@ export class SettingsPage implements OnInit {
       componentProps: {
         address: _address,
         name: localStorage.getItem('name'),
+      },
+    }).then(v => v.present());
+  }
+
+  /** 만들어진 그룹을 관리 */
+  go_to_group_detail(i: number) {
+    this.modalCtrl.create({
+      component: GroupDetailPage,
+      componentProps: {
+        info: this.groups[i],
       },
     }).then(v => v.present());
   }

@@ -5,36 +5,6 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import * as QRCode from "qrcode-svg";
 import { DomSanitizer } from '@angular/platform-browser';
 
-/** 읽었을 때 기기가 순차적으로 처리할 수 있는 양식  
- * string[]: 해당 내용의 id값만 나열되어있음  
- * 위부터 순차적으로 (서버 > 그룹 > ...) 처리하면 오류 없을 예정
- */
-export interface QRCodeForm {
-  /** 이 서버에서만 처리한다, 대상 서버 */
-  server?: ServerInfo;
-  /** 그룹 아이디 전부 가입처리 */
-  groups?: string[];
-  /** 사용자 아이디 전부 친구추가 */
-  users?: string[];
-  /** 대화방 전부 가입처리 */
-  chats?: string[];
-  /** 프로젝트 전부 참여 */
-  projects?: string[];
-  /** 업무 전부 참여 */
-  tasks?: string[];
-}
-
-interface GroupInfo {
-  server: ServerInfo;
-  id: string;
-  title: string;
-  desc: string;
-  max: number;
-  lang: string;
-  isPublic: boolean;
-  owner?: string;
-}
-
 @Component({
   selector: 'app-add-group',
   templateUrl: './add-group.page.html',
@@ -62,10 +32,15 @@ export class AddGroupPage implements OnInit {
   /** 그룹ID를 QRCode로 그려내기 */
   readasQRCodeFromId() {
     try {
-      let info: QRCodeForm = {
-        server: this.userInput.server,
-        groups: [this.userInput.id], // 그룹 아이디를 통해 서버에서 나머지 정보 받아오기
-      }
+      let info = {
+        server: {
+          type: 'group',
+          value: {
+            id: this.userInput.id,
+            server: this.userInput.server,
+          }
+        }
+      };
       let qr: string = new QRCode({
         content: `[${JSON.stringify(info)}]`,
         padding: 4,
@@ -83,7 +58,7 @@ export class AddGroupPage implements OnInit {
     }
   }
 
-  userInput: GroupInfo = {
+  userInput = {
     server: undefined,
     id: undefined,
     title: undefined,
@@ -91,7 +66,9 @@ export class AddGroupPage implements OnInit {
     max: undefined,
     lang: undefined,
     isPublic: false,
+    owner: undefined,
   }
+  img: string;
 
   /** 서버 정보, 온라인 상태의 서버만 불러온다 */
   servers: ServerInfo[] = [];
@@ -198,8 +175,7 @@ export class AddGroupPage implements OnInit {
     let reader: any = new FileReader();
     reader = reader._realReader ?? reader;
     reader.onload = (ev: any) => {
-      let img: any = document.getElementById('group_img');
-      img.src = ev.target.result;
+      this.img = ev.target.result;
     }
     reader.readAsDataURL(ev.target.files[0]);
   }

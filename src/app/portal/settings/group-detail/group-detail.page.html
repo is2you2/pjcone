@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>그룹 공유</ion-title>
+    <ion-buttons slot="start" (click)="modal.dismiss()">
+      <ion-back-button defaultHref="settings"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item>
+    <ion-label>{{info.title}}</ion-label>
+    <div class="additional_form bg_img_form">
+      <img *ngIf="img" class="bg_img" style="filter: grayscale(0) contrast(1);" [src]="img">
+    </div>
+  </ion-item>
+  <ion-item-divider>
+    <ion-label>아래를 스캔하여 참여</ion-label>
+  </ion-item-divider>
+  <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="준비중">
+  <ion-item *ngIf="is_removable" button (click)="remove_group()">
+    <ion-label class="ion-text-center" color="danger">그룹 삭제</ion-label>
+  </ion-item>
+</ion-content>

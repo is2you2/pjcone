@@ -324,10 +324,37 @@ export class NakamaService {
         permission_write: 1,
       }]
     ).then(_v => {
-      _CallBack();
       this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
+      _CallBack();
     }).catch(e => {
       console.error('save_group_list: ', e);
+    });
+  }
+
+  /** 그룹 리스트 로컬/리모트에서 삭제하기 */
+  remove_group_list(info: any, _is_official: string, _target: string, _CallBack = () => { }) {
+    this.servers[_is_official][_target].client.deleteGroup(
+      this.servers[_is_official][_target].session, info['id'],
+    ).then(v => {
+      if (v) { // 서버에서 정상삭제하였을 때
+        delete this.groups[_is_official][_target][info['id']];
+        this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
+        _CallBack();
+        this.servers[_is_official][_target].client.writeStorageObjects(
+          this.servers[_is_official][_target].session, [{
+            collection: 'user_groups',
+            key: 'linked_group',
+            value: this.groups,
+            permission_read: 1,
+            permission_write: 1,
+          }]
+        ).then(_v => {
+        }).catch(e => {
+          console.error('save_group_list: ', e);
+        });
+      }
+    }).catch(e => {
+      console.error('remove_group_list: ', e);
     });
   }
 
@@ -342,6 +369,9 @@ export class NakamaService {
       this.groups = { ...this.groups, ...v.objects[0].value as any };
     }).catch(e => {
       console.error('get_group_list: ', e);
+      this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
+        if (e && v) this.groups = JSON.parse(v);
+      });
     });
   }
 

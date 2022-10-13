@@ -57,7 +57,7 @@ export class SubscribesPage implements OnInit {
               case 'tools': // 도구모음, 단일 대상 서버 생성 액션시
                 this.create_tool_server(json[i].value);
                 break;
-              case 'servers': // 그룹 서버 자동등록처리
+              case 'server': // 그룹 서버 자동등록처리
                 this.nakama.add_group_server(json[i].value);
                 break;
               default: // 동작 미정 알림(debug)
