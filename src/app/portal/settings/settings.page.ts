@@ -43,6 +43,10 @@ export class SettingsPage implements OnInit {
         this.profile_filter = "filter: grayscale(0) contrast(1);";
       else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
     });
+    this.load_groups();
+  }
+  /** 저장된 그룹 업데이트하여 반영 */
+  load_groups() {
     this.groups.length = 0;
     let isOfficial = Object.keys(this.nakama.groups);
     isOfficial.forEach(_is_official => {
@@ -87,7 +91,12 @@ export class SettingsPage implements OnInit {
       componentProps: {
         info: this.groups[i],
       },
-    }).then(v => v.present());
+    }).then(v => {
+      v.onWillDismiss().then(() => {
+        this.load_groups();
+      });
+      v.present();
+    });
   }
 
   /** 개발자 블로그로 연결 (github 홈페이지) */
