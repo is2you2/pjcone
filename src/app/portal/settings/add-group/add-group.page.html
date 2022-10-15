@@ -8,8 +8,8 @@
 </ion-header>
 
 <ion-content>
-  <ion-accordion-group *ngIf="servers.length" [disabled]="isSaveClicked" value="colors" expand="inset" [value]="isExpanded" #accordionGroup
-    (click)="isExpanded = true">
+  <ion-accordion-group *ngIf="servers.length" [disabled]="isSaveClicked" value="colors" expand="inset"
+    [value]="isExpanded" #accordionGroup (click)="isExpanded = true">
     <ion-accordion value="colors">
       <ion-item slot="header">
         <ion-label>서버 선택</ion-label>
@@ -31,7 +31,7 @@
   </ion-item>
   <ion-item button (click)="buttonClickLickInputFile()">
     <div class="additional_form bg_img_form">
-      <img *ngIf="img" class="bg_img" style="filter: grayscale(0) contrast(1);" [src]="img">
+      <img class="bg_img" style="filter: grayscale(0) contrast(1);" [src]="userInput.img">
     </div>
     <ion-label>대표 이미지</ion-label>
   </ion-item>

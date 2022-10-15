@@ -59,7 +59,22 @@ export class SettingsPage implements OnInit {
           group_and_server_info['title'] = this.nakama.groups[_is_official][_name][_group_name]['title'];
           group_and_server_info['owner'] = this.nakama.groups[_is_official][_name][_group_name]['owner'];
           group_and_server_info['id'] = this.nakama.groups[_is_official][_name][_group_name]['id'];
-          this.groups.push(group_and_server_info);
+          if (this.nakama.groups[_is_official][_name][_group_name]['img_id']) {
+            group_and_server_info['img_id'] = this.nakama.groups[_is_official][_name][_group_name]['img_id'];
+            this.nakama.servers[_is_official][_name].client.readStorageObjects(
+              this.nakama.servers[_is_official][_name].session, {
+              object_ids: [{
+                collection: 'user_public',
+                key: this.nakama.groups[_is_official][_name][_group_name]['img_id'],
+                user_id: group_and_server_info['owner']
+              }]
+            }).then(v => {
+              group_and_server_info['img'] = v.objects[0].value['img'];
+              this.groups.push(group_and_server_info);
+            });
+          } else {
+            this.groups.push(group_and_server_info);
+          }
         });
       });
     });

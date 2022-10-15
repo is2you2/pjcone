@@ -145,33 +145,9 @@ export class ProfilePage implements OnInit {
     let reader: any = new FileReader();
     reader = reader._realReader ?? reader;
     reader.onload = (ev: any) => {
-      this.limit_image_size(ev);
+      this.nakama.limit_image_size(ev, (v) => { this.change_img_smoothly(v['canvas'].toDataURL()) });
     }
     reader.readAsDataURL(ev.target.files[0]);
-  }
-
-  /** base64 정보에 대해 Nakama에서 허용하는 수준으로 이미지 크기 줄이기 */
-  limit_image_size(ev: any) {
-    const SIZE_LIMIT = 245000;
-    new p5((p: p5) => {
-      p.setup = () => {
-        p.loadImage(ev.target.result, v => {
-          v.resize(window.innerWidth, window.innerWidth * v.height / v.width);
-          if (v['canvas'].toDataURL().length > SIZE_LIMIT) {
-            let rect_ratio = v.height / v.width * 1.05;
-            let ratio = p.pow(SIZE_LIMIT / v['canvas'].toDataURL().length, rect_ratio);
-            v.resize(v.width * ratio, v.height * ratio);
-          }
-          this.change_img_smoothly(v['canvas'].toDataURL());
-          p.remove();
-        }, _e => {
-          this.p5toast.show({
-            text: '유효한 이미지가 아닙니다.',
-          });
-          p.remove();
-        });
-      }
-    });
   }
 
   change_content() {
@@ -252,9 +228,9 @@ export class ProfilePage implements OnInit {
           }
         });
       } else if (v.indexOf('data:image') == 0) {
-        this.limit_image_size({
+        this.nakama.limit_image_size({
           target: { result: [v] },
-        });
+        }, (rv) => this.change_img_smoothly(rv['canvas'].toDataURL()));
       } else {
         this.p5toast.show({
           text: '먼저 웹 페이지에서 이미지 주소를 복사해주세요',

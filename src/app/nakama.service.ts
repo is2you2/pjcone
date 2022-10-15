@@ -5,6 +5,7 @@ import { SOCKET_SERVER_ADDRESS } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
+import * as p5 from 'p5';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -310,11 +311,40 @@ export class NakamaService {
     'unofficial': {},
   }
 
+  /** base64 정보에 대해 Nakama에서 허용하는 수준으로 이미지 크기 줄이기
+   * @param ev 클릭 event 또는 {}.target.result = value 로 구성된 이미지 경로
+   * @param _CallBack 조율된 이미지 DataURL
+   */
+  limit_image_size(ev: any, _CallBack: Function = (_rv: string) => { }) {
+    const SIZE_LIMIT = 245000;
+    new p5((p: p5) => {
+      p.setup = () => {
+        p.loadImage(ev.target.result, v => {
+          v.resize(window.innerWidth, window.innerWidth * v.height / v.width);
+          if (v['canvas'].toDataURL().length > SIZE_LIMIT) {
+            let rect_ratio = v.height / v.width * 1.05;
+            let ratio = p.pow(SIZE_LIMIT / v['canvas'].toDataURL().length, rect_ratio);
+            v.resize(v.width * ratio, v.height * ratio);
+          }
+          _CallBack(v);
+          p.remove();
+        }, _e => {
+          this.p5toast.show({
+            text: '유효한 이미지가 아닙니다.',
+          });
+          p.remove();
+        });
+      }
+    });
+  }
+
   /** 그룹 리스트 로컬/리모트에 저장하기 */
   save_group_list(_group: any, _is_official: string, _target: string, _CallBack = () => { }) {
     delete _group['server'];
+    let _group_info = { ..._group };
+    delete _group_info['img'];
     if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
-    this.groups[_is_official][_target][_group.id] = _group;
+    this.groups[_is_official][_target][_group_info.id] = _group_info;
     this.servers[_is_official][_target].client.writeStorageObjects(
       this.servers[_is_official][_target].session, [{
         collection: 'user_private',
@@ -325,6 +355,16 @@ export class NakamaService {
       }]
     ).then(_v => {
       this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
+      if (_group.img)
+        this.servers[_is_official][_target].client.writeStorageObjects(
+          this.servers[_is_official][_target].session, [{
+            collection: 'user_public',
+            key: _group.img_id,
+            value: { img: _group.img },
+            permission_read: 2,
+            permission_write: 1,
+          }]
+        );
       _CallBack();
     }).catch(e => {
       console.error('save_group_list: ', e);
@@ -337,6 +377,15 @@ export class NakamaService {
       this.servers[_is_official][_target].session, info['id'],
     ).then(v => {
       if (v) { // 서버에서 정상삭제하였을 때
+        if (info['img_id']) {
+          this.servers[_is_official][_target].client.deleteStorageObjects(
+            this.servers[_is_official][_target].session, {
+            object_ids: [{
+              collection: 'user_public',
+              key: info['img_id'],
+            }]
+          });
+        }
         _CallBack();
         this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{

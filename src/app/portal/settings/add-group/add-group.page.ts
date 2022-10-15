@@ -67,8 +67,8 @@ export class AddGroupPage implements OnInit {
     lang: undefined,
     isPublic: false,
     owner: undefined,
+    img: undefined,
   }
-  img: string;
 
   /** 서버 정보, 온라인 상태의 서버만 불러온다 */
   servers: ServerInfo[] = [];
@@ -85,6 +85,23 @@ export class AddGroupPage implements OnInit {
   /** 공개여부 토글 */
   isPublicToggle() {
     this.userInput.isPublic = !this.userInput.isPublic;
+  }
+
+  /** 저장된 그룹 업데이트하여 반영 */
+  group_count() {
+    let result = [];
+    let isOfficial = Object.keys(this.nakama.groups);
+    isOfficial.forEach(_is_official => {
+      let server = Object.keys(this.nakama.groups[_is_official]);
+      server.forEach(_name => {
+        let group = Object.keys(this.nakama.groups[_is_official][_name]);
+        group.forEach(_group_name => {
+          if (this.nakama.groups[_is_official][_name][_group_name]['img_id'])
+            result.push(this.nakama.groups[_is_official][_name][_group_name]['img_id']);
+        });
+      });
+    });
+    return result.sort();
   }
 
   isSaveClicked = false;
@@ -109,11 +126,20 @@ export class AddGroupPage implements OnInit {
     }
 
     this.isSaveClicked = true;
+    if (this.userInput.img) {
+      let group_ids = this.group_count();
+      let last: string;
+      if (group_ids.length)
+        last = group_ids[group_ids.length - 1];
+      this.userInput['img_id'] = `gid_${last ? Number(last.split('gid_')[1]) + 1 : group_ids.length}`;
+    }
+    this.userInput.lang = this.userInput.lang || 'ko';
+    this.userInput.max = this.userInput.max || 2;
     client.createGroup(session, {
       name: this.userInput.title,
-      lang_tag: this.userInput.lang ?? 'ko',
+      lang_tag: this.userInput.lang,
       description: this.userInput.desc,
-      max_count: this.userInput.max ?? 2,
+      max_count: this.userInput.max,
       open: this.userInput.isPublic,
     }).then(v => {
       this.userInput.id = v.id;
@@ -161,8 +187,10 @@ export class AddGroupPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    if (!this.isSavedWell)
+    if (!this.isSavedWell) {
+      delete this.userInput.img;
       localStorage.setItem('add-group', JSON.stringify(this.userInput));
+    }
   }
 
   /** ionic 버튼을 눌러 input-file 동작 */
@@ -175,13 +203,8 @@ export class AddGroupPage implements OnInit {
     let reader: any = new FileReader();
     reader = reader._realReader ?? reader;
     reader.onload = (ev: any) => {
-      this.img = ev.target.result;
-    }
+      this.nakama.limit_image_size(ev, (v) => this.userInput.img = v['canvas'].toDataURL())
+    };
     reader.readAsDataURL(ev.target.files[0]);
-  }
-
-  /** 선택된 그룹 이미지 업로드 필요 */
-  upload_image() {
-    console.error('이미지 업로드가 필요한데요');
   }
 }

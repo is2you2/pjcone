@@ -13,7 +13,7 @@ export class CommunityServerPage implements OnInit {
 
   constructor(
     public statusBar: StatusManageService,
-    public wsc: WscService,
+    private wsc: WscService,
   ) { }
 
   info = '';
@@ -31,7 +31,7 @@ export class CommunityServerPage implements OnInit {
 
   /** 연결이 끊어졌을 경우 눌러서 재접속 */
   reconn_community_server() {
-    if (!this.wsc.client || this.wsc.client.readyState != this.wsc.client.OPEN)
+    if (this.statusBar.settings['communityServer'] == 'offline')
       this.wsc.initialize();
     else this.wsc.client.close();
   }
