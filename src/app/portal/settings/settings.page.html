@@ -18,8 +18,8 @@
     </div>
     <ion-label>내 정보</ion-label>
   </ion-item>
-  <ion-item button [disabled]="true">
-    <ion-label>다른 기기에서 로그인</ion-label>
+  <ion-item button (click)="go_to_page('link-account')">
+    <ion-label>사용자 인계</ion-label>
   </ion-item>
   <ion-item-divider>
     <ion-label>서버 관리</ion-label>

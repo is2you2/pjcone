@@ -54,6 +54,12 @@ export class SubscribesPage implements OnInit {
           let json: UniversalCode[] = JSON.parse(v.text);
           for (let i = 0, j = json.length; i < j; i++)
             switch (json[i].type) {
+              case 'link': // 계정 연결처리
+                this.weblink.initialize({
+                  pid: json[i].value,
+                  uuid: this.nakama.uuid,
+                });
+                break;
               case 'tools': // 도구모음, 단일 대상 서버 생성 액션시
                 this.create_tool_server(json[i].value);
                 break;
@@ -71,6 +77,7 @@ export class SubscribesPage implements OnInit {
         }
       }
     }).catch(_e => {
+      console.error(_e);
       this.p5toast.show({
         text: `카메라 권한을 얻지 못했습니다`,
         lateable: true,
@@ -99,7 +106,11 @@ export class SubscribesPage implements OnInit {
         let local_addresses = [];
         for (let i = 0, j = keys.length; i < j; i++)
           local_addresses = [...local_addresses, ...v[keys[i]]['ipv4Addresses']];
-        this.weblink.initialize(data.client, local_addresses);
+        this.weblink.initialize({
+          from: 'mobile',
+          pid: data.client,
+          addresses: local_addresses,
+        });
       });
     }, onMessage);
   }

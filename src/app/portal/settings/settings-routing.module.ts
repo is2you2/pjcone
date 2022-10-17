@@ -40,6 +40,10 @@ const routes: Routes = [
     path: 'group-detail',
     loadChildren: () => import('./group-detail/group-detail.module').then( m => m.GroupDetailPageModule)
   },
+  {
+    path: 'link-account',
+    loadChildren: () => import('./link-account/link-account.module').then( m => m.LinkAccountPageModule)
+  },
 ];
 
 @NgModule({

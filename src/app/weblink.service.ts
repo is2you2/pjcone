@@ -14,24 +14,17 @@ export class WeblinkService {
   client: WebSocket;
 
   /**
-   * 서버와 반드시 연결시도하는 메인 소켓 클라이언트  
-   * 다른 서버, 클라이언트를 생성하는 등의 다양한 역할을 수행할 수 있다.
-   * @param target_pid 상대방 pid
-   * @param local_address 나의 내부망 주소
+   * 연결과 동시에 발송
+   * @param json 발송하려는 메시지
    */
-  initialize(target_pid: string, local_address: string[]) {
+  initialize(json: any) {
     const PORT: number = 12020;
     this.client = new WebSocket(`wss://${SOCKET_SERVER_ADDRESS}:${PORT}`);
     this.client.onopen = (_ev) => {
-      let json = {
-        from: 'mobile',
-        pid: target_pid,
-        addresses: local_address,
-      };
       this.client.send(JSON.stringify(json));
     }
     setTimeout(() => {
       this.client.close();
-    }, 1000);
+    }, 5000);
   }
 }

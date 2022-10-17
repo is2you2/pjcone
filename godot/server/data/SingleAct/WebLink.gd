@@ -10,6 +10,10 @@ const HEADER:= 'WebLink'
 var thread:= Thread.new()
 
 func _ready():
+	if Root.private:
+		server.private_key = Root.private
+	if Root.public:
+		server.ssl_certificate = Root.public
 	server.connect("client_connected", self, "_connected")
 	server.connect("data_received", self, '_received')
 	var err:= server.listen(PORT)
@@ -35,6 +39,8 @@ func _received(id:int, _try_left:= 5):
 						'addresses': addresses
 					}
 					send_to(int(pid), JSON.print(result).to_utf8())
+				{ 'pid': var pid, 'uuid' }: # 다른 기기에게 연결
+					send_to(int(pid), raw_data)
 				_: # 준비되지 않은 행동
 					Root.logging(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)
 		else: # 형식 오류
