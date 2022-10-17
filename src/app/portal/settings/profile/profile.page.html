@@ -12,11 +12,17 @@
     <img [hidden]="!userInput.img" id="profile_img" class="profile_img" [src]="userInput.img" alt="프로필 이미지">
     <img [hidden]="!tmp_img" id="profile_tmp_img" class="profile_img" [src]="tmp_img" alt="프로필 이미지">
     <div class="fore-gradient" (click)="change_img_from_file()"></div>
-    <input hidden type="file" id="file_sel" accept="image/png,image/jpg,image/jpeg,image/webp,image/ico,image/svg,image/tga,image/bmp" (change)="inputImageSelected($event)">
+    <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
     <div class="username">{{userInput.name ?? '이름 없는 사용자'}}</div>
   </div>
   <ion-item (click)="imageURLPasted()" [hidden]="cant_use_clipboard" [disabled]="imageURL_disabled">
     <ion-label color="medium">{{imageURL_placeholder}}</ion-label>
+  </ion-item>
+  <ion-item [hidden]="!cant_use_clipboard">
+    <ion-input type="text" [placeholder]="'이미지 주소 입력하기'" [(ngModel)]="url_input"></ion-input>
+    <ion-button (click)="change_img_smoothly(url_input)">
+      이미지 변경
+    </ion-button>
   </ion-item>
   <ion-item-divider>
     <ion-label>로그인 정보</ion-label>

@@ -23,6 +23,8 @@ export class ProfilePage implements OnInit {
 
   /** 부드러운 이미지 교체를 위한 이미지 임시 배정 */
   tmp_img: string;
+  /** 사용자 주소 입력 */
+  url_input: string;
 
   userInput = {
     /** nakama.display_name 에 해당함 */
@@ -92,7 +94,7 @@ export class ProfilePage implements OnInit {
           }],
         }).then(v => {
           if (v.objects[0] && !this.userInput.img)
-            this.change_img_smoothly(v.objects[0].value['dataURL']);
+            this.change_img_smoothly(v.objects[0].value['img']);
         });
         break;
       }
@@ -124,7 +126,7 @@ export class ProfilePage implements OnInit {
             servers[i].client.writeStorageObjects(servers[i].session, [{
               collection: 'user_public',
               key: 'profile_image',
-              value: { dataURL: this.userInput.img },
+              value: { img: this.userInput.img },
               permission_read: 2,
               permission_write: 1,
             }]).then(_v => {
@@ -166,12 +168,24 @@ export class ProfilePage implements OnInit {
         localStorage.setItem('name', this.userInput.name);
         localStorage.setItem('is_online', 'yes');
         this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
-        this.nakama.init_all_sessions((v: boolean) => {
+        this.nakama.init_all_sessions((v: boolean, _o, _t) => {
           if (v) {
             this.p5toast.show({
               text: '로그인되었습니다.',
             });
             this.receiveDataFromServer();
+          } else if (v === undefined) {
+            this.nakama.servers[_o][_t].client.writeStorageObjects(
+              this.nakama.servers[_o][_t].session, [{
+                collection: 'user_public',
+                key: 'profile_image',
+                value: { img: this.userInput.img },
+                permission_read: 2,
+                permission_write: 1,
+              }]).then(_v => {
+              }).catch(e => {
+                console.error('inputImageSelected_err: ', e, _o, _t);
+              });
           }
         });
       } else {
@@ -213,20 +227,7 @@ export class ProfilePage implements OnInit {
     this.imageURL_disabled = true;
     clipboard.read().then(v => {
       if (v.indexOf('http') == 0) {
-        new p5((p: p5) => {
-          p.setup = () => {
-            p.loadImage(v, (_v => {
-              this.imageURL_placeholder = '외부 이미지: ' + v;
-              this.change_img_smoothly(v);
-              p.remove();
-            }), (_e => {
-              this.p5toast.show({
-                text: '유효한 이미지가 아닙니다.',
-              });
-              p.remove();
-            }));
-          }
-        });
+        this.change_img_smoothly(v);
       } else if (v.indexOf('data:image') == 0) {
         this.nakama.limit_image_size({
           target: { result: [v] },

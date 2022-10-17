@@ -111,7 +111,7 @@ export class NakamaService {
   }
 
   /** 모든 pending 세션 켜기 */
-  init_all_sessions(_CallBack = (v: boolean) => console.log('init_all_sessions: ', v)) {
+  init_all_sessions(_CallBack = (v: boolean, _o: any, _t: any) => console.log('init_all_sessions: ', v)) {
     let Targets = Object.keys(this.servers['official']);
     Targets.forEach(_target => {
       if (this.statusBar.groupServer['official'][_target] != 'offline')
@@ -258,7 +258,7 @@ export class NakamaService {
    * @param _CallBack 오류시 행동방침
    * @param _target 대상 key
    */
-  async init_session(_CallBack = (_v: boolean) => console.warn('nakama.init_session.callback null: ', _v), _is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
+  async init_session(_CallBack = (_v: boolean, _o?: any, _t?: any) => console.warn('nakama.init_session.callback null: ', _v), _is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
     this.uuid = this.uuid || this.device.uuid;
     try {
       if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
@@ -292,6 +292,7 @@ export class NakamaService {
           this.p5toast.show({
             text: '회원가입이 완료되었습니다.',
           });
+          _CallBack(undefined, _is_official, _target);
           this.set_statusBar('online', _is_official, _target);
           break;
         default:
