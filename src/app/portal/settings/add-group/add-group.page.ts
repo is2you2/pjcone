@@ -87,23 +87,6 @@ export class AddGroupPage implements OnInit {
     this.userInput.isPublic = !this.userInput.isPublic;
   }
 
-  /** 저장된 그룹 업데이트하여 반영 */
-  group_count() {
-    let result = [];
-    let isOfficial = Object.keys(this.nakama.groups);
-    isOfficial.forEach(_is_official => {
-      let server = Object.keys(this.nakama.groups[_is_official]);
-      server.forEach(_name => {
-        let group = Object.keys(this.nakama.groups[_is_official][_name]);
-        group.forEach(_group_name => {
-          if (this.nakama.groups[_is_official][_name][_group_name]['img_id'])
-            result.push(this.nakama.groups[_is_official][_name][_group_name]['img_id']);
-        });
-      });
-    });
-    return result.sort();
-  }
-
   isSaveClicked = false;
   /** 정상처리되지 않았다면 작성 중 정보 임시 저장 */
   isSavedWell = false;
@@ -126,13 +109,6 @@ export class AddGroupPage implements OnInit {
     }
 
     this.isSaveClicked = true;
-    if (this.userInput.img) {
-      let group_ids = this.group_count();
-      let last: string;
-      if (group_ids.length)
-        last = group_ids[group_ids.length - 1];
-      this.userInput['img_id'] = `gid_${last ? Number(last.split('gid_')[1]) + 1 : group_ids.length}`;
-    }
     this.userInput.lang = this.userInput.lang || 'ko';
     this.userInput.max = this.userInput.max || 2;
     client.createGroup(session, {
@@ -143,6 +119,7 @@ export class AddGroupPage implements OnInit {
       open: this.userInput.isPublic,
     }).then(v => {
       this.userInput.id = v.id;
+      this.userInput['img_id'] = `group_${this.userInput.id}`;
       this.userInput.owner = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session.user_id;
       this.readasQRCodeFromId();
       this.nakama.save_group_list(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target, () => {

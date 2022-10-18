@@ -359,7 +359,7 @@ export class NakamaService {
       if (_group.img)
         this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
-            collection: 'user_public',
+            collection: 'group_public',
             key: _group.img_id,
             value: { img: _group.img },
             permission_read: 2,
@@ -382,7 +382,7 @@ export class NakamaService {
           this.servers[_is_official][_target].client.deleteStorageObjects(
             this.servers[_is_official][_target].session, {
             object_ids: [{
-              collection: 'user_public',
+              collection: 'group_public',
               key: info['img_id'],
             }]
           });

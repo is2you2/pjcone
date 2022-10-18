@@ -46,7 +46,7 @@ export class GroupDetailPage implements OnInit {
         }
         this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.writeStorageObjects(
           this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, [{
-            collection: 'user_public',
+            collection: 'group_public',
             key: this.info.img_id,
             value: { img: this.info.img },
             permission_read: 2,

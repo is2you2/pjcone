@@ -64,7 +64,7 @@ export class SettingsPage implements OnInit {
             this.nakama.servers[_is_official][_name].client.readStorageObjects(
               this.nakama.servers[_is_official][_name].session, {
               object_ids: [{
-                collection: 'user_public',
+                collection: 'group_public',
                 key: this.nakama.groups[_is_official][_name][_group_name]['img_id'],
                 user_id: group_and_server_info['owner']
               }]
