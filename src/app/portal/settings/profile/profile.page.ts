@@ -35,6 +35,7 @@ export class ProfilePage implements OnInit {
       type: undefined,
       path: undefined,
     },
+    update_time: undefined,
   }
 
   p5canvas: p5;
@@ -72,8 +73,8 @@ export class ProfilePage implements OnInit {
       let addition = {};
       if (e && v) addition = JSON.parse(v);
       this.userInput = { ...this.userInput, ...addition };
+      this.receiveDataFromServer();
     });
-    this.receiveDataFromServer();
   }
 
   /** 서버 중 한곳으로부터 데이터 수신받기 */
@@ -81,11 +82,18 @@ export class ProfilePage implements OnInit {
     let anyServers = this.nakama.get_all_server();
     if (anyServers.length) // 연결된 서버 있으면 이름 받아오기
       for (let i = 0, j = anyServers.length; i < j; i++) {
+        // 프로필 불러오기
         anyServers[i].client.getAccount(anyServers[i].session)
           .then(v => {
-            if (!this.userInput.name)
+            if (new Date(v.user.update_time).getTime() > new Date(this.userInput.update_time || 0).getTime()) {
               this.userInput.name = v.user.display_name;
+            } else {
+              anyServers[i].client.updateAccount(anyServers[i].session, {
+                display_name: this.userInput.name,
+              });
+            }
           });
+        // 프로필 이미지 불러오기
         anyServers[i].client.readStorageObjects(anyServers[i].session, {
           object_ids: [{
             collection: 'user_public',
@@ -93,8 +101,17 @@ export class ProfilePage implements OnInit {
             user_id: anyServers[i].session.user_id,
           }],
         }).then(v => {
-          if (v.objects[0] && !this.userInput.img)
+          if (v.objects[0] && new Date(v.objects[0].update_time).getTime() > new Date(this.userInput.update_time || 0).getTime())
             this.change_img_smoothly(v.objects[0].value['img']);
+          else { // 업데이트 시간을 비교하여 상호간 동기화처리
+            anyServers[i].client.writeStorageObjects(anyServers[i].session, [{
+              collection: 'user_public',
+              key: 'profile_image',
+              value: { img: this.userInput.img },
+              permission_read: 2,
+              permission_write: 1,
+            }])
+          }
         });
         break;
       }
@@ -118,10 +135,12 @@ export class ProfilePage implements OnInit {
         } else {
           lerpVal = 1;
           this.userInput.img = this.tmp_img;
-          this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
-          this.tmp_img = '';
           // 아래, 서버 이미지 업로드
           let servers = this.nakama.get_all_server();
+          if (servers.length)
+            this.userInput.update_time = new Date();
+          this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
+          this.tmp_img = '';
           for (let i = 0, j = servers.length; i < j; i++) {
             servers[i].client.writeStorageObjects(servers[i].session, [{
               collection: 'user_public',
@@ -245,18 +264,20 @@ export class ProfilePage implements OnInit {
 
   ionViewWillLeave() {
     this.userInput.img = this.tmp_img || this.userInput.img;
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
     if (this.userInput.email)
       localStorage.setItem('email', this.userInput.email);
     else localStorage.removeItem('email');
     if (this.userInput.name) { // 이름이 있으면 모든 서버에 이름 업데이트
       let servers = this.nakama.get_all_server();
+      if (servers.length)
+        this.userInput.update_time = new Date();
       for (let i = 0, j = servers.length; i < j; i++)
         servers[i].client.updateAccount(servers[i].session, {
           display_name: this.userInput.name,
         });
       localStorage.setItem('name', this.userInput.name);
     } else localStorage.removeItem('name');
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
     this.p5canvas.remove();
   }
 }

@@ -65,6 +65,7 @@ export class NakamaService {
 
 
   initialize() {
+    this.uuid = this.device.uuid;
     // 공식서버 연결처리
     this.init_server();
     // 저장된 사설서버들 정보 불러오기
@@ -259,7 +260,6 @@ export class NakamaService {
    * @param _target 대상 key
    */
   async init_session(_CallBack = (_v: boolean, _o?: any, _t?: any) => console.warn('nakama.init_session.callback null: ', _v), _is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
-    this.uuid = this.uuid || this.device.uuid;
     try {
       if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
       this.servers[_is_official][_target].session
