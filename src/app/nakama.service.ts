@@ -63,7 +63,6 @@ export class NakamaService {
     'unofficial': {},
   };
 
-
   initialize() {
     this.uuid = this.device.uuid;
     // 공식서버 연결처리
@@ -306,8 +305,10 @@ export class NakamaService {
     }
   }
 
-  /** 등록된 그룹 아이디들, 서버에 저장되어있고 동기화시켜야합니다 */
-  groups: { [id: string]: { [id: string]: { [id: string]: any } } } = {
+  /** 등록된 그룹 아이디들, 서버에 저장되어있고 동기화시켜야합니다
+   * groups[isOfficial][target][group_id] = { ...info }
+   */
+  groups: any = {
     'official': {},
     'unofficial': {},
   }
@@ -424,7 +425,7 @@ export class NakamaService {
         for (let i = 0, j = group_ids.length; i < j; i++)
           this.groups[_is_official][_target][group_ids[i]] = v.objects[0].value[group_ids[i]];
       }
-    }).catch(e => {
+    }).catch(e => { // 리모트에 없으면 로컬 자료로 덮어쓰기
       console.error('get_group_list: ', e);
       this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
         if (e && v) this.groups = JSON.parse(v);

@@ -69,7 +69,8 @@ export class SettingsPage implements OnInit {
                 user_id: group_and_server_info['owner']
               }]
             }).then(v => {
-              group_and_server_info['img'] = v.objects[0].value['img'];
+              if (v.objects[0])
+                group_and_server_info['img'] = v.objects[0].value['img'];
               this.groups.push(group_and_server_info);
             });
           } else {

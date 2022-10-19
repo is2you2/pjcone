@@ -80,4 +80,18 @@ export class IndexedDBService {
       console.error('IndexedDB loadTextFromUserPath failed: ', e);
     }
   }
+
+  removeFileFromUserPath(path: string, _CallBack = (_ev: any) => { }) {
+    if (!this.db) {
+      console.warn('IndexedDB 지정되지 않음');
+      return;
+    }
+    let data = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').delete(`/userfs/${path}`);
+    data.onsuccess = (ev) => {
+      _CallBack(ev);
+    }
+    data.onerror = (e) => {
+      console.error('IndexedDB removeFileFromUserPath failed: ', e);
+    }
+  }
 }
