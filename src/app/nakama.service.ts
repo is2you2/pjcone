@@ -411,6 +411,9 @@ export class NakamaService {
 
   /** 자신이 참여한 그룹 리모트에서 가져오기 */
   get_group_list(_is_official: string, _target: string) {
+    this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
+      if (e && v) this.groups = JSON.parse(v);
+    });
     this.servers[_is_official][_target].client.readStorageObjects(
       this.servers[_is_official][_target].session, {
       object_ids: [{
@@ -425,11 +428,8 @@ export class NakamaService {
         for (let i = 0, j = group_ids.length; i < j; i++)
           this.groups[_is_official][_target][group_ids[i]] = v.objects[0].value[group_ids[i]];
       }
-    }).catch(e => { // 리모트에 없으면 로컬 자료로 덮어쓰기
+    }).catch(e => {
       console.error('get_group_list: ', e);
-      this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
-        if (e && v) this.groups = JSON.parse(v);
-      });
     });
   }
 
