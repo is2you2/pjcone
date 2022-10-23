@@ -48,6 +48,10 @@ const routes: Routes = [
     path: 'translator',
     loadChildren: () => import('./translator/translator.module').then( m => m.TranslatorPageModule)
   },
+  {
+    path: 'creator',
+    loadChildren: () => import('./creator/creator.module').then( m => m.CreatorPageModule)
+  },
 ];
 
 @NgModule({
