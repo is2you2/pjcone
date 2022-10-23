@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>번역가</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="settings"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="profile_img_form">
+    <img [hidden]="!info.img" class="profile_img" [src]="info.img" alt="번역가 프로필 이미지">
+    <div class="username">{{info.name}}</div>
+  </div>
+  <ion-item-divider>
+    <ion-label>번역가의 말</ion-label>
+  </ion-item-divider>
+  <div (click)="add_translator()">
+    <textarea class="infobox content_size" disabled>{{info.text}}</textarea>
+  </div>
+</ion-content>

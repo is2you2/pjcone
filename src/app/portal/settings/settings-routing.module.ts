@@ -44,6 +44,10 @@ const routes: Routes = [
     path: 'link-account',
     loadChildren: () => import('./link-account/link-account.module').then( m => m.LinkAccountPageModule)
   },
+  {
+    path: 'translator',
+    loadChildren: () => import('./translator/translator.module').then( m => m.TranslatorPageModule)
+  },
 ];
 
 @NgModule({
