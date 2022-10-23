@@ -1,0 +1,11 @@
+services:
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    command: certonly --standalone --email liss22@hanmail.net --agree-tos -d pjcone.ddns.net
+    volumes:
+      - ./certbot/letsencrypt:/etc/letsencrypt
+      - ./certbot/logs:/var/log/letsencrypt
