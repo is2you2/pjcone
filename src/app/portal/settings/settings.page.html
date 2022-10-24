@@ -18,7 +18,7 @@
     </div>
     <ion-label>내 정보</ion-label>
   </ion-item>
-  <ion-item button (click)="go_to_page('link-account')">
+  <ion-item button [disabled]="statusBar.settings['communityServer'] != 'online'" (click)="go_to_page('link-account')">
     <ion-label>사용자 인계</ion-label>
   </ion-item>
   <ion-item-divider>
@@ -42,7 +42,7 @@
   <ion-item-divider>
     <ion-label>그룹 관리</ion-label>
   </ion-item-divider>
-  <ion-item button (click)="go_to_page('add-group')" [disabled]="statusBar.settings['groupServer'] == 'offline'">
+  <ion-item button (click)="go_to_page('add-group')" [disabled]="statusBar.settings['groupServer'] != 'online'">
     <ion-label>그룹 생성하기</ion-label>
   </ion-item>
   <ion-item button *ngFor="let group of groups; index as i" (click)="go_to_group_detail(i)">

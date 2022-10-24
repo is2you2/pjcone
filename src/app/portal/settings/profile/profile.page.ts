@@ -85,7 +85,9 @@ export class ProfilePage implements OnInit {
         // 프로필 불러오기
         anyServers[i].client.getAccount(anyServers[i].session)
           .then(v => {
-            if (new Date(v.user.update_time).getTime() > new Date(this.userInput.update_time || 0).getTime()) {
+            let server_update_time = new Date(v.user.update_time).getTime();
+            let local_update_time = new Date(this.userInput.update_time || 0).getTime();
+            if (server_update_time > local_update_time) {
               this.userInput.name = v.user.display_name;
             } else {
               anyServers[i].client.updateAccount(anyServers[i].session, {
@@ -101,7 +103,9 @@ export class ProfilePage implements OnInit {
             user_id: anyServers[i].session.user_id,
           }],
         }).then(v => {
-          if (v.objects[0] && new Date(v.objects[0].update_time).getTime() > new Date(this.userInput.update_time || 0).getTime())
+          let server_img_update_time = new Date(v.objects[0].update_time).getTime();
+          let local_update_time = new Date(this.userInput.update_time || 0).getTime();
+          if (v.objects[0] && server_img_update_time > local_update_time)
             this.change_img_smoothly(v.objects[0].value['img']);
           else { // 업데이트 시간을 비교하여 상호간 동기화처리
             anyServers[i].client.writeStorageObjects(anyServers[i].session, [{
@@ -110,7 +114,7 @@ export class ProfilePage implements OnInit {
               value: { img: this.userInput.img },
               permission_read: 2,
               permission_write: 1,
-            }])
+            }]);
           }
         });
         break;
@@ -271,10 +275,18 @@ export class ProfilePage implements OnInit {
       let servers = this.nakama.get_all_server();
       if (servers.length)
         this.userInput.update_time = new Date();
-      for (let i = 0, j = servers.length; i < j; i++)
+      for (let i = 0, j = servers.length; i < j; i++) {
         servers[i].client.updateAccount(servers[i].session, {
           display_name: this.userInput.name,
         });
+        servers[i].client.writeStorageObjects(servers[i].session, [{
+          collection: 'user_public',
+          key: 'profile_image',
+          value: { img: this.userInput.img },
+          permission_read: 2,
+          permission_write: 1,
+        }])
+      }
       localStorage.setItem('name', this.userInput.name);
     } else localStorage.removeItem('name');
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
