@@ -355,7 +355,7 @@ export class MinimalChatPage implements OnInit {
     this.title.setTitle('Project: Cone');
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', 'assets/icon/favicon.png');
-    this.noti.Current = '';
+    this.noti.Current = undefined;
     this.p5canvas.remove();
   }
 }
