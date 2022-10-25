@@ -13,19 +13,19 @@ export class MiniranchatClientService {
 
   // 'idle' | 'linked' | 'unlinked' | 'custom'
   status = {
-    'group': 'idle',
-    'ranchat': 'idle',
+    'dedicated_groupchat': 'idle',
+    'community_ranchat': 'idle',
   }
 
   /** 사용자 입력과 관련된 것들 */
   userInput = {
-    'group': {
+    'dedicated_groupchat': {
       /** 채팅, 로그 등 대화창에 표기되는 모든 것 */
       logs: [],
       /** 작성 텍스트 */
       text: '',
     },
-    'ranchat': {
+    'community_ranchat': {
       /** 채팅, 로그 등 대화창에 표기되는 모든 것 */
       logs: [],
       /** 작성 텍스트 */
@@ -35,18 +35,18 @@ export class MiniranchatClientService {
 
   /** 지금 연결된 사람 수 */
   ConnectedNow = {
-    'group': 0,
-    'ranchat': 0,
+    'dedicated_groupchat': 0,
+    'community_ranchat': 0,
   };
 
   /** 상호작용 함수들 */
   funcs = {
-    'group': {
+    'dedicated_groupchat': {
       onopen: (v: any) => console.warn('OnOpen 설정 안됨: ', v),
       onclose: (v: any) => console.warn('OnClose 설정 안됨: ', v),
       onmessage: (v: any) => console.warn('OnMessage 설정 안됨: ', v),
     },
-    'ranchat': {
+    'community_ranchat': {
       onopen: (v: any) => console.warn('OnOpen 설정 안됨: ', v),
       onclose: (v: any) => console.warn('OnClose 설정 안됨: ', v),
       onmessage: (v: any) => console.warn('OnMessage 설정 안됨: ', v),

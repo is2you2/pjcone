@@ -7,6 +7,7 @@ import { ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
 import * as p5 from 'p5';
+import { StatusManageService } from '../status-manage.service';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -24,6 +25,7 @@ export class MinimalChatPage implements OnInit {
     private title: Title,
     private bgmode: BackgroundMode,
     private params: NavParams,
+    private statusBar: StatusManageService,
   ) { }
 
   uuid = this.device.uuid;
@@ -53,12 +55,12 @@ export class MinimalChatPage implements OnInit {
   }
 
   /** 그룹채팅인지 랜덤채팅인지 분류 */
-  target: 'group' | 'ranchat' = 'ranchat';
+  target: 'dedicated_groupchat' | 'community_ranchat' = 'community_ranchat';
   ngOnInit() {
     let get_address = this.params.get('address');
     let name = this.params.get('name');
     if (get_address) {
-      this.target = 'group';
+      this.target = 'dedicated_groupchat';
       this.lnId = 12;
       this.header_title = '그룹 채팅';
       this.client.status[this.target] = 'custom';
@@ -71,6 +73,7 @@ export class MinimalChatPage implements OnInit {
     favicon.setAttribute('href', `assets/icon/${this.Header}.png`);
 
     if (!this.client.client[this.target] || this.client.client[this.target].readyState != this.client.client[this.target].OPEN) {
+      this.statusBar.settings[this.target] = 'pending';
       this.noti.SetListener('click', this.open_this);
       this.noti.SetListener(`send${this.target}`, (v: any, eopts: any) => {
         this.noti.ClearNoti(v['id']);
@@ -119,6 +122,7 @@ export class MinimalChatPage implements OnInit {
           else
             this.client.userInput[this.target].logs.push({ color: color, text: '그룹을 떠났습니다.', target: target });
         }
+        let alert_this: any = 'certified';
         if (data['count']) this.client.ConnectedNow[this.target] = data['count'];
         if (data['msg'])
           this.noti.PushLocal({
@@ -130,6 +134,7 @@ export class MinimalChatPage implements OnInit {
           }, this.Header, this.open_this);
         else if (data['type']) {
           let isJoin = data['type'] == 'join';
+          if (!isJoin) alert_this = 'pending';
           this.noti.PushLocal({
             id: this.lnId,
             title: isJoin ? '사용자 참여' : '사용자 떠남',
@@ -138,9 +143,19 @@ export class MinimalChatPage implements OnInit {
             autoCancel_ln: true,
           }, this.Header, this.open_this);
         }
+        this.statusBar.settings[this.target] = alert_this;
+        setTimeout(() => {
+          if (this.statusBar.settings[this.target] == alert_this)
+            this.statusBar.settings[this.target] = 'online';
+        }, 250);
       } catch (e) {
         switch (v) {
           case 'GOT_MATCHED':
+            this.statusBar.settings[this.target] = 'certified';
+            setTimeout(() => {
+              if (this.statusBar.settings[this.target] == 'certified')
+                this.statusBar.settings[this.target] = 'online';
+            }, 250);
             this.client.userInput[this.target].logs.length = 0;
             this.client.userInput[this.target].logs.push({ color: '8bb', text: '누군가를 만났습니다.' });
             this.client.status[this.target] = 'linked';
@@ -157,6 +172,11 @@ export class MinimalChatPage implements OnInit {
             }, this.Header, this.open_this);
             break;
           case 'PARTNER_OUT':
+            this.statusBar.settings[this.target] = 'pending';
+            setTimeout(() => {
+              if (this.statusBar.settings[this.target] == 'pending')
+                this.statusBar.settings[this.target] = 'online';
+            }, 250);
             this.client.userInput[this.target].logs.push({ color: 'b88', text: '상대방이 나갔습니다.' });
             this.client.status[this.target] = 'unlinked';
             this.noti.PushLocal({
@@ -182,7 +202,11 @@ export class MinimalChatPage implements OnInit {
       }
       this.focus_on_input();
     }
-    this.client.funcs[this.target].onclose = (v: any) => {
+    this.client.funcs[this.target].onclose = (_v: any) => {
+      this.statusBar.settings[this.target] = 'missing';
+      setTimeout(() => {
+        this.statusBar.settings[this.target] = 'offline';
+      }, 1500);
       this.client.userInput[this.target].logs.push({ color: 'faa', text: '채팅 참가에 실패했습니다.' });
       this.focus_on_input();
       this.noti.PushLocal({
@@ -197,7 +221,8 @@ export class MinimalChatPage implements OnInit {
         autoCancel_ln: true,
       }, this.Header, this.open_this);
     }
-    this.client.funcs[this.target].onopen = (v: any) => {
+    this.client.funcs[this.target].onopen = (_v: any) => {
+      this.statusBar.settings[this.target] = 'online';
       if (get_address) {
         let count = {
           uid: this.uuid,
@@ -206,7 +231,11 @@ export class MinimalChatPage implements OnInit {
         }
         this.client.send(this.target, JSON.stringify(count));
       }
-      this.client.funcs[this.target].onclose = (v: any) => {
+      this.client.funcs[this.target].onclose = (_v: any) => {
+        this.statusBar.settings[this.target] = 'missing';
+        setTimeout(() => {
+          this.statusBar.settings[this.target] = 'offline';
+        }, 1500);
         let text = '채팅에 참가할 수 없습니다.';
         this.client.userInput[this.target].logs.push({ color: 'faa', text: text });
         this.focus_on_input();
@@ -286,6 +315,11 @@ export class MinimalChatPage implements OnInit {
 
   /** 메시지 보내기 */
   send(text?: string) {
+    this.statusBar.settings[this.target] = 'certified';
+    setTimeout(() => {
+      if (this.statusBar.settings[this.target] == 'certified')
+        this.statusBar.settings[this.target] = 'online';
+    }, 250);
     let data = {
       uid: this.uuid,
       msg: text || this.client.userInput[this.target].text,
@@ -301,6 +335,10 @@ export class MinimalChatPage implements OnInit {
   /** 채팅 앱 종료하기 */
   quit_chat() {
     this.client.funcs[this.target].onclose = () => {
+      this.statusBar.settings[this.target] = 'missing';
+      setTimeout(() => {
+        this.statusBar.settings[this.target] = 'offline';
+      }, 1500);
       this.client.userInput[this.target].logs.push({ color: 'ffa', text: this.client.status[this.target] == 'custom' ? '그룹채팅에서 나옵니다.' : '랜덤채팅에서 벗어납니다.' });
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
