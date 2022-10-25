@@ -21,8 +21,9 @@ export class WscService {
    * received(msg: string);
    * ```
    */
-  received: Function = (v: string) => console.log('Default receive func: ', v);
-
+  received: { [id: string]: Function } = {};
+  /** 서버로부터 연결이 끊어졌을 때 취하게 될 행동들 */
+  disconnected: { [id: string]: Function } = {};
   /**
    * 서버와 반드시 연결시도하는 메인 소켓 클라이언트  
    * 다른 서버, 클라이언트를 생성하는 등의 다양한 역할을 수행할 수 있다.
@@ -35,6 +36,9 @@ export class WscService {
       this.statusBar.settings['communityServer'] = 'online';
     }
     this.client.onclose = (_ev) => {
+      let keys = Object.keys(this.disconnected);
+      for (let i = 0, j = keys.length; i < j; i++)
+        this.disconnected[keys[i]]();
       this.statusBar.settings['communityServer'] = 'missing';
       setTimeout(() => {
         this.statusBar.settings['communityServer'] = 'offline';
@@ -48,7 +52,9 @@ export class WscService {
     }
     this.client.onmessage = (ev) => {
       ev.data.text().then(v => {
-        this.received(v);
+        let keys = Object.keys(this.received);
+        for (let i = 0, j = keys.length; i < j; i++)
+          this.received[keys[i]](v);
       });
     }
   }

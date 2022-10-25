@@ -5,6 +5,9 @@ import * as QRCode from "qrcode-svg";
 import { SOCKET_SERVER_ADDRESS } from 'src/app/app.component';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import { WscService } from 'src/app/wsc.service';
+
+const HEADER = 'LinkAccount';
 
 @Component({
   selector: 'app-link-account',
@@ -18,9 +21,13 @@ export class LinkAccountPage implements OnInit {
     private p5toast: P5ToastService,
     private nakama: NakamaService,
     private navCtrl: NavController,
+    private wsc: WscService,
   ) { }
 
   ngOnInit() {
+    this.wsc.disconnected[HEADER] = () => {
+      this.navCtrl.back();
+    }
     this.websocket = new WebSocket(`wss://${SOCKET_SERVER_ADDRESS}:12020`);
     this.websocket.onmessage = (msg: any) => {
       msg.data.text().then(v => {
@@ -68,6 +75,7 @@ export class LinkAccountPage implements OnInit {
   }
 
   ionViewWillLeave() {
+    delete this.wsc.disconnected[HEADER];
     this.websocket.close();
   }
 }
