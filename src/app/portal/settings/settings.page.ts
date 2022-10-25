@@ -18,7 +18,7 @@ export class SettingsPage implements OnInit {
     private modalCtrl: ModalController,
     private nav: NavController,
     public statusBar: StatusManageService,
-    private nakama: NakamaService,
+    public nakama: NakamaService,
     private indexed: IndexedDBService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */

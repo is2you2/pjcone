@@ -105,9 +105,9 @@ export class NakamaService {
    * @param _target 대상 key
    * @param _key 서버 key
    */
-  init_server(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _address = SOCKET_SERVER_ADDRESS, _key = 'defaultkey') {
+  init_server(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _address = SOCKET_SERVER_ADDRESS, _key = 'defaultkey', _port = 7350, _useSSL = false) {
     if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
-    this.servers[_is_official][_target].client = new Client(_key, _address);
+    this.servers[_is_official][_target].client = new Client(_key, _address, _port.toString(), _useSSL);
   }
 
   /** 모든 pending 세션 켜기 */
@@ -258,7 +258,7 @@ export class NakamaService {
    * @param _CallBack 오류시 행동방침
    * @param _target 대상 key
    */
-  async init_session(_CallBack = (_v: boolean, _o?: any, _t?: any) => console.warn('nakama.init_session.callback null: ', _v), _is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
+  async init_session(_CallBack = (_v: boolean, _o?: any, _t?: any) => console.warn('nakama.init_session.callback null: ', _v), _is_official: 'official' | 'unofficial' = 'official', _target = 'default', _useSSL = false) {
     try {
       if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
       this.servers[_is_official][_target].session
@@ -266,6 +266,8 @@ export class NakamaService {
       this.get_group_list(_is_official, _target);
       this.set_statusBar('online', _is_official, _target);
       _CallBack(true);
+      this.servers[_is_official][_target].socket = this.servers[_is_official][_target].client.createSocket(_useSSL);
+      this.connect_to(_is_official, _target);
     } catch (e) {
       switch (e.status) {
         case 400: // 비번이 없거나 하는 등, 요청이 잘못됨
@@ -441,8 +443,7 @@ export class NakamaService {
   /** 소켓 서버에 연결 */
   connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
     this.servers[_is_official][_target].socket.connect(
-      this.servers[_is_official][_target].session, true
-    );
+      this.servers[_is_official][_target].session, true);
   }
 
   /** 소켄 연결 끊기 */

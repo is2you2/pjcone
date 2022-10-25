@@ -40,7 +40,9 @@ export class LinkAccountPage implements OnInit {
           });
           if (localStorage.getItem('is_online'))
             this.nakama.init_all_sessions();
-          this.navCtrl.back();
+          setTimeout(() => {
+            this.navCtrl.back();
+          }, 500);
         } catch (_e) {
           this.createQRCode({
             type: 'link',
