@@ -363,7 +363,7 @@ export class NakamaService {
         this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
             collection: 'group_public',
-            key: _group.img_id,
+            key: `group_${_group.id}`,
             value: { img: _group.img },
             permission_read: 2,
             permission_write: 1,
@@ -381,15 +381,13 @@ export class NakamaService {
       this.servers[_is_official][_target].session, info['id'],
     ).then(v => {
       if (v) { // 서버에서 정상삭제하였을 때
-        if (info['img_id']) {
-          this.servers[_is_official][_target].client.deleteStorageObjects(
-            this.servers[_is_official][_target].session, {
-            object_ids: [{
-              collection: 'group_public',
-              key: info['img_id'],
-            }]
-          });
-        }
+        this.servers[_is_official][_target].client.deleteStorageObjects(
+          this.servers[_is_official][_target].session, {
+          object_ids: [{
+            collection: 'group_public',
+            key: `group_${info['id']}`,
+          }]
+        });
         _CallBack();
         this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{

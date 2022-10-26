@@ -40,14 +40,10 @@ export class GroupDetailPage implements OnInit {
     reader.onload = (ev: any) => {
       this.nakama.limit_image_size(ev, (v) => {
         this.info.img = v['canvas'].toDataURL();
-        if (!this.info['img_id']) {
-          console.warn('이미지id가 없으면 이미지id를 만들면서 이미지 등록하기 기능 없음');
-          return;
-        }
         this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.writeStorageObjects(
           this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, [{
             collection: 'group_public',
-            key: this.info.img_id,
+            key: `group_${this.info.id}`,
             value: { img: this.info.img },
             permission_read: 2,
             permission_write: 1,

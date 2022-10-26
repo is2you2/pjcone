@@ -119,7 +119,6 @@ export class AddGroupPage implements OnInit {
       open: this.userInput.isPublic,
     }).then(v => {
       this.userInput.id = v.id;
-      this.userInput['img_id'] = `group_${this.userInput.id}`;
       this.userInput.owner = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session.user_id;
       this.readasQRCodeFromId();
       this.nakama.save_group_list(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target, () => {
@@ -165,7 +164,6 @@ export class AddGroupPage implements OnInit {
 
   ionViewWillLeave() {
     if (!this.isSavedWell) {
-      delete this.userInput.img;
       localStorage.setItem('add-group', JSON.stringify(this.userInput));
     }
   }
