@@ -344,8 +344,8 @@ export class NakamaService {
 
   /** 그룹 리스트 로컬/리모트에 저장하기 */
   save_group_list(_group: any, _is_official: string, _target: string, _CallBack = () => { }) {
-    delete _group['server'];
     let _group_info = { ..._group };
+    delete _group_info['server'];
     delete _group_info['img'];
     if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
     this.groups[_is_official][_target][_group_info.id] = _group_info;

@@ -4,6 +4,8 @@ import { ModalController, NavParams } from '@ionic/angular';
 import * as QRCode from "qrcode-svg";
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { NakamaService } from 'src/app/nakama.service';
+import { StatusManageService } from 'src/app/status-manage.service';
+import { IndexedDBService } from 'src/app/indexed-db.service';
 
 @Component({
   selector: 'app-group-detail',
@@ -16,8 +18,10 @@ export class GroupDetailPage implements OnInit {
     private navParams: NavParams,
     private sanitizer: DomSanitizer,
     private p5toast: P5ToastService,
-    private nakama: NakamaService,
+    public nakama: NakamaService,
     private modalCtrl: ModalController,
+    public statusBar: StatusManageService,
+    private indexed: IndexedDBService,
   ) { }
 
   QRCodeSRC: any;
@@ -32,8 +36,9 @@ export class GroupDetailPage implements OnInit {
   }
 
   /** ionic 버튼을 눌러 input-file 동작 */
-  buttonClickLickInputFile() {
-    document.getElementById('file_sel').click();
+  buttonClickInputFile() {
+    if (this.info['owner'] == this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session.user_id)
+      document.getElementById('file_sel').click();
   } inputImageSelected(ev: any) {
     let reader: any = new FileReader();
     reader = reader._realReader ?? reader;
@@ -79,5 +84,25 @@ export class GroupDetailPage implements OnInit {
     this.nakama.remove_group_list(this.info, this.info.server['isOfficial'], this.info.server['target'], () => {
       this.modalCtrl.dismiss();
     });
+  }
+
+  edit_group() {
+    this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.updateGroup(
+      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session,
+      this.info['id'],
+      {
+        name: this.info['title'],
+        lang_tag: this.info['lang'],
+        description: this.info['desc'],
+        open: this.info['isPublic'],
+      }
+    ).then(_v => {
+      this.modalCtrl.dismiss();
+    });
+    let less_info = { ...this.info };
+    delete less_info['server'];
+    delete less_info['img'];
+    this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']] = less_info;
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.groups), 'servers/groups.json');
   }
 }

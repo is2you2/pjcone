@@ -1,20 +1,32 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>그룹 공유</ion-title>
-    <ion-buttons slot="start" (click)="modal.dismiss()">
+    <ion-buttons slot="start" (click)="edit_group()">
       <ion-back-button defaultHref="settings"></ion-back-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-item button (click)="buttonClickLickInputFile()">
-    <ion-label>{{info.title}}</ion-label>
-    <div class="additional_form bg_img_form">
-    <img *ngIf="info.img" class="bg_img" style="filter: grayscale(0) contrast(1);" [src]="info.img">
+  <ion-item button (click)="buttonClickInputFile()">
+    <div class="additional_form status_bar_single"
+      [style]="'background-color: ' + statusBar.colors[statusBar.groupServer[info.server.isOfficial][info.server.target]]">
     </div>
+    <div class="additional_form bg_img_form">
+      <img class="bg_img" style="filter: grayscale(0) contrast(1);" [src]="info.img">
+    </div>
+    <ion-label class="form_margin">
+      <p>{{info.server.name + ' (' + info.server.target + ')'}}</p>
+      <h2>{{info.title}}</h2>
+    </ion-label>
   </ion-item>
   <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
+  <ion-item-divider>
+    <ion-label>그룹 설명</ion-label>
+  </ion-item-divider>
+  <textarea class="infobox"
+    [disabled]="info['owner'] != nakama.servers[info['server']['isOfficial']][info['server']['target']].session.user_id"
+    [(ngModel)]="info.desc" [placeholder]="'설명 없는 그룹'"></textarea>
   <ion-item-divider>
     <ion-label>아래를 스캔하여 참여</ion-label>
   </ion-item-divider>

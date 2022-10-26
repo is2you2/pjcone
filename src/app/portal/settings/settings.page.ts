@@ -59,6 +59,7 @@ export class SettingsPage implements OnInit {
           group_and_server_info['title'] = this.nakama.groups[_is_official][_name][_group_name]['title'];
           group_and_server_info['owner'] = this.nakama.groups[_is_official][_name][_group_name]['owner'];
           group_and_server_info['id'] = this.nakama.groups[_is_official][_name][_group_name]['id'];
+          group_and_server_info['desc'] = this.nakama.groups[_is_official][_name][_group_name]['desc'];
           this.nakama.servers[_is_official][_name].client.readStorageObjects(
             this.nakama.servers[_is_official][_name].session, {
             object_ids: [{

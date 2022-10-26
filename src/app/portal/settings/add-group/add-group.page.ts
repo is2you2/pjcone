@@ -169,7 +169,7 @@ export class AddGroupPage implements OnInit {
   }
 
   /** ionic 버튼을 눌러 input-file 동작 */
-  buttonClickLickInputFile() {
+  buttonClickLinkInputFile() {
     document.getElementById('file_sel').click();
   }
 
