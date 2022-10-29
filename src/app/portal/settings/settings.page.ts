@@ -74,7 +74,12 @@ export class SettingsPage implements OnInit {
               this.groups.push(group_and_server_info);
             });
           } else {
-            this.groups.push(group_and_server_info);
+            this.indexed.loadTextFromUserPath(`servers/groups/${_is_official}/${_target}/${group_and_server_info['id']}.img`, (e, v) => {
+              if (e && v) {
+                group_and_server_info['img'] = v;
+              }
+              this.groups.push(group_and_server_info);
+            });
           }
         });
       });

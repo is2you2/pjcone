@@ -346,6 +346,7 @@ export class NakamaService {
   save_group_list(_group: any, _is_official: string, _target: string, _CallBack = () => { }) {
     let _group_info = { ..._group };
     delete _group_info['server'];
+    let group_img = _group_info['img'];
     delete _group_info['img'];
     if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
     this.groups[_is_official][_target][_group_info.id] = _group_info;
@@ -359,6 +360,7 @@ export class NakamaService {
       }]
     ).then(_v => {
       this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
+      this.indexed.saveTextFileToUserPath(group_img, `servers/groups/${_is_official}/${_target}/${_group.id}.img`);
       if (_group.img)
         this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
@@ -407,6 +409,7 @@ export class NakamaService {
     });
     delete this.groups[_is_official][_target][info['id']];
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
+    this.indexed.removeFileFromUserPath(`servers/groups/${_is_official}/${_target}/${info.id}.img`);
   }
 
   /** 자신이 참여한 그룹 리모트에서 가져오기 */
@@ -429,7 +432,7 @@ export class NakamaService {
           this.groups[_is_official][_target][group_ids[i]] = v.objects[0].value[group_ids[i]];
       }
     }).catch(e => {
-      console.error('get_group_list: ', e);
+      console.error('failed to get_group_list: ', e);
     });
   }
 
