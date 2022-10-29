@@ -24,14 +24,12 @@
   <ion-item-divider>
     <ion-label>그룹 설명</ion-label>
   </ion-item-divider>
-  <textarea class="infobox"
-    [disabled]="info['owner'] != nakama.servers[info['server']['isOfficial']][info['server']['target']].session.user_id"
-    [(ngModel)]="info.desc" [placeholder]="'설명 없는 그룹'"></textarea>
+  <textarea class="infobox" [disabled]="has_admin" [(ngModel)]="info.desc" [placeholder]="'설명 없는 그룹'"></textarea>
   <ion-item-divider>
     <ion-label>아래를 스캔하여 참여</ion-label>
   </ion-item-divider>
   <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="준비중">
-  <ion-item *ngIf="is_removable" button (click)="remove_group()">
+  <ion-item *ngIf="has_admin" button (click)="remove_group()">
     <ion-label class="ion-text-center" color="danger">그룹 삭제</ion-label>
   </ion-item>
 </ion-content>

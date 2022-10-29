@@ -26,18 +26,18 @@ export class GroupDetailPage implements OnInit {
 
   QRCodeSRC: any;
   info: any;
-  is_removable = false;
+  has_admin = false;
 
   ngOnInit() {
     this.info = this.navParams.get('info');
     this.readasQRCodeFromId();
-    this.is_removable =
+    this.has_admin = this.statusBar.groupServer[this.info.server['isOfficial']][this.info.server['target']] == 'online' &&
       this.nakama.servers[this.info.server['isOfficial']][this.info.server['target']].session.user_id == this.info['owner'];
   }
 
   /** ionic 버튼을 눌러 input-file 동작 */
   buttonClickInputFile() {
-    if (this.info['owner'] == this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session.user_id)
+    if (this.has_admin)
       document.getElementById('file_sel').click();
   } inputImageSelected(ev: any) {
     let reader: any = new FileReader();
@@ -87,18 +87,20 @@ export class GroupDetailPage implements OnInit {
   }
 
   edit_group() {
-    this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.updateGroup(
-      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session,
-      this.info['id'],
-      {
-        name: this.info['title'],
-        lang_tag: this.info['lang'],
-        description: this.info['desc'],
-        open: this.info['isPublic'],
-      }
-    ).then(_v => {
-      this.modalCtrl.dismiss();
-    });
+    if (this.has_admin)
+      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.updateGroup(
+        this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session,
+        this.info['id'],
+        {
+          name: this.info['title'],
+          lang_tag: this.info['lang'],
+          description: this.info['desc'],
+          open: this.info['isPublic'],
+        }
+      ).then(_v => {
+        this.modalCtrl.dismiss();
+      });
+    else this.modalCtrl.dismiss();
     let less_info = { ...this.info };
     delete less_info['server'];
     delete less_info['img'];

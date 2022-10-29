@@ -51,27 +51,31 @@ export class SettingsPage implements OnInit {
     let isOfficial = Object.keys(this.nakama.groups);
     isOfficial.forEach(_is_official => {
       let server = Object.keys(this.nakama.groups[_is_official]);
-      server.forEach(_name => {
-        let group = Object.keys(this.nakama.groups[_is_official][_name]);
+      server.forEach(_target => {
+        let group = Object.keys(this.nakama.groups[_is_official][_target]);
         group.forEach(_group_name => {
           let group_and_server_info = {};
-          group_and_server_info['server'] = this.nakama.servers[_is_official][_name].info;
-          group_and_server_info['title'] = this.nakama.groups[_is_official][_name][_group_name]['title'];
-          group_and_server_info['owner'] = this.nakama.groups[_is_official][_name][_group_name]['owner'];
-          group_and_server_info['id'] = this.nakama.groups[_is_official][_name][_group_name]['id'];
-          group_and_server_info['desc'] = this.nakama.groups[_is_official][_name][_group_name]['desc'];
-          this.nakama.servers[_is_official][_name].client.readStorageObjects(
-            this.nakama.servers[_is_official][_name].session, {
-            object_ids: [{
-              collection: 'group_public',
-              key: `group_${group_and_server_info['id']}`,
-              user_id: group_and_server_info['owner']
-            }]
-          }).then(v => {
-            if (v.objects[0])
-              group_and_server_info['img'] = v.objects[0].value['img'];
+          group_and_server_info['server'] = this.nakama.servers[_is_official][_target].info;
+          group_and_server_info['title'] = this.nakama.groups[_is_official][_target][_group_name]['title'];
+          group_and_server_info['owner'] = this.nakama.groups[_is_official][_target][_group_name]['owner'];
+          group_and_server_info['id'] = this.nakama.groups[_is_official][_target][_group_name]['id'];
+          group_and_server_info['desc'] = this.nakama.groups[_is_official][_target][_group_name]['desc'];
+          if (this.statusBar.settings['groupServer'] == 'online') {
+            this.nakama.servers[_is_official][_target].client.readStorageObjects(
+              this.nakama.servers[_is_official][_target].session, {
+              object_ids: [{
+                collection: 'group_public',
+                key: `group_${group_and_server_info['id']}`,
+                user_id: group_and_server_info['owner']
+              }]
+            }).then(v => {
+              if (v.objects[0])
+                group_and_server_info['img'] = v.objects[0].value['img'];
+              this.groups.push(group_and_server_info);
+            });
+          } else {
             this.groups.push(group_and_server_info);
-          });
+          }
         });
       });
     });
