@@ -11,14 +11,6 @@ import { ProjinfoPage } from './projinfo/projinfo.page';
 import { QRelsePage } from './qrelse/qrelse.page';
 import { TaskInfoPage } from './task-info/task-info.page';
 
-/** 만능 인터페이스 폼 */
-interface UniversalCode {
-  /** 행동의 종류, 대분류 */
-  type?: string;
-  /** 행동 데이터(json) */
-  value?: any;
-}
-
 @Component({
   selector: 'app-subscribes',
   templateUrl: './subscribes.page.html',
@@ -51,7 +43,7 @@ export class SubscribesPage implements OnInit {
     }).then(v => {
       if (!v.cancelled) {
         try { // 양식에 맞게 끝까지 동작한다면 우리 데이터가 맞다
-          let json: UniversalCode[] = JSON.parse(v.text);
+          let json: any[] = JSON.parse(v.text);
           for (let i = 0, j = json.length; i < j; i++)
             switch (json[i].type) {
               case 'link': // 계정 연결처리
@@ -66,10 +58,14 @@ export class SubscribesPage implements OnInit {
               case 'server': // 그룹 서버 자동등록처리
                 this.nakama.add_group_server(json[i].value);
                 break;
+              case 'group': // 서버 및 그룹 자동 등록처리
+                this.nakama.try_add_group(json[i]);
+                break;
               default: // 동작 미정 알림(debug)
                 throw new Error("지정된 틀 아님");
             }
         } catch (_e) { // 양식에 맞춰 행동할 수 없다면 모르는 데이터다
+          console.error('scanQRCode_failed: ', _e);
           this.modalCtrl.create({
             component: QRelsePage,
             componentProps: { result: v },

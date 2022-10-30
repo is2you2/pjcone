@@ -342,6 +342,16 @@ export class NakamaService {
     });
   }
 
+  /** 연결된 서버들에 그룹 진입 요청 시도 */
+  try_add_group(_info: any) {
+    let online_clients = this.get_all_server();
+    for (let i = 0, j = online_clients.length; i < j; i++)
+      online_clients[i].client.joinGroup(online_clients[i].session, _info.id)
+        .then(_v => {
+          this.save_group_list(_info, online_clients[i].info.isOfficial, online_clients[i].info.target);
+        });
+  }
+
   /** 그룹 리스트 로컬/리모트에 저장하기 */
   save_group_list(_group: any, _is_official: string, _target: string, _CallBack = () => { }) {
     let _group_info = { ..._group };

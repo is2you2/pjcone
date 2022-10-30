@@ -61,13 +61,15 @@ export class GroupDetailPage implements OnInit {
 
   readasQRCodeFromId() {
     try {
-      let except_img = { ...this.info };
-      delete except_img.img;
+      let except_some = { ...this.info };
+      delete except_some.img;
+      delete except_some.server;
+      except_some['type'] = 'group';
       let qr: string = new QRCode({
-        content: `[${JSON.stringify(except_img)}]`,
+        content: `[${JSON.stringify(except_some)}]`,
         padding: 4,
-        width: 16,
-        height: 16,
+        width: 8,
+        height: 8,
         color: "#bbb",
         background: "#111",
         ecl: "M",
