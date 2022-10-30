@@ -51,7 +51,9 @@
       [style]="'background-color: ' + statusBar.colors[statusBar.groupServer[group.server.isOfficial][group.server.target]]">
     </div>
     <div class="additional_form bg_img_form">
-      <img class="bg_img" style="filter: grayscale(0) contrast(1);" [src]="group.img">
+      <img class="bg_img"
+        [style]="'filter: ' + (statusBar.groupServer[group.server.isOfficial][group.server.target] == 'online' ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
+        [src]="group.img">
     </div>
     <ion-label class="form_margin">
       <p>{{group.server.name + ' (' + group.server.target + ')'}}</p>
