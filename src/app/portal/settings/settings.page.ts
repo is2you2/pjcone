@@ -60,7 +60,15 @@ export class SettingsPage implements OnInit {
           group_and_server_info['owner'] = this.nakama.groups[_is_official][_target][_group_name]['owner'];
           group_and_server_info['id'] = this.nakama.groups[_is_official][_target][_group_name]['id'];
           group_and_server_info['desc'] = this.nakama.groups[_is_official][_target][_group_name]['desc'];
-          if (this.statusBar.settings['groupServer'] == 'online') {
+          group_and_server_info['users'] = this.nakama.groups[_is_official][_target][_group_name]['users'];
+          // 온라인이라면 서버가 무조건 우선되고 이 정보로 업데이트 함
+          if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+            this.nakama.servers[_is_official][_target].client.listGroupUsers(
+              this.nakama.servers[_is_official][_target].session, group_and_server_info['id']
+            ).then(v => {
+              if (!v.group_users.length) // 삭제된 그룹 여부 검토
+                this.statusBar.groups[_is_official][_target]['status'] = 'missing';
+            })
             this.nakama.servers[_is_official][_target].client.readStorageObjects(
               this.nakama.servers[_is_official][_target].session, {
               object_ids: [{
@@ -69,15 +77,15 @@ export class SettingsPage implements OnInit {
                 user_id: group_and_server_info['owner']
               }]
             }).then(v => {
-              if (v.objects[0])
+              if (v.objects[0]) {
                 group_and_server_info['img'] = v.objects[0].value['img'];
+                this.indexed.saveTextFileToUserPath(group_and_server_info['img'], `servers/${_is_official}/${_target}/groups/${group_and_server_info['id']}.img`)
+              }
               this.groups.push(group_and_server_info);
             });
-          } else {
-            this.indexed.loadTextFromUserPath(`servers/groups/${_is_official}/${_target}/${group_and_server_info['id']}.img`, (e, v) => {
-              if (e && v) {
-                group_and_server_info['img'] = v;
-              }
+          } else { // 오프라인일 때는 리스트만 보여줌
+            this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${group_and_server_info['id']}.img`, (e, v) => {
+              if (e && v) group_and_server_info['img'] = v;
               this.groups.push(group_and_server_info);
             });
           }

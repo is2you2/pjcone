@@ -264,7 +264,7 @@ export class NakamaService {
       this.servers[_is_official][_target].session
         = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), this.uuid, false);
       this.get_group_list(_is_official, _target);
-      this.set_statusBar('online', _is_official, _target);
+      this.set_group_statusBar('online', _is_official, _target);
       _CallBack(true);
       this.servers[_is_official][_target].socket = this.servers[_is_official][_target].client.createSocket(_useSSL);
       this.connect_to(_is_official, _target);
@@ -275,14 +275,14 @@ export class NakamaService {
             text: '사용자를 연결한 후 사용하세요.',
           });
           _CallBack(false);
-          this.set_statusBar('missing', _is_official, _target);
+          this.set_group_statusBar('missing', _is_official, _target);
           break;
         case 401: // 비밀번호 잘못됨
           this.p5toast.show({
             text: '기기 재검증 이메일 발송 필요! (아직 개발되지 않음)',
           });
           _CallBack(false);
-          this.set_statusBar('missing', _is_official, _target);
+          this.set_group_statusBar('missing', _is_official, _target);
           break;
         case 404: // 아이디 없음
           this.servers[_is_official][_target].session = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), this.uuid, true);
@@ -294,14 +294,14 @@ export class NakamaService {
             text: '회원가입이 완료되었습니다.',
           });
           _CallBack(undefined, _is_official, _target);
-          this.set_statusBar('online', _is_official, _target);
+          this.set_group_statusBar('online', _is_official, _target);
           break;
         default:
           this.p5toast.show({
             text: `준비되지 않은 오류 유형: ${e}`,
           });
           _CallBack(false);
-          this.set_statusBar('missing', _is_official, _target);
+          this.set_group_statusBar('missing', _is_official, _target);
           break;
       }
     }
@@ -348,7 +348,9 @@ export class NakamaService {
     for (let i = 0, j = online_clients.length; i < j; i++)
       online_clients[i].client.joinGroup(online_clients[i].session, _info.id)
         .then(_v => {
-          this.save_group_list(_info, online_clients[i].info.isOfficial, online_clients[i].info.target);
+          let pending = { ..._info };
+          pending['status'] = 'pending'; // 요청됨 램프 표시
+          this.save_group_list(pending, online_clients[i].info.isOfficial, online_clients[i].info.target);
         });
   }
 
@@ -370,7 +372,7 @@ export class NakamaService {
       }]
     ).then(_v => {
       this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
-      this.indexed.saveTextFileToUserPath(group_img, `servers/groups/${_is_official}/${_target}/${_group.id}.img`);
+      this.indexed.saveTextFileToUserPath(group_img, `servers/${_is_official}/${_target}/groups/${_group.id}.img`);
       if (_group.img)
         this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
@@ -419,7 +421,7 @@ export class NakamaService {
     });
     delete this.groups[_is_official][_target][info['id']];
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
-    this.indexed.removeFileFromUserPath(`servers/groups/${_is_official}/${_target}/${info.id}.img`);
+    this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
   }
 
   /** 자신이 참여한 그룹 리모트에서 가져오기 */
@@ -446,7 +448,8 @@ export class NakamaService {
     });
   }
 
-  set_statusBar(_status: 'offline' | 'missing' | 'pending' | 'online' | 'certified', _is_official: string, _target: string) {
+  /** 그룹 서버 상태 조정 */
+  set_group_statusBar(_status: 'offline' | 'missing' | 'pending' | 'online' | 'certified', _is_official: string, _target: string) {
     this.statusBar.groupServer[_is_official][_target] = _status;
     this.catch_group_server_header(_status);
   }

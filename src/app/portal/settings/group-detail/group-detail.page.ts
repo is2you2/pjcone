@@ -26,13 +26,63 @@ export class GroupDetailPage implements OnInit {
 
   QRCodeSRC: any;
   info: any;
+  /** 내가 이 그룹의 방장인지 여부 */
   has_admin = false;
+  /** 이 그룹의 서버에 연결되어 있는지 여부 */
+  is_online = false;
 
   ngOnInit() {
     this.info = this.navParams.get('info');
     this.readasQRCodeFromId();
-    this.has_admin = this.statusBar.groupServer[this.info.server['isOfficial']][this.info.server['target']] == 'online' &&
-      this.nakama.servers[this.info.server['isOfficial']][this.info.server['target']].session.user_id == this.info['owner'];
+    let _is_official: string = this.info.server['isOfficial'];
+    let _target: string = this.info.server['target'];
+    this.is_online = this.statusBar.groupServer[_is_official][_target] == 'online';
+    this.has_admin = this.is_online && this.nakama.servers[_is_official][_target].session.user_id == this.info['owner'];
+    for (let i = 0, j = this.info['users'].length; i < j; i++)
+      if (this.info['users'][i].user.is_me)
+        this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
+          if (e && v) this.info['users'][i]['img'] = JSON.parse(v)['img'];
+        });
+      else // 다른 사람들의 프로필 이미지
+        this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${this.info['users'][i].user.id}/profile.img`, (e, v) => {
+          if (e && v) this.info['users'][i]['img'] = v;
+        });
+    if (this.is_online) { // 서버로부터 정보를 받아옴
+      this.nakama.servers[_is_official][_target].client.listGroupUsers(
+        this.nakama.servers[_is_official][_target].session, this.info['id'],
+      ).then(v => {
+        // 삭제된 그룹 여부 검토
+        if (!this.info['users'].length) {
+          this.info['status'] = 'missing';
+          return;
+        };
+        this.info['users'] = v.group_users;
+        /** 그룹 내 다른 사람들의 프로필 이미지 요청 */
+        let object_req = [];
+        // 사용자 리스트 갱신
+        for (let i = 0, j = this.info['users'].length; i < j; i++)
+          if (this.info['users'][i].user.id != this.nakama.servers[_is_official][_target].session.user_id)
+            object_req.push({
+              collection: 'user_public',
+              key: 'profile_image',
+              user_id: this.info['users'][i].user.id,
+            });
+          else // 만약 내 정보라면
+            this.info['users'][i].user.is_me = true;
+        this.nakama.servers[_is_official][_target].client.readStorageObjects(
+          this.nakama.servers[_is_official][_target].session, {
+          object_ids: object_req,
+        }).then(v2 => {
+          for (let i = 0, j = v2.objects.length; i < j; i++)
+            for (let k = 0, l = this.info['users'].length; k < l; k++)
+              if (v2.objects[i].user_id == this.info['users'][k].user.id) {
+                this.info['users'][k]['img'] = v2.objects[i].value['img'];
+                this.indexed.saveTextFileToUserPath(v2.objects[i].value['img'], `servers/${_is_official}/${_target}/users/${v2.objects[i].user_id}/profile.img`);
+                break;
+              }
+        });
+      });
+    }
   }
 
   /** ionic 버튼을 눌러 input-file 동작 */
@@ -61,9 +111,7 @@ export class GroupDetailPage implements OnInit {
 
   readasQRCodeFromId() {
     try {
-      let except_some = { ...this.info };
-      delete except_some.img;
-      delete except_some.server;
+      let except_some = { id: this.info.id };
       except_some['type'] = 'group';
       let qr: string = new QRCode({
         content: `[${JSON.stringify(except_some)}]`,
@@ -83,7 +131,9 @@ export class GroupDetailPage implements OnInit {
   }
 
   remove_group() {
-    this.nakama.remove_group_list(this.info, this.info.server['isOfficial'], this.info.server['target'], () => {
+    let _is_official: string = this.info.server['isOfficial'];
+    let _target: string = this.info.server['target'];
+    this.nakama.remove_group_list(this.info, _is_official, _target, () => {
       this.modalCtrl.dismiss();
     });
   }
@@ -106,7 +156,19 @@ export class GroupDetailPage implements OnInit {
     let less_info = { ...this.info };
     delete less_info['server'];
     delete less_info['img'];
+    for (let i = 0, j = less_info['users'].length; i < j; i++)
+      delete less_info['users'][i]['img'];
     this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']] = less_info;
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.groups), 'servers/groups.json');
+  }
+
+  /** 사용자 프로필 열람 */
+  open_user_profile(userInfo: any) {
+    console.warn('상대방 프로필 열기 준비중: ', userInfo);
+  }
+
+  /** 서버에서 삭제된 그룹의 기록을 로컬에서도 삭제하기 */
+  remove_group_locally() {
+    console.warn('로컬 그룹 기록 삭제 기능 준비중');
   }
 }
