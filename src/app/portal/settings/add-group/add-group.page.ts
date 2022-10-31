@@ -33,13 +33,9 @@ export class AddGroupPage implements OnInit {
   readasQRCodeFromId() {
     try {
       let info = {
-        server: {
-          type: 'group',
-          value: {
-            id: this.userInput.id,
-            server: this.userInput.server,
-          }
-        }
+        type: 'group',
+        id: this.userInput.id,
+        title: this.userInput.title,
       };
       let qr: string = new QRCode({
         content: `[${JSON.stringify(info)}]`,

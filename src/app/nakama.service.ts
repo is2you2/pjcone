@@ -348,9 +348,41 @@ export class NakamaService {
     for (let i = 0, j = online_clients.length; i < j; i++)
       online_clients[i].client.joinGroup(online_clients[i].session, _info.id)
         .then(_v => {
-          let pending = { ..._info };
-          pending['status'] = 'pending'; // 요청됨 램프 표시
-          this.save_group_list(pending, online_clients[i].info.isOfficial, online_clients[i].info.target);
+          if (!_v) {
+            console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
+            return;
+          }
+          online_clients[i].client.listGroups(
+            online_clients[i].session, _info['title']
+          ).then(v => {
+            for (let i = 0, j = v.groups.length; i < j; i++)
+              if (v.groups[i].id == _info['id']) {
+                online_clients[i].client.readStorageObjects(online_clients[i].session, {
+                  object_ids: [{
+                    collection: 'group_public',
+                    key: `group_${v.groups[i].id}`,
+                    user_id: v.groups[i].creator_id,
+                  }]
+                }).then(img => {
+                  let pending_group = {
+                    server: undefined,
+                    id: v.groups[i].id,
+                    title: v.groups[i].name,
+                    desc: v.groups[i].description,
+                    max: v.groups[i].max_count,
+                    lang: v.groups[i].lang_tag,
+                    isPublic: v.groups[i].open,
+                    owner: v.groups[i].creator_id,
+                    status: 'pending',
+                  }
+                  if (img.objects.length)
+                    pending_group['img'] = img.objects[0].value['img'];
+                  this.save_group_list(pending_group, online_clients[i].info.isOfficial, online_clients[i].info.target);
+                  console.warn('그룹장에게 실시간으로 사용자 업데이트 필요: maybe socket?');
+                });
+                break;
+              }
+          });
         });
   }
 

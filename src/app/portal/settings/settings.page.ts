@@ -61,13 +61,16 @@ export class SettingsPage implements OnInit {
           group_and_server_info['id'] = this.nakama.groups[_is_official][_target][_group_name]['id'];
           group_and_server_info['desc'] = this.nakama.groups[_is_official][_target][_group_name]['desc'];
           group_and_server_info['users'] = this.nakama.groups[_is_official][_target][_group_name]['users'];
+          group_and_server_info['status'] = this.nakama.groups[_is_official][_target][_group_name]['status'];
           // 온라인이라면 서버가 무조건 우선되고 이 정보로 업데이트 함
           if (this.statusBar.groupServer[_is_official][_target] == 'online') {
             this.nakama.servers[_is_official][_target].client.listGroupUsers(
               this.nakama.servers[_is_official][_target].session, group_and_server_info['id']
             ).then(v => {
-              if (!v.group_users.length) // 삭제된 그룹 여부 검토
-                this.statusBar.groups[_is_official][_target]['status'] = 'missing';
+              if (!v.group_users.length) { // 삭제된 그룹 여부 검토
+                group_and_server_info['status'] = 'missing';
+                this.nakama.groups[_is_official][_target][_group_name]['status'] = 'missing';
+              }
             })
             this.nakama.servers[_is_official][_target].client.readStorageObjects(
               this.nakama.servers[_is_official][_target].session, {

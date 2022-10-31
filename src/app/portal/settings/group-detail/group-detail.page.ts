@@ -38,21 +38,23 @@ export class GroupDetailPage implements OnInit {
     let _target: string = this.info.server['target'];
     this.is_online = this.statusBar.groupServer[_is_official][_target] == 'online';
     this.has_admin = this.is_online && this.nakama.servers[_is_official][_target].session.user_id == this.info['owner'];
-    for (let i = 0, j = this.info['users'].length; i < j; i++)
-      if (this.info['users'][i].user.is_me)
-        this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
-          if (e && v) this.info['users'][i]['img'] = JSON.parse(v)['img'];
-        });
-      else // 다른 사람들의 프로필 이미지
-        this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${this.info['users'][i].user.id}/profile.img`, (e, v) => {
-          if (e && v) this.info['users'][i]['img'] = v;
-        });
+    if (this.info['users']) // 사용자 정보가 있다면 로컬 정보 불러오기 처리
+      for (let i = 0, j = this.info['users'].length; i < j; i++)
+        if (this.info['users'][i].user.is_me) { // 정보상 나라면
+          this.has_admin = this.info['owner'] == this.info['users'][i].user.id;
+          this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
+            if (e && v) this.info['users'][i]['img'] = JSON.parse(v)['img'];
+          });
+        } else // 다른 사람들의 프로필 이미지
+          this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${this.info['users'][i].user.id}/profile.img`, (e, v) => {
+            if (e && v) this.info['users'][i]['img'] = v;
+          });
     if (this.is_online) { // 서버로부터 정보를 받아옴
       this.nakama.servers[_is_official][_target].client.listGroupUsers(
         this.nakama.servers[_is_official][_target].session, this.info['id'],
       ).then(v => {
         // 삭제된 그룹 여부 검토
-        if (!this.info['users'].length) {
+        if (!v.group_users.length) {
           this.info['status'] = 'missing';
           return;
         };
@@ -60,15 +62,37 @@ export class GroupDetailPage implements OnInit {
         /** 그룹 내 다른 사람들의 프로필 이미지 요청 */
         let object_req = [];
         // 사용자 리스트 갱신
-        for (let i = 0, j = this.info['users'].length; i < j; i++)
-          if (this.info['users'][i].user.id != this.nakama.servers[_is_official][_target].session.user_id)
+        for (let i = 0, j = this.info['users'].length; i < j; i++) {
+          if (this.info['users'][i].user.id != this.nakama.servers[_is_official][_target].session.user_id) {
             object_req.push({
               collection: 'user_public',
               key: 'profile_image',
               user_id: this.info['users'][i].user.id,
             });
-          else // 만약 내 정보라면
+          } else {// 만약 내 정보라면
             this.info['users'][i].user.is_me = true;
+            this.has_admin = this.info['owner'] == this.info['users'][i].user.id;
+            this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
+              if (e && v) this.info['users'][i]['img'] = JSON.parse(v)['img'];
+            });
+          }
+          // 아래, 사용자 램프 조정
+          switch (this.info['users'][i].state) {
+            case 0:
+            case 1:
+              this.info['users'][i]['status'] = 'certified';
+              break;
+            case 2:
+              this.info['users'][i]['status'] = 'online';
+              break;
+            case 3:
+              this.info['users'][i]['status'] = 'pending';
+              break;
+            default:
+              console.warn('존재하지 않는 나카마 그룹원의 상태: ', this.info['users'][i].state);
+              break;
+          }
+        }
         this.nakama.servers[_is_official][_target].client.readStorageObjects(
           this.nakama.servers[_is_official][_target].session, {
           object_ids: object_req,
@@ -111,7 +135,7 @@ export class GroupDetailPage implements OnInit {
 
   readasQRCodeFromId() {
     try {
-      let except_some = { id: this.info.id };
+      let except_some = { id: this.info.id, title: this.info.title };
       except_some['type'] = 'group';
       let qr: string = new QRCode({
         content: `[${JSON.stringify(except_some)}]`,
@@ -139,7 +163,7 @@ export class GroupDetailPage implements OnInit {
   }
 
   edit_group() {
-    if (this.has_admin)
+    if (this.is_online && this.has_admin)
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.updateGroup(
         this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session,
         this.info['id'],
@@ -156,8 +180,9 @@ export class GroupDetailPage implements OnInit {
     let less_info = { ...this.info };
     delete less_info['server'];
     delete less_info['img'];
-    for (let i = 0, j = less_info['users'].length; i < j; i++)
-      delete less_info['users'][i]['img'];
+    if (less_info['users'])
+      for (let i = 0, j = less_info['users'].length; i < j; i++)
+        delete less_info['users'][i]['img'];
     this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']] = less_info;
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.groups), 'servers/groups.json');
   }
@@ -165,6 +190,24 @@ export class GroupDetailPage implements OnInit {
   /** 사용자 프로필 열람 */
   open_user_profile(userInfo: any) {
     console.warn('상대방 프로필 열기 준비중: ', userInfo);
+  }
+
+  /** 그룹 떠나기 */
+  leave_group() {
+    this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.leaveGroup(
+      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, this.info['id'],
+    ).then(v => {
+      if (v) {
+        this.p5toast.show({
+          text: '그룹에서 탈퇴하였습니다.',
+        })
+        this.modalCtrl.dismiss();
+      } else {
+        this.p5toast.show({
+          text: '그룹 탈퇴 실패',
+        });
+      }
+    })
   }
 
   /** 서버에서 삭제된 그룹의 기록을 로컬에서도 삭제하기 */
