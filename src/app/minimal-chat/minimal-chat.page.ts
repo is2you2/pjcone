@@ -342,7 +342,7 @@ export class MinimalChatPage implements OnInit {
       this.client.userInput[this.target].logs.push({ color: 'ffa', text: this.client.status[this.target] == 'custom' ? '그룹채팅에서 나옵니다.' : '랜덤채팅에서 벗어납니다.' });
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-    this.noti.RemoveListener(`click${this.target}`);
+    this.noti.RemoveListener('click');
     this.noti.RemoveListener(`send${this.target}`);
     this.noti.RemoveListener(`reconn${this.target}`);
     this.noti.RemoveListener(`exit${this.target}`);

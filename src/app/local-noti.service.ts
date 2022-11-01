@@ -206,7 +206,7 @@ export class LocalNotiService {
       if (opt.clock_ln)
         input['clock'] = opt.clock_ln;
       if (opt.iconColor_ln)
-        input['color'] = opt.iconColor_ln;
+        input['color'] = opt.iconColor_ln || 'ffd94e';
       if (opt.extra_ln)
         input['data'] = opt.extra_ln;
       if (opt.group_ln)
