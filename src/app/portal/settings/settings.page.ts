@@ -62,6 +62,8 @@ export class SettingsPage implements OnInit {
           group_and_server_info['desc'] = this.nakama.groups[_is_official][_target][_group_name]['desc'];
           group_and_server_info['users'] = this.nakama.groups[_is_official][_target][_group_name]['users'];
           group_and_server_info['status'] = this.nakama.groups[_is_official][_target][_group_name]['status'];
+          group_and_server_info['max'] = this.nakama.groups[_is_official][_target][_group_name]['max'];
+          group_and_server_info['lang'] = this.nakama.groups[_is_official][_target][_group_name]['lang'];
           // 온라인이라면 서버가 무조건 우선되고 이 정보로 업데이트 함
           if (this.statusBar.groupServer[_is_official][_target] == 'online') {
             this.nakama.servers[_is_official][_target].client.listGroupUsers(

@@ -168,7 +168,7 @@ export class LocalNotiService {
       const input: NotificationOptions = {
         badge: `${opt.badge}`,
         body: opt.body,
-        icon: opt.icon || `assets/icon/${header}.png` || `assets/icon/favicon.png`,
+        icon: `assets/icon/${opt.icon || header || 'favicon'}.png`,
         image: opt.image,
         lang: opt.lang_wn,
         silent: opt.silent,

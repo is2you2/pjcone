@@ -6,6 +6,9 @@ import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 import * as p5 from 'p5';
+import { LocalNotiService } from './local-noti.service';
+import { ModalController } from '@ionic/angular';
+import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -38,6 +41,8 @@ export class NakamaService {
     private p5toast: P5ToastService,
     private statusBar: StatusManageService,
     private indexed: IndexedDBService,
+    private noti: LocalNotiService,
+    private modalCtrl: ModalController,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -499,11 +504,59 @@ export class NakamaService {
     this.catch_group_server_header(_status);
   }
 
+  /** 소켓이 행동할 때 행동중인 무언가가 있을 경우 검토하여 처리 */
+  socket_reactive = {};
   /** 소켓 서버에 연결 */
   connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
     this.servers[_is_official][_target].socket.connect(
       this.servers[_is_official][_target].session, true).then(_v => {
         let socket = this.servers[_is_official][_target].socket;
+        socket.onnotification = (v) => {
+          switch (v.code) {
+            case -1: // 1:1 채팅 요청
+              console.warn('1:1 채팅만인지 검토 필요');
+              break;
+            case -5: // 그룹 참가 요청 받음
+              console.warn('안드로이드에서 테스트 필요');
+              let group_detail = this.groups[_is_official][_target][v.content['group_id']];
+              group_detail['server'] = this.servers[_is_official][_target].info;
+              this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${group_detail['id']}.img`, (e, v) => {
+                if (e && v) group_detail['img'] = v;
+              });
+              // 이미 보는 화면이라면 업데이트하기
+              if (this.socket_reactive[v.code]) {
+                this.socket_reactive[v.code].ngOnInit();
+                delete this.socket_reactive[v.code];
+              }
+              this.noti.SetListener(`check${v.code}`, (_v: any) => {
+                this.noti.ClearNoti(_v['id']);
+                this.noti.RemoveListener(`check${v.code}`);
+                this.modalCtrl.create({
+                  component: GroupDetailPage,
+                  componentProps: { info: group_detail },
+                }).then(v => v.present());
+              });
+              this.noti.PushLocal({
+                id: v.code,
+                title: `그룹 참가 요청: ${group_detail['title']}`,
+                actions_ln: [{
+                  id: `check${v.code}`,
+                  title: '검토',
+                }],
+                icon: 'diychat',
+                iconColor_ln: '271e38',
+              }, undefined, (_ev: any) => {
+                this.modalCtrl.create({
+                  component: GroupDetailPage,
+                  componentProps: { info: group_detail },
+                }).then(v => v.present());
+              });
+              break;
+            default:
+              console.warn('확인되지 않은 알림_nakama_noti: ', v);
+              break;
+          }
+        }
         socket.ondisconnect = (_e) => {
           this.p5toast.show({
             text: `그룹서버 연결 끊어짐: ${this.servers[_is_official][_target].info.name}`,

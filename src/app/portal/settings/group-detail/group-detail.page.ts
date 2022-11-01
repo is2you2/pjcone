@@ -33,6 +33,7 @@ export class GroupDetailPage implements OnInit {
 
   ngOnInit() {
     this.info = this.navParams.get('info');
+    this.nakama.socket_reactive[-5] = this;
     this.readasQRCodeFromId();
     let _is_official: string = this.info.server['isOfficial'];
     let _target: string = this.info.server['target'];
