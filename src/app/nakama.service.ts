@@ -392,7 +392,6 @@ export class NakamaService {
                   if (img.objects.length)
                     pending_group['img'] = img.objects[0].value['img'];
                   this.save_group_list(pending_group, online_clients[i].info.isOfficial, online_clients[i].info.target);
-                  console.warn('그룹장에게 실시간으로 사용자 업데이트 필요: maybe socket?');
                 });
                 break;
               }
@@ -419,7 +418,7 @@ export class NakamaService {
     ).then(_v => {
       this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
       this.indexed.saveTextFileToUserPath(group_img, `servers/${_is_official}/${_target}/groups/${_group.id}.img`);
-      if (_group.img)
+      if (_group.onwer == this.servers[_is_official][_target].session.user_id && _group.img)
         this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
             collection: 'group_public',
@@ -494,7 +493,7 @@ export class NakamaService {
     });
   }
 
-  /** 그룹 서버 상태 조정 */
+  /** 그룹 서버 및 설정-그룹서버의 상태 조정 */
   set_group_statusBar(_status: 'offline' | 'missing' | 'pending' | 'online' | 'certified', _is_official: string, _target: string) {
     this.statusBar.groupServer[_is_official][_target] = _status;
     this.catch_group_server_header(_status);
@@ -503,11 +502,14 @@ export class NakamaService {
   /** 소켓 서버에 연결 */
   connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
     this.servers[_is_official][_target].socket.connect(
-      this.servers[_is_official][_target].session, true);
-  }
-
-  /** 소켄 연결 끊기 */
-  disconnect(_is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
-    this.servers[_is_official][_target].socket.disconnect(true);
+      this.servers[_is_official][_target].session, true).then(_v => {
+        let socket = this.servers[_is_official][_target].socket;
+        socket.ondisconnect = (_e) => {
+          this.p5toast.show({
+            text: `그룹서버 연결 끊어짐: ${this.servers[_is_official][_target].info.name}`,
+          });
+          this.set_group_statusBar('missing', _is_official, _target);
+        }
+      });
   }
 }
