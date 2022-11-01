@@ -293,6 +293,20 @@ export class NakamaService {
           this.p5toast.show({
             text: '회원가입이 완료되었습니다.',
           });
+          this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
+            if (e && v) {
+              let profile = JSON.parse(v);
+              this.servers[_is_official][_target].client.writeStorageObjects(
+                this.servers[_is_official][_target].session, [{
+                  collection: 'user_public',
+                  key: 'profile_image',
+                  permission_read: 2,
+                  permission_write: 1,
+                  value: { img: profile['img'] },
+                }]
+              );
+            }
+          })
           _CallBack(undefined, _is_official, _target);
           this.set_group_statusBar('online', _is_official, _target);
           break;
