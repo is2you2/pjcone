@@ -524,10 +524,8 @@ export class NakamaService {
                 if (e && v) group_detail['img'] = v;
               });
               // 이미 보는 화면이라면 업데이트하기
-              if (this.socket_reactive[v.code]) {
+              if (this.socket_reactive[v.code].info.id == v.content['group_id'])
                 this.socket_reactive[v.code].ngOnInit();
-                delete this.socket_reactive[v.code];
-              }
               this.noti.SetListener(`check${v.code}`, (_v: any) => {
                 if (this.socket_reactive[v.code]) return;
                 this.noti.ClearNoti(_v['id']);
@@ -547,6 +545,7 @@ export class NakamaService {
                 icon: 'diychat',
                 iconColor_ln: '271e38',
               }, undefined, (_ev: any) => {
+                if (this.socket_reactive[v.code].info.id == v.content['group_id']) return;
                 this.modalCtrl.create({
                   component: GroupDetailPage,
                   componentProps: { info: group_detail },
