@@ -215,4 +215,8 @@ export class GroupDetailPage implements OnInit {
   remove_group_locally() {
     console.warn('로컬 그룹 기록 삭제 기능 준비중');
   }
+
+  ionViewWillLeave() {
+    delete this.nakama.socket_reactive[-5];
+  }
 }

@@ -529,6 +529,7 @@ export class NakamaService {
                 delete this.socket_reactive[v.code];
               }
               this.noti.SetListener(`check${v.code}`, (_v: any) => {
+                if (this.socket_reactive[v.code]) return;
                 this.noti.ClearNoti(_v['id']);
                 this.noti.RemoveListener(`check${v.code}`);
                 this.modalCtrl.create({
