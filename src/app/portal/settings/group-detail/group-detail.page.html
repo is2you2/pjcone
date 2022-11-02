@@ -48,7 +48,7 @@
   <ion-item *ngIf="is_online && has_admin" button (click)="remove_group()">
     <ion-label class="ion-text-center" color="danger">그룹 해산</ion-label>
   </ion-item>
-  <ion-item *ngIf="!has_admin && info['status'] == 'missing'" button (click)="remove_group_locally()">
+  <ion-item *ngIf="!has_admin && info['status'] == 'missing'" button (click)="remove_group()">
     <ion-label class="ion-text-center" color="danger">그룹 기록 삭제</ion-label>
   </ion-item>
   <ion-item *ngIf="!has_admin && info['status'] != 'missing' && info['status'] != 'offline'" button (click)="leave_group()">

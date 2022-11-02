@@ -158,9 +158,8 @@ export class GroupDetailPage implements OnInit {
   remove_group() {
     let _is_official: string = this.info.server['isOfficial'];
     let _target: string = this.info.server['target'];
-    this.nakama.remove_group_list(this.info, _is_official, _target, () => {
-      this.modalCtrl.dismiss();
-    });
+    this.nakama.remove_group_list(this.info, _is_official, _target);
+    this.modalCtrl.dismiss();
   }
 
   edit_group() {
@@ -198,22 +197,8 @@ export class GroupDetailPage implements OnInit {
     this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.leaveGroup(
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, this.info['id'],
     ).then(v => {
-      if (v) {
-        this.p5toast.show({
-          text: '그룹에서 탈퇴하였습니다.',
-        })
-        this.modalCtrl.dismiss();
-      } else {
-        this.p5toast.show({
-          text: '그룹 탈퇴 실패',
-        });
-      }
+      if (v) this.modalCtrl.dismiss();
     })
-  }
-
-  /** 서버에서 삭제된 그룹의 기록을 로컬에서도 삭제하기 */
-  remove_group_locally() {
-    console.warn('로컬 그룹 기록 삭제 기능 준비중');
   }
 
   ionViewDidLeave() {

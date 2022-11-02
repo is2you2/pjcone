@@ -428,7 +428,9 @@ export class NakamaService {
   }
 
   /** 그룹 리스트 로컬/리모트에서 삭제하기 (방장일 경우) */
-  remove_group_list(info: any, _is_official: string, _target: string, _CallBack = () => { }) {
+  remove_group_list(info: any, _is_official: string, _target: string) {
+    // 내가 방장이면 해산처리
+    if (info['creator_id'] == this.servers[_is_official][_target].session.user_id)
     this.servers[_is_official][_target].client.deleteGroup(
       this.servers[_is_official][_target].session, info['id'],
     ).then(v => {
@@ -440,11 +442,11 @@ export class NakamaService {
             key: `group_${info['id']}`,
           }]
         });
-        _CallBack();
       }
     }).catch(e => {
       console.error('remove_group_list: ', e);
     });
+    // 로컬에서 기록을 삭제한다
     delete this.groups[_is_official][_target][info['id']];
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
     this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
