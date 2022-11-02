@@ -35,7 +35,7 @@
       [style]="'background-color: ' + statusBar.colors[statusBar.settings['communityServer']]"></div>
     <ion-label class=" form_margin">커뮤니티 서버</ion-label>
   </ion-item>
-  <ion-item button (click)="go_to_page('dedicated-settings')" [disabled]="cant_dedicated">
+  <ion-item button (click)="go_to_page('dedicated-settings')" *ngIf="!cant_dedicated">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[statusBar.settings['dedicatedServer']]"></div>
     <ion-label class="form_margin">이 기기를 기능 서버로</ion-label>
