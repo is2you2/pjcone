@@ -19,7 +19,7 @@ export class GroupDetailPage implements OnInit {
     private sanitizer: DomSanitizer,
     private p5toast: P5ToastService,
     public nakama: NakamaService,
-    private modalCtrl: ModalController,
+    public modalCtrl: ModalController,
     public statusBar: StatusManageService,
     private indexed: IndexedDBService,
   ) { }
@@ -57,55 +57,55 @@ export class GroupDetailPage implements OnInit {
         // 삭제된 그룹 여부 검토
         if (!v.group_users.length) {
           this.info['status'] = 'missing';
-          return;
-        };
-        this.info['users'] = v.group_users;
-        /** 그룹 내 다른 사람들의 프로필 이미지 요청 */
-        let object_req = [];
-        // 사용자 리스트 갱신
-        for (let i = 0, j = this.info['users'].length; i < j; i++) {
-          if (this.info['users'][i].user.id != this.nakama.servers[_is_official][_target].session.user_id) {
-            object_req.push({
-              collection: 'user_public',
-              key: 'profile_image',
-              user_id: this.info['users'][i].user.id,
-            });
-          } else {// 만약 내 정보라면
-            this.info['users'][i].user.is_me = true;
-            this.has_admin = this.info['creator_id'] == this.info['users'][i].user.id;
-            this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
-              if (e && v) this.info['users'][i]['img'] = JSON.parse(v)['img'];
-            });
-          }
-          // 아래, 사용자 램프 조정
-          switch (this.info['users'][i].state) {
-            case 0:
-            case 1:
-              this.info['users'][i]['status'] = 'certified';
-              break;
-            case 2:
-              this.info['users'][i]['status'] = 'online';
-              break;
-            case 3:
-              this.info['users'][i]['status'] = 'pending';
-              break;
-            default:
-              console.warn('존재하지 않는 나카마 그룹원의 상태: ', this.info['users'][i].state);
-              break;
-          }
-        }
-        this.nakama.servers[_is_official][_target].client.readStorageObjects(
-          this.nakama.servers[_is_official][_target].session, {
-          object_ids: object_req,
-        }).then(v2 => {
-          for (let i = 0, j = v2.objects.length; i < j; i++)
-            for (let k = 0, l = this.info['users'].length; k < l; k++)
-              if (v2.objects[i].user_id == this.info['users'][k].user.id) {
-                this.info['users'][k]['img'] = v2.objects[i].value['img'];
-                this.indexed.saveTextFileToUserPath(v2.objects[i].value['img'], `servers/${_is_official}/${_target}/users/${v2.objects[i].user_id}/profile.img`);
+        } else {
+          this.info['users'] = v.group_users;
+          /** 그룹 내 다른 사람들의 프로필 이미지 요청 */
+          let object_req = [];
+          // 사용자 리스트 갱신
+          for (let i = 0, j = this.info['users'].length; i < j; i++) {
+            if (this.info['users'][i].user.id != this.nakama.servers[_is_official][_target].session.user_id) {
+              object_req.push({
+                collection: 'user_public',
+                key: 'profile_image',
+                user_id: this.info['users'][i].user.id,
+              });
+            } else {// 만약 내 정보라면
+              this.info['users'][i].user.is_me = true;
+              this.has_admin = this.info['creator_id'] == this.info['users'][i].user.id;
+              this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
+                if (e && v) this.info['users'][i]['img'] = JSON.parse(v)['img'];
+              });
+            }
+            // 아래, 사용자 램프 조정
+            switch (this.info['users'][i].state) {
+              case 0:
+              case 1:
+                this.info['users'][i]['status'] = 'certified';
                 break;
-              }
-        });
+              case 2:
+                this.info['users'][i]['status'] = 'online';
+                break;
+              case 3:
+                this.info['users'][i]['status'] = 'pending';
+                break;
+              default:
+                console.warn('존재하지 않는 나카마 그룹원의 상태: ', this.info['users'][i].state);
+                break;
+            }
+          }
+          this.nakama.servers[_is_official][_target].client.readStorageObjects(
+            this.nakama.servers[_is_official][_target].session, {
+            object_ids: object_req,
+          }).then(v2 => {
+            for (let i = 0, j = v2.objects.length; i < j; i++)
+              for (let k = 0, l = this.info['users'].length; k < l; k++)
+                if (v2.objects[i].user_id == this.info['users'][k].user.id) {
+                  this.info['users'][k]['img'] = v2.objects[i].value['img'];
+                  this.indexed.saveTextFileToUserPath(v2.objects[i].value['img'], `servers/${_is_official}/${_target}/users/${v2.objects[i].user_id}/profile.img`);
+                  break;
+                }
+          });
+        }
       });
     }
   }
@@ -156,12 +156,14 @@ export class GroupDetailPage implements OnInit {
   }
 
   remove_group() {
+    this.need_edit = false;
     let _is_official: string = this.info.server['isOfficial'];
     let _target: string = this.info.server['target'];
     this.nakama.remove_group_list(this.info, _is_official, _target);
     this.modalCtrl.dismiss();
   }
 
+  need_edit = true;
   edit_group() {
     if (this.is_online && this.has_admin)
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.updateGroup(
@@ -173,10 +175,7 @@ export class GroupDetailPage implements OnInit {
           description: this.info['description'],
           open: this.info['open'],
         }
-      ).then(_v => {
-        this.modalCtrl.dismiss();
-      });
-    else this.modalCtrl.dismiss();
+      );
     let less_info = { ...this.info };
     delete less_info['server'];
     delete less_info['img'];
@@ -194,6 +193,7 @@ export class GroupDetailPage implements OnInit {
 
   /** 그룹 떠나기 */
   leave_group() {
+    this.need_edit = false;
     this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.leaveGroup(
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, this.info['id'],
     ).then(v => {
@@ -201,7 +201,9 @@ export class GroupDetailPage implements OnInit {
     })
   }
 
-  ionViewDidLeave() {
+  ionViewWillLeave() {
     delete this.nakama.socket_reactive[-5];
+    if (this.need_edit)
+      this.edit_group();
   }
 }

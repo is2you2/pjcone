@@ -43,6 +43,8 @@ export class SettingsPage implements OnInit {
         this.profile_filter = "filter: grayscale(0) contrast(1);";
       else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
     });
+  }
+  ionViewDidEnter() {
     this.load_groups();
   }
   /** 저장된 그룹 업데이트하여 반영 */

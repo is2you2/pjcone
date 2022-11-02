@@ -431,21 +431,21 @@ export class NakamaService {
   remove_group_list(info: any, _is_official: string, _target: string) {
     // 내가 방장이면 해산처리
     if (info['creator_id'] == this.servers[_is_official][_target].session.user_id)
-    this.servers[_is_official][_target].client.deleteGroup(
-      this.servers[_is_official][_target].session, info['id'],
-    ).then(v => {
-      if (v) { // 서버에서 정상삭제하였을 때
-        this.servers[_is_official][_target].client.deleteStorageObjects(
-          this.servers[_is_official][_target].session, {
-          object_ids: [{
-            collection: 'group_public',
-            key: `group_${info['id']}`,
-          }]
-        });
-      }
-    }).catch(e => {
-      console.error('remove_group_list: ', e);
-    });
+      this.servers[_is_official][_target].client.deleteGroup(
+        this.servers[_is_official][_target].session, info['id'],
+      ).then(v => {
+        if (v) { // 서버에서 정상삭제하였을 때
+          this.servers[_is_official][_target].client.deleteStorageObjects(
+            this.servers[_is_official][_target].session, {
+            object_ids: [{
+              collection: 'group_public',
+              key: `group_${info['id']}`,
+            }]
+          });
+        }
+      }).catch(e => {
+        console.error('remove_group_list: ', e);
+      });
     // 로컬에서 기록을 삭제한다
     delete this.groups[_is_official][_target][info['id']];
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
