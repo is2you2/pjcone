@@ -452,9 +452,6 @@ export class NakamaService {
 
   /** 자신이 참여한 그룹 리모트에서 가져오기 */
   get_group_list(_is_official: string, _target: string) {
-    this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
-      if (e && v) this.groups = JSON.parse(v);
-    });
     this.servers[_is_official][_target].client.listUserGroups(
       this.servers[_is_official][_target].session,
       this.servers[_is_official][_target].session.user_id)
