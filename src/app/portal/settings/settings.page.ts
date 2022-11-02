@@ -56,14 +56,14 @@ export class SettingsPage implements OnInit {
         group.forEach(_group_name => {
           let group_and_server_info = {};
           group_and_server_info['server'] = this.nakama.servers[_is_official][_target].info;
-          group_and_server_info['title'] = this.nakama.groups[_is_official][_target][_group_name]['title'];
-          group_and_server_info['owner'] = this.nakama.groups[_is_official][_target][_group_name]['owner'];
+          group_and_server_info['name'] = this.nakama.groups[_is_official][_target][_group_name]['name'];
+          group_and_server_info['creator_id'] = this.nakama.groups[_is_official][_target][_group_name]['creator_id'];
           group_and_server_info['id'] = this.nakama.groups[_is_official][_target][_group_name]['id'];
-          group_and_server_info['desc'] = this.nakama.groups[_is_official][_target][_group_name]['desc'];
+          group_and_server_info['description'] = this.nakama.groups[_is_official][_target][_group_name]['description'];
           group_and_server_info['users'] = this.nakama.groups[_is_official][_target][_group_name]['users'];
           group_and_server_info['status'] = this.nakama.groups[_is_official][_target][_group_name]['status'];
-          group_and_server_info['max'] = this.nakama.groups[_is_official][_target][_group_name]['max'];
-          group_and_server_info['lang'] = this.nakama.groups[_is_official][_target][_group_name]['lang'];
+          group_and_server_info['max_count'] = this.nakama.groups[_is_official][_target][_group_name]['max_count'];
+          group_and_server_info['lang_tag'] = this.nakama.groups[_is_official][_target][_group_name]['lang_tag'];
           // 온라인이라면 서버가 무조건 우선되고 이 정보로 업데이트 함
           if (this.statusBar.groupServer[_is_official][_target] == 'online') {
             this.nakama.servers[_is_official][_target].client.listGroupUsers(
@@ -79,7 +79,7 @@ export class SettingsPage implements OnInit {
               object_ids: [{
                 collection: 'group_public',
                 key: `group_${group_and_server_info['id']}`,
-                user_id: group_and_server_info['owner']
+                user_id: group_and_server_info['creator_id']
               }]
             }).then(v => {
               if (v.objects[0]) {

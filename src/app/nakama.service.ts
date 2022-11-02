@@ -386,12 +386,12 @@ export class NakamaService {
                   let pending_group = {
                     server: undefined,
                     id: v.groups[i].id,
-                    title: v.groups[i].name,
-                    desc: v.groups[i].description,
-                    max: v.groups[i].max_count,
-                    lang: v.groups[i].lang_tag,
-                    isPublic: v.groups[i].open,
-                    owner: v.groups[i].creator_id,
+                    name: v.groups[i].name,
+                    description: v.groups[i].description,
+                    max_count: v.groups[i].max_count,
+                    lang_tag: v.groups[i].lang_tag,
+                    open: v.groups[i].open,
+                    creator_id: v.groups[i].creator_id,
                     status: 'pending',
                   }
                   if (img.objects.length)
@@ -404,11 +404,11 @@ export class NakamaService {
         });
   }
 
-  /** 그룹 리스트 로컬/리모트에 저장하기 */
+  /** 그룹 리스트 로컬에 저장하기 */
   save_group_list(_group: any, _is_official: string, _target: string, _CallBack = () => { }) {
     let _group_info = { ..._group };
     delete _group_info['server'];
-    let group_img = _group_info['img'];
+    let group_img = _group['img'];
     delete _group_info['img'];
     if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
     this.groups[_is_official][_target][_group_info.id] = _group_info;

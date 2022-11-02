@@ -38,11 +38,11 @@ export class GroupDetailPage implements OnInit {
     let _is_official: string = this.info.server['isOfficial'];
     let _target: string = this.info.server['target'];
     this.is_online = this.statusBar.groupServer[_is_official][_target] == 'online';
-    this.has_admin = this.is_online && this.nakama.servers[_is_official][_target].session.user_id == this.info['owner'];
+    this.has_admin = this.is_online && this.nakama.servers[_is_official][_target].session.user_id == this.info['creator_id'];
     if (this.info['users']) // 사용자 정보가 있다면 로컬 정보 불러오기 처리
       for (let i = 0, j = this.info['users'].length; i < j; i++)
         if (this.info['users'][i].user.is_me) { // 정보상 나라면
-          this.has_admin = this.info['owner'] == this.info['users'][i].user.id;
+          this.has_admin = this.info['creator_id'] == this.info['users'][i].user.id;
           this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
             if (e && v) this.info['users'][i]['img'] = JSON.parse(v)['img'];
           });
@@ -72,7 +72,7 @@ export class GroupDetailPage implements OnInit {
             });
           } else {// 만약 내 정보라면
             this.info['users'][i].user.is_me = true;
-            this.has_admin = this.info['owner'] == this.info['users'][i].user.id;
+            this.has_admin = this.info['creator_id'] == this.info['users'][i].user.id;
             this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
               if (e && v) this.info['users'][i]['img'] = JSON.parse(v)['img'];
             });
@@ -169,10 +169,10 @@ export class GroupDetailPage implements OnInit {
         this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session,
         this.info['id'],
         {
-          name: this.info['title'],
-          lang_tag: this.info['lang'],
-          description: this.info['desc'],
-          open: this.info['isPublic'],
+          name: this.info['name'],
+          lang_tag: this.info['lang_tag'],
+          description: this.info['description'],
+          open: this.info['open'],
         }
       ).then(_v => {
         this.modalCtrl.dismiss();

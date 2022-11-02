@@ -35,7 +35,7 @@ export class AddGroupPage implements OnInit {
       let info = {
         type: 'group',
         id: this.userInput.id,
-        title: this.userInput.title,
+        title: this.userInput.name,
       };
       let qr: string = new QRCode({
         content: `[${JSON.stringify(info)}]`,
@@ -57,12 +57,12 @@ export class AddGroupPage implements OnInit {
   userInput = {
     server: undefined,
     id: undefined,
-    title: undefined,
-    desc: undefined,
-    max: undefined,
-    lang: undefined,
-    isPublic: false,
-    owner: undefined,
+    name: undefined,
+    description: undefined,
+    max_count: undefined,
+    lang_tag: undefined,
+    open: false,
+    creator_id: undefined,
     img: undefined,
   }
 
@@ -80,7 +80,7 @@ export class AddGroupPage implements OnInit {
 
   /** 공개여부 토글 */
   isPublicToggle() {
-    this.userInput.isPublic = !this.userInput.isPublic;
+    this.userInput.open = !this.userInput.open;
   }
 
   isSaveClicked = false;
@@ -105,17 +105,17 @@ export class AddGroupPage implements OnInit {
     }
 
     this.isSaveClicked = true;
-    this.userInput.lang = this.userInput.lang || 'ko';
-    this.userInput.max = this.userInput.max || 2;
+    this.userInput.lang_tag = this.userInput.lang_tag || 'ko';
+    this.userInput.max_count = this.userInput.max_count || 2;
     client.createGroup(session, {
-      name: this.userInput.title,
-      lang_tag: this.userInput.lang,
-      description: this.userInput.desc,
-      max_count: this.userInput.max,
-      open: this.userInput.isPublic,
+      name: this.userInput.name,
+      lang_tag: this.userInput.lang_tag,
+      description: this.userInput.description,
+      max_count: this.userInput.max_count,
+      open: this.userInput.open,
     }).then(v => {
       this.userInput.id = v.id;
-      this.userInput.owner = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session.user_id;
+      this.userInput.creator_id = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session.user_id;
       this.readasQRCodeFromId();
       this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].client.writeStorageObjects(
         this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session, [{

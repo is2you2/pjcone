@@ -27,7 +27,7 @@
   </ion-item-divider>
   <ion-item [disabled]="isSaveClicked" button>
     <ion-label>표시명</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="userInput.title" [placeholder]="'그룹 이름'"></ion-input>
+    <ion-input class="ion-text-right" [(ngModel)]="userInput.name" [placeholder]="'그룹 이름'"></ion-input>
   </ion-item>
   <ion-item button (click)="buttonClickLinkInputFile()">
     <div class="additional_form bg_img_form">
@@ -35,7 +35,7 @@
     </div>
     <ion-label>
       <p>{{userInput.server.name + ' (' + userInput.server.target + ')'}}</p>
-      <h2>{{userInput.title || '눌러서 그룹 이미지 설정'}}</h2>
+      <h2>{{userInput.name || '눌러서 그룹 이미지 설정'}}</h2>
     </ion-label>
   </ion-item>
   <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
@@ -49,19 +49,19 @@
   <ion-item-divider>
     <ion-label>그룹 상세</ion-label>
   </ion-item-divider>
-  <textarea class="infobox" [disabled]="isSaveClicked" [(ngModel)]="userInput.desc" [placeholder]="'그룹 설명'"></textarea>
+  <textarea class="infobox" [disabled]="isSaveClicked" [(ngModel)]="userInput.description" [placeholder]="'그룹 설명'"></textarea>
   <ion-item [disabled]="isSaveClicked" button>
     <ion-label>국가 태그</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="userInput.lang" [placeholder]="'ko'"></ion-input>
+    <ion-input class="ion-text-right" [(ngModel)]="userInput.lang_tag" [placeholder]="'ko'"></ion-input>
   </ion-item>
   <ion-item [disabled]="isSaveClicked">
     <ion-label>최대 인원</ion-label>
-    <ion-input type="number" class="ion-text-right" min="2" [(ngModel)]="userInput.max" [placeholder]="'2'"></ion-input>
+    <ion-input type="number" class="ion-text-right" min="2" [(ngModel)]="userInput.max_count" [placeholder]="'2'"></ion-input>
     <ion-label class="ion-text-right">명</ion-label>
   </ion-item>
   <ion-item [disabled]="isSaveClicked" button (click)="isPublicToggle()">
     <ion-label>공개 여부</ion-label>
-    <ion-toggle slot="end" style="pointer-events: none;" [(ngModel)]="userInput.isPublic"></ion-toggle>
+    <ion-toggle slot="end" style="pointer-events: none;" [(ngModel)]="userInput.open"></ion-toggle>
   </ion-item>
   <ion-item button (click)="save()" [disabled]="isSaveClicked">
     <ion-label class="ion-text-center">위 정보로 추가하기</ion-label>
