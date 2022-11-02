@@ -412,34 +412,22 @@ export class NakamaService {
     delete _group_info['img'];
     if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
     this.groups[_is_official][_target][_group_info.id] = _group_info;
-    this.servers[_is_official][_target].client.writeStorageObjects(
-      this.servers[_is_official][_target].session, [{
-        collection: 'user_private',
-        key: 'linked_group',
-        value: this.groups[_is_official][_target],
-        permission_read: 1,
-        permission_write: 1,
-      }]
-    ).then(_v => {
-      this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
-      this.indexed.saveTextFileToUserPath(group_img, `servers/${_is_official}/${_target}/groups/${_group.id}.img`);
-      if (_group.onwer == this.servers[_is_official][_target].session.user_id && _group.img)
-        this.servers[_is_official][_target].client.writeStorageObjects(
-          this.servers[_is_official][_target].session, [{
-            collection: 'group_public',
-            key: `group_${_group.id}`,
-            value: { img: _group.img },
-            permission_read: 2,
-            permission_write: 1,
-          }]
-        );
-      _CallBack();
-    }).catch(e => {
-      console.error('save_group_list: ', e);
-    });
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
+    this.indexed.saveTextFileToUserPath(group_img, `servers/${_is_official}/${_target}/groups/${_group.id}.img`);
+    if (_group.onwer == this.servers[_is_official][_target].session.user_id && _group.img)
+      this.servers[_is_official][_target].client.writeStorageObjects(
+        this.servers[_is_official][_target].session, [{
+          collection: 'group_public',
+          key: `group_${_group.id}`,
+          value: { img: _group.img },
+          permission_read: 2,
+          permission_write: 1,
+        }]
+      );
+    _CallBack();
   }
 
-  /** 그룹 리스트 로컬/리모트에서 삭제하기 */
+  /** 그룹 리스트 로컬/리모트에서 삭제하기 (방장일 경우) */
   remove_group_list(info: any, _is_official: string, _target: string, _CallBack = () => { }) {
     this.servers[_is_official][_target].client.deleteGroup(
       this.servers[_is_official][_target].session, info['id'],
@@ -453,18 +441,6 @@ export class NakamaService {
           }]
         });
         _CallBack();
-        this.servers[_is_official][_target].client.writeStorageObjects(
-          this.servers[_is_official][_target].session, [{
-            collection: 'user_private',
-            key: 'linked_group',
-            value: this.groups[_is_official][_target],
-            permission_read: 1,
-            permission_write: 1,
-          }]
-        ).then(_v => {
-        }).catch(e => {
-          console.error('save_group_list: ', e);
-        });
       }
     }).catch(e => {
       console.error('remove_group_list: ', e);
@@ -479,23 +455,16 @@ export class NakamaService {
     this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
       if (e && v) this.groups = JSON.parse(v);
     });
-    this.servers[_is_official][_target].client.readStorageObjects(
-      this.servers[_is_official][_target].session, {
-      object_ids: [{
-        collection: 'user_private',
-        key: 'linked_group',
-        user_id: this.servers[_is_official][_target].session.user_id,
-      }],
-    }).then(v => {
-      if (v.objects[0]) {
-        if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
-        let group_ids = Object.keys(v.objects[0].value);
-        for (let i = 0, j = group_ids.length; i < j; i++)
-          this.groups[_is_official][_target][group_ids[i]] = v.objects[0].value[group_ids[i]];
-      }
-    }).catch(e => {
-      console.error('failed to get_group_list: ', e);
-    });
+    this.servers[_is_official][_target].client.listUserGroups(
+      this.servers[_is_official][_target].session,
+      this.servers[_is_official][_target].session.user_id)
+      .then(v => {
+        for (let i = 0, j = v.user_groups.length; i < j; i++) {
+          this.groups[_is_official][_target][v.user_groups[i].group.id]
+            = { ...this.groups[_is_official][_target][v.user_groups[i].group.id], ...v.user_groups[i].group };
+        }
+        this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
+      });
   }
 
   /** 그룹 서버 및 설정-그룹서버의 상태 조정 */
