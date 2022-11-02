@@ -117,6 +117,15 @@ export class AddGroupPage implements OnInit {
       this.userInput.id = v.id;
       this.userInput.owner = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session.user_id;
       this.readasQRCodeFromId();
+      this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].client.writeStorageObjects(
+        this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session, [{
+          collection: 'group_public',
+          key: `group_${this.userInput.id}`,
+          permission_read: 2,
+          permission_write: 1,
+          value: { img: this.userInput.img },
+        }]
+      );
       this.nakama.save_group_list(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target, () => {
         this.isSavedWell = true;
         localStorage.removeItem('add-group');
