@@ -19,14 +19,14 @@
     </div>
     <ion-label class="form_margin">
       <p>{{info.server.name + ' (' + info.server.target + ')'}}</p>
-      <h2>{{info.title}}</h2>
+      <h2>{{info.name}}</h2>
     </ion-label>
   </ion-item>
   <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
   <ion-item-divider>
     <ion-label>그룹 설명</ion-label>
   </ion-item-divider>
-  <textarea class="infobox" [disabled]="!has_admin" [(ngModel)]="info.desc" [placeholder]="'설명 없는 그룹'"></textarea>
+  <textarea class="infobox" [disabled]="!has_admin" [(ngModel)]="info.description" [placeholder]="'설명 없는 그룹'"></textarea>
   <ion-item-divider *ngIf="info['users'] && info['users'].length">
     <ion-label>그룹 구성원</ion-label>
   </ion-item-divider>
