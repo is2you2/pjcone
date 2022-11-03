@@ -33,7 +33,7 @@ func _ready():
 		Root.logging(HEADER, str('init error: ', err), Root.LOG_ERR)
 	else:
 		Root.logging(HEADER, str('Opened: ', PORT))
-	Root.rich_node = $m/c/m/log
+	Root.rich_node = $m/vbox/c/m/log
 	Root.rich_node.bbcode_text = Root.rich_log
 
 # esc를 눌러 끄기
@@ -52,6 +52,9 @@ func _connected(id:int, _proto:= 'EMPTY'):
 	if counter.maximum < counter.current:
 		counter.maximum = counter.current
 	linked_mutex.unlock()
+	$m/vbox/hbox/Current/Current2.text = str(counter['current'], '명');
+	$m/vbox/hbox/Total/Total2.text = str(counter['maximum'], '명');
+	$m/vbox/hbox/Stack/Stack2.text = str(counter['stack'], '명');
 	Root.logging(HEADER, str('Connected: ', counter))
 
 # 사이트로부터 연결 끊어짐
@@ -65,6 +68,9 @@ func _disconnected(id:int, _was_clean = null, _reason:= 'EMPTY'):
 		Root.logging(HEADER, str('Disconnected: ', counter, ' code: ', _was_clean, ' / ', _reason), '8bb')
 	elif _was_clean is bool: # 상시 로그
 		Root.logging(HEADER, str('Disconnected: ', counter, ' was_clean: ', _was_clean))
+	$m/vbox/hbox/Current/Current2.text = str(counter['current'], '명');
+	$m/vbox/hbox/Total/Total2.text = str(counter['maximum'], '명');
+	$m/vbox/hbox/Stack/Stack2.text = str(counter['stack'], '명');
 
 # 자료를 받아서 행동 코드별로 자식 노드에게 일처리 넘김
 func _received(id:int, _try_left:= 5):

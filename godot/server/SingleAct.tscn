@@ -1,18 +1,12 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://data/SingleAct/SendEximMail.gd" type="Script" id=1]
 [ext_resource path="res://data/SingleAct/SC_custom_manager.gd" type="Script" id=2]
 [ext_resource path="res://SingleAct.gd" type="Script" id=3]
 [ext_resource path="res://data/SingleAct/WebLink.gd" type="Script" id=4]
 [ext_resource path="res://data/SingleAct/MiniRanchat.gd" type="Script" id=5]
+[ext_resource path="res://default.tres" type="Theme" id=6]
 [ext_resource path="res://data/SingleAct/SC_GuestBook.gd" type="Script" id=7]
-[ext_resource path="res://data/fonts/Noto_Sans_KR/NotoSansKR-Regular.otf" type="DynamicFontData" id=8]
-
-[sub_resource type="DynamicFont" id=1]
-font_data = ExtResource( 8 )
-
-[sub_resource type="Theme" id=2]
-default_font = SubResource( 1 )
 
 [node name="SingleAct" type="Node"]
 script = ExtResource( 3 )
@@ -40,14 +34,83 @@ custom_constants/margin_top = 8
 custom_constants/margin_left = 8
 custom_constants/margin_bottom = 8
 
-[node name="c" type="ColorRect" parent="m"]
+[node name="vbox" type="VBoxContainer" parent="m"]
 margin_left = 8.0
 margin_top = 8.0
 margin_right = 352.0
 margin_bottom = 352.0
+
+[node name="hbox" type="HBoxContainer" parent="m/vbox"]
+margin_right = 344.0
+margin_bottom = 24.0
+custom_constants/separation = 16
+alignment = 1
+
+[node name="Current" type="HBoxContainer" parent="m/vbox/hbox"]
+margin_left = 27.0
+margin_right = 123.0
+margin_bottom = 24.0
+custom_constants/separation = 8
+
+[node name="Current" type="Label" parent="m/vbox/hbox/Current"]
+margin_right = 64.0
+margin_bottom = 24.0
+theme = ExtResource( 6 )
+text = "현재동접:"
+
+[node name="Current2" type="Label" parent="m/vbox/hbox/Current"]
+margin_left = 72.0
+margin_right = 96.0
+margin_bottom = 24.0
+theme = ExtResource( 6 )
+text = "0명"
+
+[node name="Total" type="HBoxContainer" parent="m/vbox/hbox"]
+margin_left = 139.0
+margin_right = 235.0
+margin_bottom = 24.0
+custom_constants/separation = 8
+
+[node name="Total" type="Label" parent="m/vbox/hbox/Total"]
+margin_right = 64.0
+margin_bottom = 24.0
+theme = ExtResource( 6 )
+text = "동시최대:"
+
+[node name="Total2" type="Label" parent="m/vbox/hbox/Total"]
+margin_left = 72.0
+margin_right = 96.0
+margin_bottom = 24.0
+theme = ExtResource( 6 )
+text = "0명"
+
+[node name="Stack" type="HBoxContainer" parent="m/vbox/hbox"]
+margin_left = 251.0
+margin_right = 317.0
+margin_bottom = 24.0
+custom_constants/separation = 8
+
+[node name="Stack" type="Label" parent="m/vbox/hbox/Stack"]
+margin_right = 34.0
+margin_bottom = 24.0
+theme = ExtResource( 6 )
+text = "누적:"
+
+[node name="Stack2" type="Label" parent="m/vbox/hbox/Stack"]
+margin_left = 42.0
+margin_right = 66.0
+margin_bottom = 24.0
+theme = ExtResource( 6 )
+text = "0명"
+
+[node name="c" type="ColorRect" parent="m/vbox"]
+margin_top = 28.0
+margin_right = 344.0
+margin_bottom = 344.0
+size_flags_vertical = 3
 color = Color( 0.192157, 0.192157, 0.192157, 1 )
 
-[node name="m" type="MarginContainer" parent="m/c"]
+[node name="m" type="MarginContainer" parent="m/vbox/c"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 custom_constants/margin_right = 8
@@ -55,11 +118,11 @@ custom_constants/margin_top = 8
 custom_constants/margin_left = 8
 custom_constants/margin_bottom = 8
 
-[node name="log" type="RichTextLabel" parent="m/c/m"]
+[node name="log" type="RichTextLabel" parent="m/vbox/c/m"]
 margin_left = 8.0
 margin_top = 8.0
 margin_right = 336.0
-margin_bottom = 336.0
-theme = SubResource( 2 )
+margin_bottom = 308.0
+theme = ExtResource( 6 )
 bbcode_enabled = true
 scroll_following = true
