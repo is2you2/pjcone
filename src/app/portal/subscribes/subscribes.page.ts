@@ -24,7 +24,7 @@ export class SubscribesPage implements OnInit {
     private p5toast: P5ToastService,
     private tools: ToolServerService,
     private weblink: WeblinkService,
-    private nakama: NakamaService,
+    public nakama: NakamaService,
   ) { }
 
   cant_scan = false;
@@ -131,5 +131,10 @@ export class SubscribesPage implements OnInit {
       component: TaskInfoPage,
       componentProps: {},
     }).then(v => v.present());
+  }
+
+  /** Nakama 서버 알림 읽기 */
+  check_notifications(i: number) {
+    console.log('알림 읽기 준비중: ', i);
   }
 }

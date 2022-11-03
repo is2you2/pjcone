@@ -258,6 +258,8 @@ export class NakamaService {
     }, 1500);
   }
 
+  /** Nakama에서 들어왔던, 읽지 않은 알림들 */
+  notifications = [];
   uuid: string;
   /** 세션처리
    * @param _CallBack 오류시 행동방침
@@ -273,6 +275,7 @@ export class NakamaService {
       _CallBack(true);
       this.servers[_is_official][_target].socket = this.servers[_is_official][_target].client.createSocket(_useSSL);
       this.connect_to(_is_official, _target);
+      this.update_notifications(_is_official, _target);
     } catch (e) {
       switch (e.status) {
         case 400: // 비번이 없거나 하는 등, 요청이 잘못됨
@@ -324,6 +327,41 @@ export class NakamaService {
           break;
       }
     }
+  }
+
+  /** 서버 알림 업데이트하기 */
+  update_notifications(_is_official: string, _target: string) {
+    this.servers[_is_official][_target].client.listNotifications(this.servers[_is_official][_target].session, 5)
+      .then(v => {
+        for (let i = 0, j = v.notifications.length; i < j; i++) {
+          v.notifications[i]['server'] = this.servers[_is_official][_target].info;
+          switch (v.notifications[i].code) {
+            case -1: // 1:1 채팅 요청에 대해서
+              // 모든 채팅에 대한건지, 1:1에 한정인지 검토 필요
+              v.notifications[i]['request'] = v.notifications[i].subject;
+              break;
+            case -5: // 그룹 참가 요청에 대해서
+              let group_id = this.groups[_is_official][_target][v.notifications[i].content['group_id']];
+              if (group_id) {
+                v.notifications[i]['request'] = `그룹참가 요청 샘플: ${group_id}`;
+              } else {
+                v.notifications[i]['request'] = '만료된 요청 샘플';
+              }
+              break;
+            default:
+              console.warn('준비되지 않은 요청 내용: ', v);
+              v.notifications[i]['request'] = v.notifications[i].subject;
+              break;
+          }
+        }
+        this.notifications = [...this.notifications, ...v.notifications];
+        this.notifications.sort((a, b) => {
+          if (a.create_time < b.create_time) return 1;
+          if (a.create_time > b.create_time) return -1;
+          return 0;
+        });
+        console.log('서버알림 업데이트됨: ', this.notifications);
+      });
   }
 
   /** 등록된 그룹 아이디들, 서버에 저장되어있고 동기화시켜야합니다
@@ -479,6 +517,7 @@ export class NakamaService {
     this.servers[_is_official][_target].socket.connect(
       this.servers[_is_official][_target].session, true).then(_v => {
         let socket = this.servers[_is_official][_target].socket;
+        // 실시간으로 알림을 받은 경우
         socket.onnotification = (v) => {
           switch (v.code) {
             case -1: // 1:1 채팅 요청
@@ -495,6 +534,8 @@ export class NakamaService {
               if (this.socket_reactive[v.code].info.id == v.content['group_id'])
                 this.socket_reactive[v.code].ngOnInit();
               this.noti.SetListener(`check${v.code}`, (_v: any) => {
+                this.servers[_is_official][_target].client.deleteNotifications(
+                  this.servers[_is_official][_target].session, [v.id]);
                 if (this.socket_reactive[v.code]) return;
                 this.noti.ClearNoti(_v['id']);
                 this.noti.RemoveListener(`check${v.code}`);
@@ -513,6 +554,8 @@ export class NakamaService {
                 icon: 'diychat',
                 iconColor_ln: '271e38',
               }, undefined, (_ev: any) => {
+                this.servers[_is_official][_target].client.deleteNotifications(
+                  this.servers[_is_official][_target].session, [v.id]);
                 if (this.socket_reactive[v.code].info.id == v.content['group_id']) return;
                 this.modalCtrl.create({
                   component: GroupDetailPage,
@@ -521,7 +564,7 @@ export class NakamaService {
               });
               break;
             default:
-              console.warn('확인되지 않은 알림_nakama_noti: ', v);
+              console.warn('확인되지 않은 실시간 알림_nakama_noti: ', v);
               break;
           }
         }

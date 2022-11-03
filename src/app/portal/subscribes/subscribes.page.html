@@ -5,6 +5,19 @@
 </ion-header>
 
 <ion-content>
+  <ion-accordion-group *ngIf="nakama.notifications.length" value="colors" expand="inset" [value]="false"
+    #accordionGroup>
+    <ion-accordion value="colors">
+      <ion-item slot="header">
+        <ion-label>검토해야할 연결이 있습니다.</ion-label>
+      </ion-item>
+      <ion-list slot="content">
+        <ion-item *ngFor="let i of [0,1,2];" button (click)="check_notifications(i)">
+          <ion-label *ngIf="nakama.notifications.length > i">{{nakama.notifications[i].request}}</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-accordion>
+  </ion-accordion-group>
   <ion-item-divider>
     <ion-label>만능 연결 버튼</ion-label>
   </ion-item-divider>
