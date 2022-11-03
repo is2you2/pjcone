@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
-import { SOCKET_SERVER_ADDRESS } from './app.component';
+import { ADDRESS_OVERRIDE, SOCKET_HEADER, SOCKET_SERVER_ADDRESS } from './app.component';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 
@@ -33,7 +33,7 @@ export class WscService {
   initialize() {
     this.statusBar.settings['communityServer'] = 'pending';
     const PORT: number = 12000;
-    this.client = new WebSocket(`wss://${SOCKET_SERVER_ADDRESS}:${PORT}`);
+    this.client = new WebSocket(`${SOCKET_HEADER}://${ADDRESS_OVERRIDE || SOCKET_SERVER_ADDRESS}:${PORT}`);
     this.client.onopen = (_ev) => {
       this.statusBar.settings['communityServer'] = 'online';
       let online_info = {

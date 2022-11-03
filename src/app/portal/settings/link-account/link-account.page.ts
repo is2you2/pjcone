@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NavController } from '@ionic/angular';
 import * as QRCode from "qrcode-svg";
-import { SOCKET_SERVER_ADDRESS } from 'src/app/app.component';
+import { ADDRESS_OVERRIDE, SOCKET_HEADER, SOCKET_SERVER_ADDRESS } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -30,7 +30,7 @@ export class LinkAccountPage implements OnInit {
     this.wsc.disconnected[HEADER] = () => {
       this.navCtrl.back();
     }
-    this.websocket = new WebSocket(`wss://${SOCKET_SERVER_ADDRESS}:12020`);
+    this.websocket = new WebSocket(`${SOCKET_HEADER}://${ADDRESS_OVERRIDE || SOCKET_SERVER_ADDRESS}:12020`);
     this.websocket.onmessage = (msg: any) => {
       msg.data.text().then(v => {
         try {

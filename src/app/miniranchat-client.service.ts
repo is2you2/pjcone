@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { SOCKET_SERVER_ADDRESS } from './app.component';
+import { ADDRESS_OVERRIDE, SOCKET_HEADER, SOCKET_SERVER_ADDRESS } from './app.component';
 
 /** 기존 MiniRanchat과 서버를 공유하는 랜챗 클라이언트  
  * 해당 프로젝트의 동작 방식 역시 모방되어있다.
@@ -59,7 +59,7 @@ export class MiniranchatClientService {
    */
   initialize(_target?: string, _Address?: string) {
     const PORT: number = 12011;
-    this.client[_target] = new WebSocket(`${_Address || `wss://${SOCKET_SERVER_ADDRESS}`}:${PORT}`);
+    this.client[_target] = new WebSocket(`${_Address || `${SOCKET_HEADER}://${ADDRESS_OVERRIDE || SOCKET_SERVER_ADDRESS}`}:${PORT}`);
     this.client[_target].onopen = (ev) => {
       this.funcs[_target].onopen(ev);
     }

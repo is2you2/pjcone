@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as p5 from "p5";
+import { ADDRESS_OVERRIDE } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { WscService } from 'src/app/wsc.service';
 
@@ -17,8 +18,11 @@ export class CommunityServerPage implements OnInit {
   ) { }
 
   info = '';
+  address_target: string;
+  address_override: string;
 
   ngOnInit() {
+    this.address_target = ADDRESS_OVERRIDE;
     new p5((p: p5) => {
       p.setup = () => {
         p.loadStrings(`assets/data/infos/${'ko'}/community-server.txt`, v => {
@@ -34,5 +38,9 @@ export class CommunityServerPage implements OnInit {
     if (this.statusBar.settings['communityServer'] == 'offline')
       this.wsc.initialize();
     else this.wsc.client.close();
+  }
+
+  on_address_changed(_ev) {
+    localStorage.setItem('wsc_address_override', this.address_override);
   }
 }

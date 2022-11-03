@@ -43,7 +43,7 @@ custom_constants/margin_bottom = 8
 [node name="c" type="ColorRect" parent="m"]
 margin_left = 8.0
 margin_top = 8.0
-margin_right = 632.0
+margin_right = 352.0
 margin_bottom = 352.0
 color = Color( 0.192157, 0.192157, 0.192157, 1 )
 
@@ -58,7 +58,7 @@ custom_constants/margin_bottom = 8
 [node name="log" type="RichTextLabel" parent="m/c/m"]
 margin_left = 8.0
 margin_top = 8.0
-margin_right = 616.0
+margin_right = 336.0
 margin_bottom = 336.0
 theme = SubResource( 2 )
 bbcode_enabled = true

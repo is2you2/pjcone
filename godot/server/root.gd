@@ -41,7 +41,9 @@ func _init(): # 기본 경로 설정
 	if not dir.dir_exists(root_path):
 		dir.make_dir_recursive(root_path)
 	# SSL 고유키 불러오기
+	if dir.file_exists(html_path + 'private.key'):
 	private = load(html_path + 'private.key')
+	if dir.file_exists(html_path + 'public.crt'):
 	public = load(html_path + 'public.crt')
 	logging('Root', 'Display logging ready.', 'aaf')
 

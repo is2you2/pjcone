@@ -20,5 +20,6 @@
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[statusBar.settings['communityServer']]"></div>
     <ion-label class="form_margin">커뮤니티 서버</ion-label>
+    <ion-input type="text" class="ion-text-end" [placeholder]="address_target" [(ngModel)]="address_override" (ionChange)="on_address_changed($event)"></ion-input>
   </ion-item>
 </ion-content>

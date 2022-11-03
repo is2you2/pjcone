@@ -21,10 +21,6 @@ func _init():
 	server.connect("client_disconnected",self,"_disconnected")
 	server.connect("client_close_request",self,"_disconnected")
 	server.connect("data_received",self,"_received")
-	if Root.private:
-		server.private_key = Root.private
-	if Root.public:
-		server.ssl_certificate = Root.public
 
 func _input(event):
 	if event.is_action_pressed("ui_cancel"):
@@ -32,6 +28,10 @@ func _input(event):
 
 func _ready():
 	set_process(false)
+	if Root.private:
+		server.private_key = Root.private
+	if Root.public:
+		server.ssl_certificate = Root.public
 	var err:= server.listen(PORT)
 	if err == OK:
 		Root.logging(HEADER, str('Listening: %d' % PORT), 'afa')
