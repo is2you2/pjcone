@@ -197,7 +197,12 @@ export class GroupDetailPage implements OnInit {
     this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.leaveGroup(
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, this.info['id'],
     ).then(v => {
-      if (v) this.modalCtrl.dismiss();
+      if (v) {
+        delete this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']];
+        this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.groups), 'servers/groups.json', (_v) => {
+          this.modalCtrl.dismiss();
+        });
+      }
     })
   }
 
