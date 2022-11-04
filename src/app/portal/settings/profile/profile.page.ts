@@ -103,6 +103,7 @@ export class ProfilePage implements OnInit {
             user_id: anyServers[i].session.user_id,
           }],
         }).then(v => {
+          if (!v.objects.length) return;
           let server_img_update_time = new Date(v.objects[0].update_time).getTime();
           let local_update_time = new Date(this.userInput.update_time || 0).getTime();
           if (v.objects[0] && server_img_update_time > local_update_time)
