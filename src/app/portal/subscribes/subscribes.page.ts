@@ -7,9 +7,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { ToolServerService, UnivToolForm } from 'src/app/tool-server.service';
 import { WeblinkService } from 'src/app/weblink.service';
 import { ChatRoomPage } from './chat-room/chat-room.page';
-import { ProjinfoPage } from './projinfo/projinfo.page';
 import { QRelsePage } from './qrelse/qrelse.page';
-import { TaskInfoPage } from './task-info/task-info.page';
 
 @Component({
   selector: 'app-subscribes',
@@ -115,20 +113,6 @@ export class SubscribesPage implements OnInit {
   go_to_chatroom() {
     this.modalCtrl.create({
       component: ChatRoomPage,
-      componentProps: {},
-    }).then(v => v.present());
-  }
-
-  go_to_projinfo() {
-    this.modalCtrl.create({
-      component: ProjinfoPage,
-      componentProps: {},
-    }).then(v => v.present());
-  }
-
-  go_to_taskinfo() {
-    this.modalCtrl.create({
-      component: TaskInfoPage,
       componentProps: {},
     }).then(v => v.present());
   }
