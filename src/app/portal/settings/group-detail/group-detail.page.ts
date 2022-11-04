@@ -50,6 +50,9 @@ export class GroupDetailPage implements OnInit {
           this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${this.info['users'][i].user.id}/profile.img`, (e, v) => {
             if (e && v) this.info['users'][i]['img'] = v;
           });
+    if (this.info['users'])
+      for (let i = 0, j = this.info['users'].length; i < j; i++)
+        this.info['users'][i]['status'] = this.info['status'];
     if (this.is_online) { // 서버로부터 정보를 받아옴
       this.nakama.servers[_is_official][_target].client.listGroupUsers(
         this.nakama.servers[_is_official][_target].session, this.info['id'],
@@ -57,6 +60,8 @@ export class GroupDetailPage implements OnInit {
         // 삭제된 그룹 여부 검토
         if (!v.group_users.length) {
           this.info['status'] = 'missing';
+          for (let i = 0, j = this.info['users'].length; i < j; i++)
+            this.info['users']['status'] = 'missing';
         } else { // 활성 그룹인 경우
           this.info['users'] = v.group_users;
           /** 그룹 내 다른 사람들의 프로필 이미지 요청 */
@@ -93,6 +98,7 @@ export class GroupDetailPage implements OnInit {
                 break;
             }
           }
+          // 아래 다른 사람들의 이미지 받아오기
           this.nakama.servers[_is_official][_target].client.readStorageObjects(
             this.nakama.servers[_is_official][_target].session, {
             object_ids: object_req,

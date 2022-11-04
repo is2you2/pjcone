@@ -79,6 +79,26 @@ export class SettingsPage implements OnInit {
                   this.groups.push(group_and_server_info);
                 });
               } else { // 그룹 활성중
+                let at_least_kicked = true;
+                for (let i = 0, j = v.group_users.length; i < j; i++)
+                  if (v.group_users[i].user.id == this.nakama.servers[_is_official][_target].session.user_id) {
+                    switch (v.group_users[i].state) {
+                      case 0: // superadmin
+                      case 1: // admin
+                      case 2: // member
+                        group_and_server_info['status'] = 'online';
+                        break;
+                      case 3: // request
+                        group_and_server_info['status'] = 'pending';
+                        break;
+                      default:
+                        console.warn('이해할 수 없는 코드 반환: ', v.group_users[i].state);
+                        group_and_server_info['status'] = 'missing';
+                        break;
+                    }
+                    at_least_kicked = false;
+                    break;
+                  }
                 this.nakama.servers[_is_official][_target].client.readStorageObjects(
                   this.nakama.servers[_is_official][_target].session, {
                   object_ids: [{
@@ -91,7 +111,8 @@ export class SettingsPage implements OnInit {
                     group_and_server_info['img'] = v.objects[0].value['img'];
                     this.indexed.saveTextFileToUserPath(group_and_server_info['img'], `servers/${_is_official}/${_target}/groups/${group_and_server_info['id']}.img`)
                   }
-                  this.groups.push(group_and_server_info);
+                  if (!at_least_kicked)
+                    this.groups.push(group_and_server_info);
                 });
               }
             })

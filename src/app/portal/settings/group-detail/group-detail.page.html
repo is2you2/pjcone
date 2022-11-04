@@ -9,8 +9,7 @@
 
 <ion-content>
   <ion-item button (click)="buttonClickInputFile()">
-    <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[(info.status || statusBar.groupServer[info.server.isOfficial][info.server.target])]">
+    <div class="additional_form status_bar_single" [style]="'background-color: ' + statusBar.colors[(info.status || statusBar.groupServer[info.server.isOfficial][info.server.target])]">
     </div>
     <div class="additional_form bg_img_form">
       <img class="bg_img"
@@ -36,7 +35,7 @@
     </div>
     <div class="additional_form bg_img_form">
       <img class="bg_img"
-        [style]="'filter: ' + ((((user.status || statusBar.groupServer[info.server.isOfficial][info.server.target]) == 'online') || ((user.status || statusBar.groupServer[info.server.isOfficial][info.server.target]) == 'certified')) ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
+        [style]="'filter: ' + (((user.status == 'online') || (user.status == 'certified')) ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
         [src]="user.img">
     </div>
     <ion-label class="form_margin">{{user.user.display_name}}</ion-label>

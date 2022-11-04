@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
-import { ModalController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -23,6 +23,7 @@ export class SubscribesPage implements OnInit {
     private tools: ToolServerService,
     private weblink: WeblinkService,
     public nakama: NakamaService,
+    private alertCtrl: AlertController,
   ) { }
 
   cant_scan = false;
@@ -132,6 +133,41 @@ export class SubscribesPage implements OnInit {
       case -4: // 상대방이 그룹 참가 수락
         break;
       case -5: // 그룹 참가 요청 받음
+        let server_info = this.nakama.notifications[i]['server'];
+        let this_server = this.nakama.servers[server_info['isOfficial']][server_info['target']];
+        this_server.client.getUsers(this_server.session, this.nakama.notifications[i]['sender_id'],)
+          .then(v => {
+            if (v.users.length) {
+              let msg = '';
+              msg += `서버: ${this.nakama.notifications[i]['server']['name']}<br>`;
+              msg += `사용자명: ${v.users[0].display_name}`;
+              this.alertCtrl.create({
+                header: '그룹 참가 요청',
+                message: msg,
+                buttons: [{
+                  text: '수락',
+                  handler: () => {
+                    this_server.client.addGroupUsers(this_server.session, this.nakama.notifications[i]['content']['group_id'], [v.users[0].id])
+                      .then(v => {
+                        if (!v) console.warn('밴인 경우인 것 같음, 확인 필요');
+                        this_server.client.deleteNotifications(this_server.session, [this.nakama.notifications[i]['id']]);
+                        this.nakama.notifications.splice(i, 1);
+                      });
+                  }
+                }, {
+                  text: '거절',
+                  handler: () => {
+                    this_server.client.kickGroupUsers(this_server.session, this.nakama.notifications[i]['content']['group_id'], [v.users[0].id])
+                      .then(v => {
+                        if (!v) console.warn('그룹 참여 거절을 kick한 경우 오류');
+                        this_server.client.deleteNotifications(this_server.session, [this.nakama.notifications[i]['id']]);
+                        this.nakama.notifications.splice(i, 1);
+                      })
+                  }
+                }],
+              }).then(v => v.present());
+            }
+          });
         break;
       case -6: // 친구가 다른 게임에 참여
         break;

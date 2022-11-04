@@ -343,6 +343,7 @@ export class NakamaService {
     this.servers[_is_official][_target].client.listNotifications(this.servers[_is_official][_target].session, 3)
       .then(v => {
         for (let i = 0, j = v.notifications.length; i < j; i++) {
+          let is_removed = false;
           v.notifications[i]['server'] = this.servers[_is_official][_target].info;
           switch (v.notifications[i].code) {
             case 0: // 예약된 메시지
@@ -362,11 +363,17 @@ export class NakamaService {
               v.notifications[i]['request'] = v.notifications[i].subject;
               break;
             case -5: // 그룹 참가 요청 받음
-              let group_id = this.groups[_is_official][_target][v.notifications[i].content['group_id']];
-              if (group_id) {
-                v.notifications[i]['request'] = `그룹참가 요청 샘플: ${group_id}`;
+              let group_info = this.groups[_is_official][_target][v.notifications[i].content['group_id']];
+              if (group_info) {
+                v.notifications[i]['request'] = `그룹참가 요청: ${group_info['name']}`;
               } else {
-                v.notifications[i]['request'] = '만료된 요청 샘플';
+                is_removed = true;
+                this.servers[_is_official][_target].client.deleteNotifications(
+                  this.servers[_is_official][_target].session, [v.notifications[i].id]
+                ).then(v => {
+                  if (v) this.update_notifications(_is_official, _target);
+                  else console.warn('알림 지우기 실패: ', v);
+                });
               }
               break;
             case -6: // 친구가 다른 게임에 참여
@@ -380,6 +387,7 @@ export class NakamaService {
               v.notifications[i]['request'] = v.notifications[i].subject;
               break;
           }
+          if (is_removed) continue;
           if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
           if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
           this.noti_origin[_is_official][_target][v.notifications[i].id] = v.notifications[i];
