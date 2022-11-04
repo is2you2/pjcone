@@ -336,11 +336,19 @@ export class NakamaService {
         for (let i = 0, j = v.notifications.length; i < j; i++) {
           v.notifications[i]['server'] = this.servers[_is_official][_target].info;
           switch (v.notifications[i].code) {
-            case -1: // 1:1 채팅 요청에 대해서
+            case 0: // 예약된 메시지
+              break;
+            case -1: // 오프라인일 때 받은 알림
               // 모든 채팅에 대한건지, 1:1에 한정인지 검토 필요
               v.notifications[i]['request'] = v.notifications[i].subject;
               break;
-            case -5: // 그룹 참가 요청에 대해서
+            case -2: // 친구 요청 받음
+              break;
+            case -3: // 상대방이 친구 요청 수락
+              break;
+            case -4: // 상대방이 그룹 참가 수락
+              break;
+            case -5: // 그룹 참가 요청 받음
               let group_id = this.groups[_is_official][_target][v.notifications[i].content['group_id']];
               if (group_id) {
                 v.notifications[i]['request'] = `그룹참가 요청 샘플: ${group_id}`;
@@ -348,6 +356,8 @@ export class NakamaService {
                 v.notifications[i]['request'] = '만료된 요청 샘플';
               }
               break;
+            case -6: // 친구가 다른 게임에 참여
+            case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
             default:
               console.warn('준비되지 않은 요청 내용: ', v);
               v.notifications[i]['request'] = v.notifications[i].subject;
@@ -520,8 +530,16 @@ export class NakamaService {
         // 실시간으로 알림을 받은 경우
         socket.onnotification = (v) => {
           switch (v.code) {
-            case -1: // 1:1 채팅 요청
+            case 0: // 예약된 알림
+              break;
+            case -1: // 오프라인일 때 받은 알림
               console.warn('1:1 채팅만인지 검토 필요');
+              break;
+            case -2: // 친구 요청 받음
+              break;
+            case -3: // 상대방이 친구 요청 수락
+              break;
+            case -4: // 상대방이 그룹 참가 수락
               break;
             case -5: // 그룹 참가 요청 받음
               console.warn('안드로이드에서 테스트 필요');
@@ -563,6 +581,8 @@ export class NakamaService {
                 }).then(v => v.present());
               });
               break;
+            case -6: // 친구가 다른 게임에 참여
+            case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
             default:
               console.warn('확인되지 않은 실시간 알림_nakama_noti: ', v);
               break;
