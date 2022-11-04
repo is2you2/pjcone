@@ -331,22 +331,26 @@ export class NakamaService {
 
   /** 서버 알림 업데이트하기 */
   update_notifications(_is_official: string, _target: string) {
-    this.servers[_is_official][_target].client.listNotifications(this.servers[_is_official][_target].session, 5)
+    this.servers[_is_official][_target].client.listNotifications(this.servers[_is_official][_target].session, 3)
       .then(v => {
         for (let i = 0, j = v.notifications.length; i < j; i++) {
           v.notifications[i]['server'] = this.servers[_is_official][_target].info;
           switch (v.notifications[i].code) {
             case 0: // 예약된 메시지
+              v.notifications[i]['request'] = v.notifications[i].subject;
               break;
             case -1: // 오프라인일 때 받은 알림
               // 모든 채팅에 대한건지, 1:1에 한정인지 검토 필요
               v.notifications[i]['request'] = v.notifications[i].subject;
               break;
             case -2: // 친구 요청 받음
+              v.notifications[i]['request'] = v.notifications[i].subject;
               break;
             case -3: // 상대방이 친구 요청 수락
+              v.notifications[i]['request'] = v.notifications[i].subject;
               break;
             case -4: // 상대방이 그룹 참가 수락
+              v.notifications[i]['request'] = v.notifications[i].subject;
               break;
             case -5: // 그룹 참가 요청 받음
               let group_id = this.groups[_is_official][_target][v.notifications[i].content['group_id']];
@@ -357,7 +361,11 @@ export class NakamaService {
               }
               break;
             case -6: // 친구가 다른 게임에 참여
+              v.notifications[i]['request'] = v.notifications[i].subject;
+              break;
             case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
+              v.notifications[i]['request'] = v.notifications[i].subject;
+              break;
             default:
               console.warn('준비되지 않은 요청 내용: ', v);
               v.notifications[i]['request'] = v.notifications[i].subject;
@@ -548,12 +556,11 @@ export class NakamaService {
               this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${group_detail['id']}.img`, (e, v) => {
                 if (e && v) group_detail['img'] = v;
               });
+              this.update_notifications(_is_official, _target);
               // 이미 보는 화면이라면 업데이트하기
               if (this.socket_reactive[v.code].info.id == v.content['group_id'])
                 this.socket_reactive[v.code].ngOnInit();
               this.noti.SetListener(`check${v.code}`, (_v: any) => {
-                this.servers[_is_official][_target].client.deleteNotifications(
-                  this.servers[_is_official][_target].session, [v.id]);
                 if (this.socket_reactive[v.code]) return;
                 this.noti.ClearNoti(_v['id']);
                 this.noti.RemoveListener(`check${v.code}`);
@@ -572,8 +579,6 @@ export class NakamaService {
                 icon: 'diychat',
                 iconColor_ln: '271e38',
               }, undefined, (_ev: any) => {
-                this.servers[_is_official][_target].client.deleteNotifications(
-                  this.servers[_is_official][_target].session, [v.id]);
                 if (this.socket_reactive[v.code].info.id == v.content['group_id']) return;
                 this.modalCtrl.create({
                   component: GroupDetailPage,
@@ -582,7 +587,9 @@ export class NakamaService {
               });
               break;
             case -6: // 친구가 다른 게임에 참여
+              break;
             case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
+              break;
             default:
               console.warn('확인되지 않은 실시간 알림_nakama_noti: ', v);
               break;

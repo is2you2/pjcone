@@ -119,6 +119,26 @@ export class SubscribesPage implements OnInit {
 
   /** Nakama 서버 알림 읽기 */
   check_notifications(i: number) {
-    console.log('알림 읽기 준비중: ', i);
+    console.log('해당 알림 내용: ', this.nakama.notifications[i]);
+    switch (this.nakama.notifications[i].code) {
+      case 0: // 예약된 알림
+        break;
+      case -1: // 오프라인일 때 받은 알림
+        break;
+      case -2: // 친구 요청 받음
+        break;
+      case -3: // 상대방이 친구 요청 수락
+        break;
+      case -4: // 상대방이 그룹 참가 수락
+        break;
+      case -5: // 그룹 참가 요청 받음
+        break;
+      case -6: // 친구가 다른 게임에 참여
+        break;
+      case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
+        break;
+      default:
+        break;
+    }
   }
 }
