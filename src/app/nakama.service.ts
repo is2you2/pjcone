@@ -260,6 +260,15 @@ export class NakamaService {
 
   /** Nakama에서 들어왔던, 읽지 않은 알림들 */
   notifications = [];
+  /** Nakama에서 수신한 그룹별 알림  
+   * { isOfficial: {
+   *     target: {
+   *       notification.id: value...
+   *     }
+   *   }
+   * }
+   */
+  noti_origin = {};
   uuid: string;
   /** 세션처리
    * @param _CallBack 오류시 행동방침
@@ -371,15 +380,32 @@ export class NakamaService {
               v.notifications[i]['request'] = v.notifications[i].subject;
               break;
           }
+          if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
+          if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
+          this.noti_origin[_is_official][_target][v.notifications[i].id] = v.notifications[i];
         }
-        this.notifications = [...this.notifications, ...v.notifications];
-        this.notifications.sort((a, b) => {
-          if (a.create_time < b.create_time) return 1;
-          if (a.create_time > b.create_time) return -1;
-          return 0;
-        });
-        console.log('서버알림 업데이트됨: ', this.notifications);
+        this.rearrange_notifications();
       });
+  }
+
+  /** 그룹별 알림을 시간순으로 정렬함 */
+  rearrange_notifications() {
+    this.notifications.length = 0;
+    let isOfficial = Object.keys(this.noti_origin);
+    isOfficial.forEach(_is_official => {
+      let Target = Object.keys(this.noti_origin[_is_official]);
+      Target.forEach(_target => {
+        let NotificationId = Object.keys(this.noti_origin[_is_official][_target]);
+        NotificationId.forEach(_noti_id => {
+          this.notifications.push(this.noti_origin[_is_official][_target][_noti_id]);
+        });
+      });
+    });
+    this.notifications.sort((a, b) => {
+      if (a.create_time < b.create_time) return 1;
+      if (a.create_time > b.create_time) return -1;
+      return 0;
+    });
   }
 
   /** 등록된 그룹 아이디들, 서버에 저장되어있고 동기화시켜야합니다
