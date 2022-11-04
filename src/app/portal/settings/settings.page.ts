@@ -70,15 +70,15 @@ export class SettingsPage implements OnInit {
           if (this.statusBar.groupServer[_is_official][_target] == 'online') {
             this.nakama.servers[_is_official][_target].client.listGroupUsers(
               this.nakama.servers[_is_official][_target].session, group_and_server_info['id']
-            ).then(v => {
-              if (!v.group_users.length) { // 삭제된 그룹 여부 검토
+            ).then(v => { // 삭제된 그룹 여부 검토
+              if (!v.group_users.length) { // 그룹 비활성중
                 group_and_server_info['status'] = 'missing';
                 this.nakama.groups[_is_official][_target][_group_name]['status'] = 'missing';
                 this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${group_and_server_info['id']}.img`, (e, v) => {
                   if (e && v) group_and_server_info['img'] = v;
                   this.groups.push(group_and_server_info);
                 });
-              } else {
+              } else { // 그룹 활성중
                 this.nakama.servers[_is_official][_target].client.readStorageObjects(
                   this.nakama.servers[_is_official][_target].session, {
                   object_ids: [{

@@ -57,7 +57,7 @@ export class GroupDetailPage implements OnInit {
         // 삭제된 그룹 여부 검토
         if (!v.group_users.length) {
           this.info['status'] = 'missing';
-        } else {
+        } else { // 활성 그룹인 경우
           this.info['users'] = v.group_users;
           /** 그룹 내 다른 사람들의 프로필 이미지 요청 */
           let object_req = [];
@@ -180,8 +180,10 @@ export class GroupDetailPage implements OnInit {
     delete less_info['server'];
     delete less_info['img'];
     if (less_info['users'])
-      for (let i = 0, j = less_info['users'].length; i < j; i++)
+      for (let i = 0, j = less_info['users'].length; i < j; i++) {
         delete less_info['users'][i]['img'];
+        delete less_info['users'][i]['status'];
+      }
     this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']] = less_info;
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.groups), 'servers/groups.json');
   }
