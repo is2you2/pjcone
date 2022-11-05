@@ -121,6 +121,8 @@ export class SubscribesPage implements OnInit {
   /** Nakama 서버 알림 읽기 */
   check_notifications(i: number) {
     console.log('해당 알림 내용: ', this.nakama.notifications[i]);
+    let server_info = this.nakama.notifications[i]['server'];
+    let this_server = this.nakama.servers[server_info['isOfficial']][server_info['target']];
     switch (this.nakama.notifications[i].code) {
       case 0: // 예약된 알림
         break;
@@ -129,12 +131,15 @@ export class SubscribesPage implements OnInit {
       case -2: // 친구 요청 받음
         break;
       case -3: // 상대방이 친구 요청 수락
-        break;
       case -4: // 상대방이 그룹 참가 수락
+      case -6: // 친구가 다른 게임에 참여
+        this_server.client.deleteNotifications(this_server.session, this.nakama.notifications[i]['id'])
+          .then(v => {
+            if (!v) console.warn('그룹 참가 수락의 false 처리에 대해서 검토 필요');
+            this.nakama.notifications.splice(i, 1);
+          });
         break;
       case -5: // 그룹 참가 요청 받음
-        let server_info = this.nakama.notifications[i]['server'];
-        let this_server = this.nakama.servers[server_info['isOfficial']][server_info['target']];
         this_server.client.getUsers(this_server.session, this.nakama.notifications[i]['sender_id'],)
           .then(v => {
             if (v.users.length) {
@@ -168,8 +173,6 @@ export class SubscribesPage implements OnInit {
               }).then(v => v.present());
             }
           });
-        break;
-      case -6: // 친구가 다른 게임에 참여
         break;
       case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
         break;

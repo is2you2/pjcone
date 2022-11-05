@@ -9,7 +9,8 @@
 
 <ion-content>
   <ion-item button (click)="buttonClickInputFile()">
-    <div class="additional_form status_bar_single" [style]="'background-color: ' + statusBar.colors[(info.status || statusBar.groupServer[info.server.isOfficial][info.server.target])]">
+    <div class="additional_form status_bar_single"
+      [style]="'background-color: ' + statusBar.colors[(info.status || statusBar.groupServer[info.server.isOfficial][info.server.target])]">
     </div>
     <div class="additional_form bg_img_form">
       <img class="bg_img"
@@ -41,7 +42,7 @@
     <ion-label class="form_margin">{{user.user.display_name}}</ion-label>
   </ion-item>
   <ion-item-divider>
-    <ion-label>아래를 스캔하여 참여</ion-label>
+    <ion-label>아래를 스캔하여 그룹에 초대</ion-label>
   </ion-item-divider>
   <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="준비중">
   <ion-item *ngIf="is_online && has_admin" button (click)="remove_group()">

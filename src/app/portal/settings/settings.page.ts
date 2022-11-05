@@ -117,6 +117,7 @@ export class SettingsPage implements OnInit {
               }
             })
           } else { // 오프라인일 때는 리스트만 보여줌
+            group_and_server_info['status'] = 'offline';
             this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${group_and_server_info['id']}.img`, (e, v) => {
               if (e && v) group_and_server_info['img'] = v;
               this.groups.push(group_and_server_info);
