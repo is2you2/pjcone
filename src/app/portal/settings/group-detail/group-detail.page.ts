@@ -6,6 +6,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
+import { ProfilePage } from '../profile/profile.page';
 
 @Component({
   selector: 'app-group-detail',
@@ -196,7 +197,13 @@ export class GroupDetailPage implements OnInit {
 
   /** 사용자 프로필 열람 */
   open_user_profile(userInfo: any) {
-    console.warn('상대방 프로필 열기 준비중: ', userInfo);
+    if (userInfo['user']['is_me']) {
+      this.modalCtrl.create({
+        component: ProfilePage,
+      }).then(v => v.present());
+    } else {
+      console.log('상대방 프로필 정보: ', userInfo);
+    }
   }
 
   /** 그룹 떠나기 */

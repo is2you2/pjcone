@@ -6,6 +6,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import clipboard from "clipboardy";
 import { isPlatform } from 'src/app/app.component';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-profile',
@@ -19,6 +20,7 @@ export class ProfilePage implements OnInit {
     private statusBar: StatusManageService,
     private p5toast: P5ToastService,
     private indexed: IndexedDBService,
+    private modalCtrl: ModalController,
   ) { }
 
   /** 부드러운 이미지 교체를 위한 이미지 임시 배정 */
@@ -292,5 +294,10 @@ export class ProfilePage implements OnInit {
     } else localStorage.removeItem('name');
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
     this.p5canvas.remove();
+  }
+
+  go_back() {
+    if (this.modalCtrl['injector']['source'] != 'ProfilePageModule')
+      this.modalCtrl.dismiss();
   }
 }
