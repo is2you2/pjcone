@@ -1,0 +1,20 @@
+.fore-gradient {
+    position: relative;
+    background-image: linear-gradient(to top, #000f, #0000);
+    width: 100%;
+    height: 100%;
+}
+
+.content_size {
+    height: 32vh;
+}
+
+.profile_img {
+    position: absolute;
+    top: 50%;
+    transform: translate(0%, -50%);
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+}

@@ -1,0 +1,23 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>others-profile</ion-title>
+    <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
+      <ion-back-button defaultHref=""></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="profile_img_form">
+    <img [hidden]="!info.img" id="profile_img" class="profile_img" [src]="info.img" alt="프로필 이미지">
+    <img [hidden]="!tmp_img" id="profile_tmp_img" class="profile_img" [src]="tmp_img" alt="프로필 이미지">
+    <div class="fore-gradient"></div>
+    <div class="username">{{info['user'].display_name ?? '이름 없는 사용자'}}</div>
+  </div>
+  <ion-item-divider>
+    <ion-label>표시 콘텐츠</ion-label>
+  </ion-item-divider>
+  <div (click)="change_content()">
+    <textarea class="infobox content_size" disabled>없음.</textarea>
+  </div>
+</ion-content>

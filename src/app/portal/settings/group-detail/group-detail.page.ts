@@ -7,6 +7,7 @@ import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { ProfilePage } from '../profile/profile.page';
+import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 
 @Component({
   selector: 'app-group-detail',
@@ -202,7 +203,12 @@ export class GroupDetailPage implements OnInit {
         component: ProfilePage,
       }).then(v => v.present());
     } else {
-      console.log('상대방 프로필 정보: ', userInfo);
+      this.modalCtrl.create({
+        component: OthersProfilePage,
+        componentProps: {
+          info: userInfo,
+        }
+      }).then(v => v.present());
     }
   }
 
