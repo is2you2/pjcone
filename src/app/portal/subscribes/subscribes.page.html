@@ -20,12 +20,14 @@
       </ion-list>
     </ion-accordion>
   </ion-accordion-group>
-  <ion-item-divider>
-    <ion-label>만능 연결 버튼</ion-label>
-  </ion-item-divider>
-  <ion-item button (click)="scanQRCode()" [disabled]="cant_scan">
-    <ion-label class="ion-text-center">연결 !</ion-label>
-  </ion-item>
+  <div *ngIf="!cant_scan">
+    <ion-item-divider>
+      <ion-label>만능 연결 버튼</ion-label>
+    </ion-item-divider>
+    <ion-item button (click)="scanQRCode()">
+      <ion-label class="ion-text-center">연결 !</ion-label>
+    </ion-item>
+  </div>
   <ion-item-divider>
     <ion-label>대화</ion-label>
   </ion-item-divider>
