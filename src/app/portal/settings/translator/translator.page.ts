@@ -16,7 +16,7 @@ export class TranslatorPage implements OnInit {
     /** 번역가 표시명 */
     name: '정보 없음',
     /** 긴 글 */
-    text: undefined,
+    text: '기능 준비중',
   };
 
   ngOnInit() { }
