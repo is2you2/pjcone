@@ -207,6 +207,8 @@ export class GroupDetailPage implements OnInit {
         component: OthersProfilePage,
         componentProps: {
           info: userInfo,
+          group: this.info,
+          has_admin: this.has_admin,
         }
       }).then(v => v.present());
     }

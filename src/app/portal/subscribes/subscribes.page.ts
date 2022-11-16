@@ -140,7 +140,7 @@ export class SubscribesPage implements OnInit {
           });
         break;
       case -5: // 그룹 참가 요청 받음
-        this_server.client.getUsers(this_server.session, this.nakama.notifications[i]['sender_id'],)
+        this_server.client.getUsers(this_server.session, this.nakama.notifications[i]['sender_id'])
           .then(v => {
             if (v.users.length) {
               let msg = '';

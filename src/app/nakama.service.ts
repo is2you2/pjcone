@@ -338,29 +338,30 @@ export class NakamaService {
     }
   }
 
-  /** 서버 알림 업데이트하기 */
+  /** 서버로부터 알림 업데이트하기 (알림 리스트 재정렬 포함됨) */
   update_notifications(_is_official: string, _target: string) {
     this.servers[_is_official][_target].client.listNotifications(this.servers[_is_official][_target].session, 3)
       .then(v => {
+        this.noti_origin = {};
         for (let i = 0, j = v.notifications.length; i < j; i++) {
           let is_removed = false;
           v.notifications[i]['server'] = this.servers[_is_official][_target].info;
           switch (v.notifications[i].code) {
             case 0: // 예약된 메시지
-              v.notifications[i]['request'] = v.notifications[i].subject;
+              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
             case -1: // 오프라인일 때 받은 알림
               // 모든 채팅에 대한건지, 1:1에 한정인지 검토 필요
-              v.notifications[i]['request'] = v.notifications[i].subject;
+              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
             case -2: // 친구 요청 받음
-              v.notifications[i]['request'] = v.notifications[i].subject;
+              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
             case -3: // 상대방이 친구 요청 수락
-              v.notifications[i]['request'] = v.notifications[i].subject;
+              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
             case -4: // 상대방이 그룹 참가 수락
-              v.notifications[i]['request'] = v.notifications[i].subject;
+              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
             case -5: // 그룹 참가 요청 받음
               let group_info = this.groups[_is_official][_target][v.notifications[i].content['group_id']];
@@ -377,14 +378,14 @@ export class NakamaService {
               }
               break;
             case -6: // 친구가 다른 게임에 참여
-              v.notifications[i]['request'] = v.notifications[i].subject;
+              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
             case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
-              v.notifications[i]['request'] = v.notifications[i].subject;
+              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
             default:
               console.warn('준비되지 않은 요청 내용: ', v);
-              v.notifications[i]['request'] = v.notifications[i].subject;
+              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
           }
           if (is_removed) continue;
