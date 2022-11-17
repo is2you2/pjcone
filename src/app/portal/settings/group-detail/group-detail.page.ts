@@ -210,7 +210,27 @@ export class GroupDetailPage implements OnInit {
           group: this.info,
           has_admin: this.has_admin,
         }
-      }).then(v => v.present());
+      }).then(v => {
+        v.onDidDismiss().then(v => {
+          if (v.data)
+            for (let i = 0, j = this.info['users'].length; i < j; i++)
+              if (this.info['users'][i]['user']['id'] == v.data['id']) {
+                switch (v.data['act']) {
+                  case 'accept_join': // 그룹 참가 수락
+                    this.info['users'][i].status = 'online';
+                    break;
+                  case 'kick': // 추방
+                    this.info['users'].splice(i, 1);
+                    break;
+                  default:
+                    console.warn('예상하지 못한 상대방 정보: ', v);
+                    break;
+                }
+                break;
+              }
+        });
+        v.present();
+      });
     }
   }
 

@@ -38,7 +38,7 @@ export class OthersProfilePage implements OnInit {
       let tmp_img = document.getElementById('profile_tmp_img');
       const LERP_SIZE = .025;
       p.draw = () => {
-        if (this.info['status'] == 'online') {
+        if (this.info['status'] == 'online' || this.info['status'] == 'certified') {
           if (this.lerpVal < 1) {
             this.lerpVal += LERP_SIZE;
           } else {
@@ -109,7 +109,7 @@ export class OthersProfilePage implements OnInit {
     switch (code) {
       case 0: // 예약된 메시지
         break;
-      case -1: // 오프라인일 때 받은 알림
+      case -1: // 오프라인이거나 채널에 없을 때 알림 받음
         // 모든 채팅에 대한건지, 1:1에 한정인지 검토 필요
         break;
       case -2: // 친구 요청 받음
@@ -121,7 +121,7 @@ export class OthersProfilePage implements OnInit {
         ).then(v => {
           if (!v) console.warn('밴 유저에 대한것 같음, 확인 필요');
           this.p5toast.show({
-            text: '그룹원이 추가되었습니다',
+            text: `그룹원이 추가되었습니다: ${this.info['user']['display_name'] || '이름 없는 사용자'}`,
           });
           this.nakama.servers[this.isOfficial][this.target].client.deleteNotifications(
             this.nakama.servers[this.isOfficial][this.target].session,
@@ -130,6 +130,10 @@ export class OthersProfilePage implements OnInit {
             if (!v) console.warn('알림 부정 검토 필요');
             delete this.additional_buttons[code.toString()];
             this.nakama.update_notifications(this.isOfficial, this.target);
+            this.modalCtrl.dismiss({
+              id: this.info['user']['id'],
+              act: 'accept_join',
+            });
           });
         });
         break;
@@ -155,6 +159,13 @@ export class OthersProfilePage implements OnInit {
       this.group_info['id'], [this.info['user']['id']]
     ).then(v => {
       if (v) console.log('정상적으로 사용자 퇴출');
+      this.p5toast.show({
+        text: `사용자를 퇴출하였습니다: ${this.info['user']['display_name'] || '이름 없는 사용자'}`,
+      });
+      this.modalCtrl.dismiss({
+        id: this.info['user']['id'],
+        act: 'kick',
+      });
     });
   }
 }

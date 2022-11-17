@@ -350,7 +350,7 @@ export class NakamaService {
             case 0: // 예약된 메시지
               v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
-            case -1: // 오프라인일 때 받은 알림
+            case -1: // 오프라인이거나 채널에 없을 때 알림 받음
               // 모든 채팅에 대한건지, 1:1에 한정인지 검토 필요
               v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
@@ -574,17 +574,18 @@ export class NakamaService {
         let socket = this.servers[_is_official][_target].socket;
         // 실시간으로 알림을 받은 경우
         socket.onnotification = (v) => {
+          console.log('소켓에서 실시간으로 무언가 받음: ', v);
           switch (v.code) {
             case 0: // 예약된 알림
               break;
-            case -1: // 오프라인일 때 받은 알림
-              console.warn('1:1 채팅만인지 검토 필요');
-              break;
             case -2: // 친구 요청 받음
               break;
-            case -3: // 상대방이 친구 요청 수락
+            case -1: // 오프라인이거나 채널에 없을 때 알림 받음
+              console.log('알림 -1: ', v);
               break;
+            case -3: // 상대방이 친구 요청 수락
             case -4: // 상대방이 그룹 참가 수락
+              this.update_notifications(_is_official, _target);
               break;
             case -5: // 그룹 참가 요청 받음
               console.warn('안드로이드에서 테스트 필요');
@@ -608,7 +609,7 @@ export class NakamaService {
               });
               this.noti.PushLocal({
                 id: v.code,
-                title: `그룹 참가 요청: ${group_detail['title']}`,
+                title: `${group_detail['title']} 그룹에 참가 요청`,
                 actions_ln: [{
                   id: `check${v.code}`,
                   title: '검토',

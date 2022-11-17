@@ -126,7 +126,7 @@ export class SubscribesPage implements OnInit {
     switch (this.nakama.notifications[i].code) {
       case 0: // 예약된 알림
         break;
-      case -1: // 오프라인일 때 받은 알림
+      case -1: // 오프라인이거나 채널에 없을 때 알림 받음
         break;
       case -2: // 친구 요청 받음
         break;
@@ -135,7 +135,7 @@ export class SubscribesPage implements OnInit {
       case -6: // 친구가 다른 게임에 참여
         this_server.client.deleteNotifications(this_server.session, this.nakama.notifications[i]['id'])
           .then(v => {
-            if (!v) console.warn('그룹 참가 수락의 false 처리에 대해서 검토 필요');
+            if (!v) console.warn('알림 거부처리 검토 필요');
             this.nakama.notifications.splice(i, 1);
           });
         break;
@@ -171,6 +171,15 @@ export class SubscribesPage implements OnInit {
                   }
                 }],
               }).then(v => v.present());
+            } else {
+              this_server.client.deleteNotifications(this_server.session, this.nakama.notifications[i]['id'])
+                .then(v => {
+                  if (!v) console.warn('알림 거부처리 검토 필요');
+                  this.p5toast.show({
+                    text: '만료된 알림: 사용자 없음',
+                  })
+                  this.nakama.notifications.splice(i, 1);
+                });
             }
           });
         break;
