@@ -138,6 +138,8 @@ export class GroupServerPage implements OnInit {
             break;
           }
         }
+        delete this.statusBar.groupServer[_is_official][_target];
+        this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
         this.indexed.saveTextFileToUserPath(lines.join('\n'), 'servers/list_detail.csv');
       }
     });
