@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
-import { Client, Session, Socket } from "@heroiclabs/nakama-js";
+import { Channel, Client, Session, Socket } from "@heroiclabs/nakama-js";
 import { SOCKET_SERVER_ADDRESS } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
@@ -25,6 +25,7 @@ export interface ServerInfo {
 
 /** 서버마다 구성 */
 interface NakamaGroup {
+  /** 서버 정보 */
   info?: ServerInfo;
   client?: Client;
   session?: Session;
@@ -423,6 +424,32 @@ export class NakamaService {
   groups: any = {
     'official': {},
     'unofficial': {},
+  }
+
+  /** 등록된 채널들 관리  
+   * channels_orig[isOfficial][target]***[group_id or null]***[channels] = [ ...info ]
+   */
+  channels_orig = {};
+
+  /** 리스트로 정리된 채널, 채널 자체는 channels_orig에 보관됩니다  
+   */
+  channels: any[] = [];
+
+  /** 채널 추가 */
+  add_channels(channel_info: Channel, _is_official: string, _target: string) {
+    console.log('채널 추가하기: ', channel_info, _is_official, _target);
+    this.rearrange_channels();
+  }
+
+  /** 채널 삭제 */
+  remove_channels(channel_id: string, _is_official: string, _target: string) {
+    console.log('채널 삭제하기');
+    this.rearrange_channels();
+  }
+
+  /** 채널 리스트 정리 */
+  rearrange_channels() {
+    console.log('채널 리스트 정리');
   }
 
   /** base64 정보에 대해 Nakama에서 허용하는 수준으로 이미지 크기 줄이기

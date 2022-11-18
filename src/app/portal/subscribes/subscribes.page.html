@@ -31,17 +31,19 @@
   <ion-item-divider>
     <ion-label>대화</ion-label>
   </ion-item-divider>
-  <ion-item button [disabled]="true">
+  <ion-item *ngIf="!nakama.channels.length" button [disabled]="true">
     <ion-label>참여중인 대화가 없습니다.</ion-label>
   </ion-item>
-  <ion-item button (click)="go_to_chatroom()">
-    <div class="additional_form status_bar_double" style="background-color: #888;"></div>
-    <div class="additional_form bg_img_form">
-      <img class="bg_img" style="filter: grayscale(.9) contrast(1.4);" src="assets/icon/favicon.png">
-    </div>
-    <ion-label>
-      <div class="form_margin header"> 대화방 제목 </div>
-      <div class="form_margin content"> 구 서버 연결 없음 색상 </div>
-    </ion-label>
-  </ion-item>
+  <ion-list *ngIf="nakama.channels.length">
+    <ion-item button (click)="go_to_chatroom()">
+      <div class="additional_form status_bar_double" style="background-color: #888;"></div>
+      <div class="additional_form bg_img_form">
+        <img class="bg_img" style="filter: grayscale(.9) contrast(1.4);" src="assets/icon/favicon.png">
+      </div>
+      <ion-label>
+        <div class="form_margin header"> 대화방 제목 </div>
+        <div class="form_margin content"> 구 서버 연결 없음 색상 </div>
+      </ion-label>
+    </ion-item>
+  </ion-list>
 </ion-content>

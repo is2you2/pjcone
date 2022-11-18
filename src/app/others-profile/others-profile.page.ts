@@ -103,6 +103,7 @@ export class OthersProfilePage implements OnInit {
     });
   }
 
+  onDismissData = {};
   /** 알림에 의해 생성된 버튼들의 반응 */
   notification_react(code: number) {
     console.log('알림에 따른 행동: ', code);
@@ -130,10 +131,10 @@ export class OthersProfilePage implements OnInit {
             if (!v) console.warn('알림 부정 검토 필요');
             delete this.additional_buttons[code.toString()];
             this.nakama.update_notifications(this.isOfficial, this.target);
-            this.modalCtrl.dismiss({
+            this.onDismissData = {
               id: this.info['user']['id'],
               act: 'accept_join',
-            });
+            };
           });
         });
         break;
@@ -143,12 +144,12 @@ export class OthersProfilePage implements OnInit {
     }
   }
 
-  /** 대화 생성하기 */
+  /** 1:1 대화 생성하기 */
   create_chat() {
     this.nakama.servers[this.isOfficial][this.target].socket.joinChat(
       this.info['user']['id'], 2, true, false
     ).then(c => {
-      console.log('채널 생성됨: ', c);
+      console.log('create_chat 준비중: ', c);
     });
   }
 
