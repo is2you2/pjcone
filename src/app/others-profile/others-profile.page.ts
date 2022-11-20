@@ -136,6 +136,8 @@ export class OthersProfilePage implements OnInit {
               id: this.info['user']['id'],
               act: 'accept_join',
             };
+            this.info['status'] = 'online';
+            this.p5canvas.loop();
           });
         });
         break;
@@ -150,11 +152,16 @@ export class OthersProfilePage implements OnInit {
     this.nakama.servers[this.isOfficial][this.target].socket.joinChat(
       this.info['user']['id'], 2, true, false
     ).then(c => {
-      this.nakama.add_channels(c, this.isOfficial, this.target);
+      let _info = { ...c };
+      _info['info'] = {
+        isOfficial: this.isOfficial,
+        target: this.target,
+        group: 'directmsg',
+      }
       this.modalCtrl.create({
         component: ChatRoomPage,
         componentProps: {
-          info: c,
+          info: _info,
         },
       }).then(v => v.present());
     });

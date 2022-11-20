@@ -354,7 +354,24 @@ export class NakamaService {
               break;
             case -1: // 오프라인이거나 채널에 없을 때 알림 받음
               // 모든 채팅에 대한건지, 1:1에 한정인지 검토 필요
-              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
+              let targetType: number;
+              if (v['content'] && v['content']['username'])
+                targetType = 2;
+              // 요청 타입을 구분하여 자동반응처리
+              switch (targetType) {
+                case 2:
+                  this.servers[_is_official][_target].socket.joinChat(
+                    v['sender_id'], targetType, v['persistent'], false,
+                  ).then(c => {
+                    this.add_channels(c, _is_official, _target);
+                    this.servers[_is_official][_target].client.deleteNotifications(
+                      this.servers[_is_official][_target].session, [v.notifications[i]['id']]);
+                  });
+                  break;
+                default:
+                  console.warn('예상하지 못한 알림 행동처리: ', v);
+                  break;
+              }
               break;
             case -2: // 친구 요청 받음
               v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
@@ -386,7 +403,7 @@ export class NakamaService {
               v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
             default:
-              console.warn('준비되지 않은 요청 내용: ', v);
+              console.warn('준비되지 않은 요청 내용: ', v, '/', i);
               v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
           }
@@ -476,8 +493,15 @@ export class NakamaService {
         let GroupKeys = Object.keys(this.channels_orig[isOfficial[i]][Targets[k]]);
         for (let m = 0, n = GroupKeys.length; m < n; m++) {
           let ChannelIds = Object.keys(this.channels_orig[isOfficial[i]][Targets[k]][GroupKeys[m]]);
-          for (let o = 0, p = ChannelIds.length; o < p; o++)
-            result.push(this.channels_orig[isOfficial[i]][Targets[k]][GroupKeys[m]][ChannelIds[o]]);
+          for (let o = 0, p = ChannelIds.length; o < p; o++) {
+            let channel_info = this.channels_orig[isOfficial[i]][Targets[k]][GroupKeys[m]][ChannelIds[o]];
+            channel_info['info'] = {
+              isOfficial: isOfficial[i],
+              target: Targets[k],
+              group: GroupKeys[m],
+            }
+            result.push(channel_info);
+          }
         }
       }
     }

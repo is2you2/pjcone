@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
-import { Channel } from '@heroiclabs/nakama-js';
 import { AlertController, ModalController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { NakamaService } from 'src/app/nakama.service';
@@ -112,7 +111,7 @@ export class SubscribesPage implements OnInit {
   }
 
   /** 채팅방으로 이동하기 */
-  go_to_chatroom(info: Channel) {
+  go_to_chatroom(info: any) {
     this.modalCtrl.create({
       component: ChatRoomPage,
       componentProps: {
