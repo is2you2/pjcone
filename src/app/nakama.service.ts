@@ -105,6 +105,7 @@ export class NakamaService {
       if (e && v)
         this.groups = JSON.parse(v);
     })
+    this.load_channel_list();
   }
   /** 공식 테스트 서버를 대상으로 Nakama 클라이언트 구성을 진행합니다.
    * @param _is_official 공식 서버 여부
@@ -429,27 +430,59 @@ export class NakamaService {
   /** 등록된 채널들 관리  
    * channels_orig[isOfficial][target]***[group_id or null]***[channels] = [ ...info ]
    */
-  channels_orig = {};
+  channels_orig = {
+    'official': {},
+    'unofficial': {},
+  };
 
   /** 리스트로 정리된 채널, 채널 자체는 channels_orig에 보관됩니다  
    */
   channels: any[] = [];
 
   /** 채널 추가 */
-  add_channels(channel_info: Channel, _is_official: string, _target: string) {
-    console.log('채널 추가하기: ', channel_info, _is_official, _target);
+  add_channels(channel_info: Channel, _is_official: string, _target: string, _group_id: string = 'directmsg') {
+    if (!this.channels_orig[_is_official][_target])
+      this.channels_orig[_is_official][_target] = {};
+    if (!this.channels_orig[_is_official][_target][_group_id])
+      this.channels_orig[_is_official][_target][_group_id] = {};
+    if (this.channels_orig[_is_official][_target][_group_id][channel_info.id] === undefined)
+      this.channels_orig[_is_official][_target][_group_id][channel_info.id] = channel_info;
     this.rearrange_channels();
   }
 
   /** 채널 삭제 */
-  remove_channels(channel_id: string, _is_official: string, _target: string) {
+  remove_channels(channel_id: string, _is_official: string, _target: string, _group_id = 'directmsg') {
     console.log('채널 삭제하기');
     this.rearrange_channels();
   }
 
+  /** 채팅 기록 가져오기 */
+  load_channel_list() {
+    this.indexed.loadTextFromUserPath('servers/channels.json', (e, v) => {
+      if (e && v) {
+        this.channels_orig = JSON.parse(v);
+        this.rearrange_channels();
+      }
+    });
+  }
+
   /** 채널 리스트 정리 */
   rearrange_channels() {
-    console.log('채널 리스트 정리');
+    let result = [];
+    let isOfficial = Object.keys(this.channels_orig);
+    for (let i = 0, j = isOfficial.length; i < j; i++) {
+      let Targets = Object.keys(this.channels_orig[isOfficial[i]]);
+      for (let k = 0, l = Targets.length; k < l; k++) {
+        let GroupKeys = Object.keys(this.channels_orig[isOfficial[i]][Targets[k]]);
+        for (let m = 0, n = GroupKeys.length; m < n; m++) {
+          let ChannelIds = Object.keys(this.channels_orig[isOfficial[i]][Targets[k]][GroupKeys[m]]);
+          for (let o = 0, p = ChannelIds.length; o < p; o++)
+            result.push(this.channels_orig[isOfficial[i]][Targets[k]][GroupKeys[m]][ChannelIds[o]]);
+        }
+      }
+    }
+    this.channels = result;
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.channels_orig), 'servers/channels.json');
   }
 
   /** base64 정보에 대해 Nakama에서 허용하는 수준으로 이미지 크기 줄이기
@@ -608,7 +641,24 @@ export class NakamaService {
             case -2: // 친구 요청 받음
               break;
             case -1: // 오프라인이거나 채널에 없을 때 알림 받음
-              console.log('알림 -1: ', v);
+              let targetType: number;
+              if (v['content']['username'])
+                targetType = 2;
+              // 요청 타입을 구분하여 자동반응처리
+              switch (targetType) {
+                case 2:
+                  socket.joinChat(
+                    v['sender_id'], targetType, v['persistent'], false,
+                  ).then(c => {
+                    this.add_channels(c, _is_official, _target);
+                    this.servers[_is_official][_target].client.deleteNotifications(
+                      this.servers[_is_official][_target].session, [v['id']]);
+                  });
+                  break;
+                default:
+                  console.warn('예상하지 못한 알림 행동처리: ', v);
+                  break;
+              }
               break;
             case -3: // 상대방이 친구 요청 수락
             case -4: // 상대방이 그룹 참가 수락

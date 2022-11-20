@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
-import { GlobalActService } from 'src/app/global-act.service';
+import { Channel } from '@heroiclabs/nakama-js';
+import { ModalController, NavParams } from '@ionic/angular';
 
 @Component({
   selector: 'app-chat-room',
@@ -10,22 +10,24 @@ import { GlobalActService } from 'src/app/global-act.service';
 export class ChatRoomPage implements OnInit {
 
   constructor(
-    private app: GlobalActService,
     public modalCtrl: ModalController,
+    private navParams: NavParams,
   ) { }
 
-  ngOnInit() { }
+  info: Channel;
+
+  ngOnInit() {
+    this.info = this.navParams.get('info');
+    console.log('채팅 채널 정보: ', this.info);
+  }
 
   /** 사용자 입력 */
   userInput = {
     text: '',
   }
 
-  ionViewWillEnter() {
-    this.app.CreateGodotIFrame('godot-test-chat-act', 'chatroom');
-  }
-
   send() {
+    if (!this.userInput.text) return;
     console.log('메시지 보내기: ', this.userInput.text);
     this.userInput.text = '';
   }

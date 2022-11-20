@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { Channel } from '@heroiclabs/nakama-js';
 import { AlertController, ModalController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { NakamaService } from 'src/app/nakama.service';
@@ -111,10 +112,12 @@ export class SubscribesPage implements OnInit {
   }
 
   /** 채팅방으로 이동하기 */
-  go_to_chatroom() {
+  go_to_chatroom(info: Channel) {
     this.modalCtrl.create({
       component: ChatRoomPage,
-      componentProps: {},
+      componentProps: {
+        info: info,
+      },
     }).then(v => v.present());
   }
 
@@ -143,7 +146,12 @@ export class SubscribesPage implements OnInit {
                     this.nakama.notifications[i]['sender_id'],
                     targetType, this.nakama.notifications[i]['persistent'], false,
                   ).then(c => {
-                    console.log('채널 알림 상호작용 준비중: ', c);
+                    this.nakama.add_channels(c, server_info['isOfficial'], server_info['target']);
+                    this_server.client.deleteNotifications(
+                      this_server.session, [this.nakama.notifications[i]['id']]
+                    ).then(_v => {
+                      this.nakama.update_notifications(server_info['isOfficial'], server_info['target']);
+                    });
                   });
                   break;
                 default:

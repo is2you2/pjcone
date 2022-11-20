@@ -3,6 +3,7 @@ import { ModalController, NavParams } from '@ionic/angular';
 import * as p5 from "p5";
 import { NakamaService } from '../nakama.service';
 import { P5ToastService } from '../p5-toast.service';
+import { ChatRoomPage } from '../portal/subscribes/chat-room/chat-room.page';
 import { StatusManageService } from "../status-manage.service";
 
 @Component({
@@ -149,7 +150,13 @@ export class OthersProfilePage implements OnInit {
     this.nakama.servers[this.isOfficial][this.target].socket.joinChat(
       this.info['user']['id'], 2, true, false
     ).then(c => {
-      console.log('create_chat 준비중: ', c);
+      this.nakama.add_channels(c, this.isOfficial, this.target);
+      this.modalCtrl.create({
+        component: ChatRoomPage,
+        componentProps: {
+          info: c,
+        },
+      }).then(v => v.present());
     });
   }
 

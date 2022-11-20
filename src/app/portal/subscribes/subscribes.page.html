@@ -34,8 +34,8 @@
   <ion-item *ngIf="!nakama.channels.length" button [disabled]="true">
     <ion-label>참여중인 대화가 없습니다.</ion-label>
   </ion-item>
-  <ion-list *ngIf="nakama.channels.length">
-    <ion-item button (click)="go_to_chatroom()">
+  <div *ngIf="nakama.channels.length">
+    <ion-item *ngFor="let channel of nakama.channels" button (click)="go_to_chatroom(channel)">
       <div class="additional_form status_bar_double" style="background-color: #888;"></div>
       <div class="additional_form bg_img_form">
         <img class="bg_img" style="filter: grayscale(.9) contrast(1.4);" src="assets/icon/favicon.png">
@@ -45,5 +45,5 @@
         <div class="form_margin content"> 구 서버 연결 없음 색상 </div>
       </ion-label>
     </ion-item>
-  </ion-list>
+  </div>
 </ion-content>
