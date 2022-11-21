@@ -227,6 +227,7 @@ export class SubscribesPage implements OnInit {
       case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
         break;
       default:
+        console.warn('예상하지 못한 알림 구분: ', this.nakama.notifications[i].code);
         break;
     }
   }

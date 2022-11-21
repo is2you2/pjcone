@@ -51,9 +51,8 @@ export class IndexedDBService {
       timestamp: new Date(),
     }, `/userfs/${path}`);
     put.onsuccess = (ev) => {
-      if (ev.type == 'success')
-        console.log('저장 성공: ', path);
-      else console.error('저장 실패: ', path);
+      if (ev.type != 'success')
+        console.error('저장 실패: ', path);
       _CallBack(ev);
     }
     put.onerror = (e) => {

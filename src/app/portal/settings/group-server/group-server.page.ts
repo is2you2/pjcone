@@ -73,7 +73,11 @@ export class GroupServerPage implements OnInit {
           this.nakama.servers[_is_official][_target].session,
           this.nakama.servers[_is_official][_target].session.token,
           this.nakama.servers[_is_official][_target].session.refresh_token,
-        );
+        ).then(v => {
+          if (!v) console.warn('로그아웃 오류 검토 필요');
+          delete this.nakama.noti_origin[_is_official][_target];
+          this.nakama.rearrange_notifications();
+        });
       }
     }
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
@@ -126,6 +130,8 @@ export class GroupServerPage implements OnInit {
       )
     // 정보 일괄 삭제
     delete this.nakama.servers[_is_official][_target];
+    delete this.nakama.noti_origin[_is_official][_target];
+    this.nakama.rearrange_notifications();
     this.servers = this.nakama.get_all_server_info();
     // 파일로부터 일치하는 정보 삭제
     this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
