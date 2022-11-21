@@ -145,6 +145,11 @@ export class SubscribesPage implements OnInit {
                     this.nakama.notifications[i]['sender_id'],
                     targetType, this.nakama.notifications[i]['persistent'], false,
                   ).then(c => {
+                    c['redirect'] = {
+                      id: this.nakama.notifications[i]['sender_id'],
+                      type: targetType,
+                      persistence: this.nakama.notifications[i]['persistent'],
+                    };
                     this.nakama.add_channels(c, server_info['isOfficial'], server_info['target']);
                     this_server.client.deleteNotifications(
                       this_server.session, [this.nakama.notifications[i]['id']]

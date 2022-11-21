@@ -212,6 +212,8 @@ export class ProfilePage implements OnInit {
                 this.nakama.servers[_is_official][_target].session.token,
                 this.nakama.servers[_is_official][_target].session.refresh_token,
               );
+            if (this.nakama.servers[_is_official][_target].socket)
+              this.nakama.servers[_is_official][_target].socket.disconnect(true);
           }
         });
       });

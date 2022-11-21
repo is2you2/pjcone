@@ -39,7 +39,7 @@ export class GroupServerPage implements OnInit {
 
   /** 서버 연결하기 */
   link_group(_is_official: string, _target: string) {
-    if (this.statusBar.groupServer[_is_official][_target] == 'offline') {
+    if (this.statusBar.groupServer[_is_official][_target] == 'offline' || this.statusBar.groupServer[_is_official][_target] == 'missing') {
       this.statusBar.groupServer[_is_official][_target] = 'pending';
       this.nakama.catch_group_server_header('pending');
       if (localStorage.getItem('is_online'))
@@ -75,10 +75,13 @@ export class GroupServerPage implements OnInit {
           this.nakama.servers[_is_official][_target].session.refresh_token,
         ).then(v => {
           if (!v) console.warn('로그아웃 오류 검토 필요');
-          delete this.nakama.noti_origin[_is_official][_target];
+          if (this.nakama.noti_origin[_is_official] && this.nakama.noti_origin[_is_official][_target])
+            delete this.nakama.noti_origin[_is_official][_target];
           this.nakama.rearrange_notifications();
         });
       }
+      if (this.nakama.servers[_is_official][_target].socket)
+        this.nakama.servers[_is_official][_target].socket.disconnect(true);
     }
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
   }
@@ -128,9 +131,12 @@ export class GroupServerPage implements OnInit {
         this.nakama.servers[_is_official][_target].session.token,
         this.nakama.servers[_is_official][_target].session.refresh_token,
       )
+    if (this.nakama.servers[_is_official][_target].socket)
+      this.nakama.servers[_is_official][_target].socket.disconnect(true);
     // 정보 일괄 삭제
     delete this.nakama.servers[_is_official][_target];
-    delete this.nakama.noti_origin[_is_official][_target];
+    if (this.nakama.noti_origin[_is_official] && this.nakama.noti_origin[_is_official][_target])
+      delete this.nakama.noti_origin[_is_official][_target];
     this.nakama.rearrange_notifications();
     this.servers = this.nakama.get_all_server_info();
     // 파일로부터 일치하는 정보 삭제

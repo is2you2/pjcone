@@ -71,6 +71,7 @@ export class NakamaService {
 
   initialize() {
     this.uuid = this.device.uuid;
+    this.load_channel_list();
     // 공식서버 연결처리
     this.init_server();
     // 저장된 사설서버들 정보 불러오기
@@ -105,7 +106,6 @@ export class NakamaService {
       if (e && v)
         this.groups = JSON.parse(v);
     })
-    this.load_channel_list();
   }
   /** 공식 테스트 서버를 대상으로 Nakama 클라이언트 구성을 진행합니다.
    * @param _is_official 공식 서버 여부
@@ -285,7 +285,7 @@ export class NakamaService {
       this.set_group_statusBar('online', _is_official, _target);
       _CallBack(true);
       this.servers[_is_official][_target].socket = this.servers[_is_official][_target].client.createSocket(_useSSL);
-      this.connect_to(_is_official, _target);
+      this.connect_to(_is_official, _target, () => this.redirect_channel(_is_official, _target));
       this.update_notifications(_is_official, _target);
     } catch (e) {
       switch (e.status) {
@@ -354,6 +354,7 @@ export class NakamaService {
               break;
             case -1: // 오프라인이거나 채널에 없을 때 알림 받음
               // 모든 채팅에 대한건지, 1:1에 한정인지 검토 필요
+              console.log('채널에 없을 때 받은 메시지란..: ', v.notifications[i]);
               let targetType: number;
               if (v['content'] && v['content']['username'])
                 targetType = 2;
@@ -363,6 +364,11 @@ export class NakamaService {
                   this.servers[_is_official][_target].socket.joinChat(
                     v['sender_id'], targetType, v['persistent'], false,
                   ).then(c => {
+                    c['redirect'] = {
+                      id: v['sender_id'],
+                      type: targetType,
+                      persistence: v['persistent'],
+                    };
                     this.add_channels(c, _is_official, _target);
                     this.servers[_is_official][_target].client.deleteNotifications(
                       this.servers[_is_official][_target].session, [v.notifications[i]['id']]);
@@ -481,6 +487,25 @@ export class NakamaService {
         this.rearrange_channels();
       }
     });
+  }
+
+  /** 세션 재접속 시 기존 정보를 이용하여 채팅방에 다시 로그인함 */
+  redirect_channel(_is_official: string, _target: string) {
+    if (this.channels_orig[_is_official])
+      if (this.channels_orig[_is_official][_target]) {
+        let chat_type = Object.keys(this.channels_orig[_is_official][_target]);
+        for (let i = 0, j = chat_type.length; i < j; i++) {
+          let channel_ids = Object.keys(this.channels_orig[_is_official][_target][chat_type[i]]);
+          for (let k = 0, l = channel_ids.length; k < l; k++) {
+            this.servers[_is_official][_target].socket.joinChat(
+              this.channels_orig[_is_official][_target][chat_type[i]][channel_ids[k]]['redirect']['id'],
+              this.channels_orig[_is_official][_target][chat_type[i]][channel_ids[k]]['redirect']['type'],
+              this.channels_orig[_is_official][_target][chat_type[i]][channel_ids[k]]['redirect']['persistence'],
+              false
+            );
+          }
+        }
+      }
   }
 
   /** 채널 리스트 정리 */
@@ -652,10 +677,11 @@ export class NakamaService {
   /** 소켓이 행동할 때 행동중인 무언가가 있을 경우 검토하여 처리 */
   socket_reactive = {};
   /** 소켓 서버에 연결 */
-  connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
+  connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _CallBack = () => { }) {
     this.servers[_is_official][_target].socket.connect(
       this.servers[_is_official][_target].session, true).then(_v => {
         let socket = this.servers[_is_official][_target].socket;
+        _CallBack();
         // 실시간으로 알림을 받은 경우
         socket.onnotification = (v) => {
           console.log('소켓에서 실시간으로 무언가 받음: ', v);
@@ -665,6 +691,7 @@ export class NakamaService {
             case -2: // 친구 요청 받음
               break;
             case -1: // 오프라인이거나 채널에 없을 때 알림 받음
+              console.log('채널에 없을 때 받은 메시지란 ...: ', v);
               let targetType: number;
               if (v['content']['username'])
                 targetType = 2;
@@ -674,6 +701,11 @@ export class NakamaService {
                   socket.joinChat(
                     v['sender_id'], targetType, v['persistent'], false,
                   ).then(c => {
+                    c['redirect'] = {
+                      id: v['sender_id'],
+                      type: targetType,
+                      persistence: v['persistent'],
+                    };
                     this.add_channels(c, _is_official, _target);
                     this.servers[_is_official][_target].client.deleteNotifications(
                       this.servers[_is_official][_target].session, [v['id']]);
@@ -733,6 +765,12 @@ export class NakamaService {
               console.warn('확인되지 않은 실시간 알림_nakama_noti: ', v);
               break;
           }
+        }
+        socket.onchannelpresence = (p) => {
+          console.log('onchannelpresence: ', p);
+        }
+        socket.onchannelmessage = (c) => {
+          console.log('onchamsg: ', c);
         }
         socket.ondisconnect = (_e) => {
           this.p5toast.show({

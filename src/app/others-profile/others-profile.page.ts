@@ -153,11 +153,17 @@ export class OthersProfilePage implements OnInit {
       this.info['user']['id'], 2, true, false
     ).then(c => {
       let _info = { ...c };
+      _info['redirect'] = {
+        id: this.info['user']['id'],
+        type: 2,
+        persistence: true,
+      };
       _info['info'] = {
         isOfficial: this.isOfficial,
         target: this.target,
         group: 'directmsg',
       }
+      this.nakama.add_channels(_info, this.isOfficial, this.target);
       this.modalCtrl.create({
         component: ChatRoomPage,
         componentProps: {
