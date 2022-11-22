@@ -161,7 +161,6 @@ export class OthersProfilePage implements OnInit {
       _info['info'] = {
         isOfficial: this.isOfficial,
         target: this.target,
-        group: 'directmsg',
       }
       this.nakama.add_channels(_info, this.isOfficial, this.target);
       this.modalCtrl.create({

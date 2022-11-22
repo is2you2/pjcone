@@ -371,7 +371,11 @@ export class NakamaService {
                     };
                     this.add_channels(c, _is_official, _target);
                     this.servers[_is_official][_target].client.deleteNotifications(
-                      this.servers[_is_official][_target].session, [v.notifications[i]['id']]);
+                      this.servers[_is_official][_target].session, [v.notifications[i]['id']]).then(
+                        v => {
+                          if (v) this.update_notifications(_is_official, _target);
+                          else console.warn('알림 지우기 실패: ', v);
+                        });
                   });
                   break;
                 default:
@@ -409,7 +413,7 @@ export class NakamaService {
               v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
             default:
-              console.warn('준비되지 않은 요청 내용: ', v, '/', i);
+              console.warn('준비되지 않은 요청 내용: ', v.notifications[i]);
               v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
           }
@@ -463,19 +467,19 @@ export class NakamaService {
   channels: any[] = [];
 
   /** 채널 추가 */
-  add_channels(channel_info: Channel, _is_official: string, _target: string, _group_id: string = 'directmsg') {
+  add_channels(channel_info: Channel, _is_official: string, _target: string) {
     if (!this.channels_orig[_is_official][_target])
       this.channels_orig[_is_official][_target] = {};
-    if (!this.channels_orig[_is_official][_target][_group_id])
-      this.channels_orig[_is_official][_target][_group_id] = {};
-    if (this.channels_orig[_is_official][_target][_group_id][channel_info.id] === undefined)
-      this.channels_orig[_is_official][_target][_group_id][channel_info.id] = channel_info;
+    if (!this.channels_orig[_is_official][_target])
+      this.channels_orig[_is_official][_target] = {};
+    if (this.channels_orig[_is_official][_target][channel_info.id] === undefined)
+      this.channels_orig[_is_official][_target][channel_info.id] = channel_info;
     this.rearrange_channels();
   }
 
   /** 채널 삭제 */
-  remove_channels(channel_id: string, _is_official: string, _target: string, _group_id = 'directmsg') {
-    console.log('채널 삭제하기');
+  remove_channels(channel_id: string, _is_official: string, _target: string) {
+    console.log('채널 삭제하기: ', channel_id, _is_official, _target);
     this.rearrange_channels();
   }
 
@@ -491,21 +495,23 @@ export class NakamaService {
 
   /** 세션 재접속 시 기존 정보를 이용하여 채팅방에 다시 로그인함 */
   redirect_channel(_is_official: string, _target: string) {
-    if (this.channels_orig[_is_official])
-      if (this.channels_orig[_is_official][_target]) {
-        let chat_type = Object.keys(this.channels_orig[_is_official][_target]);
-        for (let i = 0, j = chat_type.length; i < j; i++) {
-          let channel_ids = Object.keys(this.channels_orig[_is_official][_target][chat_type[i]]);
-          for (let k = 0, l = channel_ids.length; k < l; k++) {
-            this.servers[_is_official][_target].socket.joinChat(
-              this.channels_orig[_is_official][_target][chat_type[i]][channel_ids[k]]['redirect']['id'],
-              this.channels_orig[_is_official][_target][chat_type[i]][channel_ids[k]]['redirect']['type'],
-              this.channels_orig[_is_official][_target][chat_type[i]][channel_ids[k]]['redirect']['persistence'],
-              false
-            );
-          }
-        }
+    if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
+      let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
+      for (let k = 0, l = channel_ids.length; k < l; k++) {
+        this.servers[_is_official][_target].socket.joinChat(
+          this.channels_orig[_is_official][_target][channel_ids[k]]['redirect']['id'],
+          this.channels_orig[_is_official][_target][channel_ids[k]]['redirect']['type'],
+          this.channels_orig[_is_official][_target][channel_ids[k]]['redirect']['persistence'],
+          false
+        );
+        this.servers[_is_official][_target].client.listChannelMessages(
+          this.servers[_is_official][_target].session, channel_ids[k], 1, false)
+          .then(v => {
+            this.channels_orig[_is_official][_target][channel_ids[k]]['last_comment'] = v.messages[0].content['msg'];
+          });
       }
+      this.rearrange_channels();
+    }
   }
 
   /** 채널 리스트 정리 */
@@ -515,18 +521,14 @@ export class NakamaService {
     for (let i = 0, j = isOfficial.length; i < j; i++) {
       let Targets = Object.keys(this.channels_orig[isOfficial[i]]);
       for (let k = 0, l = Targets.length; k < l; k++) {
-        let GroupKeys = Object.keys(this.channels_orig[isOfficial[i]][Targets[k]]);
-        for (let m = 0, n = GroupKeys.length; m < n; m++) {
-          let ChannelIds = Object.keys(this.channels_orig[isOfficial[i]][Targets[k]][GroupKeys[m]]);
-          for (let o = 0, p = ChannelIds.length; o < p; o++) {
-            let channel_info = this.channels_orig[isOfficial[i]][Targets[k]][GroupKeys[m]][ChannelIds[o]];
-            channel_info['info'] = {
-              isOfficial: isOfficial[i],
-              target: Targets[k],
-              group: GroupKeys[m],
-            }
-            result.push(channel_info);
+        let ChannelIds = Object.keys(this.channels_orig[isOfficial[i]][Targets[k]]);
+        for (let o = 0, p = ChannelIds.length; o < p; o++) {
+          let channel_info = this.channels_orig[isOfficial[i]][Targets[k]][ChannelIds[o]];
+          channel_info['info'] = {
+            isOfficial: isOfficial[i],
+            target: Targets[k],
           }
+          result.push(channel_info);
         }
       }
     }
@@ -708,7 +710,10 @@ export class NakamaService {
                     };
                     this.add_channels(c, _is_official, _target);
                     this.servers[_is_official][_target].client.deleteNotifications(
-                      this.servers[_is_official][_target].session, [v['id']]);
+                      this.servers[_is_official][_target].session, [v['id']]).then(v => {
+                        if (v) this.update_notifications(_is_official, _target);
+                        else console.warn('알림 업데이트 실패: ', v);
+                      });
                   });
                   break;
                 default:
@@ -771,6 +776,8 @@ export class NakamaService {
         }
         socket.onchannelmessage = (c) => {
           console.log('onchamsg: ', c);
+          this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = c.content['msg'];
+          this.rearrange_channels();
         }
         socket.ondisconnect = (_e) => {
           this.p5toast.show({

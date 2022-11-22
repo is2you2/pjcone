@@ -138,6 +138,9 @@ export class GroupServerPage implements OnInit {
     if (this.nakama.noti_origin[_is_official] && this.nakama.noti_origin[_is_official][_target])
       delete this.nakama.noti_origin[_is_official][_target];
     this.nakama.rearrange_notifications();
+    if (this.nakama.channels_orig[_is_official] && this.nakama.channels_orig[_is_official][_target])
+      delete this.nakama.channels_orig[_is_official][_target];
+    this.nakama.rearrange_channels();
     this.servers = this.nakama.get_all_server_info();
     // 파일로부터 일치하는 정보 삭제
     this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {

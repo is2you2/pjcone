@@ -153,8 +153,9 @@ export class SubscribesPage implements OnInit {
                     this.nakama.add_channels(c, server_info['isOfficial'], server_info['target']);
                     this_server.client.deleteNotifications(
                       this_server.session, [this.nakama.notifications[i]['id']]
-                    ).then(_v => {
-                      this.nakama.update_notifications(server_info['isOfficial'], server_info['target']);
+                    ).then(v => {
+                      if (v) this.nakama.update_notifications(server_info['isOfficial'], server_info['target']);
+                      else console.warn('알림 업데이트 실패: ', v);
                     });
                   });
                   break;
