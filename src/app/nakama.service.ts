@@ -371,11 +371,10 @@ export class NakamaService {
                     };
                     this.add_channels(c, _is_official, _target);
                     this.servers[_is_official][_target].client.deleteNotifications(
-                      this.servers[_is_official][_target].session, [v.notifications[i]['id']]).then(
-                        v => {
-                          if (v) this.update_notifications(_is_official, _target);
-                          else console.warn('알림 지우기 실패: ', v);
-                        });
+                      this.servers[_is_official][_target].session, [v.notifications[i]['id']]).then(b => {
+                        if (b) this.update_notifications(_is_official, _target);
+                        else console.warn('알림 지우기 실패: ', b);
+                      });
                   });
                   break;
                 default:
