@@ -171,11 +171,6 @@ export class SettingsPage implements OnInit {
     });
   }
 
-  /** 개발자 블로그로 연결 (github 홈페이지) */
-  go_to_dev_blog() {
-    window.open('https://is2you2.github.io', '_system')
-  }
-
   go_to_page(_page: string) {
     this.nav.navigateForward(`settings/${_page}`, {
       animation: iosTransitionAnimation,
