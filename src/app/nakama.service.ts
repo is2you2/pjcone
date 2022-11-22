@@ -356,18 +356,18 @@ export class NakamaService {
               // 모든 채팅에 대한건지, 1:1에 한정인지 검토 필요
               console.log('채널에 없을 때 받은 메시지란..: ', v.notifications[i]);
               let targetType: number;
-              if (v['content'] && v['content']['username'])
+              if (v.notifications[i]['content'] && v.notifications[i]['content']['username'])
                 targetType = 2;
               // 요청 타입을 구분하여 자동반응처리
               switch (targetType) {
                 case 2:
                   this.servers[_is_official][_target].socket.joinChat(
-                    v['sender_id'], targetType, v['persistent'], false,
+                    v.notifications[i]['sender_id'], targetType, v.notifications[i]['persistent'], false,
                   ).then(c => {
                     c['redirect'] = {
-                      id: v['sender_id'],
+                      id: v.notifications[i]['sender_id'],
                       type: targetType,
-                      persistence: v['persistent'],
+                      persistence: v.notifications[i]['persistent'],
                     };
                     this.add_channels(c, _is_official, _target);
                     this.servers[_is_official][_target].client.deleteNotifications(
@@ -378,7 +378,8 @@ export class NakamaService {
                   });
                   break;
                 default:
-                  console.warn('예상하지 못한 알림 행동처리: ', v);
+                  console.warn('예상하지 못한 알림 행동처리: ', v, targetType);
+                  v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
                   break;
               }
               break;
@@ -487,6 +488,15 @@ export class NakamaService {
     this.indexed.loadTextFromUserPath('servers/channels.json', (e, v) => {
       if (e && v) {
         this.channels_orig = JSON.parse(v);
+        let isOfficial = Object.keys(this.channels_orig);
+        for (let i = 0, j = isOfficial.length; i < j; i++) {
+          let Target = Object.keys(this.channels_orig[isOfficial[i]]);
+          for (let k = 0, l = Target.length; k < l; k++) {
+            let channel_ids = Object.keys(this.channels_orig[isOfficial[i]][Target[k]]);
+            for (let m = 0, n = channel_ids.length; m < n; i++)
+              delete this.channels_orig[isOfficial[i]][Target[k]][channel_ids[m]]['status'];
+          }
+        }
         this.rearrange_channels();
       }
     });
@@ -772,6 +782,14 @@ export class NakamaService {
         }
         socket.onchannelpresence = (p) => {
           console.log('onchannelpresence: ', p);
+          console.warn('다른 대화타입에서 검토 필요: 그룹, 룸');
+          if (p.joins !== undefined) {
+            console.warn('상대방 진입에 대한 검토 필요: 전체 중 몇명 들어왔는지');
+            this.channels_orig[_is_official][_target][p.channel_id]['status'] = 'online';
+          } else if (p.leaves !== undefined) {
+            console.warn('상대방 떠남에 대한 검토 필요: 전체 중 몇명 빠졌는지');
+            this.channels_orig[_is_official][_target][p.channel_id]['status'] = 'pending';
+          }
         }
         socket.onchannelmessage = (c) => {
           console.log('onchamsg: ', c);

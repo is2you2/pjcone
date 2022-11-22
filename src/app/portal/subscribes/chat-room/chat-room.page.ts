@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
+import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 
 @Component({
@@ -13,15 +14,15 @@ export class ChatRoomPage implements OnInit {
     public modalCtrl: ModalController,
     private navParams: NavParams,
     public nakama: NakamaService,
+    private noti: LocalNotiService,
   ) { }
 
   info: any;
 
   ngOnInit() {
     this.info = this.navParams.get('info');
-    let isOfficial = this.info['info']['isOfficial'];
-    let target = this.info['info']['target'];
     console.log('채팅방 잠시 대기: ', this.info);
+    this.noti.Current = this.info['id'];
   }
 
   /** 사용자 입력 */
@@ -37,5 +38,9 @@ export class ChatRoomPage implements OnInit {
       }).then(_v => {
         this.userInput.text = '';
       });
+  }
+
+  ionViewWillLeave() {
+    this.noti.Current = undefined;
   }
 }

@@ -82,6 +82,11 @@ export class GroupServerPage implements OnInit {
       }
       if (this.nakama.servers[_is_official][_target].socket)
         this.nakama.servers[_is_official][_target].socket.disconnect(true);
+      if (this.nakama.channels_orig[_is_official] && this.nakama.channels_orig[_is_official][_target]) {
+        let channel_ids = Object.keys(this.nakama.channels_orig[_is_official][_target]);
+        for (let i = 0, j = channel_ids.length; i < j; i++)
+          delete this.nakama.channels_orig[_is_official][_target][channel_ids[i]]['status'];
+      }
     }
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
   }

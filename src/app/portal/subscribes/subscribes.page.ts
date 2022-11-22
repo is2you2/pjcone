@@ -4,6 +4,7 @@ import { AlertController, ModalController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import { StatusManageService } from 'src/app/status-manage.service';
 import { ToolServerService, UnivToolForm } from 'src/app/tool-server.service';
 import { WeblinkService } from 'src/app/weblink.service';
 import { ChatRoomPage } from './chat-room/chat-room.page';
@@ -24,6 +25,7 @@ export class SubscribesPage implements OnInit {
     private weblink: WeblinkService,
     public nakama: NakamaService,
     private alertCtrl: AlertController,
+    public statusBar: StatusManageService,
   ) { }
 
   cant_scan = false;
