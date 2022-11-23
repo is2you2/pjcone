@@ -284,9 +284,7 @@ export class NakamaService {
       this.get_group_list(_is_official, _target);
       this.set_group_statusBar('online', _is_official, _target);
       _CallBack(true);
-      this.servers[_is_official][_target].socket = this.servers[_is_official][_target].client.createSocket(_useSSL);
-      this.connect_to(_is_official, _target, () => this.redirect_channel(_is_official, _target));
-      this.update_notifications(_is_official, _target);
+      this.after_login(_is_official, _target, _useSSL);
     } catch (e) {
       switch (e.status) {
         case 400: // 비번이 없거나 하는 등, 요청이 잘못됨
@@ -310,7 +308,8 @@ export class NakamaService {
             display_name: localStorage.getItem('name'),
           });
           this.p5toast.show({
-            text: '회원가입이 완료되었습니다.',
+            text: `회원가입이 완료되었습니다: ${_target}`,
+            lateable: true,
           });
           this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
             if (e && v) {
@@ -326,8 +325,10 @@ export class NakamaService {
               );
             }
           })
-          _CallBack(undefined, _is_official, _target);
+          this.get_group_list(_is_official, _target);
           this.set_group_statusBar('online', _is_official, _target);
+          _CallBack(undefined, _is_official, _target);
+          this.after_login(_is_official, _target, _useSSL);
           break;
         default:
           this.p5toast.show({
@@ -338,6 +339,13 @@ export class NakamaService {
           break;
       }
     }
+  }
+
+  /** 로그인 및 회원가입 직후 행동들 */
+  after_login(_is_official: any, _target: string, _useSSL: boolean) {
+    this.servers[_is_official][_target].socket = this.servers[_is_official][_target].client.createSocket(_useSSL);
+    this.connect_to(_is_official, _target, () => this.redirect_channel(_is_official, _target));
+    this.update_notifications(_is_official, _target);
   }
 
   /** 서버로부터 알림 업데이트하기 (알림 리스트 재정렬 포함됨) */
@@ -369,6 +377,29 @@ export class NakamaService {
                       type: targetType,
                       persistence: v.notifications[i]['persistent'],
                     };
+                    // 방 이미지를 상대방 이미지로 설정
+                    this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${v.notifications[i]['sender_id']}/profile.img`, (e, img) => {
+                      if (e && img) c['img'] = img;
+                      else {
+                        this.servers[_is_official][_target].client.readStorageObjects(
+                          this.servers[_is_official][_target].session, {
+                          object_ids: [{
+                            collection: 'user_public',
+                            key: 'profile_image',
+                            user_id: v.notifications[i]['sender_id'],
+                          }]
+                        }).then(_img => {
+                          if (_img.objects.length)
+                            c['img'] = _img.objects[0].value['img'];
+                        });
+                      }
+                    });
+                    // 방 이름을 상대방 이름으로 설정
+                    this.servers[_is_official][_target].client.getUsers(
+                      this.servers[_is_official][_target].session, [v.notifications[i]['sender_id']]
+                    ).then(info => {
+                      c['title'] = info.users[0].display_name;
+                    });
                     this.add_channels(c, _is_official, _target);
                     this.servers[_is_official][_target].client.deleteNotifications(
                       this.servers[_is_official][_target].session, [v.notifications[i]['id']]).then(b => {
@@ -717,11 +748,34 @@ export class NakamaService {
                       type: targetType,
                       persistence: v['persistent'],
                     };
+                    // 방 이미지를 상대방 이미지로 설정
+                    this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${v['sender_id']}/profile.img`, (e, img) => {
+                      if (e && img) c['img'] = img;
+                      else {
+                        this.servers[_is_official][_target].client.readStorageObjects(
+                          this.servers[_is_official][_target].session, {
+                          object_ids: [{
+                            collection: 'user_public',
+                            key: 'profile_image',
+                            user_id: v['sender_id'],
+                          }]
+                        }).then(_img => {
+                          if (_img.objects.length)
+                            c['img'] = _img.objects[0].value['img'];
+                        });
+                      }
+                    });
+                    // 방 이름을 상대방 이름으로 설정
+                    this.servers[_is_official][_target].client.getUsers(
+                      this.servers[_is_official][_target].session, [v['sender_id']]
+                    ).then(info => {
+                      c['title'] = info.users[0].display_name;
+                    });
                     this.add_channels(c, _is_official, _target);
                     this.servers[_is_official][_target].client.deleteNotifications(
-                      this.servers[_is_official][_target].session, [v['id']]).then(v => {
-                        if (v) this.update_notifications(_is_official, _target);
-                        else console.warn('알림 업데이트 실패: ', v);
+                      this.servers[_is_official][_target].session, [v['id']]).then(b => {
+                        if (b) this.update_notifications(_is_official, _target);
+                        else console.warn('알림 지우기 실패: ', b);
                       });
                   });
                   break;
@@ -801,6 +855,11 @@ export class NakamaService {
             text: `그룹서버 연결 끊어짐: ${this.servers[_is_official][_target].info.name}`,
           });
           this.set_group_statusBar('missing', _is_official, _target);
+          if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
+            let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
+            for (let i = 0, j = channel_ids.length; i < j; i++)
+              delete this.channels_orig[_is_official][_target][channel_ids[i]]['status'];
+          }
         }
       });
   }

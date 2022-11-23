@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
 import * as p5 from "p5";
+import { IndexedDBService } from '../indexed-db.service';
 import { NakamaService } from '../nakama.service';
 import { P5ToastService } from '../p5-toast.service';
 import { ChatRoomPage } from '../portal/subscribes/chat-room/chat-room.page';
@@ -19,6 +20,7 @@ export class OthersProfilePage implements OnInit {
     private nakama: NakamaService,
     public statusBar: StatusManageService,
     private p5toast: P5ToastService,
+    private indexed: IndexedDBService,
   ) { }
 
   info = {};
@@ -152,21 +154,43 @@ export class OthersProfilePage implements OnInit {
     this.nakama.servers[this.isOfficial][this.target].socket.joinChat(
       this.info['user']['id'], 2, true, false
     ).then(c => {
-      let _info = { ...c };
-      _info['redirect'] = {
+      c['redirect'] = {
         id: this.info['user']['id'],
         type: 2,
         persistence: true,
       };
-      _info['info'] = {
+      c['info'] = {
         isOfficial: this.isOfficial,
         target: this.target,
       }
-      this.nakama.add_channels(_info, this.isOfficial, this.target);
+      // 방 이미지를 상대방 이미지로 설정
+      this.indexed.loadTextFromUserPath(`servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/profile.img`, (e, img) => {
+        if (e && img) c['img'] = img;
+        else {
+          this.nakama.servers[this.isOfficial][this.target].client.readStorageObjects(
+            this.nakama.servers[this.isOfficial][this.target].session, {
+            object_ids: [{
+              collection: 'user_public',
+              key: 'profile_image',
+              user_id: this.info['user']['id'],
+            }]
+          }).then(_img => {
+            if (_img.objects.length)
+              c['img'] = _img.objects[0].value['img'];
+          });
+        }
+      });
+      // 방 이름을 상대방 이름으로 설정
+      this.nakama.servers[this.isOfficial][this.target].client.getUsers(
+        this.nakama.servers[this.isOfficial][this.target].session, [this.info['user']['id']]
+      ).then(info => {
+        c['title'] = info.users[0].display_name;
+      });
+      this.nakama.add_channels(c, this.isOfficial, this.target);
       this.modalCtrl.create({
         component: ChatRoomPage,
         componentProps: {
-          info: _info,
+          info: c,
         },
       }).then(v => v.present());
     });

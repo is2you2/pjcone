@@ -132,53 +132,11 @@ export class SubscribesPage implements OnInit {
   check_notifications(i: number) {
     console.log('해당 알림 내용: ', this.nakama.notifications[i]);
     let server_info = this.nakama.notifications[i]['server'];
-    let this_server = this.nakama.servers[server_info['isOfficial']][server_info['target']];
+    let _is_official = server_info['isOfficial'];
+    let _target = server_info['target'];
+    let this_server = this.nakama.servers[_is_official][_target];
     switch (this.nakama.notifications[i].code) {
       case 0: // 예약된 알림
-        break;
-      case -1: // 오프라인이거나 채널에 없을 때 알림 받음
-        this_server.client.getUsers(this_server.session, this.nakama.notifications[i]['sender_id'])
-          .then(v => {
-            if (v.users.length) {
-              let targetType: number;
-              if (this.nakama.notifications[i]['content']['username'])
-                targetType = 2;
-              // 요청 타입을 구분하여 자동반응처리
-              switch (targetType) {
-                case 2:
-                  this_server.socket.joinChat(
-                    this.nakama.notifications[i]['sender_id'],
-                    targetType, this.nakama.notifications[i]['persistent'], false,
-                  ).then(c => {
-                    c['redirect'] = {
-                      id: this.nakama.notifications[i]['sender_id'],
-                      type: targetType,
-                      persistence: this.nakama.notifications[i]['persistent'],
-                    };
-                    this.nakama.add_channels(c, server_info['isOfficial'], server_info['target']);
-                    this_server.client.deleteNotifications(
-                      this_server.session, [this.nakama.notifications[i]['id']]
-                    ).then(v => {
-                      if (v) this.nakama.update_notifications(server_info['isOfficial'], server_info['target']);
-                      else console.warn('알림 업데이트 실패: ', v);
-                    });
-                  });
-                  break;
-                default:
-                  console.warn('예상하지 못한 알림 행동처리: ', this.nakama.notifications[i]);
-                  break;
-              }
-            } else {
-              this_server.client.deleteNotifications(this_server.session, this.nakama.notifications[i]['id'])
-                .then(v => {
-                  if (!v) console.warn('알림 거부처리 검토 필요');
-                  this.p5toast.show({
-                    text: '만료된 알림: 사용자 없음',
-                  })
-                  this.nakama.notifications.splice(i, 1);
-                });
-            }
-          });
         break;
       case -2: // 친구 요청 받음
         break;

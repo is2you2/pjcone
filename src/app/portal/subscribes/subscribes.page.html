@@ -36,12 +36,15 @@
   </ion-item>
   <div *ngIf="nakama.channels.length">
     <ion-item *ngFor="let channel of nakama.channels" button (click)="go_to_chatroom(channel)">
-      <div class="additional_form status_bar_double" [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']"></div>
+      <div class="additional_form status_bar_double"
+        [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']"></div>
       <div class="additional_form bg_img_form">
-        <img class="bg_img" [style]="channel['status'] == 'online' ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'" src="assets/icon/favicon.png">
+        <img class="bg_img"
+          [style]="channel['status'] == 'online' ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'"
+          [src]="channel.img">
       </div>
       <ion-label>
-        <div class="form_margin header"> 대화방 제목 </div>
+        <div class="form_margin header"> {{channel.title}} </div>
         <div class="form_margin content"> {{channel.last_comment || '새로 생성된 채팅방'}} </div>
       </ion-label>
     </ion-item>
