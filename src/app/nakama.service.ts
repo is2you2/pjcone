@@ -493,7 +493,7 @@ export class NakamaService {
           let Target = Object.keys(this.channels_orig[isOfficial[i]]);
           for (let k = 0, l = Target.length; k < l; k++) {
             let channel_ids = Object.keys(this.channels_orig[isOfficial[i]][Target[k]]);
-            for (let m = 0, n = channel_ids.length; m < n; i++)
+            for (let m = 0, n = channel_ids.length; m < n; m++)
               delete this.channels_orig[isOfficial[i]][Target[k]][channel_ids[m]]['status'];
           }
         }

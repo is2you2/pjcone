@@ -7,6 +7,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { ToolServerService, UnivToolForm } from 'src/app/tool-server.service';
 import { WeblinkService } from 'src/app/weblink.service';
+import { WscService } from 'src/app/wsc.service';
 import { ChatRoomPage } from './chat-room/chat-room.page';
 import { QRelsePage } from './qrelse/qrelse.page';
 
@@ -26,6 +27,7 @@ export class SubscribesPage implements OnInit {
     public nakama: NakamaService,
     private alertCtrl: AlertController,
     public statusBar: StatusManageService,
+    private wsc: WscService,
   ) { }
 
   cant_scan = false;
@@ -48,10 +50,14 @@ export class SubscribesPage implements OnInit {
           for (let i = 0, j = json.length; i < j; i++)
             switch (json[i].type) {
               case 'link': // 계정 연결처리
-                this.weblink.initialize({
-                  pid: json[i].value,
-                  uuid: this.nakama.uuid,
-                });
+                if (this.wsc.client.readyState == this.wsc.client.OPEN)
+                  this.weblink.initialize({
+                    pid: json[i].value,
+                    uuid: this.nakama.uuid,
+                  });
+                else this.p5toast.show({
+                  text: '커뮤니티 서버와 연결되어있어야 합니다.',
+                })
                 break;
               case 'tools': // 도구모음, 단일 대상 서버 생성 액션시
                 this.create_tool_server(json[i].value);
@@ -127,9 +133,6 @@ export class SubscribesPage implements OnInit {
     console.log('해당 알림 내용: ', this.nakama.notifications[i]);
     let server_info = this.nakama.notifications[i]['server'];
     let this_server = this.nakama.servers[server_info['isOfficial']][server_info['target']];
-    let this_group = this.nakama.groups[server_info['isOfficial']][server_info['target']];
-    let this_channels = this.nakama.channels_orig[server_info['isOfficial']][server_info['target']];
-
     switch (this.nakama.notifications[i].code) {
       case 0: // 예약된 알림
         break;
