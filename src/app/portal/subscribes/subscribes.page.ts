@@ -153,6 +153,7 @@ export class SubscribesPage implements OnInit {
         break;
       case -2: // 친구 요청 받음
         break;
+      case -1: // 친구 요청 받음
       case -3: // 상대방이 친구 요청 수락
       case -4: // 상대방이 그룹 참가 수락
       case -6: // 친구가 다른 게임에 참여

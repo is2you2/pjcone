@@ -11,8 +11,14 @@
   <table id="main_table" style="width: 100%; height: 100%;">
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
-        <div class="full_screen">
-          채팅방 테스트
+        <div class="full_screen main">
+          <ion-item button (click)="pull_msg_from_server()">
+            <ion-label>이전 기록 불러오는 임시 버튼</ion-label>
+          </ion-item>
+          <p *ngFor="let msg of messages">
+            {{msg.content['msg']}}
+          </p>
+          <div id="content"></div>
         </div>
       </td>
     </tr>

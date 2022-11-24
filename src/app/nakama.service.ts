@@ -105,7 +105,11 @@ export class NakamaService {
     this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
       if (e && v)
         this.groups = JSON.parse(v);
-    })
+      let all_groups = this.rearrange_group_list();
+      all_groups.forEach(group => {
+        group['status'] = 'offline';
+      });
+    });
   }
   /** 공식 테스트 서버를 대상으로 Nakama 클라이언트 구성을 진행합니다.
    * @param _is_official 공식 서버 여부
@@ -507,6 +511,7 @@ export class NakamaService {
     if (!this.channels_orig[_is_official][_target])
       this.channels_orig[_is_official][_target] = {};
     channel_info['status'] = this.channels_orig[_is_official][_target][channel_info.id]['status'];
+    channel_info['title'] = this.channels_orig[_is_official][_target][channel_info.id]['title'];
     channel_info['last_comment'] = this.channels_orig[_is_official][_target][channel_info.id]['last_comment'];
     this.channels_orig[_is_official][_target][channel_info.id] = channel_info;
     this.rearrange_channels();
@@ -530,6 +535,7 @@ export class NakamaService {
             let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
             channel_ids.forEach(_cid => {
               delete this.channels_orig[_is_official][_target][_cid]['status'];
+              delete this.channels_orig[_is_official][_target][_cid]['update'];
             });
           });
         });
@@ -971,6 +977,8 @@ export class NakamaService {
         socket.onchannelmessage = (c) => {
           console.log('onchamsg: ', c);
           this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = c.content['msg'];
+          if (this.channels_orig[_is_official][_target][c.channel_id]['update'])
+            this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
           this.rearrange_channels();
         }
         socket.ondisconnect = (_e) => {
