@@ -5,7 +5,7 @@
 </ion-header>
 
 <ion-content>
-  <ion-accordion-group *ngIf="nakama.notifications.length" value="colors" expand="inset" [value]="false"
+  <ion-accordion-group *ngIf="notifications.length" value="colors" expand="inset" [value]="false"
     #accordionGroup>
     <ion-accordion value="colors">
       <ion-item slot="header">
@@ -13,8 +13,8 @@
       </ion-item>
       <ion-list slot="content">
         <div *ngFor="let i of [0,1,2];">
-          <ion-item *ngIf="nakama.notifications.length > i" button (click)="check_notifications(i)">
-            <ion-label>{{nakama.notifications[i].request}}</ion-label>
+          <ion-item *ngIf="notifications.length > i" button (click)="check_notifications(i)">
+            <ion-label>{{notifications[i].request}}</ion-label>
           </ion-item>
         </div>
       </ion-list>
@@ -31,11 +31,11 @@
   <ion-item-divider>
     <ion-label>대화</ion-label>
   </ion-item-divider>
-  <ion-item *ngIf="!nakama.channels.length" button [disabled]="true">
+  <ion-item *ngIf="!channels.length" button [disabled]="true">
     <ion-label>참여중인 대화가 없습니다.</ion-label>
   </ion-item>
-  <div *ngIf="nakama.channels.length">
-    <ion-item *ngFor="let channel of nakama.channels" button (click)="go_to_chatroom(channel)">
+  <div *ngIf="channels.length">
+    <ion-item *ngFor="let channel of channels" button (click)="go_to_chatroom(channel)">
       <div class="additional_form status_bar_double"
         [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']"></div>
       <div class="additional_form bg_img_form">

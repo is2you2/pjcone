@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
-import { Channel, Client, Session, Socket, User } from "@heroiclabs/nakama-js";
+import { Channel, Client, Notification, Session, Socket, User } from "@heroiclabs/nakama-js";
 import { SOCKET_SERVER_ADDRESS } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
@@ -260,8 +260,6 @@ export class NakamaService {
     }, 1500);
   }
 
-  /** Nakama에서 들어왔던, 읽지 않은 알림들 */
-  notifications = [];
   /** Nakama에서 수신한 그룹별 알림  
    * { isOfficial: {
    *     target: {
@@ -457,24 +455,32 @@ export class NakamaService {
       });
   }
 
+  /** 알림이 재정렬된 후에..  
+   * @return nakama.Notification[]
+   */
+  after_notifications_rearrange = {};
   /** 그룹별 알림을 시간순으로 정렬함 */
   rearrange_notifications() {
-    this.notifications.length = 0;
+    let result: Notification[] = [];
     let isOfficial = Object.keys(this.noti_origin);
     isOfficial.forEach(_is_official => {
       let Target = Object.keys(this.noti_origin[_is_official]);
       Target.forEach(_target => {
         let NotificationId = Object.keys(this.noti_origin[_is_official][_target]);
         NotificationId.forEach(_noti_id => {
-          this.notifications.push(this.noti_origin[_is_official][_target][_noti_id]);
+          result.push(this.noti_origin[_is_official][_target][_noti_id]);
         });
       });
     });
-    this.notifications.sort((a, b) => {
+    result.sort((a, b) => {
       if (a.create_time < b.create_time) return 1;
       if (a.create_time > b.create_time) return -1;
       return 0;
     });
+    let keys = Object.keys(this.after_channel_rearrange);
+    for (let i = 0, j = keys.length; i < j; i++)
+      this.after_channel_rearrange[keys[i]](result);
+    return result;
   }
 
   /** 등록된 그룹 아이디들, 서버에 저장되어있고 동기화시켜야합니다
@@ -492,9 +498,6 @@ export class NakamaService {
     'official': {},
     'unofficial': {},
   };
-
-  /** 리스트로 정리된 채널, 채널 자체는 channels_orig에 보관됩니다 */
-  channels: any[] = [];
 
   /** 채널 추가 */
   add_channels(channel_info: Channel, _is_official: string, _target: string) {
@@ -552,7 +555,13 @@ export class NakamaService {
     }
   }
 
-  /** 채널 리스트 정리 */
+  /** 채널 재정렬 후 업데이트처리  
+   * after_channel_rearrange > page_key > (nakama.Channel[]) => {}
+   */
+  after_channel_rearrange = {};
+  /** 채널 리스트 정리  
+   * @return Channel[] from channel_orig
+   */
   rearrange_channels() {
     let result = [];
     let isOfficial = Object.keys(this.channels_orig);
@@ -570,8 +579,11 @@ export class NakamaService {
         }
       }
     }
-    this.channels = result;
+    let keys = Object.keys(this.after_channel_rearrange);
+    for (let i = 0, j = keys.length; i < j; i++)
+      this.after_channel_rearrange[keys[i]](result);
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.channels_orig), 'servers/channels.json');
+    return result;
   }
 
   /** 다른 사용자의 정보 저장하기 */

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { Channel, Notification } from '@heroiclabs/nakama-js';
 import { AlertController, ModalController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { NakamaService } from 'src/app/nakama.service';
@@ -24,17 +25,29 @@ export class SubscribesPage implements OnInit {
     private p5toast: P5ToastService,
     private tools: ToolServerService,
     private weblink: WeblinkService,
-    public nakama: NakamaService,
+    private nakama: NakamaService,
     private alertCtrl: AlertController,
     public statusBar: StatusManageService,
     private wsc: WscService,
   ) { }
 
+  HEADER = 'subscribes';
+
   cant_scan = false;
+  channels: Channel[] = [];
+  notifications: Notification[] = [];
 
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_scan = true;
+    this.channels = this.nakama.rearrange_channels();
+    this.nakama.after_channel_rearrange[this.HEADER] = (list: Channel[]) => {
+      this.channels = list;
+    }
+    this.notifications = this.nakama.rearrange_notifications();
+    this.nakama.after_notifications_rearrange[this.HEADER] = (list: Notification[]) => {
+      this.notifications = list;
+    }
   }
 
   // 웹에 있는 QRCode는 무조건 json[]로 구성되어있어야함
@@ -130,12 +143,12 @@ export class SubscribesPage implements OnInit {
 
   /** Nakama 서버 알림 읽기 */
   check_notifications(i: number) {
-    console.log('해당 알림 내용: ', this.nakama.notifications[i]);
-    let server_info = this.nakama.notifications[i]['server'];
+    console.log('해당 알림 내용: ', this.notifications[i]);
+    let server_info = this.notifications[i]['server'];
     let _is_official = server_info['isOfficial'];
     let _target = server_info['target'];
     let this_server = this.nakama.servers[_is_official][_target];
-    switch (this.nakama.notifications[i].code) {
+    switch (this.notifications[i].code) {
       case 0: // 예약된 알림
         break;
       case -2: // 친구 요청 받음
@@ -143,18 +156,18 @@ export class SubscribesPage implements OnInit {
       case -3: // 상대방이 친구 요청 수락
       case -4: // 상대방이 그룹 참가 수락
       case -6: // 친구가 다른 게임에 참여
-        this_server.client.deleteNotifications(this_server.session, this.nakama.notifications[i]['id'])
+        this_server.client.deleteNotifications(this_server.session, [this.notifications[i]['id']])
           .then(v => {
             if (!v) console.warn('알림 거부처리 검토 필요');
-            this.nakama.notifications.splice(i, 1);
+            this.notifications.splice(i, 1);
           });
         break;
       case -5: // 그룹 참가 요청 받음
-        this_server.client.getUsers(this_server.session, this.nakama.notifications[i]['sender_id'])
+        this_server.client.getUsers(this_server.session, [this.notifications[i]['sender_id']])
           .then(v => {
             if (v.users.length) {
               let msg = '';
-              msg += `서버: ${this.nakama.notifications[i]['server']['name']}<br>`;
+              msg += `서버: ${this.notifications[i]['server']['name']}<br>`;
               msg += `사용자명: ${v.users[0].display_name}`;
               this.alertCtrl.create({
                 header: '그룹 참가 요청',
@@ -162,33 +175,33 @@ export class SubscribesPage implements OnInit {
                 buttons: [{
                   text: '수락',
                   handler: () => {
-                    this_server.client.addGroupUsers(this_server.session, this.nakama.notifications[i]['content']['group_id'], [v.users[0].id])
+                    this_server.client.addGroupUsers(this_server.session, this.notifications[i]['content']['group_id'], [v.users[0].id])
                       .then(v => {
                         if (!v) console.warn('밴인 경우인 것 같음, 확인 필요');
-                        this_server.client.deleteNotifications(this_server.session, [this.nakama.notifications[i]['id']]);
-                        this.nakama.notifications.splice(i, 1);
+                        this_server.client.deleteNotifications(this_server.session, [this.notifications[i]['id']]);
+                        this.notifications.splice(i, 1);
                       });
                   }
                 }, {
                   text: '거절',
                   handler: () => {
-                    this_server.client.kickGroupUsers(this_server.session, this.nakama.notifications[i]['content']['group_id'], [v.users[0].id])
+                    this_server.client.kickGroupUsers(this_server.session, this.notifications[i]['content']['group_id'], [v.users[0].id])
                       .then(v => {
                         if (!v) console.warn('그룹 참여 거절을 kick한 경우 오류');
-                        this_server.client.deleteNotifications(this_server.session, [this.nakama.notifications[i]['id']]);
-                        this.nakama.notifications.splice(i, 1);
+                        this_server.client.deleteNotifications(this_server.session, [this.notifications[i]['id']]);
+                        this.notifications.splice(i, 1);
                       })
                   }
                 }],
               }).then(v => v.present());
             } else {
-              this_server.client.deleteNotifications(this_server.session, this.nakama.notifications[i]['id'])
+              this_server.client.deleteNotifications(this_server.session, [this.notifications[i]['id']])
                 .then(v => {
                   if (!v) console.warn('알림 거부처리 검토 필요');
                   this.p5toast.show({
                     text: '만료된 알림: 사용자 없음',
                   })
-                  this.nakama.notifications.splice(i, 1);
+                  this.notifications.splice(i, 1);
                 });
             }
           });
@@ -196,8 +209,13 @@ export class SubscribesPage implements OnInit {
       case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
         break;
       default:
-        console.warn('예상하지 못한 알림 구분: ', this.nakama.notifications[i].code);
+        console.warn('예상하지 못한 알림 구분: ', this.notifications[i].code);
         break;
     }
+  }
+
+  ionViewWillLeave() {
+    delete this.nakama.after_channel_rearrange[this.HEADER];
+    delete this.nakama.after_notifications_rearrange[this.HEADER];
   }
 }
