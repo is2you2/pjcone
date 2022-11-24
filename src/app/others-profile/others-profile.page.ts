@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
 import * as p5 from "p5";
-import { IndexedDBService } from '../indexed-db.service';
 import { NakamaService } from '../nakama.service';
 import { P5ToastService } from '../p5-toast.service';
 import { ChatRoomPage } from '../portal/subscribes/chat-room/chat-room.page';
@@ -20,15 +19,18 @@ export class OthersProfilePage implements OnInit {
     private nakama: NakamaService,
     public statusBar: StatusManageService,
     private p5toast: P5ToastService,
-    private indexed: IndexedDBService,
   ) { }
 
   info = {};
   group_info = {};
   /** 추가 생성 버튼 (알림 검토의 결과물) */
   additional_buttons = {};
+  /** 사용자 이미지 */
   tmp_img: any;
+  /** 그룹 관리자여부에 따라 그룹 관리 버튼 추가 */
   has_admin = false;
+  /** 1:1 대화 버튼 생성여부 */
+  CanCreateChat = true;
 
   lerpVal: number;
   p5canvas: p5;
@@ -159,10 +161,6 @@ export class OthersProfilePage implements OnInit {
         type: 2,
         persistence: true,
       };
-      c['info'] = {
-        isOfficial: this.isOfficial,
-        target: this.target,
-      }
       // 방 이미지를 상대방 이미지로 설정
       this.nakama.get_user_profile_image(this.info['user']['id'], this.isOfficial, this.target)
         .then(v => {
@@ -198,5 +196,9 @@ export class OthersProfilePage implements OnInit {
         act: 'kick',
       });
     });
+  }
+
+  ionViewDidLeave() {
+    this.p5canvas.remove();
   }
 }

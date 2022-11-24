@@ -40,7 +40,7 @@
                   친구
                 </ion-button>
               </td>
-              <td>
+              <td *ngIf="CanCreateChat">
                 <ion-button (click)="create_chat()" expand="block">
                   대화
                 </ion-button>
