@@ -164,28 +164,15 @@ export class OthersProfilePage implements OnInit {
         target: this.target,
       }
       // 방 이미지를 상대방 이미지로 설정
-      this.indexed.loadTextFromUserPath(`servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/profile.img`, (e, img) => {
-        if (e && img) c['img'] = img;
-        else {
-          this.nakama.servers[this.isOfficial][this.target].client.readStorageObjects(
-            this.nakama.servers[this.isOfficial][this.target].session, {
-            object_ids: [{
-              collection: 'user_public',
-              key: 'profile_image',
-              user_id: this.info['user']['id'],
-            }]
-          }).then(_img => {
-            if (_img.objects.length)
-              c['img'] = _img.objects[0].value['img'];
-          });
-        }
-      });
+      this.nakama.get_user_profile_image(this.info['user']['id'], this.isOfficial, this.target)
+        .then(v => {
+          c['img'] = v;
+        });
       // 방 이름을 상대방 이름으로 설정
-      this.nakama.servers[this.isOfficial][this.target].client.getUsers(
-        this.nakama.servers[this.isOfficial][this.target].session, [this.info['user']['id']]
-      ).then(info => {
-        c['title'] = info.users[0].display_name;
-      });
+      this.nakama.get_user_info(this.info['user']['id'], this.isOfficial, this.target)
+        .then(v => {
+          c['title'] = v['display_name'];
+        });
       this.nakama.add_channels(c, this.isOfficial, this.target);
       this.modalCtrl.create({
         component: ChatRoomPage,

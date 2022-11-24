@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
-import { Channel, Client, Session, Socket } from "@heroiclabs/nakama-js";
+import { Channel, Client, Session, Socket, User } from "@heroiclabs/nakama-js";
 import { SOCKET_SERVER_ADDRESS } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
@@ -493,8 +493,7 @@ export class NakamaService {
     'unofficial': {},
   };
 
-  /** 리스트로 정리된 채널, 채널 자체는 channels_orig에 보관됩니다  
-   */
+  /** 리스트로 정리된 채널, 채널 자체는 channels_orig에 보관됩니다 */
   channels: any[] = [];
 
   /** 채널 추가 */
@@ -503,8 +502,7 @@ export class NakamaService {
       this.channels_orig[_is_official][_target] = {};
     if (!this.channels_orig[_is_official][_target])
       this.channels_orig[_is_official][_target] = {};
-    if (this.channels_orig[_is_official][_target][channel_info.id] === undefined)
-      this.channels_orig[_is_official][_target][channel_info.id] = channel_info;
+    this.channels_orig[_is_official][_target][channel_info.id] = channel_info;
     this.rearrange_channels();
   }
 
@@ -576,6 +574,71 @@ export class NakamaService {
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.channels_orig), 'servers/channels.json');
   }
 
+  /** 다른 사용자의 정보 저장하기 */
+  save_user_info(userInfo: User, _is_official: string, _target: string) {
+    this.indexed.saveTextFileToUserPath(JSON.stringify(userInfo),
+      `servers/${_is_official}/${_target}/users/${userInfo.id}/profile.csv`);
+  }
+
+  /** 다른 사용자 정보 불러오기 (로컬/원격) */
+  get_user_info(userId: string, _is_official: string, _target: string): Promise<User> {
+    return new Promise((userInfoReturn, noUserInfo) => {
+      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.csv`, (e, info) => {
+        if (e && info) userInfoReturn(JSON.parse(info) as User);
+        else {
+          this.servers[_is_official][_target].client.getUsers(
+            this.servers[_is_official][_target].session, [userId]
+          ).then(info => {
+            if (info.users.length) {
+              this.indexed.saveTextFileToUserPath(JSON.stringify(info.users[0]), `servers/${_is_official}/${_target}/users/${userId}/profile.csv`);
+              userInfoReturn(info.users[0] as User);
+            } else {
+              noUserInfo({
+                result: false,
+                text: 'Probably Removed.',
+              });
+            }
+          });
+        }
+      });
+    });
+  }
+
+  /** 다른 사용자의 프로필 이미지 저장하기 */
+  save_user_profile_image(profileImg: string, userId: string, _is_official: string, _target: string) {
+    this.indexed.saveTextFileToUserPath(profileImg,
+      `servers/${_is_official}/${_target}/users/${userId}/profile.img`);
+  }
+
+  /** 다른 사용자의 프로필 이미지 불러오기(로컬/원격) */
+  get_user_profile_image(userId: string, _is_official: string, _target: string): Promise<string> {
+    return new Promise((imgReturn, noImage) => {
+      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, _img) => {
+        if (e && _img) imgReturn(_img);
+        else {
+          this.servers[_is_official][_target].client.readStorageObjects(
+            this.servers[_is_official][_target].session, {
+            object_ids: [{
+              collection: 'user_public',
+              key: 'profile_image',
+              user_id: userId,
+            }]
+          }).then(_img => {
+            if (_img.objects.length) {
+              this.indexed.saveTextFileToUserPath(_img.objects[0].value['img'], `servers/${_is_official}/${_target}/users/${userId}/profile.img`);
+              imgReturn(_img.objects[0].value['img']);
+            } else {
+              noImage({
+                result: false,
+                text: 'Probably Removed.'
+              });
+            }
+          });
+        }
+      });
+    });
+  }
+
   /** base64 정보에 대해 Nakama에서 허용하는 수준으로 이미지 크기 줄이기
    * @param ev 클릭 event 또는 {}.target.result = value 로 구성된 이미지 경로
    * @param _CallBack 조율된 이미지 DataURL
@@ -586,11 +649,8 @@ export class NakamaService {
       p.setup = () => {
         p.loadImage(ev.target.result, v => {
           v.resize(window.innerWidth, window.innerWidth * v.height / v.width);
-          if (v['canvas'].toDataURL().length > SIZE_LIMIT) {
-            let rect_ratio = v.height / v.width * 1.05;
-            let ratio = p.pow(SIZE_LIMIT / v['canvas'].toDataURL().length, rect_ratio);
-            v.resize(v.width * ratio, v.height * ratio);
-          }
+          if (v['canvas'].toDataURL().length > SIZE_LIMIT)
+            check_size(v);
           _CallBack(v);
           p.remove();
         }, _e => {
@@ -599,6 +659,12 @@ export class NakamaService {
           });
           p.remove();
         });
+      }
+      let check_size = (v: p5.Image) => {
+        const RATIO = .95;
+        v.resize(v.width * RATIO, v.height * RATIO);
+        if (v['canvas'].toDataURL().length > SIZE_LIMIT)
+          check_size(v);
       }
     });
   }
