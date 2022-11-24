@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
-import { Channel, Client, Notification, Session, Socket, User } from "@heroiclabs/nakama-js";
+import { Channel, Client, Group, Notification, Session, Socket, User } from "@heroiclabs/nakama-js";
 import { SOCKET_SERVER_ADDRESS } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
@@ -477,9 +477,9 @@ export class NakamaService {
       if (a.create_time > b.create_time) return -1;
       return 0;
     });
-    let keys = Object.keys(this.after_channel_rearrange);
+    let keys = Object.keys(this.after_notifications_rearrange);
     keys.forEach(key => {
-      this.after_channel_rearrange[key](result);
+      this.after_notifications_rearrange[key](result);
     })
     return result;
   }
@@ -719,7 +719,7 @@ export class NakamaService {
                   }
                   if (img.objects.length)
                     pending_group['img'] = img.objects[0].value['img'];
-                  this.save_group_list(pending_group, online_clients[i].info.isOfficial, online_clients[i].info.target);
+                  this.save_group_info(pending_group, online_clients[i].info.isOfficial, online_clients[i].info.target);
                 });
                 break;
               }
@@ -727,16 +727,14 @@ export class NakamaService {
         });
   }
 
-  /** 그룹 리스트 로컬에 저장하기 */
-  save_group_list(_group: any, _is_official: string, _target: string, _CallBack = () => { }) {
-    let _group_info = { ..._group };
-    delete _group_info['server'];
-    let group_img = _group['img'];
-    delete _group_info['img'];
+  /** 그룹 정보를 로컬에 저장하기 */
+  save_group_info(_group: any, _is_official: string, _target: string, _CallBack = () => { }) {
     if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
-    this.groups[_is_official][_target][_group_info.id] = _group_info;
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
-    this.indexed.saveTextFileToUserPath(group_img, `servers/${_is_official}/${_target}/groups/${_group.id}.img`);
+    this.groups[_is_official][_target][_group.id] = _group;
+    this.rearrange_group_list();
+    this.save_groups_with_less_info();
+    this.indexed.saveTextFileToUserPath(_group['img'], `servers/${_is_official}/${_target}/groups/${_group.id}.img`);
+    // 내가 그룹의 주인이라면 이미지 변경사항 업로드
     if (_group.onwer == this.servers[_is_official][_target].session.user_id && _group.img)
       this.servers[_is_official][_target].client.writeStorageObjects(
         this.servers[_is_official][_target].session, [{
@@ -747,6 +745,24 @@ export class NakamaService {
           permission_write: 1,
         }]
       );
+    _CallBack();
+  }
+
+  /** 간소화된 그룹 정보 저장하기 */
+  save_groups_with_less_info(_CallBack = () => { }) {
+    let copied_group = { ...this.groups };
+    let isOfficial = Object.keys(copied_group);
+    isOfficial.forEach(_is_official => {
+      let Target = Object.keys(copied_group[_is_official])
+      Target.forEach(_target => {
+        let GroupId = Object.keys(copied_group[_is_official][_target]);
+        GroupId.forEach(_gid => {
+          delete copied_group[_is_official][_target][_gid]['server'];
+          delete copied_group[_is_official][_target][_gid]['img'];
+        });
+      });
+    });
+    this.indexed.saveTextFileToUserPath(JSON.stringify(copied_group), 'servers/groups.json');
     _CallBack();
   }
 
@@ -771,7 +787,8 @@ export class NakamaService {
       });
     // 로컬에서 기록을 삭제한다
     delete this.groups[_is_official][_target][info['id']];
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
+    this.rearrange_group_list();
+    this.save_groups_with_less_info();
     this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
   }
 
@@ -787,11 +804,31 @@ export class NakamaService {
           this.groups[_is_official][_target][user_group.group.id]
             = { ...this.groups[_is_official][_target][user_group.group.id], ...user_group.group };
         });
-        this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
+        this.save_groups_with_less_info();
       });
-        }
+  }
 
+  /** 그룹을 재배열화한 후에 */
+  after_rearrange_group = {};
+  /** 모든 그룹 리스트를 배열로 돌려주기 */
+  rearrange_group_list() {
+    let result: Group[] = [];
+    let isOfficial = Object.keys(this.groups);
+    isOfficial.forEach(_is_official => {
+      let Target = Object.keys(this.groups[_is_official]);
+      Target.forEach(_target => {
+        let groupId = Object.keys(this.groups[_is_official][_target])
+        groupId.forEach(_gid => {
+          this.groups[_is_official][_target][_gid]['server'] = this.servers[_is_official][_target].info;
+          result.push(this.groups[_is_official][_target][_gid]);
+        });
       });
+    });
+    let keys = Object.keys(this.after_rearrange_group);
+    keys.forEach(key => {
+      this.after_rearrange_group[key](result);
+    });
+    return result;
   }
 
   /** 그룹 서버 및 설정-그룹서버의 상태 조정 */

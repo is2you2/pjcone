@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Group } from '@heroiclabs/nakama-js';
 import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -30,7 +31,7 @@ export class SettingsPage implements OnInit {
   }
 
   /** 표시되는 그룹 리스트 */
-  groups: any[] = [];
+  groups: Group[] = [];
   /** 프로필 썸네일 */
   profile_img: string;
   profile_filter: string;
@@ -47,94 +48,61 @@ export class SettingsPage implements OnInit {
   }
   /** 저장된 그룹 업데이트하여 반영 */
   load_groups() {
-    this.groups.length = 0;
-    let local_tmp = [];
-    let online_tmp = [];
-    let isOfficial = Object.keys(this.nakama.groups);
-    let is_last_official = false;
-    let is_last_target = false;
-    let is_last_group = false;
-    for (let i = 0, j = isOfficial.length; i < j; i++) {
-      let target = Object.keys(this.nakama.groups[isOfficial[i]]);
-      for (let k = 0, l = target.length; k < l; k++) {
-        let group = Object.keys(this.nakama.groups[isOfficial[i]][target[k]]);
-        for (let m = 0, n = group.length; m < n; m++) {
-          let group_and_server_info = {};
-          group_and_server_info['server'] = this.nakama.servers[isOfficial[i]][target[k]].info;
-          group_and_server_info['name'] = this.nakama.groups[isOfficial[i]][target[k]][group[m]]['name'];
-          group_and_server_info['creator_id'] = this.nakama.groups[isOfficial[i]][target[k]][group[m]]['creator_id'];
-          group_and_server_info['id'] = this.nakama.groups[isOfficial[i]][target[k]][group[m]]['id'];
-          group_and_server_info['description'] = this.nakama.groups[isOfficial[i]][target[k]][group[m]]['description'];
-          group_and_server_info['users'] = this.nakama.groups[isOfficial[i]][target[k]][group[m]]['users'];
-          group_and_server_info['status'] = this.nakama.groups[isOfficial[i]][target[k]][group[m]]['status'];
-          group_and_server_info['max_count'] = this.nakama.groups[isOfficial[i]][target[k]][group[m]]['max_count'];
-          group_and_server_info['lang_tag'] = this.nakama.groups[isOfficial[i]][target[k]][group[m]]['lang_tag'];
-          group_and_server_info['status'] = 'offline';
-          this.indexed.loadTextFromUserPath(`servers/${isOfficial[i]}/${target[k]}/groups/${group_and_server_info['id']}.img`, (e, v) => {
-            if (e && v) group_and_server_info['img'] = v;
-            local_tmp.push(group_and_server_info);
-            if (is_last_official && is_last_target && m == n - 1)
-              this.groups = local_tmp;
-            // 온라인이라면 서버가 무조건 우선되고 이 정보로 업데이트 함
-            if (this.statusBar.groupServer[isOfficial[i]][target[k]] == 'online') {
-              this.nakama.servers[isOfficial[i]][target[k]].client.listGroupUsers(
-                this.nakama.servers[isOfficial[i]][target[k]].session, group_and_server_info['id']
-              ).then(v => { // 삭제된 그룹 여부 검토
-                if (!v.group_users.length) { // 그룹 비활성중
-                  group_and_server_info['status'] = 'missing';
-                  this.nakama.groups[isOfficial[i]][target[k]][group[m]]['status'] = 'missing';
-                  this.indexed.loadTextFromUserPath(`servers/${isOfficial[i]}/${target[k]}/groups/${group_and_server_info['id']}.img`, (e, v) => {
-                    if (e && v) group_and_server_info['img'] = v;
-                    online_tmp.push(group_and_server_info);
-                  });
-                } else { // 그룹 활성중
-                  let at_least_kicked = true;
-                  for (let o = 0, p = v.group_users.length; o < p; o++)
-                    if (v.group_users[o].user.id == this.nakama.servers[isOfficial[i]][target[k]].session.user_id) {
-                      switch (v.group_users[o].state) {
-                        case 0: // superadmin
-                        case 1: // admin
-                        case 2: // member
-                          group_and_server_info['status'] = 'online';
-                          break;
-                        case 3: // request
-                          group_and_server_info['status'] = 'pending';
-                          break;
-                        default:
-                          console.warn('이해할 수 없는 코드 반환: ', v.group_users[o].state);
-                          group_and_server_info['status'] = 'missing';
-                          break;
-                      }
-                      at_least_kicked = false;
-                      break;
-                    }
-                  this.nakama.servers[isOfficial[i]][target[k]].client.readStorageObjects(
-                    this.nakama.servers[isOfficial[i]][target[k]].session, {
-                    object_ids: [{
-                      collection: 'group_public',
-                      key: `group_${group_and_server_info['id']}`,
-                      user_id: group_and_server_info['creator_id']
-                    }]
-                  }).then(v => {
-                    if (v.objects[0]) {
-                      group_and_server_info['img'] = v.objects[0].value['img'];
-                      this.indexed.saveTextFileToUserPath(group_and_server_info['img'], `servers/${isOfficial[i]}/${target[k]}/groups/${group_and_server_info['id']}.img`)
-                    }
-                    if (!at_least_kicked)
-                      online_tmp.push(group_and_server_info);
-                    is_last_group = m == n - 1;
-                    if (is_last_official && is_last_target && is_last_group)
-                      this.groups = online_tmp;
-                  });
+    this.groups = this.nakama.rearrange_group_list();
+    this.groups.forEach(group => {
+      group['status'] = 'offline';
+      let _is_official = group['server']['isOfficial'];
+      let _target = group['server']['target'];
+      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${group['id']}.img`, (e, v) => {
+        if (e && v) group['img'] = v;
+      });
+      // 온라인이라면 서버정보로 덮어쓰기
+      if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+        this.nakama.servers[_is_official][_target].client.listGroupUsers(
+          this.nakama.servers[_is_official][_target].session, group['id']
+        ).then(v => { // 삭제된 그룹 여부 검토
+          if (!v.group_users.length) { // 그룹 비활성중
+            this.nakama.groups[_is_official][_target][group.id]['status'] = 'missing';
+          } else { // 그룹 활성중
+            for (let i = 0, j = v.group_users.length; i < j; i++)
+              if (v.group_users[i].user.id == this.nakama.servers[_is_official][_target].session.user_id) {
+                switch (v.group_users[i].state) {
+                  case 0: // superadmin
+                  case 1: // admin
+                  case 2: // member
+                    this.nakama.groups[_is_official][_target][group.id]['status'] = 'online';
+                    break;
+                  case 3: // request
+                    this.nakama.groups[_is_official][_target][group.id]['status'] = 'pending';
+                    break;
+                  default:
+                    console.warn('이해할 수 없는 코드 반환: ', v.group_users[i].state);
+                    this.nakama.groups[_is_official][_target][group.id]['status'] = 'missing';
+                    break;
                 }
-              })
-            }
-          });
-        }
-        is_last_target = k == l - 1;
+                break;
+              }
+            // 그룹 이미지 업데이트
+            this.nakama.servers[_is_official][_target].client.readStorageObjects(
+              this.nakama.servers[_is_official][_target].session, {
+              object_ids: [{
+                collection: 'group_public',
+                key: `group_${group['id']}`,
+                user_id: group['creator_id']
+              }]
+            }).then(v => {
+              if (v.objects[0]) {
+                group['img'] = v.objects[0].value['img'];
+                this.indexed.saveTextFileToUserPath(group['img'], `servers/${_is_official}/${_target}/groups/${group['id']}.img`)
+              } else {
+                delete group['img'];
+                this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${group['id']}.img`)
+              }
+            });
+          }
+        })
       }
-      is_last_official = i == j - 1;
-    }
+    });
   }
   /** 채팅방 이중진입 방지용 */
   will_enter = false;

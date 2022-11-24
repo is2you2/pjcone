@@ -193,7 +193,7 @@ export class GroupDetailPage implements OnInit {
         delete less_info['users'][i]['status'];
       }
     this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']] = less_info;
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.groups), 'servers/groups.json');
+    this.nakama.save_groups_with_less_info();
   }
 
   /** 사용자 프로필 열람 */
@@ -242,9 +242,7 @@ export class GroupDetailPage implements OnInit {
     ).then(v => {
       if (v) {
         delete this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']];
-        this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.groups), 'servers/groups.json', (_v) => {
-          this.modalCtrl.dismiss();
-        });
+        this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss());
       }
     })
   }

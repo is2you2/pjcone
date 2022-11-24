@@ -126,7 +126,7 @@ export class AddGroupPage implements OnInit {
           value: { img: this.userInput.img },
         }]
       );
-      this.nakama.save_group_list(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target, () => {
+      this.nakama.save_group_info(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target, () => {
         this.isSavedWell = true;
         localStorage.removeItem('add-group');
         this.p5toast.show({
