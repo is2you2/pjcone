@@ -506,6 +506,8 @@ export class NakamaService {
       this.channels_orig[_is_official][_target] = {};
     if (!this.channels_orig[_is_official][_target])
       this.channels_orig[_is_official][_target] = {};
+    channel_info['status'] = this.channels_orig[_is_official][_target][channel_info.id]['status'];
+    channel_info['last_comment'] = this.channels_orig[_is_official][_target][channel_info.id]['last_comment'];
     this.channels_orig[_is_official][_target][channel_info.id] = channel_info;
     this.rearrange_channels();
   }
@@ -980,6 +982,12 @@ export class NakamaService {
             let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
             channel_ids.forEach(_cid => {
               delete this.channels_orig[_is_official][_target][_cid]['status'];
+            });
+          }
+          if (this.groups[_is_official] && this.groups[_is_official][_target]) {
+            let groups_id = Object.keys(this.groups[_is_official][_target]);
+            groups_id.forEach(_gid => {
+              this.groups[_is_official][_target][_gid]['status'] = 'offline';
             });
           }
         }

@@ -50,7 +50,6 @@ export class SettingsPage implements OnInit {
   load_groups() {
     this.groups = this.nakama.rearrange_group_list();
     this.groups.forEach(group => {
-      group['status'] = 'offline';
       let _is_official = group['server']['isOfficial'];
       let _target = group['server']['target'];
       this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${group['id']}.img`, (e, v) => {
