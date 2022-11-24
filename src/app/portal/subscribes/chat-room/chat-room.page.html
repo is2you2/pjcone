@@ -11,7 +11,7 @@
   <table id="main_table" style="width: 100%; height: 100%;">
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
-        <div class="full_screen main">
+        <div class="main">
           <ion-item button (click)="pull_msg_from_server()">
             <ion-label>이전 기록 불러오는 임시 버튼</ion-label>
           </ion-item>
@@ -33,7 +33,8 @@
                 </ion-button>
               </td> -->
               <td style="width: 100%;">
-                <ion-input type="text" placeholder="메시지 입력..." (keyup.enter)="send()" [(ngModel)]="userInput.text">
+                <ion-input type="text" placeholder="메시지 입력..." (ionFocus)="focus_on_input()" (keyup.enter)="send()"
+                  [(ngModel)]="userInput.text">
                 </ion-input>
               </td>
               <td>

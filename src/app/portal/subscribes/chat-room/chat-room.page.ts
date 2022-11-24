@@ -42,9 +42,7 @@ export class ChatRoomPage implements OnInit {
     // 실시간 채팅을 받는 경우 행동처리
     this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'] = (c: any) => {
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setTimeout(() => {
-        this.content_panel.scrollIntoView({ block: 'start' });
-      }, 0);
+      this.focus_on_input();
       this.messages.push(c);
     }
     // 온라인이라면 마지막 대화 기록을 받아온다
@@ -73,6 +71,13 @@ export class ChatRoomPage implements OnInit {
           });
           this.next_cursor = v.next_cursor;
         });
+  }
+
+  /** 모바일 키보드 높이 맞추기용 */
+  focus_on_input() {
+    setTimeout(() => {
+      this.content_panel.scrollIntoView({ block: 'start' });
+    }, 0);
   }
 
   send() {
