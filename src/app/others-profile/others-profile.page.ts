@@ -76,9 +76,10 @@ export class OthersProfilePage implements OnInit {
     hasNotifications = hasNotifications && this.nakama.noti_origin[this.isOfficial] && this.nakama.noti_origin[this.isOfficial][this.target];
     if (hasNotifications) {
       let noti_ids = Object.keys(this.nakama.noti_origin[this.isOfficial][this.target]);
-      for (let i = 0, j = noti_ids.length; i < j; i++)
-        if (this.nakama.noti_origin[this.isOfficial][this.target][noti_ids[i]]['sender_id'] == this.info['user']['id'])
-          this.additional_buttons[this.nakama.noti_origin[this.isOfficial][this.target][noti_ids[i]]['code'].toString()] = noti_ids[i];
+      noti_ids.forEach(noti_id => {
+        if (this.nakama.noti_origin[this.isOfficial][this.target][noti_id]['sender_id'] == this.info['user']['id'])
+          this.additional_buttons[this.nakama.noti_origin[this.isOfficial][this.target][noti_id]['code'].toString()] = noti_id;
+      });
     }
   }
 

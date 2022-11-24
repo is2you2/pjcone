@@ -78,8 +78,8 @@ export class NakamaService {
     this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
       if (e && v) { // 내용이 있을 때에만 동작
         let list: string[] = v.split('\n');
-        for (let i = 0, j = list.length; i < j; i++) {
-          let sep = list[i].split(',');
+        list.forEach(ele => {
+          let sep = ele.split(',');
           let info: ServerInfo = {
             isOfficial: sep[1],
             name: sep[2],
@@ -91,7 +91,7 @@ export class NakamaService {
           this.servers['unofficial'][info.target] = {};
           this.servers['unofficial'][info.target].info = info;
           this.init_server(info.isOfficial as any, info.target, info.address, info.key);
-        }
+        });
       }
     });
     // 마지막 상태바 정보 불러오기: 사용자의 연결 여부 의사가 반영되어있음
@@ -478,8 +478,9 @@ export class NakamaService {
       return 0;
     });
     let keys = Object.keys(this.after_channel_rearrange);
-    for (let i = 0, j = keys.length; i < j; i++)
-      this.after_channel_rearrange[keys[i]](result);
+    keys.forEach(key => {
+      this.after_channel_rearrange[key](result);
+    })
     return result;
   }
 
@@ -521,14 +522,15 @@ export class NakamaService {
       if (e && v) {
         this.channels_orig = JSON.parse(v);
         let isOfficial = Object.keys(this.channels_orig);
-        for (let i = 0, j = isOfficial.length; i < j; i++) {
-          let Target = Object.keys(this.channels_orig[isOfficial[i]]);
-          for (let k = 0, l = Target.length; k < l; k++) {
-            let channel_ids = Object.keys(this.channels_orig[isOfficial[i]][Target[k]]);
-            for (let m = 0, n = channel_ids.length; m < n; m++)
-              delete this.channels_orig[isOfficial[i]][Target[k]][channel_ids[m]]['status'];
-          }
-        }
+        isOfficial.forEach(_is_official => {
+          let Target = Object.keys(this.channels_orig[_is_official]);
+          Target.forEach(_target => {
+            let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
+            channel_ids.forEach(_cid => {
+              delete this.channels_orig[_is_official][_target][_cid]['status'];
+            });
+          });
+        });
         this.rearrange_channels();
       }
     });
@@ -538,19 +540,19 @@ export class NakamaService {
   redirect_channel(_is_official: string, _target: string) {
     if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
       let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
-      for (let k = 0, l = channel_ids.length; k < l; k++) {
+      channel_ids.forEach(_cid => {
         this.servers[_is_official][_target].socket.joinChat(
-          this.channels_orig[_is_official][_target][channel_ids[k]]['redirect']['id'],
-          this.channels_orig[_is_official][_target][channel_ids[k]]['redirect']['type'],
-          this.channels_orig[_is_official][_target][channel_ids[k]]['redirect']['persistence'],
+          this.channels_orig[_is_official][_target][_cid]['redirect']['id'],
+          this.channels_orig[_is_official][_target][_cid]['redirect']['type'],
+          this.channels_orig[_is_official][_target][_cid]['redirect']['persistence'],
           false
         );
         this.servers[_is_official][_target].client.listChannelMessages(
-          this.servers[_is_official][_target].session, channel_ids[k], 1, false)
+          this.servers[_is_official][_target].session, _cid, 1, false)
           .then(v => {
-            this.channels_orig[_is_official][_target][channel_ids[k]]['last_comment'] = v.messages[0].content['msg'];
+            this.channels_orig[_is_official][_target][_cid]['last_comment'] = v.messages[0].content['msg'];
           });
-      }
+      });
       this.rearrange_channels();
     }
   }
@@ -565,23 +567,24 @@ export class NakamaService {
   rearrange_channels() {
     let result = [];
     let isOfficial = Object.keys(this.channels_orig);
-    for (let i = 0, j = isOfficial.length; i < j; i++) {
-      let Targets = Object.keys(this.channels_orig[isOfficial[i]]);
-      for (let k = 0, l = Targets.length; k < l; k++) {
-        let ChannelIds = Object.keys(this.channels_orig[isOfficial[i]][Targets[k]]);
-        for (let o = 0, p = ChannelIds.length; o < p; o++) {
-          let channel_info = this.channels_orig[isOfficial[i]][Targets[k]][ChannelIds[o]];
+    isOfficial.forEach(_is_official => {
+      let Targets = Object.keys(this.channels_orig[_is_official]);
+      Targets.forEach(_target => {
+        let ChannelIds = Object.keys(this.channels_orig[_is_official][_target]);
+        ChannelIds.forEach(_cid => {
+          let channel_info = this.channels_orig[_is_official][_target][_cid];
           channel_info['info'] = {
-            isOfficial: isOfficial[i],
-            target: Targets[k],
+            isOfficial: _is_official,
+            target: _target,
           }
           result.push(channel_info);
-        }
-      }
-    }
+        });
+      });
+    });
     let keys = Object.keys(this.after_channel_rearrange);
-    for (let i = 0, j = keys.length; i < j; i++)
-      this.after_channel_rearrange[keys[i]](result);
+    keys.forEach(key => {
+      this.after_channel_rearrange[key](result);
+    });
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.channels_orig), 'servers/channels.json');
     return result;
   }
@@ -772,7 +775,7 @@ export class NakamaService {
     this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
   }
 
-  /** 자신이 참여한 그룹 리모트에서 가져오기 */
+  /** 자신이 참여한 그룹을 리모트에서 가져오기 */
   get_group_list(_is_official: string, _target: string) {
     if (!this.groups[_is_official]) this.groups[_is_official] = {};
     if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
@@ -780,11 +783,14 @@ export class NakamaService {
       this.servers[_is_official][_target].session,
       this.servers[_is_official][_target].session.user_id)
       .then(v => {
-        for (let i = 0, j = v.user_groups.length; i < j; i++) {
-          this.groups[_is_official][_target][v.user_groups[i].group.id]
-            = { ...this.groups[_is_official][_target][v.user_groups[i].group.id], ...v.user_groups[i].group };
-        }
+        v.user_groups.forEach(user_group => {
+          this.groups[_is_official][_target][user_group.group.id]
+            = { ...this.groups[_is_official][_target][user_group.group.id], ...user_group.group };
+        });
         this.indexed.saveTextFileToUserPath(JSON.stringify(this.groups), 'servers/groups.json');
+      });
+        }
+
       });
   }
 
@@ -935,8 +941,9 @@ export class NakamaService {
           this.set_group_statusBar('missing', _is_official, _target);
           if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
             let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
-            for (let i = 0, j = channel_ids.length; i < j; i++)
-              delete this.channels_orig[_is_official][_target][channel_ids[i]]['status'];
+            channel_ids.forEach(_cid => {
+              delete this.channels_orig[_is_official][_target][_cid]['status'];
+            });
           }
         }
       });

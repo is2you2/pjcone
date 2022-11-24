@@ -33,10 +33,12 @@ export class DedicatedSettingsPage implements OnInit {
     this.server.funcs.onCheck = (v: any) => {
       let keys = Object.keys(v);
       let results: string[] = [];
-      for (let i = 0, j = keys.length; i < j; i++)
-        if (v[keys[i]]['ipv4Addresses'].length)
-          for (let k = 0, l = v[keys[i]]['ipv4Addresses'].length; k < l; k++)
-            results.push(`${v[keys[i]]['ipv4Addresses'][k]} (${keys[i]})`);
+      keys.forEach(key => {
+        if (v[key]['ipv4Addresses'].length)
+          v[key]['ipv4Addresses'].forEach(address => {
+            results.push(`${address} (${key})`);
+          });
+      });
       if (results.length)
         this.addresses = results.join('\n');
       else this.addresses = '연결된 네트워크가 없습니다.';
