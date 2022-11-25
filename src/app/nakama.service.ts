@@ -298,7 +298,7 @@ export class NakamaService {
           break;
         case 401: // 비밀번호 잘못됨
           this.p5toast.show({
-            text: '기기 재검증 이메일 발송 필요! (아직 개발되지 않음)',
+            text: '기기 재검증 과정 필요! (아직 개발되지 않음)',
           });
           _CallBack(false);
           this.set_group_statusBar('missing', _is_official, _target);
@@ -510,9 +510,11 @@ export class NakamaService {
       this.channels_orig[_is_official][_target] = {};
     if (!this.channels_orig[_is_official][_target])
       this.channels_orig[_is_official][_target] = {};
-    channel_info['status'] = this.channels_orig[_is_official][_target][channel_info.id]['status'];
-    channel_info['title'] = this.channels_orig[_is_official][_target][channel_info.id]['title'];
-    channel_info['last_comment'] = this.channels_orig[_is_official][_target][channel_info.id]['last_comment'];
+    if (this.channels_orig[_is_official][_target][channel_info.id]) {
+      channel_info['status'] = this.channels_orig[_is_official][_target][channel_info.id]['status'];
+      channel_info['title'] = this.channels_orig[_is_official][_target][channel_info.id]['title'];
+      channel_info['last_comment'] = this.channels_orig[_is_official][_target][channel_info.id]['last_comment'];
+    }
     this.channels_orig[_is_official][_target][channel_info.id] = channel_info;
     this.rearrange_channels();
   }
@@ -968,7 +970,8 @@ export class NakamaService {
           console.warn('다른 대화타입에서 검토 필요: 그룹, 룸');
           if (p.joins !== undefined) {
             console.warn('상대방 진입에 대한 검토 필요: 전체 중 몇명 들어왔는지');
-            this.channels_orig[_is_official][_target][p.channel_id]['status'] = 'online';
+            if (this.channels_orig[_is_official][_target][p.channel_id])
+              this.channels_orig[_is_official][_target][p.channel_id]['status'] = 'online';
           } else if (p.leaves !== undefined) {
             console.warn('상대방 떠남에 대한 검토 필요: 전체 중 몇명 빠졌는지');
             this.channels_orig[_is_official][_target][p.channel_id]['status'] = 'pending';
