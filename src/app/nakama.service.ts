@@ -107,7 +107,8 @@ export class NakamaService {
         this.groups = JSON.parse(v);
       let all_groups = this.rearrange_group_list();
       all_groups.forEach(group => {
-        group['status'] = 'offline';
+        if (group['status'] != 'missing')
+          group['status'] = 'offline';
       });
     });
   }
@@ -294,14 +295,14 @@ export class NakamaService {
             text: '사용자를 연결한 후 사용하세요.',
           });
           _CallBack(false);
-          this.set_group_statusBar('missing', _is_official, _target);
+          this.set_group_statusBar('offline', _is_official, _target);
           break;
         case 401: // 비밀번호 잘못됨
           this.p5toast.show({
             text: '기기 재검증 과정 필요! (아직 개발되지 않음)',
           });
           _CallBack(false);
-          this.set_group_statusBar('missing', _is_official, _target);
+          this.set_group_statusBar('offline', _is_official, _target);
           break;
         case 404: // 아이디 없음
           this.servers[_is_official][_target].session = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), this.uuid, true);
@@ -337,7 +338,7 @@ export class NakamaService {
             text: `준비되지 않은 오류 유형: ${e}`,
           });
           _CallBack(false);
-          this.set_group_statusBar('missing', _is_official, _target);
+          this.set_group_statusBar('offline', _is_official, _target);
           break;
       }
     }
@@ -497,7 +498,7 @@ export class NakamaService {
   }
 
   /** 등록된 채널들 관리  
-   * channels_orig[isOfficial][target]***[group_id or null]***[channels] = [ ...info ]
+   * channels_orig[isOfficial][target][channel_id] = [ ...info ]
    */
   channels_orig = {
     'official': {},
@@ -536,7 +537,8 @@ export class NakamaService {
           Target.forEach(_target => {
             let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
             channel_ids.forEach(_cid => {
-              delete this.channels_orig[_is_official][_target][_cid]['status'];
+              if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
+                delete this.channels_orig[_is_official][_target][_cid]['status'];
               delete this.channels_orig[_is_official][_target][_cid]['update'];
             });
           });
@@ -779,7 +781,7 @@ export class NakamaService {
   /** 그룹 리스트 로컬/리모트에서 삭제하기 (방장일 경우) */
   remove_group_list(info: any, _is_official: string, _target: string) {
     // 내가 방장이면 해산처리
-    if (info['creator_id'] == this.servers[_is_official][_target].session.user_id)
+    if (this.servers[_is_official][_target] && info['creator_id'] == this.servers[_is_official][_target].session.user_id)
       this.servers[_is_official][_target].client.deleteGroup(
         this.servers[_is_official][_target].session, info['id'],
       ).then(v => {
@@ -829,7 +831,13 @@ export class NakamaService {
       Target.forEach(_target => {
         let groupId = Object.keys(this.groups[_is_official][_target])
         groupId.forEach(_gid => {
-          this.groups[_is_official][_target][_gid]['server'] = this.servers[_is_official][_target].info;
+          if (this.servers[_is_official][_target])
+            this.groups[_is_official][_target][_gid]['server'] = this.servers[_is_official][_target].info;
+          else this.groups[_is_official][_target][_gid]['server'] = {
+            name: '삭제된 서버',
+            isOfficial: _is_official,
+            target: _target,
+          }
           result.push(this.groups[_is_official][_target][_gid]);
         });
       });
@@ -988,7 +996,7 @@ export class NakamaService {
           this.p5toast.show({
             text: `그룹서버 연결 끊어짐: ${this.servers[_is_official][_target].info.name}`,
           });
-          this.set_group_statusBar('missing', _is_official, _target);
+          this.set_group_statusBar('offline', _is_official, _target);
           if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
             let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
             channel_ids.forEach(_cid => {

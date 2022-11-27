@@ -39,7 +39,7 @@
               </td>
               <td>
                 <ion-button (click)="send()" expand="block"
-                  [disabled]="!nakama.servers[info['info']['isOfficial']][info['info']['target']].socket">
+                  [disabled]="!nakama.servers[info['info']['isOfficial']][info['info']['target']] || !nakama.servers[info['info']['isOfficial']][info['info']['target']].socket">
                   보내기
                 </ion-button>
               </td>

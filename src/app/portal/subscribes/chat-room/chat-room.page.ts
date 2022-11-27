@@ -65,8 +65,10 @@ export class ChatRoomPage implements OnInit {
       this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
         this.nakama.servers[this.isOfficial][this.target].session,
         this.info['id'], 15, false, this.next_cursor).then(v => {
-          console.warn('로컬 채팅 기록과 대조하여 내용이 다르다면 계속해서 불러오기처리 필요');
+          console.warn('로컬 채팅id 기록과 대조하여 내용이 다르다면 계속해서 불러오기처리 필요');
           v.messages.forEach(msg => {
+            if (!this.info['last_comment'])
+              this.info['last_comment'] = msg['content']['msg'];
             this.messages.unshift(msg);
           });
           this.next_cursor = v.next_cursor;

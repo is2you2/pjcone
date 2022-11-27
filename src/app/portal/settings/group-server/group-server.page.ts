@@ -139,15 +139,29 @@ export class GroupServerPage implements OnInit {
       )
     if (this.nakama.servers[_is_official][_target].socket)
       this.nakama.servers[_is_official][_target].socket.disconnect(true);
-    // 정보 일괄 삭제
+    // 알림정보 삭제
     delete this.nakama.servers[_is_official][_target];
     if (this.nakama.noti_origin[_is_official] && this.nakama.noti_origin[_is_official][_target])
       delete this.nakama.noti_origin[_is_official][_target];
     this.nakama.rearrange_notifications();
-    if (this.nakama.channels_orig[_is_official] && this.nakama.channels_orig[_is_official][_target])
-      delete this.nakama.channels_orig[_is_official][_target];
+    // 예하 채널들 손상처리
+    if (this.nakama.channels_orig[_is_official] && this.nakama.channels_orig[_is_official][_target]) {
+      let channel_ids = Object.keys(this.nakama.channels_orig[_is_official][_target]);
+      channel_ids.forEach(_cid => {
+        this.nakama.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
+      });
+    }
     this.nakama.rearrange_channels();
+    // 예하 그룹들 손상처리
+    let group_ids = Object.keys(this.nakama.groups[_is_official][_target]);
+    group_ids.forEach(_gid => {
+      this.nakama.groups[_is_official][_target][_gid]['status'] = 'missing';
+    });
+    // 그룹서버 리스트 정리
     this.servers = this.nakama.get_all_server_info();
+    // 그룹서버 정리
+    delete this.statusBar.groupServer[_is_official][_target];
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
     // 파일로부터 일치하는 정보 삭제
     this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
       if (e) {
@@ -159,8 +173,6 @@ export class GroupServerPage implements OnInit {
             break;
           }
         }
-        delete this.statusBar.groupServer[_is_official][_target];
-        this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
         this.indexed.saveTextFileToUserPath(lines.join('\n'), 'servers/list_detail.csv');
       }
     });
