@@ -10,16 +10,16 @@
 <ion-content>
   <ion-item button (click)="buttonClickInputFile()">
     <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[(info.status || statusBar.groupServer[info.server.isOfficial][info.server.target])]">
+      [style]="'background-color: ' + statusBar.colors[(info['status'] || statusBar.groupServer[info.server.isOfficial][info.server.target])]">
     </div>
     <div class="additional_form bg_img_form">
       <img class="bg_img"
-        [style]="'filter: ' + ((info.status || statusBar.groupServer[info.server.isOfficial][info.server.target]) == 'online' ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
-        [src]="info.img">
+        [style]="'filter: ' + ((info['status'] || statusBar.groupServer[info.server.isOfficial][info.server.target]) == 'online' ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
+        [src]="info['img']">
     </div>
     <ion-label class="form_margin">
       <p>{{info.server.name + ' (' + info.server.target + ')'}}</p>
-      <h2>{{info.name}}</h2>
+      <h2>{{info['name']}}</h2>
     </ion-label>
   </ion-item>
   <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
@@ -48,7 +48,7 @@
   <ion-item *ngIf="is_online && has_admin" button (click)="remove_group()">
     <ion-label class="ion-text-center" color="danger">그룹 해산</ion-label>
   </ion-item>
-  <ion-item *ngIf="info['status'] == 'missing'" button (click)="remove_group()">
+  <ion-item *ngIf="info['status'] == 'missing' || (info['status'] == 'offline' && statusBar.groupServer[info.server.isOfficial][info.server.target] == 'online')" button (click)="remove_group()">
     <ion-label class="ion-text-center" color="danger">기록 삭제</ion-label>
   </ion-item>
   <ion-item *ngIf="!has_admin && info['status'] != 'missing' && info['status'] != 'offline'" button

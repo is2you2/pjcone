@@ -240,7 +240,7 @@ export class LocalNotiService {
       if (opt.vibrate_ln)
         input['vibrate'] = opt.vibrate_ln;
       if (opt.icon)
-        input['icon'] = `res://${opt.icon}`;
+        input['icon'] = opt.icon;
       input['smallIcon'] = `res://${opt.smallIcon_ln || header || 'icon_mono'}`;
       input['sound'] = `res://${opt.sound_ln || 'platform_default'}`;
       input['foreground'] = true;

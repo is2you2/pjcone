@@ -187,10 +187,9 @@ export class OthersProfilePage implements OnInit {
     this.nakama.servers[this.isOfficial][this.target].client.kickGroupUsers(
       this.nakama.servers[this.isOfficial][this.target].session,
       this.group_info['id'], [this.info['user']['id']]
-    ).then(v => {
-      if (v) console.log('정상적으로 사용자 퇴출');
+    ).then(_v => {
       this.p5toast.show({
-        text: `사용자를 퇴출하였습니다: ${this.info['user']['display_name'] || '이름 없는 사용자'}`,
+        text: `사용자를 내보냈습니다: ${this.info['user']['display_name'] || '이름 없는 사용자'}`,
       });
       this.modalCtrl.dismiss({
         id: this.info['user']['id'],

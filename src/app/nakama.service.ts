@@ -7,7 +7,7 @@ import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 import * as p5 from 'p5';
 import { LocalNotiService } from './local-noti.service';
-import { ModalController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 
 /** 서버 상세 정보 */
@@ -44,6 +44,7 @@ export class NakamaService {
     private indexed: IndexedDBService,
     private noti: LocalNotiService,
     private modalCtrl: ModalController,
+    private alertCtrl: AlertController,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -926,6 +927,29 @@ export class NakamaService {
             case -3: // 상대방이 친구 요청 수락
             case -4: // 상대방이 그룹 참가 수락
               this.update_notifications(_is_official, _target);
+              this.noti.SetListener(`check${v.code}`, (_v: any) => {
+                this.noti.ClearNoti(_v['id']);
+                this.noti.RemoveListener(`check${v.code}`);
+                this.check_notifications(v, _is_official, _target);
+              });
+              this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`, (_e, _v) => {
+                console.log('불러오기 경로는: ', `servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`);
+                console.log('이미지 불러오기: ', _e, _v);
+                this.noti.PushLocal({
+                  id: v.code,
+                  title: '검토해야할 연결이 있습니다.',
+                  body: v.subject,
+                  actions_ln: [{
+                    id: `check${v.code}`,
+                    title: '확인',
+                  }],
+                  icon: _v,
+                  smallIcon_ln: 'diychat',
+                  iconColor_ln: '271e38',
+                }, undefined, (_ev: any) => {
+                  this.check_notifications(v, _is_official, _target);
+                });
+              });
               break;
             case -5: // 그룹 참가 요청 받음
               console.warn('안드로이드에서 테스트 필요');
@@ -939,29 +963,32 @@ export class NakamaService {
               if (this.socket_reactive[v.code].info.id == v.content['group_id'])
                 this.socket_reactive[v.code].ngOnInit();
               this.noti.SetListener(`check${v.code}`, (_v: any) => {
-                if (this.socket_reactive[v.code]) return;
                 this.noti.ClearNoti(_v['id']);
                 this.noti.RemoveListener(`check${v.code}`);
+                if (this.socket_reactive[v.code]) return;
                 this.modalCtrl.create({
                   component: GroupDetailPage,
                   componentProps: { info: group_detail },
                 }).then(v => v.present());
               });
-              this.noti.PushLocal({
-                id: v.code,
-                title: `${group_detail['title']} 그룹에 참가 요청`,
-                actions_ln: [{
-                  id: `check${v.code}`,
-                  title: '검토',
-                }],
-                icon: 'diychat',
-                iconColor_ln: '271e38',
-              }, undefined, (_ev: any) => {
-                if (this.socket_reactive[v.code].info.id == v.content['group_id']) return;
-                this.modalCtrl.create({
-                  component: GroupDetailPage,
-                  componentProps: { info: group_detail },
-                }).then(v => v.present());
+              this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`, (_e, _v) => {
+                this.noti.PushLocal({
+                  id: v.code,
+                  title: `${group_detail['title']} 그룹에 참가 요청`,
+                  actions_ln: [{
+                    id: `check${v.code}`,
+                    title: '검토',
+                  }],
+                  icon: _v,
+                  smallIcon_ln: 'diychat',
+                  iconColor_ln: '271e38',
+                }, undefined, (_ev: any) => {
+                  if (this.socket_reactive[v.code].info.id == v.content['group_id']) return;
+                  this.modalCtrl.create({
+                    component: GroupDetailPage,
+                    componentProps: { info: group_detail },
+                  }).then(v => v.present());
+                });
               });
               break;
             case -6: // 친구가 다른 게임에 참여
@@ -1011,5 +1038,76 @@ export class NakamaService {
           }
         }
       });
+  }
+
+  /** 알림 내용 클릭시 행동 */
+  check_notifications(this_noti: Notification, _is_official: string, _target: string) {
+    console.log('해당 알림 내용: ', this_noti);
+    let this_server = this.servers[_is_official][_target];
+    switch (this_noti.code) {
+      case 0: // 예약된 알림
+        break;
+      case -2: // 친구 요청 받음
+        break;
+      case -1: // 친구 요청 받음
+      case -3: // 상대방이 친구 요청 수락
+      case -4: // 상대방이 그룹 참가 수락
+      case -6: // 친구가 다른 게임에 참여
+        this_server.client.deleteNotifications(this_server.session, [this_noti['id']])
+          .then(v => {
+            if (!v) console.warn('알림 거부처리 검토 필요');
+            this.update_notifications(_is_official, _target);
+          });
+        break;
+      case -5: // 그룹 참가 요청 받음
+        this_server.client.getUsers(this_server.session, [this_noti['sender_id']])
+          .then(v => {
+            if (v.users.length) {
+              let msg = '';
+              msg += `서버: ${this_noti['server']['name']}<br>`;
+              msg += `사용자명: ${v.users[0].display_name}`;
+              this.alertCtrl.create({
+                header: '그룹 참가 요청',
+                message: msg,
+                buttons: [{
+                  text: '수락',
+                  handler: () => {
+                    this_server.client.addGroupUsers(this_server.session, this_noti['content']['group_id'], [v.users[0].id])
+                      .then(v => {
+                        if (!v) console.warn('밴인 경우인 것 같음, 확인 필요');
+                        this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
+                        this.update_notifications(_is_official, _target);
+                      });
+                  }
+                }, {
+                  text: '거절',
+                  handler: () => {
+                    this_server.client.kickGroupUsers(this_server.session, this_noti['content']['group_id'], [v.users[0].id])
+                      .then(v => {
+                        if (!v) console.warn('그룹 참여 거절을 kick한 경우 오류');
+                        this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
+                        this.update_notifications(_is_official, _target);
+                      })
+                  }
+                }],
+              }).then(v => v.present());
+            } else {
+              this_server.client.deleteNotifications(this_server.session, [this_noti['id']])
+                .then(v => {
+                  if (!v) console.warn('알림 거부처리 검토 필요');
+                  this.p5toast.show({
+                    text: '만료된 알림: 사용자 없음',
+                  })
+                  this.update_notifications(_is_official, _target);
+                });
+            }
+          });
+        break;
+      case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
+        break;
+      default:
+        console.warn('예상하지 못한 알림 구분: ', this_noti.code);
+        break;
+    }
   }
 }

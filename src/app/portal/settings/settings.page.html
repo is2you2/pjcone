@@ -48,16 +48,16 @@
   </ion-item>
   <ion-item button *ngFor="let group of groups; index as i" (click)="go_to_group_detail(i)">
     <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[(group.status || statusBar.groupServer[group.server.isOfficial][group.server.target])]">
+      [style]="'background-color: ' + statusBar.colors[(group['status'] || statusBar.groupServer[group.server.isOfficial][group.server.target])]">
     </div>
     <div class="additional_form bg_img_form">
       <img class="bg_img"
-        [style]="'filter: ' + ((group.status || statusBar.groupServer[group.server.isOfficial][group.server.target]) == 'online' ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
-        [src]="group.img">
+        [style]="'filter: ' + ((group['status'] || statusBar.groupServer[group.server.isOfficial][group.server.target]) == 'online' ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
+        [src]="group['img']">
     </div>
     <ion-label class="form_margin">
       <p>{{group.server.name + ' (' + group.server.target + ')'}}</p>
-      <h2>{{group.name}}</h2>
+      <h2>{{group['name']}}</h2>
     </ion-label>
   </ion-item>
   <ion-item-divider>
