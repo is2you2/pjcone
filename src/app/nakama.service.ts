@@ -425,6 +425,9 @@ export class NakamaService {
               v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
             case -4: // 상대방이 그룹 참가 수락
+              this.groups[_is_official][_target][v.notifications[i].content['group_id']]['status'] = 'online';
+              if (this.socket_reactive[v.notifications[i].code] && this.socket_reactive[v.notifications[i].code].info.id == v.notifications[i].content['group_id'])
+                this.socket_reactive[v.notifications[i].code].ngOnInit();
               v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
               break;
             case -5: // 그룹 참가 요청 받음
@@ -435,9 +438,9 @@ export class NakamaService {
                 is_removed = true;
                 this.servers[_is_official][_target].client.deleteNotifications(
                   this.servers[_is_official][_target].session, [v.notifications[i].id]
-                ).then(v => {
-                  if (v) this.update_notifications(_is_official, _target);
-                  else console.warn('알림 지우기 실패: ', v);
+                ).then(b => {
+                  if (b) this.update_notifications(_is_official, _target);
+                  else console.warn('알림 지우기 실패: ', b);
                 });
               }
               break;
@@ -510,12 +513,13 @@ export class NakamaService {
   add_channels(channel_info: Channel, _is_official: string, _target: string) {
     if (!this.channels_orig[_is_official][_target])
       this.channels_orig[_is_official][_target] = {};
-    if (!this.channels_orig[_is_official][_target])
-      this.channels_orig[_is_official][_target] = {};
     if (this.channels_orig[_is_official][_target][channel_info.id]) {
-      channel_info['status'] = this.channels_orig[_is_official][_target][channel_info.id]['status'];
-      channel_info['title'] = this.channels_orig[_is_official][_target][channel_info.id]['title'];
-      channel_info['last_comment'] = this.channels_orig[_is_official][_target][channel_info.id]['last_comment'];
+      if (this.channels_orig[_is_official][_target][channel_info.id]['status'])
+        channel_info['status'] = this.channels_orig[_is_official][_target][channel_info.id]['status'];
+      if (this.channels_orig[_is_official][_target][channel_info.id]['title'])
+        channel_info['title'] = this.channels_orig[_is_official][_target][channel_info.id]['title'];
+      if (this.channels_orig[_is_official][_target][channel_info.id]['last_comment'])
+        channel_info['last_comment'] = this.channels_orig[_is_official][_target][channel_info.id]['last_comment'];
     }
     this.channels_orig[_is_official][_target][channel_info.id] = channel_info;
     this.rearrange_channels();
@@ -594,8 +598,8 @@ export class NakamaService {
         });
       });
     });
-    let keys = Object.keys(this.after_channel_rearrange);
-    keys.forEach(key => {
+    let _cids = Object.keys(this.after_channel_rearrange);
+    _cids.forEach(key => {
       this.after_channel_rearrange[key](result);
     });
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.channels_orig), 'servers/channels.json');
@@ -958,7 +962,7 @@ export class NakamaService {
               });
               this.update_notifications(_is_official, _target);
               // 이미 보는 화면이라면 업데이트하기
-              if (this.socket_reactive[v.code].info.id == v.content['group_id'])
+              if (this.socket_reactive[v.code] && this.socket_reactive[v.code].info.id == v.content['group_id'])
                 this.socket_reactive[v.code].ngOnInit();
               this.noti.SetListener(`check${v.code}`, (_v: any) => {
                 this.noti.ClearNoti(_v['id']);
@@ -1076,16 +1080,19 @@ export class NakamaService {
                     this_server.client.addGroupUsers(this_server.session, this_noti['content']['group_id'], [v.users[0].id])
                       .then(v => {
                         if (!v) console.warn('밴인 경우인 것 같음, 확인 필요');
-                        this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
-                        this.update_notifications(_is_official, _target);
+                        this_server.client.deleteNotifications(this_server.session, [this_noti['id']])
+                          .then(b => {
+                            if (b) this.update_notifications(_is_official, _target);
+                            else console.warn('알림 지우기 실패: ', b);
+                          });
                       });
                   }
                 }, {
                   text: '거절',
                   handler: () => {
                     this_server.client.kickGroupUsers(this_server.session, this_noti['content']['group_id'], [v.users[0].id])
-                      .then(v => {
-                        if (!v) console.warn('그룹 참여 거절을 kick한 경우 오류');
+                      .then(b => {
+                        if (!b) console.warn('그룹 참여 거절을 kick한 경우 오류');
                         this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
                         this.update_notifications(_is_official, _target);
                       })
@@ -1094,8 +1101,8 @@ export class NakamaService {
               }).then(v => v.present());
             } else {
               this_server.client.deleteNotifications(this_server.session, [this_noti['id']])
-                .then(v => {
-                  if (!v) console.warn('알림 거부처리 검토 필요');
+                .then(b => {
+                  if (!b) console.warn('알림 거부처리 검토 필요');
                   this.p5toast.show({
                     text: '만료된 알림: 사용자 없음',
                   })

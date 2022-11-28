@@ -35,6 +35,7 @@ export class GroupDetailPage implements OnInit {
 
   ngOnInit() {
     this.info = this.navParams.get('info');
+    this.nakama.socket_reactive[-4] = this;
     this.nakama.socket_reactive[-5] = this;
     this.readasQRCodeFromId();
     let _is_official: string = this.info.server['isOfficial'];
@@ -248,6 +249,7 @@ export class GroupDetailPage implements OnInit {
   }
 
   ionViewWillLeave() {
+    delete this.nakama.socket_reactive[-4];
     delete this.nakama.socket_reactive[-5];
     if (this.need_edit)
       this.edit_group();

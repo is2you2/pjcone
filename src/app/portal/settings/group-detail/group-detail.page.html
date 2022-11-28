@@ -39,7 +39,7 @@
   </ion-item-divider>
   <textarea class="infobox" [disabled]="!has_admin" [(ngModel)]="info.description"
     [placeholder]="'설명 없는 그룹'"></textarea>
-  <ion-item-divider *ngIf="info['users'] && info['users'].length">
+  <ion-item-divider *ngIf="info['status'] != 'missing' && info['users'] && info['users'].length">
     <ion-label>그룹 구성원</ion-label>
   </ion-item-divider>
   <ion-item button *ngFor="let user of info['users']; i as index" (click)="open_user_profile(user)">

@@ -48,8 +48,8 @@ export class SettingsPage implements OnInit {
   }
   /** 저장된 그룹 업데이트하여 반영 */
   load_groups() {
-    this.groups = this.nakama.rearrange_group_list();
-    this.groups.forEach(group => {
+    let tmp_groups = this.nakama.rearrange_group_list();
+    tmp_groups.forEach(group => {
       let _is_official = group['server']['isOfficial'];
       let _target = group['server']['target'];
       this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${group['id']}.img`, (e, v) => {
@@ -102,6 +102,7 @@ export class SettingsPage implements OnInit {
         })
       }
     });
+    this.groups = tmp_groups;
   }
   /** 채팅방 이중진입 방지용 */
   will_enter = false;
