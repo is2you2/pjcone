@@ -381,6 +381,10 @@ export class NakamaService {
                       type: targetType,
                       persistence: v.notifications[i]['persistent'],
                     };
+                    this.servers[_is_official][_target].client.listChannelMessages(
+                      this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
+                        c['last_comment'] = m.messages[0].content['msg'];
+                      });
                     // 방 이미지를 상대방 이미지로 설정
                     this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${v.notifications[i]['sender_id']}/profile.img`, (e, img) => {
                       if (e && img) c['img'] = img;
@@ -594,6 +598,53 @@ export class NakamaService {
             isOfficial: _is_official,
             target: _target,
           }
+          switch (channel_info['redirect']['type']) {
+            case 1: // 방 대화
+              console.warn('방 대화 기능 준비중...');
+              break;
+            case 2: // 1:1 대화
+              this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${channel_info['redirect']['id']}/profile.json`, (e, data) => {
+                if (e && data) {
+                  let info = JSON.parse(data);
+                  channel_info['title'] = info['display_name'] || '이름 없는 사용자';
+                } else {
+                  this.servers[_is_official][_target].client.getUsers(
+                    this.servers[_is_official][_target].session, [channel_info['redirect']['id']]
+                  ).then(_info => {
+                    if (_info.users.length) {
+                      channel_info['title'] = _info.users[0].display_name;
+                      this.indexed.saveTextFileToUserPath(JSON.stringify(_info.users[0]), `servers/${_is_official}/${_target}/users/${channel_info['redirect']['id']}/profile.json`)
+                    } else channel_info['title'] = '상대방 정보 없음';
+                  });
+                }
+              });
+              this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${channel_info['redirect']['id']}/profile.img`, (e, img) => {
+                if (e && img)
+                  channel_info['img'] = img;
+                else {
+                  this.servers[_is_official][_target].client.readStorageObjects(
+                    this.servers[_is_official][_target].session, {
+                    object_ids: [{
+                      collection: 'user_public',
+                      key: 'profile_image',
+                      user_id: channel_info['redirect']['id'],
+                    }],
+                  }).then(_img => {
+                    if (_img.objects.length) {
+                      channel_info['img'] = _img.objects[0].value['img'];
+                      this.indexed.saveTextFileToUserPath(_img.objects[0].value['img'], `servers/${_is_official}/${_target}/users/${channel_info['redirect']['id']}/profile.img`)
+                    }
+                  });
+                }
+              });
+              break;
+            case 3: // 그룹 대화
+              console.warn('그룹 대화 기능 준비중...');
+              break;
+            default:
+              console.error('예상되지 않은 대화형식: ', channel_info);
+              break;
+          }
           result.push(channel_info);
         });
       });
@@ -609,20 +660,20 @@ export class NakamaService {
   /** 다른 사용자의 정보 저장하기 */
   save_user_info(userInfo: User, _is_official: string, _target: string) {
     this.indexed.saveTextFileToUserPath(JSON.stringify(userInfo),
-      `servers/${_is_official}/${_target}/users/${userInfo.id}/profile.csv`);
+      `servers/${_is_official}/${_target}/users/${userInfo.id}/profile.json`);
   }
 
   /** 다른 사용자 정보 불러오기 (로컬/원격) */
   get_user_info(userId: string, _is_official: string, _target: string): Promise<User> {
     return new Promise((userInfoReturn, noUserInfo) => {
-      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.csv`, (e, info) => {
+      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.json`, (e, info) => {
         if (e && info) userInfoReturn(JSON.parse(info) as User);
         else {
           this.servers[_is_official][_target].client.getUsers(
             this.servers[_is_official][_target].session, [userId]
           ).then(info => {
             if (info.users.length) {
-              this.indexed.saveTextFileToUserPath(JSON.stringify(info.users[0]), `servers/${_is_official}/${_target}/users/${userId}/profile.csv`);
+              this.indexed.saveTextFileToUserPath(JSON.stringify(info.users[0]), `servers/${_is_official}/${_target}/users/${userId}/profile.json`);
               userInfoReturn(info.users[0] as User);
             } else {
               noUserInfo({
@@ -883,7 +934,7 @@ export class NakamaService {
                 targetType = 2;
               // 요청 타입을 구분하여 자동반응처리
               switch (targetType) {
-                case 2:
+                case 2: // 1:1 대화
                   socket.joinChat(
                     v['sender_id'], targetType, v['persistent'], false,
                   ).then(c => {
@@ -892,6 +943,10 @@ export class NakamaService {
                       type: targetType,
                       persistence: v['persistent'],
                     };
+                    this.servers[_is_official][_target].client.listChannelMessages(
+                      this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
+                        c['last_comment'] = m.messages[0].content['msg'];
+                      });
                     // 방 이미지를 상대방 이미지로 설정
                     this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${v['sender_id']}/profile.img`, (e, img) => {
                       if (e && img) c['img'] = img;
@@ -1007,7 +1062,7 @@ export class NakamaService {
           console.warn('다른 대화타입에서 검토 필요: 그룹, 룸');
           if (p.joins !== undefined) {
             console.warn('상대방 진입에 대한 검토 필요: 전체 중 몇명 들어왔는지');
-            if (this.channels_orig[_is_official][_target][p.channel_id])
+            if (this.channels_orig[_is_official][_target] && this.channels_orig[_is_official][_target][p.channel_id])
               this.channels_orig[_is_official][_target][p.channel_id]['status'] = 'online';
           } else if (p.leaves !== undefined) {
             console.warn('상대방 떠남에 대한 검토 필요: 전체 중 몇명 빠졌는지');
