@@ -4,6 +4,8 @@ import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import * as QRCode from "qrcode-svg";
 import { DomSanitizer } from '@angular/platform-browser';
+import { isPlatform } from 'src/app/app.component';
+import clipboard from "clipboardy";
 
 @Component({
   selector: 'app-add-group',
@@ -76,6 +78,33 @@ export class AddGroupPage implements OnInit {
     this.index = i;
     this.userInput.server = this.servers[i];
     this.isExpanded = false;
+  }
+
+  /** 클립보드 사용가능 여부 */
+  cant_use_clipboard = false;
+  imageURL_disabled = false;
+  imageURL_placeholder = '눌러서 외부이미지 주소 붙여넣기';
+  /** 외부 주소 붙여넣기 */
+  imageURLPasted() {
+    if (isPlatform != 'DesktopPWA') return;
+    this.imageURL_disabled = true;
+    clipboard.read().then(v => {
+      if (v.indexOf('http') == 0) {
+        this.userInput.img = v;
+        this.imageURL_placeholder = v;
+      } else if (v.indexOf('data:image') == 0) {
+        this.nakama.limit_image_size({
+          target: { result: [v] },
+        }, (rv) => this.userInput.img = rv['canvas'].toDataURL());
+      } else {
+        this.p5toast.show({
+          text: '먼저 웹 페이지에서 이미지 주소를 복사해주세요',
+        });
+      }
+    });
+    setTimeout(() => {
+      this.imageURL_disabled = false;
+    }, 1500);
   }
 
   /** 공개여부 토글 */

@@ -933,8 +933,6 @@ export class NakamaService {
                 this.check_notifications(v, _is_official, _target);
               });
               this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`, (_e, _v) => {
-                console.log('불러오기 경로는: ', `servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`);
-                console.log('이미지 불러오기: ', _e, _v);
                 this.noti.PushLocal({
                   id: v.code,
                   title: '검토해야할 연결이 있습니다.',

@@ -38,6 +38,9 @@
       <h2>{{userInput.name || '눌러서 그룹 이미지 설정'}}</h2>
     </ion-label>
   </ion-item>
+  <ion-item (click)="imageURLPasted()" [hidden]="cant_use_clipboard" [disabled]="imageURL_disabled">
+    <ion-label color="medium">{{imageURL_placeholder}}</ion-label>
+  </ion-item>
   <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
   <ion-item-divider>
     <ion-label>그룹 참여</ion-label>
