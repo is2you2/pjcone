@@ -8,6 +8,17 @@
 </ion-header>
 
 <ion-content>
+  <ion-item *ngIf="info['status'] == 'pending'" color="warning">
+    <ion-label class="ion-text-center">아직 수락되지 않았습니다</ion-label>
+  </ion-item>
+  <ion-item *ngIf="info['status'] == 'missing'" color="warning">
+    <ion-label class="ion-text-center">이 그룹은 사용할 수 없습니다</ion-label>
+  </ion-item>
+  <ion-item
+    *ngIf="info['status'] == 'offline' && statusBar.groupServer[info.server.isOfficial][info.server.target] == 'online'"
+    color="warning">
+    <ion-label class="ion-text-center">더 이상 그룹구성원이 아닙니다</ion-label>
+  </ion-item>
   <ion-item button (click)="buttonClickInputFile()">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[(info['status'] || statusBar.groupServer[info.server.isOfficial][info.server.target])]">
@@ -48,7 +59,9 @@
   <ion-item *ngIf="is_online && has_admin" button (click)="remove_group()">
     <ion-label class="ion-text-center" color="danger">그룹 해산</ion-label>
   </ion-item>
-  <ion-item *ngIf="info['status'] == 'missing' || (info['status'] == 'offline' && statusBar.groupServer[info.server.isOfficial][info.server.target] == 'online')" button (click)="remove_group()">
+  <ion-item
+    *ngIf="info['status'] == 'missing' || (info['status'] == 'offline' && statusBar.groupServer[info.server.isOfficial][info.server.target] == 'online')"
+    button (click)="remove_group()">
     <ion-label class="ion-text-center" color="danger">기록 삭제</ion-label>
   </ion-item>
   <ion-item *ngIf="!has_admin && info['status'] != 'missing' && info['status'] != 'offline'" button
