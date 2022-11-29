@@ -286,8 +286,6 @@ export class NakamaService {
       if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
       this.servers[_is_official][_target].session
         = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), this.uuid, false);
-      this.get_group_list(_is_official, _target);
-      this.set_group_statusBar('online', _is_official, _target);
       _CallBack(true);
       this.after_login(_is_official, _target, _useSSL);
     } catch (e) {
@@ -330,8 +328,6 @@ export class NakamaService {
               );
             }
           })
-          this.get_group_list(_is_official, _target);
-          this.set_group_statusBar('online', _is_official, _target);
           _CallBack(undefined, _is_official, _target);
           this.after_login(_is_official, _target, _useSSL);
           break;
@@ -351,6 +347,8 @@ export class NakamaService {
     this.servers[_is_official][_target].socket = this.servers[_is_official][_target].client.createSocket(_useSSL);
     this.connect_to(_is_official, _target, () => this.redirect_channel(_is_official, _target));
     this.update_notifications(_is_official, _target);
+    this.get_group_list(_is_official, _target);
+    this.set_group_statusBar('online', _is_official, _target);
   }
 
   /** 다른 사용자의 프로필 정보 받아오기 */
@@ -408,102 +406,8 @@ export class NakamaService {
     this.servers[_is_official][_target].client.listNotifications(this.servers[_is_official][_target].session, 3)
       .then(v => {
         this.noti_origin = {};
-        for (let i = 0, j = v.notifications.length; i < j; i++) {
-          let is_removed = false;
-          v.notifications[i]['server'] = this.servers[_is_official][_target].info;
-          switch (v.notifications[i].code) {
-            case 0: // 예약된 메시지
-              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
-              break;
-            case -1: // 오프라인이거나 채널에 없을 때 알림 받음
-              // 모든 채팅에 대한건지, 1:1에 한정인지 검토 필요
-              console.log('채널에 없을 때 받은 메시지란..: ', v.notifications[i]);
-              let targetType: number;
-              if (v.notifications[i]['content'] && v.notifications[i]['content']['username'])
-                targetType = 2;
-              // 요청 타입을 구분하여 자동반응처리
-              switch (targetType) {
-                case 2:
-                  this.servers[_is_official][_target].socket.joinChat(
-                    v.notifications[i]['sender_id'], targetType, v.notifications[i]['persistent'], false,
-                  ).then(c => {
-                    c['redirect'] = {
-                      id: v.notifications[i]['sender_id'],
-                      type: targetType,
-                      persistence: v.notifications[i]['persistent'],
-                    };
-                    this.servers[_is_official][_target].client.listChannelMessages(
-                      this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
-                        if (m.messages.length)
-                          c['last_comment'] = m.messages[0].content['msg'];
-                      });
-                    // 방 이미지를 상대방 이미지로 설정
-                    this.load_other_user_profile_info(v.notifications[i]['sender_id'], _is_official, _target)
-                      .then(_img => {
-                        c['img'] = _img;
-                      });
-                    // 방 이름을 상대방 이름으로 설정
-                    this.servers[_is_official][_target].client.getUsers(
-                      this.servers[_is_official][_target].session, [v.notifications[i]['sender_id']]
-                    ).then(info => {
-                      c['title'] = info.users[0].display_name;
-                    });
-                    this.add_channels(c, _is_official, _target);
-                    this.servers[_is_official][_target].client.deleteNotifications(
-                      this.servers[_is_official][_target].session, [v.notifications[i]['id']]).then(b => {
-                        if (b) this.update_notifications(_is_official, _target);
-                        else console.warn('알림 지우기 실패: ', b);
-                      });
-                  });
-                  break;
-                default:
-                  console.warn('예상하지 못한 알림 행동처리: ', v, targetType);
-                  v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
-                  break;
-              }
-              break;
-            case -2: // 친구 요청 받음
-              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
-              break;
-            case -3: // 상대방이 친구 요청 수락
-              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
-              break;
-            case -4: // 상대방이 그룹 참가 수락
-              this.groups[_is_official][_target][v.notifications[i].content['group_id']]['status'] = 'online';
-              if (this.socket_reactive[v.notifications[i].code] && this.socket_reactive[v.notifications[i].code].info.id == v.notifications[i].content['group_id'])
-                this.socket_reactive[v.notifications[i].code].ngOnInit();
-              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
-              break;
-            case -5: // 그룹 참가 요청 받음
-              let group_info = this.groups[_is_official][_target][v.notifications[i].content['group_id']];
-              if (group_info) {
-                v.notifications[i]['request'] = `그룹참가 요청: ${group_info['name']}`;
-              } else {
-                is_removed = true;
-                this.servers[_is_official][_target].client.deleteNotifications(
-                  this.servers[_is_official][_target].session, [v.notifications[i].id]
-                ).then(b => {
-                  if (b) this.update_notifications(_is_official, _target);
-                  else console.warn('알림 지우기 실패: ', b);
-                });
-              }
-              break;
-            case -6: // 친구가 다른 게임에 참여
-              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
-              break;
-            case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
-              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
-              break;
-            default:
-              console.warn('준비되지 않은 요청 내용: ', v.notifications[i]);
-              v.notifications[i]['request'] = `${v.notifications[i].code}-${v.notifications[i].subject}`;
-              break;
-          }
-          if (is_removed) continue;
-          if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
-          if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
-          this.noti_origin[_is_official][_target][v.notifications[i].id] = v.notifications[i];
-        }
+        for (let i = 0, j = v.notifications.length; i < j; i++)
+          this.act_on_notification(v.notifications[i], _is_official, _target);
         this.rearrange_notifications();
       });
   }
@@ -648,7 +552,7 @@ export class NakamaService {
             case 2: // 1:1 대화
               this.load_other_user_profile_info(channel_info['redirect']['id'], _is_official, _target)
                 .then(_info => {
-                  channel_info['title'] = _info['display_name'];
+                  this.channels_orig[_is_official][_target][_cid]['title'] = _info['display_name'];
                 });
               this.load_other_user_profile_image(channel_info['redirect']['id'], _is_official, _target)
                 .then(_img => {
@@ -660,7 +564,7 @@ export class NakamaService {
                 (e, v) => {
                   if (e && v) channel_info['img'] = v;
                   if (this.groups[_is_official][_target] && this.groups[_is_official][_target][channel_info['redirect']['id']]) { // 유효한 그룹인 경우
-                    channel_info['title'] = this.groups[_is_official][_target][channel_info['redirect']['id']].name;
+                    this.channels_orig[_is_official][_target][_cid]['title'] = this.groups[_is_official][_target][channel_info['redirect']['id']].name;
                     if (this.statusBar.groupServer[_is_official][_target] == 'online') {
                       this.servers[_is_official][_target].client.readStorageObjects(
                         this.servers[_is_official][_target].session, {
@@ -679,10 +583,7 @@ export class NakamaService {
                         }
                       });
                     }
-                  } else {
-                    channel_info['title'] = '삭제된 그룹';
-                    channel_info['status'] = 'missing';
-                  }
+                  } else channel_info['status'] = 'missing';
                 });
               break;
             default:
@@ -849,6 +750,15 @@ export class NakamaService {
         v.user_groups.forEach(user_group => {
           this.groups[_is_official][_target][user_group.group.id]
             = { ...this.groups[_is_official][_target][user_group.group.id], ...user_group.group };
+          this.servers[_is_official][_target].socket.joinChat(user_group.group.id, 3, true, false)
+            .then(c => {
+              c['redirect'] = {
+                id: user_group.group.id,
+                type: 3,
+                persistence: true,
+              };
+              this.add_channels(c, _is_official, _target);
+            });
         });
         this.save_groups_with_less_info();
       });
@@ -900,129 +810,8 @@ export class NakamaService {
         // 실시간으로 알림을 받은 경우
         socket.onnotification = (v) => {
           console.log('소켓에서 실시간으로 무언가 받음: ', v);
-          switch (v.code) {
-            case 0: // 예약된 알림
-              break;
-            case -2: // 친구 요청 받음
-              break;
-            case -1: // 오프라인이거나 채널에 없을 때 알림 받음
-              console.log('채널에 없을 때 받은 메시지란 ...: ', v);
-              let targetType: number;
-              if (v['content']['username'])
-                targetType = 2;
-              // 요청 타입을 구분하여 자동반응처리
-              switch (targetType) {
-                case 2: // 1:1 대화
-                  socket.joinChat(
-                    v['sender_id'], targetType, v['persistent'], false,
-                  ).then(c => {
-                    c['redirect'] = {
-                      id: v['sender_id'],
-                      type: targetType,
-                      persistence: v['persistent'],
-                    };
-                    this.servers[_is_official][_target].client.listChannelMessages(
-                      this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
-                        if (m.messages.length)
-                          c['last_comment'] = m.messages[0].content['msg'];
-                      });
-                    // 방 이미지를 상대방 이미지로 설정
-                    this.load_other_user_profile_image(v['sender_id'], _is_official, _target)
-                      .then(_img => {
-                        c['img'] = _img;
-                      });
-                    // 방 이름을 상대방 이름으로 설정
-                    this.servers[_is_official][_target].client.getUsers(
-                      this.servers[_is_official][_target].session, [v['sender_id']]
-                    ).then(info => {
-                      c['title'] = info.users[0].display_name;
-                    });
-                    this.add_channels(c, _is_official, _target);
-                    this.servers[_is_official][_target].client.deleteNotifications(
-                      this.servers[_is_official][_target].session, [v['id']]).then(b => {
-                        if (b) this.update_notifications(_is_official, _target);
-                        else console.warn('알림 지우기 실패: ', b);
-                      });
-                  });
-                  break;
-                default:
-                  console.warn('예상하지 못한 알림 행동처리: ', v);
-                  break;
-              }
-              break;
-            case -3: // 상대방이 친구 요청 수락
-            case -4: // 상대방이 그룹 참가 수락
-              this.update_notifications(_is_official, _target);
-              this.noti.SetListener(`check${v.code}`, (_v: any) => {
-                this.noti.ClearNoti(_v['id']);
-                this.noti.RemoveListener(`check${v.code}`);
-                this.check_notifications(v, _is_official, _target);
-              });
-              this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`, (_e, _v) => {
-                this.noti.PushLocal({
-                  id: v.code,
-                  title: '검토해야할 연결이 있습니다.',
-                  body: v.subject,
-                  actions_ln: [{
-                    id: `check${v.code}`,
-                    title: '확인',
-                  }],
-                  icon: _v,
-                  smallIcon_ln: 'diychat',
-                  iconColor_ln: '271e38',
-                }, undefined, (_ev: any) => {
-                  this.check_notifications(v, _is_official, _target);
-                });
-              });
-              break;
-            case -5: // 그룹 참가 요청 받음
-              console.warn('안드로이드에서 테스트 필요');
-              let group_detail = this.groups[_is_official][_target][v.content['group_id']];
-              group_detail['server'] = this.servers[_is_official][_target].info;
-              this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${group_detail['id']}.img`, (e, v) => {
-                if (e && v) group_detail['img'] = v;
-              });
-              this.update_notifications(_is_official, _target);
-              // 이미 보는 화면이라면 업데이트하기
-              if (this.socket_reactive[v.code] && this.socket_reactive[v.code].info.id == v.content['group_id'])
-                this.socket_reactive[v.code].ngOnInit();
-              this.noti.SetListener(`check${v.code}`, (_v: any) => {
-                this.noti.ClearNoti(_v['id']);
-                this.noti.RemoveListener(`check${v.code}`);
-                if (this.socket_reactive[v.code]) return;
-                this.modalCtrl.create({
-                  component: GroupDetailPage,
-                  componentProps: { info: group_detail },
-                }).then(v => v.present());
-              });
-              this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`, (_e, _v) => {
-                this.noti.PushLocal({
-                  id: v.code,
-                  title: `${group_detail['title']} 그룹에 참가 요청`,
-                  actions_ln: [{
-                    id: `check${v.code}`,
-                    title: '검토',
-                  }],
-                  icon: _v,
-                  smallIcon_ln: 'diychat',
-                  iconColor_ln: '271e38',
-                }, undefined, (_ev: any) => {
-                  if (this.socket_reactive[v.code].info.id == v.content['group_id']) return;
-                  this.modalCtrl.create({
-                    component: GroupDetailPage,
-                    componentProps: { info: group_detail },
-                  }).then(v => v.present());
-                });
-              });
-              break;
-            case -6: // 친구가 다른 게임에 참여
-              break;
-            case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
-              break;
-            default:
-              console.warn('확인되지 않은 실시간 알림_nakama_noti: ', v);
-              break;
-          }
+          this.act_on_notification(v, _is_official, _target);
+          this.rearrange_notifications();
         }
         socket.onchannelpresence = (p) => {
           console.log('onchannelpresence: ', p);
@@ -1139,5 +928,164 @@ export class NakamaService {
         console.warn('예상하지 못한 알림 구분: ', this_noti.code);
         break;
     }
+  }
+
+  /** 들어오는 알림에 반응하기 */
+  act_on_notification(v: Notification, _is_official: string, _target: string) {
+    let is_removed = false;
+    v['server'] = this.servers[_is_official][_target].info;
+    switch (v.code) {
+      case 0: // 예약된 알림
+        v['request'] = `${v.code}-${v.subject}`;
+        break;
+      case -1: // 오프라인이거나 채널에 없을 때 알림 받음
+        // 모든 채팅에 대한건지, 1:1에 한정인지 검토 필요
+        console.log('채널에 없을 때 받은 메시지란..: ', v);
+        let targetType: number;
+        if (v['content'] && v['content']['username'])
+          targetType = 2;
+        // 요청 타입을 구분하여 자동반응처리
+        switch (targetType) {
+          case 2:
+            this.servers[_is_official][_target].socket.joinChat(
+              v['sender_id'], targetType, v['persistent'], false,
+            ).then(c => {
+              c['redirect'] = {
+                id: v['sender_id'],
+                type: targetType,
+                persistence: v['persistent'],
+              };
+              this.servers[_is_official][_target].client.listChannelMessages(
+                this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
+                  if (m.messages.length)
+                    c['last_comment'] = m.messages[0].content['msg'];
+                });
+              // 방 이미지를 상대방 이미지로 설정
+              this.load_other_user_profile_info(v['sender_id'], _is_official, _target)
+                .then(_img => {
+                  c['img'] = _img;
+                });
+              // 방 이름을 상대방 이름으로 설정
+              this.servers[_is_official][_target].client.getUsers(
+                this.servers[_is_official][_target].session, [v['sender_id']]
+              ).then(info => {
+                c['title'] = info.users[0].display_name;
+              });
+              this.add_channels(c, _is_official, _target);
+              this.servers[_is_official][_target].client.deleteNotifications(
+                this.servers[_is_official][_target].session, [v['id']]).then(b => {
+                  if (b) this.update_notifications(_is_official, _target);
+                  else console.warn('알림 지우기 실패: ', b);
+                });
+            });
+            break;
+          default:
+            console.warn('예상하지 못한 알림 행동처리: ', v, targetType);
+            v['request'] = `${v.code}-${v.subject}`;
+            break;
+        }
+        break;
+      case -2: // 친구 요청 받음
+        v['request'] = `${v.code}-${v.subject}`;
+        break;
+      case -3: // 상대방이 친구 요청 수락
+        v['request'] = `${v.code}-${v.subject}`;
+        break;
+      case -4: // 상대방이 그룹 참가 수락
+        this.groups[_is_official][_target][v.content['group_id']]['status'] = 'online';
+        if (this.socket_reactive[v.code] && this.socket_reactive[v.code].info.id == v.content['group_id'])
+          this.socket_reactive[v.code].ngOnInit();
+        v['request'] = `${v.code}-${v.subject}`;
+        this.rearrange_notifications();
+        this.noti.SetListener(`check${v.code}`, (_v: any) => {
+          this.noti.ClearNoti(_v['id']);
+          this.noti.RemoveListener(`check${v.code}`);
+          this.check_notifications(v, _is_official, _target);
+        });
+        this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`, (_e, _v) => {
+          this.noti.PushLocal({
+            id: v.code,
+            title: '검토해야할 연결이 있습니다.',
+            body: v.subject,
+            actions_ln: [{
+              id: `check${v.code}`,
+              title: '확인',
+            }],
+            icon: _v,
+            smallIcon_ln: 'diychat',
+            iconColor_ln: '271e38',
+          }, undefined, (_ev: any) => {
+            this.check_notifications(v, _is_official, _target);
+          });
+        });
+        break;
+      case -5: // 그룹 참가 요청 받음
+        let group_info = this.groups[_is_official][_target][v.content['group_id']];
+        if (group_info) {
+          v['request'] = `그룹참가 요청: ${group_info['name']}`;
+        } else {
+          is_removed = true;
+          this.servers[_is_official][_target].client.deleteNotifications(
+            this.servers[_is_official][_target].session, [v.id]
+          ).then(b => {
+            if (b) this.update_notifications(_is_official, _target);
+            else console.warn('알림 지우기 실패: ', b);
+          });
+        }
+        console.warn('안드로이드에서 테스트 필요');
+        let group_detail = this.groups[_is_official][_target][v.content['group_id']];
+        group_detail['server'] = this.servers[_is_official][_target].info;
+        this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${group_detail['id']}.img`, (e, v) => {
+          if (e && v) group_detail['img'] = v;
+        });
+        this.rearrange_notifications();
+        // 이미 보는 화면이라면 업데이트하기
+        if (this.socket_reactive[v.code] && this.socket_reactive[v.code].info.id == v.content['group_id'])
+          this.socket_reactive[v.code].ngOnInit();
+        this.noti.SetListener(`check${v.code}`, (_v: any) => {
+          this.noti.ClearNoti(_v['id']);
+          this.noti.RemoveListener(`check${v.code}`);
+          if (this.socket_reactive[v.code]) return;
+          this.modalCtrl.create({
+            component: GroupDetailPage,
+            componentProps: { info: group_detail },
+          }).then(v => v.present());
+        });
+        this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`, (_e, _v) => {
+          this.noti.PushLocal({
+            id: v.code,
+            title: `${group_detail['title']} 그룹에 참가 요청`,
+            actions_ln: [{
+              id: `check${v.code}`,
+              title: '검토',
+            }],
+            icon: _v,
+            smallIcon_ln: 'diychat',
+            iconColor_ln: '271e38',
+          }, undefined, (_ev: any) => {
+            if (this.socket_reactive[v.code].info.id == v.content['group_id']) return;
+            this.modalCtrl.create({
+              component: GroupDetailPage,
+              componentProps: { info: group_detail },
+            }).then(v => v.present());
+          });
+        });
+        break;
+      case -6: // 친구가 다른 게임에 참여
+        v['request'] = `${v.code}-${v.subject}`;
+        break;
+      case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
+        v['request'] = `${v.code}-${v.subject}`;
+        break;
+      default:
+        console.warn('확인되지 않은 실시간 알림_nakama_noti: ', v);
+        v['request'] = `${v.code}-${v.subject}`;
+        break;
+    }
+    console.log('이게 삭제된 알림이니?: ', is_removed);
+    if (is_removed) return;
+    if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
+    if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
+    this.noti_origin[_is_official][_target][v.id] = v;
   }
 }

@@ -53,7 +53,8 @@ export class GroupDetailPage implements OnInit {
         } else // 다른 사람들의 프로필 이미지
           this.nakama.load_other_user_profile_image(this.info['users'][i].user.id, _is_official, _target)
             .then(_img => {
-              this.info['users'][i]['img'] = _img;
+              if (this.info['users'][i])
+                this.info['users'][i]['img'] = _img;
             });
     if (this.info['users'])
       for (let i = 0, j = this.info['users'].length; i < j; i++)
@@ -175,8 +176,8 @@ export class GroupDetailPage implements OnInit {
     this.need_edit = false;
     let _is_official: string = this.info.server['isOfficial'];
     let _target: string = this.info.server['target'];
-    this.nakama.remove_group_list(this.info, _is_official, _target);
     this.leave_channel();
+    this.nakama.remove_group_list(this.info, _is_official, _target);
     this.modalCtrl.dismiss();
   }
 

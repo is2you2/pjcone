@@ -159,6 +159,7 @@ export class AddGroupPage implements OnInit {
           type: 3,
           persistence: true,
         };
+        c['status'] = 'online';
         this.nakama.add_channels(c, this.servers[this.index].isOfficial, this.servers[this.index].target);
         this.isSavedWell = true;
         localStorage.removeItem('add-group');

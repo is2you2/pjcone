@@ -86,7 +86,8 @@ export class GroupServerPage implements OnInit {
       if (this.nakama.channels_orig[_is_official] && this.nakama.channels_orig[_is_official][_target]) {
         let channel_ids = Object.keys(this.nakama.channels_orig[_is_official][_target]);
         channel_ids.forEach(_cid => {
-          delete this.nakama.channels_orig[_is_official][_target][_cid]['status'];
+          if (this.nakama.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
+            delete this.nakama.channels_orig[_is_official][_target][_cid]['status'];
         });
       }
     }
