@@ -50,9 +50,10 @@ export class GroupDetailPage implements OnInit {
             if (e && v) this.info['users'][i]['img'] = JSON.parse(v)['img'];
           });
         } else // 다른 사람들의 프로필 이미지
-          this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${this.info['users'][i].user.id}/profile.img`, (e, v) => {
-            if (e && v) this.info['users'][i]['img'] = v;
-          });
+          this.nakama.load_other_user_profile_image(this.info['users'][i].user.id, _is_official, _target)
+            .then(_img => {
+              this.info['users'][i]['img'] = _img;
+            });
     if (this.info['users'])
       for (let i = 0, j = this.info['users'].length; i < j; i++)
         this.info['users'][i]['status'] = this.info['status'];

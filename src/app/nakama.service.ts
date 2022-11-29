@@ -352,6 +352,56 @@ export class NakamaService {
     this.update_notifications(_is_official, _target);
   }
 
+  /** 다른 사용자의 프로필 정보 받아오기 */
+  load_other_user_profile_info(_userId: string, _is_official: string, _target: string): Promise<User> {
+    return new Promise((userInfo) => {
+      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${_userId}/profile.json`, (e, v) => {
+        let result: User = {
+          'display_name': '사용자 정보 없음',
+          'online': false,
+        };
+        if (e && v)
+          result = JSON.parse(v);
+        if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+          this.servers[_is_official][_target].client.getUsers(
+            this.servers[_is_official][_target].session, [_userId])
+            .then(_get => {
+              if (_get.users.length)
+                result = _get.users[0];
+              this.indexed.saveTextFileToUserPath(JSON.stringify(result), `servers/${_is_official}/${_target}/users/${_userId}/profile.json`);
+              userInfo(result);
+            });
+        } else userInfo(result);
+      });
+    });
+  }
+
+  /** 다른 사용자의 프로필 이미지 받아오기 */
+  load_other_user_profile_image(_userId: string, _is_official: string, _target: string): Promise<string> {
+    return new Promise((img) => {
+      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${_userId}/profile.img`, (e, v) => {
+        let result = 'about:blank';
+        if (e && v)
+          result = v;
+        if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+          this.servers[_is_official][_target].client.readStorageObjects(
+            this.servers[_is_official][_target].session, {
+            object_ids: [{
+              collection: 'user_public',
+              key: 'profile_image',
+              user_id: _userId,
+            }],
+          }).then(obj => {
+            if (obj.objects.length)
+              result = obj.objects[0].value['img'];
+            this.indexed.saveTextFileToUserPath(JSON.stringify(obj.objects[0].value['img']), `servers/${_is_official}/${_target}/users/${_userId}/profile.img`);
+            img(result);
+          });
+        } else img(result);
+      });
+    });
+  }
+
   /** 서버로부터 알림 업데이트하기 (알림 리스트 재정렬 포함됨) */
   update_notifications(_is_official: string, _target: string) {
     this.servers[_is_official][_target].client.listNotifications(this.servers[_is_official][_target].session, 3)
@@ -386,22 +436,10 @@ export class NakamaService {
                         c['last_comment'] = m.messages[0].content['msg'];
                       });
                     // 방 이미지를 상대방 이미지로 설정
-                    this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${v.notifications[i]['sender_id']}/profile.img`, (e, img) => {
-                      if (e && img) c['img'] = img;
-                      else {
-                        this.servers[_is_official][_target].client.readStorageObjects(
-                          this.servers[_is_official][_target].session, {
-                          object_ids: [{
-                            collection: 'user_public',
-                            key: 'profile_image',
-                            user_id: v.notifications[i]['sender_id'],
-                          }]
-                        }).then(_img => {
-                          if (_img.objects.length)
-                            c['img'] = _img.objects[0].value['img'];
-                        });
-                      }
-                    });
+                    this.load_other_user_profile_info(v.notifications[i]['sender_id'], _is_official, _target)
+                      .then(_img => {
+                        c['img'] = _img;
+                      });
                     // 방 이름을 상대방 이름으로 설정
                     this.servers[_is_official][_target].client.getUsers(
                       this.servers[_is_official][_target].session, [v.notifications[i]['sender_id']]
@@ -603,40 +641,14 @@ export class NakamaService {
               console.warn('방 대화 기능 준비중...');
               break;
             case 2: // 1:1 대화
-              this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${channel_info['redirect']['id']}/profile.json`, (e, data) => {
-                if (e && data) {
-                  let info = JSON.parse(data);
-                  channel_info['title'] = info['display_name'] || '이름 없는 사용자';
-                } else {
-                  this.servers[_is_official][_target].client.getUsers(
-                    this.servers[_is_official][_target].session, [channel_info['redirect']['id']]
-                  ).then(_info => {
-                    if (_info.users.length) {
-                      channel_info['title'] = _info.users[0].display_name;
-                      this.indexed.saveTextFileToUserPath(JSON.stringify(_info.users[0]), `servers/${_is_official}/${_target}/users/${channel_info['redirect']['id']}/profile.json`)
-                    } else channel_info['title'] = '상대방 정보 없음';
-                  });
-                }
-              });
-              this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${channel_info['redirect']['id']}/profile.img`, (e, img) => {
-                if (e && img)
-                  channel_info['img'] = img;
-                else {
-                  this.servers[_is_official][_target].client.readStorageObjects(
-                    this.servers[_is_official][_target].session, {
-                    object_ids: [{
-                      collection: 'user_public',
-                      key: 'profile_image',
-                      user_id: channel_info['redirect']['id'],
-                    }],
-                  }).then(_img => {
-                    if (_img.objects.length) {
-                      channel_info['img'] = _img.objects[0].value['img'];
-                      this.indexed.saveTextFileToUserPath(_img.objects[0].value['img'], `servers/${_is_official}/${_target}/users/${channel_info['redirect']['id']}/profile.img`)
-                    }
-                  });
-                }
-              });
+              this.load_other_user_profile_info(channel_info['redirect']['id'], _is_official, _target)
+                .then(_info => {
+                  channel_info['title'] = _info['display_name'];
+                });
+              this.load_other_user_profile_image(channel_info['redirect']['id'], _is_official, _target)
+                .then(_img => {
+                  channel_info['img'] = _img;
+                });
               break;
             case 3: // 그룹 대화
               console.warn('그룹 대화 기능 준비중...');
@@ -655,71 +667,6 @@ export class NakamaService {
     });
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.channels_orig), 'servers/channels.json');
     return result;
-  }
-
-  /** 다른 사용자의 정보 저장하기 */
-  save_user_info(userInfo: User, _is_official: string, _target: string) {
-    this.indexed.saveTextFileToUserPath(JSON.stringify(userInfo),
-      `servers/${_is_official}/${_target}/users/${userInfo.id}/profile.json`);
-  }
-
-  /** 다른 사용자 정보 불러오기 (로컬/원격) */
-  get_user_info(userId: string, _is_official: string, _target: string): Promise<User> {
-    return new Promise((userInfoReturn, noUserInfo) => {
-      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.json`, (e, info) => {
-        if (e && info) userInfoReturn(JSON.parse(info) as User);
-        else {
-          this.servers[_is_official][_target].client.getUsers(
-            this.servers[_is_official][_target].session, [userId]
-          ).then(info => {
-            if (info.users.length) {
-              this.indexed.saveTextFileToUserPath(JSON.stringify(info.users[0]), `servers/${_is_official}/${_target}/users/${userId}/profile.json`);
-              userInfoReturn(info.users[0] as User);
-            } else {
-              noUserInfo({
-                result: false,
-                text: 'Probably Removed.',
-              });
-            }
-          });
-        }
-      });
-    });
-  }
-
-  /** 다른 사용자의 프로필 이미지 저장하기 */
-  save_user_profile_image(profileImg: string, userId: string, _is_official: string, _target: string) {
-    this.indexed.saveTextFileToUserPath(profileImg,
-      `servers/${_is_official}/${_target}/users/${userId}/profile.img`);
-  }
-
-  /** 다른 사용자의 프로필 이미지 불러오기(로컬/원격) */
-  get_user_profile_image(userId: string, _is_official: string, _target: string): Promise<string> {
-    return new Promise((imgReturn, noImage) => {
-      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, _img) => {
-        if (e && _img) imgReturn(_img);
-        else {
-          this.servers[_is_official][_target].client.readStorageObjects(
-            this.servers[_is_official][_target].session, {
-            object_ids: [{
-              collection: 'user_public',
-              key: 'profile_image',
-              user_id: userId,
-            }]
-          }).then(_img => {
-            if (_img.objects.length) {
-              this.indexed.saveTextFileToUserPath(_img.objects[0].value['img'], `servers/${_is_official}/${_target}/users/${userId}/profile.img`);
-              imgReturn(_img.objects[0].value['img']);
-            } else {
-              noImage({
-                result: false,
-                text: 'Probably Removed.'
-              });
-            }
-          });
-        }
-      });
-    });
   }
 
   /** base64 정보에 대해 Nakama에서 허용하는 수준으로 이미지 크기 줄이기
@@ -948,22 +895,10 @@ export class NakamaService {
                         c['last_comment'] = m.messages[0].content['msg'];
                       });
                     // 방 이미지를 상대방 이미지로 설정
-                    this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${v['sender_id']}/profile.img`, (e, img) => {
-                      if (e && img) c['img'] = img;
-                      else {
-                        this.servers[_is_official][_target].client.readStorageObjects(
-                          this.servers[_is_official][_target].session, {
-                          object_ids: [{
-                            collection: 'user_public',
-                            key: 'profile_image',
-                            user_id: v['sender_id'],
-                          }]
-                        }).then(_img => {
-                          if (_img.objects.length)
-                            c['img'] = _img.objects[0].value['img'];
-                        });
-                      }
-                    });
+                    this.load_other_user_profile_image(v['sender_id'], _is_official, _target)
+                      .then(_img => {
+                        c['img'] = _img;
+                      });
                     // 방 이름을 상대방 이름으로 설정
                     this.servers[_is_official][_target].client.getUsers(
                       this.servers[_is_official][_target].session, [v['sender_id']]
