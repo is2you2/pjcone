@@ -29,7 +29,7 @@
     <ion-label>표시명</ion-label>
     <ion-input class="ion-text-right" [(ngModel)]="userInput.name" [placeholder]="'그룹 이름'"></ion-input>
   </ion-item>
-  <ion-item button (click)="buttonClickLinkInputFile()">
+  <ion-item button [disabled]="isSaveClicked" (click)="buttonClickLinkInputFile()">
     <div class="additional_form bg_img_form">
       <img class="bg_img" style="filter: grayscale(0) contrast(1);" [src]="userInput.img">
     </div>
@@ -38,7 +38,7 @@
       <h2>{{userInput.name || '눌러서 그룹 이미지 설정'}}</h2>
     </ion-label>
   </ion-item>
-  <ion-item (click)="imageURLPasted()" [hidden]="cant_use_clipboard" [disabled]="imageURL_disabled">
+  <ion-item (click)="imageURLPasted()" [hidden]="cant_use_clipboard" [disabled]="isSaveClicked || imageURL_disabled">
     <ion-label color="medium">{{imageURL_placeholder}}</ion-label>
   </ion-item>
   <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">

@@ -72,7 +72,18 @@ export class NakamaService {
 
   initialize() {
     this.uuid = this.device.uuid;
-    this.load_channel_list();
+    // 서버별 그룹 정보 불러오기
+    this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
+      if (e && v)
+        this.groups = JSON.parse(v);
+      let all_groups = this.rearrange_group_list();
+      all_groups.forEach(group => {
+        if (group['status'] != 'missing')
+          delete group['status'];
+      });
+      // 채널 불러오기
+      this.load_channel_list();
+    });
     // 공식서버 연결처리
     this.init_server();
     // 저장된 사설서버들 정보 불러오기
@@ -101,16 +112,6 @@ export class NakamaService {
         this.statusBar.groupServer = JSON.parse(v);
       if (localStorage.getItem('is_online'))
         this.init_all_sessions();
-    });
-    // 서버별 그룹 정보 불러오기
-    this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
-      if (e && v)
-        this.groups = JSON.parse(v);
-      let all_groups = this.rearrange_group_list();
-      all_groups.forEach(group => {
-        if (group['status'] != 'missing')
-          group['status'] = 'offline';
-      });
     });
   }
   /** 공식 테스트 서버를 대상으로 Nakama 클라이언트 구성을 진행합니다.
@@ -433,7 +434,8 @@ export class NakamaService {
                     };
                     this.servers[_is_official][_target].client.listChannelMessages(
                       this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
-                        c['last_comment'] = m.messages[0].content['msg'];
+                        if (m.messages.length)
+                          c['last_comment'] = m.messages[0].content['msg'];
                       });
                     // 방 이미지를 상대방 이미지로 설정
                     this.load_other_user_profile_info(v.notifications[i]['sender_id'], _is_official, _target)
@@ -551,7 +553,7 @@ export class NakamaService {
     'unofficial': {},
   };
 
-  /** 채널 추가 */
+  /** 채널 추가, 채널 재배열 포함됨 */
   add_channels(channel_info: Channel, _is_official: string, _target: string) {
     if (!this.channels_orig[_is_official][_target])
       this.channels_orig[_is_official][_target] = {};
@@ -600,17 +602,20 @@ export class NakamaService {
     if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
       let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
       channel_ids.forEach(_cid => {
-        this.servers[_is_official][_target].socket.joinChat(
-          this.channels_orig[_is_official][_target][_cid]['redirect']['id'],
-          this.channels_orig[_is_official][_target][_cid]['redirect']['type'],
-          this.channels_orig[_is_official][_target][_cid]['redirect']['persistence'],
-          false
-        );
-        this.servers[_is_official][_target].client.listChannelMessages(
-          this.servers[_is_official][_target].session, _cid, 1, false)
-          .then(v => {
-            this.channels_orig[_is_official][_target][_cid]['last_comment'] = v.messages[0].content['msg'];
-          });
+        if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing') {
+          this.servers[_is_official][_target].socket.joinChat(
+            this.channels_orig[_is_official][_target][_cid]['redirect']['id'],
+            this.channels_orig[_is_official][_target][_cid]['redirect']['type'],
+            this.channels_orig[_is_official][_target][_cid]['redirect']['persistence'],
+            false
+          );
+          this.servers[_is_official][_target].client.listChannelMessages(
+            this.servers[_is_official][_target].session, _cid, 1, false)
+            .then(v => {
+              if (v.messages.length)
+                this.channels_orig[_is_official][_target][_cid]['last_comment'] = v.messages[0].content['msg'];
+            });
+        }
       });
       this.rearrange_channels();
     }
@@ -651,7 +656,34 @@ export class NakamaService {
                 });
               break;
             case 3: // 그룹 대화
-              console.warn('그룹 대화 기능 준비중...');
+              this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${channel_info['redirect']['id']}.img`,
+                (e, v) => {
+                  if (e && v) channel_info['img'] = v;
+                  if (this.groups[_is_official][_target] && this.groups[_is_official][_target][channel_info['redirect']['id']]) { // 유효한 그룹인 경우
+                    channel_info['title'] = this.groups[_is_official][_target][channel_info['redirect']['id']].name;
+                    if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+                      this.servers[_is_official][_target].client.readStorageObjects(
+                        this.servers[_is_official][_target].session, {
+                        object_ids: [{
+                          collection: 'group_public',
+                          key: `group_${channel_info['redirect']['id']}`,
+                          user_id: this.groups[_is_official][_target][channel_info['redirect']['id']].owner,
+                        }],
+                      }).then(_img => {
+                        if (_img.objects.length) {
+                          channel_info['img'] = _img.objects[0].value['img'];
+                          this.indexed.saveTextFileToUserPath(_img.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${channel_info['redirect']['id']}.img`);
+                        } else {
+                          delete channel_info['img'];
+                          this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${channel_info['redirect']['id']}.img`);
+                        }
+                      });
+                    }
+                  } else {
+                    channel_info['title'] = '삭제된 그룹';
+                    channel_info['status'] = 'missing';
+                  }
+                });
               break;
             default:
               console.error('예상되지 않은 대화형식: ', channel_info);
@@ -742,10 +774,10 @@ export class NakamaService {
         });
   }
 
-  /** 그룹 정보를 로컬에 저장하기 */
-  save_group_info(_group: any, _is_official: string, _target: string, _CallBack = () => { }) {
+  /** 그룹 정보를 로컬에 저장하기, 원격에 이미지 업로드 */
+  save_group_info(_group: any, _is_official: string, _target: string) {
     if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
-    this.groups[_is_official][_target][_group.id] = _group;
+    this.groups[_is_official][_target][_group.id] = { ..._group };
     this.rearrange_group_list();
     this.save_groups_with_less_info();
     this.indexed.saveTextFileToUserPath(_group['img'], `servers/${_is_official}/${_target}/groups/${_group.id}.img`);
@@ -760,7 +792,6 @@ export class NakamaService {
           permission_write: 1,
         }]
       );
-    _CallBack();
   }
 
   /** 간소화된 그룹 정보 저장하기 */
@@ -892,7 +923,8 @@ export class NakamaService {
                     };
                     this.servers[_is_official][_target].client.listChannelMessages(
                       this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
-                        c['last_comment'] = m.messages[0].content['msg'];
+                        if (m.messages.length)
+                          c['last_comment'] = m.messages[0].content['msg'];
                       });
                     // 방 이미지를 상대방 이미지로 설정
                     this.load_other_user_profile_image(v['sender_id'], _is_official, _target)

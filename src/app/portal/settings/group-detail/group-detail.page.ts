@@ -27,6 +27,7 @@ export class GroupDetailPage implements OnInit {
   ) { }
 
   QRCodeSRC: any;
+  /** 그룹 정보 */
   info: any;
   /** 내가 이 그룹의 방장인지 여부 */
   has_admin = false;
@@ -118,6 +119,11 @@ export class GroupDetailPage implements OnInit {
         }
       });
     }
+    if (this.statusBar.groupServer[this.info['server']['isOfficial']][this.info['server']['target']] == 'online')
+      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.joinChat(
+        this.info['id'], 3, true, false).then(c => {
+          this.info['channel_id'] = c.id;
+        });
   }
 
   /** ionic 버튼을 눌러 input-file 동작 */
@@ -170,6 +176,7 @@ export class GroupDetailPage implements OnInit {
     let _is_official: string = this.info.server['isOfficial'];
     let _target: string = this.info.server['target'];
     this.nakama.remove_group_list(this.info, _is_official, _target);
+    this.leave_channel();
     this.modalCtrl.dismiss();
   }
 
@@ -243,10 +250,16 @@ export class GroupDetailPage implements OnInit {
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, this.info['id'],
     ).then(v => {
       if (v) {
+        this.leave_channel();
         delete this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']];
         this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss());
       }
     })
+  }
+
+  /** 그룹 채널에서 나오기 */
+  leave_channel() {
+    this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] = 'missing';
   }
 
   ionViewWillLeave() {

@@ -6,6 +6,7 @@ import * as QRCode from "qrcode-svg";
 import { DomSanitizer } from '@angular/platform-browser';
 import { isPlatform } from 'src/app/app.component';
 import clipboard from "clipboardy";
+import { StatusManageService } from 'src/app/status-manage.service';
 
 @Component({
   selector: 'app-add-group',
@@ -19,6 +20,7 @@ export class AddGroupPage implements OnInit {
     private p5toast: P5ToastService,
     private nakama: NakamaService,
     private sanitizer: DomSanitizer,
+    private statusBar: StatusManageService,
   ) { }
 
   QRCodeSRC: any;
@@ -56,6 +58,7 @@ export class AddGroupPage implements OnInit {
     }
   }
 
+  /** 사용자가 작성한 그룹 정보 */
   userInput = {
     server: undefined,
     id: undefined,
@@ -116,22 +119,16 @@ export class AddGroupPage implements OnInit {
   /** 정상처리되지 않았다면 작성 중 정보 임시 저장 */
   isSavedWell = false;
   save() {
-    let client = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].client;
-    if (!client) { // 클라이언트 존재 여부 검토
+    if (this.statusBar.groupServer[this.servers[this.index].isOfficial][this.servers[this.index].target] != 'online') {
       this.p5toast.show({
         text: '선택한 서버를 사용할 수 없습니다.',
       });
       return;
     }
-
+    let client = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].client;
     let session = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session;
-    if (!session) { // 세션 검토
-      console.warn('refreshToken 등 검토 필요');
-      this.p5toast.show({
-        text: '세션이 종료되었습니다.',
-      });
-      return;
-    }
+    let socket = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].socket;
+    this.userInput['owner'] = session.user_id;
 
     this.isSaveClicked = true;
     this.userInput.lang_tag = this.userInput.lang_tag || 'ko';
@@ -155,7 +152,14 @@ export class AddGroupPage implements OnInit {
           value: { img: this.userInput.img },
         }]
       );
-      this.nakama.save_group_info(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target, () => {
+      this.nakama.save_group_info(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target);
+      socket.joinChat(v.id, 3, true, false).then(c => {
+        c['redirect'] = {
+          id: v.id,
+          type: 3,
+          persistence: true,
+        };
+        this.nakama.add_channels(c, this.servers[this.index].isOfficial, this.servers[this.index].target);
         this.isSavedWell = true;
         localStorage.removeItem('add-group');
         this.p5toast.show({
