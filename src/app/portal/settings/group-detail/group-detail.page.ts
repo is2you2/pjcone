@@ -194,15 +194,10 @@ export class GroupDetailPage implements OnInit {
           open: this.info['open'],
         }
       );
-    let less_info = { ...this.info };
-    delete less_info['server'];
-    delete less_info['img'];
-    if (less_info['users'])
-      for (let i = 0, j = less_info['users'].length; i < j; i++) {
-        delete less_info['users'][i]['img'];
-        delete less_info['users'][i]['status'];
-      }
-    this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']] = less_info;
+    this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']] = this.info;
+    this.indexed.saveTextFileToUserPath(this.info['img'], `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`, () => {
+      this.nakama.rearrange_channels();
+    });
     this.nakama.save_groups_with_less_info();
   }
 

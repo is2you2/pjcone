@@ -496,8 +496,8 @@ export class NakamaService {
             });
           });
         });
-        this.rearrange_channels();
       }
+      this.rearrange_channels();
     });
   }
 
@@ -540,57 +540,38 @@ export class NakamaService {
       Targets.forEach(_target => {
         let ChannelIds = Object.keys(this.channels_orig[_is_official][_target]);
         ChannelIds.forEach(_cid => {
-          let channel_info = this.channels_orig[_is_official][_target][_cid];
-          channel_info['info'] = {
+          this.channels_orig[_is_official][_target][_cid]['info'] = {
             isOfficial: _is_official,
             target: _target,
           }
-          switch (channel_info['redirect']['type']) {
+          switch (this.channels_orig[_is_official][_target][_cid]['redirect']['type']) {
             case 1: // 방 대화
               console.warn('방 대화 기능 준비중...');
               break;
             case 2: // 1:1 대화
-              this.load_other_user_profile_info(channel_info['redirect']['id'], _is_official, _target)
+              this.load_other_user_profile_info(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target)
                 .then(_info => {
                   this.channels_orig[_is_official][_target][_cid]['title'] = _info['display_name'];
                 });
-              this.load_other_user_profile_image(channel_info['redirect']['id'], _is_official, _target)
+              this.load_other_user_profile_image(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target)
                 .then(_img => {
-                  channel_info['img'] = _img;
+                  this.channels_orig[_is_official][_target][_cid]['img'] = _img;
                 });
               break;
             case 3: // 그룹 대화
-              this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${channel_info['redirect']['id']}.img`,
+              this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${this.channels_orig[_is_official][_target][_cid]['redirect']['id']}.img`,
                 (e, v) => {
-                  if (e && v) channel_info['img'] = v;
-                  if (this.groups[_is_official][_target] && this.groups[_is_official][_target][channel_info['redirect']['id']]) { // 유효한 그룹인 경우
-                    this.channels_orig[_is_official][_target][_cid]['title'] = this.groups[_is_official][_target][channel_info['redirect']['id']].name;
-                    if (this.statusBar.groupServer[_is_official][_target] == 'online') {
-                      this.servers[_is_official][_target].client.readStorageObjects(
-                        this.servers[_is_official][_target].session, {
-                        object_ids: [{
-                          collection: 'group_public',
-                          key: `group_${channel_info['redirect']['id']}`,
-                          user_id: this.groups[_is_official][_target][channel_info['redirect']['id']].owner,
-                        }],
-                      }).then(_img => {
-                        if (_img.objects.length) {
-                          channel_info['img'] = _img.objects[0].value['img'];
-                          this.indexed.saveTextFileToUserPath(_img.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${channel_info['redirect']['id']}.img`);
-                        } else {
-                          delete channel_info['img'];
-                          this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${channel_info['redirect']['id']}.img`);
-                        }
-                      });
-                    }
-                  } else channel_info['status'] = 'missing';
+                  if (e && v) this.channels_orig[_is_official][_target][_cid]['img'] = v;
+                  if (this.groups[_is_official][_target] && this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]) { // 유효한 그룹인 경우
+                    this.channels_orig[_is_official][_target][_cid]['title'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']].name;
+                  } else this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
                 });
               break;
             default:
-              console.error('예상되지 않은 대화형식: ', channel_info);
+              console.error('예상하지 않은 대화형식: ', this.channels_orig[_is_official][_target][_cid]);
               break;
           }
-          result.push(channel_info);
+          result.push(this.channels_orig[_is_official][_target][_cid]);
         });
       });
     });
@@ -598,8 +579,24 @@ export class NakamaService {
     _cids.forEach(key => {
       this.after_channel_rearrange[key](result);
     });
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.channels_orig), 'servers/channels.json');
+    this.save_channels_with_less_info();
     return result;
+  }
+
+  save_channels_with_less_info() {
+    let channels_copy = JSON.parse(JSON.stringify(this.channels_orig));
+    let isOfficial = Object.keys(channels_copy);
+    isOfficial.forEach(_is_official => {
+      let Targets = Object.keys(channels_copy[_is_official]);
+      Targets.forEach(_target => {
+        let ChannelIds = Object.keys(channels_copy[_is_official][_target]);
+        ChannelIds.forEach(_cid => {
+          delete channels_copy[_is_official][_target][_cid]['img'];
+          delete channels_copy[_is_official][_target][_cid]['info'];
+        });
+      });
+    });
+    this.indexed.saveTextFileToUserPath(JSON.stringify(channels_copy), 'servers/channels.json');
   }
 
   /** base64 정보에 대해 Nakama에서 허용하는 수준으로 이미지 크기 줄이기
