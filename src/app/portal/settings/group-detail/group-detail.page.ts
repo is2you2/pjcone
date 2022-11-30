@@ -60,71 +60,73 @@ export class GroupDetailPage implements OnInit {
       for (let i = 0, j = this.info['users'].length; i < j; i++)
         this.info['users'][i]['status'] = this.info['status'];
     if (this.is_online) { // 서버로부터 정보를 받아옴
-      this.nakama.servers[_is_official][_target].client.listGroupUsers(
-        this.nakama.servers[_is_official][_target].session, this.info['id'],
-      ).then(v => {
-        // 삭제된 그룹 여부 검토
-        if (!v.group_users.length) {
-          this.info['status'] = 'missing';
-          for (let i = 0, j = this.info['users'].length; i < j; i++)
-            this.info['users']['status'] = 'missing';
-        } else { // 활성 그룹인 경우
-          this.info['users'] = v.group_users;
-          /** 그룹 내 다른 사람들의 프로필 이미지 요청 */
-          let object_req = [];
-          // 사용자 리스트 갱신
-          for (let i = 0, j = this.info['users'].length; i < j; i++) {
-            if (this.info['users'][i].user.id != this.nakama.servers[_is_official][_target].session.user_id) {
-              object_req.push({
-                collection: 'user_public',
-                key: 'profile_image',
-                user_id: this.info['users'][i].user.id,
-              });
-            } else {// 만약 내 정보라면
-              this.info['users'][i].user.is_me = true;
-              this.has_admin = this.info['creator_id'] == this.info['users'][i].user.id;
-              this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
-                if (e && v) this.info['users'][i]['img'] = JSON.parse(v)['img'];
-              });
-            }
-            // 아래, 사용자 램프 조정
-            switch (this.info['users'][i].state) {
-              case 0:
-              case 1:
-                this.info['users'][i]['status'] = 'certified';
-                break;
-              case 2:
-                this.info['users'][i]['status'] = 'online';
-                break;
-              case 3:
-                this.info['users'][i]['status'] = 'pending';
-                break;
-              default:
-                console.warn('존재하지 않는 나카마 그룹원의 상태: ', this.info['users'][i].state);
-                break;
-            }
-          }
-          // 아래 다른 사람들의 이미지 받아오기
-          this.nakama.servers[_is_official][_target].client.readStorageObjects(
-            this.nakama.servers[_is_official][_target].session, {
-            object_ids: object_req,
-          }).then(v2 => {
-            for (let i = 0, j = v2.objects.length; i < j; i++)
-              for (let k = 0, l = this.info['users'].length; k < l; k++)
-                if (v2.objects[i].user_id == this.info['users'][k].user.id) {
-                  this.info['users'][k]['img'] = v2.objects[i].value['img'];
-                  this.indexed.saveTextFileToUserPath(v2.objects[i].value['img'], `servers/${_is_official}/${_target}/users/${v2.objects[i].user_id}/profile.img`);
+      if (this.info['status'] != 'missing')
+        this.nakama.servers[_is_official][_target].client.listGroupUsers(
+          this.nakama.servers[_is_official][_target].session, this.info['id'],
+        ).then(v => {
+          // 삭제된 그룹 여부 검토
+          if (!v.group_users.length) {
+            this.info['status'] = 'missing';
+            this.nakama.channels_orig[_is_official][_target][this.info['channel_id']]['title']
+            = this.nakama.channels_orig[_is_official][_target][this.info['channel_id']]['title'] + ' (삭제된 그룹)';
+            this.nakama.save_channels_with_less_info();
+            this.nakama.channels_orig[_is_official][_target][this.info['channel_id']]['status'] = 'missing';
+            console.warn('사용자 로그인 여부를 연결/반영해야함');
+            for (let i = 0, j = this.info['users'].length; i < j; i++)
+              this.info['users']['status'] = 'missing';
+          } else { // 활성 그룹인 경우
+            this.info['users'] = v.group_users;
+            /** 그룹 내 다른 사람들의 프로필 이미지 요청 */
+            let object_req = [];
+            // 사용자 리스트 갱신
+            for (let i = 0, j = this.info['users'].length; i < j; i++) {
+              if (this.info['users'][i].user.id != this.nakama.servers[_is_official][_target].session.user_id) {
+                object_req.push({
+                  collection: 'user_public',
+                  key: 'profile_image',
+                  user_id: this.info['users'][i].user.id,
+                });
+              } else {// 만약 내 정보라면
+                this.info['users'][i].user.is_me = true;
+                this.has_admin = this.info['creator_id'] == this.info['users'][i].user.id;
+                this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
+                  if (e && v) this.info['users'][i]['img'] = JSON.parse(v)['img'];
+                });
+              }
+              // 아래, 사용자 램프 조정
+              switch (this.info['users'][i].state) {
+                case 0:
+                case 1:
+                  this.info['users'][i]['status'] = 'certified';
                   break;
-                }
-          });
-        }
-      });
-    }
-    if (this.statusBar.groupServer[this.info['server']['isOfficial']][this.info['server']['target']] == 'online')
-      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.joinChat(
-        this.info['id'], 3, true, false).then(c => {
-          this.info['channel_id'] = c.id;
+                case 2:
+                  this.info['users'][i]['status'] = 'online';
+                  break;
+                case 3:
+                  this.info['users'][i]['status'] = 'pending';
+                  break;
+                default:
+                  console.warn('존재하지 않는 나카마 그룹원의 상태: ', this.info['users'][i].state);
+                  break;
+              }
+            }
+            // 아래 다른 사람들의 이미지 받아오기
+            this.nakama.servers[_is_official][_target].client.readStorageObjects(
+              this.nakama.servers[_is_official][_target].session, {
+              object_ids: object_req,
+            }).then(v2 => {
+              for (let i = 0, j = v2.objects.length; i < j; i++)
+                for (let k = 0, l = this.info['users'].length; k < l; k++)
+                  if (v2.objects[i].user_id == this.info['users'][k].user.id) {
+                    this.info['users'][k]['img'] = v2.objects[i].value['img'];
+                    this.indexed.saveTextFileToUserPath(v2.objects[i].value['img'], `servers/${_is_official}/${_target}/users/${v2.objects[i].user_id}/profile.img`);
+                    break;
+                  }
+            });
+          }
         });
+      this.nakama.save_groups_with_less_info();
+    }
   }
 
   /** ionic 버튼을 눌러 input-file 동작 */
@@ -255,10 +257,13 @@ export class GroupDetailPage implements OnInit {
 
   /** 그룹 채널에서 나오기 */
   leave_channel() {
-    delete this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['img'];
-    this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['title']
-      = this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['title'] + '(삭제된 그룹)';
-    this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] = 'missing';
+    if (this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] != 'missing') {
+      delete this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['img'];
+      this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['title']
+        = this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['title'] + ' (삭제된 그룹)';
+      this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] = 'missing';
+    }
+    this.nakama.save_channels_with_less_info();
   }
 
   ionViewWillLeave() {

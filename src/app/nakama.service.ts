@@ -694,7 +694,7 @@ export class NakamaService {
 
   /** 간소화된 그룹 정보 저장하기 */
   save_groups_with_less_info(_CallBack = () => { }) {
-    let copied_group = { ...this.groups };
+    let copied_group = JSON.parse(JSON.stringify(this.groups));
     let isOfficial = Object.keys(copied_group);
     isOfficial.forEach(_is_official => {
       let Target = Object.keys(copied_group[_is_official])
@@ -718,13 +718,14 @@ export class NakamaService {
         this.servers[_is_official][_target].session, info['id'],
       ).then(v => {
         if (v) { // 서버에서 정상삭제하였을 때
-          this.servers[_is_official][_target].client.deleteStorageObjects(
-            this.servers[_is_official][_target].session, {
-            object_ids: [{
-              collection: 'group_public',
-              key: `group_${info['id']}`,
-            }]
-          });
+          if (info['img'])
+            this.servers[_is_official][_target].client.deleteStorageObjects(
+              this.servers[_is_official][_target].session, {
+              object_ids: [{
+                collection: 'group_public',
+                key: `group_${info['id']}`,
+              }]
+            });
         }
       }).catch(e => {
         console.error('remove_group_list: ', e);
@@ -990,9 +991,9 @@ export class NakamaService {
         v['request'] = `${v.code}-${v.subject}`;
         break;
       case -4: // 상대방이 그룹 참가 수락
-        this.groups[_is_official][_target][v.content['group_id']]['status'] = 'online';
         if (this.socket_reactive[v.code] && this.socket_reactive[v.code].info.id == v.content['group_id'])
           this.socket_reactive[v.code].ngOnInit();
+        this.groups[_is_official][_target][v.content['group_id']]['status'] = 'online';
         v['request'] = `${v.code}-${v.subject}`;
         this.rearrange_notifications();
         this.noti.SetListener(`check${v.code}`, (_v: any) => {
@@ -1008,6 +1009,7 @@ export class NakamaService {
               persistence: true,
             };
             c['status'] = 'online';
+            this.groups[_is_official][_target][v.content['group_id']]['channel_id'] = c.id;
             this.add_channels(c, _is_official, _target);
           });
         this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`, (_e, _v) => {
@@ -1090,7 +1092,6 @@ export class NakamaService {
         v['request'] = `${v.code}-${v.subject}`;
         break;
     }
-    console.log('이게 삭제된 알림이니?: ', is_removed);
     if (is_removed) return;
     if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
     if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
