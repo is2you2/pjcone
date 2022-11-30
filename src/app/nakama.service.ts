@@ -680,7 +680,7 @@ export class NakamaService {
     this.save_groups_with_less_info();
     this.indexed.saveTextFileToUserPath(_group['img'], `servers/${_is_official}/${_target}/groups/${_group.id}.img`);
     // 내가 그룹의 주인이라면 이미지 변경사항 업로드
-    if (_group.onwer == this.servers[_is_official][_target].session.user_id && _group.img)
+    if (_group.owner == this.servers[_is_official][_target].session.user_id && _group.img)
       this.servers[_is_official][_target].client.writeStorageObjects(
         this.servers[_is_official][_target].session, [{
           collection: 'group_public',
@@ -837,7 +837,8 @@ export class NakamaService {
           if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
             let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
             channel_ids.forEach(_cid => {
-              delete this.channels_orig[_is_official][_target][_cid]['status'];
+              if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
+                delete this.channels_orig[_is_official][_target][_cid]['status'];
             });
           }
           if (this.groups[_is_official] && this.groups[_is_official][_target]) {
