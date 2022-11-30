@@ -68,9 +68,9 @@ export class GroupDetailPage implements OnInit {
           if (!v.group_users.length) {
             this.info['status'] = 'missing';
             this.nakama.channels_orig[_is_official][_target][this.info['channel_id']]['title']
-            = this.nakama.channels_orig[_is_official][_target][this.info['channel_id']]['title'] + ' (삭제된 그룹)';
-            this.nakama.save_channels_with_less_info();
+              = this.nakama.channels_orig[_is_official][_target][this.info['channel_id']]['title'] + ' (삭제된 그룹)';
             this.nakama.channels_orig[_is_official][_target][this.info['channel_id']]['status'] = 'missing';
+            this.nakama.save_channels_with_less_info();
             console.warn('사용자 로그인 여부를 연결/반영해야함');
             for (let i = 0, j = this.info['users'].length; i < j; i++)
               this.info['users']['status'] = 'missing';
@@ -79,6 +79,7 @@ export class GroupDetailPage implements OnInit {
             /** 그룹 내 다른 사람들의 프로필 이미지 요청 */
             let object_req = [];
             // 사용자 리스트 갱신
+            let am_i_lost = true;
             for (let i = 0, j = this.info['users'].length; i < j; i++) {
               if (this.info['users'][i].user.id != this.nakama.servers[_is_official][_target].session.user_id) {
                 object_req.push({
@@ -92,6 +93,7 @@ export class GroupDetailPage implements OnInit {
                 this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
                   if (e && v) this.info['users'][i]['img'] = JSON.parse(v)['img'];
                 });
+                am_i_lost = false;
               }
               // 아래, 사용자 램프 조정
               switch (this.info['users'][i].state) {
@@ -110,19 +112,27 @@ export class GroupDetailPage implements OnInit {
                   break;
               }
             }
-            // 아래 다른 사람들의 이미지 받아오기
-            this.nakama.servers[_is_official][_target].client.readStorageObjects(
-              this.nakama.servers[_is_official][_target].session, {
-              object_ids: object_req,
-            }).then(v2 => {
-              for (let i = 0, j = v2.objects.length; i < j; i++)
-                for (let k = 0, l = this.info['users'].length; k < l; k++)
-                  if (v2.objects[i].user_id == this.info['users'][k].user.id) {
-                    this.info['users'][k]['img'] = v2.objects[i].value['img'];
-                    this.indexed.saveTextFileToUserPath(v2.objects[i].value['img'], `servers/${_is_official}/${_target}/users/${v2.objects[i].user_id}/profile.img`);
-                    break;
-                  }
-            });
+            if (am_i_lost) { // 내가 포함된 그룹이 아님
+              this.info['status'] = 'missing';
+              this.nakama.channels_orig[_is_official][_target][this.info['channel_id']]['title']
+                = this.nakama.channels_orig[_is_official][_target][this.info['channel_id']]['title'] + ' (그룹원이 아님)';
+              this.nakama.channels_orig[_is_official][_target][this.info['channel_id']]['status'] = 'missing';
+              this.nakama.save_channels_with_less_info();
+            } else {
+              // 아래 다른 사람들의 이미지 받아오기
+              this.nakama.servers[_is_official][_target].client.readStorageObjects(
+                this.nakama.servers[_is_official][_target].session, {
+                object_ids: object_req,
+              }).then(v2 => {
+                for (let i = 0, j = v2.objects.length; i < j; i++)
+                  for (let k = 0, l = this.info['users'].length; k < l; k++)
+                    if (v2.objects[i].user_id == this.info['users'][k].user.id) {
+                      this.info['users'][k]['img'] = v2.objects[i].value['img'];
+                      this.indexed.saveTextFileToUserPath(v2.objects[i].value['img'], `servers/${_is_official}/${_target}/users/${v2.objects[i].user_id}/profile.img`);
+                      break;
+                    }
+              });
+            }
           }
         });
       this.nakama.save_groups_with_less_info();
@@ -155,7 +165,7 @@ export class GroupDetailPage implements OnInit {
 
   readasQRCodeFromId() {
     try {
-      let except_some = { id: this.info.id, title: this.info.title };
+      let except_some = { id: this.info.id, title: this.info.name };
       except_some['type'] = 'group';
       let qr: string = new QRCode({
         content: `[${JSON.stringify(except_some)}]`,

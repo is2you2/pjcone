@@ -461,14 +461,7 @@ export class NakamaService {
   add_channels(channel_info: Channel, _is_official: string, _target: string) {
     if (!this.channels_orig[_is_official][_target])
       this.channels_orig[_is_official][_target] = {};
-    if (this.channels_orig[_is_official][_target][channel_info.id]) {
-      if (this.channels_orig[_is_official][_target][channel_info.id]['status'])
-        channel_info['status'] = this.channels_orig[_is_official][_target][channel_info.id]['status'];
-      if (this.channels_orig[_is_official][_target][channel_info.id]['title'])
-        channel_info['title'] = this.channels_orig[_is_official][_target][channel_info.id]['title'];
-      if (this.channels_orig[_is_official][_target][channel_info.id]['last_comment'])
-        channel_info['last_comment'] = this.channels_orig[_is_official][_target][channel_info.id]['last_comment'];
-    }
+    if (this.channels_orig[_is_official][_target][channel_info.id] !== undefined && this.channels_orig[_is_official][_target][channel_info.id]['status'] != 'missing') return;
     this.channels_orig[_is_official][_target][channel_info.id] = channel_info;
     this.rearrange_channels();
   }
@@ -492,7 +485,6 @@ export class NakamaService {
             channel_ids.forEach(_cid => {
               if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
                 delete this.channels_orig[_is_official][_target][_cid]['status'];
-              delete this.channels_orig[_is_official][_target][_cid]['update'];
             });
           });
         });
@@ -503,7 +495,7 @@ export class NakamaService {
 
   /** 세션 재접속 시 기존 정보를 이용하여 채팅방에 다시 로그인함 */
   redirect_channel(_is_official: string, _target: string) {
-    if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
+    if (this.channels_orig[_is_official][_target]) {
       let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
       channel_ids.forEach(_cid => {
         if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing') {
@@ -512,13 +504,19 @@ export class NakamaService {
             this.channels_orig[_is_official][_target][_cid]['redirect']['type'],
             this.channels_orig[_is_official][_target][_cid]['redirect']['persistence'],
             false
-          );
-          this.servers[_is_official][_target].client.listChannelMessages(
-            this.servers[_is_official][_target].session, _cid, 1, false)
-            .then(v => {
-              if (v.messages.length)
-                this.channels_orig[_is_official][_target][_cid]['last_comment'] = v.messages[0].content['msg'];
-            });
+          ).then(_c => {
+            this.servers[_is_official][_target].client.listChannelMessages(
+              this.servers[_is_official][_target].session, _cid, 1, false)
+              .then(v => {
+                if (v.messages.length)
+                  this.channels_orig[_is_official][_target][_cid]['last_comment'] = v.messages[0].content['msg'];
+              });
+          }).catch(_e => {
+            this.channels_orig[_is_official][_target][_cid]['title']
+              = this.channels_orig[_is_official][_target][_cid]['title'] + ' (그룹원이 아님)';
+            this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
+            this.save_channels_with_less_info();
+          });
         }
       });
       this.rearrange_channels();
@@ -562,9 +560,11 @@ export class NakamaService {
               this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${this.channels_orig[_is_official][_target][_cid]['redirect']['id']}.img`,
                 (e, v) => {
                   if (e && v) this.channels_orig[_is_official][_target][_cid]['img'] = v;
-                  if (this.groups[_is_official][_target] && this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]) { // 유효한 그룹인 경우
-                    this.channels_orig[_is_official][_target][_cid]['title'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']].name;
-                  } else this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
+                  if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing') {
+                    if (this.groups[_is_official][_target] && this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]) { // 유효한 그룹인 경우
+                      this.channels_orig[_is_official][_target][_cid]['title'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']].name;
+                    } else this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
+                  }
                 });
               break;
             default:
@@ -593,6 +593,7 @@ export class NakamaService {
         ChannelIds.forEach(_cid => {
           delete channels_copy[_is_official][_target][_cid]['img'];
           delete channels_copy[_is_official][_target][_cid]['info'];
+          delete channels_copy[_is_official][_target][_cid]['update'];
         });
       });
     });
@@ -631,45 +632,37 @@ export class NakamaService {
 
   /** 연결된 서버들에 그룹 진입 요청 시도 */
   try_add_group(_info: any) {
-    let online_clients = this.get_all_server();
-    for (let i = 0, j = online_clients.length; i < j; i++)
-      online_clients[i].client.joinGroup(online_clients[i].session, _info.id)
+    let servers = this.get_all_server();
+    servers.forEach(server => {
+      server.client.joinGroup(server.session, _info.id)
         .then(_v => {
           if (!_v) {
             console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
             return;
           }
-          online_clients[i].client.listGroups(
-            online_clients[i].session, _info['title']
+          server.client.listGroups(
+            server.session, _info['title']
           ).then(v => {
             for (let i = 0, j = v.groups.length; i < j; i++)
               if (v.groups[i].id == _info['id']) {
-                online_clients[i].client.readStorageObjects(online_clients[i].session, {
+                server.client.readStorageObjects(server.session, {
                   object_ids: [{
                     collection: 'group_public',
                     key: `group_${v.groups[i].id}`,
                     user_id: v.groups[i].creator_id,
                   }]
                 }).then(img => {
-                  let pending_group = {
-                    server: undefined,
-                    id: v.groups[i].id,
-                    name: v.groups[i].name,
-                    description: v.groups[i].description,
-                    max_count: v.groups[i].max_count,
-                    lang_tag: v.groups[i].lang_tag,
-                    open: v.groups[i].open,
-                    creator_id: v.groups[i].creator_id,
-                    status: 'pending',
-                  }
+                  let pending_group = { ...v.groups[i] };
+                  pending_group['status'] = 'pending';
                   if (img.objects.length)
                     pending_group['img'] = img.objects[0].value['img'];
-                  this.save_group_info(pending_group, online_clients[i].info.isOfficial, online_clients[i].info.target);
+                  this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
                 });
                 break;
               }
           });
         });
+    });
   }
 
   /** 그룹 정보를 로컬에 저장하기, 원격에 이미지 업로드 */
@@ -828,7 +821,22 @@ export class NakamaService {
           this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = c.content['msg'];
           if (this.channels_orig[_is_official][_target][c.channel_id]['update'])
             this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
-          this.rearrange_channels();
+          switch (c.code) {
+            case 6: // 누군가 그룹에서 내보내짐
+              if (c.sender_id == this.servers[_is_official][_target].session.user_id) {
+                this.channels_orig[_is_official][_target][c.channel_id]['status'] = 'missing';
+                this.channels_orig[_is_official][_target][c.channel_id]['title']
+                  = this.channels_orig[_is_official][_target][c.channel_id]['title'] + ' (그룹원이 아님)';
+                this.groups[_is_official][_target][c['group_id']]['status'] = 'missing';
+              } else {
+                console.warn('다른 누군가가 내보내짐 알림 필요');
+              }
+              break;
+            default:
+              console.warn('예상하지 못한 채널 메시지 코드: ', c.code);
+              break;
+          }
+          this.save_channels_with_less_info();
         }
         socket.ondisconnect = (_e) => {
           this.p5toast.show({
@@ -1096,5 +1104,6 @@ export class NakamaService {
     if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
     if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
     this.noti_origin[_is_official][_target][v.id] = v;
+    this.rearrange_notifications();
   }
 }
