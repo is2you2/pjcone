@@ -1000,6 +1000,16 @@ export class NakamaService {
           this.noti.RemoveListener(`check${v.code}`);
           this.check_notifications(v, _is_official, _target);
         });
+        this.servers[_is_official][_target].socket.joinChat(v.content['group_id'], 3, true, false)
+          .then(c => {
+            c['redirect'] = {
+              id: v.content['group_id'],
+              type: 3,
+              persistence: true,
+            };
+            c['status'] = 'online';
+            this.add_channels(c, _is_official, _target);
+          });
         this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`, (_e, _v) => {
           this.noti.PushLocal({
             id: v.code,
