@@ -255,6 +255,9 @@ export class GroupDetailPage implements OnInit {
 
   /** 그룹 채널에서 나오기 */
   leave_channel() {
+    delete this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['img'];
+    this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['title']
+      = this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['title'] + '(삭제된 그룹)';
     this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] = 'missing';
   }
 
