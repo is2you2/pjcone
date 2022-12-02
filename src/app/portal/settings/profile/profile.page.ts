@@ -161,6 +161,18 @@ export class ProfilePage implements OnInit {
 
   /** 사용자 온라인 여부 */
   is_online: boolean;
+  can_auto_modified = false;
+  ionViewDidEnter() {
+    this.can_auto_modified = true;
+  }
+  /** 이메일 변경시 오프라인 처리 */
+  email_modified() {
+    if (this.can_auto_modified) {
+      if (this.is_online)
+        this.toggle_online();
+      this.is_online = false;
+    }
+  }
   /** 채도 변화자 */
   lerpVal: number;
   toggle_online() {

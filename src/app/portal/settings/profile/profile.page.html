@@ -29,7 +29,8 @@
   </ion-item-divider>
   <ion-item>
     <ion-label>이메일 주소</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="userInput.email" [placeholder]="'test@example.com'"></ion-input>
+    <ion-input class="ion-text-right" [(ngModel)]="userInput.email" (ionChange)="email_modified()"
+      [placeholder]="'test@example.com'"></ion-input>
   </ion-item>
   <ion-item>
     <ion-label>사용자 표시명</ion-label>
