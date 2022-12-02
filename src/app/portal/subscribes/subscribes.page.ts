@@ -59,17 +59,19 @@ export class SubscribesPage implements OnInit {
       if (!v.cancelled) {
         try { // 양식에 맞게 끝까지 동작한다면 우리 데이터가 맞다
           let json: any[] = JSON.parse(v.text);
+          if (this.wsc.client.readyState != this.wsc.client.OPEN) {
+            this.p5toast.show({
+              text: '커뮤니티 서버와 연결되어있어야 합니다.',
+            });
+            return;
+          }
           for (let i = 0, j = json.length; i < j; i++)
             switch (json[i].type) {
               case 'link': // 계정 연결처리
-                if (this.wsc.client.readyState == this.wsc.client.OPEN)
-                  this.weblink.initialize({
-                    pid: json[i].value,
-                    uuid: this.nakama.uuid,
-                  });
-                else this.p5toast.show({
-                  text: '커뮤니티 서버와 연결되어있어야 합니다.',
-                })
+                this.weblink.initialize({
+                  pid: json[i].value,
+                  uuid: this.nakama.uuid,
+                });
                 break;
               case 'tools': // 도구모음, 단일 대상 서버 생성 액션시
                 this.create_tool_server(json[i].value);

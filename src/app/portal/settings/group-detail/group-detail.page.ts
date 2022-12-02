@@ -165,7 +165,7 @@ export class GroupDetailPage implements OnInit {
 
   readasQRCodeFromId() {
     try {
-      let except_some = { id: this.info.id, title: this.info.name };
+      let except_some = { id: this.info.id, name: this.info.name };
       except_some['type'] = 'group';
       let qr: string = new QRCode({
         content: `[${JSON.stringify(except_some)}]`,

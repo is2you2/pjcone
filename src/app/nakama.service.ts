@@ -286,7 +286,7 @@ export class NakamaService {
       if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
       this.servers[_is_official][_target].session
         = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), this.uuid, false);
-        this.after_login(_is_official, _target, _useSSL);
+      this.after_login(_is_official, _target, _useSSL);
       _CallBack(true);
     } catch (e) {
       switch (e.status) {
@@ -641,10 +641,12 @@ export class NakamaService {
             return;
           }
           server.client.listGroups(
-            server.session, _info['title']
+            server.session, _info['name']
           ).then(v => {
             for (let i = 0, j = v.groups.length; i < j; i++)
               if (v.groups[i].id == _info['id']) {
+                let pending_group = v.groups[i];
+                pending_group['status'] = 'pending';
                 server.client.readStorageObjects(server.session, {
                   object_ids: [{
                     collection: 'group_public',
@@ -652,12 +654,10 @@ export class NakamaService {
                     user_id: v.groups[i].creator_id,
                   }]
                 }).then(img => {
-                  let pending_group = { ...v.groups[i] };
-                  pending_group['status'] = 'pending';
                   if (img.objects.length)
                     pending_group['img'] = img.objects[0].value['img'];
-                  this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
                 });
+                this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
                 break;
               }
           });
@@ -710,15 +710,14 @@ export class NakamaService {
       this.servers[_is_official][_target].client.deleteGroup(
         this.servers[_is_official][_target].session, info['id'],
       ).then(v => {
-        if (v) { // 서버에서 정상삭제하였을 때
-          if (info['img'])
-            this.servers[_is_official][_target].client.deleteStorageObjects(
-              this.servers[_is_official][_target].session, {
-              object_ids: [{
-                collection: 'group_public',
-                key: `group_${info['id']}`,
-              }]
-            });
+        if (v && info['img']) { // 서버에서 정상삭제하였을 때
+          this.servers[_is_official][_target].client.deleteStorageObjects(
+            this.servers[_is_official][_target].session, {
+            object_ids: [{
+              collection: 'group_public',
+              key: `group_${info['id']}`,
+            }]
+          });
         }
       }).catch(e => {
         console.error('remove_group_list: ', e);
@@ -955,12 +954,12 @@ export class NakamaService {
         switch (targetType) {
           case 2:
             this.servers[_is_official][_target].socket.joinChat(
-              v['sender_id'], targetType, v['persistent'], false,
+              v['sender_id'], targetType, true, false,
             ).then(c => {
               c['redirect'] = {
                 id: v['sender_id'],
                 type: targetType,
-                persistence: v['persistent'],
+                persistence: true,
               };
               this.servers[_is_official][_target].client.listChannelMessages(
                 this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
@@ -1009,8 +1008,8 @@ export class NakamaService {
           this.noti.RemoveListener(`check${v.code}`);
           this.check_notifications(v, _is_official, _target);
         });
-        this.servers[_is_official][_target].socket.joinChat(v.content['group_id'], 3, true, false)
-          .then(c => {
+        this.servers[_is_official][_target].socket.joinChat(
+          v.content['group_id'], 3, true, false).then(c => {
             c['redirect'] = {
               id: v.content['group_id'],
               type: 3,
@@ -1019,6 +1018,12 @@ export class NakamaService {
             c['status'] = 'online';
             this.groups[_is_official][_target][v.content['group_id']]['channel_id'] = c.id;
             this.add_channels(c, _is_official, _target);
+            this.servers[_is_official][_target].client.listChannelMessages(
+              this.servers[_is_official][_target].session, c.id, 1, false)
+              .then(v => {
+                if (v.messages.length)
+                  this.channels_orig[_is_official][_target][c.id]['last_comment'] = v.messages[0].content['msg'];
+              });
           });
         this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`, (_e, _v) => {
           this.noti.PushLocal({
