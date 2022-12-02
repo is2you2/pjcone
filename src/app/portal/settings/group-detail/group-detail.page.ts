@@ -157,7 +157,13 @@ export class GroupDetailPage implements OnInit {
             permission_read: 2,
             permission_write: 1,
           }]
-        );
+        ).then(_info => {
+          this.indexed.saveTextFileToUserPath(JSON.stringify(this.info['img']), `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
+          this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
+            this.info['channel_id'], {
+            msg: '그룹 이미지 업데이트 알림-테스트 로그',
+          });
+        });
       });
     };
     reader.readAsDataURL(ev.target.files[0]);
@@ -198,18 +204,18 @@ export class GroupDetailPage implements OnInit {
     if (this.is_online && this.has_admin)
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.updateGroup(
         this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session,
-        this.info['id'],
-        {
-          name: this.info['name'],
-          lang_tag: this.info['lang_tag'],
-          description: this.info['description'],
-          open: this.info['open'],
-        }
-      );
+        this.info['id'], {
+        name: this.info['name'],
+        lang_tag: this.info['lang_tag'],
+        description: this.info['description'],
+        open: this.info['open'],
+      }).then(_v => {
+        this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
+          this.info['channel_id'], {
+          msg: '그룹 정보 업데이트 알림-테스트 로그',
+        });
+      });
     this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']] = this.info;
-    this.indexed.saveTextFileToUserPath(this.info['img'], `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`, () => {
-      this.nakama.rearrange_channels();
-    });
     this.nakama.save_groups_with_less_info();
   }
 

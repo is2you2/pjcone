@@ -52,9 +52,6 @@ export class SettingsPage implements OnInit {
     tmp_groups.forEach(group => {
       let _is_official = group['server']['isOfficial'];
       let _target = group['server']['target'];
-      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${group['id']}.img`, (e, v) => {
-        if (e && v) group['img'] = v;
-      });
       // 온라인이라면 서버정보로 덮어쓰기
       if (this.statusBar.groupServer[_is_official][_target] == 'online') {
         if (this.nakama.groups[_is_official][_target][group.id]['status'] != 'missing')
@@ -95,24 +92,6 @@ export class SettingsPage implements OnInit {
                 this.nakama.channels_orig[_is_official][_target][group['channel_id']]['title']
                   = this.nakama.channels_orig[_is_official][_target][group['channel_id']]['title'] + ' (그룹원이 아님)';
                 this.nakama.save_channels_with_less_info();
-              } else {
-                // 그룹 이미지 업데이트
-                this.nakama.servers[_is_official][_target].client.readStorageObjects(
-                  this.nakama.servers[_is_official][_target].session, {
-                  object_ids: [{
-                    collection: 'group_public',
-                    key: `group_${group['id']}`,
-                    user_id: group['creator_id']
-                  }]
-                }).then(v => {
-                  if (v.objects[0]) {
-                    group['img'] = v.objects[0].value['img'];
-                    this.indexed.saveTextFileToUserPath(group['img'], `servers/${_is_official}/${_target}/groups/${group['id']}.img`)
-                  } else {
-                    delete group['img'];
-                    this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${group['id']}.img`)
-                  }
-                });
               }
             }
           })

@@ -78,8 +78,12 @@ export class NakamaService {
         this.groups = JSON.parse(v);
       let all_groups = this.rearrange_group_list();
       all_groups.forEach(group => {
-        if (group['status'] != 'missing')
+        if (group['status'] != 'missing') {
+          this.indexed.loadTextFromUserPath(`servers/${group['server']['isOfficial']}/${group['server']['target']}/groups/${group.id}.img`, (e, v) => {
+            if (e && v) group['img'] = v['img'];
+          });
           delete group['status'];
+        }
       });
       // 채널 불러오기
       this.load_channel_list();
@@ -547,6 +551,7 @@ export class NakamaService {
               console.warn('방 대화 기능 준비중...');
               break;
             case 2: // 1:1 대화
+              console.warn('사용자 정보를 직접 링크 작업 필요');
               this.load_other_user_profile_info(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target)
                 .then(_info => {
                   this.channels_orig[_is_official][_target][_cid]['title'] = _info['display_name'];
@@ -557,15 +562,12 @@ export class NakamaService {
                 });
               break;
             case 3: // 그룹 대화
-              this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${this.channels_orig[_is_official][_target][_cid]['redirect']['id']}.img`,
-                (e, v) => {
-                  if (e && v) this.channels_orig[_is_official][_target][_cid]['img'] = v;
-                  if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing') {
-                    if (this.groups[_is_official][_target] && this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]) { // 유효한 그룹인 경우
-                      this.channels_orig[_is_official][_target][_cid]['title'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']].name;
-                    } else this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
-                  }
-                });
+              if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing') {
+                if (this.groups[_is_official][_target] && this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]) { // 유효한 그룹인 경우
+                  this.channels_orig[_is_official][_target][_cid]['title'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']].name;
+                  this.channels_orig[_is_official][_target][_cid]['group'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']];
+                } else this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
+              }
               break;
             default:
               console.error('예상하지 않은 대화형식: ', this.channels_orig[_is_official][_target][_cid]);
@@ -592,6 +594,7 @@ export class NakamaService {
         let ChannelIds = Object.keys(channels_copy[_is_official][_target]);
         ChannelIds.forEach(_cid => {
           delete channels_copy[_is_official][_target][_cid]['img'];
+          delete channels_copy[_is_official][_target][_cid]['group'];
           delete channels_copy[_is_official][_target][_cid]['info'];
           delete channels_copy[_is_official][_target][_cid]['update'];
         });
@@ -647,16 +650,6 @@ export class NakamaService {
               if (v.groups[i].id == _info['id']) {
                 let pending_group = v.groups[i];
                 pending_group['status'] = 'pending';
-                server.client.readStorageObjects(server.session, {
-                  object_ids: [{
-                    collection: 'group_public',
-                    key: `group_${v.groups[i].id}`,
-                    user_id: v.groups[i].creator_id,
-                  }]
-                }).then(img => {
-                  if (img.objects.length)
-                    pending_group['img'] = img.objects[0].value['img'];
-                });
                 this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
                 break;
               }
@@ -668,7 +661,7 @@ export class NakamaService {
   /** 그룹 정보를 로컬에 저장하기, 원격에 이미지 업로드 */
   save_group_info(_group: any, _is_official: string, _target: string) {
     if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
-    this.groups[_is_official][_target][_group.id] = { ..._group };
+    this.groups[_is_official][_target][_group.id] = _group;
     this.rearrange_group_list();
     this.save_groups_with_less_info();
     this.indexed.saveTextFileToUserPath(_group['img'], `servers/${_is_official}/${_target}/groups/${_group.id}.img`);
@@ -1008,6 +1001,19 @@ export class NakamaService {
           this.noti.RemoveListener(`check${v.code}`);
           this.check_notifications(v, _is_official, _target);
         });
+        this.servers[_is_official][_target].client.readStorageObjects(
+          this.servers[_is_official][_target].session, {
+          object_ids: [{
+            collection: 'group_public',
+            key: `group_${v.content['group_id']}`,
+            user_id: this.groups[_is_official][_target][v.content['group_id']].creator_id,
+          }]
+        }).then(img => {
+          if (img.objects.length) {
+            this.groups[_is_official][_target][v.content['group_id']]['img'] = img.objects[0].value['img'];
+            this.indexed.saveTextFileToUserPath(img.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`);
+          }
+        });
         this.servers[_is_official][_target].socket.joinChat(
           v.content['group_id'], 3, true, false).then(c => {
             c['redirect'] = {
@@ -1025,21 +1031,19 @@ export class NakamaService {
                   this.channels_orig[_is_official][_target][c.id]['last_comment'] = v.messages[0].content['msg'];
               });
           });
-        this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`, (_e, _v) => {
-          this.noti.PushLocal({
-            id: v.code,
-            title: '검토해야할 연결이 있습니다.',
-            body: v.subject,
-            actions_ln: [{
-              id: `check${v.code}`,
-              title: '확인',
-            }],
-            icon: _v,
-            smallIcon_ln: 'diychat',
-            iconColor_ln: '271e38',
-          }, undefined, (_ev: any) => {
-            this.check_notifications(v, _is_official, _target);
-          });
+        this.noti.PushLocal({
+          id: v.code,
+          title: '검토해야할 연결이 있습니다.',
+          body: v.subject,
+          actions_ln: [{
+            id: `check${v.code}`,
+            title: '확인',
+          }],
+          icon: this.groups[_is_official][_target][v.content['group_id']['img']],
+          smallIcon_ln: 'diychat',
+          iconColor_ln: '271e38',
+        }, undefined, (_ev: any) => {
+          this.check_notifications(v, _is_official, _target);
         });
         break;
       case -5: // 그룹 참가 요청 받음
@@ -1055,12 +1059,6 @@ export class NakamaService {
             else console.warn('알림 지우기 실패: ', b);
           });
         }
-        console.warn('안드로이드에서 테스트 필요');
-        let group_detail = this.groups[_is_official][_target][v.content['group_id']];
-        group_detail['server'] = this.servers[_is_official][_target].info;
-        this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${group_detail['id']}.img`, (e, v) => {
-          if (e && v) group_detail['img'] = v;
-        });
         this.rearrange_notifications();
         // 이미 보는 화면이라면 업데이트하기
         if (this.socket_reactive[v.code] && this.socket_reactive[v.code].info.id == v.content['group_id'])
@@ -1071,27 +1069,25 @@ export class NakamaService {
           if (this.socket_reactive[v.code]) return;
           this.modalCtrl.create({
             component: GroupDetailPage,
-            componentProps: { info: group_detail },
+            componentProps: { info: this.groups[_is_official][_target][v.content['group_id']] },
           }).then(v => v.present());
         });
-        this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`, (_e, _v) => {
-          this.noti.PushLocal({
-            id: v.code,
-            title: `${group_detail['title']} 그룹에 참가 요청`,
-            actions_ln: [{
-              id: `check${v.code}`,
-              title: '검토',
-            }],
-            icon: _v,
-            smallIcon_ln: 'diychat',
-            iconColor_ln: '271e38',
-          }, undefined, (_ev: any) => {
-            if (this.socket_reactive[v.code].info.id == v.content['group_id']) return;
-            this.modalCtrl.create({
-              component: GroupDetailPage,
-              componentProps: { info: group_detail },
-            }).then(v => v.present());
-          });
+        this.noti.PushLocal({
+          id: v.code,
+          title: `${this.groups[_is_official][_target][v.content['group_id']]['name']} 그룹에 참가 요청`,
+          actions_ln: [{
+            id: `check${v.code}`,
+            title: '검토',
+          }],
+          icon: this.groups[_is_official][_target][v.content['group_id']]['img'],
+          smallIcon_ln: 'diychat',
+          iconColor_ln: '271e38',
+        }, undefined, (_ev: any) => {
+          if (this.socket_reactive[v.code].info.id == v.content['group_id']) return;
+          this.modalCtrl.create({
+            component: GroupDetailPage,
+            componentProps: { info: this.groups[_is_official][_target][v.content['group_id']] },
+          }).then(v => v.present());
         });
         break;
       case -6: // 친구가 다른 게임에 참여

@@ -41,7 +41,7 @@
       <div class="additional_form bg_img_form">
         <img class="bg_img"
           [style]="channel['status'] == 'online' ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'"
-          [src]="channel.img">
+          [src]="channel.group.img">
       </div>
       <ion-label>
         <div class="form_margin header"> {{channel.title}} </div>
