@@ -637,24 +637,30 @@ export class NakamaService {
   try_add_group(_info: any) {
     let servers = this.get_all_online_server();
     servers.forEach(server => {
-      server.client.joinGroup(server.session, _info.id)
-        .then(_v => {
-          if (!_v) {
-            console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
-            return;
-          }
-          server.client.listGroups(
-            server.session, _info['name']
-          ).then(v => {
-            for (let i = 0, j = v.groups.length; i < j; i++)
-              if (v.groups[i].id == _info['id']) {
-                let pending_group = v.groups[i];
-                pending_group['status'] = 'pending';
-                this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
-                break;
-              }
+      if (this.groups[server.info.isOfficial][server.info.target][_info['id']] === undefined)
+        server.client.joinGroup(server.session, _info.id)
+          .then(_v => {
+            if (!_v) {
+              console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
+              return;
+            }
+            server.client.listGroups(
+              server.session, _info['name']
+            ).then(v => {
+              for (let i = 0, j = v.groups.length; i < j; i++)
+                if (v.groups[i].id == _info['id']) {
+                  let pending_group = v.groups[i];
+                  pending_group['status'] = 'pending';
+                  this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
+                  break;
+                }
+            });
           });
+      else {
+        this.p5toast.show({
+          text: `이미 등록된 그룹입니다: ${_info['name']}`,
         });
+      }
     });
   }
 
