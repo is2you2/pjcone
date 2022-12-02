@@ -143,7 +143,6 @@ export class AddGroupPage implements OnInit {
       this.userInput.id = v.id;
       this.userInput.creator_id = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session.user_id;
       this.readasQRCodeFromId();
-      this.nakama.save_group_info(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target);
       socket.joinChat(v.id, 3, true, false).then(c => {
         c['redirect'] = {
           id: v.id,
@@ -153,7 +152,8 @@ export class AddGroupPage implements OnInit {
         c['status'] = 'online';
         c['title'] = this.userInput['name'];
         c['img'] = this.userInput['img'];
-        this.nakama.groups[this.servers[this.index].isOfficial][this.servers[this.index].target][v.id]['channel_id'] = c.id;
+        this.userInput['channel_id'] = c.id;
+        this.nakama.save_group_info(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target);
         this.nakama.add_channels(c, this.servers[this.index].isOfficial, this.servers[this.index].target);
         this.isSavedWell = true;
         localStorage.removeItem('add-group');

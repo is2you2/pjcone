@@ -61,7 +61,7 @@ export class ChatRoomPage implements OnInit {
 
   /** 서버로부터 메시지 더 받아오기 */
   pull_msg_from_server() {
-    if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online' && this.next_cursor !== undefined)
+    if (this.info['status'] == 'online' && this.next_cursor !== undefined)
       this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
         this.nakama.servers[this.isOfficial][this.target].session,
         this.info['id'], 15, false, this.next_cursor).then(v => {

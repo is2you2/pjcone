@@ -194,9 +194,14 @@ export class GroupDetailPage implements OnInit {
     this.need_edit = false;
     let _is_official: string = this.info.server['isOfficial'];
     let _target: string = this.info.server['target'];
-    this.leave_channel();
-    this.nakama.remove_group_list(this.info, _is_official, _target);
-    this.modalCtrl.dismiss();
+    this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
+      this.info['channel_id'], {
+      msg: `사용자가 그룹 나감: ${this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session.user_id}-테스트 로그`
+    }).then(_m => {
+      this.leave_channel();
+      this.nakama.remove_group_list(this.info, _is_official, _target);
+      this.modalCtrl.dismiss();
+    });
   }
 
   need_edit = true;
@@ -260,15 +265,20 @@ export class GroupDetailPage implements OnInit {
   /** 그룹 떠나기 */
   leave_group() {
     this.need_edit = false;
-    this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.leaveGroup(
-      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, this.info['id'],
-    ).then(v => {
-      if (v) {
-        this.leave_channel();
-        delete this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']];
-        this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss());
-      }
-    })
+    this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
+      this.info['channel_id'], {
+      msg: `사용자가 그룹 나감: ${this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session.user_id}-테스트 로그`
+    }).then(_m => {
+      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.leaveGroup(
+        this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, this.info['id'],
+      ).then(v => {
+        if (v) {
+          this.leave_channel();
+          delete this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']];
+          this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss());
+        }
+      })
+    });
   }
 
   /** 그룹 채널에서 나오기 */

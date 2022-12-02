@@ -39,7 +39,7 @@
       <div class="additional_form status_bar_double"
         [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']"></div>
       <div class="additional_form bg_img_form">
-        <img class="bg_img"
+        <img *ngIf="channel.group" class="bg_img"
           [style]="channel['status'] == 'online' ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'"
           [src]="channel.group.img">
       </div>

@@ -470,12 +470,6 @@ export class NakamaService {
     this.rearrange_channels();
   }
 
-  /** 채널 삭제 */
-  remove_channels(channel_id: string, _is_official: string, _target: string) {
-    console.log('채널 삭제하기: ', channel_id, _is_official, _target);
-    this.rearrange_channels();
-  }
-
   /** 채팅 기록 가져오기 */
   load_channel_list() {
     this.indexed.loadTextFromUserPath('servers/channels.json', (e, v) => {
@@ -746,10 +740,11 @@ export class NakamaService {
                 type: 3,
                 persistence: true,
               };
+              this.groups[_is_official][_target][user_group.group.id]['channel_id'] = c.id;
               this.add_channels(c, _is_official, _target);
+              this.save_groups_with_less_info();
             });
         });
-        this.save_groups_with_less_info();
       });
   }
 
