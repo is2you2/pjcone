@@ -80,7 +80,7 @@ export class NakamaService {
       all_groups.forEach(group => {
         if (group['status'] != 'missing') {
           this.indexed.loadTextFromUserPath(`servers/${group['server']['isOfficial']}/${group['server']['target']}/groups/${group.id}.img`, (e, v) => {
-            if (e && v) group['img'] = v['img'];
+            if (e && v) group['img'] = v;
           });
           delete group['status'];
         }
@@ -310,10 +310,11 @@ export class NakamaService {
           break;
         case 404: // 아이디 없음
           this.servers[_is_official][_target].session = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), this.uuid, true);
-          await this.servers[_is_official][_target].client.updateAccount(
-            this.servers[_is_official][_target].session, {
-            display_name: localStorage.getItem('name'),
-          });
+          if (localStorage.getItem('name'))
+            await this.servers[_is_official][_target].client.updateAccount(
+              this.servers[_is_official][_target].session, {
+              display_name: localStorage.getItem('name'),
+            });
           this.p5toast.show({
             text: `회원가입이 완료되었습니다: ${_target}`,
             lateable: true,
@@ -349,10 +350,12 @@ export class NakamaService {
   /** 로그인 및 회원가입 직후 행동들 */
   after_login(_is_official: any, _target: string, _useSSL: boolean) {
     this.servers[_is_official][_target].socket = this.servers[_is_official][_target].client.createSocket(_useSSL);
-    this.connect_to(_is_official, _target, () => this.redirect_channel(_is_official, _target));
-    this.update_notifications(_is_official, _target);
-    this.get_group_list(_is_official, _target);
-    this.set_group_statusBar('online', _is_official, _target);
+    this.connect_to(_is_official, _target, () => {
+      this.redirect_channel(_is_official, _target)
+      this.update_notifications(_is_official, _target);
+      this.get_group_list(_is_official, _target);
+      this.set_group_statusBar('online', _is_official, _target);
+    });
   }
 
   /** 다른 사용자의 프로필 정보 받아오기 */

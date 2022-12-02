@@ -268,9 +268,10 @@ export class ProfilePage implements OnInit {
     if (this.userInput.name) { // 이름이 있으면 모든 서버에 이름 업데이트
       let servers = this.nakama.get_all_online_server();
       for (let i = 0, j = servers.length; i < j; i++) {
-        servers[i].client.updateAccount(servers[i].session, {
-          display_name: this.userInput.name,
-        });
+        if (this.userInput.name)
+          servers[i].client.updateAccount(servers[i].session, {
+            display_name: this.userInput.name,
+          });
         servers[i].client.writeStorageObjects(servers[i].session, [{
           collection: 'user_public',
           key: 'profile_image',

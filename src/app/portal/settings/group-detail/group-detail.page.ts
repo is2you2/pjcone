@@ -192,16 +192,20 @@ export class GroupDetailPage implements OnInit {
 
   remove_group() {
     this.need_edit = false;
-    let _is_official: string = this.info.server['isOfficial'];
-    let _target: string = this.info.server['target'];
-    this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
-      this.info['channel_id'], {
-      msg: `사용자가 그룹 나감: ${this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session.user_id}-테스트 로그`
-    }).then(_m => {
-      this.leave_channel();
-      this.nakama.remove_group_list(this.info, _is_official, _target);
-      this.modalCtrl.dismiss();
-    });
+    if (this.info['status'] == 'online')
+      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
+        this.info['channel_id'], {
+        msg: `사용자가 그룹 나감: ${this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session.user_id}-테스트 로그`
+      }).then(_m => {
+        this.after_remove_group();
+      });
+    else this.after_remove_group();
+  }
+
+  after_remove_group() {
+    this.leave_channel();
+    this.nakama.remove_group_list(this.info, this.info['server']['isOfficial'], this.info['server']['target']);
+    this.modalCtrl.dismiss();
   }
 
   need_edit = true;
