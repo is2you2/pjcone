@@ -80,7 +80,7 @@ export class ProfilePage implements OnInit {
 
   /** 서버 중 한곳으로부터 데이터 수신받기 */
   receiveDataFromServer() {
-    let anyServers = this.nakama.get_all_server();
+    let anyServers = this.nakama.get_all_online_server();
     if (anyServers.length) // 연결된 서버 있으면 이름 받아오기
       for (let i = 0, j = anyServers.length; i < j; i++) {
         // 프로필 불러오기
@@ -122,7 +122,7 @@ export class ProfilePage implements OnInit {
           lerpVal = 1;
           this.userInput.img = this.tmp_img;
           // 아래, 서버 이미지 업로드
-          let servers = this.nakama.get_all_server();
+          let servers = this.nakama.get_all_online_server();
           this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
           this.tmp_img = '';
           for (let i = 0, j = servers.length; i < j; i++) {
@@ -254,7 +254,7 @@ export class ProfilePage implements OnInit {
       localStorage.setItem('email', this.userInput.email);
     else localStorage.removeItem('email');
     if (this.userInput.name) { // 이름이 있으면 모든 서버에 이름 업데이트
-      let servers = this.nakama.get_all_server();
+      let servers = this.nakama.get_all_online_server();
       for (let i = 0, j = servers.length; i < j; i++) {
         servers[i].client.updateAccount(servers[i].session, {
           display_name: this.userInput.name,

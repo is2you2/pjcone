@@ -42,7 +42,7 @@ export class LinkAccountPage implements OnInit {
           });
           if (localStorage.getItem('is_online'))
             this.nakama.init_all_sessions((_v) => {
-              let online_servers = this.nakama.get_all_server();
+              let online_servers = this.nakama.get_all_online_server();
               for (let i = 0, j = online_servers.length; i < j; i++) {
                 this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
                   if (e && v) {

@@ -141,7 +141,7 @@ export class NakamaService {
   /** 모든 online 클라이언트 받아오기
    * @returns Nakama.Client[] == 'online'
    */
-  get_all_server(): NakamaGroup[] {
+  get_all_online_server(): NakamaGroup[] {
     let result: NakamaGroup[] = [];
     let Targets = Object.keys(this.servers['official']);
     Targets.forEach(_target => {
@@ -286,8 +286,8 @@ export class NakamaService {
       if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
       this.servers[_is_official][_target].session
         = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), this.uuid, false);
+        this.after_login(_is_official, _target, _useSSL);
       _CallBack(true);
-      this.after_login(_is_official, _target, _useSSL);
     } catch (e) {
       switch (e.status) {
         case 400: // 비번이 없거나 하는 등, 요청이 잘못됨
@@ -328,8 +328,8 @@ export class NakamaService {
               );
             }
           })
-          _CallBack(undefined, _is_official, _target);
           this.after_login(_is_official, _target, _useSSL);
+          _CallBack(undefined, _is_official, _target);
           break;
         default:
           this.p5toast.show({
@@ -632,7 +632,7 @@ export class NakamaService {
 
   /** 연결된 서버들에 그룹 진입 요청 시도 */
   try_add_group(_info: any) {
-    let servers = this.get_all_server();
+    let servers = this.get_all_online_server();
     servers.forEach(server => {
       server.client.joinGroup(server.session, _info.id)
         .then(_v => {
