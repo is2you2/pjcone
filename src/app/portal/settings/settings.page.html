@@ -14,7 +14,7 @@
   </ion-item-divider>
   <ion-item button (click)="go_to_page('profile')">
     <div class="additional_form bg_img_form">
-      <img class="bg_img" [style]="profile_filter" [src]="profile_img">
+      <img class="bg_img" [style]="profile_filter" [src]="nakama.users.self['img']">
     </div>
     <ion-label>내 정보</ion-label>
   </ion-item>

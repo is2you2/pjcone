@@ -71,7 +71,12 @@ export class NakamaService {
   };
 
   initialize() {
+    // 개인 정보 설정
     this.uuid = this.device.uuid;
+    this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
+      if (e && v) this.users.self = JSON.parse(v);
+      console.log('내 정보 검토: ', v);
+    });
     // 서버별 그룹 정보 불러오기
     this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
       if (e && v)
@@ -118,7 +123,7 @@ export class NakamaService {
     this.indexed.loadTextFromUserPath('servers/list.json', (e, v) => {
       if (e && v)
         this.statusBar.groupServer = JSON.parse(v);
-      if (localStorage.getItem('is_online'))
+      if (this.users.self['is_online'])
         this.init_all_sessions();
     });
   }
@@ -293,7 +298,7 @@ export class NakamaService {
     try {
       if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
       this.servers[_is_official][_target].session
-        = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), this.uuid, false);
+        = await this.servers[_is_official][_target].client.authenticateEmail(this.users.self['email'], this.uuid, false);
       this.after_login(_is_official, _target, _useSSL);
       _CallBack(true);
     } catch (e) {
@@ -303,6 +308,7 @@ export class NakamaService {
             text: '사용자를 연결한 후 사용하세요.',
           });
           _CallBack(false);
+          this.users.self['is_online'] = false;
           this.set_group_statusBar('offline', _is_official, _target);
           break;
         case 401: // 비밀번호 잘못됨
@@ -313,30 +319,26 @@ export class NakamaService {
           this.set_group_statusBar('offline', _is_official, _target);
           break;
         case 404: // 아이디 없음
-          this.servers[_is_official][_target].session = await this.servers[_is_official][_target].client.authenticateEmail(localStorage.getItem('email'), this.uuid, true);
-          if (localStorage.getItem('name'))
+          this.servers[_is_official][_target].session = await this.servers[_is_official][_target].client.authenticateEmail(this.users.self['email'], this.uuid, true);
+          if (this.users.self['display_name'])
             await this.servers[_is_official][_target].client.updateAccount(
               this.servers[_is_official][_target].session, {
-              display_name: localStorage.getItem('name'),
+              display_name: this.users.self['display_name'],
             });
           this.p5toast.show({
             text: `회원가입이 완료되었습니다: ${_target}`,
             lateable: true,
           });
-          this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
-            if (e && v) {
-              let profile = JSON.parse(v);
-              this.servers[_is_official][_target].client.writeStorageObjects(
-                this.servers[_is_official][_target].session, [{
-                  collection: 'user_public',
-                  key: 'profile_image',
-                  permission_read: 2,
-                  permission_write: 1,
-                  value: { img: profile['img'] },
-                }]
-              );
-            }
-          })
+          if (this.users.self['img'])
+            this.servers[_is_official][_target].client.writeStorageObjects(
+              this.servers[_is_official][_target].session, [{
+                collection: 'user_public',
+                key: 'profile_image',
+                permission_read: 2,
+                permission_write: 1,
+                value: { img: this.users.self['img'] },
+              }]
+            );
           this.after_login(_is_official, _target, _useSSL);
           _CallBack(undefined, _is_official, _target);
           break;
@@ -364,9 +366,17 @@ export class NakamaService {
 
   /** 서버별 사용자 정보 가져오기 */
   users = {
+    self: {},
     official: {},
     unofficial: {},
   };
+
+  /** 내 정보를 저장하기 */
+  save_self_profile(_info: any) {
+    let without_img = { ..._info };
+    delete without_img['img'];
+    this.indexed.saveTextFileToUserPath(JSON.stringify(without_img), 'servers/self/profile.json')
+  }
 
   /** 다른 사용자의 프로필 정보 받아오기 */
   load_other_user_profile_info(_userId: string, _is_official: string, _target: string): Promise<User> {

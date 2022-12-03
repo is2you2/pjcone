@@ -28,29 +28,15 @@ export class ProfilePage implements OnInit {
   /** 사용자 주소 입력 */
   url_input: string;
 
-  userInput = {
-    /** nakama.display_name 에 해당함 */
-    name: undefined,
-    email: undefined,
-    img: undefined,
-    content: {
-      type: undefined,
-      path: undefined,
-    },
-  }
-
   p5canvas: p5;
   ngOnInit() {
-    this.is_online = Boolean(localStorage.getItem('is_online'));
-    this.userInput.name = localStorage.getItem('name');
-    this.userInput.email = localStorage.getItem('email');
     this.cant_use_clipboard = isPlatform != 'DesktopPWA';
     let sketch = (p: p5) => {
       let img = document.getElementById('profile_img');
       let tmp_img = document.getElementById('profile_tmp_img');
       const LERP_SIZE = .025;
       p.draw = () => {
-        if (this.is_online) {
+        if (this.nakama.users.self['is_online']) {
           if (this.lerpVal < 1) {
             this.lerpVal += LERP_SIZE;
           } else {
@@ -70,12 +56,6 @@ export class ProfilePage implements OnInit {
       }
     }
     this.p5canvas = new p5(sketch);
-    this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
-      let addition = {};
-      if (e && v) addition = JSON.parse(v);
-      this.userInput = { ...this.userInput, ...addition };
-      this.receiveDataFromServer();
-    });
   }
 
   /** 서버 중 한곳으로부터 데이터 수신받기 */
@@ -86,7 +66,7 @@ export class ProfilePage implements OnInit {
         // 프로필 불러오기
         anyServers[i].client.getAccount(anyServers[i].session)
           .then(v => {
-            this.userInput.name = v.user.display_name;
+            this.nakama.users.self['name'] = v.user.display_name;
           });
         // 프로필 이미지 불러오기
         anyServers[i].client.readStorageObjects(anyServers[i].session, {
@@ -113,23 +93,24 @@ export class ProfilePage implements OnInit {
       let lerpVal = 0;
       p.setup = () => {
         file_sel['value'] = '';
-        profile_tmp_img.setAttribute('style', `filter: grayscale(${this.is_online ? 0 : .9}) contrast(${this.is_online ? 1 : 1.4}) opacity(${lerpVal})`);
+        profile_tmp_img.setAttribute('style', `filter: grayscale(${this.nakama.users.self['is_online'] ? 0 : .9}) contrast(${this.nakama.users.self['is_online'] ? 1 : 1.4}) opacity(${lerpVal})`);
       }
       p.draw = () => {
         if (lerpVal < 1) {
           lerpVal += LERP_SIZE;
         } else {
           lerpVal = 1;
-          this.userInput.img = this.tmp_img;
+          this.nakama.users.self['img'] = this.tmp_img;
           // 아래, 서버 이미지 업로드
           let servers = this.nakama.get_all_online_server();
-          this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
+          this.nakama.save_self_profile(this.nakama.users.self);
+          this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.users.self['img']), 'servers/self/profile.img');
           this.tmp_img = '';
           for (let i = 0, j = servers.length; i < j; i++) {
             servers[i].client.writeStorageObjects(servers[i].session, [{
               collection: 'user_public',
               key: 'profile_image',
-              value: { img: this.userInput.img },
+              value: { img: this.nakama.users.self['img'] },
               permission_read: 2,
               permission_write: 1,
             }]).then(_v => {
@@ -139,7 +120,7 @@ export class ProfilePage implements OnInit {
           }
           p.remove();
         }
-        profile_tmp_img.setAttribute('style', `filter: grayscale(${this.is_online ? 0 : .9}) contrast(${this.is_online ? 1 : 1.4}) opacity(${lerpVal})`);
+        profile_tmp_img.setAttribute('style', `filter: grayscale(${this.nakama.users.self['is_online'] ? 0 : .9}) contrast(${this.nakama.users.self['is_online'] ? 1 : 1.4}) opacity(${lerpVal})`);
       }
     });
   }
@@ -159,8 +140,6 @@ export class ProfilePage implements OnInit {
     console.log('표시 콘텐츠 수정 클릭');
   }
 
-  /** 사용자 온라인 여부 */
-  is_online: boolean;
   can_auto_modified = false;
   ionViewDidEnter() {
     this.can_auto_modified = true;
@@ -168,21 +147,18 @@ export class ProfilePage implements OnInit {
   /** 이메일 변경시 오프라인 처리 */
   email_modified() {
     if (this.can_auto_modified) {
-      if (this.is_online)
+      if (this.nakama.users.self['is_online'])
         this.toggle_online();
-      this.is_online = false;
+      this.nakama.users.self['is_online'] = false;
     }
   }
   /** 채도 변화자 */
   lerpVal: number;
   toggle_online() {
-    this.is_online = !this.is_online;
-    if (this.is_online) {
-      if (this.userInput.email) {
-        localStorage.setItem('email', this.userInput.email);
-        localStorage.setItem('name', this.userInput.name);
-        localStorage.setItem('is_online', 'yes');
-        this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
+    this.nakama.users.self['is_online'] = !this.nakama.users.self['is_online'];
+    if (this.nakama.users.self['is_online']) {
+      if (this.nakama.users.self['email']) {
+        this.nakama.save_self_profile(this.nakama.users.self);
         this.nakama.init_all_sessions((v: boolean, _o, _t) => {
           if (v) {
             this.p5toast.show({
@@ -194,7 +170,7 @@ export class ProfilePage implements OnInit {
               this.nakama.servers[_o][_t].session, [{
                 collection: 'user_public',
                 key: 'profile_image',
-                value: { img: this.userInput.img },
+                value: { img: this.nakama.users.self['img'] },
                 permission_read: 2,
                 permission_write: 1,
               }]).then(_v => {
@@ -207,7 +183,7 @@ export class ProfilePage implements OnInit {
         this.p5toast.show({
           text: '이메일 주소가 있어야 온라인으로 전환하실 수 있습니다.',
         });
-        this.is_online = false;
+        this.nakama.users.self['is_online'] = false;
         localStorage.removeItem('is_online');
       }
     } else {
@@ -261,28 +237,25 @@ export class ProfilePage implements OnInit {
   }
 
   ionViewWillLeave() {
-    this.userInput.img = this.tmp_img || this.userInput.img;
-    if (this.userInput.email)
-      localStorage.setItem('email', this.userInput.email);
-    else localStorage.removeItem('email');
-    if (this.userInput.name) { // 이름이 있으면 모든 서버에 이름 업데이트
+    this.nakama.users.self['img'] = this.tmp_img || this.nakama.users.self['img'];
+    if (this.nakama.users.self['name']) { // 이름이 있으면 모든 서버에 이름 업데이트
       let servers = this.nakama.get_all_online_server();
       for (let i = 0, j = servers.length; i < j; i++) {
-        if (this.userInput.name)
+        if (this.nakama.users.self['name'])
           servers[i].client.updateAccount(servers[i].session, {
-            display_name: this.userInput.name,
+            display_name: this.nakama.users.self['name'],
           });
         servers[i].client.writeStorageObjects(servers[i].session, [{
           collection: 'user_public',
           key: 'profile_image',
-          value: { img: this.userInput.img },
+          value: { img: this.nakama.users.self['img'] },
           permission_read: 2,
           permission_write: 1,
         }])
       }
-      localStorage.setItem('name', this.userInput.name);
-    } else localStorage.removeItem('name');
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), 'servers/self/profile.json');
+    }
+    this.nakama.save_self_profile(this.nakama.users.self);
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.users.self['img']), 'servers/self/profile.img');
     this.p5canvas.remove();
   }
 

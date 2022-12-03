@@ -40,30 +40,25 @@ export class LinkAccountPage implements OnInit {
           this.p5toast.show({
             text: '사용자 연결에 성공했습니다.',
           });
-          if (localStorage.getItem('is_online'))
+          if (this.nakama.users.self['is_online'])
             this.nakama.init_all_sessions((_v) => {
               let online_servers = this.nakama.get_all_online_server();
               for (let i = 0, j = online_servers.length; i < j; i++) {
-                this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
-                  if (e && v) {
-                    let json = JSON.parse(v);
-                    if (!json['img']) {
-                      online_servers[i].client.readStorageObjects(
-                        online_servers[i].session, {
-                        object_ids: [{
-                          collection: 'user_public',
-                          key: 'profile_image',
-                          user_id: online_servers[i].session.user_id,
-                        }],
-                      }).then(v => {
-                        if (v.objects.length) {
-                          json['img'] = v.objects[0].value['img'];
-                          this.indexed.saveTextFileToUserPath(JSON.stringify(json), 'servers/self/profile.json');
-                        }
-                      })
+                if (!this.nakama.users.self['img']) {
+                  online_servers[i].client.readStorageObjects(
+                    online_servers[i].session, {
+                    object_ids: [{
+                      collection: 'user_public',
+                      key: 'profile_image',
+                      user_id: online_servers[i].session.user_id,
+                    }],
+                  }).then(v => {
+                    if (v.objects.length) {
+                      this.nakama.users.self['img'] = v.objects[0].value['img'];
+                      this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.users.self['img']), 'servers/self/profile.img');
                     }
-                  }
-                })
+                  })
+                }
                 break;
               }
             });

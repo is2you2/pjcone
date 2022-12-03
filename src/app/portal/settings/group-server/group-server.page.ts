@@ -42,29 +42,25 @@ export class GroupServerPage implements OnInit {
     if (this.statusBar.groupServer[_is_official][_target] == 'offline' || this.statusBar.groupServer[_is_official][_target] == 'missing') {
       this.statusBar.groupServer[_is_official][_target] = 'pending';
       this.nakama.catch_group_server_header('pending');
-      if (localStorage.getItem('is_online'))
+      if (this.nakama.users.self['is_online'])
         this.nakama.init_session((_v) => {
-          if (_v || _v === undefined)
-            this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
-              if (e && v) {
-                let json = JSON.parse(v);
-                if (!json['img']) {
-                  this.nakama.servers[_is_official][_target].client.readStorageObjects(
-                    this.nakama.servers[_is_official][_target].session, {
-                    object_ids: [{
-                      collection: 'user_public',
-                      key: 'profile_image',
-                      user_id: this.nakama.servers[_is_official][_target].session.user_id,
-                    }],
-                  }).then(v => {
-                    if (v.objects.length) {
-                      json['img'] = v.objects[0].value['img'];
-                      this.indexed.saveTextFileToUserPath(JSON.stringify(json), 'servers/self/profile.json');
-                    }
-                  })
+          if (_v || _v === undefined) {
+            if (!this.nakama.users.self['img']) {
+              this.nakama.servers[_is_official][_target].client.readStorageObjects(
+                this.nakama.servers[_is_official][_target].session, {
+                object_ids: [{
+                  collection: 'user_public',
+                  key: 'profile_image',
+                  user_id: this.nakama.servers[_is_official][_target].session.user_id,
+                }],
+              }).then(v => {
+                if (v.objects.length) {
+                  this.nakama.users.self['img'] = v.objects[0].value['img'];
+                  this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.users.self['img']), 'servers/self/profile.img');
                 }
-              }
-            })
+              })
+            }
+          }
         }, _is_official as any, _target);
     } else { // 활동중이면 로그아웃처리
       this.statusBar.groupServer[_is_official][_target] = 'offline';

@@ -32,17 +32,17 @@ export class SettingsPage implements OnInit {
 
   /** 표시되는 그룹 리스트 */
   groups: Group[] = [];
+  self = {};
   /** 프로필 썸네일 */
-  profile_img: string;
   profile_filter: string;
   ionViewWillEnter() {
-    this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
-      let addition = {};
-      if (e && v) addition = JSON.parse(v);
-      this.profile_img = addition['img'];
-      if (Boolean(localStorage.getItem('is_online')))
-        this.profile_filter = "filter: grayscale(0) contrast(1);";
-      else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
+    this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
+      if (e && v) {
+        this.nakama.users.self['img'] = v.substring(1, v.length - 1);
+        if (this.nakama.users.self['is_online'])
+          this.profile_filter = "filter: grayscale(0) contrast(1);";
+        else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
+      }
     });
     this.load_groups();
   }
@@ -115,7 +115,7 @@ export class SettingsPage implements OnInit {
       component: MinimalChatPage,
       componentProps: {
         address: _address,
-        name: localStorage.getItem('name'),
+        name: this.nakama.users.self['display_name'],
       },
     }).then(v => v.present());
   }

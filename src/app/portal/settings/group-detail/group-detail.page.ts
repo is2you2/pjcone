@@ -31,8 +31,6 @@ export class GroupDetailPage implements OnInit {
   info: any;
   /** 내가 이 그룹의 방장인지 여부 */
   has_admin = false;
-  /** 이 그룹의 서버에 연결되어 있는지 여부 */
-  is_online = false;
 
   ngOnInit() {
     this.info = this.navParams.get('info');
@@ -41,8 +39,7 @@ export class GroupDetailPage implements OnInit {
     this.readasQRCodeFromId();
     let _is_official: string = this.info.server['isOfficial'];
     let _target: string = this.info.server['target'];
-    this.is_online = this.statusBar.groupServer[_is_official][_target] == 'online';
-    this.has_admin = this.is_online && this.nakama.servers[_is_official][_target].session.user_id == this.info['creator_id'];
+    this.has_admin = this.statusBar.groupServer[_is_official][_target] == 'online' && this.nakama.servers[_is_official][_target].session.user_id == this.info['creator_id'];
     if (this.info['users']) // 사용자 정보가 있다면 로컬 정보 불러오기 처리
       for (let i = 0, j = this.info['users'].length; i < j; i++)
         if (this.info['users'][i].user.is_me) { // 정보상 나라면
@@ -59,7 +56,7 @@ export class GroupDetailPage implements OnInit {
     if (this.info['users'])
       for (let i = 0, j = this.info['users'].length; i < j; i++)
         this.info['users'][i]['status'] = this.info['status'];
-    if (this.is_online) { // 서버로부터 정보를 받아옴
+    if (this.statusBar.groupServer[_is_official][_target] == 'online') { // 서버로부터 정보를 받아옴
       if (this.info['status'] != 'missing')
         this.nakama.servers[_is_official][_target].client.listGroupUsers(
           this.nakama.servers[_is_official][_target].session, this.info['id'],
@@ -210,7 +207,7 @@ export class GroupDetailPage implements OnInit {
 
   need_edit = true;
   edit_group() {
-    if (this.is_online && this.has_admin)
+    if (this.statusBar.groupServer[this.info['server']['isOfficial']][this.info['server']['target']] == 'online' && this.has_admin)
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.updateGroup(
         this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session,
         this.info['id'], {
