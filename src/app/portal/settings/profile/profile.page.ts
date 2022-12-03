@@ -189,7 +189,7 @@ export class ProfilePage implements OnInit {
               text: '로그인되었습니다.',
             });
             this.receiveDataFromServer();
-          } else if (v === undefined) {
+          } else if (v === undefined) { // 회원가입시
             this.nakama.servers[_o][_t].client.writeStorageObjects(
               this.nakama.servers[_o][_t].session, [{
                 collection: 'user_public',

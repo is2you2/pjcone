@@ -350,11 +350,11 @@ export class NakamaService {
   /** 로그인 및 회원가입 직후 행동들 */
   after_login(_is_official: any, _target: string, _useSSL: boolean) {
     this.servers[_is_official][_target].socket = this.servers[_is_official][_target].client.createSocket(_useSSL);
+    this.get_group_list(_is_official, _target);
+    this.set_group_statusBar('online', _is_official, _target);
     this.connect_to(_is_official, _target, () => {
       this.redirect_channel(_is_official, _target)
       this.update_notifications(_is_official, _target);
-      this.get_group_list(_is_official, _target);
-      this.set_group_statusBar('online', _is_official, _target);
     });
   }
 
