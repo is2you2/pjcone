@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { Channel, Client, Group, Notification, Session, Socket, User } from "@heroiclabs/nakama-js";
-import { SOCKET_SERVER_ADDRESS } from './app.component';
+import { isPlatform, SOCKET_SERVER_ADDRESS } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
@@ -80,7 +80,11 @@ export class NakamaService {
       all_groups.forEach(group => {
         if (group['status'] != 'missing') {
           this.indexed.loadTextFromUserPath(`servers/${group['server']['isOfficial']}/${group['server']['target']}/groups/${group.id}.img`, (e, v) => {
-            if (e && v) group['img'] = v;
+            if (e && v) {
+              if (isPlatform == 'DesktopPWA')
+                group['img'] = v.substring(0, v.length - 1);
+              else if (isPlatform != 'MobilePWA') group['img'] = v;
+            }
           });
           delete group['status'];
         }
@@ -358,8 +362,15 @@ export class NakamaService {
     });
   }
 
+  /** 서버별 사용자 정보 가져오기 */
+  users = {
+    official: {},
+    unofficial: {},
+  };
+
   /** 다른 사용자의 프로필 정보 받아오기 */
   load_other_user_profile_info(_userId: string, _is_official: string, _target: string): Promise<User> {
+    console.log('여기는 와?');
     return new Promise((userInfo) => {
       this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${_userId}/profile.json`, (e, v) => {
         let result: User = {
@@ -368,16 +379,21 @@ export class NakamaService {
         };
         if (e && v)
           result = JSON.parse(v);
-        if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+        console.log('작업 시작');
+        try {
           this.servers[_is_official][_target].client.getUsers(
             this.servers[_is_official][_target].session, [_userId])
             .then(_get => {
-              if (_get.users.length)
-                result = _get.users[0];
+              result = _get.users[0];
               this.indexed.saveTextFileToUserPath(JSON.stringify(result), `servers/${_is_official}/${_target}/users/${_userId}/profile.json`);
-              userInfo(result);
+              throw new Error("work remote well");
             });
-        } else userInfo(result);
+        } catch (e) {
+          console.log('뭐가 넘어오나 볼까: ', e);
+          if (this.users[_is_official][_target]) this.users[_is_official][_target] = {};
+          this.users[_is_official][_target][result.id] = result;
+          userInfo(result);
+        }
       });
     });
   }
@@ -386,9 +402,12 @@ export class NakamaService {
   load_other_user_profile_image(_userId: string, _is_official: string, _target: string): Promise<string> {
     return new Promise((img) => {
       this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${_userId}/profile.img`, (e, v) => {
-        let result = 'about:blank';
-        if (e && v)
-          result = v;
+        let result = '';
+        if (e && v) {
+          if (isPlatform == 'DesktopPWA')
+            result = v.substring(0, v.length - 1);
+          else if (isPlatform != 'MobilePWA') result = v;
+        }
         if (this.statusBar.groupServer[_is_official][_target] == 'online') {
           this.servers[_is_official][_target].client.readStorageObjects(
             this.servers[_is_official][_target].session, {
@@ -398,9 +417,13 @@ export class NakamaService {
               user_id: _userId,
             }],
           }).then(obj => {
-            if (obj.objects.length)
+            try {
               result = obj.objects[0].value['img'];
-            this.indexed.saveTextFileToUserPath(JSON.stringify(obj.objects[0].value['img']), `servers/${_is_official}/${_target}/users/${_userId}/profile.img`);
+              this.indexed.saveTextFileToUserPath(JSON.stringify(obj.objects[0].value['img']), `servers/${_is_official}/${_target}/users/${_userId}/profile.img`);
+            } catch (error) {
+              result = '';
+              this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${_userId}/profile.img`);
+            }
             img(result);
           });
         } else img(result);
