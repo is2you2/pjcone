@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>그룹 공유</ion-title>
+    <ion-title>그룹 상세</ion-title>
     <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
       <ion-back-button defaultHref="settings"></ion-back-button>
     </ion-buttons>
@@ -43,9 +43,9 @@
     <div class="additional_form bg_img_form">
       <img class="bg_img"
         [style]="'filter: ' + (((user.status == 'online') || (user.status == 'certified')) ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
-        [src]="user.img">
+        [src]="user.user.img">
     </div>
-    <ion-label class="form_margin">{{user.user.display_name}}</ion-label>
+    <ion-label class="form_margin">{{user.user.display_name || '정보 없는 사용자'}}</ion-label>
   </ion-item>
   <ion-item-divider>
     <ion-label>아래를 스캔하여 그룹에 초대</ion-label>

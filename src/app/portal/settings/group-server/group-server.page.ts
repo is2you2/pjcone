@@ -45,6 +45,13 @@ export class GroupServerPage implements OnInit {
       if (this.nakama.users.self['is_online'])
         this.nakama.init_session((_v) => {
           if (_v || _v === undefined) {
+            if (!this.nakama.users.self['display_name'])
+              this.nakama.servers[_is_official][_target].client.getUsers(
+                this.nakama.servers[_is_official][_target].session, [this.nakama.servers[_is_official][_target].session.user_id]
+              ).then(_info => {
+                this.nakama.users.self['display_name'] = _info.users[0].display_name;
+                this.nakama.save_self_profile();
+              });
             if (!this.nakama.users.self['img']) {
               this.nakama.servers[_is_official][_target].client.readStorageObjects(
                 this.nakama.servers[_is_official][_target].session, {

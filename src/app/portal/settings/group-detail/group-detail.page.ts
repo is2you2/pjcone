@@ -42,17 +42,15 @@ export class GroupDetailPage implements OnInit {
     this.has_admin = this.statusBar.groupServer[_is_official][_target] == 'online' && this.nakama.servers[_is_official][_target].session.user_id == this.info['creator_id'];
     if (this.info['users']) // 사용자 정보가 있다면 로컬 정보 불러오기 처리
       for (let i = 0, j = this.info['users'].length; i < j; i++)
-        if (this.info['users'][i].user.is_me) { // 정보상 나라면
-          this.has_admin = this.info['creator_id'] == this.info['users'][i].user.id;
-          this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
-            if (e && v) this.info['users'][i]['img'] = JSON.parse(v)['img'];
-          });
-        } else // 다른 사람들의 프로필 이미지
+        if (this.info['users'][i].is_me) { // 정보상 나라면
+          this.info['users'][i]['user'] = this.nakama.users.self;
+        } else { // 다른 사람들의 프로필 이미지
           this.nakama.load_other_user_profile_image(this.info['users'][i].user.id, _is_official, _target)
             .then(_img => {
               if (this.info['users'][i])
-                this.info['users'][i]['img'] = _img;
+                this.info['users'][i]['user']['img'] = _img;
             });
+        }
     if (this.info['users'])
       for (let i = 0, j = this.info['users'].length; i < j; i++)
         this.info['users'][i]['status'] = this.info['status'];
@@ -73,24 +71,14 @@ export class GroupDetailPage implements OnInit {
               this.info['users']['status'] = 'missing';
           } else { // 활성 그룹인 경우
             this.info['users'] = v.group_users;
-            /** 그룹 내 다른 사람들의 프로필 이미지 요청 */
-            let object_req = [];
             // 사용자 리스트 갱신
             let am_i_lost = true;
             for (let i = 0, j = this.info['users'].length; i < j; i++) {
               if (this.info['users'][i].user.id != this.nakama.servers[_is_official][_target].session.user_id) {
-                object_req.push({
-                  collection: 'user_public',
-                  key: 'profile_image',
-                  user_id: this.info['users'][i].user.id,
-                });
-              } else {// 만약 내 정보라면
-                this.info['users'][i].user.is_me = true;
-                this.has_admin = this.info['creator_id'] == this.info['users'][i].user.id;
-                this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
-                  if (e && v) this.info['users'][i]['img'] = JSON.parse(v)['img'];
-                });
+                console.log('다른 사람 정보일 때');
+              } else {
                 am_i_lost = false;
+                this.has_admin = this.info['creator_id'] == this.nakama.servers[_is_official][_target].session.user_id;
               }
               // 아래, 사용자 램프 조정
               switch (this.info['users'][i].state) {
@@ -117,18 +105,7 @@ export class GroupDetailPage implements OnInit {
               this.nakama.save_channels_with_less_info();
             } else {
               // 아래 다른 사람들의 이미지 받아오기
-              this.nakama.servers[_is_official][_target].client.readStorageObjects(
-                this.nakama.servers[_is_official][_target].session, {
-                object_ids: object_req,
-              }).then(v2 => {
-                for (let i = 0, j = v2.objects.length; i < j; i++)
-                  for (let k = 0, l = this.info['users'].length; k < l; k++)
-                    if (v2.objects[i].user_id == this.info['users'][k].user.id) {
-                      this.info['users'][k]['img'] = v2.objects[i].value['img'];
-                      this.indexed.saveTextFileToUserPath(v2.objects[i].value['img'], `servers/${_is_official}/${_target}/users/${v2.objects[i].user_id}/profile.img`);
-                      break;
-                    }
-              });
+              console.log('다른 사람의 이미지 받아오기');
             }
           }
         });
@@ -207,7 +184,7 @@ export class GroupDetailPage implements OnInit {
 
   need_edit = true;
   edit_group() {
-    if (this.statusBar.groupServer[this.info['server']['isOfficial']][this.info['server']['target']] == 'online' && this.has_admin)
+    if (this.statusBar.groupServer[this.info['server']['isOfficial']][this.info['server']['target']] == 'online' && this.info['status'] != 'missing' && this.has_admin)
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.updateGroup(
         this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session,
         this.info['id'], {

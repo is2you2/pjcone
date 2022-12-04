@@ -13,7 +13,7 @@
     <img [hidden]="!tmp_img" id="profile_tmp_img" class="profile_img" [src]="tmp_img" alt="프로필 이미지">
     <div class="fore-gradient" (click)="change_img_from_file()"></div>
     <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
-    <div class="username">{{nakama.users.self.name ?? '이름 없는 사용자'}}</div>
+    <div class="username">{{nakama.users.self.display_name ?? '이름 없는 사용자'}}</div>
   </div>
   <ion-item (click)="imageURLPasted()" [hidden]="cant_use_clipboard" [disabled]="imageURL_disabled">
     <ion-label color="medium">{{imageURL_placeholder}}</ion-label>
@@ -34,7 +34,7 @@
   </ion-item>
   <ion-item>
     <ion-label>사용자 표시명</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self.name" [placeholder]="'사용자 이름'"></ion-input>
+    <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self.display_name" [placeholder]="'사용자 이름'"></ion-input>
   </ion-item>
   <ion-item button (click)="toggle_online()">
     <ion-label>로그인</ion-label>

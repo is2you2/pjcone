@@ -28,6 +28,13 @@ export class SettingsPage implements OnInit {
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
+    this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
+      if (e && v) {
+        if (isPlatform == 'DesktopPWA')
+          this.nakama.users.self['img'] = v.substring(1, v.length - 1);
+        else if (isPlatform != 'MobilePWA') this.nakama.users.self['img'] = v;
+      }
+    });
   }
 
   /** 표시되는 그룹 리스트 */
@@ -36,14 +43,9 @@ export class SettingsPage implements OnInit {
   /** 프로필 썸네일 */
   profile_filter: string;
   ionViewWillEnter() {
-    this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
-      if (e && v) {
-        this.nakama.users.self['img'] = v.substring(1, v.length - 1);
-        if (this.nakama.users.self['is_online'])
-          this.profile_filter = "filter: grayscale(0) contrast(1);";
-        else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
-      }
-    });
+    if (this.nakama.users.self['is_online'])
+      this.profile_filter = "filter: grayscale(0) contrast(1);";
+    else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
     this.load_groups();
   }
   /** 저장된 그룹 업데이트하여 반영 */
@@ -64,7 +66,6 @@ export class SettingsPage implements OnInit {
               this.nakama.channels_orig[_is_official][_target][group['channel_id']]['title']
                 = this.nakama.channels_orig[_is_official][_target][group['channel_id']]['title'] + ' (삭제된 그룹)';
               this.nakama.save_channels_with_less_info();
-              console.warn('사용자 로그인 여부를 연결/반영해야함');
             } else { // 그룹 활성중
               let am_i_lost = true;
               for (let i = 0, j = v.group_users.length; i < j; i++)
@@ -84,6 +85,7 @@ export class SettingsPage implements OnInit {
                       break;
                   }
                   am_i_lost = false;
+                  v.group_users[i]['is_me'] = true;
                   break;
                 }
               if (am_i_lost) { // 그룹은 있으나 구성원은 아님
@@ -94,8 +96,15 @@ export class SettingsPage implements OnInit {
                 this.nakama.save_channels_with_less_info();
               }
             }
-          })
-        this.nakama.save_groups_with_less_info();
+            if (v.group_users.length)
+              group['users'] = v.group_users;
+            v.group_users.forEach(User => {
+              if (User['is_me'])
+                User['user'] = this.nakama.users.self;
+              else console.log('다른 사용자 정보 링크하기');
+            });
+            this.nakama.save_groups_with_less_info();
+          });
       }
     });
     this.groups = tmp_groups;

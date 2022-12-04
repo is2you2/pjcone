@@ -87,7 +87,7 @@ export class NakamaService {
           this.indexed.loadTextFromUserPath(`servers/${group['server']['isOfficial']}/${group['server']['target']}/groups/${group.id}.img`, (e, v) => {
             if (e && v) {
               if (isPlatform == 'DesktopPWA')
-                group['img'] = v.substring(0, v.length - 1);
+                group['img'] = v.substring(1, v.length - 1);
               else if (isPlatform != 'MobilePWA') group['img'] = v;
             }
           });
@@ -356,9 +356,9 @@ export class NakamaService {
   /** 로그인 및 회원가입 직후 행동들 */
   after_login(_is_official: any, _target: string, _useSSL: boolean) {
     this.servers[_is_official][_target].socket = this.servers[_is_official][_target].client.createSocket(_useSSL);
-    this.get_group_list(_is_official, _target);
     this.set_group_statusBar('online', _is_official, _target);
     this.connect_to(_is_official, _target, () => {
+      this.get_group_list(_is_official, _target);
       this.redirect_channel(_is_official, _target)
       this.update_notifications(_is_official, _target);
     });
@@ -372,8 +372,8 @@ export class NakamaService {
   };
 
   /** 내 정보를 저장하기 */
-  save_self_profile(_info: any) {
-    let without_img = { ..._info };
+  save_self_profile() {
+    let without_img = { ...this.users.self };
     delete without_img['img'];
     this.indexed.saveTextFileToUserPath(JSON.stringify(without_img), 'servers/self/profile.json')
   }
@@ -415,7 +415,7 @@ export class NakamaService {
         let result = '';
         if (e && v) {
           if (isPlatform == 'DesktopPWA')
-            result = v.substring(0, v.length - 1);
+            result = v.substring(1, v.length - 1);
           else if (isPlatform != 'MobilePWA') result = v;
         }
         if (this.statusBar.groupServer[_is_official][_target] == 'online') {
@@ -725,6 +725,11 @@ export class NakamaService {
         GroupId.forEach(_gid => {
           delete copied_group[_is_official][_target][_gid]['server'];
           delete copied_group[_is_official][_target][_gid]['img'];
+          if (copied_group[_is_official][_target][_gid]['users'])
+            copied_group[_is_official][_target][_gid]['users'].forEach(User => {
+              delete User['state'];
+              User['user'] = { id: User['user']['id'] };
+            });
         });
       });
     });

@@ -16,7 +16,7 @@ import { ModalController } from '@ionic/angular';
 export class ProfilePage implements OnInit {
 
   constructor(
-    private nakama: NakamaService,
+    public nakama: NakamaService,
     private statusBar: StatusManageService,
     private p5toast: P5ToastService,
     private indexed: IndexedDBService,
@@ -66,7 +66,8 @@ export class ProfilePage implements OnInit {
         // 프로필 불러오기
         anyServers[i].client.getAccount(anyServers[i].session)
           .then(v => {
-            this.nakama.users.self['name'] = v.user.display_name;
+            this.nakama.users.self['display_name'] = v.user.display_name;
+            this.nakama.save_self_profile();
           });
         // 프로필 이미지 불러오기
         anyServers[i].client.readStorageObjects(anyServers[i].session, {
@@ -103,7 +104,7 @@ export class ProfilePage implements OnInit {
           this.nakama.users.self['img'] = this.tmp_img;
           // 아래, 서버 이미지 업로드
           let servers = this.nakama.get_all_online_server();
-          this.nakama.save_self_profile(this.nakama.users.self);
+          this.nakama.save_self_profile();
           this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.users.self['img']), 'servers/self/profile.img');
           this.tmp_img = '';
           for (let i = 0, j = servers.length; i < j; i++) {
@@ -158,7 +159,7 @@ export class ProfilePage implements OnInit {
     this.nakama.users.self['is_online'] = !this.nakama.users.self['is_online'];
     if (this.nakama.users.self['is_online']) {
       if (this.nakama.users.self['email']) {
-        this.nakama.save_self_profile(this.nakama.users.self);
+        this.nakama.save_self_profile();
         this.nakama.init_all_sessions((v: boolean, _o, _t) => {
           if (v) {
             this.p5toast.show({
@@ -238,13 +239,13 @@ export class ProfilePage implements OnInit {
 
   ionViewWillLeave() {
     this.nakama.users.self['img'] = this.tmp_img || this.nakama.users.self['img'];
-    if (this.nakama.users.self['name']) { // 이름이 있으면 모든 서버에 이름 업데이트
-      let servers = this.nakama.get_all_online_server();
-      for (let i = 0, j = servers.length; i < j; i++) {
-        if (this.nakama.users.self['name'])
-          servers[i].client.updateAccount(servers[i].session, {
-            display_name: this.nakama.users.self['name'],
-          });
+    let servers = this.nakama.get_all_online_server();
+    for (let i = 0, j = servers.length; i < j; i++) {
+      if (this.nakama.users.self['display_name'])
+        servers[i].client.updateAccount(servers[i].session, {
+          display_name: this.nakama.users.self['display_name'],
+        });
+      if (this.nakama.users.self['img'])
         servers[i].client.writeStorageObjects(servers[i].session, [{
           collection: 'user_public',
           key: 'profile_image',
@@ -252,9 +253,8 @@ export class ProfilePage implements OnInit {
           permission_read: 2,
           permission_write: 1,
         }])
-      }
     }
-    this.nakama.save_self_profile(this.nakama.users.self);
+    this.nakama.save_self_profile();
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.users.self['img']), 'servers/self/profile.img');
     this.p5canvas.remove();
   }
