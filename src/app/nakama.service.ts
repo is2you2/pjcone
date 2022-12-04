@@ -547,7 +547,7 @@ export class NakamaService {
               });
           }).catch(_e => {
             this.channels_orig[_is_official][_target][_cid]['title']
-              = this.channels_orig[_is_official][_target][_cid]['title'] + ' (그룹원이 아님)';
+              = this.channels_orig[_is_official][_target][_cid]['title'] + ' (그룹원 아님)';
             this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
             this.save_channels_with_less_info();
           });
@@ -860,7 +860,7 @@ export class NakamaService {
               if (c.sender_id == this.servers[_is_official][_target].session.user_id) {
                 this.channels_orig[_is_official][_target][c.channel_id]['status'] = 'missing';
                 this.channels_orig[_is_official][_target][c.channel_id]['title']
-                  = this.channels_orig[_is_official][_target][c.channel_id]['title'] + ' (그룹원이 아님)';
+                  = this.channels_orig[_is_official][_target][c.channel_id]['title'] + ' (그룹원 아님)';
                 this.groups[_is_official][_target][c['group_id']]['status'] = 'missing';
               } else {
                 console.warn('다른 누군가가 내보내짐 알림 필요');

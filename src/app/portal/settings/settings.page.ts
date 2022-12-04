@@ -29,11 +29,7 @@ export class SettingsPage implements OnInit {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
     this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
-      if (e && v) {
-        if (isPlatform == 'DesktopPWA')
-          this.nakama.users.self['img'] = v.substring(1, v.length - 1);
-        else if (isPlatform != 'MobilePWA') this.nakama.users.self['img'] = v;
-      }
+      if (e && v) this.nakama.users.self['img'] = v.substring(1, v.length - 1);
     });
   }
 
@@ -92,7 +88,7 @@ export class SettingsPage implements OnInit {
                 this.nakama.groups[_is_official][_target][group.id]['status'] = 'missing';
                 this.nakama.channels_orig[_is_official][_target][group['channel_id']]['status'] = 'missing';
                 this.nakama.channels_orig[_is_official][_target][group['channel_id']]['title']
-                  = this.nakama.channels_orig[_is_official][_target][group['channel_id']]['title'] + ' (그룹원이 아님)';
+                  = this.nakama.channels_orig[_is_official][_target][group['channel_id']]['title'] + ' (그룹원 아님)';
                 this.nakama.save_channels_with_less_info();
               }
             }

@@ -100,7 +100,7 @@ export class GroupDetailPage implements OnInit {
             if (am_i_lost) { // 내가 포함된 그룹이 아님
               this.info['status'] = 'missing';
               this.nakama.channels_orig[_is_official][_target][this.info['channel_id']]['title']
-                = this.nakama.channels_orig[_is_official][_target][this.info['channel_id']]['title'] + ' (그룹원이 아님)';
+                = this.nakama.channels_orig[_is_official][_target][this.info['channel_id']]['title'] + ' (그룹원 아님)';
               this.nakama.channels_orig[_is_official][_target][this.info['channel_id']]['status'] = 'missing';
               this.nakama.save_channels_with_less_info();
             } else {
