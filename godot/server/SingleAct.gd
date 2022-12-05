@@ -41,6 +41,8 @@ func _input(event):
 	if event.is_action_pressed("ui_cancel"):
 		get_tree().quit()
 
+# 관리와 관련된 알림을 받을 관리자 계정 pid
+var administrator_pid:int
 # 연결과 관련된 행동 쓰레드 충돌 방지용
 var linked_mutex:= Mutex.new()
 # 사이트에 연결 확인됨
@@ -63,6 +65,8 @@ func _disconnected(id:int, _was_clean = null, _reason:= 'EMPTY'):
 	users.erase(str(id))
 	counter.current = users.size()
 	linked_mutex.unlock()
+	if id == administrator_pid:
+		administrator_pid == 0
 	# 일반 종료가 아닐 때 로그 남김
 	if _was_clean is int and _was_clean != 1001:
 		Root.logging(HEADER, str('Disconnected: ', counter, ' code: ', _was_clean, ' / ', _reason), '8bb')
@@ -89,12 +93,35 @@ func _received(id:int, _try_left:= 5):
 				{ 'act': 'sc1_custom', 'target': 'write_guestbook', 'form': var _data }: # 방명록 작성
 					$SC_custom_manager/GuestBook.write_content(_data)
 					$m/vbox/c/bgColor.visible = true
+					if administrator_pid:
+						var result = {
+							'act': 'admin_noti',
+							'text': '캠컴까 방명록이 작성됨',
+						}
+						send_to(administrator_pid, JSON.print(result).to_utf8())
 				{ 'act': 'sc1_custom', 'target': 'modify_guestbook', 'form': var _data }: # 방명록 수정
 					$SC_custom_manager/GuestBook.modify_content(_data)
 					$m/vbox/c/bgColor.visible = true
+					if administrator_pid:
+						var result = {
+							'act': 'admin_noti',
+							'text': '캠컴까 방명록 내용 수정됨',
+						}
+						send_to(administrator_pid, JSON.print(result).to_utf8())
 				{ 'act': 'sc1_custom', 'target': 'remove_guestbook', 'form': var _data }: # 방명록 삭제
 					$SC_custom_manager/GuestBook.remove_content(_data)
 					$m/vbox/c/bgColor.visible = true
+					if administrator_pid:
+						var result = {
+							'act': 'admin_noti',
+							'text': '캠컴까 방명록 내용 삭제됨',
+						}
+						send_to(administrator_pid, JSON.print(result).to_utf8())
+				{ 'act': 'is_admin', 'uuid': var uuid }:
+					var is_admin = uuid == $m/vbox/AdminInfo/TargetUUID.text
+					if is_admin:
+						administrator_pid = id
+					return
 				_: # 준비되지 않은 행동
 					Root.logging(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)
 			var caches = {

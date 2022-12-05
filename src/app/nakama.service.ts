@@ -9,6 +9,7 @@ import * as p5 from 'p5';
 import { LocalNotiService } from './local-noti.service';
 import { AlertController, ModalController } from '@ionic/angular';
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
+import { WscService } from './wsc.service';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -45,6 +46,7 @@ export class NakamaService {
     private noti: LocalNotiService,
     private modalCtrl: ModalController,
     private alertCtrl: AlertController,
+    private communityServer: WscService,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -75,7 +77,6 @@ export class NakamaService {
     this.uuid = this.device.uuid;
     this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
       if (e && v) this.users.self = JSON.parse(v);
-      console.log('내 정보 검토: ', v);
     });
     // 서버별 그룹 정보 불러오기
     this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
@@ -357,6 +358,13 @@ export class NakamaService {
   after_login(_is_official: any, _target: string, _useSSL: boolean) {
     this.servers[_is_official][_target].socket = this.servers[_is_official][_target].client.createSocket(_useSSL);
     this.set_group_statusBar('online', _is_official, _target);
+    if (_is_official == 'official' && _target == 'default') {
+      let packet = {
+        act: 'is_admin',
+        uuid: this.servers[_is_official][_target].session.user_id
+      }
+      this.communityServer.send(JSON.stringify(packet));
+    }
     this.connect_to(_is_official, _target, () => {
       this.get_group_list(_is_official, _target);
       this.redirect_channel(_is_official, _target)

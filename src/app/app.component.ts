@@ -44,8 +44,17 @@ export class AppComponent {
     ADDRESS_OVERRIDE = localStorage.getItem('wsc_address_override');
     if (ADDRESS_OVERRIDE) SOCKET_HEADER = 'ws';
     noti.initialize();
+    client.initialize();
+    client.received['admin_noti'] = (rv: any) => {
+      noti.PushLocal({
+        id: 0,
+        title: '관리자 전용알림',
+        body: rv['text'],
+        smallIcon_ln: 'icon_mono',
+        iconColor_ln: 'ffd94e',
+      }, undefined);
+    };
     indexed.initialize(() => {
-      client.initialize();
       nakama.initialize();
     });
     // 모바일 기기 특정 설정

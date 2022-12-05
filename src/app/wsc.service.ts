@@ -71,10 +71,8 @@ export class WscService {
     }
     this.client.onmessage = (ev) => {
       ev.data.text().then(v => {
-        let keys = Object.keys(this.received);
-        keys.forEach(key => {
-          this.received[key](v);
-        });
+        let json = JSON.parse(v);
+        this.received[json['act']](json);
       });
     }
   }
@@ -82,5 +80,6 @@ export class WscService {
   send(msg: string) {
     if (this.client && this.client.readyState == this.client.OPEN)
       this.client.send(msg);
+    else console.warn('메시지 발송 실패: ', msg);
   }
 }

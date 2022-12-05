@@ -12,13 +12,16 @@
     <ion-label>서버와 계정에 대해서</ion-label>
   </ion-item-divider>
   <textarea class="infobox" disabled [(ngModel)]="info" style="height: 250px;"></textarea>
-  <ion-item-divider>
+  <ion-item-divider *ngIf="nakama.servers['official']['default'] || servers.length">
     <ion-label>참여중인 서버 목록</ion-label>
   </ion-item-divider>
-  <ion-item button (click)="link_group('official','default')">
+  <ion-item *ngIf="nakama.servers['official']['default']" button (click)="link_group('official','default')">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[statusBar.groupServer.official['default']]"></div>
     <ion-label class="form_margin">개발 테스트 서버</ion-label>
+    <ion-button (click)="remove_server('official', 'default')">
+      가리기
+    </ion-button>
   </ion-item>
   <ion-item *ngFor="let server of servers" button (click)="link_group(server.isOfficial, server.target)">
     <div class="additional_form status_bar_single"

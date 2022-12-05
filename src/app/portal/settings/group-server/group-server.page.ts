@@ -136,16 +136,17 @@ export class GroupServerPage implements OnInit {
   /** 사설 서버 삭제 */
   remove_server(_is_official: string, _target: string) {
     // 로그인 상태일 경우 로그오프처리
-    if (this.nakama.servers[_is_official][_target].session)
+    if (this.statusBar.groupServer[_is_official][_target] == 'online') {
       this.nakama.servers[_is_official][_target].client.sessionLogout(
         this.nakama.servers[_is_official][_target].session,
         this.nakama.servers[_is_official][_target].session.token,
         this.nakama.servers[_is_official][_target].session.refresh_token,
       )
-    if (this.nakama.servers[_is_official][_target].socket)
-      this.nakama.servers[_is_official][_target].socket.disconnect(true);
-    // 알림정보 삭제
+      if (this.nakama.servers[_is_official][_target].socket)
+        this.nakama.servers[_is_official][_target].socket.disconnect(true);
+    }
     delete this.nakama.servers[_is_official][_target];
+    // 알림정보 삭제
     if (this.nakama.noti_origin[_is_official] && this.nakama.noti_origin[_is_official][_target])
       delete this.nakama.noti_origin[_is_official][_target];
     this.nakama.rearrange_notifications();
@@ -158,10 +159,12 @@ export class GroupServerPage implements OnInit {
     }
     this.nakama.rearrange_channels();
     // 예하 그룹들 손상처리
-    let group_ids = Object.keys(this.nakama.groups[_is_official][_target]);
-    group_ids.forEach(_gid => {
-      this.nakama.groups[_is_official][_target][_gid]['status'] = 'missing';
-    });
+    if (this.nakama.groups[_is_official][_target]) {
+      let group_ids = Object.keys(this.nakama.groups[_is_official][_target]);
+      group_ids.forEach(_gid => {
+        this.nakama.groups[_is_official][_target][_gid]['status'] = 'missing';
+      });
+    }
     // 그룹서버 리스트 정리
     this.servers = this.nakama.get_all_server_info();
     // 그룹서버 정리
