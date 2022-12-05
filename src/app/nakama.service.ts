@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { Channel, Client, Group, Notification, Session, Socket, User } from "@heroiclabs/nakama-js";
-import { isPlatform, SOCKET_SERVER_ADDRESS } from './app.component';
+import { SOCKET_SERVER_ADDRESS } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
@@ -86,11 +86,7 @@ export class NakamaService {
       all_groups.forEach(group => {
         if (group['status'] != 'missing') {
           this.indexed.loadTextFromUserPath(`servers/${group['server']['isOfficial']}/${group['server']['target']}/groups/${group.id}.img`, (e, v) => {
-            if (e && v) {
-              if (isPlatform == 'DesktopPWA')
-                group['img'] = v.substring(1, v.length - 1);
-              else if (isPlatform != 'MobilePWA') group['img'] = v;
-            }
+            if (e && v) group['img'] = v.replace(/"|=|\\/g, '');
           });
           delete group['status'];
         }
@@ -421,11 +417,7 @@ export class NakamaService {
     return new Promise((img) => {
       this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${_userId}/profile.img`, (e, v) => {
         let result = '';
-        if (e && v) {
-          if (isPlatform == 'DesktopPWA')
-            result = v.substring(1, v.length - 1);
-          else if (isPlatform != 'MobilePWA') result = v;
-        }
+        if (e && v) result = v.replace(/"|=|\\/g, '');
         if (this.statusBar.groupServer[_is_official][_target] == 'online') {
           this.servers[_is_official][_target].client.readStorageObjects(
             this.servers[_is_official][_target].session, {

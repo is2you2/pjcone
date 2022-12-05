@@ -29,7 +29,7 @@ export class SettingsPage implements OnInit {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
     this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
-      if (e && v) this.nakama.users.self['img'] = v.substring(1, v.length - 1);
+      if (e && v) this.nakama.users.self['img'] = v.replace(/"|=|\\/g, '');
     });
   }
 
