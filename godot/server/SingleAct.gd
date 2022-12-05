@@ -121,6 +121,12 @@ func _received(id:int, _try_left:= 5):
 					var is_admin = uuid == $m/vbox/AdminInfo/TargetUUID.text
 					if is_admin:
 						administrator_pid = id
+					if administrator_pid:
+						var result = {
+							'act': 'admin_noti',
+							'text': '앱 외 알림을 수신합니다',
+						}
+						send_to(administrator_pid, JSON.print(result).to_utf8())
 					return
 				_: # 준비되지 않은 행동
 					Root.logging(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)

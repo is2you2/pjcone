@@ -52,6 +52,7 @@ export class AppComponent {
         body: rv['text'],
         smallIcon_ln: 'icon_mono',
         iconColor_ln: 'ffd94e',
+        autoCancel_ln: true,
       }, undefined);
     };
     indexed.initialize(() => {
