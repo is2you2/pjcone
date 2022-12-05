@@ -310,7 +310,7 @@ export class NakamaService {
           break;
         case 401: // 비밀번호 잘못됨
           this.p5toast.show({
-            text: '기기 재검증 과정 필요! (아직 개발되지 않음)',
+            text: '기기 재검증 과정 필요 (아직 개발되지 않음)',
           });
           _CallBack(false);
           this.set_group_statusBar('offline', _is_official, _target);
@@ -382,63 +382,34 @@ export class NakamaService {
     this.indexed.saveTextFileToUserPath(JSON.stringify(without_img), 'servers/self/profile.json')
   }
 
-  /** 다른 사용자의 프로필 정보 받아오기 */
-  load_other_user_profile_info(_userId: string, _is_official: string, _target: string): Promise<User> {
-    console.log('여기는 와?');
-    return new Promise((userInfo) => {
-      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${_userId}/profile.json`, (e, v) => {
-        let result: User = {
-          'display_name': '사용자 정보 없음',
-          'online': false,
-        };
-        if (e && v)
-          result = JSON.parse(v);
-        console.log('작업 시작');
-        try {
-          this.servers[_is_official][_target].client.getUsers(
-            this.servers[_is_official][_target].session, [_userId])
-            .then(_get => {
-              result = _get.users[0];
-              this.indexed.saveTextFileToUserPath(JSON.stringify(result), `servers/${_is_official}/${_target}/users/${_userId}/profile.json`);
-              throw new Error("work remote well");
-            });
-        } catch (e) {
-          console.log('뭐가 넘어오나 볼까: ', e);
-          if (this.users[_is_official][_target]) this.users[_is_official][_target] = {};
-          this.users[_is_official][_target][result.id] = result;
-          userInfo(result);
+  /** 다른 사람의 정보 반환해주기 */
+  load_other_user(userId: string, _is_official: string, _target: string) {
+    if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
+    if (!this.users[_is_official][_target][userId]) {
+      this.users[_is_official][_target][userId] = {};
+      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.json`, (e, v) => {
+        if (e && v) {
+          let data = JSON.parse(v);
+          let keys = Object.keys(data);
+          keys.forEach(key => {
+            this.users[_is_official][_target][userId][key] = data[key];
+          });
         }
+        this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
+          if (e && v) this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
+        });
       });
-    });
+    }
+    return this.users[_is_official][_target][userId];
   }
 
-  /** 다른 사용자의 프로필 이미지 받아오기 */
-  load_other_user_profile_image(_userId: string, _is_official: string, _target: string): Promise<string> {
-    return new Promise((img) => {
-      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${_userId}/profile.img`, (e, v) => {
-        let result = '';
-        if (e && v) result = v.replace(/"|=|\\/g, '');
-        if (this.statusBar.groupServer[_is_official][_target] == 'online') {
-          this.servers[_is_official][_target].client.readStorageObjects(
-            this.servers[_is_official][_target].session, {
-            object_ids: [{
-              collection: 'user_public',
-              key: 'profile_image',
-              user_id: _userId,
-            }],
-          }).then(obj => {
-            try {
-              result = obj.objects[0].value['img'];
-              this.indexed.saveTextFileToUserPath(JSON.stringify(obj.objects[0].value['img']), `servers/${_is_official}/${_target}/users/${_userId}/profile.img`);
-            } catch (error) {
-              result = '';
-              this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${_userId}/profile.img`);
-            }
-            img(result);
-          });
-        } else img(result);
-      });
-    });
+  /** 다른 사람의 정보 간소화하여 저장하기 */
+  save_other_user(userInfo: any, _is_official: string, _target: string) {
+    let copied = { ...userInfo };
+    delete copied['img'];
+    this.indexed.saveTextFileToUserPath(JSON.stringify(copied), `servers/${_is_official}/${_target}/users/${copied['id']}/profile.json`);
+    if (userInfo['img'])
+      this.indexed.saveTextFileToUserPath(userInfo['img'], `servers/${_is_official}/${_target}/users/${userInfo['id']}/profile.img`);
   }
 
   /** 서버로부터 알림 업데이트하기 (알림 리스트 재정렬 포함됨) */
@@ -581,15 +552,8 @@ export class NakamaService {
               console.warn('방 대화 기능 준비중...');
               break;
             case 2: // 1:1 대화
-              console.warn('사용자 정보를 직접 링크 작업 필요');
-              this.load_other_user_profile_info(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target)
-                .then(_info => {
-                  this.channels_orig[_is_official][_target][_cid]['title'] = _info['display_name'];
-                });
-              this.load_other_user_profile_image(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target)
-                .then(_img => {
-                  this.channels_orig[_is_official][_target][_cid]['img'] = _img;
-                });
+              this.channels_orig[_is_official][_target][_cid]['title'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target)['display_name'];
+              this.channels_orig[_is_official][_target][_cid]['img'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target)['img'];
               break;
             case 3: // 그룹 대화
               if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing') {
@@ -903,7 +867,7 @@ export class NakamaService {
         break;
       case -2: // 친구 요청 받음
         break;
-      case -1: // 친구 요청 받음
+      case -1: // 오프라인이거나 채널에 없을 때 알림받음
       case -3: // 상대방이 친구 요청 수락
       case -4: // 상대방이 그룹 참가 수락
       case -6: // 친구가 다른 게임에 참여
@@ -1002,10 +966,7 @@ export class NakamaService {
                     c['last_comment'] = m.messages[0].content['msg'];
                 });
               // 방 이미지를 상대방 이미지로 설정
-              this.load_other_user_profile_info(v['sender_id'], _is_official, _target)
-                .then(_img => {
-                  c['img'] = _img;
-                });
+              c['img'] = this.load_other_user(v.sender_id, _is_official, _target)['img'];
               // 방 이름을 상대방 이름으로 설정
               this.servers[_is_official][_target].client.getUsers(
                 this.servers[_is_official][_target].session, [v['sender_id']]

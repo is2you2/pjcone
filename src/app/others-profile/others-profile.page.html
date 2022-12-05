@@ -12,7 +12,7 @@
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
         <div class="profile_img_form">
-          <img [hidden]="!info.img" id="profile_img" class="profile_img" [src]="info.img" alt="프로필 이미지">
+          <img [hidden]="!info['user'].img" id="profile_img" class="profile_img" [src]="info['user'].img" alt="프로필 이미지">
           <img [hidden]="!tmp_img" id="profile_tmp_img" class="profile_img" [src]="tmp_img" alt="프로필 이미지">
           <div class="fore-gradient"></div>
           <div class="username">{{info['user'].display_name ?? '이름 없는 사용자'}}</div>

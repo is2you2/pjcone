@@ -97,7 +97,7 @@ export class SettingsPage implements OnInit {
             v.group_users.forEach(User => {
               if (User['is_me'])
                 User['user'] = this.nakama.users.self;
-              else console.log('다른 사용자 정보 링크하기');
+              else this.nakama.save_other_user(User['user'], _is_official, _target);
             });
             this.nakama.save_groups_with_less_info();
           });

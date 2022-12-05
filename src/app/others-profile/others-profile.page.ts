@@ -163,15 +163,9 @@ export class OthersProfilePage implements OnInit {
         persistence: true,
       };
       // 방 이미지를 상대방 이미지로 설정
-      this.nakama.load_other_user_profile_image(this.info['user']['id'], this.isOfficial, this.target)
-        .then(v => {
-          c['img'] = v;
-        });
+      c['img'] = this.nakama.users[this.isOfficial][this.target][this.info['user']['id']]['img'];
       // 방 이름을 상대방 이름으로 설정
-      this.nakama.load_other_user_profile_info(this.info['user']['id'], this.isOfficial, this.target)
-        .then(v => {
-          c['title'] = v['display_name'];
-        });
+      c['title'] = this.nakama.users[this.isOfficial][this.target][this.info['user']['id']]['display_name'];
       this.nakama.add_channels(c, this.isOfficial, this.target);
       this.modalCtrl.create({
         component: ChatRoomPage,
