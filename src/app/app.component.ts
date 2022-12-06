@@ -49,7 +49,7 @@ export class AppComponent {
     client.received['all_noti'] = (ev) => {
       noti.PushLocal({
         id: 2,
-        title: '커뮤니티 서버 알림',
+        title: '커뮤니티 알림',
         body: ev['text'],
         smallIcon_ln: 'icon_mono',
         iconColor_ln: 'ffd94e',

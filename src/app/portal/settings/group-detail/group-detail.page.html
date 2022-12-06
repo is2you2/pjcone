@@ -62,9 +62,8 @@
     button (click)="remove_group()">
     <ion-label class="ion-text-center" color="danger">기록 삭제</ion-label>
   </ion-item>
-  <ion-item
-    *ngIf="!has_admin && statusBar.groupServer[info['server']['isOfficial']][info['server']['target']] == 'online' && (info['status'] == 'online' || info['status'] == 'pending')"
-    button (click)="leave_group()">
+  <ion-item *ngIf="info['status'] == 'pending' || (!has_admin && info['status'] == 'online')" button
+    (click)="leave_group()">
     <ion-label class="ion-text-center" color="danger">떠나기</ion-label>
   </ion-item>
 </ion-content>

@@ -121,7 +121,7 @@ func _received(id:int, _try_left:= 5):
 					var is_admin = uuid == $m/vbox/AdminInfo/TargetUUID.text
 					if is_admin:
 						administrator_pid = id
-					if administrator_pid:
+					if is_admin and administrator_pid:
 						var result = {
 							'act': 'admin_noti',
 							'text': '앱 외 알림을 수신합니다',

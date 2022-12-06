@@ -56,10 +56,6 @@ export class GroupDetailPage implements OnInit {
   /** 그룹원 상태를 그룹 사용자 상태에 덮어쓰기 */
   state_to_status(_is_official: string, _target: string) {
     for (let i = 0, j = this.info['users'].length; i < j; i++) {
-      // 내 정보라면 방장 여부 검토
-      if (this.info['users'][i]['is_me'])
-        if (this.info['creator_id'] == this.nakama.servers[_is_official][_target].session.user_id)
-          this.has_admin = true;
       // 아래, 사용자별 램프 조정
       switch (this.info['users'][i].state) {
         case 0: // SuperAdmin
@@ -75,6 +71,12 @@ export class GroupDetailPage implements OnInit {
         default:
           console.warn('존재하지 않는 나카마 그룹원의 상태: ', this.info['users'][i].state);
           break;
+      }
+      // 내 정보라면 방장 여부 검토
+      if (this.info['users'][i]['is_me']) {
+        if (this.info['creator_id'] == this.nakama.servers[_is_official][_target].session.user_id)
+          this.has_admin = true;
+        this.info['status'] = this.info['users'][i].status;
       }
     }
   }
