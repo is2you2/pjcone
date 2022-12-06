@@ -45,11 +45,23 @@ export class AppComponent {
     if (ADDRESS_OVERRIDE) SOCKET_HEADER = 'ws';
     noti.initialize();
     client.initialize();
-    client.received['admin_noti'] = (rv: any) => {
+    // 모든 사용자가 수신할 수 있는 알림
+    client.received['all_noti'] = (ev) => {
+      noti.PushLocal({
+        id: 2,
+        title: '커뮤니티 서버 알림',
+        body: ev['text'],
+        smallIcon_ln: 'icon_mono',
+        iconColor_ln: 'ffd94e',
+        autoCancel_ln: true,
+      }, undefined);
+    }
+    // 관리자 전용 알림 설정
+    client.received['admin_noti'] = (ev: any) => {
       noti.PushLocal({
         id: 0,
         title: '관리자 전용알림',
-        body: rv['text'],
+        body: ev['text'],
         smallIcon_ln: 'icon_mono',
         iconColor_ln: 'ffd94e',
         autoCancel_ln: true,

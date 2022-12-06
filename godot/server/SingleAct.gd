@@ -182,3 +182,14 @@ func _process(_delta):
 
 func _exit_tree():
 	server.stop()
+
+
+func _on_Button_pressed():
+	if not $m/vbox/SendAllNoti/AllNotiText.text: return
+	for user in users:
+		var result = {
+			'act': 'all_noti',
+			'text': $m/vbox/SendAllNoti/AllNotiText.text,
+		}
+		send_to(int(user), JSON.print(result).to_utf8())
+	$m/vbox/SendAllNoti/AllNotiText.text = ''
