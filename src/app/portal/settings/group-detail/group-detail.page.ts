@@ -33,7 +33,7 @@ export class GroupDetailPage implements OnInit {
   has_admin = false;
 
   ngOnInit() {
-    this.info = this.navParams.get('info');
+    this.info = { ... this.navParams.get('info') };
     this.nakama.socket_reactive[-4] = this;
     this.nakama.socket_reactive[-5] = this;
     this.readasQRCodeFromId();
@@ -138,7 +138,8 @@ export class GroupDetailPage implements OnInit {
     this.modalCtrl.dismiss();
   }
 
-  need_edit = true;
+  /** 그룹 편집사항이 있는지, 그래서 편집해야하는지 여부 검토 */
+  need_edit = false;
   edit_group() {
     if (this.statusBar.groupServer[this.info['server']['isOfficial']][this.info['server']['target']] == 'online' && this.info['status'] != 'missing' && this.has_admin)
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.updateGroup(
@@ -229,6 +230,7 @@ export class GroupDetailPage implements OnInit {
   ionViewWillLeave() {
     delete this.nakama.socket_reactive[-4];
     delete this.nakama.socket_reactive[-5];
+    this.need_edit = this.info['description'] != this.navParams.get('info')['description'];
     if (this.need_edit)
       this.edit_group();
   }

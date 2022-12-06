@@ -197,6 +197,10 @@ export class OthersProfilePage implements OnInit {
     });
   }
 
+  focus_on_content() {
+    console.warn('콘텐츠 자세히보기 기능 준비중');
+  }
+
   ionViewDidLeave() {
     this.p5canvas.remove();
   }

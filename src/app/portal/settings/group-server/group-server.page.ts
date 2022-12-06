@@ -129,8 +129,10 @@ export class GroupServerPage implements OnInit {
       this.dedicated_info.port = undefined;
       this.dedicated_info.useSSL = undefined;
       this.dedicated_info.isOfficial = undefined;
-      this.add_custom_tog = false;
     });
+    setTimeout(() => {
+      this.add_custom_tog = false;
+    }, 1000);
   }
 
   /** 사설 서버 삭제 */
