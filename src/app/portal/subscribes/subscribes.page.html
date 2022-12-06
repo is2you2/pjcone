@@ -5,8 +5,7 @@
 </ion-header>
 
 <ion-content>
-  <ion-accordion-group *ngIf="notifications.length" value="colors" expand="inset" [value]="false"
-    #accordionGroup>
+  <ion-accordion-group *ngIf="notifications.length" value="colors" expand="inset" [value]="false" #accordionGroup>
     <ion-accordion value="colors">
       <ion-item slot="header">
         <ion-label>검토해야할 연결이 있습니다.</ion-label>
@@ -39,12 +38,13 @@
       <div class="additional_form status_bar_double"
         [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']"></div>
       <div class="additional_form bg_img_form">
-        <img *ngIf="channel.group" class="bg_img"
+        <img *ngIf="channel.info" class="bg_img"
           [style]="channel['status'] == 'online' ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'"
-          [src]="channel.group.img">
+          [src]="channel.info.img">
       </div>
       <ion-label>
-        <div class="form_margin header"> {{channel.title}} </div>
+        <div class="form_margin header"> {{channel.info ? (channel.info.name || channel.info.display_name || '제목 없는
+          채팅방') : (channel.title || '제목 없는 채팅방')}} </div>
         <div class="form_margin content"> {{channel.last_comment || '기록된 메시지 없음'}} </div>
       </ion-label>
     </ion-item>

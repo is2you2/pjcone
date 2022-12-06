@@ -385,21 +385,19 @@ export class NakamaService {
   /** 다른 사람의 정보 반환해주기 */
   load_other_user(userId: string, _is_official: string, _target: string) {
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
-    if (!this.users[_is_official][_target][userId]) {
-      this.users[_is_official][_target][userId] = {};
-      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.json`, (e, v) => {
-        if (e && v) {
-          let data = JSON.parse(v);
-          let keys = Object.keys(data);
-          keys.forEach(key => {
-            this.users[_is_official][_target][userId][key] = data[key];
-          });
-        }
-        this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
-          if (e && v) this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
+    if (!this.users[_is_official][_target][userId]) this.users[_is_official][_target][userId] = {};
+    this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.json`, (e, v) => {
+      if (e && v) {
+        let data = JSON.parse(v);
+        let keys = Object.keys(data);
+        keys.forEach(key => {
+          this.users[_is_official][_target][userId][key] = data[key];
         });
+      }
+      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
+        if (e && v) this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
       });
-    }
+    });
     return this.users[_is_official][_target][userId];
   }
 
@@ -520,6 +518,7 @@ export class NakamaService {
             this.channels_orig[_is_official][_target][_cid]['title']
               = this.channels_orig[_is_official][_target][_cid]['title'] + ' (그룹원 아님)';
             this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
+            delete this.channels_orig[_is_official][_target][_cid]['info'];
             this.save_channels_with_less_info();
           });
         }
@@ -543,7 +542,7 @@ export class NakamaService {
       Targets.forEach(_target => {
         let ChannelIds = Object.keys(this.channels_orig[_is_official][_target]);
         ChannelIds.forEach(_cid => {
-          this.channels_orig[_is_official][_target][_cid]['info'] = {
+          this.channels_orig[_is_official][_target][_cid]['server'] = {
             isOfficial: _is_official,
             target: _target,
           }
@@ -552,14 +551,14 @@ export class NakamaService {
               console.warn('방 대화 기능 준비중...');
               break;
             case 2: // 1:1 대화
-              this.channels_orig[_is_official][_target][_cid]['title'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target)['display_name'];
-              this.channels_orig[_is_official][_target][_cid]['img'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target)['img'];
+              this.channels_orig[_is_official][_target][_cid]['info'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
+              this.channels_orig[_is_official][_target][_cid]['title'] = this.channels_orig[_is_official][_target][_cid]['info']['display_name'];
               break;
             case 3: // 그룹 대화
               if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing') {
                 if (this.groups[_is_official][_target] && this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]) { // 유효한 그룹인 경우
-                  this.channels_orig[_is_official][_target][_cid]['title'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']].name;
-                  this.channels_orig[_is_official][_target][_cid]['group'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']];
+                  this.channels_orig[_is_official][_target][_cid]['info'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']];
+                  this.channels_orig[_is_official][_target][_cid]['title'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]['name'];
                 } else this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
               }
               break;
@@ -820,14 +819,32 @@ export class NakamaService {
               if (c.content['user']) // 그룹 사용자 정보 변경
                 this.update_group_user_info(c, _is_official, _target);
               break;
+            case 5: // 들어오려다가 포기한 사람에 대한 알림
+              console.warn('알림에서 이 사람의 초대를 전부 제외해야함_부분 동작중');
+              if (this.noti_origin[_is_official] && this.noti_origin[_is_official][_target]) {
+                let keys = Object.keys(this.noti_origin[_is_official][_target]);
+                let empty_ids = [];
+                keys.forEach(key => {
+                  if (this.noti_origin[_is_official][_target][key]['code'] == -5
+                    && this.noti_origin[_is_official][_target][key]['sender_id'] == c.sender_id)
+                    empty_ids.push(key);
+                });
+                this.servers[_is_official][_target].client.deleteNotifications(
+                  this.servers[_is_official][_target].session, empty_ids).then(v => {
+                    if (!v) console.warn('사용하지 않는 알림 삭제 후 오류');
+                    this.update_notifications(_is_official, _target);
+                  });
+              }
             case 6: // 누군가 그룹에서 내보내짐
-              if (c.sender_id == this.servers[_is_official][_target].session.user_id) {
+              if (c.sender_id == this.servers[_is_official][_target].session.user_id) { // 내보내진게 나야
                 this.channels_orig[_is_official][_target][c.channel_id]['status'] = 'missing';
                 this.channels_orig[_is_official][_target][c.channel_id]['title']
                   = this.channels_orig[_is_official][_target][c.channel_id]['title'] + ' (그룹원 아님)';
+                delete this.channels_orig[_is_official][_target][c.channel_id]['info'];
                 this.groups[_is_official][_target][c['group_id']]['status'] = 'missing';
-              } else {
-                console.warn('다른 누군가가 내보내짐 알림 필요');
+              } else { // 다른 누군가야
+                if (this.socket_reactive[-5]) // 그룹 상세를 보는 중이라면 업데이트하기
+                  this.socket_reactive[-5].update_GroupUsersList(_is_official, _target);
               }
               break;
             default:
@@ -871,7 +888,7 @@ export class NakamaService {
           }]
         }).then(v => {
           if (v.objects.length) {
-            this.groups[_is_official][_target][c.group_id]['img'] = v.objects[0].value['img'].replace(/"|=|\\/g,'');
+            this.groups[_is_official][_target][c.group_id]['img'] = v.objects[0].value['img'].replace(/"|=|\\/g, '');
             this.indexed.saveTextFileToUserPath(v.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${c.group_id}.img`);
           } else {
             delete this.groups[_is_official][_target][c.group_id]['img'];
@@ -1020,6 +1037,8 @@ export class NakamaService {
                 this.servers[_is_official][_target].session, [v['sender_id']]
               ).then(info => {
                 c['title'] = info.users[0].display_name;
+                c['info'] = info.users[0];
+                this.save_other_user(info.users[0], _is_official, _target);
               });
               this.add_channels(c, _is_official, _target);
               this.servers[_is_official][_target].client.deleteNotifications(

@@ -34,7 +34,7 @@ export class GroupDetailPage implements OnInit {
   has_admin = false;
 
   ngOnInit() {
-    this.info = { ... this.navParams.get('info') };
+    this.info = this.navParams.get('info');
     this.nakama.socket_reactive[-4] = this;
     this.nakama.socket_reactive[-5] = this;
     this.readasQRCodeFromId();
@@ -48,7 +48,7 @@ export class GroupDetailPage implements OnInit {
         else // 다른 사람들의 프로필 이미지
           this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], _is_official, _target);
       // 온라인일 경우
-      if (this.has_admin)
+      if (this.has_admin) // 여기서만 has_admin이 온라인 여부처럼 동작함
         this.state_to_status(_is_official, _target);
     }
   }
@@ -79,13 +79,13 @@ export class GroupDetailPage implements OnInit {
         this.info['status'] = this.info['users'][i].status;
         if (this.info['status'] == 'certified')
           this.info['status'] = 'online';
+        else this.has_admin = false;
       }
     }
   }
 
   /** 그룹 사용자 리스트 업데이트 */
   update_from_notification(v: Notification) {
-    console.log('그룹 사용자 리스트 업데이트: ', v);
     switch (v.code) {
       case -4: // 그룹 참가 수락됨
       case -5: // 그룹 참가 신청
@@ -263,20 +263,30 @@ export class GroupDetailPage implements OnInit {
   /** 그룹 떠나기 */
   leave_group() {
     this.need_edit = false;
-    this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
-      this.info['channel_id'], {
-      user: 'out',
-      msg: `사용자가 그룹 나감: ${this.nakama.users.self['display_name']}-테스트 로그`
-    }).then(_m => {
-      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.leaveGroup(
-        this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, this.info['id'],
-      ).then(v => {
-        if (v) {
+    if (this.info['status'] == 'online')
+      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
+        this.info['channel_id'], {
+        user: 'out',
+        msg: `사용자가 그룹 나감: ${this.nakama.users.self['display_name']}-테스트 로그`
+      }).then(_m => {
+        this.after_leave_group_announce(() => {
           this.leave_channel();
           delete this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']];
           this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss());
-        }
-      })
+        });
+      });
+    else if (this.info['status'] == 'pending') this.after_leave_group_announce(() => {
+      delete this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']];
+      this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss());
+    });
+  }
+
+  /** 그룹 나가기 행동 */
+  after_leave_group_announce(_CallBack = () => console.warn('after_leave_group_announce Func Null')) {
+    this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.leaveGroup(
+      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, this.info['id'],
+    ).then(v => {
+      if (v) _CallBack();
     });
   }
 
@@ -287,6 +297,7 @@ export class GroupDetailPage implements OnInit {
       this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['title']
         = this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['title'] + ' (삭제된 그룹)';
       this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] = 'missing';
+      delete this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['info'];
     }
     this.nakama.save_channels_with_less_info();
   }

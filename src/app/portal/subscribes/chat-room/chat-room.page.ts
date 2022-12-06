@@ -32,8 +32,8 @@ export class ChatRoomPage implements OnInit {
   ngOnInit() {
     this.info = this.navParams.get('info');
     this.noti.Current = this.info['id'];
-    this.isOfficial = this.info['info']['isOfficial'];
-    this.target = this.info['info']['target'];
+    this.isOfficial = this.info['server']['isOfficial'];
+    this.target = this.info['server']['target'];
     this.load_all_users_info();
     this.content_panel = document.getElementById('content');
     console.warn('이 자리에서 로컬 채팅 기록 불러오기');

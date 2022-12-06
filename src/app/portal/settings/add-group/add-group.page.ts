@@ -151,7 +151,7 @@ export class AddGroupPage implements OnInit {
         };
         c['status'] = 'online';
         c['title'] = this.userInput['name'];
-        c['img'] = this.userInput['img'];
+        c['info'] = this.userInput;
         this.userInput['channel_id'] = c.id;
         this.nakama.save_group_info(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target);
         this.nakama.add_channels(c, this.servers[this.index].isOfficial, this.servers[this.index].target);

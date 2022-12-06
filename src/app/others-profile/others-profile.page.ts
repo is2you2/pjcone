@@ -162,10 +162,9 @@ export class OthersProfilePage implements OnInit {
         type: 2,
         persistence: true,
       };
-      // 방 이미지를 상대방 이미지로 설정
-      c['img'] = this.nakama.users[this.isOfficial][this.target][this.info['user']['id']]['img'];
       // 방 이름을 상대방 이름으로 설정
       c['title'] = this.nakama.users[this.isOfficial][this.target][this.info['user']['id']]['display_name'];
+      c['info'] = this.nakama.users[this.isOfficial][this.target][this.info['user']['id']];
       this.nakama.add_channels(c, this.isOfficial, this.target);
       this.modalCtrl.create({
         component: ChatRoomPage,
