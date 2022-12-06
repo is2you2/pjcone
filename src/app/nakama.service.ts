@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
-import { Channel, Client, Group, Notification, Session, Socket, User } from "@heroiclabs/nakama-js";
+import { Channel, ChannelMessage, Client, Group, Notification, Session, Socket, User } from "@heroiclabs/nakama-js";
 import { SOCKET_SERVER_ADDRESS } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
@@ -816,9 +816,9 @@ export class NakamaService {
           switch (c.code) {
             case 0: // 사용자가 작성한 일반적인 메시지
               if (c.content['update']) // 그룹 정보 업데이트
-                this.update_group_info(c.content, _is_official, _target);
+                this.update_group_info(c, _is_official, _target);
               if (c.content['user']) // 그룹 사용자 정보 변경
-                this.update_group_user_info(c.content, _is_official, _target);
+                this.update_group_user_info(c, _is_official, _target);
               break;
             case 6: // 누군가 그룹에서 내보내짐
               if (c.sender_id == this.servers[_is_official][_target].session.user_id) {
@@ -859,34 +859,49 @@ export class NakamaService {
   }
 
   /** 그룹 정보 변경 처리 */
-  update_group_info(content: any, _is_official: string, _target: string) {
-    switch (content['update']) {
+  update_group_info(c: ChannelMessage, _is_official: string, _target: string) {
+    switch (c.content['update']) {
       case 'image': // 그룹 이미지가 변경됨
-        console.log('그룹 이미지가 변경됨: ', content);
+        this.servers[_is_official][_target].client.readStorageObjects(
+          this.servers[_is_official][_target].session, {
+          object_ids: [{
+            collection: 'group_public',
+            key: `group_${c.group_id}`,
+            user_id: c.sender_id,
+          }]
+        }).then(v => {
+          if (v.objects.length) {
+            this.groups[_is_official][_target][c.group_id]['img'] = v.objects[0].value['img'].replace(/"|=|\\/g,'');
+            this.indexed.saveTextFileToUserPath(v.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${c.group_id}.img`);
+          } else {
+            delete this.groups[_is_official][_target][c.group_id]['img'];
+            this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${c.group_id}.img`);
+          }
+        });
         break;
       case 'info': // 그룹 정보가 변경됨
-        console.log('그룹 정보 변경됨: ', content);
+        console.log('그룹 정보 변경됨: ', c);
         break;
       case 'remove': // 그룹이 삭제됨
-        console.log('그룹이 삭제됨: ', content);
+        console.log('그룹이 삭제됨: ', c);
         break;
       default:
-        console.warn('예상하지 못한 그룹 행동: ', content);
+        console.warn('예상하지 못한 그룹 행동: ', c);
         break;
     }
   }
 
   /** 그룹 사용자 상태 변경 처리 */
-  update_group_user_info(content: any, _is_official: string, _target: string) {
-    switch (content['user']) {
+  update_group_user_info(c: ChannelMessage, _is_official: string, _target: string) {
+    switch (c.content['user']) {
       case 'join':
-        console.log('사용자 진입: ', content);
+        console.log('사용자 진입: ', c);
         break;
       case 'out':
-        console.log('사용자 삭제: ', content);
+        console.log('사용자 삭제: ', c);
         break;
       default:
-        console.warn('예상하지 못한 그룹 사용자 행동: ', content);
+        console.warn('예상하지 못한 그룹 사용자 행동: ', c);
         break;
     }
   }

@@ -77,6 +77,8 @@ export class GroupDetailPage implements OnInit {
         if (this.info['creator_id'] == this.nakama.servers[_is_official][_target].session.user_id)
           this.has_admin = true;
         this.info['status'] = this.info['users'][i].status;
+        if (this.info['status'] == 'certified')
+          this.info['status'] = 'online';
       }
     }
   }
@@ -222,7 +224,7 @@ export class GroupDetailPage implements OnInit {
 
   /** 사용자 프로필 열람 */
   open_user_profile(userInfo: any) {
-    if (userInfo['user']['is_me']) {
+    if (userInfo['is_me']) {
       this.modalCtrl.create({
         component: ProfilePage,
       }).then(v => v.present());
