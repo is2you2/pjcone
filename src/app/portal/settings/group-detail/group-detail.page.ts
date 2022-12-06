@@ -8,6 +8,7 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { ProfilePage } from '../profile/profile.page';
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
+import { Notification } from '@heroiclabs/nakama-js';
 
 @Component({
   selector: 'app-group-detail',
@@ -39,34 +40,89 @@ export class GroupDetailPage implements OnInit {
     this.readasQRCodeFromId();
     let _is_official: string = this.info.server['isOfficial'];
     let _target: string = this.info.server['target'];
-    this.has_admin = this.statusBar.groupServer[_is_official][_target] == 'online' && this.nakama.servers[_is_official][_target].session.user_id == this.info['creator_id'];
+    this.has_admin = this.statusBar.groupServer[_is_official][_target] == 'online';
     if (this.info['users']) {// 사용자 정보가 있다면 로컬 정보 불러오기 처리
       for (let i = 0, j = this.info['users'].length; i < j; i++)
-        if (this.info['users'][i].is_me) { // 정보상 나라면
+        if (this.info['users'][i].is_me) // 정보상 나라면
           this.info['users'][i]['user'] = this.nakama.users.self;
-        } else { // 다른 사람들의 프로필 이미지
+        else // 다른 사람들의 프로필 이미지
           this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], _is_official, _target);
-        }
       // 온라인일 경우
-      if (this.statusBar.groupServer[_is_official][_target] == 'online')
-        for (let i = 0, j = this.info['users'].length; i < j; i++) {
-          this.info['users'][i]['status'] = this.info['status'];
-          // 내 정보라면 방장 여부 검토
-          if (this.info['users'][i]['is_me'])
-            if (this.info['creator_id'] == this.nakama.servers[_is_official][_target].session.user_id)
-              this.has_admin = true;
-          // 아래, 사용자별 램프 조정
-          switch (this.info['users'][i].state) {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            default:
-              console.warn('존재하지 않는 나카마 그룹원의 상태: ', this.info['users'][i].state);
-              break;
-          }
-        }
+      if (this.has_admin)
+        this.state_to_status(_is_official, _target);
     }
+  }
+
+  /** 그룹원 상태를 그룹 사용자 상태에 덮어쓰기 */
+  state_to_status(_is_official: string, _target: string) {
+    for (let i = 0, j = this.info['users'].length; i < j; i++) {
+      // 내 정보라면 방장 여부 검토
+      if (this.info['users'][i]['is_me'])
+        if (this.info['creator_id'] == this.nakama.servers[_is_official][_target].session.user_id)
+          this.has_admin = true;
+      // 아래, 사용자별 램프 조정
+      switch (this.info['users'][i].state) {
+        case 0: // SuperAdmin
+        case 1: // Admin
+          this.info['users'][i].status = 'certified';
+          break;
+        case 2: // Member
+          this.info['users'][i].status = 'online';
+          break;
+        case 3: // Request
+          this.info['users'][i].status = 'pending';
+          break;
+        default:
+          console.warn('존재하지 않는 나카마 그룹원의 상태: ', this.info['users'][i].state);
+          break;
+      }
+    }
+  }
+
+  /** 그룹 사용자 리스트 업데이트 */
+  update_from_notification(v: Notification) {
+    console.log('그룹 사용자 리스트 업데이트: ', v);
+    switch (v.code) {
+      case -4: // 그룹 참가 수락됨
+      case -5: // 그룹 참가 신청
+        this.update_GroupUsersList(v['server']['isOfficial'], v['server']['target']);
+        break;
+      default:
+        console.warn('예상하지 못한 그룹 행동: ', v);
+        break;
+    }
+  }
+
+  update_GroupUsersList(_is_official: string, _target: string) {
+    this.nakama.servers[_is_official][_target].client.listGroupUsers(
+      this.nakama.servers[_is_official][_target].session, this.info['id']
+    ).then(ul => {
+      let result = [];
+      for (let i = 0, j = ul.group_users.length; i < j; i++) {
+        // 내 정보인 경우
+        if (ul.group_users[i].user.id == this.nakama.servers[_is_official][_target].session.user_id) {
+          let form = {
+            state: ul.group_users[i].state,
+            user: this.nakama.users.self,
+          };
+          result.push(form);
+        } else { // 다른 사람의 정보인 경우
+          if (!this.nakama.users[_is_official][_target]) this.nakama.users[_is_official][_target] = {};
+          if (!this.nakama.users[_is_official][_target][ul.group_users[i].user.id]) this.nakama.users[_is_official][_target][ul.group_users[i].user.id] = {};
+          let keys = Object.keys(ul.group_users[i].user);
+          keys.forEach(key => {
+            this.nakama.users[_is_official][_target][ul.group_users[i].user.id][key] = ul.group_users[i].user[key];
+          });
+          let form = {
+            state: ul.group_users[i].state,
+            user: this.nakama.users[_is_official][_target][ul.group_users[i].user.id],
+          }
+          result.push(form);
+        }
+      }
+      this.info['users'] = result;
+      this.state_to_status(_is_official, _target);
+    });
   }
 
   /** ionic 버튼을 눌러 input-file 동작 */
@@ -91,6 +147,7 @@ export class GroupDetailPage implements OnInit {
           this.indexed.saveTextFileToUserPath(JSON.stringify(this.info['img']), `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
           this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
             this.info['channel_id'], {
+            update: 'image',
             msg: '그룹 이미지 업데이트 알림-테스트 로그',
           });
         });
@@ -125,7 +182,8 @@ export class GroupDetailPage implements OnInit {
     if (this.info['status'] == 'online')
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
         this.info['channel_id'], {
-        msg: `사용자가 그룹 나감: ${this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session.user_id}-테스트 로그`
+        update: 'remove',
+        msg: `그룹이 삭제됨`,
       }).then(_m => {
         this.after_remove_group();
       });
@@ -152,6 +210,7 @@ export class GroupDetailPage implements OnInit {
       }).then(_v => {
         this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
           this.info['channel_id'], {
+          update: 'info',
           msg: '그룹 정보 업데이트 알림-테스트 로그',
         });
       });
@@ -202,7 +261,8 @@ export class GroupDetailPage implements OnInit {
     this.need_edit = false;
     this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
       this.info['channel_id'], {
-      msg: `사용자가 그룹 나감: ${this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session.user_id}-테스트 로그`
+      user: 'out',
+      msg: `사용자가 그룹 나감: ${this.nakama.users.self['display_name']}-테스트 로그`
     }).then(_m => {
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.leaveGroup(
         this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, this.info['id'],

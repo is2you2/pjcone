@@ -631,30 +631,24 @@ export class NakamaService {
   try_add_group(_info: any) {
     let servers = this.get_all_online_server();
     servers.forEach(server => {
-      if (this.groups[server.info.isOfficial][server.info.target][_info['id']] === undefined)
-        server.client.joinGroup(server.session, _info.id)
-          .then(_v => {
-            if (!_v) {
-              console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
-              return;
-            }
-            server.client.listGroups(
-              server.session, _info['name']
-            ).then(v => {
-              for (let i = 0, j = v.groups.length; i < j; i++)
-                if (v.groups[i].id == _info['id']) {
-                  let pending_group = v.groups[i];
-                  pending_group['status'] = 'pending';
-                  this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
-                  break;
-                }
-            });
+      server.client.joinGroup(server.session, _info.id)
+        .then(_v => {
+          if (!_v) {
+            console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
+            return;
+          }
+          server.client.listGroups(
+            server.session, _info['name']
+          ).then(v => {
+            for (let i = 0, j = v.groups.length; i < j; i++)
+              if (v.groups[i].id == _info['id']) {
+                let pending_group = v.groups[i];
+                pending_group['status'] = 'pending';
+                this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
+                break;
+              }
           });
-      else {
-        this.p5toast.show({
-          text: `이미 등록된 그룹입니다: ${_info['name']}`,
         });
-      }
     });
   }
 
@@ -820,6 +814,12 @@ export class NakamaService {
           if (this.channels_orig[_is_official][_target][c.channel_id]['update'])
             this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
           switch (c.code) {
+            case 0: // 사용자가 작성한 일반적인 메시지
+              if (c.content['update']) // 그룹 정보 업데이트
+                this.update_group_info(c.content, _is_official, _target);
+              if (c.content['user']) // 그룹 사용자 정보 변경
+                this.update_group_user_info(c.content, _is_official, _target);
+              break;
             case 6: // 누군가 그룹에서 내보내짐
               if (c.sender_id == this.servers[_is_official][_target].session.user_id) {
                 this.channels_orig[_is_official][_target][c.channel_id]['status'] = 'missing';
@@ -856,6 +856,39 @@ export class NakamaService {
           }
         }
       });
+  }
+
+  /** 그룹 정보 변경 처리 */
+  update_group_info(content: any, _is_official: string, _target: string) {
+    switch (content['update']) {
+      case 'image': // 그룹 이미지가 변경됨
+        console.log('그룹 이미지가 변경됨: ', content);
+        break;
+      case 'info': // 그룹 정보가 변경됨
+        console.log('그룹 정보 변경됨: ', content);
+        break;
+      case 'remove': // 그룹이 삭제됨
+        console.log('그룹이 삭제됨: ', content);
+        break;
+      default:
+        console.warn('예상하지 못한 그룹 행동: ', content);
+        break;
+    }
+  }
+
+  /** 그룹 사용자 상태 변경 처리 */
+  update_group_user_info(content: any, _is_official: string, _target: string) {
+    switch (content['user']) {
+      case 'join':
+        console.log('사용자 진입: ', content);
+        break;
+      case 'out':
+        console.log('사용자 삭제: ', content);
+        break;
+      default:
+        console.warn('예상하지 못한 그룹 사용자 행동: ', content);
+        break;
+    }
   }
 
   /** 알림 내용 클릭시 행동 */
@@ -995,7 +1028,7 @@ export class NakamaService {
         break;
       case -4: // 상대방이 그룹 참가 수락
         if (this.socket_reactive[v.code] && this.socket_reactive[v.code].info.id == v.content['group_id'])
-          this.socket_reactive[v.code].ngOnInit();
+          this.socket_reactive[v.code].update_from_notification(v);
         this.groups[_is_official][_target][v.content['group_id']]['status'] = 'online';
         v['request'] = `${v.code}-${v.subject}`;
         this.rearrange_notifications();
@@ -1065,7 +1098,7 @@ export class NakamaService {
         this.rearrange_notifications();
         // 이미 보는 화면이라면 업데이트하기
         if (this.socket_reactive[v.code] && this.socket_reactive[v.code].info.id == v.content['group_id'])
-          this.socket_reactive[v.code].ngOnInit();
+          this.socket_reactive[v.code].update_from_notification(v);
         this.noti.SetListener(`check${v.code}`, (_v: any) => {
           this.noti.ClearNoti(_v['id']);
           this.noti.RemoveListener(`check${v.code}`);

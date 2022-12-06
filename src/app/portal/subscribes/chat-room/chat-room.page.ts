@@ -3,7 +3,6 @@ import { Channel } from '@heroiclabs/nakama-js';
 import { ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
-import { StatusManageService } from 'src/app/status-manage.service';
 
 @Component({
   selector: 'app-chat-room',
@@ -17,7 +16,6 @@ export class ChatRoomPage implements OnInit {
     private navParams: NavParams,
     public nakama: NakamaService,
     private noti: LocalNotiService,
-    private statusBar: StatusManageService,
   ) { }
 
   info: Channel;
@@ -86,7 +84,7 @@ export class ChatRoomPage implements OnInit {
     if (!this.userInput.text) return;
     this.nakama.servers[this.isOfficial][this.target].socket
       .writeChatMessage(this.info['id'], {
-        msg: this.userInput.text
+        msg: this.userInput.text,
       }).then(_v => {
         this.userInput.text = '';
       });

@@ -178,21 +178,16 @@ export class OthersProfilePage implements OnInit {
 
   /** 그룹장이 이 사용자를 퇴출 */
   kick_user_from_group() {
-    this.nakama.servers[this.isOfficial][this.target].socket.writeChatMessage(
-      this.group_info['id'], {
-      msg: `사용자 퇴출: ${this.info['id']}-테스트 로그`,
-    }).then(_m => {
-      this.nakama.servers[this.isOfficial][this.target].client.kickGroupUsers(
-        this.nakama.servers[this.isOfficial][this.target].session,
-        this.group_info['id'], [this.info['user']['id']]
-      ).then(_v => {
-        this.p5toast.show({
-          text: `사용자를 내보냈습니다: ${this.info['user']['display_name'] || '이름 없는 사용자'}`,
-        });
-        this.modalCtrl.dismiss({
-          id: this.info['user']['id'],
-          act: 'kick',
-        });
+    this.nakama.servers[this.isOfficial][this.target].client.kickGroupUsers(
+      this.nakama.servers[this.isOfficial][this.target].session,
+      this.group_info['id'], [this.info['user']['id']]
+    ).then(_v => {
+      this.p5toast.show({
+        text: `사용자를 내보냈습니다: ${this.info['user']['display_name'] || '이름 없는 사용자'}`,
+      });
+      this.modalCtrl.dismiss({
+        id: this.info['user']['id'],
+        act: 'kick',
       });
     });
   }
