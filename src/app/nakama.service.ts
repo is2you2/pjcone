@@ -528,7 +528,6 @@ export class NakamaService {
               .then(v => {
                 if (v.messages.length) {
                   this.channels_orig[_is_official][_target][_cid]['last_comment'] = v.messages[0].content['msg'];
-                  this.update_from_channel_msg(v.messages[0], _is_official, _target);
                 }
               });
           }).catch(_e => {
@@ -1053,7 +1052,7 @@ export class NakamaService {
           targetType = 2;
         // 요청 타입을 구분하여 자동반응처리
         switch (targetType) {
-          case 2:
+          case 2: // 1:1 채팅
             this.servers[_is_official][_target].socket.joinChat(
               v['sender_id'], targetType, true, false,
             ).then(c => {

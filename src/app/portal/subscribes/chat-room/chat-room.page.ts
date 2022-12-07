@@ -68,7 +68,6 @@ export class ChatRoomPage implements OnInit {
             if (!this.info['last_comment'])
               this.info['last_comment'] = msg['content']['msg'];
             this.messages.unshift(msg);
-            this.nakama.update_from_channel_msg(msg, this.isOfficial, this.target);
           });
           this.next_cursor = v.next_cursor;
         });
