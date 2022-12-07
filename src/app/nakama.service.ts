@@ -135,16 +135,16 @@ export class NakamaService {
   }
 
   /** 모든 pending 세션 켜기 */
-  init_all_sessions(_CallBack = (v: boolean, _o: any, _t: any) => console.log('init_all_sessions: ', v)) {
+  init_all_sessions() {
     let Targets = Object.keys(this.servers['official']);
     Targets.forEach(_target => {
       if (this.statusBar.groupServer['official'][_target] != 'offline')
-        this.init_session(_CallBack, 'official', _target);
+        this.init_session('official', _target);
     });
     let unTargets = Object.keys(this.servers['unofficial']);
     unTargets.forEach(_target => {
       if (this.statusBar.groupServer['unofficial'][_target] != 'offline')
-        this.init_session(_CallBack, 'unofficial', _target);
+        this.init_session('unofficial', _target);
     });
   }
 
@@ -291,20 +291,18 @@ export class NakamaService {
    * @param _CallBack 오류시 행동방침
    * @param _target 대상 key
    */
-  async init_session(_CallBack = (_v: boolean, _o?: any, _t?: any) => console.warn('nakama.init_session.callback null: ', _v), _is_official: 'official' | 'unofficial' = 'official', _target = 'default', _useSSL = false) {
+  async init_session(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _useSSL = false) {
     try {
       if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
       this.servers[_is_official][_target].session
         = await this.servers[_is_official][_target].client.authenticateEmail(this.users.self['email'], this.uuid, false);
       this.after_login(_is_official, _target, _useSSL);
-      _CallBack(true);
     } catch (e) {
       switch (e.status) {
         case 400: // 비번이 없거나 하는 등, 요청이 잘못됨
           this.p5toast.show({
             text: '사용자를 연결한 후 사용하세요.',
           });
-          _CallBack(false);
           this.users.self['is_online'] = false;
           this.set_group_statusBar('offline', _is_official, _target);
           break;
@@ -312,7 +310,6 @@ export class NakamaService {
           this.p5toast.show({
             text: '기기 재검증 과정 필요 (아직 개발되지 않음)',
           });
-          _CallBack(false);
           this.set_group_statusBar('offline', _is_official, _target);
           break;
         case 404: // 아이디 없음
@@ -337,13 +334,11 @@ export class NakamaService {
               }]
             );
           this.after_login(_is_official, _target, _useSSL);
-          _CallBack(undefined, _is_official, _target);
           break;
         default:
           this.p5toast.show({
             text: `준비되지 않은 오류 유형: ${e}`,
           });
-          _CallBack(false);
           this.set_group_statusBar('offline', _is_official, _target);
           break;
       }
@@ -361,6 +356,26 @@ export class NakamaService {
       }
       this.communityServer.send(JSON.stringify(packet));
     }
+    this.servers[_is_official][_target].client.getAccount(
+      this.servers[_is_official][_target].session).then(v => {
+        let keys = Object.keys(v.user);
+        keys.forEach(key => {
+          this.users.self[key] = v.user[key];
+        });
+      });
+    this.servers[_is_official][_target].client.readStorageObjects(
+      this.servers[_is_official][_target].session, {
+      object_ids: [{
+        collection: 'user_public',
+        key: 'profile_image',
+        user_id: this.servers[_is_official][_target].session.user_id,
+      }],
+    }).then(v => {
+      if (v.objects.length) {
+        this.users.self['img'] = v.objects[0].value['img'];
+        this.indexed.saveTextFileToUserPath(JSON.stringify(this.users.self['img']), 'servers/self/profile.img');
+      }
+    })
     this.connect_to(_is_official, _target, () => {
       this.get_group_list(_is_official, _target);
       this.redirect_channel(_is_official, _target)

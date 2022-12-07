@@ -41,33 +41,7 @@ export class LinkAccountPage implements OnInit {
             text: '사용자 연결에 성공했습니다.',
           });
           this.nakama.users.self['is_online'] = true;
-          this.nakama.init_all_sessions((_v) => {
-            let online_servers = this.nakama.get_all_online_server();
-            for (let i = 0, j = online_servers.length; i < j; i++) {
-              if (!this.nakama.users.self['display_name'])
-                online_servers[i].client.getUsers(
-                  online_servers[i].session, [online_servers[i].session.user_id]).then(_info => {
-                    this.nakama.users.self['display_name'] = _info.users[0].display_name;
-                    this.nakama.save_self_profile();
-                  });
-              if (!this.nakama.users.self['img']) {
-                online_servers[i].client.readStorageObjects(
-                  online_servers[i].session, {
-                  object_ids: [{
-                    collection: 'user_public',
-                    key: 'profile_image',
-                    user_id: online_servers[i].session.user_id,
-                  }],
-                }).then(v => {
-                  if (v.objects.length) {
-                    this.nakama.users.self['img'] = v.objects[0].value['img'];
-                    this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.users.self['img']), 'servers/self/profile.img');
-                  }
-                })
-              }
-              break;
-            }
-          });
+          this.nakama.init_all_sessions();
           setTimeout(() => {
             this.navCtrl.back();
           }, 500);

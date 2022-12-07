@@ -58,32 +58,6 @@ export class ProfilePage implements OnInit {
     this.p5canvas = new p5(sketch);
   }
 
-  /** 서버 중 한곳으로부터 데이터 수신받기 */
-  receiveDataFromServer() {
-    let anyServers = this.nakama.get_all_online_server();
-    if (anyServers.length) // 연결된 서버 있으면 이름 받아오기
-      for (let i = 0, j = anyServers.length; i < j; i++) {
-        // 프로필 불러오기
-        anyServers[i].client.getAccount(anyServers[i].session)
-          .then(v => {
-            this.nakama.users.self['display_name'] = v.user.display_name;
-            this.nakama.save_self_profile();
-          });
-        // 프로필 이미지 불러오기
-        anyServers[i].client.readStorageObjects(anyServers[i].session, {
-          object_ids: [{
-            collection: 'user_public',
-            key: 'profile_image',
-            user_id: anyServers[i].session.user_id,
-          }],
-        }).then(v => {
-          if (!v.objects.length) return;
-          this.change_img_smoothly(v.objects[0].value['img']);
-        });
-        break;
-      }
-  }
-
   /** 부드러운 이미지 변환 */
   change_img_smoothly(_url: string) {
     this.tmp_img = _url;
@@ -160,26 +134,7 @@ export class ProfilePage implements OnInit {
     if (this.nakama.users.self['is_online']) {
       if (this.nakama.users.self['email']) {
         this.nakama.save_self_profile();
-        this.nakama.init_all_sessions((v: boolean, _o, _t) => {
-          if (v) {
-            this.p5toast.show({
-              text: '로그인되었습니다.',
-            });
-            this.receiveDataFromServer();
-          } else if (v === undefined) { // 회원가입시
-            this.nakama.servers[_o][_t].client.writeStorageObjects(
-              this.nakama.servers[_o][_t].session, [{
-                collection: 'user_public',
-                key: 'profile_image',
-                value: { img: this.nakama.users.self['img'] },
-                permission_read: 2,
-                permission_write: 1,
-              }]).then(_v => {
-              }).catch(e => {
-                console.error('inputImageSelected_err: ', e, _o, _t);
-              });
-          }
-        });
+        this.nakama.init_all_sessions();
       } else {
         this.p5toast.show({
           text: '이메일 주소가 있어야 온라인으로 전환하실 수 있습니다.',
