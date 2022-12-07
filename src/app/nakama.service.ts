@@ -511,8 +511,10 @@ export class NakamaService {
             this.servers[_is_official][_target].client.listChannelMessages(
               this.servers[_is_official][_target].session, _cid, 1, false)
               .then(v => {
-                if (v.messages.length)
+                if (v.messages.length) {
                   this.channels_orig[_is_official][_target][_cid]['last_comment'] = v.messages[0].content['msg'];
+                  this.update_from_channel_msg(v.messages[0], _is_official, _target);
+                }
               });
           }).catch(_e => {
             this.channels_orig[_is_official][_target][_cid]['title']
@@ -812,45 +814,7 @@ export class NakamaService {
           this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = c.content['msg'];
           if (this.channels_orig[_is_official][_target][c.channel_id]['update'])
             this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
-          switch (c.code) {
-            case 0: // 사용자가 작성한 일반적인 메시지
-              if (c.content['update']) // 그룹 정보 업데이트
-                this.update_group_info(c, _is_official, _target);
-              if (c.content['user']) // 그룹 사용자 정보 변경
-                this.update_group_user_info(c, _is_official, _target);
-              break;
-            case 5: // 들어오려다가 포기한 사람에 대한 알림
-              console.warn('알림에서 이 사람의 초대를 전부 제외해야함_부분 동작중');
-              if (this.noti_origin[_is_official] && this.noti_origin[_is_official][_target]) {
-                let keys = Object.keys(this.noti_origin[_is_official][_target]);
-                let empty_ids = [];
-                keys.forEach(key => {
-                  if (this.noti_origin[_is_official][_target][key]['code'] == -5
-                    && this.noti_origin[_is_official][_target][key]['sender_id'] == c.sender_id)
-                    empty_ids.push(key);
-                });
-                this.servers[_is_official][_target].client.deleteNotifications(
-                  this.servers[_is_official][_target].session, empty_ids).then(v => {
-                    if (!v) console.warn('사용하지 않는 알림 삭제 후 오류');
-                    this.update_notifications(_is_official, _target);
-                  });
-              }
-            case 6: // 누군가 그룹에서 내보내짐
-              if (c.sender_id == this.servers[_is_official][_target].session.user_id) { // 내보내진게 나야
-                this.channels_orig[_is_official][_target][c.channel_id]['status'] = 'missing';
-                this.channels_orig[_is_official][_target][c.channel_id]['title']
-                  = this.channels_orig[_is_official][_target][c.channel_id]['title'] + ' (그룹원 아님)';
-                delete this.channels_orig[_is_official][_target][c.channel_id]['info'];
-                this.groups[_is_official][_target][c['group_id']]['status'] = 'missing';
-              } else { // 다른 누군가야
-                if (this.socket_reactive[-5]) // 그룹 상세를 보는 중이라면 업데이트하기
-                  this.socket_reactive[-5].update_GroupUsersList(_is_official, _target);
-              }
-              break;
-            default:
-              console.warn('예상하지 못한 채널 메시지 코드: ', c.code);
-              break;
-          }
+          this.update_from_channel_msg(c, _is_official, _target);
           this.save_channels_with_less_info();
         }
         socket.ondisconnect = (_e) => {
@@ -873,6 +837,49 @@ export class NakamaService {
           }
         }
       });
+  }
+
+  /** 채널 메시지를 분석하여 행동하기 */
+  update_from_channel_msg(c: ChannelMessage, _is_official: string, _target: string) {
+    switch (c.code) {
+      case 0: // 사용자가 작성한 일반적인 메시지
+        if (c.content['update']) // 그룹 정보 업데이트
+          this.update_group_info(c, _is_official, _target);
+        if (c.content['user']) // 그룹 사용자 정보 변경
+          this.update_group_user_info(c, _is_official, _target);
+        break;
+      case 5: // 들어오려다가 포기한 사람에 대한 알림
+        console.warn('알림에서 이 사람의 초대를 전부 제외해야함_부분 동작중');
+        if (this.noti_origin[_is_official] && this.noti_origin[_is_official][_target]) {
+          let keys = Object.keys(this.noti_origin[_is_official][_target]);
+          let empty_ids = [];
+          keys.forEach(key => {
+            if (this.noti_origin[_is_official][_target][key]['code'] == -5
+              && this.noti_origin[_is_official][_target][key]['sender_id'] == c.sender_id)
+              empty_ids.push(key);
+          });
+          this.servers[_is_official][_target].client.deleteNotifications(
+            this.servers[_is_official][_target].session, empty_ids).then(v => {
+              if (!v) console.warn('사용하지 않는 알림 삭제 후 오류');
+              this.update_notifications(_is_official, _target);
+            });
+        }
+      case 6: // 누군가 그룹에서 내보내짐
+        if (c.sender_id == this.servers[_is_official][_target].session.user_id) { // 내보내진게 나야
+          this.channels_orig[_is_official][_target][c.channel_id]['status'] = 'missing';
+          this.channels_orig[_is_official][_target][c.channel_id]['title']
+            = this.channels_orig[_is_official][_target][c.channel_id]['title'] + ' (그룹원 아님)';
+          delete this.channels_orig[_is_official][_target][c.channel_id]['info'];
+          this.groups[_is_official][_target][c['group_id']]['status'] = 'missing';
+        } else { // 다른 누군가야
+          if (this.socket_reactive[-5]) // 그룹 상세를 보는 중이라면 업데이트하기
+            this.socket_reactive[-5].update_GroupUsersList(_is_official, _target);
+        }
+        break;
+      default:
+        console.warn('예상하지 못한 채널 메시지 코드: ', c.code);
+        break;
+    }
   }
 
   /** 그룹 정보 변경 처리 */
@@ -1027,8 +1034,10 @@ export class NakamaService {
               };
               this.servers[_is_official][_target].client.listChannelMessages(
                 this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
-                  if (m.messages.length)
+                  if (m.messages.length) {
                     c['last_comment'] = m.messages[0].content['msg'];
+                    this.update_from_channel_msg(m.messages[0], _is_official, _target);
+                  }
                 });
               // 방 이미지를 상대방 이미지로 설정
               c['img'] = this.load_other_user(v.sender_id, _is_official, _target)['img'];
@@ -1097,8 +1106,10 @@ export class NakamaService {
             this.servers[_is_official][_target].client.listChannelMessages(
               this.servers[_is_official][_target].session, c.id, 1, false)
               .then(v => {
-                if (v.messages.length)
+                if (v.messages.length) {
                   this.channels_orig[_is_official][_target][c.id]['last_comment'] = v.messages[0].content['msg'];
+                  this.update_from_channel_msg(v.messages[0], _is_official, _target);
+                }
               });
           });
         this.noti.PushLocal({
