@@ -52,6 +52,7 @@ export class GroupDetailPage implements OnInit {
           this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], _is_official, _target);
       // 온라인일 경우
       if (this.has_admin) // 여기서만 has_admin이 온라인 여부처럼 동작함
+        if (this.info['status'] != 'missing')
         this.state_to_status(_is_official, _target);
     }
   }
@@ -298,8 +299,6 @@ export class GroupDetailPage implements OnInit {
   leave_channel() {
     if (this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] != 'missing') {
       delete this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['img'];
-      this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['title']
-        = this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['title'] + ' (삭제된 그룹)';
       this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] = 'missing';
       delete this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['info'];
     }

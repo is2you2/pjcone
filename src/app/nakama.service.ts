@@ -517,8 +517,6 @@ export class NakamaService {
                 }
               });
           }).catch(_e => {
-            this.channels_orig[_is_official][_target][_cid]['title']
-              = this.channels_orig[_is_official][_target][_cid]['title'] + ' (그룹원 아님)';
             this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
             delete this.channels_orig[_is_official][_target][_cid]['info'];
             this.save_channels_with_less_info();
@@ -867,8 +865,6 @@ export class NakamaService {
       case 6: // 누군가 그룹에서 내보내짐
         if (c.sender_id == this.servers[_is_official][_target].session.user_id) { // 내보내진게 나야
           this.channels_orig[_is_official][_target][c.channel_id]['status'] = 'missing';
-          this.channels_orig[_is_official][_target][c.channel_id]['title']
-            = this.channels_orig[_is_official][_target][c.channel_id]['title'] + ' (그룹원 아님)';
           delete this.channels_orig[_is_official][_target][c.channel_id]['info'];
           this.groups[_is_official][_target][c['group_id']]['status'] = 'missing';
         } else { // 다른 누군가야
@@ -913,7 +909,15 @@ export class NakamaService {
           });
         break;
       case 'remove': // 그룹이 삭제됨
-        console.log('그룹이 삭제됨: ', c);
+        this.groups[_is_official][_target][c.group_id]['status'] = 'missing';
+        delete this.groups[_is_official][_target][c.group_id]['img'];
+        this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${c.group_id}.img`);
+        let users = Object.keys(this.groups[_is_official][_target][c.group_id]['users']);
+        users.forEach(userId => {
+          delete this.groups[_is_official][_target][c.group_id]['users'][userId]['user']['state'];
+          this.groups[_is_official][_target][c.group_id]['users'][userId]['user']['status'] = 'missing';
+        });
+        this.channels_orig[_is_official][_target][c.channel_id]['status'] = 'missing';
         break;
       default:
         console.warn('예상하지 못한 그룹 행동: ', c);

@@ -59,8 +59,6 @@ export class SettingsPage implements OnInit {
             if (!v.group_users.length) { // 그룹 비활성중
               this.nakama.groups[_is_official][_target][group.id]['status'] = 'missing';
               this.nakama.channels_orig[_is_official][_target][group['channel_id']]['status'] = 'missing';
-              this.nakama.channels_orig[_is_official][_target][group['channel_id']]['title']
-                = this.nakama.channels_orig[_is_official][_target][group['channel_id']]['title'] + ' (삭제된 그룹)';
               this.nakama.save_channels_with_less_info();
             } else { // 그룹 활성중
               let am_i_lost = true;
@@ -87,8 +85,6 @@ export class SettingsPage implements OnInit {
               if (am_i_lost) { // 그룹은 있으나 구성원은 아님
                 this.nakama.groups[_is_official][_target][group.id]['status'] = 'missing';
                 this.nakama.channels_orig[_is_official][_target][group['channel_id']]['status'] = 'missing';
-                this.nakama.channels_orig[_is_official][_target][group['channel_id']]['title']
-                  = this.nakama.channels_orig[_is_official][_target][group['channel_id']]['title'] + ' (그룹원 아님)';
                 this.nakama.save_channels_with_less_info();
               }
             }
