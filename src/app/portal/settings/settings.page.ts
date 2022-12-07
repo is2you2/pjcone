@@ -31,6 +31,7 @@ export class SettingsPage implements OnInit {
     this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
       if (e && v) this.nakama.users.self['img'] = v.replace(/"|=|\\/g, '');
     });
+    this.nakama.socket_reactive['settings'] = this;
   }
 
   /** 표시되는 그룹 리스트 */
@@ -140,5 +141,9 @@ export class SettingsPage implements OnInit {
     this.nav.navigateForward(`settings/${_page}`, {
       animation: iosTransitionAnimation,
     })
+  }
+
+  ionViewWillLeave() {
+    delete this.nakama.socket_reactive['settings'];
   }
 }

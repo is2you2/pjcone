@@ -883,8 +883,10 @@ export class NakamaService {
           delete this.channels_orig[_is_official][_target][c.channel_id]['info'];
           this.groups[_is_official][_target][c['group_id']]['status'] = 'missing';
         } else { // 다른 누군가야
-          if (this.socket_reactive[-5]) // 그룹 상세를 보는 중이라면 업데이트하기
-            this.socket_reactive[-5].update_GroupUsersList(_is_official, _target);
+          if (this.socket_reactive['settings'])
+            this.socket_reactive['settings'].load_groups();
+          if (this.socket_reactive['group_detail']) // 그룹 상세를 보는 중이라면 업데이트하기
+            this.socket_reactive['group_detail'].update_GroupUsersList(_is_official, _target);
         }
         break;
       default:
@@ -1098,8 +1100,10 @@ export class NakamaService {
         v['request'] = `${v.code}-${v.subject}`;
         break;
       case -4: // 상대방이 그룹 참가 수락
-        if (this.socket_reactive[v.code] && this.socket_reactive[v.code].info.id == v.content['group_id'])
-          this.socket_reactive[v.code].update_from_notification(v);
+        if (this.socket_reactive['group_detail'] && this.socket_reactive['group_detail'].info.id == v.content['group_id'])
+          this.socket_reactive['group_detail'].update_from_notification(v);
+        if (this.socket_reactive['settings'])
+          this.socket_reactive['settings'].load_groups();
         this.groups[_is_official][_target][v.content['group_id']]['status'] = 'online';
         v['request'] = `${v.code}-${v.subject}`;
         this.rearrange_notifications();
@@ -1170,12 +1174,14 @@ export class NakamaService {
         }
         this.rearrange_notifications();
         // 이미 보는 화면이라면 업데이트하기
-        if (this.socket_reactive[v.code] && this.socket_reactive[v.code].info.id == v.content['group_id'])
-          this.socket_reactive[v.code].update_from_notification(v);
+        if (this.socket_reactive['settings'])
+          this.socket_reactive['settings'].load_groups();
+        if (this.socket_reactive['group_detail'] && this.socket_reactive['group_detail'].info.id == v.content['group_id'])
+          this.socket_reactive['group_detail'].update_from_notification(v);
         this.noti.SetListener(`check${v.code}`, (_v: any) => {
           this.noti.ClearNoti(_v['id']);
           this.noti.RemoveListener(`check${v.code}`);
-          if (this.socket_reactive[v.code]) return;
+          if (this.socket_reactive['group_detail']) return;
           this.modalCtrl.create({
             component: GroupDetailPage,
             componentProps: { info: this.groups[_is_official][_target][v.content['group_id']] },
@@ -1192,7 +1198,7 @@ export class NakamaService {
           smallIcon_ln: 'diychat',
           iconColor_ln: '271e38',
         }, undefined, (_ev: any) => {
-          if (this.socket_reactive[v.code].info.id == v.content['group_id']) return;
+          if (this.socket_reactive['group_detail'].info.id == v.content['group_id']) return;
           this.modalCtrl.create({
             component: GroupDetailPage,
             componentProps: { info: this.groups[_is_official][_target][v.content['group_id']] },
