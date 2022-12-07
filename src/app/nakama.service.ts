@@ -904,7 +904,13 @@ export class NakamaService {
         });
         break;
       case 'info': // 그룹 정보가 변경됨
-        console.log('그룹 정보 변경됨: ', c);
+        this.servers[_is_official][_target].client.listGroups(
+          this.servers[_is_official][_target].session, c.content['name']).then(v => {
+            let keys = Object.keys(v.groups[0]);
+            keys.forEach(key => {
+              this.groups[_is_official][_target][v.groups[0].id][key] = v.groups[0][key];
+            });
+          });
         break;
       case 'remove': // 그룹이 삭제됨
         console.log('그룹이 삭제됨: ', c);
@@ -923,6 +929,9 @@ export class NakamaService {
         break;
       case 'out':
         console.log('사용자 삭제: ', c);
+        break;
+      case 'modify':
+        console.log('사용자 정보 변경: ', c);
         break;
       default:
         console.warn('예상하지 못한 그룹 사용자 행동: ', c);

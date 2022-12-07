@@ -32,9 +32,12 @@ export class GroupDetailPage implements OnInit {
   info: any;
   /** 내가 이 그룹의 방장인지 여부 */
   has_admin = false;
+  /** 진입시 그룹 정보 */
+  info_orig: any;
 
   ngOnInit() {
     this.info = this.navParams.get('info');
+    this.info_orig = { ...this.navParams.get('info') };
     this.nakama.socket_reactive[-4] = this;
     this.nakama.socket_reactive[-5] = this;
     this.readasQRCodeFromId();
@@ -215,6 +218,7 @@ export class GroupDetailPage implements OnInit {
         this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
           this.info['channel_id'], {
           update: 'info',
+          name: this.info['name'],
           msg: '그룹 정보 업데이트 알림-테스트 로그',
         });
       });
@@ -305,7 +309,7 @@ export class GroupDetailPage implements OnInit {
   ionViewWillLeave() {
     delete this.nakama.socket_reactive[-4];
     delete this.nakama.socket_reactive[-5];
-    this.need_edit = this.info['description'] != this.navParams.get('info')['description'];
+    this.need_edit = this.info['description'] != this.info_orig['description'];
     if (this.need_edit)
       this.edit_group();
   }
