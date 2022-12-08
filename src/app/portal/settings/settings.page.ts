@@ -142,6 +142,7 @@ export class SettingsPage implements OnInit {
 
   /** 만들어진 그룹을 관리 */
   go_to_group_detail(i: number) {
+    delete this.nakama.socket_reactive['settings'];
     this.modalCtrl.create({
       component: GroupDetailPage,
       componentProps: {

@@ -52,7 +52,7 @@ export class GroupDetailPage implements OnInit {
       // 온라인일 경우
       if (this.has_admin) // 여기서만 has_admin이 온라인 여부처럼 동작함
         if (this.info['status'] != 'missing')
-        this.state_to_status(_is_official, _target);
+          this.state_to_status(_is_official, _target);
     }
   }
 
@@ -271,7 +271,8 @@ export class GroupDetailPage implements OnInit {
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
         this.info['channel_id'], {
         user: 'out',
-        msg: `사용자가 그룹 나감: ${this.nakama.users.self['display_name']}-테스트 로그`
+        display_name: this.nakama.users.self['display_name'],
+        msg: `사용자가 그룹 나감: ${this.nakama.users.self['display_name']}-테스트 로그` // 받는 사람이 생성해야함
       }).then(_m => {
         this.after_leave_group_announce(() => {
           this.leave_channel();

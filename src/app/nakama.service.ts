@@ -828,7 +828,9 @@ export class NakamaService {
     this.servers[_is_official][_target].socket.connect(
       this.servers[_is_official][_target].session, true).then(_v => {
         let socket = this.servers[_is_official][_target].socket;
-        _CallBack();
+        setTimeout(() => {
+          _CallBack();
+        }, 250);
         // 실시간으로 알림을 받은 경우
         socket.onnotification = (v) => {
           console.log('소켓에서 실시간으로 무언가 받음: ', v);
@@ -886,8 +888,15 @@ export class NakamaService {
         if (c.content['user']) // 그룹 사용자 정보 변경
           this.update_group_user_info(c, _is_official, _target);
         break;
-      case 5: // 들어오려다가 포기한 사람에 대한 알림
-        console.warn('알림에서 이 사람의 초대를 전부 제외해야함_부분 동작중');
+      case 4: // 채널에 새로 들어온 사람 알림
+      case 5: // 그룹에 있던 사용자 나감(들어오려다가 포기한 사람 포함)
+      case 6: // 누군가 그룹에서 내보내짐 (kick)
+        console.warn('탈퇴/추방 등 사람이 나간 경우');
+        if (this.socket_reactive['settings'])
+          this.socket_reactive['settings'].load_groups();
+        if (this.socket_reactive['group_detail']) // 그룹 상세를 보는 중이라면 업데이트하기
+          this.socket_reactive['group_detail'].update_GroupUsersList(_is_official, _target);
+        if (c.code == 4) break;
         if (this.noti_origin[_is_official] && this.noti_origin[_is_official][_target]) {
           let keys = Object.keys(this.noti_origin[_is_official][_target]);
           let empty_ids = [];
@@ -902,7 +911,6 @@ export class NakamaService {
               this.update_notifications(_is_official, _target);
             });
         }
-      case 6: // 누군가 그룹에서 내보내짐
         if (c.sender_id == this.servers[_is_official][_target].session.user_id) { // 내보내진게 나야
           this.channels_orig[_is_official][_target][c.channel_id]['status'] = 'missing';
           delete this.channels_orig[_is_official][_target][c.channel_id]['info'];
@@ -970,12 +978,6 @@ export class NakamaService {
   /** 그룹 사용자 상태 변경 처리 */
   update_group_user_info(c: ChannelMessage, _is_official: string, _target: string) {
     switch (c.content['user']) {
-      case 'join': // 사용자 그룹 들어옴
-        console.log('사용자 진입: ', c);
-        break;
-      case 'out': // 사용자 그룹 나감
-        console.log('사용자 나감: ', c);
-        break;
       case 'modify': // 프로필 또는 이미지가 변경됨
         this.servers[_is_official][_target].client.readStorageObjects(
           this.servers[_is_official][_target].session, {
@@ -989,6 +991,8 @@ export class NakamaService {
             if (this.socket_reactive['others-profile']) {
               this.socket_reactive['others-profile'](v.objects[0].value['img']);
             } else {
+              if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
+              if (!this.users[_is_official][_target][c.sender_id]) this.users[_is_official][_target][c.sender_id] = {};
               this.users[_is_official][_target][c.sender_id]['img'] = v.objects[0].value['img'];
               this.indexed.saveTextFileToUserPath(v.objects[0].value['img'], `servers/${_is_official}/${_target}/users/${c.sender_id}/profile.img`)
             }

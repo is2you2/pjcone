@@ -46,6 +46,9 @@ export class OthersProfilePage implements OnInit {
     this.nakama.socket_reactive['others-profile'] = (img_url: string) => {
       this.change_img_smoothly(img_url);
     };
+    this.nakama.socket_reactive['others-online'] = (v: any) => {
+      console.warn('사용자 참가/떠남 여부: ', v);
+    };
     this.catch_user_noties();
     let sketch = (p: p5) => {
       let img = document.getElementById('profile_img');
@@ -190,6 +193,12 @@ export class OthersProfilePage implements OnInit {
       this.p5toast.show({
         text: `사용자를 내보냈습니다: ${this.info['user']['display_name'] || '이름 없는 사용자'}`,
       });
+      if (this.info['state'] == 3) // 입장 요청중인 인원
+        this.nakama.servers[this.isOfficial][this.target].socket.writeChatMessage(
+          this.group_info['channel_id'], {
+          user: 'kick',
+          msg: `참여 거절-${this.info['user']['display_name']}`,
+        });
       this.modalCtrl.dismiss({
         id: this.info['user']['id'],
         act: 'kick',
@@ -203,6 +212,7 @@ export class OthersProfilePage implements OnInit {
 
   ionViewDidLeave() {
     delete this.nakama.socket_reactive['others-profile'];
+    delete this.nakama.socket_reactive['others-online'];
     this.p5canvas.remove();
   }
 }
