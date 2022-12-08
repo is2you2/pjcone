@@ -31,6 +31,7 @@ export class AddGroupPage implements OnInit {
       this.userInput = tmp;
     this.servers = this.nakama.get_all_server_info(true, true);
     this.userInput.server = this.servers[this.index];
+    this.userInput.lang_tag = navigator.language.split('-')[0];
   }
 
   /** 그룹ID를 QRCode로 그려내기 */

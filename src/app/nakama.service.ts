@@ -318,6 +318,7 @@ export class NakamaService {
             await this.servers[_is_official][_target].client.updateAccount(
               this.servers[_is_official][_target].session, {
               display_name: this.users.self['display_name'],
+              lang_tag: navigator.language.split('-')[0],
             });
           this.p5toast.show({
             text: `회원가입이 완료되었습니다: ${_target}`,
@@ -332,7 +333,12 @@ export class NakamaService {
                 permission_write: 1,
                 value: { img: this.users.self['img'] },
               }]
-            );
+            ).then(v => {
+              this.servers[_is_official][_target].client.updateAccount(
+                this.servers[_is_official][_target].session, {
+                avatar_url: v.acks[0].version,
+              });
+            });
           this.after_login(_is_official, _target, _useSSL);
           break;
         default:
@@ -372,8 +378,12 @@ export class NakamaService {
       }],
     }).then(v => {
       if (v.objects.length) {
-        this.users.self['img'] = v.objects[0].value['img'];
-        this.indexed.saveTextFileToUserPath(JSON.stringify(this.users.self['img']), 'servers/self/profile.img');
+        if (this.socket_reactive['profile']) {
+          this.socket_reactive['profile'](v.objects[0].value['img']);
+        } else {
+          this.users.self['img'] = v.objects[0].value['img'];
+          this.indexed.saveTextFileToUserPath(JSON.stringify(this.users.self['img']), 'servers/self/profile.img');
+        }
       }
     })
     this.connect_to(_is_official, _target, () => {
@@ -395,6 +405,22 @@ export class NakamaService {
     let without_img = { ...this.users.self };
     delete without_img['img'];
     this.indexed.saveTextFileToUserPath(JSON.stringify(without_img), 'servers/self/profile.json')
+  }
+
+  /** 불러와진 모든 사용자를 배열로 돌려주기 */
+  rearrange_all_user() {
+    let result: User[] = [];
+    let isOfficial = Object.keys(this.users);
+    isOfficial.forEach(_is_official => {
+      let Target = Object.keys(this.users[_is_official]);
+      Target.forEach(_target => {
+        let UserIds = Object.keys(this.users[_is_official][_target]);
+        UserIds.forEach(_uid => {
+          result.push(this.users[_is_official][_target][_uid]);
+        });
+      });
+    });
+    return result;
   }
 
   /** 다른 사람의 정보 반환해주기 */
@@ -549,7 +575,7 @@ export class NakamaService {
    * @return Channel[] from channel_orig
    */
   rearrange_channels() {
-    let result = [];
+    let result: Channel[] = [];
     let isOfficial = Object.keys(this.channels_orig);
     isOfficial.forEach(_is_official => {
       let Targets = Object.keys(this.channels_orig[_is_official]);
@@ -944,14 +970,35 @@ export class NakamaService {
   /** 그룹 사용자 상태 변경 처리 */
   update_group_user_info(c: ChannelMessage, _is_official: string, _target: string) {
     switch (c.content['user']) {
-      case 'join':
+      case 'join': // 사용자 그룹 들어옴
         console.log('사용자 진입: ', c);
         break;
-      case 'out':
-        console.log('사용자 삭제: ', c);
+      case 'out': // 사용자 그룹 나감
+        console.log('사용자 나감: ', c);
         break;
-      case 'modify':
-        console.log('사용자 정보 변경: ', c);
+      case 'modify': // 프로필 또는 이미지가 변경됨
+        this.servers[_is_official][_target].client.readStorageObjects(
+          this.servers[_is_official][_target].session, {
+          object_ids: [{
+            collection: 'user_public',
+            key: 'profile_image',
+            user_id: c.sender_id,
+          }]
+        }).then(v => {
+          if (v.objects.length) {
+            if (this.socket_reactive['others-profile']) {
+              this.socket_reactive['others-profile'](v.objects[0].value['img']);
+            } else {
+              this.users[_is_official][_target][c.sender_id]['img'] = v.objects[0].value['img'];
+              this.indexed.saveTextFileToUserPath(v.objects[0].value['img'], `servers/${_is_official}/${_target}/users/${c.sender_id}/profile.img`)
+            }
+          } else {
+            if (this.socket_reactive['others-profile'])
+              this.socket_reactive['others-profile']('');
+            delete this.users[_is_official][_target][c.sender_id]['img'];
+            this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${c.sender_id}/profile.img`)
+          }
+        });
         break;
       default:
         console.warn('예상하지 못한 그룹 사용자 행동: ', c);

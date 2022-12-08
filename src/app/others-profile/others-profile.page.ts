@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
 import * as p5 from "p5";
+import { IndexedDBService } from '../indexed-db.service';
 import { NakamaService } from '../nakama.service';
 import { P5ToastService } from '../p5-toast.service';
 import { ChatRoomPage } from '../portal/subscribes/chat-room/chat-room.page';
@@ -19,6 +20,7 @@ export class OthersProfilePage implements OnInit {
     private nakama: NakamaService,
     public statusBar: StatusManageService,
     private p5toast: P5ToastService,
+    private indexed: IndexedDBService,
   ) { }
 
   info = {};
@@ -37,6 +39,13 @@ export class OthersProfilePage implements OnInit {
   ngOnInit() {
     this.info = this.navParams.get('info');
     this.has_admin = this.navParams.get('has_admin');
+    this.group_info = this.navParams.get('group');
+    this.isOfficial = this.group_info['server']['isOfficial'];
+    this.target = this.group_info['server']['target'];
+    this.nakama.load_other_user(this.info['user']['id'], this.isOfficial, this.target);
+    this.nakama.socket_reactive['others-profile'] = (img_url: string) => {
+      this.change_img_smoothly(img_url);
+    };
     this.catch_user_noties();
     let sketch = (p: p5) => {
       let img = document.getElementById('profile_img');
@@ -69,11 +78,7 @@ export class OthersProfilePage implements OnInit {
   target: string;
   /** 이 사용자와 관련된 알림 검토 (그룹 리액션 검토용) */
   catch_user_noties() {
-    this.group_info = this.navParams.get('group');
-    this.isOfficial = this.group_info['server']['isOfficial'];
-    this.target = this.group_info['server']['target'];
-    let hasNotifications = true;
-    hasNotifications = hasNotifications && this.nakama.noti_origin[this.isOfficial] && this.nakama.noti_origin[this.isOfficial][this.target];
+    let hasNotifications = this.nakama.noti_origin[this.isOfficial] && this.nakama.noti_origin[this.isOfficial][this.target];
     if (hasNotifications) {
       let noti_ids = Object.keys(this.nakama.noti_origin[this.isOfficial][this.target]);
       noti_ids.forEach(noti_id => {
@@ -85,7 +90,6 @@ export class OthersProfilePage implements OnInit {
 
   /** 부드러운 이미지 변환 */
   change_img_smoothly(_url: string) {
-    this.tmp_img = _url;
     new p5((p: p5) => {
       let profile_tmp_img = document.getElementById('profile_tmp_img');
       let file_sel = document.getElementById('file_sel');
@@ -93,18 +97,20 @@ export class OthersProfilePage implements OnInit {
       let lerpVal = 0;
       p.setup = () => {
         file_sel['value'] = '';
-        profile_tmp_img.setAttribute('style', `filter: grayscale(${this.info['state'] ? 0 : .9}) contrast(${this.info['state'] ? 1 : 1.4}) opacity(${lerpVal})`);
+        profile_tmp_img.setAttribute('style', `filter: grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)}) opacity(${lerpVal})`);
+        this.tmp_img = _url;
       }
       p.draw = () => {
         if (lerpVal < 1) {
           lerpVal += LERP_SIZE;
         } else {
           lerpVal = 1;
-          this.info['img'] = this.tmp_img;
+          this.info['user']['img'] = this.tmp_img;
+          this.indexed.saveTextFileToUserPath(this.info['user']['img'], `servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/profile.img`)
           this.tmp_img = '';
           p.remove();
         }
-        profile_tmp_img.setAttribute('style', `filter: grayscale(${this.info['state'] ? 0 : .9}) contrast(${this.info['state'] ? 1 : 1.4}) opacity(${lerpVal})`);
+        profile_tmp_img.setAttribute('style', `filter: grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)}) opacity(${lerpVal})`);
       }
     });
   }
@@ -196,6 +202,7 @@ export class OthersProfilePage implements OnInit {
   }
 
   ionViewDidLeave() {
+    delete this.nakama.socket_reactive['others-profile'];
     this.p5canvas.remove();
   }
 }

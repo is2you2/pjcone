@@ -27,9 +27,15 @@ export class ProfilePage implements OnInit {
   tmp_img: string;
   /** 사용자 주소 입력 */
   url_input: string;
+  /** 들어오기 직전 프로필 정보 백업 */
+  original_profile = {};
 
   p5canvas: p5;
   ngOnInit() {
+    this.original_profile = { ...this.nakama.users.self };
+    this.nakama.socket_reactive['profile'] = (img_url: string) => {
+      this.change_img_smoothly(img_url);
+    }
     this.cant_use_clipboard = isPlatform != 'DesktopPWA';
     let sketch = (p: p5) => {
       let img = document.getElementById('profile_img');
@@ -60,7 +66,6 @@ export class ProfilePage implements OnInit {
 
   /** 부드러운 이미지 변환 */
   change_img_smoothly(_url: string) {
-    this.tmp_img = _url;
     new p5((p: p5) => {
       let profile_tmp_img = document.getElementById('profile_tmp_img');
       let file_sel = document.getElementById('file_sel');
@@ -69,6 +74,7 @@ export class ProfilePage implements OnInit {
       p.setup = () => {
         file_sel['value'] = '';
         profile_tmp_img.setAttribute('style', `filter: grayscale(${this.nakama.users.self['is_online'] ? 0 : .9}) contrast(${this.nakama.users.self['is_online'] ? 1 : 1.4}) opacity(${lerpVal})`);
+        this.tmp_img = _url;
       }
       p.draw = () => {
         if (lerpVal < 1) {
@@ -88,7 +94,17 @@ export class ProfilePage implements OnInit {
               value: { img: this.nakama.users.self['img'] },
               permission_read: 2,
               permission_write: 1,
-            }]).then(_v => {
+            }]).then(v => {
+              servers[i].client.updateAccount(servers[i].session, {
+                avatar_url: v.acks[0].version,
+              });
+              let all_channels = this.nakama.rearrange_channels();
+              all_channels.forEach(channel => {
+                servers[i].socket.writeChatMessage(channel.id, {
+                  user: 'modify',
+                  msg: `${this.nakama.users.self['display_name']}-사용자 프로필 변경됨`,
+                });
+              });
             }).catch(e => {
               console.error('inputImageSelected_err: ', e);
             });
@@ -193,24 +209,44 @@ export class ProfilePage implements OnInit {
   }
 
   ionViewWillLeave() {
+    delete this.nakama.socket_reactive['profile'];
+    let keys = Object.keys(this.original_profile);
+    let isProfileChanged = false;
+    for (let i = 0, j = keys.length; i < j; i++)
+      if (this.nakama.users.self[keys[i]] != this.original_profile[keys[i]]) {
+        isProfileChanged = true;
+        break;
+      }
     this.nakama.users.self['img'] = this.tmp_img || this.nakama.users.self['img'];
-    let servers = this.nakama.get_all_online_server();
-    for (let i = 0, j = servers.length; i < j; i++) {
-      if (this.nakama.users.self['display_name'])
-        servers[i].client.updateAccount(servers[i].session, {
-          display_name: this.nakama.users.self['display_name'],
-        });
-      if (this.nakama.users.self['img'])
-        servers[i].client.writeStorageObjects(servers[i].session, [{
-          collection: 'user_public',
-          key: 'profile_image',
-          value: { img: this.nakama.users.self['img'] },
-          permission_read: 2,
-          permission_write: 1,
-        }])
+    if (isProfileChanged) {
+      let servers = this.nakama.get_all_online_server();
+      for (let i = 0, j = servers.length; i < j; i++) {
+        if (this.nakama.users.self['display_name'])
+          servers[i].client.updateAccount(servers[i].session, {
+            display_name: this.nakama.users.self['display_name'],
+          });
+        if (this.nakama.users.self['img'])
+          servers[i].client.writeStorageObjects(servers[i].session, [{
+            collection: 'user_public',
+            key: 'profile_image',
+            value: { img: this.nakama.users.self['img'] },
+            permission_read: 2,
+            permission_write: 1,
+          }]).then(v => {
+            servers[i].client.updateAccount(servers[i].session, {
+              avatar_url: v.acks[0].version,
+            });
+            let all_channels = this.nakama.rearrange_channels();
+            all_channels.forEach(channel => {
+              servers[i].socket.writeChatMessage(channel.id, {
+                user: 'modify',
+                msg: `${this.nakama.users.self['display_name']}-사용자 프로필 변경됨`,
+              });
+            });
+          });
+      }
+      this.nakama.save_self_profile();
     }
-    this.nakama.save_self_profile();
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.users.self['img']), 'servers/self/profile.img');
     this.p5canvas.remove();
   }
 

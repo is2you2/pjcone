@@ -31,7 +31,6 @@ export class SettingsPage implements OnInit {
     this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
       if (e && v) this.nakama.users.self['img'] = v.replace(/"|=|\\/g, '');
     });
-    this.nakama.socket_reactive['settings'] = this;
   }
 
   /** 표시되는 그룹 리스트 */
@@ -40,6 +39,7 @@ export class SettingsPage implements OnInit {
   /** 프로필 썸네일 */
   profile_filter: string;
   ionViewWillEnter() {
+    this.nakama.socket_reactive['settings'] = this;
     if (this.nakama.users.self['is_online'])
       this.profile_filter = "filter: grayscale(0) contrast(1);";
     else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
@@ -85,7 +85,8 @@ export class SettingsPage implements OnInit {
                 }
               if (am_i_lost) { // 그룹은 있으나 구성원은 아님
                 this.nakama.groups[_is_official][_target][group.id]['status'] = 'missing';
-                this.nakama.channels_orig[_is_official][_target][group['channel_id']]['status'] = 'missing';
+                if (group['channel_id']) // 그룹 수락이 안되어있는 경우
+                  this.nakama.channels_orig[_is_official][_target][group['channel_id']]['status'] = 'missing';
                 this.nakama.save_channels_with_less_info();
               }
             }
@@ -94,7 +95,24 @@ export class SettingsPage implements OnInit {
             v.group_users.forEach(User => {
               if (User['is_me'])
                 User['user'] = this.nakama.users.self;
-              else this.nakama.save_other_user(User['user'], _is_official, _target);
+              else {
+                let need_img_update = true;
+                if (this.nakama.users[_is_official][_target] && this.nakama.users[_is_official][_target][User['user'].id])
+                  need_img_update = this.nakama.users[_is_official][_target][User['user'].id]['avatar_url'] == User['user'].avatar_url;
+                if (need_img_update)
+                  this.nakama.servers[_is_official][_target].client.readStorageObjects(
+                    this.nakama.servers[_is_official][_target].session, {
+                    object_ids: [{
+                      collection: 'user_public',
+                      key: 'profile_image',
+                      user_id: User['user']['id'],
+                    }],
+                  }).then(v => {
+                    User['user']['img'] = v.objects[0].value['img'];
+                    this.nakama.save_other_user(User['user'], _is_official, _target);
+                  });
+                this.nakama.save_other_user(User['user'], _is_official, _target);
+              }
             });
             this.nakama.save_groups_with_less_info();
           });
@@ -145,5 +163,13 @@ export class SettingsPage implements OnInit {
 
   ionViewWillLeave() {
     delete this.nakama.socket_reactive['settings'];
+  }
+
+  go_back() {
+    let AllUsers = this.nakama.rearrange_all_user();
+    AllUsers.forEach(user => {
+      delete user['img'];
+    });
+    delete this.nakama.users.self['img'];
   }
 }
