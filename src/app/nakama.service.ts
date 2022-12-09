@@ -365,9 +365,7 @@ export class NakamaService {
     this.servers[_is_official][_target].client.getAccount(
       this.servers[_is_official][_target].session).then(v => {
         let keys = Object.keys(v.user);
-        keys.forEach(key => {
-          this.users.self[key] = v.user[key];
-        });
+        keys.forEach(key => this.users.self[key] = v.user[key]);
       });
     this.servers[_is_official][_target].client.readStorageObjects(
       this.servers[_is_official][_target].session, {
@@ -431,9 +429,7 @@ export class NakamaService {
       if (e && v) {
         let data = JSON.parse(v);
         let keys = Object.keys(data);
-        keys.forEach(key => {
-          this.users[_is_official][_target][userId][key] = data[key];
-        });
+        keys.forEach(key => this.users[_is_official][_target][userId][key] = data[key]);
       }
       this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
         if (e && v) this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
@@ -446,6 +442,10 @@ export class NakamaService {
   save_other_user(userInfo: any, _is_official: string, _target: string) {
     let copied = { ...userInfo };
     delete copied['img'];
+    if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
+    if (!this.users[_is_official][_target][userInfo['id']]) this.users[_is_official][_target][userInfo['id']] = {};
+    let keys = Object.keys(userInfo);
+    keys.forEach(key => this.users[_is_official][_target][userInfo['id']][key] = userInfo[key]);
     this.indexed.saveTextFileToUserPath(JSON.stringify(copied), `servers/${_is_official}/${_target}/users/${copied['id']}/profile.json`);
     if (userInfo['img'])
       this.indexed.saveTextFileToUserPath(userInfo['img'], `servers/${_is_official}/${_target}/users/${userInfo['id']}/profile.img`);
@@ -485,9 +485,7 @@ export class NakamaService {
       return 0;
     });
     let keys = Object.keys(this.after_notifications_rearrange);
-    keys.forEach(key => {
-      this.after_notifications_rearrange[key](result);
-    })
+    keys.forEach(key => this.after_notifications_rearrange[key](result));
     return result;
   }
 
@@ -809,9 +807,7 @@ export class NakamaService {
       });
     });
     let keys = Object.keys(this.after_rearrange_group);
-    keys.forEach(key => {
-      this.after_rearrange_group[key](result);
-    });
+    keys.forEach(key => this.after_rearrange_group[key](result));
     return result;
   }
 
@@ -953,9 +949,7 @@ export class NakamaService {
         this.servers[_is_official][_target].client.listGroups(
           this.servers[_is_official][_target].session, c.content['name']).then(v => {
             let keys = Object.keys(v.groups[0]);
-            keys.forEach(key => {
-              this.groups[_is_official][_target][v.groups[0].id][key] = v.groups[0][key];
-            });
+            keys.forEach(key => this.groups[_is_official][_target][v.groups[0].id][key] = v.groups[0][key]);
           });
         break;
       case 'remove': // 그룹이 삭제됨

@@ -117,9 +117,7 @@ export class GroupDetailPage implements OnInit {
           if (!this.nakama.users[_is_official][_target]) this.nakama.users[_is_official][_target] = {};
           if (!this.nakama.users[_is_official][_target][ul.group_users[i].user.id]) this.nakama.users[_is_official][_target][ul.group_users[i].user.id] = {};
           let keys = Object.keys(ul.group_users[i].user);
-          keys.forEach(key => {
-            this.nakama.users[_is_official][_target][ul.group_users[i].user.id][key] = ul.group_users[i].user[key];
-          });
+          keys.forEach(key => this.nakama.users[_is_official][_target][ul.group_users[i].user.id][key] = ul.group_users[i].user[key]);
           let form = {
             state: ul.group_users[i].state,
             user: this.nakama.users[_is_official][_target][ul.group_users[i].user.id],

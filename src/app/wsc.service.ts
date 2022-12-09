@@ -47,9 +47,7 @@ export class WscService {
     }
     this.client.onclose = (_ev) => {
       let keys = Object.keys(this.disconnected);
-      keys.forEach(key => {
-        this.disconnected[key]();
-      });
+      keys.forEach(key => this.disconnected[key]());
       this.statusBar.settings['communityServer'] = 'missing';
       setTimeout(() => {
         this.statusBar.settings['communityServer'] = 'offline';
