@@ -1041,10 +1041,9 @@ export class NakamaService {
             if (this.socket_reactive['others-profile']) {
               this.socket_reactive['others-profile'](v.objects[0].value['img']);
             } else {
-              if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
-              if (!this.users[_is_official][_target][c.sender_id]) this.users[_is_official][_target][c.sender_id] = {};
               this.users[_is_official][_target][c.sender_id]['img'] = v.objects[0].value['img'];
-              this.indexed.saveTextFileToUserPath(v.objects[0].value['img'], `servers/${_is_official}/${_target}/users/${c.sender_id}/profile.img`)
+              this.users[_is_official][_target][c.sender_id]['avatar_url'] = v.objects[0].version;
+              this.save_other_user(c.sender_id, _is_official, _target);
             }
           } else {
             if (this.socket_reactive['others-profile'])

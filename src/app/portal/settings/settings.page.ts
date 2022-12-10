@@ -96,10 +96,7 @@ export class SettingsPage implements OnInit {
               if (User['is_me'])
                 User['user'] = this.nakama.users.self;
               else {
-                let need_img_update = true;
-                if (this.nakama.users[_is_official][_target] && this.nakama.users[_is_official][_target][User['user'].id])
-                  need_img_update = this.nakama.load_other_user(User['user'].id, _is_official, _target)['avatar_url'] == User['user'].avatar_url;
-                if (need_img_update)
+                if (this.nakama.load_other_user(User['user'].id, _is_official, _target)['avatar_url'] != User['user'].avatar_url)
                   this.nakama.servers[_is_official][_target].client.readStorageObjects(
                     this.nakama.servers[_is_official][_target].session, {
                     object_ids: [{
@@ -111,7 +108,7 @@ export class SettingsPage implements OnInit {
                     User['user']['img'] = v.objects[0].value['img'];
                     this.nakama.save_other_user(User['user'], _is_official, _target);
                   });
-                this.nakama.save_other_user(User['user'], _is_official, _target);
+                else this.nakama.save_other_user(User['user'], _is_official, _target);
               }
             });
             this.nakama.save_groups_with_less_info();
