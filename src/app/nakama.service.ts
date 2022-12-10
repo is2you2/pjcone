@@ -358,20 +358,24 @@ export class NakamaService {
 
   /** 로그인 및 회원가입 직후 행동들 */
   after_login(_is_official: any, _target: string, _useSSL: boolean) {
+    // 통신 소켓 생성
     this.servers[_is_official][_target].socket = this.servers[_is_official][_target].client.createSocket(_useSSL);
+    // 그룹 서버 연결 상태 업데이트
     this.set_group_statusBar('online', _is_official, _target);
-    if (_is_official == 'official' && _target == 'default') {
-      let packet = {
+    // 공식 서버인 경우 관리자 알림모드 검토
+    if (_is_official == 'official' && _target == 'default')
+      this.communityServer.send(JSON.stringify({
         act: 'is_admin',
         uuid: this.servers[_is_official][_target].session.user_id
-      }
-      this.communityServer.send(JSON.stringify(packet));
-    }
+      }));
+    // 개인 정보를 서버에 맞춤
     this.servers[_is_official][_target].client.getAccount(
       this.servers[_is_official][_target].session).then(v => {
         let keys = Object.keys(v.user);
         keys.forEach(key => this.users.self[key] = v.user[key]);
+        this.save_self_profile();
       });
+    // 개인 프로필 이미지를 서버에 맞춤
     this.servers[_is_official][_target].client.readStorageObjects(
       this.servers[_is_official][_target].session, {
       object_ids: [{
@@ -389,6 +393,22 @@ export class NakamaService {
         }
       }
     })
+    // 단발적으로 다른 사용자 정보 업데이트
+    let group_ids = Object.keys(this.groups[_is_official][_target]);
+    group_ids.forEach(_gid => {
+      this.groups[_is_official][_target][_gid]['users'].forEach((_user: any) => {
+        if (!_user['is_me'])
+          this.servers[_is_official][_target].client.getUsers(
+            this.servers[_is_official][_target].session, [_user['user']['id']]
+          ).then(_userinfo => {
+            if (_userinfo.users.length) {
+              let keys = Object.keys(_userinfo.users[0]);
+              keys.forEach(key => this.users[_is_official][_target][_userinfo.users[0].id][key] = _userinfo.users[0][key]);
+            } else this.users[_is_official][_target][_user['user']['id']]['deleted'] = true;
+          });
+      });
+    });
+    // 통신 소켓 연결하기
     this.connect_to(_is_official, _target, () => {
       this.get_group_list(_is_official, _target);
       this.redirect_channel(_is_official, _target)
@@ -396,7 +416,9 @@ export class NakamaService {
     });
   }
 
-  /** 서버별 사용자 정보 가져오기 */
+  /** 서버별 사용자 정보 가져오기
+   * users[isOfficial][target][uid] = UserInfo;
+   */
   users = {
     self: {},
     official: {},
@@ -452,6 +474,7 @@ export class NakamaService {
   save_other_user(userInfo: any, _is_official: string, _target: string) {
     let copied = { ...userInfo };
     delete copied['img'];
+    delete copied['online'];
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
     if (!this.users[_is_official][_target][userInfo['id']]) this.users[_is_official][_target][userInfo['id']] = {};
     let keys = Object.keys(userInfo);
@@ -679,10 +702,7 @@ export class NakamaService {
     servers.forEach(server => {
       server.client.joinGroup(server.session, _info.id)
         .then(_v => {
-          if (!_v) {
-            console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
-            return;
-          }
+          if (!_v) console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
           server.client.listGroups(
             server.session, _info['name']
           ).then(v => {
@@ -690,6 +710,14 @@ export class NakamaService {
               if (v.groups[i].id == _info['id']) {
                 let pending_group = v.groups[i];
                 pending_group['status'] = 'pending';
+                this.servers[server.info.isOfficial][server.info.target].client.listGroupUsers(
+                  this.servers[server.info.isOfficial][server.info.target].session, v.groups[i].id
+                ).then(_list => {
+                  _list.group_users.forEach(_guser => {
+                    let keys = Object.keys(_guser.user);
+                    keys.forEach(key => this.users[server.info.isOfficial][server.info.target][_guser.user.id][key] = _guser.user[key]);
+                  });
+                });
                 this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
                 break;
               }
