@@ -134,7 +134,7 @@ export class OthersProfilePage implements OnInit {
       case -5: // 그룹 참가 요청 받음
         this.nakama.servers[this.isOfficial][this.target].client.addGroupUsers(
           this.nakama.servers[this.isOfficial][this.target].session,
-          this.group_info['channel_id'], [this.info['user']['id']]
+          this.group_info['id'], [this.info['user']['id']]
         ).then(v => {
           if (!v) console.warn('밴 유저에 대한것 같음, 확인 필요');
           this.p5toast.show({
