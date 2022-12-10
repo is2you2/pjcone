@@ -195,6 +195,7 @@ export class GroupDetailPage implements OnInit {
     else this.after_remove_group();
   }
 
+  /** 삭제 알림 그 후에 */
   after_remove_group() {
     this.leave_channel();
     this.nakama.remove_group_list(this.info, this.info['server']['isOfficial'], this.info['server']['target']);
@@ -266,26 +267,19 @@ export class GroupDetailPage implements OnInit {
   leave_group() {
     this.need_edit = false;
     if (this.info['status'] == 'online')
-      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
-        this.info['channel_id'], {
-        user: 'out',
-        display_name: this.nakama.users.self['display_name'],
-        msg: `사용자가 그룹 나감: ${this.nakama.users.self['display_name']}-테스트 로그` // 받는 사람이 생성해야함
-      }).then(_m => {
-        this.after_leave_group_announce(() => {
-          this.leave_channel();
-          delete this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']];
-          this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss());
-        });
+      this.after_leave_group(() => {
+        this.leave_channel();
+        delete this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']];
+        this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss());
       });
-    else if (this.info['status'] == 'pending') this.after_leave_group_announce(() => {
+    else if (this.info['status'] == 'pending') this.after_leave_group(() => {
       delete this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']];
       this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss());
     });
   }
 
   /** 그룹 나가기 행동 */
-  after_leave_group_announce(_CallBack = () => console.warn('after_leave_group_announce Func Null')) {
+  after_leave_group(_CallBack = () => console.warn('after_leave_group_announce Func Null')) {
     this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.leaveGroup(
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, this.info['id'],
     ).then(v => {

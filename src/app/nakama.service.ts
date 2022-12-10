@@ -315,7 +315,7 @@ export class NakamaService {
         case 404: // 아이디 없음
           this.servers[_is_official][_target].session = await this.servers[_is_official][_target].client.authenticateEmail(this.users.self['email'], this.uuid, true);
           if (this.users.self['display_name'])
-            await this.servers[_is_official][_target].client.updateAccount(
+            this.servers[_is_official][_target].client.updateAccount(
               this.servers[_is_official][_target].session, {
               display_name: this.users.self['display_name'],
               lang_tag: navigator.language.split('-')[0],
@@ -421,20 +421,25 @@ export class NakamaService {
     return result;
   }
 
-  /** 다른 사람의 정보 반환해주기 */
+  /** 다른 사람의 정보 반환해주기
+   * @returns 다른 사람 정보: User
+   */
   load_other_user(userId: string, _is_official: string, _target: string) {
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
-    if (!this.users[_is_official][_target][userId]) this.users[_is_official][_target][userId] = {};
-    this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.json`, (e, v) => {
-      if (e && v) {
-        let data = JSON.parse(v);
-        let keys = Object.keys(data);
-        keys.forEach(key => this.users[_is_official][_target][userId][key] = data[key]);
-      }
-      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
-        if (e && v) this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
+    let need_to_load_from_file = !this.users[_is_official][_target][userId];
+    if (need_to_load_from_file) {
+      this.users[_is_official][_target][userId] = {};
+      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.json`, (e, v) => {
+        if (e && v) {
+          let data = JSON.parse(v);
+          let keys = Object.keys(data);
+          keys.forEach(key => this.users[_is_official][_target][userId][key] = data[key]);
+        }
+        this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
+          if (e && v) this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
+        });
       });
-    });
+    }
     return this.users[_is_official][_target][userId];
   }
 
@@ -550,9 +555,8 @@ export class NakamaService {
             this.servers[_is_official][_target].client.listChannelMessages(
               this.servers[_is_official][_target].session, _cid, 1, false)
               .then(v => {
-                if (v.messages.length) {
+                if (v.messages.length)
                   this.channels_orig[_is_official][_target][_cid]['last_comment'] = v.messages[0].content['msg'];
-                }
               });
           }).catch(_e => {
             this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
@@ -824,9 +828,7 @@ export class NakamaService {
     this.servers[_is_official][_target].socket.connect(
       this.servers[_is_official][_target].session, true).then(_v => {
         let socket = this.servers[_is_official][_target].socket;
-        setTimeout(() => {
-          _CallBack();
-        }, 250);
+        _CallBack();
         // 실시간으로 알림을 받은 경우
         socket.onnotification = (v) => {
           console.log('소켓에서 실시간으로 무언가 받음: ', v);
@@ -847,9 +849,6 @@ export class NakamaService {
         }
         socket.onchannelmessage = (c) => {
           console.log('onchamsg: ', c);
-          this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = c.content['msg'];
-          if (this.channels_orig[_is_official][_target][c.channel_id]['update'])
-            this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
           this.update_from_channel_msg(c, _is_official, _target);
           this.save_channels_with_less_info();
         }
@@ -875,8 +874,17 @@ export class NakamaService {
       });
   }
 
-  /** 채널 메시지를 분석하여 행동하기 */
-  update_from_channel_msg(c: ChannelMessage, _is_official: string, _target: string) {
+  /** 채널 메시지를 변조 후 전파하기 */
+  update_from_channel_msg(msg: ChannelMessage, _is_official: string, _target: string) {
+    let c = this.modulation_channel_message(msg, _is_official, _target);
+    if (this.channels_orig[_is_official][_target][c.channel_id]['update'])
+      this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
+    this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = c.content['msg'];
+  }
+
+  modulation_channel_message(c: ChannelMessage, _is_official: string, _target: string) {
+    let is_me = c.sender_id == this.servers[_is_official][_target].session.user_id;
+    let target = is_me ? this.users.self : this.load_other_user(c.sender_id, _is_official, _target);
     switch (c.code) {
       case 0: // 사용자가 작성한 일반적인 메시지
         if (c.content['update']) // 그룹 정보 업데이트
@@ -887,12 +895,31 @@ export class NakamaService {
       case 4: // 채널에 새로 들어온 사람 알림
       case 5: // 그룹에 있던 사용자 나감(들어오려다가 포기한 사람 포함)
       case 6: // 누군가 그룹에서 내보내짐 (kick)
-        console.warn('탈퇴/추방 등 사람이 나간 경우');
         if (this.socket_reactive['settings'])
           this.socket_reactive['settings'].load_groups();
         if (this.socket_reactive['group_detail']) // 그룹 상세를 보는 중이라면 업데이트하기
           this.socket_reactive['group_detail'].update_GroupUsersList(_is_official, _target);
+        // 행동에서 자동으로 메시지 생성
+        switch (c.code) {
+          case 4:
+            c.content['user'] = target;
+            c.content['msg'] = `사용자 그룹참여-${target['display_name']}`;
+            break;
+          case 5:
+            console.warn('그룹원 탈퇴와 참여 예정자의 포기를 구분할 수 있는지: ', c);
+            c.content['user'] = target;
+            c.content['msg'] = `사용자 그룹탈퇴-${target['display_name']}`;
+            break;
+          case 6:
+            c.content['user'] = target;
+            c.content['msg'] = `사용자 강제퇴장-${target['display_name']}`;
+            break;
+          default:
+            console.warn('예상하지 못한 메시지 코드: ', c);
+            break;
+        }
         if (c.code == 4) break;
+        // 사용자 유입과 관련된 알림 제거
         if (this.noti_origin[_is_official] && this.noti_origin[_is_official][_target]) {
           let keys = Object.keys(this.noti_origin[_is_official][_target]);
           let empty_ids = [];
@@ -907,21 +934,17 @@ export class NakamaService {
               this.update_notifications(_is_official, _target);
             });
         }
-        if (c.sender_id == this.servers[_is_official][_target].session.user_id) { // 내보내진게 나야
+        if (is_me) { // 그 유입 주체가 나야
           this.channels_orig[_is_official][_target][c.channel_id]['status'] = 'missing';
           delete this.channels_orig[_is_official][_target][c.channel_id]['info'];
           this.groups[_is_official][_target][c['group_id']]['status'] = 'missing';
-        } else { // 다른 누군가야
-          if (this.socket_reactive['settings'])
-            this.socket_reactive['settings'].load_groups();
-          if (this.socket_reactive['group_detail']) // 그룹 상세를 보는 중이라면 업데이트하기
-            this.socket_reactive['group_detail'].update_GroupUsersList(_is_official, _target);
         }
         break;
       default:
         console.warn('예상하지 못한 채널 메시지 코드: ', c.code);
         break;
     }
+    return c;
   }
 
   /** 그룹 정보 변경 처리 */

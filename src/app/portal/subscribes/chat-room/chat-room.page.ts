@@ -59,12 +59,13 @@ export class ChatRoomPage implements OnInit {
 
   /** 서버로부터 메시지 더 받아오기 */
   pull_msg_from_server() {
-    if (this.info['status'] == 'online' && this.next_cursor !== undefined)
+    if ((this.info['status'] == 'online' || this.info['status'] == 'pending') && this.next_cursor !== undefined)
       this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
         this.nakama.servers[this.isOfficial][this.target].session,
         this.info['id'], 15, false, this.next_cursor).then(v => {
           console.warn('로컬 채팅id 기록과 대조하여 내용이 다르다면 계속해서 불러오기처리 필요');
           v.messages.forEach(msg => {
+            msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
             if (!this.info['last_comment'])
               this.info['last_comment'] = msg['content']['msg'];
             this.messages.unshift(msg);

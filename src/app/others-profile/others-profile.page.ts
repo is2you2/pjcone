@@ -23,6 +23,7 @@ export class OthersProfilePage implements OnInit {
     private indexed: IndexedDBService,
   ) { }
 
+  /** 다른 사용자의 정보 */
   info = {};
   group_info = {};
   /** 추가 생성 버튼 (알림 검토의 결과물) */
@@ -133,7 +134,7 @@ export class OthersProfilePage implements OnInit {
       case -5: // 그룹 참가 요청 받음
         this.nakama.servers[this.isOfficial][this.target].client.addGroupUsers(
           this.nakama.servers[this.isOfficial][this.target].session,
-          this.group_info['id'], [this.info['user']['id']]
+          this.group_info['channel_id'], [this.info['user']['id']]
         ).then(v => {
           if (!v) console.warn('밴 유저에 대한것 같음, 확인 필요');
           this.p5toast.show({
@@ -186,6 +187,33 @@ export class OthersProfilePage implements OnInit {
 
   /** 그룹장이 이 사용자를 퇴출 */
   kick_user_from_group() {
+    switch (this.info['state']) {
+      case 0:
+      case 1:
+      case 2: // 그룹원을 강제 탈퇴
+        this.after_announce_kick();
+        break;
+      case 3: // 그룹 입장 대기중인 경우
+        this.nakama.servers[this.isOfficial][this.target].client.deleteNotifications(
+          this.nakama.servers[this.isOfficial][this.target].session,
+          [this.additional_buttons['-5']]
+        ).then(v => {
+          if (!v) console.warn('알림 부정 검토 필요');
+          this.after_announce_kick();
+          delete this.additional_buttons['-5'];
+          this.nakama.update_notifications(this.isOfficial, this.target);
+          this.info['status'] = 'missing';
+          this.p5canvas.loop();
+        });
+        break;
+      default:
+        console.warn('예상하지 못한 그룹 사용자 상태: ', this.info);
+        break;
+    }
+  }
+
+  /** 사용자 퇴출 알림 후 */
+  after_announce_kick() {
     this.nakama.servers[this.isOfficial][this.target].client.kickGroupUsers(
       this.nakama.servers[this.isOfficial][this.target].session,
       this.group_info['id'], [this.info['user']['id']]
@@ -193,12 +221,6 @@ export class OthersProfilePage implements OnInit {
       this.p5toast.show({
         text: `사용자를 내보냈습니다: ${this.info['user']['display_name'] || '이름 없는 사용자'}`,
       });
-      if (this.info['state'] == 3) // 입장 요청중인 인원
-        this.nakama.servers[this.isOfficial][this.target].socket.writeChatMessage(
-          this.group_info['channel_id'], {
-          user: 'kick',
-          msg: `참여 거절-${this.info['user']['display_name']}`,
-        });
       this.modalCtrl.dismiss({
         id: this.info['user']['id'],
         act: 'kick',
