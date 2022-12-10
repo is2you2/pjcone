@@ -716,6 +716,7 @@ export class NakamaService {
                   _list.group_users.forEach(_guser => {
                     let keys = Object.keys(_guser.user);
                     keys.forEach(key => this.users[server.info.isOfficial][server.info.target][_guser.user.id][key] = _guser.user[key]);
+                    this.save_other_user(_guser.user.id, server.info.isOfficial, server.info.target);
                   });
                 });
                 this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
