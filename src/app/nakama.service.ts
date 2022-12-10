@@ -89,6 +89,11 @@ export class NakamaService {
             if (e && v) group['img'] = v.replace(/"|=|\\/g, '');
           });
           delete group['status'];
+          let _is_official = group['server']['isOfficial'];
+          let _target = group['server']['target'];
+          for (let i = 0, j = group['users'].length; i < j; i++)
+            if (!group['users'][i]['is_me'])
+              group['users'][i]['user'] = this.load_other_user(group['users'][i]['user']['id'], _is_official, _target);
         }
       });
       // 채널 불러오기

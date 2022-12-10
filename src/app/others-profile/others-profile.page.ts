@@ -173,8 +173,9 @@ export class OthersProfilePage implements OnInit {
         persistence: true,
       };
       // 방 이름을 상대방 이름으로 설정
-      c['title'] = this.nakama.users[this.isOfficial][this.target][this.info['user']['id']]['display_name'];
-      c['info'] = this.nakama.users[this.isOfficial][this.target][this.info['user']['id']];
+      let user = this.nakama.load_other_user(this.info['user']['id'], this.isOfficial, this.target);
+      c['title'] = user['display_name'];
+      c['info'] = user;
       this.nakama.add_channels(c, this.isOfficial, this.target);
       this.modalCtrl.create({
         component: ChatRoomPage,

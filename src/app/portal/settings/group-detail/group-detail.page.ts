@@ -114,13 +114,12 @@ export class GroupDetailPage implements OnInit {
           };
           result.push(form);
         } else { // 다른 사람의 정보인 경우
-          if (!this.nakama.users[_is_official][_target]) this.nakama.users[_is_official][_target] = {};
-          if (!this.nakama.users[_is_official][_target][ul.group_users[i].user.id]) this.nakama.users[_is_official][_target][ul.group_users[i].user.id] = {};
+          let user = this.nakama.load_other_user(ul.group_users[i].user.id, _is_official, _target);
           let keys = Object.keys(ul.group_users[i].user);
-          keys.forEach(key => this.nakama.users[_is_official][_target][ul.group_users[i].user.id][key] = ul.group_users[i].user[key]);
+          keys.forEach(key => user[key] = ul.group_users[i].user[key]);
           let form = {
             state: ul.group_users[i].state,
-            user: this.nakama.users[_is_official][_target][ul.group_users[i].user.id],
+            user: user,
           }
           result.push(form);
         }
