@@ -5,8 +5,10 @@ database:
     address:
       - 'postgres:localdb@postgres:5432/nakama'
 
-# socket:
-#     server_key: defaultkey
+socket:
+    ssl_certificate: '/nakama/data/public.crt'
+    ssl_private_key: '/nakama/data/private.key'
+    # server_key: defaultkey
 
 session:
     token_expiry_sec: 32400

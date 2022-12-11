@@ -65,7 +65,10 @@ export class NakamaService {
           name: '개발 테스트 서버',
           address: SOCKET_SERVER_ADDRESS,
           isOfficial: 'official',
-          target: 'default'
+          target: 'default',
+          key: 'defaultkey',
+          port: 7350,
+          useSSL: true,
         }
       }
     },
@@ -100,7 +103,7 @@ export class NakamaService {
       this.load_channel_list();
     });
     // 공식서버 연결처리
-    this.init_server();
+    this.init_server(this.servers['official']['default'].info);
     // 저장된 사설서버들 정보 불러오기
     this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
       if (e && v) { // 내용이 있을 때에만 동작
@@ -117,7 +120,7 @@ export class NakamaService {
           }
           this.servers['unofficial'][info.target] = {};
           this.servers['unofficial'][info.target].info = info;
-          this.init_server(info.isOfficial as any, info.target, info.address, info.key);
+          this.init_server(info);
         });
       }
     });
@@ -134,9 +137,13 @@ export class NakamaService {
    * @param _target 대상 key
    * @param _key 서버 key
    */
-  init_server(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _address = SOCKET_SERVER_ADDRESS, _key = 'defaultkey', _port = 7350, _useSSL = false) {
-    if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
-    this.servers[_is_official][_target].client = new Client(_key, _address, _port.toString(), _useSSL);
+  init_server(_info: ServerInfo) {
+    if (!this.servers[_info.isOfficial][_info.target]) this.servers[_info.isOfficial][_info.target] = {};
+    this.servers[_info.isOfficial][_info.target].client = new Client(
+      (_info.key || 'defaultkey'), _info.address,
+      (_info.port || 7350).toString(),
+      (_info.useSSL || false),
+    );
   }
 
   /** 모든 pending 세션 켜기 */
@@ -144,12 +151,12 @@ export class NakamaService {
     let Targets = Object.keys(this.servers['official']);
     Targets.forEach(_target => {
       if (this.statusBar.groupServer['official'][_target] != 'offline')
-        this.init_session('official', _target);
+        this.init_session(this.servers['official'][_target].info);
     });
     let unTargets = Object.keys(this.servers['unofficial']);
     unTargets.forEach(_target => {
       if (this.statusBar.groupServer['unofficial'][_target] != 'offline')
-        this.init_session('unofficial', _target);
+        this.init_session(this.servers['unofficial'][_target].info);
     });
   }
 
@@ -228,7 +235,7 @@ export class NakamaService {
       if (e && v) list = v.split('\n');
       list.push(line);
       this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv', (_v) => {
-        this.init_server(info.isOfficial as any, info.target, info.address, info.key);
+        this.init_server(info);
         this.servers[info.isOfficial][info.target].info = { ...info };
         _CallBack();
       });
@@ -294,44 +301,45 @@ export class NakamaService {
   uuid: string;
   /** 세션처리
    * @param _CallBack 오류시 행동방침
-   * @param _target 대상 key
+   * @param info.target 대상 key
    */
-  async init_session(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _useSSL = false) {
+  async init_session(info: ServerInfo) {
+    console.log(info);
     try {
-      if (!this.servers[_is_official][_target]) this.servers[_is_official][_target] = {};
-      this.servers[_is_official][_target].session
-        = await this.servers[_is_official][_target].client.authenticateEmail(this.users.self['email'], this.uuid, false);
-      this.after_login(_is_official, _target, _useSSL);
+      this.servers[info.isOfficial][info.target].session
+        = await this.servers[info.isOfficial][info.target].client.authenticateEmail(this.users.self['email'], this.uuid, false);
+      this.after_login(info.isOfficial, info.target, info.useSSL);
     } catch (e) {
+      console.log(e);
       switch (e.status) {
         case 400: // 비번이 없거나 하는 등, 요청이 잘못됨
           this.p5toast.show({
             text: '사용자를 연결한 후 사용하세요.',
           });
           this.users.self['is_online'] = false;
-          this.set_group_statusBar('offline', _is_official, _target);
+          this.set_group_statusBar('offline', info.isOfficial, info.target);
           break;
         case 401: // 비밀번호 잘못됨
           this.p5toast.show({
             text: '기기 재검증 과정 필요 (아직 개발되지 않음)',
           });
-          this.set_group_statusBar('offline', _is_official, _target);
+          this.set_group_statusBar('offline', info.isOfficial, info.target);
           break;
         case 404: // 아이디 없음
-          this.servers[_is_official][_target].session = await this.servers[_is_official][_target].client.authenticateEmail(this.users.self['email'], this.uuid, true);
+          this.servers[info.isOfficial][info.target].session = await this.servers[info.isOfficial][info.target].client.authenticateEmail(this.users.self['email'], this.uuid, true);
           if (this.users.self['display_name'])
-            this.servers[_is_official][_target].client.updateAccount(
-              this.servers[_is_official][_target].session, {
+            this.servers[info.isOfficial][info.target].client.updateAccount(
+              this.servers[info.isOfficial][info.target].session, {
               display_name: this.users.self['display_name'],
               lang_tag: navigator.language.split('-')[0],
             });
           this.p5toast.show({
-            text: `회원가입이 완료되었습니다: ${_target}`,
+            text: `회원가입이 완료되었습니다: ${info.target}`,
             lateable: true,
           });
           if (this.users.self['img'])
-            this.servers[_is_official][_target].client.writeStorageObjects(
-              this.servers[_is_official][_target].session, [{
+            this.servers[info.isOfficial][info.target].client.writeStorageObjects(
+              this.servers[info.isOfficial][info.target].session, [{
                 collection: 'user_public',
                 key: 'profile_image',
                 permission_read: 2,
@@ -339,18 +347,18 @@ export class NakamaService {
                 value: { img: this.users.self['img'] },
               }]
             ).then(v => {
-              this.servers[_is_official][_target].client.updateAccount(
-                this.servers[_is_official][_target].session, {
+              this.servers[info.isOfficial][info.target].client.updateAccount(
+                this.servers[info.isOfficial][info.target].session, {
                 avatar_url: v.acks[0].version,
               });
             });
-          this.after_login(_is_official, _target, _useSSL);
+          this.after_login(info.isOfficial, info.target, info.useSSL);
           break;
         default:
           this.p5toast.show({
             text: `준비되지 않은 오류 유형: ${e}`,
           });
-          this.set_group_statusBar('offline', _is_official, _target);
+          this.set_group_statusBar('offline', info.isOfficial, info.target);
           break;
       }
     }
@@ -369,31 +377,45 @@ export class NakamaService {
         uuid: this.servers[_is_official][_target].session.user_id
       }));
     // 개인 정보를 서버에 맞춤
-    this.servers[_is_official][_target].client.getAccount(
-      this.servers[_is_official][_target].session).then(v => {
-        let keys = Object.keys(v.user);
-        keys.forEach(key => this.users.self[key] = v.user[key]);
-        this.save_self_profile();
-      });
+    if (!this.users.self['display_name'])
+      this.servers[_is_official][_target].client.getAccount(
+        this.servers[_is_official][_target].session).then(v => {
+          let keys = Object.keys(v.user);
+          keys.forEach(key => this.users.self[key] = v.user[key]);
+          this.save_self_profile();
+        });
     // 개인 프로필 이미지를 서버에 맞춤
-    this.servers[_is_official][_target].client.readStorageObjects(
-      this.servers[_is_official][_target].session, {
-      object_ids: [{
-        collection: 'user_public',
-        key: 'profile_image',
-        user_id: this.servers[_is_official][_target].session.user_id,
-      }],
-    }).then(v => {
-      if (v.objects.length) {
-        if (this.socket_reactive['profile']) {
-          this.socket_reactive['profile'](v.objects[0].value['img']);
-        } else {
-          this.users.self['img'] = v.objects[0].value['img'];
-          this.indexed.saveTextFileToUserPath(JSON.stringify(this.users.self['img']), 'servers/self/profile.img');
+    if (!this.users.self['img'])
+      this.servers[_is_official][_target].client.readStorageObjects(
+        this.servers[_is_official][_target].session, {
+        object_ids: [{
+          collection: 'user_public',
+          key: 'profile_image',
+          user_id: this.servers[_is_official][_target].session.user_id,
+        }],
+      }).then(v => {
+        if (v.objects.length) {
+          if (this.socket_reactive['profile']) {
+            this.socket_reactive['profile'](v.objects[0].value['img']);
+          } else {
+            this.users.self['img'] = v.objects[0].value['img'];
+            this.indexed.saveTextFileToUserPath(JSON.stringify(this.users.self['img']), 'servers/self/profile.img');
+          }
         }
-      }
-    })
+      })
     // 단발적으로 다른 사용자 정보 업데이트
+    if (this.groups[_is_official][_target])
+      this.instant_group_user_update(_is_official, _target);
+    // 통신 소켓 연결하기
+    this.connect_to(_is_official, _target, () => {
+      this.get_group_list(_is_official, _target);
+      this.redirect_channel(_is_official, _target)
+      this.update_notifications(_is_official, _target);
+    });
+  }
+
+  /** 그룹 내 모든 다른 사용자 정보 업데이트 */
+  instant_group_user_update(_is_official: string, _target: string) {
     let group_ids = Object.keys(this.groups[_is_official][_target]);
     group_ids.forEach(_gid => {
       this.groups[_is_official][_target][_gid]['users'].forEach((_user: any) => {
@@ -407,12 +429,6 @@ export class NakamaService {
             } else this.users[_is_official][_target][_user['user']['id']]['deleted'] = true;
           });
       });
-    });
-    // 통신 소켓 연결하기
-    this.connect_to(_is_official, _target, () => {
-      this.get_group_list(_is_official, _target);
-      this.redirect_channel(_is_official, _target)
-      this.update_notifications(_is_official, _target);
     });
   }
 

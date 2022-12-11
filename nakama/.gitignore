@@ -3,6 +3,10 @@
 # nakama 부산물 무시
 postgres/*
 
+# nakama ssl key 무시
+data/private.key
+data/public.crt
+
 # godot에 생성되는 심볼릭 링크 무시
 godot/public.crt
 godot/private.key
