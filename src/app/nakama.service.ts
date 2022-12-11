@@ -409,7 +409,7 @@ export class NakamaService {
     // 통신 소켓 연결하기
     this.connect_to(_is_official, _target, () => {
       this.get_group_list(_is_official, _target);
-      this.redirect_channel(_is_official, _target)
+      this.redirect_channel(_is_official, _target);
       this.update_notifications(_is_official, _target);
     });
   }
@@ -695,6 +695,7 @@ export class NakamaService {
           delete channels_copy[_is_official][_target][_cid]['group'];
           delete channels_copy[_is_official][_target][_cid]['info'];
           delete channels_copy[_is_official][_target][_cid]['update'];
+          delete channels_copy[_is_official][_target][_cid]['presences'];
         });
       });
     });
@@ -907,10 +908,12 @@ export class NakamaService {
   }
 
   /** 채널 상태 검토 */
-  count_channel_online_member(p: ChannelPresenceEvent, _is_official: string, _target: string) {
+  count_channel_online_member(p: any, _is_official: string, _target: string) {
     let result_status = 'pending';
     if (p['group_id']) { // 그룹 채널인 경우
-      for (let i = 0, j = this.groups[_is_official][_target][p['group_id']]['users'].length; i < j; i++) {
+      let user_length = this.groups[_is_official][_target][p['group_id']]['users'].length;
+      if (user_length == 1) result_status = 'online'; // 그룹에 혼자만 있음
+      else for (let i = 0; i < user_length; i++) { // 2명 이상의 그룹원
         let userId = this.groups[_is_official][_target][p['group_id']]['users'][i]['user']['id'];
         if (!this.groups[_is_official][_target][p['group_id']]['users'][i]['is_me'])
           if (this.users[_is_official][_target][userId]['online']) {
