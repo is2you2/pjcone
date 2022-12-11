@@ -304,7 +304,6 @@ export class NakamaService {
    * @param info.target 대상 key
    */
   async init_session(info: ServerInfo) {
-    console.log(info);
     try {
       this.servers[info.isOfficial][info.target].session
         = await this.servers[info.isOfficial][info.target].client.authenticateEmail(this.users.self['email'], this.uuid, false);
