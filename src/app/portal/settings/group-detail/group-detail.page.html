@@ -43,7 +43,7 @@
     </div>
     <div class="additional_form bg_img_form">
       <img class="bg_img"
-        [style]="'filter: ' + (((user.status == 'online') || (user.status == 'certified')) ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
+        [style]="'filter: ' + (user.user['online'] ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
         [src]="user.user.img">
     </div>
     <ion-label class="form_margin">{{user.user.display_name || '이름 없는 사용자'}}</ion-label>

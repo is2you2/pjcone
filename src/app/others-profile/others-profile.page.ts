@@ -56,7 +56,7 @@ export class OthersProfilePage implements OnInit {
       let tmp_img = document.getElementById('profile_tmp_img');
       const LERP_SIZE = .025;
       p.draw = () => {
-        if (this.info['status'] == 'online' || this.info['status'] == 'certified') {
+        if (this.info['user']['online']) {
           if (this.lerpVal < 1) {
             this.lerpVal += LERP_SIZE;
           } else {

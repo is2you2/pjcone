@@ -94,9 +94,10 @@ export class NakamaService {
           delete group['status'];
           let _is_official = group['server']['isOfficial'];
           let _target = group['server']['target'];
-          for (let i = 0, j = group['users'].length; i < j; i++)
-            if (!group['users'][i]['is_me'])
-              group['users'][i]['user'] = this.load_other_user(group['users'][i]['user']['id'], _is_official, _target);
+          if (group['users'])
+            for (let i = 0, j = group['users'].length; i < j; i++)
+              if (!group['users'][i]['is_me'])
+                group['users'][i]['user'] = this.load_other_user(group['users'][i]['user']['id'], _is_official, _target);
         }
       });
       // 채널 불러오기
@@ -464,7 +465,7 @@ export class NakamaService {
     return result;
   }
 
-  /** 다른 사람의 정보 반환해주기
+  /** 다른 사람의 정보 반환해주기 (로컬 정보 기반)
    * @returns 다른 사람 정보: User
    */
   load_other_user(userId: string, _is_official: string, _target: string) {
@@ -574,6 +575,8 @@ export class NakamaService {
           Target.forEach(_target => {
             let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
             channel_ids.forEach(_cid => {
+              if (this.channels_orig[_is_official][_target][_cid]['redirect']['type'] == 2)
+                this.channels_orig[_is_official][_target][_cid]['info'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
               if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
                 delete this.channels_orig[_is_official][_target][_cid]['status'];
             });
@@ -821,6 +824,22 @@ export class NakamaService {
       this.servers[_is_official][_target].session.user_id)
       .then(v => {
         v.user_groups.forEach(user_group => {
+          if (!this.groups[_is_official][_target][user_group.group.id]) { // 로컬에 없던 그룹은 이미지 확인
+            this.groups[_is_official][_target][user_group.group.id] = {};
+            this.servers[_is_official][_target].client.readStorageObjects(
+              this.servers[_is_official][_target].session, {
+              object_ids: [{
+                collection: 'group_public',
+                key: `group_${user_group.group.id}`,
+                user_id: user_group.group.creator_id,
+              }],
+            }).then(gimg => {
+              if (gimg.objects.length) {
+                this.groups[_is_official][_target][user_group.group.id]['img'] = gimg.objects[0].value['img'];
+                this.indexed.saveTextFileToUserPath(gimg.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${user_group.group.id}.img`);
+              }
+            });
+          }
           this.groups[_is_official][_target][user_group.group.id]
             = { ...this.groups[_is_official][_target][user_group.group.id], ...user_group.group };
           this.servers[_is_official][_target].socket.joinChat(user_group.group.id, 3, true, false)
@@ -1060,7 +1079,7 @@ export class NakamaService {
             } else {
               this.users[_is_official][_target][c.sender_id]['img'] = v.objects[0].value['img'];
               this.users[_is_official][_target][c.sender_id]['avatar_url'] = v.objects[0].version;
-              this.save_other_user(c.sender_id, _is_official, _target);
+              this.save_other_user(this.users[_is_official][_target][c.sender_id], _is_official, _target);
             }
           } else {
             if (this.socket_reactive['others-profile'])

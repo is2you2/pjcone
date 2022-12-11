@@ -168,6 +168,13 @@ export class SettingsPage implements OnInit {
     AllUsers.forEach(user => {
       delete user['img'];
     });
+    let channels = this.nakama.rearrange_channels();
+    channels.forEach(channel => {
+      if (channel['redirect']['type'] == 2)
+        this.indexed.loadTextFromUserPath(`servers/${channel['server']['isOfficial']}/${channel['server']['target']}/users/${channel['redirect']['id']}/profile.img`, (e, v) => {
+          if (e && v) this.nakama.users[channel['server']['isOfficial']][channel['server']['target']][channel['redirect']['id']]['img'] = v.replace(/"|=|\\/g, '');
+        });
+    });
     delete this.nakama.users.self['img'];
   }
 }
