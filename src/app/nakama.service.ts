@@ -1020,18 +1020,17 @@ export class NakamaService {
           this.socket_reactive['group_detail'].update_GroupUsersList(_is_official, _target);
         // 행동에서 자동으로 메시지 생성
         switch (c.code) {
-          case 4:
+          case 4: // join
             c.content['user'] = target;
             c.content['msg'] = `사용자 그룹참여-${target['display_name']}`;
             break;
-          case 5:
+          case 5: // out
             console.warn('그룹원 탈퇴와 참여 예정자의 포기를 구분할 수 있는지: ', c);
             c.content['user'] = target;
             c.content['msg'] = `사용자 그룹탈퇴-${target['display_name']}`;
-            break;
-          case 6:
-            c.content['user'] = target;
+          case 6: // kick
             c.content['msg'] = `사용자 강제퇴장-${target['display_name']}`;
+
             break;
           default:
             console.warn('예상하지 못한 메시지 코드: ', c);
