@@ -480,7 +480,23 @@ export class NakamaService {
           keys.forEach(key => this.users[_is_official][_target][userId][key] = data[key]);
         }
         this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
-          if (e && v) this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
+          if (e && v) {
+            this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
+          } else if (userId[_is_official][_target][userId]['avatar_url']) {
+            this.servers[_is_official][_target].client.readStorageObjects(
+              this.servers[_is_official][_target].session, {
+              object_ids: [{
+                collection: 'user_public',
+                key: 'profile_image',
+                user_id: userId,
+              }]
+            }).then(v => {
+              if (v.objects.length)
+                this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
+              else delete this.users[_is_official][_target][userId]['avatar_url'];
+              this.save_other_user(userId, _is_official, _target);
+            });
+          }
         });
       });
     }

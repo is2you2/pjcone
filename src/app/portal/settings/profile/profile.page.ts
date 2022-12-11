@@ -244,6 +244,16 @@ export class ProfilePage implements OnInit {
               });
             });
           });
+        else servers[i].client.deleteStorageObjects(servers[i].session, {
+          object_ids: [{
+            collection: 'user_public',
+            key: 'profile_image',
+          }]
+        }).then(v => {
+          if (!v) console.warn('내 프로필 이미지 삭제 실패 로그');
+          delete this.nakama.users.self['avatar_url'];
+          servers[i].client.updateAccount(servers[i].session, this.nakama.users.self);
+        });
       }
       this.nakama.save_self_profile();
     }
