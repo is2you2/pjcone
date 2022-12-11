@@ -482,7 +482,7 @@ export class NakamaService {
         this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
           if (e && v) {
             this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
-          } else if (userId[_is_official][_target][userId]['avatar_url']) {
+          } else if (this.users[_is_official][_target][userId]['avatar_url']) {
             this.servers[_is_official][_target].client.readStorageObjects(
               this.servers[_is_official][_target].session, {
               object_ids: [{
@@ -577,6 +577,35 @@ export class NakamaService {
       this.channels_orig[_is_official][_target] = {};
     if (this.channels_orig[_is_official][_target][channel_info.id] !== undefined && this.channels_orig[_is_official][_target][channel_info.id]['status'] != 'missing') return;
     this.channels_orig[_is_official][_target][channel_info.id] = channel_info;
+    switch (channel_info['redirect']['type']) {
+      case 2: // 1:1 대화
+        let targetId = channel_info['redirect']['id'];
+        let result_status = this.users[_is_official][_target][targetId]['online'] ? 'online' : 'pending';
+        channel_info['status'] = result_status;
+        break;
+      case 3: // 새로 개설된 그룹 채널인 경우
+        let group_id = channel_info['redirect']['id'];
+        this.servers[_is_official][_target].client.listGroupUsers(
+          this.servers[_is_official][_target].session, group_id).then(v => {
+            if (!this.groups[_is_official][_target][group_id]['users'])
+              this.groups[_is_official][_target][group_id]['users'] = [];
+            if (v.group_users.length)
+              v.group_users.forEach(_user => {
+                let keys = Object.keys(_user.user);
+                keys.forEach(key => this.load_other_user(_user.user.id, _is_official, _target)[key] = _user.user[key]);
+                if (_user.user.id == this.servers[_is_official][_target].session.user_id)
+                  _user.user['is_me'] = true;
+                else this.save_other_user(_user.user, _is_official, _target);
+                _user.user = this.load_other_user(_user.user.id, _is_official, _target);
+                this.groups[_is_official][_target][group_id]['users'].push(_user);
+              });
+            this.count_channel_online_member(channel_info, _is_official, _target);
+          });
+        break;
+      default:
+        console.error('예상하지 못한 채널 종류: ', channel_info);
+        break;
+    }
     this.rearrange_channels();
   }
 
@@ -739,9 +768,7 @@ export class NakamaService {
       server.client.joinGroup(server.session, _info.id)
         .then(_v => {
           if (!_v) console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
-          server.client.listGroups(
-            server.session, _info['name']
-          ).then(v => {
+          server.client.listGroups(server.session, _info['name']).then(v => {
             for (let i = 0, j = v.groups.length; i < j; i++)
               if (v.groups[i].id == _info['id']) {
                 let pending_group = v.groups[i];
@@ -911,21 +938,23 @@ export class NakamaService {
   count_channel_online_member(p: any, _is_official: string, _target: string) {
     let result_status = 'pending';
     if (p['group_id']) { // 그룹 채널인 경우
-      let user_length = this.groups[_is_official][_target][p['group_id']]['users'].length;
-      if (user_length == 1) result_status = 'online'; // 그룹에 혼자만 있음
-      else for (let i = 0; i < user_length; i++) { // 2명 이상의 그룹원
-        let userId = this.groups[_is_official][_target][p['group_id']]['users'][i]['user']['id'];
-        if (!this.groups[_is_official][_target][p['group_id']]['users'][i]['is_me'])
-          if (this.users[_is_official][_target][userId]['online']) {
-            result_status = 'online';
-            break;
-          }
+      if (this.groups[_is_official][_target][p['group_id']]['users']) {
+        let user_length = this.groups[_is_official][_target][p['group_id']]['users'].length;
+        if (user_length == 1) result_status = 'online'; // 그룹에 혼자만 있음
+        else for (let i = 0; i < user_length; i++) { // 2명 이상의 그룹원
+          let userId = this.groups[_is_official][_target][p['group_id']]['users'][i]['user']['id'];
+          if (userId != this.servers[_is_official][_target].session.user_id)
+            if (this.users[_is_official][_target][userId]['online']) {
+              result_status = 'online';
+              break;
+            }
+        }
       }
     } else if (p['user_id_one']) { // 1:1 채팅인 경우
       let targetId = this.channels_orig[_is_official][_target][p.channel_id]['redirect']['id'];
       result_status = this.users[_is_official][_target][targetId]['online'] ? 'online' : 'pending';
     }
-    this.channels_orig[_is_official][_target][p.channel_id]['status'] = result_status;
+    this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] = result_status;
   }
 
   /** 소켓이 행동할 때 행동중인 무언가가 있을 경우 검토하여 처리 */
