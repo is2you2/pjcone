@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
-import { Channel, ChannelMessage, Client, Group, Notification, Session, Socket, User } from "@heroiclabs/nakama-js";
+import { Channel, ChannelMessage, ChannelPresenceEvent, Client, Group, Notification, Session, Socket, User } from "@heroiclabs/nakama-js";
 import { SOCKET_SERVER_ADDRESS } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
@@ -906,6 +906,25 @@ export class NakamaService {
     this.catch_group_server_header(_status);
   }
 
+  /** 채널 상태 검토 */
+  count_channel_online_member(p: ChannelPresenceEvent, _is_official: string, _target: string) {
+    let result_status = 'pending';
+    if (p['group_id']) { // 그룹 채널인 경우
+      for (let i = 0, j = this.groups[_is_official][_target][p['group_id']]['users'].length; i < j; i++) {
+        let userId = this.groups[_is_official][_target][p['group_id']]['users'][i]['user']['id'];
+        if (!this.groups[_is_official][_target][p['group_id']]['users'][i]['is_me'])
+          if (this.users[_is_official][_target][userId]['online']) {
+            result_status = 'online';
+            break;
+          }
+      }
+    } else if (p['user_id_one']) { // 1:1 채팅인 경우
+      let targetId = this.channels_orig[_is_official][_target][p.channel_id]['redirect']['id'];
+      result_status = this.users[_is_official][_target][targetId]['online'] ? 'online' : 'pending';
+    }
+    this.channels_orig[_is_official][_target][p.channel_id]['status'] = result_status;
+  }
+
   /** 소켓이 행동할 때 행동중인 무언가가 있을 경우 검토하여 처리 */
   socket_reactive = {};
   /** 소켓 서버에 연결 */
@@ -921,15 +940,30 @@ export class NakamaService {
           this.rearrange_notifications();
         }
         socket.onchannelpresence = (p) => {
-          console.log('onchannelpresence: ', p);
-          console.warn('다른 대화타입에서 검토 필요: 그룹, 룸');
-          if (p.joins !== undefined) {
-            console.warn('상대방 진입에 대한 검토 필요: 전체 중 몇명 들어왔는지');
-            if (this.channels_orig[_is_official][_target] && this.channels_orig[_is_official][_target][p.channel_id])
-              this.channels_orig[_is_official][_target][p.channel_id]['status'] = 'online';
-          } else if (p.leaves !== undefined) {
-            console.warn('상대방 떠남에 대한 검토 필요: 전체 중 몇명 빠졌는지');
-            this.channels_orig[_is_official][_target][p.channel_id]['status'] = 'pending';
+          if (p.joins !== undefined) { // 참여 검토
+            p.joins.forEach(info => {
+              if (this.servers[_is_official][_target].session.user_id != info.user_id)
+                this.users[_is_official][_target][info.user_id]['online'] = true;
+            });
+            this.count_channel_online_member(p, _is_official, _target);
+          } else if (p.leaves !== undefined) { // 떠남 검토
+            let others = [];
+            p.leaves.forEach(info => {
+              if (this.servers[_is_official][_target].session.user_id != info.user_id) {
+                delete this.users[_is_official][_target][info.user_id]['online'];
+                others.push(info.user_id);
+              }
+            });
+            this.servers[_is_official][_target].client.getUsers(
+              this.servers[_is_official][_target].session, others).then(v => {
+                if (v.users.length)
+                  v.users.forEach(_user => {
+                    let keys = Object.keys(_user);
+                    keys.forEach(key => this.users[_is_official][_target][_user.id][key] = _user[key]);
+                    this.save_other_user(_user, _is_official, _target);
+                  });
+                this.count_channel_online_member(p, _is_official, _target);
+              });
           }
         }
         socket.onchannelmessage = (c) => {
