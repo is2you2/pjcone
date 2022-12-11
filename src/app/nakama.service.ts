@@ -417,17 +417,18 @@ export class NakamaService {
   instant_group_user_update(_is_official: string, _target: string) {
     let group_ids = Object.keys(this.groups[_is_official][_target]);
     group_ids.forEach(_gid => {
-      this.groups[_is_official][_target][_gid]['users'].forEach((_user: any) => {
-        if (!_user['is_me'])
-          this.servers[_is_official][_target].client.getUsers(
-            this.servers[_is_official][_target].session, [_user['user']['id']]
-          ).then(_userinfo => {
-            if (_userinfo.users.length) {
-              let keys = Object.keys(_userinfo.users[0]);
-              keys.forEach(key => this.users[_is_official][_target][_userinfo.users[0].id][key] = _userinfo.users[0][key]);
-            } else this.users[_is_official][_target][_user['user']['id']]['deleted'] = true;
-          });
-      });
+      if (this.groups[_is_official][_target][_gid]['users'])
+        this.groups[_is_official][_target][_gid]['users'].forEach((_user: any) => {
+          if (!_user['is_me'])
+            this.servers[_is_official][_target].client.getUsers(
+              this.servers[_is_official][_target].session, [_user['user']['id']]
+            ).then(_userinfo => {
+              if (_userinfo.users.length) {
+                let keys = Object.keys(_userinfo.users[0]);
+                keys.forEach(key => this.users[_is_official][_target][_userinfo.users[0].id][key] = _userinfo.users[0][key]);
+              } else this.users[_is_official][_target][_user['user']['id']]['deleted'] = true;
+            });
+        });
     });
   }
 
