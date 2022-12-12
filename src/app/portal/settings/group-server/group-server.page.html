@@ -61,9 +61,9 @@
     <ion-input disabled [(ngModel)]="dedicated_info.port" class="ion-text-right" type="number" [placeholder]="'7350'">
     </ion-input>
   </ion-item>
-  <ion-item button [disabled]="add_custom_tog">
+  <ion-item button (click)="dedicated_info.useSSL =! dedicated_info.useSSL" [disabled]="add_custom_tog">
     <ion-label>SSL 적용여부</ion-label>
-    <ion-toggle [(ngModel)]="dedicated_info.useSSL" disabled slot="end"></ion-toggle>
+    <ion-toggle [(ngModel)]="dedicated_info.useSSL" slot="end" style="pointer-events: none;"></ion-toggle>
   </ion-item>
   <ion-item button (click)="add_custom_dedicated()" [disabled]="add_custom_tog">
     <ion-label class="ion-text-center">등록하기</ion-label>

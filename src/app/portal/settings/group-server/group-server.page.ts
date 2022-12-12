@@ -96,6 +96,10 @@ export class GroupServerPage implements OnInit {
     }
     this.add_custom_tog = true;
 
+    this.dedicated_info.port = this.dedicated_info.port || 7350;
+    this.dedicated_info.useSSL = this.dedicated_info.useSSL || false;
+    this.dedicated_info.key = this.dedicated_info.key || 'defaultkey';
+
     this.nakama.add_group_server(this.dedicated_info, () => {
       this.servers = this.nakama.get_all_server_info();
       this.dedicated_info.name = undefined;

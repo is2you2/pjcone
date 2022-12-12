@@ -117,7 +117,7 @@ export class NakamaService {
             target: sep[3],
             address: sep[4],
             port: +sep[5],
-            useSSL: Boolean(sep[6]),
+            useSSL: Boolean(sep[6] == 'true'),
           }
           this.servers['unofficial'][info.target] = {};
           this.servers['unofficial'][info.target].info = info;
@@ -310,7 +310,6 @@ export class NakamaService {
         = await this.servers[info.isOfficial][info.target].client.authenticateEmail(this.users.self['email'], this.uuid, false);
       this.after_login(info.isOfficial, info.target, info.useSSL);
     } catch (e) {
-      console.log(e);
       switch (e.status) {
         case 400: // 비번이 없거나 하는 등, 요청이 잘못됨
           this.p5toast.show({
@@ -483,19 +482,20 @@ export class NakamaService {
           if (e && v) {
             this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
           } else if (this.users[_is_official][_target][userId]['avatar_url']) {
-            this.servers[_is_official][_target].client.readStorageObjects(
-              this.servers[_is_official][_target].session, {
-              object_ids: [{
-                collection: 'user_public',
-                key: 'profile_image',
-                user_id: userId,
-              }]
-            }).then(v => {
-              if (v.objects.length)
-                this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
-              else delete this.users[_is_official][_target][userId]['avatar_url'];
-              this.save_other_user(userId, _is_official, _target);
-            });
+            if (this.statusBar.groupServer[_is_official][_target] == 'online')
+              this.servers[_is_official][_target].client.readStorageObjects(
+                this.servers[_is_official][_target].session, {
+                object_ids: [{
+                  collection: 'user_public',
+                  key: 'profile_image',
+                  user_id: userId,
+                }]
+              }).then(v => {
+                if (v.objects.length)
+                  this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
+                else delete this.users[_is_official][_target][userId]['avatar_url'];
+                this.save_other_user(userId, _is_official, _target);
+              });
           }
         });
       });
@@ -592,7 +592,10 @@ export class NakamaService {
             if (v.group_users.length)
               v.group_users.forEach(_user => {
                 let keys = Object.keys(_user.user);
-                keys.forEach(key => this.load_other_user(_user.user.id, _is_official, _target)[key] = _user.user[key]);
+                keys.forEach(key => {
+                  if (_user.user.id != this.servers[_is_official][_target].session.user_id)
+                    this.load_other_user(_user.user.id, _is_official, _target)[key] = _user.user[key]
+                });
                 if (_user.user.id == this.servers[_is_official][_target].session.user_id)
                   _user.user['is_me'] = true;
                 else this.save_other_user(_user.user, _is_official, _target);
@@ -834,29 +837,31 @@ export class NakamaService {
   }
 
   /** 그룹 리스트 로컬/리모트에서 삭제하기 (방장일 경우) */
-  remove_group_list(info: any, _is_official: string, _target: string) {
-    // 내가 방장이면 해산처리
-    if (this.servers[_is_official][_target] && info['creator_id'] == this.servers[_is_official][_target].session.user_id)
-      this.servers[_is_official][_target].client.deleteGroup(
-        this.servers[_is_official][_target].session, info['id'],
-      ).then(v => {
-        if (v && info['img']) { // 서버에서 정상삭제하였을 때
-          this.servers[_is_official][_target].client.deleteStorageObjects(
-            this.servers[_is_official][_target].session, {
-            object_ids: [{
-              collection: 'group_public',
-              key: `group_${info['id']}`,
-            }]
-          });
-        }
-      }).catch(e => {
-        console.error('remove_group_list: ', e);
-      });
-    // 로컬에서 기록을 삭제한다
-    delete this.groups[_is_official][_target][info['id']];
-    this.rearrange_group_list();
-    this.save_groups_with_less_info();
-    this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
+  async remove_group_list(info: any, _is_official: string, _target: string) {
+    try { // 내가 방장이면 해산처리 우선, 이 외의 경우 기록 삭제
+      if (this.servers[_is_official][_target] && info['creator_id'] == this.servers[_is_official][_target].session.user_id)
+        await this.servers[_is_official][_target].client.deleteGroup(
+          this.servers[_is_official][_target].session, info['id'],
+        ).then(v => {
+          if (v && info['img']) { // 서버에서 정상삭제하였을 때
+            this.servers[_is_official][_target].client.deleteStorageObjects(
+              this.servers[_is_official][_target].session, {
+              object_ids: [{
+                collection: 'group_public',
+                key: `group_${info['id']}`,
+              }]
+            });
+          }
+        });
+      else throw new Error("not creator");
+    } catch (e) {
+      delete this.groups[_is_official][_target][info['id']];
+      this.rearrange_group_list();
+      this.save_groups_with_less_info();
+      this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
+      if (this.socket_reactive['settings'])
+        this.socket_reactive['settings'].load_groups();
+    }
   }
 
   /** 자신이 참여한 그룹을 리모트에서 가져오기 */
@@ -944,7 +949,7 @@ export class NakamaService {
         else for (let i = 0; i < user_length; i++) { // 2명 이상의 그룹원
           let userId = this.groups[_is_official][_target][p['group_id']]['users'][i]['user']['id'];
           if (userId != this.servers[_is_official][_target].session.user_id)
-            if (this.users[_is_official][_target][userId]['online']) {
+            if (this.load_other_user(userId, _is_official, _target)['online']) {
               result_status = 'online';
               break;
             }
@@ -1128,6 +1133,7 @@ export class NakamaService {
       case 'remove': // 그룹이 삭제됨
         this.groups[_is_official][_target][c.group_id]['status'] = 'missing';
         delete this.groups[_is_official][_target][c.group_id]['img'];
+        this.save_groups_with_less_info();
         this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${c.group_id}.img`);
         let users = Object.keys(this.groups[_is_official][_target][c.group_id]['users']);
         users.forEach(userId => {

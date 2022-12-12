@@ -147,6 +147,7 @@ export class SettingsPage implements OnInit {
       },
     }).then(v => {
       v.onWillDismiss().then(() => {
+        this.nakama.socket_reactive['settings'] = this;
         this.load_groups();
       });
       v.present();
