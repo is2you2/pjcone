@@ -54,6 +54,7 @@
     <tr *ngIf="isExpanded">
       <td>
         <div class="expanded">
+          <input hidden type="file" id="file_sel" accept="*" (change)="inputFileSelected($event)">
           <div *ngFor="let button of extended_buttons" class="ext_button"
             [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'" (click)="button['act']()">
             <img [src]="'assets/icon/' + (button['icon'] || 'favicon') + '.png'" [alt]="button['title']">

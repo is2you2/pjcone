@@ -5,6 +5,15 @@ import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 
+interface FileInfo {
+  id?: string;
+  name?: string;
+  ext?: string;
+  /** 전체 파일 크기 */
+  size?: number;
+  result?: string;
+}
+
 interface ExtendButtonForm {
   title: string;
   /** 크기: 64 x 64 px */
@@ -61,12 +70,28 @@ export class ChatRoomPage implements OnInit {
     icon: '',
     cursor: 'copy',
     act: () => {
-      console.log('파일 첨부');
+      document.getElementById('file_sel').click();
     }
   },
   ];
 
+  /** 파일 첨부하기 */
+  inputFileSelected(ev: any) {
+    this.userInput['file'] = {};
+    this.userInput.file['name'] = ev.target.files[0].name;
+    this.userInput.file['ext'] = ev.target.files[0].name.split('.')[1] || ev.target.files[0].type || '검토 불가';
+    this.userInput.file['size'] = ev.target.files[0].size;
+    let reader: any = new FileReader();
+    reader = reader._realReader ?? reader;
+    reader.onload = (ev: any) => {
+      this.userInput.file['result'] = ev.target.result.replace(/"|\\|=/g, '');
+    }
+    reader.readAsDataURL(ev.target.files[0]);
+  }
+
+  /** 옛날로 가는 커서 */
   next_cursor = '';
+  /** 최근으로 가는 커서 */
   prev_cursor = '';
   content_panel: HTMLElement;
 
@@ -82,6 +107,8 @@ export class ChatRoomPage implements OnInit {
     this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'] = (c: any) => {
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       this.focus_on_input();
+      console.warn('마지막 발송자를 검토하여 이름 추가 표기 기능 필요');
+      console.warn('파일 여부를 검토하여 last_comment에만 파일 포함 여부 표시');
       this.messages.push(c);
     }
     // 온라인이라면 마지막 대화 기록을 받아온다
@@ -95,6 +122,7 @@ export class ChatRoomPage implements OnInit {
 
   /** 사용자 입력 */
   userInput = {
+    file: undefined as FileInfo,
     text: '',
   }
 
@@ -137,11 +165,45 @@ export class ChatRoomPage implements OnInit {
   }
 
   send() {
-    if (!this.userInput.text) return;
+    if (!this.userInput.text && !this.userInput['file']) return;
+    let result = {};
+    result['msg'] = this.userInput.text;
+    let upload: string[] = [];
+    if (this.userInput.file) { // 파일 첨부시
+      result['filename'] = this.userInput.file.name;
+      result['filesize'] = this.userInput.file.size;
+      result['file_ext'] = this.userInput.file.ext;
+      result['msg'] = result['msg'] || '(첨부파일 수신)';
+      const SIZE_LIMIT = 240000;
+      let seek = 0;
+      while (seek < this.userInput.file.size) {
+        let next = seek + SIZE_LIMIT;
+        if (next > this.userInput.file.result.length)
+          next = this.userInput.file.result.length;
+        upload.push(this.userInput.file.result.substring(seek, next));
+        seek = next;
+      }
+      result['partsize'] = upload.length;
+    }
     this.nakama.servers[this.isOfficial][this.target].socket
-      .writeChatMessage(this.info['id'], {
-        msg: this.userInput.text,
-      }).then(_v => {
+      .writeChatMessage(this.info['id'], result).then(v => {
+        /** 업로드가 진행중인 메시지 개체 */
+        let worked = 0;
+        for (let i = 0, j = upload.length; i < j; i++) // 첨부 파일이 포함된 경우
+          this.nakama.servers[this.isOfficial][this.target].client.writeStorageObjects(
+            this.nakama.servers[this.isOfficial][this.target].session, [{
+              collection: 'file_public',
+              key: `msg_${v.message_id}_${i}`,
+              permission_read: 2,
+              permission_write: 1,
+              value: { data: upload[i] },
+            }]).then(_f => {
+              worked++;
+              console.warn('업로드 경과 게시하기: ', worked, '/', j);
+            }).catch(e => {
+              console.error(`${i}번째 파일 올리기 오류`, e);
+            });
+        delete this.userInput.file;
         this.userInput.text = '';
       });
   }

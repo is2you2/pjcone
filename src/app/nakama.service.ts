@@ -742,7 +742,7 @@ export class NakamaService {
     const SIZE_LIMIT = 245000;
     new p5((p: p5) => {
       p.setup = () => {
-        p.loadImage(ev.target.result, v => {
+        p.loadImage(ev.target.result.replace(/"|\\|=/g, ''), v => {
           v.resize(window.innerWidth, window.innerWidth * v.height / v.width);
           if (v['canvas'].toDataURL().length > SIZE_LIMIT)
             check_size(v);
@@ -1038,6 +1038,9 @@ export class NakamaService {
     this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = c.content['msg'];
   }
 
+  /** 메시지에 추가 정보를 자동생성하여 반환
+   * @return c.modulated
+   */
   modulation_channel_message(c: ChannelMessage, _is_official: string, _target: string) {
     let is_me = c.sender_id == this.servers[_is_official][_target].session.user_id;
     let target = is_me ? this.users.self : this.load_other_user(c.sender_id, _is_official, _target);
