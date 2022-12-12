@@ -9,3 +9,26 @@
 p {
     margin: 8px 0px 0px 0px;
 }
+
+// 하단 확장메뉴
+.expanded {
+    height: 240px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    text-align: center;
+}
+
+// 확장메뉴의 각 버튼들
+.ext_button {
+    display: inline-block;
+    width: 96px;
+    height: 112px;
+    margin: 16px 8px 0px 8px;
+    text-align: center;
+}
+
+.ext_button_icon {
+    width: 72px;
+    height: 72px;
+}

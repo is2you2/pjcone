@@ -13,11 +13,14 @@
       <td style="vertical-align: top;">
         <div class="main">
           <ion-item button (click)="pull_msg_from_server()">
-            <ion-label>이전 기록 불러오기 버튼</ion-label>
+            <ion-label>이전 기록 불러오기</ion-label>
           </ion-item>
           <p *ngFor="let msg of messages">
             {{msg.content['msg']}}
           </p>
+          <ion-item *ngIf="prev_cursor" button (click)="pull_msg_from_server(false)">
+            <ion-label>최근 기록 불러오기</ion-label>
+          </ion-item>
           <div id="content"></div>
         </div>
       </td>
@@ -27,11 +30,11 @@
         <div>
           <table id="input_table" style="width: 100%; background-color: black;">
             <tr>
-              <!-- <td>
-                <ion-button expand="block" [disabled]="true">
-                  첨부
+              <td>
+                <ion-button expand="block" (click)="isExpanded = !isExpanded">
+                  추가
                 </ion-button>
-              </td> -->
+              </td>
               <td style="width: 100%;">
                 <ion-input type="text" placeholder="메시지 입력..." (ionFocus)="focus_on_input()" (keyup.enter)="send()"
                   [(ngModel)]="userInput.text">
@@ -45,6 +48,16 @@
               </td>
             </tr>
           </table>
+        </div>
+      </td>
+    </tr>
+    <tr *ngIf="isExpanded">
+      <td>
+        <div class="expanded">
+          <div *ngFor="let button of extended_buttons" class="ext_button" (click)="button['act']()">
+            <img [src]="'assets/icon/' + (button['icon'] || 'favicon') + '.png'" [alt]="button['title']">
+            <div style="display: inline-block;"> {{button['title']}} </div>
+          </div>
         </div>
       </td>
     </tr>

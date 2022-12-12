@@ -4,6 +4,13 @@ import { ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 
+interface ExtendButtonForm {
+  title: string;
+  /** 크기: 64 x 64 px */
+  icon: string;
+  act: Function;
+}
+
 @Component({
   selector: 'app-chat-room',
   templateUrl: './chat-room.page.html',
@@ -25,8 +32,25 @@ export class ChatRoomPage implements OnInit {
   messages = [];
   /** 사용자 정보 일람 */
   users = {};
+  /** 확장 버튼 행동들 */
+  extended_buttons: ExtendButtonForm[] = [{
+    title: '채널 삭제',
+    icon: '', // 아이콘 상대경로
+    act: () => {
+      console.log('채널 삭제 행동');
+    }
+  },
+  {
+    title: '파일 첨부',
+    icon: '',
+    act: () => {
+      console.log('파일 첨부');
+    }
+  },
+  ];
 
-  next_cursor: string = '';
+  next_cursor = '';
+  prev_cursor = '';
   content_panel: HTMLElement;
 
   ngOnInit() {
@@ -58,25 +82,32 @@ export class ChatRoomPage implements OnInit {
   }
 
   /** 서버로부터 메시지 더 받아오기 */
-  pull_msg_from_server() {
-    if ((this.info['status'] == 'online' || this.info['status'] == 'pending') && this.next_cursor !== undefined)
-      this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
-        this.nakama.servers[this.isOfficial][this.target].session,
-        this.info['id'], 15, false, this.next_cursor).then(v => {
-          console.warn('로컬 채팅id 기록과 대조하여 내용이 다르다면 계속해서 불러오기처리 필요');
-          v.messages.forEach(msg => {
-            msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
-            if (!this.info['last_comment'])
-              this.info['last_comment'] = msg['content']['msg'];
-            this.messages.unshift(msg);
+  pull_msg_from_server(isHistory = true) {
+    if (isHistory) {
+      if ((this.info['status'] == 'online' || this.info['status'] == 'pending') && this.next_cursor !== undefined)
+        this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
+          this.nakama.servers[this.isOfficial][this.target].session,
+          this.info['id'], 15, false, this.next_cursor).then(v => {
+            console.warn('로컬 채팅id 기록과 대조하여 내용이 다르다면 계속해서 불러오기처리 필요');
+            v.messages.forEach(msg => {
+              msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
+              if (!this.info['last_comment'])
+                this.info['last_comment'] = msg['content']['msg'];
+              this.messages.unshift(msg);
+            });
+            this.next_cursor = v.next_cursor;
+            this.prev_cursor = v.prev_cursor;
           });
-          this.next_cursor = v.next_cursor;
-        });
+    } else {
+      console.log('현 상태보다 최근 기록 불러오기');
+    }
   }
 
+  isExpanded = false;
   /** 모바일 키보드 높이 맞추기용 */
   focus_on_input() {
     setTimeout(() => {
+      this.isExpanded = false;
       this.content_panel.scrollIntoView({ block: 'start' });
     }, 0);
   }
