@@ -425,8 +425,8 @@ export class NakamaService {
             ).then(_userinfo => {
               if (_userinfo.users.length) {
                 let keys = Object.keys(_userinfo.users[0]);
-                keys.forEach(key => this.users[_is_official][_target][_userinfo.users[0].id][key] = _userinfo.users[0][key]);
-              } else this.users[_is_official][_target][_user['user']['id']]['deleted'] = true;
+                keys.forEach(key => this.load_other_user(_userinfo.users[0].id, _is_official, _target)[key] = _userinfo.users[0][key]);
+              }
             });
         });
     });

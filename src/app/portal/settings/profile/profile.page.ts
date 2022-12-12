@@ -122,7 +122,7 @@ export class ProfilePage implements OnInit {
     let reader: any = new FileReader();
     reader = reader._realReader ?? reader;
     reader.onload = (ev: any) => {
-      this.nakama.limit_image_size(ev, (v) => { this.change_img_smoothly(v['canvas'].toDataURL()) });
+      this.nakama.limit_image_size(ev, (v: any) => { this.change_img_smoothly(v['canvas'].toDataURL()) });
     }
     reader.readAsDataURL(ev.target.files[0]);
   }
