@@ -208,6 +208,11 @@ export class ChatRoomPage implements OnInit {
       });
   }
 
+  /** 메시지 정보 상세 */
+  message_detail(msg: any) {
+    console.warn('메시지 상세 정보 표시: ', msg);
+  }
+
   ionViewWillLeave() {
     if (this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
