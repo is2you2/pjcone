@@ -3,11 +3,14 @@ import { Channel } from '@heroiclabs/nakama-js';
 import { ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
+import { P5ToastService } from 'src/app/p5-toast.service';
 
 interface ExtendButtonForm {
   title: string;
   /** 크기: 64 x 64 px */
   icon: string;
+  /** 마우스 커서 스타일 */
+  cursor?: string;
   act: Function;
 }
 
@@ -23,6 +26,7 @@ export class ChatRoomPage implements OnInit {
     private navParams: NavParams,
     public nakama: NakamaService,
     private noti: LocalNotiService,
+    private p5toast: P5ToastService,
   ) { }
 
   info: Channel;
@@ -37,12 +41,25 @@ export class ChatRoomPage implements OnInit {
     title: '채널 삭제',
     icon: '', // 아이콘 상대경로
     act: () => {
-      console.log('채널 삭제 행동');
+      if (this.info['status'] != 'missing') {
+        if (this.info['redirect']['type'] != 3)
+          this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
+        else {
+          this.p5toast.show({
+            text: '이 채널은 그룹에 귀속되어 있습니다.',
+          });
+          return;
+        }
+      }
+      delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
+      this.nakama.rearrange_channels();
+      this.modalCtrl.dismiss();
     }
   },
   {
     title: '파일 첨부',
     icon: '',
+    cursor: 'copy',
     act: () => {
       console.log('파일 첨부');
     }
@@ -130,7 +147,8 @@ export class ChatRoomPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
+    if (this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
+      delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
     this.noti.Current = undefined;
   }
 }

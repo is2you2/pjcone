@@ -32,7 +32,7 @@
             <tr>
               <td>
                 <ion-button expand="block" (click)="open_ext_with_delay()">
-                  추가
+                  기능
                 </ion-button>
               </td>
               <td style="width: 100%;">
@@ -54,7 +54,8 @@
     <tr *ngIf="isExpanded">
       <td>
         <div class="expanded">
-          <div *ngFor="let button of extended_buttons" class="ext_button" (click)="button['act']()">
+          <div *ngFor="let button of extended_buttons" class="ext_button"
+            [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'" (click)="button['act']()">
             <img [src]="'assets/icon/' + (button['icon'] || 'favicon') + '.png'" [alt]="button['title']">
             <div style="display: inline-block;"> {{button['title']}} </div>
           </div>

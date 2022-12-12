@@ -668,7 +668,7 @@ export class NakamaService {
    * after_channel_rearrange > page_key > (nakama.Channel[]) => {}
    */
   after_channel_rearrange = {};
-  /** 채널 리스트 정리  
+  /** 채널 리스트 정리, 채널 정보 저장  
    * @return Channel[] from channel_orig
    */
   rearrange_channels() {
