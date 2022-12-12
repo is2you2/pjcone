@@ -104,6 +104,13 @@ export class ChatRoomPage implements OnInit {
   }
 
   isExpanded = false;
+
+  open_ext_with_delay() {
+    setTimeout(() => {
+      this.isExpanded = !this.isExpanded;
+    }, 60);
+  }
+
   /** 모바일 키보드 높이 맞추기용 */
   focus_on_input() {
     setTimeout(() => {
