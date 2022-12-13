@@ -1030,18 +1030,8 @@ export class NakamaService {
 
   /** 채널 메시지를 변조 후 전파하기 */
   update_from_channel_msg(msg: ChannelMessage, _is_official: string, _target: string) {
+    let is_me = msg.sender_id == this.servers[_is_official][_target].session.user_id;
     let c = this.modulation_channel_message(msg, _is_official, _target);
-    if (this.channels_orig[_is_official][_target][c.channel_id]['update'])
-      this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
-    this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = c.content['msg'];
-  }
-
-  /** 메시지에 추가 정보를 자동생성하여 반환
-   * @return c.modulated
-   */
-  modulation_channel_message(c: ChannelMessage, _is_official: string, _target: string) {
-    let is_me = c.sender_id == this.servers[_is_official][_target].session.user_id;
-    let target = is_me ? this.users.self : this.load_other_user(c.sender_id, _is_official, _target);
     switch (c.code) {
       case 0: // 사용자가 작성한 일반적인 메시지
         if (c.content['update']) // 그룹 정보 업데이트
@@ -1056,24 +1046,6 @@ export class NakamaService {
           this.socket_reactive['settings'].load_groups();
         if (this.socket_reactive['group_detail']) // 그룹 상세를 보는 중이라면 업데이트하기
           this.socket_reactive['group_detail'].update_GroupUsersList(_is_official, _target);
-        // 행동에서 자동으로 메시지 생성
-        switch (c.code) {
-          case 4: // join
-            c.content['user'] = target;
-            c.content['msg'] = `사용자 그룹참여-${target['display_name']}`;
-            break;
-          case 5: // out
-            console.warn('그룹원 탈퇴와 참여 예정자의 포기를 구분할 수 있는지: ', c);
-            c.content['user'] = target;
-            c.content['msg'] = `사용자 그룹탈퇴-${target['display_name']}`;
-          case 6: // kick
-            c.content['msg'] = `사용자 강제퇴장-${target['display_name']}`;
-
-            break;
-          default:
-            console.warn('예상하지 못한 메시지 코드: ', c);
-            break;
-        }
         if (c.code == 4) break;
         // 사용자 유입과 관련된 알림 제거
         if (this.noti_origin[_is_official] && this.noti_origin[_is_official][_target]) {
@@ -1093,11 +1065,39 @@ export class NakamaService {
         if (is_me) { // 그 유입 주체가 나야
           this.channels_orig[_is_official][_target][c.channel_id]['status'] = 'missing';
           delete this.channels_orig[_is_official][_target][c.channel_id]['info'];
-          this.groups[_is_official][_target][c['group_id']]['status'] = 'missing';
         }
         break;
       default:
         console.warn('예상하지 못한 채널 메시지 코드: ', c.code);
+        break;
+    }
+    if (this.channels_orig[_is_official][_target][c.channel_id]['update'])
+      this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
+    this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = c.content['msg'];
+  }
+
+  /** 채널 정보를 분석하여 메시지 변형 (행동은 하지 않음)
+   * @return c.modulated
+   */
+  modulation_channel_message(c: ChannelMessage, _is_official: string, _target: string) {
+    let is_me = c.sender_id == this.servers[_is_official][_target].session.user_id;
+    let target = is_me ? this.users.self : this.load_other_user(c.sender_id, _is_official, _target);
+    switch (c.code) {
+      case 0: // 사용자가 작성한 일반적인 메시지
+        break;
+      case 4: // 채널에 새로 들어온 사람 알림
+        c.content['user'] = target;
+        c.content['msg'] = `사용자 그룹참여-${target['display_name']}`;
+        break;
+      case 5: // 그룹에 있던 사용자 나감(들어오려다가 포기한 사람 포함)
+        console.warn('그룹원 탈퇴와 참여 예정자의 포기를 구분할 수 있는지: ', c);
+        c.content['user'] = target;
+        c.content['msg'] = `사용자 그룹탈퇴-${target['display_name']}`;
+      case 6: // 누군가 그룹에서 내보내짐 (kick)
+        c.content['msg'] = `사용자 강제퇴장-${target['display_name']}`;
+        break;
+      default:
+        console.warn('예상하지 못한 메시지 코드: ', c);
         break;
     }
     return c;

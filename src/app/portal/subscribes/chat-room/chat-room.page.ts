@@ -101,7 +101,6 @@ export class ChatRoomPage implements OnInit {
     this.noti.Current = this.info['id'];
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
-    this.load_all_users_info();
     this.content_panel = document.getElementById('content');
     console.warn('이 자리에서 로컬 채팅 기록 불러오기');
     // 실시간 채팅을 받는 경우 행동처리
@@ -115,11 +114,6 @@ export class ChatRoomPage implements OnInit {
     // 온라인이라면 마지막 대화 기록을 받아온다
     this.pull_msg_from_server();
     this.follow_resize();
-  }
-
-  /** 모든 사용자 정보를 받아오기 */
-  load_all_users_info() {
-    console.warn('모든 사용자 정보를 준비하기');
   }
 
   p5canvas: p5;
@@ -148,7 +142,9 @@ export class ChatRoomPage implements OnInit {
     text: '',
   }
 
-  /** 서버로부터 메시지 더 받아오기 */
+  /** 서버로부터 메시지 더 받아오기
+   * @param isHistory 옛날 정보 불러오기 유무, false면 최신정보 불러오기 진행
+   */
   pull_msg_from_server(isHistory = true) {
     if (isHistory) {
       if ((this.info['status'] == 'online' || this.info['status'] == 'pending') && this.next_cursor !== undefined)
@@ -232,7 +228,12 @@ export class ChatRoomPage implements OnInit {
 
   /** 메시지 정보 상세 */
   message_detail(msg: any) {
-    console.warn('메시지 상세 정보 표시: ', msg);
+    console.warn('긴 클릭시 행동.. 메시지 상세 정보 표시: ', msg);
+  }
+
+  /** 메시지 내 파일 정보 */
+  file_detail(msg: any) {
+    console.warn('짧은 클릭으로 파일이 있는 메시지 정보 표시: ', msg);
   }
 
   ionViewWillLeave() {
