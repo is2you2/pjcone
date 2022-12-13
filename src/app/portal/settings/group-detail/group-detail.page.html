@@ -37,7 +37,7 @@
   <ion-item-divider *ngIf="info['users'] && info['users'].length">
     <ion-label>{{'그룹 구성원 (' + info['users'].length + '/' + info['max_count'] + ')'}}</ion-label>
   </ion-item-divider>
-  <ion-item button *ngFor="let user of info['users']; i as index" (click)="open_user_profile(user)">
+  <ion-item button *ngFor="let user of info['users']" (click)="open_user_profile(user)">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[user.status || info['status'] || 'offline']">
     </div>

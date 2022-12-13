@@ -6,10 +6,6 @@
     scroll-behavior: smooth;
 }
 
-p {
-    margin: 8px 0px 0px 0px;
-}
-
 // 하단 확장메뉴
 .expanded {
     height: 240px;
@@ -38,5 +34,6 @@ p {
     height: 64px;
     overflow: hidden;
     // 테스트용 배경색
-    background-color: red;
+    background-color: grey;
+    margin-top: 4px;
 }

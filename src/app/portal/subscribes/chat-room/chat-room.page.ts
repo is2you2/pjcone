@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Channel } from '@heroiclabs/nakama-js';
+import { Channel, ChannelMessage } from '@heroiclabs/nakama-js';
 import { ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
@@ -107,6 +107,7 @@ export class ChatRoomPage implements OnInit {
     this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'] = (c: any) => {
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       this.focus_on_input();
+      this.check_sender_and_show_name(c);
       console.warn('마지막 발송자를 검토하여 이름 추가 표기 기능 필요');
       console.warn('파일 여부를 검토하여 last_comment에만 파일 포함 여부 표시');
       this.messages.push(c);
@@ -114,6 +115,15 @@ export class ChatRoomPage implements OnInit {
     // 온라인이라면 마지막 대화 기록을 받아온다
     this.pull_msg_from_server();
     this.follow_resize();
+  }
+
+  /** 발신인 표시를 위한 메시지 추가 가공 */
+  check_sender_and_show_name(c: ChannelMessage) {
+    c['color'] = c.sender_id.replace(/-/g, '').substring(0, 6);
+    if (c.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id)
+      c['user_display_name'] = this.nakama.users.self['display_name'];
+    else c['user_display_name'] = this.nakama.load_other_user(c.sender_id, this.isOfficial, this.target)['display_name'];
+    c['user_display_name'] = c['user_display_name'] || '이름 없는 사용자';
   }
 
   p5canvas: p5;
@@ -154,6 +164,7 @@ export class ChatRoomPage implements OnInit {
             console.warn('로컬 채팅id 기록과 대조하여 내용이 다르다면 계속해서 불러오기처리 필요');
             v.messages.forEach(msg => {
               msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
+              this.check_sender_and_show_name(msg);
               if (!this.info['last_comment'])
                 this.info['last_comment'] = msg['content']['msg'];
               this.messages.unshift(msg);

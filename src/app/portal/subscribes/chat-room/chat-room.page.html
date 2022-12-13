@@ -15,11 +15,14 @@
           <ion-item button (click)="pull_msg_from_server()">
             <ion-label>이전 기록 불러오기</ion-label>
           </ion-item>
-          <div *ngFor="let msg of messages" (click)="message_detail(msg)">
+          <div *ngFor="let msg of messages; let i = index" (click)="message_detail(msg)">
+            <p *ngIf="!messages[i - 1] || msg.sender_id != messages[i - 1].sender_id" style=" margin: 8px 0px 0px 0px;">
+              <font color="#{{msg.color}}">{{msg.user_display_name}}</font>
+            </p>
             <div *ngIf="msg.content['filename']" class="file_button" (click)="file_detail(msg)">
               {{msg.content['filename']}}
             </div>
-            <p *ngIf="msg.content['msg']"> {{msg.content['msg']}} </p>
+            <p *ngIf="msg.content['msg']" style="margin: 4px 0px 0px 0px;"> {{msg.content['msg']}} </p>
           </div>
           <ion-item *ngIf="prev_cursor" hidden button (click)="pull_msg_from_server(false)">
             <ion-label>최근 기록 불러오기</ion-label>
