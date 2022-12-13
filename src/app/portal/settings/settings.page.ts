@@ -173,7 +173,7 @@ export class SettingsPage implements OnInit {
     channels.forEach(channel => {
       if (channel['redirect']['type'] == 2)
         this.indexed.loadTextFromUserPath(`servers/${channel['server']['isOfficial']}/${channel['server']['target']}/users/${channel['redirect']['id']}/profile.img`, (e, v) => {
-          if (e && v) this.nakama.users[channel['server']['isOfficial']][channel['server']['target']][channel['redirect']['id']]['img'] = v.replace(/"|=|\\/g, '');
+          if (e && v) this.nakama.load_other_user(channel['redirect']['id'], channel['server']['isOfficial'], channel['server']['target'])['img'] = v.replace(/"|=|\\/g, '');
         });
     });
     delete this.nakama.users.self['img'];

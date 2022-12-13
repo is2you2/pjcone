@@ -508,10 +508,8 @@ export class NakamaService {
     let copied = { ...userInfo };
     delete copied['img'];
     delete copied['online'];
-    if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
-    if (!this.users[_is_official][_target][userInfo['id']]) this.users[_is_official][_target][userInfo['id']] = {};
     let keys = Object.keys(userInfo);
-    keys.forEach(key => this.users[_is_official][_target][userInfo['id']][key] = userInfo[key]);
+    keys.forEach(key => this.load_other_user(userInfo['id'], _is_official, _target)[key] = userInfo[key]);
     this.indexed.saveTextFileToUserPath(JSON.stringify(copied), `servers/${_is_official}/${_target}/users/${copied['id']}/profile.json`);
     if (userInfo['img'])
       this.indexed.saveTextFileToUserPath(userInfo['img'], `servers/${_is_official}/${_target}/users/${userInfo['id']}/profile.img`);
@@ -580,7 +578,7 @@ export class NakamaService {
     switch (channel_info['redirect']['type']) {
       case 2: // 1:1 대화
         let targetId = channel_info['redirect']['id'];
-        let result_status = this.users[_is_official][_target][targetId]['online'] ? 'online' : 'pending';
+        let result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
         channel_info['status'] = result_status;
         break;
       case 3: // 새로 개설된 그룹 채널인 경우
@@ -781,7 +779,7 @@ export class NakamaService {
                 ).then(_list => {
                   _list.group_users.forEach(_guser => {
                     let keys = Object.keys(_guser.user);
-                    keys.forEach(key => this.users[server.info.isOfficial][server.info.target][_guser.user.id][key] = _guser.user[key]);
+                    keys.forEach(key => this.load_other_user(_guser.user.id, server.info.isOfficial, server.info.target)[key] = _guser.user[key]);
                     this.save_other_user(_guser.user.id, server.info.isOfficial, server.info.target);
                   });
                 });
@@ -957,7 +955,7 @@ export class NakamaService {
       }
     } else if (p['user_id_one']) { // 1:1 채팅인 경우
       let targetId = this.channels_orig[_is_official][_target][p.channel_id]['redirect']['id'];
-      result_status = this.users[_is_official][_target][targetId]['online'] ? 'online' : 'pending';
+      result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
     }
     this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] = result_status;
   }
@@ -980,14 +978,14 @@ export class NakamaService {
           if (p.joins !== undefined) { // 참여 검토
             p.joins.forEach(info => {
               if (this.servers[_is_official][_target].session.user_id != info.user_id)
-                this.users[_is_official][_target][info.user_id]['online'] = true;
+                this.load_other_user(info.user_id, _is_official, _target)['online'] = true;
             });
             this.count_channel_online_member(p, _is_official, _target);
           } else if (p.leaves !== undefined) { // 떠남 검토
             let others = [];
             p.leaves.forEach(info => {
               if (this.servers[_is_official][_target].session.user_id != info.user_id) {
-                delete this.users[_is_official][_target][info.user_id]['online'];
+                delete this.load_other_user(info.user_id, _is_official, _target)['online'];
                 others.push(info.user_id);
               }
             });
@@ -996,7 +994,7 @@ export class NakamaService {
                 if (v.users.length)
                   v.users.forEach(_user => {
                     let keys = Object.keys(_user);
-                    keys.forEach(key => this.users[_is_official][_target][_user.id][key] = _user[key]);
+                    keys.forEach(key => this.load_other_user(_user.id, _is_official, _target)[key] = _user[key]);
                     this.save_other_user(_user, _is_official, _target);
                   });
                 this.count_channel_online_member(p, _is_official, _target);
@@ -1167,14 +1165,14 @@ export class NakamaService {
             if (this.socket_reactive['others-profile']) {
               this.socket_reactive['others-profile'](v.objects[0].value['img']);
             } else {
-              this.users[_is_official][_target][c.sender_id]['img'] = v.objects[0].value['img'];
-              this.users[_is_official][_target][c.sender_id]['avatar_url'] = v.objects[0].version;
-              this.save_other_user(this.users[_is_official][_target][c.sender_id], _is_official, _target);
+              this.load_other_user(c.sender_id, _is_official, _target)['img'] = v.objects[0].value['img'];
+              this.load_other_user(c.sender_id, _is_official, _target)['avatar_url'] = v.objects[0].version;
+              this.save_other_user(this.load_other_user(c.sender_id, _is_official, _target), _is_official, _target);
             }
           } else {
             if (this.socket_reactive['others-profile'])
               this.socket_reactive['others-profile']('');
-            delete this.users[_is_official][_target][c.sender_id]['img'];
+            delete this.load_other_user(c.sender_id, _is_official, _target)['img'];
             this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${c.sender_id}/profile.img`)
           }
         });
