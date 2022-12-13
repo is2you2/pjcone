@@ -4,6 +4,7 @@ import { ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import * as p5 from "p5";
 
 interface FileInfo {
   id?: string;
@@ -113,11 +114,32 @@ export class ChatRoomPage implements OnInit {
     }
     // 온라인이라면 마지막 대화 기록을 받아온다
     this.pull_msg_from_server();
+    this.follow_resize();
   }
 
   /** 모든 사용자 정보를 받아오기 */
   load_all_users_info() {
     console.warn('모든 사용자 정보를 준비하기');
+  }
+
+  p5canvas: p5;
+  /** 창 조절에 따른 최대 화면 크기 조정 */
+  follow_resize() {
+    let sketch = (p: p5) => {
+      let mainTable = document.getElementById('main_table');
+      let mainDiv = document.getElementById('main_div');
+      let inputTable = document.getElementById('input_table');
+      p.setup = () => {
+        setTimeout(() => {
+          p.windowResized();
+        }, 100);
+        p.noLoop();
+      }
+      p.windowResized = () => {
+        mainDiv.setAttribute('style', `max-width: ${mainTable.parentElement.offsetWidth}px; max-height: ${mainTable.parentElement.clientHeight - inputTable.offsetHeight}px`);
+      }
+    }
+    this.p5canvas = new p5(sketch);
   }
 
   /** 사용자 입력 */
@@ -217,5 +239,6 @@ export class ChatRoomPage implements OnInit {
     if (this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
     this.noti.Current = undefined;
+    this.p5canvas.remove();
   }
 }
