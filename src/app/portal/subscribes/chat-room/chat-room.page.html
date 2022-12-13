@@ -17,7 +17,9 @@
           </ion-item>
           <div *ngFor="let msg of messages; let i = index" (click)="message_detail(msg)">
             <p *ngIf="!messages[i - 1] || msg.sender_id != messages[i - 1].sender_id" style=" margin: 8px 0px 0px 0px;">
-              <font color="#{{msg.color}}">{{msg.user_display_name}}</font>
+              <b>
+                <font color="#{{msg.color}}">{{msg.user_display_name}}</font>
+              </b>
             </p>
             <div *ngIf="msg.content['filename']" class="file_button" (click)="file_detail(msg)">
               {{msg.content['filename']}}
@@ -42,8 +44,8 @@
                 </ion-button>
               </td>
               <td style="width: 100%;">
-                <ion-input type="text" placeholder="메시지 입력..." (ionFocus)="focus_on_input()" (keyup.enter)="send()"
-                  [(ngModel)]="userInput.text">
+                <ion-input type="text" placeholder="메시지 입력..." (ionFocus)="open_ext_with_delay(true)"
+                  (keyup.enter)="send()" [(ngModel)]="userInput.text">
                 </ion-input>
               </td>
               <td>
@@ -57,7 +59,7 @@
         </div>
       </td>
     </tr>
-    <tr *ngIf="isExpanded">
+    <tr id="ext_menu" [hidden]="isHidden">
       <td>
         <div class="expanded">
           <input hidden type="file" id="file_sel" accept="*" (change)="inputFileSelected($event)">

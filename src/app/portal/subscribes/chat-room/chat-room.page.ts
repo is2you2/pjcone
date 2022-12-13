@@ -106,11 +106,13 @@ export class ChatRoomPage implements OnInit {
     // 실시간 채팅을 받는 경우 행동처리
     this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'] = (c: any) => {
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      this.focus_on_input();
       this.check_sender_and_show_name(c);
       console.warn('마지막 발송자를 검토하여 이름 추가 표기 기능 필요');
       console.warn('파일 여부를 검토하여 last_comment에만 파일 포함 여부 표시');
       this.messages.push(c);
+      setTimeout(() => {
+        this.content_panel.scrollIntoView({ block: 'start' });
+      }, 0);
     }
     // 온라인이라면 마지막 대화 기록을 받아온다
     this.pull_msg_from_server();
@@ -133,6 +135,7 @@ export class ChatRoomPage implements OnInit {
       let mainTable = document.getElementById('main_table');
       let mainDiv = document.getElementById('main_div');
       let inputTable = document.getElementById('input_table');
+      let ext_menu = document.getElementById('ext_menu');
       p.setup = () => {
         setTimeout(() => {
           p.windowResized();
@@ -140,7 +143,9 @@ export class ChatRoomPage implements OnInit {
         p.noLoop();
       }
       p.windowResized = () => {
-        mainDiv.setAttribute('style', `max-width: ${mainTable.parentElement.offsetWidth}px; max-height: ${mainTable.parentElement.clientHeight - inputTable.offsetHeight}px`);
+        setTimeout(() => {
+          mainDiv.setAttribute('style', `max-width: ${mainTable.parentElement.offsetWidth}px; max-height: ${mainTable.parentElement.clientHeight - inputTable.offsetHeight - ext_menu.offsetHeight}px`);
+        }, 0);
       }
     }
     this.p5canvas = new p5(sketch);
@@ -177,20 +182,17 @@ export class ChatRoomPage implements OnInit {
     }
   }
 
-  isExpanded = false;
+  isHidden = true;
 
-  open_ext_with_delay() {
+  /** 핸드폰 가상키보드의 움직임을 고려하여 눈이 덜 불편하도록 지연 */
+  open_ext_with_delay(force?: boolean) {
+    this.isHidden = force || !this.isHidden;
     setTimeout(() => {
-      this.isExpanded = !this.isExpanded;
-    }, 60);
-  }
-
-  /** 모바일 키보드 높이 맞추기용 */
-  focus_on_input() {
-    setTimeout(() => {
-      this.isExpanded = false;
-      this.content_panel.scrollIntoView({ block: 'start' });
-    }, 0);
+      this.p5canvas.windowResized();
+      setTimeout(() => {
+        this.content_panel.scrollIntoView({ block: 'start' });
+      }, 0);
+    }, 120);
   }
 
   send() {

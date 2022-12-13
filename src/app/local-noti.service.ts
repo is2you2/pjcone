@@ -91,7 +91,7 @@ interface TotalNotiForm {
   autoCancel_ln?: boolean;
   /** 소리 설정 */
   sound_ln?: string;
-  /** 안드로이드 전용. 알아서 꺼지기 시간 */
+  /** 안드로이드 전용. 알아서 꺼지기 시간(단위/밀리초) */
   timeoutAfter_ln?: number | false;
   /** 알림에 저장될 추가 데이터, Json 형태로 저장됩니다 */
   extra_ln?: any;

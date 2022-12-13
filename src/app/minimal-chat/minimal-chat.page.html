@@ -44,7 +44,7 @@
                 </ion-button>
               </td>
               <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'custom'" style="width: 100%;">
-                <ion-input type="text" placeholder="메시지 입력..." (ionFocus)="focus_on_input()" (keyup.enter)="send()"
+                <ion-input type="text" placeholder="메시지 입력..." (ionFocus)="focus_on_input(120)" (keyup.enter)="send()"
                   [(ngModel)]="client.userInput[target].text">
                 </ion-input>
               </td>

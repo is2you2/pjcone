@@ -307,10 +307,10 @@ export class MinimalChatPage implements OnInit {
   }
 
   /** 모바일 키보드 높이 맞추기용 */
-  focus_on_input() {
+  focus_on_input(force?: number) {
     setTimeout(() => {
       this.content_panel.scrollIntoView({ block: 'start' });
-    }, 0);
+    }, force || 0);
   }
 
   /** 메시지 보내기 */

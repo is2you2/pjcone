@@ -65,6 +65,7 @@ export class AppComponent {
         smallIcon_ln: 'icon_mono',
         iconColor_ln: 'ffd94e',
         autoCancel_ln: true,
+        timeoutAfter_ln: 8000,
       }, undefined);
     };
     indexed.initialize(() => {
