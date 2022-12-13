@@ -124,6 +124,9 @@ export class SettingsPage implements OnInit {
   /** 최소한의 기능을 가진 채팅 시작하기 */
   start_minimalchat(_address?: string) {
     if (this.will_enter) return;
+    if (this.statusBar.settings[_address ? 'dedicated_groupchat' : 'community_ranchat'] != 'online'
+      && this.statusBar.settings[_address ? 'dedicated_groupchat' : 'community_ranchat'] != 'certified')
+      this.statusBar.settings[_address ? 'dedicated_groupchat' : 'community_ranchat'] = 'pending';
     this.will_enter = true;
     setTimeout(() => {
       this.will_enter = false;

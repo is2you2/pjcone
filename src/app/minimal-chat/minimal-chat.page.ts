@@ -65,6 +65,7 @@ export class MinimalChatPage implements OnInit {
       this.header_title = '그룹 채팅';
       this.client.status[this.target] = 'custom';
     }
+    this.noti.ClearNoti(this.lnId);
     this.title.setTitle(get_address ? 'Project: 그룹채팅' : 'Project: 랜덤채팅');
     this.summaryText = '그룹채팅';
     this.noti.Current = this.Header;
@@ -73,7 +74,6 @@ export class MinimalChatPage implements OnInit {
     favicon.setAttribute('href', `assets/icon/${this.Header}.png`);
 
     if (!this.client.client[this.target] || this.client.client[this.target].readyState != this.client.client[this.target].OPEN) {
-      this.statusBar.settings[this.target] = 'pending';
       this.noti.SetListener('click', this.open_this);
       this.noti.SetListener(`send${this.target}`, (v: any, eopts: any) => {
         this.noti.ClearNoti(v['id']);
@@ -269,7 +269,7 @@ export class MinimalChatPage implements OnInit {
         p.noLoop();
       }
       p.windowResized = () => {
-        mainDiv.setAttribute('style', `max-width: ${mainTable.offsetWidth}px; max-height: ${mainTable.offsetHeight - inputTable.offsetHeight}px`);
+        mainDiv.setAttribute('style', `max-width: ${mainTable.parentElement.offsetWidth}px; max-height: ${mainTable.parentElement.clientHeight - inputTable.offsetHeight}px`);
       }
     }
     this.p5canvas = new p5(sketch);
