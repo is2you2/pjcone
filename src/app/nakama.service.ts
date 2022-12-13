@@ -408,7 +408,6 @@ export class NakamaService {
     // 통신 소켓 연결하기
     this.connect_to(_is_official, _target, () => {
       this.get_group_list(_is_official, _target);
-      this.redirect_channel(_is_official, _target);
       this.update_notifications(_is_official, _target);
     });
   }
@@ -899,6 +898,7 @@ export class NakamaService {
               this.groups[_is_official][_target][user_group.group.id]['channel_id'] = c.id;
               this.add_channels(c, _is_official, _target);
               this.save_groups_with_less_info();
+              this.redirect_channel(_is_official, _target);
             });
         });
       });
