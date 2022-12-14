@@ -17,8 +17,10 @@ interface FileInfo {
 
 interface ExtendButtonForm {
   title: string;
-  /** 크기: 64 x 64 px */
-  icon: string;
+  /** 버튼 숨기기 */
+  isHide?: boolean;
+  /** 아이콘 상대경로-이름, 크기: 64 x 64 px */
+  icon?: string;
   /** 마우스 커서 스타일 */
   cursor?: string;
   act: Function;
@@ -48,22 +50,28 @@ export class ChatRoomPage implements OnInit {
   users = {};
   /** 확장 버튼 행동들 */
   extended_buttons: ExtendButtonForm[] = [{
-    title: '채널 삭제',
-    icon: '', // 아이콘 상대경로
+    title: '삭제',
     act: () => {
-      if (this.info['status'] != 'missing') {
-        if (this.info['redirect']['type'] != 3)
-          this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
-        else {
-          this.p5toast.show({
-            text: '이 채널은 그룹에 귀속되어 있습니다.',
-          });
-          return;
-        }
-      }
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
       this.nakama.rearrange_channels();
       this.modalCtrl.dismiss();
+    }
+  },
+  {
+    title: '나가기',
+    act: () => {
+      if (this.info['redirect']['type'] != 3) {
+        this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
+        this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
+        this.nakama.rearrange_channels();
+        this.extended_buttons[0].isHide = false;
+        this.extended_buttons[1].isHide = true;
+      } else {
+        this.p5toast.show({
+          text: '이 채널은 그룹에 귀속되어 있습니다.',
+        });
+        return;
+      }
     }
   },
   {
@@ -114,6 +122,8 @@ export class ChatRoomPage implements OnInit {
         this.content_panel.scrollIntoView({ block: 'start' });
       }, 0);
     }
+    this.extended_buttons[0].isHide = this.info['status'] != 'missing';
+    this.extended_buttons[1].isHide = this.info['status'] == 'missing';
     // 온라인이라면 마지막 대화 기록을 받아온다
     this.pull_msg_from_server();
     this.follow_resize();
