@@ -115,8 +115,6 @@ export class ChatRoomPage implements OnInit {
     this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'] = (c: any) => {
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       this.check_sender_and_show_name(c);
-      console.warn('마지막 발송자를 검토하여 이름 추가 표기 기능 필요');
-      console.warn('파일 여부를 검토하여 last_comment에만 파일 포함 여부 표시');
       this.messages.push(c);
       setTimeout(() => {
         this.content_panel.scrollIntoView({ block: 'start' });
@@ -180,8 +178,10 @@ export class ChatRoomPage implements OnInit {
             v.messages.forEach(msg => {
               msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
               this.check_sender_and_show_name(msg);
-              if (!this.info['last_comment'])
+              if (!this.info['last_comment']) {
+                let hasFile = msg['content']['file'] ? '(첨부파일) ' : '';
                 this.info['last_comment'] = msg['content']['msg'];
+              }
               this.messages.unshift(msg);
             });
             this.next_cursor = v.next_cursor;
