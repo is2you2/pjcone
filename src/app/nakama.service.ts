@@ -649,6 +649,7 @@ export class NakamaService {
               .then(v => {
                 if (v.messages.length)
                   this.channels_orig[_is_official][_target][_cid]['last_comment'] = v.messages[0].content['msg'];
+                this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
               });
           }).catch(_e => {
             this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
@@ -955,7 +956,7 @@ export class NakamaService {
         }
       }
     } else if (p['user_id_one']) { // 1:1 채팅인 경우
-      let targetId = this.channels_orig[_is_official][_target][p.channel_id]['redirect']['id'];
+      let targetId = this.channels_orig[_is_official][_target][p.channel_id || p.id]['redirect']['id'];
       result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
     }
     this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] = result_status;
@@ -1292,6 +1293,7 @@ export class NakamaService {
                     c['last_comment'] = m.messages[0].content['msg'];
                     this.update_from_channel_msg(m.messages[0], _is_official, _target);
                   }
+                  this.count_channel_online_member(c, _is_official, _target);
                 });
               // 방 이미지를 상대방 이미지로 설정
               c['img'] = this.load_other_user(v.sender_id, _is_official, _target)['img'];
@@ -1366,6 +1368,7 @@ export class NakamaService {
                   this.channels_orig[_is_official][_target][c.id]['last_comment'] = v.messages[0].content['msg'];
                   this.update_from_channel_msg(v.messages[0], _is_official, _target);
                 }
+                this.count_channel_online_member(c, _is_official, _target)
               });
           });
         this.noti.PushLocal({
