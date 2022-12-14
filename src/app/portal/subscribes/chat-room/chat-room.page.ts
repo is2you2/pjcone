@@ -162,7 +162,7 @@ export class ChatRoomPage implements OnInit {
    */
   pull_msg_from_server(isHistory = true) {
     if (isHistory) {
-      if ((this.info['status'] == 'online' || this.info['status'] == 'pending') && this.next_cursor !== undefined)
+      if ((this.info['status'] == 'online' || this.info['status'] == 'pending')) // 온라인 기반 리스트 받아오기
         this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
           this.nakama.servers[this.isOfficial][this.target].session,
           this.info['id'], 15, false, this.next_cursor).then(v => {
@@ -177,6 +177,19 @@ export class ChatRoomPage implements OnInit {
             this.next_cursor = v.next_cursor;
             this.prev_cursor = v.prev_cursor;
           });
+      else { // 오프라인 기반 리스트 알려주기
+        let tmp = [{
+          content: {
+            msg: '오프라인 기록 열람 기능 준비중',
+          }
+        }, {
+          content: {
+            msg: '온라인 상태여야 합니다.',
+          }
+        }];
+        this.next_cursor = undefined;
+        tmp.forEach(tmsg => this.messages.unshift(tmsg));
+      }
     } else {
       console.log('현 상태보다 최근 기록 불러오기');
     }

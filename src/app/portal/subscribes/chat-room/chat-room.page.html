@@ -12,7 +12,7 @@
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
         <div id="main_div" class="main">
-          <ion-item button (click)="pull_msg_from_server()">
+          <ion-item *ngIf="next_cursor !== undefined" button (click)="pull_msg_from_server()">
             <ion-label>이전 기록 불러오기</ion-label>
           </ion-item>
           <div *ngFor="let msg of messages; let i = index" (click)="message_detail(msg)">

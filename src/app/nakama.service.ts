@@ -124,6 +124,7 @@ export class NakamaService {
           this.init_server(info);
         });
       }
+      this.catch_group_server_header('offline');
     });
     // 마지막 상태바 정보 불러오기: 사용자의 연결 여부 의사가 반영되어있음
     this.indexed.loadTextFromUserPath('servers/list.json', (e, v) => {

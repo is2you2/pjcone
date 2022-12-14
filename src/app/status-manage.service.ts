@@ -68,6 +68,6 @@ export class StatusManageService {
   };
 
   constructor() {
-    setInterval(() => { }, 350); // services 개체 실시간 업데이트 유도용
+    setInterval(undefined, 350); // services 개체 실시간 업데이트 유도용
   }
 }
