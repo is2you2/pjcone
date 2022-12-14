@@ -900,6 +900,7 @@ export class NakamaService {
               this.add_channels(c, _is_official, _target);
               this.save_groups_with_less_info();
               this.redirect_channel(_is_official, _target);
+              this.count_channel_online_member(c, _is_official, _target);
             });
         });
       });
