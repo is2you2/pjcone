@@ -96,7 +96,8 @@ export class SettingsPage implements OnInit {
               if (User['is_me'])
                 User['user'] = this.nakama.users.self;
               else {
-                if (this.nakama.load_other_user(User['user'].id, _is_official, _target)['avatar_url'] != User['user'].avatar_url)
+                if (this.nakama.load_other_user(User['user'].id, _is_official, _target)['avatar_url'] != User['user'].avatar_url
+                  || !this.nakama.load_other_user(User['user'].id, _is_official, _target)['img'])
                   this.nakama.servers[_is_official][_target].client.readStorageObjects(
                     this.nakama.servers[_is_official][_target].session, {
                     object_ids: [{
