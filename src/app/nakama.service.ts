@@ -481,7 +481,7 @@ export class NakamaService {
         this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
           if (e && v) {
             this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
-          } else if (this.users[_is_official][_target][userId]['avatar_url']) {
+          } else if (this.users[_is_official][_target][userId]['avatar_url'])
             if (this.statusBar.groupServer[_is_official][_target] == 'online')
               this.servers[_is_official][_target].client.readStorageObjects(
                 this.servers[_is_official][_target].session, {
@@ -496,7 +496,6 @@ export class NakamaService {
                 else delete this.users[_is_official][_target][userId]['avatar_url'];
                 this.save_other_user(userId, _is_official, _target);
               });
-          }
         });
       });
     }
@@ -948,7 +947,7 @@ export class NakamaService {
         if (user_length == 1) result_status = 'online'; // 그룹에 혼자만 있음
         else for (let i = 0; i < user_length; i++) { // 2명 이상의 그룹원
           let userId = this.groups[_is_official][_target][p['group_id']]['users'][i]['user']['id'];
-          if (userId != this.servers[_is_official][_target].session.user_id)
+          if (userId != this.servers[_is_official][_target].session.user_id) // 다른 사람인 경우
             if (this.load_other_user(userId, _is_official, _target)['online']) {
               result_status = 'online';
               break;

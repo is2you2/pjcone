@@ -131,7 +131,7 @@ export class ChatRoomPage implements OnInit {
 
   /** 발신인 표시를 위한 메시지 추가 가공 */
   check_sender_and_show_name(c: ChannelMessage) {
-    c['color'] = c.sender_id.replace(/-/g, '').substring(0, 6);
+    c['color'] = (c.sender_id.replace(/[^8-9a-f]/g, '') + 'abcdef').substring(0, 6);
     if (c.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id)
       c['user_display_name'] = this.nakama.users.self['display_name'];
     else c['user_display_name'] = this.nakama.load_other_user(c.sender_id, this.isOfficial, this.target)['display_name'];
