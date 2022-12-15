@@ -24,6 +24,8 @@ export class SettingsPage implements OnInit {
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
+  /** 이용기기 국가 또는 설정된 국가 연동 */
+  current_lang: string;
 
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
@@ -31,6 +33,8 @@ export class SettingsPage implements OnInit {
     this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
       if (e && v) this.nakama.users.self['img'] = v.replace(/"|=|\\/g, '');
     });
+    console.warn('앱의 언어 설정으로 지정된 언어 검토 필요');
+    this.current_lang = navigator.language.split('-')[0];
   }
 
   /** 표시되는 그룹 리스트 */

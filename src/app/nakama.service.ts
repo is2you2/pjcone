@@ -312,16 +312,16 @@ export class NakamaService {
       this.after_login(info.isOfficial, info.target, info.useSSL);
     } catch (e) {
       switch (e.status) {
-        case 400: // 비번이 없거나 하는 등, 요청이 잘못됨
+        case 400: // 이메일/비번이 없거나 하는 등, 요청 정보가 잘못됨
           this.p5toast.show({
-            text: '사용자를 연결한 후 사용하세요.',
+            text: '로그인 정보를 확인해주세요',
           });
           this.users.self['is_online'] = false;
           this.set_group_statusBar('offline', info.isOfficial, info.target);
           break;
         case 401: // 비밀번호 잘못됨
           this.p5toast.show({
-            text: '기기 재검증 과정 필요 (아직 개발되지 않음)',
+            text: '이 기기에서는 로그인할 수 없습니다 (계정 이전 기능 준비중)',
           });
           this.set_group_statusBar('offline', info.isOfficial, info.target);
           break;
