@@ -15,7 +15,8 @@ export class WscService {
     private p5toast: P5ToastService,
     private bgmode: BackgroundMode,
   ) { }
-
+  /** 관리자 여부를 확인하여 관리자 메뉴 토글에 사용 */
+  is_admin = false;
   client: WebSocket;
   /** 받았을 때 취할 행동
    * 1개 변수에서 메시지를 받아야 함

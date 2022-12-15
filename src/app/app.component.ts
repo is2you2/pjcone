@@ -58,6 +58,7 @@ export class AppComponent {
     }
     // 관리자 전용 알림 설정
     client.received['admin_noti'] = (ev: any) => {
+      client.is_admin = true;
       noti.PushLocal({
         id: 0,
         title: '관리자 전용알림',

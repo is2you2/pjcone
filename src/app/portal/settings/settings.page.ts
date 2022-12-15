@@ -5,6 +5,7 @@ import { isPlatform } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
+import { WscService } from 'src/app/wsc.service';
 import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 import { GroupDetailPage } from './group-detail/group-detail.page';
 
@@ -21,6 +22,7 @@ export class SettingsPage implements OnInit {
     public statusBar: StatusManageService,
     public nakama: NakamaService,
     private indexed: IndexedDBService,
+    public client: WscService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;

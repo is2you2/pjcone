@@ -30,7 +30,7 @@
   <ion-item-divider>
     <ion-label>대화</ion-label>
   </ion-item-divider>
-  <ion-item *ngIf="!channels.length" button [disabled]="true">
+  <ion-item *ngIf="!channels.length" button disabled>
     <ion-label>참여중인 대화가 없습니다.</ion-label>
   </ion-item>
   <div *ngIf="channels.length">
