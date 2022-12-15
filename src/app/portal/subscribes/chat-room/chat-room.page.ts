@@ -5,6 +5,8 @@ import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import * as p5 from "p5";
+import { ProfilePage } from '../../settings/profile/profile.page';
+import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 
 interface FileInfo {
   id?: string;
@@ -41,13 +43,12 @@ export class ChatRoomPage implements OnInit {
     private p5toast: P5ToastService,
   ) { }
 
+  /** 채널 정보 */
   info: Channel;
   isOfficial: string;
   target: string;
 
   messages = [];
-  /** 사용자 정보 일람 */
-  users = {};
   /** 확장 버튼 행동들 */
   extended_buttons: ExtendButtonForm[] = [{
     title: '삭제',
@@ -270,6 +271,24 @@ export class ChatRoomPage implements OnInit {
   /** 메시지 내 파일 정보 */
   file_detail(msg: any) {
     console.warn('짧은 클릭으로 파일이 있는 메시지 정보 표시: ', msg);
+  }
+
+  /** 사용자 정보보기 */
+  user_detail(msg: ChannelMessage) {
+    if (this.nakama.servers[this.isOfficial][this.target].session.user_id == msg.sender_id) // 내 정보
+      this.modalCtrl.create({
+        component: ProfilePage,
+      }).then(v => v.present());
+    else { // 다른 사용자 정보
+      this.modalCtrl.create({
+        component: OthersProfilePage,
+        componentProps: {
+          info: { user: this.nakama.load_other_user(msg.sender_id, this.isOfficial, this.target) },
+          group: this.info,
+          has_admin: false,
+        },
+      }).then(v => v.present());
+    }
   }
 
   ionViewWillLeave() {

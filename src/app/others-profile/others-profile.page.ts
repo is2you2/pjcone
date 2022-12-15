@@ -134,7 +134,7 @@ export class OthersProfilePage implements OnInit {
       case -5: // 그룹 참가 요청 받음
         this.nakama.servers[this.isOfficial][this.target].client.addGroupUsers(
           this.nakama.servers[this.isOfficial][this.target].session,
-          this.group_info['id'], [this.info['user']['id']]
+          this.group_info['group_id'] || this.group_info['id'], [this.info['user']['id']]
         ).then(v => {
           if (!v) console.warn('밴 유저에 대한것 같음, 확인 필요');
           this.p5toast.show({
@@ -217,7 +217,7 @@ export class OthersProfilePage implements OnInit {
   after_announce_kick() {
     this.nakama.servers[this.isOfficial][this.target].client.kickGroupUsers(
       this.nakama.servers[this.isOfficial][this.target].session,
-      this.group_info['id'], [this.info['user']['id']]
+      this.group_info['group_id'] || this.group_info['id'], [this.info['user']['id']]
     ).then(_v => {
       this.p5toast.show({
         text: `사용자를 내보냈습니다: ${this.info['user']['display_name'] || '이름 없는 사용자'}`,

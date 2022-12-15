@@ -16,7 +16,8 @@
             <ion-label>이전 기록 불러오기</ion-label>
           </ion-item>
           <div *ngFor="let msg of messages; let i = index" (click)="message_detail(msg)">
-            <p *ngIf="!messages[i - 1] || msg.sender_id != messages[i - 1].sender_id" style=" margin: 8px 0px 0px 0px;">
+            <p *ngIf="!messages[i - 1] || msg.sender_id != messages[i - 1].sender_id" style=" margin: 8px 0px 0px 0px;"
+              (click)="user_detail(msg)">
               <b>
                 <font color="#{{msg.color}}">{{msg.user_display_name}}</font>
               </b>

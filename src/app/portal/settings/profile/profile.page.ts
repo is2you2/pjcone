@@ -32,7 +32,12 @@ export class ProfilePage implements OnInit {
 
   p5canvas: p5;
   ngOnInit() {
-    this.original_profile = { ...this.nakama.users.self };
+    if (!this.nakama.users.self['img']) {
+      this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
+        if (e && v) this.nakama.users.self['img'] = v.replace(/"|\\|=/g, '');
+        this.original_profile = { ...this.nakama.users.self };
+      });
+    } else this.original_profile = { ...this.nakama.users.self };
     this.nakama.socket_reactive['profile'] = (img_url: string) => {
       this.change_img_smoothly(img_url);
     }
@@ -225,7 +230,7 @@ export class ProfilePage implements OnInit {
           servers[i].client.updateAccount(servers[i].session, {
             display_name: this.nakama.users.self['display_name'],
           });
-        if (this.nakama.users.self['img'])
+        if (this.nakama.users.self['img'] != this.original_profile['img'])
           servers[i].client.writeStorageObjects(servers[i].session, [{
             collection: 'user_public',
             key: 'profile_image',
