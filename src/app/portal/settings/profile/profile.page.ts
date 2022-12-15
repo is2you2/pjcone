@@ -107,7 +107,7 @@ export class ProfilePage implements OnInit {
               all_channels.forEach(channel => {
                 servers[i].socket.writeChatMessage(channel.id, {
                   user: 'modify',
-                  msg: `${this.nakama.users.self['display_name']}-사용자 프로필 변경됨`,
+                  noti: `사용자 프로필 변경: ${this.nakama.users.self['display_name']}`,
                 });
               });
             }).catch(e => {
@@ -245,7 +245,7 @@ export class ProfilePage implements OnInit {
             all_channels.forEach(channel => {
               servers[i].socket.writeChatMessage(channel.id, {
                 user: 'modify',
-                msg: `${this.nakama.users.self['display_name']}-사용자 프로필 변경됨`,
+                noti: `사용자 프로필 변경: ${this.nakama.users.self['display_name']}`,
               });
             });
           });

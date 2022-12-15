@@ -181,7 +181,7 @@ export class ChatRoomPage implements OnInit {
               this.check_sender_and_show_name(msg);
               if (!this.info['last_comment']) {
                 let hasFile = msg['content']['file'] ? '(첨부파일) ' : '';
-                this.info['last_comment'] = msg['content']['msg'];
+                this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti']);
               }
               this.messages.unshift(msg);
             });
@@ -191,15 +191,15 @@ export class ChatRoomPage implements OnInit {
       else { // 오프라인 기반 리스트 알려주기
         let tmp = [{
           content: {
-            msg: '오프라인 기록 열람 기능 준비중',
+            msg: '이 그룹 서버에 온라인 상태여야 합니다.',
           }
         }, {
           content: {
-            msg: '온라인 상태여야 합니다.',
+            msg: '오프라인 기록 열람 기능 준비중',
           }
         }];
         this.next_cursor = undefined;
-        tmp.forEach(tmsg => this.messages.unshift(tmsg));
+        tmp.forEach(tmsg => this.messages.push(tmsg));
       }
     } else {
       console.log('현 상태보다 최근 기록 불러오기');

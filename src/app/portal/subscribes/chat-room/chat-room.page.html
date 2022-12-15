@@ -25,6 +25,9 @@
             <div *ngIf="msg.content['filename']" class="file_button" (click)="file_detail(msg)">
               {{msg.content['filename']}}
             </div>
+            <div class="notice_form">
+              <div class="notice" *ngIf="msg.content['noti']"> {{msg.content['noti']}} </div>
+            </div>
             <p *ngIf="msg.content['msg']" style="margin: 4px 0px 0px 0px;"> {{msg.content['msg']}} </p>
           </div>
           <ion-item *ngIf="prev_cursor" hidden button (click)="pull_msg_from_server(false)">
