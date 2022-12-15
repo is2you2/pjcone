@@ -313,8 +313,12 @@ export class NakamaService {
     } catch (e) {
       switch (e.status) {
         case 400: // 이메일/비번이 없거나 하는 등, 요청 정보가 잘못됨
-          this.p5toast.show({
-            text: '로그인 정보를 확인해주세요',
+          if (this.uuid)
+            this.p5toast.show({
+              text: '로그인 정보를 입력해주세요',
+            });
+          else this.p5toast.show({
+            text: '사용자를 연결해주세요',
           });
           this.users.self['is_online'] = false;
           this.set_group_statusBar('offline', info.isOfficial, info.target);
