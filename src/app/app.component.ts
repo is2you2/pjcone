@@ -54,6 +54,7 @@ export class AppComponent {
         smallIcon_ln: 'icon_mono',
         iconColor_ln: 'ffd94e',
         autoCancel_ln: true,
+        image: ev['img'],
       }, undefined);
     }
     // 관리자 전용 알림 설정
@@ -61,7 +62,7 @@ export class AppComponent {
       client.is_admin = true;
       noti.PushLocal({
         id: 0,
-        title: '관리자 전용알림',
+        title: '커뮤니티 관리자',
         body: ev['text'],
         smallIcon_ln: 'icon_mono',
         iconColor_ln: 'ffd94e',

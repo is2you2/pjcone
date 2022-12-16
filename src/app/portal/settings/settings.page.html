@@ -79,10 +79,10 @@
   </ion-item>
   <div *ngIf="client.is_admin">
     <ion-item-divider>
-      <ion-label>관리자 전용 메뉴</ion-label>
+      <ion-label>커뮤니티 관리자 메뉴</ion-label>
     </ion-item-divider>
-    <ion-item button disabled>
-      <ion-label>관리자 전용 메뉴 준비중</ion-label>
+    <ion-item button (click)="go_to_page('notification')">
+      <ion-label>전체 사용자 공지</ion-label>
     </ion-item>
   </div>
   <ion-item-divider>

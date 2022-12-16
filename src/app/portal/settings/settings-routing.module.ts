@@ -52,6 +52,10 @@ const routes: Routes = [
     path: 'creator',
     loadChildren: () => import('./creator/creator.module').then( m => m.CreatorPageModule)
   },
+  {
+    path: 'notification',
+    loadChildren: () => import('./admin/notification/notification.module').then( m => m.NotificationPageModule)
+  },
 ];
 
 @NgModule({

@@ -374,12 +374,11 @@ export class NakamaService {
     this.servers[_is_official][_target].socket = this.servers[_is_official][_target].client.createSocket(_useSSL);
     // 그룹 서버 연결 상태 업데이트
     this.set_group_statusBar('online', _is_official, _target);
-    // 공식 서버인 경우 관리자 알림모드 검토
-    if (_is_official == 'official' && _target == 'default')
-      this.communityServer.send(JSON.stringify({
-        act: 'is_admin',
-        uuid: this.servers[_is_official][_target].session.user_id
-      }));
+    // 커뮤니티 서버를 쓰는 관리자모드 검토
+    this.communityServer.send(JSON.stringify({
+      act: 'is_admin',
+      uuid: this.servers[_is_official][_target].session.user_id
+    }));
     // 개인 정보를 서버에 맞춤
     if (!this.users.self['display_name'])
       this.servers[_is_official][_target].client.getAccount(

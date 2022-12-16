@@ -124,10 +124,31 @@ size_flags_horizontal = 3
 theme = ExtResource( 6 )
 placeholder_text = "00000000-0000-0000-0000-000000000000"
 
-[node name="SendAllNoti" type="HBoxContainer" parent="m/vbox"]
+[node name="SendAllNotiImg" type="HBoxContainer" parent="m/vbox"]
 margin_top = 66.0
 margin_right = 344.0
 margin_bottom = 100.0
+custom_constants/separation = 8
+
+[node name="Label" type="Label" parent="m/vbox/SendAllNotiImg"]
+margin_top = 5.0
+margin_right = 75.0
+margin_bottom = 29.0
+theme = ExtResource( 6 )
+text = "알림이미지"
+
+[node name="AllNotiURL" type="LineEdit" parent="m/vbox/SendAllNotiImg"]
+margin_left = 83.0
+margin_right = 344.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+theme = ExtResource( 6 )
+placeholder_text = "이미지 링크"
+
+[node name="SendAllNoti" type="HBoxContainer" parent="m/vbox"]
+margin_top = 104.0
+margin_right = 344.0
+margin_bottom = 138.0
 custom_constants/separation = 8
 
 [node name="Label" type="Label" parent="m/vbox/SendAllNoti"]
@@ -153,7 +174,7 @@ theme = ExtResource( 6 )
 text = "발송"
 
 [node name="c" type="ColorRect" parent="m/vbox"]
-margin_top = 104.0
+margin_top = 142.0
 margin_right = 344.0
 margin_bottom = 344.0
 size_flags_vertical = 3
@@ -171,7 +192,7 @@ custom_constants/margin_bottom = 8
 margin_left = 8.0
 margin_top = 8.0
 margin_right = 336.0
-margin_bottom = 232.0
+margin_bottom = 194.0
 theme = ExtResource( 6 )
 bbcode_enabled = true
 scroll_following = true

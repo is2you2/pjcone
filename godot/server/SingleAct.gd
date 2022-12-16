@@ -85,6 +85,11 @@ func _received(id:int, _try_left:= 5):
 		var json = JSON.parse(data).result
 		if json is Dictionary:
 			match(json):
+				{ 'act': 'global_noti', 'uuid': var _uuid, 'text': var _noti, .. }: # 커뮤니티 서버를 통한 알림 전파
+					if administrator_pid == _uuid:
+						$m/vbox/SendAllNoti/AllNotiText.text = _noti
+						$m/vbox/SendAllNotiImg/AllNotiURL.text = json['img']
+						_on_Button_pressed()
 				{ 'act': 'sc1_custom_refresh' }: # SC1_custom 폴더 리스트 새로고침
 					$SC_custom_manager.refresh_list()
 					return
@@ -124,7 +129,7 @@ func _received(id:int, _try_left:= 5):
 					if is_admin and administrator_pid:
 						var result = {
 							'act': 'admin_noti',
-							'text': '앱 외 알림을 수신합니다',
+							'text': '관리자 기능을 사용합니다',
 						}
 						send_to(administrator_pid, JSON.print(result).to_utf8())
 					return
@@ -183,13 +188,14 @@ func _process(_delta):
 func _exit_tree():
 	server.stop()
 
-
 func _on_Button_pressed():
 	if not $m/vbox/SendAllNoti/AllNotiText.text: return
 	for user in users:
 		var result = {
 			'act': 'all_noti',
 			'text': $m/vbox/SendAllNoti/AllNotiText.text,
+			'img': $m/vbox/SendAllNotiImg/AllNotiURL.text,
 		}
 		send_to(int(user), JSON.print(result).to_utf8())
 	$m/vbox/SendAllNoti/AllNotiText.text = ''
+	$m/vbox/SendAllNotiImg/AllNotiURL.text = ''
