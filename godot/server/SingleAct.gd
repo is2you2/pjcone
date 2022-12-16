@@ -85,11 +85,12 @@ func _received(id:int, _try_left:= 5):
 		var json = JSON.parse(data).result
 		if json is Dictionary:
 			match(json):
-				{ 'act': 'global_noti', 'uuid': var _uuid, 'text': var _noti, .. }: # 커뮤니티 서버를 통한 알림 전파
-					if administrator_pid == _uuid:
+				{ 'act': 'global_noti', 'text': var _noti, .. }: # 커뮤니티 서버를 통한 알림 전파
+					if id == administrator_pid:
 						$m/vbox/SendAllNoti/AllNotiText.text = _noti
 						$m/vbox/SendAllNotiImg/AllNotiURL.text = json['img']
 						_on_Button_pressed()
+					return
 				{ 'act': 'sc1_custom_refresh' }: # SC1_custom 폴더 리스트 새로고침
 					$SC_custom_manager.refresh_list()
 					return

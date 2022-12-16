@@ -62,7 +62,6 @@ export class NotificationPage implements OnInit {
     if (!this.userInput.text) return;
     this.client.send(JSON.stringify({
       act: 'global_noti',
-      uuid: this.nakama.uuid,
       img: this.userInput.img_url,
       text: this.userInput.text,
     }));
