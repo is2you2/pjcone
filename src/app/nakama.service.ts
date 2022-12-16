@@ -498,7 +498,7 @@ export class NakamaService {
                 if (v.objects.length)
                   this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
                 else delete this.users[_is_official][_target][userId]['avatar_url'];
-                this.save_other_user(userId, _is_official, _target);
+                this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
               });
         });
       });
@@ -590,19 +590,18 @@ export class NakamaService {
           this.servers[_is_official][_target].session, group_id).then(v => {
             if (!this.groups[_is_official][_target][group_id]['users'])
               this.groups[_is_official][_target][group_id]['users'] = [];
-            if (v.group_users.length)
-              v.group_users.forEach(_user => {
-                let keys = Object.keys(_user.user);
-                keys.forEach(key => {
-                  if (_user.user.id != this.servers[_is_official][_target].session.user_id)
-                    this.load_other_user(_user.user.id, _is_official, _target)[key] = _user.user[key]
-                });
-                if (_user.user.id == this.servers[_is_official][_target].session.user_id)
-                  _user.user['is_me'] = true;
-                else this.save_other_user(_user.user, _is_official, _target);
-                _user.user = this.load_other_user(_user.user.id, _is_official, _target);
-                this.groups[_is_official][_target][group_id]['users'].push(_user);
+            v.group_users.forEach(_user => {
+              let keys = Object.keys(_user.user);
+              keys.forEach(key => {
+                if (_user.user.id != this.servers[_is_official][_target].session.user_id)
+                  this.load_other_user(_user.user.id, _is_official, _target)[key] = _user.user[key]
               });
+              if (_user.user.id == this.servers[_is_official][_target].session.user_id)
+                _user.user['is_me'] = true;
+              else this.save_other_user(_user.user, _is_official, _target);
+              _user.user = this.load_other_user(_user.user.id, _is_official, _target);
+              this.groups[_is_official][_target][group_id]['users'].push(_user);
+            });
             this.count_channel_online_member(channel_info, _is_official, _target);
           });
         break;
@@ -648,15 +647,50 @@ export class NakamaService {
             this.channels_orig[_is_official][_target][_cid]['redirect']['persistence'],
             false
           ).then(_c => {
-            this.servers[_is_official][_target].client.listChannelMessages(
-              this.servers[_is_official][_target].session, _cid, 1, false)
-              .then(v => {
-                if (v.messages.length) {
-                  let hasFile = v.messages[0].content['file'] ? '(첨부파일) ' : '';
-                  this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti']);
-                }
-                this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
-              });
+            switch (this.channels_orig[_is_official][_target][_cid]['redirect']['type']) {
+              case 2:
+                this.servers[_is_official][_target].client.listChannelMessages(
+                  this.servers[_is_official][_target].session, _cid, 1, false)
+                  .then(v => {
+                    if (v.messages.length) {
+                      let hasFile = v.messages[0].content['file'] ? '(첨부파일) ' : '';
+                      v['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti']);
+                      this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti']);
+                    }
+                    this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
+                    this.save_channels_with_less_info();
+                  });
+                break;
+              case 3: // 그룹 채팅인 경우 그룹 유저도 검토
+                this.servers[_is_official][_target].client.listGroupUsers(
+                  this.servers[_is_official][_target].session, this.channels_orig[_is_official][_target][_cid]['redirect']['id']
+                ).then(_guser => {
+                  _guser.group_users.forEach(_user => {
+                    let keys = Object.keys(_user.user);
+                    keys.forEach(key => this.load_other_user(_user.user.id, _is_official, _target)[key] = _user.user[key]);
+                    if (_user.user.id == this.servers[_is_official][_target].session.user_id)
+                      _user.user['is_me'] = true;
+                    else this.save_other_user(_user.user, _is_official, _target);
+                    _user.user = this.load_other_user(_user.user.id, _is_official, _target);
+                    this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]['users'].push(_user);
+                  });
+                  this.servers[_is_official][_target].client.listChannelMessages(
+                    this.servers[_is_official][_target].session, _cid, 1, false)
+                    .then(v => {
+                      if (v.messages.length) {
+                        let hasFile = v.messages[0].content['file'] ? '(첨부파일) ' : '';
+                        v['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti']);
+                        this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti']);
+                      }
+                      this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
+                      this.save_channels_with_less_info();
+                    });
+                });
+                break;
+              default:
+                console.warn('예상하지 못한 리다이렉션 타입: ', this.channels_orig[_is_official][_target][_cid]['redirect']['type']);
+                break;
+            }
           }).catch(_e => {
             this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
             delete this.channels_orig[_is_official][_target][_cid]['info'];
@@ -786,7 +820,7 @@ export class NakamaService {
                   _list.group_users.forEach(_guser => {
                     let keys = Object.keys(_guser.user);
                     keys.forEach(key => this.load_other_user(_guser.user.id, server.info.isOfficial, server.info.target)[key] = _guser.user[key]);
-                    this.save_other_user(_guser.user.id, server.info.isOfficial, server.info.target);
+                    this.save_other_user(_guser.user, server.info.isOfficial, server.info.target);
                   });
                 });
                 this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
@@ -953,7 +987,7 @@ export class NakamaService {
         let user_length = this.groups[_is_official][_target][p['group_id']]['users'].length;
         if (user_length == 1) result_status = 'online'; // 그룹에 혼자만 있음
         else for (let i = 0; i < user_length; i++) { // 2명 이상의 그룹원
-          let userId = this.groups[_is_official][_target][p['group_id']]['users'][i]['user']['id'];
+          let userId = this.groups[_is_official][_target][p['group_id']]['users'][i]['user']['id'] || this.servers[_is_official][_target].session.user_id;
           if (userId != this.servers[_is_official][_target].session.user_id) // 다른 사람인 경우
             if (this.load_other_user(userId, _is_official, _target)['online']) {
               result_status = 'online';
