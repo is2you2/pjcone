@@ -109,7 +109,8 @@ export class ChatRoomPage implements OnInit {
     this.info = this.navParams.get('info');
     // 1:1 대화라면
     if (this.info['redirect']['type'] == 2)
-      this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
+      if (!this.info['redirect']) // 채널 최초 생성 오류 방지용
+        this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
     this.noti.Current = this.info['cnoti_id'];
     if (this.info['cnoti_id'])
       this.noti.CancelNotificationById(this.info['cnoti_id']);
