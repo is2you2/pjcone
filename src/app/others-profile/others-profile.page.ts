@@ -47,8 +47,8 @@ export class OthersProfilePage implements OnInit {
     this.nakama.socket_reactive['others-profile'] = (img_url: string) => {
       this.change_img_smoothly(img_url);
     };
-    this.nakama.socket_reactive['others-online'] = (v: any) => {
-      console.warn('사용자 참가/떠남 여부: ', v);
+    this.nakama.socket_reactive['others-online'] = () => {
+      this.p5canvas.loop();
     };
     this.catch_user_noties();
     let sketch = (p: p5) => {

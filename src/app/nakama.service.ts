@@ -1032,6 +1032,8 @@ export class NakamaService {
           this.rearrange_notifications();
         }
         socket.onchannelpresence = (p) => {
+          if (this.socket_reactive['others-online'])
+            this.socket_reactive['others-online']();
           if (p.joins !== undefined) { // 참여 검토
             p.joins.forEach(info => {
               if (this.servers[_is_official][_target].session.user_id != info.user_id)

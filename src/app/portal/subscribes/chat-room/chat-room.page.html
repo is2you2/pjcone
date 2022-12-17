@@ -19,7 +19,7 @@
             <p *ngIf="(!messages[i - 1] || msg.sender_id != messages[i - 1].sender_id || !messages[i - 1].content['msg']) && msg.content['msg']"
               style=" margin: 8px 0px 0px 0px;" (click)="user_detail(msg)">
               <b>
-                <font color="#{{msg.color}}">{{msg.user_display_name}}</font>
+                <font color="#{{(msg.sender_id && nakama.users[isOfficial][target][msg.sender_id]['online']) ? msg.color : '888'}}">{{msg.user_display_name}}</font>
               </b>
             </p>
             <div *ngIf="msg.content['filename']" class="file_button" (click)="file_detail(msg)">
