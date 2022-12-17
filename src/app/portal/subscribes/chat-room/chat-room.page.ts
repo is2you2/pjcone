@@ -107,16 +107,18 @@ export class ChatRoomPage implements OnInit {
 
   ngOnInit() {
     this.info = this.navParams.get('info');
-    // 1:1 대화라면
-    if (this.info['redirect']['type'] == 2)
-      if (!this.info['redirect']) // 채널 최초 생성 오류 방지용
-        this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
     this.noti.Current = this.info['cnoti_id'];
     if (this.info['cnoti_id'])
       this.noti.CancelNotificationById(this.info['cnoti_id']);
     this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
+    // 1:1 대화라면
+    if (this.info['redirect']['type'] == 2) {
+      if (!this.info['redirect']) // 채널 최초 생성 오류 방지용
+        this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
+      else this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
+    }
     this.content_panel = document.getElementById('content');
     console.warn('이 자리에서 로컬 채팅 기록 불러오기');
     // 실시간 채팅을 받는 경우 행동처리
