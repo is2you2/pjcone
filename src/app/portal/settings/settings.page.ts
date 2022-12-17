@@ -46,7 +46,7 @@ export class SettingsPage implements OnInit {
   profile_filter: string;
   ionViewWillEnter() {
     this.nakama.socket_reactive['settings'] = this;
-    if (this.nakama.users.self['is_online'])
+    if (this.nakama.users.self['online'])
       this.profile_filter = "filter: grayscale(0) contrast(1);";
     else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
     this.load_groups();

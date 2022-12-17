@@ -7,7 +7,6 @@ var server:= WebSocketServer.new()
 
 const PORT:= 12020
 const HEADER:= 'WebLink'
-var thread:= Thread.new()
 
 func _ready():
 	if Root.private:

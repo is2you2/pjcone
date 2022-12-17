@@ -47,7 +47,7 @@ export class ProfilePage implements OnInit {
       let tmp_img = document.getElementById('profile_tmp_img');
       const LERP_SIZE = .025;
       p.draw = () => {
-        if (this.nakama.users.self['is_online']) {
+        if (this.nakama.users.self['online']) {
           if (this.lerpVal < 1) {
             this.lerpVal += LERP_SIZE;
           } else {
@@ -78,7 +78,7 @@ export class ProfilePage implements OnInit {
       let lerpVal = 0;
       p.setup = () => {
         file_sel['value'] = '';
-        profile_tmp_img.setAttribute('style', `filter: grayscale(${this.nakama.users.self['is_online'] ? 0 : .9}) contrast(${this.nakama.users.self['is_online'] ? 1 : 1.4}) opacity(${lerpVal})`);
+        profile_tmp_img.setAttribute('style', `filter: grayscale(${this.nakama.users.self['online'] ? 0 : .9}) contrast(${this.nakama.users.self['online'] ? 1 : 1.4}) opacity(${lerpVal})`);
         this.tmp_img = _url;
       }
       p.draw = () => {
@@ -116,7 +116,7 @@ export class ProfilePage implements OnInit {
           }
           p.remove();
         }
-        profile_tmp_img.setAttribute('style', `filter: grayscale(${this.nakama.users.self['is_online'] ? 0 : .9}) contrast(${this.nakama.users.self['is_online'] ? 1 : 1.4}) opacity(${lerpVal})`);
+        profile_tmp_img.setAttribute('style', `filter: grayscale(${this.nakama.users.self['online'] ? 0 : .9}) contrast(${this.nakama.users.self['online'] ? 1 : 1.4}) opacity(${lerpVal})`);
       }
     });
   }
@@ -143,16 +143,16 @@ export class ProfilePage implements OnInit {
   /** 이메일 변경시 오프라인 처리 */
   email_modified() {
     if (this.can_auto_modified) {
-      if (this.nakama.users.self['is_online'])
+      if (this.nakama.users.self['online'])
         this.toggle_online();
-      this.nakama.users.self['is_online'] = false;
+      this.nakama.users.self['online'] = false;
     }
   }
   /** 채도 변화자 */
   lerpVal: number;
   toggle_online() {
-    this.nakama.users.self['is_online'] = !this.nakama.users.self['is_online'];
-    if (this.nakama.users.self['is_online']) {
+    this.nakama.users.self['online'] = !this.nakama.users.self['online'];
+    if (this.nakama.users.self['online']) {
       if (this.nakama.users.self['email']) {
         this.nakama.save_self_profile();
         this.nakama.init_all_sessions();
@@ -160,8 +160,7 @@ export class ProfilePage implements OnInit {
         this.p5toast.show({
           text: '이메일 주소가 있어야 온라인으로 전환하실 수 있습니다.',
         });
-        this.nakama.users.self['is_online'] = false;
-        localStorage.removeItem('is_online');
+        this.nakama.users.self['online'] = false;
       }
     } else {
       let IsOfficials = Object.keys(this.statusBar.groupServer);
@@ -182,7 +181,6 @@ export class ProfilePage implements OnInit {
           }
         });
       });
-      localStorage.removeItem('is_online');
     }
     this.p5canvas.loop();
   }

@@ -107,7 +107,13 @@ export class ChatRoomPage implements OnInit {
 
   ngOnInit() {
     this.info = this.navParams.get('info');
-    this.noti.Current = this.info['id'];
+    // 1:1 대화라면
+    if (this.info['redirect']['type'] == 2)
+      this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
+    this.noti.Current = this.info['cnoti_id'];
+    if (this.info['cnoti_id'])
+      this.noti.CancelNotificationById(this.info['cnoti_id']);
+    this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
     this.content_panel = document.getElementById('content');

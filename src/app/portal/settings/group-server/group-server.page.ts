@@ -42,7 +42,7 @@ export class GroupServerPage implements OnInit {
     if (this.statusBar.groupServer[_is_official][_target] == 'offline' || this.statusBar.groupServer[_is_official][_target] == 'missing') {
       this.statusBar.groupServer[_is_official][_target] = 'pending';
       this.nakama.catch_group_server_header('pending');
-      if (this.nakama.users.self['is_online'])
+      if (this.nakama.users.self['online'])
         this.nakama.init_session(this.nakama.servers[_is_official][_target].info);
     } else { // 활동중이면 로그아웃처리
       this.statusBar.groupServer[_is_official][_target] = 'offline';

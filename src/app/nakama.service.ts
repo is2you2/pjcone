@@ -10,6 +10,7 @@ import { LocalNotiService } from './local-noti.service';
 import { AlertController, ModalController } from '@ionic/angular';
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 import { WscService } from './wsc.service';
+import { ChatRoomPage } from './portal/subscribes/chat-room/chat-room.page';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -130,7 +131,7 @@ export class NakamaService {
     this.indexed.loadTextFromUserPath('servers/list.json', (e, v) => {
       if (e && v)
         this.statusBar.groupServer = JSON.parse(v);
-      if (this.users.self['is_online'])
+      if (this.users.self['online'])
         this.init_all_sessions();
     });
   }
@@ -320,7 +321,7 @@ export class NakamaService {
           else this.p5toast.show({
             text: '사용자를 연결해주세요',
           });
-          this.users.self['is_online'] = false;
+          this.users.self['online'] = false;
           this.set_group_statusBar('offline', info.isOfficial, info.target);
           break;
         case 401: // 비밀번호 잘못됨
@@ -472,8 +473,7 @@ export class NakamaService {
    */
   load_other_user(userId: string, _is_official: string, _target: string) {
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
-    let need_to_load_from_file = !this.users[_is_official][_target][userId];
-    if (need_to_load_from_file) {
+    if (!this.users[_is_official][_target][userId]) {
       this.users[_is_official][_target][userId] = {};
       this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.json`, (e, v) => {
         if (e && v) {
@@ -481,27 +481,28 @@ export class NakamaService {
           let keys = Object.keys(data);
           keys.forEach(key => this.users[_is_official][_target][userId][key] = data[key]);
         }
-        this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
-          if (e && v) {
-            this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
-          } else if (this.users[_is_official][_target][userId]['avatar_url'])
-            if (this.statusBar.groupServer[_is_official][_target] == 'online')
-              this.servers[_is_official][_target].client.readStorageObjects(
-                this.servers[_is_official][_target].session, {
-                object_ids: [{
-                  collection: 'user_public',
-                  key: 'profile_image',
-                  user_id: userId,
-                }]
-              }).then(v => {
-                if (v.objects.length)
-                  this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
-                else delete this.users[_is_official][_target][userId]['avatar_url'];
-                this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
-              });
-        });
       });
     }
+    if (!this.users[_is_official][_target][userId]['img'])
+      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
+        if (e && v) {
+          this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
+        } else if (this.users[_is_official][_target][userId]['avatar_url'])
+          if (this.statusBar.groupServer[_is_official][_target] == 'online')
+            this.servers[_is_official][_target].client.readStorageObjects(
+              this.servers[_is_official][_target].session, {
+              object_ids: [{
+                collection: 'user_public',
+                key: 'profile_image',
+                user_id: userId,
+              }]
+            }).then(v => {
+              if (v.objects.length)
+                this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
+              else delete this.users[_is_official][_target][userId]['avatar_url'];
+              this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
+            });
+      });
     return this.users[_is_official][_target][userId];
   }
 
@@ -576,15 +577,20 @@ export class NakamaService {
     if (!this.channels_orig[_is_official][_target])
       this.channels_orig[_is_official][_target] = {};
     if (this.channels_orig[_is_official][_target][channel_info.id] !== undefined && this.channels_orig[_is_official][_target][channel_info.id]['status'] != 'missing') return;
-    this.channels_orig[_is_official][_target][channel_info.id] = channel_info;
-    switch (channel_info['redirect']['type']) {
+    if (!this.channels_orig[_is_official][_target][channel_info.id])
+      this.channels_orig[_is_official][_target][channel_info.id] = {};
+    let keys = Object.keys(channel_info);
+    keys.forEach(key => this.channels_orig[_is_official][_target][channel_info.id][key] = channel_info[key]);
+    if (!this.channels_orig[_is_official][_target][channel_info.id]['cnoti_id'])
+      this.channels_orig[_is_official][_target][channel_info.id]['cnoti_id'] = this.get_channel_noti_id();
+    switch (this.channels_orig[_is_official][_target][channel_info.id]['redirect']['type']) {
       case 2: // 1:1 대화
-        let targetId = channel_info['redirect']['id'];
+        let targetId = this.channels_orig[_is_official][_target][channel_info.id]['redirect']['id'];
         let result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
-        channel_info['status'] = result_status;
+        this.channels_orig[_is_official][_target][channel_info.id]['status'] = result_status;
         break;
       case 3: // 새로 개설된 그룹 채널인 경우
-        let group_id = channel_info['redirect']['id'];
+        let group_id = this.channels_orig[_is_official][_target][channel_info.id]['redirect']['id'];
         this.servers[_is_official][_target].client.listGroupUsers(
           this.servers[_is_official][_target].session, group_id).then(v => {
             if (!this.groups[_is_official][_target][group_id]['users'])
@@ -601,11 +607,11 @@ export class NakamaService {
               _user.user = this.load_other_user(_user.user.id, _is_official, _target);
               this.groups[_is_official][_target][group_id]['users'].push(_user);
             });
-            this.count_channel_online_member(channel_info, _is_official, _target);
+            this.count_channel_online_member(this.channels_orig[_is_official][_target][channel_info.id], _is_official, _target);
           });
         break;
       default:
-        console.error('예상하지 못한 채널 종류: ', channel_info);
+        console.error('예상하지 못한 채널 종류: ', this.channels_orig[_is_official][_target][channel_info.id]);
         break;
     }
     this.rearrange_channels();
@@ -634,6 +640,12 @@ export class NakamaService {
     });
   }
 
+  /** 채널 알림 아이디, 새 채널이 생길 때마다 추가됨, 2000부터 시작 */
+  channel_noti_id = 2000;
+  get_channel_noti_id(): number {
+    this.channel_noti_id++;
+    return this.channel_noti_id;
+  }
   /** 세션 재접속 시 기존 정보를 이용하여 채팅방에 다시 로그인함 */
   redirect_channel(_is_official: string, _target: string) {
     if (this.channels_orig[_is_official][_target]) {
@@ -646,6 +658,8 @@ export class NakamaService {
             this.channels_orig[_is_official][_target][_cid]['redirect']['persistence'],
             false
           ).then(_c => {
+            if (!this.channels_orig[_is_official][_target][_cid]['cnoti_id'])
+              this.channels_orig[_is_official][_target][_cid]['cnoti_id'] = this.get_channel_noti_id();
             switch (this.channels_orig[_is_official][_target][_cid]['redirect']['type']) {
               case 2:
                 this.servers[_is_official][_target].client.listChannelMessages(
@@ -653,7 +667,6 @@ export class NakamaService {
                   .then(v => {
                     if (v.messages.length) {
                       let hasFile = v.messages[0].content['file'] ? '(첨부파일) ' : '';
-                      v['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti']);
                       this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti']);
                     }
                     this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
@@ -765,6 +778,7 @@ export class NakamaService {
           delete channels_copy[_is_official][_target][_cid]['info'];
           delete channels_copy[_is_official][_target][_cid]['update'];
           delete channels_copy[_is_official][_target][_cid]['presences'];
+          delete channels_copy[_is_official][_target][_cid]['cnoti_id'];
         });
       });
     });
@@ -880,15 +894,17 @@ export class NakamaService {
         await this.servers[_is_official][_target].client.deleteGroup(
           this.servers[_is_official][_target].session, info['id'],
         ).then(v => {
-          if (v && info['img']) { // 서버에서 정상삭제하였을 때
-            this.servers[_is_official][_target].client.deleteStorageObjects(
-              this.servers[_is_official][_target].session, {
-              object_ids: [{
-                collection: 'group_public',
-                key: `group_${info['id']}`,
-              }]
-            });
-          }
+          if (!v) console.warn('그룹 삭제 오류 검토 필요');
+          this.servers[_is_official][_target].client.deleteStorageObjects(
+            this.servers[_is_official][_target].session, {
+            object_ids: [{
+              collection: 'group_public',
+              key: `group_${info['id']}`,
+            }]
+          }).then(v => {
+            if (!v) console.warn('그룹 이미지 삭제 오류 검토 필요');
+            throw new Error("remove image");
+          });
         });
       else throw new Error("not creator");
     } catch (e) {
@@ -1073,6 +1089,42 @@ export class NakamaService {
   update_from_channel_msg(msg: ChannelMessage, _is_official: string, _target: string) {
     let is_me = msg.sender_id == this.servers[_is_official][_target].session.user_id;
     let c = this.modulation_channel_message(msg, _is_official, _target);
+    if (!is_me) {
+      this.noti.RemoveListener(`openchat${this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']}`);
+      this.noti.SetListener(`openchat${this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']}`, (v: any, eopts: any) => {
+        this.noti.ClearNoti(v['id']);
+        this.modalCtrl.create({
+          component: ChatRoomPage,
+          componentProps: {
+            info: this.channels_orig[_is_official][_target][msg.channel_id],
+          },
+        }).then(v => v.present());
+      });
+      this.noti.PushLocal({
+        id: this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'],
+        title: this.channels_orig[_is_official][_target][msg.channel_id]['info']['name']
+          || this.channels_orig[_is_official][_target][msg.channel_id]['info']['display_name']
+          || this.channels_orig[_is_official][_target][msg.channel_id]['title']
+          || '제목 없는 채팅방',
+        body: c.content['msg'],
+        smallIcon_ln: 'diychat',
+        iconColor_ln: '271e38',
+        actions_ln: [{
+          id: `openchat${this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']}`,
+          title: '열기',
+        }],
+        autoCancel_ln: true,
+      }, this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'], (ev: any) => {
+        // 알림 아이디가 같으면 진입 허용
+        if (ev['id'] == this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'])
+          this.modalCtrl.create({
+            component: ChatRoomPage,
+            componentProps: {
+              info: this.channels_orig[_is_official][_target][msg.channel_id],
+            },
+          }).then(v => v.present());
+      });
+    }
     switch (c.code) {
       case 0: // 사용자가 작성한 일반적인 메시지
         if (c.content['update']) // 그룹 정보 업데이트

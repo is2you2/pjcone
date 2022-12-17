@@ -172,6 +172,10 @@ export class OthersProfilePage implements OnInit {
         type: 2,
         persistence: true,
       };
+      c['server'] = {
+        isOfficial: this.isOfficial,
+        target: this.target,
+      };
       // 방 이름을 상대방 이름으로 설정
       let user = this.nakama.load_other_user(this.info['user']['id'], this.isOfficial, this.target);
       c['title'] = user['display_name'];

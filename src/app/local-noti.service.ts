@@ -286,7 +286,8 @@ export class LocalNotiService {
   /** 알림 취소하기 */
   CancelNotificationById(id: number) {
     if (isPlatform == 'DesktopPWA') {
-      this.WebNoties[id].close();
+      if (this.WebNoties[id])
+        this.WebNoties[id].close();
     } else if (isPlatform != 'MobilePWA') {
       this.noti.cancel(id);
     }

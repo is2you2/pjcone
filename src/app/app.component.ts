@@ -69,6 +69,9 @@ export class AppComponent {
         autoCancel_ln: true,
         timeoutAfter_ln: 8000,
       }, undefined);
+      setTimeout(() => {
+        noti.CancelNotificationById(0);
+      }, 8000);
     };
     indexed.initialize(() => {
       nakama.initialize();

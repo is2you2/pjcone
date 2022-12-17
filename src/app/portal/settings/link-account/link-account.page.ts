@@ -40,7 +40,7 @@ export class LinkAccountPage implements OnInit {
           this.p5toast.show({
             text: '사용자 연결에 성공했습니다.',
           });
-          this.nakama.users.self['is_online'] = true;
+          this.nakama.users.self['online'] = true;
           this.nakama.init_all_sessions();
           setTimeout(() => {
             this.navCtrl.back();
