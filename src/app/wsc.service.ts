@@ -64,6 +64,7 @@ export class WscService {
       };
       this.bgmode.setDefaults(offline_info);
       this.bgmode.configure(offline_info);
+      this.is_admin = false;
     }
     this.client.onerror = (e) => {
       console.error('메인소켓 오류 발생: ', e);
