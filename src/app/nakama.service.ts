@@ -516,6 +516,7 @@ export class NakamaService {
     this.indexed.saveTextFileToUserPath(JSON.stringify(copied), `servers/${_is_official}/${_target}/users/${copied['id']}/profile.json`);
     if (userInfo['img'])
       this.indexed.saveTextFileToUserPath(userInfo['img'], `servers/${_is_official}/${_target}/users/${userInfo['id']}/profile.img`);
+    else this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${userInfo['id']}/profile.img`);
   }
 
   /** 서버로부터 알림 업데이트하기 (알림 리스트 재정렬 포함됨) */
