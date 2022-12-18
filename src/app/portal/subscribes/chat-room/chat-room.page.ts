@@ -179,10 +179,13 @@ export class ChatRoomPage implements OnInit {
     text: '',
   }
 
+  pullable = true;
   /** 서버로부터 메시지 더 받아오기
    * @param isHistory 옛날 정보 불러오기 유무, false면 최신정보 불러오기 진행
    */
   pull_msg_from_server(isHistory = true) {
+    if (!this.pullable) return;
+    this.pullable = false;
     if (isHistory) {
       if ((this.info['status'] == 'online' || this.info['status'] == 'pending')) // 온라인 기반 리스트 받아오기
         this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
@@ -200,6 +203,7 @@ export class ChatRoomPage implements OnInit {
             });
             this.next_cursor = v.next_cursor;
             this.prev_cursor = v.prev_cursor;
+            this.pullable = true;
           });
       else { // 오프라인 기반 리스트 알려주기
         let tmp = [{

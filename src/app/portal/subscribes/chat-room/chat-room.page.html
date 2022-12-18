@@ -12,14 +12,16 @@
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
         <div id="main_div" class="main">
-          <ion-item *ngIf="next_cursor !== undefined" button (click)="pull_msg_from_server()">
+          <ion-item [disabled]="next_cursor === undefined || !pullable" button (click)="pull_msg_from_server()">
             <ion-label>이전 기록 불러오기</ion-label>
           </ion-item>
           <div *ngFor="let msg of messages; let i = index" (click)="message_detail(msg)">
             <p *ngIf="(!messages[i - 1] || msg.sender_id != messages[i - 1].sender_id || !messages[i - 1].content['msg']) && msg.content['msg']"
               style=" margin: 8px 0px 0px 0px;" (click)="user_detail(msg)">
               <b>
-                <font color="#{{(msg.sender_id && nakama.users[isOfficial][target][msg.sender_id]['online']) ? msg.color : '888'}}">{{msg.user_display_name}}</font>
+                <font
+                  color="#{{(msg.sender_id && nakama.users[isOfficial][target][msg.sender_id]['online']) ? msg.color : '888'}}">
+                  {{msg.user_display_name}}</font>
               </b>
             </p>
             <div *ngIf="msg.content['filename']" class="file_button" (click)="file_detail(msg)">
@@ -30,7 +32,7 @@
             </div>
             <p *ngIf="msg.content['msg']" style="margin: 4px 0px 0px 0px;"> {{msg.content['msg']}} </p>
           </div>
-          <ion-item *ngIf="prev_cursor" hidden button (click)="pull_msg_from_server(false)">
+          <ion-item *ngIf="prev_cursor" hidden [disabled]="!pullable" button (click)="pull_msg_from_server(false)">
             <ion-label>최근 기록 불러오기</ion-label>
           </ion-item>
           <div id="content"></div>
