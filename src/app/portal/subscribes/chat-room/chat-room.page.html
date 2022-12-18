@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>채팅방 제목</ion-title>
+    <ion-title>{{info['title'] || '이름 없는 채팅방'}}</ion-title>
     <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
       <ion-back-button defaultHref="subscribes"></ion-back-button>
     </ion-buttons>

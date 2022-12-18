@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { ILocalNotificationAction, ILocalNotificationActionType } from '@awesome-cordova-plugins/local-notifications/ngx';
 import { ModalController, NavParams } from '@ionic/angular';
@@ -23,7 +22,6 @@ export class MinimalChatPage implements OnInit {
     private device: Device,
     private noti: LocalNotiService,
     private title: Title,
-    private bgmode: BackgroundMode,
     private params: NavParams,
     private statusBar: StatusManageService,
   ) { }
@@ -65,6 +63,9 @@ export class MinimalChatPage implements OnInit {
       this.header_title = '그룹 채팅';
       this.client.status[this.target] = 'custom';
     }
+    this.noti.RemoveListener(`send${this.target}`);
+    this.noti.RemoveListener(`reconn${this.target}`);
+    this.noti.RemoveListener(`exit${this.target}`);
     this.noti.ClearNoti(this.lnId);
     this.title.setTitle(get_address ? 'Project: 그룹채팅' : 'Project: 랜덤채팅');
     this.summaryText = '그룹채팅';
@@ -74,7 +75,6 @@ export class MinimalChatPage implements OnInit {
     favicon.setAttribute('href', `assets/icon/${this.Header}.png`);
 
     if (!this.client.client[this.target] || this.client.client[this.target].readyState != this.client.client[this.target].OPEN) {
-      this.noti.SetListener('click', this.open_this);
       this.noti.SetListener(`send${this.target}`, (v: any, eopts: any) => {
         this.noti.ClearNoti(v['id']);
         this.send(eopts['text']);
@@ -86,9 +86,6 @@ export class MinimalChatPage implements OnInit {
       this.noti.SetListener(`exit${this.target}`, (v: any) => {
         this.noti.ClearNoti(v['id']);
         this.quit_chat();
-      });
-      this.bgmode.on('deactivate').subscribe(() => {
-        this.noti.ClearNoti(this.lnId);
       });
       this.reply_act = [{
         id: `send${this.target}`,
@@ -129,7 +126,18 @@ export class MinimalChatPage implements OnInit {
             id: this.lnId,
             title: target,
             body: data['msg'],
+            group_ln: 'simplechat',
+            extra_ln: {
+              page: {
+                component: 'MinimalChatPage',
+                componentProps: {
+                  address: this.params.get('address'),
+                  name: this.params.get('name'),
+                },
+              },
+            },
             iconColor_ln: this.iconColor,
+            autoCancel_ln: true,
             actions_ln: this.reply_act,
           }, this.Header, this.open_this);
         else if (data['type']) {
@@ -139,6 +147,16 @@ export class MinimalChatPage implements OnInit {
             id: this.lnId,
             title: isJoin ? '사용자 참여' : '사용자 떠남',
             body: target + ` | ${isJoin ? '그룹에 참여했습니다.' : '그룹을 떠났습니다.'}`,
+            group_ln: 'simplechat',
+            extra_ln: {
+              page: {
+                component: 'MinimalChatPage',
+                componentProps: {
+                  address: this.params.get('address'),
+                  name: this.params.get('name'),
+                },
+              },
+            },
             iconColor_ln: this.iconColor,
             autoCancel_ln: true,
           }, this.Header, this.open_this);
@@ -162,13 +180,23 @@ export class MinimalChatPage implements OnInit {
             this.noti.PushLocal({
               id: this.lnId,
               title: '누군가를 만났습니다.',
+              group_ln: 'simplechat',
               actions_ln: [{
                 id: `send${this.target}`,
                 type: ILocalNotificationActionType.INPUT,
                 title: '인사'
               }],
-              iconColor_ln: this.iconColor,
+              extra_ln: {
+                page: {
+                  component: 'MinimalChatPage',
+                  componentProps: {
+                    address: this.params.get('address'),
+                    name: this.params.get('name'),
+                  },
+                },
+              },
               autoCancel_ln: true,
+              iconColor_ln: this.iconColor,
             }, this.Header, this.open_this);
             break;
           case 'PARTNER_OUT':
@@ -182,6 +210,16 @@ export class MinimalChatPage implements OnInit {
             this.noti.PushLocal({
               id: this.lnId,
               title: '상대방이 나갔습니다.',
+              group_ln: 'simplechat',
+              extra_ln: {
+                page: {
+                  component: 'MinimalChatPage',
+                  componentProps: {
+                    address: this.params.get('address'),
+                    name: this.params.get('name'),
+                  },
+                },
+              },
               actions_ln: [{
                 id: `reconn${this.target}`,
                 title: '새 대화'
@@ -190,8 +228,8 @@ export class MinimalChatPage implements OnInit {
                 title: '끝내기',
                 launch: false,
               }],
-              iconColor_ln: this.iconColor,
               autoCancel_ln: true,
+              iconColor_ln: this.iconColor,
             }, this.Header, this.open_this);
             break;
           default:
@@ -212,13 +250,23 @@ export class MinimalChatPage implements OnInit {
       this.noti.PushLocal({
         id: this.lnId,
         title: '채팅 참가에 실패했습니다.',
+        group_ln: 'simplechat',
+        extra_ln: {
+          page: {
+            component: 'MinimalChatPage',
+            componentProps: {
+              address: this.params.get('address'),
+              name: this.params.get('name'),
+            },
+          },
+        },
         actions_ln: [{
           id: `exit${this.target}`,
           title: '끝내기',
           launch: false,
         }],
-        iconColor_ln: this.iconColor,
         autoCancel_ln: true,
+        iconColor_ln: this.iconColor,
       }, this.Header, this.open_this);
     }
     this.client.funcs[this.target].onopen = (_v: any) => {
@@ -242,13 +290,23 @@ export class MinimalChatPage implements OnInit {
         this.noti.PushLocal({
           id: this.lnId,
           title: text,
+          group_ln: 'simplechat',
+          extra_ln: {
+            page: {
+              component: 'MinimalChatPage',
+              componentProps: {
+                address: this.params.get('address'),
+                name: this.params.get('name'),
+              },
+            },
+          },
           actions_ln: [{
             id: `exit${this.target}`,
             title: '끝내기',
             launch: false,
           }],
-          iconColor_ln: this.iconColor,
           autoCancel_ln: true,
+          iconColor_ln: this.iconColor,
         }, this.Header, this.open_this);
       }
     }
@@ -295,13 +353,23 @@ export class MinimalChatPage implements OnInit {
       this.noti.PushLocal({
         id: this.lnId,
         title: text,
+        group_ln: 'simplechat',
+        extra_ln: {
+          page: {
+            component: 'MinimalChatPage',
+            componentProps: {
+              address: this.params.get('address'),
+              name: this.params.get('name'),
+            },
+          },
+        },
         actions_ln: [{
           id: `exit${this.target}`,
           title: '끝내기',
           launch: false,
         }],
-        iconColor_ln: this.iconColor,
         autoCancel_ln: true,
+        iconColor_ln: this.iconColor,
       }, this.Header, this.open_this);
     }
   }
@@ -342,7 +410,6 @@ export class MinimalChatPage implements OnInit {
       this.client.userInput[this.target].logs.push({ color: 'ffa', text: this.client.status[this.target] == 'custom' ? '그룹채팅에서 나옵니다.' : '랜덤채팅에서 벗어납니다.' });
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-    this.noti.RemoveListener('click');
     this.noti.RemoveListener(`send${this.target}`);
     this.noti.RemoveListener(`reconn${this.target}`);
     this.noti.RemoveListener(`exit${this.target}`);

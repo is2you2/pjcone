@@ -1093,30 +1093,25 @@ export class NakamaService {
     let is_me = msg.sender_id == this.servers[_is_official][_target].session.user_id;
     let c = this.modulation_channel_message(msg, _is_official, _target);
     if (!is_me) {
-      this.noti.RemoveListener(`openchat${this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']}`);
-      this.noti.SetListener(`openchat${this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']}`, (v: any, eopts: any) => {
-        this.noti.ClearNoti(v['id']);
-        this.modalCtrl.create({
-          component: ChatRoomPage,
-          componentProps: {
-            info: this.channels_orig[_is_official][_target][msg.channel_id],
-          },
-        }).then(v => v.present());
-      });
       this.noti.PushLocal({
         id: this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'],
         title: this.channels_orig[_is_official][_target][msg.channel_id]['info']['name']
           || this.channels_orig[_is_official][_target][msg.channel_id]['info']['display_name']
           || this.channels_orig[_is_official][_target][msg.channel_id]['title']
           || '제목 없는 채팅방',
-        body: c.content['msg'],
+        body: c.content['msg'] || c.content['noti'],
+        extra_ln: {
+          page: {
+            component: 'ChatRoomPage',
+            componentProps: {
+              info: this.channels_orig[_is_official][_target][msg.channel_id],
+            },
+          },
+        },
+        group_ln: 'diychat',
         smallIcon_ln: 'diychat',
-        iconColor_ln: '271e38',
-        actions_ln: [{
-          id: `openchat${this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']}`,
-          title: '열기',
-        }],
         autoCancel_ln: true,
+        iconColor_ln: '271e38',
       }, this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'], (ev: any) => {
         // 알림 아이디가 같으면 진입 허용
         if (ev['id'] == this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'])
@@ -1431,6 +1426,7 @@ export class NakamaService {
         this.groups[_is_official][_target][v.content['group_id']]['status'] = 'online';
         v['request'] = `${v.code}-${v.subject}`;
         this.rearrange_notifications();
+        this.noti.RemoveListener(`check${v.code}`);
         this.noti.SetListener(`check${v.code}`, (_v: any) => {
           this.noti.ClearNoti(_v['id']);
           this.noti.RemoveListener(`check${v.code}`);
@@ -1474,12 +1470,14 @@ export class NakamaService {
           id: v.code,
           title: '검토해야할 연결이 있습니다.',
           body: v.subject,
+          group_ln: 'diychat',
           actions_ln: [{
             id: `check${v.code}`,
             title: '확인',
           }],
           icon: this.groups[_is_official][_target][v.content['group_id']['img']],
           smallIcon_ln: 'diychat',
+          autoCancel_ln: true,
           iconColor_ln: '271e38',
         }, undefined, (_ev: any) => {
           this.check_notifications(v, _is_official, _target);
@@ -1504,6 +1502,7 @@ export class NakamaService {
           this.socket_reactive['settings'].load_groups();
         if (this.socket_reactive['group_detail'] && this.socket_reactive['group_detail'].info.id == v.content['group_id'])
           this.socket_reactive['group_detail'].update_from_notification(v);
+        this.noti.RemoveListener(`check${v.code}`);
         this.noti.SetListener(`check${v.code}`, (_v: any) => {
           this.noti.ClearNoti(_v['id']);
           this.noti.RemoveListener(`check${v.code}`);
@@ -1516,12 +1515,14 @@ export class NakamaService {
         this.noti.PushLocal({
           id: v.code,
           title: `${this.groups[_is_official][_target][v.content['group_id']]['name']} 그룹에 참가 요청`,
+          group_ln: 'diychat',
           actions_ln: [{
             id: `check${v.code}`,
             title: '검토',
           }],
           icon: this.groups[_is_official][_target][v.content['group_id']]['img'],
           smallIcon_ln: 'diychat',
+          autoCancel_ln: true,
           iconColor_ln: '271e38',
         }, undefined, (_ev: any) => {
           if (this.socket_reactive['group_detail'].info.id == v.content['group_id']) return;

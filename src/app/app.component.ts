@@ -2,10 +2,12 @@ import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
-import { Platform } from '@ionic/angular';
+import { ModalController, Platform } from '@ionic/angular';
 import { IndexedDBService } from './indexed-db.service';
 import { LocalNotiService } from './local-noti.service';
+import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { NakamaService } from './nakama.service';
+import { ChatRoomPage } from './portal/subscribes/chat-room/chat-room.page';
 import { WscService } from './wsc.service';
 /** 페이지가 돌고 있는 플렛폼 구분자 */
 export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'DesktopPWA';
@@ -32,6 +34,7 @@ export class AppComponent {
     bgmode: BackgroundMode,
     nakama: NakamaService,
     indexed: IndexedDBService,
+    modalCtrl: ModalController,
   ) {
     if (platform.is('desktop'))
       isPlatform = 'DesktopPWA';
@@ -53,7 +56,6 @@ export class AppComponent {
         body: ev['text'],
         smallIcon_ln: 'icon_mono',
         iconColor_ln: 'ffd94e',
-        autoCancel_ln: true,
         image: ev['img'],
       }, undefined);
     }
@@ -91,6 +93,26 @@ export class AppComponent {
         });
       });
     }
+    noti.SetListener('click', (ev: any) => {
+      if (ev.data.page) {
+        let page: any;
+        switch (ev.data.page.component) {
+          case 'ChatRoomPage':
+            page = ChatRoomPage;
+            break;
+          case 'MinimalChatPage':
+            page = MinimalChatPage;
+            break;
+          default:
+            console.warn('준비된 페이지가 아님: ', ev.data.page.component);
+            break;
+        }
+        modalCtrl.create({
+          component: page,
+          componentProps: ev.data.page.componentProps,
+        }).then(v => v.present());
+      }
+    });
     bgmode.enable();
   }
 }
