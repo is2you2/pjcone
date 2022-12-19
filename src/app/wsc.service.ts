@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
-import { ADDRESS_OVERRIDE, SOCKET_HEADER, SOCKET_SERVER_ADDRESS } from './app.component';
+import { SOCKET_SERVER_ADDRESS } from './app.component';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 
@@ -27,14 +27,21 @@ export class WscService {
   received: { [id: string]: Function } = {};
   /** 서버로부터 연결이 끊어졌을 때 취하게 될 행동들 */
   disconnected: { [id: string]: Function } = {};
+
+  socket_header = 'wss';
+  address_override = '';
+
   /**
    * 서버와 반드시 연결시도하는 메인 소켓 클라이언트  
    * 다른 서버, 클라이언트를 생성하는 등의 다양한 역할을 수행할 수 있다.
    */
   initialize() {
+    this.address_override = (localStorage.getItem('wsc_address_override') || '').replace(/[^0-9.]/g, '');
+    this.socket_header = localStorage.getItem('wsc_socket_header') || 'wss';
     this.statusBar.settings['communityServer'] = 'pending';
     const PORT: number = 12000;
-    this.client = new WebSocket(`${SOCKET_HEADER}://${ADDRESS_OVERRIDE || SOCKET_SERVER_ADDRESS}:${PORT}`);
+    console.log('여기로 연결해: ', `${this.socket_header}://${this.address_override || SOCKET_SERVER_ADDRESS}:${PORT}`);
+    this.client = new WebSocket(`${this.socket_header}://${this.address_override || SOCKET_SERVER_ADDRESS}:${PORT}`);
     this.client.onopen = (_ev) => {
       this.statusBar.settings['communityServer'] = 'online';
       let online_info = {
