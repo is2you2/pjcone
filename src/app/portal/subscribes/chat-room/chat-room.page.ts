@@ -247,7 +247,7 @@ export class ChatRoomPage implements OnInit {
       result['filename'] = this.userInput.file.name;
       result['filesize'] = this.userInput.file.size;
       result['file_ext'] = this.userInput.file.ext;
-      result['msg'] = result['msg'] || '(첨부파일 수신)';
+      result['msg'] = result['msg'] || '(첨부파일)';
       const SIZE_LIMIT = 240000;
       let seek = 0;
       while (seek < this.userInput.file.size) {
@@ -266,7 +266,7 @@ export class ChatRoomPage implements OnInit {
         for (let i = 0, j = upload.length; i < j; i++) // 첨부 파일이 포함된 경우
           this.nakama.servers[this.isOfficial][this.target].client.writeStorageObjects(
             this.nakama.servers[this.isOfficial][this.target].session, [{
-              collection: 'file_public',
+              collection: `file_${v.channel_id}`,
               key: `msg_${v.message_id}_${i}`,
               permission_read: 2,
               permission_write: 1,
