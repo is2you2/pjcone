@@ -51,7 +51,7 @@
                 </ion-button>
               </td>
               <td style="width: 100%;">
-                <ion-input type="text" placeholder="메시지 입력..." (ionFocus)="open_ext_with_delay(true)"
+                <ion-input type="text" [placeholder]="inputPlaceholder" (ionFocus)="open_ext_with_delay(true)"
                   (keyup.enter)="send()" [(ngModel)]="userInput.text">
                 </ion-input>
               </td>

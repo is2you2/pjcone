@@ -97,6 +97,7 @@ export class ChatRoomPage implements OnInit {
     reader = reader._realReader ?? reader;
     reader.onload = (ev: any) => {
       this.userInput.file['result'] = ev.target.result.replace(/"|\\|=/g, '');
+      this.inputPlaceholder = `(첨부파일: ${this.userInput.file.name})`;
     }
     reader.readAsDataURL(ev.target.files[0]);
   }
@@ -178,6 +179,7 @@ export class ChatRoomPage implements OnInit {
     file: undefined as FileInfo,
     text: '',
   }
+  inputPlaceholder = '메시지 입력...';
 
   pullable = true;
   /** 서버로부터 메시지 더 받아오기
@@ -277,6 +279,7 @@ export class ChatRoomPage implements OnInit {
             });
         delete this.userInput.file;
         this.userInput.text = '';
+        this.inputPlaceholder = '메시지 입력...';
       });
   }
 
