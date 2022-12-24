@@ -40,7 +40,6 @@ export class WscService {
     this.socket_header = localStorage.getItem('wsc_socket_header') || 'wss';
     this.statusBar.settings['communityServer'] = 'pending';
     const PORT: number = 12000;
-    console.log('여기로 연결해: ', `${this.socket_header}://${this.address_override || SOCKET_SERVER_ADDRESS}:${PORT}`);
     this.client = new WebSocket(`${this.socket_header}://${this.address_override || SOCKET_SERVER_ADDRESS}:${PORT}`);
     this.client.onopen = (_ev) => {
       this.statusBar.settings['communityServer'] = 'online';
