@@ -210,7 +210,7 @@ export class ChatRoomPage implements OnInit {
       else { // 오프라인 기반 리스트 알려주기
         let tmp = [{
           content: {
-            msg: '이 그룹 서버에 온라인 상태여야 합니다.',
+            msg: '이 채널이 온라인 상태여야 합니다.',
           }
         }, {
           content: {

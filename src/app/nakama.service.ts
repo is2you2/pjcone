@@ -889,6 +889,7 @@ export class NakamaService {
 
   /** 그룹 리스트 로컬/리모트에서 삭제하기 (방장일 경우) */
   async remove_group_list(info: any, _is_official: string, _target: string) {
+    console.log('그룹 정보: ', info);
     try { // 내가 방장이면 해산처리 우선, 이 외의 경우 기록 삭제
       if (this.servers[_is_official][_target] && info['creator_id'] == this.servers[_is_official][_target].session.user_id)
         await this.servers[_is_official][_target].client.deleteGroup(
@@ -901,9 +902,20 @@ export class NakamaService {
               collection: 'group_public',
               key: `group_${info['id']}`,
             }]
+          }).then(_v => {
+            throw new Error("Remove group image well");
+          }).catch(_e => {
+            throw new Error("No group image found");
+          });
+          this.servers[_is_official][_target].client.deleteStorageObjects(
+            this.servers[_is_official][_target].session, {
+            object_ids: [{
+              collection: `file_${info['channel_id']}`,
+            }]
           }).then(v => {
-            if (!v) console.warn('그룹 이미지 삭제 오류 검토 필요');
-            throw new Error("remove image");
+            console.log('컬렉션 삭제 성공 로그?: ', v);
+          }).catch(e => {
+            console.log('컬렉션 삭제 실패: ', e);
           });
         });
       else throw new Error("not creator");
