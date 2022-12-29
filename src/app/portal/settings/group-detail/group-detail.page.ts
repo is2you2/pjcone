@@ -153,7 +153,7 @@ export class GroupDetailPage implements OnInit {
           this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
             this.info['channel_id'], {
             update: 'image',
-            msg: '그룹 이미지 업데이트 알림-테스트 로그',
+            noti: '그룹 이미지 업데이트됨',
           });
         });
       });
