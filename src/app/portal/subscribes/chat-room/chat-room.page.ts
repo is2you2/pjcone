@@ -266,7 +266,7 @@ export class ChatRoomPage implements OnInit {
         for (let i = 0, j = upload.length; i < j; i++) // 첨부 파일이 포함된 경우
           this.nakama.servers[this.isOfficial][this.target].client.writeStorageObjects(
             this.nakama.servers[this.isOfficial][this.target].session, [{
-              collection: `file_${v.channel_id}`,
+              collection: `file_${v.channel_id.replace(/[.]/g, '_')}`,
               key: `msg_${v.message_id}_${i}`,
               permission_read: 2,
               permission_write: 1,
