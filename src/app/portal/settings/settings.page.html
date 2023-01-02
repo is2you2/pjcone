@@ -42,6 +42,9 @@
       [style]="'background-color: ' + statusBar.colors[statusBar.settings['dedicatedServer']]"></div>
     <ion-label class="form_margin">이 기기를 기능 서버로</ion-label>
   </ion-item>
+  <ion-item button *ngIf="!cant_dedicated && !isBatteryOptimizationsShowed" (click)="setDisableBatteryOptimizations()">
+    <ion-label>배터리 최적화 제외 설정</ion-label>
+  </ion-item>
   <ion-item-divider>
     <ion-label>그룹 관리</ion-label>
   </ion-item-divider>

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { Group } from '@heroiclabs/nakama-js';
 import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
@@ -23,6 +24,7 @@ export class SettingsPage implements OnInit {
     public nakama: NakamaService,
     private indexed: IndexedDBService,
     public client: WscService,
+    private bgmode: BackgroundMode,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
@@ -37,6 +39,7 @@ export class SettingsPage implements OnInit {
     });
     console.warn('앱의 언어 설정으로 지정된 언어 검토 필요');
     this.current_lang = navigator.language.split('-')[0];
+    this.isBatteryOptimizationsShowed = Boolean(localStorage.getItem('ShowDisableBatteryOptimizations'));
   }
 
   /** 표시되는 그룹 리스트 */
@@ -173,6 +176,13 @@ export class SettingsPage implements OnInit {
 
   ionViewWillLeave() {
     delete this.nakama.socket_reactive['settings'];
+  }
+
+  isBatteryOptimizationsShowed = false;
+  setDisableBatteryOptimizations() {
+    this.bgmode.disableBatteryOptimizations();
+    this.isBatteryOptimizationsShowed = true;
+    localStorage.setItem('ShowDisableBatteryOptimizations', 'true');
   }
 
   go_back() {
