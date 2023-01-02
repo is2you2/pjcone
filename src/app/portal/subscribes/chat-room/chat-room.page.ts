@@ -199,7 +199,7 @@ export class ChatRoomPage implements OnInit {
               this.check_sender_and_show_name(msg);
               if (!this.info['last_comment']) {
                 let hasFile = msg['content']['file'] ? '(첨부파일) ' : '';
-                this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti']);
+                this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
               }
               this.messages.unshift(msg);
             });
@@ -247,7 +247,7 @@ export class ChatRoomPage implements OnInit {
       result['filename'] = this.userInput.file.name;
       result['filesize'] = this.userInput.file.size;
       result['file_ext'] = this.userInput.file.ext;
-      result['msg'] = result['msg'] || '(첨부파일)';
+      result['msg'] = result['msg'];
       const SIZE_LIMIT = 240000;
       let seek = 0;
       while (seek < this.userInput.file.size) {

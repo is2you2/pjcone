@@ -665,7 +665,7 @@ export class NakamaService {
                   .then(v => {
                     if (v.messages.length) {
                       let hasFile = v.messages[0].content['file'] ? '(첨부파일) ' : '';
-                      this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti']);
+                      this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
                     }
                     this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
                     this.save_channels_with_less_info();
@@ -690,7 +690,7 @@ export class NakamaService {
                       if (v.messages.length) {
                         let hasFile = v.messages[0].content['file'] ? '(첨부파일) ' : '';
                         v['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti']);
-                        this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti']);
+                        this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
                       }
                       this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
                       this.save_channels_with_less_info();
@@ -1145,7 +1145,7 @@ export class NakamaService {
           || this.channels_orig[_is_official][_target][msg.channel_id]['info']['display_name']
           || this.channels_orig[_is_official][_target][msg.channel_id]['title']
           || '제목 없는 채팅방',
-        body: c.content['msg'] || c.content['noti'],
+        body: c.content['msg'] || c.content['noti'] || '(첨부파일)',
         extra_ln: {
           page: {
             component: 'ChatRoomPage',
@@ -1211,7 +1211,7 @@ export class NakamaService {
     if (this.channels_orig[_is_official][_target][c.channel_id]['update'])
       this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
     let hasFile = c.content['file'] ? '(첨부파일) ' : '';
-    this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile + (c.content['msg'] || c.content['noti']);
+    this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile + (c.content['msg'] || c.content['noti'] || '');
   }
 
   /** 채널 정보를 분석하여 메시지 변형 (행동은 하지 않음)
@@ -1422,7 +1422,7 @@ export class NakamaService {
                 this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
                   if (m.messages.length) {
                     let hasFile = m.messages[0].content['file'] ? '(첨부파일) ' : '';
-                    c['last_comment'] = hasFile + (m.messages[0].content['msg'] || m.messages[0].content['noti']);
+                    c['last_comment'] = hasFile + (m.messages[0].content['msg'] || m.messages[0].content['noti'] || '');
                     this.update_from_channel_msg(m.messages[0], _is_official, _target);
                   }
                 });
@@ -1478,7 +1478,7 @@ export class NakamaService {
             .then(v => {
               if (v.messages.length) {
                 let hasFile = v.messages[0].content['file'] ? '(첨부파일) ' : '';
-                this.channels_orig[_is_official][_target][c.id]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti']);
+                this.channels_orig[_is_official][_target][c.id]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
                 this.update_from_channel_msg(v.messages[0], _is_official, _target);
               }
             });
