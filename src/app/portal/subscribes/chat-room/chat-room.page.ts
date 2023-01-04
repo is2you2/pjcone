@@ -327,7 +327,7 @@ export class ChatRoomPage implements OnInit {
     console.warn('짧은 클릭으로 첨부파일 다운받기: ', msg);
     this.indexed.loadTextFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.file`, async (e, v) => {
       if (e && v) {
-        this.modulate_thumbnail(msg, v);
+        this.modulate_thumbnail(msg, v.replace(/"|\\|=/g, ''));
         this.open_viewer(msg);
       } else { // 가지고 있는 파일이 아닐 경우
         let result = '';
@@ -359,8 +359,9 @@ export class ChatRoomPage implements OnInit {
 
   /** 메시지에 썸네일 콘텐츠를 생성 */
   modulate_thumbnail(msg: any, dataURL: string) {
+    if (msg.content['img']) return; // 이미 썸네일이 있다면 제외
     if (msg.content['type']) {
-      if (msg.content['type'].indexOf('image/') == 0) // 자동분류상 이미지 파일이라면 썸네일 이미지 생성
+      if (msg.content['type'].indexOf('image/') == 0) // 자동분류상 이미지라면 썸네일 이미지 생성
         new p5((p: p5) => {
           p.setup = () => {
             p.smooth();
@@ -379,8 +380,30 @@ export class ChatRoomPage implements OnInit {
             });
           }
         });
-    } else { // 자동 분류가 없는 경우
-      console.log('obj 또는 stl 파일을 읽은 후 썸네일 이미지 생성하여 게시하기');
+    } else if (msg.content['file_ext']) { // 자동 분류가 없는 경우
+      switch (msg.content['file_ext']) {
+        case 'stl':
+        case 'obj': // dataURL로부터 모델 받아오기 불가능
+          new p5((p: p5) => {
+            p.setup = () => {
+              p.loadModel(dataURL, v => { // 불러오기 단계를 지원하지 않음
+                p.createCanvas(160, 160, p.WEBGL);
+                p.model(v);
+                p.saveFrames('out', 'png', 1, 1, data => {
+                  msg.content['img'] = data[0]['imageData'].replace(/"|\\|=/g, '');
+                  p.remove();
+                });
+              }, e => {
+                console.error('모델 파일 불러오기 실패: ', e);
+                p.remove();
+              });
+            }
+          });
+          break;
+        default:
+          console.warn('썸네일 구성을 지원하지 않거나 준비중인 형식: ', msg.content['file_ext']);
+          break;
+      }
     }
   }
 

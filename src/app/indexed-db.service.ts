@@ -45,8 +45,21 @@ export class IndexedDBService {
       console.warn('IndexedDB 지정되지 않음');
       return;
     };
+    let result: Uint8Array;
+    // if (text.indexOf('data:') == 0) {
+    //   let sep = text.split(',');
+    //   let mime = sep[0].split(':')[1].split(';')[0];
+    //   let byteStr = atob(sep[1]);
+    //   let arrayBuffer = new ArrayBuffer(byteStr.length);
+    //   let uintArray = new Uint8Array(arrayBuffer);
+    //   for (let i = 0, j = byteStr.length; i < j; i++)
+    //     uintArray[i] = byteStr.charCodeAt(i);
+    //   result = uintArray;
+    // } else
+    result = new TextEncoder().encode(text);
+    // let blob = new Blob([arrayBuffer], { type: mime });
     let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
-      contents: new TextEncoder().encode(text),
+      contents: result,
       mode: 33206,
       timestamp: new Date(),
     }, `/userfs/${path}`);
