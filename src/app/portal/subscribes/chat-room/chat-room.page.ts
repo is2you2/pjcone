@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Channel, ChannelMessage } from '@heroiclabs/nakama-js';
+import { Channel, ChannelMessage, WriteStorageObject } from '@heroiclabs/nakama-js';
 import { ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
@@ -204,6 +204,10 @@ export class ChatRoomPage implements OnInit {
               if (!this.info['last_comment']) {
                 let hasFile = msg['content']['file'] ? '(첨부파일) ' : '';
                 this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
+                if (msg.content['filename']) // 파일 포함 메시지는 자동 썸네일 생성 시도
+                  this.indexed.loadTextFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.file`, async (e, v) => {
+                    if (e && v) this.modulate_thumbnail(msg, v);
+                  });
               }
               this.messages.unshift(msg);
             });
@@ -282,7 +286,14 @@ export class ChatRoomPage implements OnInit {
               }]).then(_f => {
                 console.warn('업로드 경과 게시하기: ', i, '/', j);
               }).catch(e => {
-                console.error(`${i}번째 파일 올리기 오류`, e);
+                console.warn(`${i}번째 파일 올리기 오류`, e);
+                this.retry_upload_part({
+                  collection: `file_${v.channel_id.replace(/[.]/g, '_')}`,
+                  key: `msg_${v.message_id}_${i}`,
+                  permission_read: 2,
+                  permission_write: 1,
+                  value: { data: upload[i] },
+                }, i, j);
               });
         }
         delete this.userInput.file;
@@ -291,17 +302,33 @@ export class ChatRoomPage implements OnInit {
       });
   }
 
+  /** 업로드 실패한 파트 다시 올리기 */
+  retry_upload_part(info: WriteStorageObject, i: number, j: number, _try_left = 5) {
+    this.nakama.servers[this.isOfficial][this.target].client.writeStorageObjects(
+      this.nakama.servers[this.isOfficial][this.target].session, [info]).then(_f => {
+        console.warn('재업로드 경과 게시하기: ', i, '/', j);
+      }).catch(e => {
+        console.warn(`${i}번째 파일 다시 올리기 오류`, e, `try_left: ${_try_left}`);
+        if (_try_left > 0)
+          this.retry_upload_part(info, i, j, _try_left - 1);
+        else {
+          console.error('파일 다시 올리기 실패: ', info, i);
+        }
+      });
+  }
+
   /** 메시지 정보 상세 */
   message_detail(msg: any) {
     console.warn('긴 클릭시 행동.. 메시지 상세 정보 표시: ', msg);
   }
 
-  /** 메시지 내 파일 정보 */
+  /** 메시지 내 파일 정보, 파일 다운받기 */
   file_detail(msg: any) {
-    console.warn('짧은 클릭으로 파일이 있는 메시지 정보 표시: ', msg);
+    console.warn('짧은 클릭으로 첨부파일 다운받기: ', msg);
     this.indexed.loadTextFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.file`, async (e, v) => {
       if (e && v) {
         this.modulate_thumbnail(msg, v);
+        this.open_viewer(msg);
       } else { // 가지고 있는 파일이 아닐 경우
         let result = '';
         for (let i = 0, j = msg.content['partsize']; i < j; i++)
@@ -322,6 +349,7 @@ export class ChatRoomPage implements OnInit {
         if (result) {
           this.indexed.saveTextFileToUserPath(result, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.file`);
           this.modulate_thumbnail(msg, result);
+          this.open_viewer(msg);
         } else this.p5toast.show({
           text: '이 파일은 서버에서 삭제되었습니다.',
         });
@@ -331,12 +359,34 @@ export class ChatRoomPage implements OnInit {
 
   /** 메시지에 썸네일 콘텐츠를 생성 */
   modulate_thumbnail(msg: any, dataURL: string) {
-    console.warn('파일 뷰어 열기 기능 필요: ', msg);
+    if (msg.content['type']) {
+      if (msg.content['type'].indexOf('image/') == 0) // 자동분류상 이미지 파일이라면 썸네일 이미지 생성
+        new p5((p: p5) => {
+          p.setup = () => {
+            p.smooth();
+            p.loadImage(dataURL, v => {
+              const SIDE_LIMIT = 192;
+              if (v.width > v.height) {
+                if (v.width > SIDE_LIMIT)
+                  v.resize(SIDE_LIMIT, v.height / v.width * SIDE_LIMIT);
+              } else if (v.height > SIDE_LIMIT)
+                v.resize(v.width / v.height * SIDE_LIMIT, SIDE_LIMIT);
+              msg.content['img'] = v['canvas'].toDataURL();
+              p.remove();
+            }, e => {
+              console.error('이미지 불러오기 실패: ', e);
+              p.remove();
+            });
+          }
+        });
+    } else { // 자동 분류가 없는 경우
+      console.log('obj 또는 stl 파일을 읽은 후 썸네일 이미지 생성하여 게시하기');
+    }
   }
-  
+
   /** 콘텐츠 상세보기 뷰어 띄우기 */
   open_viewer(msg: any) {
-
+    console.warn('콘텐츠 뷰어 열기: ', msg);
   }
 
   /** 사용자 정보보기 */
