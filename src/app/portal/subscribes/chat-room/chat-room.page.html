@@ -24,8 +24,11 @@
                   {{msg.user_display_name}}</font>
               </b>
             </p>
-            <div *ngIf="msg.content['filename']" class="file_button" (click)="file_detail(msg)">
+            <div *ngIf="msg.content['filename'] && !msg.content['thumbnail']" class="file_button" (click)="file_detail(msg)">
               {{msg.content['filename']}}
+            </div>
+            <div *ngIf="msg.content['thumbnail']" (click)="open_viewer(msg)">
+              <img [src]="msg.content['thumbnail']" alt="msg.content['filename']">
             </div>
             <div *ngIf="msg.content['noti']" class="notice_form">
               <div class="notice"> {{msg.content['noti']}} </div>

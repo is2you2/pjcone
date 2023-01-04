@@ -8,10 +8,12 @@ import * as p5 from "p5";
 import { ProfilePage } from '../../settings/profile/profile.page';
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { StatusManageService } from 'src/app/status-manage.service';
+import { IndexedDBService } from 'src/app/indexed-db.service';
 
 interface FileInfo {
   id?: string;
   name?: string;
+  type?: string;
   ext?: string;
   /** 전체 파일 크기 */
   size?: number;
@@ -43,6 +45,7 @@ export class ChatRoomPage implements OnInit {
     private noti: LocalNotiService,
     private p5toast: P5ToastService,
     private statusBar: StatusManageService,
+    private indexed: IndexedDBService,
   ) { }
 
   /** 채널 정보 */
@@ -93,6 +96,7 @@ export class ChatRoomPage implements OnInit {
     this.userInput.file['name'] = ev.target.files[0].name;
     this.userInput.file['ext'] = ev.target.files[0].name.split('.')[1] || ev.target.files[0].type || '검토 불가';
     this.userInput.file['size'] = ev.target.files[0].size;
+    this.userInput.file['type'] = ev.target.files[0].type;
     let reader: any = new FileReader();
     reader = reader._realReader ?? reader;
     reader.onload = (ev: any) => {
@@ -247,6 +251,7 @@ export class ChatRoomPage implements OnInit {
       result['filename'] = this.userInput.file.name;
       result['filesize'] = this.userInput.file.size;
       result['file_ext'] = this.userInput.file.ext;
+      result['type'] = this.userInput.file.type;
       result['msg'] = result['msg'];
       const SIZE_LIMIT = 240000;
       let seek = 0;
@@ -260,23 +265,26 @@ export class ChatRoomPage implements OnInit {
       result['partsize'] = upload.length;
     }
     this.nakama.servers[this.isOfficial][this.target].socket
-      .writeChatMessage(this.info['id'], result).then(v => {
+      .writeChatMessage(this.info['id'], result).then(async v => {
         /** 업로드가 진행중인 메시지 개체 */
-        let worked = 0;
-        for (let i = 0, j = upload.length; i < j; i++) // 첨부 파일이 포함된 경우
-          this.nakama.servers[this.isOfficial][this.target].client.writeStorageObjects(
-            this.nakama.servers[this.isOfficial][this.target].session, [{
-              collection: `file_${v.channel_id.replace(/[.]/g, '_')}`,
-              key: `msg_${v.message_id}_${i}`,
-              permission_read: 2,
-              permission_write: 1,
-              value: { data: upload[i] },
-            }]).then(_f => {
-              worked++;
-              console.warn('업로드 경과 게시하기: ', worked, '/', j);
-            }).catch(e => {
-              console.error(`${i}번째 파일 올리기 오류`, e);
-            });
+        if (upload.length) { // 첨부 파일이 포함된 경우
+          // 로컬에 파일을 저장
+          this.indexed.saveTextFileToUserPath(this.userInput.file.result, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.file`);
+          // 서버에 파일을 업로드
+          for (let i = 0, j = upload.length; i < j; i++)
+            await this.nakama.servers[this.isOfficial][this.target].client.writeStorageObjects(
+              this.nakama.servers[this.isOfficial][this.target].session, [{
+                collection: `file_${v.channel_id.replace(/[.]/g, '_')}`,
+                key: `msg_${v.message_id}_${i}`,
+                permission_read: 2,
+                permission_write: 1,
+                value: { data: upload[i] },
+              }]).then(_f => {
+                console.warn('업로드 경과 게시하기: ', i, '/', j);
+              }).catch(e => {
+                console.error(`${i}번째 파일 올리기 오류`, e);
+              });
+        }
         delete this.userInput.file;
         this.userInput.text = '';
         this.inputPlaceholder = '메시지 입력...';
@@ -291,6 +299,44 @@ export class ChatRoomPage implements OnInit {
   /** 메시지 내 파일 정보 */
   file_detail(msg: any) {
     console.warn('짧은 클릭으로 파일이 있는 메시지 정보 표시: ', msg);
+    this.indexed.loadTextFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.file`, async (e, v) => {
+      if (e && v) {
+        this.modulate_thumbnail(msg, v);
+      } else { // 가지고 있는 파일이 아닐 경우
+        let result = '';
+        for (let i = 0, j = msg.content['partsize']; i < j; i++)
+          await this.nakama.servers[this.isOfficial][this.target].client.readStorageObjects(
+            this.nakama.servers[this.isOfficial][this.target].session, {
+            object_ids: [{
+              collection: `file_${msg.channel_id.replace(/[.]/g, '_')}`,
+              key: `msg_${msg.message_id}_${i}`,
+              user_id: msg['sender_id'],
+            }]
+          }).then(v => {
+            if (v.objects.length) {
+              console.warn('다운로드 경과 게시하기: ', i, '/', j);
+              result += v.objects[0].value['data'];
+            }
+          });
+        result = result.replace(/"|\\|=/g, '');
+        if (result) {
+          this.indexed.saveTextFileToUserPath(result, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.file`);
+          this.modulate_thumbnail(msg, result);
+        } else this.p5toast.show({
+          text: '이 파일은 서버에서 삭제되었습니다.',
+        });
+      }
+    });
+  }
+
+  /** 메시지에 썸네일 콘텐츠를 생성 */
+  modulate_thumbnail(msg: any, dataURL: string) {
+    console.warn('파일 뷰어 열기 기능 필요: ', msg);
+  }
+  
+  /** 콘텐츠 상세보기 뷰어 띄우기 */
+  open_viewer(msg: any) {
+
   }
 
   /** 사용자 정보보기 */
