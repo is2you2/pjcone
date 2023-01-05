@@ -1,0 +1,26 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>수신 동작</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="settings"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item-divider>
+    <ion-label>알림 설정</ion-label>
+  </ion-item-divider>
+  <ion-item button disabled (click)="settings.vibrate=!settings.vibrate">
+    <ion-label>진동</ion-label>
+    <ion-toggle [(ngModel)]="settings.vibrate" slot="end" style="pointer-events: none;"></ion-toggle>
+  </ion-item>
+  <div *ngIf="!cant_dedicated && !isBatteryOptimizationsShowed">
+    <ion-item-divider>
+      <ion-label>백그라운드 설정</ion-label>
+    </ion-item-divider>
+    <ion-item button (click)="setDisableBatteryOptimizations()">
+      <ion-label>배터리 최적화 제외 설정</ion-label>
+    </ion-item>
+  </div>
+</ion-content>
