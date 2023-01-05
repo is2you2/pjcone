@@ -12,7 +12,7 @@
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
         <div id="main_div" class="main">
-          <ion-item [disabled]="next_cursor === undefined || !pullable" button (click)="pull_msg_from_server()">
+          <ion-item [disabled]="next_cursor === undefined || !pullable" button (click)="pull_msg_history()">
             <ion-label>이전 기록 불러오기</ion-label>
           </ion-item>
           <div *ngFor="let msg of messages; let i = index" (click)="message_detail(msg)">
@@ -35,7 +35,7 @@
             </div>
             <p *ngIf="msg.content['msg']" style="margin: 4px 0px 0px 0px;"> {{msg.content['msg']}} </p>
           </div>
-          <ion-item *ngIf="prev_cursor" hidden [disabled]="!pullable" button (click)="pull_msg_from_server(false)">
+          <ion-item *ngIf="prev_cursor" hidden [disabled]="!pullable" button (click)="pull_msg_history(false)">
             <ion-label>최근 기록 불러오기</ion-label>
           </ion-item>
           <div id="content"></div>

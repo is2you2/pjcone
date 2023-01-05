@@ -14,7 +14,8 @@ export class ReceiveActPage implements OnInit {
   ) { }
 
   settings = {
-    
+    /** 알림 진동 사용 여부 */
+    vibrate: false,
   }
 
   cant_dedicated = false;

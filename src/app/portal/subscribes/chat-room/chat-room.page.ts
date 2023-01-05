@@ -141,8 +141,8 @@ export class ChatRoomPage implements OnInit {
     }
     this.extended_buttons[0].isHide = this.info['status'] != 'missing';
     this.extended_buttons[1].isHide = this.info['status'] == 'missing';
-    // 온라인이라면 마지막 대화 기록을 받아온다
-    this.pull_msg_from_server();
+    // 마지막 대화 기록을 받아온다
+    this.pull_msg_history();
     this.follow_resize();
   }
 
@@ -189,7 +189,7 @@ export class ChatRoomPage implements OnInit {
   /** 서버로부터 메시지 더 받아오기
    * @param isHistory 옛날 정보 불러오기 유무, false면 최신정보 불러오기 진행
    */
-  pull_msg_from_server(isHistory = true) {
+  pull_msg_history(isHistory = true) {
     if (!this.pullable) return;
     this.pullable = false;
     if (isHistory) {
@@ -202,7 +202,7 @@ export class ChatRoomPage implements OnInit {
               msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
               this.check_sender_and_show_name(msg);
               if (!this.info['last_comment']) {
-                let hasFile = msg['content']['file'] ? '(첨부파일) ' : '';
+                let hasFile = msg.content['filename'] ? '(첨부파일) ' : '';
                 this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
               }
               if (msg.content['filename']) // 파일 포함 메시지는 자동 썸네일 생성 시도
