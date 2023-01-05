@@ -204,11 +204,11 @@ export class ChatRoomPage implements OnInit {
               if (!this.info['last_comment']) {
                 let hasFile = msg['content']['file'] ? '(첨부파일) ' : '';
                 this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
-                if (msg.content['filename']) // 파일 포함 메시지는 자동 썸네일 생성 시도
-                  this.indexed.loadTextFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.file`, async (e, v) => {
-                    if (e && v) this.modulate_thumbnail(msg, v);
-                  });
               }
+              if (msg.content['filename']) // 파일 포함 메시지는 자동 썸네일 생성 시도
+                this.indexed.loadTextFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.file`, async (e, v) => {
+                  if (e && v) this.modulate_thumbnail(msg, v);
+                });
               this.messages.unshift(msg);
             });
             this.next_cursor = v.next_cursor;
@@ -259,10 +259,11 @@ export class ChatRoomPage implements OnInit {
       result['msg'] = result['msg'];
       const SIZE_LIMIT = 240000;
       let seek = 0;
-      while (seek < this.userInput.file.size) {
+      const RESULT_LIMIT = this.userInput.file.result.length;
+      while (seek < RESULT_LIMIT) {
         let next = seek + SIZE_LIMIT;
-        if (next > this.userInput.file.result.length)
-          next = this.userInput.file.result.length;
+        if (next > RESULT_LIMIT)
+          next = RESULT_LIMIT;
         upload.push(this.userInput.file.result.substring(seek, next));
         seek = next;
       }
@@ -284,9 +285,9 @@ export class ChatRoomPage implements OnInit {
                 permission_write: 1,
                 value: { data: upload[i] },
               }]).then(_f => {
-                console.warn('업로드 경과 게시하기: ', i, '/', j);
+                console.warn('업로드 경과 게시하기: ', i + 1, '/', j);
               }).catch(e => {
-                console.warn(`${i}번째 파일 올리기 오류`, e);
+                console.warn(`${i + 1}번째 파일 올리기 오류`, e);
                 this.retry_upload_part({
                   collection: `file_${v.channel_id.replace(/[.]/g, '_')}`,
                   key: `msg_${v.message_id}_${i}`,
@@ -306,7 +307,7 @@ export class ChatRoomPage implements OnInit {
   retry_upload_part(info: WriteStorageObject, i: number, j: number, _try_left = 5) {
     this.nakama.servers[this.isOfficial][this.target].client.writeStorageObjects(
       this.nakama.servers[this.isOfficial][this.target].session, [info]).then(_f => {
-        console.warn('재업로드 경과 게시하기: ', i, '/', j);
+        console.warn('재업로드 경과 게시하기: ', i + 1, '/', j);
       }).catch(e => {
         console.warn(`${i}번째 파일 다시 올리기 오류`, e, `try_left: ${_try_left}`);
         if (_try_left > 0)
@@ -330,7 +331,7 @@ export class ChatRoomPage implements OnInit {
         this.modulate_thumbnail(msg, v.replace(/"|\\|=/g, ''));
         this.open_viewer(msg);
       } else { // 가지고 있는 파일이 아닐 경우
-        let result = '';
+        let result = [];
         for (let i = 0, j = msg.content['partsize']; i < j; i++)
           await this.nakama.servers[this.isOfficial][this.target].client.readStorageObjects(
             this.nakama.servers[this.isOfficial][this.target].session, {
@@ -341,14 +342,14 @@ export class ChatRoomPage implements OnInit {
             }]
           }).then(v => {
             if (v.objects.length) {
-              console.warn('다운로드 경과 게시하기: ', i, '/', j);
-              result += v.objects[0].value['data'];
+              console.warn('다운로드 경과 게시하기: ', i + 1, '/', j);
+              result[i] = v.objects[0].value['data'];
             }
           });
-        result = result.replace(/"|\\|=/g, '');
-        if (result) {
-          this.indexed.saveTextFileToUserPath(result, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.file`);
-          this.modulate_thumbnail(msg, result);
+        let resultModified = result.join('').replace(/"|\\|=/g, '');
+        if (resultModified) {
+          this.indexed.saveTextFileToUserPath(resultModified, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.file`);
+          this.modulate_thumbnail(msg, resultModified);
           this.open_viewer(msg);
         } else this.p5toast.show({
           text: '이 파일은 서버에서 삭제되었습니다.',
