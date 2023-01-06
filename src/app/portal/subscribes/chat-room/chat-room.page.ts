@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Channel, ChannelMessage, WriteStorageObject } from '@heroiclabs/nakama-js';
-import { ModalController, NavParams } from '@ionic/angular';
+import { AlertController, ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -9,6 +9,8 @@ import { ProfilePage } from '../../settings/profile/profile.page';
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
+import { GlobalActService } from 'src/app/global-act.service';
+import { isPlatform } from 'src/app/app.component';
 
 interface FileInfo {
   id?: string;
@@ -46,6 +48,8 @@ export class ChatRoomPage implements OnInit {
     private p5toast: P5ToastService,
     private statusBar: StatusManageService,
     private indexed: IndexedDBService,
+    private global: GlobalActService,
+    private alertCtrl: AlertController,
   ) { }
 
   /** 채널 정보 */
@@ -325,11 +329,10 @@ export class ChatRoomPage implements OnInit {
 
   /** 메시지 내 파일 정보, 파일 다운받기 */
   file_detail(msg: any) {
-    console.warn('짧은 클릭으로 첨부파일 다운받기: ', msg);
     this.indexed.loadFileFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, async (e, v) => {
       if (e && v) {
         this.modulate_thumbnail(msg, v.replace(/"|\\|=/g, ''));
-        this.open_viewer(msg);
+        this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
       } else { // 가지고 있는 파일이 아닐 경우
         let result = [];
         for (let i = 0, j = msg.content['partsize']; i < j; i++)
@@ -350,7 +353,7 @@ export class ChatRoomPage implements OnInit {
         if (resultModified) {
           this.indexed.saveFileToUserPath(resultModified, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
           this.modulate_thumbnail(msg, resultModified);
-          this.open_viewer(msg);
+          this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
         } else this.p5toast.show({
           text: '이 파일은 서버에서 삭제되었습니다.',
         });
@@ -402,41 +405,105 @@ export class ChatRoomPage implements OnInit {
   }
 
   /** 콘텐츠 상세보기 뷰어 띄우기 */
-  open_viewer(msg: any) {
-    console.warn('콘텐츠 뷰어 열기: ', msg);
+  open_viewer(msg: any, path: string) {
     if (msg.content['type']) { // 자동지정 타입이 있는 경우
       if (msg.content['type'].indexOf('image/') == 0) // 분류상 이미지
-        console.log('이미지임: ', msg.content['type']);
+        this.go_to_image_viewer(msg, path);
       else if (msg.content['type'].indexOf('audio/') == 0) // 분류상 소리
-        console.log('소리임: ', msg.content['type']);
+        this.go_to_sound_reader(msg, path);
       else if (msg.content['type'].indexOf('video/') == 0) // 분류상 비디오
-        console.log('비디오임: ', msg.content['type']);
+        this.go_to_video_viewer(msg, path);
       else if (msg.content['type'].indexOf('text/') == 0) // 분류상 텍스트 문서
-        console.log('텍스트임: ', msg.content['type']);
-      else console.log('열람 가능 미디어는 아닌거 같음: ', msg.content['type']);
+        this.go_to_text_viewer(msg, path);
+      else this.alert_download(msg, path);
     } else { // 자동지정 타입이 없는 경우
       switch (msg.content['file_ext']) {
         // 이미지류
         case 'png':
         case 'jpeg':
         case 'jpg':
+        case 'webp':
+          this.go_to_image_viewer(msg, path);
+          break;
         // 사운드류
         case 'wav':
         case 'ogg':
         case 'mp3':
+          this.go_to_sound_reader(msg, path);
+          break;
+        // 비디오류
+        case 'mp4':
+        case 'ogv':
+        case 'webm':
+          this.go_to_video_viewer(msg, path);
+          break;
         // 모델링류
         case 'obj':
         case 'stl':
         case 'glb':
         case 'gltf':
+          this.go_to_model_viewer(msg, path);
+          break;
         // 뷰어 제한 파일
         case 'zip':
+          this.alert_download(msg, path);
+          break;
+        // 고도엔진 패키지 파일
+        case 'pck':
+          this.go_to_godot_viewer(msg, path);
           break;
         default: // 임의의 파일은 텍스트로 읽어서 내용 보여주기
-          console.warn('텍스트로 파헤치기 뷰어 열기');
+          this.go_to_text_viewer(msg, path);
           break;
       }
     }
+  }
+
+  /** 텍스트 뷰어 열기 */
+  go_to_text_viewer(msg: any, path: string) {
+    console.log('go_to_text_viewer', msg, '/', path);
+  }
+
+  /** 이미지 뷰어 열기 */
+  go_to_image_viewer(msg: any, path: string) {
+    console.log('go_to_image_viewer', msg, '/', path);
+  }
+
+  /** 소리 리더 열기 */
+  go_to_sound_reader(msg: any, path: string) {
+    console.log('go_to_sound_reader', msg, '/', path);
+  }
+
+  /** 비디오 뷰어 열기 */
+  go_to_video_viewer(msg: any, path: string) {
+    console.log('go_to_video_viewer', msg, '/', path);
+  }
+
+  /** 모델 뷰어 열기 */
+  go_to_model_viewer(msg: any, path: string) {
+    console.log('go_to_model_viewer', msg, '/', path);
+  }
+
+  go_to_godot_viewer(msg: any, path: string) {
+    console.log('go_to_godot_viewer', msg, '/', path);
+  }
+
+  /** 열람 불가 파일 다운로드로 유도 */
+  alert_download(msg: any, path: string) {
+    if (isPlatform == 'DesktopPWA')
+      this.alertCtrl.create({
+        header: '지원하지 않는 파일',
+        message: '파일을 열람할 수 없습니다',
+        buttons: [{
+          text: '추출',
+          handler: () => {
+            this.global.DownloadFile_from_indexedDB(msg.content['filename'], path);
+          }
+        }]
+      }).then(v => v.present());
+    else this.p5toast.show({
+      text: '파일을 열람할 수 없습니다',
+    });
   }
 
   /** 사용자 정보보기 */

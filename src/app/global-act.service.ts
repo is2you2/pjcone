@@ -1,4 +1,7 @@
 import { Injectable } from '@angular/core';
+import { isPlatform } from './app.component';
+import { IndexedDBService } from './indexed-db.service';
+import { P5ToastService } from './p5-toast.service';
 
 /** 고도엔진과 공유되는 키값 */
 interface GodotFrameKeys {
@@ -12,7 +15,10 @@ interface GodotFrameKeys {
 })
 export class GlobalActService {
 
-  constructor() { }
+  constructor(
+    private indexed: IndexedDBService,
+    private p5toast: P5ToastService,
+  ) { }
 
 
   /** 브라우저에서 딥 링크마냥 행동하기
@@ -62,5 +68,27 @@ export class GlobalActService {
     _keys.forEach(key => _godot_window[key] = keys[key]);
     this.godot = _godot;
     return _godot;
+  }
+
+  /**
+   * indexedDB에 저장된 파일을 사용자가 접근 가능한 곳으로 저장함
+   * @param filename 저장될 파일 이름
+   * @param path indexedDB 파일 경로
+   */
+  DownloadFile_from_indexedDB(filename: string, path: string) {
+    if (isPlatform == 'DesktopPWA')
+      this.indexed.loadFileFromUserPath(path, (e, v) => {
+        if (e && v) {
+          var link = document.createElement("a");
+          link.download = filename;
+          link.href = v;
+          link.click();
+          link.remove();
+        }
+      });
+    else if (isPlatform != 'MobilePWA')
+      this.p5toast.show({
+        text: '지원하지 않는 기능입니다.',
+      });
   }
 }

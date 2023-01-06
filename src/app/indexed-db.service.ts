@@ -94,7 +94,7 @@ export class IndexedDBService {
 
   /** 고도엔진에서 'user://~'에 해당하는 파일 불러오기
    * @param path 'user://~'에 들어가는 사용자 폴더 경로
-   * @param act 불러오기 이후 행동. 인자 1개 필요 (load-return)
+   * @param act 불러오기 이후 행동. 인자 2개 필요 (load-return)
    */
   loadTextFromUserPath(path: string, _CallBack = (_e: boolean, _v: string) => console.warn('loadTextFromUserPath act null')) {
     if (!this.db) {
@@ -114,7 +114,7 @@ export class IndexedDBService {
 
   /** 고도엔진에서 'user://~'에 해당하는 파일 불러오기
    * @param path 'user://~'에 들어가는 사용자 폴더 경로
-   * @param _CallBack 불러오기 이후 행동. 인자 1개 필요 (load-return)
+   * @param _CallBack 불러오기 이후 행동. 인자 2개 필요 (load-return)
    */
   loadFileFromUserPath(path: string, _CallBack = (_e: boolean, _v: string) => console.warn('loadTextFromUserPath act null')) {
     if (!this.db) {
