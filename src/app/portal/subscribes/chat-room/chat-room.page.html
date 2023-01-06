@@ -17,7 +17,7 @@
           </ion-item>
           <div *ngFor="let msg of messages; let i = index" (click)="message_detail(msg)">
             <p *ngIf="!msg.content.noti && (!messages[i - 1] || msg.sender_id != messages[i - 1].sender_id || messages[i - 1].content.noti)"
-              style=" margin: 8px 0px 0px 0px;" (click)="user_detail(msg)">
+              class="message_form" (click)="user_detail(msg)">
               <b>
                 <font
                   color="#{{(msg.sender_id && nakama.load_other_user(msg.sender_id,isOfficial,target)['online']) ? msg.color : '888'}}">
@@ -25,7 +25,9 @@
               </b>
             </p>
             <div *ngIf="msg.content['filename'] && !msg.content['img']" class="file_button" (click)="file_detail(msg)">
-              {{msg.content['filename']}}
+              <p class="file_info"> {{msg.content['filename']}} </p>
+              <div *ngIf="msg.content['text']" class="text_seperator"></div>
+              <p *ngIf="msg.content['text']" class="file_text_thumbnail"> {{msg.content['text']}} </p>
             </div>
             <div *ngIf="msg.content['img']" style="margin-top: 4px;" (click)="open_viewer(msg)">
               <img [src]="msg.content['img']" alt="msg.content['filename']">

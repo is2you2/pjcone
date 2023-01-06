@@ -127,7 +127,6 @@ export class IndexedDBService {
         let reader: any = new FileReader();
         reader = reader._realReader ?? reader;
         reader.onload = (ev: any) => {
-          console.log('파일 열기: ', ev);
           _CallBack(true, ev.target.result);
         };
         reader.readAsDataURL(ev.target['result']['contents']);

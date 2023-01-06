@@ -360,9 +360,9 @@ export class ChatRoomPage implements OnInit {
 
   /** 메시지에 썸네일 콘텐츠를 생성 */
   modulate_thumbnail(msg: any, dataURL: string) {
-    if (msg.content['img']) return; // 이미 썸네일이 있다면 제외
     if (msg.content['type']) {
-      if (msg.content['type'].indexOf('image/') == 0) // 자동분류상 이미지라면 썸네일 이미지 생성
+      if (msg.content['type'].indexOf('image/') == 0) { // 자동분류상 이미지라면 썸네일 이미지 생성
+        if (msg.content['img']) return; // 이미 썸네일이 있다면 제외
         new p5((p: p5) => {
           p.setup = () => {
             p.smooth();
@@ -381,29 +381,22 @@ export class ChatRoomPage implements OnInit {
             });
           }
         });
-    } else if (msg.content['file_ext']) { // 자동 분류가 없는 경우
-      switch (msg.content['file_ext']) {
-        case 'stl':
-        case 'obj': // dataURL로부터 모델 받아오기 불가능
-          new p5((p: p5) => {
-            p.setup = () => {
-              p.loadModel(dataURL, v => { // 불러오기 단계를 지원하지 않음
-                p.createCanvas(160, 160, p.WEBGL);
-                p.model(v);
-                p.saveFrames('out', 'png', 1, 1, data => {
-                  msg.content['img'] = data[0]['imageData'].replace(/"|\\|=/g, '');
-                  p.remove();
-                });
-              }, e => {
-                console.error('모델 파일 불러오기 실패: ', e);
-                p.remove();
-              });
-            }
-          });
-          break;
-        default:
-          console.warn('썸네일 구성을 지원하지 않거나 준비중인 형식: ', msg.content['file_ext']);
-          break;
+      } else if (msg.content['type'].indexOf('audio/') == 0) { // 자동분류상 이미지라면 썸네일 이미지 생성
+        console.log('오디오 썸네일 가능?');
+      } else if (msg.content['type'].indexOf('video/') == 0) { // 분류상 비디오
+        console.log('비디오 썸네일 가능?');
+      } else if (msg.content['type'].indexOf('text/') == 0) { // 분류상 텍스트
+        new p5((p: p5) => {
+          p.setup = () => {
+            p.loadStrings(dataURL, v => {
+              msg.content['text'] = v;
+              p.remove();
+            }, e => {
+              console.error('텍스트 열람 불가: ', e);
+              p.remove();
+            });
+          }
+        });
       }
     }
   }
@@ -411,6 +404,39 @@ export class ChatRoomPage implements OnInit {
   /** 콘텐츠 상세보기 뷰어 띄우기 */
   open_viewer(msg: any) {
     console.warn('콘텐츠 뷰어 열기: ', msg);
+    if (msg.content['type']) { // 자동지정 타입이 있는 경우
+      if (msg.content['type'].indexOf('image/') == 0) // 분류상 이미지
+        console.log('이미지임: ', msg.content['type']);
+      else if (msg.content['type'].indexOf('audio/') == 0) // 분류상 소리
+        console.log('소리임: ', msg.content['type']);
+      else if (msg.content['type'].indexOf('video/') == 0) // 분류상 비디오
+        console.log('비디오임: ', msg.content['type']);
+      else if (msg.content['type'].indexOf('text/') == 0) // 분류상 텍스트 문서
+        console.log('텍스트임: ', msg.content['type']);
+      else console.log('열람 가능 미디어는 아닌거 같음: ', msg.content['type']);
+    } else { // 자동지정 타입이 없는 경우
+      switch (msg.content['file_ext']) {
+        // 이미지류
+        case 'png':
+        case 'jpeg':
+        case 'jpg':
+        // 사운드류
+        case 'wav':
+        case 'ogg':
+        case 'mp3':
+        // 모델링류
+        case 'obj':
+        case 'stl':
+        case 'glb':
+        case 'gltf':
+        // 뷰어 제한 파일
+        case 'zip':
+          break;
+        default: // 임의의 파일은 텍스트로 읽어서 내용 보여주기
+          console.warn('텍스트로 파헤치기 뷰어 열기');
+          break;
+      }
+    }
   }
 
   /** 사용자 정보보기 */
