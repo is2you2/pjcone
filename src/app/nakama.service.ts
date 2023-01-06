@@ -664,7 +664,7 @@ export class NakamaService {
                   this.servers[_is_official][_target].session, _cid, 1, false)
                   .then(v => {
                     if (v.messages.length) {
-                      let hasFile = v.messages[0].content['file'] ? '(첨부파일) ' : '';
+                      let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
                       this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
                     }
                     this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
@@ -688,7 +688,7 @@ export class NakamaService {
                     this.servers[_is_official][_target].session, _cid, 1, false)
                     .then(v => {
                       if (v.messages.length) {
-                        let hasFile = v.messages[0].content['file'] ? '(첨부파일) ' : '';
+                        let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
                         v['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti']);
                         this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
                       }
@@ -1210,7 +1210,7 @@ export class NakamaService {
     }
     if (this.channels_orig[_is_official][_target][c.channel_id]['update'])
       this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
-    let hasFile = c.content['file'] ? '(첨부파일) ' : '';
+    let hasFile = c.content['filename'] ? '(첨부파일) ' : '';
     this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile + (c.content['msg'] || c.content['noti'] || '');
   }
 
@@ -1421,7 +1421,7 @@ export class NakamaService {
               this.servers[_is_official][_target].client.listChannelMessages(
                 this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
                   if (m.messages.length) {
-                    let hasFile = m.messages[0].content['file'] ? '(첨부파일) ' : '';
+                    let hasFile = m.messages[0].content['filename'] ? '(첨부파일) ' : '';
                     c['last_comment'] = hasFile + (m.messages[0].content['msg'] || m.messages[0].content['noti'] || '');
                     this.update_from_channel_msg(m.messages[0], _is_official, _target);
                   }
@@ -1477,7 +1477,7 @@ export class NakamaService {
             this.servers[_is_official][_target].session, c.id, 1, false)
             .then(v => {
               if (v.messages.length) {
-                let hasFile = v.messages[0].content['file'] ? '(첨부파일) ' : '';
+                let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
                 this.channels_orig[_is_official][_target][c.id]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
                 this.update_from_channel_msg(v.messages[0], _is_official, _target);
               }
@@ -1485,7 +1485,7 @@ export class NakamaService {
         });
         this.noti.PushLocal({
           id: v.code,
-          title: '검토해야할 연결이 있습니다.',
+          title: `${this.groups[_is_official][_target][v.content['group_id']]['name']}: 그룹 참가됨`,
           body: v.subject,
           group_ln: 'diychat',
           actions_ln: [{
@@ -1531,7 +1531,7 @@ export class NakamaService {
         });
         this.noti.PushLocal({
           id: v.code,
-          title: `${this.groups[_is_official][_target][v.content['group_id']]['name']} 그룹에 참가 요청`,
+          title: `${this.groups[_is_official][_target][v.content['group_id']]['name']}: 그룹 참가 요청`,
           group_ln: 'diychat',
           actions_ln: [{
             id: `check${v.code}`,
