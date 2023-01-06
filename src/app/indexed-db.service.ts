@@ -16,8 +16,7 @@ export class IndexedDBService {
    */
   initialize(_CallBack = () => { }) {
     if (this.db) return;
-    let check = localStorage.getItem('IndexedDB');
-    if (check == 'godot') {
+    if (window['godot'] == 'godot') {
       let req = indexedDB.open('/userfs', 21);
       req.onsuccess = (_ev) => {
         this.db = req.result;

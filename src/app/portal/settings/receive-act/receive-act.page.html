@@ -12,11 +12,8 @@
     <ion-label>알림 설정</ion-label>
   </ion-item-divider>
   <ion-item button disabled (click)="settings.sound=!settings.sound">
-    <ion-label>Toggle</ion-label>
-    <ion-toggle [(ngModel)]="settings.sound" slot="end" style="pointer-events: none;"></ion-toggle>
-  </ion-item>
-  <ion-item button disabled>
     <ion-label>소리</ion-label>
+    <ion-toggle [(ngModel)]="settings.sound" slot="end" style="pointer-events: none;"></ion-toggle>
   </ion-item>
   <ion-item button disabled (click)="settings.vibrate=!settings.vibrate">
     <ion-label>진동</ion-label>
