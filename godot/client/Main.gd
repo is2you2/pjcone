@@ -6,10 +6,10 @@ func _init():
 	if OS.has_feature('JavaScript'):
 		# ionic에게 IndexedDB가 생성되었음을 알림
 		JavaScript.eval('localStorage.setItem("IndexedDB", "godot")')
-		var act:String = JavaScript.eval('localStorage.getItem("godot")')
-		JavaScript.eval('localStorage.removeItem("godot")')
+		var window = JavaScript.get_interface('window')
+		var act:String = window.act
 		if not act: # 아무런 요청도 없이 프레임만 불러온 경우
-			printerr('Godot: 패키지 정보가 비어있음')
+			printerr('Godot: 행동 정보가 비어있음')
 		else: load_package(act)
 	else: # 엔진에서 테스트중일 때
 		var test_act:= 'godot-debug'

@@ -1,5 +1,11 @@
 import { Injectable } from '@angular/core';
 
+/** 고도엔진과 공유되는 키값 */
+interface GodotFrameKeys {
+  act: string;
+  [id: string]: any;
+}
+
 /** 어느 페이지에든 행동할 가능성이 있는 공용 함수 모음 */
 @Injectable({
   providedIn: 'root'
@@ -37,20 +43,23 @@ export class GlobalActService {
    * 이 함수는 고도엔진이 실행되는 페이지의 ionViewWillEnter()에서 진행되어야 합니다
    * @param _act_name 로딩할 pck 파일의 이름
    * @param _frame_name 고도 결과물을 담으려는 div id
+   * @param keys 고도엔진 iframe.window에 작성될 값들
    * @returns iframe 개체 돌려주기
    */
-  CreateGodotIFrame(_act_name: string, _frame_name: string) {
-    localStorage.setItem('godot', _act_name);
+  CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys) {
     if (this.last_frame_name == _frame_name && this.godot.isConnected) return;
     if (this.godot) this.godot.remove();
     this.last_frame_name = _frame_name;
-    let _godot: HTMLIFrameElement = document.createElement('iframe');
+    let _godot = document.createElement('iframe');
     _godot.id = 'godot';
     _godot.setAttribute("src", "assets/html/index.html");
     _godot.setAttribute("frameborder", "0");
     _godot.setAttribute('class', 'full_screen');
     let frame = document.getElementById(_frame_name);
     frame.appendChild(_godot);
+    let _godot_window = _godot.contentWindow || _godot.contentDocument;
+    let _keys = Object.keys(keys);
+    _keys.forEach(key => _godot_window[key] = keys[key]);
     this.godot = _godot;
     return _godot;
   }

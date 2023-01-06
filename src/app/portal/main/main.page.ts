@@ -15,6 +15,6 @@ export class MainPage implements OnInit {
   ngOnInit() { }
 
   ionViewWillEnter() {
-    this.app.CreateGodotIFrame('godot-test-act', 'godot-main-frame');
+    this.app.CreateGodotIFrame('godot-todo', { act: 'godot-todo' });
   }
 }
