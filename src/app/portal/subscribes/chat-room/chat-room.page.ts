@@ -206,7 +206,7 @@ export class ChatRoomPage implements OnInit {
                 this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
               }
               if (msg.content['filename']) // 파일 포함 메시지는 자동 썸네일 생성 시도
-                this.indexed.loadTextFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.file`, async (e, v) => {
+                this.indexed.loadFileFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, async (e, v) => {
                   if (e && v) this.modulate_thumbnail(msg, v);
                 });
               this.messages.unshift(msg);
@@ -274,7 +274,7 @@ export class ChatRoomPage implements OnInit {
         /** 업로드가 진행중인 메시지 개체 */
         if (upload.length) { // 첨부 파일이 포함된 경우
           // 로컬에 파일을 저장
-          this.indexed.saveTextFileToUserPath(this.userInput.file.result, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.file`);
+          this.indexed.saveFileToUserPath(this.userInput.file.result, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.ext}`);
           // 서버에 파일을 업로드
           for (let i = 0, j = upload.length; i < j; i++)
             await this.nakama.servers[this.isOfficial][this.target].client.writeStorageObjects(
@@ -326,7 +326,7 @@ export class ChatRoomPage implements OnInit {
   /** 메시지 내 파일 정보, 파일 다운받기 */
   file_detail(msg: any) {
     console.warn('짧은 클릭으로 첨부파일 다운받기: ', msg);
-    this.indexed.loadTextFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.file`, async (e, v) => {
+    this.indexed.loadFileFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, async (e, v) => {
       if (e && v) {
         this.modulate_thumbnail(msg, v.replace(/"|\\|=/g, ''));
         this.open_viewer(msg);
@@ -348,7 +348,7 @@ export class ChatRoomPage implements OnInit {
           });
         let resultModified = result.join('').replace(/"|\\|=/g, '');
         if (resultModified) {
-          this.indexed.saveTextFileToUserPath(resultModified, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.file`);
+          this.indexed.saveFileToUserPath(resultModified, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
           this.modulate_thumbnail(msg, resultModified);
           this.open_viewer(msg);
         } else this.p5toast.show({

@@ -14,6 +14,8 @@ export class ReceiveActPage implements OnInit {
   ) { }
 
   settings = {
+    /** 알림 소리 사용 여부 */
+    sound: true,
     /** 알림 진동 사용 여부 */
     vibrate: false,
   }

@@ -45,21 +45,41 @@ export class IndexedDBService {
       console.warn('IndexedDB 지정되지 않음');
       return;
     };
-    let result: Uint8Array;
-    // if (text.indexOf('data:') == 0) {
-    //   let sep = text.split(',');
-    //   let mime = sep[0].split(':')[1].split(';')[0];
-    //   let byteStr = atob(sep[1]);
-    //   let arrayBuffer = new ArrayBuffer(byteStr.length);
-    //   let uintArray = new Uint8Array(arrayBuffer);
-    //   for (let i = 0, j = byteStr.length; i < j; i++)
-    //     uintArray[i] = byteStr.charCodeAt(i);
-    //   result = uintArray;
-    // } else
-    result = new TextEncoder().encode(text);
-    // let blob = new Blob([arrayBuffer], { type: mime });
     let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
-      contents: result,
+      contents: new TextEncoder().encode(text),
+      mode: 33206,
+      timestamp: new Date(),
+    }, `/userfs/${path}`);
+    put.onsuccess = (ev) => {
+      if (ev.type != 'success')
+        console.error('저장 실패: ', path);
+      _CallBack(ev);
+    }
+    put.onerror = (e) => {
+      console.error('IndexedDB saveFileToUserPath failed: ', e);
+    }
+  }
+
+  /**
+   * 파일 공유용
+   * @param base64 문서에 포함될 base64 텍스트
+   * @param path 저장될 상대 경로(user://~)
+   */
+  saveFileToUserPath(base64: string, path: string, _CallBack = (_v: any) => { }) {
+    if (!this.db) {
+      console.warn('IndexedDB 지정되지 않음');
+      return;
+    };
+    let sep = base64.split(',');
+    let mime = sep[0].split(':')[1].split(';')[0];
+    let byteStr = atob(sep[1]);
+    let arrayBuffer = new ArrayBuffer(byteStr.length);
+    let uintArray = new Uint8Array(arrayBuffer);
+    for (let i = 0, j = byteStr.length; i < j; i++)
+      uintArray[i] = byteStr.charCodeAt(i);
+    let blob = new Blob([arrayBuffer], { type: mime });
+    let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
+      contents: blob,
       mode: 33206,
       timestamp: new Date(),
     }, `/userfs/${path}`);
@@ -87,6 +107,34 @@ export class IndexedDBService {
       if (ev.target['result'])
         _CallBack(true, new TextDecoder().decode(ev.target['result']['contents']));
       else _CallBack(false, `No file: , ${path}`);
+    }
+    data.onerror = (e) => {
+      console.error('IndexedDB loadTextFromUserPath failed: ', e);
+    }
+  }
+
+  /** 고도엔진에서 'user://~'에 해당하는 파일 불러오기
+   * @param path 'user://~'에 들어가는 사용자 폴더 경로
+   * @param _CallBack 불러오기 이후 행동. 인자 1개 필요 (load-return)
+   */
+  loadFileFromUserPath(path: string, _CallBack = (_e: boolean, _v: string) => console.warn('loadTextFromUserPath act null')) {
+    if (!this.db) {
+      console.warn('IndexedDB 지정되지 않음');
+      return;
+    };
+    let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
+    data.onsuccess = (ev) => {
+      try {
+        let reader: any = new FileReader();
+        reader = reader._realReader ?? reader;
+        reader.onload = (ev: any) => {
+          console.log('파일 열기: ', ev);
+          _CallBack(true, ev.target.result);
+        };
+        reader.readAsDataURL(ev.target['result']['contents']);
+      } catch (e) {
+        _CallBack(false, `No file: , ${path} || ${e}`)
+      }
     }
     data.onerror = (e) => {
       console.error('IndexedDB loadTextFromUserPath failed: ', e);
