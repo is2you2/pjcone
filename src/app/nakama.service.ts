@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
-import { Channel, ChannelMessage, ChannelPresenceEvent, Client, Group, Notification, Session, Socket, User } from "@heroiclabs/nakama-js";
+import { Channel, ChannelMessage, ChannelPresenceEvent, Client, Group, Notification, Session, Socket, User, WriteStorageObject } from "@heroiclabs/nakama-js";
 import { SOCKET_SERVER_ADDRESS } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
@@ -1565,5 +1565,82 @@ export class NakamaService {
     if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
     this.noti_origin[_is_official][_target][v.id] = v;
     this.rearrange_notifications();
+  }
+
+  /**
+   * 채널에서 백그라운드 파일 발송 요청
+   * @param msg 메시지 정보
+   * @param upload 업로드하려는 내용
+   */
+  async WriteStorage_From_channel(msg: any, upload: string[], _is_official: string, _target: string, Progress = (_count: number) => { }) {
+    let _msg = JSON.parse(JSON.stringify(msg));
+    let _upload = [...upload];
+    for (let i = 0, j = _upload.length; i < j; i++)
+      await this.servers[_is_official][_target].client.writeStorageObjects(
+        this.servers[_is_official][_target].session, [{
+          collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
+          key: `msg_${_msg.message_id}_${i}`,
+          permission_read: 2,
+          permission_write: 1,
+          value: { data: _upload[i] },
+        }]).then(_f => {
+          console.warn('업로드 경과 게시하기: ', i + 1, '/', j);
+          if (Progress) Progress(1);
+        }).catch(e => {
+          console.warn(`${i + 1}번째 파일 올리기 오류`, e);
+          this.retry_upload_part({
+            collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
+            key: `msg_${_msg.message_id}_${i}`,
+            permission_read: 2,
+            permission_write: 1,
+            value: { data: _upload[i] },
+          }, _is_official, _target, i, j, Progress);
+        });
+  }
+  /** 업로드 실패한 파트 다시 올리기 */
+  retry_upload_part(info: WriteStorageObject, _is_official: string, _target: string, i: number, j: number, Progress = (_count: number) => { }, _try_left = 5,) {
+    this.servers[_is_official][_target].client.writeStorageObjects(
+      this.servers[_is_official][_target].session, [info]).then(_f => {
+        console.warn('재업로드 경과 게시하기: ', i + 1, '/', j);
+      }).then(_v => {
+        if (Progress) Progress(1);
+      }).catch(e => {
+        console.warn(`${i}번째 파일 다시 올리기 오류`, e, `try_left: ${_try_left}`);
+        if (_try_left > 0)
+          this.retry_upload_part(info, _is_official, _target, i, j, Progress, _try_left - 1);
+        else {
+          console.error('파일 다시 올리기 실패: ', info, i);
+        }
+      });
+  }
+  /**
+   * 채널 메시지에 기반하여 파일 다운받기
+   * @param msg 메시지 정보
+   */
+  async ReadStorage_From_channel(msg: any, _is_official: string, _target: string, Progress = (_count: number) => { }, _CallBack = (_result: string) => { }) {
+    let _msg = JSON.parse(JSON.stringify(msg));
+    let result = [];
+    for (let i = 0, j = _msg.content['partsize']; i < j; i++)
+      await this.servers[_is_official][_target].client.readStorageObjects(
+        this.servers[_is_official][_target].session, {
+        object_ids: [{
+          collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
+          key: `msg_${_msg.message_id}_${i}`,
+          user_id: _msg['sender_id'],
+        }]
+      }).then(v => {
+        if (v.objects.length) {
+          console.warn('다운로드 경과 게시하기: ', i + 1, '/', j);
+          if (Progress) Progress(1);
+          result[i] = v.objects[0].value['data'];
+        }
+      });
+    let resultModified = result.join('').replace(/"|\\|=/g, '');
+    if (resultModified) {
+      this.indexed.saveFileToUserPath(resultModified, `servers/${_is_official}/${_target}/channels/${_msg.channel_id}/files/msg_${_msg.message_id}.${_msg.content['file_ext']}`);
+      if (_CallBack) _CallBack(resultModified);
+    } else this.p5toast.show({
+      text: '이 파일은 서버에서 삭제되었습니다.',
+    });
   }
 }
