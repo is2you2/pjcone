@@ -9,6 +9,9 @@ func _ready():
 		window = JavaScript.get_interface('window')
 		# ionic에게 IndexedDB가 생성되었음을 알림
 		window.parent['godot'] = 'godot';
+		var dir:= Directory.new()
+		if not dir.dir_exists('user://acts/'):
+			dir.make_dir('user://acts/')
 		# 행동 방침 가져오기
 		var act:String = window.act
 		if not act: # 아무런 요청도 없이 프레임만 불러온 경우
@@ -23,12 +26,8 @@ func load_package(act_name:String):
 	var is_loaded:= ProjectSettings.load_resource_pack('user://acts/%s.pck' % act_name)
 	if not is_loaded: # 없으면 다운받기
 		printerr('Godot: 패키지를 불러오지 못함: ', act_name)
-		var dir:= Directory.new()
-		if not dir.dir_exists('user://acts/'):
-			dir.make_dir('user://acts/')
-		if OS.has_feature('JavaScript'):
-			if not $CenterContainer/ColorRect.is_connected("gui_input", self, '_on_Label_gui_input'):
-				$CenterContainer/ColorRect.connect("gui_input", self, '_on_Label_gui_input')
+		if not $CenterContainer/ColorRect.is_connected("gui_input", self, '_on_Label_gui_input'):
+			$CenterContainer/ColorRect.connect("gui_input", self, '_on_Label_gui_input')
 	else: # 패키지를 가지고 있는 경우
 		print('Godot: 패키지 타겟: ', act_name)
 		$CenterContainer.queue_free()
@@ -36,7 +35,7 @@ func load_package(act_name:String):
 		add_child(inst.instance())
 
 # 파일 다운로드 시작
-func start_download_pck(args = null):
+func start_download_pck():
 	var act_name:= 'godot-debug'
 	if OS.has_feature('JavaScript'):
 		act_name = window.act
@@ -44,7 +43,6 @@ func start_download_pck(args = null):
 	req.name = 'HTTPRequest'
 	req.download_file = 'user://acts/%s.pck' % act_name
 	req.connect("request_completed", self, '_on_HTTPRequest_request_completed')
-	req.use_threads = true
 	$CenterContainer.add_child(req)
 	var err:= req.request('https://is2you2.github.io/pjcone_pck/%s.pck' % act_name)
 	if err != OK:
@@ -69,8 +67,6 @@ func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 func _on_Label_gui_input(event):
 	if (event is InputEventMouseButton or event is TouchScreenButton) and event.pressed:
 		if OS.has_feature('JavaScript'):
-			var _Callback = JavaScript.create_callback(self, 'start_download_pck')
-			window['accept'] = _Callback
-			window.permit()
+			start_download_pck()
 		else:
-			load_package('godot-debug')
+			start_download_pck()

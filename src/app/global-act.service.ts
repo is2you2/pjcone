@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { AlertController } from '@ionic/angular';
 import { isPlatform } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
@@ -10,8 +9,6 @@ interface GodotFrameKeys {
   act: string;
   /** 패키지 이름 입력 */
   title: string;
-  /** 자동 생성됨: 다운로드가 필요한 경우 다운받겠습니까? */
-  permit?: any;
   /** 고도엔진에서 다운로드가 필요한 경우 반응용, 사용금지 */
   accept?: any;
   /** 패키지 불러오기 행동 실패시 실행됨 */
@@ -28,7 +25,6 @@ export class GlobalActService {
   constructor(
     private indexed: IndexedDBService,
     private p5toast: P5ToastService,
-    private alertCtrl: AlertController,
   ) { }
 
 
@@ -75,19 +71,6 @@ export class GlobalActService {
     let frame = document.getElementById(_frame_name);
     frame.appendChild(_godot);
     let _godot_window = _godot.contentWindow || _godot.contentDocument;
-    keys['permit'] = () => {
-      this.alertCtrl.create({
-        header: keys['title'],
-        message: '이 기능을 다운로드합니다.',
-        buttons: [{
-          text: '다운로드',
-          handler: () => {
-            _godot_window['accept']();
-            console.log('내가 다운받기를 누르면..: ', _godot_window['accept']);
-          },
-        }]
-      }).then(v => v.present());
-    }
     let _keys = Object.keys(keys);
     _keys.forEach(key => _godot_window[key] = keys[key]);
     this.godot = _godot;
