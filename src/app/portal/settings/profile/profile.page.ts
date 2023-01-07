@@ -213,7 +213,7 @@ export class ProfilePage implements OnInit {
 
   ionViewWillLeave() {
     delete this.nakama.socket_reactive['profile'];
-    let keys = Object.keys(this.original_profile);
+    let keys = Object.keys(this.nakama.users.self);
     let isProfileChanged = false;
     for (let i = 0, j = keys.length; i < j; i++)
       if (this.nakama.users.self[keys[i]] != this.original_profile[keys[i]]) {

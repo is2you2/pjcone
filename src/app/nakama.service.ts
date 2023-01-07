@@ -457,13 +457,15 @@ export class NakamaService {
     let result: User[] = [];
     let isOfficial = Object.keys(this.users);
     isOfficial.forEach(_is_official => {
-      let Target = Object.keys(this.users[_is_official]);
-      Target.forEach(_target => {
-        let UserIds = Object.keys(this.users[_is_official][_target]);
-        UserIds.forEach(_uid => {
-          result.push(this.users[_is_official][_target][_uid]);
+      if (_is_official != 'self') {
+        let Target = Object.keys(this.users[_is_official]);
+        Target.forEach(_target => {
+          let UserIds = Object.keys(this.users[_is_official][_target]);
+          UserIds.forEach(_uid => {
+            result.push(this.users[_is_official][_target][_uid]);
+          });
         });
-      });
+      }
     });
     return result;
   }

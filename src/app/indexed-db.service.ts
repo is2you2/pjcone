@@ -41,7 +41,9 @@ export class IndexedDBService {
    */
   saveTextFileToUserPath(text: string, path: string, _CallBack = (_v: any) => { }) {
     if (!this.db) {
-      console.warn('IndexedDB 지정되지 않음');
+      setTimeout(() => {
+        this.saveTextFileToUserPath(text, path, _CallBack)
+      }, 1000);
       return;
     };
     let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
@@ -66,7 +68,9 @@ export class IndexedDBService {
    */
   saveFileToUserPath(base64: string, path: string, _CallBack = (_v: any) => { }) {
     if (!this.db) {
-      console.warn('IndexedDB 지정되지 않음');
+      setTimeout(() => {
+        this.saveFileToUserPath(base64, path, _CallBack);
+      }, 1000);
       return;
     };
     let sep = base64.split(',');
@@ -98,7 +102,9 @@ export class IndexedDBService {
    */
   loadTextFromUserPath(path: string, _CallBack = (_e: boolean, _v: string) => console.warn('loadTextFromUserPath act null')) {
     if (!this.db) {
-      console.warn('IndexedDB 지정되지 않음');
+      setTimeout(() => {
+        this.loadTextFromUserPath(path, _CallBack);
+      }, 1000);
       return;
     };
     let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
@@ -118,7 +124,9 @@ export class IndexedDBService {
    */
   loadFileFromUserPath(path: string, _CallBack = (_e: boolean, _v: string) => console.warn('loadTextFromUserPath act null')) {
     if (!this.db) {
-      console.warn('IndexedDB 지정되지 않음');
+      setTimeout(() => {
+        this.loadFileFromUserPath(path, _CallBack);
+      }, 1000);
       return;
     };
     let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
@@ -141,7 +149,9 @@ export class IndexedDBService {
 
   removeFileFromUserPath(path: string, _CallBack = (_ev: any) => { }) {
     if (!this.db) {
-      console.warn('IndexedDB 지정되지 않음');
+      setTimeout(() => {
+        this.removeFileFromUserPath(path, _CallBack);
+      }, 1000);
       return;
     }
     let data = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').delete(`/userfs/${path}`);
