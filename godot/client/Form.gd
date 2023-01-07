@@ -27,22 +27,16 @@ func load_package(act_name:String):
 		if not dir.dir_exists('user://acts/'):
 			dir.make_dir('user://acts/')
 		if OS.has_feature('JavaScript'):
-			var _Callback = JavaScript.create_callback(self, 'start_download_pck')
-			window['accept'] = _Callback
-			window.permit()
-			yield(get_tree().create_timer(1), "timeout")
-			if not $Label.is_connected("gui_input", self, '_on_Label_gui_input'):
-				$Label.connect("gui_input", self, '_on_Label_gui_input')
-		else:
-			start_download_pck(act_name)
+			if not $CenterContainer/ColorRect.is_connected("gui_input", self, '_on_Label_gui_input'):
+				$CenterContainer/ColorRect.connect("gui_input", self, '_on_Label_gui_input')
 	else: # 패키지를 가지고 있는 경우
 		print('Godot: 패키지 타겟: ', act_name)
-		$Label.queue_free()
+		$CenterContainer.queue_free()
 		var inst = load('res://Main.tscn')
 		add_child(inst.instance())
 
 # 파일 다운로드 시작
-func start_download_pck(args):
+func start_download_pck(args = null):
 	var act_name:= 'godot-debug'
 	if OS.has_feature('JavaScript'):
 		act_name = window.act
@@ -51,7 +45,7 @@ func start_download_pck(args):
 	req.download_file = 'user://acts/%s.pck' % act_name
 	req.connect("request_completed", self, '_on_HTTPRequest_request_completed')
 	req.use_threads = true
-	$Label.add_child(req)
+	$CenterContainer.add_child(req)
 	var err:= req.request('https://is2you2.github.io/pjcone_pck/%s.pck' % act_name)
 	if err != OK:
 		if OS.has_feature('JavaScript'):
@@ -75,6 +69,8 @@ func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 func _on_Label_gui_input(event):
 	if (event is InputEventMouseButton or event is TouchScreenButton) and event.pressed:
 		if OS.has_feature('JavaScript'):
-			load_package(window.act)
+			var _Callback = JavaScript.create_callback(self, 'start_download_pck')
+			window['accept'] = _Callback
+			window.permit()
 		else:
 			load_package('godot-debug')
