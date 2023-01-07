@@ -4,3 +4,11 @@
 
 [node name="Form" type="Node"]
 script = ExtResource( 1 )
+
+[node name="Label" type="Label" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 0
+text = "No tools found."
+align = 1
+valign = 1
