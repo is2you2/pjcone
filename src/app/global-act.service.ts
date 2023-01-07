@@ -5,7 +5,12 @@ import { P5ToastService } from './p5-toast.service';
 
 /** 고도엔진과 공유되는 키값 */
 interface GodotFrameKeys {
+  /** 공식 패키지 이름 */
   act: string;
+  /** 다운로드가 필요한 경우 다운받겠습니까? */
+  permit: any;
+  /** 패키지 불러오기 행동 실패시 실행됨 */
+  failed: any;
   [id: string]: any;
 }
 
