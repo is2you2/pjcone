@@ -148,6 +148,9 @@ export class ChatRoomPage implements OnInit {
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
     this.follow_resize();
+    setTimeout(() => {
+      this.content_panel.scrollIntoView({ block: 'start' });
+    }, 500);
   }
 
   /** 발신인 표시를 위한 메시지 추가 가공 */
@@ -280,11 +283,7 @@ export class ChatRoomPage implements OnInit {
           // 로컬에 파일을 저장
           this.indexed.saveFileToUserPath(this.userInput.file.result, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.ext}`);
           // 서버에 파일을 업로드
-          let count = 0;
-          this.nakama.WriteStorage_From_channel(v, upload, this.isOfficial, this.target, (i) => {
-            count += i;
-            console.log('파일 업로드 표시하기: ', count, '/', upload.length);
-          });
+          this.nakama.WriteStorage_From_channel(v, upload, this.isOfficial, this.target);
         }
         delete this.userInput.file;
         this.userInput.text = '';
@@ -304,11 +303,7 @@ export class ChatRoomPage implements OnInit {
         this.modulate_thumbnail(msg, v.replace(/"|\\|=/g, ''));
         this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
       } else { // 가지고 있는 파일이 아닐 경우
-        let count = 0;
-        this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (i) => {
-          count += i;
-          console.log('다운로드 표시하기: ', i, '/', msg.content['partsize']);
-        }, (resultModified) => {
+        this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
           this.modulate_thumbnail(msg, resultModified);
           this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
         });

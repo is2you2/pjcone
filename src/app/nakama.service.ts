@@ -1569,14 +1569,26 @@ export class NakamaService {
     this.rearrange_notifications();
   }
 
+  /** 채널별 파일 송/수신 경과  
+   * 송수신을 시작하면 길이에 해당하는 배열을 만든 후 소거법으로 완료된 파트를 삭제  
+   * channel_transfer[isOfficial][target][channel_id][message_id] = [...partsize.length - completed];
+   */
+  channel_transfer = {
+    'official': {},
+    'unofficial': {},
+  };
   /**
    * 채널에서 백그라운드 파일 발송 요청
    * @param msg 메시지 정보
    * @param upload 업로드하려는 내용
    */
-  async WriteStorage_From_channel(msg: any, upload: string[], _is_official: string, _target: string, Progress = (_count: number) => { }) {
+  async WriteStorage_From_channel(msg: any, upload: string[], _is_official: string, _target: string) {
     let _msg = JSON.parse(JSON.stringify(msg));
     let _upload = [...upload];
+    if (!this.channel_transfer[_is_official][_target]) this.channel_transfer[_is_official][_target] = {};
+    if (!this.channel_transfer[_is_official][_target][msg.channel_id]) this.channel_transfer[_is_official][_target][msg.channel_id] = {};
+    if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id])
+      this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id] = Array.from(Array(_upload.length).keys());
     for (let i = 0, j = _upload.length; i < j; i++)
       await this.servers[_is_official][_target].client.writeStorageObjects(
         this.servers[_is_official][_target].session, [{
@@ -1586,41 +1598,54 @@ export class NakamaService {
           permission_write: 1,
           value: { data: _upload[i] },
         }]).then(_f => {
-          console.warn('업로드 경과 게시하기: ', i + 1, '/', j);
-          if (Progress) Progress(1);
-        }).catch(e => {
+          this.when_transfer_success(msg, _is_official, _target, i);
+        }).catch(async e => {
           console.warn(`${i + 1}번째 파일 올리기 오류`, e);
-          this.retry_upload_part({
+          await this.retry_upload_part(msg, {
             collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
             key: `msg_${_msg.message_id}_${i}`,
             permission_read: 2,
             permission_write: 1,
             value: { data: _upload[i] },
-          }, _is_official, _target, i, j, Progress);
+          }, _is_official, _target, i);
         });
   }
   /** 업로드 실패한 파트 다시 올리기 */
-  retry_upload_part(info: WriteStorageObject, _is_official: string, _target: string, i: number, j: number, Progress = (_count: number) => { }, _try_left = 5,) {
-    this.servers[_is_official][_target].client.writeStorageObjects(
+  async retry_upload_part(msg: any, info: WriteStorageObject, _is_official: string, _target: string, i: number, _try_left = 5) {
+    await this.servers[_is_official][_target].client.writeStorageObjects(
       this.servers[_is_official][_target].session, [info]).then(_f => {
-        console.warn('재업로드 경과 게시하기: ', i + 1, '/', j);
       }).then(_v => {
-        if (Progress) Progress(1);
+        this.when_transfer_success(msg, _is_official, _target, i);
       }).catch(e => {
         console.warn(`${i}번째 파일 다시 올리기 오류`, e, `try_left: ${_try_left}`);
         if (_try_left > 0)
-          this.retry_upload_part(info, _is_official, _target, i, j, Progress, _try_left - 1);
+          this.retry_upload_part(msg, info, _is_official, _target, i, _try_left - 1);
         else {
           console.error('파일 다시 올리기 실패: ', info, i);
         }
       });
   }
+
+  /** 파일 전송에 성공했다면 */
+  when_transfer_success(msg: any, _is_official: string, _target: string, index: number) {
+    if (this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id].shift() != index) {
+      this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id].unshift(index);
+      console.error('파일 전송에 문제가 있음: ', index);
+    } else {
+      if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id].length)
+        delete this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id];
+    }
+  }
   /**
    * 채널 메시지에 기반하여 파일 다운받기
    * @param msg 메시지 정보
    */
-  async ReadStorage_From_channel(msg: any, _is_official: string, _target: string, Progress = (_count: number) => { }, _CallBack = (_result: string) => { }) {
+  async ReadStorage_From_channel(msg: any, _is_official: string, _target: string, _CallBack = (_result: string) => { }) {
     let _msg = JSON.parse(JSON.stringify(msg));
+    if (!this.channel_transfer[_is_official][_target]) this.channel_transfer[_is_official][_target] = {};
+    if (!this.channel_transfer[_is_official][_target][msg.channel_id]) this.channel_transfer[_is_official][_target][msg.channel_id] = {};
+    if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id])
+      this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id] = Array.from(Array(_msg.content['partsize']).keys());
     let result = [];
     for (let i = 0, j = _msg.content['partsize']; i < j; i++)
       await this.servers[_is_official][_target].client.readStorageObjects(
@@ -1632,8 +1657,7 @@ export class NakamaService {
         }]
       }).then(v => {
         if (v.objects.length) {
-          console.warn('다운로드 경과 게시하기: ', i + 1, '/', j);
-          if (Progress) Progress(1);
+          this.when_transfer_success(_msg, _is_official, _target, i);
           result[i] = v.objects[0].value['data'];
         }
       });
