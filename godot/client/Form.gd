@@ -14,6 +14,7 @@ func _ready():
 			dir.make_dir('user://acts/')
 		# 행동 방침 가져오기
 		var act:String = window.act
+		$CenterContainer/ColorRect/Label.text = 'Click to download\n"%s" tool.' % window.title
 		if not act: # 아무런 요청도 없이 프레임만 불러온 경우
 			printerr('Godot: 행동 정보가 비어있음')
 		else: load_package(act)

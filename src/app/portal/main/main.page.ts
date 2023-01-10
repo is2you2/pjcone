@@ -19,7 +19,7 @@ export class MainPage implements OnInit {
   ionViewWillEnter() {
     this.app.CreateGodotIFrame('godot-todo', {
       act: 'godot-todo',
-      title: '해야할 일',
+      title: 'Todo',
       failed: () => {
         this.p5toast.show({
           text: '기능 다운로드 실패',

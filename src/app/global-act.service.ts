@@ -7,7 +7,7 @@ import { P5ToastService } from './p5-toast.service';
 interface GodotFrameKeys {
   /** 공식 패키지 이름 */
   act: string;
-  /** 패키지 이름 입력 */
+  /** 패키지 이름 입력(영문) */
   title: string;
   /** 고도엔진에서 다운로드가 필요한 경우 반응용, 사용금지 */
   accept?: any;
