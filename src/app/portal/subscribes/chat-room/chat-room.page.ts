@@ -303,10 +303,18 @@ export class ChatRoomPage implements OnInit {
         this.modulate_thumbnail(msg, v.replace(/"|\\|=/g, ''));
         this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
       } else { // 가지고 있는 파일이 아닐 경우
-        this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
-          this.modulate_thumbnail(msg, resultModified);
-          this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
-        });
+        try { // 전송중이라면 무시
+          if (!this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id])
+            this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
+              this.modulate_thumbnail(msg, resultModified);
+              this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
+            });
+        } catch (_e) { // 전송중이 아니라면 다운받기
+          this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
+            this.modulate_thumbnail(msg, resultModified);
+            this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
+          });
+        }
       }
     });
   }
