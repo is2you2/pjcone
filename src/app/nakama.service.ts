@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
-import { Channel, ChannelMessage, ChannelPresenceEvent, Client, Group, Notification, Session, Socket, User, WriteStorageObject } from "@heroiclabs/nakama-js";
+import { Channel, ChannelMessage, Client, Group, Notification, Session, Socket, User, WriteStorageObject } from "@heroiclabs/nakama-js";
 import { SOCKET_SERVER_ADDRESS } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
@@ -11,6 +11,7 @@ import { AlertController, ModalController } from '@ionic/angular';
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 import { WscService } from './wsc.service';
 import { ChatRoomPage } from './portal/subscribes/chat-room/chat-room.page';
+import { ApiReadStorageObjectId } from '@heroiclabs/nakama-js/dist/api.gen';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -1599,8 +1600,7 @@ export class NakamaService {
           value: { data: _upload[i] },
         }]).then(_f => {
           this.when_transfer_success(msg, _is_official, _target, i);
-        }).catch(async e => {
-          console.warn(`${i + 1}번째 파일 올리기 오류`, e);
+        }).catch(async _e => {
           await this.retry_upload_part(msg, {
             collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
             key: `msg_${_msg.message_id}_${i}`,
@@ -1611,13 +1611,12 @@ export class NakamaService {
         });
   }
   /** 업로드 실패한 파트 다시 올리기 */
-  async retry_upload_part(msg: any, info: WriteStorageObject, _is_official: string, _target: string, i: number, _try_left = 5) {
+  async retry_upload_part(msg: any, info: WriteStorageObject, _is_official: string, _target: string, i: number, _try_left = 10) {
     await this.servers[_is_official][_target].client.writeStorageObjects(
-      this.servers[_is_official][_target].session, [info]).then(_f => {
-      }).then(_v => {
+      this.servers[_is_official][_target].session, [info])
+      .then(_v => {
         this.when_transfer_success(msg, _is_official, _target, i);
       }).catch(e => {
-        console.warn(`${i}번째 파일 다시 올리기 오류`, e, `try_left: ${_try_left}`);
         if (_try_left > 0)
           this.retry_upload_part(msg, info, _is_official, _target, i, _try_left - 1);
         else {
@@ -1630,11 +1629,14 @@ export class NakamaService {
   when_transfer_success(msg: any, _is_official: string, _target: string, index: number) {
     if (this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id].shift() != index) {
       this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id].unshift(index);
-      console.error('파일 전송에 문제가 있음: ', index);
-    } else {
-      if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id].length)
-        delete this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id];
+      for (let i = 0, j = this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id].length; i < j; i++)
+        if (this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id][i] == index) {
+          this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id].splice(index, 1);
+          break;
+        }
     }
+    if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id].length)
+      delete this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id];
   }
   /**
    * 채널 메시지에 기반하여 파일 다운받기
@@ -1660,6 +1662,12 @@ export class NakamaService {
           this.when_transfer_success(_msg, _is_official, _target, i);
           result[i] = v.objects[0].value['data'];
         }
+      }).catch(_e => {
+        this.retry_download_part(_msg, {
+          collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
+          key: `msg_${_msg.message_id}_${i}`,
+          user_id: _msg['sender_id'],
+        }, _is_official, _target, i);
       });
     let resultModified = result.join('').replace(/"|\\|=/g, '');
     if (resultModified) {
@@ -1667,6 +1675,21 @@ export class NakamaService {
       if (_CallBack) _CallBack(resultModified);
     } else this.p5toast.show({
       text: '이 파일은 서버에서 삭제되었습니다.',
+    });
+  }
+  /** 다운로드 실패한 파트 다시 받기 */
+  async retry_download_part(msg: any, info: ApiReadStorageObjectId, _is_official: string, _target: string, i: number, _try_left = 10) {
+    await this.servers[_is_official][_target].client.readStorageObjects(
+      this.servers[_is_official][_target].session, {
+      object_ids: [info],
+    }).then(_v => {
+      this.when_transfer_success(msg, _is_official, _target, i);
+    }).catch(e => {
+      if (_try_left > 0)
+        this.retry_upload_part(msg, info, _is_official, _target, i, _try_left - 1);
+      else {
+        console.error('파일 다시 받기 실패: ', info, i);
+      }
     });
   }
 }
