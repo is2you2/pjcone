@@ -134,6 +134,12 @@ export class LocalNotiService {
     private bgmode: BackgroundMode,
   ) { }
 
+  settings = {
+    /** 알림 소리 사용 여부 */
+    sound: true,
+    /** 알림 진동 사용 여부 */
+    vibrate: false,
+  }
   /** 현재 바라보고 있는 화면 이름, 비교하여 같으면 알림을 보내지 않음 */
   Current: string;
   /** 웹에서 앱 아이디를 따라 알림 관리  

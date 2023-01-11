@@ -11,13 +11,13 @@
   <ion-item-divider>
     <ion-label>알림 설정</ion-label>
   </ion-item-divider>
-  <ion-item button disabled (click)="settings.sound=!settings.sound">
+  <ion-item button disabled (click)="localPush.settings.sound=!localPush.settings.sound">
     <ion-label>소리</ion-label>
-    <ion-toggle [(ngModel)]="settings.sound" slot="end" style="pointer-events: none;"></ion-toggle>
+    <ion-toggle [(ngModel)]="localPush.settings.sound" slot="end" style="pointer-events: none;"></ion-toggle>
   </ion-item>
-  <ion-item button disabled (click)="settings.vibrate=!settings.vibrate">
+  <ion-item button disabled (click)="localPush.settings.vibrate=!localPush.settings.vibrate">
     <ion-label>진동</ion-label>
-    <ion-toggle [(ngModel)]="settings.vibrate" slot="end" style="pointer-events: none;"></ion-toggle>
+    <ion-toggle [(ngModel)]="localPush.settings.vibrate" slot="end" style="pointer-events: none;"></ion-toggle>
   </ion-item>
   <div *ngIf="!cant_dedicated && !isBatteryOptimizationsShowed">
     <ion-item-divider>

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { isPlatform } from 'src/app/app.component';
+import { LocalNotiService } from 'src/app/local-noti.service';
 
 @Component({
   selector: 'app-receive-act',
@@ -11,14 +12,8 @@ export class ReceiveActPage implements OnInit {
 
   constructor(
     private bgmode: BackgroundMode,
+    public localPush: LocalNotiService,
   ) { }
-
-  settings = {
-    /** 알림 소리 사용 여부 */
-    sound: true,
-    /** 알림 진동 사용 여부 */
-    vibrate: false,
-  }
 
   cant_dedicated = false;
 
