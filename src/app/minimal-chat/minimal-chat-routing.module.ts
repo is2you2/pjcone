@@ -7,6 +7,14 @@ const routes: Routes = [
   {
     path: '',
     component: MinimalChatPage
+  },
+  {
+    path: 'ionic-viewer',
+    loadChildren: () => import('./ionic-viewer/ionic-viewer.module').then( m => m.IonicViewerPageModule)
+  },
+  {
+    path: 'godot-viewer',
+    loadChildren: () => import('./godot-viewer/godot-viewer.module').then( m => m.GodotViewerPageModule)
   }
 ];
 

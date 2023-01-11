@@ -11,6 +11,7 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { isPlatform } from 'src/app/app.component';
+import { IonicViewerPage } from 'src/app/minimal-chat/ionic-viewer/ionic-viewer.page';
 
 interface FileInfo {
   id?: string;
@@ -426,6 +427,13 @@ export class ChatRoomPage implements OnInit {
   /** 텍스트 뷰어 열기 */
   go_to_text_viewer(msg: any, path: string) {
     console.log('go_to_text_viewer', msg, '/', path);
+    this.modalCtrl.create({
+      component: IonicViewerPage,
+      componentProps: {
+        info: msg.content,
+        path: path,
+      },
+    }).then(v => v.present());
   }
 
   /** 이미지 뷰어 열기 */
