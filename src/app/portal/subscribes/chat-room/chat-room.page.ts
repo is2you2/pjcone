@@ -213,9 +213,14 @@ export class ChatRoomPage implements OnInit {
                 this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
               }
               if (msg.content['filename']) // 파일 포함 메시지는 자동 썸네일 생성 시도
-                this.indexed.loadFileFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, async (e, v) => {
-                  if (e && v) this.modulate_thumbnail(msg, v);
-                });
+                if (msg.content['filesize'] < 5000000 && // 5메가 미만 파일에 대해서만
+                  (msg.content['type'].indexOf('image/') == 0 ||
+                    msg.content['type'].indexOf('audio/') == 0 ||
+                    msg.content['type'].indexOf('video/') == 0 ||
+                    msg.content['type'].indexOf('text/') == 0)) // 확실하게 썸네일 가능한 애들에 대해서만
+                  this.indexed.loadFileFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, async (e, v) => {
+                    if (e && v) this.modulate_thumbnail(msg, v);
+                  });
               this.messages.unshift(msg);
             });
             this.next_cursor = v.next_cursor;
@@ -381,6 +386,7 @@ export class ChatRoomPage implements OnInit {
         case 'jpeg':
         case 'jpg':
         case 'webp':
+        case 'gif':
           this.go_to_image_viewer(msg, path);
           break;
         // 사운드류
