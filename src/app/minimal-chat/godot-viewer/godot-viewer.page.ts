@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
+import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 
 @Component({
@@ -15,8 +16,14 @@ export class GodotViewerPage implements OnInit {
     private global: GlobalActService,
   ) { }
 
+  cant_dedicated: boolean;
   ngOnInit() {
-    console.log(this.navParams.data);
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
+      this.cant_dedicated = true;
+    this.global.CreateGodotIFrame('godot-viewer', {
+      act: 'godot-viewer',
+      title: 'ViewerEx',
+    });
   }
 
   download_file() {

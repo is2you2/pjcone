@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
+import { isPlatform } from 'src/app/app.component';
+import * as p5 from "p5";
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -13,8 +15,10 @@ export class IonicViewerPage implements OnInit {
     private navParams: NavParams,
   ) { }
 
+  cant_dedicated: boolean;
   ngOnInit() {
-    console.log(this.navParams.data);
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
+      this.cant_dedicated = true;
   }
 
   download_file() {

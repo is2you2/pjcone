@@ -12,6 +12,7 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { isPlatform } from 'src/app/app.component';
 import { IonicViewerPage } from 'src/app/minimal-chat/ionic-viewer/ionic-viewer.page';
+import { GodotViewerPage } from 'src/app/minimal-chat/godot-viewer/godot-viewer.page';
 
 interface FileInfo {
   id?: string;
@@ -439,6 +440,13 @@ export class ChatRoomPage implements OnInit {
   /** 이미지 뷰어 열기 */
   go_to_image_viewer(msg: any, path: string) {
     console.log('go_to_image_viewer', msg, '/', path);
+    this.modalCtrl.create({
+      component: GodotViewerPage,
+      componentProps: {
+        info: msg.content,
+        path: path,
+      },
+    }).then(v => v.present());
   }
 
   /** 소리 리더 열기 */
