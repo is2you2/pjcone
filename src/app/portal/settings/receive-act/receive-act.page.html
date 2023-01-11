@@ -19,12 +19,4 @@
     <ion-label>진동</ion-label>
     <ion-toggle [(ngModel)]="localPush.settings.vibrate" slot="end" style="pointer-events: none;"></ion-toggle>
   </ion-item>
-  <div *ngIf="!cant_dedicated && !isBatteryOptimizationsShowed">
-    <ion-item-divider>
-      <ion-label>백그라운드 설정</ion-label>
-    </ion-item-divider>
-    <ion-item button (click)="setDisableBatteryOptimizations()">
-      <ion-label>배터리 최적화 제외 설정</ion-label>
-    </ion-item>
-  </div>
 </ion-content>

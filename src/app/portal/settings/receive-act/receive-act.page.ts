@@ -1,6 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
-import { isPlatform } from 'src/app/app.component';
 import { LocalNotiService } from 'src/app/local-noti.service';
 
 @Component({
@@ -11,22 +9,9 @@ import { LocalNotiService } from 'src/app/local-noti.service';
 export class ReceiveActPage implements OnInit {
 
   constructor(
-    private bgmode: BackgroundMode,
     public localPush: LocalNotiService,
   ) { }
 
-  cant_dedicated = false;
+  ngOnInit() { }
 
-  ngOnInit() {
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
-      this.cant_dedicated = true;
-    this.isBatteryOptimizationsShowed = Boolean(localStorage.getItem('ShowDisableBatteryOptimizations'));
-  }
-
-  isBatteryOptimizationsShowed = false;
-  setDisableBatteryOptimizations() {
-    this.bgmode.disableBatteryOptimizations();
-    this.isBatteryOptimizationsShowed = true;
-    localStorage.setItem('ShowDisableBatteryOptimizations', 'true');
-  }
 }

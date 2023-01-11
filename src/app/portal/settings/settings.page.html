@@ -96,6 +96,11 @@
   <ion-item button (click)="go_to_page('receive-act')">
     <ion-label>수신 동작</ion-label>
   </ion-item>
+  <div *ngIf="!cant_dedicated && !isBatteryOptimizationsShowed">
+    <ion-item button (click)="setDisableBatteryOptimizations()">
+      <ion-label>배터리 최적화 제외 설정</ion-label>
+    </ion-item>
+  </div>
   <ion-item-divider>
     <ion-label>앱 정보</ion-label>
   </ion-item-divider>
