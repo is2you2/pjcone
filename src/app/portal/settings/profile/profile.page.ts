@@ -87,38 +87,43 @@ export class ProfilePage implements OnInit {
         } else {
           lerpVal = 1;
           this.nakama.users.self['img'] = this.tmp_img;
-          // 아래, 서버 이미지 업로드
-          let servers = this.nakama.get_all_online_server();
-          this.nakama.save_self_profile();
-          this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.users.self['img']), 'servers/self/profile.img');
-          this.tmp_img = '';
-          for (let i = 0, j = servers.length; i < j; i++) {
-            servers[i].client.writeStorageObjects(servers[i].session, [{
-              collection: 'user_public',
-              key: 'profile_image',
-              value: { img: this.nakama.users.self['img'] },
-              permission_read: 2,
-              permission_write: 1,
-            }]).then(v => {
-              servers[i].client.updateAccount(servers[i].session, {
-                avatar_url: v.acks[0].version,
-              });
-              let all_channels = this.nakama.rearrange_channels();
-              all_channels.forEach(channel => {
-                servers[i].socket.writeChatMessage(channel.id, {
-                  user: 'modify',
-                  noti: `사용자 프로필 변경: ${this.nakama.users.self['display_name']}`,
-                });
-              });
-            }).catch(e => {
-              console.error('inputImageSelected_err: ', e);
-            });
-          }
+          this.sync_to_all_server();
           p.remove();
         }
         profile_tmp_img.setAttribute('style', `filter: grayscale(${this.nakama.users.self['online'] ? 0 : .9}) contrast(${this.nakama.users.self['online'] ? 1 : 1.4}) opacity(${lerpVal})`);
       }
     });
+  }
+
+  /** 모든 서버에 프로필 변경됨 고지 및 동기화 */
+  sync_to_all_server() {
+    console.warn('변경전 이미지를 tmp로, 변경 후 이미지는 즉시 적용 처리 필요');
+    let servers = this.nakama.get_all_online_server();
+    this.nakama.save_self_profile();
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.users.self['img']), 'servers/self/profile.img');
+    this.tmp_img = '';
+    for (let i = 0, j = servers.length; i < j; i++) {
+      servers[i].client.writeStorageObjects(servers[i].session, [{
+        collection: 'user_public',
+        key: 'profile_image',
+        value: { img: this.nakama.users.self['img'] },
+        permission_read: 2,
+        permission_write: 1,
+      }]).then(v => {
+        servers[i].client.updateAccount(servers[i].session, {
+          avatar_url: v.acks[0].version,
+        });
+        let all_channels = this.nakama.rearrange_channels();
+        all_channels.forEach(channel => {
+          servers[i].socket.writeChatMessage(channel.id, {
+            user: 'modify',
+            noti: `사용자 프로필 변경: ${this.original_profile['display_name']}`,
+          });
+        });
+      }).catch(e => {
+        console.error('inputImageSelected_err: ', e);
+      });
+    }
   }
 
   change_img_from_file() { document.getElementById('file_sel').click(); }
