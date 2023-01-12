@@ -12,6 +12,7 @@ import { GroupDetailPage } from './portal/settings/group-detail/group-detail.pag
 import { WscService } from './wsc.service';
 import { ChatRoomPage } from './portal/subscribes/chat-room/chat-room.page';
 import { ApiReadStorageObjectId } from '@heroiclabs/nakama-js/dist/api.gen';
+import { LanguageSettingService } from './language-setting.service';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -49,6 +50,7 @@ export class NakamaService {
     private modalCtrl: ModalController,
     private alertCtrl: AlertController,
     private communityServer: WscService,
+    private langset: LanguageSettingService,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -337,7 +339,7 @@ export class NakamaService {
             this.servers[info.isOfficial][info.target].client.updateAccount(
               this.servers[info.isOfficial][info.target].session, {
               display_name: this.users.self['display_name'],
-              lang_tag: navigator.language.split('-')[0],
+              lang_tag: this.langset.lang,
             });
           this.p5toast.show({
             text: `회원가입이 완료되었습니다: ${info.target}`,

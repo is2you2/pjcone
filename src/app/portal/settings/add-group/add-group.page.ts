@@ -7,6 +7,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { isPlatform } from 'src/app/app.component';
 import clipboard from "clipboardy";
 import { StatusManageService } from 'src/app/status-manage.service';
+import { LanguageSettingService } from 'src/app/language-setting.service';
 
 @Component({
   selector: 'app-add-group',
@@ -21,6 +22,7 @@ export class AddGroupPage implements OnInit {
     private nakama: NakamaService,
     private sanitizer: DomSanitizer,
     private statusBar: StatusManageService,
+    private langset: LanguageSettingService,
   ) { }
 
   QRCodeSRC: any;
@@ -31,7 +33,7 @@ export class AddGroupPage implements OnInit {
       this.userInput = tmp;
     this.servers = this.nakama.get_all_server_info(true, true);
     this.userInput.server = this.servers[this.index];
-    this.userInput.lang_tag = navigator.language.split('-')[0];
+    this.userInput.lang_tag = this.langset;
   }
 
   /** 그룹ID를 QRCode로 그려내기 */

@@ -4,6 +4,7 @@ import { Group } from '@heroiclabs/nakama-js';
 import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
+import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { WscService } from 'src/app/wsc.service';
@@ -25,6 +26,7 @@ export class SettingsPage implements OnInit {
     private indexed: IndexedDBService,
     public client: WscService,
     private bgmode: BackgroundMode,
+    private langset: LanguageSettingService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
@@ -39,7 +41,7 @@ export class SettingsPage implements OnInit {
     });
     this.isBatteryOptimizationsShowed = Boolean(localStorage.getItem('ShowDisableBatteryOptimizations'));
     console.warn('앱의 언어 설정으로 지정된 언어 검토 필요');
-    this.current_lang = navigator.language.split('-')[0];
+    this.current_lang = this.langset.lang;
   }
 
   isBatteryOptimizationsShowed = false;
