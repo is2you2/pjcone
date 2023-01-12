@@ -1591,7 +1591,10 @@ export class NakamaService {
     if (!this.channel_transfer[_is_official][_target]) this.channel_transfer[_is_official][_target] = {};
     if (!this.channel_transfer[_is_official][_target][msg.channel_id]) this.channel_transfer[_is_official][_target][msg.channel_id] = {};
     if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id])
-      this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id] = Array.from(Array(_upload.length).keys());
+      this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id] = {
+        type: 'upload',
+        progress: Array.from(Array(_upload.length).keys()),
+      };
     for (let i = 0, j = _upload.length; i < j; i++)
       await this.servers[_is_official][_target].client.writeStorageObjects(
         this.servers[_is_official][_target].session, [{
@@ -1629,15 +1632,15 @@ export class NakamaService {
 
   /** 파일 전송에 성공했다면 */
   when_transfer_success(msg: any, _is_official: string, _target: string, index: number) {
-    if (this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id].shift() != index) {
-      this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id].unshift(index);
-      for (let i = 0, j = this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id].length; i < j; i++)
-        if (this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id][i] == index) {
-          this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id].splice(index, 1);
+    if (this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'].shift() != index) {
+      this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'].unshift(index);
+      for (let i = 0, j = this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'].length; i < j; i++)
+        if (this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'][i] == index) {
+          this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'].splice(index, 1);
           break;
         }
     }
-    if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id].length)
+    if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'].length)
       delete this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id];
   }
   /**
@@ -1649,7 +1652,10 @@ export class NakamaService {
     if (!this.channel_transfer[_is_official][_target]) this.channel_transfer[_is_official][_target] = {};
     if (!this.channel_transfer[_is_official][_target][msg.channel_id]) this.channel_transfer[_is_official][_target][msg.channel_id] = {};
     if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id])
-      this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id] = Array.from(Array(_msg.content['partsize']).keys());
+      this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id] = {
+        type: 'download',
+        progress: Array.from(Array(_msg.content['partsize']).keys()),
+      }
     let result = [];
     for (let i = 0, j = _msg.content['partsize']; i < j; i++)
       await this.servers[_is_official][_target].client.readStorageObjects(
@@ -1686,7 +1692,7 @@ export class NakamaService {
       object_ids: [info],
     }).then(_v => {
       this.when_transfer_success(msg, _is_official, _target, i);
-    }).catch(e => {
+    }).catch(_e => {
       if (_try_left > 0)
         this.retry_upload_part(msg, info, _is_official, _target, i, _try_left - 1);
       else {
