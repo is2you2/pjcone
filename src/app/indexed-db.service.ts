@@ -99,6 +99,24 @@ export class IndexedDBService {
     }
   }
 
+  /** 파일이 있는지 검토 */
+  checkIfFileExist(path: string, _CallBack = (_b: boolean) => { console.warn('checkIfFileExist act null') }) {
+    if (!this.db) {
+      setTimeout(() => {
+        this.checkIfFileExist(path, _CallBack);
+      }, 1000);
+      return;
+    }
+    let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').count(`/userfs/${path}`);
+    data.onsuccess = (ev) => {
+      let cursor = ev.target['result'];
+      _CallBack(cursor);
+    }
+    data.onerror = (e) => {
+      console.error('IndexedDB CheckIfFileExist failed: ', e);
+    }
+  }
+
   /** 고도엔진에서 'user://~'에 해당하는 파일 불러오기
    * @param path 'user://~'에 들어가는 사용자 폴더 경로
    * @param act 불러오기 이후 행동. 인자 2개 필요 (load-return)

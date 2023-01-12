@@ -33,7 +33,7 @@ export class AddGroupPage implements OnInit {
       this.userInput = tmp;
     this.servers = this.nakama.get_all_server_info(true, true);
     this.userInput.server = this.servers[this.index];
-    this.userInput.lang_tag = this.langset;
+    this.userInput.lang_tag = this.langset.lang;
   }
 
   /** 그룹ID를 QRCode로 그려내기 */
@@ -130,7 +130,6 @@ export class AddGroupPage implements OnInit {
     }
     let client = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].client;
     let session = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session;
-    let socket = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].socket;
     this.userInput['owner'] = session.user_id;
 
     this.isSaveClicked = true;

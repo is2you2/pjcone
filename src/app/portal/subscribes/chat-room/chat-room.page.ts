@@ -192,6 +192,8 @@ export class ChatRoomPage implements OnInit {
   }
   inputPlaceholder = '메시지 입력...';
 
+  /** 자동 열람 파일 크기 제한 */
+  FILESIZE_LIMIT = 5000000;
   pullable = true;
   /** 서버로부터 메시지 더 받아오기
    * @param isHistory 옛날 정보 불러오기 유무, false면 최신정보 불러오기 진행
@@ -213,14 +215,17 @@ export class ChatRoomPage implements OnInit {
                 this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
               }
               if (msg.content['filename']) // 파일 포함 메시지는 자동 썸네일 생성 시도
-                if (msg.content['filesize'] < 5000000 && // 5메가 미만 파일에 대해서만
+                if (msg.content['filesize'] < this.FILESIZE_LIMIT &&
                   (msg.content['type'].indexOf('image/') == 0 ||
                     msg.content['type'].indexOf('audio/') == 0 ||
                     msg.content['type'].indexOf('video/') == 0 ||
                     msg.content['type'].indexOf('text/') == 0)) // 확실하게 썸네일 가능한 애들에 대해서만
-                  this.indexed.loadFileFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, async (e, v) => {
-                    if (e && v) this.modulate_thumbnail(msg, v);
-                  });
+                  this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (b) => {
+                    if (b && msg.content['filesize'] < this.FILESIZE_LIMIT)
+                      this.indexed.loadFileFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (e, v) => {
+                        if (e && v) this.modulate_thumbnail(msg, v);
+                      });
+                  })
               this.messages.unshift(msg);
             });
             this.next_cursor = v.next_cursor;
@@ -303,9 +308,12 @@ export class ChatRoomPage implements OnInit {
 
   /** 메시지 내 파일 정보, 파일 다운받기 */
   file_detail(msg: any) {
-    this.indexed.loadFileFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (e, v) => {
-      if (e && v) {
-        this.modulate_thumbnail(msg, v.replace(/"|\\|=/g, ''));
+    this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (v) => {
+      if (v) {
+        if (msg.content['filesize'] < this.FILESIZE_LIMIT)
+          this.indexed.loadFileFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (e, v) => {
+            this.modulate_thumbnail(msg, v.replace(/"|\\|=/g, ''));
+          })
         this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
       } else { // 가지고 있는 파일이 아닐 경우
         try { // 전송중이라면 무시
@@ -416,7 +424,6 @@ export class ChatRoomPage implements OnInit {
     }
   }
 
-  /** 텍스트 뷰어 열기 */
   open_ionic_viewer(msg: any, _path: string) {
     this.modalCtrl.create({
       component: IonicViewerPage,
@@ -427,7 +434,6 @@ export class ChatRoomPage implements OnInit {
     }).then(v => v.present());
   }
 
-  /** 이미지 뷰어 열기 */
   open_godot_viewer(msg: any, _path: string) {
     this.modalCtrl.create({
       component: GodotViewerPage,
