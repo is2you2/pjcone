@@ -9,7 +9,6 @@ import { ProfilePage } from '../../settings/profile/profile.page';
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
-import { GlobalActService } from 'src/app/global-act.service';
 import { isPlatform } from 'src/app/app.component';
 import { IonicViewerPage } from 'src/app/minimal-chat/ionic-viewer/ionic-viewer.page';
 import { GodotViewerPage } from 'src/app/minimal-chat/godot-viewer/godot-viewer.page';
@@ -50,7 +49,6 @@ export class ChatRoomPage implements OnInit {
     private p5toast: P5ToastService,
     private statusBar: StatusManageService,
     private indexed: IndexedDBService,
-    private global: GlobalActService,
     private alertCtrl: AlertController,
   ) { }
 
@@ -383,41 +381,34 @@ export class ChatRoomPage implements OnInit {
       else this.alert_download(msg, path);
     } else { // 자동지정 타입이 없는 경우
       switch (msg.content['file_ext']) {
+        // 모델링류
+        case 'obj':
+        case 'stl':
+        case 'glb':
+        case 'gltf':
+        // 고도엔진 패키지 파일
+        case 'pck':
+          this.open_godot_viewer(msg, path);
+          break;
+        // 뷰어 제한 파일
+        case 'zip':
+        case 'fbx':
+          this.alert_download(msg, path);
+          break;
         // 이미지류
         case 'png':
         case 'jpeg':
         case 'jpg':
         case 'webp':
         case 'gif':
-          this.open_ionic_viewer(msg, path);
-          break;
         // 사운드류
         case 'wav':
         case 'ogg':
         case 'mp3':
-          this.open_ionic_viewer(msg, path);
-          break;
         // 비디오류
         case 'mp4':
         case 'ogv':
         case 'webm':
-          this.open_ionic_viewer(msg, path);
-          break;
-        // 모델링류
-        case 'obj':
-        case 'stl':
-        case 'glb':
-        case 'gltf':
-          this.open_godot_viewer(msg, path);
-          break;
-        // 뷰어 제한 파일
-        case 'zip':
-          this.alert_download(msg, path);
-          break;
-        // 고도엔진 패키지 파일
-        case 'pck':
-          this.open_godot_viewer(msg, path);
-          break;
         default: // 임의의 파일은 텍스트로 읽어서 내용 보여주기
           this.open_ionic_viewer(msg, path);
           break;
@@ -452,16 +443,16 @@ export class ChatRoomPage implements OnInit {
     if (isPlatform == 'DesktopPWA')
       this.alertCtrl.create({
         header: '지원하지 않는 파일',
-        message: '파일을 열람할 수 없습니다',
+        message: '파일을 열람할 수 없습니다.',
         buttons: [{
           text: '추출',
           handler: () => {
-            this.global.DownloadFile_from_indexedDB(msg.content['filename'], path);
+            this.indexed.DownloadFileFromUserPath(path, msg.content['filename']);
           }
         }]
       }).then(v => v.present());
     else this.p5toast.show({
-      text: '파일을 열람할 수 없습니다',
+      text: '파일을 열람할 수 없습니다.',
     });
   }
 

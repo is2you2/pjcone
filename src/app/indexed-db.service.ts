@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { P5ToastService } from './p5-toast.service';
 
 /** godot 웹 결과물과 파일을 공유하기 위한 비기랄까 */
 @Injectable({
@@ -6,7 +7,9 @@ import { Injectable } from '@angular/core';
 })
 export class IndexedDBService {
 
-  constructor() { }
+  constructor(
+    private p5toast: P5ToastService,
+  ) { }
 
   /** IndexedDB */
   private db: IDBDatabase;
@@ -140,6 +143,40 @@ export class IndexedDBService {
         reader.readAsDataURL(ev.target['result']['contents']);
       } catch (e) {
         _CallBack(false, `No file: , ${path} || ${e}`)
+      }
+    }
+    data.onerror = (e) => {
+      console.error('IndexedDB loadTextFromUserPath failed: ', e);
+    }
+  }
+
+  /** 고도엔진의 'user://~'에 해당하는 파일 다운받기
+   * @param path 'user://~'에 들어가는 사용자 폴더 경로
+   * @param filename 저장할 파일 이름
+   */
+  DownloadFileFromUserPath(path: string, filename: string) {
+    if (!this.db) {
+      setTimeout(() => {
+        this.DownloadFileFromUserPath(path, filename);
+      }, 1000);
+      return;
+    };
+    let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
+    data.onsuccess = (ev) => {
+      try {
+        let url = URL.createObjectURL(ev.target['result']['contents']);
+        var link = document.createElement("a");
+        link.download = filename;
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        link.remove();
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        this.p5toast.show({
+          text: `다운받기 오류: ${e}`,
+        });
       }
     }
     data.onerror = (e) => {
