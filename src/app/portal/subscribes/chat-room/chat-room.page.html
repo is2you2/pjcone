@@ -36,7 +36,7 @@
                 class="transfer_count">
                 {{nakama.channel_transfer[isOfficial][target][msg.channel_id][msg.message_id].length}}</div>
             </div>
-            <div *ngIf="msg.content['img']" style="margin-top: 4px;" (click)="open_viewer(msg)">
+            <div *ngIf="msg.content['img']" style="margin-top: 4px;" (click)="file_detail(msg)">
               <img [src]="msg.content['img']" alt="msg.content['filename']">
             </div>
             <div *ngIf="msg.content['noti']" class="notice_form">

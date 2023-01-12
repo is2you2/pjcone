@@ -373,13 +373,13 @@ export class ChatRoomPage implements OnInit {
   open_viewer(msg: any, path: string) {
     if (msg.content['type']) { // 자동지정 타입이 있는 경우
       if (msg.content['type'].indexOf('image/') == 0) // 분류상 이미지
-        this.go_to_image_viewer(msg, path);
+        this.open_ionic_viewer(msg, path);
       else if (msg.content['type'].indexOf('audio/') == 0) // 분류상 소리
-        this.go_to_sound_reader(msg, path);
+        this.open_ionic_viewer(msg, path);
       else if (msg.content['type'].indexOf('video/') == 0) // 분류상 비디오
-        this.go_to_video_viewer(msg, path);
+        this.open_ionic_viewer(msg, path);
       else if (msg.content['type'].indexOf('text/') == 0) // 분류상 텍스트 문서
-        this.go_to_text_viewer(msg, path);
+        this.open_ionic_viewer(msg, path);
       else this.alert_download(msg, path);
     } else { // 자동지정 타입이 없는 경우
       switch (msg.content['file_ext']) {
@@ -389,26 +389,26 @@ export class ChatRoomPage implements OnInit {
         case 'jpg':
         case 'webp':
         case 'gif':
-          this.go_to_image_viewer(msg, path);
+          this.open_ionic_viewer(msg, path);
           break;
         // 사운드류
         case 'wav':
         case 'ogg':
         case 'mp3':
-          this.go_to_sound_reader(msg, path);
+          this.open_ionic_viewer(msg, path);
           break;
         // 비디오류
         case 'mp4':
         case 'ogv':
         case 'webm':
-          this.go_to_video_viewer(msg, path);
+          this.open_ionic_viewer(msg, path);
           break;
         // 모델링류
         case 'obj':
         case 'stl':
         case 'glb':
         case 'gltf':
-          this.go_to_model_viewer(msg, path);
+          this.open_godot_viewer(msg, path);
           break;
         // 뷰어 제한 파일
         case 'zip':
@@ -416,56 +416,35 @@ export class ChatRoomPage implements OnInit {
           break;
         // 고도엔진 패키지 파일
         case 'pck':
-          this.go_to_godot_viewer(msg, path);
+          this.open_godot_viewer(msg, path);
           break;
         default: // 임의의 파일은 텍스트로 읽어서 내용 보여주기
-          this.go_to_text_viewer(msg, path);
+          this.open_ionic_viewer(msg, path);
           break;
       }
     }
   }
 
   /** 텍스트 뷰어 열기 */
-  go_to_text_viewer(msg: any, path: string) {
-    console.log('go_to_text_viewer', msg, '/', path);
+  open_ionic_viewer(msg: any, _path: string) {
     this.modalCtrl.create({
       component: IonicViewerPage,
       componentProps: {
         info: msg.content,
-        path: path,
+        path: _path,
       },
     }).then(v => v.present());
   }
 
   /** 이미지 뷰어 열기 */
-  go_to_image_viewer(msg: any, path: string) {
-    console.log('go_to_image_viewer', msg, '/', path);
+  open_godot_viewer(msg: any, _path: string) {
     this.modalCtrl.create({
       component: GodotViewerPage,
       componentProps: {
         info: msg.content,
-        path: path,
+        path: _path,
       },
     }).then(v => v.present());
-  }
-
-  /** 소리 리더 열기 */
-  go_to_sound_reader(msg: any, path: string) {
-    console.log('go_to_sound_reader', msg, '/', path);
-  }
-
-  /** 비디오 뷰어 열기 */
-  go_to_video_viewer(msg: any, path: string) {
-    console.log('go_to_video_viewer', msg, '/', path);
-  }
-
-  /** 모델 뷰어 열기 */
-  go_to_model_viewer(msg: any, path: string) {
-    console.log('go_to_model_viewer', msg, '/', path);
-  }
-
-  go_to_godot_viewer(msg: any, path: string) {
-    console.log('go_to_godot_viewer', msg, '/', path);
   }
 
   /** 열람 불가 파일 다운로드로 유도 */
