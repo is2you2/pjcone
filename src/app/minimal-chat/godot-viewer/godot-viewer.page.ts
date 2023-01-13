@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
+import { IndexedDBService } from 'src/app/indexed-db.service';
 
 @Component({
   selector: 'app-godot-viewer',
@@ -14,19 +15,24 @@ export class GodotViewerPage implements OnInit {
     public modalCtrl: ModalController,
     private navParams: NavParams,
     private global: GlobalActService,
+    private indexed: IndexedDBService,
   ) { }
 
   cant_dedicated: boolean;
+  FileInfo: any;
+
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
+    this.FileInfo = this.navParams.get('info');
     this.global.CreateGodotIFrame('godot-viewer', {
       act: 'godot-viewer',
       title: 'ViewerEx',
     });
+    console.log('넘겨받은 정보: ', this.navParams.data);
   }
 
   download_file() {
-    console.log('지금 연 파일을 다운받기: ', this.navParams.data);
+    this.indexed.DownloadFileFromUserPath(this.navParams.get('path'), this.FileInfo['filename']);
   }
 }
