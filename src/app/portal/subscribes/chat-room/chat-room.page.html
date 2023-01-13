@@ -20,7 +20,7 @@
               class="message_form" (click)="user_detail(msg)">
               <b>
                 <font
-                  color="#{{(msg.sender_id && nakama.load_other_user(msg.sender_id,isOfficial,target)['online']) ? msg.color : '888'}}">
+                  color="#{{(msg['is_me'] && nakama.users.self['online']) || (!msg['is_me'] && nakama.load_other_user(msg.sender_id,isOfficial,target)['online']) ? msg.color : '888'}}">
                   {{msg.user_display_name}}</font>
               </b>
             </p>
