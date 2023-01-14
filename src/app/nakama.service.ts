@@ -1295,10 +1295,22 @@ export class NakamaService {
   }
 
   /** 그룹 사용자 상태 변경 처리 */
-  update_group_user_info(c: ChannelMessage, _is_official: string, _target: string) {
+  async update_group_user_info(c: ChannelMessage, _is_official: string, _target: string) {
     switch (c.content['user']) {
-      case 'modify': // 프로필 또는 이미지가 변경됨
-        this.servers[_is_official][_target].client.readStorageObjects(
+      case 'modify_data': // 프로필 또는 이미지가 변경됨
+        await this.servers[_is_official][_target].client.getUsers(
+          this.servers[_is_official][_target].session, [c.sender_id]
+        ).then(v => {
+          if (v.users.length) {
+            this.save_other_user(v.users[0], _is_official, _target);
+          } else {
+            delete this.users[_is_official][_target][c.sender_id];
+            this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${c.sender_id}/profile.json`)
+          }
+        });
+        break;
+      case 'modify_img': // 프로필 또는 이미지가 변경됨
+        await this.servers[_is_official][_target].client.readStorageObjects(
           this.servers[_is_official][_target].session, {
           object_ids: [{
             collection: 'user_public',

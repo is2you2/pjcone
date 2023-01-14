@@ -116,8 +116,8 @@ export class ProfilePage implements OnInit {
         let all_channels = this.nakama.rearrange_channels();
         all_channels.forEach(channel => {
           servers[i].socket.writeChatMessage(channel.id, {
-            user: 'modify',
-            noti: `사용자 프로필 변경: ${this.original_profile['display_name']}`,
+            user: 'modify_img',
+            noti: `사용자 이미지 변경: ${this.original_profile['display_name']}`,
           });
         });
       }).catch(e => {
@@ -216,7 +216,7 @@ export class ProfilePage implements OnInit {
     }, 1500);
   }
 
-  ionViewWillLeave() {
+  async ionViewWillLeave() {
     delete this.nakama.socket_reactive['profile'];
     let keys = Object.keys(this.nakama.users.self);
     let isProfileChanged = false;
@@ -229,12 +229,15 @@ export class ProfilePage implements OnInit {
     if (isProfileChanged) {
       let servers = this.nakama.get_all_online_server();
       for (let i = 0, j = servers.length; i < j; i++) {
-        if (this.nakama.users.self['display_name'])
-          servers[i].client.updateAccount(servers[i].session, {
+        let NeedAnnounceUpdate = false;
+        if (this.nakama.users.self['display_name'] != this.original_profile['display_name'])
+          await servers[i].client.updateAccount(servers[i].session, {
             display_name: this.nakama.users.self['display_name'],
+          }).then(_v => {
+            NeedAnnounceUpdate = true;
           });
         if (this.nakama.users.self['img'] != this.original_profile['img'])
-          servers[i].client.writeStorageObjects(servers[i].session, [{
+          await servers[i].client.writeStorageObjects(servers[i].session, [{
             collection: 'user_public',
             key: 'profile_image',
             value: { img: this.nakama.users.self['img'] },
@@ -244,24 +247,32 @@ export class ProfilePage implements OnInit {
             servers[i].client.updateAccount(servers[i].session, {
               avatar_url: v.acks[0].version,
             });
-            let all_channels = this.nakama.rearrange_channels();
-            all_channels.forEach(channel => {
-              servers[i].socket.writeChatMessage(channel.id, {
-                user: 'modify',
-                noti: `사용자 프로필 변경: ${this.nakama.users.self['display_name']}`,
-              });
+            NeedAnnounceUpdate = true;
+          });
+        else if (!this.nakama.users.self['img'])
+          await servers[i].client.deleteStorageObjects(servers[i].session, {
+            object_ids: [{
+              collection: 'user_public',
+              key: 'profile_image',
+            }]
+          }).then(v => {
+            if (!v) console.warn('내 프로필 이미지 삭제 실패 로그');
+            delete this.nakama.users.self['avatar_url'];
+            servers[i].client.updateAccount(servers[i].session, {
+              avatar_url: '',
+            });
+            NeedAnnounceUpdate = true;
+          });
+        // 해당 서버 연결된 채널에 고지
+        if (NeedAnnounceUpdate) {
+          let all_channels = this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target];
+          all_channels.forEach(channelId => {
+            servers[i].socket.writeChatMessage(channelId, {
+              user: 'modify_data',
+              noti: `사용자 프로필 변경: ${this.original_profile['display_name']}`,
             });
           });
-        else servers[i].client.deleteStorageObjects(servers[i].session, {
-          object_ids: [{
-            collection: 'user_public',
-            key: 'profile_image',
-          }]
-        }).then(v => {
-          if (!v) console.warn('내 프로필 이미지 삭제 실패 로그');
-          delete this.nakama.users.self['avatar_url'];
-          servers[i].client.updateAccount(servers[i].session, this.nakama.users.self);
-        });
+        }
       }
       this.nakama.save_self_profile();
     }
