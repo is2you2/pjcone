@@ -245,12 +245,13 @@ export class ProfilePage implements OnInit {
         // 해당 서버 연결된 채널에 고지
         if (NeedAnnounceUpdate) {
           let all_channels = this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target];
-          all_channels.forEach(channelId => {
-            servers[i].socket.writeChatMessage(channelId, {
-              user: 'modify_data',
-              noti: `사용자 프로필 변경: ${this.original_profile['display_name']}`,
+          if (all_channels)
+            all_channels.forEach((channelId: any) => {
+              servers[i].socket.writeChatMessage(channelId, {
+                user: 'modify_data',
+                noti: `사용자 프로필 변경: ${this.original_profile['display_name']}`,
+              });
             });
-          });
         }
       }
       this.nakama.save_self_profile();
