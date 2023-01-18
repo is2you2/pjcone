@@ -3,7 +3,6 @@ import * as p5 from "p5";
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { StatusManageService } from 'src/app/status-manage.service';
 import clipboard from "clipboardy";
 import { isPlatform } from 'src/app/app.component';
 import { ModalController } from '@ionic/angular';
@@ -17,7 +16,6 @@ export class ProfilePage implements OnInit {
 
   constructor(
     public nakama: NakamaService,
-    private statusBar: StatusManageService,
     private p5toast: P5ToastService,
     private indexed: IndexedDBService,
     private modalCtrl: ModalController,
@@ -167,26 +165,7 @@ export class ProfilePage implements OnInit {
         });
         this.nakama.users.self['online'] = false;
       }
-    } else {
-      let IsOfficials = Object.keys(this.statusBar.groupServer);
-      IsOfficials.forEach(_is_official => {
-        let Targets = Object.keys(this.statusBar.groupServer[_is_official]);
-        Targets.forEach(_target => {
-          if (this.statusBar.groupServer[_is_official][_target] == 'online') {
-            this.statusBar.groupServer[_is_official][_target] = 'pending';
-            this.nakama.catch_group_server_header('pending');
-            if (this.nakama.servers[_is_official][_target].session)
-              this.nakama.servers[_is_official][_target].client.sessionLogout(
-                this.nakama.servers[_is_official][_target].session,
-                this.nakama.servers[_is_official][_target].session.token,
-                this.nakama.servers[_is_official][_target].session.refresh_token,
-              );
-            if (this.nakama.servers[_is_official][_target].socket)
-              this.nakama.servers[_is_official][_target].socket.disconnect(true);
-          }
-        });
-      });
-    }
+    } else this.nakama.logout_all_server();
     this.p5canvas.loop();
   }
 

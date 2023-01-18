@@ -18,8 +18,7 @@
     </div>
     <ion-label>내 정보</ion-label>
   </ion-item>
-  <ion-item button [hidden]="nakama.uuid" [disabled]="statusBar.settings['communityServer'] != 'online'"
-    (click)="go_to_page('link-account')">
+  <ion-item button [disabled]="statusBar.settings['communityServer'] != 'online'" (click)="go_to_page('link-account')">
     <ion-label>사용자 인계</ion-label>
   </ion-item>
   <ion-item-divider>
@@ -107,7 +106,7 @@
   <ion-item button (click)="go_to_page('creator')">
     <ion-label>제작자</ion-label>
   </ion-item>
-  <ion-item *ngIf="current_lang != 'ko'" button (click)="go_to_page('translator')">
+  <ion-item *ngIf="langset.lang != 'ko'" button (click)="go_to_page('translator')">
     <ion-label>번역가</ion-label>
   </ion-item>
   <ion-item button (click)="go_to_page('privacy')">

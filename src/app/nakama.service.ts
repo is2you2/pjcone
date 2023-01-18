@@ -81,7 +81,10 @@ export class NakamaService {
 
   initialize() {
     // 개인 정보 설정
-    this.uuid = this.device.uuid;
+    this.indexed.loadTextFromUserPath('link-account', (e, v) => {
+      if (e && v) this.uuid = v;
+      else this.uuid = this.device.uuid;
+    });
     this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
       if (e && v) this.users.self = JSON.parse(v);
     });
@@ -163,6 +166,28 @@ export class NakamaService {
     unTargets.forEach(_target => {
       if (this.statusBar.groupServer['unofficial'][_target] != 'offline')
         this.init_session(this.servers['unofficial'][_target].info);
+    });
+  }
+
+  /** 모든 서버 로그아웃처리 */
+  logout_all_server() {
+    let IsOfficials = Object.keys(this.statusBar.groupServer);
+    IsOfficials.forEach(_is_official => {
+      let Targets = Object.keys(this.statusBar.groupServer[_is_official]);
+      Targets.forEach(_target => {
+        if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+          this.statusBar.groupServer[_is_official][_target] = 'pending';
+          this.catch_group_server_header('pending');
+          if (this.servers[_is_official][_target].session)
+            this.servers[_is_official][_target].client.sessionLogout(
+              this.servers[_is_official][_target].session,
+              this.servers[_is_official][_target].session.token,
+              this.servers[_is_official][_target].session.refresh_token,
+            );
+          if (this.servers[_is_official][_target].socket)
+            this.servers[_is_official][_target].socket.disconnect(true);
+        }
+      });
     });
   }
 

@@ -11,5 +11,11 @@
   <ion-item-divider>
     <ion-label>만능 연결 버튼을 사용하여 기기id 인계</ion-label>
   </ion-item-divider>
-  <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="준비중">
+  <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="QRCodeSRC">
+  <ion-item-divider>
+    <ion-label>원상복구</ion-label>
+  </ion-item-divider>
+  <ion-item (click)="removeOverrideDeviceId()" [disabled]="!isOverrided" button>
+    <ion-label>기기id 되돌리기</ion-label>
+  </ion-item>
 </ion-content>

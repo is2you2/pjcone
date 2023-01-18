@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
+import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { NavController } from '@ionic/angular';
 import * as QRCode from "qrcode-svg";
 import { SOCKET_SERVER_ADDRESS } from 'src/app/app.component';
@@ -24,12 +25,19 @@ export class LinkAccountPage implements OnInit {
     private navCtrl: NavController,
     private wsc: WscService,
     private indexed: IndexedDBService,
+    private device: Device,
   ) { }
+
+  /** 기기 아이디가 이미 덮어씌워진 상태인지 */
+  isOverrided: boolean;
 
   ngOnInit() {
     this.wsc.disconnected[HEADER] = () => {
       this.navCtrl.back();
     }
+    this.indexed.checkIfFileExist('link-account', b => {
+      this.isOverrided = b;
+    });
     this.websocket = new WebSocket(`${this.wsc.socket_header}://${this.wsc.address_override || SOCKET_SERVER_ADDRESS}:12020`);
     this.websocket.onmessage = (msg: any) => {
       msg.data.text().then(v => {
@@ -37,11 +45,13 @@ export class LinkAccountPage implements OnInit {
           let json = JSON.parse(v);
           if (!json.uuid) throw new Error("uuid 받기 실패");
           this.nakama.uuid = json.uuid;
+          this.indexed.saveTextFileToUserPath(this.nakama.uuid, 'link-account');
           this.p5toast.show({
             text: '사용자 연결에 성공했습니다.',
+            lateable: true,
           });
+          this.nakama.logout_all_server();
           this.nakama.users.self['online'] = true;
-          this.nakama.init_all_sessions();
           setTimeout(() => {
             this.navCtrl.back();
           }, 500);
@@ -57,6 +67,14 @@ export class LinkAccountPage implements OnInit {
 
   QRCodeSRC: any;
   websocket: any;
+
+  /** 기기 아이디 원복처리 */
+  removeOverrideDeviceId() {
+    this.isOverrided = false;
+    this.nakama.uuid = this.device.uuid;
+    this.indexed.removeFileFromUserPath('link-account');
+    this.nakama.logout_all_server();
+  }
 
   /** 그룹ID를 QRCode로 그려내기 */
   createQRCode(info: any) {
