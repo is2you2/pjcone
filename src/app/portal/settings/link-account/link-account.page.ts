@@ -52,6 +52,7 @@ export class LinkAccountPage implements OnInit {
           });
           this.nakama.logout_all_server();
           this.nakama.users.self['online'] = true;
+          this.nakama.init_all_sessions();
           setTimeout(() => {
             this.navCtrl.back();
           }, 500);

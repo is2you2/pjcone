@@ -868,6 +868,32 @@ export class NakamaService {
                 break;
               }
           });
+        }).catch(e => {
+          switch (e.status) {
+            case 400: // 그룹에 이미 있는데 그룹추가 시도함
+              server.client.listGroups(server.session, _info['name']).then(v => {
+                for (let i = 0, j = v.groups.length; i < j; i++)
+                  if (v.groups[i].id == _info['id']) {
+                    let pending_group = v.groups[i];
+                    pending_group['status'] = 'pending';
+                    this.servers[server.info.isOfficial][server.info.target].client.listGroupUsers(
+                      this.servers[server.info.isOfficial][server.info.target].session, v.groups[i].id
+                    ).then(_list => {
+                      _list.group_users.forEach(_guser => {
+                        let keys = Object.keys(_guser.user);
+                        keys.forEach(key => this.load_other_user(_guser.user.id, server.info.isOfficial, server.info.target)[key] = _guser.user[key]);
+                        this.save_other_user(_guser.user, server.info.isOfficial, server.info.target);
+                      });
+                    });
+                    this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
+                    break;
+                  }
+              });
+              break;
+            default:
+              console.error('그룹 추가 오류: ', e);
+              break;
+          }
         });
     });
   }
