@@ -124,7 +124,6 @@ export class ChatRoomPage implements OnInit {
     this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
-    console.log(this.info);
     // 1:1 대화라면
     if (this.info['redirect']['type'] == 2) {
       if (!this.info['redirect']) // 채널 최초 생성 오류 방지용
@@ -135,14 +134,16 @@ export class ChatRoomPage implements OnInit {
     this.content_panel = document.getElementById('content');
     console.warn('이 자리에서 로컬 채팅 기록 불러오기');
     // 실시간 채팅을 받는 경우 행동처리
-    this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'] = (c: any) => {
-      this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      this.check_sender_and_show_name(c);
-      this.messages.push(c);
-      setTimeout(() => {
-        this.content_panel.scrollIntoView({ block: 'start' });
-      }, 0);
-    }
+    if (this.nakama.channels_orig[this.isOfficial][this.target] &&
+      this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
+      this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'] = (c: any) => {
+        this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        this.check_sender_and_show_name(c);
+        this.messages.push(c);
+        setTimeout(() => {
+          this.content_panel.scrollIntoView({ block: 'start' });
+        }, 0);
+      }
     this.extended_buttons[0].isHide = this.info['status'] != 'missing';
     this.extended_buttons[1].isHide = this.info['status'] == 'missing';
     // 마지막 대화 기록을 받아온다
@@ -310,7 +311,7 @@ export class ChatRoomPage implements OnInit {
   /** 메시지 내 파일 정보, 파일 다운받기 */
   file_detail(msg: any) {
     this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (v) => {
-      if (v) {
+      if (v) { // 파일이 존재하는 경우
         if (msg.content['filesize'] < this.FILESIZE_LIMIT)
           this.indexed.loadFileFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (e, v) => {
             this.modulate_thumbnail(msg, v.replace(/"|\\|=/g, ''));
@@ -378,17 +379,18 @@ export class ChatRoomPage implements OnInit {
 
   /** 콘텐츠 상세보기 뷰어 띄우기 */
   open_viewer(msg: any, path: string) {
-    if (msg.content['type']) { // 자동지정 타입이 있는 경우
+    try { // 자동지정 타입이 있는 경우
       if (msg.content['type'].indexOf('image/') == 0) // 분류상 이미지
-        this.open_ionic_viewer(msg, path);
+        msg.content['viewer'] = 'image';
       else if (msg.content['type'].indexOf('audio/') == 0) // 분류상 소리
-        this.open_ionic_viewer(msg, path);
+        msg.content['viewer'] = 'audio';
       else if (msg.content['type'].indexOf('video/') == 0) // 분류상 비디오
-        this.open_ionic_viewer(msg, path);
+        msg.content['viewer'] = 'video';
       else if (msg.content['type'].indexOf('text/') == 0) // 분류상 텍스트 문서
-        this.open_ionic_viewer(msg, path);
-      else this.alert_download(msg, path);
-    } else { // 자동지정 타입이 없는 경우
+        msg.content['viewer'] = 'text';
+      else throw new Error("열람 불가능한 자동지정 타입");
+      this.open_ionic_viewer(msg, path);
+    } catch (error) { // 자동지정 타입이 없는 경우
       switch (msg.content['file_ext']) {
         // 모델링류
         case 'obj':
@@ -398,11 +400,6 @@ export class ChatRoomPage implements OnInit {
         // 고도엔진 패키지 파일
         case 'pck':
           this.open_godot_viewer(msg, path);
-          break;
-        // 뷰어 제한 파일
-        case 'zip':
-        case 'fbx':
-          this.alert_download(msg, path);
           break;
         // 이미지류
         case 'png':
@@ -418,8 +415,19 @@ export class ChatRoomPage implements OnInit {
         case 'mp4':
         case 'ogv':
         case 'webm':
-        default: // 임의의 파일은 텍스트로 읽어서 내용 보여주기
+        // 텍스트류
+        case 'txt':
+        case 'cs':
+        case 'gd':
+        case 'py':
+        case 'ini':
           this.open_ionic_viewer(msg, path);
+          break;
+        case 'zip':
+        case 'fbx':
+        case 'pdf':
+        default: // 뷰어 제한 파일
+          this.alert_download(msg, path);
           break;
       }
     }
@@ -482,7 +490,8 @@ export class ChatRoomPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    if (this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
+    if (this.nakama.channels_orig[this.isOfficial][this.target] &&
+      this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
     this.noti.Current = undefined;
     this.p5canvas.remove();

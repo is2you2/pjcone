@@ -244,7 +244,7 @@ export class ProfilePage implements OnInit {
           });
         // 해당 서버 연결된 채널에 고지
         if (NeedAnnounceUpdate) {
-          let all_channels = this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target];
+          let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
           if (all_channels)
             all_channels.forEach((channelId: any) => {
               servers[i].socket.writeChatMessage(channelId, {

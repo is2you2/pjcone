@@ -164,7 +164,33 @@ export class IndexedDBService {
       }
     }
     data.onerror = (e) => {
-      console.error('IndexedDB loadTextFromUserPath failed: ', e);
+      console.error('IndexedDB loadFileFromUserPath failed: ', e);
+    }
+  }
+
+  /** 고도엔진의 'user://~'에 해당하는 파일 Blob 상태로 받기
+     * @param path 'user://~'에 들어가는 사용자 폴더 경로
+     * @param _CallBack 받은 Blob 활용하기
+     */
+  loadBlobFromUserPath(path: string, _CallBack = (_blob: Blob) => console.warn('loadBlobFromUserPath act null')) {
+    if (!this.db) {
+      setTimeout(() => {
+        this.loadBlobFromUserPath(path, _CallBack);
+      }, 1000);
+      return;
+    };
+    let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
+    data.onsuccess = (ev) => {
+      try {
+        _CallBack(ev.target['result']['contents']);
+      } catch (e) {
+        this.p5toast.show({
+          text: `파일 열기 오류: ${e}`,
+        });
+      }
+    }
+    data.onerror = (e) => {
+      console.error('IndexedDB loadBlobFromUserPath failed: ', e);
     }
   }
 
@@ -183,7 +209,7 @@ export class IndexedDBService {
     data.onsuccess = (ev) => {
       try {
         let url = URL.createObjectURL(ev.target['result']['contents']);
-        var link = document.createElement("a");
+        let link = document.createElement("a");
         link.download = filename;
         link.href = url;
         document.body.appendChild(link);
@@ -198,7 +224,7 @@ export class IndexedDBService {
       }
     }
     data.onerror = (e) => {
-      console.error('IndexedDB loadTextFromUserPath failed: ', e);
+      console.error('IndexedDB DownloadFileFromUserPath failed: ', e);
     }
   }
 
