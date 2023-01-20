@@ -87,7 +87,6 @@ export class ChatRoomPage implements OnInit {
   {
     title: '파일 첨부',
     icon: '',
-    cursor: 'copy',
     act: () => {
       document.getElementById('file_sel').click();
     }
@@ -139,6 +138,8 @@ export class ChatRoomPage implements OnInit {
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'] = (c: any) => {
         this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.check_sender_and_show_name(c);
+        if (c.content['filename'])
+          this.set_viewer_category(c);
         this.messages.push(c);
         setTimeout(() => {
           this.content_panel.scrollIntoView({ block: 'start' });
@@ -216,18 +217,15 @@ export class ChatRoomPage implements OnInit {
                 let hasFile = msg.content['filename'] ? '(첨부파일) ' : '';
                 this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
               }
-              if (msg.content['filename']) // 파일 포함 메시지는 자동 썸네일 생성 시도
-                if (msg.content['filesize'] < this.FILESIZE_LIMIT &&
-                  (msg.content['type'].indexOf('image/') == 0 ||
-                    msg.content['type'].indexOf('audio/') == 0 ||
-                    msg.content['type'].indexOf('video/') == 0 ||
-                    msg.content['type'].indexOf('text/') == 0)) // 확실하게 썸네일 가능한 애들에 대해서만
+              if (msg.content['filename']) { // 파일 포함 메시지는 자동 썸네일 생성 시도
+                this.set_viewer_category(msg);
+                if (msg.content['filesize'] < this.FILESIZE_LIMIT) // 너무 크지 않은 파일에 대해서만
                   this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (b) => {
-                    if (b && msg.content['filesize'] < this.FILESIZE_LIMIT)
-                      this.indexed.loadFileFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (e, v) => {
-                        if (e && v) this.modulate_thumbnail(msg, v);
-                      });
+                    if (b) this.indexed.loadFileFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (e, v) => {
+                      if (e && v) this.modulate_thumbnail(msg, v);
+                    });
                   })
+              }
               this.messages.unshift(msg);
             });
             this.next_cursor = v.next_cursor;
@@ -336,8 +334,8 @@ export class ChatRoomPage implements OnInit {
 
   /** 메시지에 썸네일 콘텐츠를 생성 */
   modulate_thumbnail(msg: any, dataURL: string) {
-    if (msg.content['type']) {
-      if (msg.content['type'].indexOf('image/') == 0) { // 자동분류상 이미지라면 썸네일 이미지 생성
+    switch (msg.content['viewer']) {
+      case 'image':
         if (msg.content['img']) return; // 이미 썸네일이 있다면 제외
         new p5((p: p5) => {
           p.setup = () => {
@@ -357,11 +355,9 @@ export class ChatRoomPage implements OnInit {
             });
           }
         });
-      } else if (msg.content['type'].indexOf('audio/') == 0) { // 자동분류상 이미지라면 썸네일 이미지 생성
-        console.log('오디오 썸네일 가능?');
-      } else if (msg.content['type'].indexOf('video/') == 0) { // 분류상 비디오
-        console.log('비디오 썸네일 가능?');
-      } else if (msg.content['type'].indexOf('text/') == 0) { // 분류상 텍스트
+        break;
+      case 'text':
+        if (msg.content['text']) return; // 이미 썸네일이 있다면 제외
         new p5((p: p5) => {
           p.setup = () => {
             p.loadStrings(dataURL, v => {
@@ -373,12 +369,26 @@ export class ChatRoomPage implements OnInit {
             });
           }
         });
-      }
+        break;
+      case 'audio':
+        console.log('오디오 썸네일 가능?');
+        break;
+      case 'video':
+        console.log('비디오 썸네일 가능?');
+        break;
+      case 'godot':
+        console.log('프로젝트 썸네일 가능?');
+        break;
+      case 'disabled':
+        break;
+      default:
+        console.error('예상하지 못한 카테고리: ', msg['viewer']);
+        break;
     }
   }
 
   /** 콘텐츠 상세보기 뷰어 띄우기 */
-  open_viewer(msg: any, path: string) {
+  set_viewer_category(msg: any) {
     try { // 자동지정 타입이 있는 경우
       if (msg.content['type'].indexOf('image/') == 0) // 분류상 이미지
         msg.content['viewer'] = 'image';
@@ -388,8 +398,7 @@ export class ChatRoomPage implements OnInit {
         msg.content['viewer'] = 'video';
       else if (msg.content['type'].indexOf('text/') == 0) // 분류상 텍스트 문서
         msg.content['viewer'] = 'text';
-      else throw new Error("열람 불가능한 자동지정 타입");
-      this.open_ionic_viewer(msg, path);
+      else throw new Error("자동지정되지 않은 타입");
     } catch (error) { // 자동지정 타입이 없는 경우
       switch (msg.content['file_ext']) {
         // 모델링류
@@ -399,7 +408,7 @@ export class ChatRoomPage implements OnInit {
         case 'gltf':
         // 고도엔진 패키지 파일
         case 'pck':
-          this.open_godot_viewer(msg, path);
+          msg.content['viewer'] = 'godot';
           break;
         // 이미지류
         case 'png':
@@ -407,29 +416,53 @@ export class ChatRoomPage implements OnInit {
         case 'jpg':
         case 'webp':
         case 'gif':
+          msg.content['viewer'] = 'image';
+          break;
         // 사운드류
         case 'wav':
         case 'ogg':
         case 'mp3':
+          msg.content['viewer'] = 'audio';
+          break;
         // 비디오류
         case 'mp4':
         case 'ogv':
         case 'webm':
+          msg.content['viewer'] = 'video';
+          break;
         // 텍스트류
         case 'txt':
         case 'cs':
         case 'gd':
         case 'py':
-        case 'ini':
-          this.open_ionic_viewer(msg, path);
+        case 'yml':
+        case 'gitignore':
+        case 'md':
+        case 'json':
+        case 'csv':
+        case 'ts':
+        case 'js':
+          msg.content['viewer'] = 'text';
           break;
-        case 'zip':
-        case 'fbx':
-        case 'pdf':
         default: // 뷰어 제한 파일
-          this.alert_download(msg, path);
+          msg.content['viewer'] = 'disabled';
           break;
       }
+    }
+  }
+
+  /** 콘텐츠 상세보기 뷰어 띄우기 */
+  open_viewer(msg: any, path: string) {
+    switch (msg.content['viewer']) {
+      case 'model':
+        this.open_godot_viewer(msg, path);
+        break;
+      case 'disabled':
+        this.alert_download(msg, path);
+        break;
+      default:
+        this.open_ionic_viewer(msg, path);
+        break;
     }
   }
 
