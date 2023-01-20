@@ -127,6 +127,10 @@ export class ProfilePage implements OnInit {
   change_img_from_file() { document.getElementById('file_sel').click(); }
   /** 파일 선택시 로컬에서 반영 */
   inputImageSelected(ev: any) {
+    let updater = setInterval(() => { }, 110);
+    setTimeout(() => {
+      clearInterval(updater);
+    }, 1500);
     let reader: any = new FileReader();
     reader = reader._realReader ?? reader;
     reader.onload = (ev: any) => {

@@ -94,6 +94,10 @@ export class OthersProfilePage implements OnInit {
 
   /** 부드러운 이미지 변환 */
   change_img_smoothly(_url: string) {
+    let updater = setInterval(() => { }, 110);
+    setTimeout(() => {
+      clearInterval(updater);
+    }, 1500);
     new p5((p: p5) => {
       let profile_tmp_img = document.getElementById('profile_tmp_img');
       let file_sel = document.getElementById('file_sel');
