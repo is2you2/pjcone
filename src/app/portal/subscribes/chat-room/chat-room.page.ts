@@ -456,7 +456,7 @@ export class ChatRoomPage implements OnInit {
   /** 콘텐츠 상세보기 뷰어 띄우기 */
   open_viewer(msg: any, path: string) {
     switch (msg.content['viewer']) {
-      case 'model':
+      case 'godot':
         this.open_godot_viewer(msg, path);
         break;
       case 'disabled':

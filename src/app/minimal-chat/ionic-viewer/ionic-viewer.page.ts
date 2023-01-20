@@ -34,40 +34,104 @@ export class IonicViewerPage implements OnInit {
     this.indexed.loadBlobFromUserPath(this.navParams.get('path'), (blob) => {
       this.FileURL = URL.createObjectURL(blob);
       setTimeout(() => {
-        let sketch = (p: p5) => {
-          var mediaObject: p5.MediaElement;
-          p.setup = () => {
-            let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
-            canvas.style('margin', '0');
-            canvas.style('position', 'relative');
-            canvas.style('pointer-events', 'none');
-            p.noLoop();
-            switch (this.FileInfo['viewer']) {
-              case 'image': // 이미지
+        // 경우에 따라 로딩하는 캔버스를 구분
+        switch (this.FileInfo['viewer']) {
+          case 'image': // 이미지
+            this.p5canvas = new p5((p: p5) => {
+              p.setup = () => {
+                let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
+                canvas.style('margin', '0');
+                canvas.style('position', 'relative');
+                canvas.style('pointer-events', 'none');
+                p.noLoop();
                 let img = p.createImg(this.FileURL, this.FileInfo['filename']);
                 img.parent(canvasDiv);
-                break;
-              case 'audio': // 오디오
+              }
+            });
+            break;
+          case 'audio': // 오디오
+            this.p5canvas = new p5((p: p5) => {
+              var mediaObject: p5.MediaElement;
+              p.setup = () => {
+                let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
+                canvas.style('margin', '0');
+                canvas.style('position', 'relative');
+                canvas.style('pointer-events', 'none');
+                p.noLoop();
                 mediaObject = p.createAudio([this.FileURL], () => {
-                  canvasDiv.appendChild(mediaObject['elt']);
                   canvas.parent(canvasDiv);
-                  ResizeMedia();
+                  canvasDiv.appendChild(mediaObject['elt']);
+                  ResizeAudio();
                   mediaObject.showControls();
                   mediaObject.loop();
-                  mediaObject.volume(0);
+                  // mediaObject.volume(0);
                 });
-                break;
-              case 'video': // 비디오
+              }
+              /** 오디오 플레이어 크기 및 캔버스 크기 조정 */
+              let ResizeAudio = () => {
+                if (this.FileInfo['viewer'] != 'audio') return;
+                let canvasWidth = this.ContentBox.offsetWidth;
+                mediaObject['size'](canvasWidth, undefined);
+                p.resizeCanvas(canvasWidth, 100);
+                p.background(255);
+                p.line(0, 0, p.width, p.height);
+              }
+              p.windowResized = () => {
+                setTimeout(() => {
+                  ResizeAudio();
+                }, 50);
+              }
+            });
+            break;
+          case 'video': // 비디오
+            this.p5canvas = new p5((p: p5) => {
+              var mediaObject: p5.MediaElement;
+              p.setup = () => {
+                let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
+                canvas.style('margin', '0');
+                canvas.style('position', 'relative');
+                canvas.style('pointer-events', 'none');
+                p.noLoop();
                 mediaObject = p.createVideo([this.FileURL], () => {
                   canvasDiv.appendChild(mediaObject['elt']);
                   canvas.parent(canvasDiv);
-                  ResizeMedia();
+                  ResizeVideo();
                   mediaObject.showControls();
                   mediaObject.loop();
-                  mediaObject.volume(0);
+                  // mediaObject.volume(0);
                 });
-                break;
-              default: // 텍스트 파일과 모르는 파일들
+              }
+              /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
+              let ResizeVideo = () => {
+                if (this.FileInfo['viewer'] != 'video') return;
+                let canvasWidth = this.ContentBox.offsetWidth;
+                let canvasHeight = this.ContentBox.offsetHeight - this.FileHeader.offsetHeight;
+                let width = mediaObject['width'];
+                let height = mediaObject['height'];
+                if (width > height) { // 가로 영상
+                  width = canvasWidth;
+                  height = height / mediaObject['width'] * width;
+                } else { // 세로 영상
+                  height = canvasHeight;
+                  width = width / mediaObject['height'] * height;
+                }
+                mediaObject['size'](width, height);
+              }
+              p.windowResized = () => {
+                setTimeout(() => {
+                  ResizeVideo();
+                }, 50);
+              }
+            });
+            break;
+          default: // 텍스트 파일과 모르는 파일들
+            this.p5canvas = new p5((p: p5) => {
+              p.setup = () => {
+                let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
+                canvas.style('margin', '0');
+                canvas.style('position', 'relative');
+                canvas.style('pointer-events', 'none');
+                p.noLoop();
                 p.loadStrings(this.FileURL, v => {
                   let textArea = document.createElement("textarea");
                   textArea.disabled = true;
@@ -79,53 +143,10 @@ export class IonicViewerPage implements OnInit {
                   console.error('열람할 수 없는 파일: ', e);
                   canvasDiv.textContent = '열람할 수 없는 파일입니다.';
                 });
-                break;
-            }
-          }
-          /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
-          let ResizeMedia = () => {
-            if (!mediaObject) return;
-            let canvasWidth = this.ContentBox.offsetWidth;
-            let canvasHeight = this.ContentBox.offsetHeight - this.FileHeader.offsetHeight;
-            let width = mediaObject['width'];
-            let height = mediaObject['height'];
-            if (width > height) { // 가로 영상
-              width = canvasWidth;
-              height = height / mediaObject['width'] * width;
-            } else { // 세로 영상
-              height = canvasHeight;
-              width = width / mediaObject['height'] * height;
-            }
-            mediaObject['size'](width, height);
-            p.resizeCanvas(width, canvasHeight - 10 - height);
-            p.background(255);
-            p.line(0, 0, p.width, p.height);
-          }
-          p.mousePressed = () => {
-            console.log('마우스 시작');
-          }
-          p.mouseReleased = () => {
-            console.log('마우스 뗌');
-          }
-          p.mouseDragged = () => {
-            console.log('마우스 드래그');
-          }
-          p.touchStarted = () => {
-            console.log('터치 시작');
-          }
-          p.touchEnded = () => {
-            console.log('터치 End');
-          }
-          p.touchMoved = () => {
-            console.log('터치 이동');
-          }
-          p.windowResized = () => {
-            setTimeout(() => {
-              ResizeMedia();
-            }, 50);
-          }
+              }
+            });
+            break;
         }
-        this.p5canvas = new p5(sketch);
       }, 50);
     });
   }
