@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar id="Toolbar">
     <ion-title>Ionic Viewer</ion-title>
     <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
       <ion-back-button defaultHref=""></ion-back-button>
@@ -7,11 +7,11 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content id="ContentBox">
   <table class="main_table" style="width: 100%; height: 100%; margin: 0;">
     <tr style="height: 0;">
       <td>
-        <ion-list-header>
+        <ion-list-header id="FileHeader">
           <ion-label>{{FileInfo.filename}}</ion-label>
           <ion-button *ngIf="cant_dedicated" (click)="download_file()">다운로드</ion-button>
         </ion-list-header>

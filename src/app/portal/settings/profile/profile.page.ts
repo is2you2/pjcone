@@ -253,7 +253,9 @@ export class ProfilePage implements OnInit {
             all_channels.forEach((channelId: any) => {
               servers[i].socket.writeChatMessage(channelId, {
                 user: 'modify_data',
-                noti: `사용자 프로필 변경: ${this.original_profile['display_name']}`,
+                noti: this.original_profile['display_name'] == this.nakama.users.self['display_name']
+                  ? `사용자 프로필 변경: ${this.original_profile['display_name']}`
+                  : `사용자 프로필 변경: ${this.original_profile['display_name']} -> ${this.nakama.users.self['display_name']}`,
               });
             });
         }

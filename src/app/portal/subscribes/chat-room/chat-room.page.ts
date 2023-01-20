@@ -168,24 +168,26 @@ export class ChatRoomPage implements OnInit {
   p5canvas: p5;
   /** 창 조절에 따른 최대 화면 크기 조정 */
   follow_resize() {
-    let sketch = (p: p5) => {
-      let mainTable = document.getElementById('main_table');
-      let mainDiv = document.getElementById('main_div');
-      let inputTable = document.getElementById('input_table');
-      let ext_menu = document.getElementById('ext_menu');
-      p.setup = () => {
-        setTimeout(() => {
-          p.windowResized();
-        }, 100);
-        p.noLoop();
+    setTimeout(() => {
+      let sketch = (p: p5) => {
+        let mainTable = document.getElementById('main_table');
+        let mainDiv = document.getElementById('main_div');
+        let inputTable = document.getElementById('input_table');
+        let ext_menu = document.getElementById('ext_menu');
+        p.setup = () => {
+          setTimeout(() => {
+            p.windowResized();
+          }, 100);
+          p.noLoop();
+        }
+        p.windowResized = () => {
+          setTimeout(() => {
+            mainDiv.setAttribute('style', `max-width: ${mainTable.parentElement.offsetWidth}px; max-height: ${mainTable.parentElement.clientHeight - inputTable.offsetHeight - ext_menu.offsetHeight}px`);
+          }, 0);
+        }
       }
-      p.windowResized = () => {
-        setTimeout(() => {
-          mainDiv.setAttribute('style', `max-width: ${mainTable.parentElement.offsetWidth}px; max-height: ${mainTable.parentElement.clientHeight - inputTable.offsetHeight - ext_menu.offsetHeight}px`);
-        }, 0);
-      }
-    }
-    this.p5canvas = new p5(sketch);
+      this.p5canvas = new p5(sketch);
+    }, 50);
   }
 
   /** 사용자 입력 */

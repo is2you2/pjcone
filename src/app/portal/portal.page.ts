@@ -17,8 +17,8 @@ export class PortalPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, _v) => {
-      if (!e)  // 프로필 정보 없는 상태
+    this.indexed.checkIfFileExist('servers/self/profile.json', (b) => {
+      if (!b)  // 프로필 정보 없는 상태
         this.modalCtrl.create({
           component: ProfilePage
         }).then(v => v.present());
