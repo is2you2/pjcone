@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as p5 from "p5";
+window['p5'] = p5;
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';

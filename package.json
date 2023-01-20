@@ -54,7 +54,7 @@
     "cordova-plugin-websocket-server": "^1.6.0",
     "ionic-plugin-deeplinks": "^1.0.24",
     "jetifier": "^2.0.0",
-    "p5": "^1.4.1",
+    "p5": "^1.5.0",
     "phonegap-plugin-barcodescanner": "^8.1.0",
     "qrcode-svg": "^1.1.0",
     "rxjs": "~6.6.0",

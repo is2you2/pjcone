@@ -12,7 +12,7 @@ const routes: Routes = [
   },
   {
     path: 'others-profile',
-    loadChildren: () => import('./others-profile/others-profile.module').then( m => m.OthersProfilePageModule)
+    loadChildren: () => import('./others-profile/others-profile.module').then(m => m.OthersProfilePageModule)
   },
 ];
 
