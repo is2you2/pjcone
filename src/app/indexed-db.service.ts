@@ -37,6 +37,29 @@ export class IndexedDBService {
     }
   }
 
+  /** 고도엔진 시스템 오류 방지를 위해 폴더구조 생성 */
+  createRecursiveDirectory(path: string) {
+    let lastIndexOf = path.lastIndexOf('/');
+    let dir = path.substring(0, lastIndexOf);
+    if (!dir) return;
+    this.checkIfFileExist(dir, b => {
+      if (!b) {
+        let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
+          timestamp: new Date(),
+          mode: 16893,
+        }, `/userfs/${dir}`);
+        put.onsuccess = (ev) => {
+          if (ev.type != 'success')
+            console.error('저장 실패: ', path);
+          this.createRecursiveDirectory(dir);
+        }
+        put.onerror = (e) => {
+          console.error('IndexedDB createRecursiveDirectory failed: ', e);
+        }
+      }
+    })
+  }
+
   /**
    * 문자열 공유용
    * @param text 문서에 포함될 텍스트
@@ -49,10 +72,11 @@ export class IndexedDBService {
       }, 1000);
       return;
     };
+    this.createRecursiveDirectory(path);
     let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
-      contents: new TextEncoder().encode(text),
-      mode: 33206,
       timestamp: new Date(),
+      mode: 33206,
+      contents: new TextEncoder().encode(text),
     }, `/userfs/${path}`);
     put.onsuccess = (ev) => {
       if (ev.type != 'success')
