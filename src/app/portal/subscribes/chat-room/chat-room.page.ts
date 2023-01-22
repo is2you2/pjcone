@@ -223,9 +223,14 @@ export class ChatRoomPage implements OnInit {
                 this.set_viewer_category(msg);
                 if (msg.content['filesize'] < this.FILESIZE_LIMIT) // 너무 크지 않은 파일에 대해서만
                   this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (b) => {
-                    if (b) this.indexed.loadFileFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (e, v) => {
-                      if (e && v) this.modulate_thumbnail(msg, v);
-                    });
+                    if (b) this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
+                      msg.content['type'],
+                      v => {
+                        if (v) {
+                          let url = URL.createObjectURL(v);
+                          this.modulate_thumbnail(msg, url);
+                        }
+                      });
                   })
               }
               this.messages.unshift(msg);
@@ -313,9 +318,12 @@ export class ChatRoomPage implements OnInit {
     this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (v) => {
       if (v) { // 파일이 존재하는 경우
         if (msg.content['filesize'] < this.FILESIZE_LIMIT)
-          this.indexed.loadFileFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (e, v) => {
-            this.modulate_thumbnail(msg, v.replace(/"|\\|=/g, ''));
-          })
+          this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
+            msg.content['type'],
+            v => {
+              let url = URL.createObjectURL(v);
+              this.modulate_thumbnail(msg, url);
+            });
         this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
       } else { // 가지고 있는 파일이 아닐 경우
         try { // 전송중이라면 무시
@@ -357,14 +365,14 @@ export class ChatRoomPage implements OnInit {
   }
 
   /** 메시지에 썸네일 콘텐츠를 생성 */
-  modulate_thumbnail(msg: any, dataURL: string) {
+  modulate_thumbnail(msg: any, ObjectURL: string) {
     switch (msg.content['viewer']) {
       case 'image':
         if (msg.content['img']) return; // 이미 썸네일이 있다면 제외
         new p5((p: p5) => {
           p.setup = () => {
             p.smooth();
-            p.loadImage(dataURL, v => {
+            p.loadImage(ObjectURL, v => {
               const SIDE_LIMIT = 192;
               if (v.width > v.height) {
                 if (v.width > SIDE_LIMIT)
@@ -372,9 +380,11 @@ export class ChatRoomPage implements OnInit {
               } else if (v.height > SIDE_LIMIT)
                 v.resize(v.width / v.height * SIDE_LIMIT, SIDE_LIMIT);
               msg.content['img'] = v['canvas'].toDataURL();
+              URL.revokeObjectURL(ObjectURL);
               p.remove();
             }, e => {
               console.error('이미지 불러오기 실패: ', e);
+              URL.revokeObjectURL(ObjectURL);
               p.remove();
             });
           }
@@ -384,11 +394,13 @@ export class ChatRoomPage implements OnInit {
         if (msg.content['text']) return; // 이미 썸네일이 있다면 제외
         new p5((p: p5) => {
           p.setup = () => {
-            p.loadStrings(dataURL, v => {
+            p.loadStrings(ObjectURL, v => {
               msg.content['text'] = v;
+              URL.revokeObjectURL(ObjectURL);
               p.remove();
             }, e => {
               console.error('텍스트 열람 불가: ', e);
+              URL.revokeObjectURL(ObjectURL);
               p.remove();
             });
           }

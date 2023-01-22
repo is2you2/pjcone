@@ -100,18 +100,16 @@ export class IndexedDBService {
       }, 1000);
       return;
     };
-    let sep = base64.split(',');
-    let mime = sep[0].split(':')[1].split(';')[0];
-    let byteStr = atob(sep[1]);
+    let byteStr = atob(base64.split(',')[1]);
     let arrayBuffer = new ArrayBuffer(byteStr.length);
-    let uintArray = new Uint8Array(arrayBuffer);
+    let int8Array = new Int8Array(arrayBuffer);
     for (let i = 0, j = byteStr.length; i < j; i++)
-      uintArray[i] = byteStr.charCodeAt(i);
-    let blob = new Blob([arrayBuffer], { type: mime });
+      int8Array[i] = byteStr.charCodeAt(i);
+    this.createRecursiveDirectory(path);
     let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
-      contents: blob,
-      mode: 33206,
       timestamp: new Date(),
+      mode: 33206,
+      contents: int8Array,
     }, `/userfs/${path}`);
     put.onsuccess = (ev) => {
       if (ev.type != 'success')
@@ -163,50 +161,22 @@ export class IndexedDBService {
     }
   }
 
-  /** 고도엔진에서 'user://~'에 해당하는 파일 불러오기
-   * @param path 'user://~'에 들어가는 사용자 폴더 경로
-   * @param _CallBack 불러오기 이후 행동. 인자 2개 필요 (load-return)
-   */
-  loadFileFromUserPath(path: string, _CallBack = (_e: boolean, _v: string) => console.warn('loadTextFromUserPath act null')) {
-    if (!this.db) {
-      setTimeout(() => {
-        this.loadFileFromUserPath(path, _CallBack);
-      }, 1000);
-      return;
-    };
-    let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
-    data.onsuccess = (ev) => {
-      try {
-        let reader: any = new FileReader();
-        reader = reader._realReader ?? reader;
-        reader.onload = (ev: any) => {
-          _CallBack(true, ev.target.result);
-        };
-        reader.readAsDataURL(ev.target['result']['contents']);
-      } catch (e) {
-        _CallBack(false, `No file: , ${path} || ${e}`)
-      }
-    }
-    data.onerror = (e) => {
-      console.error('IndexedDB loadFileFromUserPath failed: ', e);
-    }
-  }
-
   /** 고도엔진의 'user://~'에 해당하는 파일 Blob 상태로 받기
      * @param path 'user://~'에 들어가는 사용자 폴더 경로
      * @param _CallBack 받은 Blob 활용하기
      */
-  loadBlobFromUserPath(path: string, _CallBack = (_blob: Blob) => console.warn('loadBlobFromUserPath act null')) {
+  loadBlobFromUserPath(path: string, mime: string, _CallBack = (_blob: Blob) => console.warn('loadBlobFromUserPath act null')) {
     if (!this.db) {
       setTimeout(() => {
-        this.loadBlobFromUserPath(path, _CallBack);
+        this.loadBlobFromUserPath(path, mime, _CallBack);
       }, 1000);
       return;
     };
     let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
     data.onsuccess = (ev) => {
       try {
-        _CallBack(ev.target['result']['contents']);
+        let blob = new Blob([ev.target['result']['contents']], { type: mime });
+        _CallBack(blob);
       } catch (e) {
         this.p5toast.show({
           text: `파일 열기 오류: ${e}`,

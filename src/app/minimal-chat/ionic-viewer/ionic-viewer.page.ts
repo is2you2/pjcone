@@ -33,7 +33,7 @@ export class IonicViewerPage implements OnInit {
     this.FileInfo = this.navParams.get('info');
     this.ContentBox = document.getElementById('ContentBox');
     this.FileHeader = document.getElementById('FileHeader');
-    this.indexed.loadBlobFromUserPath(this.navParams.get('path'), (blob) => {
+    this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type'], (blob) => {
       this.FileURL = URL.createObjectURL(blob);
     });
   }
