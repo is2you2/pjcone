@@ -1714,6 +1714,8 @@ export class NakamaService {
     let _msg = JSON.parse(JSON.stringify(msg));
     if (!this.channel_transfer[_is_official][_target]) this.channel_transfer[_is_official][_target] = {};
     if (!this.channel_transfer[_is_official][_target][msg.channel_id]) this.channel_transfer[_is_official][_target][msg.channel_id] = {};
+    // 이미 진행중이라면 무시
+    if (this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]) return;
     if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id])
       this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id] = {
         type: 'download',

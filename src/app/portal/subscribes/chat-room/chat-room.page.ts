@@ -325,10 +325,32 @@ export class ChatRoomPage implements OnInit {
               this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
             });
         } catch (_e) { // 전송중이 아니라면 다운받기
-          this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
-            this.modulate_thumbnail(msg, resultModified);
-            this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
-          });
+          if (isPlatform == 'DesktopPWA') {
+            this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
+              this.modulate_thumbnail(msg, resultModified);
+              this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
+            });
+          } else if (isPlatform != 'MobilePWA')
+            if (msg.content['viewer'] == 'disabled')
+              this.alertCtrl.create({
+                header: '모바일에서 열 수 없음',
+                message: '이 파일은 뷰어로 볼 수 없습니다.',
+                buttons: [{
+                  text: '그래도 다운로드',
+                  handler: () => {
+                    this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
+                      this.modulate_thumbnail(msg, resultModified);
+                      this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
+                    });
+                  }
+                }]
+              }).then(v => v.present());
+            else {
+              this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
+                this.modulate_thumbnail(msg, resultModified);
+                this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
+              });
+            }
         }
       }
     });
