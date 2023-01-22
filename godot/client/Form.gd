@@ -32,7 +32,7 @@ func load_package(act_name:String):
 	else: # 패키지를 가지고 있는 경우
 		print('Godot: 패키지 타겟: ', act_name)
 		$CenterContainer.queue_free()
-		var inst = load('res://Main.tscn')
+		var inst = load('res://%s.tscn' % (window.title if window.title else 'Main'))
 		add_child(inst.instance())
 
 # 파일 다운로드 시작
@@ -40,6 +40,7 @@ func start_download_pck():
 	var act_name:= 'godot-debug'
 	if OS.has_feature('JavaScript'):
 		act_name = window.act
+	$CenterContainer/ColorRect/Label.text = 'Downloading...\n"%s" tool.' % window.title
 	var req:= HTTPRequest.new()
 	req.name = 'HTTPRequest'
 	req.download_file = 'user://acts/%s.pck' % act_name
@@ -59,6 +60,7 @@ func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 		else: # 엔진 내 테스트중
 			load_package('godot-debug')
 	else: # 목표 파일 다운로드 실패
+		$CenterContainer/ColorRect/Label.text = 'Click to download\n"%s" tool.' % window.title
 		if OS.has_feature('JavaScript'):
 			window.failed()
 		else:

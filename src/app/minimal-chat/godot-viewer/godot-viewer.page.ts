@@ -28,6 +28,8 @@ export class GodotViewerPage implements OnInit {
     this.global.CreateGodotIFrame('godot-viewer', {
       act: 'godot-viewer',
       title: 'ViewerEx',
+      path: this.navParams.get('path'),
+      ext: this.FileInfo['file_ext']
     });
     console.log('넘겨받은 정보: ', this.navParams.data);
   }

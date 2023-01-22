@@ -65,7 +65,8 @@ export class GlobalActService {
     _godot.setAttribute('class', 'full_screen');
     keys['failed'] = () => {
       this.p5toast.show({
-        text: '기능 다운로드 실패',
+        text: `기능 다운로드 실패: ${keys.title}`,
+        lateable: true,
       });
     }
     let frame = document.getElementById(_frame_name);
