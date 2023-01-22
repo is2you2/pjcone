@@ -221,17 +221,18 @@ export class ChatRoomPage implements OnInit {
               }
               if (msg.content['filename']) { // 파일 포함 메시지는 자동 썸네일 생성 시도
                 this.set_viewer_category(msg);
-                if (msg.content['filesize'] < this.FILESIZE_LIMIT) // 너무 크지 않은 파일에 대해서만
-                  this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (b) => {
-                    if (b) this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
-                      msg.content['type'],
-                      v => {
-                        if (v) {
+                this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (b) => {
+                  if (b) {
+                    msg.content['text'] = '다운로드됨';
+                    if (msg.content['filesize'] < this.FILESIZE_LIMIT) // 너무 크지 않은 파일에 대해서만 자동 썸네일 구성
+                      this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
+                        msg.content['type'],
+                        v => {
                           let url = URL.createObjectURL(v);
                           this.modulate_thumbnail(msg, url);
-                        }
-                      });
-                  })
+                        });
+                  }
+                })
               }
               this.messages.unshift(msg);
             });
@@ -327,19 +328,18 @@ export class ChatRoomPage implements OnInit {
         this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
       } else { // 가지고 있는 파일이 아닐 경우
         try { // 전송중이라면 무시
-          if (!this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id])
-            this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
-              this.modulate_thumbnail(msg, resultModified);
-              this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
-            });
+          if (this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id])
+            return;
+          else throw new Error("Need to download file");
         } catch (_e) { // 전송중이 아니라면 다운받기
           if (isPlatform == 'DesktopPWA') {
             this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
-              this.modulate_thumbnail(msg, resultModified);
+              let url = URL.createObjectURL(resultModified);
+              this.modulate_thumbnail(msg, url);
               this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
             });
-          } else if (isPlatform != 'MobilePWA')
-            if (msg.content['viewer'] == 'disabled')
+          } else if (isPlatform != 'MobilePWA') {
+            if (msg.content['viewer'] == 'disabled') {
               this.alertCtrl.create({
                 header: '모바일에서 열 수 없음',
                 message: '이 파일은 뷰어로 볼 수 없습니다.',
@@ -347,18 +347,21 @@ export class ChatRoomPage implements OnInit {
                   text: '그래도 다운로드',
                   handler: () => {
                     this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
-                      this.modulate_thumbnail(msg, resultModified);
+                      let url = URL.createObjectURL(resultModified);
+                      this.modulate_thumbnail(msg, url);
                       this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
                     });
                   }
                 }]
               }).then(v => v.present());
-            else {
+            } else {
               this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
-                this.modulate_thumbnail(msg, resultModified);
+                let url = URL.createObjectURL(resultModified);
+                this.modulate_thumbnail(msg, url);
                 this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
               });
             }
+          }
         }
       }
     });
@@ -391,7 +394,6 @@ export class ChatRoomPage implements OnInit {
         });
         break;
       case 'text':
-        if (msg.content['text']) return; // 이미 썸네일이 있다면 제외
         new p5((p: p5) => {
           p.setup = () => {
             p.loadStrings(ObjectURL, v => {
@@ -407,23 +409,21 @@ export class ChatRoomPage implements OnInit {
         });
         break;
       case 'audio':
-        console.log('오디오 썸네일 가능?');
+        console.log('오디오 썸네일');
+        URL.revokeObjectURL(ObjectURL);
         break;
       case 'video':
-        console.log('비디오 썸네일 가능?');
-        break;
-      case 'godot':
-        console.log('프로젝트 썸네일 가능?');
-        break;
-      case 'disabled':
+        console.log('비디오 썸네일');
+        URL.revokeObjectURL(ObjectURL);
         break;
       default:
         console.error('예상하지 못한 카테고리: ', msg['viewer']);
+        URL.revokeObjectURL(ObjectURL);
         break;
     }
   }
 
-  /** 콘텐츠 상세보기 뷰어 띄우기 */
+  /** 콘텐츠 카테고리 분류 */
   set_viewer_category(msg: any) {
     try { // 자동지정 타입이 있는 경우
       if (msg.content['type'].indexOf('image/') == 0) // 분류상 이미지

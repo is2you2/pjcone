@@ -93,7 +93,7 @@ export class IndexedDBService {
    * @param base64 문서에 포함될 base64 텍스트
    * @param path 저장될 상대 경로(user://~)
    */
-  saveFileToUserPath(base64: string, path: string, _CallBack = (_input: string) => { }) {
+  saveFileToUserPath(base64: string, path: string, _CallBack = (_int8array: Int8Array) => { }) {
     if (!this.db) {
       setTimeout(() => {
         this.saveFileToUserPath(base64, path, _CallBack);
@@ -114,7 +114,7 @@ export class IndexedDBService {
     put.onsuccess = (ev) => {
       if (ev.type != 'success')
         console.error('저장 실패: ', path);
-      _CallBack(base64);
+      _CallBack(int8Array);
     }
     put.onerror = (e) => {
       console.error('IndexedDB saveFileToUserPath failed: ', e);

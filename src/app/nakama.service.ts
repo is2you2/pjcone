@@ -1710,7 +1710,7 @@ export class NakamaService {
    * 채널 메시지에 기반하여 파일 다운받기
    * @param msg 메시지 정보
    */
-  async ReadStorage_From_channel(msg: any, _is_official: string, _target: string, _CallBack = (_result: string) => { }) {
+  async ReadStorage_From_channel(msg: any, _is_official: string, _target: string, _CallBack = (_blob: Blob) => { }) {
     let _msg = JSON.parse(JSON.stringify(msg));
     if (!this.channel_transfer[_is_official][_target]) this.channel_transfer[_is_official][_target] = {};
     if (!this.channel_transfer[_is_official][_target][msg.channel_id]) this.channel_transfer[_is_official][_target][msg.channel_id] = {};
@@ -1743,9 +1743,12 @@ export class NakamaService {
         }, _is_official, _target, i);
       });
     let resultModified = result.join('').replace(/"|\\|=/g, '');
+    msg.content['text'] = '다운로드됨';
     if (resultModified) {
-      this.indexed.saveFileToUserPath(resultModified, `servers/${_is_official}/${_target}/channels/${_msg.channel_id}/files/msg_${_msg.message_id}.${_msg.content['file_ext']}`);
-      if (_CallBack) _CallBack(resultModified);
+      this.indexed.saveFileToUserPath(resultModified, `servers/${_is_official}/${_target}/channels/${_msg.channel_id}/files/msg_${_msg.message_id}.${_msg.content['file_ext']}`,
+        v => {
+          _CallBack(new Blob([v], { type: msg.content['type'] }));
+        });
     } else this.p5toast.show({
       text: '이 파일은 서버에서 삭제되었습니다.',
     });
