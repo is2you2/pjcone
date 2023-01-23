@@ -100,6 +100,10 @@ export class ChatRoomPage implements OnInit {
     this.userInput.file['ext'] = ev.target.files[0].name.split('.')[1] || ev.target.files[0].type || '검토 불가';
     this.userInput.file['size'] = ev.target.files[0].size;
     this.userInput.file['type'] = ev.target.files[0].type;
+    let updater = setInterval(() => { }, 110);
+    setTimeout(() => {
+      clearInterval(updater);
+    }, 1500);
     let reader: any = new FileReader();
     reader = reader._realReader ?? reader;
     reader.onload = (ev: any) => {
