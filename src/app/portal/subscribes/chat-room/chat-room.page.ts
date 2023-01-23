@@ -123,15 +123,22 @@ export class ChatRoomPage implements OnInit {
     this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
-    // 1:1 대화라면
-    if (this.info['redirect']['type'] == 2) {
-      if (!this.info['redirect']) // 채널 최초 생성 오류 방지용
-        this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
-      else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
-        this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
+    switch (this.info['redirect']['type']) {
+      case 2: // 1:1 대화라면
+        if (!this.info['redirect']) // 채널 최초 생성 오류 방지용
+          this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
+        else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
+          this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
+        console.warn('이 자리에서 로컬 채팅 기록 불러오기');
+        break;
+      case 3: // 그룹 대화라면
+        if (this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open'])
+          console.warn('이 자리에서 로컬 채팅 기록 불러오기: 그룹');
+        break;
+      default:
+        break;
     }
     this.content_panel = document.getElementById('content');
-    console.warn('이 자리에서 로컬 채팅 기록 불러오기');
     // 실시간 채팅을 받는 경우 행동처리
     if (this.nakama.channels_orig[this.isOfficial][this.target] &&
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
@@ -241,20 +248,35 @@ export class ChatRoomPage implements OnInit {
             this.pullable = true;
           });
       else { // 오프라인 기반 리스트 알려주기
+        if (this.info['redirect']['type'] == 3) // 그룹대화라면 공개여부 검토
+          if (!this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open']) {
+            let tmp = [{
+              content: {
+                msg: '이 채널이 온라인 상태여야 합니다.',
+              }
+            }, {
+              content: {
+                msg: '그룹에서 오프라인 기록 열람을 허용하지 않습니다.',
+              }
+            }];
+            this.next_cursor = undefined;
+            tmp.forEach(tmsg => this.messages.push(tmsg));
+            return;
+          }
         let tmp = [{
           content: {
             msg: '이 채널이 온라인 상태여야 합니다.',
           }
         }, {
           content: {
-            msg: '오프라인 기록 열람 기능 준비중',
+            msg: '오프라인 기록 기능 준비중',
           }
         }];
         this.next_cursor = undefined;
         tmp.forEach(tmsg => this.messages.push(tmsg));
       }
     } else {
-      console.log('현 상태보다 최근 기록 불러오기');
+      console.log('지금 보고있는 기록보다 최근 기록 불러오기');
     }
   }
 

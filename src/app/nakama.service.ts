@@ -1068,7 +1068,7 @@ export class NakamaService {
         }
       }
     } else if (p['user_id_one']) { // 1:1 채팅인 경우
-      let targetId = this.channels_orig[_is_official][_target][p.channel_id || p.id]['redirect']['id'];
+      let targetId = this.channels_orig[_is_official][_target][p.channel_id || p.id || p['user_id_one']]['redirect']['id'];
       result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
     }
     if (this.channels_orig[_is_official][_target][p.channel_id || p.id] && this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] != 'missing')

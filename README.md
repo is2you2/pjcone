@@ -29,7 +29,7 @@ Godot 엔진이 현재 가지고 있는 구조상의 한계를 뛰어넘기 위�
 - [ ] 다른 기기에서 작업하면 페이지 업데이트하기
 - [ ] liss22_home으로부터 선물 개체들을 받아와줘
 - [ ] 곽인지 고양이 캐릭터 넣기
-- [ ] 컨텐츠 뷰어 구성
+- [x] 컨텐츠 뷰어 구성
 - [ ] 서버와의 소통을 기반, 웹 사이트 UI를 통해 게시물 관리하기 기능
 
 ## Project: Cone
@@ -68,7 +68,7 @@ Godot 엔진이 현재 가지고 있는 구조상의 한계를 뛰어넘기 위�
       - [ ] 3D
       - [ ] 게임
    - [ ] 채팅방 (DIYFreeChat)
-      - [ ] ContentsViewer (DIYFreeChat)
+      - [x] ContentsViewer (DIYFreeChat)
       - [ ] 공유 그림판 (DrawScribbleDeluxe)
       - [ ] 내부 악기 관리자
       - [ ] 내부 타악기 시뮬레이터 (freeInst)
