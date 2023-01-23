@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { Group } from '@heroiclabs/nakama-js';
 import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
-import { isPlatform } from 'src/app/app.component';
+import { isPlatform, SERVER_PATH_ROOT } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
@@ -38,6 +38,45 @@ export class SettingsPage implements OnInit {
       if (e && v) this.nakama.users.self['img'] = v.replace(/"|=|\\/g, '');
     });
     this.isBatteryOptimizationsShowed = Boolean(localStorage.getItem('ShowDisableBatteryOptimizations'));
+    this.checkAdsInfo();
+  }
+
+  /** 광고 정보 불러오기 */
+  async checkAdsInfo() {
+    try {
+      let res = await fetch(`${SERVER_PATH_ROOT}pjcone_pck/ads.txt`);
+      let text = await (await res.blob()).text();
+      this.indexed.saveTextFileToUserPath(text, 'ads_list.txt');
+      let lines: string[] = text.split('\n');
+      if (text.indexOf('<html>') < 0) {
+        this.createAdIFrame(lines);
+      } else throw new Error("없는거 다름없지");
+    } catch (e) {
+      this.indexed.loadTextFromUserPath('ads_list.txt', (e, v) => {
+        if (e && v) this.createAdIFrame(v.split('\n'));
+      });
+    }
+  }
+
+  /** 광고 판넬 구성하기 */
+  createAdIFrame(lines: string[]) {
+    let availables = [];
+    let currentTime = new Date().getTime();
+    // 양식: 시작시간,끝시간,사이트주소
+    for (let i = 0, j = lines.length; i < j; i++) {
+      let sep = lines[i].split(',');
+      if (Number(sep[0]) > currentTime && Number(sep[1]) < currentTime)
+        availables.push(sep[2]);
+    }
+    let randomIndex = Math.floor(Math.random() * availables.length);
+    let currentAd = availables[randomIndex];
+    let AdFrame = document.createElement('iframe');
+    AdFrame.id = 'AdFrame';
+    AdFrame.setAttribute("src", currentAd);
+    AdFrame.setAttribute("frameborder", "0");
+    AdFrame.setAttribute('class', 'full_screen');
+    let AD_Div = document.getElementById('advertise');
+    AD_Div.appendChild(AdFrame);
   }
 
   isBatteryOptimizationsShowed = false;
