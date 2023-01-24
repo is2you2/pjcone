@@ -44,39 +44,67 @@ export class SettingsPage implements OnInit {
   /** 광고 정보 불러오기 */
   async checkAdsInfo() {
     try {
-      let res = await fetch(`${SERVER_PATH_ROOT}pjcone_pck/ads.txt`);
+      let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/${this.langset.lang}.txt`);
       let text = await (await res.blob()).text();
-      this.indexed.saveTextFileToUserPath(text, 'ads_list.txt');
       let lines: string[] = text.split('\n');
       if (text.indexOf('<html>') < 0) {
-        this.createAdIFrame(lines);
-      } else throw new Error("없는거 다름없지");
-    } catch (e) {
+        this.indexed.saveTextFileToUserPath(text, 'ads_list.txt');
+        this.listAvailableAds(lines);
+      } else throw new Error("없는거나 다름없지");
+    } catch (e) { // 로컬 정보 기반으로 광고
       this.indexed.loadTextFromUserPath('ads_list.txt', (e, v) => {
-        if (e && v) this.createAdIFrame(v.split('\n'));
+        if (e && v) this.listAvailableAds(v.split('\n'));
       });
     }
   }
 
+  /** 사용가능한 광고 리스트 추리기 */
+  availables = [];
   /** 광고 판넬 구성하기 */
-  createAdIFrame(lines: string[]) {
-    let availables = [];
+  listAvailableAds(lines: string[]) {
     let currentTime = new Date().getTime();
     // 양식: 시작시간,끝시간,사이트주소
+    this.availables.length = 0;
     for (let i = 0, j = lines.length; i < j; i++) {
       let sep = lines[i].split(',');
-      if (Number(sep[0]) > currentTime && Number(sep[1]) < currentTime)
-        availables.push(sep[2]);
+      if (Number(sep[0]) < currentTime && currentTime < Number(sep[1]))
+        this.availables.push([Number(sep[0]), Number(sep[1]), sep[2]]);
     }
-    let randomIndex = Math.floor(Math.random() * availables.length);
-    let currentAd = availables[randomIndex];
-    let AdFrame = document.createElement('iframe');
-    AdFrame.id = 'AdFrame';
-    AdFrame.setAttribute("src", currentAd);
-    AdFrame.setAttribute("frameborder", "0");
-    AdFrame.setAttribute('class', 'full_screen');
+    if (this.availables.length)
+      this.displayRandomAds();
+    else {
+      console.warn('이 곳에서 보여줄 광고가 없는 경우 다음 광고 게시 예약하기');
+    }
+  }
+
+  /** 광고 게시 여부 */
+  isAdHiding = true;
+  /** 새로고침 관리 */
+  refreshAds: any;
+  displayRandomAds() {
     let AD_Div = document.getElementById('advertise');
-    AD_Div.appendChild(AdFrame);
+    let children = AD_Div.childNodes;
+    this.isAdHiding = true;
+    children.forEach(child => {
+      child.remove();
+    });
+    if (this.availables.length) { // 가능한 광고가 있다면
+      let randomIndex = Math.floor(Math.random() * this.availables.length);
+      let currentAd = this.availables[randomIndex];
+      console.log(currentAd[1] - new Date().getTime());
+      this.refreshAds = setTimeout(() => {
+        this.indexed.loadTextFromUserPath('ads_list.txt', (e, v) => {
+          if (e && v) this.listAvailableAds(v.split('\n'));
+        });
+      }, currentAd[1] - new Date().getTime());
+      let AdFrame = document.createElement('iframe');
+      AdFrame.id = 'AdFrame';
+      AdFrame.setAttribute("src", currentAd[2]);
+      AdFrame.setAttribute("frameborder", "0");
+      AdFrame.setAttribute('class', 'full_screen');
+      this.isAdHiding = false;
+      AD_Div.appendChild(AdFrame);
+    }
   }
 
   isBatteryOptimizationsShowed = false;
@@ -235,5 +263,6 @@ export class SettingsPage implements OnInit {
         });
     });
     delete this.nakama.users.self['img'];
+    clearTimeout(this.refreshAds);
   }
 }

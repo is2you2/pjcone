@@ -8,7 +8,12 @@
 </ion-header>
 
 <ion-content>
-  <div id="advertise" class="advertise_banner"></div>
+  <div [hidden]="isAdHiding">
+    <ion-item-divider>
+      <ion-label>커뮤니티 광고</ion-label>
+    </ion-item-divider>
+    <div id="advertise" class="advertise_banner"></div>
+  </div>
   <ion-item-divider>
     <ion-label>사용자 정보</ion-label>
   </ion-item-divider>
