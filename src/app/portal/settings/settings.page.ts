@@ -38,6 +38,7 @@ export class SettingsPage implements OnInit {
       if (e && v) this.nakama.users.self['img'] = v.replace(/"|=|\\/g, '');
     });
     this.isBatteryOptimizationsShowed = Boolean(localStorage.getItem('ShowDisableBatteryOptimizations'));
+    this.AD_Div = document.getElementById('advertise');
     this.checkAdsInfo();
   }
 
@@ -65,15 +66,31 @@ export class SettingsPage implements OnInit {
     let currentTime = new Date().getTime();
     // 양식: 시작시간,끝시간,사이트주소
     this.availables.length = 0;
+    let NotYet: number;
     for (let i = 0, j = lines.length; i < j; i++) {
       let sep = lines[i].split(',');
-      if (Number(sep[0]) < currentTime && currentTime < Number(sep[1]))
-        this.availables.push([Number(sep[0]), Number(sep[1]), sep[2]]);
+      if (Number(sep[0]) < currentTime) {
+        if (currentTime < Number(sep[1]))
+          this.availables.push([Number(sep[0]), Number(sep[1]), sep[2]]);
+      } else { // 아직 도래하지 않은 광고리스트
+        if (!NotYet) NotYet = Number(sep[0]);
+        else if (Number(sep[0]) < NotYet)
+          NotYet = Number(sep[0]);
+      }
     }
+    let children = this.AD_Div.childNodes;
+    this.isAdHiding = true;
+    children.forEach(child => {
+      child.remove();
+    });
     if (this.availables.length)
       this.displayRandomAds();
-    else {
-      console.warn('이 곳에서 보여줄 광고가 없는 경우 다음 광고 게시 예약하기');
+    else if (NotYet) {
+      this.refreshAds = setTimeout(() => {
+        this.indexed.loadTextFromUserPath('ads_list.txt', (e, v) => {
+          if (e && v) this.listAvailableAds(v.split('\n'));
+        });
+      }, NotYet - new Date().getTime());
     }
   }
 
@@ -81,30 +98,27 @@ export class SettingsPage implements OnInit {
   isAdHiding = true;
   /** 새로고침 관리 */
   refreshAds: any;
+  AD_Div: HTMLElement;
   displayRandomAds() {
-    let AD_Div = document.getElementById('advertise');
-    let children = AD_Div.childNodes;
-    this.isAdHiding = true;
-    children.forEach(child => {
-      child.remove();
-    });
-    if (this.availables.length) { // 가능한 광고가 있다면
-      let randomIndex = Math.floor(Math.random() * this.availables.length);
-      let currentAd = this.availables[randomIndex];
-      console.log(currentAd[1] - new Date().getTime());
-      this.refreshAds = setTimeout(() => {
-        this.indexed.loadTextFromUserPath('ads_list.txt', (e, v) => {
-          if (e && v) this.listAvailableAds(v.split('\n'));
-        });
-      }, currentAd[1] - new Date().getTime());
-      let AdFrame = document.createElement('iframe');
-      AdFrame.id = 'AdFrame';
-      AdFrame.setAttribute("src", currentAd[2]);
-      AdFrame.setAttribute("frameborder", "0");
-      AdFrame.setAttribute('class', 'full_screen');
-      this.isAdHiding = false;
-      AD_Div.appendChild(AdFrame);
-    }
+    let randomIndex = Math.floor(Math.random() * this.availables.length);
+    let currentAd = this.availables[randomIndex];
+    this.refreshAds = setTimeout(() => {
+      this.indexed.loadTextFromUserPath('ads_list.txt', (e, v) => {
+        if (e && v) this.listAvailableAds(v.split('\n'));
+      });
+    }, currentAd[1] - new Date().getTime());
+    let AdFrame = document.createElement('iframe');
+    AdFrame.id = 'AdFrame';
+    AdFrame.setAttribute("src", currentAd[2]);
+    AdFrame.setAttribute("frameborder", "0");
+    AdFrame.setAttribute('class', 'full_screen');
+    this.isAdHiding = false;
+    this.AD_Div.appendChild(AdFrame);
+  }
+
+  /** 웹 사이트 주소 열기 */
+  open_link(_link: string) {
+    window.open(_link, '_system')
   }
 
   isBatteryOptimizationsShowed = false;
