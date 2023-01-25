@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
 import * as p5 from "p5";
 import { IndexedDBService } from '../indexed-db.service';
+import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
 import { P5ToastService } from '../p5-toast.service';
 import { ChatRoomPage } from '../portal/subscribes/chat-room/chat-room.page';
@@ -21,6 +22,7 @@ export class OthersProfilePage implements OnInit {
     public statusBar: StatusManageService,
     private p5toast: P5ToastService,
     private indexed: IndexedDBService,
+    public lang: LanguageSettingService,
   ) { }
 
   /** 다른 사용자의 정보 */
@@ -142,7 +144,7 @@ export class OthersProfilePage implements OnInit {
         ).then(v => {
           if (!v) console.warn('밴 유저에 대한것 같음, 확인 필요');
           this.p5toast.show({
-            text: `그룹원이 추가되었습니다: ${this.info['user']['display_name'] || '이름 없는 사용자'}`,
+            text: `${this.lang.text['OtherProfile']['added_to_group']}: ${this.info['user']['display_name'] || '이름 없는 사용자'}`,
           });
           this.nakama.servers[this.isOfficial][this.target].client.deleteNotifications(
             this.nakama.servers[this.isOfficial][this.target].session,
@@ -212,7 +214,7 @@ export class OthersProfilePage implements OnInit {
       this.group_info['group_id'] || this.group_info['id'], [this.info['user']['id']]
     ).then(_v => {
       this.p5toast.show({
-        text: `사용자를 내보냈습니다: ${this.info['user']['display_name'] || '이름 없는 사용자'}`,
+        text: `${this.lang.text['OtherProfile']['kicked_from_group']}: ${this.info['user']['display_name'] || '이름 없는 사용자'}`,
       });
       this.modalCtrl.dismiss({
         id: this.info['user']['id'],

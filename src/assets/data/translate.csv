@@ -60,8 +60,17 @@ user_display_name,사용자 표시명
 login_toggle,로그인
 main_content,메인 콘텐츠
 not_available_yet,기능 준비중
+no_main_content,없음
 user_img_changed,사용자 이미지 변경
 need_email,이메일 주소가 있어야 온라인으로 전환하실 수 있습니다.
 pasteURI,눌러서 외부이미지 주소 붙여넣기
 copyURIFirst,먼저 웹 페이지에서 이미지 주소를 복사해주세요
 user_profile_changed,사용자 프로필 변경
+## OtherProfile,
+Title,사용자 정보
+add_to_group,추가
+add_friend,친구
+privacy_chat,대화
+kick_from_group,추방
+added_to_group,그룹원이 추가되었습니다
+kicked_from_group,사용자를 내보냈습니다

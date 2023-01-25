@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>사용자 정보</ion-title>
+    <ion-title>{{lang.text['OtherProfile']['Title']}}</ion-title>
     <ion-buttons slot="start" (click)="modalCtrl.dismiss(onDismissData)">
       <ion-back-button defaultHref=""></ion-back-button>
     </ion-buttons>
@@ -15,13 +15,13 @@
           <img [hidden]="!info['user'].img" id="profile_img" class="profile_img" [src]="info['user'].img" alt="프로필 이미지">
           <img [hidden]="!tmp_img" id="profile_tmp_img" class="profile_img" [src]="tmp_img" alt="프로필 이미지">
           <div class="fore-gradient"></div>
-          <div class="username">{{info['user'].display_name ?? '이름 없는 사용자'}}</div>
+          <div class="username">{{info['user'].display_name ?? lang.text['Profile']['noname_user']}}</div>
         </div>
         <ion-item-divider>
-          <ion-label>표시 콘텐츠</ion-label>
+          <ion-label>{{lang.text['Profile']['main_content']}}</ion-label>
         </ion-item-divider>
         <div (click)="focus_on_content()">
-          <textarea class="infobox content_size" disabled>없음.</textarea>
+          <textarea class="infobox content_size" disabled>{{lang.text['Profile']['no_main_content']}}</textarea>
         </div>
       </td>
     </tr>
@@ -32,22 +32,22 @@
             <tr>
               <td *ngIf="has_admin && additional_buttons['-5']">
                 <ion-button (click)="notification_react(-5)" expand="block">
-                  추가
+                  {{lang.text['OtherProfile']['add_to_group']}}
                 </ion-button>
               </td>
               <td *ngIf="additional_buttons['-2']">
                 <ion-button (click)="notification_react(-2)" expand="block">
-                  친구
+                  {{lang.text['OtherProfile']['add_friend']}}
                 </ion-button>
               </td>
               <td *ngIf="CanCreateChat">
                 <ion-button (click)="create_chat()" expand="block">
-                  대화
+                  {{lang.text['OtherProfile']['privacy_chat']}}
                 </ion-button>
               </td>
               <td *ngIf="has_admin">
                 <ion-button (click)="kick_user_from_group()" color="danger" expand="block">
-                  추방
+                  {{lang.text['OtherProfile']['kick_from_group']}}
                 </ion-button>
               </td>
             </tr>
