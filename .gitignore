@@ -36,3 +36,5 @@ npm-debug.log*
 html/
 # 고도엔진 파일 무시
 Godot_v*
+# 백업파일 무시
+*.bak
