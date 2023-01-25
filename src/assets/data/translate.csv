@@ -14,9 +14,11 @@ Chat,대화
 noChatList,참여중인 대화가 없습니다.
 noTitiedChat,제목 없는 채팅방
 noMessageHistory,기록된 메시지 없음
+needLinkWithCommServ,커뮤니티 서버와 연결되어있어야 합니다.
+CameraPermissionDenied,카메라 권한을 얻지 못했습니다
 ## Settings,
 Title,설정
-Community Ads,커뮤니티 광고
+CommunityAds,커뮤니티 광고
 AdsContact,광고 문의
 UserInfo,사용자 정보
 myInfo,내 정보

@@ -63,7 +63,7 @@ export class SubscribesPage implements OnInit {
           let json: any[] = JSON.parse(v.text);
           if (this.wsc.client.readyState != this.wsc.client.OPEN) {
             this.p5toast.show({
-              text: '커뮤니티 서버와 연결되어있어야 합니다.',
+              text: this.lang.text['Settings']['needLinkWithCommServ'],
             });
             return;
           }
@@ -98,7 +98,7 @@ export class SubscribesPage implements OnInit {
     }).catch(_e => {
       console.error(_e);
       this.p5toast.show({
-        text: `카메라 권한을 얻지 못했습니다`,
+        text: this.lang.text['Settings']['CameraPermissionDenied'],
         lateable: true,
       });
     });
