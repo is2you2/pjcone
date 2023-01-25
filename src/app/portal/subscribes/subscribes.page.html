@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>연결</ion-title>
+    <ion-title>{{lang.text['Subscribes']['Title']}}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -8,7 +8,7 @@
   <ion-accordion-group *ngIf="notifications.length" value="colors" expand="inset" [value]="false" #accordionGroup>
     <ion-accordion value="colors">
       <ion-item slot="header">
-        <ion-label>검토해야할 연결이 있습니다.</ion-label>
+        <ion-label>{{lang.text['Subscribes']['has_noties']}}</ion-label>
       </ion-item>
       <ion-list slot="content">
         <div *ngFor="let i of [0,1,2];">
@@ -21,17 +21,17 @@
   </ion-accordion-group>
   <div *ngIf="!cant_scan">
     <ion-item-divider>
-      <ion-label>만능 연결 버튼</ion-label>
+      <ion-label>{{lang.text['Subscribes']['almighty_link']}}</ion-label>
     </ion-item-divider>
     <ion-item button (click)="scanQRCode()">
-      <ion-label class="ion-text-center">연결 !</ion-label>
+      <ion-label class="ion-text-center">{{lang.text['Subscribes']['almighty_button']}}</ion-label>
     </ion-item>
   </div>
   <ion-item-divider>
-    <ion-label>대화</ion-label>
+    <ion-label>{{lang.text['Subscribes']['Chat']}}</ion-label>
   </ion-item-divider>
   <ion-item *ngIf="!channels.length" button disabled>
-    <ion-label>참여중인 대화가 없습니다.</ion-label>
+    <ion-label>{{lang.text['Subscribes']['noChatList']}}</ion-label>
   </ion-item>
   <div *ngIf="channels.length">
     <ion-item *ngFor="let channel of channels" button (click)="go_to_chatroom(channel)">
@@ -47,8 +47,8 @@
           <table>
             <tr>
               <td>
-                {{channel.info ? (channel.info.name || channel.info.display_name || '제목 없는 채팅방') : (channel.title || '제목
-                없는 채팅방')}}
+                {{channel.info ? (channel.info.name || channel.info.display_name ||
+                lang.text['Subscribes']['noTitiedChat']) : (channel.title || lang.text['Subscribes']['noTitiedChat'])}}
               </td>
               <td class="server_target">
                 {{'(' + channel.server.target + ')'}}
@@ -56,7 +56,8 @@
             </tr>
           </table>
         </div>
-        <div class="form_margin content"> {{channel.last_comment || channel.noti || '기록된 메시지 없음'}} </div>
+        <div class="form_margin content"> {{channel.last_comment || channel.noti ||
+          lang.text['Subscribes']['noMessageHistory']}} </div>
       </ion-label>
     </ion-item>
   </div>

@@ -3,6 +3,7 @@ import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { Channel, Notification } from '@heroiclabs/nakama-js';
 import { ModalController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
+import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
@@ -28,6 +29,7 @@ export class SubscribesPage implements OnInit {
     private nakama: NakamaService,
     public statusBar: StatusManageService,
     private wsc: WscService,
+    public lang: LanguageSettingService,
   ) { }
 
   HEADER = 'subscribes';
