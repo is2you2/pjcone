@@ -441,6 +441,8 @@ export class NakamaService {
     // 통신 소켓 연결하기
     this.connect_to(_is_official, _target, () => {
       this.get_group_list(_is_official, _target);
+      if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
+      if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
       this.update_notifications(_is_official, _target);
     });
   }
@@ -552,7 +554,7 @@ export class NakamaService {
   update_notifications(_is_official: string, _target: string) {
     this.servers[_is_official][_target].client.listNotifications(this.servers[_is_official][_target].session, 3)
       .then(v => {
-        this.noti_origin = {};
+        this.noti_origin[_is_official][_target] = {};
         for (let i = 0, j = v.notifications.length; i < j; i++)
           this.act_on_notification(v.notifications[i], _is_official, _target);
         this.rearrange_notifications();

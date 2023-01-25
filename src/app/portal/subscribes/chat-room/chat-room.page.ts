@@ -10,8 +10,8 @@ import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { isPlatform } from 'src/app/app.component';
-import { IonicViewerPage } from 'src/app/minimal-chat/ionic-viewer/ionic-viewer.page';
-import { GodotViewerPage } from 'src/app/minimal-chat/godot-viewer/godot-viewer.page';
+import { IonicViewerPage } from './ionic-viewer/ionic-viewer.page';
+import { GodotViewerPage } from './godot-viewer/godot-viewer.page';
 
 interface FileInfo {
   id?: string;

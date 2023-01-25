@@ -40,11 +40,8 @@ export class LanguageSettingService {
                 tmpTitle = v.rows[i]['obj']['#'].substring(3);
                 if (!this.text[tmpTitle])
                   this.text[tmpTitle] = {};
-              } else {
-                this.text[tmpTitle][v.rows[i]['obj']['#']] = v.rows[i]['obj'][this.lang];
-              }
+              } else this.text[tmpTitle][v.rows[i]['obj']['#']] = v.rows[i]['obj'][this.lang];
             }
-            console.log(this.text);
             p.remove();
           }, e => {
             console.error('내부 문서 읽기 실패: ', e);
