@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>내 정보</ion-title>
+    <ion-title>{{lang.text['Profile']['Title']}}</ion-title>
     <ion-buttons slot="start" (click)="go_back()">
       <ion-back-button defaultHref="settings"></ion-back-button>
     </ion-buttons>
@@ -9,41 +9,41 @@
 
 <ion-content>
   <div class="profile_img_form">
-    <img [hidden]="!nakama.users.self['img']" id="profile_img" class="profile_img" [src]="nakama.users.self['img']" alt="프로필 이미지">
-    <img [hidden]="!tmp_img" id="profile_tmp_img" class="profile_img" [src]="tmp_img" alt="프로필 이미지">
+    <img [hidden]="!nakama.users.self['img']" id="profile_img" class="profile_img" [src]="nakama.users.self['img']" [alt]="lang.text['Profile']['img_alt']">
+    <img [hidden]="!tmp_img" id="profile_tmp_img" class="profile_img" [src]="tmp_img" [alt]="lang.text['Profile']['img_alt']">
     <div class="fore-gradient" (click)="change_img_from_file()"></div>
     <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
-    <div class="username">{{nakama.users.self['display_name'] ?? '이름 없는 사용자'}}</div>
+    <div class="username">{{nakama.users.self['display_name'] ?? lang.text['Profile']['noname_user']}}</div>
   </div>
   <ion-item (click)="imageURLPasted()" [hidden]="cant_use_clipboard" [disabled]="imageURL_disabled">
     <ion-label color="medium">{{imageURL_placeholder}}</ion-label>
   </ion-item>
   <ion-item [hidden]="!cant_use_clipboard">
-    <ion-input type="text" [placeholder]="'이미지 주소 입력하기'" [(ngModel)]="url_input"></ion-input>
+    <ion-input type="text" [placeholder]="lang.text['Profile']['enterURI']" [(ngModel)]="url_input"></ion-input>
     <ion-button (click)="change_img_smoothly(url_input)">
-      이미지 변경
+      {{lang.text['Profile']['change_img']}}
     </ion-button>
   </ion-item>
   <ion-item-divider>
-    <ion-label>로그인 정보</ion-label>
+    <ion-label>{{lang.text['Profile']['login_info']}}</ion-label>
   </ion-item-divider>
   <ion-item>
-    <ion-label>이메일 주소</ion-label>
+    <ion-label>{{lang.text['Profile']['email_address']}}</ion-label>
     <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self['email']" (ionChange)="email_modified()"
       [placeholder]="'test@example.com'"></ion-input>
   </ion-item>
   <ion-item>
-    <ion-label>사용자 표시명</ion-label>
+    <ion-label>{{lang.text['Profile']['user_display_name']}}</ion-label>
     <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self['display_name']" [placeholder]="'사용자 이름'"></ion-input>
   </ion-item>
   <ion-item button (click)="toggle_online()">
-    <ion-label>로그인</ion-label>
+    <ion-label>{{lang.text['Profile']['login_toggle']}}</ion-label>
     <ion-toggle slot="end" [(ngModel)]="nakama.users.self['online']" style="pointer-events: none;"></ion-toggle>
   </ion-item>
   <ion-item-divider>
-    <ion-label>표시 콘텐츠</ion-label>
+    <ion-label>{{lang.text['Profile']['main_content']}}</ion-label>
   </ion-item-divider>
   <div (click)="change_content()">
-    <textarea class="infobox content_size" disabled>기능 준비중</textarea>
+    <textarea class="infobox content_size" disabled>{{lang.text['Profile']['not_available_yet']}}</textarea>
   </div>
 </ion-content>

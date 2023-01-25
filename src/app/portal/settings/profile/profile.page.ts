@@ -7,6 +7,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import clipboard from "clipboardy";
 import { isPlatform } from 'src/app/app.component';
 import { ModalController } from '@ionic/angular';
+import { LanguageSettingService } from 'src/app/language-setting.service';
 
 @Component({
   selector: 'app-profile',
@@ -20,6 +21,7 @@ export class ProfilePage implements OnInit {
     private p5toast: P5ToastService,
     private indexed: IndexedDBService,
     private modalCtrl: ModalController,
+    public lang: LanguageSettingService,
   ) { }
 
   /** 부드러운 이미지 교체를 위한 이미지 임시 배정 */
@@ -96,7 +98,6 @@ export class ProfilePage implements OnInit {
 
   /** 모든 서버에 프로필 변경됨 고지 및 동기화 */
   sync_to_all_server() {
-    console.warn('변경전 이미지를 tmp로, 변경 후 이미지는 즉시 적용 처리 필요');
     let servers = this.nakama.get_all_online_server();
     this.nakama.save_self_profile();
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.users.self['img']), 'servers/self/profile.img');
@@ -116,7 +117,7 @@ export class ProfilePage implements OnInit {
         all_channels.forEach(channel => {
           servers[i].socket.writeChatMessage(channel.id, {
             user: 'modify_img',
-            noti: `사용자 이미지 변경: ${this.nakama.users.self['display_name']}`,
+            noti: `${this.lang.text['Profile']['user_img_changed']}: ${this.nakama.users.self['display_name']}`,
           });
         });
       }).catch(e => {
@@ -166,7 +167,7 @@ export class ProfilePage implements OnInit {
         this.nakama.init_all_sessions();
       } else {
         this.p5toast.show({
-          text: '이메일 주소가 있어야 온라인으로 전환하실 수 있습니다.',
+          text: this.lang.text['Profile']['need_email'],
         });
         this.nakama.users.self['online'] = false;
       }
@@ -177,7 +178,7 @@ export class ProfilePage implements OnInit {
   /** 클립보드 사용가능 여부 */
   cant_use_clipboard = false;
   imageURL_disabled = false;
-  imageURL_placeholder = '눌러서 외부이미지 주소 붙여넣기';
+  imageURL_placeholder = this.lang.text['Profile']['pasteURI'];
   /** 외부 주소 붙여넣기 */
   imageURLPasted() {
     if (isPlatform != 'DesktopPWA') return;
@@ -191,7 +192,7 @@ export class ProfilePage implements OnInit {
         }, (rv) => this.change_img_smoothly(rv['canvas'].toDataURL()));
       } else {
         this.p5toast.show({
-          text: '먼저 웹 페이지에서 이미지 주소를 복사해주세요',
+          text: this.lang.text['Profile']['copyURIFirst'],
         });
       }
     });
@@ -255,8 +256,8 @@ export class ProfilePage implements OnInit {
               servers[i].socket.writeChatMessage(channelId, {
                 user: 'modify_data',
                 noti: this.original_profile['display_name'] == this.nakama.users.self['display_name']
-                  ? `사용자 프로필 변경: ${this.original_profile['display_name']}`
-                  : `사용자 프로필 변경: ${this.original_profile['display_name']} -> ${this.nakama.users.self['display_name']}`,
+                  ? `${this.lang.text['Profile']['user_profile_changed']}: ${this.original_profile['display_name']}`
+                  : `${this.lang.text['Profile']['user_profile_changed']}: ${this.original_profile['display_name']} -> ${this.nakama.users.self['display_name']}`,
               });
             });
         }

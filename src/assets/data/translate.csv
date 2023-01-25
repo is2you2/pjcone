@@ -48,3 +48,20 @@ AppCreator,제작자
 AppTranslator,번역가
 userPrivacyTerms,개인정보처리방침
 LicenseNotice,라이선스 고지
+## Profile,
+Title,내 정보
+img_alt,프로필 이미지
+noname_user,이름 없는 사용자
+enterURI,이미지 주소 입력하기
+change_img,이미지 변경
+login_info,로그인 정보
+email_address,이메일 주소
+user_display_name,사용자 표시명
+login_toggle,로그인
+main_content,메인 콘텐츠
+not_available_yet,기능 준비중
+user_img_changed,사용자 이미지 변경
+need_email,이메일 주소가 있어야 온라인으로 전환하실 수 있습니다.
+pasteURI,눌러서 외부이미지 주소 붙여넣기
+copyURIFirst,먼저 웹 페이지에서 이미지 주소를 복사해주세요
+user_profile_changed,사용자 프로필 변경
