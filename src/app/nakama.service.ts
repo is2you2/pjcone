@@ -1483,7 +1483,7 @@ export class NakamaService {
         break;
       case -1: // 오프라인이거나 채널에 없을 때 알림 받음
         // 모든 채팅에 대한건지, 1:1에 한정인지 검토 필요
-        console.log('채널에 없을 때 받은 메시지란..: ', v);
+        console.warn('채널에 없을 때 받은 메시지란..: ', v);
         let targetType: number;
         if (v['content'] && v['content']['username'])
           targetType = 2;

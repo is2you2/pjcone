@@ -9,19 +9,19 @@
 
 <ion-content>
   <ion-item-divider>
-    <ion-label>사용할 수 없는 구성</ion-label>
+    <ion-label>{{lang.text['QRElse']['Title']}}</ion-label>
   </ion-item-divider>
-  <textarea class="infobox" disabled [(ngModel)]="info"></textarea>
+  <textarea class="infobox" disabled [(ngModel)]="lang.text['QRElse']['info']"></textarea>
   <ion-item-divider>
   </ion-item-divider>
   <ion-item>
     <ion-label>
-      <p>종류</p>
+      <p>{{lang.text['QRElse']['format']}}</p>
       <h2>{{result.format}}</h2>
     </ion-label>
   </ion-item>
   <ion-item-divider>
-    <ion-label>내용</ion-label>
+    <ion-label>{{lang.text['QRElse']['contents']}}</ion-label>
   </ion-item-divider>
   <textarea class="infobox" disabled [(ngModel)]="result.text"></textarea>
 </ion-content>

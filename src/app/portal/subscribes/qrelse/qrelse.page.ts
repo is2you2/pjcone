@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
-import * as p5 from "p5";
+import { LanguageSettingService } from 'src/app/language-setting.service';
 
 @Component({
   selector: 'app-qrelse',
@@ -12,6 +12,7 @@ export class QRelsePage implements OnInit {
   constructor(
     private navParams: NavParams,
     public modalCtrl: ModalController,
+    public lang: LanguageSettingService,
   ) {
   }
 

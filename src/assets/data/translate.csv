@@ -16,6 +16,11 @@ noTitiedChat,제목 없는 채팅방
 noMessageHistory,기록된 메시지 없음
 needLinkWithCommServ,커뮤니티 서버와 연결되어있어야 합니다.
 CameraPermissionDenied,카메라 권한을 얻지 못했습니다
+## QRElse,
+Title,사용할 수 없는 구성
+info,QR코드 또는 바코드를 인식하였으나 이 앱에서 사용하는 구성이 아닙니다.
+format,종류
+contents,내용
 ## Settings,
 Title,설정
 CommunityAds,커뮤니티 광고
