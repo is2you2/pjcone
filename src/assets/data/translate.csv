@@ -1,0 +1,43 @@
+﻿#,ko
+## Portal,
+Link,연결
+Main,메인
+Settings,설정
+## Main,
+Title,해야할 일
+## Subscribes,
+Title,연결
+has_noties,검토해야할 연결이 있습니다.
+almighty_link,만능 연결 버튼
+almighty_button,연결 !
+Chat,대화
+noChatList,참여중인 대화가 없습니다.
+noTitiedChat,제목 없는 채팅방
+noMessageHistory,기록된 메시지 없음
+## Settings,
+Title,설정
+Community Ads,커뮤니티 광고
+AdsContact,광고 문의
+UserInfo,사용자 정보
+myInfo,내 정보
+takeOverUser,사용자 인계
+ManageServer,서버 관리
+groupServer,그룹 서버
+commServer,커뮤니티 서버
+useDeviceAsServer,이 기기를 기능 서버로
+ManageGroup,그룹 관리
+CreateGroup,그룹 생성하기
+Community,커뮤니티
+joinRanchat,랜덤채팅 참여
+joinDediChat,사설 그룹채팅
+joinDedi_placeholder,기본
+joinDedi_button,참여
+admin_community_menu,커뮤니티 관리자 메뉴
+admin_noti_all,전체 사용자 공지
+notifications,알림
+batteryOptimization,배터리 최적화 제외 설정
+AppInfo,앱 정보
+AppCreator,제작자
+AppTranslator,번역가
+userPrivacyTerms,개인정보처리방침
+LicenseNotice,라이선스 고지

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
 import { IndexedDBService } from '../indexed-db.service';
+import { LanguageSettingService } from '../language-setting.service';
 import { ProfilePage } from './settings/profile/profile.page';
 
 @Component({
@@ -14,6 +15,7 @@ export class PortalPage implements OnInit {
     private nav: NavController,
     private indexed: IndexedDBService,
     private modalCtrl: ModalController,
+    public lang: LanguageSettingService,
   ) { }
 
   ngOnInit() {

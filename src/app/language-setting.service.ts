@@ -12,7 +12,9 @@ export class LanguageSettingService {
   /** 불러와진 모든 문자열  
    * 데이터 구성: { 페이지 구분: { 키워드: 문장 } }
    */
-  text = {};
+  text = {
+    Portal: {},
+  };
 
   constructor() {
     this.lang = navigator.language.split('-')[0];
@@ -41,6 +43,7 @@ export class LanguageSettingService {
                 this.text[tmpTitle][v.rows[i]['obj']['#']] = v.rows[i]['obj'][this.lang];
               }
             }
+            console.log(this.text);
             p.remove();
           }, e => {
             console.error('내부 문서 읽기 실패: ', e);
