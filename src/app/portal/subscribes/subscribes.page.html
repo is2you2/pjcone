@@ -43,8 +43,19 @@
           [src]="channel.info.img">
       </div>
       <ion-label>
-        <div class="form_margin header"> {{(channel.info ? (channel.info.name || channel.info.display_name || '제목 없는
-          채팅방') : (channel.title || '제목 없는 채팅방')) + ' (' + channel.server.target + ')'}} </div>
+        <div class="form_margin header">
+          <table>
+            <tr>
+              <td>
+                {{channel.info ? (channel.info.name || channel.info.display_name || '제목 없는 채팅방') : (channel.title || '제목
+                없는 채팅방')}}
+              </td>
+              <td class="server_target">
+                {{'(' + channel.server.target + ')'}}
+              </td>
+            </tr>
+          </table>
+        </div>
         <div class="form_margin content"> {{channel.last_comment || channel.noti || '기록된 메시지 없음'}} </div>
       </ion-label>
     </ion-item>
