@@ -26,7 +26,7 @@ export class SettingsPage implements OnInit {
     private indexed: IndexedDBService,
     public client: WscService,
     private bgmode: BackgroundMode,
-    public langset: LanguageSettingService,
+    public lang: LanguageSettingService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
@@ -45,7 +45,7 @@ export class SettingsPage implements OnInit {
   /** 광고 정보 불러오기 */
   async checkAdsInfo() {
     try {
-      let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/${this.langset.lang}.txt`);
+      let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/${this.lang.lang}.txt`);
       let text = await (await res.blob()).text();
       let lines: string[] = text.split('\n');
       if (text.indexOf('<html>') < 0) {
