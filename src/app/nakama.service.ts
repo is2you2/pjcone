@@ -1068,7 +1068,12 @@ export class NakamaService {
         }
       }
     } else if (p['user_id_one']) { // 1:1 채팅인 경우
-      let targetId = this.channels_orig[_is_official][_target][p.channel_id || p.id || p['user_id_one']]['redirect']['id'];
+      // 보통 내가 접근하면서 사용자 온라인 여부 검토를 할 때 채널이 없는 경우 오류가 남, 검토 후 채널 생성 처리
+      if (!this.channels_orig[_is_official][_target][p.channel_id || p.id])
+        this.join_chat_with_modulation(
+          p['user_id_one'] != this.servers[_is_official][_target].session.user_id ? p['user_id_one'] : p['user_id_two'],
+          2, _is_official, _target);
+      let targetId = this.channels_orig[_is_official][_target][p.channel_id || p.id]['redirect']['id'];
       result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
     }
     if (this.channels_orig[_is_official][_target][p.channel_id || p.id] && this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] != 'missing')
