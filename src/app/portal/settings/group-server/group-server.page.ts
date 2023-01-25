@@ -13,7 +13,7 @@ import { StatusManageService } from 'src/app/status-manage.service';
 export class GroupServerPage implements OnInit {
 
   constructor(
-    private nakama: NakamaService,
+    public nakama: NakamaService,
     private p5toast: P5ToastService,
     public statusBar: StatusManageService,
     private indexed: IndexedDBService,
