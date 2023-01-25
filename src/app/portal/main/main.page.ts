@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { GlobalActService } from 'src/app/global-act.service';
+import { LanguageSettingService } from 'src/app/language-setting.service';
 
 @Component({
   selector: 'app-main',
@@ -10,6 +11,7 @@ export class MainPage implements OnInit {
 
   constructor(
     private app: GlobalActService,
+    public lang: LanguageSettingService,
   ) { }
 
   ngOnInit() { }
