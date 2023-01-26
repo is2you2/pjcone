@@ -126,13 +126,24 @@ Godot 엔진이 현재 가지고 있는 구조상의 한계를 뛰어넘기 위�
 
 ## Android 빌드 작업보조 정보글
 - Application에 추가 작성
-  - android:usesCleartextTraffic="true"
+```xml
+<manifest>
+  <application>
+    <meta-data
+    android:usesCleartextTraffic="true"
+    android:name="com.google.android.gms.ads.APPLICATION_ID"
+    android:value="@string/admob_app_id"/>
+```
 - [백그라운드 모드 안드로이드 권한 설정](https://stackoverflow.com/questions/69101863/background-mode-not-quite-working-ionic-app-sleeps-after-5-minutes)
 ```xml
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>  
 <!-- <uses-permission android:name="android.permission.ACCESS_BACKGROUND_SERVICE"/>   -->
 <uses-permission android:name="android.permission.WAKE_LOCK" />  
 <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />  
+```
+- android/app/src/main/res/values/strings.xml 에 다음 줄 추가
+```xml
+<string name="admob_app_id">[APP_ID]</string>
 ```
 - Godot-html은 백그라운드가 켜져있더라도 액션이 멈춤, 통신을 ionic에 의존해야함 
 - 최초 Android 플랫폼 설치 후 오류시 다음 코드 진행
