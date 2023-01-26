@@ -63,7 +63,7 @@ export class SubscribesPage implements OnInit {
           let json: any[] = JSON.parse(v.text);
           if (this.wsc.client.readyState != this.wsc.client.OPEN) {
             this.p5toast.show({
-              text: this.lang.text['Settings']['needLinkWithCommServ'],
+              text: this.lang.text['Subscribes']['needLinkWithCommServ'],
             });
             return;
           }
@@ -98,7 +98,7 @@ export class SubscribesPage implements OnInit {
     }).catch(_e => {
       console.error(_e);
       this.p5toast.show({
-        text: this.lang.text['Settings']['CameraPermissionDenied'],
+        text: this.lang.text['Subscribes']['CameraPermissionDenied'],
         lateable: true,
       });
     });
