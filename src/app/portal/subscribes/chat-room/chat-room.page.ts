@@ -149,8 +149,7 @@ export class ChatRoomPage implements OnInit {
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'] = (c: any) => {
         this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.check_sender_and_show_name(c);
-        if (c.content['filename'])
-          this.set_viewer_category(c);
+        if (c.content['filename']) this.ModulateFileEmbedMessage(c);
         this.messages.push(c);
         setTimeout(() => {
           this.content_panel.scrollIntoView({ block: 'start' });
@@ -222,7 +221,6 @@ export class ChatRoomPage implements OnInit {
         this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
           this.nakama.servers[this.isOfficial][this.target].session,
           this.info['id'], 15, false, this.next_cursor).then(v => {
-            console.warn('로컬 채팅id 기록과 대조하여 내용이 다르다면 계속해서 불러오기처리 필요');
             v.messages.forEach(msg => {
               msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
               this.check_sender_and_show_name(msg);
@@ -230,21 +228,7 @@ export class ChatRoomPage implements OnInit {
                 let hasFile = msg.content['filename'] ? '(첨부파일) ' : '';
                 this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
               }
-              if (msg.content['filename']) { // 파일 포함 메시지는 자동 썸네일 생성 시도
-                this.set_viewer_category(msg);
-                this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (b) => {
-                  if (b) {
-                    msg.content['text'] = '다운로드됨';
-                    if (msg.content['filesize'] < this.FILESIZE_LIMIT) // 너무 크지 않은 파일에 대해서만 자동 썸네일 구성
-                      this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
-                        msg.content['type'],
-                        v => {
-                          let url = URL.createObjectURL(v);
-                          this.modulate_thumbnail(msg, url);
-                        });
-                  }
-                })
-              }
+              if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
               this.messages.unshift(msg);
             });
             this.next_cursor = v.next_cursor;
@@ -511,6 +495,23 @@ export class ChatRoomPage implements OnInit {
           break;
       }
     }
+  }
+
+  /** 파일이 포함된 메시지 구조화, 자동 썸네일 작업 */
+  ModulateFileEmbedMessage(msg: any) {
+    this.set_viewer_category(msg);
+    this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (b) => {
+      if (b) {
+        msg.content['text'] = '다운로드됨';
+        if (msg.content['filesize'] < this.FILESIZE_LIMIT) // 너무 크지 않은 파일에 대해서만 자동 썸네일 구성
+          this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
+            msg.content['type'],
+            v => {
+              let url = URL.createObjectURL(v);
+              this.modulate_thumbnail(msg, url);
+            });
+      }
+    });
   }
 
   /** 콘텐츠 상세보기 뷰어 띄우기 */

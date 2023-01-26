@@ -24,20 +24,19 @@
                   {{msg.user_display_name}}</font>
               </b>
             </p>
-            <div *ngIf="msg.content['filename'] && !msg.content['img']" style="display: flex;"
-              (click)="file_detail(msg)">
-              <div class="file_button">
+            <div *ngIf="msg.content['filename']" style="display: flex;" (click)="file_detail(msg)">
+              <div *ngIf="!msg.content['img']" class="file_button">
                 <p class="file_info"> {{msg.content['filename']}} </p>
                 <div *ngIf="msg.content['text']" class="text_seperator"></div>
                 <p *ngIf="msg.content['text']" class="file_text_thumbnail"> {{msg.content['text']}} </p>
+              </div>
+              <div *ngIf="msg.content['img']" style="margin-top: 4px;">
+                <img [src]="msg.content['img']" alt="msg.content['filename']">
               </div>
               <div
                 *ngIf="nakama.channel_transfer[isOfficial][target] && nakama.channel_transfer[isOfficial][target][msg.channel_id] && nakama.channel_transfer[isOfficial][target][msg.channel_id][msg.message_id]"
                 class="transfer_count">
                 {{nakama.channel_transfer[isOfficial][target][msg.channel_id][msg.message_id]['progress'].length}}</div>
-            </div>
-            <div *ngIf="msg.content['img']" style="margin-top: 4px;" (click)="file_detail(msg)">
-              <img [src]="msg.content['img']" alt="msg.content['filename']">
             </div>
             <div *ngIf="msg.content['noti']" class="notice_form">
               <div class="notice"> {{msg.content['noti']}} </div>
