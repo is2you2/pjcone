@@ -1074,9 +1074,14 @@ export class NakamaService {
       if (!this.channels_orig[_is_official][_target][p.channel_id || p.id])
         this.join_chat_with_modulation(
           p['user_id_one'] != this.servers[_is_official][_target].session.user_id ? p['user_id_one'] : p['user_id_two'],
-          2, _is_official, _target);
-      let targetId = this.channels_orig[_is_official][_target][p.channel_id || p.id]['redirect']['id'];
-      result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
+          2, _is_official, _target, (c) => {
+            let targetId = this.channels_orig[_is_official][_target][c.id]['redirect']['id'];
+            result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
+          });
+      else {
+        let targetId = this.channels_orig[_is_official][_target][p.channel_id || p.id]['redirect']['id'];
+        result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
+      }
     }
     if (this.channels_orig[_is_official][_target][p.channel_id || p.id] && this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] != 'missing')
       this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] = result_status;
