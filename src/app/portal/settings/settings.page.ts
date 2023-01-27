@@ -47,9 +47,9 @@ export class SettingsPage implements OnInit {
     try {
       let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/${this.lang.lang}.txt`);
       let text = await (await res.blob()).text();
-      let lines: string[] = text.split('\n');
       if (text.indexOf('<html>') < 0) {
         this.indexed.saveTextFileToUserPath(text, 'ads_list.txt');
+        let lines: string[] = text.split('\n');
         this.listAvailableAds(lines);
       } else throw new Error("없는거나 다름없지");
     } catch (e) { // 로컬 정보 기반으로 광고

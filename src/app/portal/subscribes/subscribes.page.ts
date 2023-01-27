@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { Channel, Notification } from '@heroiclabs/nakama-js';
 import { ModalController } from '@ionic/angular';
-import { isPlatform } from 'src/app/app.component';
+import { isPlatform, SERVER_PATH_ROOT } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -20,7 +20,6 @@ import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginE
   styleUrls: ['./subscribes.page.scss'],
 })
 export class SubscribesPage implements OnInit {
-  appMargin: number;
 
   constructor(
     private modalCtrl: ModalController,
@@ -59,6 +58,7 @@ export class SubscribesPage implements OnInit {
   }
 
   async resumeBanner() {
+    if (!this.isBannerShowing) return;
     const result = await AdMob.resumeBanner()
       .catch(e => console.log(e));
     if (result === undefined) {
@@ -70,6 +70,7 @@ export class SubscribesPage implements OnInit {
   }
 
   async removeBanner() {
+    if (!this.isBannerShowing) return;
     const result = await AdMob.hideBanner()
       .catch(e => console.log(e));
     if (result === undefined) {
@@ -80,7 +81,9 @@ export class SubscribesPage implements OnInit {
     app.style.marginBottom = '0px';
   }
 
-  add_admob_banner() {
+  isBannerShowing = false;
+  appMargin: number;
+  async add_admob_banner() {
     AdMob.addListener(BannerAdPluginEvents.SizeChanged, (size: AdMobBannerSize) => {
       this.appMargin = size.height;
       const app: HTMLElement = document.querySelector('ion-router-outlet');
@@ -94,9 +97,18 @@ export class SubscribesPage implements OnInit {
       adId: 'ca-app-pub-6577630868247944/4829889344',
       adSize: BannerAdSize.ADAPTIVE_BANNER,
       position: BannerAdPosition.BOTTOM_CENTER,
-      isTesting: true
     };
-    AdMob.showBanner(options);
+    /** 광고 정보 불러오기 */
+    try {
+      let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/admob.txt`);
+      let text = await (await res.blob()).text();
+      if (text.indexOf('<html>') < 0) {
+      } else throw new Error("없는거나 다름없지");
+    } catch (e) { // 로컬 정보 기반으로 광고
+      AdMob.showBanner(options).then(() => {
+        this.isBannerShowing = true;
+      });
+    }
   }
 
   // 웹에 있는 QRCode는 무조건 json[]로 구성되어있어야함
