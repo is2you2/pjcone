@@ -12,6 +12,7 @@ import { WeblinkService } from 'src/app/weblink.service';
 import { WscService } from 'src/app/wsc.service';
 import { ChatRoomPage } from './chat-room/chat-room.page';
 import { QRelsePage } from './qrelse/qrelse.page';
+import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize } from '@capacitor-community/admob';
 
 @Component({
   selector: 'app-subscribes',
@@ -19,6 +20,7 @@ import { QRelsePage } from './qrelse/qrelse.page';
   styleUrls: ['./subscribes.page.scss'],
 })
 export class SubscribesPage implements OnInit {
+  appMargin: number;
 
   constructor(
     private modalCtrl: ModalController,
@@ -49,6 +51,52 @@ export class SubscribesPage implements OnInit {
     this.nakama.after_notifications_rearrange[this.HEADER] = (list: Notification[]) => {
       this.notifications = list;
     }
+    this.add_admob_banner();
+  }
+
+  ionViewDidEnter() {
+    this.resumeBanner();
+  }
+
+  async resumeBanner() {
+    const result = await AdMob.resumeBanner()
+      .catch(e => console.log(e));
+    if (result === undefined) {
+      return;
+    }
+
+    const app: HTMLElement = document.querySelector('ion-router-outlet');
+    app.style.marginBottom = this.appMargin + 'px';
+  }
+
+  async removeBanner() {
+    const result = await AdMob.hideBanner()
+      .catch(e => console.log(e));
+    if (result === undefined) {
+      return;
+    }
+
+    const app: HTMLElement = document.querySelector('ion-router-outlet');
+    app.style.marginBottom = '0px';
+  }
+
+  add_admob_banner() {
+    AdMob.addListener(BannerAdPluginEvents.SizeChanged, (size: AdMobBannerSize) => {
+      this.appMargin = size.height;
+      const app: HTMLElement = document.querySelector('ion-router-outlet');
+
+      if (this.appMargin === 0)
+        app.style.marginBottom = '';
+      else if (this.appMargin > 0)
+        app.style.marginBottom = this.appMargin + 'px';
+    });
+    const options: BannerAdOptions = {
+      adId: 'ca-app-pub-6577630868247944/4829889344',
+      adSize: BannerAdSize.ADAPTIVE_BANNER,
+      position: BannerAdPosition.BOTTOM_CENTER,
+      isTesting: true
+    };
+    AdMob.showBanner(options);
   }
 
   // 웹에 있는 QRCode는 무조건 json[]로 구성되어있어야함
@@ -141,7 +189,13 @@ export class SubscribesPage implements OnInit {
       componentProps: {
         info: info,
       },
-    }).then(v => v.present());
+    }).then(v => {
+      this.removeBanner();
+      v.onWillDismiss().then(() => {
+        this.resumeBanner();
+      });
+      v.present()
+    });
   }
 
   /** Nakama 서버 알림 읽기 */
@@ -155,5 +209,6 @@ export class SubscribesPage implements OnInit {
   ionViewWillLeave() {
     delete this.nakama.after_channel_rearrange[this.HEADER];
     delete this.nakama.after_notifications_rearrange[this.HEADER];
+    this.removeBanner();
   }
 }

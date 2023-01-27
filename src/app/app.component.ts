@@ -9,6 +9,7 @@ import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { NakamaService } from './nakama.service';
 import { ChatRoomPage } from './portal/subscribes/chat-room/chat-room.page';
 import { WscService } from './wsc.service';
+import { AdMob } from "@capacitor-community/admob";
 /** 페이지가 돌고 있는 플렛폼 구분자 */
 export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'DesktopPWA';
 /** 소켓서버용 */
@@ -22,7 +23,8 @@ export const SERVER_PATH_ROOT: string = 'https://is2you2.github.io/';
   styleUrls: ['app.component.scss'],
 })
 export class AppComponent {
-  constructor(platform: Platform,
+  constructor(
+    private platform: Platform,
     router: Router,
     ngZone: NgZone,
     noti: LocalNotiService,
@@ -41,6 +43,7 @@ export class AppComponent {
     else if (platform.is('iphone'))
       isPlatform = 'iOS';
     noti.initialize();
+    this.init_admob();
     client.initialize();
     // 모든 사용자가 수신할 수 있는 알림
     client.received['all_noti'] = (ev) => {
@@ -108,5 +111,14 @@ export class AppComponent {
       }
     });
     bgmode.enable();
+  }
+
+  init_admob() {
+    this.platform.ready().then(() => {
+      AdMob.initialize({
+        requestTrackingAuthorization: true,
+        initializeForTesting: true,
+      });
+    });
   }
 }
