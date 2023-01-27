@@ -144,6 +144,7 @@ Godot 엔진이 현재 가지고 있는 구조상의 한계를 뛰어넘기 위�
 ```xml
 <string name="admob_app_id">[APP_ID]</string>
 ```
+이 때, APP_ID는 ~이 들어간 광고 앱 아이디로 교체
 - Godot-html은 백그라운드가 켜져있더라도 액션이 멈춤, 통신을 ionic에 의존해야함 
 - 최초 Android 플랫폼 설치 후 오류시 다음 코드 진행
 ```bash

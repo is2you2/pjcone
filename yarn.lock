@@ -1300,6 +1300,13 @@
     "@babel/helper-validator-identifier" "^7.16.7"
     "to-fast-properties" "^2.0.0"
 
+"@capacitor-community/admob@^3.3.0":
+  "integrity" "sha512-OaUZ4Oe37o+N7G7MvTEWzK1rK/3Xq1L+6YjkVUOgd1eojxvBPdbkg/H+fZANLih69xepMn83vRQBUCElRJW3PQ=="
+  "resolved" "https://registry.npmjs.org/@capacitor-community/admob/-/admob-3.3.0.tgz"
+  "version" "3.3.0"
+  dependencies:
+    "@capacitor/core" "^3.0.0"
+
 "@capacitor/android@3.4.3":
   "integrity" "sha512-G/6+mbOde9LMWl5KvA5rB/xEQF05sKrQFMBwo8y3C8pYF+axtcrS0Dgze9rOB7nCjH4NXv/bLw58E9+q8/sQUA=="
   "resolved" "https://registry.npmjs.org/@capacitor/android/-/android-3.4.3.tgz"
