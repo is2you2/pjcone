@@ -16,6 +16,10 @@
             <ion-label>이전 기록 불러오기</ion-label>
           </ion-item>
           <div *ngFor="let msg of messages; let i = index" (click)="message_detail(msg)">
+            <div *ngIf="!messages[i - 1] || msg['msgDate'] != messages[i - 1]['msgDate']"
+              style="text-align: center; font-size: 16px;">
+              <font color="#888"> {{msg['msgDate']}} </font>
+            </div>
             <p *ngIf="!msg.content.noti && (!messages[i - 1] || msg.sender_id != messages[i - 1].sender_id || messages[i - 1].content.noti)"
               class="message_form" (click)="user_detail(msg)">
               <b>

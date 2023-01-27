@@ -229,6 +229,7 @@ export class ChatRoomPage implements OnInit {
                 this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
               }
               if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
+              msg['msgDate'] = msg.create_time.substring(0, 10);
               this.messages.unshift(msg);
             });
             this.next_cursor = v.next_cursor;
