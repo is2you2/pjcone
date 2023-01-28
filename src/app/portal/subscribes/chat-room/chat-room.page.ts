@@ -147,6 +147,8 @@ export class ChatRoomPage implements OnInit {
         this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.check_sender_and_show_name(c);
         if (c.content['filename']) this.ModulateFileEmbedMessage(c);
+        let currentTime = new Date(c.create_time);
+        c['msgDate'] = `${currentTime.getFullYear()}-${("00" + (currentTime.getMonth() + 1)).slice(-2)}-${("00" + currentTime.getDate()).slice(-2)}`;
         this.messages.push(c);
         setTimeout(() => {
           this.content_panel.scrollIntoView({ block: 'start' });

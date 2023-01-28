@@ -1508,9 +1508,9 @@ export class NakamaService {
                   }
                 });
               this.servers[_is_official][_target].client.deleteNotifications(
-                this.servers[_is_official][_target].session, [v['id']]).then(b => {
-                  if (b) this.update_notifications(_is_official, _target);
-                  else console.warn('알림 지우기 실패: ', b);
+                this.servers[_is_official][_target].session, [v['id']]).then(v => {
+                  if (!v) console.warn('알림 거부처리 검토 필요');
+                  this.update_notifications(_is_official, _target);
                 });
             });
             break;
