@@ -252,23 +252,29 @@ export class ChatRoomPage implements OnInit {
             tmp.forEach(tmsg => this.messages.push(tmsg));
             return;
           }
-        let tmp = [{
-          content: {
-            msg: '이 채널이 온라인 상태여야 합니다.',
-          }
-        }, {
-          content: {
-            msg: '오프라인 기록 기능 준비중',
-          }
-        }];
-        this.next_cursor = undefined;
-        tmp.forEach(tmsg => this.messages.push(tmsg));
+        this.LoadLocalChatHistory();
       }
     } else {
       console.log('지금 보고있는 기록보다 최근 기록 불러오기');
     }
   }
 
+  /** 내부 저장소 채팅 기록 열람 */
+  LoadLocalChatHistory() {
+    let tmp = [{
+      content: {
+        msg: '이 채널이 온라인 상태여야 합니다.',
+      }
+    }, {
+      content: {
+        msg: '오프라인 기록 기능 준비중',
+      }
+    }];
+    this.next_cursor = undefined;
+    tmp.forEach(tmsg => this.messages.push(tmsg));
+  }
+
+  /** 추가 매뉴 숨김여부 */
   isHidden = true;
 
   /** 핸드폰 가상키보드의 움직임을 고려하여 눈이 덜 불편하도록 지연 */

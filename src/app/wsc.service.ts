@@ -61,6 +61,7 @@ export class WscService {
       }, 1500);
       this.p5toast.show({
         text: '커뮤니티 서버로부터 연결이 끊어졌습니다.',
+        lateable: true,
       });
       let offline_info = {
         title: '오프라인 모드',

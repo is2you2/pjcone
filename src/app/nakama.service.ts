@@ -1148,6 +1148,7 @@ export class NakamaService {
         socket.ondisconnect = (_e) => {
           this.p5toast.show({
             text: `그룹서버 연결 끊어짐: ${this.servers[_is_official][_target].info.name}`,
+            lateable: true,
           });
           this.set_group_statusBar('offline', _is_official, _target);
           if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
