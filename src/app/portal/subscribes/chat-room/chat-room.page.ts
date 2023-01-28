@@ -133,11 +133,8 @@ export class ChatRoomPage implements OnInit {
           this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
         else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
           this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
-        console.warn('이 자리에서 로컬 채팅 기록 불러오기');
         break;
       case 3: // 그룹 대화라면
-        if (this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open'])
-          console.warn('이 자리에서 로컬 채팅 기록 불러오기: 그룹');
         break;
       default:
         break;
@@ -261,6 +258,9 @@ export class ChatRoomPage implements OnInit {
 
   /** 내부 저장소 채팅 기록 열람 */
   LoadLocalChatHistory() {
+    this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/`, (list) => {
+      console.log('네네 이걸 받았습니다: ', list);
+    });
     let tmp = [{
       content: {
         msg: '이 채널이 온라인 상태여야 합니다.',
