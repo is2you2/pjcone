@@ -246,6 +246,7 @@ export class ChatRoomPage implements OnInit {
               }
             }];
             this.next_cursor = undefined;
+            this.isHistoryLoaded = true;
             tmp.forEach(tmsg => this.messages.push(tmsg));
             return;
           }
@@ -256,22 +257,32 @@ export class ChatRoomPage implements OnInit {
     }
   }
 
+  isHistoryLoaded = false;
+  LocalHistoryList = [];
   /** 내부 저장소 채팅 기록 열람 */
   LoadLocalChatHistory() {
-    this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/`, (list) => {
-      console.log('네네 이걸 받았습니다: ', list);
-    });
-    let tmp = [{
-      content: {
-        msg: '이 채널이 온라인 상태여야 합니다.',
-      }
-    }, {
-      content: {
-        msg: '오프라인 기록 기능 준비중',
-      }
-    }];
-    this.next_cursor = undefined;
-    tmp.forEach(tmsg => this.messages.push(tmsg));
+    if (!this.isHistoryLoaded)
+      this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/`, (list) => {
+        this.LocalHistoryList = list;
+        this.isHistoryLoaded = true;
+        this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop().substring(8), (e, v) => {
+          if (e && v) {
+            let json = JSON.parse(v);
+            this.messages = [...json, ...this.messages];
+          }
+          this.next_cursor = null;
+          this.pullable = Boolean(this.LocalHistoryList.length);
+        });
+      });
+    else {
+      this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop().substring(8), (e, v) => {
+        if (e && v) {
+          let json = JSON.parse(v);
+          this.messages = [...json, ...this.messages];
+        }
+        this.pullable = Boolean(this.LocalHistoryList.length);
+      });
+    }
   }
 
   /** 추가 매뉴 숨김여부 */
@@ -350,33 +361,36 @@ export class ChatRoomPage implements OnInit {
           else throw new Error("Need to download file");
         } catch (_e) { // 전송중이 아니라면 다운받기
           if (isPlatform == 'DesktopPWA') {
-            this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
-              let url = URL.createObjectURL(resultModified);
-              this.modulate_thumbnail(msg, url);
-              this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
-            });
-          } else if (isPlatform != 'MobilePWA') {
-            if (msg.content['viewer'] == 'disabled') {
-              this.alertCtrl.create({
-                header: '모바일에서 열 수 없음',
-                message: '이 파일은 뷰어로 볼 수 없습니다.',
-                buttons: [{
-                  text: '그래도 다운로드',
-                  handler: () => {
-                    this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
-                      let url = URL.createObjectURL(resultModified);
-                      this.modulate_thumbnail(msg, url);
-                      this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
-                    });
-                  }
-                }]
-              }).then(v => v.present());
-            } else {
+            if (!this.isHistoryLoaded)
               this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
                 let url = URL.createObjectURL(resultModified);
                 this.modulate_thumbnail(msg, url);
                 this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
               });
+          } else if (isPlatform != 'MobilePWA') {
+            if (msg.content['viewer'] == 'disabled') {
+              if (!this.isHistoryLoaded)
+                this.alertCtrl.create({
+                  header: '모바일에서 열 수 없음',
+                  message: '이 파일은 뷰어로 볼 수 없습니다.',
+                  buttons: [{
+                    text: '그래도 다운로드',
+                    handler: () => {
+                      this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
+                        let url = URL.createObjectURL(resultModified);
+                        this.modulate_thumbnail(msg, url);
+                        this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
+                      });
+                    }
+                  }]
+                }).then(v => v.present());
+            } else {
+              if (!this.isHistoryLoaded)
+                this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
+                  let url = URL.createObjectURL(resultModified);
+                  this.modulate_thumbnail(msg, url);
+                  this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
+                });
             }
           }
         }
@@ -598,5 +612,20 @@ export class ChatRoomPage implements OnInit {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
     this.noti.Current = undefined;
     this.p5canvas.remove();
+    // 온라인 접속시에만 열람 기록 저장
+    if (!this.isHistoryLoaded) { // 그룹 기록은 설정을 따름
+      if (this.info['redirect']['type'] == 3 && !this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open']) return;
+      let SepByDate = {};
+      while (this.messages.length) {
+        if (SepByDate['target'] != this.messages[0]['msgDate']) {
+          if (SepByDate['msg'])
+            this.indexed.saveTextFileToUserPath(JSON.stringify(SepByDate['msg']), `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/${SepByDate['target']}`);
+          SepByDate['target'] = this.messages[0]['msgDate'];
+          SepByDate['msg'] = [];
+        }
+        SepByDate['msg'].push(this.messages.shift());
+      }
+      this.indexed.saveTextFileToUserPath(JSON.stringify(SepByDate['msg']), `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/${SepByDate['target']}`);
+    }
   }
 }
