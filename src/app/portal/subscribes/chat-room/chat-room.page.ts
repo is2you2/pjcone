@@ -593,7 +593,7 @@ export class ChatRoomPage implements OnInit {
 
   /** 사용자 정보보기 */
   user_detail(msg: ChannelMessage) {
-    if (this.nakama.servers[this.isOfficial][this.target].session.user_id == msg.sender_id) // 내 정보
+    if (msg['is_me']) // 내 정보
       this.modalCtrl.create({
         component: ProfilePage,
       }).then(v => v.present());
