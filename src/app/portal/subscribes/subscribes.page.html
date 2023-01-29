@@ -30,11 +30,11 @@
   <ion-item-divider>
     <ion-label>{{lang.text['Subscribes']['Chat']}}</ion-label>
   </ion-item-divider>
-  <ion-item *ngIf="!channels.length" button disabled>
+  <ion-item *ngIf="!nakama.channels.length" button disabled>
     <ion-label>{{lang.text['Subscribes']['noChatList']}}</ion-label>
   </ion-item>
-  <div *ngIf="channels.length">
-    <ion-item *ngFor="let channel of channels" button (click)="go_to_chatroom(channel)">
+  <div *ngIf="nakama.channels.length">
+    <ion-item *ngFor="let channel of nakama.channels" button (click)="go_to_chatroom(channel)">
       <div class="additional_form status_bar_double"
         [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']"></div>
       <div class="additional_form bg_img_form">

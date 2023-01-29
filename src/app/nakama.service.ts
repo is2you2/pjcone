@@ -605,7 +605,7 @@ export class NakamaService {
   };
 
   /** 채널 추가, 채널 재배열 포함됨 */
-  add_channels(channel_info: Channel, _is_official: string, _target: string) {
+  async add_channels(channel_info: Channel, _is_official: string, _target: string) {
     if (this.channels_orig[_is_official][_target][channel_info.id] !== undefined && this.channels_orig[_is_official][_target][channel_info.id]['status'] != 'missing') return;
     if (!this.channels_orig[_is_official][_target][channel_info.id])
       this.channels_orig[_is_official][_target][channel_info.id] = {};
@@ -621,7 +621,7 @@ export class NakamaService {
         break;
       case 3: // 새로 개설된 그룹 채널인 경우
         let group_id = this.channels_orig[_is_official][_target][channel_info.id]['redirect']['id'];
-        this.servers[_is_official][_target].client.listGroupUsers(
+        await this.servers[_is_official][_target].client.listGroupUsers(
           this.servers[_is_official][_target].session, group_id).then(v => {
             if (!this.groups[_is_official][_target][group_id]['users'])
               this.groups[_is_official][_target][group_id]['users'] = [];
@@ -687,7 +687,7 @@ export class NakamaService {
             this.channels_orig[_is_official][_target][_cid]['redirect']['type'],
             this.channels_orig[_is_official][_target][_cid]['redirect']['persistence'],
             false
-          ).then(_c => {
+          ).then(async _c => {
             if (!this.channels_orig[_is_official][_target][_cid]['cnoti_id'])
               this.channels_orig[_is_official][_target][_cid]['cnoti_id'] = this.get_channel_noti_id();
             switch (this.channels_orig[_is_official][_target][_cid]['redirect']['type']) {
@@ -704,7 +704,7 @@ export class NakamaService {
                   });
                 break;
               case 3: // 그룹 채팅인 경우 그룹 유저도 검토
-                this.servers[_is_official][_target].client.listGroupUsers(
+                await this.servers[_is_official][_target].client.listGroupUsers(
                   this.servers[_is_official][_target].session, this.channels_orig[_is_official][_target][_cid]['redirect']['id']
                 ).then(_guser => {
                   _guser.group_users.forEach(_user => {
@@ -744,10 +744,8 @@ export class NakamaService {
     }
   }
 
-  /** 채널 재정렬 후 업데이트처리  
-   * after_channel_rearrange > page_key > (nakama.Channel[]) => {}
-   */
-  after_channel_rearrange = {};
+  /** subscribe 페이지에서 사용할 채널 리스트 */
+  channels: Channel[] = [];
   /** 채널 리스트 정리, 채널 정보 저장  
    * @return Channel[] from channel_orig
    */
@@ -787,10 +785,7 @@ export class NakamaService {
         });
       });
     });
-    let _cids = Object.keys(this.after_channel_rearrange);
-    _cids.forEach(key => {
-      this.after_channel_rearrange[key](result);
-    });
+    this.channels = result;
     this.save_channels_with_less_info();
     return result;
   }
@@ -852,12 +847,12 @@ export class NakamaService {
       server.client.joinGroup(server.session, _info.id)
         .then(_v => {
           if (!_v) console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
-          server.client.listGroups(server.session, _info['name']).then(v => {
+          server.client.listGroups(server.session, _info['name']).then(async v => {
             for (let i = 0, j = v.groups.length; i < j; i++)
               if (v.groups[i].id == _info['id']) {
                 let pending_group = v.groups[i];
                 pending_group['status'] = 'pending';
-                this.servers[server.info.isOfficial][server.info.target].client.listGroupUsers(
+                await this.servers[server.info.isOfficial][server.info.target].client.listGroupUsers(
                   this.servers[server.info.isOfficial][server.info.target].session, v.groups[i].id
                 ).then(_list => {
                   _list.group_users.forEach(_guser => {
@@ -873,12 +868,12 @@ export class NakamaService {
         }).catch(e => {
           switch (e.status) {
             case 400: // 그룹에 이미 있는데 그룹추가 시도함
-              server.client.listGroups(server.session, _info['name']).then(v => {
+              server.client.listGroups(server.session, _info['name']).then(async v => {
                 for (let i = 0, j = v.groups.length; i < j; i++)
                   if (v.groups[i].id == _info['id']) {
                     let pending_group = v.groups[i];
                     pending_group['status'] = 'pending';
-                    this.servers[server.info.isOfficial][server.info.target].client.listGroupUsers(
+                    await this.servers[server.info.isOfficial][server.info.target].client.listGroupUsers(
                       this.servers[server.info.isOfficial][server.info.target].session, v.groups[i].id
                     ).then(_list => {
                       _list.group_users.forEach(_guser => {

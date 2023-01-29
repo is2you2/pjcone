@@ -143,13 +143,13 @@ export class SettingsPage implements OnInit {
   /** 저장된 그룹 업데이트하여 반영 */
   load_groups() {
     let tmp_groups = this.nakama.rearrange_group_list();
-    tmp_groups.forEach(group => {
+    tmp_groups.forEach(async group => {
       let _is_official = group['server']['isOfficial'];
       let _target = group['server']['target'];
       // 온라인이라면 서버정보로 덮어쓰기
       if (this.statusBar.groupServer[_is_official][_target] == 'online') {
         if (this.nakama.groups[_is_official][_target][group.id]['status'] != 'missing')
-          this.nakama.servers[_is_official][_target].client.listGroupUsers(
+          await this.nakama.servers[_is_official][_target].client.listGroupUsers(
             this.nakama.servers[_is_official][_target].session, group['id']
           ).then(v => { // 삭제된 그룹 여부 검토
             if (!v.group_users.length) { // 그룹 비활성중
@@ -187,13 +187,13 @@ export class SettingsPage implements OnInit {
             }
             if (v.group_users.length)
               group['users'] = v.group_users;
-            v.group_users.forEach(User => {
+            v.group_users.forEach(async User => {
               if (User['is_me'])
                 User['user'] = this.nakama.users.self;
               else {
                 if (this.nakama.load_other_user(User['user'].id, _is_official, _target)['avatar_url'] != User['user'].avatar_url
                   || !this.nakama.load_other_user(User['user'].id, _is_official, _target)['img'])
-                  this.nakama.servers[_is_official][_target].client.readStorageObjects(
+                  await this.nakama.servers[_is_official][_target].client.readStorageObjects(
                     this.nakama.servers[_is_official][_target].session, {
                     object_ids: [{
                       collection: 'user_public',

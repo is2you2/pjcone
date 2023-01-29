@@ -36,16 +36,11 @@ export class SubscribesPage implements OnInit {
   HEADER = 'subscribes';
 
   cant_scan = false;
-  channels: Channel[] = [];
   notifications: Notification[] = [];
 
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_scan = true;
-    this.channels = this.nakama.rearrange_channels();
-    this.nakama.after_channel_rearrange[this.HEADER] = (list: Channel[]) => {
-      this.channels = list;
-    }
     this.notifications = this.nakama.rearrange_notifications();
     this.nakama.after_notifications_rearrange[this.HEADER] = (list: Notification[]) => {
       this.notifications = list;
@@ -219,7 +214,6 @@ export class SubscribesPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    delete this.nakama.after_channel_rearrange[this.HEADER];
     delete this.nakama.after_notifications_rearrange[this.HEADER];
     this.removeBanner();
   }
