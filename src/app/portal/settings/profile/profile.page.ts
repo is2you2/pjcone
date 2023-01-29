@@ -178,7 +178,6 @@ export class ProfilePage implements OnInit {
   /** 클립보드 사용가능 여부 */
   cant_use_clipboard = false;
   imageURL_disabled = false;
-  imageURL_placeholder = this.lang.text['Profile']['pasteURI'];
   /** 외부 주소 붙여넣기 */
   imageURLPasted() {
     if (isPlatform != 'DesktopPWA') return;

@@ -52,6 +52,7 @@ contents,내용
 Title,내 정보
 img_alt,프로필 이미지
 noname_user,이름 없는 사용자
+name_placeholder,사용자 이름
 enterURI,이미지 주소 입력하기
 change_img,이미지 변경
 login_info,로그인 정보
