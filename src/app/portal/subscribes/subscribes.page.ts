@@ -36,15 +36,10 @@ export class SubscribesPage implements OnInit {
   HEADER = 'subscribes';
 
   cant_scan = false;
-  notifications: Notification[] = [];
 
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_scan = true;
-    this.notifications = this.nakama.rearrange_notifications();
-    this.nakama.after_notifications_rearrange[this.HEADER] = (list: Notification[]) => {
-      this.notifications = list;
-    }
     this.add_admob_banner();
   }
 
@@ -207,14 +202,13 @@ export class SubscribesPage implements OnInit {
 
   /** Nakama 서버 알림 읽기 */
   check_notifications(i: number) {
-    let server_info = this.notifications[i]['server'];
+    let server_info = this.nakama.notifications_rearrange[i]['server'];
     let _is_official = server_info['isOfficial'];
     let _target = server_info['target'];
-    this.nakama.check_notifications(this.notifications[i], _is_official, _target);
+    this.nakama.check_notifications(this.nakama.notifications_rearrange[i], _is_official, _target);
   }
 
   ionViewWillLeave() {
-    delete this.nakama.after_notifications_rearrange[this.HEADER];
     this.removeBanner();
   }
 }

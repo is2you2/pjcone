@@ -5,15 +5,15 @@
 </ion-header>
 
 <ion-content>
-  <ion-accordion-group *ngIf="notifications.length" value="colors" expand="inset" [value]="false" #accordionGroup>
+  <ion-accordion-group *ngIf="nakama.notifications_rearrange.length" value="colors" expand="inset" [value]="false" #accordionGroup>
     <ion-accordion value="colors">
       <ion-item slot="header">
         <ion-label>{{lang.text['Subscribes']['has_noties']}}</ion-label>
       </ion-item>
       <ion-list slot="content">
         <div *ngFor="let i of [0,1,2];">
-          <ion-item *ngIf="notifications.length > i" button (click)="check_notifications(i)">
-            <ion-label>{{notifications[i]['request']}}</ion-label>
+          <ion-item *ngIf="nakama.notifications_rearrange.length > i" button (click)="check_notifications(i)">
+            <ion-label>{{nakama.notifications_rearrange[i]['request']}}</ion-label>
           </ion-item>
         </div>
       </ion-list>

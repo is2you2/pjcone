@@ -561,10 +561,7 @@ export class NakamaService {
       });
   }
 
-  /** 알림이 재정렬된 후에..  
-   * @return nakama.Notification[]
-   */
-  after_notifications_rearrange = {};
+  notifications_rearrange = [];
   /** 그룹별 알림을 시간순으로 정렬함 */
   rearrange_notifications() {
     let result: Notification[] = [];
@@ -583,8 +580,7 @@ export class NakamaService {
       if (a.create_time > b.create_time) return -1;
       return 0;
     });
-    let keys = Object.keys(this.after_notifications_rearrange);
-    keys.forEach(key => this.after_notifications_rearrange[key](result));
+    this.notifications_rearrange = result;
     return result;
   }
 
