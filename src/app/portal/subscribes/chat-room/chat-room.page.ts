@@ -368,7 +368,6 @@ export class ChatRoomPage implements OnInit {
               this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
                 let url = URL.createObjectURL(resultModified);
                 this.modulate_thumbnail(msg, url);
-                this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
               });
           } else if (isPlatform != 'MobilePWA') {
             if (msg.content['viewer'] == 'disabled') {
@@ -382,7 +381,6 @@ export class ChatRoomPage implements OnInit {
                       this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
                         let url = URL.createObjectURL(resultModified);
                         this.modulate_thumbnail(msg, url);
-                        this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
                       });
                     }
                   }]
@@ -392,7 +390,6 @@ export class ChatRoomPage implements OnInit {
                 this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
                   let url = URL.createObjectURL(resultModified);
                   this.modulate_thumbnail(msg, url);
-                  this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
                 });
             }
           }
