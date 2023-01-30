@@ -50,6 +50,7 @@ export class LanguageSettingService {
       }
     });
   }
+  Callback_once: Function;
   /** 순차적으로 번역처리하기 */
   ASyncTranslation(v: p5.Table, i: number, j: number, tmpTitle?: string) {
     if (i < j) {
@@ -61,6 +62,7 @@ export class LanguageSettingService {
       setTimeout(() => {
         this.ASyncTranslation(v, i + 1, j, tmpTitle);
       }, 0);
-    }
+    } else // 전부 불러온 후
+      this.Callback_once(this.text['GroupServer']['DevTestServer']);
   }
 }

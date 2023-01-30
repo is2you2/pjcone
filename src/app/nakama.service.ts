@@ -50,7 +50,7 @@ export class NakamaService {
     private modalCtrl: ModalController,
     private alertCtrl: AlertController,
     private communityServer: WscService,
-    private langset: LanguageSettingService,
+    private lang: LanguageSettingService,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -110,6 +110,10 @@ export class NakamaService {
       // 채널 불러오기
       this.load_channel_list();
     });
+    this.lang.Callback_once = (DevTestServer: string) => {
+      this.servers['official']['default'].info.name = DevTestServer;
+      delete this.lang.Callback_once;
+    }
     // 공식서버 연결처리
     this.init_server(this.servers['official']['default'].info);
     // 저장된 사설서버들 정보 불러오기
@@ -364,7 +368,7 @@ export class NakamaService {
             this.servers[info.isOfficial][info.target].client.updateAccount(
               this.servers[info.isOfficial][info.target].session, {
               display_name: this.users.self['display_name'],
-              lang_tag: this.langset.lang,
+              lang_tag: this.lang.lang,
             });
           this.p5toast.show({
             text: `회원가입이 완료되었습니다: ${info.target}`,

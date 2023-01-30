@@ -142,3 +142,21 @@ Recovery,원상복구
 recovery_device_id,기기 id 되돌리기
 link_account_succ,사용자 연결에 성공했습니다.
 failed_to_gen_qr,QRCode 생성 실패
+## GroupServer,
+Title,그룹 서버
+AboutServerAndAccount,서버와 계정에 대해서
+JoinedServerList,참여중인 서버 목록
+DevTestServer,개발 테스트 서버
+HideOfficialDefault,가리기
+RemoveUnofficial,삭제
+RegisterServer,사설 서버 등록하기
+DisplayName,표시명
+DisplayName_placeholder,사용자 사설 서버
+DivisionName,구분자
+DivisionName_placeholder,표시명을 따라감
+Address,서버 주소
+Key,서버 키
+Port,포트
+isSSL,SSL 적용여부
+submit,등록하기
+NeedSetDIsplayName,이름을 지정해주세요.

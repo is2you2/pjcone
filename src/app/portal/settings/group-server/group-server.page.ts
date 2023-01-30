@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import * as p5 from "p5";
 import { IndexedDBService } from 'src/app/indexed-db.service';
+import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
@@ -17,6 +18,7 @@ export class GroupServerPage implements OnInit {
     private p5toast: P5ToastService,
     public statusBar: StatusManageService,
     private indexed: IndexedDBService,
+    public lang: LanguageSettingService,
   ) { }
 
   info: string;
@@ -90,7 +92,7 @@ export class GroupServerPage implements OnInit {
 
     if (!this.dedicated_info.name) {
       this.p5toast.show({
-        text: '이름을 지정해주세요.',
+        text: this.lang.text['GroupServer']['NeedSetDIsplayName'],
       });
       return;
     }
