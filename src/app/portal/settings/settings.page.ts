@@ -46,8 +46,8 @@ export class SettingsPage implements OnInit {
   async checkAdsInfo() {
     try {
       let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/${this.lang.lang}.txt`);
-      let text = await (await res.blob()).text();
-      if (text.indexOf('<html>') < 0) {
+      if (res.ok) {
+        let text = await (await res.blob()).text();
         this.indexed.saveTextFileToUserPath(text, 'ads_list.txt');
         let lines: string[] = text.split('\n');
         this.listAvailableAds(lines);

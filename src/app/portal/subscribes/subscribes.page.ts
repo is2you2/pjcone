@@ -91,9 +91,7 @@ export class SubscribesPage implements OnInit {
     /** 광고 정보 불러오기 */
     try {
       let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/admob.txt`);
-      let text = await (await res.blob()).text();
-      if (text.indexOf('<html>') < 0) {
-      } else throw new Error("없는거나 다름없지");
+      if (!res.ok) throw new Error("없는거나 다름없지");
     } catch (e) { // 로컬 정보 기반으로 광고
       AdMob.showBanner(options).then(() => {
         this.isBannerShowing = true;
