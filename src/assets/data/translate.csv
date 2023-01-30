@@ -99,3 +99,9 @@ cannot_open_file,파일을 열람할 수 없습니다.
 export_download,추출
 ## ContentViewer,
 Download,다운로드
+## WscClient,
+OnlineMode,온라인 모드
+OnlineMode_text,커뮤니티 서버로부터 알림을 받을 수 있습니다.
+Disconnected,커뮤니티 서버로부터 연결이 끊어졌습니다.
+OfflineMode,오프라인 모드
+OfflineMode_text,사설서버부터 알림을 받을 수 있습니다.

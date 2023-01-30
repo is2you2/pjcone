@@ -17,6 +17,9 @@ export class LanguageSettingService {
     Main: {},
     Settings: {},
     Profile: {},
+    WscClient: {
+      Disconnected: 'Disconnected from community server.',
+    },
   };
 
   constructor() {

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { SOCKET_SERVER_ADDRESS } from './app.component';
+import { LanguageSettingService } from './language-setting.service';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 
@@ -14,6 +15,7 @@ export class WscService {
     private statusBar: StatusManageService,
     private p5toast: P5ToastService,
     private bgmode: BackgroundMode,
+    private lang: LanguageSettingService,
   ) { }
   /** 관리자 여부를 확인하여 관리자 메뉴 토글에 사용 */
   is_admin = false;
@@ -44,8 +46,8 @@ export class WscService {
     this.client.onopen = (_ev) => {
       this.statusBar.settings['communityServer'] = 'online';
       let online_info = {
-        title: '온라인 모드',
-        text: '커뮤니티 서버로부터 알림을 받을 수 있습니다.',
+        title: this.lang.text['WscClient']['OnlineMode'],
+        text: this.lang.text['WscClient']['OnlineMode_text'],
         icon: 'icon_mono',
         color: 'ffd94e', // 모자 밑단 노란색
       };
@@ -60,12 +62,12 @@ export class WscService {
         this.statusBar.settings['communityServer'] = 'offline';
       }, 1500);
       this.p5toast.show({
-        text: '커뮤니티 서버로부터 연결이 끊어졌습니다.',
+        text: this.lang.text['WscClient']['Disconnected'],
         lateable: true,
       });
       let offline_info = {
-        title: '오프라인 모드',
-        text: '사설서버부터 알림을 받을 수 있습니다.',
+        title: this.lang.text['WscClient']['OfflineMode'],
+        text: this.lang.text['WscClient']['OfflineMode_text'],
         icon: 'icon_mono',
         color: 'ffd94e', // 모자 밑단 노란색
       };
