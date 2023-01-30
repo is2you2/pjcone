@@ -151,6 +151,7 @@ export class ChatRoomPage implements OnInit {
         if (c.content['filename']) this.ModulateFileEmbedMessage(c);
         let currentTime = new Date(c.create_time);
         c['msgDate'] = `${currentTime.getFullYear()}-${("00" + (currentTime.getMonth() + 1)).slice(-2)}-${("00" + currentTime.getDate()).slice(-2)}`;
+        c['msgTime'] = `${("00" + (currentTime.getHours() + 1)).slice(-2)}:${("00" + currentTime.getMinutes()).slice(-2)}`;
         this.messages.push(c);
         setTimeout(() => {
           this.content_panel.scrollIntoView({ block: 'start' });
@@ -232,6 +233,7 @@ export class ChatRoomPage implements OnInit {
               if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
               let currentTime = new Date(msg.create_time);
               msg['msgDate'] = `${currentTime.getFullYear()}-${("00" + (currentTime.getMonth() + 1)).slice(-2)}-${("00" + currentTime.getDate()).slice(-2)}`;
+              msg['msgTime'] = `${("00" + (currentTime.getHours() + 1)).slice(-2)}:${("00" + currentTime.getMinutes()).slice(-2)}`;
               this.messages.unshift(msg);
             });
             this.next_cursor = v.next_cursor;
