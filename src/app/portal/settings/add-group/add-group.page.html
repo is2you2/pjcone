@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>그룹 생성하기</ion-title>
+    <ion-title>{{lang.text['AddGroup']['Title']}}</ion-title>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="settings"></ion-back-button>
     </ion-buttons>
@@ -12,7 +12,7 @@
     [value]="isExpanded" #accordionGroup (click)="isExpanded = true">
     <ion-accordion value="colors">
       <ion-item slot="header">
-        <ion-label>서버 선택</ion-label>
+        <ion-label>{{lang.text['AddGroup']['SelectServer']}}</ion-label>
         <ion-label class="ion-text-right">{{servers[index].name}}</ion-label>
       </ion-item>
       <ion-list slot="content">
@@ -23,11 +23,11 @@
     </ion-accordion>
   </ion-accordion-group>
   <ion-item-divider>
-    <ion-label>그룹 정보</ion-label>
+    <ion-label>{{lang.text['AddGroup']['GroupInfo']}}</ion-label>
   </ion-item-divider>
   <ion-item [disabled]="isSaveClicked" button>
-    <ion-label>표시명</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="userInput.name" [placeholder]="'그룹 이름'"></ion-input>
+    <ion-label>{{lang.text['AddGroup']['DisplayName']}}</ion-label>
+    <ion-input class="ion-text-right" [(ngModel)]="userInput.name" [placeholder]="lang.text['AddGroup']['DisplayName_placeholder']"></ion-input>
   </ion-item>
   <ion-item button [disabled]="isSaveClicked" (click)="buttonClickLinkInputFile()">
     <div class="additional_form bg_img_form">
@@ -35,7 +35,7 @@
     </div>
     <ion-label>
       <p>{{userInput.server.name + ' (' + userInput.server.target + ')'}}</p>
-      <h2>{{userInput.name || '눌러서 그룹 이미지 설정'}}</h2>
+      <h2>{{userInput.name || lang.text['AddGroup']['ClicktoChangeGroupImg']}}</h2>
     </ion-label>
   </ion-item>
   <ion-item (click)="imageURLPasted()" [hidden]="cant_use_clipboard" [disabled]="isSaveClicked || imageURL_disabled">
@@ -43,30 +43,29 @@
   </ion-item>
   <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
   <ion-item-divider>
-    <ion-label>그룹 참여</ion-label>
+    <ion-label>{{lang.text['AddGroup']['JoinThisGroup']}}</ion-label>
   </ion-item-divider>
   <ion-item *ngIf="!QRCodeSRC" disabled>
-    <ion-label>그룹을 생성하여 계속</ion-label>
+    <ion-label>{{lang.text['AddGroup']['AfterCreateGroup']}}</ion-label>
   </ion-item>
-  <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="준비중">
+  <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="Loading">
   <ion-item-divider>
-    <ion-label>그룹 상세</ion-label>
+    <ion-label>{{lang.text['AddGroup']['GroupDetail']}}</ion-label>
   </ion-item-divider>
-  <textarea class="infobox" [disabled]="isSaveClicked" [(ngModel)]="userInput.description" [placeholder]="'그룹 설명'"></textarea>
+  <textarea class="infobox" [disabled]="isSaveClicked" [(ngModel)]="userInput.description" [placeholder]="lang.text['AddGroup']['GroupDetail_placeholder']"></textarea>
   <ion-item [disabled]="isSaveClicked" button>
-    <ion-label>국가 태그</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="userInput.lang_tag" [placeholder]="'ko'"></ion-input>
+    <ion-label>{{lang.text['AddGroup']['LanguageTag']}}</ion-label>
+    <ion-input class="ion-text-right" [(ngModel)]="userInput.lang_tag" [placeholder]="lang.lang"></ion-input>
   </ion-item>
   <ion-item [disabled]="isSaveClicked">
-    <ion-label>최대 인원</ion-label>
-    <ion-input type="number" class="ion-text-right" min="2" [(ngModel)]="userInput.max_count" [placeholder]="'2'"></ion-input>
-    <ion-label class="ion-text-right">명</ion-label>
+    <ion-label>{{lang.text['AddGroup']['MemberMaxLimit']}}</ion-label>
+    <ion-input type="number" class="ion-text-right" min="2" [(ngModel)]="userInput.max_count" placeholder="2"></ion-input>
   </ion-item>
   <ion-item [disabled]="isSaveClicked" button (click)="isPublicToggle()">
-    <ion-label>공개 여부</ion-label>
+    <ion-label>{{lang.text['AddGroup']['IsOpen']}}</ion-label>
     <ion-toggle slot="end" style="pointer-events: none;" [(ngModel)]="userInput.open"></ion-toggle>
   </ion-item>
   <ion-item button (click)="save()" [disabled]="isSaveClicked">
-    <ion-label class="ion-text-center">위 정보로 추가하기</ion-label>
+    <ion-label class="ion-text-center">{{lang.text['AddGroup']['submit']}}</ion-label>
   </ion-item>
 </ion-content>

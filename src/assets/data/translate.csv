@@ -166,3 +166,23 @@ AboutCommServer,커뮤니티 서버에 대해서
 ServerStatus,서버 상태
 AddressInfo,커뮤니티 서버
 isSSL,SSL 적용 여부
+## AddGroup,
+Title,그룹 생성하기
+SelectServer,서버 선택
+GroupInfo,그룹 정보
+DisplayName,표시명
+DisplayName_placeholder,그룹 이름
+ClicktoChangeGroupImg,눌러서 그룹 이미지 설정
+JoinThisGroup,그룹 참여
+AfterCreateGroup,그룹을 생성하여 계속
+GroupDetail,그룹 상세
+GroupDetail_placeholder,그룹 설명
+LanguageTag,국가 태그
+MemberMaxLimit,최대 인원
+IsOpen,공개 여부
+submit,위 정보로 추가하기
+cannot_use_selected_server,선택한 서버를 사용할 수 없습니다.
+group_created,그룹이 생성되었습니다.
+NeedSetGroupName,그룹 이름을 작성해주세요.
+AlreadyExist,이미 같은 이름의 그룹이 존재합니다.
+UnexpectedErr,준비되지 않은 오류처리

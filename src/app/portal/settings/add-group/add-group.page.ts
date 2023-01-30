@@ -22,7 +22,7 @@ export class AddGroupPage implements OnInit {
     private nakama: NakamaService,
     private sanitizer: DomSanitizer,
     private statusBar: StatusManageService,
-    private langset: LanguageSettingService,
+    public lang: LanguageSettingService,
   ) { }
 
   QRCodeSRC: any;
@@ -33,7 +33,6 @@ export class AddGroupPage implements OnInit {
       this.userInput = tmp;
     this.servers = this.nakama.get_all_server_info(true, true);
     this.userInput.server = this.servers[this.index];
-    this.userInput.lang_tag = this.langset.lang;
   }
 
   /** 그룹ID를 QRCode로 그려내기 */
@@ -56,7 +55,7 @@ export class AddGroupPage implements OnInit {
       this.QRCodeSRC = this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);
     } catch (e) {
       this.p5toast.show({
-        text: `QRCode 생성 실패: ${e}`,
+        text: `${this.lang.text['LinkAccount']['failed_to_gen_qr']}: ${e}`,
       });
     }
   }
@@ -89,7 +88,7 @@ export class AddGroupPage implements OnInit {
   /** 클립보드 사용가능 여부 */
   cant_use_clipboard = false;
   imageURL_disabled = false;
-  imageURL_placeholder = '눌러서 외부이미지 주소 붙여넣기';
+  imageURL_placeholder = this.lang.text['Profile']['pasteURI'];
   /** 외부 주소 붙여넣기 */
   imageURLPasted() {
     if (isPlatform != 'DesktopPWA') return;
@@ -104,7 +103,7 @@ export class AddGroupPage implements OnInit {
         }, (rv) => this.userInput.img = rv['canvas'].toDataURL());
       } else {
         this.p5toast.show({
-          text: '먼저 웹 페이지에서 이미지 주소를 복사해주세요',
+          text: this.lang.text['Profile']['copyURIFirst'],
         });
       }
     });
@@ -124,7 +123,7 @@ export class AddGroupPage implements OnInit {
   save() {
     if (this.statusBar.groupServer[this.servers[this.index].isOfficial][this.servers[this.index].target] != 'online') {
       this.p5toast.show({
-        text: '선택한 서버를 사용할 수 없습니다.',
+        text: this.lang.text['AddGroup']['cannot_use_selected_server'],
       });
       return;
     }
@@ -133,7 +132,7 @@ export class AddGroupPage implements OnInit {
     this.userInput['owner'] = session.user_id;
 
     this.isSaveClicked = true;
-    this.userInput.lang_tag = this.userInput.lang_tag || 'ko';
+    this.userInput.lang_tag = this.userInput.lang_tag || this.lang.lang;
     this.userInput.max_count = this.userInput.max_count || 2;
     client.createGroup(session, {
       name: this.userInput.name,
@@ -150,7 +149,7 @@ export class AddGroupPage implements OnInit {
         this.isSavedWell = true;
         localStorage.removeItem('add-group');
         this.p5toast.show({
-          text: '그룹이 생성되었습니다.',
+          text: this.lang.text['AddGroup']['group_created'],
         });
         setTimeout(() => {
           this.navCtrl.back();
@@ -162,7 +161,7 @@ export class AddGroupPage implements OnInit {
         case 400:
           setTimeout(() => {
             this.p5toast.show({
-              text: '그룹 이름을 작성해주세요.',
+              text: this.lang.text['AddGroup']['NeedSetGroupName'],
             });
             this.isSaveClicked = false;
           }, 500);
@@ -170,7 +169,7 @@ export class AddGroupPage implements OnInit {
         case 409:
           setTimeout(() => {
             this.p5toast.show({
-              text: '이미 같은 이름의 그룹이 존재합니다.',
+              text: this.lang.text['AddGroup']['AlreadyExist'],
             });
             this.isSaveClicked = false;
           }, 500);
@@ -178,7 +177,7 @@ export class AddGroupPage implements OnInit {
         default:
           setTimeout(() => {
             this.p5toast.show({
-              text: `준비되지 않은 오류처리: ${e}`,
+              text: `${this.lang.text['AddGroup']['UnexpectedErr']}: ${e}`,
             });
             this.isSaveClicked = false;
           }, 500);
