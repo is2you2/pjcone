@@ -212,7 +212,7 @@ export class IonicViewerPage implements OnInit {
   }
 
   download_file() {
-    this.indexed.DownloadFileFromUserPath(this.navParams.get('path'), this.FileInfo['filename']);
+    this.indexed.DownloadFileFromUserPath(this.navParams.get('path'), this.FileInfo['type'], this.FileInfo['filename']);
   }
 
   ionViewWillLeave() {

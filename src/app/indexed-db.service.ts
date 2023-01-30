@@ -214,17 +214,18 @@ export class IndexedDBService {
    * @param path 'user://~'에 들어가는 사용자 폴더 경로
    * @param filename 저장할 파일 이름
    */
-  DownloadFileFromUserPath(path: string, filename: string) {
+  DownloadFileFromUserPath(path: string, mime: string, filename: string) {
     if (!this.db) {
       setTimeout(() => {
-        this.DownloadFileFromUserPath(path, filename);
+        this.DownloadFileFromUserPath(path, mime, filename);
       }, 1000);
       return;
     };
     let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
     data.onsuccess = (ev) => {
       try {
-        let url = URL.createObjectURL(ev.target['result']['contents']);
+        let blob = new Blob([ev.target['result']['contents']], { type: mime });
+        let url = URL.createObjectURL(blob);
         let link = document.createElement("a");
         link.download = filename;
         link.href = url;

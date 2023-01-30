@@ -583,7 +583,7 @@ export class ChatRoomPage implements OnInit {
         buttons: [{
           text: this.lang.text['ChatRoom']['export_download'],
           handler: () => {
-            this.indexed.DownloadFileFromUserPath(path, msg.content['filename']);
+            this.indexed.DownloadFileFromUserPath(path, msg.content['type'], msg.content['filename']);
           }
         }]
       }).then(v => v.present());
