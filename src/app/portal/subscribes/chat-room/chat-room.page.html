@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>{{info['title'] || '이름 없는 채팅방'}}</ion-title>
+    <ion-title>{{info['title'] || lang.text['ChatRoom']['noname_chatroom']}}</ion-title>
     <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
       <ion-back-button defaultHref="subscribes"></ion-back-button>
     </ion-buttons>
@@ -13,7 +13,7 @@
       <td style="vertical-align: top;">
         <div id="main_div" class="main">
           <ion-item [disabled]="next_cursor === undefined || !pullable" button (click)="pull_msg_history()">
-            <ion-label>이전 기록 불러오기</ion-label>
+            <ion-label>{{lang.text['ChatRoom']['fetch_previous_chat']}}</ion-label>
           </ion-item>
           <div *ngFor="let msg of messages; let i = index" (click)="message_detail(msg)">
             <div *ngIf="!messages[i - 1] || msg['msgDate'] != messages[i - 1]['msgDate']"
@@ -48,7 +48,7 @@
             <p *ngIf="msg.content['msg']" style="margin: 4px 0px 0px 0px;"> {{msg.content['msg']}} </p>
           </div>
           <ion-item *ngIf="prev_cursor" hidden [disabled]="!pullable" button (click)="pull_msg_history(false)">
-            <ion-label>최근 기록 불러오기</ion-label>
+            <ion-label>{{lang.text['ChatRoom']['fetch_next_chat']}}</ion-label>
           </ion-item>
           <div id="content"></div>
         </div>
@@ -62,7 +62,7 @@
               <td>
                 <ion-button expand="block" [disabled]="!info['status'] || info['status'] == 'offline'"
                   (click)="open_ext_with_delay()">
-                  기능
+                  {{lang.text['ChatRoom']['chat_extension']}}
                 </ion-button>
               </td>
               <td style="width: 100%;">
@@ -73,7 +73,7 @@
               <td>
                 <ion-button (click)="send()" expand="block"
                   [disabled]="!info['status'] || info['status'] == 'missing' || info['status'] == 'offline'">
-                  보내기
+                  {{lang.text['ChatRoom']['send_chat']}}
                 </ion-button>
               </td>
             </tr>

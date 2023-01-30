@@ -75,3 +75,25 @@ privacy_chat,대화
 kick_from_group,추방
 added_to_group,그룹원이 추가되었습니다
 kicked_from_group,사용자를 내보냈습니다
+## ChatRoom,
+noname_chatroom,이름 없는 채팅방
+fetch_previous_chat,이전 기록 불러오기
+fetch_next_chat,최근 기록 불러오기
+chat_extension,기능
+send_chat,보내기
+remove_chatroom,삭제
+leave_chatroom,나가기
+belonging_to_group,이 채널은 그룹에 귀속되어 있습니다.
+attach_file,파일 첨부
+unknown_ext,검토 불가
+attachments,첨부파일
+input_placeholder,메시지 입력...
+closed_group_must_online,이 채널이 온라인 상태여야 합니다.
+closed_group_not_allow,그룹에서 오프라인 기록 열람을 허용하지 않습니다.
+cannot_open_from_mobile,모바일에서 열 수 없음
+cannot_open_with_viewer,이 파일은 뷰어로 볼 수 없습니다.
+download_anyway,그래도 다운로드
+downloaded,다운로드됨
+viewer_not_support,뷰어가 지원하지 않는 파일
+cannot_open_file,파일을 열람할 수 없습니다.
+export_download,추출

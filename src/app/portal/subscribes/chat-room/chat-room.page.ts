@@ -12,6 +12,7 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { isPlatform } from 'src/app/app.component';
 import { IonicViewerPage } from './ionic-viewer/ionic-viewer.page';
 import { GodotViewerPage } from './godot-viewer/godot-viewer.page';
+import { LanguageSettingService } from 'src/app/language-setting.service';
 
 interface FileInfo {
   id?: string;
@@ -50,6 +51,7 @@ export class ChatRoomPage implements OnInit {
     private statusBar: StatusManageService,
     private indexed: IndexedDBService,
     private alertCtrl: AlertController,
+    public lang: LanguageSettingService,
   ) { }
 
   /** 채널 정보 */
@@ -60,7 +62,7 @@ export class ChatRoomPage implements OnInit {
   messages = [];
   /** 확장 버튼 행동들 */
   extended_buttons: ExtendButtonForm[] = [{
-    title: '삭제',
+    title: this.lang.text['ChatRoom']['remove_chatroom'],
     act: () => {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
       this.nakama.rearrange_channels();
@@ -68,7 +70,7 @@ export class ChatRoomPage implements OnInit {
     }
   },
   {
-    title: '나가기',
+    title: this.lang.text['ChatRoom']['leave_chatroom'],
     act: () => {
       if (this.info['redirect']['type'] != 3) {
         this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
@@ -78,14 +80,14 @@ export class ChatRoomPage implements OnInit {
         this.extended_buttons[1].isHide = true;
       } else {
         this.p5toast.show({
-          text: '이 채널은 그룹에 귀속되어 있습니다.',
+          text: this.lang.text['ChatRoom']['belonging_to_group'],
         });
         return;
       }
     }
   },
   {
-    title: '파일 첨부',
+    title: this.lang.text['ChatRoom']['attach_file'],
     icon: '',
     act: () => {
       document.getElementById('file_sel').click();
@@ -97,7 +99,7 @@ export class ChatRoomPage implements OnInit {
   inputFileSelected(ev: any) {
     this.userInput['file'] = {};
     this.userInput.file['name'] = ev.target.files[0].name;
-    this.userInput.file['ext'] = ev.target.files[0].name.split('.')[1] || ev.target.files[0].type || '검토 불가';
+    this.userInput.file['ext'] = ev.target.files[0].name.split('.')[1] || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
     this.userInput.file['size'] = ev.target.files[0].size;
     this.userInput.file['type'] = ev.target.files[0].type;
     let updater = setInterval(() => { }, 110);
@@ -108,7 +110,7 @@ export class ChatRoomPage implements OnInit {
     reader = reader._realReader ?? reader;
     reader.onload = (ev: any) => {
       this.userInput.file['result'] = ev.target.result.replace(/"|\\|=/g, '');
-      this.inputPlaceholder = `(첨부파일: ${this.userInput.file.name})`;
+      this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.name})`;
     }
     reader.readAsDataURL(ev.target.files[0]);
   }
@@ -171,7 +173,7 @@ export class ChatRoomPage implements OnInit {
       c['user_display_name'] = this.nakama.users.self['display_name'];
       c['is_me'] = true;
     } else c['user_display_name'] = this.nakama.load_other_user(c.sender_id, this.isOfficial, this.target)['display_name'];
-    c['user_display_name'] = c['user_display_name'] || '이름 없는 사용자';
+    c['user_display_name'] = c['user_display_name'] || this.lang.text['Profile']['noname_user'];
   }
 
   p5canvas: p5;
@@ -204,7 +206,7 @@ export class ChatRoomPage implements OnInit {
     file: undefined as FileInfo,
     text: '',
   }
-  inputPlaceholder = '메시지 입력...';
+  inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
 
   /** 자동 열람 파일 크기 제한 */
   FILESIZE_LIMIT = 5000000;
@@ -224,7 +226,7 @@ export class ChatRoomPage implements OnInit {
               msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
               this.check_sender_and_show_name(msg);
               if (!this.info['last_comment']) {
-                let hasFile = msg.content['filename'] ? '(첨부파일) ' : '';
+                let hasFile = msg.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
                 this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
               }
               if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
@@ -241,11 +243,11 @@ export class ChatRoomPage implements OnInit {
           if (!this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open']) {
             let tmp = [{
               content: {
-                msg: '이 채널이 온라인 상태여야 합니다.',
+                msg: this.lang.text['ChatRoom']['closed_group_must_online'],
               }
             }, {
               content: {
-                msg: '그룹에서 오프라인 기록 열람을 허용하지 않습니다.',
+                msg: this.lang.text['ChatRoom']['closed_group_not_allow'],
               }
             }];
             this.next_cursor = undefined;
@@ -336,7 +338,7 @@ export class ChatRoomPage implements OnInit {
         }
         delete this.userInput.file;
         this.userInput.text = '';
-        this.inputPlaceholder = '메시지 입력...';
+        this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
       });
   }
 
@@ -373,10 +375,10 @@ export class ChatRoomPage implements OnInit {
             if (msg.content['viewer'] == 'disabled') {
               if (!this.isHistoryLoaded)
                 this.alertCtrl.create({
-                  header: '모바일에서 열 수 없음',
-                  message: '이 파일은 뷰어로 볼 수 없습니다.',
+                  header: this.lang.text['ChatRoom']['cannot_open_from_mobile'],
+                  message: this.lang.text['ChatRoom']['cannot_open_with_viewer'],
                   buttons: [{
-                    text: '그래도 다운로드',
+                    text: this.lang.text['ChatRoom']['download_anyway'],
                     handler: () => {
                       this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
                         let url = URL.createObjectURL(resultModified);
@@ -523,7 +525,7 @@ export class ChatRoomPage implements OnInit {
     this.set_viewer_category(msg);
     this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (b) => {
       if (b) {
-        msg.content['text'] = '다운로드됨';
+        msg.content['text'] = this.lang.text['ChatRoom']['downloaded'];
         if (msg.content['filesize'] < this.FILESIZE_LIMIT) // 너무 크지 않은 파일에 대해서만 자동 썸네일 구성
           this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
             msg.content['type'],
@@ -574,17 +576,17 @@ export class ChatRoomPage implements OnInit {
   alert_download(msg: any, path: string) {
     if (isPlatform == 'DesktopPWA')
       this.alertCtrl.create({
-        header: '지원하지 않는 파일',
-        message: '파일을 열람할 수 없습니다.',
+        header: this.lang.text['ChatRoom']['viewer_not_support'],
+        message: this.lang.text['ChatRoom']['cannot_open_file'],
         buttons: [{
-          text: '추출',
+          text: this.lang.text['ChatRoom']['export_download'],
           handler: () => {
             this.indexed.DownloadFileFromUserPath(path, msg.content['filename']);
           }
         }]
       }).then(v => v.present());
     else this.p5toast.show({
-      text: '파일을 열람할 수 없습니다.',
+      text: this.lang.text['ChatRoom']['cannot_open_file'],
     });
   }
 

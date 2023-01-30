@@ -15,6 +15,8 @@ export class LanguageSettingService {
   text = {
     Portal: {},
     Main: {},
+    Settings: {},
+    Profile: {},
   };
 
   constructor() {
