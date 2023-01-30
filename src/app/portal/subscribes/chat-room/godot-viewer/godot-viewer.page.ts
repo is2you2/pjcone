@@ -3,6 +3,7 @@ import { ModalController, NavParams } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
+import { LanguageSettingService } from 'src/app/language-setting.service';
 
 @Component({
   selector: 'app-godot-viewer',
@@ -16,6 +17,7 @@ export class GodotViewerPage implements OnInit {
     private navParams: NavParams,
     private global: GlobalActService,
     private indexed: IndexedDBService,
+    public lang: LanguageSettingService,
   ) { }
 
   cant_dedicated: boolean;

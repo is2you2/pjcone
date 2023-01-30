@@ -5,6 +5,7 @@ import * as p5 from "p5";
 import 'p5/lib/addons/p5.sound';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import { LanguageSettingService } from 'src/app/language-setting.service';
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -18,6 +19,7 @@ export class IonicViewerPage implements OnInit {
     private navParams: NavParams,
     private indexed: IndexedDBService,
     private p5toast: P5ToastService,
+    public lang: LanguageSettingService,
   ) { }
 
   cant_dedicated: boolean;

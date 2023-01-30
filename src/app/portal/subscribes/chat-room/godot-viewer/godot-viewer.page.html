@@ -13,7 +13,7 @@
       <td>
         <ion-list-header>
           <ion-label>{{FileInfo.filename}}</ion-label>
-          <ion-button *ngIf="cant_dedicated" (click)="download_file()">다운로드</ion-button>
+          <ion-button *ngIf="cant_dedicated" (click)="download_file()">{{lang.text['ContentViewer']['Download']}}</ion-button>
         </ion-list-header>
       </td>
     </tr>
