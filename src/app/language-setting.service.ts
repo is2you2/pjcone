@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import * as p5 from "p5";
 
 /** 언어 설정에 관하여 */
@@ -22,7 +23,9 @@ export class LanguageSettingService {
     },
   };
 
-  constructor() {
+  constructor(
+    private bgmode: BackgroundMode,
+  ) {
     this.lang = navigator.language.split('-')[0];
     let lang_override = localStorage.getItem('lang');
     if (lang_override)
@@ -62,7 +65,16 @@ export class LanguageSettingService {
       setTimeout(() => {
         this.ASyncTranslation(v, i + 1, j, tmpTitle);
       }, 0);
-    } else // 전부 불러온 후
+    } else { // 전부 불러온 후
+      let online_info = {
+        title: this.text['WscClient']['OnlineMode'],
+        text: this.text['WscClient']['OnlineMode_text'],
+        icon: 'icon_mono',
+        color: 'ffd94e', // 모자 밑단 노란색
+      };
+      this.bgmode.setDefaults(online_info);
+      this.bgmode.configure(online_info);
       this.Callback_once(this.text['GroupServer']['DevTestServer']);
+    }
   }
 }
