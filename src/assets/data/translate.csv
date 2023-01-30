@@ -105,3 +105,33 @@ OnlineMode_text,커뮤니티 서버로부터 알림을 받을 수 있습니다.
 Disconnected,커뮤니티 서버로부터 연결이 끊어졌습니다.
 OfflineMode,오프라인 모드
 OfflineMode_text,사설서버부터 알림을 받을 수 있습니다.
+## MinimalChat,
+concurrent_users,동시접속자
+start_chat,대화 시작하기
+new_chat,새 대화
+exit_chat,끝내기
+send,보내기
+input_placeholder,메시지 입력...
+header_title_ranchat,미니랜챗
+header_title_group,그룹채팅
+WebTitle_ran,Project: 랜덤채팅
+WebTitle_group,Project: 그룹채팅
+Noti_Reply,답장
+name_me,나
+name_stranger_ran,상대방
+name_stranger_group,참여자
+joinChat_ran,랜덤채팅에 참가합니다.
+joinChat_group,그룹채팅에 참가합니다.
+user_join,사용자 참여
+user_join_comment,그룹에 참여했습니다.
+user_out,사용자 떠남
+user_out_comment,그룹을 떠났습니다.
+meet_someone,누군가를 만났습니다.
+leave_someone,상대방이 나갔습니다.
+Noti_Greeting,인사
+failed_to_join,채팅 참가에 실패했습니다.
+cannot_join,채팅에 참가할 수 없습니다.
+waiting_someone,새로운 상대를 기다립니다..
+cannot_start,시작할 수 없어요..
+leave_chat_ran,랜덤채팅에서 벗어납니다.
+leave_chat_group,그룹채팅에서 나옵니다.

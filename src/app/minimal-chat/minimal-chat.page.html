@@ -4,7 +4,7 @@
       <ion-back-button defaultHref=""></ion-back-button>
     </ion-buttons>
     <ion-title>{{header_title}}</ion-title>
-    <div style="margin: 8px 16px;" slot="end">동시접속자: {{client.ConnectedNow[target]}}명</div>
+    <div style="margin: 8px 16px;" slot="end">{{lang.text['MinimalChat']['concurrent_users']}}: {{client.ConnectedNow[target]}}</div>
   </ion-toolbar>
 </ion-header>
 
@@ -30,27 +30,27 @@
             <tr>
               <td *ngIf="client.status[target] == 'idle'">
                 <ion-button (click)="join_ranchat()" expand="block">
-                  대화 시작하기
+                  {{lang.text['MinimalChat']['start_chat']}}
                 </ion-button>
               </td>
               <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'unlinked'">
                 <ion-button (click)="join_ranchat()" expand="block" [disabled]="req_refreshed">
-                  새 대화
+                  {{lang.text['MinimalChat']['new_chat']}}
                 </ion-button>
               </td>
               <td *ngIf="client.status[target] == 'unlinked' || client.status[target] == 'idle' || client.status[target] == 'custom'">
                 <ion-button (click)="quit_chat()" expand="block">
-                  대화 종료
+                  {{lang.text['MinimalChat']['exit_chat']}}
                 </ion-button>
               </td>
               <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'custom'" style="width: 100%;">
-                <ion-input type="text" placeholder="메시지 입력..." (ionFocus)="focus_on_input(120)" (keyup.enter)="send()"
+                <ion-input type="text" [placeholder]="lang.text['MinimalChat']['input_placeholder']" (ionFocus)="focus_on_input(120)" (keyup.enter)="send()"
                   [(ngModel)]="client.userInput[target].text">
                 </ion-input>
               </td>
               <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'custom'">
                 <ion-button (click)="send()" expand="block">
-                  보내기
+                  {{lang.text['MinimalChat']['send']}}
                 </ion-button>
               </td>
             </tr>
