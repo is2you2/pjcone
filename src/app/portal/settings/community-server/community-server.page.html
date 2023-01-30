@@ -1,6 +1,6 @@
-<ion-header>
+  <ion-header>
   <ion-toolbar>
-    <ion-title>커뮤니티 서버</ion-title>
+    <ion-title>{{lang.text['CommunityServer']['Title']}}</ion-title>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="settings"></ion-back-button>
     </ion-buttons>
@@ -9,22 +9,22 @@
 
 <ion-content>
   <ion-item-divider>
-    <ion-label>커뮤니티 서버에 대해서</ion-label>
+    <ion-label>{{lang.text['CommunityServer']['AboutCommServer']}}</ion-label>
   </ion-item-divider>
   <textarea class="infobox" disabled [(ngModel)]="info" style="height: 350px;"></textarea>
 
   <ion-item-divider>
-    <ion-label>서버 상태</ion-label>
+    <ion-label>{{lang.text['CommunityServer']['ServerStatus']}}</ion-label>
   </ion-item-divider>
   <ion-item button (click)="reconn_community_server()">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[statusBar.settings['communityServer']]"></div>
-    <ion-label class="form_margin">커뮤니티 서버</ion-label>
+    <ion-label class="form_margin">{{lang.text['CommunityServer']['AddressInfo']}}</ion-label>
     <ion-input type="text" class="ion-text-end" [(ngModel)]="address_override" (ionChange)="on_address_changed($event)">
     </ion-input>
   </ion-item>
   <ion-item [disabled]="!address_override" (click)="toggle_useSSL()" button>
-    <ion-label>SSL 적용 여부</ion-label>
+    <ion-label>{{lang.text['CommunityServer']['isSSL']}}</ion-label>
     <ion-toggle [(ngModel)]="useSSL" slot="end" style="pointer-events: none;"></ion-toggle>
   </ion-item>
 </ion-content>

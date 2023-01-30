@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as p5 from "p5";
+import { LanguageSettingService } from 'src/app/language-setting.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { WscService } from 'src/app/wsc.service';
 
@@ -14,6 +15,7 @@ export class CommunityServerPage implements OnInit {
   constructor(
     public statusBar: StatusManageService,
     public wsc: WscService,
+    public lang: LanguageSettingService,
   ) { }
 
   info = '';
