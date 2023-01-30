@@ -5,6 +5,7 @@ import { NavController } from '@ionic/angular';
 import * as QRCode from "qrcode-svg";
 import { SOCKET_SERVER_ADDRESS } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
+import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { WscService } from 'src/app/wsc.service';
@@ -26,6 +27,7 @@ export class LinkAccountPage implements OnInit {
     private wsc: WscService,
     private indexed: IndexedDBService,
     private device: Device,
+    public lang: LanguageSettingService,
   ) { }
 
   /** 기기 아이디가 이미 덮어씌워진 상태인지 */
@@ -47,7 +49,7 @@ export class LinkAccountPage implements OnInit {
           this.nakama.uuid = json.uuid;
           this.indexed.saveTextFileToUserPath(this.nakama.uuid, 'link-account');
           this.p5toast.show({
-            text: '사용자 연결에 성공했습니다.',
+            text: this.lang.text['LinkAccount']['link_account_succ'],
             lateable: true,
           });
           this.nakama.logout_all_server();
@@ -92,7 +94,7 @@ export class LinkAccountPage implements OnInit {
       this.QRCodeSRC = this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);
     } catch (e) {
       this.p5toast.show({
-        text: `QRCode 생성 실패: ${e}`,
+        text: `${this.lang.text['LinkAccount']['failed_to_gen_qr']}: ${e}`,
       });
     }
   }
