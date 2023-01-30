@@ -20,7 +20,7 @@
               style="text-align: center; font-size: 16px; padding-top: 8px;">
               <font color="#888"> {{msg['msgDate']}} </font>
             </div>
-            <p *ngIf="!msg.content.noti && (!messages[i - 1] || msg.sender_id != messages[i - 1].sender_id || messages[i - 1].content.noti)"
+            <p *ngIf="!msg.content.noti && (!messages[i - 1] || msg.sender_id != messages[i - 1].sender_id || messages[i - 1].content.noti || msg['msgDate'] != messages[i - 1]['msgDate'])"
               class="message_form" (click)="user_detail(msg)">
               <b>
                 <font

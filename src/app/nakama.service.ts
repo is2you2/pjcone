@@ -1160,9 +1160,9 @@ export class NakamaService {
   }
 
   /** 채널 정보를 변형한 후 추가하기 */
-  join_chat_with_modulation(targetId: string, type: number, _is_official: string, _target: string, _CallBack = (_c: Channel) => { }) {
+  async join_chat_with_modulation(targetId: string, type: number, _is_official: string, _target: string, _CallBack = (_c: Channel) => { }) {
     if (!this.channels_orig[_is_official][_target]) this.channels_orig[_is_official][_target] = {};
-    this.servers[_is_official][_target].socket.joinChat(targetId, type, true, false).then(c => {
+    await this.servers[_is_official][_target].socket.joinChat(targetId, type, true, false).then(c => {
       c['redirect'] = {
         id: targetId,
         type: type,
@@ -1489,19 +1489,14 @@ export class NakamaService {
         // 요청 타입을 구분하여 자동반응처리
         switch (targetType) {
           case 2: // 1:1 채팅
-            this.join_chat_with_modulation(v['sender_id'], targetType, _is_official, _target, (c) => {
-              this.servers[_is_official][_target].client.listChannelMessages(
+            this.join_chat_with_modulation(v['sender_id'], targetType, _is_official, _target, async (c) => {
+              await this.servers[_is_official][_target].client.listChannelMessages(
                 this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
                   if (m.messages.length) {
                     let hasFile = m.messages[0].content['filename'] ? '(첨부파일) ' : '';
                     c['last_comment'] = hasFile + (m.messages[0].content['msg'] || m.messages[0].content['noti'] || '');
                     this.update_from_channel_msg(m.messages[0], _is_official, _target);
                   }
-                });
-              this.servers[_is_official][_target].client.deleteNotifications(
-                this.servers[_is_official][_target].session, [v['id']]).then(v => {
-                  if (!v) console.warn('알림 거부처리 검토 필요');
-                  this.update_notifications(_is_official, _target);
                 });
             });
             break;
@@ -1510,6 +1505,11 @@ export class NakamaService {
             v['request'] = `${v.code}-${v.subject}`;
             break;
         }
+        this.servers[_is_official][_target].client.deleteNotifications(
+          this.servers[_is_official][_target].session, [v['id']]).then(b => {
+            if (!b) console.warn('알림 거부처리 검토 필요');
+            this.update_notifications(_is_official, _target);
+          });
         break;
       case -2: // 친구 요청 받음
         v['request'] = `${v.code}-${v.subject}`;
