@@ -161,6 +161,9 @@ npx cap sync android
 ```html
 <div id="godot-main-frame" class="full_screen"></div>
 ```
+- GodotViewer 구성 제한사항
+  - 사용자가 별도 클래스를 생성한 경우 .pck 파일에 포함되지 않는 오류가 있음
+  - Singleton이 설정된 경우 정상적으로 동작하지 않음 (싱글톤 없는 씬)
 ```javascript
 ionViewWillEnter() {
   this.app.CreateGodotIFrame('godot-main-frame', { key: value, ... });

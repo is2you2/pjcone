@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>그룹 상세</ion-title>
+    <ion-title>{{lang.text['GroupDetail']['Title']}}</ion-title>
     <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
       <ion-back-button defaultHref="settings"></ion-back-button>
     </ion-buttons>
@@ -9,10 +9,10 @@
 
 <ion-content>
   <ion-item *ngIf="info['status'] == 'pending'" color="warning">
-    <ion-label class="ion-text-center">아직 수락되지 않았습니다</ion-label>
+    <ion-label class="ion-text-center">{{lang.text['GroupDetail']['NotAcceptYet']}}</ion-label>
   </ion-item>
   <ion-item *ngIf="info['status'] == 'missing'" color="warning">
-    <ion-label class="ion-text-center">더 이상 그룹구성원이 아닙니다</ion-label>
+    <ion-label class="ion-text-center">{{lang.text['GroupDetail']['MissedGroup']}}</ion-label>
   </ion-item>
   <ion-item button (click)="buttonClickInputFile()">
     <div class="additional_form status_bar_single"
@@ -30,12 +30,12 @@
   </ion-item>
   <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
   <ion-item-divider>
-    <ion-label>그룹 설명</ion-label>
+    <ion-label>{{lang.text['AddGroup']['GroupDetail_placeholder']}}</ion-label>
   </ion-item-divider>
   <textarea class="infobox" [disabled]="!has_admin" [(ngModel)]="info.description"
-    [placeholder]="'설명 없는 그룹'"></textarea>
+    [placeholder]="lang.text['GroupDetail']['NoDetailGroup']"></textarea>
   <ion-item-divider *ngIf="info['users'] && info['users'].length">
-    <ion-label>{{'그룹 구성원 (' + info['users'].length + '/' + info['max_count'] + ')'}}</ion-label>
+    <ion-label>{{lang.text['GroupDetail']['Members'] + ' (' + info['users'].length + '/' + info['max_count'] + ')'}}</ion-label>
   </ion-item-divider>
   <ion-item button *ngFor="let user of info['users']" (click)="open_user_profile(user)">
     <div class="additional_form status_bar_single"
@@ -46,24 +46,24 @@
         [style]="'filter: ' + (user.user['online'] ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
         [src]="user.user.img">
     </div>
-    <ion-label class="form_margin">{{user.user.display_name || '이름 없는 사용자'}}</ion-label>
+    <ion-label class="form_margin">{{user.user.display_name || lang.text['Profile']['noname_user']}}</ion-label>
   </ion-item>
   <ion-item-divider>
-    <ion-label>아래를 스캔하여 그룹에 초대</ion-label>
+    <ion-label>{{lang.text['GroupDetail']['invite_scan_below']}}</ion-label>
   </ion-item-divider>
-  <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="준비중">
+  <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="Loading">
   <ion-item
     *ngIf="statusBar.groupServer[info['server']['isOfficial']][info['server']['target']] == 'online' && has_admin && info['status'] == 'online'"
     button (click)="remove_group()">
-    <ion-label class="ion-text-center" color="danger">그룹 해산</ion-label>
+    <ion-label class="ion-text-center" color="danger">{{lang.text['GroupDetail']['BreakupGroup']}}</ion-label>
   </ion-item>
   <ion-item
     *ngIf="info['status'] == 'missing' || (info['status'] == 'offline' && statusBar.groupServer[info['server']['isOfficial']][info['server']['target']] == 'online')"
     button (click)="remove_group()">
-    <ion-label class="ion-text-center" color="danger">기록 삭제</ion-label>
+    <ion-label class="ion-text-center" color="danger">{{lang.text['GroupDetail']['RemoveGroup']}}</ion-label>
   </ion-item>
   <ion-item *ngIf="info['status'] == 'pending' || (!has_admin && info['status'] == 'online')" button
     (click)="leave_group()">
-    <ion-label class="ion-text-center" color="danger">떠나기</ion-label>
+    <ion-label class="ion-text-center" color="danger">{{lang.text['GroupDetail']['LeaveGroup']}}</ion-label>
   </ion-item>
 </ion-content>

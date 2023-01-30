@@ -186,3 +186,13 @@ group_created,그룹이 생성되었습니다.
 NeedSetGroupName,그룹 이름을 작성해주세요.
 AlreadyExist,이미 같은 이름의 그룹이 존재합니다.
 UnexpectedErr,준비되지 않은 오류처리
+## GroupDetail,
+Title,그룹 상세
+NotAcceptYet,아직 수락되지 않았습니다
+MissedGroup,더 이상 그룹구성원이 아닙니다
+NoDetailGroup,설명 없는 그룹
+Members,그룹 구성원
+invite_scan_below,아래를 스캔하여 그룹에 초대
+BreakupGroup,그룹 해산
+RemoveGroup,기록 삭제
+LeaveGroup,떠나기

@@ -9,6 +9,7 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { ProfilePage } from '../profile/profile.page';
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { Notification } from '@heroiclabs/nakama-js';
+import { LanguageSettingService } from 'src/app/language-setting.service';
 
 @Component({
   selector: 'app-group-detail',
@@ -25,6 +26,7 @@ export class GroupDetailPage implements OnInit {
     public modalCtrl: ModalController,
     public statusBar: StatusManageService,
     private indexed: IndexedDBService,
+    public lang: LanguageSettingService,
   ) { }
 
   QRCodeSRC: any;
@@ -176,7 +178,7 @@ export class GroupDetailPage implements OnInit {
       this.QRCodeSRC = this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);
     } catch (e) {
       this.p5toast.show({
-        text: `QRCode 생성 실패: ${e}`,
+        text: `${this.lang.text['LinkAccount']['failed_to_gen_qr']}: ${e}`,
       });
     }
   }
