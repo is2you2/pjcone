@@ -674,6 +674,7 @@ export class NakamaService {
 
   /** 채널 알림 아이디, 새 채널이 생길 때마다 추가됨, 2000부터 시작 */
   channel_noti_id = 2000;
+  /** 로컬알림에 사용될 채널별 id 구성용 */
   get_channel_noti_id(): number {
     this.channel_noti_id++;
     return this.channel_noti_id;
@@ -698,8 +699,10 @@ export class NakamaService {
                   this.servers[_is_official][_target].session, _cid, 1, false)
                   .then(v => {
                     if (v.messages.length) {
-                      let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
-                      this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
+                      if (v.messages[0].message_id != this.channels_orig[_is_official][_target][_cid]['last_comment_id']) {
+                        let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
+                        this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
+                      }
                     }
                     this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
                     this.save_channels_with_less_info();
@@ -722,12 +725,15 @@ export class NakamaService {
                     this.servers[_is_official][_target].session, _cid, 1, false)
                     .then(v => {
                       if (v.messages.length) {
-                        let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
-                        v['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti']);
-                        this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
+                        if (v.messages[0].message_id != this.channels_orig[_is_official][_target][_cid]['last_comment_id']) {
+                          {
+                            let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
+                            this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
+                          }
+                        }
+                        this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
+                        this.save_channels_with_less_info();
                       }
-                      this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
-                      this.save_channels_with_less_info();
                     });
                 });
                 break;
@@ -809,6 +815,7 @@ export class NakamaService {
         });
       });
     });
+    console.log(channels_copy);
     this.indexed.saveTextFileToUserPath(JSON.stringify(channels_copy), 'servers/channels.json');
   }
 
@@ -870,9 +877,11 @@ export class NakamaService {
                       this.servers[server.info.isOfficial][server.info.target].session, c.id, 1, false)
                       .then(v => {
                         if (v.messages.length) {
-                          let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
-                          this.channels_orig[server.info.isOfficial][server.info.target][c.id]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
-                          this.update_from_channel_msg(v.messages[0], server.info.isOfficial, server.info.target);
+                          if (v.messages[0].message_id != this.channels_orig[server.info.isOfficial][server.info.target][c.id]['last_comment_id']) {
+                            let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
+                            this.channels_orig[server.info.isOfficial][server.info.target][c.id]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
+                            this.update_from_channel_msg(v.messages[0], server.info.isOfficial, server.info.target);
+                          }
                         }
                       });
                   });
@@ -1253,6 +1262,7 @@ export class NakamaService {
           this.update_group_info(c, _is_official, _target);
         if (c.content['user']) // 그룹 사용자 정보 변경
           this.update_group_user_info(c, _is_official, _target);
+        this.channels_orig[_is_official][_target][c.channel_id]['last_comment_id'] = c.message_id;
         break;
       case 3: // 열린 그룹 상태에서 사용자 들어오기 요청
       case 4: // 채널에 새로 들어온 사람 알림
@@ -1291,6 +1301,7 @@ export class NakamaService {
       this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
     let hasFile = c.content['filename'] ? '(첨부파일) ' : '';
     this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile + (c.content['msg'] || c.content['noti'] || '');
+    this.save_channels_with_less_info();
   }
 
   /** 채널 정보를 분석하여 메시지 변형 (행동은 하지 않음)
@@ -1325,6 +1336,7 @@ export class NakamaService {
 
   /** 그룹 정보 변경 처리 */
   update_group_info(c: ChannelMessage, _is_official: string, _target: string) {
+    this.translate_updates(c);
     switch (c.content['update']) {
       case 'image': // 그룹 이미지가 변경됨
         this.servers[_is_official][_target].client.readStorageObjects(
@@ -1369,8 +1381,34 @@ export class NakamaService {
     }
   }
 
+  /** 사용자 및 그룹 업데이트 안내 문구 번역 구성 */
+  translate_updates(msg: any) {
+    if (msg.content['user'])
+      switch (msg.content['user']) {
+        case 'modify_data': // 프로필 또는 이미지가 변경됨
+          msg.content['noti'] = `${this.lang.text['Profile']['user_profile_changed']}${msg.content['noti']}`;
+          break;
+        case 'modify_img': // 프로필 또는 이미지가 변경됨
+          msg.content['noti'] = `${this.lang.text['Profile']['user_img_changed']}${msg.content['noti']}`;
+          break;
+      }
+    if (msg.content['update'])
+      switch (msg.content['update']) {
+        case 'info': // 그룹 정보가 변경됨
+          msg.content['noti'] = this.lang.text['GroupDetail']['GroupInfoUpdated'];
+          break;
+        case 'image': // 그룹 이미지가 변경됨
+          msg.content['noti'] = this.lang.text['GroupDetail']['GroupImageUpdated'];
+          break;
+        case 'remove': // 그룹이 삭제됨
+          msg.content['noti'] = this.lang.text['GroupDetail']['GroupRemoved'];
+          break;
+      }
+  }
+
   /** 그룹 사용자 상태 변경 처리 */
   async update_group_user_info(c: ChannelMessage, _is_official: string, _target: string) {
+    this.translate_updates(c);
     switch (c.content['user']) {
       case 'modify_data': // 프로필 또는 이미지가 변경됨
         await this.servers[_is_official][_target].client.getUsers(
@@ -1515,9 +1553,11 @@ export class NakamaService {
               await this.servers[_is_official][_target].client.listChannelMessages(
                 this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
                   if (m.messages.length) {
-                    let hasFile = m.messages[0].content['filename'] ? '(첨부파일) ' : '';
-                    c['last_comment'] = hasFile + (m.messages[0].content['msg'] || m.messages[0].content['noti'] || '');
-                    this.update_from_channel_msg(m.messages[0], _is_official, _target);
+                    if (m.messages[0].message_id != this.channels_orig[_is_official][_target][c.id]['last_comment_id']) {
+                      let hasFile = m.messages[0].content['filename'] ? '(첨부파일) ' : '';
+                      c['last_comment'] = hasFile + (m.messages[0].content['msg'] || m.messages[0].content['noti'] || '');
+                      this.update_from_channel_msg(m.messages[0], _is_official, _target);
+                    }
                   }
                 });
             });
@@ -1572,9 +1612,11 @@ export class NakamaService {
             this.servers[_is_official][_target].session, c.id, 1, false)
             .then(v => {
               if (v.messages.length) {
-                let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
-                this.channels_orig[_is_official][_target][c.id]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
-                this.update_from_channel_msg(v.messages[0], _is_official, _target);
+                if (v.messages[0].message_id != this.channels_orig[_is_official][_target][c.id]['last_comment_id']) {
+                  let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
+                  this.channels_orig[_is_official][_target][c.id]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
+                  this.update_from_channel_msg(v.messages[0], _is_official, _target);
+                }
               }
             });
         });

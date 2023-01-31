@@ -154,7 +154,6 @@ export class GroupDetailPage implements OnInit {
           this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
             this.info['channel_id'], {
             update: 'image',
-            noti: '그룹 이미지 업데이트됨',
           });
         });
       });
@@ -189,7 +188,6 @@ export class GroupDetailPage implements OnInit {
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
         this.info['channel_id'], {
         update: 'remove',
-        msg: `그룹이 삭제됨`,
       }).then(_m => {
         this.after_remove_group();
       });
@@ -219,7 +217,6 @@ export class GroupDetailPage implements OnInit {
           this.info['channel_id'], {
           update: 'info',
           name: this.info['name'],
-          msg: '그룹 정보 업데이트 알림-테스트 로그',
         });
       });
     this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']] = this.info;
