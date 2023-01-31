@@ -203,3 +203,5 @@ DedicatedServer,사설 서버
 CustomGroupChat,사설 그룹채팅 서버
 LoadingAddresses,이곳에 이 기기의 네트워크 주소가 보여집니다.
 NoAddress,연결된 네트워크가 없습니다.
+## Translator,
+TranslatorSpeaking,번역가의 한마디

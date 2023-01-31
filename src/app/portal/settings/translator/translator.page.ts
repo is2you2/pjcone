@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import * as p5 from "p5";
+import { LanguageSettingService } from 'src/app/language-setting.service';
 
 @Component({
   selector: 'app-translator',
@@ -7,7 +9,9 @@ import { Component, OnInit } from '@angular/core';
 })
 export class TranslatorPage implements OnInit {
 
-  constructor() { }
+  constructor(
+    public lang: LanguageSettingService,
+  ) { }
 
   /** 번역가 페이지 정보 */
   info = {
@@ -19,5 +23,17 @@ export class TranslatorPage implements OnInit {
     text: '기능 준비중',
   };
 
-  ngOnInit() { }
+  ngOnInit() {
+    new p5((p: p5) => {
+      p.setup = () => {
+        p.loadJSON(`assets/data/infos/${this.lang.lang}/translator.json`, v => {
+          this.info = v;
+          p.remove();
+        }, e => {
+          console.error('번역가 정보 불러오기 실패: ', e);
+          p.remove();
+        });
+      }
+    });
+  }
 }

@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>번역가</ion-title>
+    <ion-title>{{lang.text['Settings']['AppTranslator']}}</ion-title>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="settings"></ion-back-button>
     </ion-buttons>
@@ -10,10 +10,11 @@
 <ion-content>
   <div class="profile_img_form">
     <img [hidden]="!info.img" class="profile_img" [src]="info.img" alt="번역가 프로필 이미지">
+    <div class="fore-gradient"></div>
     <div class="username">{{info.name}}</div>
   </div>
   <ion-item-divider>
-    <ion-label>번역가의 표시 콘텐츠</ion-label>
+    <ion-label>{{lang.text['Translator']['TranslatorSpeaking']}}</ion-label>
   </ion-item-divider>
   <div>
     <textarea class="infobox content_size" disabled>{{info.text}}</textarea>
