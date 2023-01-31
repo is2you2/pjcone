@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as p5 from "p5";
+import { LanguageSettingService } from 'src/app/language-setting.service';
 
 /** Project: Cone, 개인정보처리방침 */
 @Component({
@@ -9,7 +10,9 @@ import * as p5 from "p5";
 })
 export class PrivacyPage implements OnInit {
 
-  constructor() { }
+  constructor(
+    public lang: LanguageSettingService,
+  ) { }
 
   ngOnInit() {
     this.read_privacy();
@@ -20,7 +23,7 @@ export class PrivacyPage implements OnInit {
   read_privacy() {
     let show = (p: p5) => {
       p.setup = () => {
-        p.loadStrings(`assets/data/infos/${'ko'}/privacy.txt`, v => {
+        p.loadStrings(`assets/data/infos/${this.lang.lang}/privacy.txt`, v => {
           this.lines = v.join('\n');
           p.remove();
         }, e => {

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as p5 from "p5";
+import { LanguageSettingService } from 'src/app/language-setting.service';
 
 
 @Component({
@@ -9,7 +10,9 @@ import * as p5 from "p5";
 })
 export class LicensesPage implements OnInit {
 
-  constructor() { }
+  constructor(
+    public lang: LanguageSettingService,
+  ) { }
 
   ngOnInit() {
     this.loadTexts();
@@ -73,7 +76,7 @@ export class LicensesPage implements OnInit {
   }
 
   /** 웹 사이트 주소 열기 */
-  open_link(_link:string) {
+  open_link(_link: string) {
     window.open(_link, '_system')
   }
 }
