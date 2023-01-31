@@ -27,7 +27,7 @@ export class SubscribesPage implements OnInit {
     private p5toast: P5ToastService,
     private tools: ToolServerService,
     private weblink: WeblinkService,
-    private nakama: NakamaService,
+    public nakama: NakamaService,
     public statusBar: StatusManageService,
     private wsc: WscService,
     public lang: LanguageSettingService,
