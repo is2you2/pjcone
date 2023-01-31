@@ -37,7 +37,7 @@
                 <div *ngIf="msg.content['text']" class="text_seperator"></div>
                 <p *ngIf="msg.content['text']" class="file_text_thumbnail"> {{msg.content['text']}} </p>
               </div>
-              <div *ngIf="msg.content['img']" style="margin-top: 4px;">
+              <div *ngIf="msg.content['img']" style="margin-top: 4px; max-width: 192px; max-height: 192px;">
                 <img [src]="msg.content['img']" alt="msg.content['filename']">
               </div>
               <div
