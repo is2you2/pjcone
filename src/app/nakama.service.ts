@@ -940,7 +940,6 @@ export class NakamaService {
 
   /** 그룹 리스트 로컬/리모트에서 삭제하기 (방장일 경우) */
   async remove_group_list(info: any, _is_official: string, _target: string) {
-    console.log('그룹 정보: ', info);
     try { // 내가 방장이면 해산처리 우선, 이 외의 경우 기록 삭제
       if (this.servers[_is_official][_target] && info['creator_id'] == this.servers[_is_official][_target].session.user_id)
         await this.servers[_is_official][_target].client.deleteGroup(
@@ -1240,6 +1239,7 @@ export class NakamaService {
         if (c.content['user']) // 그룹 사용자 정보 변경
           this.update_group_user_info(c, _is_official, _target);
         break;
+      case 3: // 열린 그룹 상태에서 사용자 들어오기 요청
       case 4: // 채널에 새로 들어온 사람 알림
       case 5: // 그룹에 있던 사용자 나감(들어오려다가 포기한 사람 포함)
       case 6: // 누군가 그룹에서 내보내짐 (kick)
@@ -1287,6 +1287,7 @@ export class NakamaService {
     switch (c.code) {
       case 0: // 사용자가 작성한 일반적인 메시지
         break;
+      case 3: // 열린 그룹에 들어온 사용자 알림
       case 4: // 채널에 새로 들어온 사람 알림
         c.content['user'] = target;
         c.content['noti'] = `사용자 그룹참여: ${target['display_name']}`;

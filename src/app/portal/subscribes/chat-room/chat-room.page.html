@@ -16,12 +16,12 @@
             <ion-label>{{lang.text['ChatRoom']['fetch_previous_chat']}}</ion-label>
           </ion-item>
           <div *ngFor="let msg of messages; let i = index" (click)="message_detail(msg)">
-            <div *ngIf="!messages[i - 1] || msg['msgDate'] != messages[i - 1]['msgDate']"
+            <div *ngIf="msg['msgDate'] && (!messages[i - 1] || msg['msgDate'] != messages[i - 1]['msgDate'])"
               style="text-align: center; font-size: 16px; padding-top: 8px;">
               <font color="#888"> {{msg['msgDate']}} </font>
             </div>
             <div class="message_form"
-              *ngIf="!msg.content.noti && (!messages[i - 1] || msg.sender_id != messages[i - 1].sender_id || messages[i - 1].content.noti || msg['msgDate'] != messages[i - 1]['msgDate'])">
+              *ngIf="!msg.content.noti && msg.user_display_name && (!messages[i - 1] || msg.sender_id != messages[i - 1].sender_id || messages[i - 1].content.noti || msg['msgDate'] != messages[i - 1]['msgDate'])">
               <span style="margin-right: 8px;" (click)="user_detail(msg)">
                 <b>
                   <font

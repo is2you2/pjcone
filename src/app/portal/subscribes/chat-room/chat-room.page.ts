@@ -65,6 +65,7 @@ export class ChatRoomPage implements OnInit {
   /** 확장 버튼 행동들 */
   extended_buttons: ExtendButtonForm[] = [{
     title: this.lang.text['ChatRoom']['remove_chatroom'],
+    isHide: true,
     act: () => {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
       this.nakama.rearrange_channels();
@@ -83,8 +84,10 @@ export class ChatRoomPage implements OnInit {
         this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
         this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
         this.nakama.rearrange_channels();
+        this.extended_buttons.forEach(button => {
+          button.isHide = true;
+        });
         this.extended_buttons[0].isHide = false;
-        this.extended_buttons[1].isHide = true;
       } else {
         this.p5toast.show({
           text: this.lang.text['ChatRoom']['belonging_to_group'],
@@ -169,8 +172,12 @@ export class ChatRoomPage implements OnInit {
           this.content_panel.scrollIntoView({ block: 'start' });
         }, 0);
       }
-    this.extended_buttons[0].isHide = this.info['status'] != 'missing';
-    this.extended_buttons[1].isHide = this.info['status'] == 'missing';
+    if (this.info['status'] == 'missing') {
+      this.extended_buttons.forEach(button => {
+        button.isHide = true;
+      });
+      this.extended_buttons[0].isHide = false;
+    }
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
     this.follow_resize();
@@ -254,7 +261,7 @@ export class ChatRoomPage implements OnInit {
           });
       else { // 오프라인 기반 리스트 알려주기
         if (this.info['redirect']['type'] == 3) // 그룹대화라면 공개여부 검토
-          if (!this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open']) {
+          if (this.info['status'] != 'missing' && !this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open']) {
             let tmp = [{
               content: {
                 msg: this.lang.text['ChatRoom']['closed_group_must_online'],
@@ -284,6 +291,7 @@ export class ChatRoomPage implements OnInit {
       this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/`, (list) => {
         this.LocalHistoryList = list;
         this.isHistoryLoaded = true;
+        if (!this.LocalHistoryList.length) return;
         this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop().substring(8), (e, v) => {
           if (e && v) {
             let json = JSON.parse(v);
