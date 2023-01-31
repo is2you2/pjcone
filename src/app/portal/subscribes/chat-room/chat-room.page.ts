@@ -104,22 +104,27 @@ export class ChatRoomPage implements OnInit {
 
   /** 파일 첨부하기 */
   inputFileSelected(ev: any) {
-    this.userInput['file'] = {};
-    this.userInput.file['name'] = ev.target.files[0].name;
-    this.userInput.file['ext'] = ev.target.files[0].name.split('.')[1] || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
-    this.userInput.file['size'] = ev.target.files[0].size;
-    this.userInput.file['type'] = ev.target.files[0].type;
-    let updater = setInterval(() => { }, 110);
-    setTimeout(() => {
-      clearInterval(updater);
-    }, 1500);
-    let reader: any = new FileReader();
-    reader = reader._realReader ?? reader;
-    reader.onload = (ev: any) => {
-      this.userInput.file['result'] = ev.target.result.replace(/"|\\|=/g, '');
-      this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.name})`;
+    if (ev.target.files.length) {
+      this.userInput['file'] = {};
+      this.userInput.file['name'] = ev.target.files[0].name;
+      this.userInput.file['ext'] = ev.target.files[0].name.split('.')[1] || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
+      this.userInput.file['size'] = ev.target.files[0].size;
+      this.userInput.file['type'] = ev.target.files[0].type;
+      let updater = setInterval(() => { }, 110);
+      setTimeout(() => {
+        clearInterval(updater);
+      }, 1500);
+      let reader: any = new FileReader();
+      reader = reader._realReader ?? reader;
+      reader.onload = (ev: any) => {
+        this.userInput.file['result'] = ev.target.result.replace(/"|\\|=/g, '');
+        this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.name})`;
+      }
+      reader.readAsDataURL(ev.target.files[0]);
+    } else {
+      delete this.userInput.file;
+      this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
     }
-    reader.readAsDataURL(ev.target.files[0]);
   }
 
   /** 옛날로 가는 커서 */
