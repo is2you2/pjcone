@@ -213,3 +213,7 @@ WriteContent,알림 내용 작성
 SendNotification,전체 알림 발송
 OnlyForAdmin,관리자 전용메뉴입니다
 CannotUseDataURL,데이터 URL은 사용할 수 없습니다.
+## CreatorInfo,
+name,최성수
+creatorComment,제작자의 한마디
+text,여러분의 효율적인 콘텐츠 생산을 응원합니다
