@@ -294,7 +294,9 @@ export class ChatRoomPage implements OnInit {
         if (!this.LocalHistoryList.length) return;
         this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop().substring(8), (e, v) => {
           if (e && v) {
-            let json = JSON.parse(v);
+            let json: any[] = JSON.parse(v);
+            for (let i = 0, j = json.length; i < j; i++)
+              this.ModulateFileEmbedMessage(json[i]);
             this.messages = [...json, ...this.messages];
           }
           this.next_cursor = null;
@@ -655,7 +657,10 @@ export class ChatRoomPage implements OnInit {
           SepByDate['target'] = this.messages[0]['msgDate'];
           SepByDate['msg'] = [];
         }
-        SepByDate['msg'].push(this.messages.shift());
+        let msg = this.messages.shift();
+        delete msg.content['text'];
+        delete msg.content['img'];
+        SepByDate['msg'].push(msg);
       }
       this.indexed.saveTextFileToUserPath(JSON.stringify(SepByDate['msg']), `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/${SepByDate['target']}`);
     }
