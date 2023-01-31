@@ -205,3 +205,11 @@ LoadingAddresses,이곳에 이 기기의 네트워크 주소가 보여집니다.
 NoAddress,연결된 네트워크가 없습니다.
 ## Translator,
 TranslatorSpeaking,번역가의 한마디
+## Administrator,
+AboutThisNotification,이 알림에 대해서
+InputMessageInfo,발송 정보 입력
+CommunityNotification,커뮤니티 알림
+WriteContent,알림 내용 작성
+SendNotification,전체 알림 발송
+OnlyForAdmin,관리자 전용메뉴입니다
+CannotUseDataURL,데이터 URL은 사용할 수 없습니다.

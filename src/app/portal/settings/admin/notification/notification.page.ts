@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
-import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { WscService } from 'src/app/wsc.service';
 import clipboard from "clipboardy";
+import * as p5 from "p5";
+import { LanguageSettingService } from 'src/app/language-setting.service';
 
 @Component({
   selector: 'app-notification',
@@ -15,9 +16,9 @@ export class NotificationPage implements OnInit {
 
   constructor(
     private client: WscService,
-    private nakama: NakamaService,
     private p5toast: P5ToastService,
     private navCtrl: NavController,
+    public lang: LanguageSettingService,
   ) { }
 
   userInput = {
@@ -25,15 +26,28 @@ export class NotificationPage implements OnInit {
     text: undefined,
   }
 
+  info_text = '';
+
   cant_use_clipboard = false;
   ngOnInit() {
     this.cant_use_clipboard = isPlatform != 'DesktopPWA';
     if (!this.client.is_admin) {
       this.p5toast.show({
-        text: '관리자 전용메뉴입니다',
+        text: this.lang.text['Administrator']['OnlyForAdmin'],
       });
       this.navCtrl.back();
     }
+    new p5((p: p5) => {
+      p.setup = () => {
+        p.loadStrings(`assets/data/infos/${this.lang.lang}/administrator_notification.txt`, (v: string[]) => {
+          this.info_text = v.join('\n');
+          p.remove();
+        }, e => {
+          console.error('관리자 알림 불러오기 실패: ', e);
+          p.remove();
+        });
+      }
+    });
   }
 
   imageURL_disabled = false;
@@ -45,11 +59,11 @@ export class NotificationPage implements OnInit {
         this.userInput.img_url = v;
       } else if (v.indexOf('data:image') == 0) {
         this.p5toast.show({
-          text: '데이터 URL은 사용할 수 없습니다.',
+          text: this.lang.text['Administrator']['CannotUseDataURL'],
         });
       } else {
         this.p5toast.show({
-          text: '먼저 웹 페이지에서 이미지 주소를 복사해주세요',
+          text: this.lang.text['Profile']['copyURIFirst'],
         });
       }
     });

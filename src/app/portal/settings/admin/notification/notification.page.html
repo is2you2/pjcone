@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>전체 알림 발송</ion-title>
+    <ion-title>{{lang.text['Settings']['admin_noti_all']}}</ion-title>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="portal/settings"></ion-back-button>
     </ion-buttons>
@@ -9,30 +9,28 @@
 
 <ion-content>
   <ion-item-divider>
-    <ion-label>이 알림에 대해서</ion-label>
+    <ion-label>{{lang.text['Administrator']['AboutThisNotification']}}</ion-label>
   </ion-item-divider>
-  <textarea class="infobox" style="height: 200px;" disabled>
-    커뮤니티 서버에 연결된 모든 사용자에게 알림을 보냅니다. 같은 그룹 서버를 사용하더라도 커뮤니티 서버가 다르다면 알림이 전파되지 않습니다.
-    이미지 URL을 추가하면 알림에 이미지를 포함시킬 수 있습니다.
-  </textarea>
+  <textarea class="infobox" disabled [(ngModel)]="info_text"></textarea>
   <ion-item-divider>
-    <ion-label>발송 정보 입력</ion-label>
+    <ion-label>{{lang.text['Administrator']['InputMessageInfo']}}</ion-label>
   </ion-item-divider>
   <img *ngIf="userInput.img_url" [src]="userInput.img_url" alt="">
   <ion-item [hidden]="cant_use_clipboard" (click)="imageURLPasted()" [disabled]="imageURL_disabled">
-    <ion-label color="medium">눌러서 이미지 포함시키기</ion-label>
+    <ion-label color="medium">{{lang.text['Profile']['pasteURI']}}</ion-label>
   </ion-item>
   <ion-item [hidden]="!cant_use_clipboard">
-    <ion-input type="text" placeholder="이미지 주소 입력하기" [(ngModel)]="userInput.img_url"></ion-input>
+    <ion-input type="text" [placeholder]="lang.text['Profile']['enterURI']" [(ngModel)]="userInput.img_url"></ion-input>
     <ion-button (click)="imageURLPasted()">
-      이미지 변경
+      {{lang.text['Profile']['change_img']}}
     </ion-button>
   </ion-item>
   <ion-item button>
-    <ion-label>커뮤니티 알림</ion-label>
-    <ion-input type="text" placeholder="알림 내용 작성" [(ngModel)]="userInput.text"></ion-input>
+    <ion-label>{{lang.text['Administrator']['CommunityNotification']}}</ion-label>
+    <ion-input type="text" [placeholder]="lang.text['Administrator']['WriteContent']" [(ngModel)]="userInput.text">
+    </ion-input>
   </ion-item>
   <ion-button (click)="send()" expand="block">
-    전체 알림 발송
+    {{lang.text['Administrator']['SendNotification']}}
   </ion-button>
 </ion-content>
