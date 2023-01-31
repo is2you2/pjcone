@@ -532,6 +532,7 @@ export class ChatRoomPage implements OnInit {
         case 'csv':
         case 'ts':
         case 'js':
+        case 'shader':
           msg.content['viewer'] = 'text';
           break;
         default: // 뷰어 제한 파일
