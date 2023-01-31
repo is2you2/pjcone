@@ -66,83 +66,109 @@ export class IonicViewerPage implements OnInit {
         break;
       case 'audio': // 오디오
         this.p5canvas = new p5((p: p5) => {
-          let ContentBox = this.ContentBox;
-          /** 오디오 플레이어 */
-          class AudioController {
-            pos: p5.Vector;
-            constructor() {
-              this.pos = p.createVector(p.width / 2, p.height - 40);
-            }
-            display() {
-              p.push();
-              p.rect(this.pos.x, this.pos.y, ContentBox.offsetWidth - 20, 60, 8);
-              p.pop();
-            }
-          }
-          /** 오디오 분석기 */
-          class AudioAnalyzer {
-            pos: p5.Vector;
-            constructor() {
-              this.pos = p.createVector(p.width / 2, p.height - 110);
-            }
-            display() {
-              p.push();
-              p.rect(this.pos.x, this.pos.y, ContentBox.offsetWidth - 20, 60);
-              p.pop();
-            }
-          }
-          let player: AudioController;
-          let analyzer: AudioAnalyzer;
-          let sound: p5.SoundFile;
-          let soundLength: number;
-          const MARGIN = 10;
-          const PLAYER_HEIGHT = 150;
+          var mediaObject: p5.MediaElement;
           p.setup = () => {
-            let canvas = p.createCanvas(canvasDiv.clientWidth, PLAYER_HEIGHT);
-            canvas.parent(canvasDiv);
-            player = new AudioController();
-            analyzer = new AudioAnalyzer();
-            p.smooth();
-            p.imageMode(p.CENTER);
-            p.rectMode(p.CENTER);
+            let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
+            canvas.style('margin', '0');
+            canvas.style('position', 'relative');
+            canvas.style('pointer-events', 'none');
             p.noLoop();
-            p.loadSound(this.FileURL, (v: p5.SoundFile) => {
-              sound = v;
-              soundLength = v.duration();
-              console.log(v);
-              v.play();
-              p.loop();
-            }, e => {
-              console.error('오디오 열람 불가:', e);
-              this.p5toast.show({
-                text: `파일 열기 실패: ${e}`,
-              });
+            mediaObject = p.createAudio([this.FileURL], () => {
+              canvasDiv.appendChild(mediaObject['elt']);
+              canvas.parent(canvasDiv);
+              ResizeAudio();
+              mediaObject.showControls();
+              mediaObject.play();
             });
-            ResizeAudio();
           }
-          p.draw = () => {
-            if (!sound) return;
-            p.clear(0, 0, 0, 0);
-            analyzer.display();
-            p.push();
-            let currentPos = p.map(sound.currentTime(), 0, soundLength, MARGIN, p.width - MARGIN);
-            p.line(currentPos, 0, currentPos, p.height);
-            p.pop();
-            player.display();
-          }
-          /** 오디오 플레이어 크기 및 캔버스 크기 조정 */
+          /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let ResizeAudio = () => {
             if (this.FileInfo['viewer'] != 'audio') return;
             let canvasWidth = this.ContentBox.offsetWidth;
-            p.resizeCanvas(canvasWidth, PLAYER_HEIGHT);
-            player.pos = p.createVector(canvasWidth / 2, PLAYER_HEIGHT - 40);
-            analyzer.pos = p.createVector(canvasWidth / 2, PLAYER_HEIGHT - 110);
+            mediaObject['size'](canvasWidth, 25);
           }
           p.windowResized = () => {
             setTimeout(() => {
               ResizeAudio();
             }, 50);
           }
+          // let ContentBox = this.ContentBox;
+          // /** 오디오 플레이어 */
+          // class AudioController {
+          //   pos: p5.Vector;
+          //   constructor() {
+          //     this.pos = p.createVector(p.width / 2, p.height - 40);
+          //   }
+          //   display() {
+          //     p.push();
+          //     p.rect(this.pos.x, this.pos.y, ContentBox.offsetWidth - 20, 60, 8);
+          //     p.pop();
+          //   }
+          // }
+          // /** 오디오 분석기 */
+          // class AudioAnalyzer {
+          //   pos: p5.Vector;
+          //   constructor() {
+          //     this.pos = p.createVector(p.width / 2, p.height - 110);
+          //   }
+          //   display() {
+          //     p.push();
+          //     p.rect(this.pos.x, this.pos.y, ContentBox.offsetWidth - 20, 60);
+          //     p.pop();
+          //   }
+          // }
+          // let player: AudioController;
+          // let analyzer: AudioAnalyzer;
+          // let sound: p5.SoundFile;
+          // let soundLength: number;
+          // const MARGIN = 10;
+          // const PLAYER_HEIGHT = 150;
+          // p.setup = () => {
+          //   let canvas = p.createCanvas(canvasDiv.clientWidth, PLAYER_HEIGHT);
+          //   canvas.parent(canvasDiv);
+          //   player = new AudioController();
+          //   analyzer = new AudioAnalyzer();
+          //   p.smooth();
+          //   p.imageMode(p.CENTER);
+          //   p.rectMode(p.CENTER);
+          //   p.noLoop();
+          //   p.loadSound(this.FileURL, (v: p5.SoundFile) => {
+          //     sound = v;
+          //     soundLength = v.duration();
+          //     console.log(v);
+          //     v.play();
+          //     p.loop();
+          //   }, e => {
+          //     console.error('오디오 열람 불가:', e);
+          //     this.p5toast.show({
+          //       text: `파일 열기 실패: ${e}`,
+          //     });
+          //   });
+          //   ResizeAudio();
+          // }
+          // p.draw = () => {
+          //   if (!sound) return;
+          //   p.clear(0, 0, 0, 0);
+          //   analyzer.display();
+          //   p.push();
+          //   let currentPos = p.map(sound.currentTime(), 0, soundLength, MARGIN, p.width - MARGIN);
+          //   p.line(currentPos, 0, currentPos, p.height);
+          //   p.pop();
+          //   player.display();
+          // }
+          // /** 오디오 플레이어 크기 및 캔버스 크기 조정 */
+          // let ResizeAudio = () => {
+          //   if (this.FileInfo['viewer'] != 'audio') return;
+          //   let canvasWidth = this.ContentBox.offsetWidth;
+          //   p.resizeCanvas(canvasWidth, PLAYER_HEIGHT);
+          //   player.pos = p.createVector(canvasWidth / 2, PLAYER_HEIGHT - 40);
+          //   analyzer.pos = p.createVector(canvasWidth / 2, PLAYER_HEIGHT - 110);
+          // }
+          // p.windowResized = () => {
+          //   setTimeout(() => {
+          //     ResizeAudio();
+          //   }, 50);
+          // }
         });
         break;
       case 'video': // 비디오
@@ -159,8 +185,7 @@ export class IonicViewerPage implements OnInit {
               canvas.parent(canvasDiv);
               ResizeVideo();
               mediaObject.showControls();
-              mediaObject.loop();
-              // mediaObject.volume(0);
+              mediaObject.play();
             });
           }
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
