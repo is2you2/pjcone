@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { LocalGroupServerService } from 'src/app/local-group-server.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import * as p5 from "p5";
+import { LanguageSettingService } from 'src/app/language-setting.service';
 
 @Component({
   selector: 'app-dedicated-settings',
@@ -13,10 +14,11 @@ export class DedicatedSettingsPage implements OnInit {
   constructor(
     public server: LocalGroupServerService,
     public statusBar: StatusManageService,
+    public lang: LanguageSettingService,
   ) { }
 
   info: string;
-  addresses = '이곳에 이 기기의 네트워크 주소가 보여집니다.';
+  addresses = this.lang.text['UseAsServer']['LoadingAddresses'];
 
   ngOnInit() {
     new p5((p: p5) => {
@@ -41,7 +43,7 @@ export class DedicatedSettingsPage implements OnInit {
       });
       if (results.length)
         this.addresses = results.join('\n');
-      else this.addresses = '연결된 네트워크가 없습니다.';
+      else this.addresses = this.lang.text['UseAsServer']['NoAddress'];
     }
     this.server.check_addresses();
   }

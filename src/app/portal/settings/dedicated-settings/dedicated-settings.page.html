@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>이 기기를 기능 서버로</ion-title>
+    <ion-title>{{lang.text['UseAsServer']['Title']}}</ion-title>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="settings"></ion-back-button>
     </ion-buttons>
@@ -9,20 +9,20 @@
 
 <ion-content>
   <ion-item-divider>
-    <ion-label>사용 유의사항</ion-label>
+    <ion-label>{{lang.text['UseAsServer']['UserNotice']}}</ion-label>
   </ion-item-divider>
   <textarea class="infobox" disabled [(ngModel)]="info" style="height: 250px;"></textarea>
   <ion-list-header>
-    <ion-label color="medium">이 기기의 네트워크 주소</ion-label>
-    <ion-button (click)="server.check_addresses()">새로고침</ion-button>
+    <ion-label color="medium">{{lang.text['UseAsServer']['ThisDeviceAddress']}}</ion-label>
+    <ion-button (click)="server.check_addresses()">{{lang.text['UseAsServer']['RefreshAddress']}}</ion-button>
   </ion-list-header>
   <textarea class="infobox" disabled [(ngModel)]="addresses" style="height: 80px;"></textarea>
   <ion-item-divider>
-    <ion-label>사설 서버</ion-label>
+    <ion-label>{{lang.text['UseAsServer']['DedicatedServer']}}</ion-label>
   </ion-item-divider>
   <ion-item button (click)="start_minimalserver()" [disabled]="block.groupchat">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[statusBar.dedicated.official['groupchat']]"></div>
-    <ion-label class="form_margin">사설 그룹채팅 서버</ion-label>
+    <ion-label class="form_margin">{{lang.text['UseAsServer']['CustomGroupChat']}}</ion-label>
   </ion-item>
 </ion-content>
