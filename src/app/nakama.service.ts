@@ -604,7 +604,9 @@ export class NakamaService {
     'unofficial': {},
   };
 
-  /** 채널 추가, 채널 재배열 포함됨 */
+  /** 채널 추가, 채널 재배열 포함됨  
+   * 채널 추가에 사용하려는 경우 join_chat_with_modulation() 를 대신 사용하세요
+   */
   async add_channels(channel_info: Channel, _is_official: string, _target: string) {
     if (this.channels_orig[_is_official][_target][channel_info.id] !== undefined && this.channels_orig[_is_official][_target][channel_info.id]['status'] != 'missing') return;
     if (!this.channels_orig[_is_official][_target][channel_info.id])
@@ -862,6 +864,19 @@ export class NakamaService {
                   });
                 });
                 this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
+                if (pending_group.open) {
+                  this.join_chat_with_modulation(pending_group.id, 3, server.info.isOfficial, server.info.target, (c) => {
+                    this.servers[server.info.isOfficial][server.info.target].client.listChannelMessages(
+                      this.servers[server.info.isOfficial][server.info.target].session, c.id, 1, false)
+                      .then(v => {
+                        if (v.messages.length) {
+                          let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
+                          this.channels_orig[server.info.isOfficial][server.info.target][c.id]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
+                          this.update_from_channel_msg(v.messages[0], server.info.isOfficial, server.info.target);
+                        }
+                      });
+                  });
+                }
                 break;
               }
           });
@@ -1247,7 +1262,7 @@ export class NakamaService {
           this.socket_reactive['settings'].load_groups();
         if (this.socket_reactive['group_detail']) // 그룹 상세를 보는 중이라면 업데이트하기
           this.socket_reactive['group_detail'].update_GroupUsersList(_is_official, _target);
-        if (c.code == 4) break;
+        if (c.code == 3 || c.code == 4) break;
         // 사용자 유입과 관련된 알림 제거
         if (this.noti_origin[_is_official] && this.noti_origin[_is_official][_target]) {
           let keys = Object.keys(this.noti_origin[_is_official][_target]);
