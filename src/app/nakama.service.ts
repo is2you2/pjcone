@@ -561,7 +561,6 @@ export class NakamaService {
         this.noti_origin[_is_official][_target] = {};
         for (let i = 0, j = v.notifications.length; i < j; i++)
           this.act_on_notification(v.notifications[i], _is_official, _target);
-        this.rearrange_notifications();
       });
   }
 
@@ -1543,7 +1542,7 @@ export class NakamaService {
   }
 
   /** 들어오는 알림에 반응하기 */
-  act_on_notification(v: Notification, _is_official: string, _target: string) {
+  async act_on_notification(v: Notification, _is_official: string, _target: string) {
     /** 처리과정에서 알림이 지워졌는지 여부 */
     let is_removed = false;
     v['server'] = this.servers[_is_official][_target].info;
@@ -1580,7 +1579,7 @@ export class NakamaService {
             break;
         }
         is_removed = true;
-        this.servers[_is_official][_target].client.deleteNotifications(
+        await this.servers[_is_official][_target].client.deleteNotifications(
           this.servers[_is_official][_target].session, [v['id']]).then(b => {
             if (!b) console.warn('알림 거부처리 검토 필요');
             this.update_notifications(_is_official, _target);

@@ -164,9 +164,7 @@ export class ChatRoomPage implements OnInit {
         this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.check_sender_and_show_name(c);
         if (c.content['filename']) this.ModulateFileEmbedMessage(c);
-        let currentTime = new Date(c.create_time);
-        c['msgDate'] = `${currentTime.getFullYear()}-${("00" + (currentTime.getMonth() + 1)).slice(-2)}-${("00" + currentTime.getDate()).slice(-2)}`;
-        c['msgTime'] = `${("00" + (currentTime.getHours() + 1)).slice(-2)}:${("00" + currentTime.getMinutes()).slice(-2)}`;
+        this.ModulateTimeDate(c);
         this.messages.push(c);
         setTimeout(() => {
           this.content_panel.scrollIntoView({ block: 'start' });
@@ -251,9 +249,7 @@ export class ChatRoomPage implements OnInit {
               }
               this.nakama.translate_updates(msg);
               if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
-              let currentTime = new Date(msg.create_time);
-              msg['msgDate'] = `${currentTime.getFullYear()}-${("00" + (currentTime.getMonth() + 1)).slice(-2)}-${("00" + currentTime.getDate()).slice(-2)}`;
-              msg['msgTime'] = `${("00" + (currentTime.getHours() + 1)).slice(-2)}:${("00" + currentTime.getMinutes()).slice(-2)}`;
+              this.ModulateTimeDate(msg);
               this.messages.unshift(msg);
             });
             this.next_cursor = v.next_cursor;
@@ -296,8 +292,10 @@ export class ChatRoomPage implements OnInit {
         this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop().substring(8), (e, v) => {
           if (e && v) {
             let json: any[] = JSON.parse(v);
-            for (let i = 0, j = json.length; i < j; i++)
+            for (let i = 0, j = json.length; i < j; i++) {
               this.ModulateFileEmbedMessage(json[i]);
+              this.ModulateTimeDate(json[i]);
+            }
             this.messages = [...json, ...this.messages];
           }
           this.next_cursor = null;
@@ -570,6 +568,13 @@ export class ChatRoomPage implements OnInit {
     });
   }
 
+  /** 메시지 수신 시각을 수신자에게 맞춤 */
+  ModulateTimeDate(msg: any) {
+    let currentTime = new Date(msg.create_time);
+    msg['msgDate'] = `${currentTime.getFullYear()}-${("00" + (currentTime.getMonth() + 1)).slice(-2)}-${("00" + currentTime.getDate()).slice(-2)}`;
+    msg['msgTime'] = `${("00" + currentTime.getHours()).slice(-2)}:${("00" + currentTime.getMinutes()).slice(-2)}`;
+  }
+
   /** 콘텐츠 상세보기 뷰어 띄우기 */
   open_viewer(msg: any, path: string) {
     switch (msg.content['viewer']) {
@@ -661,6 +666,8 @@ export class ChatRoomPage implements OnInit {
         let msg = this.messages.shift();
         delete msg.content['text'];
         delete msg.content['img'];
+        delete msg['msgDate'];
+        delete msg['msgTime'];
         SepByDate['msg'].push(msg);
       }
       this.indexed.saveTextFileToUserPath(JSON.stringify(SepByDate['msg']), `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/${SepByDate['target']}`);
