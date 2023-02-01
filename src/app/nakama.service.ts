@@ -1054,7 +1054,7 @@ export class NakamaService {
           if (this.servers[_is_official][_target])
             this.groups[_is_official][_target][_gid]['server'] = this.servers[_is_official][_target].info;
           else this.groups[_is_official][_target][_gid]['server'] = {
-            name: this.lang.text['Nakama'][['DeletedServer']],
+            name: this.lang.text['Nakama']['DeletedServer'],
             isOfficial: _is_official,
             target: _target,
           }

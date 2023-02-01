@@ -21,6 +21,7 @@ export class LanguageSettingService {
     WscClient: {
       Disconnected: 'Disconnected from community server.',
     },
+    Nakama: {},
   };
 
   constructor(
