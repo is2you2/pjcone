@@ -1,0 +1,37 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+[application]
+
+config/name="Todo"
+config/description="해야할 일을 관리합니다.
+기본적으로 로컬 앱이나 서버로부터 지시를 수신한 경우에도 정보를 누적합니다"
+run/main_scene="res://Todo.tscn"
+config/icon="res://icon.png"
+
+[display]
+
+window/size/width=360
+window/size/height=360
+window/handheld/orientation="portrait"
+window/stretch/mode="2d"
+window/stretch/aspect="expand"
+
+[gui]
+
+common/drop_mouse_on_gui_input_disabled=true
+
+[physics]
+
+common/enable_pause_aware_picking=true
+
+[rendering]
+
+environment/default_environment="res://default_env.tres"
