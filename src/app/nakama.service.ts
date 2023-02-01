@@ -815,7 +815,6 @@ export class NakamaService {
         });
       });
     });
-    console.log(channels_copy);
     this.indexed.saveTextFileToUserPath(JSON.stringify(channels_copy), 'servers/channels.json');
   }
 
@@ -870,8 +869,21 @@ export class NakamaService {
                     this.save_other_user(_guser.user, server.info.isOfficial, server.info.target);
                   });
                 });
+                await this.servers[server.info.isOfficial][server.info.target].client.readStorageObjects(
+                  this.servers[server.info.isOfficial][server.info.target].session, {
+                  object_ids: [{
+                    collection: 'group_public',
+                    key: `group_${v.groups[i].id}`,
+                    user_id: v.groups[i].creator_id,
+                  }],
+                }).then(gimg => {
+                  if (gimg.objects.length)
+                    pending_group['img'] = gimg.objects[0].value['img'];
+                }).catch(_e => {
+                  console.warn('이미지가 없는 그룹');
+                });
                 this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
-                if (pending_group.open) {
+                if (pending_group.open) { // 열린 그룹이라면 즉시 채널에 참가
                   this.join_chat_with_modulation(pending_group.id, 3, server.info.isOfficial, server.info.target, (c) => {
                     this.servers[server.info.isOfficial][server.info.target].client.listChannelMessages(
                       this.servers[server.info.isOfficial][server.info.target].session, c.id, 1, false)
