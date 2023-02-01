@@ -698,10 +698,8 @@ export class NakamaService {
                   this.servers[_is_official][_target].session, _cid, 1, false)
                   .then(v => {
                     if (v.messages.length) {
-                      if (v.messages[0].message_id != this.channels_orig[_is_official][_target][_cid]['last_comment_id']) {
-                        let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
-                        this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
-                      }
+                      if (v.messages[0].message_id != this.channels_orig[_is_official][_target][_cid]['last_comment_id'])
+                        this.update_from_channel_msg(v.messages[0], _is_official, _target);
                     }
                     this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
                     this.save_channels_with_less_info();
@@ -724,12 +722,8 @@ export class NakamaService {
                     this.servers[_is_official][_target].session, _cid, 1, false)
                     .then(v => {
                       if (v.messages.length) {
-                        if (v.messages[0].message_id != this.channels_orig[_is_official][_target][_cid]['last_comment_id']) {
-                          {
-                            let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
-                            this.channels_orig[_is_official][_target][_cid]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
-                          }
-                        }
+                        if (v.messages[0].message_id != this.channels_orig[_is_official][_target][_cid]['last_comment_id'])
+                          this.update_from_channel_msg(v.messages[0], _is_official, _target);
                         this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
                         this.save_channels_with_less_info();
                       }
@@ -888,11 +882,8 @@ export class NakamaService {
                       this.servers[server.info.isOfficial][server.info.target].session, c.id, 1, false)
                       .then(v => {
                         if (v.messages.length) {
-                          if (v.messages[0].message_id != this.channels_orig[server.info.isOfficial][server.info.target][c.id]['last_comment_id']) {
-                            let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
-                            this.channels_orig[server.info.isOfficial][server.info.target][c.id]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
+                          if (v.messages[0].message_id != this.channels_orig[server.info.isOfficial][server.info.target][c.id]['last_comment_id'])
                             this.update_from_channel_msg(v.messages[0], server.info.isOfficial, server.info.target);
-                          }
                         }
                       });
                   });
@@ -1564,11 +1555,8 @@ export class NakamaService {
               await this.servers[_is_official][_target].client.listChannelMessages(
                 this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
                   if (m.messages.length) {
-                    if (m.messages[0].message_id != this.channels_orig[_is_official][_target][c.id]['last_comment_id']) {
-                      let hasFile = m.messages[0].content['filename'] ? '(첨부파일) ' : '';
-                      c['last_comment'] = hasFile + (m.messages[0].content['msg'] || m.messages[0].content['noti'] || '');
+                    if (m.messages[0].message_id != this.channels_orig[_is_official][_target][c.id]['last_comment_id'])
                       this.update_from_channel_msg(m.messages[0], _is_official, _target);
-                    }
                   }
                 });
             });
@@ -1623,11 +1611,8 @@ export class NakamaService {
             this.servers[_is_official][_target].session, c.id, 1, false)
             .then(v => {
               if (v.messages.length) {
-                if (v.messages[0].message_id != this.channels_orig[_is_official][_target][c.id]['last_comment_id']) {
-                  let hasFile = v.messages[0].content['filename'] ? '(첨부파일) ' : '';
-                  this.channels_orig[_is_official][_target][c.id]['last_comment'] = hasFile + (v.messages[0].content['msg'] || v.messages[0].content['noti'] || '');
+                if (v.messages[0].message_id != this.channels_orig[_is_official][_target][c.id]['last_comment_id'])
                   this.update_from_channel_msg(v.messages[0], _is_official, _target);
-                }
               }
             });
         });
