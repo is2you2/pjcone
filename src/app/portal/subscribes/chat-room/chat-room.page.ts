@@ -305,7 +305,11 @@ export class ChatRoomPage implements OnInit {
     else {
       this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop().substring(8), (e, v) => {
         if (e && v) {
-          let json = JSON.parse(v);
+          let json: any[] = JSON.parse(v);
+          for (let i = 0, j = json.length; i < j; i++) {
+            this.ModulateFileEmbedMessage(json[i]);
+            this.ModulateTimeDate(json[i]);
+          }
           this.messages = [...json, ...this.messages];
         }
         this.pullable = Boolean(this.LocalHistoryList.length);
