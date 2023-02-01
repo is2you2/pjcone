@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { LanguageSettingService } from './language-setting.service';
 import { P5ToastService } from './p5-toast.service';
 
 /** godot 웹 결과물과 파일을 공유하기 위한 비기랄까 */
@@ -9,6 +10,7 @@ export class IndexedDBService {
 
   constructor(
     private p5toast: P5ToastService,
+    private lang: LanguageSettingService,
   ) { }
 
   /** IndexedDB */
@@ -201,7 +203,7 @@ export class IndexedDBService {
         _CallBack(blob);
       } catch (e) {
         this.p5toast.show({
-          text: `파일 열기 오류: ${e}`,
+          text: `${this.lang.text['IndexedDB']['FailedToOpenFile']}: ${e}`,
         });
       }
     }
@@ -236,7 +238,7 @@ export class IndexedDBService {
         URL.revokeObjectURL(url);
       } catch (e) {
         this.p5toast.show({
-          text: `다운받기 오류: ${e}`,
+          text: `${this.lang.text['IndexedDB']['FailedToDownloadFile']}: ${e}`,
         });
       }
     }

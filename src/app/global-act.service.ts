@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { LanguageSettingService } from './language-setting.service';
 import { P5ToastService } from './p5-toast.service';
 
 /** 고도엔진과 공유되는 키값 */
@@ -20,6 +21,7 @@ export class GlobalActService {
 
   constructor(
     private p5toast: P5ToastService,
+    private lang: LanguageSettingService,
   ) { }
 
 
@@ -65,7 +67,7 @@ export class GlobalActService {
     _godot.setAttribute('class', 'full_screen');
     keys['failed'] = () => {
       this.p5toast.show({
-        text: `기능 다운로드 실패: ${keys.title}`,
+        text: `${this.lang.text['GlobalAct']['FailedToDownloadGodot']}: ${keys.title}`,
         lateable: true,
       });
     }

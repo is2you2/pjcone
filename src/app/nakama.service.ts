@@ -66,7 +66,7 @@ export class NakamaService {
     'official': {
       'default': {
         info: {
-          name: '개발 테스트 서버',
+          name: '개발 테스트 서버', // lang.CallbackOnce 에서 처리됨
           address: SOCKET_SERVER_ADDRESS,
           isOfficial: 'official',
           target: 'default',
@@ -245,7 +245,7 @@ export class NakamaService {
     // 같은 이름 거르기
     if (this.statusBar.groupServer['unofficial'][info.target || info.name]) {
       this.p5toast.show({
-        text: `이미 같은 구분자를 쓰는 서버가 있습니다 있습니다: ${info.target || info.name}`,
+        text: `${this.lang.text['Nakama']['AlreadyHaveTargetName']}: ${info.target || info.name}`,
       });
       return;
     }
@@ -348,17 +348,17 @@ export class NakamaService {
         case 400: // 이메일/비번이 없거나 하는 등, 요청 정보가 잘못됨
           if (this.uuid)
             this.p5toast.show({
-              text: '로그인 정보를 입력해주세요',
+              text: this.lang.text['Nakama']['NeedLoginInfo'],
             });
           else this.p5toast.show({
-            text: '사용자를 연결해주세요',
+            text: this.lang.text['Nakama']['NeedLinkUser'],
           });
           this.users.self['online'] = false;
           this.set_group_statusBar('offline', info.isOfficial, info.target);
           break;
         case 401: // 비밀번호 잘못됨
           this.p5toast.show({
-            text: '이 기기에서는 로그인할 수 없습니다 (계정 이전 기능 준비중)',
+            text: this.lang.text['Nakama']['NeedAccountReset'],
           });
           this.set_group_statusBar('offline', info.isOfficial, info.target);
           break;
@@ -371,7 +371,7 @@ export class NakamaService {
               lang_tag: this.lang.lang,
             });
           this.p5toast.show({
-            text: `회원가입이 완료되었습니다: ${info.target}`,
+            text: `${this.lang.text['Nakama']['RegisterUserSucc']}: ${info.target}`,
             lateable: true,
           });
           if (this.users.self['img'])
@@ -393,7 +393,7 @@ export class NakamaService {
           break;
         default:
           this.p5toast.show({
-            text: `준비되지 않은 오류 유형: ${e}`,
+            text: `${this.lang.text['Nakama']['UnexpectedLoginErr']}: ${e}`,
           });
           this.set_group_statusBar('offline', info.isOfficial, info.target);
           break;
@@ -827,7 +827,7 @@ export class NakamaService {
           p.remove();
         }, _e => {
           this.p5toast.show({
-            text: '유효한 이미지가 아닙니다.',
+            text: this.lang.text['Nakama']['CannotOpenImg'],
           });
           p.remove();
         });
@@ -1054,7 +1054,7 @@ export class NakamaService {
           if (this.servers[_is_official][_target])
             this.groups[_is_official][_target][_gid]['server'] = this.servers[_is_official][_target].info;
           else this.groups[_is_official][_target][_gid]['server'] = {
-            name: '삭제된 서버',
+            name: this.lang.text['Nakama'][['DeletedServer']],
             isOfficial: _is_official,
             target: _target,
           }
@@ -1167,7 +1167,7 @@ export class NakamaService {
         }
         socket.ondisconnect = (_e) => {
           this.p5toast.show({
-            text: `그룹서버 연결 끊어짐: ${this.servers[_is_official][_target].info.name}`,
+            text: `${this.lang.text['Nakama']['DisconnectedFromServer']}: ${this.servers[_is_official][_target].info.name}`,
             lateable: true,
           });
           this.set_group_statusBar('offline', _is_official, _target);
@@ -1233,8 +1233,8 @@ export class NakamaService {
         title: this.channels_orig[_is_official][_target][msg.channel_id]['info']['name']
           || this.channels_orig[_is_official][_target][msg.channel_id]['info']['display_name']
           || this.channels_orig[_is_official][_target][msg.channel_id]['title']
-          || '제목 없는 채팅방',
-        body: c.content['msg'] || c.content['noti'] || '(첨부파일)',
+          || this.lang.text['Subscribes']['noTitiedChat'],
+        body: c.content['msg'] || c.content['noti'] || `(${this.lang.text['ChatRoom']['attachments']})`,
         extra_ln: {
           page: {
             component: 'ChatRoomPage',
@@ -1301,7 +1301,7 @@ export class NakamaService {
     }
     if (this.channels_orig[_is_official][_target][c.channel_id]['update'])
       this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
-    let hasFile = c.content['filename'] ? '(첨부파일) ' : '';
+    let hasFile = c.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
     this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile + (c.content['msg'] || c.content['noti'] || '');
     this.save_channels_with_less_info();
   }
@@ -1318,16 +1318,16 @@ export class NakamaService {
       case 3: // 열린 그룹에 들어온 사용자 알림
       case 4: // 채널에 새로 들어온 사람 알림
         c.content['user'] = target;
-        c.content['noti'] = `사용자 그룹참여: ${target['display_name']}`;
+        c.content['noti'] = `${this.lang.text['Nakama']['GroupUserJoin']}: ${target['display_name']}`;
         break;
       case 5: // 그룹에 있던 사용자 나감(들어오려다가 포기한 사람 포함)
         console.warn('그룹원 탈퇴와 참여 예정자의 포기를 구분할 수 있는지: ', c);
         c.content['user'] = target;
-        c.content['noti'] = `사용자 그룹탈퇴: ${target['display_name']}`;
+        c.content['noti'] = `${this.lang.text['Nakama']['GroupUserOut']}: ${target['display_name']}`;
         break;
       case 6: // 누군가 그룹에서 내보내짐 (kick)
         c.content['user'] = target;
-        c.content['noti'] = `사용자 강제퇴장: ${target['display_name']}`;
+        c.content['noti'] = `${this.lang.text['Nakama']['GroupUserKick']}: ${target['display_name']}`;
         break;
       default:
         console.warn('예상하지 못한 메시지 코드: ', c);
@@ -1482,13 +1482,13 @@ export class NakamaService {
           .then(v => {
             if (v.users.length) {
               let msg = '';
-              msg += `서버: ${this_noti['server']['name']}<br>`;
-              msg += `사용자명: ${v.users[0].display_name}`;
+              msg += `${this.lang.text['Nakama']['ReqContServer']}: ${this_noti['server']['name']}<br>`;
+              msg += `${this.lang.text['Nakama']['ReqContUserName']}: ${v.users[0].display_name}`;
               this.alertCtrl.create({
-                header: '그룹 참가 요청',
+                header: this.lang.text['Nakama']['ReqContTitle'],
                 message: msg,
                 buttons: [{
-                  text: '수락',
+                  text: this.lang.text['Nakama']['ReqContAccept'],
                   handler: () => {
                     this_server.client.addGroupUsers(this_server.session, this_noti['content']['group_id'], [v.users[0].id])
                       .then(v => {
@@ -1501,7 +1501,7 @@ export class NakamaService {
                       });
                   }
                 }, {
-                  text: '거절',
+                  text: this.lang.text['Nakama']['ReqContReject'],
                   handler: () => {
                     this_server.client.kickGroupUsers(this_server.session, this_noti['content']['group_id'], [v.users[0].id])
                       .then(b => {
@@ -1517,7 +1517,7 @@ export class NakamaService {
                 .then(b => {
                   if (!b) console.warn('알림 거부처리 검토 필요');
                   this.p5toast.show({
-                    text: '만료된 알림: 사용자 없음',
+                    text: this.lang.text['Nakama']['UserNotFound'],
                   })
                   this.update_notifications(_is_official, _target);
                 });
@@ -1618,12 +1618,12 @@ export class NakamaService {
         });
         this.noti.PushLocal({
           id: v.code,
-          title: `${this.groups[_is_official][_target][v.content['group_id']]['name']}: 그룹 참가됨`,
+          title: `${this.groups[_is_official][_target][v.content['group_id']]['name']}: ${this.lang.text['Nakama']['LocalNotiTitle']}`,
           body: v.subject,
           group_ln: 'diychat',
           actions_ln: [{
             id: `check${v.code}`,
-            title: '확인',
+            title: this.lang.text['Nakama']['LocalNotiOK'],
           }],
           icon: this.groups[_is_official][_target][v.content['group_id']['img']],
           smallIcon_ln: 'diychat',
@@ -1636,7 +1636,7 @@ export class NakamaService {
       case -5: // 그룹 참가 요청 받음
         let group_info = this.groups[_is_official][_target][v.content['group_id']];
         if (group_info) {
-          v['request'] = `그룹참가 요청: ${group_info['name']}`;
+          v['request'] = `${this.lang.text['Nakama']['ReqContTitle']}: ${group_info['name']}`;
         } else {
           is_removed = true;
           this.servers[_is_official][_target].client.deleteNotifications(
@@ -1664,11 +1664,11 @@ export class NakamaService {
         });
         this.noti.PushLocal({
           id: v.code,
-          title: `${this.groups[_is_official][_target][v.content['group_id']]['name']}: 그룹 참가 요청`,
+          title: `${this.groups[_is_official][_target][v.content['group_id']]['name']}: ${this.lang.text['Nakama']['ReqContTitle']}`,
           group_ln: 'diychat',
           actions_ln: [{
             id: `check${v.code}`,
-            title: '검토',
+            title: this.lang.text['Nakama']['LocalNotiCheck'],
           }],
           icon: this.groups[_is_official][_target][v.content['group_id']]['img'],
           smallIcon_ln: 'diychat',
@@ -1808,14 +1808,14 @@ export class NakamaService {
         }, _is_official, _target, i);
       });
     let resultModified = result.join('').replace(/"|\\|=/g, '');
-    msg.content['text'] = '다운로드됨';
+    msg.content['text'] = this.lang.text['ChatRoom']['downloaded'];
     if (resultModified) {
       this.indexed.saveFileToUserPath(resultModified, `servers/${_is_official}/${_target}/channels/${_msg.channel_id}/files/msg_${_msg.message_id}.${_msg.content['file_ext']}`,
         v => {
           _CallBack(new Blob([v], { type: msg.content['type'] }));
         });
     } else this.p5toast.show({
-      text: '이 파일은 서버에서 삭제되었습니다.',
+      text: this.lang.text['Nakama']['MissingFile'],
     });
   }
   /** 다운로드 실패한 파트 다시 받기 */
