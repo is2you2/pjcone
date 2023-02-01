@@ -22,6 +22,9 @@ export class LanguageSettingService {
       Disconnected: 'Disconnected from community server.',
     },
     Nakama: {},
+    GlobalAct: {
+      FailedToDownloadGodot: 'Failed to Download',
+    },
   };
 
   constructor(
