@@ -21,7 +21,9 @@ export class LanguageSettingService {
     WscClient: {
       Disconnected: 'Disconnected from community server.',
     },
-    Nakama: {},
+    Nakama: {
+      UnexpectedLoginErr: 'Login Failed',
+    },
     GlobalAct: {
       FailedToDownloadGodot: 'Failed to Download',
     },

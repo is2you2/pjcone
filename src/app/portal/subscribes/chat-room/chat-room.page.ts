@@ -683,14 +683,14 @@ export class ChatRoomPage implements OnInit {
   }
 
   /** 날짜별로 대화 기록 저장하기 */
-  saveMessageByDate(SepByDate: any) {
-    let tmp_msg = JSON.parse(JSON.stringify(SepByDate['msg']));
+  saveMessageByDate(info: any) {
+    let SepByDate = JSON.parse(JSON.stringify(info));
     this.indexed.loadTextFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/${SepByDate['target']}`, (e, v) => {
       let base: any[] = [];
       let added: any[] = [];
       if (e && v)
         base = JSON.parse(v);
-      tmp_msg.forEach(_msg => {
+      SepByDate['msg'].forEach(_msg => {
         let isDuplicate = false;
         for (let i = 0, j = base.length; i < j; i++)
           if (base[i]['message_id'] == _msg['message_id']) {
