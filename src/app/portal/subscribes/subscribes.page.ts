@@ -197,6 +197,7 @@ export class SubscribesPage implements OnInit {
         this.resumeBanner();
       });
       v.present()
+      this.nakama.rearrange_channels();
       this.nakama.save_channels_with_less_info();
     });
   }

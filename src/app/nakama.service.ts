@@ -786,6 +786,20 @@ export class NakamaService {
         });
       });
     });
+    result.sort((a, b) => {
+      if (a['last_comment_time'] > b['last_comment_time'])
+        return -1;
+      if (a['last_comment_time'] < b['last_comment_time'])
+        return 1;
+      return 0;
+    });
+    result.sort((a, b) => {
+      if (a['is_new'])
+        if (b['is_new'])
+          return 0;
+        else return -1;
+      else return 1;
+    });
     this.channels = result;
     this.save_channels_with_less_info();
     return result;
@@ -1225,10 +1239,8 @@ export class NakamaService {
   has_new_channel_msg = false;
   /** 채널 메시지를 변조 후 전파하기 */
   update_from_channel_msg(msg: ChannelMessage, _is_official: string, _target: string) {
-    if (msg.message_id == this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_id']) return;
     let is_me = msg.sender_id == this.servers[_is_official][_target].session.user_id;
-    this.channels_orig[_is_official][_target][msg.channel_id]['is_new'] = msg.sender_id != this.servers[_is_official][_target].session.user_id;
-    this.has_new_channel_msg = msg.sender_id != this.servers[_is_official][_target].session.user_id;
+    let is_new = msg.message_id != this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_id'];
     let c = this.modulation_channel_message(msg, _is_official, _target);
     if (!is_me) {
       this.noti.PushLocal({
@@ -1267,6 +1279,12 @@ export class NakamaService {
           this.update_group_info(c, _is_official, _target);
         if (c.content['user']) // 그룹 사용자 정보 변경
           this.update_group_user_info(c, _is_official, _target);
+        if (is_new) {
+          this.channels_orig[_is_official][_target][msg.channel_id]['is_new'] = !is_me;
+          this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_time'] = msg.create_time;
+          this.has_new_channel_msg = !is_me;
+          this.rearrange_channels();
+        }
         this.channels_orig[_is_official][_target][c.channel_id]['last_comment_id'] = c.message_id;
         break;
       case 3: // 열린 그룹 상태에서 사용자 들어오기 요청
