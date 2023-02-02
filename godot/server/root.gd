@@ -26,9 +26,9 @@ func _init(): # 기본 경로 설정
 		root_path = 'res://gd_database/'
 		html_path = 'res://'
 		var file:= File.new() # 테스트 중인 경우 이 폴더를 프로젝트로부터 무시합니다
-		if file.open(root_path + '.gdignore', File.WRITE):
+		if file.open(root_path + '.gdignore', File.WRITE) == OK:
 			file.store_string('gdignore')
-		file.flush()
+			file.flush()
 		file.close()
 	else: # 서버 실행파일이 위치한 경로로부터
 		var only_path:= OS.get_executable_path()

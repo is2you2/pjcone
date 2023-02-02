@@ -215,4 +215,5 @@ text = "업데이트됨"
 align = 1
 valign = 1
 
+[connection signal="text_changed" from="m/vbox/AdminInfo/TargetUUID" to="." method="_on_TargetUUID_text_changed"]
 [connection signal="pressed" from="m/vbox/SendAllNoti/Button" to="." method="_on_Button_pressed"]

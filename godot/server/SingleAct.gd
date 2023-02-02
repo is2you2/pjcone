@@ -19,6 +19,9 @@ var counter:= {
 	'maximum': 0,
 }
 
+# 관리자 아이디를 파일에서 관리
+var admin_file:String
+
 func _ready():
 	server.connect("data_received", self, '_received')
 	server.connect('client_connected', self, '_connected')
@@ -35,6 +38,11 @@ func _ready():
 		Root.logging(HEADER, str('Opened: ', PORT))
 	Root.rich_node = $m/vbox/c/m/log
 	Root.rich_node.bbcode_text = Root.rich_log
+	admin_file = Root.html_path + 'admin.txt'
+	var file:= File.new()
+	if file.open(admin_file, File.READ) == OK:
+		$m/vbox/AdminInfo/TargetUUID.text = file.get_as_text()
+	file.close()
 
 # esc를 눌러 끄기
 func _input(event):
@@ -200,3 +208,10 @@ func _on_Button_pressed():
 		send_to(int(user), JSON.print(result).to_utf8())
 	$m/vbox/SendAllNoti/AllNotiText.text = ''
 	$m/vbox/SendAllNotiImg/AllNotiURL.text = ''
+
+# 관리자 아이디를 파일로 관리
+func _on_TargetUUID_text_changed(new_text):
+	var file:= File.new()
+	if file.open(admin_file, File.WRITE) == OK:
+		file.store_string(new_text)
+	file.close()
