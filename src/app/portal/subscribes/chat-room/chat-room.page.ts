@@ -69,6 +69,7 @@ export class ChatRoomPage implements OnInit {
     act: () => {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
       this.nakama.rearrange_channels();
+      delete this.nakama.channel_transfer[this.isOfficial][this.target][this.info.id];
       this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`, (list) => {
         list.forEach(path => {
           this.indexed.removeFileFromUserPath(path.substring(8));
