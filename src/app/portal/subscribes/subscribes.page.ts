@@ -33,8 +33,6 @@ export class SubscribesPage implements OnInit {
     public lang: LanguageSettingService,
   ) { }
 
-  HEADER = 'subscribes';
-
   cant_scan = false;
 
   ngOnInit() {
@@ -44,6 +42,7 @@ export class SubscribesPage implements OnInit {
   }
 
   ionViewDidEnter() {
+    this.nakama.subscribe_lock = true;
     this.resumeBanner();
   }
 
@@ -193,10 +192,8 @@ export class SubscribesPage implements OnInit {
       this.removeBanner();
       delete info['is_new'];
       this.nakama.has_new_channel_msg = false;
-      v.onWillDismiss().then(() => {
-        this.resumeBanner();
-      });
-      v.present()
+      v.onWillDismiss().then(() => this.resumeBanner());
+      v.present();
       this.nakama.rearrange_channels();
       this.nakama.save_channels_with_less_info();
     });
@@ -211,6 +208,7 @@ export class SubscribesPage implements OnInit {
   }
 
   ionViewWillLeave() {
+    this.nakama.subscribe_lock = false;
     this.removeBanner();
   }
 }

@@ -663,7 +663,7 @@ export class NakamaService {
                 this.channels_orig[_is_official][_target][_cid]['info'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
               if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
                 delete this.channels_orig[_is_official][_target][_cid]['status'];
-              if (this.channels_orig[_is_official][_target][_cid]['is_new'])
+              if (this.channels_orig[_is_official][_target][_cid]['is_new'] && !this.subscribe_lock)
                 this.has_new_channel_msg = true;
             });
           });
@@ -1236,6 +1236,8 @@ export class NakamaService {
     });
   }
 
+  /** 연결 페이지를 보고있는지 여부 */
+  subscribe_lock = false;
   has_new_channel_msg = false;
   /** 채널 메시지를 변조 후 전파하기 */
   update_from_channel_msg(msg: ChannelMessage, _is_official: string, _target: string) {
@@ -1282,7 +1284,8 @@ export class NakamaService {
         if (is_new) {
           this.channels_orig[_is_official][_target][msg.channel_id]['is_new'] = !is_me;
           this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_time'] = msg.create_time;
-          this.has_new_channel_msg = !is_me;
+          if (!this.subscribe_lock)
+            this.has_new_channel_msg = !is_me;
           this.rearrange_channels();
         }
         this.channels_orig[_is_official][_target][c.channel_id]['last_comment_id'] = c.message_id;
