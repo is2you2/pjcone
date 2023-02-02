@@ -663,21 +663,51 @@ export class ChatRoomPage implements OnInit {
     if (!this.isHistoryLoaded) { // 그룹 기록은 설정을 따름
       if (this.info['redirect']['type'] == 3 && !this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open']) return;
       let SepByDate = {};
-      while (this.messages.length) {
-        if (SepByDate['target'] != this.messages[0]['msgDate']) {
+      let tmp_msg: any[] = JSON.parse(JSON.stringify(this.messages));
+      while (tmp_msg.length) {
+        if (SepByDate['target'] != tmp_msg[0]['msgDate']) {
           if (SepByDate['msg'])
-            this.indexed.saveTextFileToUserPath(JSON.stringify(SepByDate['msg']), `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/${SepByDate['target']}`);
-          SepByDate['target'] = this.messages[0]['msgDate'];
+            this.saveMessageByDate(SepByDate);
+          SepByDate['target'] = tmp_msg[0]['msgDate'];
           SepByDate['msg'] = [];
         }
-        let msg = this.messages.shift();
+        let msg = tmp_msg.shift();
         delete msg.content['text'];
         delete msg.content['img'];
         delete msg['msgDate'];
         delete msg['msgTime'];
         SepByDate['msg'].push(msg);
       }
-      this.indexed.saveTextFileToUserPath(JSON.stringify(SepByDate['msg']), `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/${SepByDate['target']}`);
+      this.saveMessageByDate(SepByDate);
     }
+  }
+
+  /** 날짜별로 대화 기록 저장하기 */
+  saveMessageByDate(SepByDate: any) {
+    let tmp_msg = JSON.parse(JSON.stringify(SepByDate['msg']));
+    this.indexed.loadTextFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/${SepByDate['target']}`, (e, v) => {
+      let base: any[] = [];
+      let added: any[] = [];
+      if (e && v)
+        base = JSON.parse(v);
+      tmp_msg.forEach(_msg => {
+        let isDuplicate = false;
+        for (let i = 0, j = base.length; i < j; i++)
+          if (base[i]['message_id'] == _msg['message_id']) {
+            isDuplicate = true;
+            break;
+          }
+        if (!isDuplicate) added.push(_msg);
+      });
+      let result = [...base, ...added];
+      result.sort((a, b) => {
+        if (a['create_time'] < b['create_time'])
+          return -1;
+        if (a['create_time'] > b['create_time'])
+          return 1;
+        return 0;
+      });
+      this.indexed.saveTextFileToUserPath(JSON.stringify(result), `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/${SepByDate['target']}`);
+    });
   }
 }

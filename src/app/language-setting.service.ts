@@ -25,6 +25,9 @@ export class LanguageSettingService {
     GlobalAct: {
       FailedToDownloadGodot: 'Failed to Download',
     },
+    ChatRoom: {
+      attachments: 'Attachments',
+    },
   };
 
   constructor(
