@@ -1227,8 +1227,8 @@ export class NakamaService {
   update_from_channel_msg(msg: ChannelMessage, _is_official: string, _target: string) {
     if (msg.message_id == this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_id']) return;
     let is_me = msg.sender_id == this.servers[_is_official][_target].session.user_id;
-    this.channels_orig[_is_official][_target][msg.channel_id]['is_new'] = true;
-    this.has_new_channel_msg = true;
+    this.channels_orig[_is_official][_target][msg.channel_id]['is_new'] = msg.sender_id != this.servers[_is_official][_target].session.user_id;
+    this.has_new_channel_msg = msg.sender_id != this.servers[_is_official][_target].session.user_id;
     let c = this.modulation_channel_message(msg, _is_official, _target);
     if (!is_me) {
       this.noti.PushLocal({
