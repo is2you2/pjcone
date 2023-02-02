@@ -1249,7 +1249,7 @@ export class NakamaService {
     let is_me = msg.sender_id == this.servers[_is_official][_target].session.user_id;
     let is_new = msg.message_id != this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_id'];
     let c = this.modulation_channel_message(msg, _is_official, _target);
-    if (!is_me) {
+    if (!is_me && (c.code != 0 || is_new)) {
       this.noti.PushLocal({
         id: this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'],
         title: this.channels_orig[_is_official][_target][msg.channel_id]['info']['name']
