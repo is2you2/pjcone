@@ -191,10 +191,12 @@ export class SubscribesPage implements OnInit {
       },
     }).then(v => {
       this.removeBanner();
+      delete info['is_new'];
       v.onWillDismiss().then(() => {
         this.resumeBanner();
       });
       v.present()
+      this.nakama.save_channels_with_less_info();
     });
   }
 

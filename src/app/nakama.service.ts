@@ -596,7 +596,7 @@ export class NakamaService {
   }
 
   /** 등록된 채널들 관리  
-   * channels_orig[isOfficial][target][channel_id] = [ ...info ]
+   * channels_orig[isOfficial][target][channel_id] = { ...info }
    */
   channels_orig = {
     'official': {},
@@ -698,8 +698,7 @@ export class NakamaService {
                   this.servers[_is_official][_target].session, _cid, 1, false)
                   .then(v => {
                     if (v.messages.length) {
-                      if (v.messages[0].message_id != this.channels_orig[_is_official][_target][_cid]['last_comment_id'])
-                        this.update_from_channel_msg(v.messages[0], _is_official, _target);
+                      this.update_from_channel_msg(v.messages[0], _is_official, _target);
                     }
                     this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
                     this.save_channels_with_less_info();
@@ -722,8 +721,7 @@ export class NakamaService {
                     this.servers[_is_official][_target].session, _cid, 1, false)
                     .then(v => {
                       if (v.messages.length) {
-                        if (v.messages[0].message_id != this.channels_orig[_is_official][_target][_cid]['last_comment_id'])
-                          this.update_from_channel_msg(v.messages[0], _is_official, _target);
+                        this.update_from_channel_msg(v.messages[0], _is_official, _target);
                         this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
                         this.save_channels_with_less_info();
                       }
@@ -882,8 +880,7 @@ export class NakamaService {
                       this.servers[server.info.isOfficial][server.info.target].session, c.id, 1, false)
                       .then(v => {
                         if (v.messages.length) {
-                          if (v.messages[0].message_id != this.channels_orig[server.info.isOfficial][server.info.target][c.id]['last_comment_id'])
-                            this.update_from_channel_msg(v.messages[0], server.info.isOfficial, server.info.target);
+                          this.update_from_channel_msg(v.messages[0], server.info.isOfficial, server.info.target);
                         }
                       });
                   });
@@ -1225,7 +1222,9 @@ export class NakamaService {
 
   /** 채널 메시지를 변조 후 전파하기 */
   update_from_channel_msg(msg: ChannelMessage, _is_official: string, _target: string) {
+    if (msg.message_id == this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_id']) return;
     let is_me = msg.sender_id == this.servers[_is_official][_target].session.user_id;
+    this.channels_orig[_is_official][_target][msg.channel_id]['is_new'] = true;
     let c = this.modulation_channel_message(msg, _is_official, _target);
     if (!is_me) {
       this.noti.PushLocal({
@@ -1555,8 +1554,7 @@ export class NakamaService {
               await this.servers[_is_official][_target].client.listChannelMessages(
                 this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
                   if (m.messages.length) {
-                    if (m.messages[0].message_id != this.channels_orig[_is_official][_target][c.id]['last_comment_id'])
-                      this.update_from_channel_msg(m.messages[0], _is_official, _target);
+                    this.update_from_channel_msg(m.messages[0], _is_official, _target);
                   }
                 });
             });
@@ -1611,8 +1609,7 @@ export class NakamaService {
             this.servers[_is_official][_target].session, c.id, 1, false)
             .then(v => {
               if (v.messages.length) {
-                if (v.messages[0].message_id != this.channels_orig[_is_official][_target][c.id]['last_comment_id'])
-                  this.update_from_channel_msg(v.messages[0], _is_official, _target);
+                this.update_from_channel_msg(v.messages[0], _is_official, _target);
               }
             });
         });

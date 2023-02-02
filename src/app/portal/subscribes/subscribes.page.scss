@@ -19,3 +19,14 @@
     color: #888;
     padding-left: 4px;
 }
+
+// 새 메시지 알림용
+.new_circle {
+    position: relative;
+    top: -5px;
+    left: 9px;
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    background: red;
+}

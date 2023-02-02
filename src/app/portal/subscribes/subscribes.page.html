@@ -5,7 +5,8 @@
 </ion-header>
 
 <ion-content>
-  <ion-accordion-group *ngIf="nakama.notifications_rearrange.length" value="colors" expand="inset" [value]="false" #accordionGroup>
+  <ion-accordion-group *ngIf="nakama.notifications_rearrange.length" value="colors" expand="inset" [value]="false"
+    #accordionGroup>
     <ion-accordion value="colors">
       <ion-item slot="header">
         <ion-label>{{lang.text['Subscribes']['has_noties']}}</ion-label>
@@ -36,7 +37,9 @@
   <div *ngIf="nakama.channels.length">
     <ion-item *ngFor="let channel of nakama.channels" button (click)="go_to_chatroom(channel)">
       <div class="additional_form status_bar_double"
-        [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']"></div>
+        [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']">
+        <div *ngIf="channel['is_new']" class="new_circle"></div>
+      </div>
       <div class="additional_form bg_img_form">
         <img *ngIf="channel['info']" class="bg_img"
           [style]="channel['status'] == 'online' ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'"
@@ -48,7 +51,8 @@
             <tr>
               <td>
                 {{channel['info'] ? (channel['info']['name'] || channel['info']['display_name'] ||
-                lang.text['Subscribes']['noTitiedChat']) : (channel['title'] || lang.text['Subscribes']['noTitiedChat'])}}
+                lang.text['Subscribes']['noTitiedChat']) : (channel['title'] ||
+                lang.text['Subscribes']['noTitiedChat'])}}
               </td>
               <td class="server_target">
                 {{'(' + channel['server']['target'] + ')'}}
