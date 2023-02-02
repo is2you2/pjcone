@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
 import { IndexedDBService } from '../indexed-db.service';
 import { LanguageSettingService } from '../language-setting.service';
+import { NakamaService } from '../nakama.service';
 import { ProfilePage } from './settings/profile/profile.page';
 
 @Component({
@@ -16,6 +17,7 @@ export class PortalPage implements OnInit {
     private indexed: IndexedDBService,
     private modalCtrl: ModalController,
     public lang: LanguageSettingService,
+    public nakama: NakamaService,
   ) { }
 
   ngOnInit() {
@@ -25,6 +27,11 @@ export class PortalPage implements OnInit {
           component: ProfilePage
         }).then(v => v.present());
     });
+  }
+
+  /** 하단 탭을 눌러 알림 확인함 처리 */
+  subscribe_button() {
+    this.nakama.has_new_channel_msg = false;
   }
 
   /** 하단 탭을 눌러 설정페이지로 이동 */

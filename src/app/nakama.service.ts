@@ -663,6 +663,8 @@ export class NakamaService {
                 this.channels_orig[_is_official][_target][_cid]['info'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
               if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
                 delete this.channels_orig[_is_official][_target][_cid]['status'];
+              if (this.channels_orig[_is_official][_target][_cid]['is_new'])
+                this.has_new_channel_msg = true;
             });
           });
         });
@@ -1220,11 +1222,13 @@ export class NakamaService {
     });
   }
 
+  has_new_channel_msg = false;
   /** 채널 메시지를 변조 후 전파하기 */
   update_from_channel_msg(msg: ChannelMessage, _is_official: string, _target: string) {
     if (msg.message_id == this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_id']) return;
     let is_me = msg.sender_id == this.servers[_is_official][_target].session.user_id;
     this.channels_orig[_is_official][_target][msg.channel_id]['is_new'] = true;
+    this.has_new_channel_msg = true;
     let c = this.modulation_channel_message(msg, _is_official, _target);
     if (!is_me) {
       this.noti.PushLocal({
