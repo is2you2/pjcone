@@ -1230,6 +1230,11 @@ export class NakamaService {
           break;
       }
       this.add_channels(c, _is_official, _target);
+      this.servers[_is_official][_target].client.listChannelMessages(
+        this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
+          if (m.messages.length)
+            this.update_from_channel_msg(m.messages[0], _is_official, _target);
+        });
       this.count_channel_online_member(c, _is_official, _target);
       this.save_groups_with_less_info();
       _CallBack(c);
