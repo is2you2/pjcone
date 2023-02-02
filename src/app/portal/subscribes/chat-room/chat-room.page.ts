@@ -167,6 +167,8 @@ export class ChatRoomPage implements OnInit {
         this.ModulateTimeDate(c);
         this.messages.push(c);
         setTimeout(() => {
+          this.info['is_new'] = false;
+          this.nakama.has_new_channel_msg = false;
           this.content_panel.scrollIntoView({ block: 'start' });
         }, 0);
       }
