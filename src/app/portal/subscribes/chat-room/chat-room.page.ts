@@ -484,7 +484,7 @@ export class ChatRoomPage implements OnInit {
         new p5((p: p5) => {
           p.setup = () => {
             p.loadStrings(ObjectURL, v => {
-              msg.content['text'] = v;
+              msg.content['text'] = v.join('\n');
               URL.revokeObjectURL(ObjectURL);
               p.remove();
             }, e => {
