@@ -169,6 +169,7 @@ export class ChatRoomPage implements OnInit {
         this.check_sender_and_show_name(c);
         if (c.content['filename']) this.ModulateFileEmbedMessage(c);
         this.ModulateTimeDate(c);
+        this.info['last_read_id'] = this.info['last_comment_id'];
         this.messages.push(c);
         setTimeout(() => {
           this.info['is_new'] = false;
