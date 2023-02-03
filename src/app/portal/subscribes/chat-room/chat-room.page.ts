@@ -247,6 +247,7 @@ export class ChatRoomPage implements OnInit {
         this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
           this.nakama.servers[this.isOfficial][this.target].session,
           this.info['id'], 15, false, this.next_cursor).then(v => {
+            let pull_more = false;
             v.messages.forEach(msg => {
               msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
               this.check_sender_and_show_name(msg);
@@ -255,11 +256,12 @@ export class ChatRoomPage implements OnInit {
                 this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
               }
               // 마지막으로 읽은 메시지인지 검토
-              if (!this.foundLastRead && this.info['last_read_id'])
+              if (!this.foundLastRead && this.info['last_read_id']) {
                 if (this.info['last_read_id'] == msg.message_id) {
                   msg['isLastRead'] = true;
                   this.foundLastRead = true;
-                }
+                } else pull_more = true;
+              }
               this.nakama.translate_updates(msg);
               if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
               this.ModulateTimeDate(msg);
@@ -268,6 +270,7 @@ export class ChatRoomPage implements OnInit {
             this.next_cursor = v.next_cursor;
             this.prev_cursor = v.prev_cursor;
             this.pullable = true;
+            if (pull_more) this.pull_msg_history();
           });
       else { // 오프라인 기반 리스트 알려주기
         if (this.info['redirect']['type'] == 3) // 그룹대화라면 공개여부 검토
