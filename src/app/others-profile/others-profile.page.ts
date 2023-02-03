@@ -183,7 +183,7 @@ export class OthersProfilePage implements OnInit {
           v.present();
           this.lock_create_chat = false;
         });
-      });
+      }, true);
     }
   }
 

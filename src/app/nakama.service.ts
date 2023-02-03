@@ -1202,7 +1202,7 @@ export class NakamaService {
   }
 
   /** 채널 정보를 변형한 후 추가하기 */
-  async join_chat_with_modulation(targetId: string, type: number, _is_official: string, _target: string, _CallBack = (_c: Channel) => { }) {
+  async join_chat_with_modulation(targetId: string, type: number, _is_official: string, _target: string, _CallBack = (_c: Channel) => { }, isNewChannel = false) {
     if (!this.channels_orig[_is_official][_target]) this.channels_orig[_is_official][_target] = {};
     await this.servers[_is_official][_target].socket.joinChat(targetId, type, true, false).then(c => {
       c['redirect'] = {
@@ -1233,7 +1233,7 @@ export class NakamaService {
       this.servers[_is_official][_target].client.listChannelMessages(
         this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
           if (m.messages.length)
-            this.update_from_channel_msg(m.messages[0], _is_official, _target);
+            this.update_from_channel_msg(m.messages[0], _is_official, _target, isNewChannel);
         });
       this.count_channel_online_member(c, _is_official, _target);
       this.save_groups_with_less_info();
@@ -1245,7 +1245,7 @@ export class NakamaService {
   subscribe_lock = false;
   has_new_channel_msg = false;
   /** 채널 메시지를 변조 후 전파하기 */
-  update_from_channel_msg(msg: ChannelMessage, _is_official: string, _target: string) {
+  update_from_channel_msg(msg: ChannelMessage, _is_official: string, _target: string, isNewChannel = false) {
     let is_me = msg.sender_id == this.servers[_is_official][_target].session.user_id;
     let is_new = msg.message_id != this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_id'];
     let c = this.modulation_channel_message(msg, _is_official, _target);
@@ -1328,7 +1328,7 @@ export class NakamaService {
         console.warn('예상하지 못한 채널 메시지 코드: ', c.code);
         break;
     }
-    if (this.channels_orig[_is_official][_target][c.channel_id]['update'])
+    if (!isNewChannel && this.channels_orig[_is_official][_target][c.channel_id]['update'])
       this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
     let hasFile = c.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
     this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile + (c.content['msg'] || c.content['noti'] || '');
