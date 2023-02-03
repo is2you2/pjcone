@@ -610,24 +610,37 @@ export class ChatRoomPage implements OnInit {
     }
   }
 
+  lock_modal_open = false;
   open_ionic_viewer(msg: any, _path: string) {
-    this.modalCtrl.create({
-      component: IonicViewerPage,
-      componentProps: {
-        info: msg.content,
-        path: _path,
-      },
-    }).then(v => v.present());
+    if (!this.lock_modal_open) {
+      this.lock_modal_open = true;
+      this.modalCtrl.create({
+        component: IonicViewerPage,
+        componentProps: {
+          info: msg.content,
+          path: _path,
+        },
+      }).then(v => {
+        v.present();
+        this.lock_modal_open = false;
+      });
+    }
   }
 
   open_godot_viewer(msg: any, _path: string) {
-    this.modalCtrl.create({
-      component: GodotViewerPage,
-      componentProps: {
-        info: msg.content,
-        path: _path,
-      },
-    }).then(v => v.present());
+    if (!this.lock_modal_open) {
+      this.lock_modal_open = true;
+      this.modalCtrl.create({
+        component: GodotViewerPage,
+        componentProps: {
+          info: msg.content,
+          path: _path,
+        },
+      }).then(v => {
+        v.present();
+        this.lock_modal_open = false;
+      });
+    }
   }
 
   /** 열람 불가 파일 다운로드로 유도 */
@@ -650,19 +663,28 @@ export class ChatRoomPage implements OnInit {
 
   /** 사용자 정보보기 */
   user_detail(msg: ChannelMessage) {
-    if (msg['is_me']) // 내 정보
-      this.modalCtrl.create({
-        component: ProfilePage,
-      }).then(v => v.present());
-    else { // 다른 사용자 정보
-      this.modalCtrl.create({
-        component: OthersProfilePage,
-        componentProps: {
-          info: { user: this.nakama.load_other_user(msg.sender_id, this.isOfficial, this.target) },
-          group: this.info,
-          has_admin: false,
-        },
-      }).then(v => v.present());
+    if (!this.lock_modal_open) {
+      this.lock_modal_open = true;
+      if (msg['is_me']) // 내 정보
+        this.modalCtrl.create({
+          component: ProfilePage,
+        }).then(v => {
+          v.present();
+          this.lock_modal_open = false;
+        });
+      else { // 다른 사용자 정보
+        this.modalCtrl.create({
+          component: OthersProfilePage,
+          componentProps: {
+            info: { user: this.nakama.load_other_user(msg.sender_id, this.isOfficial, this.target) },
+            group: this.info,
+            has_admin: false,
+          },
+        }).then(v => {
+          v.present();
+          this.lock_modal_open = false;
+        });
+      }
     }
   }
 

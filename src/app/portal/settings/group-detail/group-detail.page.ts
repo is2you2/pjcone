@@ -223,41 +223,49 @@ export class GroupDetailPage implements OnInit {
     this.nakama.save_groups_with_less_info();
   }
 
+  lock_modal_open = false;
   /** 사용자 프로필 열람 */
   open_user_profile(userInfo: any) {
-    if (userInfo['is_me']) {
-      this.modalCtrl.create({
-        component: ProfilePage,
-      }).then(v => v.present());
-    } else {
-      this.modalCtrl.create({
-        component: OthersProfilePage,
-        componentProps: {
-          info: userInfo,
-          group: this.info,
-          has_admin: this.has_admin,
-        }
-      }).then(v => {
-        v.onDidDismiss().then(v => {
-          if (v.data)
-            for (let i = 0, j = this.info['users'].length; i < j; i++)
-              if (this.info['users'][i]['user']['id'] == v.data['id']) {
-                switch (v.data['act']) {
-                  case 'accept_join': // 그룹 참가 수락
-                    this.info['users'][i].status = 'online';
-                    break;
-                  case 'kick': // 추방
-                    this.info['users'].splice(i, 1);
-                    break;
-                  default:
-                    console.warn('예상하지 못한 상대방 정보: ', v);
-                    break;
-                }
-                break;
-              }
+    if (!this.lock_modal_open) {
+      this.lock_modal_open = true;
+      if (userInfo['is_me']) {
+        this.modalCtrl.create({
+          component: ProfilePage,
+        }).then(v => {
+          v.present();
+          this.lock_modal_open = false;
         });
-        v.present();
-      });
+      } else {
+        this.modalCtrl.create({
+          component: OthersProfilePage,
+          componentProps: {
+            info: userInfo,
+            group: this.info,
+            has_admin: this.has_admin,
+          }
+        }).then(v => {
+          v.onDidDismiss().then(v => {
+            if (v.data)
+              for (let i = 0, j = this.info['users'].length; i < j; i++)
+                if (this.info['users'][i]['user']['id'] == v.data['id']) {
+                  switch (v.data['act']) {
+                    case 'accept_join': // 그룹 참가 수락
+                      this.info['users'][i].status = 'online';
+                      break;
+                    case 'kick': // 추방
+                      this.info['users'].splice(i, 1);
+                      break;
+                    default:
+                      console.warn('예상하지 못한 상대방 정보: ', v);
+                      break;
+                  }
+                  break;
+                }
+          });
+          v.present();
+          this.lock_modal_open = false;
+        });
+      }
     }
   }
 

@@ -218,40 +218,52 @@ export class SettingsPage implements OnInit {
   will_enter = false;
   /** 사설 서버 주소, 없으면 공식서버 랜덤채팅 */
   chat_address: string;
+  /** 페이지 이동 제한 (중복 행동 방지용) */
+  lock_modal_open = false;
   /** 최소한의 기능을 가진 채팅 시작하기 */
   start_minimalchat(_address?: string) {
-    if (this.will_enter) return;
-    if (this.statusBar.settings[_address ? 'dedicated_groupchat' : 'community_ranchat'] != 'online'
-      && this.statusBar.settings[_address ? 'dedicated_groupchat' : 'community_ranchat'] != 'certified')
-      this.statusBar.settings[_address ? 'dedicated_groupchat' : 'community_ranchat'] = 'pending';
-    this.will_enter = true;
-    setTimeout(() => {
-      this.will_enter = false;
-    }, 500);
-    this.modalCtrl.create({
-      component: MinimalChatPage,
-      componentProps: {
-        address: _address,
-        name: this.nakama.users.self['display_name'],
-      },
-    }).then(v => v.present());
+    if (!this.lock_modal_open) {
+      this.lock_modal_open = true;
+      if (this.will_enter) return;
+      if (this.statusBar.settings[_address ? 'dedicated_groupchat' : 'community_ranchat'] != 'online'
+        && this.statusBar.settings[_address ? 'dedicated_groupchat' : 'community_ranchat'] != 'certified')
+        this.statusBar.settings[_address ? 'dedicated_groupchat' : 'community_ranchat'] = 'pending';
+      this.will_enter = true;
+      setTimeout(() => {
+        this.will_enter = false;
+      }, 500);
+      this.modalCtrl.create({
+        component: MinimalChatPage,
+        componentProps: {
+          address: _address,
+          name: this.nakama.users.self['display_name'],
+        },
+      }).then(v => {
+        v.present();
+        this.lock_modal_open = false;
+      });
+    }
   }
 
   /** 만들어진 그룹을 관리 */
   go_to_group_detail(i: number) {
-    delete this.nakama.socket_reactive['settings'];
-    this.modalCtrl.create({
-      component: GroupDetailPage,
-      componentProps: {
-        info: this.groups[i],
-      },
-    }).then(v => {
-      v.onWillDismiss().then(() => {
-        this.nakama.socket_reactive['settings'] = this;
-        this.load_groups();
+    if (!this.lock_modal_open) {
+      this.lock_modal_open = true;
+      delete this.nakama.socket_reactive['settings'];
+      this.modalCtrl.create({
+        component: GroupDetailPage,
+        componentProps: {
+          info: this.groups[i],
+        },
+      }).then(v => {
+        v.onWillDismiss().then(() => {
+          this.nakama.socket_reactive['settings'] = this;
+          this.load_groups();
+        });
+        v.present();
+        this.lock_modal_open = false;
       });
-      v.present();
-    });
+    }
   }
 
   go_to_page(_page: string) {
