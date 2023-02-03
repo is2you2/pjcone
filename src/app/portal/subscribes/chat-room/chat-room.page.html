@@ -49,6 +49,7 @@
               <div class="notice"> {{msg.content['noti']}} </div>
             </div>
             <p *ngIf="msg.content['msg']" style="margin: 4px 0px 0px 0px;"> {{msg.content['msg']}} </p>
+            <div *ngIf="msg['isLastRead']" class="read_last_here">여기까지 읽었습니다</div>
           </div>
           <ion-item *ngIf="prev_cursor" hidden [disabled]="!pullable" button (click)="pull_msg_history(false)">
             <ion-label>{{lang.text['ChatRoom']['fetch_next_chat']}}</ion-label>

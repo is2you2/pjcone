@@ -61,6 +61,8 @@ export class ChatRoomPage implements OnInit {
   isOfficial: string;
   target: string;
 
+  /** 마지막에 읽은 메시지를 찾았는지 */
+  foundLastRead = false;
   messages = [];
   /** 확장 버튼 행동들 */
   extended_buttons: ExtendButtonForm[] = [{
@@ -145,6 +147,7 @@ export class ChatRoomPage implements OnInit {
     this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
+    this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
     switch (this.info['redirect']['type']) {
       case 2: // 1:1 대화라면
         if (!this.info['redirect']) // 채널 최초 생성 오류 방지용
@@ -250,6 +253,12 @@ export class ChatRoomPage implements OnInit {
                 let hasFile = msg.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
                 this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
               }
+              // 마지막으로 읽은 메시지인지 검토
+              if (!this.foundLastRead && this.info['last_read_id'])
+                if (this.info['last_read_id'] == msg.message_id) {
+                  msg['isLastRead'] = true;
+                  this.foundLastRead = true;
+                }
               this.nakama.translate_updates(msg);
               if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
               this.ModulateTimeDate(msg);
@@ -676,6 +685,8 @@ export class ChatRoomPage implements OnInit {
         delete msg.content['img'];
         delete msg['msgDate'];
         delete msg['msgTime'];
+        delete msg['isLastRead'];
+        this.info['last_read_id'] = this.info['last_comment_id'];
         SepByDate['msg'].push(msg);
       }
       this.saveMessageByDate(SepByDate);
