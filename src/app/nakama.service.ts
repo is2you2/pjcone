@@ -1282,7 +1282,7 @@ export class NakamaService {
     }
     switch (c.code) {
       case 0: // 사용자가 작성한 일반적인 메시지
-        if (c.content['update']) // 그룹 정보 업데이트
+        if (c.content['gupdate']) // 그룹 정보 업데이트
           this.update_group_info(c, _is_official, _target);
         if (c.content['user']) // 그룹 사용자 정보 변경
           this.update_group_user_info(c, _is_official, _target);
@@ -1368,7 +1368,7 @@ export class NakamaService {
   /** 그룹 정보 변경 처리 */
   update_group_info(c: ChannelMessage, _is_official: string, _target: string) {
     this.translate_updates(c);
-    switch (c.content['update']) {
+    switch (c.content['gupdate']) {
       case 'image': // 그룹 이미지가 변경됨
         this.servers[_is_official][_target].client.readStorageObjects(
           this.servers[_is_official][_target].session, {
@@ -1423,8 +1423,8 @@ export class NakamaService {
           msg.content['noti'] = `${this.lang.text['Profile']['user_img_changed']}${msg.content['noti']}`;
           break;
       }
-    if (msg.content['update'])
-      switch (msg.content['update']) {
+    if (msg.content['gupdate'])
+      switch (msg.content['gupdate']) {
         case 'info': // 그룹 정보가 변경됨
           msg.content['noti'] = this.lang.text['GroupDetail']['GroupInfoUpdated'];
           break;

@@ -193,7 +193,6 @@ export class SubscribesPage implements OnInit {
         },
       }).then(v => {
         this.removeBanner();
-        delete info['is_new'];
         this.nakama.has_new_channel_msg = false;
         v.onWillDismiss().then(() => this.resumeBanner());
         v.present().then(_v => this.lock_chatroom = false);

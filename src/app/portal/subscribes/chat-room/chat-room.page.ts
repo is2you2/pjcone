@@ -83,9 +83,9 @@ export class ChatRoomPage implements OnInit {
   },
   {
     title: this.lang.text['ChatRoom']['leave_chatroom'],
-    act: () => {
+    act: async () => {
       if (this.info['redirect']['type'] != 3) {
-        this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
+        await this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
         this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
         this.nakama.rearrange_channels();
         this.extended_buttons.forEach(button => {
@@ -151,10 +151,12 @@ export class ChatRoomPage implements OnInit {
     this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
     switch (this.info['redirect']['type']) {
       case 2: // 1:1 대화라면
-        if (!this.info['redirect']) // 채널 최초 생성 오류 방지용
-          this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
-        else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
-          this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
+        if (this.info['status'] != 'missing') {
+          if (!this.info['redirect']) // 채널 최초 생성 오류 방지용
+            this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
+          else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
+            this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
+        }
         break;
       case 3: // 그룹 대화라면
         break;
@@ -185,6 +187,7 @@ export class ChatRoomPage implements OnInit {
       this.extended_buttons[0].isHide = false;
     }
     // 마지막 대화 기록을 받아온다
+    this.info['is_new'] = false;
     this.pull_msg_history();
     this.follow_resize();
     setTimeout(() => {

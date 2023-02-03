@@ -153,7 +153,7 @@ export class GroupDetailPage implements OnInit {
           this.indexed.saveTextFileToUserPath(JSON.stringify(this.info['img']), `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
           this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
             this.info['channel_id'], {
-            update: 'image',
+            gupdate: 'image',
           });
         });
       });
@@ -187,7 +187,7 @@ export class GroupDetailPage implements OnInit {
     if (this.info['status'] == 'online')
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
         this.info['channel_id'], {
-        update: 'remove',
+        gupdate: 'remove',
       }).then(_m => {
         this.after_remove_group();
       });
@@ -215,7 +215,7 @@ export class GroupDetailPage implements OnInit {
       }).then(_v => {
         this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
           this.info['channel_id'], {
-          update: 'info',
+          gupdate: 'info',
           name: this.info['name'],
         });
       });
