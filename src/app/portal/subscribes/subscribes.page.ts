@@ -181,22 +181,26 @@ export class SubscribesPage implements OnInit {
     }, onMessage);
   }
 
+  lock_chatroom = false;
   /** 채팅방으로 이동하기 */
   go_to_chatroom(info: any) {
-    this.modalCtrl.create({
-      component: ChatRoomPage,
-      componentProps: {
-        info: info,
-      },
-    }).then(v => {
-      this.removeBanner();
-      delete info['is_new'];
-      this.nakama.has_new_channel_msg = false;
-      v.onWillDismiss().then(() => this.resumeBanner());
-      v.present();
-      this.nakama.rearrange_channels();
-      this.nakama.save_channels_with_less_info();
-    });
+    if (!this.lock_chatroom) {
+      this.lock_chatroom = true;
+      this.modalCtrl.create({
+        component: ChatRoomPage,
+        componentProps: {
+          info: info,
+        },
+      }).then(v => {
+        this.removeBanner();
+        delete info['is_new'];
+        this.nakama.has_new_channel_msg = false;
+        v.onWillDismiss().then(() => this.resumeBanner());
+        v.present().then(_v => this.lock_chatroom = false);
+        this.nakama.rearrange_channels();
+        this.nakama.save_channels_with_less_info();
+      });
+    }
   }
 
   /** Nakama 서버 알림 읽기 */
