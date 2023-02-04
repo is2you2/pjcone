@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
-import { Channel, ChannelMessage, Client, Group, Notification, Session, Socket, User, WriteStorageObject } from "@heroiclabs/nakama-js";
+import { Channel, ChannelMessage, Client, Group, GroupUser, Notification, Session, Socket, User, WriteStorageObject } from "@heroiclabs/nakama-js";
 import { SOCKET_SERVER_ADDRESS } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
@@ -486,7 +486,9 @@ export class NakamaService {
     this.indexed.saveTextFileToUserPath(JSON.stringify(without_img), 'servers/self/profile.json')
   }
 
-  /** 불러와진 모든 사용자를 배열로 돌려주기 */
+  /** 불러와진 모든 사용자를 배열로 돌려주기  
+   * 설정 화면에서 벗어날 때 사용자 정보를 최소로 줄이기 위해 불러와짐
+   */
   rearrange_all_user() {
     let result: User[] = [];
     let isOfficial = Object.keys(this.users);
@@ -636,7 +638,7 @@ export class NakamaService {
                 _user.user['is_me'] = true;
               else this.save_other_user(_user.user, _is_official, _target);
               _user.user = this.load_other_user(_user.user.id, _is_official, _target);
-              this.groups[_is_official][_target][group_id]['users'].push(_user);
+              this.add_group_user_without_duplicate(_user, group_id, _is_official, _target);
             });
             this.count_channel_online_member(this.channels_orig[_is_official][_target][channel_info.id], _is_official, _target);
           });
@@ -646,6 +648,17 @@ export class NakamaService {
         break;
     }
     this.rearrange_channels();
+  }
+
+  add_group_user_without_duplicate(user: GroupUser, gid: string, _is_official: string, _target: string) {
+    let isAlreadyJoined = false;
+    for (let i = 0, j = this.groups[_is_official][_target][gid]['users'].length; i < j; i++)
+      if (this.groups[_is_official][_target][gid]['users'][i]['user']['id'] == user.user['id']) {
+        isAlreadyJoined = true;
+        break;
+      }
+    if (!isAlreadyJoined)
+      this.groups[_is_official][_target][gid]['users'].push(user);
   }
 
   /** 채팅 기록 가져오기 */
@@ -717,7 +730,7 @@ export class NakamaService {
                       _user.user['is_me'] = true;
                     else this.save_other_user(_user.user, _is_official, _target);
                     _user.user = this.load_other_user(_user.user.id, _is_official, _target);
-                    this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]['users'].push(_user);
+                    this.add_group_user_without_duplicate(_user, this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
                   });
                   this.servers[_is_official][_target].client.listChannelMessages(
                     this.servers[_is_official][_target].session, _cid, 1, false)
