@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://data/SingleAct/SendEximMail.gd" type="Script" id=1]
 [ext_resource path="res://data/SingleAct/SC_custom_manager.gd" type="Script" id=2]
@@ -7,14 +7,18 @@
 [ext_resource path="res://data/SingleAct/MiniRanchat.gd" type="Script" id=5]
 [ext_resource path="res://default.tres" type="Theme" id=6]
 [ext_resource path="res://data/SingleAct/SC_GuestBook.gd" type="Script" id=7]
+[ext_resource path="res://SC1_custom.gd" type="Script" id=8]
 
 [node name="SingleAct" type="Node"]
 script = ExtResource( 3 )
 
-[node name="SC_custom_manager" type="Node" parent="."]
+[node name="SC1_custom" type="Node" parent="."]
+script = ExtResource( 8 )
+
+[node name="SC_custom_manager" type="Node" parent="SC1_custom"]
 script = ExtResource( 2 )
 
-[node name="GuestBook" type="Node" parent="SC_custom_manager"]
+[node name="GuestBook" type="Node" parent="SC1_custom/SC_custom_manager"]
 script = ExtResource( 7 )
 
 [node name="MiniRanchat" type="Node" parent="."]

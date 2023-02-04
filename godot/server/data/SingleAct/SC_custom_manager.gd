@@ -1,7 +1,7 @@
 extends Node
 # 폴더를 올려 내부 파일 리스트를 새로고침하여 리스트 파일을 출력합니다
 
-const HEADER:= 'SC1_custom'
+const HEADER:= 'SC1_list'
 
 func _ready():
 	refresh_list()

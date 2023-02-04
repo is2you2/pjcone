@@ -3,8 +3,8 @@ extends Node
 
 # 사용자가 반드시 연결 시도하는 사용자 카운터 서버
 var server:= WebSocketServer.new()
-const PORT:= 12000
-const HEADER:= 'Counter'
+const PORT:= 12012
+const HEADER:= 'SC1_custom'
 
 # 사용자 pid로 접속 카운트
 var users:= []
@@ -36,21 +36,12 @@ func _ready():
 		Root.logging(HEADER, str('init error: ', err), Root.LOG_ERR)
 	else:
 		Root.logging(HEADER, str('Opened: ', PORT))
-	Root.rich_node = $m/vbox/c/m/log
-	Root.rich_node.bbcode_text = Root.rich_log
-	admin_file = Root.html_path + 'admin.txt'
-	var file:= File.new()
-	if file.open(admin_file, File.READ) == OK:
-		$m/vbox/AdminInfo/TargetUUID.text = file.get_as_text()
-	file.close()
 
 # esc를 눌러 끄기
 func _input(event):
 	if event.is_action_pressed("ui_cancel"):
 		get_tree().quit()
 
-# 관리와 관련된 알림을 받을 관리자 계정 pid
-var administrator_pid:int
 # 연결과 관련된 행동 쓰레드 충돌 방지용
 var linked_mutex:= Mutex.new()
 # 사이트에 연결 확인됨
@@ -73,8 +64,6 @@ func _disconnected(id:int, _was_clean = null, _reason:= 'EMPTY'):
 	users.erase(str(id))
 	counter.current = users.size()
 	linked_mutex.unlock()
-	if id == administrator_pid:
-		administrator_pid == 0
 	# 일반 종료가 아닐 때 로그 남김
 	if _was_clean is int and _was_clean != 1001:
 		Root.logging(HEADER, str('Disconnected: ', counter, ' code: ', _was_clean, ' / ', _reason), '8bb')
@@ -93,25 +82,47 @@ func _received(id:int, _try_left:= 5):
 		var json = JSON.parse(data).result
 		if json is Dictionary:
 			match(json):
-				{ 'act': 'global_noti', 'text': var _noti, .. }: # 커뮤니티 서버를 통한 알림 전파
-					if id == administrator_pid:
-						$m/vbox/SendAllNoti/AllNotiText.text = _noti
-						$m/vbox/SendAllNotiImg/AllNotiURL.text = json['img']
-						_on_Button_pressed()
+				{ 'act': 'sc1_custom_refresh' }: # SC1_custom 폴더 리스트 새로고침
+					$SC_custom_manager.refresh_list()
 					return
-				{ 'act': 'is_admin', 'uuid': var uuid }:
-					var is_admin = uuid == $m/vbox/AdminInfo/TargetUUID.text
-					if is_admin:
-						administrator_pid = id
-					if is_admin and administrator_pid:
+				{ 'act': 'sc1_custom', 'target': 'cache_refresh' }: # 서버에 있는 캐시 받아오기
+					pass
+				{ 'act': 'sc1_custom', 'target': 'write_guestbook', 'form': var _data }: # 방명록 작성
+					$SC_custom_manager/GuestBook.write_content(_data)
+					$m/vbox/c/bgColor.visible = true
+					if get_parent().administrator_pid:
 						var result = {
 							'act': 'admin_noti',
-							'text': '관리자 기능을 사용합니다',
+							'text': '캠컴까 방명록이 작성됨',
 						}
-						send_to(administrator_pid, JSON.print(result).to_utf8())
-					return
+						send_to(get_parent().administrator_pid, JSON.print(result).to_utf8())
+				{ 'act': 'sc1_custom', 'target': 'modify_guestbook', 'form': var _data }: # 방명록 수정
+					$SC_custom_manager/GuestBook.modify_content(_data)
+					$m/vbox/c/bgColor.visible = true
+					if get_parent().administrator_pid:
+						var result = {
+							'act': 'admin_noti',
+							'text': '캠컴까 방명록 내용 수정됨',
+						}
+						send_to(get_parent().administrator_pid, JSON.print(result).to_utf8())
+				{ 'act': 'sc1_custom', 'target': 'remove_guestbook', 'form': var _data }: # 방명록 삭제
+					$SC_custom_manager/GuestBook.remove_content(_data)
+					$m/vbox/c/bgColor.visible = true
+					if get_parent().administrator_pid:
+						var result = {
+							'act': 'admin_noti',
+							'text': '캠컴까 방명록 내용 삭제됨',
+						}
+						send_to(get_parent().administrator_pid, JSON.print(result).to_utf8())
 				_: # 준비되지 않은 행동
 					Root.logging(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)
+			var caches = {
+				'act': 'refresh',
+				'wrote': $SC_custom_manager/GuestBook.wrote,
+				'modified': $SC_custom_manager/GuestBook.modified,
+				'removed': $SC_custom_manager/GuestBook.removed,
+			}
+			send_to(id, JSON.print(caches).to_utf8())
 		else: # 형식 오류
 			Root.logging(HEADER, str('UnExpected form: ', data), Root.LOG_ERR)
 	else: # 패킷 오류
@@ -157,22 +168,3 @@ func _process(_delta):
 
 func _exit_tree():
 	server.stop()
-
-func _on_Button_pressed():
-	if not $m/vbox/SendAllNoti/AllNotiText.text: return
-	for user in users:
-		var result = {
-			'act': 'all_noti',
-			'text': $m/vbox/SendAllNoti/AllNotiText.text,
-			'img': $m/vbox/SendAllNotiImg/AllNotiURL.text,
-		}
-		send_to(int(user), JSON.print(result).to_utf8())
-	$m/vbox/SendAllNoti/AllNotiText.text = ''
-	$m/vbox/SendAllNotiImg/AllNotiURL.text = ''
-
-# 관리자 아이디를 파일로 관리
-func _on_TargetUUID_text_changed(new_text):
-	var file:= File.new()
-	if file.open(admin_file, File.WRITE) == OK:
-		file.store_string(new_text)
-	file.close()
