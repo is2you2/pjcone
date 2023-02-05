@@ -700,9 +700,6 @@ export class ChatRoomPage implements OnInit {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
     this.noti.Current = undefined;
     this.p5canvas.remove();
-    // 온라인 접속시에만 열람 기록 저장
-    if (!this.isHistoryLoaded) // 그룹 기록은 설정을 따름
-      this.saveListedMessage();
   }
 
   /** 현재 보여지는 메시지들을 저장함 */
