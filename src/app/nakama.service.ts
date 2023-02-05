@@ -818,6 +818,7 @@ export class NakamaService {
     return result;
   }
 
+  /** 채널별로 정보를 분리 저장한 후 초기 로드시 병합시키는 구성 필요함 */
   save_channels_with_less_info() {
     let channels_copy = JSON.parse(JSON.stringify(this.channels_orig));
     let isOfficial = Object.keys(channels_copy);

@@ -187,7 +187,6 @@ export class ChatRoomPage implements OnInit {
       this.extended_buttons[0].isHide = false;
     }
     // 마지막 대화 기록을 받아온다
-    this.info['is_new'] = false;
     this.pull_msg_history();
     this.follow_resize();
     setTimeout(() => {
@@ -251,7 +250,7 @@ export class ChatRoomPage implements OnInit {
         this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
           this.nakama.servers[this.isOfficial][this.target].session,
           this.info['id'], 15, false, this.next_cursor).then(v => {
-            let pull_more = false;
+            this.info['is_new'] = false;
             v.messages.forEach(msg => {
               msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
               this.check_sender_and_show_name(msg);
@@ -264,7 +263,9 @@ export class ChatRoomPage implements OnInit {
                 if (this.info['last_read_id'] == msg.message_id) {
                   msg['isLastRead'] = true;
                   this.foundLastRead = true;
-                } else pull_more = true;
+                  this.info['last_read_id'] = this.info['last_comment_id'];
+                  this.nakama.save_channels_with_less_info();
+                }
               }
               this.nakama.translate_updates(msg);
               if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
@@ -274,7 +275,7 @@ export class ChatRoomPage implements OnInit {
             this.next_cursor = v.next_cursor;
             this.prev_cursor = v.prev_cursor;
             this.pullable = true;
-            if (pull_more) this.pull_msg_history();
+            if (!this.foundLastRead) this.pull_msg_history();
           });
       else { // 오프라인 기반 리스트 알려주기
         if (this.info['redirect']['type'] == 3) // 그룹대화라면 공개여부 검토
