@@ -264,9 +264,8 @@ export class ChatRoomPage implements OnInit {
                   msg['isLastRead'] = true;
                   this.foundLastRead = true;
                   this.info['last_read_id'] = this.info['last_comment_id'];
-                  this.nakama.save_channels_with_less_info();
                 }
-              }
+              } else this.foundLastRead = true;
               this.nakama.translate_updates(msg);
               if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
               this.ModulateTimeDate(msg);
@@ -276,6 +275,8 @@ export class ChatRoomPage implements OnInit {
             this.prev_cursor = v.prev_cursor;
             this.pullable = true;
             if (!this.foundLastRead) this.pull_msg_history();
+            this.saveListedMessage();
+            this.nakama.save_channels_with_less_info();
           });
       else { // 오프라인 기반 리스트 알려주기
         if (this.info['redirect']['type'] == 3) // 그룹대화라면 공개여부 검토
@@ -700,28 +701,32 @@ export class ChatRoomPage implements OnInit {
     this.noti.Current = undefined;
     this.p5canvas.remove();
     // 온라인 접속시에만 열람 기록 저장
-    if (!this.isHistoryLoaded) { // 그룹 기록은 설정을 따름
-      if (this.info['redirect']['type'] == 3 && !this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open']) return;
-      let SepByDate = {};
-      let tmp_msg: any[] = JSON.parse(JSON.stringify(this.messages));
-      while (tmp_msg.length) {
-        if (SepByDate['target'] != tmp_msg[0]['msgDate']) {
-          if (SepByDate['msg'])
-            this.saveMessageByDate(SepByDate);
-          SepByDate['target'] = tmp_msg[0]['msgDate'];
-          SepByDate['msg'] = [];
-        }
-        let msg = tmp_msg.shift();
-        delete msg.content['text'];
-        delete msg.content['img'];
-        delete msg['msgDate'];
-        delete msg['msgTime'];
-        delete msg['isLastRead'];
-        this.info['last_read_id'] = this.info['last_comment_id'];
-        SepByDate['msg'].push(msg);
+    if (!this.isHistoryLoaded) // 그룹 기록은 설정을 따름
+      this.saveListedMessage();
+  }
+
+  /** 현재 보여지는 메시지들을 저장함 */
+  saveListedMessage() {
+    if (this.info['redirect']['type'] == 3 && !this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open']) return;
+    let SepByDate = {};
+    let tmp_msg: any[] = JSON.parse(JSON.stringify(this.messages));
+    while (tmp_msg.length) {
+      if (SepByDate['target'] != tmp_msg[0]['msgDate']) {
+        if (SepByDate['msg'])
+          this.saveMessageByDate(SepByDate);
+        SepByDate['target'] = tmp_msg[0]['msgDate'];
+        SepByDate['msg'] = [];
       }
-      this.saveMessageByDate(SepByDate);
+      let msg = tmp_msg.shift();
+      delete msg.content['text'];
+      delete msg.content['img'];
+      delete msg['msgDate'];
+      delete msg['msgTime'];
+      delete msg['isLastRead'];
+      this.info['last_read_id'] = this.info['last_comment_id'];
+      SepByDate['msg'].push(msg);
     }
+    this.saveMessageByDate(SepByDate);
   }
 
   /** 날짜별로 대화 기록 저장하기 */

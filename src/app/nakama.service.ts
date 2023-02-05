@@ -13,6 +13,7 @@ import { WscService } from './wsc.service';
 import { ChatRoomPage } from './portal/subscribes/chat-room/chat-room.page';
 import { ApiReadStorageObjectId } from '@heroiclabs/nakama-js/dist/api.gen';
 import { LanguageSettingService } from './language-setting.service';
+import { AdMob } from '@capacitor-community/admob';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -157,6 +158,42 @@ export class NakamaService {
       (_info.port || 7350).toString(),
       (_info.useSSL || false),
     );
+  }
+
+  isBannerShowing = false;
+  appMargin: number;
+  async resumeBanner() {
+    if (!this.isBannerShowing) return;
+    const result = await AdMob.resumeBanner()
+      .catch(e => console.log(e));
+    if (result === undefined) {
+      return;
+    }
+
+    const app: HTMLElement = document.querySelector('ion-router-outlet');
+    app.style.marginBottom = this.appMargin + 'px';
+  }
+
+  async removeBanner() {
+    if (!this.isBannerShowing) return;
+    const result = await AdMob.hideBanner()
+      .catch(e => console.log(e));
+    if (result === undefined) {
+      return;
+    }
+
+    const app: HTMLElement = document.querySelector('ion-router-outlet');
+    app.style.marginBottom = '0px';
+  }
+
+  /** subscribe과 localPush의 채팅방 입장 행동을 통일함 */
+  go_to_chatroom_without_admob_act(v: HTMLIonModalElement) {
+    this.removeBanner();
+    this.has_new_channel_msg = false;
+    v.onWillDismiss().then(() => this.resumeBanner());
+    v.present();
+    this.rearrange_channels();
+    this.save_channels_with_less_info();
   }
 
   /** 모든 pending 세션 켜기 */
@@ -1275,7 +1312,11 @@ export class NakamaService {
           page: {
             component: 'ChatRoomPage',
             componentProps: {
-              info: this.channels_orig[_is_official][_target][msg.channel_id],
+              info: {
+                id: msg.channel_id,
+                isOfficial: _is_official,
+                target: _target,
+              }
             },
           },
         },
@@ -1291,7 +1332,7 @@ export class NakamaService {
             componentProps: {
               info: this.channels_orig[_is_official][_target][msg.channel_id],
             },
-          }).then(v => v.present());
+          }).then(v => this.go_to_chatroom_without_admob_act(v));
       });
     }
     switch (c.code) {

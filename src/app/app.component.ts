@@ -93,9 +93,16 @@ export class AppComponent {
     noti.SetListener('click', (ev: any) => {
       if (ev.data.page) {
         let page: any;
+        let props: any = ev.data.page.componentProps;
         switch (ev.data.page.component) {
           case 'ChatRoomPage':
             page = ChatRoomPage;
+            let _cid = ev.data.page.componentProps['info']['id'];
+            let _is_official = ev.data.page.componentProps['info']['isOfficial'];
+            let _target = ev.data.page.componentProps['info']['target'];
+            props = {
+              info: nakama.channels_orig[_is_official][_target][_cid]
+            };
             break;
           case 'MinimalChatPage':
             page = MinimalChatPage;
@@ -106,8 +113,18 @@ export class AppComponent {
         }
         modalCtrl.create({
           component: page,
-          componentProps: ev.data.page.componentProps,
-        }).then(v => v.present());
+          componentProps: props,
+        }).then(v => {
+          switch (ev.data.page.component) {
+            case 'ChatRoomPage':
+              nakama.go_to_chatroom_without_admob_act(v);
+              break;
+            default:
+              console.warn('준비된 페이지 행동 없음: ', ev.data.page.component);
+              v.present();
+              break;
+          }
+        });
       }
     });
     bgmode.enable();

@@ -43,44 +43,18 @@ export class SubscribesPage implements OnInit {
 
   ionViewDidEnter() {
     this.nakama.subscribe_lock = true;
-    this.resumeBanner();
+    this.nakama.resumeBanner();
   }
 
-  async resumeBanner() {
-    if (!this.isBannerShowing) return;
-    const result = await AdMob.resumeBanner()
-      .catch(e => console.log(e));
-    if (result === undefined) {
-      return;
-    }
-
-    const app: HTMLElement = document.querySelector('ion-router-outlet');
-    app.style.marginBottom = this.appMargin + 'px';
-  }
-
-  async removeBanner() {
-    if (!this.isBannerShowing) return;
-    const result = await AdMob.hideBanner()
-      .catch(e => console.log(e));
-    if (result === undefined) {
-      return;
-    }
-
-    const app: HTMLElement = document.querySelector('ion-router-outlet');
-    app.style.marginBottom = '0px';
-  }
-
-  isBannerShowing = false;
-  appMargin: number;
   async add_admob_banner() {
     AdMob.addListener(BannerAdPluginEvents.SizeChanged, (size: AdMobBannerSize) => {
-      this.appMargin = size.height;
+      this.nakama.appMargin = size.height;
       const app: HTMLElement = document.querySelector('ion-router-outlet');
 
-      if (this.appMargin === 0)
+      if (this.nakama.appMargin === 0)
         app.style.marginBottom = '';
-      else if (this.appMargin > 0)
-        app.style.marginBottom = this.appMargin + 'px';
+      else if (this.nakama.appMargin > 0)
+        app.style.marginBottom = this.nakama.appMargin + 'px';
     });
     const options: BannerAdOptions = {
       adId: 'ca-app-pub-6577630868247944/4829889344',
@@ -93,7 +67,7 @@ export class SubscribesPage implements OnInit {
       if (!res.ok) throw new Error("없는거나 다름없지");
     } catch (e) { // 로컬 정보 기반으로 광고
       AdMob.showBanner(options).then(() => {
-        this.isBannerShowing = true;
+        this.nakama.isBannerShowing = true;
       });
     }
   }
@@ -192,12 +166,8 @@ export class SubscribesPage implements OnInit {
           info: info,
         },
       }).then(v => {
-        this.removeBanner();
-        this.nakama.has_new_channel_msg = false;
-        v.onWillDismiss().then(() => this.resumeBanner());
-        v.present().then(_v => this.lock_chatroom = false);
-        this.nakama.rearrange_channels();
-        this.nakama.save_channels_with_less_info();
+        this.nakama.go_to_chatroom_without_admob_act(v);
+        this.lock_chatroom = false;
       });
     }
   }
@@ -212,6 +182,6 @@ export class SubscribesPage implements OnInit {
 
   ionViewWillLeave() {
     this.nakama.subscribe_lock = false;
-    this.removeBanner();
+    this.nakama.removeBanner();
   }
 }
