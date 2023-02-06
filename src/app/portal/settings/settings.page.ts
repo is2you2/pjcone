@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { Group } from '@heroiclabs/nakama-js';
 import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
@@ -269,6 +269,10 @@ export class SettingsPage implements OnInit {
     }
   }
 
+  @ViewChild('LangSel') LangSel: any;
+  LangClicked() {
+    this.LangSel.open();
+  }
   /** 언어 변경됨 */
   LanguageChanged(ev: any) {
     this.lang.lang = ev.detail.value;
