@@ -1,3 +1,6 @@
+## SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
+## SPDX-License-Identifier: MIT
+
 extends Node
 # 핸드폰에서 웹 사이트를 연결하기 위해 구성된 서버
 # 웹 사이트에서 QR코드 게시 직전 id를 이곳에 구성하고 핸드폰에서 QR코드에 들어있는 id를 검토하여 두 기기를 연결한다

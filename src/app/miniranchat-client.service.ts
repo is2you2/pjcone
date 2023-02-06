@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
+// SPDX-License-Identifier: MIT
+
 import { Injectable } from '@angular/core';
 import { SOCKET_SERVER_ADDRESS } from './app.component';
 import { WscService } from './wsc.service';

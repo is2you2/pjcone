@@ -1,6 +1,8 @@
+// SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
+// SPDX-License-Identifier: MIT
+
 import { Component, OnInit } from '@angular/core';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
-import { Channel, Notification } from '@heroiclabs/nakama-js';
 import { ModalController } from '@ionic/angular';
 import { isPlatform, SERVER_PATH_ROOT } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';

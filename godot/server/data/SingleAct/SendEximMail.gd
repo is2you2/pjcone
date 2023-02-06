@@ -1,3 +1,6 @@
+## SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
+## SPDX-License-Identifier: MIT
+
 extends Node
 # 회원기입 처리 후 이메일 발송용
 # 별도 서버로 관리됨 (게스트 모드용)

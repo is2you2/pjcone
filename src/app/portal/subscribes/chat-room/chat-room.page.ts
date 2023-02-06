@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
+// SPDX-License-Identifier: MIT
+
 import { Component, OnInit } from '@angular/core';
 import { Channel, ChannelMessage } from '@heroiclabs/nakama-js';
 import { AlertController, ModalController, NavParams } from '@ionic/angular';

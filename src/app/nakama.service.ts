@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
+// SPDX-License-Identifier: MIT
+
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { Channel, ChannelMessage, Client, Group, GroupUser, Notification, Session, Socket, User, WriteStorageObject } from "@heroiclabs/nakama-js";
