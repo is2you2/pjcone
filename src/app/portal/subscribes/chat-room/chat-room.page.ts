@@ -281,7 +281,7 @@ export class ChatRoomPage implements OnInit {
             this.pullable = true;
             if (!this.foundLastRead) this.pull_msg_history();
             this.saveListedMessage();
-            this.nakama.save_channels_with_less_info();
+            this.nakama.rearrange_channels();
           });
       else { // 오프라인 기반 리스트 알려주기
         if (this.info['redirect']['type'] == 3) // 그룹대화라면 공개여부 검토
