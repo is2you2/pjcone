@@ -7,7 +7,6 @@ import { isPlatform } from 'src/app/app.component';
 import * as p5 from "p5";
 import 'p5/lib/addons/p5.sound';
 import { IndexedDBService } from 'src/app/indexed-db.service';
-import { P5ToastService } from 'src/app/p5-toast.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 
 @Component({
@@ -21,7 +20,6 @@ export class IonicViewerPage implements OnInit {
     public modalCtrl: ModalController,
     private navParams: NavParams,
     private indexed: IndexedDBService,
-    private p5toast: P5ToastService,
     public lang: LanguageSettingService,
   ) { }
 
@@ -49,21 +47,33 @@ export class IonicViewerPage implements OnInit {
     switch (this.FileInfo['viewer']) {
       case 'image': // 이미지
         this.p5canvas = new p5((p: p5) => {
+          const IMAGE_ELEMENT_ID = 'ImageEle';
+          let img: p5.Element;
           p.setup = () => {
             let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
             canvas.style('margin', '0');
             canvas.style('position', 'relative');
             canvas.style('pointer-events', 'none');
-            p.noLoop();
-            let img = p.createImg(this.FileURL, this.FileInfo['filename']);
+            img = p.createImg(this.FileURL, this.FileInfo['filename']);
+            img.id(IMAGE_ELEMENT_ID);
             img.parent(canvasDiv);
-            p.loadImage(this.FileURL, _v => {
-            }, e => {
-              console.error('이미지 불러오기 실패: ', e);
-              this.p5toast.show({
-                text: `파일 열기 실패: ${e}`,
-              });
-            });
+            p.noLoop();
+          }
+          p.mouseClicked = (ev) => {
+            if (ev['path'][0]['id'] == IMAGE_ELEMENT_ID) {
+              if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
+                window.open(this.FileURL);
+              else {
+                img.hide();
+                let iframe_sub = document.createElement('iframe');
+                iframe_sub.id = IMAGE_ELEMENT_ID;
+                iframe_sub.setAttribute("src", this.FileURL);
+                iframe_sub.setAttribute("frameborder", "0");
+                iframe_sub.setAttribute('class', 'full_screen');
+                iframe_sub.setAttribute('style', 'position: relative; pointer-events: all');
+                canvasDiv.appendChild(iframe_sub);
+              }
+            }
           }
         });
         break;

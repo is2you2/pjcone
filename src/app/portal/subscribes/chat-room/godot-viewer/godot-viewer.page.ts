@@ -36,7 +36,6 @@ export class GodotViewerPage implements OnInit {
       path: this.navParams.get('path'),
       ext: this.FileInfo['file_ext']
     });
-    console.log('넘겨받은 정보: ', this.navParams.data);
   }
 
   download_file() {
