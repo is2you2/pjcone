@@ -71,6 +71,7 @@ export class ChatRoomPage implements OnInit {
   extended_buttons: ExtendButtonForm[] = [{
     title: this.lang.text['ChatRoom']['remove_chatroom'],
     isHide: true,
+    icon: 'close-circle',
     act: () => {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
       this.nakama.rearrange_channels();
@@ -86,6 +87,7 @@ export class ChatRoomPage implements OnInit {
   },
   {
     title: this.lang.text['ChatRoom']['leave_chatroom'],
+    icon: 'log-out',
     act: async () => {
       if (this.info['redirect']['type'] != 3) {
         await this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
@@ -105,7 +107,7 @@ export class ChatRoomPage implements OnInit {
   },
   {
     title: this.lang.text['ChatRoom']['attach_file'],
-    icon: '',
+    icon: 'attach',
     act: () => {
       document.getElementById('file_sel').click();
     }
