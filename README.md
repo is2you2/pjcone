@@ -217,10 +217,10 @@ ionViewWillEnter() {
 - 12021: engineppt
 
 ## License
-### MIT
-- [x] 제작자의 자랑글
+MIT
+- [x] 제작자의 짧은 글귀
 - [x] 번역가의 짧은 글귀
 - [x] 코드 라이선스 고지
   - Ionic 6, Capacitor, Godot engine, p5js, Nakama
-### CCL CC-BY-ND (저작자 표시-변경금지)
-- [ ] 콘텐츠 라이선스 고지
+### CCL CC-BY-SA (저작자 표시-변경금지)
+- [x] 콘텐츠 라이선스 고지

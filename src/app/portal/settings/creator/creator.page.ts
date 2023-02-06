@@ -16,16 +16,14 @@ export class CreatorPage implements OnInit {
   /** 번역가 페이지 정보 */
   info = {
     /** 번역가 표시명 */
-    name: '정보 준비중',
-    /** 긴 글 */
-    text: '기능 준비중',
+    name: '그림또따',
   };
 
   ngOnInit() {
     new p5((p: p5) => {
       p.setup = () => {
         p.loadJSON(`assets/data/infos/${this.lang.lang}/creator.json`, v => {
-          this.info = v;
+          this.info = { ...v, ...this.info };
           p.remove();
         }, e => {
           console.error('번역가 정보 불러오기 실패: ', e);
