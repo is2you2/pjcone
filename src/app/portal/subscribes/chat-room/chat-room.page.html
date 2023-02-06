@@ -49,7 +49,8 @@
               <div class="notice"> {{msg.content['noti']}} </div>
             </div>
             <p *ngIf="msg.content['msg']" style="margin: 4px 0px 0px 0px;"> {{msg.content['msg']}} </p>
-            <div *ngIf="msg['isLastRead']" id="lastReadMsg" class="read_last_here">{{lang.text['ChatRoom']['YouReadHereLast']}}</div>
+            <div *ngIf="msg['isLastRead']" id="lastReadMsg" class="read_last_here">
+              {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
           </div>
           <ion-item *ngIf="prev_cursor" hidden [disabled]="!pullable" button (click)="pull_msg_history(false)">
             <ion-label>{{lang.text['ChatRoom']['fetch_next_chat']}}</ion-label>
@@ -70,8 +71,8 @@
                 </ion-button>
               </td>
               <td style="width: 100%;">
-                <ion-input type="text" [placeholder]="inputPlaceholder" (ionFocus)="open_ext_with_delay(true)"
-                  (keyup.enter)="send()" [(ngModel)]="userInput.text">
+                <ion-input type="text" [placeholder]="inputPlaceholder" (keyup.enter)="send()"
+                  [(ngModel)]="userInput.text">
                 </ion-input>
               </td>
               <td>

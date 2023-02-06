@@ -343,8 +343,8 @@ export class ChatRoomPage implements OnInit {
   isHidden = true;
 
   /** 핸드폰 가상키보드의 움직임을 고려하여 눈이 덜 불편하도록 지연 */
-  open_ext_with_delay(force?: boolean) {
-    this.isHidden = force || !this.isHidden;
+  open_ext_with_delay() {
+    this.isHidden = !this.isHidden;
     setTimeout(() => {
       this.p5canvas.windowResized();
       setTimeout(() => {
