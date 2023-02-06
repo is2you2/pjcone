@@ -49,6 +49,7 @@ export class IonicViewerPage implements OnInit {
         this.p5canvas = new p5((p: p5) => {
           const IMAGE_ELEMENT_ID = 'ImageEle';
           let img: p5.Element;
+          let iframe_sub: HTMLIFrameElement;
           p.setup = () => {
             let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
             canvas.style('margin', '0');
@@ -57,6 +58,15 @@ export class IonicViewerPage implements OnInit {
             img = p.createImg(this.FileURL, this.FileInfo['filename']);
             img.id(IMAGE_ELEMENT_ID);
             img.parent(canvasDiv);
+            if (isPlatform == 'Android' || isPlatform == 'iOS') {
+              iframe_sub = document.createElement('iframe');
+              iframe_sub.setAttribute("src", this.FileURL);
+              iframe_sub.setAttribute("frameborder", "0");
+              iframe_sub.setAttribute('class', 'full_screen');
+              iframe_sub.setAttribute('style', 'position: relative; pointer-events: all');
+              iframe_sub.hidden = true;
+              canvasDiv.appendChild(iframe_sub);
+            }
             p.noLoop();
           }
           p.mouseClicked = (ev) => {
@@ -64,14 +74,8 @@ export class IonicViewerPage implements OnInit {
               if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
                 window.open(this.FileURL);
               else {
-                img.hide();
-                let iframe_sub = document.createElement('iframe');
-                iframe_sub.id = IMAGE_ELEMENT_ID;
-                iframe_sub.setAttribute("src", this.FileURL);
-                iframe_sub.setAttribute("frameborder", "0");
-                iframe_sub.setAttribute('class', 'full_screen');
-                iframe_sub.setAttribute('style', 'position: relative; pointer-events: all');
-                canvasDiv.appendChild(iframe_sub);
+                img.remove();
+                iframe_sub.hidden = false;
               }
             }
           }
