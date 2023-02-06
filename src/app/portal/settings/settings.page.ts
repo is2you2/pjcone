@@ -269,6 +269,12 @@ export class SettingsPage implements OnInit {
     }
   }
 
+  /** 언어 변경됨 */
+  LanguageChanged(ev: any) {
+    this.lang.lang = ev.detail.value;
+    this.lang.load_selected_lang();
+  }
+
   go_to_page(_page: string) {
     this.nav.navigateForward(`settings/${_page}`, {
       animation: iosTransitionAnimation,

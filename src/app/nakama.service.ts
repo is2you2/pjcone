@@ -116,7 +116,6 @@ export class NakamaService {
     });
     this.lang.Callback_once = (DevTestServer: string) => {
       this.servers['official']['default'].info.name = DevTestServer;
-      delete this.lang.Callback_once;
     }
     // 공식서버 연결처리
     this.init_server(this.servers['official']['default'].info);
