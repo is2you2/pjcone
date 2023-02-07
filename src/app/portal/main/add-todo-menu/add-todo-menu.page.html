@@ -1,0 +1,55 @@
+<!-- SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
+SPDX-License-Identifier: MIT -->
+
+<ion-header>
+  <ion-toolbar>
+    <ion-title>해야할 일 추가하기</ion-title>
+    <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
+      <ion-back-button defaultHref="main"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <table id="main_table" style="width: 100%; height: 100%;">
+    <tr style="height: 100%;">
+      <td style="vertical-align: top;">
+        <div id="main_div" class="main">
+          <ion-item>
+            <ion-label>표시명</ion-label>
+            <ion-input [(ngModel)]="userInput.title" class="ion-text-right" placeholder="짧게"></ion-input>
+          </ion-item>
+          <ion-item button (click)="toggle_calendar()">
+            <ion-label>기한</ion-label>
+            <ion-label class="ion-text-right uneditable_data">{{userInput.limitDisplay}}</ion-label>
+          </ion-item>
+          <ion-datetime #Calendar [hidden]="isCalendarHidden" style="display: inline;" [locale]="lang.lang"
+            (ionChange)="limit_change($event)"></ion-datetime>
+          <ion-item>
+            <ion-label>상세 내용</ion-label>
+          </ion-item>
+          <textarea class="infobox" [(ngModel)]="userInput.description" placeholder="해야할 일 상세 내용"></textarea>
+          <ion-item button>
+            <ion-label>첨부파일</ion-label>
+            <ion-label class="ion-text-right uneditable_data">없음</ion-label>
+          </ion-item>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div style="width: 100%;">
+          <table id="bottom_buttons" style="width: 100%; background-color: black;">
+            <tr>
+              <td>
+                <ion-button (click)="saveData()" expand="block">
+                  추가
+                </ion-button>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </td>
+    </tr>
+  </table>
+</ion-content>

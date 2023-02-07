@@ -50,7 +50,7 @@ export class GlobalActService {
   }
 
   /** 실행중인 iframe-godot 개체를 기억하여 2개 이상 생성될 경우 이전에 진행중인 객체를 삭제, 마지막 실행기만 기억하기 */
-  private godot: HTMLIFrameElement;
+  godot: HTMLIFrameElement;
   /** 마지막에 기록된 프레임 id */
   private last_frame_name: string;
   /** 고도엔진이 시작하자마자 로딩할 내용과 고도 결과물을 담을 iframe id를 전달  

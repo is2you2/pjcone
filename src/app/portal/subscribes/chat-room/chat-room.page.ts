@@ -193,10 +193,13 @@ export class ChatRoomPage implements OnInit {
     }
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
-    this.follow_resize();
     setTimeout(() => {
       this.content_panel.scrollIntoView({ block: 'start' });
     }, 500);
+  }
+
+  ionViewWillEnter() {
+    this.follow_resize();
   }
 
   /** 발신인 표시를 위한 메시지 추가 가공 */
