@@ -9,10 +9,11 @@ import { P5ToastService } from './p5-toast.service';
 interface GodotFrameKeys {
   /** 공식 패키지 이름 */
   act: string;
-  /** 패키지 이름 입력(영문) */
+  /** 패키지 이름 입력(영문), 고도 프로젝트에서는 메인 씬 이름이어야함 */
   title: string;
   /** 패키지 불러오기 행동 실패시 실행됨, 사용금지 */
   failed?: any;
+  /** 고도엔진과 상호작용하기 위한 값들, 고도엔진에서 JavaScript.get_interface('window')[id]로 접근 */
   [id: string]: any;
 }
 
