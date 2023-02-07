@@ -8,6 +8,7 @@ var window
 
 # 앱 시작과 동시에 동작하려는 pck 정보를 받아옴
 func _ready():
+	get_tree().connect("files_dropped", self, 'load_package_debug')
 	if OS.has_feature('JavaScript'):
 		window = JavaScript.get_interface('window')
 		# ionic에게 IndexedDB가 생성되었음을 알림
@@ -25,6 +26,23 @@ func _ready():
 		var test_act:= 'godot-debug'
 		load_package(test_act)
 
+# pck 투척시 테스트를 위해 바로 받아보기
+func load_package_debug(files:PoolStringArray, scr):
+	var target:String
+	for file in files:
+		if file.find('.pck') + 1:
+			target = file
+			break
+	var is_loaded:= ProjectSettings.load_resource_pack(target)
+	if not is_loaded: # 불러오기 실패
+		printerr('Godot: 패키지를 불러오지 못함: ', target)
+	else: # 정상적으로 불러와짐
+		$CenterContainer.queue_free()
+		print('Godot-debug: 패키지 타겟: ', target)
+		var inst = load('res://Main.tscn')
+		add_child(inst.instance())
+	get_tree().disconnect("files_dropped", self, 'load_package_debug')
+
 # 동작하려는 pck 정보 불러오기
 func load_package(act_name:String):
 	var is_loaded:= ProjectSettings.load_resource_pack('user://acts/%s.pck' % act_name)
@@ -37,6 +55,8 @@ func load_package(act_name:String):
 		$CenterContainer.queue_free()
 		var inst = load('res://%s.tscn' % (window.title if window.title else 'Main'))
 		add_child(inst.instance())
+		if get_tree().is_connected("files_dropped", self, 'load_package_debug'):
+			get_tree().disconnect("files_dropped", self, 'load_package_debug')
 
 # 파일 다운로드 시작
 func start_download_pck():
