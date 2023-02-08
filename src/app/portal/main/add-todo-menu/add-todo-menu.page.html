@@ -14,7 +14,7 @@ SPDX-License-Identifier: MIT -->
   <table id="main_table" style="width: 100%; height: 100%;">
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
-        <div id="p5timer" style="position: absolute; width: 100%; height: 8px;"></div>
+        <div id="p5timer" style="position: absolute; width: 100%; height: 8px; z-index: 2;"></div>
         <div id="main_div" class="main">
           <ion-item>
             <ion-label>표시명</ion-label>
@@ -22,7 +22,7 @@ SPDX-License-Identifier: MIT -->
           </ion-item>
           <ion-item button (click)="toggle_calendar()">
             <ion-label>기한</ion-label>
-            <ion-label class="ion-text-right uneditable_data">{{userInput.limitDisplay}}</ion-label>
+            <ion-label class="ion-text-right uneditable_data">{{limitDisplay}}</ion-label>
           </ion-item>
           <ion-datetime #Calendar [hidden]="isCalendarHidden" style="display: inline;" [locale]="lang.lang"
             (ionChange)="limit_change($event)"></ion-datetime>

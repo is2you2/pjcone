@@ -40,16 +40,12 @@ export class AddTodoMenuPage implements OnInit {
     written: undefined,
     /** 기한 */
     limit: undefined,
-    /** 사용자에게 보여지는 기한 문자열 */
-    limitDisplay: undefined,
+    /** 일의 중요도, 가시화 기한의 색상에 영향을 줌 */
+    importance: 0,
     /** 이 업무가 연동되어 행해진 기록들 */
     logs: [],
     /** 상세 내용 */
     description: undefined,
-    /** 어디에서 작성한 데이터인지  
-     * local: 내가 내 폰에서, remote: 서버를 거쳐서 지시
-     */
-    type: 'local',
     /** remote 정보인 경우 서버, 채널, 작성자 정보 포함됨  
      * keys: isOfficial, target, channel_id, sender_id
      */
@@ -58,30 +54,27 @@ export class AddTodoMenuPage implements OnInit {
     attach: {},
   };
 
+  /** 사용자에게 보여지는 기한 문자열, 저장시 삭제됨 */
+  limitDisplay: string;
   ImageURL: any;
   ngOnInit() { }
 
   ionViewWillEnter() {
-    let tomorrow = new Date(new Date().getTime() + 86400000);
-    this.Calendar.value = new Date(tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60 * 1000).toISOString();
-    this.userInput.limit = tomorrow.toISOString();
-    this.userInput.limitDisplay = tomorrow.toLocaleString(this.lang.lang);
-    this.userInput.limitDisplay = this.userInput.limitDisplay.substring(0, this.userInput.limitDisplay.lastIndexOf(':'));
     // 미리 지정된 데이터 정보가 있는지 검토
-    let data = this.navParams.get('data');
-    if (data) {
-      switch (data['type']) {
-        case 'local': // 로컬에서 작성된 개인의 해야할 일 (로컬에 저장된 파일 경로)
-          console.log('로컬 생성된 정보로 내용을 수정할 수 있음: ');
-          break;
-        case 'order': // 채팅방에서 지시 형태로 생성된 할 일
-          console.log('누군가로부터 지시받음: ');
-          break;
-        default:
-          console.warn('예상하지 못한 기존 정보 형식: ', data);
-          break;
-      }
+    this.userInput = { ...this.navParams.get('data'), ...this.userInput };
+    if (this.userInput['remote']) {
+      console.log('누군가로부터 지시받음: ');
+    } else {
+      console.log('내가 생성한 할 일로, 정보를 수정할 수 있음');
     }
+    if (!this.userInput.limit) { // 새로 만든경우 기본 기한을 24시간 후로 설정
+      let tomorrow = new Date(new Date().getTime() + 86400000);
+      this.userInput.limit = tomorrow.toISOString();
+    }
+    let date_limit = new Date(this.userInput.limit);
+    this.Calendar.value = new Date(date_limit.getTime() - date_limit.getTimezoneOffset() * 60 * 1000).toISOString();
+    this.limitDisplay = date_limit.toLocaleString(this.lang.lang);
+    this.limitDisplay = this.limitDisplay.substring(0, this.limitDisplay.lastIndexOf(':'));
     this.follow_resize();
   }
 
@@ -99,8 +92,8 @@ export class AddTodoMenuPage implements OnInit {
   /** 기한 변경됨 */
   limit_change(ev: any) {
     this.userInput.limit = ev.detail.value;
-    this.userInput.limitDisplay = new Date(ev.detail.value).toLocaleString(this.lang.lang);
-    this.userInput.limitDisplay = this.userInput.limitDisplay.substring(0, this.userInput.limitDisplay.lastIndexOf(':'))
+    this.limitDisplay = new Date(ev.detail.value).toLocaleString(this.lang.lang);
+    this.limitDisplay = this.limitDisplay.substring(0, this.limitDisplay.lastIndexOf(':'))
     this.limitTimeP5Display = new Date(this.userInput.limit).getTime();
   }
 
@@ -130,6 +123,9 @@ export class AddTodoMenuPage implements OnInit {
 
   p5timer: p5;
   limitTimeP5Display: number;
+  /** 평소 기한 가시화 색상 */
+  normal_color = '#888b';
+  alert_color = '#800b';
   show_count_timer() {
     this.userInput.written = new Date().toISOString(); // 테스트용
     this.p5timer = new p5((p: p5) => {
@@ -137,7 +133,7 @@ export class AddTodoMenuPage implements OnInit {
       let startTime = new Date(this.userInput.written).getTime();
       this.limitTimeP5Display = new Date(this.userInput.limit).getTime();
       let currentTime: number;
-      let color: p5.Color = p.color('#888');
+      let color: p5.Color;
       p.setup = () => {
         let timerDiv = document.getElementById('p5timer');
         let canvas = p.createCanvas(timerDiv.clientWidth, timerDiv.clientHeight);
@@ -149,13 +145,12 @@ export class AddTodoMenuPage implements OnInit {
         p.noStroke();
       }
       let checkCurrent = () => {
-        // currentTime = new Date().getTime();
         currentTime = new Date().getTime();
         let lerpVal = p.map(currentTime, startTime, this.limitTimeP5Display, 0, 1);
         if (lerpVal <= .7) {
-          color = p.color('#888');
+          color = p.color(this.normal_color);
         } else if (lerpVal > .7)
-          color = p.lerpColor(p.color('#888'), p.color('#800'), p.map(lerpVal, .7, 1, 0, 1) * startAnimLerp);
+          color = p.lerpColor(p.color(this.normal_color), p.color(this.alert_color), p.map(lerpVal, .7, 1, 0, 1) * startAnimLerp);
       }
       p.draw = () => {
         checkCurrent();
@@ -196,7 +191,8 @@ export class AddTodoMenuPage implements OnInit {
     this.userInput.attach['type'] = ev.target.files[0]['type'];
     this.userInput.attach['viewer'] = 'image';
     reader.onload = (ev: any) => {
-      this.indexed.saveFileToUserPath(ev.target.result.replace(/"|\\|=/g, ''), 'todo/add_tmp.attach');
+      this.userInput.attach['img'] = ev.target.result.replace(/"|\\|=/g, '');
+      this.indexed.saveFileToUserPath(this.userInput.attach['img'], 'todo/add_tmp.attach');
     };
     this.ImageURL = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(ev.target.files[0]));
     reader.readAsDataURL(ev.target.files[0]);
@@ -221,10 +217,12 @@ export class AddTodoMenuPage implements OnInit {
       });
       return;
     }
-    this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
     // this.userInput.id = '';
+    console.log('이 자리에서 이미지 저장');
+    delete this.userInput.attach['img'];
     this.userInput.written = new Date().toISOString();
     console.log('이 자리에서 해야할 일 아이디 생성', this.userInput);
+    this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
     this.modalCtrl.dismiss();
   }
 
