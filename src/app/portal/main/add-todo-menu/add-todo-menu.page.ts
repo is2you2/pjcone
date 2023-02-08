@@ -65,7 +65,7 @@ export class AddTodoMenuPage implements OnInit {
     let tomorrow = new Date(new Date().getTime() + 86400000);
     this.Calendar.value = new Date(tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60 * 1000).toISOString();
     this.userInput.limit = tomorrow.toISOString();
-    this.userInput.limitDisplay = tomorrow.toLocaleString();
+    this.userInput.limitDisplay = tomorrow.toLocaleString(this.lang.lang);
     this.userInput.limitDisplay = this.userInput.limitDisplay.substring(0, this.userInput.limitDisplay.lastIndexOf(':'));
     // 미리 지정된 데이터 정보가 있는지 검토
     let data = this.navParams.get('data');
@@ -85,21 +85,26 @@ export class AddTodoMenuPage implements OnInit {
     this.follow_resize();
   }
 
+  ionViewDidEnter() {
+    this.show_count_timer();
+  }
+
   isCalendarHidden = true;
   /** 달력 켜기끄기 */
   toggle_calendar() {
-    this.p5canvas.windowResized();
+    this.p5resize.windowResized();
     this.isCalendarHidden = !this.isCalendarHidden;
   }
 
   /** 기한 변경됨 */
   limit_change(ev: any) {
     this.userInput.limit = ev.detail.value;
-    this.userInput.limitDisplay = new Date(ev.detail.value).toLocaleString();
+    this.userInput.limitDisplay = new Date(ev.detail.value).toLocaleString(this.lang.lang);
     this.userInput.limitDisplay = this.userInput.limitDisplay.substring(0, this.userInput.limitDisplay.lastIndexOf(':'))
+    this.limitTimeP5Display = new Date(this.userInput.limit).getTime();
   }
 
-  p5canvas: p5;
+  p5resize: p5;
   /** 창 조절에 따른 최대 화면 크기 조정 */
   follow_resize() {
     setTimeout(() => {
@@ -119,8 +124,61 @@ export class AddTodoMenuPage implements OnInit {
           }, 0);
         }
       }
-      this.p5canvas = new p5(sketch);
+      this.p5resize = new p5(sketch);
     }, 50);
+  }
+
+  p5timer: p5;
+  limitTimeP5Display: number;
+  show_count_timer() {
+    this.userInput.written = new Date().toISOString(); // 테스트용
+    this.p5timer = new p5((p: p5) => {
+      let startAnimLerp = 0;
+      let startTime = new Date(this.userInput.written).getTime();
+      this.limitTimeP5Display = new Date(this.userInput.limit).getTime();
+      let currentTime: number;
+      let color: p5.Color = p.color('#888');
+      p.setup = () => {
+        let timerDiv = document.getElementById('p5timer');
+        let canvas = p.createCanvas(timerDiv.clientWidth, timerDiv.clientHeight);
+        canvas.id('timer');
+        canvas.style('position', 'inherit');
+        canvas.style('width', '100%');
+        canvas.style('height', '100%');
+        canvas.parent(timerDiv);
+        p.noStroke();
+      }
+      let checkCurrent = () => {
+        // currentTime = new Date().getTime();
+        currentTime = new Date().getTime();
+        let lerpVal = p.map(currentTime, startTime, this.limitTimeP5Display, 0, 1);
+        if (lerpVal <= .7) {
+          color = p.color('#888');
+        } else if (lerpVal > .7)
+          color = p.lerpColor(p.color('#888'), p.color('#800'), p.map(lerpVal, .7, 1, 0, 1) * startAnimLerp);
+      }
+      p.draw = () => {
+        checkCurrent();
+        p.clear(255, 255, 255, 255);
+        p.push();
+        p.fill(color);
+        if (startAnimLerp < 1) {
+          startAnimLerp += .04;
+          if (startAnimLerp >= 1)
+            startAnimLerp = 1;
+          p.rect(0, 0, p.lerp(0, p.map(currentTime, startTime, this.limitTimeP5Display, 0, p.width), easeOut(startAnimLerp)), p.height);
+        } else {
+          p.rect(0, 0, p.map(currentTime, startTime, this.limitTimeP5Display, 0, p.width), p.height);
+        }
+        p.pop();
+      }
+      let easeOut = (t: number) => {
+        return Flip(p.sq(Flip(t)));
+      }
+      let Flip = (t: number) => {
+        return 1 - t;
+      }
+    });
   }
 
   /** 참조 이미지 첨부 */
@@ -174,6 +232,7 @@ export class AddTodoMenuPage implements OnInit {
     this.indexed.removeFileFromUserPath('todo/add_tmp.attach');
     if (this.ImageURL)
       URL.revokeObjectURL(this.ImageURL);
-    this.p5canvas.remove();
+    this.p5resize.remove();
+    this.p5timer.remove();
   }
 }
