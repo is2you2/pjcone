@@ -45,6 +45,16 @@ SPDX-License-Identifier: MIT -->
             <ion-label class="ion-text-right uneditable_data">{{userInput.attach['filename'] || '없음'}}</ion-label>
           </ion-item>
           <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
+          <div *ngIf="userInput.logs.length">
+            <ion-item button (click)="toggle_logs()">
+              <ion-label>기록</ion-label>
+            </ion-item>
+            <div [hidden]="isLogsHidden">
+              <div *ngFor="let log of userInput.logs" class="logs">
+                {{log.displayText || log.translateCode}}
+              </div>
+            </div>
+          </div>
         </div>
       </td>
     </tr>

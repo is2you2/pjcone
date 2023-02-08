@@ -9,6 +9,26 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { DomSanitizer } from '@angular/platform-browser';
 import { IndexedDBService } from 'src/app/indexed-db.service';
+import { NakamaService } from 'src/app/nakama.service';
+
+interface LogForm {
+  /** 이 로그를 발생시킨 사람, 리모트인 경우에만 넣기, 로컬일 경우 비워두기 */
+  creator?: string;
+  /** 로그 생성 시점 */
+  createTime?: number;
+  /** 번역코드 */
+  translateCode?: string;
+  /** 사용자에게 보여지는 문자열 */
+  displayText?: string;
+}
+
+/** 서버에서 채널로 생성한 경우 */
+interface RemoteInfo {
+  isOfficial?: string;
+  target?: string;
+  channel_id?: string;
+  sender_id?: string;
+}
 
 @Component({
   selector: 'app-add-todo-menu',
@@ -25,6 +45,7 @@ export class AddTodoMenuPage implements OnInit {
     private p5toast: P5ToastService,
     private sanitizer: DomSanitizer,
     private indexed: IndexedDBService,
+    private nakama: NakamaService,
   ) { }
 
   /** 작성된 내용 */
@@ -43,13 +64,13 @@ export class AddTodoMenuPage implements OnInit {
     /** 일의 중요도, 가시화 기한의 색상에 영향을 줌 */
     importance: '0',
     /** 이 업무가 연동되어 행해진 기록들 */
-    logs: [],
+    logs: [] as LogForm[],
     /** 상세 내용 */
     description: undefined,
     /** remote 정보인 경우 서버, 채널, 작성자 정보 포함됨  
      * keys: isOfficial, target, channel_id, sender_id
      */
-    remote: undefined,
+    remote: undefined as RemoteInfo,
     /** 첨부 이미지 정보 */
     attach: {},
   };
@@ -87,6 +108,12 @@ export class AddTodoMenuPage implements OnInit {
   toggle_calendar() {
     this.p5resize.windowResized();
     this.isCalendarHidden = !this.isCalendarHidden;
+  }
+
+  isLogsHidden = true;
+  /** 기록 리스트 켜고 끄기 */
+  toggle_logs() {
+    this.isLogsHidden = !this.isLogsHidden;
   }
 
   /** 기한 변경됨 */
@@ -245,6 +272,17 @@ export class AddTodoMenuPage implements OnInit {
     console.log('이 자리에서 이미지 저장');
     delete this.userInput.attach['img'];
     this.userInput.written = new Date().toISOString();
+    this.userInput.logs.push({
+      creator: this.userInput.remote ?
+        this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id
+        : '',
+      createTime: new Date().getTime(),
+      translateCode: 'CreateTodo',
+    });
+    this.isLogsHidden = true;
+    this.userInput.logs.forEach(log => {
+      delete log.displayText;
+    });
     console.log('이 자리에서 해야할 일 아이디 생성', this.userInput);
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
     this.modalCtrl.dismiss();
