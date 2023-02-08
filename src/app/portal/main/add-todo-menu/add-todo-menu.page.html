@@ -20,6 +20,15 @@ SPDX-License-Identifier: MIT -->
             <ion-label>표시명</ion-label>
             <ion-input [(ngModel)]="userInput.title" class="ion-text-right" placeholder="짧게"></ion-input>
           </ion-item>
+          <ion-item button (click)="ImporantSelClicked()">
+            <ion-label>중요도</ion-label>
+            <ion-select #ImporantSel style="pointer-events: none;" [value]="userInput.importance"
+              (ionChange)="ImporantSelChanged($event)">
+              <ion-select-option value="2">중요함</ion-select-option>
+              <ion-select-option value="1">기억해야 함</ion-select-option>
+              <ion-select-option value="0">메모</ion-select-option>
+            </ion-select>
+          </ion-item>
           <ion-item button (click)="toggle_calendar()">
             <ion-label>기한</ion-label>
             <ion-label class="ion-text-right uneditable_data">{{limitDisplay}}</ion-label>
@@ -33,7 +42,7 @@ SPDX-License-Identifier: MIT -->
           <img *ngIf="ImageURL" [src]="ImageURL" alt="attach_image" (click)="go_to_ionic_viewer()">
           <ion-item button (click)="select_attach_image()">
             <ion-label>첨부파일</ion-label>
-            <ion-label class="ion-text-right uneditable_data">없음</ion-label>
+            <ion-label class="ion-text-right uneditable_data">{{userInput.attach['filename'] || '없음'}}</ion-label>
           </ion-item>
           <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
         </div>

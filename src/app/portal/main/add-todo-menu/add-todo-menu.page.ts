@@ -41,7 +41,7 @@ export class AddTodoMenuPage implements OnInit {
     /** 기한 */
     limit: undefined,
     /** 일의 중요도, 가시화 기한의 색상에 영향을 줌 */
-    importance: 0,
+    importance: '0',
     /** 이 업무가 연동되어 행해진 기록들 */
     logs: [],
     /** 상세 내용 */
@@ -125,7 +125,7 @@ export class AddTodoMenuPage implements OnInit {
   limitTimeP5Display: number;
   /** 평소 기한 가시화 색상 */
   normal_color = '#888b';
-  alert_color = '#800b';
+  alert_color = '#888b';
   show_count_timer() {
     this.userInput.written = new Date().toISOString(); // 테스트용
     this.p5timer = new p5((p: p5) => {
@@ -144,13 +144,14 @@ export class AddTodoMenuPage implements OnInit {
         canvas.parent(timerDiv);
         p.noStroke();
       }
+      const AlertLerpStartFrom = .4;
       let checkCurrent = () => {
         currentTime = new Date().getTime();
         let lerpVal = p.map(currentTime, startTime, this.limitTimeP5Display, 0, 1);
-        if (lerpVal <= .7) {
+        if (lerpVal <= AlertLerpStartFrom) {
           color = p.color(this.normal_color);
-        } else if (lerpVal > .7)
-          color = p.lerpColor(p.color(this.normal_color), p.color(this.alert_color), p.map(lerpVal, .7, 1, 0, 1) * startAnimLerp);
+        } else if (lerpVal > AlertLerpStartFrom)
+          color = p.lerpColor(p.color(this.normal_color), p.color(this.alert_color), p.map(lerpVal, AlertLerpStartFrom, 1, 0, 1) * startAnimLerp);
       }
       p.draw = () => {
         checkCurrent();
@@ -179,6 +180,29 @@ export class AddTodoMenuPage implements OnInit {
   /** 참조 이미지 첨부 */
   select_attach_image() {
     document.getElementById('file_sel').click();
+  }
+
+  @ViewChild('ImporantSel') ImporantSel: any;
+  ImporantSelClicked() {
+    this.ImporantSel.open();
+  }
+  /** 중요도 변경됨 */
+  ImporantSelChanged(ev: any) {
+    this.userInput.importance = ev.detail.value;
+    switch (this.userInput.importance) {
+      case '0': // 메모
+        this.normal_color = '#888b';
+        this.alert_color = '#888b';
+        break;
+      case '1': // 기억해야함
+        this.normal_color = '#888b';
+        this.alert_color = '#dddd0cbb';
+        break;
+      case '2': // 중요함
+        this.normal_color = '#dddd0cbb';
+        this.alert_color = '#800b';
+        break;
+    }
   }
 
   /** 파일 선택시 로컬에서 반영 */
