@@ -3,7 +3,7 @@ SPDX-License-Identifier: MIT -->
 
 <ion-header>
   <ion-toolbar>
-    <ion-title>해야할 일 추가하기</ion-title>
+    <ion-title>해야할 일</ion-title>
     <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
       <ion-back-button defaultHref="main"></ion-back-button>
     </ion-buttons>
@@ -29,10 +29,12 @@ SPDX-License-Identifier: MIT -->
             <ion-label>상세 내용</ion-label>
           </ion-item>
           <textarea class="infobox" [(ngModel)]="userInput.description" placeholder="해야할 일 상세 내용"></textarea>
-          <ion-item button>
+          <img *ngIf="ImageURL" [src]="ImageURL" alt="attach_image" (click)="go_to_ionic_viewer()">
+          <ion-item button (click)="select_attach_image()">
             <ion-label>첨부파일</ion-label>
             <ion-label class="ion-text-right uneditable_data">없음</ion-label>
           </ion-item>
+          <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
         </div>
       </td>
     </tr>

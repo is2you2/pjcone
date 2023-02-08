@@ -6,6 +6,9 @@ import { ModalController, NavParams } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import * as p5 from "p5";
 import { P5ToastService } from 'src/app/p5-toast.service';
+import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
+import { DomSanitizer } from '@angular/platform-browser';
+import { IndexedDBService } from 'src/app/indexed-db.service';
 
 @Component({
   selector: 'app-add-todo-menu',
@@ -20,14 +23,24 @@ export class AddTodoMenuPage implements OnInit {
     public modalCtrl: ModalController,
     public lang: LanguageSettingService,
     private p5toast: P5ToastService,
+    private sanitizer: DomSanitizer,
+    private indexed: IndexedDBService,
   ) { }
 
   /** 작성된 내용 */
   userInput = {
+    /** 해야할 일 아이디  
+     * 로컬에서 생성하면 일시 정보로 생성  
+     * 리모트에서 생성하면 'isOfficial/target/channel_id/msg_id' 로 생성됨
+     */
+    id: undefined,
+    /** 간략한 제목 설정 */
     title: undefined,
+    /** 작성일시 */
+    written: undefined,
     /** 기한 */
     limit: undefined,
-    /** 사용자에게 보여지는 문자열 */
+    /** 사용자에게 보여지는 기한 문자열 */
     limitDisplay: undefined,
     /** 이 업무가 연동되어 행해진 기록들 */
     logs: [],
@@ -41,8 +54,11 @@ export class AddTodoMenuPage implements OnInit {
      * keys: isOfficial, target, channel_id, sender_id
      */
     remote: undefined,
+    /** 첨부 이미지 정보 */
+    attach: {},
   };
 
+  ImageURL: any;
   ngOnInit() { }
 
   ionViewWillEnter() {
@@ -50,6 +66,7 @@ export class AddTodoMenuPage implements OnInit {
     this.Calendar.value = new Date(tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60 * 1000).toISOString();
     this.userInput.limit = tomorrow.toISOString();
     this.userInput.limitDisplay = tomorrow.toLocaleString();
+    this.userInput.limitDisplay = this.userInput.limitDisplay.substring(0, this.userInput.limitDisplay.lastIndexOf(':'));
     // 미리 지정된 데이터 정보가 있는지 검토
     let data = this.navParams.get('data');
     if (data) {
@@ -64,8 +81,6 @@ export class AddTodoMenuPage implements OnInit {
           console.warn('예상하지 못한 기존 정보 형식: ', data);
           break;
       }
-    } else { // 새 해야할 일 생성
-      console.log('새 해야할 일 생성');
     }
     this.follow_resize();
   }
@@ -81,6 +96,7 @@ export class AddTodoMenuPage implements OnInit {
   limit_change(ev: any) {
     this.userInput.limit = ev.detail.value;
     this.userInput.limitDisplay = new Date(ev.detail.value).toLocaleString();
+    this.userInput.limitDisplay = this.userInput.limitDisplay.substring(0, this.userInput.limitDisplay.lastIndexOf(':'))
   }
 
   p5canvas: p5;
@@ -107,9 +123,40 @@ export class AddTodoMenuPage implements OnInit {
     }, 50);
   }
 
+  /** 참조 이미지 첨부 */
+  select_attach_image() {
+    document.getElementById('file_sel').click();
+  }
+
+  /** 파일 선택시 로컬에서 반영 */
+  inputImageSelected(ev: any) {
+    let reader: any = new FileReader();
+    reader = reader._realReader ?? reader;
+    this.userInput.attach['filename'] = ev.target.files[0]['name'];
+    this.userInput.attach['file_ext'] = ev.target.files[0]['name'].substring(ev.target.files[0]['name'].lastIndexOf('.'));
+    this.userInput.attach['filesize'] = ev.target.files[0]['size'];
+    this.userInput.attach['type'] = ev.target.files[0]['type'];
+    this.userInput.attach['viewer'] = 'image';
+    reader.onload = (ev: any) => {
+      this.indexed.saveFileToUserPath(ev.target.result.replace(/"|\\|=/g, ''), 'todo/add_tmp.attach');
+    };
+    this.ImageURL = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(ev.target.files[0]));
+    reader.readAsDataURL(ev.target.files[0]);
+  }
+
+  /** 이미지를 뷰어에서 보기 */
+  go_to_ionic_viewer() {
+    this.modalCtrl.create({
+      component: IonicViewerPage,
+      componentProps: {
+        info: this.userInput.attach,
+        path: this.userInput.id ? `todo/${this.userInput.id}.attach` : 'todo/add_tmp.attach',
+      }
+    }).then(v => v.present());
+  }
+
   /** 이 해야할 일 정보를 저장 */
   saveData() {
-    console.log('저장하기 테스트: ', this.userInput);
     if (!this.userInput.title) {
       this.p5toast.show({
         text: '표시명을 작성하여야 합니다.',
@@ -117,10 +164,16 @@ export class AddTodoMenuPage implements OnInit {
       return;
     }
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
+    // this.userInput.id = '';
+    this.userInput.written = new Date().toISOString();
+    console.log('이 자리에서 해야할 일 아이디 생성', this.userInput);
     this.modalCtrl.dismiss();
   }
 
   ionViewWillLeave() {
+    this.indexed.removeFileFromUserPath('todo/add_tmp.attach');
+    if (this.ImageURL)
+      URL.revokeObjectURL(this.ImageURL);
     this.p5canvas.remove();
   }
 }
