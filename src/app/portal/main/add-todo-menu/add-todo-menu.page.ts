@@ -260,6 +260,7 @@ export class AddTodoMenuPage implements OnInit {
     }).then(v => v.present());
   }
 
+  isSaveClicked = false;
   /** 이 해야할 일 정보를 저장 */
   saveData() {
     if (!this.userInput.title) {
@@ -268,9 +269,12 @@ export class AddTodoMenuPage implements OnInit {
       });
       return;
     }
-    // this.userInput.id = '';
-    console.log('이 자리에서 이미지 저장');
+    this.isSaveClicked = true;
+    this.userInput.id = new Date().toISOString().replace(/[:|.]/g, '_');
+    let copy_img = this.userInput.attach['img'];
     delete this.userInput.attach['img'];
+    if (copy_img)
+      this.indexed.saveFileToUserPath(copy_img, `todo/${this.userInput.id}/attach.img`);
     this.userInput.written = new Date().toISOString();
     this.userInput.logs.push({
       creator: this.userInput.remote ?
@@ -283,9 +287,10 @@ export class AddTodoMenuPage implements OnInit {
     this.userInput.logs.forEach(log => {
       delete log.displayText;
     });
-    console.log('이 자리에서 해야할 일 아이디 생성', this.userInput);
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
-    this.modalCtrl.dismiss();
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, () => {
+      this.modalCtrl.dismiss();
+    });
   }
 
   ionViewWillLeave() {

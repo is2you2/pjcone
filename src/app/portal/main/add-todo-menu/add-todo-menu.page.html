@@ -64,7 +64,7 @@ SPDX-License-Identifier: MIT -->
           <table id="bottom_buttons" style="width: 100%; background-color: black;">
             <tr>
               <td>
-                <ion-button (click)="saveData()" expand="block">
+                <ion-button [disabled]="isSaveClicked" (click)="saveData()" expand="block">
                   추가
                 </ion-button>
               </td>
