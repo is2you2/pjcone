@@ -33,18 +33,25 @@ export class AddTodoMenuPage implements OnInit {
     logs: [],
     /** 상세 내용 */
     description: undefined,
+    /** 어디에서 작성한 데이터인지  
+     * local: 내가 내 폰에서, remote: 서버를 거쳐서 지시
+     */
+    type: 'local',
+    /** remote 정보인 경우 서버, 채널, 작성자 정보 포함됨  
+     * keys: isOfficial, target, channel_id, sender_id
+     */
+    remote: undefined,
   };
 
   ngOnInit() { }
 
   ionViewWillEnter() {
     let tomorrow = new Date(new Date().getTime() + 86400000);
+    this.Calendar.value = new Date(tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60 * 1000).toISOString();
     this.userInput.limit = tomorrow.toISOString();
     this.userInput.limitDisplay = tomorrow.toLocaleString();
-    this.Calendar.value = this.userInput.limit;
     // 미리 지정된 데이터 정보가 있는지 검토
     let data = this.navParams.get('data');
-    console.log(data);
     if (data) {
       switch (data['type']) {
         case 'local': // 로컬에서 작성된 개인의 해야할 일 (로컬에 저장된 파일 경로)
