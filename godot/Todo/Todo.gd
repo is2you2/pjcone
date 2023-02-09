@@ -24,17 +24,72 @@ func _ready():
 		window = JavaScript.get_interface('window')
 		window.add_todo = add_todo_func
 	else: # 엔진에서 테스트중일 때
-		pass
+		print_debug('on test...')
 
+var ele_0:= preload("res://TodoEle_0.tscn")
+var ele_1:= preload("res://TodoEle_1.tscn")
+var ele_2:= preload("res://TodoEle_2.tscn")
 # 해야할 일 추가하기
 func add_todo(args):
 	var json = JSON.parse(args[0]).result
 	if json is Dictionary:
+		# 추가하기 구성 변경
+		if not $Todos/Todo_Add.visible:
+#			$EmptyTodo.queue_free()
+			$Todos/Todo_Add.visible = true
+		var new_todo # 해야할 일 정보
+		match(json.importance):
+			'0': # 메모
+				new_todo = ele_0.instance()
+			'1': # 기억해야함
+				new_todo = ele_1.instance()
+			'2': # 중요함
+				new_todo = ele_2.instance()
+		# 필수 정보 입력
+		new_todo.title = json.title
+		new_todo.id = json.id
+		# 랜덤한 위치에서 생성
+		new_todo.position = Vector2(400, 400)
+		var max_dist:float = $Todos/Area2D/CollisionShape2D.shape.radius
+		$Todos/Area2D.rotation = deg2rad(randf() * 720 - 360)
+		var target_dist: float
+		if window_size.x > window_size.y:
+			target_dist = window_size.x
+		else: target_dist = window_size.y
+		var pos_x = target_dist + (randi() % GEN_MARGIN / 2)
+		var pos_y = target_dist + (randi() % GEN_MARGIN / 2)
+		new_todo.position = Vector2(pos_x, pos_y)
+		print_debug(new_todo.position)
+		$Todos.add_child(new_todo)
 		print_debug('data: json_', json['title'])
 	else: print_debug('data: else')
 
-# 해야할 일 추가하기 페이지 띄우기 (ionic-modal)
-func _on_add_pressed():
-	if OS.has_feature('JavaScript'):
-		window.add_todo_menu()
-	else: print_debug('웹앱에서 테스트 필요')
+
+var test_importance = 0
+func _on_Add_gui_input(event):
+	if event is InputEventMouseButton or event is InputEventScreenTouch:
+		if event.pressed:
+			if OS.has_feature('JavaScript'):
+				window.add_todo_menu()
+			else:
+				print_debug('editor test add todo')
+				add_todo([JSON.print({
+					'id': 'engine_test_id',
+					'title': 'engine_test_title',
+					'written': 'user_id',
+					'limit': 0,
+					'importance': str(test_importance),
+					'logs': [],
+					'description': 'test_desc',
+					'remote': null,
+					'attach': {},
+				})])
+				test_importance = (test_importance + 1) % 3
+
+# Control 노드를 이용한 화면 크기 검토용
+var window_size:Vector2
+const GEN_MARGIN:= 200
+func _process(_delta):
+	window_size = $Todos.rect_size
+	$Todos/Area2D.position = window_size / 2
+	$Todos/Area2D/CollisionShape2D.shape.radius = window_size.x + GEN_MARGIN if window_size.x > window_size.y else window_size.y + GEN_MARGIN
