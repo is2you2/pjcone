@@ -325,7 +325,7 @@ export class AddTodoMenuPage implements OnInit {
   /** 이 해야할 일 삭제 */
   deleteData() {
     this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, (v) => {
-      v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+      v.forEach(_path => this.indexed.removeFileFromUserPath(_path.substring(8)));
       this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
       this.modalCtrl.dismiss();
     });

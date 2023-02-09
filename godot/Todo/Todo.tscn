@@ -18,11 +18,11 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="Add" type="Control" parent="EmptyTodo/c"]
-margin_left = 144.0
-margin_top = 144.0
-margin_right = 216.0
-margin_bottom = 216.0
-rect_min_size = Vector2( 72, 72 )
+margin_left = 120.0
+margin_top = 120.0
+margin_right = 240.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 120, 120 )
 
 [node name="hoz" type="ColorRect" parent="EmptyTodo/c/Add"]
 anchor_left = 0.5

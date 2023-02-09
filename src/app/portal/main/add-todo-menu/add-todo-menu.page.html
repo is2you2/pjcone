@@ -68,7 +68,7 @@ SPDX-License-Identifier: MIT -->
                   {{buttonDisplay.saveTodo}}
                 </ion-button>
               </td>
-              <td>
+              <td *ngIf="isModify">
                 <ion-button [disabled]="isButtonClicked" (click)="deleteData()" expand="block">
                   삭제
                 </ion-button>

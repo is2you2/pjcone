@@ -90,7 +90,7 @@ func remove_todo(args):
 				child.queue_free()
 				break
 		# 추가하기 구성 변경
-		if children.size() == 1:
+		if children.size() <= 1:
 			$EmptyTodo.show()
 			$Todos/Todo_Add.visible = false
 	else: printerr('json import error')
