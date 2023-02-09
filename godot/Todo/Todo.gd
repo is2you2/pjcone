@@ -6,6 +6,7 @@ extends Node
 # iframe 창
 var window
 var add_todo_func = JavaScript.create_callback(self, 'add_todo')
+var remove_todo_func = JavaScript.create_callback(self, 'remove_todo')
 
 # 앱 시작과 동시에 동작하려는 pck 정보를 받아옴
 func _ready():
@@ -13,16 +14,23 @@ func _ready():
 	var dir:= Directory.new()
 	if not dir.dir_exists('user://todo/'):
 		dir.make_dir('user://todo/')
+	yield(get_tree(), "idle_frame")
+	yield(get_tree(), "idle_frame")
 	if dir.open('user://todo/') == OK:
 		dir.list_dir_begin(true, true)
 		var ls = dir.get_next()
 		while ls:
-			print_debug('여기행동: ', ls)
+			var file:= File.new()
+			var err:= file.open('user://todo/%s/info.todo' % ls, File.READ)
+			if err == OK:
+				add_todo([file.get_as_text()])
+			file.close()
 			ls = dir.get_next()
 		dir.list_dir_end()
 	if OS.has_feature('JavaScript'):
 		window = JavaScript.get_interface('window')
 		window.add_todo = add_todo_func
+		window.remove_todo = remove_todo_func
 	else: # 엔진에서 테스트중일 때
 		print_debug('on test...')
 
@@ -35,7 +43,7 @@ func add_todo(args):
 	if json is Dictionary:
 		# 추가하기 구성 변경
 		if not $Todos/Todo_Add.visible:
-			$EmptyTodo.queue_free()
+			$EmptyTodo.hide()
 			$Todos/Todo_Add.visible = true
 		var new_todo # 해야할 일 정보
 		# 기존에 가지고 있는 해야할 일인지 정보 검토
@@ -67,6 +75,24 @@ func add_todo(args):
 		$Todos/Area2D.rotation = deg2rad(randf() * 720 - 360)
 		new_todo.position = $Todos/Area2D/GenerateHere.global_position
 		$Todos/TodoElements.add_child(new_todo)
+	else: printerr('json import error')
+
+# 해야할 일 개체 삭제
+func remove_todo(args):
+	var json = JSON.parse(args[0]).result
+	if json is Dictionary:
+		var new_todo # 해야할 일 정보
+		# 기존에 가지고 있는 해야할 일인지 정보 검토
+		var children:= $Todos/TodoElements.get_children()
+		for child in children:
+			if child.name == json.id:
+				child.name = 'will_remove'
+				child.queue_free()
+				break
+		# 추가하기 구성 변경
+		if children.size() == 1:
+			$EmptyTodo.show()
+			$Todos/Todo_Add.visible = false
 	else: printerr('json import error')
 
 

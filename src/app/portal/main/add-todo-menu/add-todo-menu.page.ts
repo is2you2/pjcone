@@ -85,31 +85,37 @@ export class AddTodoMenuPage implements OnInit {
     saveTodo: '추가',
   }
 
+  /** 이 할 일을 내가 만들었는지 */
+  isOwner = true;
+  isModify = false;
   ionViewWillEnter() {
     // 미리 지정된 데이터 정보가 있는지 검토
     let received_data = this.navParams.get('data');
-    if (received_data) this.buttonDisplay.saveTodo = '수정';
+    if (received_data) { // 이미 있는 데이터 조회
+      this.buttonDisplay.saveTodo = '수정';
+      this.isModify = true;
+    } else { // 새로 만드는 경우
+      let tomorrow = new Date(new Date().getTime() + 86400000);
+      this.userInput.limit = tomorrow.toISOString();
+    }
     this.userInput = { ...this.userInput, ...received_data };
     // 첨부 이미지가 있음
-    if (this.userInput.attach)
+    if (this.userInput.attach['type'])
       this.indexed.loadBlobFromUserPath(`todo/${this.userInput.id}/attach.img`, this.userInput.attach['type'], (b) => {
         if (this.ImageURL)
           URL.revokeObjectURL(this.ImageURL);
         this.ImageURL = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(b));
       });
+    // 수정 가능 여부 검토
     if (this.userInput['remote']) {
-      console.log('누군가로부터 지시받음: ');
-    } else {
-      console.log('내가 생성한 할 일로, 정보를 수정할 수 있음');
-    }
-    if (!this.userInput.limit) { // 새로 만든경우 기본 기한을 24시간 후로 설정
-      let tomorrow = new Date(new Date().getTime() + 86400000);
-      this.userInput.limit = tomorrow.toISOString();
+      console.warn('임시 남의 것 처리');
+      this.isOwner = false;
     }
     let date_limit = new Date(this.userInput.limit);
     this.Calendar.value = new Date(date_limit.getTime() - date_limit.getTimezoneOffset() * 60 * 1000).toISOString();
     this.limitDisplay = date_limit.toLocaleString(this.lang.lang);
     this.limitDisplay = this.limitDisplay.substring(0, this.limitDisplay.lastIndexOf(':'));
+    this.isLimitChangable = true;
     this.follow_resize();
   }
 
@@ -130,8 +136,10 @@ export class AddTodoMenuPage implements OnInit {
     this.isLogsHidden = !this.isLogsHidden;
   }
 
+  isLimitChangable = false;
   /** 기한 변경됨 */
   limit_change(ev: any) {
+    if (!this.isLimitChangable) return;
     this.userInput.limit = ev.detail.value;
     this.limitDisplay = new Date(ev.detail.value).toLocaleString(this.lang.lang);
     this.limitDisplay = this.limitDisplay.substring(0, this.limitDisplay.lastIndexOf(':'))
@@ -168,13 +176,12 @@ export class AddTodoMenuPage implements OnInit {
   normal_color = '#888b';
   alert_color = '#888b';
   show_count_timer() {
-    this.userInput.written = new Date().toISOString(); // 테스트용
     this.p5timer = new p5((p: p5) => {
       let startAnimLerp = 0;
       let startTime = new Date(this.userInput.written).getTime();
       this.limitTimeP5Display = new Date(this.userInput.limit).getTime();
       let currentTime: number;
-      let color: p5.Color;
+      let color = p.color(this.normal_color);
       p.setup = () => {
         let timerDiv = document.getElementById('p5timer');
         let canvas = p.createCanvas(timerDiv.clientWidth, timerDiv.clientHeight);
@@ -276,7 +283,7 @@ export class AddTodoMenuPage implements OnInit {
     }).then(v => v.present());
   }
 
-  isSaveClicked = false;
+  isButtonClicked = false;
   /** 이 해야할 일 정보를 저장 */
   saveData() {
     if (!this.userInput.title) {
@@ -285,7 +292,7 @@ export class AddTodoMenuPage implements OnInit {
       });
       return;
     }
-    this.isSaveClicked = true;
+    this.isButtonClicked = true;
     if (!this.userInput.id)
       this.userInput.id = new Date().toISOString().replace(/[:|.]/g, '_');
     let copy_img = this.userInput.attach['img'];
@@ -298,7 +305,7 @@ export class AddTodoMenuPage implements OnInit {
         this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id
         : '',
       createTime: new Date().getTime(),
-      translateCode: 'CreateTodo',
+      translateCode: this.isModify ? 'ModifyTodo' : 'CreateTodo',
     });
     this.isLogsHidden = true;
     this.userInput.logs.forEach(log => {
@@ -306,6 +313,20 @@ export class AddTodoMenuPage implements OnInit {
     });
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, () => {
+      this.modalCtrl.dismiss();
+    });
+  }
+
+  /** 이 해야할 일의 상태 업데이트 */
+  taskUpdate() {
+    console.log('상태가 업데이트됨');
+  }
+
+  /** 이 해야할 일 삭제 */
+  deleteData() {
+    this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, (v) => {
+      v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+      this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
       this.modalCtrl.dismiss();
     });
   }

@@ -64,8 +64,13 @@ SPDX-License-Identifier: MIT -->
           <table id="bottom_buttons" style="width: 100%; background-color: black;">
             <tr>
               <td>
-                <ion-button [disabled]="isSaveClicked" (click)="saveData()" expand="block">
+                <ion-button [disabled]="isButtonClicked" (click)="saveData()" expand="block">
                   {{buttonDisplay.saveTodo}}
+                </ion-button>
+              </td>
+              <td>
+                <ion-button [disabled]="isButtonClicked" (click)="deleteData()" expand="block">
+                  삭제
                 </ion-button>
               </td>
             </tr>

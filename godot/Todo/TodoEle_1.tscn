@@ -10,8 +10,8 @@ radius = 38.4
 [node name="Todo_1" type="RigidBody2D"]
 position = Vector2( 1, 1 )
 mass = 25.0
-linear_damp = 2.0
-angular_damp = 2.0
+linear_damp = 4.0
+angular_damp = 4.0
 script = ExtResource( 2 )
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
