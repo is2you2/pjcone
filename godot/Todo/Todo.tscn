@@ -71,5 +71,8 @@ shape = SubResource( 1 )
 [node name="Todo_Add" parent="Todos" instance=ExtResource( 2 )]
 visible = false
 position = Vector2( 180, 180 )
+parent_script = NodePath("../..")
+
+[node name="TodoElements" type="Node2D" parent="Todos"]
 
 [connection signal="gui_input" from="EmptyTodo/c/Add" to="." method="_on_Add_gui_input"]

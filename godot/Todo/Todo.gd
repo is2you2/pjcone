@@ -35,7 +35,7 @@ func add_todo(args):
 	if json is Dictionary:
 		# 추가하기 구성 변경
 		if not $Todos/Todo_Add.visible:
-#			$EmptyTodo.queue_free()
+			$EmptyTodo.queue_free()
 			$Todos/Todo_Add.visible = true
 		var new_todo # 해야할 일 정보
 		match(json.importance):
@@ -47,17 +47,17 @@ func add_todo(args):
 				new_todo = ele_2.instance()
 		# 필수 정보 입력
 		new_todo.title = json.title
-		new_todo.id = json.id
+		new_todo.name = json.id
+		new_todo.info = json
 		# 랜덤한 위치에서 생성
 		var max_dist:float = $Todos/Area2D/CollisionShape2D.shape.radius
 		$Todos/Area2D/GenerateHere.position = Vector2(max_dist - 100, 0)
 		$Todos/Area2D.rotation = deg2rad(randf() * 720 - 360)
 		new_todo.position = $Todos/Area2D/GenerateHere.global_position
-		$Todos.add_child(new_todo)
+		$Todos/TodoElements.add_child(new_todo)
 	else: printerr('json import error')
 
 
-var test_importance = 0
 func _on_Add_gui_input(event):
 	if event is InputEventMouseButton or event is InputEventScreenTouch:
 		if event.pressed:
@@ -70,13 +70,13 @@ func _on_Add_gui_input(event):
 					'title': '엔진_test_title',
 					'written': 'user_id',
 					'limit': 0,
-					'importance': str(test_importance),
+					'importance': '0',
 					'logs': [],
 					'description': 'test_desc',
 					'remote': null,
 					'attach': {},
 				})])
-				test_importance = (test_importance + 1) % 3
+
 
 # Control 노드를 이용한 화면 크기 검토용
 var window_size:Vector2

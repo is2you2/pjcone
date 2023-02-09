@@ -31,12 +31,12 @@ export class MainPage implements OnInit {
        * 해야할 일 추가/수정/열람 메뉴 띄우기
        * @param _data 해당 해야할 일 정보
        */
-      add_todo_menu: (_data: any) => {
+      add_todo_menu: (_data: string) => {
         this.modalCtrl.create({
           component: AddTodoMenuPage,
           componentProps: {
             godot: this.app.godot.contentWindow || this.app.godot.contentDocument,
-            data: _data ? JSON.stringify(_data) : undefined,
+            data: _data,
           },
         }).then(v => v.present());
       }

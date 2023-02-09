@@ -33,7 +33,6 @@ margin_left = -38.4
 margin_top = -38.4
 margin_right = 38.4
 margin_bottom = 38.4
-mouse_filter = 2
 
 [node name="Label" type="Label" parent="CollisionShape2D/Node2D/UI"]
 anchor_right = 1.0
@@ -44,3 +43,5 @@ align = 1
 valign = 1
 autowrap = true
 clip_text = true
+
+[connection signal="gui_input" from="CollisionShape2D/Node2D/UI" to="." method="_on_UI_gui_input"]
