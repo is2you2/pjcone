@@ -49,20 +49,12 @@ func add_todo(args):
 		new_todo.title = json.title
 		new_todo.id = json.id
 		# 랜덤한 위치에서 생성
-		new_todo.position = Vector2(400, 400)
 		var max_dist:float = $Todos/Area2D/CollisionShape2D.shape.radius
+		$Todos/Area2D/GenerateHere.position = Vector2(max_dist - 100, 0)
 		$Todos/Area2D.rotation = deg2rad(randf() * 720 - 360)
-		var target_dist: float
-		if window_size.x > window_size.y:
-			target_dist = window_size.x
-		else: target_dist = window_size.y
-		var pos_x = target_dist + (randi() % GEN_MARGIN / 2)
-		var pos_y = target_dist + (randi() % GEN_MARGIN / 2)
-		new_todo.position = Vector2(pos_x, pos_y)
-		print_debug(new_todo.position)
+		new_todo.position = $Todos/Area2D/GenerateHere.global_position
 		$Todos.add_child(new_todo)
-		print_debug('data: json_', json['title'])
-	else: print_debug('data: else')
+	else: printerr('json import error')
 
 
 var test_importance = 0
@@ -75,7 +67,7 @@ func _on_Add_gui_input(event):
 				print_debug('editor test add todo')
 				add_todo([JSON.print({
 					'id': 'engine_test_id',
-					'title': 'engine_test_title',
+					'title': '엔진_test_title',
 					'written': 'user_id',
 					'limit': 0,
 					'importance': str(test_importance),

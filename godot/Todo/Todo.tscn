@@ -66,6 +66,8 @@ linear_damp = 2.0
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Todos/Area2D"]
 shape = SubResource( 1 )
 
+[node name="GenerateHere" type="Node2D" parent="Todos/Area2D"]
+
 [node name="Todo_Add" parent="Todos" instance=ExtResource( 2 )]
 visible = false
 position = Vector2( 180, 180 )
