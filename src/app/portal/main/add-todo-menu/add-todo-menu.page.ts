@@ -80,9 +80,23 @@ export class AddTodoMenuPage implements OnInit {
   ImageURL: any;
   ngOnInit() { }
 
+  /** 하단에 보여지는 버튼 */
+  buttonDisplay = {
+    saveTodo: '추가',
+  }
+
   ionViewWillEnter() {
     // 미리 지정된 데이터 정보가 있는지 검토
-    this.userInput = { ...this.navParams.get('data'), ...this.userInput };
+    let received_data = this.navParams.get('data');
+    if (received_data) this.buttonDisplay.saveTodo = '수정';
+    this.userInput = { ...this.userInput, ...received_data };
+    // 첨부 이미지가 있음
+    if (this.userInput.attach)
+      this.indexed.loadBlobFromUserPath(`todo/${this.userInput.id}/attach.img`, this.userInput.attach['type'], (b) => {
+        if (this.ImageURL)
+          URL.revokeObjectURL(this.ImageURL);
+        this.ImageURL = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(b));
+      });
     if (this.userInput['remote']) {
       console.log('누군가로부터 지시받음: ');
     } else {
@@ -245,6 +259,8 @@ export class AddTodoMenuPage implements OnInit {
       this.userInput.attach['img'] = ev.target.result.replace(/"|\\|=/g, '');
       this.indexed.saveFileToUserPath(this.userInput.attach['img'], 'todo/add_tmp.attach');
     };
+    if (this.ImageURL)
+      URL.revokeObjectURL(this.ImageURL);
     this.ImageURL = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(ev.target.files[0]));
     reader.readAsDataURL(ev.target.files[0]);
   }
@@ -270,7 +286,8 @@ export class AddTodoMenuPage implements OnInit {
       return;
     }
     this.isSaveClicked = true;
-    this.userInput.id = new Date().toISOString().replace(/[:|.]/g, '_');
+    if (!this.userInput.id)
+      this.userInput.id = new Date().toISOString().replace(/[:|.]/g, '_');
     let copy_img = this.userInput.attach['img'];
     delete this.userInput.attach['img'];
     if (copy_img)

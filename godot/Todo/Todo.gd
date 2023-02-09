@@ -38,6 +38,18 @@ func add_todo(args):
 			$EmptyTodo.queue_free()
 			$Todos/Todo_Add.visible = true
 		var new_todo # 해야할 일 정보
+		# 기존에 가지고 있는 해야할 일인지 정보 검토
+		var children:= $Todos/TodoElements.get_children()
+		var check_exist:= false
+		var checked_node
+		for child in children:
+			if child.name == json.id:
+				checked_node = child
+				check_exist = true
+				break
+		if check_exist:
+			checked_node.name = 'will_remove'
+			checked_node.queue_free()
 		match(json.importance):
 			'0': # 메모
 				new_todo = ele_0.instance()
@@ -46,12 +58,12 @@ func add_todo(args):
 			'2': # 중요함
 				new_todo = ele_2.instance()
 		# 필수 정보 입력
-		new_todo.title = json.title
 		new_todo.name = json.id
 		new_todo.info = json
 		# 랜덤한 위치에서 생성
 		var max_dist:float = $Todos/Area2D/CollisionShape2D.shape.radius
 		$Todos/Area2D/GenerateHere.position = Vector2(max_dist - 100, 0)
+		randomize()
 		$Todos/Area2D.rotation = deg2rad(randf() * 720 - 360)
 		new_todo.position = $Todos/Area2D/GenerateHere.global_position
 		$Todos/TodoElements.add_child(new_todo)
@@ -59,9 +71,9 @@ func add_todo(args):
 
 
 func _on_Add_gui_input(event):
-	if event is InputEventMouseButton or event is InputEventScreenTouch:
+	if event is InputEventMouseButton:
 		if event.pressed:
-			if OS.has_feature('JavaScript'):
+			if window:
 				window.add_todo_menu()
 			else:
 				print_debug('editor test add todo')
