@@ -61,6 +61,8 @@ func _process(_delta):
 	rotation = 0
 	if not is_add_button: # 추가 버튼을 제외한 행동
 		calc_lerpVal()
+		linear_damp = 4 - lerp_value
+		angular_damp = 4 - lerp_value
 		$CollisionShape2D/Node2D/Sprite.modulate = normal_color.linear_interpolate(alert_color, color_lerp_with_limit)
 		$CollisionShape2D/Node2D/UI.update()
 
