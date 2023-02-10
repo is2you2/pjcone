@@ -44,7 +44,6 @@ export class ToolManagementPage implements OnInit {
           this.indexed.saveFileToUserPath(ev.target.result.replace(/"|\\|=/g, ''), `acts/${this.list[i]}`, () => {
             this.p5toast.show({
               text: `${this.lang.text['ToolManager']['redownloadSucc']}: ${this.list[i]}`,
-              lateable: true,
             });
           });
         };
@@ -53,7 +52,6 @@ export class ToolManagementPage implements OnInit {
     } catch (e) { // 로컬 정보 기반으로 광고
       this.p5toast.show({
         text: `${this.lang.text['ToolManager']['redownloadFailed']}: ${this.list[i]}`,
-        lateable: true,
       });
     }
   }
