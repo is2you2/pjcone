@@ -13,6 +13,7 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { WscService } from 'src/app/wsc.service';
 import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 import { GroupDetailPage } from './group-detail/group-detail.page';
+import { ToolManagementPage } from './tool-management/tool-management.page';
 
 @Component({
   selector: 'app-settings',
@@ -43,6 +44,30 @@ export class SettingsPage implements OnInit {
     this.isBatteryOptimizationsShowed = Boolean(localStorage.getItem('ShowDisableBatteryOptimizations'));
     this.AD_Div = document.getElementById('advertise');
     this.checkAdsInfo();
+    // 다운받은 패키지가 있는지 확인
+    this.indexed.GetFileListFromDB('acts/', list => {
+      this.list_tools = list;
+    });
+  }
+
+  /** 다운받은 pck 파일들 */
+  list_tools = [];
+
+  /** 도구 관리 페이지 열기 */
+  go_to_tool_list() {
+    this.modalCtrl.create({
+      component: ToolManagementPage,
+      componentProps: {
+        data: this.list_tools,
+      },
+    }).then(v => {
+      v.onWillDismiss().then(() => {
+        this.indexed.GetFileListFromDB('acts/', list => {
+          this.list_tools = list;
+        });
+      });
+      v.present();
+    });
   }
 
   /** 광고 정보 불러오기 */
@@ -282,7 +307,7 @@ export class SettingsPage implements OnInit {
   go_to_page(_page: string) {
     this.nav.navigateForward(`settings/${_page}`, {
       animation: iosTransitionAnimation,
-    })
+    });
   }
 
   ionViewWillLeave() {

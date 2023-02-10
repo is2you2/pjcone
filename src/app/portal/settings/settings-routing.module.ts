@@ -64,6 +64,10 @@ const routes: Routes = [
     path: 'send-act',
     loadChildren: () => import('./send-act/send-act.module').then( m => m.SendActPageModule)
   },
+  {
+    path: 'tool-management',
+    loadChildren: () => import('./tool-management/tool-management.module').then( m => m.ToolManagementPageModule)
+  },
 ];
 
 @NgModule({

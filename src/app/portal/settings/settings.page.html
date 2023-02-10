@@ -114,6 +114,14 @@ SPDX-License-Identifier: MIT -->
       </ion-item>
     </div>
   </div>
+  <div *ngIf="list_tools.length">
+    <ion-item-divider>
+      <ion-label>{{lang.text['Settings']['ToolManage']}}</ion-label>
+    </ion-item-divider>
+    <ion-item button (click)="go_to_tool_list()">
+      <ion-label>{{lang.text['Settings']['ToolList']}}</ion-label>
+    </ion-item>
+  </div>
   <ion-item-divider>
     <ion-label>{{lang.text['Settings']['AppInfo']}}</ion-label>
   </ion-item-divider>
