@@ -86,8 +86,8 @@ func add_todo(args):
 		new_todo.info = json
 		# 랜덤한 위치에서 생성
 		var max_dist:float = $Todos/Area2D/CollisionShape2D.shape.radius
-		$Todos/Area2D/GenerateHere.position = Vector2(max_dist - 100, 0)
 		randomize()
+		$Todos/Area2D/GenerateHere.position = Vector2(max_dist - (50 + randf() * 75), 0)
 		$Todos/Area2D.rotation = deg2rad(randf() * 720 - 360)
 		new_todo.position = $Todos/Area2D/GenerateHere.global_position
 		$Todos/TodoElements.add_child(new_todo)
