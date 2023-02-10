@@ -33,6 +33,7 @@ export class LanguageSettingService {
     ChatRoom: {
       attachments: 'Attachments',
     },
+    TodoDetail: {},
   };
 
   constructor(

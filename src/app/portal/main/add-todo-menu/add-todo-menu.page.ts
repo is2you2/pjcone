@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ModalController, NavParams } from '@ionic/angular';
+import { AlertController, ModalController, NavParams } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import * as p5 from "p5";
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -46,6 +46,7 @@ export class AddTodoMenuPage implements OnInit {
     private sanitizer: DomSanitizer,
     private indexed: IndexedDBService,
     private nakama: NakamaService,
+    private alertCtrl: AlertController,
   ) { }
 
   /** 작성된 내용 */
@@ -334,11 +335,20 @@ export class AddTodoMenuPage implements OnInit {
 
   /** 이 해야할 일 삭제 */
   deleteData() {
-    this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, (v) => {
-      v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-      this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
-      this.modalCtrl.dismiss();
-    });
+    this.alertCtrl.create({
+      header: this.lang.text['TodoDetail']['removeTodo'],
+      message: this.lang.text['TodoDetail']['terminateTodo'],
+      buttons: [{
+        text: this.lang.text['TodoDetail']['remove'],
+        handler: () => {
+          this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, (v) => {
+            v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+            this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
+            this.modalCtrl.dismiss();
+          });
+        },
+      }]
+    }).then(v => v.present());
   }
 
   ionViewWillLeave() {

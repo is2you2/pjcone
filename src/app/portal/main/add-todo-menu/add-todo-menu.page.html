@@ -69,7 +69,7 @@ SPDX-License-Identifier: MIT -->
                 </ion-button>
               </td>
               <td *ngIf="isModify">
-                <ion-button [disabled]="isButtonClicked" (click)="deleteData()" expand="block">
+                <ion-button color="danger" [disabled]="isButtonClicked" (click)="deleteData()" expand="block">
                   {{lang.text['TodoDetail']['remove']}}
                 </ion-button>
               </td>

@@ -65,6 +65,8 @@ buttonDisplay_modify,수정
 needDisplayName,표시명을 작성하여야 합니다.
 CreateTodo,해야할 일 생성
 ModifyTodo,해야할 일 수정
+removeTodo,기록 삭제
+terminateTodo,이 작업은 되돌릴 수 없습니다.
 ## QRElse,
 Title,사용할 수 없는 구성
 info,QR코드 또는 바코드를 인식하였으나 이 앱에서 사용하는 구성이 아닙니다.
