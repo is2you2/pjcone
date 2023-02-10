@@ -104,7 +104,7 @@ export class AddTodoMenuPage implements OnInit {
     this.userInput = { ...this.userInput, ...received_data };
     // 첨부 이미지가 있음
     if (this.userInput.attach['type'])
-      this.indexed.loadBlobFromUserPath(`todo/${this.userInput.id}/attach.img`, this.userInput.attach['type'], (b) => {
+      this.indexed.loadBlobFromUserPath(`todo/${this.userInput.id}/${this.userInput.attach['filename']}`, this.userInput.attach['type'], (b) => {
         if (this.ImageURL)
           URL.revokeObjectURL(this.ImageURL);
         this.ImageURL = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(b));
@@ -290,7 +290,7 @@ export class AddTodoMenuPage implements OnInit {
       component: IonicViewerPage,
       componentProps: {
         info: this.userInput.attach,
-        path: this.userInput.id ? `todo/${this.userInput.id}/attach.img` : 'todo/add_tmp.attach',
+        path: this.userInput.id ? `todo/${this.userInput.id}/${this.userInput.attach['filename']}` : 'todo/add_tmp.attach',
       }
     }).then(v => v.present());
   }
@@ -312,7 +312,7 @@ export class AddTodoMenuPage implements OnInit {
     let copy_img = this.userInput.attach['img'];
     delete this.userInput.attach['img'];
     if (copy_img)
-      this.indexed.saveFileToUserPath(copy_img, `todo/${this.userInput.id}/attach.img`);
+      this.indexed.saveFileToUserPath(copy_img, `todo/${this.userInput.id}/${this.userInput.attach['filename']}`);
     this.userInput.written = new Date().getTime();
     this.userInput.limit = new Date(this.userInput.limit).getTime();
     this.userInput.logs.push({
