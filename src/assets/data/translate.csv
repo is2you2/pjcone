@@ -45,6 +45,26 @@ AppLanguage,언어 설정
 userPrivacyTerms,개인정보처리방침
 LicenseNotice,라이선스 고지
 UserGuideLink,사용자 가이드
+## TodoDetail,
+Title,해야할 일
+DisplayName,표시명
+DisplayName_placeholder,짧게
+Importance,중요도
+Importance_2,중요함
+Importance_1,기억해야 함
+Importance_0,메모
+limit,기한
+description,상세 내용
+description_placeholder,해야할 일 상세 내용
+attachments,첨부파일
+attachments_none,없음
+logs,기록
+remove,삭제
+buttonDisplay_add,추가
+buttonDisplay_modify,수정
+needDisplayName,표시명을 작성하여야 합니다.
+CreateTodo,해야할 일 생성
+ModifyTodo,해야할 일 수정
 ## QRElse,
 Title,사용할 수 없는 구성
 info,QR코드 또는 바코드를 인식하였으나 이 앱에서 사용하는 구성이 아닙니다.

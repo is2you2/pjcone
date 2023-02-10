@@ -82,7 +82,7 @@ export class AddTodoMenuPage implements OnInit {
 
   /** 하단에 보여지는 버튼 */
   buttonDisplay = {
-    saveTodo: '추가',
+    saveTodo: this.lang.text['TodoDetail']['buttonDisplay_add'],
   }
 
   /** 이 할 일을 내가 만들었는지 */
@@ -92,7 +92,7 @@ export class AddTodoMenuPage implements OnInit {
     // 미리 지정된 데이터 정보가 있는지 검토
     let received_data = this.navParams.get('data');
     if (received_data) { // 이미 있는 데이터 조회
-      this.buttonDisplay.saveTodo = '수정';
+      this.buttonDisplay.saveTodo = this.lang.text['TodoDetail']['buttonDisplay_modify'];
       this.isModify = true;
     } else { // 새로 만드는 경우
       let tomorrow = new Date(new Date().getTime() + 86400000);
@@ -108,8 +108,11 @@ export class AddTodoMenuPage implements OnInit {
       });
     // 수정 가능 여부 검토
     if (this.userInput['remote']) {
-      console.warn('임시 남의 것 처리');
       this.isOwner = false;
+    }
+    // 로그 정보 게시
+    if (this.userInput.logs.length) {
+      this.userInput.logs.forEach(_log => _log.displayText = this.lang.text['TodoDetail'][_log.translateCode] || _log.translateCode);
     }
     let date_limit = new Date(this.userInput.limit);
     this.Calendar.value = new Date(date_limit.getTime() - date_limit.getTimezoneOffset() * 60 * 1000).toISOString();
@@ -294,7 +297,7 @@ export class AddTodoMenuPage implements OnInit {
   saveData() {
     if (!this.userInput.title) {
       this.p5toast.show({
-        text: '표시명을 작성하여야 합니다.',
+        text: this.lang.text['TodoDetail']['needDisplayName'],
       });
       return;
     }

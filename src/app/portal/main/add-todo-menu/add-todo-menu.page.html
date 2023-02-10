@@ -3,7 +3,7 @@ SPDX-License-Identifier: MIT -->
 
 <ion-header>
   <ion-toolbar>
-    <ion-title>해야할 일</ion-title>
+    <ion-title>{{lang.text['TodoDetail']['Title']}}</ion-title>
     <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
       <ion-back-button defaultHref="main"></ion-back-button>
     </ion-buttons>
@@ -17,41 +17,41 @@ SPDX-License-Identifier: MIT -->
         <div id="p5timer" style="position: absolute; width: 100%; height: 8px; z-index: 2;"></div>
         <div id="main_div" class="main">
           <ion-item>
-            <ion-label>표시명</ion-label>
-            <ion-input [(ngModel)]="userInput.title" class="ion-text-right" placeholder="짧게"></ion-input>
+            <ion-label>{{lang.text['TodoDetail']['DisplayName']}}</ion-label>
+            <ion-input [(ngModel)]="userInput.title" class="ion-text-right" [placeholder]="lang.text['TodoDetail']['DisplayName_placeholder']"></ion-input>
           </ion-item>
           <ion-item button (click)="ImporantSelClicked()">
-            <ion-label>중요도</ion-label>
+            <ion-label>{{lang.text['TodoDetail']['Importance']}}</ion-label>
             <ion-select #ImporantSel style="pointer-events: none;" [value]="userInput.importance"
               (ionChange)="ImporantSelChanged($event)">
-              <ion-select-option value="2">중요함</ion-select-option>
-              <ion-select-option value="1">기억해야 함</ion-select-option>
-              <ion-select-option value="0">메모</ion-select-option>
+              <ion-select-option value="2">{{lang.text['TodoDetail']['Importance_2']}}</ion-select-option>
+              <ion-select-option value="1">{{lang.text['TodoDetail']['Importance_1']}}</ion-select-option>
+              <ion-select-option value="0">{{lang.text['TodoDetail']['Importance_0']}}</ion-select-option>
             </ion-select>
           </ion-item>
           <ion-item button (click)="toggle_calendar()">
-            <ion-label>기한</ion-label>
+            <ion-label>{{lang.text['TodoDetail']['limit']}}</ion-label>
             <ion-label class="ion-text-right uneditable_data">{{limitDisplay}}</ion-label>
           </ion-item>
           <ion-datetime #Calendar [hidden]="isCalendarHidden" style="display: inline;" [locale]="lang.lang"
             (ionChange)="limit_change($event)"></ion-datetime>
           <ion-item>
-            <ion-label>상세 내용</ion-label>
+            <ion-label>{{lang.text['TodoDetail']['description']}}</ion-label>
           </ion-item>
-          <textarea class="infobox" [(ngModel)]="userInput.description" placeholder="해야할 일 상세 내용"></textarea>
+          <textarea class="infobox" [(ngModel)]="userInput.description" [placeholder]="lang.text['TodoDetail']['description']"></textarea>
           <img *ngIf="ImageURL" [src]="ImageURL" alt="attach_image" (click)="go_to_ionic_viewer()">
           <ion-item button (click)="select_attach_image()">
-            <ion-label>첨부파일</ion-label>
-            <ion-label class="ion-text-right uneditable_data">{{userInput.attach['filename'] || '없음'}}</ion-label>
+            <ion-label>{{lang.text['TodoDetail']['attachments']}}</ion-label>
+            <ion-label class="ion-text-right uneditable_data">{{userInput.attach['filename'] || lang.text['TodoDetail']['attachments_none']}}</ion-label>
           </ion-item>
           <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
           <div *ngIf="userInput.logs.length">
             <ion-item button (click)="toggle_logs()">
-              <ion-label>기록</ion-label>
+              <ion-label>{{lang.text['TodoDetail']['logs']}}</ion-label>
             </ion-item>
             <div [hidden]="isLogsHidden">
               <div *ngFor="let log of userInput.logs" class="logs">
-                {{log.displayText || log.translateCode}}
+                {{log.displayText}}
               </div>
             </div>
           </div>
@@ -70,7 +70,7 @@ SPDX-License-Identifier: MIT -->
               </td>
               <td *ngIf="isModify">
                 <ion-button [disabled]="isButtonClicked" (click)="deleteData()" expand="block">
-                  삭제
+                  {{lang.text['TodoDetail']['remove']}}
                 </ion-button>
               </td>
             </tr>
