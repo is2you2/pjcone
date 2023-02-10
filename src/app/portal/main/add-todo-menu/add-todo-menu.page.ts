@@ -58,6 +58,8 @@ export class AddTodoMenuPage implements OnInit {
     id: undefined,
     /** 간략한 제목 설정 */
     title: undefined,
+    /** 최초 생성날짜 */
+    create_at: undefined,
     /** 작성일시 */
     written: undefined,
     /** 기한 */
@@ -303,8 +305,10 @@ export class AddTodoMenuPage implements OnInit {
       return;
     }
     this.isButtonClicked = true;
+    if (!this.userInput.create_at)
+      this.userInput.create_at = new Date().getTime();
     if (!this.userInput.id)
-      this.userInput.id = new Date().toISOString().replace(/[:|.]/g, '_');
+      this.userInput.id = new Date(this.userInput.create_at).toISOString().replace(/[:|.]/g, '_');
     let copy_img = this.userInput.attach['img'];
     delete this.userInput.attach['img'];
     if (copy_img)

@@ -34,6 +34,21 @@ func _ready():
 		window.remove_todo = remove_todo_func
 	else: # 엔진에서 테스트중일 때
 		print_debug('on test...')
+	greater_gravity_at_start()
+
+
+var gravity_value:= 3860
+const GRAVITY_TARGET:= 2240
+func greater_gravity_at_start():
+	yield(get_tree(), "idle_frame")
+	$Todos/Area2D.gravity = gravity_value
+	gravity_value -= 32
+	if gravity_value > GRAVITY_TARGET:
+		greater_gravity_at_start()
+	else:
+		gravity_value = GRAVITY_TARGET
+		$Todos/Area2D.gravity = gravity_value
+
 
 var ele_0:= preload("res://TodoEle_0.tscn")
 var ele_1:= preload("res://TodoEle_1.tscn")

@@ -18,6 +18,8 @@ var is_add_button:= false
 func _ready():
 	if info.has('title'):
 		title = info.title
+		if info.attach.has('filename'):
+			try_to_load_attach()
 	else: is_add_button = true
 	if title:
 		$CollisionShape2D/Node2D/UI/Label.text = title
@@ -26,6 +28,22 @@ func _ready():
 	if not parent_script:
 		parent_script = '../../..'
 	parent_node = get_node(parent_script)
+
+
+# 파일 불러오기 시도
+# 다시 로드되기 전까지는 경로가 업데이트되지 않는 오류가 있다
+func try_to_load_attach():
+	var dir:= Directory.new()
+	yield(get_tree(), "idle_frame")
+	var check_exist:= dir.file_exists('user://todo/%s/attach.img' % info.id)
+	if check_exist:
+		var img:= Image.new()
+		img.load('user://todo/%s/attach.img' % info.id)
+		var tex:= ImageTexture.new()
+		tex.create_from_image(img)
+		# Texture 에 이미지 투사
+	else:
+		printerr('다시 로드되기 전까지는 경로가 업데이트 되지 않음')
 
 
 var lerp_value:= 0.0
