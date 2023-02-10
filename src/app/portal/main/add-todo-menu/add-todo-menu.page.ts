@@ -96,9 +96,10 @@ export class AddTodoMenuPage implements OnInit {
       this.isModify = true;
     } else { // 새로 만드는 경우
       let tomorrow = new Date(new Date().getTime() + 86400000);
-      this.userInput.limit = tomorrow.toISOString();
+      this.userInput.limit = tomorrow.getTime();
     }
     this.userInput = { ...this.userInput, ...received_data };
+    console.log(this.userInput);
     // 첨부 이미지가 있음
     if (this.userInput.attach['type'])
       this.indexed.loadBlobFromUserPath(`todo/${this.userInput.id}/attach.img`, this.userInput.attach['type'], (b) => {
@@ -174,7 +175,8 @@ export class AddTodoMenuPage implements OnInit {
   limitTimeP5Display: number;
   /** 평소 기한 가시화 색상 */
   normal_color = '#888b';
-  alert_color = '#888b';
+  alert_color = '#0bbb';
+  AlertLerpStartFrom = .8;
   show_count_timer() {
     this.p5timer = new p5((p: p5) => {
       let startAnimLerp = 0;
@@ -192,14 +194,16 @@ export class AddTodoMenuPage implements OnInit {
         canvas.parent(timerDiv);
         p.noStroke();
       }
-      const AlertLerpStartFrom = .4;
+      let lerpVal = 0;
       let checkCurrent = () => {
         currentTime = new Date().getTime();
-        let lerpVal = p.map(currentTime, startTime, this.limitTimeP5Display, 0, 1);
-        if (lerpVal <= AlertLerpStartFrom) {
+        if (this.limitTimeP5Display < currentTime)
+          lerpVal = 1;
+        else lerpVal = p.map(currentTime, startTime, this.limitTimeP5Display, 0, 1, true);
+        if (lerpVal <= this.AlertLerpStartFrom) {
           color = p.color(this.normal_color);
-        } else if (lerpVal > AlertLerpStartFrom)
-          color = p.lerpColor(p.color(this.normal_color), p.color(this.alert_color), p.map(lerpVal, AlertLerpStartFrom, 1, 0, 1) * startAnimLerp);
+        } else if (lerpVal > this.AlertLerpStartFrom)
+          color = p.lerpColor(p.color(this.normal_color), p.color(this.alert_color), p.map(lerpVal, this.AlertLerpStartFrom, 1, 0, 1) * startAnimLerp);
       }
       p.draw = () => {
         checkCurrent();
@@ -210,9 +214,9 @@ export class AddTodoMenuPage implements OnInit {
           startAnimLerp += .04;
           if (startAnimLerp >= 1)
             startAnimLerp = 1;
-          p.rect(0, 0, p.lerp(0, p.map(currentTime, startTime, this.limitTimeP5Display, 0, p.width), easeOut(startAnimLerp)), p.height);
+          p.rect(0, 0, p.lerp(0, p.width, lerpVal * easeOut(startAnimLerp)), p.height);
         } else {
-          p.rect(0, 0, p.map(currentTime, startTime, this.limitTimeP5Display, 0, p.width), p.height);
+          p.rect(0, 0, p.lerp(0, p.width, lerpVal), p.height);
         }
         p.pop();
       }
@@ -240,15 +244,18 @@ export class AddTodoMenuPage implements OnInit {
     switch (this.userInput.importance) {
       case '0': // 메모
         this.normal_color = '#888b';
-        this.alert_color = '#888b';
+        this.alert_color = '#0bbb';
+        this.AlertLerpStartFrom = .8;
         break;
       case '1': // 기억해야함
         this.normal_color = '#888b';
         this.alert_color = '#dddd0cbb';
+        this.AlertLerpStartFrom = .5;
         break;
       case '2': // 중요함
         this.normal_color = '#dddd0cbb';
         this.alert_color = '#800b';
+        this.AlertLerpStartFrom = .4;
         break;
     }
   }
@@ -278,7 +285,7 @@ export class AddTodoMenuPage implements OnInit {
       component: IonicViewerPage,
       componentProps: {
         info: this.userInput.attach,
-        path: this.userInput.id ? `todo/${this.userInput.id}.attach` : 'todo/add_tmp.attach',
+        path: this.userInput.id ? `todo/${this.userInput.id}/attach.img` : 'todo/add_tmp.attach',
       }
     }).then(v => v.present());
   }
@@ -299,7 +306,8 @@ export class AddTodoMenuPage implements OnInit {
     delete this.userInput.attach['img'];
     if (copy_img)
       this.indexed.saveFileToUserPath(copy_img, `todo/${this.userInput.id}/attach.img`);
-    this.userInput.written = new Date().toISOString();
+    this.userInput.written = new Date().getTime();
+    this.userInput.limit = new Date(this.userInput.limit).getTime();
     this.userInput.logs.push({
       creator: this.userInput.remote ?
         this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id

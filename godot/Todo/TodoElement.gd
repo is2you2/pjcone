@@ -3,22 +3,46 @@ extends RigidBody2D
 
 export var title:String
 
+
 var info:Dictionary
 export var parent_script:NodePath
 var window
+var parent_node
+var normal_color:Color
+var alert_color:Color
+var lerp_start_from:= 0.0
+var is_add_button:= false
 
 func _ready():
 	if info.has('title'):
 		title = info.title
+	else: is_add_button = true
 	if title:
 		$CollisionShape2D/Node2D/UI/Label.text = title
 	if OS.has_feature('JavaScript'):
 		window = JavaScript.get_interface('window')
+	if not parent_script:
+		parent_script = '../../..'
+	parent_node = get_node(parent_script)
 
 
+var lerp_value:= 0.0
+var color_lerp_with_limit:= 0.0
+func calc_lerpVal():
+	lerp_value = clamp(map(parent_node.current_time, info.written, info.limit, 0, 1), 0, 1)
+	color_lerp_with_limit = clamp(map(lerp_value, lerp_start_from, 1, 0, 1), 0, 1)
+	
 
 func _process(_delta):
 	rotation = 0
+	if not is_add_button: # 추가 버튼을 제외한 행동
+		calc_lerpVal()
+		$CollisionShape2D/Node2D/Sprite.modulate = normal_color.linear_interpolate(alert_color, color_lerp_with_limit)
+
+
+func map(value, InputA, InputB, OutputA, OutputB):
+	return (value - InputA) / (InputB - InputA) * (OutputB - OutputA) + OutputA
+
 
 var test_todo_index:= 0
 # 클릭 받아내기
@@ -36,11 +60,11 @@ func _on_UI_gui_input(event):
 						print_debug(info)
 					else: # 새로 만들기
 						test_todo_index = (test_todo_index + 1) % 3
-						get_node(parent_script).add_todo([JSON.print({
+						parent_node.add_todo([JSON.print({
 							'id': 'engine_test_id',
 							'title': '엔진_test_title',
-							'written': 'user_id',
-							'limit': 0,
+							'written': OS.get_system_time_msecs(),
+							'limit': OS.get_system_time_msecs() + 10000,
 							'importance': str(test_todo_index),
 							'logs': [],
 							'description': 'test_desc',

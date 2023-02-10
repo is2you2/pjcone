@@ -3,8 +3,7 @@
 
 extends Node
 
-# iframe 창
-var window
+var window # iframe 창
 var add_todo_func = JavaScript.create_callback(self, 'add_todo')
 var remove_todo_func = JavaScript.create_callback(self, 'remove_todo')
 
@@ -66,10 +65,19 @@ func add_todo(args):
 		match(json.importance):
 			'0': # 메모
 				new_todo = ele_0.instance()
+				new_todo.normal_color = Color('#bb888888')
+				new_todo.alert_color = Color('#bb00bbbb')
+				new_todo.lerp_start_from = .8
 			'1': # 기억해야함
 				new_todo = ele_1.instance()
+				new_todo.normal_color = Color('#bb888888')
+				new_todo.alert_color = Color('#bbdddd0c')
+				new_todo.lerp_start_from = .5
 			'2': # 중요함
 				new_todo = ele_2.instance()
+				new_todo.normal_color = Color('#bbdddd0c')
+				new_todo.alert_color = Color('#bb880000')
+				new_todo.lerp_start_from = .4
 		# 필수 정보 입력
 		new_todo.name = json.id
 		new_todo.info = json
@@ -114,8 +122,8 @@ func _on_Add_gui_input(event):
 				add_todo([JSON.print({
 					'id': 'engine_test_id',
 					'title': '엔진_test_title',
-					'written': 'user_id',
-					'limit': 0,
+					'written': OS.get_system_time_msecs(),
+					'limit': OS.get_system_time_msecs() + 10000,
 					'importance': '0',
 					'logs': [],
 					'description': 'test_desc',
@@ -127,7 +135,10 @@ func _on_Add_gui_input(event):
 # Control 노드를 이용한 화면 크기 검토용
 var window_size:Vector2
 const GEN_MARGIN:= 200
+var current_time:int
+# add-todo-menu.p5timer.AlertLerpStartFrom
 func _process(_delta):
+	current_time = OS.get_system_time_msecs()
 	window_size = $Todos.rect_size
 	$Todos/Area2D.position = window_size / 2
 	$Todos/Area2D/CollisionShape2D.shape.radius = window_size.x + GEN_MARGIN if window_size.x > window_size.y else window_size.y + GEN_MARGIN
