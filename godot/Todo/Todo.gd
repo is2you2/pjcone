@@ -65,18 +65,21 @@ func add_todo(args):
 		match(json.importance):
 			'0': # 메모
 				new_todo = ele_0.instance()
-				new_todo.normal_color = Color('#bb888888')
-				new_todo.alert_color = Color('#bb00bbbb')
+				new_todo.line_color = Color('#bb888888')
+				new_todo.normal_color = Color('#88888888')
+				new_todo.alert_color = Color('#8800bbbb')
 				new_todo.lerp_start_from = .8
 			'1': # 기억해야함
 				new_todo = ele_1.instance()
-				new_todo.normal_color = Color('#bb888888')
-				new_todo.alert_color = Color('#bbdddd0c')
+				new_todo.line_color = Color('#bbdddd0c')
+				new_todo.normal_color = Color('#88888888')
+				new_todo.alert_color = Color('#88dddd0c')
 				new_todo.lerp_start_from = .5
 			'2': # 중요함
 				new_todo = ele_2.instance()
-				new_todo.normal_color = Color('#bbdddd0c')
-				new_todo.alert_color = Color('#bb880000')
+				new_todo.line_color = Color('#bb880000')
+				new_todo.normal_color = Color('#88dddd0c')
+				new_todo.alert_color = Color('#88880000')
 				new_todo.lerp_start_from = .4
 		# 필수 정보 입력
 		new_todo.name = json.id

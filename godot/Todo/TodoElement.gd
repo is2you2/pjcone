@@ -8,10 +8,12 @@ var info:Dictionary
 export var parent_script:NodePath
 var window
 var parent_node
+var line_color:Color
 var normal_color:Color
 var alert_color:Color
 var lerp_start_from:= 0.0
 var is_add_button:= false
+
 
 func _ready():
 	if info.has('title'):
@@ -29,15 +31,20 @@ func _ready():
 var lerp_value:= 0.0
 var color_lerp_with_limit:= 0.0
 func calc_lerpVal():
-	lerp_value = clamp(map(parent_node.current_time, info.written, info.limit, 0, 1), 0, 1)
-	color_lerp_with_limit = clamp(map(lerp_value, lerp_start_from, 1, 0, 1), 0, 1)
-	
+	if info.limit < parent_node.current_time:
+		lerp_value = 1
+		color_lerp_with_limit = 1
+	else:
+		lerp_value = clamp(map(parent_node.current_time, info.written, info.limit, 0, 1), 0, 1)
+		color_lerp_with_limit = clamp(map(lerp_value, lerp_start_from, 1, 0, 1), 0, 1)
+
 
 func _process(_delta):
 	rotation = 0
 	if not is_add_button: # 추가 버튼을 제외한 행동
 		calc_lerpVal()
 		$CollisionShape2D/Node2D/Sprite.modulate = normal_color.linear_interpolate(alert_color, color_lerp_with_limit)
+		$CollisionShape2D/Node2D/UI.update()
 
 
 func map(value, InputA, InputB, OutputA, OutputB):

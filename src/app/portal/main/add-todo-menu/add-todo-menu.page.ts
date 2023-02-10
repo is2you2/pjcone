@@ -99,7 +99,6 @@ export class AddTodoMenuPage implements OnInit {
       this.userInput.limit = tomorrow.getTime();
     }
     this.userInput = { ...this.userInput, ...received_data };
-    console.log(this.userInput);
     // 첨부 이미지가 있음
     if (this.userInput.attach['type'])
       this.indexed.loadBlobFromUserPath(`todo/${this.userInput.id}/attach.img`, this.userInput.attach['type'], (b) => {
