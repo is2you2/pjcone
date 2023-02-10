@@ -406,6 +406,7 @@ export class ChatRoomPage implements OnInit {
   file_detail(msg: any) {
     this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (v) => {
       if (v) { // 파일이 존재하는 경우
+        msg.content['text'] = this.lang.text['ChatRoom']['downloaded'];
         if (msg.content['filesize'] < this.FILESIZE_LIMIT)
           this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
             msg.content['type'],
