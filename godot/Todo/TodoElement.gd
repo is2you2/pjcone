@@ -36,7 +36,6 @@ func try_to_load_attach():
 	var dir:= Directory.new()
 	yield(get_tree(), "idle_frame")
 	var check_exist:= dir.file_exists('user://todo/%s/%s' % [info.id, info.attach.filename])
-	print_debug('user://todo/%s/%s' % [info.id, info.attach.filename])
 	if check_exist:
 		var img:= Image.new()
 		img.load('user://todo/%s/%s' % [info.id, info.attach.filename])

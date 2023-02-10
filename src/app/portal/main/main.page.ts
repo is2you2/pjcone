@@ -38,7 +38,7 @@ export class MainPage implements OnInit {
           component: AddTodoMenuPage,
           componentProps: {
             godot: this.app.godot.contentWindow || this.app.godot.contentDocument,
-            data: _data ? JSON.parse(_data) : undefined,
+            data: _data,
           },
         }).then(v => v.present());
       }

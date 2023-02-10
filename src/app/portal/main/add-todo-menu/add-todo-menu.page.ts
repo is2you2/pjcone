@@ -91,17 +91,19 @@ export class AddTodoMenuPage implements OnInit {
   /** 이 할 일을 내가 만들었는지 */
   isOwner = true;
   isModify = false;
+  received_data: string;
   ionViewWillEnter() {
     // 미리 지정된 데이터 정보가 있는지 검토
-    let received_data = this.navParams.get('data');
-    if (received_data) { // 이미 있는 데이터 조회
+    this.received_data = this.navParams.get('data');
+    if (this.received_data) { // 이미 있는 데이터 조회
       this.buttonDisplay.saveTodo = this.lang.text['TodoDetail']['buttonDisplay_modify'];
       this.isModify = true;
     } else { // 새로 만드는 경우
       let tomorrow = new Date(new Date().getTime() + 86400000);
       this.userInput.limit = tomorrow.getTime();
     }
-    this.userInput = { ...this.userInput, ...received_data };
+    if (this.received_data)
+      this.userInput = { ...this.userInput, ...JSON.parse(this.received_data) };
     // 첨부 이미지가 있음
     if (this.userInput.attach['type'])
       this.indexed.loadBlobFromUserPath(`todo/${this.userInput.id}/${this.userInput.attach['filename']}`, this.userInput.attach['type'], (b) => {
@@ -290,7 +292,7 @@ export class AddTodoMenuPage implements OnInit {
       component: IonicViewerPage,
       componentProps: {
         info: this.userInput.attach,
-        path: this.userInput.id ? `todo/${this.userInput.id}/${this.userInput.attach['filename']}` : 'todo/add_tmp.attach',
+        path: this.userInput.attach['img'] ? 'todo/add_tmp.attach' : `todo/${this.userInput.id}/${this.userInput.attach['filename']}`,
       }
     }).then(v => v.present());
   }
@@ -305,14 +307,27 @@ export class AddTodoMenuPage implements OnInit {
       return;
     }
     this.isButtonClicked = true;
+    let copy_img = this.userInput.attach['img'];
+    delete this.userInput.attach['img'];
+    this.userInput.logs.forEach(log => {
+      delete log.displayText;
+    });
+    // 들어올 때와 같은지 검토
+    let exactly_same = JSON.stringify(this.userInput) == this.received_data;
+    if (exactly_same) {
+      this.modalCtrl.dismiss();
+      return;
+    } // 같으면 저장 동작을 하지 않음
     if (!this.userInput.create_at)
       this.userInput.create_at = new Date().getTime();
     if (!this.userInput.id)
       this.userInput.id = new Date(this.userInput.create_at).toISOString().replace(/[:|.]/g, '_');
-    let copy_img = this.userInput.attach['img'];
-    delete this.userInput.attach['img'];
-    if (copy_img)
+    let received_json = this.received_data ? JSON.parse(this.received_data) : undefined;
+    if (copy_img) {
+      if (received_json)
+        this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/${received_json.attach['filename']}`);
       this.indexed.saveFileToUserPath(copy_img, `todo/${this.userInput.id}/${this.userInput.attach['filename']}`);
+    }
     this.userInput.written = new Date().getTime();
     this.userInput.limit = new Date(this.userInput.limit).getTime();
     this.userInput.logs.push({
@@ -323,9 +338,6 @@ export class AddTodoMenuPage implements OnInit {
       translateCode: this.isModify ? 'ModifyTodo' : 'CreateTodo',
     });
     this.isLogsHidden = true;
-    this.userInput.logs.forEach(log => {
-      delete log.displayText;
-    });
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, () => {
       this.modalCtrl.dismiss();
