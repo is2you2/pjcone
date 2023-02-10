@@ -16,6 +16,8 @@ func _ready():
 		dir.make_dir('user://todo/')
 	yield(get_tree(), "idle_frame")
 	yield(get_tree(), "idle_frame")
+	$Todos/Todo_Add.global_position = window_size / 2
+	$Todos/Todo_Add.global_position
 	if dir.open('user://todo/') == OK:
 		dir.list_dir_begin(true, true)
 		var ls = dir.get_next()
@@ -45,6 +47,9 @@ func add_todo(args):
 		if not $Todos/Todo_Add.visible:
 			$EmptyTodo.hide()
 			$Todos/Todo_Add.visible = true
+			$Todos/Todo_Add.global_position = window_size / 2
+			$Todos/Todo_Add.global_position
+			$Todos/Todo_Add.sleeping = true
 		var new_todo # 해야할 일 정보
 		# 기존에 가지고 있는 해야할 일인지 정보 검토
 		var children:= $Todos/TodoElements.get_children()
@@ -93,6 +98,9 @@ func remove_todo(args):
 		if children.size() <= 1:
 			$EmptyTodo.show()
 			$Todos/Todo_Add.visible = false
+			$Todos/Todo_Add.global_position = window_size / 2
+			$Todos/Todo_Add.global_position
+			$Todos/Todo_Add.sleeping = true
 	else: printerr('json import error')
 
 

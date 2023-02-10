@@ -71,6 +71,7 @@ shape = SubResource( 1 )
 [node name="Todo_Add" parent="Todos" instance=ExtResource( 2 )]
 visible = false
 position = Vector2( 180, 180 )
+sleeping = true
 parent_script = NodePath("../..")
 
 [node name="TodoElements" type="Node2D" parent="Todos"]

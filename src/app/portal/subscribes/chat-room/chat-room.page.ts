@@ -78,9 +78,7 @@ export class ChatRoomPage implements OnInit {
       if (this.nakama.channel_transfer[this.isOfficial][this.target] && this.nakama.channel_transfer[this.isOfficial][this.target][this.info.id])
         delete this.nakama.channel_transfer[this.isOfficial][this.target][this.info.id];
       this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`, (list) => {
-        list.forEach(path => {
-          this.indexed.removeFileFromUserPath(path.substring(8));
-        });
+        list.forEach(path => this.indexed.removeFileFromUserPath(path));
       });
       this.modalCtrl.dismiss();
     }
@@ -319,7 +317,7 @@ export class ChatRoomPage implements OnInit {
         this.LocalHistoryList = list;
         this.isHistoryLoaded = true;
         if (!this.LocalHistoryList.length) return;
-        this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop().substring(8), (e, v) => {
+        this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop(), (e, v) => {
           if (e && v) {
             let json: any[] = JSON.parse(v);
             for (let i = 0, j = json.length; i < j; i++) {
@@ -333,7 +331,7 @@ export class ChatRoomPage implements OnInit {
         });
       });
     else {
-      this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop().substring(8), (e, v) => {
+      this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop(), (e, v) => {
         if (e && v) {
           let json: any[] = JSON.parse(v);
           for (let i = 0, j = json.length; i < j; i++) {

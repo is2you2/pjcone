@@ -158,6 +158,7 @@ export class IndexedDBService {
       for (let i = keys.length - 1; i >= 0; i--) {
         if (!keys[i].includes(path))
           keys.splice(i, 1);
+        else keys[i] = keys[i].substring(8);
       }
       _CallBack(keys);
     }
