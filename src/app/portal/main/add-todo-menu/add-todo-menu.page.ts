@@ -178,6 +178,15 @@ export class AddTodoMenuPage implements OnInit {
     }, 50);
   }
 
+  /** 첨푸아리 삭제 */
+  remove_attach() {
+    this.indexed.removeFileFromUserPath('todo/add_tmp.attach');
+    delete this.userInput.attach;
+    URL.revokeObjectURL(this.ImageURL);
+    this.ImageURL = undefined;
+    this.userInput.attach = {};
+  }
+
   p5timer: p5;
   limitTimeP5Display: number;
   /** 평소 기한 가시화 색상 */

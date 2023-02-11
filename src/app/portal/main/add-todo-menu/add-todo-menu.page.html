@@ -18,7 +18,8 @@ SPDX-License-Identifier: MIT -->
         <div id="main_div" class="main">
           <ion-item>
             <ion-label>{{lang.text['TodoDetail']['DisplayName']}}</ion-label>
-            <ion-input [(ngModel)]="userInput.title" class="ion-text-right" [placeholder]="lang.text['TodoDetail']['DisplayName_placeholder']"></ion-input>
+            <ion-input [(ngModel)]="userInput.title" class="ion-text-right"
+              [placeholder]="lang.text['TodoDetail']['DisplayName_placeholder']"></ion-input>
           </ion-item>
           <ion-item button (click)="ImporantSelClicked()">
             <ion-label>{{lang.text['TodoDetail']['Importance']}}</ion-label>
@@ -37,12 +38,17 @@ SPDX-License-Identifier: MIT -->
             (ionChange)="limit_change($event)"></ion-datetime>
           <ion-item>
             <ion-label>{{lang.text['TodoDetail']['description']}}</ion-label>
+            <ion-button *ngIf="ImageURL" (click)="remove_attach()">
+              {{lang.text['TodoDetail']['delete_attach']}}
+            </ion-button>
           </ion-item>
-          <textarea class="infobox" [(ngModel)]="userInput.description" [placeholder]="lang.text['TodoDetail']['description']"></textarea>
+          <textarea class="infobox" [(ngModel)]="userInput.description"
+            [placeholder]="lang.text['TodoDetail']['description']"></textarea>
           <img *ngIf="ImageURL" [src]="ImageURL" alt="attach_image" (click)="go_to_ionic_viewer()">
           <ion-item button (click)="select_attach_image()">
             <ion-label>{{lang.text['TodoDetail']['attachments']}}</ion-label>
-            <ion-label class="ion-text-right uneditable_data">{{userInput.attach['filename'] || lang.text['TodoDetail']['attachments_none']}}</ion-label>
+            <ion-label class="ion-text-right uneditable_data">{{userInput.attach['filename'] ||
+              lang.text['TodoDetail']['attachments_none']}}</ion-label>
           </ion-item>
           <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
           <div *ngIf="userInput.logs.length">
