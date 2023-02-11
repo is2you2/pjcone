@@ -5,7 +5,7 @@ import { Component, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import * as p5 from "p5";
-import 'p5/lib/addons/p5.sound';
+// import 'p5/lib/addons/p5.sound';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 
