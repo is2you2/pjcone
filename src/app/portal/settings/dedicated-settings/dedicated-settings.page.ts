@@ -26,7 +26,7 @@ export class DedicatedSettingsPage implements OnInit {
   ngOnInit() {
     new p5((p: p5) => {
       p.setup = () => {
-        p.loadStrings(`assets/data/infos/${'ko'}/dedicated.txt`, v => {
+        p.loadStrings(`assets/data/infos/${this.lang.lang}/dedicated.txt`, v => {
           this.info = v.join('\n');
           p.remove();
         }, e => {

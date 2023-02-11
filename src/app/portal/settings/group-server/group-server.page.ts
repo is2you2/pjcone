@@ -30,7 +30,7 @@ export class GroupServerPage implements OnInit {
   ngOnInit() {
     new p5((p: p5) => {
       p.setup = () => {
-        p.loadStrings(`assets/data/infos/${'ko'}/group-server.txt`, v => {
+        p.loadStrings(`assets/data/infos/${this.lang.lang}/group-server.txt`, v => {
           this.info = v.join('\n');
           p.remove();
         }, e => {

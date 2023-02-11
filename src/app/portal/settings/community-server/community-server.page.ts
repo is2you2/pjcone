@@ -30,7 +30,7 @@ export class CommunityServerPage implements OnInit {
     this.useSSL = this.wsc.socket_header == 'wss';
     new p5((p: p5) => {
       p.setup = () => {
-        p.loadStrings(`assets/data/infos/${'ko'}/community-server.txt`, v => {
+        p.loadStrings(`assets/data/infos/${this.lang.lang}/community-server.txt`, v => {
           this.info = v.join('\n');
           p.remove();
         });
