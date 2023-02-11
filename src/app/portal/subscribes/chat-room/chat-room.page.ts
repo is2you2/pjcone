@@ -318,7 +318,7 @@ export class ChatRoomPage implements OnInit {
         if (!this.LocalHistoryList.length) return;
         this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop(), (e, v) => {
           if (e && v) {
-            let json: any[] = JSON.parse(v);
+            let json: any[] = JSON.parse(v.trim());
             for (let i = 0, j = json.length; i < j; i++) {
               this.ModulateFileEmbedMessage(json[i]);
               this.nakama.ModulateTimeDate(json[i]);
@@ -332,7 +332,7 @@ export class ChatRoomPage implements OnInit {
     else {
       this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop(), (e, v) => {
         if (e && v) {
-          let json: any[] = JSON.parse(v);
+          let json: any[] = JSON.parse(v.trim());
           for (let i = 0, j = json.length; i < j; i++) {
             this.ModulateFileEmbedMessage(json[i]);
             this.nakama.ModulateTimeDate(json[i]);

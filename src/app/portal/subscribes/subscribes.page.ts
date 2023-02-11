@@ -83,7 +83,7 @@ export class SubscribesPage implements OnInit {
     }).then(v => {
       if (!v.cancelled) {
         try { // 양식에 맞게 끝까지 동작한다면 우리 데이터가 맞다
-          let json: any[] = JSON.parse(v.text);
+          let json: any[] = JSON.parse(v.text.trim());
           if (this.wsc.client.readyState != this.wsc.client.OPEN) {
             this.p5toast.show({
               text: this.lang.text['Subscribes']['needLinkWithCommServ'],
