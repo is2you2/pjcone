@@ -74,7 +74,6 @@ export class ChatRoomPage implements OnInit {
     icon: 'close-circle',
     act: () => {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
-      this.nakama.rearrange_channels();
       if (this.nakama.channel_transfer[this.isOfficial][this.target] && this.nakama.channel_transfer[this.isOfficial][this.target][this.info.id])
         delete this.nakama.channel_transfer[this.isOfficial][this.target][this.info.id];
       this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`, (list) => {
@@ -90,7 +89,6 @@ export class ChatRoomPage implements OnInit {
       if (this.info['redirect']['type'] != 3) {
         await this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
         this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
-        this.nakama.rearrange_channels();
         this.extended_buttons.forEach(button => {
           button.isHide = true;
         });
@@ -281,7 +279,6 @@ export class ChatRoomPage implements OnInit {
             this.pullable = true;
             if (!this.foundLastRead) this.pull_msg_history();
             this.nakama.saveListedMessage(this.messages, this.info, this.isOfficial, this.target);
-            this.nakama.rearrange_channels();
           });
       else { // 오프라인 기반 리스트 알려주기
         if (this.info['redirect']['type'] == 3) // 그룹대화라면 공개여부 검토
@@ -687,6 +684,7 @@ export class ChatRoomPage implements OnInit {
   }
 
   ionViewWillLeave() {
+    this.nakama.rearrange_channels();
     if (this.nakama.channels_orig[this.isOfficial][this.target] &&
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
