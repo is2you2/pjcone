@@ -174,7 +174,6 @@ export class ChatRoomPage implements OnInit {
         this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.check_sender_and_show_name(c);
         if (c.content['filename']) this.ModulateFileEmbedMessage(c);
-        this.ModulateTimeDate(c);
         this.info['last_read_id'] = this.info['last_comment_id'];
         this.messages.push(c);
         setTimeout(() => {
@@ -274,14 +273,14 @@ export class ChatRoomPage implements OnInit {
               } else this.foundLastRead = true;
               this.nakama.translate_updates(msg);
               if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
-              this.ModulateTimeDate(msg);
+              this.nakama.ModulateTimeDate(msg);
               this.messages.unshift(msg);
             });
             this.next_cursor = v.next_cursor;
             this.prev_cursor = v.prev_cursor;
             this.pullable = true;
             if (!this.foundLastRead) this.pull_msg_history();
-            this.saveListedMessage();
+            this.nakama.saveListedMessage(this.messages, this.info, this.isOfficial, this.target);
             this.nakama.rearrange_channels();
           });
       else { // 오프라인 기반 리스트 알려주기
@@ -322,7 +321,7 @@ export class ChatRoomPage implements OnInit {
             let json: any[] = JSON.parse(v);
             for (let i = 0, j = json.length; i < j; i++) {
               this.ModulateFileEmbedMessage(json[i]);
-              this.ModulateTimeDate(json[i]);
+              this.nakama.ModulateTimeDate(json[i]);
             }
             this.messages = [...json, ...this.messages];
           }
@@ -336,7 +335,7 @@ export class ChatRoomPage implements OnInit {
           let json: any[] = JSON.parse(v);
           for (let i = 0, j = json.length; i < j; i++) {
             this.ModulateFileEmbedMessage(json[i]);
-            this.ModulateTimeDate(json[i]);
+            this.nakama.ModulateTimeDate(json[i]);
           }
           this.messages = [...json, ...this.messages];
         }
@@ -602,13 +601,6 @@ export class ChatRoomPage implements OnInit {
     });
   }
 
-  /** 메시지 수신 시각을 수신자에게 맞춤 */
-  ModulateTimeDate(msg: any) {
-    let currentTime = new Date(msg.create_time);
-    msg['msgDate'] = `${currentTime.getFullYear()}-${("00" + (currentTime.getMonth() + 1)).slice(-2)}-${("00" + currentTime.getDate()).slice(-2)}`;
-    msg['msgTime'] = `${("00" + currentTime.getHours()).slice(-2)}:${("00" + currentTime.getMinutes()).slice(-2)}`;
-  }
-
   /** 콘텐츠 상세보기 뷰어 띄우기 */
   open_viewer(msg: any, path: string) {
     switch (msg.content['viewer']) {
@@ -708,58 +700,5 @@ export class ChatRoomPage implements OnInit {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
     this.noti.Current = undefined;
     this.p5canvas.remove();
-  }
-
-  /** 현재 보여지는 메시지들을 저장함 */
-  saveListedMessage() {
-    if (this.info['redirect']['type'] == 3 && !this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open']) return;
-    let SepByDate = {};
-    let tmp_msg: any[] = JSON.parse(JSON.stringify(this.messages));
-    while (tmp_msg.length) {
-      if (SepByDate['target'] != tmp_msg[0]['msgDate']) {
-        if (SepByDate['msg'])
-          this.saveMessageByDate(SepByDate);
-        SepByDate['target'] = tmp_msg[0]['msgDate'];
-        SepByDate['msg'] = [];
-      }
-      let msg = tmp_msg.shift();
-      delete msg.content['text'];
-      delete msg.content['img'];
-      delete msg['msgDate'];
-      delete msg['msgTime'];
-      delete msg['isLastRead'];
-      this.info['last_read_id'] = this.info['last_comment_id'];
-      SepByDate['msg'].push(msg);
-    }
-    this.saveMessageByDate(SepByDate);
-  }
-
-  /** 날짜별로 대화 기록 저장하기 */
-  saveMessageByDate(info: any) {
-    let SepByDate = JSON.parse(JSON.stringify(info));
-    this.indexed.loadTextFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/${SepByDate['target']}`, (e, v) => {
-      let base: any[] = [];
-      let added: any[] = [];
-      if (e && v)
-        base = JSON.parse(v);
-      SepByDate['msg'].forEach(_msg => {
-        let isDuplicate = false;
-        for (let i = 0, j = base.length; i < j; i++)
-          if (base[i]['message_id'] == _msg['message_id']) {
-            isDuplicate = true;
-            break;
-          }
-        if (!isDuplicate) added.push(_msg);
-      });
-      let result = [...base, ...added];
-      result.sort((a, b) => {
-        if (a['create_time'] < b['create_time'])
-          return -1;
-        if (a['create_time'] > b['create_time'])
-          return 1;
-        return 0;
-      });
-      this.indexed.saveTextFileToUserPath(JSON.stringify(result), `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/${SepByDate['target']}`);
-    });
   }
 }

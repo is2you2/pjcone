@@ -1254,6 +1254,68 @@ export class NakamaService {
       });
   }
 
+  /** 현재 보여지는 메시지들을 저장함  
+   * @param messages 메시지[]
+   */
+  saveListedMessage(messages: any[], channel_info: any, _is_official: string, _target: string) {
+    if (channel_info['redirect']['type'] == 3 && !this.groups[_is_official][_target][channel_info['group_id']]['open']) return;
+    let SepByDate = {};
+    let tmp_msg: any[] = JSON.parse(JSON.stringify(messages));
+    while (tmp_msg.length) {
+      if (SepByDate['target'] != tmp_msg[0]['msgDate']) {
+        if (SepByDate['msg'])
+          this.saveMessageByDate(SepByDate, channel_info, _is_official, _target);
+        SepByDate['target'] = tmp_msg[0]['msgDate'];
+        SepByDate['msg'] = [];
+      }
+      let msg = tmp_msg.shift();
+      delete msg.content['text'];
+      delete msg.content['img'];
+      delete msg['msgDate'];
+      delete msg['msgTime'];
+      delete msg['isLastRead'];
+      channel_info['last_read_id'] = channel_info['last_comment_id'];
+      SepByDate['msg'].push(msg);
+    }
+    this.saveMessageByDate(SepByDate, channel_info, _is_official, _target);
+  }
+
+  /** 날짜별로 대화 기록 저장하기 */
+  saveMessageByDate(info: any, channel_info: any, _is_official: string, _target: string) {
+    let SepByDate = JSON.parse(JSON.stringify(info));
+    this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/channels/${channel_info.id}/chats/${SepByDate['target']}`, (e, v) => {
+      let base: any[] = [];
+      let added: any[] = [];
+      if (e && v)
+        base = JSON.parse(v);
+      SepByDate['msg'].forEach(_msg => {
+        let isDuplicate = false;
+        for (let i = 0, j = base.length; i < j; i++)
+          if (base[i]['message_id'] == _msg['message_id']) {
+            isDuplicate = true;
+            break;
+          }
+        if (!isDuplicate) added.push(_msg);
+      });
+      let result = [...base, ...added];
+      result.sort((a, b) => {
+        if (a['create_time'] < b['create_time'])
+          return -1;
+        if (a['create_time'] > b['create_time'])
+          return 1;
+        return 0;
+      });
+      this.indexed.saveTextFileToUserPath(JSON.stringify(result), `servers/${_is_official}/${_target}/channels/${channel_info.id}/chats/${SepByDate['target']}`);
+    });
+  }
+
+  /** 메시지 수신 시각을 수신자에게 맞춤 */
+  ModulateTimeDate(msg: any) {
+    let currentTime = new Date(msg.create_time);
+    msg['msgDate'] = `${currentTime.getFullYear()}-${("00" + (currentTime.getMonth() + 1)).slice(-2)}-${("00" + currentTime.getDate()).slice(-2)}`;
+    msg['msgTime'] = `${("00" + currentTime.getHours()).slice(-2)}:${("00" + currentTime.getMinutes()).slice(-2)}`;
+  }
+
   /** 채널 정보를 변형한 후 추가하기 */
   async join_chat_with_modulation(targetId: string, type: number, _is_official: string, _target: string, _CallBack = (_c: Channel) => { }, isNewChannel = false) {
     if (!this.channels_orig[_is_official][_target]) this.channels_orig[_is_official][_target] = {};
@@ -1385,6 +1447,8 @@ export class NakamaService {
         console.warn('예상하지 못한 채널 메시지 코드: ', c.code);
         break;
     }
+    this.ModulateTimeDate(c);
+    this.saveListedMessage([c], this.channels_orig[_is_official][_target][c.channel_id], _is_official, _target);
     if (!isNewChannel && this.channels_orig[_is_official][_target][c.channel_id]['update'])
       this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
     let hasFile = c.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
