@@ -602,6 +602,7 @@ export class NakamaService {
         this.noti_origin[_is_official][_target] = {};
         for (let i = 0, j = v.notifications.length; i < j; i++)
           this.act_on_notification(v.notifications[i], _is_official, _target);
+        this.rearrange_notifications();
       });
   }
 
@@ -1736,7 +1737,6 @@ export class NakamaService {
           this.socket_reactive['settings'].load_groups();
         this.groups[_is_official][_target][v.content['group_id']]['status'] = 'online';
         v['request'] = `${v.code}-${v.subject}`;
-        this.rearrange_notifications();
         this.noti.RemoveListener(`check${v.code}`);
         this.noti.SetListener(`check${v.code}`, (_v: any) => {
           this.noti.ClearNoti(_v['id']);
@@ -1795,7 +1795,6 @@ export class NakamaService {
             else console.warn('알림 지우기 실패: ', b);
           });
         }
-        this.rearrange_notifications();
         // 이미 보는 화면이라면 업데이트하기
         if (this.socket_reactive['settings'])
           this.socket_reactive['settings'].load_groups();
@@ -1846,7 +1845,6 @@ export class NakamaService {
     if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
     if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
     this.noti_origin[_is_official][_target][v.id] = v;
-    this.rearrange_notifications();
   }
 
   /** 채널별 파일 송/수신 경과  
