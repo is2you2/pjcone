@@ -44,73 +44,263 @@ margin_top = 8.0
 margin_right = 352.0
 margin_bottom = 352.0
 
-[node name="hbox" type="HBoxContainer" parent="m/vbox"]
+[node name="GridContainer" type="GridContainer" parent="m/vbox"]
 margin_right = 344.0
-margin_bottom = 24.0
-custom_constants/separation = 16
-alignment = 1
+margin_bottom = 132.0
+columns = 4
 
-[node name="Current" type="HBoxContainer" parent="m/vbox/hbox"]
-margin_left = 27.0
-margin_right = 123.0
-margin_bottom = 24.0
-custom_constants/separation = 8
+[node name="#" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_right = 83.0
+margin_bottom = 30.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.227451, 0.227451, 0.227451, 1 )
 
-[node name="Current" type="Label" parent="m/vbox/hbox/Current"]
-margin_right = 64.0
-margin_bottom = 24.0
+[node name="#" type="Label" parent="m/vbox/GridContainer/#"]
+anchor_right = 1.0
+anchor_bottom = 1.0
 theme = ExtResource( 6 )
-text = "현재동접:"
+text = "#"
+align = 1
+valign = 1
 
-[node name="Current2" type="Label" parent="m/vbox/hbox/Current"]
-margin_left = 72.0
-margin_right = 96.0
-margin_bottom = 24.0
+[node name="Title_0" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_left = 87.0
+margin_right = 170.0
+margin_bottom = 30.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.211765, 0.211765, 0.211765, 1 )
+
+[node name="Title" type="Label" parent="m/vbox/GridContainer/Title_0"]
+anchor_right = 1.0
+anchor_bottom = 1.0
 theme = ExtResource( 6 )
-text = "0명"
+text = "현재동접"
+align = 1
+valign = 1
 
-[node name="Total" type="HBoxContainer" parent="m/vbox/hbox"]
-margin_left = 139.0
-margin_right = 235.0
-margin_bottom = 24.0
-custom_constants/separation = 8
+[node name="Title_1" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_left = 174.0
+margin_right = 257.0
+margin_bottom = 30.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.211765, 0.211765, 0.211765, 1 )
 
-[node name="Total" type="Label" parent="m/vbox/hbox/Total"]
-margin_right = 64.0
-margin_bottom = 24.0
+[node name="Title" type="Label" parent="m/vbox/GridContainer/Title_1"]
+anchor_right = 1.0
+anchor_bottom = 1.0
 theme = ExtResource( 6 )
-text = "동시최대:"
+text = "동시최대"
+align = 1
+valign = 1
 
-[node name="Total2" type="Label" parent="m/vbox/hbox/Total"]
-margin_left = 72.0
-margin_right = 96.0
-margin_bottom = 24.0
+[node name="Title_2" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_left = 261.0
+margin_right = 344.0
+margin_bottom = 30.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.211765, 0.211765, 0.211765, 1 )
+
+[node name="Title" type="Label" parent="m/vbox/GridContainer/Title_2"]
+anchor_right = 1.0
+anchor_bottom = 1.0
 theme = ExtResource( 6 )
-text = "0명"
+text = "누적"
+align = 1
+valign = 1
 
-[node name="Stack" type="HBoxContainer" parent="m/vbox/hbox"]
-margin_left = 251.0
-margin_right = 317.0
-margin_bottom = 24.0
-custom_constants/separation = 8
+[node name="#2" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_top = 34.0
+margin_right = 83.0
+margin_bottom = 64.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.227451, 0.227451, 0.227451, 1 )
 
-[node name="Stack" type="Label" parent="m/vbox/hbox/Stack"]
-margin_right = 34.0
-margin_bottom = 24.0
+[node name="#" type="Label" parent="m/vbox/GridContainer/#2"]
+anchor_right = 1.0
+anchor_bottom = 1.0
 theme = ExtResource( 6 )
-text = "누적:"
+text = "Counter"
+align = 1
+valign = 1
 
-[node name="Stack2" type="Label" parent="m/vbox/hbox/Stack"]
-margin_left = 42.0
-margin_right = 66.0
-margin_bottom = 24.0
+[node name="Current_0" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_left = 87.0
+margin_top = 34.0
+margin_right = 170.0
+margin_bottom = 64.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.176471, 0.176471, 0.176471, 1 )
+
+[node name="Current_0" type="Label" parent="m/vbox/GridContainer/Current_0"]
+anchor_right = 1.0
+anchor_bottom = 1.0
 theme = ExtResource( 6 )
-text = "0명"
+text = "0"
+align = 1
+valign = 1
+
+[node name="Maximum_0" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_left = 174.0
+margin_top = 34.0
+margin_right = 257.0
+margin_bottom = 64.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.176471, 0.176471, 0.176471, 1 )
+
+[node name="Maximum_0" type="Label" parent="m/vbox/GridContainer/Maximum_0"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 6 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="Stack_0" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_left = 261.0
+margin_top = 34.0
+margin_right = 344.0
+margin_bottom = 64.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.176471, 0.176471, 0.176471, 1 )
+
+[node name="Stack_0" type="Label" parent="m/vbox/GridContainer/Stack_0"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 6 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="#3" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_top = 68.0
+margin_right = 83.0
+margin_bottom = 98.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.227451, 0.227451, 0.227451, 1 )
+
+[node name="#" type="Label" parent="m/vbox/GridContainer/#3"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 6 )
+text = "SC1_cus"
+align = 1
+valign = 1
+
+[node name="Current_1" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_left = 87.0
+margin_top = 68.0
+margin_right = 170.0
+margin_bottom = 98.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.176471, 0.176471, 0.176471, 1 )
+
+[node name="Current_0" type="Label" parent="m/vbox/GridContainer/Current_1"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 6 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="Maximum_1" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_left = 174.0
+margin_top = 68.0
+margin_right = 257.0
+margin_bottom = 98.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.176471, 0.176471, 0.176471, 1 )
+
+[node name="Maximum_0" type="Label" parent="m/vbox/GridContainer/Maximum_1"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 6 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="Stack_1" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_left = 261.0
+margin_top = 68.0
+margin_right = 344.0
+margin_bottom = 98.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.176471, 0.176471, 0.176471, 1 )
+
+[node name="Stack_0" type="Label" parent="m/vbox/GridContainer/Stack_1"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 6 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="#4" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_top = 102.0
+margin_right = 83.0
+margin_bottom = 132.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.227451, 0.227451, 0.227451, 1 )
+
+[node name="#" type="Label" parent="m/vbox/GridContainer/#4"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 6 )
+text = "Minichat"
+align = 1
+valign = 1
+
+[node name="Current_2" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_left = 87.0
+margin_top = 102.0
+margin_right = 170.0
+margin_bottom = 132.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.176471, 0.176471, 0.176471, 1 )
+
+[node name="Current_0" type="Label" parent="m/vbox/GridContainer/Current_2"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 6 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="Maximum_2" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_left = 174.0
+margin_top = 102.0
+margin_right = 257.0
+margin_bottom = 132.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.176471, 0.176471, 0.176471, 1 )
+
+[node name="Maximum_0" type="Label" parent="m/vbox/GridContainer/Maximum_2"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 6 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="Stack_2" type="ColorRect" parent="m/vbox/GridContainer"]
+margin_left = 261.0
+margin_top = 102.0
+margin_right = 344.0
+margin_bottom = 132.0
+rect_min_size = Vector2( 83, 30 )
+color = Color( 0.176471, 0.176471, 0.176471, 1 )
+
+[node name="Stack_0" type="Label" parent="m/vbox/GridContainer/Stack_2"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 6 )
+text = "0"
+align = 1
+valign = 1
 
 [node name="AdminInfo" type="HBoxContainer" parent="m/vbox"]
-margin_top = 28.0
+margin_top = 136.0
 margin_right = 344.0
-margin_bottom = 62.0
+margin_bottom = 170.0
 custom_constants/separation = 8
 
 [node name="IsAdmin" type="Label" parent="m/vbox/AdminInfo"]
@@ -129,9 +319,9 @@ theme = ExtResource( 6 )
 placeholder_text = "00000000-0000-0000-0000-000000000000"
 
 [node name="SendAllNotiImg" type="HBoxContainer" parent="m/vbox"]
-margin_top = 66.0
+margin_top = 174.0
 margin_right = 344.0
-margin_bottom = 100.0
+margin_bottom = 208.0
 custom_constants/separation = 8
 
 [node name="Label" type="Label" parent="m/vbox/SendAllNotiImg"]
@@ -150,9 +340,9 @@ theme = ExtResource( 6 )
 placeholder_text = "이미지 링크"
 
 [node name="SendAllNoti" type="HBoxContainer" parent="m/vbox"]
-margin_top = 104.0
+margin_top = 212.0
 margin_right = 344.0
-margin_bottom = 138.0
+margin_bottom = 246.0
 custom_constants/separation = 8
 
 [node name="Label" type="Label" parent="m/vbox/SendAllNoti"]
@@ -178,7 +368,7 @@ theme = ExtResource( 6 )
 text = "발송"
 
 [node name="c" type="ColorRect" parent="m/vbox"]
-margin_top = 142.0
+margin_top = 250.0
 margin_right = 344.0
 margin_bottom = 344.0
 size_flags_vertical = 3
@@ -196,7 +386,7 @@ custom_constants/margin_bottom = 8
 margin_left = 8.0
 margin_top = 8.0
 margin_right = 336.0
-margin_bottom = 194.0
+margin_bottom = 86.0
 theme = ExtResource( 6 )
 bbcode_enabled = true
 scroll_following = true

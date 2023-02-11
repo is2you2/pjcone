@@ -65,9 +65,7 @@ func _connected(id:int, _proto:= 'EMPTY'):
 	if counter.maximum < counter.current:
 		counter.maximum = counter.current
 	linked_mutex.unlock()
-	$m/vbox/hbox/Current/Current2.text = str(counter['current'], '명');
-	$m/vbox/hbox/Total/Total2.text = str(counter['maximum'], '명');
-	$m/vbox/hbox/Stack/Stack2.text = str(counter['stack'], '명');
+	display_counter_value()
 	Root.logging(HEADER, str('Connected: ', counter))
 
 # 사이트로부터 연결 끊어짐
@@ -83,9 +81,15 @@ func _disconnected(id:int, _was_clean = null, _reason:= 'EMPTY'):
 		Root.logging(HEADER, str('Disconnected: ', counter, ' code: ', _was_clean, ' / ', _reason), '8bb')
 	elif _was_clean is bool: # 상시 로그
 		Root.logging(HEADER, str('Disconnected: ', counter, ' was_clean: ', _was_clean))
-	$m/vbox/hbox/Current/Current2.text = str(counter['current'], '명');
-	$m/vbox/hbox/Total/Total2.text = str(counter['maximum'], '명');
-	$m/vbox/hbox/Stack/Stack2.text = str(counter['stack'], '명');
+	display_counter_value()
+
+
+# 자료를 받아서 화면에 게시
+func display_counter_value():
+	$m/vbox/GridContainer/Current_0/Current_0.text = str(counter['current']);
+	$m/vbox/GridContainer/Maximum_0/Maximum_0.text = str(counter['maximum']);
+	$m/vbox/GridContainer/Stack_0/Stack_0.text = str(counter['stack']);
+
 
 # 자료를 받아서 행동 코드별로 자식 노드에게 일처리 넘김
 func _received(id:int, _try_left:= 5):
@@ -139,19 +143,6 @@ func send_to(id:int, msg:PoolByteArray, _try_left:= 5):
 		else:
 			Root.logging(HEADER, str('send packet error and try left out.'), Root.LOG_ERR)
 			server.disconnect_peer(id, 1011, 'MainServer packet send try left out.')
-
-
-# 해당 사용자를 제외하고 발송
-func send_except(id:int, msg:PoolByteArray):
-	for user in $UserManager.users:
-		if user != id:
-			send_to(user, msg)
-
-
-# 모든 연결된 사용자에게 메시지 보내기
-func send_to_all(msg:PoolByteArray):
-	for user in $UserManager.users:
-		send_to(user, msg)
 
 
 func _process(_delta):

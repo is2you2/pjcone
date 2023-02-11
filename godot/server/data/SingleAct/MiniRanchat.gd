@@ -73,6 +73,7 @@ func _connected(id:int, _proto:='EMPTY_PROTO'):
 	for user in pid_list:
 		send_to(user, _count)
 	mutex.unlock()
+	display_counter_value()
 
 func _disconnected(id:int, _was_clean = null, _reason:= 'EMPTY_REASON'):
 	mutex.lock()
@@ -88,11 +89,20 @@ func _disconnected(id:int, _was_clean = null, _reason:= 'EMPTY_REASON'):
 	for user in pid_list:
 		send_to(user, _count)
 	mutex.unlock()
+	display_counter_value()
 	# 일반 종료가 아닐 때 로그 남김
 	if _was_clean is int and _was_clean != 1001:
 		Root.logging(HEADER, str('Disconnected: ', counter, ' code: ', _was_clean, ' / ', _reason), '8bb')
 	elif _was_clean is bool: # 상시 로그
 		Root.logging(HEADER, str('Disconnected: ', counter, ' was_clean: ', _was_clean))
+
+
+# 자료를 받아서 화면에 게시
+func display_counter_value():
+	get_node('../m/vbox/GridContainer/Current_2/Current_0').text = str(counter['current']);
+	get_node('../m/vbox/GridContainer/Maximum_2/Maximum_0').text = str(counter['maximum']);
+	get_node('../m/vbox/GridContainer/Stack_2/Stack_0').text = str(counter['stack']);
+
 
 func _received(id:int, _try_left:= 5):
 	var err:= server.get_peer(id).get_packet_error()
