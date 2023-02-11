@@ -97,23 +97,27 @@ export class AppComponent {
       if (ev.data.page) {
         let page: any;
         let props: any = ev.data.page.componentProps;
+        let noti_id: string;
         switch (ev.data.page.component) {
           case 'ChatRoomPage':
             page = ChatRoomPage;
             let _cid = ev.data.page.componentProps['info']['id'];
             let _is_official = ev.data.page.componentProps['info']['isOfficial'];
             let _target = ev.data.page.componentProps['info']['target'];
+            noti_id = ev.data.page.componentProps['info']['noti_id'];
             props = {
               info: nakama.channels_orig[_is_official][_target][_cid]
             };
             break;
           case 'MinimalChatPage':
             page = MinimalChatPage;
+            noti_id = ev.data.page.componentProps['noti_id'];
             break;
           default:
             console.warn('준비된 페이지가 아님: ', ev.data.page.component);
             break;
         }
+        if (noti_id == noti.Current) return;
         modalCtrl.create({
           component: page,
           componentProps: props,

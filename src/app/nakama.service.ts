@@ -1380,6 +1380,7 @@ export class NakamaService {
                 id: msg.channel_id,
                 isOfficial: _is_official,
                 target: _target,
+                noti_id: this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'],
               }
             },
           },

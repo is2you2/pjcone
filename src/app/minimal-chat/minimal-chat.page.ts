@@ -32,9 +32,9 @@ export class MinimalChatPage implements OnInit {
   ) { }
 
   uuid = this.device.uuid;
-  header_title = '미니랜챗';
+  header_title: string;
   /** 페이지 구분자는 페이지에 사용될 아이콘 이름을 따라가도록 */
-  Header = 'simplechat';
+  Header = 'ranchat';
   iconColor = 'd8d8d8';
   lnId = 11;
   /** 새 대화 버튼 disabled 토글 */
@@ -67,6 +67,7 @@ export class MinimalChatPage implements OnInit {
       this.lnId = 12;
       this.header_title = this.lang.text['MinimalChat']['header_title_group'];
       this.client.status[this.target] = 'custom';
+      this.Header = 'simplechat';
     }
     this.noti.RemoveListener(`send${this.target}`);
     this.noti.RemoveListener(`reconn${this.target}`);
@@ -137,6 +138,7 @@ export class MinimalChatPage implements OnInit {
                 componentProps: {
                   address: this.params.get('address'),
                   name: this.params.get('name'),
+                  noti_id: this.Header,
                 },
               },
             },
@@ -158,6 +160,7 @@ export class MinimalChatPage implements OnInit {
                 componentProps: {
                   address: this.params.get('address'),
                   name: this.params.get('name'),
+                  noti_id: this.Header,
                 },
               },
             },
@@ -196,6 +199,7 @@ export class MinimalChatPage implements OnInit {
                   componentProps: {
                     address: this.params.get('address'),
                     name: this.params.get('name'),
+                    noti_id: this.Header,
                   },
                 },
               },
@@ -221,6 +225,7 @@ export class MinimalChatPage implements OnInit {
                   componentProps: {
                     address: this.params.get('address'),
                     name: this.params.get('name'),
+                    noti_id: this.Header,
                   },
                 },
               },
@@ -261,6 +266,7 @@ export class MinimalChatPage implements OnInit {
             componentProps: {
               address: this.params.get('address'),
               name: this.params.get('name'),
+              noti_id: this.Header,
             },
           },
         },
@@ -301,6 +307,7 @@ export class MinimalChatPage implements OnInit {
               componentProps: {
                 address: this.params.get('address'),
                 name: this.params.get('name'),
+                noti_id: this.Header,
               },
             },
           },
@@ -364,6 +371,7 @@ export class MinimalChatPage implements OnInit {
             componentProps: {
               address: this.params.get('address'),
               name: this.params.get('name'),
+              noti_id: this.Header,
             },
           },
         },

@@ -504,14 +504,14 @@ export class ChatRoomPage implements OnInit {
           }
         });
         break;
-      case 'audio':
-        console.log('오디오 썸네일');
-        URL.revokeObjectURL(ObjectURL);
-        break;
-      case 'video':
-        console.log('비디오 썸네일');
-        URL.revokeObjectURL(ObjectURL);
-        break;
+      // case 'audio':
+      //   console.log('오디오 썸네일');
+      //   URL.revokeObjectURL(ObjectURL);
+      //   break;
+      // case 'video':
+      //   console.log('비디오 썸네일');
+      //   URL.revokeObjectURL(ObjectURL);
+      //   break;
       default:
         console.error('예상하지 못한 카테고리: ', msg['viewer']);
         URL.revokeObjectURL(ObjectURL);
