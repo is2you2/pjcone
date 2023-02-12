@@ -502,7 +502,7 @@ export class ChatRoomPage implements OnInit {
         });
         break;
       default:
-        console.error('예상하지 못한 카테고리: ', msg['viewer']);
+        console.error('예상하지 못한 카테고리-viewer: ', msg);
         URL.revokeObjectURL(ObjectURL);
         break;
     }
