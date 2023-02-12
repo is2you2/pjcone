@@ -44,7 +44,7 @@
     "@types/p5": "^1.4.3",
     "clipboardy": "^3.0.0",
     "cordova-plugin-advanced-http": "^3.3.1",
-    "cordova-plugin-background-mode": "^0.7.3",
+    "cordova-plugin-background-mode": "bitbucket:TheBosZ/cordova-plugin-run-in-background",
     "cordova-plugin-badge": "^0.8.8",
     "cordova-plugin-camera": "^6.0.0",
     "cordova-plugin-device": "^2.1.0",

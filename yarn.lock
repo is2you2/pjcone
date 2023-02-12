@@ -3247,10 +3247,9 @@
   "resolved" "https://registry.npmjs.org/cordova-plugin-advanced-http/-/cordova-plugin-advanced-http-3.3.1.tgz"
   "version" "3.3.1"
 
-"cordova-plugin-background-mode@^0.7.3":
-  "integrity" "sha512-LsU1v7EgTUROaks+tcQ8TnMzVUcU/TwjDVwj2O/4e4aI2q2ldLGsiZorqKqfqvwh2HoIssmY73OwJk91hQi62w=="
-  "resolved" "https://registry.npmjs.org/cordova-plugin-background-mode/-/cordova-plugin-background-mode-0.7.3.tgz"
-  "version" "0.7.3"
+"cordova-plugin-background-mode@bitbucket:TheBosZ/cordova-plugin-run-in-background":
+  "resolved" "git+ssh://git@bitbucket.org/TheBosZ/cordova-plugin-run-in-background.git#e11ee4f4324cb1f67db093d2c7a815ea23bc48bb"
+  "version" "0.8.0"
 
 "cordova-plugin-badge@^0.8.8":
   "integrity" "sha512-RhIBtd5xhD/iLnxjt35jvOae28oNW/wtMZBOmQR3Rf0y4wirvA1bpAZEhBoFqL+rZGhsd6ddOdQXdex1T0DRyQ=="
