@@ -168,6 +168,15 @@ Godot 엔진이 현재 가지고 있는 구조상의 한계를 뛰어넘기 위�
 <string name="admob_app_id">[APP_ID]</string>
 ```
 이 때, [APP_ID]는 ~이 들어간 광고 앱 아이디로 교체
+[APPLICATION_ID]는 앱 아이디로 교체
+- android/app/build.gradle 에 추가
+```gradle
+implementation 'com.google.android.gms:play-services-ads:21.5.0'
+```
+- Capacitor Admob 의 올바른 동작을 위해 빌드 전에 다음 명령 진행
+```bash
+npx cap update
+```
 - Godot-html은 백그라운드가 켜져있더라도 액션이 멈춤, 통신을 ionic에 의존해야함
 - [빌드시 android 12 버전보다 높게 출시하는 것으로 오류가 난 경우 AndroidManifest에 다음 내용을 추가](https://stackoverflow.com/questions/68678008/apps-targeting-android-12-and-higher-required-to-specify-an-explicit-value-for)
 ```xml

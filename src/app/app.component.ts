@@ -140,7 +140,7 @@ export class AppComponent {
   init_admob() {
     this.platform.ready().then(() => {
       AdMob.initialize({
-        requestTrackingAuthorization: true,
+        testingDevices: [],
         initializeForTesting: true,
       });
     });
