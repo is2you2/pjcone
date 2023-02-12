@@ -188,12 +188,17 @@ npx cap update
 <uses-permission android:name="android.permission.WAKE_LOCK" />  
 <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />  
 ```
+- Android 12부터는 예약된 알람이 제대로 동작하지 않을 수 있음
+```xml
+<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+```
 - 최초 Android 플랫폼 설치 후 오류시 다음 코드 진행
 ```bash
 npm install jetifier
 npx jetify
 npx cap sync android
 ```
+- 빌드 후에 android.support.v4.* 관련 오류가 뜬다면 위 jetify를 행동을 다시 합니다.
 - Android 빌드 후 버전 정보 변경 (수동): android/variables.gradle
 ```gradle
     minSdkVersion = 22,

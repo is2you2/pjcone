@@ -337,10 +337,10 @@
   dependencies:
     "@types/cordova" "latest"
 
-"@awesome-cordova-plugins/local-notifications@^5.44.0":
-  "integrity" "sha512-w96OMJOauCGUIoZV/JSm56rpmt7lUODAjf8DcaIlaS3HJ2JMKpR0FeGGocaGW61Cvamhjo/Ce9OsyZtWFeQRvA=="
-  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/local-notifications/-/local-notifications-5.44.0.tgz"
-  "version" "5.44.0"
+"@awesome-cordova-plugins/local-notifications@^5.46.0":
+  "integrity" "sha512-HloIGG+uAjwXXPEbeK7egm0CpIsnk3U0nu91j+z2GfTb3diOYa2UQeaWwH3RDXJmTwLwVakQm9DuAXe1cfzn3A=="
+  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/local-notifications/-/local-notifications-5.46.0.tgz"
+  "version" "5.46.0"
   dependencies:
     "@types/cordova" "latest"
 
@@ -1339,10 +1339,10 @@
     "tslib" "^2.1.0"
     "xml2js" "^0.4.23"
 
-"@capacitor/core@^3.0.0", "@capacitor/core@^3.4.0", "@capacitor/core@^3.5.1":
-  "integrity" "sha512-UTROxB7q/hZBnhDLcCN7mVsAX3SxXNMhVuPbtddsDOUCm4hExLXN62gPD7rjgmumhfHMjeXmkw/EfRzSjttL1g=="
-  "resolved" "https://registry.npmjs.org/@capacitor/core/-/core-3.5.1.tgz"
-  "version" "3.5.1"
+"@capacitor/core@^3.0.0", "@capacitor/core@^3.4.0", "@capacitor/core@^3.9.0":
+  "integrity" "sha512-j1lL0+/7stY8YhIq1Lm6xixvUqIn89vtyH5ZpJNNmcZ0kwz6K9eLkcG6fvq1UWMDgSVZg9JrRGSFhb4LLoYOsw=="
+  "resolved" "https://registry.npmjs.org/@capacitor/core/-/core-3.9.0.tgz"
+  "version" "3.9.0"
   dependencies:
     "tslib" "^2.1.0"
 
@@ -1453,11 +1453,11 @@
     "tslib" "^2.0.0"
 
 "@ionic/cli-framework-output@^2.2.1":
-  "integrity" "sha512-Ok0DuQseeyEQnpq1eIE9Wt2oy80qmsprmQYu4bMeiaggbXTmzdf0wa+2CIRrAy1Mzh7Lnz95AI4KyYl3h+97GQ=="
-  "resolved" "https://registry.npmjs.org/@ionic/cli-framework-output/-/cli-framework-output-2.2.3.tgz"
-  "version" "2.2.3"
+  "integrity" "sha512-YeDLTnTaE6V4IDUxT8GDIep0GuRIFaR7YZDLANMuuWJZDmnTku6DP+MmQoltBeLmVvz1BAAZgk41xzxdq6H2FQ=="
+  "resolved" "https://registry.npmjs.org/@ionic/cli-framework-output/-/cli-framework-output-2.2.5.tgz"
+  "version" "2.2.5"
   dependencies:
-    "@ionic/utils-terminal" "2.3.1"
+    "@ionic/utils-terminal" "2.3.3"
     "debug" "^4.0.0"
     "tslib" "^2.0.1"
 
@@ -1478,11 +1478,12 @@
     "debug" "^4.0.0"
     "tslib" "^2.0.1"
 
-"@ionic/utils-fs@^3.1.5", "@ionic/utils-fs@3.1.5":
-  "integrity" "sha512-a41bY2dHqWSEQQ/80CpbXSs8McyiCFf2DnIWWLukrhYWf46h4qi6M/8dxcMKrofRiqI/3F+cL3S2mOm9Zz/o2Q=="
-  "resolved" "https://registry.npmjs.org/@ionic/utils-fs/-/utils-fs-3.1.5.tgz"
-  "version" "3.1.5"
+"@ionic/utils-fs@^3.1.5", "@ionic/utils-fs@3.1.6":
+  "integrity" "sha512-eikrNkK89CfGPmexjTfSWl4EYqsPSBh0Ka7by4F0PLc1hJZYtJxUZV3X4r5ecA8ikjicUmcbU7zJmAjmqutG/w=="
+  "resolved" "https://registry.npmjs.org/@ionic/utils-fs/-/utils-fs-3.1.6.tgz"
+  "version" "3.1.6"
   dependencies:
+    "@types/fs-extra" "^8.0.0"
     "debug" "^4.0.0"
     "fs-extra" "^9.0.0"
     "tslib" "^2.0.1"
@@ -1495,13 +1496,13 @@
     "debug" "^4.0.0"
     "tslib" "^2.0.1"
 
-"@ionic/utils-process@2.1.8":
-  "integrity" "sha512-VBBoyTzi+m6tgKAItl+jiTQneGwTOsctcrTG4CsEgmVOVOEhUYkPhddXqzD+oC54hPDU9ROsd3I014P5CWEuhQ=="
-  "resolved" "https://registry.npmjs.org/@ionic/utils-process/-/utils-process-2.1.8.tgz"
-  "version" "2.1.8"
+"@ionic/utils-process@2.1.10":
+  "integrity" "sha512-mZ7JEowcuGQK+SKsJXi0liYTcXd2bNMR3nE0CyTROpMECUpJeAvvaBaPGZf5ERQUPeWBVuwqAqjUmIdxhz5bxw=="
+  "resolved" "https://registry.npmjs.org/@ionic/utils-process/-/utils-process-2.1.10.tgz"
+  "version" "2.1.10"
   dependencies:
     "@ionic/utils-object" "2.1.5"
-    "@ionic/utils-terminal" "2.3.1"
+    "@ionic/utils-terminal" "2.3.3"
     "debug" "^4.0.0"
     "signal-exit" "^3.0.3"
     "tree-kill" "^1.2.2"
@@ -1516,24 +1517,25 @@
     "tslib" "^2.0.1"
 
 "@ionic/utils-subprocess@^2.1.6":
-  "integrity" "sha512-OZ4QKyFOoC3+NCcBW8tvDUdLzWqOMKZPpzOQR009xVsfGbT3LwV8h60os7VRAbRV2KrA7t6YMMDrMQYV5DS+DQ=="
-  "resolved" "https://registry.npmjs.org/@ionic/utils-subprocess/-/utils-subprocess-2.1.9.tgz"
-  "version" "2.1.9"
+  "integrity" "sha512-6zCDixNmZCbMCy5np8klSxOZF85kuDyzZSTTQKQP90ZtYNCcPYmuFSzaqDwApJT4r5L3MY3JrqK1gLkc6xiUPw=="
+  "resolved" "https://registry.npmjs.org/@ionic/utils-subprocess/-/utils-subprocess-2.1.11.tgz"
+  "version" "2.1.11"
   dependencies:
     "@ionic/utils-array" "2.1.5"
-    "@ionic/utils-fs" "3.1.5"
-    "@ionic/utils-process" "2.1.8"
+    "@ionic/utils-fs" "3.1.6"
+    "@ionic/utils-process" "2.1.10"
     "@ionic/utils-stream" "3.1.5"
-    "@ionic/utils-terminal" "2.3.1"
+    "@ionic/utils-terminal" "2.3.3"
     "cross-spawn" "^7.0.3"
     "debug" "^4.0.0"
     "tslib" "^2.0.1"
 
-"@ionic/utils-terminal@^2.3.0", "@ionic/utils-terminal@^2.3.1", "@ionic/utils-terminal@2.3.1":
-  "integrity" "sha512-cglsSd2AckI3Ldtdfczeq64vIIDjtPspV5QJtky8f8uIdxkeOIGeRV7bCj1+BEf1hyo+ZuggQxLviHnbMZhiRw=="
-  "resolved" "https://registry.npmjs.org/@ionic/utils-terminal/-/utils-terminal-2.3.1.tgz"
-  "version" "2.3.1"
+"@ionic/utils-terminal@^2.3.0", "@ionic/utils-terminal@^2.3.1", "@ionic/utils-terminal@2.3.3":
+  "integrity" "sha512-RnuSfNZ5fLEyX3R5mtcMY97cGD1A0NVBbarsSQ6yMMfRJ5YHU7hHVyUfvZeClbqkBC/pAqI/rYJuXKCT9YeMCQ=="
+  "resolved" "https://registry.npmjs.org/@ionic/utils-terminal/-/utils-terminal-2.3.3.tgz"
+  "version" "2.3.3"
   dependencies:
+    "@types/slice-ansi" "^4.0.0"
     "debug" "^4.0.0"
     "signal-exit" "^3.0.3"
     "slice-ansi" "^4.0.0"
@@ -1851,6 +1853,13 @@
     "@types/qs" "*"
     "@types/serve-static" "*"
 
+"@types/fs-extra@^8.0.0":
+  "integrity" "sha512-SvSrYXfWSc7R4eqnOzbQF4TZmfpNSM9FrSWLU3EUnWBuyZqNBOrv1B1JA3byUDPUl9z4Ab3jeZG2eDdySlgNMg=="
+  "resolved" "https://registry.npmjs.org/@types/fs-extra/-/fs-extra-8.1.2.tgz"
+  "version" "8.1.2"
+  dependencies:
+    "@types/node" "*"
+
 "@types/http-proxy@^1.17.8":
   "integrity" "sha512-5kPLG5BKpWYkw/LVOGWpiq3nEVqxiN32rTgI53Sk12/xHFQ2rG3ehI9IO+O3W2QoKeyB92dJkoka8SUm6BX1pA=="
   "resolved" "https://registry.npmjs.org/@types/http-proxy/-/http-proxy-1.17.8.tgz"
@@ -1939,6 +1948,11 @@
   dependencies:
     "@types/mime" "^1"
     "@types/node" "*"
+
+"@types/slice-ansi@^4.0.0":
+  "integrity" "sha512-+OpjSaq85gvlZAYINyzKpLeiFkSC4EsC6IIiT6v6TLSU5k5U83fHGj9Lel8oKEXM0HqgrMVCjXPDPVICtxF7EQ=="
+  "resolved" "https://registry.npmjs.org/@types/slice-ansi/-/slice-ansi-4.0.0.tgz"
+  "version" "4.0.0"
 
 "@types/sockjs@^0.3.33":
   "integrity" "sha512-f0KEEe05NvUnat+boPTZ0dgaLZ4SfSouXUgv5noUiefG2ajgKjmETo9ZJyuqsl7dfl2aHlLJUiki6B4ZYldiiw=="
