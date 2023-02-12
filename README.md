@@ -148,14 +148,30 @@ Godot 엔진이 현재 가지고 있는 구조상의 한계를 뛰어넘기 위�
   - [x] 사용자가 사설 서버 등록 및 이용 가능
 
 ## Android 빌드 작업보조 정보글
-- Application에 추가 작성
+- 광고 정보를 Application에 추가 작성
 ```xml
 <manifest>
-  <application>
-    <meta-data
-    android:usesCleartextTraffic="true"
-    android:name="com.google.android.gms.ads.APPLICATION_ID"
-    android:value="@string/admob_app_id"/>
+    <application>
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/admob_app_id"/>
+
+        ...
+
+    </application>
+    <-- For apps targeting Android 13 or higher & IMA SDK version 3.24.0 or lower -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
+</manifest>
+```
+- android/app/src/main/res/values/strings.xml 에 다음 줄 추가
+```xml
+<string name="admob_app_id">[APP_ID]</string>
+```
+이 때, [APP_ID]는 ~이 들어간 광고 앱 아이디로 교체
+- Godot-html은 백그라운드가 켜져있더라도 액션이 멈춤, 통신을 ionic에 의존해야함
+- [빌드시 android 12 버전보다 높게 출시하는 것으로 오류가 난 경우 AndroidManifest에 다음 내용을 추가](https://stackoverflow.com/questions/68678008/apps-targeting-android-12-and-higher-required-to-specify-an-explicit-value-for)
+```xml
+<activity android:exported="true"/>
 ```
 - [백그라운드 모드 안드로이드 권한 설정](https://stackoverflow.com/questions/69101863/background-mode-not-quite-working-ionic-app-sleeps-after-5-minutes)
 ```xml
@@ -164,12 +180,6 @@ Godot 엔진이 현재 가지고 있는 구조상의 한계를 뛰어넘기 위�
 <uses-permission android:name="android.permission.WAKE_LOCK" />  
 <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />  
 ```
-- android/app/src/main/res/values/strings.xml 에 다음 줄 추가
-```xml
-<string name="admob_app_id">[APP_ID]</string>
-```
-이 때, APP_ID는 ~이 들어간 광고 앱 아이디로 교체
-- Godot-html은 백그라운드가 켜져있더라도 액션이 멈춤, 통신을 ionic에 의존해야함 
 - 최초 Android 플랫폼 설치 후 오류시 다음 코드 진행
 ```bash
 npm install jetifier
@@ -180,10 +190,6 @@ npx cap sync android
 ```gradle
     minSdkVersion = 22,
     cordovaAndroidVersion = '10.1.2',
-```
-- [빌드시 android 12 버전보다 높게 출시하는 것으로 오류가 난 경우 AndroidManifest에 다음 내용을 추가](https://stackoverflow.com/questions/68678008/apps-targeting-android-12-and-higher-required-to-specify-an-explicit-value-for)
-```xml
-<activity android:exported="true"/>
 ```
 - Component 중복 링크 불가로 엔진 부르기를 할 때 아래 코드를 직접 사용하는 것으로 대체합니다
 ```html
