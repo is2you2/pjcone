@@ -68,8 +68,8 @@ export class IonicViewerPage implements OnInit {
             }
             p.noLoop();
           }
-          p.mouseClicked = (ev) => {
-            if (ev['path'][0]['id'] == IMAGE_ELEMENT_ID) {
+          p.mouseClicked = (ev: any) => {
+            if (ev.target.id == IMAGE_ELEMENT_ID) {
               if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
                 window.open(this.FileURL);
               else {
