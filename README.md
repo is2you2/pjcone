@@ -181,6 +181,10 @@ npx cap sync android
     minSdkVersion = 22,
     cordovaAndroidVersion = '10.1.2',
 ```
+- [빌드시 android 12 버전보다 높게 출시하는 것으로 오류가 난 경우 AndroidManifest에 다음 내용을 추가](https://stackoverflow.com/questions/68678008/apps-targeting-android-12-and-higher-required-to-specify-an-explicit-value-for)
+```xml
+<activity android:exported="true"/>
+```
 - Component 중복 링크 불가로 엔진 부르기를 할 때 아래 코드를 직접 사용하는 것으로 대체합니다
 ```html
 <div id="godot-main-frame" class="full_screen"></div>
