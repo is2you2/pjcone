@@ -274,10 +274,10 @@
   "resolved" "https://registry.npmjs.org/@assemblyscript/loader/-/loader-0.10.1.tgz"
   "version" "0.10.1"
 
-"@awesome-cordova-plugins/background-mode@^5.44.0":
-  "integrity" "sha512-77Io/ipD6ZdacqzlY7+vsXG7IRAkgtFMiv4EnvzExbL5e3KTpiQqIaZh0ufPsmcxn9IzgkJv4hep1fSuIcljjg=="
-  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/background-mode/-/background-mode-5.44.0.tgz"
-  "version" "5.44.0"
+"@awesome-cordova-plugins/background-mode@^5.46.0":
+  "integrity" "sha512-leZzNM6HhneiP0wbQ0qbZVt1zwlue8nEL/875yDdg7+E9fDsdnWRd0Gm23QdTyLyyX5fl2fd2c85NZzCN9k+wQ=="
+  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/background-mode/-/background-mode-5.46.0.tgz"
+  "version" "5.46.0"
   dependencies:
     "@types/cordova" "latest"
 
