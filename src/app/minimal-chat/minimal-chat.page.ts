@@ -77,7 +77,7 @@ export class MinimalChatPage implements OnInit {
     this.noti.Current = this.Header;
     this.content_panel = document.getElementById('content');
     const favicon = document.getElementById('favicon');
-    favicon.setAttribute('href', `assets/icon/${this.Header}.png`);
+    favicon.setAttribute('href', `assets/icon/simplechat.png`);
 
     if (!this.client.client[this.target] || this.client.client[this.target].readyState != this.client.client[this.target].OPEN) {
       this.noti.SetListener(`send${this.target}`, (v: any, eopts: any) => {
@@ -142,6 +142,7 @@ export class MinimalChatPage implements OnInit {
                 },
               },
             },
+            smallIcon_ln: 'simplechat',
             iconColor_ln: this.iconColor,
             autoCancel_ln: true,
             // actions_ln: this.reply_act,
@@ -164,6 +165,7 @@ export class MinimalChatPage implements OnInit {
                 },
               },
             },
+            smallIcon_ln: 'simplechat',
             iconColor_ln: this.iconColor,
             autoCancel_ln: true,
           }, this.Header, this.open_this);
@@ -204,6 +206,7 @@ export class MinimalChatPage implements OnInit {
                 },
               },
               autoCancel_ln: true,
+              smallIcon_ln: 'simplechat',
               iconColor_ln: this.iconColor,
             }, this.Header, this.open_this);
             break;
@@ -238,6 +241,7 @@ export class MinimalChatPage implements OnInit {
               //   launch: false,
               // }],
               autoCancel_ln: true,
+              smallIcon_ln: 'simplechat',
               iconColor_ln: this.iconColor,
             }, this.Header, this.open_this);
             break;
@@ -276,6 +280,7 @@ export class MinimalChatPage implements OnInit {
         //   launch: false,
         // }],
         autoCancel_ln: true,
+        smallIcon_ln: 'simplechat',
         iconColor_ln: this.iconColor,
       }, this.Header, this.open_this);
     }
@@ -317,6 +322,7 @@ export class MinimalChatPage implements OnInit {
           //   launch: false,
           // }],
           autoCancel_ln: true,
+          smallIcon_ln: 'simplechat',
           iconColor_ln: this.iconColor,
         }, this.Header, this.open_this);
       }
@@ -381,6 +387,7 @@ export class MinimalChatPage implements OnInit {
         //   launch: false,
         // }],
         autoCancel_ln: true,
+        smallIcon_ln: 'simplechat',
         iconColor_ln: this.iconColor,
       }, this.Header, this.open_this);
     }
