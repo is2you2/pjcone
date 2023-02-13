@@ -22,7 +22,7 @@ SPDX-License-Identifier: MIT -->
       [style]="'background-color: ' + statusBar.colors[(info['status'] || statusBar.groupServer[info.server.isOfficial][info.server.target])]">
     </div>
     <div class="additional_form bg_img_form">
-      <img class="bg_img"
+      <img class="profile_img"
         [style]="'filter: ' + ((info['status'] || statusBar.groupServer[info.server.isOfficial][info.server.target]) == 'online' ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
         [src]="info['img']">
     </div>
@@ -45,7 +45,7 @@ SPDX-License-Identifier: MIT -->
       [style]="'background-color: ' + statusBar.colors[user.status || info['status'] || 'offline']">
     </div>
     <div class="additional_form bg_img_form">
-      <img class="bg_img"
+      <img class="profile_img"
         [style]="'filter: ' + (user.user['online'] ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
         [src]="user.user.img">
     </div>
