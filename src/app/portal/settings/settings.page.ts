@@ -35,6 +35,13 @@ export class SettingsPage implements OnInit {
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
 
+  EventListenerAct = (ev: any) => {
+    ev.detail.register(10, (processNextHandler) => {
+      this.go_back();
+      processNextHandler();
+    });
+  }
+
   ngOnInit() {
     this.nakama.removeBanner();
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
@@ -168,6 +175,7 @@ export class SettingsPage implements OnInit {
       this.profile_filter = "filter: grayscale(0) contrast(1);";
     else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
     this.load_groups();
+    document.addEventListener('ionBackButton', this.EventListenerAct);
   }
   /** 저장된 그룹 업데이트하여 반영 */
   load_groups() {
@@ -313,6 +321,10 @@ export class SettingsPage implements OnInit {
 
   ionViewWillLeave() {
     delete this.nakama.socket_reactive['settings'];
+    document.removeEventListener('ionBackButton', this.EventListenerAct);
+  }
+
+  go_back() {
     let AllUsers = this.nakama.rearrange_all_user();
     AllUsers.forEach(user => {
       delete user['img'];

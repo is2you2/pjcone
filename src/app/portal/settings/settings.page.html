@@ -4,7 +4,7 @@ SPDX-License-Identifier: MIT -->
 <ion-header>
   <ion-toolbar>
     <ion-title>{{lang.text['Settings']['Title']}}</ion-title>
-    <ion-buttons slot="start">
+    <ion-buttons slot="start" (click)="go_back()">
       <ion-back-button defaultHref="main"></ion-back-button>
     </ion-buttons>
   </ion-toolbar>
