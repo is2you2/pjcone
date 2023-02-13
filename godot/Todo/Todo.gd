@@ -23,8 +23,9 @@ func _ready():
 		while ls:
 			var file:= File.new()
 			var err:= file.open('user://todo/%s/info.todo' % ls, File.READ)
-			if err == OK:
-				add_todo([file.get_as_text()])
+			if err == OK: # 혹시 완료된 일인지도 검토
+				if not dir.file_exists('user://todo/%s/done.todo' % ls):
+					add_todo([file.get_as_text()])
 			file.close()
 			ls = dir.get_next()
 		dir.list_dir_end()
@@ -77,6 +78,9 @@ func add_todo(args):
 		if check_exist:
 			checked_node.name = 'will_remove'
 			checked_node.queue_free()
+		if json['done']:
+			print_debug('무언가 이펙트를 넣어야함, 사용자가 보상감을 느낄 수 있는')
+			return
 		match(json.importance):
 			'0': # 메모
 				new_todo = ele_0.instance()

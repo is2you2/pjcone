@@ -10,6 +10,7 @@ import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-v
 import { DomSanitizer } from '@angular/platform-browser';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { NakamaService } from 'src/app/nakama.service';
+import { LocalNotiService } from 'src/app/local-noti.service';
 
 interface LogForm {
   /** 이 로그를 발생시킨 사람, 리모트인 경우에만 넣기, 로컬일 경우 비워두기 */
@@ -47,6 +48,7 @@ export class AddTodoMenuPage implements OnInit {
     private indexed: IndexedDBService,
     private nakama: NakamaService,
     private alertCtrl: AlertController,
+    private noti: LocalNotiService,
   ) { }
 
   /** 작성된 내용 */
@@ -76,6 +78,8 @@ export class AddTodoMenuPage implements OnInit {
     remote: undefined as RemoteInfo,
     /** 첨부 이미지 정보 */
     attach: {},
+    /** 이 업무는 완료되었습니다, 완료 후에도 변경될 수 있음 */
+    done: undefined,
   };
 
   /** 사용자에게 보여지는 기한 문자열, 저장시 삭제됨 */
@@ -306,6 +310,12 @@ export class AddTodoMenuPage implements OnInit {
         path: this.userInput.attach['img'] ? 'todo/add_tmp.attach' : `todo/${this.userInput.id}/${this.userInput.attach['filename']}`,
       }
     }).then(v => v.present());
+  }
+
+  /** 이 일을 완료했습니다 */
+  doneTodo() {
+    console.log('이 일을 완료했습니다');
+    this.userInput.done = true;
   }
 
   isButtonClicked = false;

@@ -15,6 +15,7 @@ var lerp_start_from:= 0.0
 var is_add_button:= false
 
 
+# 재시작하기 전까지 ionic으로부터 받은 정보는 공유되지 않는다
 func _ready():
 	if info.has('title'):
 		title = info.title
@@ -34,7 +35,6 @@ func _ready():
 # 다시 로드되기 전까지는 경로가 업데이트되지 않는 오류가 있다
 func try_to_load_attach():
 	var dir:= Directory.new()
-	yield(get_tree(), "idle_frame")
 	var check_exist:= dir.file_exists('user://todo/%s/%s' % [info.id, info.attach.filename])
 	if check_exist:
 		var img:= Image.new()

@@ -13,7 +13,7 @@ declare var cordova: any;
  */
 interface TotalNotiForm {
   /** 알림 아이디  
-   * 웹에서도 활용하는 구조로 변경됨
+   * 웹에서도 알림 취소로 활용할 수 있음
    */
   id: number,
   /** 타이틀 */
@@ -116,8 +116,9 @@ interface TotalNotiForm {
   lang_wn?: string;
   /** Web.Noti: 미확인 */
   requireInteraction_wn?: boolean;
-  /** Web.Noti: 미확인  
-   * 모바일: 미확인, 조용한 알림 여부
+  /** 조용한 알림 여부  
+   * Web.Noti: 미확인  
+   * 모바일: 미확인
    */
   silent?: boolean;
   /** Web.Noti: 미확인 */
@@ -173,6 +174,7 @@ export class LocalNotiService {
     if (isPlatform == 'DesktopPWA') {
       // 창을 바라보는 중이라면 무시됨, 바라보는 중이면서 같은 화면이면 무시됨
       if (document.hasFocus() && this.Current == header) return;
+      if (opt.triggerWhen_ln) return; // 웹에는 예약 기능이 없음
       /** 기본 알림 옵션 (교체될 수 있음) */
       const input: NotificationOptions = {
         badge: `${opt.badge}`,

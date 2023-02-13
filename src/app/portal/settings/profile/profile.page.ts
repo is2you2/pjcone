@@ -37,12 +37,12 @@ export class ProfilePage implements OnInit {
   p5canvas: p5;
   ngOnInit() {
     this.nakama.removeBanner();
+    this.original_profile = JSON.parse(JSON.stringify(this.nakama.users.self));
     if (!this.nakama.users.self['img']) {
       this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
         if (e && v) this.nakama.users.self['img'] = v.replace(/"|\\|=/g, '');
-        this.original_profile = { ...this.nakama.users.self };
       });
-    } else this.original_profile = { ...this.nakama.users.self };
+    }
     this.nakama.socket_reactive['profile'] = (img_url: string) => {
       this.change_img_smoothly(img_url);
     }
@@ -149,6 +149,7 @@ export class ProfilePage implements OnInit {
     console.log('표시 콘텐츠 수정 클릭');
   }
 
+  /** 온라인 전환 자동처리 가능여부 */
   can_auto_modified = false;
   ionViewDidEnter() {
     this.can_auto_modified = true;
@@ -209,7 +210,7 @@ export class ProfilePage implements OnInit {
     let keys = Object.keys(this.nakama.users.self);
     let isProfileChanged = false;
     for (let i = 0, j = keys.length; i < j; i++)
-      if (this.nakama.users.self[keys[i]] != this.original_profile[keys[i]]) {
+      if (keys[i] != 'img' && this.nakama.users.self[keys[i]] != this.original_profile[keys[i]]) {
         isProfileChanged = true;
         break;
       }
