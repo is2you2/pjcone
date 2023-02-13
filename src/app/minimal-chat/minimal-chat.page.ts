@@ -144,7 +144,7 @@ export class MinimalChatPage implements OnInit {
             },
             iconColor_ln: this.iconColor,
             autoCancel_ln: true,
-            actions_ln: this.reply_act,
+            // actions_ln: this.reply_act,
           }, this.Header, this.open_this);
         else if (data['type']) {
           let isJoin = data['type'] == 'join';
@@ -188,11 +188,11 @@ export class MinimalChatPage implements OnInit {
               id: this.lnId,
               title: this.lang.text['MinimalChat']['meet_someone'],
               group_ln: 'simplechat',
-              actions_ln: [{
-                id: `send${this.target}`,
-                type: ILocalNotificationActionType.INPUT,
-                title: this.lang.text['MinimalChat']['Noti_Greeting']
-              }],
+              // actions_ln: [{
+              //   id: `send${this.target}`,
+              //   type: ILocalNotificationActionType.INPUT,
+              //   title: this.lang.text['MinimalChat']['Noti_Greeting']
+              // }],
               extra_ln: {
                 page: {
                   component: 'MinimalChatPage',
@@ -229,14 +229,14 @@ export class MinimalChatPage implements OnInit {
                   },
                 },
               },
-              actions_ln: [{
-                id: `reconn${this.target}`,
-                title: this.lang.text['MinimalChat']['new_chat']
-              }, {
-                id: `exit${this.target}`,
-                title: this.lang.text['MinimalChat']['exit_chat'],
-                launch: false,
-              }],
+              // actions_ln: [{
+              //   id: `reconn${this.target}`,
+              //   title: this.lang.text['MinimalChat']['new_chat']
+              // }, {
+              //   id: `exit${this.target}`,
+              //   title: this.lang.text['MinimalChat']['exit_chat'],
+              //   launch: false,
+              // }],
               autoCancel_ln: true,
               iconColor_ln: this.iconColor,
             }, this.Header, this.open_this);
@@ -270,11 +270,11 @@ export class MinimalChatPage implements OnInit {
             },
           },
         },
-        actions_ln: [{
-          id: `exit${this.target}`,
-          title: this.lang.text['MinimalChat']['exit_chat'],
-          launch: false,
-        }],
+        // actions_ln: [{
+        //   id: `exit${this.target}`,
+        //   title: this.lang.text['MinimalChat']['exit_chat'],
+        //   launch: false,
+        // }],
         autoCancel_ln: true,
         iconColor_ln: this.iconColor,
       }, this.Header, this.open_this);
@@ -311,11 +311,11 @@ export class MinimalChatPage implements OnInit {
               },
             },
           },
-          actions_ln: [{
-            id: `exit${this.target}`,
-            title: this.lang.text['MinimalChat']['exit_chat'],
-            launch: false,
-          }],
+          // actions_ln: [{
+          //   id: `exit${this.target}`,
+          //   title: this.lang.text['MinimalChat']['exit_chat'],
+          //   launch: false,
+          // }],
           autoCancel_ln: true,
           iconColor_ln: this.iconColor,
         }, this.Header, this.open_this);
@@ -375,11 +375,11 @@ export class MinimalChatPage implements OnInit {
             },
           },
         },
-        actions_ln: [{
-          id: `exit${this.target}`,
-          title: this.lang.text['MinimalChat']['exit_chat'],
-          launch: false,
-        }],
+        // actions_ln: [{
+        //   id: `exit${this.target}`,
+        //   title: this.lang.text['MinimalChat']['exit_chat'],
+        //   launch: false,
+        // }],
         autoCancel_ln: true,
         iconColor_ln: this.iconColor,
       }, this.Header, this.open_this);

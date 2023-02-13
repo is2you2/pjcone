@@ -1771,10 +1771,10 @@ export class NakamaService {
           title: `${this.groups[_is_official][_target][v.content['group_id']]['name']}: ${this.lang.text['Nakama']['LocalNotiTitle']}`,
           body: v.subject,
           group_ln: 'diychat',
-          actions_ln: [{
-            id: `check${v.code}`,
-            title: this.lang.text['Nakama']['LocalNotiOK'],
-          }],
+          // actions_ln: [{
+          //   id: `check${v.code}`,
+          //   title: this.lang.text['Nakama']['LocalNotiOK'],
+          // }],
           icon: this.groups[_is_official][_target][v.content['group_id']['img']],
           smallIcon_ln: 'diychat',
           autoCancel_ln: true,
@@ -1815,10 +1815,10 @@ export class NakamaService {
           id: v.code,
           title: `${this.groups[_is_official][_target][v.content['group_id']]['name']}: ${this.lang.text['Nakama']['ReqContTitle']}`,
           group_ln: 'diychat',
-          actions_ln: [{
-            id: `check${v.code}`,
-            title: this.lang.text['Nakama']['LocalNotiCheck'],
-          }],
+          // actions_ln: [{
+          //   id: `check${v.code}`,
+          //   title: this.lang.text['Nakama']['LocalNotiCheck'],
+          // }],
           icon: this.groups[_is_official][_target][v.content['group_id']]['img'],
           smallIcon_ln: 'diychat',
           autoCancel_ln: true,
