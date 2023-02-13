@@ -80,6 +80,10 @@ export class AddTodoMenuPage implements OnInit {
     attach: {},
     /** 이 업무는 완료되었습니다, 완료 후에도 변경될 수 있음 */
     done: undefined,
+    /** 관할 업무 여부 */
+    is_me: undefined,
+    /** 업무 집중 여부 */
+    is_focus: undefined,
   };
 
   /** 사용자에게 보여지는 기한 문자열, 저장시 삭제됨 */
@@ -96,6 +100,7 @@ export class AddTodoMenuPage implements OnInit {
 
   /** 이 할 일을 내가 만들었는지 */
   isOwner = true;
+  /** 기존 할 일을 보러 온 것인지 */
   isModify = false;
   received_data: string;
   ionViewWillEnter() {
@@ -314,8 +319,20 @@ export class AddTodoMenuPage implements OnInit {
 
   /** 이 일을 완료했습니다 */
   doneTodo() {
-    console.log('이 일을 완료했습니다');
     this.userInput.done = true;
+    this.indexed.saveTextFileToUserPath('', `todo/${this.userInput.id}/done.todo`, () => {
+      this.saveData();
+    });
+  }
+
+  /** 다른 사람에게 일을 부탁합니다 */
+  moveTodo() {
+    console.warn('업무 이관 행동 필요, is_me 활용');
+  }
+
+  /** 이 일을 집중적으로 하고 있음을 알립니다 */
+  focusTodo() {
+    console.warn('업무 집중 행동 필요, is_focus 활용');
   }
 
   isButtonClicked = false;

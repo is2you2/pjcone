@@ -60,6 +60,27 @@ SPDX-License-Identifier: MIT -->
                 {{log.displayText}}
               </div>
             </div>
+            <div *ngIf="isModify">
+              <ion-grid fixed>
+                <ion-row>
+                  <ion-col col-33>
+                    <ion-item button color="success" (click)="doneTodo()">
+                      <ion-label class="ion-text-center">완료</ion-label>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col col-33>
+                    <ion-item button color="warning" disabled (click)="moveTodo()">
+                      <ion-label class="ion-text-center">이관</ion-label>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col col-33>
+                    <ion-item button color="light" disabled (click)="focusTodo()">
+                      <ion-label class="ion-text-center">집중</ion-label>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </div>
           </div>
         </div>
       </td>

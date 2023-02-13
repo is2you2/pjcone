@@ -78,8 +78,15 @@ func add_todo(args):
 		if check_exist:
 			checked_node.name = 'will_remove'
 			checked_node.queue_free()
-		if json['done']:
+		if json.has('done') and json.done:
 			print_debug('무언가 이펙트를 넣어야함, 사용자가 보상감을 느낄 수 있는')
+			# 마지막으로 할 일을 완료한 경우 토글
+			if children.size() <= 1:
+				$EmptyTodo.show()
+				$Todos/Todo_Add.visible = false
+				$Todos/Todo_Add.global_position = window_size / 2
+				$Todos/Todo_Add.global_position
+				$Todos/Todo_Add.sleeping = true
 			return
 		match(json.importance):
 			'0': # 메모
