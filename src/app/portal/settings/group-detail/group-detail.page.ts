@@ -41,6 +41,7 @@ export class GroupDetailPage implements OnInit {
   info_orig: any;
 
   ngOnInit() {
+    this.nakama.removeBanner();
     this.info = this.navParams.get('info');
     this.info_orig = { ...this.navParams.get('info') };
     this.nakama.socket_reactive['group_detail'] = this;
@@ -232,7 +233,7 @@ export class GroupDetailPage implements OnInit {
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;
       if (userInfo['is_me']) {
-        this.modalCtrl.create({
+      this.modalCtrl.create({
           component: ProfilePage,
         }).then(v => {
           v.present();

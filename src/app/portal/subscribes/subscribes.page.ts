@@ -4,7 +4,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { ModalController } from '@ionic/angular';
-import { isPlatform, SERVER_PATH_ROOT } from 'src/app/app.component';
+import { isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -14,7 +14,6 @@ import { WeblinkService } from 'src/app/weblink.service';
 import { WscService } from 'src/app/wsc.service';
 import { ChatRoomPage } from './chat-room/chat-room.page';
 import { QRelsePage } from './qrelse/qrelse.page';
-import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize } from '@capacitor-community/admob';
 
 @Component({
   selector: 'app-subscribes',
@@ -40,38 +39,11 @@ export class SubscribesPage implements OnInit {
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_scan = true;
-    this.add_admob_banner();
   }
 
   ionViewDidEnter() {
     this.nakama.subscribe_lock = true;
     this.nakama.resumeBanner();
-  }
-
-  async add_admob_banner() {
-    AdMob.addListener(BannerAdPluginEvents.SizeChanged, (size: AdMobBannerSize) => {
-      this.nakama.appMargin = size.height;
-      const app: HTMLElement = document.querySelector('ion-router-outlet');
-
-      if (this.nakama.appMargin === 0)
-        app.style.marginBottom = '';
-      else if (this.nakama.appMargin > 0)
-        app.style.marginBottom = this.nakama.appMargin + 'px';
-    });
-    const options: BannerAdOptions = {
-      adId: 'ca-app-pub-6577630868247944/4829889344',
-      adSize: BannerAdSize.ADAPTIVE_BANNER,
-      position: BannerAdPosition.BOTTOM_CENTER,
-    };
-    /** 광고 정보 불러오기 */
-    try {
-      let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/admob.txt`);
-      if (!res.ok) throw new Error("없는거나 다름없지");
-    } catch (e) { // 로컬 정보 기반으로 광고
-      AdMob.showBanner(options).then(() => {
-        this.nakama.isBannerShowing = true;
-      });
-    }
   }
 
   // 웹에 있는 QRCode는 무조건 json[]로 구성되어있어야함
@@ -184,6 +156,5 @@ export class SubscribesPage implements OnInit {
 
   ionViewWillLeave() {
     this.nakama.subscribe_lock = false;
-    this.nakama.removeBanner();
   }
 }

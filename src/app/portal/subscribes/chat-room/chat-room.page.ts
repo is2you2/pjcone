@@ -142,6 +142,7 @@ export class ChatRoomPage implements OnInit {
   content_panel: HTMLElement;
 
   ngOnInit() {
+    this.nakama.removeBanner();
     this.info = this.navParams.get('info');
     this.noti.Current = this.info['cnoti_id'];
     if (this.info['cnoti_id'])

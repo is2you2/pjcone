@@ -25,10 +25,11 @@ export class PortalPage implements OnInit {
 
   ngOnInit() {
     this.indexed.checkIfFileExist('servers/self/profile.json', (b) => {
-      if (!b)  // 프로필 정보 없는 상태
+      if (!b) {  // 프로필 정보 없는 상태
         this.modalCtrl.create({
           component: ProfilePage
         }).then(v => v.present());
+      }
     });
   }
 
@@ -39,6 +40,7 @@ export class PortalPage implements OnInit {
 
   /** 하단 탭을 눌러 설정페이지로 이동 */
   setting_button() {
+    this.nakama.removeBanner();
     this.nav.navigateForward('settings', {
       animation: iosTransitionAnimation,
     });

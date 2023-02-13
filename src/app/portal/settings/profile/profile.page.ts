@@ -36,6 +36,7 @@ export class ProfilePage implements OnInit {
 
   p5canvas: p5;
   ngOnInit() {
+    this.nakama.removeBanner();
     if (!this.nakama.users.self['img']) {
       this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
         if (e && v) this.nakama.users.self['img'] = v.replace(/"|\\|=/g, '');

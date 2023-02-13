@@ -81,7 +81,9 @@ export class AddTodoMenuPage implements OnInit {
   /** 사용자에게 보여지는 기한 문자열, 저장시 삭제됨 */
   limitDisplay: string;
   ImageURL: any;
-  ngOnInit() { }
+  ngOnInit() {
+    this.nakama.removeBanner();
+  }
 
   /** 하단에 보여지는 버튼 */
   buttonDisplay = {

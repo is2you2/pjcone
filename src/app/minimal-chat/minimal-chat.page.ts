@@ -11,6 +11,7 @@ import { MiniranchatClientService } from '../miniranchat-client.service';
 import * as p5 from 'p5';
 import { StatusManageService } from '../status-manage.service';
 import { LanguageSettingService } from '../language-setting.service';
+import { NakamaService } from '../nakama.service';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -29,6 +30,7 @@ export class MinimalChatPage implements OnInit {
     private params: NavParams,
     private statusBar: StatusManageService,
     public lang: LanguageSettingService,
+    private nakama: NakamaService,
   ) { }
 
   uuid = this.device.uuid;
@@ -46,7 +48,7 @@ export class MinimalChatPage implements OnInit {
   /** 이 창 열기(알림 상호작용) */
   open_this = (ev: any) => {
     // 알림 아이디가 같으면 진입 허용
-    if (ev['id'] == this.lnId)
+    if (ev['id'] == this.lnId) {
       this.modalCtrl.create({
         component: MinimalChatPage,
         componentProps: {
@@ -54,11 +56,13 @@ export class MinimalChatPage implements OnInit {
           name: this.params.get('name'),
         },
       }).then(v => v.present());
+    }
   }
 
   /** 그룹채팅인지 랜덤채팅인지 분류 */
   target: 'dedicated_groupchat' | 'community_ranchat' = 'community_ranchat';
   ngOnInit() {
+    this.nakama.removeBanner();
     this.header_title = this.lang.text['MinimalChat']['header_title_ranchat'];
     let get_address = this.params.get('address');
     let name = this.params.get('name');

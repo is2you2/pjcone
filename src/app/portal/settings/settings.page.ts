@@ -36,6 +36,7 @@ export class SettingsPage implements OnInit {
   cant_dedicated = false;
 
   ngOnInit() {
+    this.nakama.removeBanner();
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
     this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
@@ -312,9 +313,6 @@ export class SettingsPage implements OnInit {
 
   ionViewWillLeave() {
     delete this.nakama.socket_reactive['settings'];
-  }
-
-  go_back() {
     let AllUsers = this.nakama.rearrange_all_user();
     AllUsers.forEach(user => {
       delete user['img'];

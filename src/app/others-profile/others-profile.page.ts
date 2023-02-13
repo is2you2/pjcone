@@ -43,6 +43,7 @@ export class OthersProfilePage implements OnInit {
   lerpVal: number;
   p5canvas: p5;
   ngOnInit() {
+    this.nakama.removeBanner();
     this.info = this.navParams.get('info');
     this.has_admin = this.navParams.get('has_admin');
     this.group_info = this.navParams.get('group');

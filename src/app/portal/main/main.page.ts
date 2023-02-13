@@ -5,7 +5,10 @@ import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
+import { NakamaService } from 'src/app/nakama.service';
 import { AddTodoMenuPage } from './add-todo-menu/add-todo-menu.page';
+import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize } from '@capacitor-community/admob';
+import { SERVER_PATH_ROOT } from 'src/app/app.component';
 
 @Component({
   selector: 'app-main',
@@ -18,9 +21,38 @@ export class MainPage implements OnInit {
     private app: GlobalActService,
     public lang: LanguageSettingService,
     private modalCtrl: ModalController,
+    private nakama: NakamaService,
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.add_admob_banner();
+  }
+
+  async add_admob_banner() {
+    AdMob.addListener(BannerAdPluginEvents.SizeChanged, (size: AdMobBannerSize) => {
+      this.nakama.appMargin = size.height;
+      const app: HTMLElement = document.querySelector('ion-router-outlet');
+
+      if (this.nakama.appMargin === 0)
+        app.style.marginBottom = '';
+      else if (this.nakama.appMargin > 0)
+        app.style.marginBottom = this.nakama.appMargin + 'px';
+    });
+    const options: BannerAdOptions = {
+      adId: 'ca-app-pub-6577630868247944/4829889344',
+      adSize: BannerAdSize.ADAPTIVE_BANNER,
+      position: BannerAdPosition.BOTTOM_CENTER,
+    };
+    /** 광고 정보 불러오기 */
+    try { // 파일이 없으면 광고를 보여줌, 파일이 있다면 안보여줌
+      let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/admob.txt`);
+      if (!res.ok) throw new Error("없는거나 다름없지");
+    } catch (e) { // 로컬 정보 기반으로 광고
+      AdMob.showBanner(options).then(() => {
+        this.nakama.isBannerShowing = true;
+      });
+    }
+  }
 
   ionViewWillEnter() {
     this.app.CreateGodotIFrame('godot-todo', {
@@ -43,5 +75,9 @@ export class MainPage implements OnInit {
         }).then(v => v.present());
       }
     });
+  }
+
+  ionViewDidEnter() {
+    this.nakama.resumeBanner();
   }
 }

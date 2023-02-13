@@ -1393,13 +1393,14 @@ export class NakamaService {
         iconColor_ln: '271e38',
       }, this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'], (ev: any) => {
         // 알림 아이디가 같으면 진입 허용
-        if (ev['id'] == this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'])
+        if (ev['id'] == this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']) {
           this.modalCtrl.create({
             component: ChatRoomPage,
             componentProps: {
               info: this.channels_orig[_is_official][_target][msg.channel_id],
             },
           }).then(v => this.go_to_chatroom_without_admob_act(v));
+        }
       });
     }
     switch (c.code) {

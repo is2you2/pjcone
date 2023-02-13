@@ -4,6 +4,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
+import { NakamaService } from 'src/app/nakama.service';
 
 @Component({
   selector: 'app-qrelse',
@@ -16,6 +17,7 @@ export class QRelsePage implements OnInit {
     private navParams: NavParams,
     public modalCtrl: ModalController,
     public lang: LanguageSettingService,
+    private nakama: NakamaService,
   ) {
   }
 
@@ -26,5 +28,6 @@ export class QRelsePage implements OnInit {
 
   ngOnInit() {
     this.result = this.navParams.get('result');
+    this.nakama.removeBanner();
   }
 }
