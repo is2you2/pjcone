@@ -54,6 +54,7 @@ func greater_gravity_at_start():
 var ele_0:= preload("res://TodoEle_0.tscn")
 var ele_1:= preload("res://TodoEle_1.tscn")
 var ele_2:= preload("res://TodoEle_2.tscn")
+var have_done:= preload("res://DoneEffect.tscn")
 # 해야할 일 추가하기
 func add_todo(args):
 	var json = JSON.parse(args[0]).result
@@ -75,11 +76,17 @@ func add_todo(args):
 				checked_node = child
 				check_exist = true
 				break
+		var checked_position:Vector2
 		if check_exist:
 			checked_node.name = 'will_remove'
+			checked_position = checked_node.global_position
 			checked_node.queue_free()
 		if json.has('done') and json.done:
-			print_debug('무언가 이펙트를 넣어야함, 사용자가 보상감을 느낄 수 있는')
+			if check_exist:
+				var inst:= have_done.instance()
+				inst.name = 'have_done'
+				inst.global_position = checked_position
+				add_child(inst)
 			# 마지막으로 할 일을 완료한 경우 토글
 			if children.size() <= 1:
 				$EmptyTodo.show()
@@ -87,7 +94,7 @@ func add_todo(args):
 				$Todos/Todo_Add.global_position = window_size / 2
 				$Todos/Todo_Add.global_position
 				$Todos/Todo_Add.sleeping = true
-			return
+			return # 완료된 일은 개체를 생성하지 않음
 		match(json.importance):
 			'0': # 메모
 				new_todo = ele_0.instance()

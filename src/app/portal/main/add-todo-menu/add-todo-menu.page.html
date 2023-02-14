@@ -51,7 +51,7 @@ SPDX-License-Identifier: MIT -->
               lang.text['TodoDetail']['attachments_none']}}</ion-label>
           </ion-item>
           <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
-          <div *ngIf="userInput.logs.length">
+          <div *ngIf="isModify">
             <ion-item button (click)="toggle_logs()">
               <ion-label>{{lang.text['TodoDetail']['logs']}}</ion-label>
             </ion-item>
