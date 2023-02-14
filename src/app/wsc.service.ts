@@ -44,18 +44,12 @@ export class WscService {
     this.address_override = (localStorage.getItem('wsc_address_override') || '').replace(/[^0-9.]/g, '');
     this.socket_header = localStorage.getItem('wsc_socket_header') || 'wss';
     this.statusBar.settings['communityServer'] = 'pending';
+    this.lang.Callback_WscClient = this.set_bgmode_text;
     const PORT: number = 12000;
     this.client = new WebSocket(`${this.socket_header}://${this.address_override || SOCKET_SERVER_ADDRESS}:${PORT}`);
     this.client.onopen = (_ev) => {
       this.statusBar.settings['communityServer'] = 'online';
-      let online_info = {
-        title: this.lang.text['WscClient']['OnlineMode'],
-        text: this.lang.text['WscClient']['OnlineMode_text'],
-        icon: 'icon_mono',
-        color: 'ffd94e', // 모자 밑단 노란색
-      };
-      this.bgmode.setDefaults(online_info);
-      this.bgmode.configure(online_info);
+      this.set_bgmode_text(this.lang, true);
     }
     this.client.onclose = (_ev) => {
       let keys = Object.keys(this.disconnected);
@@ -68,14 +62,7 @@ export class WscService {
         text: this.lang.text['WscClient']['Disconnected'],
         lateable: true,
       });
-      let offline_info = {
-        title: this.lang.text['WscClient']['OfflineMode'],
-        text: this.lang.text['WscClient']['OfflineMode_text'],
-        icon: 'icon_mono',
-        color: 'ffd94e', // 모자 밑단 노란색
-      };
-      this.bgmode.setDefaults(offline_info);
-      this.bgmode.configure(offline_info);
+      this.set_bgmode_text(this.lang, false);
       this.is_admin = false;
     }
     this.client.onerror = (e) => {
@@ -87,6 +74,28 @@ export class WscService {
         this.received[json['act']](json);
       });
     }
+  }
+
+  /** 백그라운드 알림 문구 번역처리 */
+  set_bgmode_text(lang: LanguageSettingService, is_online: boolean = undefined) {
+    if (!is_online)
+      is_online = this.client && this.client.readyState == this.client.OPEN;
+    let info: any;
+    if (is_online)
+      info = {
+        title: lang.text['WscClient']['OnlineMode'],
+        text: lang.text['WscClient']['OnlineMode_text'],
+        icon: 'icon_mono',
+        color: 'ffd94e', // 모자 밑단 노란색
+      };
+    else info = {
+      title: lang.text['WscClient']['OfflineMode'],
+      text: lang.text['WscClient']['OfflineMode_text'],
+      icon: 'icon_mono',
+      color: 'ffd94e', // 모자 밑단 노란색
+    };
+    this.bgmode.setDefaults(info);
+    this.bgmode.configure(info);
   }
 
   send(msg: string) {

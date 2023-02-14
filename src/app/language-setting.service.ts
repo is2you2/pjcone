@@ -23,6 +23,10 @@ export class LanguageSettingService {
     Profile: {},
     WscClient: {
       Disconnected: 'Disconnected from community server.',
+      OnlineMode: 'Online mode',
+      OnlineMode_text: 'You can receive notification from community server.',
+      OfflineMode: 'Offline mode',
+      OfflineMode_text: 'You can receive notification from local network.',
     },
     Nakama: {
       UnexpectedLoginErr: 'Login Failed',
@@ -37,7 +41,7 @@ export class LanguageSettingService {
   };
 
   constructor(
-    private bgmode: BackgroundMode,
+    public bgmode: BackgroundMode,
   ) {
     this.lang = navigator.language.split('-')[0];
     let lang_override = localStorage.getItem('lang');
@@ -67,7 +71,8 @@ export class LanguageSettingService {
     });
   }
   /** nakama 스크립트 상호참조를 우회하여 번역처리 */
-  Callback_once: Function;
+  Callback_nakama: Function;
+  Callback_WscClient: Function;
   /** 순차적으로 번역처리하기 */
   ASyncTranslation(v: p5.Table, i: number, j: number, tmpTitle?: string) {
     if (i < j) {
@@ -80,15 +85,8 @@ export class LanguageSettingService {
         this.ASyncTranslation(v, i + 1, j, tmpTitle);
       }, 0);
     } else { // 전부 불러온 후
-      let online_info = {
-        title: this.text['WscClient']['OnlineMode'],
-        text: this.text['WscClient']['OnlineMode_text'],
-        icon: 'icon_mono',
-        color: 'ffd94e', // 모자 밑단 노란색
-      };
-      this.bgmode.setDefaults(online_info);
-      this.bgmode.configure(online_info);
-      this.Callback_once(this.text['GroupServer']['DevTestServer']);
+      this.Callback_nakama(this.text['GroupServer']['DevTestServer']);
+      this.Callback_WscClient(this);
     }
   }
 }

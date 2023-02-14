@@ -114,7 +114,7 @@ export class NakamaService {
       // 채널 불러오기
       this.load_channel_list();
     });
-    this.lang.Callback_once = (DevTestServer: string) => {
+    this.lang.Callback_nakama = (DevTestServer: string) => {
       this.servers['official']['default'].info.name = DevTestServer;
     }
     // 공식서버 연결처리
