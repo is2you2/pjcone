@@ -90,6 +90,7 @@ interface TotalNotiForm {
   ongoing_ln?: boolean;
   /** 안드로이드 전용.  
    * 알림을 클릭해서 알림이 취소됩니다.  
+   * 정확히 확인이 안됨 ㅡㅡ;
    */
   autoCancel_ln?: boolean;
   /** 소리 설정 */

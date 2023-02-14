@@ -11,6 +11,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { LocalNotiService } from 'src/app/local-noti.service';
+import { isPlatform } from 'src/app/app.component';
 
 interface LogForm {
   /** 이 로그를 발생시킨 사람, 리모트인 경우에만 넣기, 로컬일 경우 비워두기 */
@@ -366,6 +367,27 @@ export class AddTodoMenuPage implements OnInit {
       this.noti.ClearNoti(this.userInput.noti_id);
     } // 알림 아이디가 없다면 새로 배정
     this.userInput.noti_id = this.nakama.get_noti_id();
+    // 알림 예약 생성
+    if (this.userInput.importance != '0') // 중요도가 메모가 아닐 때
+      if (isPlatform == 'DesktopPWA') { // 웹은 예약 발송이 없으므로 지금부터 수를 세야함
+        setTimeout(() => {
+          this.noti.PushLocal({
+            id: this.userInput.noti_id,
+            title: this.userInput.title,
+            body: this.userInput.description,
+          });
+        }, new Date(this.userInput.limit).getTime() - new Date().getTime());
+      } else if (isPlatform != 'MobilePWA') { // 모바일은 예약 발송을 설정
+        this.noti.PushLocal({
+          id: this.userInput.noti_id,
+          title: this.userInput.title,
+          body: this.userInput.description,
+          smallIcon_ln: 'icon_mono',
+          triggerWhen_ln: {
+            at: new Date(this.userInput.limit),
+          },
+        });
+      }
     let received_json = this.received_data ? JSON.parse(this.received_data) : undefined;
     if (copy_img) {
       if (received_json)
