@@ -16,6 +16,10 @@ SPDX-License-Identifier: MIT -->
       <td style="vertical-align: top;">
         <div id="p5timer" style="position: absolute; width: 100%; height: 8px; z-index: 2;"></div>
         <div id="main_div" class="main">
+          <ion-item *ngIf="isModify">
+            <ion-label color="medium">이 기기에서</ion-label>
+            <ion-label color="medium" class="ion-text-right">내가 작성</ion-label>
+          </ion-item>
           <ion-item>
             <ion-label>{{lang.text['TodoDetail']['DisplayName']}}</ion-label>
             <ion-input [(ngModel)]="userInput.title" class="ion-text-right"

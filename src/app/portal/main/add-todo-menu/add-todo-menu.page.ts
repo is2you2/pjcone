@@ -54,7 +54,7 @@ export class AddTodoMenuPage implements OnInit {
   /** 작성된 내용 */
   userInput = {
     /** 해야할 일 아이디  
-     * 로컬에서 생성하면 일시 정보로 생성  
+     * 로컬에서 생성하면 날짜시간 정보로 생성  
      * 리모트에서 생성하면 'isOfficial/target/channel_id/msg_id' 로 생성됨
      */
     id: undefined,
@@ -84,6 +84,8 @@ export class AddTodoMenuPage implements OnInit {
     is_me: undefined,
     /** 업무 집중 여부 */
     is_focus: undefined,
+    /** 알림 아이디 저장 */
+    noti_id: undefined,
   };
 
   /** 사용자에게 보여지는 기한 문자열, 저장시 삭제됨 */
@@ -355,11 +357,15 @@ export class AddTodoMenuPage implements OnInit {
     if (exactly_same) {
       this.modalCtrl.dismiss();
       return;
-    } // 같으면 저장 동작을 하지 않음
-    if (!this.userInput.create_at)
+    } // ^ 같으면 저장 동작을 하지 않음
+    if (!this.userInput.create_at) // 생성 날짜 기록
       this.userInput.create_at = new Date().getTime();
-    if (!this.userInput.id)
+    if (!this.userInput.id) // 할 일 구분자 생성 (내 기록은 날짜시간, 그룹채널 기록은 채널-메시지 경로: isOfficial/target/channel_id/msg_id)
       this.userInput.id = new Date(this.userInput.create_at).toISOString().replace(/[:|.]/g, '_');
+    if (this.userInput.noti_id) {  // 알림 아이디가 있다면 삭제 후 재배정
+      this.noti.ClearNoti(this.userInput.noti_id);
+    } // 알림 아이디가 없다면 새로 배정
+    this.userInput.noti_id = this.nakama.get_noti_id();
     let received_json = this.received_data ? JSON.parse(this.received_data) : undefined;
     if (copy_img) {
       if (received_json)

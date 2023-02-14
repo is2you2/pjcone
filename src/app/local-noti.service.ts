@@ -293,14 +293,4 @@ export class LocalNotiService {
       delete this.listeners[ev];
     }
   }
-
-  /** 알림 취소하기 */
-  CancelNotificationById(id: number) {
-    if (isPlatform == 'DesktopPWA') {
-      if (this.WebNoties[id])
-        this.WebNoties[id].close();
-    } else if (isPlatform != 'MobilePWA') {
-      this.noti.cancel(id);
-    }
-  }
 }

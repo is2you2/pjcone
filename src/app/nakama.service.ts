@@ -655,7 +655,7 @@ export class NakamaService {
     let keys = Object.keys(channel_info);
     keys.forEach(key => this.channels_orig[_is_official][_target][channel_info.id][key] = channel_info[key]);
     if (!this.channels_orig[_is_official][_target][channel_info.id]['cnoti_id'])
-      this.channels_orig[_is_official][_target][channel_info.id]['cnoti_id'] = this.get_channel_noti_id();
+      this.channels_orig[_is_official][_target][channel_info.id]['cnoti_id'] = this.get_noti_id();
     switch (this.channels_orig[_is_official][_target][channel_info.id]['redirect']['type']) {
       case 2: // 1:1 대화
         let targetId = this.channels_orig[_is_official][_target][channel_info.id]['redirect']['id'];
@@ -726,12 +726,15 @@ export class NakamaService {
     });
   }
 
-  /** 채널 알림 아이디, 새 채널이 생길 때마다 추가됨, 2000부터 시작 */
-  channel_noti_id = 2000;
+  /** 알림 아이디  
+   * 새 채널이 생길 때마다 추가됨  
+   * 새 할 일이 생성될 때마다 추가됨  
+   * 2000부터 시작 */
+  noti_id = 2000;
   /** 로컬알림에 사용될 채널별 id 구성용 */
-  get_channel_noti_id(): number {
-    this.channel_noti_id++;
-    return this.channel_noti_id;
+  get_noti_id(): number {
+    this.noti_id++;
+    return this.noti_id;
   }
   /** 세션 재접속 시 기존 정보를 이용하여 채팅방에 다시 로그인함 */
   redirect_channel(_is_official: string, _target: string) {
@@ -746,7 +749,7 @@ export class NakamaService {
             false
           ).then(async _c => {
             if (!this.channels_orig[_is_official][_target][_cid]['cnoti_id'])
-              this.channels_orig[_is_official][_target][_cid]['cnoti_id'] = this.get_channel_noti_id();
+              this.channels_orig[_is_official][_target][_cid]['cnoti_id'] = this.get_noti_id();
             switch (this.channels_orig[_is_official][_target][_cid]['redirect']['type']) {
               case 2:
                 this.servers[_is_official][_target].client.listChannelMessages(
@@ -1625,7 +1628,7 @@ export class NakamaService {
       case -6: // 친구가 다른 게임에 참여
         this.noti.ClearNoti(this_noti['id']);
         this.noti.RemoveListener(`check${this_noti.code}`);
-        this.noti.CancelNotificationById(this_noti.code);
+        this.noti.ClearNoti(this_noti.code);
         this_server.client.deleteNotifications(this_server.session, [this_noti['id']])
           .then(v => {
             if (!v) console.warn('알림 거부처리 검토 필요');

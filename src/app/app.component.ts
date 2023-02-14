@@ -72,7 +72,7 @@ export class AppComponent {
         timeoutAfter_ln: 8000,
       }, undefined);
       setTimeout(() => {
-        noti.CancelNotificationById(0);
+        noti.ClearNoti(0);
       }, 8000);
     };
     indexed.initialize(() => {
