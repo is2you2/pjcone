@@ -410,11 +410,6 @@ export class AddTodoMenuPage implements OnInit {
     });
   }
 
-  /** 이 해야할 일의 상태 업데이트 */
-  taskUpdate() {
-    console.log('상태가 업데이트됨');
-  }
-
   /** 이 해야할 일 삭제 */
   deleteData() {
     this.alertCtrl.create({
