@@ -18,13 +18,3 @@ rect_min_size = Vector2( 240, 0 )
 text = "Cannot open file:"
 align = 1
 autowrap = true
-
-[node name="FileDialog" type="FileDialog" parent="."]
-margin_left = 3.0
-margin_top = 30.0
-margin_right = 356.0
-margin_bottom = 353.0
-window_title = "파일 열기"
-mode = 0
-access = 1
-show_hidden_files = true
