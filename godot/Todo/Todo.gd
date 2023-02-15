@@ -146,12 +146,8 @@ func remove_todo(args):
 
 
 func _on_Add_gui_input(event):
-	if event is InputEventMouseButton or event is InputEventScreenTouch:
+	if event is InputEventMouseButton:
 		if event.pressed:
-			if event is InputEventMouseButton:
-				if event.button_index != 1: return
-			if event is InputEventScreenTouch:
-				if event.index != 0: return
 			if window:
 				window.add_todo_menu()
 			else:

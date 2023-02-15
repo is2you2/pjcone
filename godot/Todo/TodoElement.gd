@@ -76,12 +76,8 @@ func map(value, InputA, InputB, OutputA, OutputB):
 var test_todo_index:= 0
 # 클릭 받아내기
 func _on_UI_gui_input(event):
-	if event is InputEventMouseButton or event is InputEventScreenTouch:
+	if event is InputEventMouseButton:
 		if event.pressed:
-			if event is InputEventMouseButton:
-				if event.button_index != 1: return
-			if event is InputEventScreenTouch:
-				if event.index != 0: return
 			if ($CollisionShape2D/Node2D/UI.rect_size / 2).distance_to(event.position) <= $CollisionShape2D.shape.radius:
 				if OS.has_feature('JavaScript'): # 웹에서 사용됨
 					if info.has('id'): # 생성된 할 일 정보

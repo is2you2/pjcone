@@ -56,8 +56,6 @@ func _input(event):
 				mutex.lock()
 				touches[index] = event.position
 				mutex.unlock()
-			elif touches_length > 2:
-				reset_viewport()
 	if event is InputEventMouseButton:
 		match(event.button_index):
 			1, 2: # 좌우 클릭

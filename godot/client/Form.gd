@@ -91,7 +91,7 @@ func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 
 
 func _on_Label_gui_input(event):
-	if event is InputEventMouseButton or event is InputEventScreenTouch:
+	if event is InputEventMouseButton:
 		if event.pressed:
 			if OS.has_feature('JavaScript'):
 				start_download_pck()
