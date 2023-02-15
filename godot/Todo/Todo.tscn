@@ -20,21 +20,10 @@ margin_top = 180.0
 margin_right = 180.0
 margin_bottom = 180.0
 mouse_filter = 2
+script = ExtResource( 3 )
 
 [node name="Camera2D" type="Camera2D" parent="Centered/CenterCamera"]
 current = true
-
-[node name="DisplayPanel" type="Control" parent="Centered/CenterCamera/Camera2D"]
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-margin_left = -180.0
-margin_top = -180.0
-margin_right = 180.0
-margin_bottom = 180.0
-mouse_filter = 1
-script = ExtResource( 3 )
 
 [node name="EmptyTodo" type="Control" parent="."]
 anchor_right = 1.0
@@ -105,6 +94,5 @@ parent_script = NodePath("../..")
 
 [node name="TodoElements" type="Node2D" parent="Todos"]
 
-[connection signal="gui_input" from="Centered/CenterCamera/Camera2D/DisplayPanel" to="Centered/CenterCamera/Camera2D/DisplayPanel" method="_on_DisplayPanel_gui_input"]
 [connection signal="gui_input" from="EmptyTodo/c/Add" to="." method="_on_Add_gui_input"]
 [connection signal="gui_input" from="Todos" to="Todos" method="_on_Todos_gui_input"]
