@@ -524,10 +524,10 @@ export class ChatRoomPage implements OnInit {
     } catch (error) { // 자동지정 타입이 없는 경우
       switch (msg.content['file_ext']) {
         // 모델링류
-        case 'obj':
-        case 'stl':
-        case 'glb':
-        case 'gltf':
+        // case 'obj':
+        // case 'stl':
+        // case 'glb':
+        // case 'gltf':
         // 고도엔진 패키지 파일
         case 'pck':
           msg.content['viewer'] = 'godot';

@@ -1,11 +1,11 @@
 ## SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 ## SPDX-License-Identifier: MIT
-
 extends Node
 
 var window # iframe 창
 var add_todo_func = JavaScript.create_callback(self, 'add_todo')
 var remove_todo_func = JavaScript.create_callback(self, 'remove_todo')
+
 
 # 앱 시작과 동시에 동작하려는 pck 정보를 받아옴
 func _ready():
@@ -64,7 +64,6 @@ func add_todo(args):
 			$EmptyTodo.hide()
 			$Todos/Todo_Add.visible = true
 			$Todos/Todo_Add.global_position = window_size / 2
-			$Todos/Todo_Add.global_position
 			$Todos/Todo_Add.sleeping = true
 		var new_todo # 해야할 일 정보
 		# 기존에 가지고 있는 해야할 일인지 정보 검토
@@ -92,7 +91,6 @@ func add_todo(args):
 				$EmptyTodo.show()
 				$Todos/Todo_Add.visible = false
 				$Todos/Todo_Add.global_position = window_size / 2
-				$Todos/Todo_Add.global_position
 				$Todos/Todo_Add.sleeping = true
 			return # 완료된 일은 개체를 생성하지 않음
 		match(json.importance):
@@ -144,7 +142,6 @@ func remove_todo(args):
 			$Todos/Todo_Add.visible = false
 			$Todos/Todo_Add.global_position = window_size / 2
 			$Todos/Todo_Add.global_position
-			$Todos/Todo_Add.sleeping = true
 	else: printerr('json import error')
 
 
