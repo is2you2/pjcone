@@ -754,8 +754,10 @@ export class NakamaService {
   }
   /** 기등록된 아이디 수집 */
   registered_id: number[];
-  /** 웹에서 등록된 예약 알림의 경우 */
-  web_id: { [id: string]: NodeJS.Timeout } = {};
+  /** 웹에서 등록된 예약 알림의 경우  
+   * { id: timeout }
+  */
+  web_id = {};
   /** 세션 재접속 시 기존 정보를 이용하여 채팅방에 다시 로그인함 */
   redirect_channel(_is_official: string, _target: string) {
     if (this.channels_orig[_is_official][_target]) {
