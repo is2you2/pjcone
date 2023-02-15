@@ -16,10 +16,31 @@ SPDX-License-Identifier: MIT -->
       <td style="vertical-align: top;">
         <div id="p5timer" style="position: absolute; width: 100%; height: 8px; z-index: 2;"></div>
         <div id="main_div" class="main">
-          <ion-item *ngIf="isModify">
-            <ion-label color="medium">이 기기에서</ion-label>
-            <ion-label color="medium" class="ion-text-right">내가 작성</ion-label>
-          </ion-item>
+          <div *ngIf="isModify">
+            <ion-item>
+              <ion-label color="medium">이 기기에서</ion-label>
+              <ion-label color="medium" class="ion-text-right">내가 작성</ion-label>
+            </ion-item>
+            <ion-grid fixed>
+              <ion-row>
+                <ion-col col-33>
+                  <ion-item button color="success" (click)="doneTodo()">
+                    <ion-label class="ion-text-center">완료</ion-label>
+                  </ion-item>
+                </ion-col>
+                <ion-col col-33>
+                  <ion-item button color="warning" disabled (click)="moveTodo()">
+                    <ion-label class="ion-text-center">이관</ion-label>
+                  </ion-item>
+                </ion-col>
+                <ion-col col-33>
+                  <ion-item button color="light" disabled (click)="focusTodo()">
+                    <ion-label class="ion-text-center">집중</ion-label>
+                  </ion-item>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </div>
           <ion-item>
             <ion-label>{{lang.text['TodoDetail']['DisplayName']}}</ion-label>
             <ion-input [(ngModel)]="userInput.title" class="ion-text-right"
@@ -63,27 +84,6 @@ SPDX-License-Identifier: MIT -->
               <div *ngFor="let log of userInput.logs" class="logs">
                 {{log.displayText}}
               </div>
-            </div>
-            <div *ngIf="isModify">
-              <ion-grid fixed>
-                <ion-row>
-                  <ion-col col-33>
-                    <ion-item button color="success" (click)="doneTodo()">
-                      <ion-label class="ion-text-center">완료</ion-label>
-                    </ion-item>
-                  </ion-col>
-                  <ion-col col-33>
-                    <ion-item button color="warning" disabled (click)="moveTodo()">
-                      <ion-label class="ion-text-center">이관</ion-label>
-                    </ion-item>
-                  </ion-col>
-                  <ion-col col-33>
-                    <ion-item button color="light" disabled (click)="focusTodo()">
-                      <ion-label class="ion-text-center">집중</ion-label>
-                    </ion-item>
-                  </ion-col>
-                </ion-row>
-              </ion-grid>
             </div>
           </div>
         </div>
