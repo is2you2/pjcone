@@ -6,6 +6,8 @@ extends Control
 onready var target_camera:= $Camera2D
 
 
+# touches 오류 방지
+var mutex:= Mutex.new()
 # indexes
 var touches:Dictionary = {}
 # center, dist
@@ -16,33 +18,46 @@ func _input(event):
 	if event is InputEventScreenTouch or event is InputEventMouseButton:
 		var index = 0 if event is InputEventMouseButton else event.index
 		if event.pressed: # 등록
+			mutex.lock()
 			touches[index] = event.position
+			mutex.unlock()
+			if touches.size() > 2: # 기본값으로 복구
+				reset_viewport()
 		else: # 삭제
-			touches.erase(index)
-			tmp.clear()
-		if touches.size() > 2: # 기본값으로 복구
-			reset_viewport()
+			var touches_length:= touches.size()
+			if touches_length:
+				mutex.lock()
+				touches.erase(index)
+				mutex.unlock()
+				tmp.clear()
 	if event is InputEventScreenDrag or event is InputEventMouseMotion:
 		var touches_length:= touches.size()
-		var index = 0 if event is InputEventMouseMotion else event.index
-		if touches_length == 1: # 패닝
-			var last_info:Vector2 = touches[index]
-			target_camera.translate(last_info - event.position)
-			touches[index] = event.position
-		elif touches_length == 2: # 스케일, 패닝
-			var last_other:Vector2 = touches[1 if index == 0 else 0]
-			var dist:= last_other.distance_to(event.position)
-			var center:Vector2 = (last_other + event.position) / 2
-			# 사전 등록값이 있을 때만 연산
-			if tmp.size():
-				target_camera.zoom = tmp['zoom'] * (tmp['dist'] / dist)
-				target_camera.translate(tmp['center'] - center)
-			tmp['zoom'] = target_camera.zoom
-			tmp['center'] = center
-			tmp['dist'] = dist
-			touches[index] = event.position
-		elif touches_length > 2:
-			reset_viewport()
+		if touches_length:
+			var index = 0 if event is InputEventMouseMotion else event.index
+			if touches_length == 1: # 패닝
+				var last_info:Vector2 = touches[index]
+				target_camera.translate((last_info - event.position) * target_camera.zoom.x)
+				mutex.lock()
+				touches[index] = event.position
+				mutex.unlock()
+			elif touches_length == 2: # 스케일, 패닝
+				mutex.lock()
+				var last_other:Vector2 = touches[1 if index == 0 else 0]
+				mutex.unlock()
+				var dist:= last_other.distance_to(event.position)
+				var center:Vector2 = (last_other + event.position) / 2
+				# 사전 등록값이 있을 때만 연산
+				if tmp.size():
+					target_camera.translate((tmp['center'] - center) * tmp['zooom'].x)
+					target_camera.zoom = tmp['zoom'] * (tmp['dist'] / dist)
+				tmp['zoom'] = target_camera.zoom
+				tmp['center'] = center
+				tmp['dist'] = dist
+				mutex.lock()
+				touches[index] = event.position
+				mutex.unlock()
+			elif touches_length > 2:
+				reset_viewport()
 	if event is InputEventMouseButton:
 		match(event.button_index):
 			1, 2: # 좌우 클릭
@@ -65,3 +80,5 @@ func reset_viewport():
 	target_camera.position = Vector2.ZERO
 	target_camera.rotation_degrees = 0
 	target_camera.zoom = Vector2.ONE
+	touches.clear()
+	tmp.clear()
