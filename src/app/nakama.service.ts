@@ -84,6 +84,8 @@ export class NakamaService {
   };
 
   initialize() {
+    // 기등록 알림 id 검토
+    this.noti.GetNotificationIds((list) => this.registered_id = list);
     // 개인 정보 설정
     this.indexed.loadTextFromUserPath('link-account', (e, v) => {
       if (e && v) this.uuid = v;
@@ -733,9 +735,27 @@ export class NakamaService {
   noti_id = 2000;
   /** 로컬알림에 사용될 채널별 id 구성용 */
   get_noti_id(): number {
-    this.noti_id++;
+    this.noti_id = this.check_If_RegisteredId(this.noti_id + 1);
     return this.noti_id;
   }
+  check_If_RegisteredId(expectation_number: number): number {
+    if (this.registered_id) {
+      let already_registered = false;
+      for (let i = 0, j = this.registered_id.length; i < j; i++)
+        if (this.registered_id[i] == expectation_number) {
+          already_registered = true;
+          this.registered_id.splice(i, 1);
+          break;
+        }
+      if (already_registered)
+        return this.check_If_RegisteredId(expectation_number + 1);
+      else return expectation_number;
+    } else return expectation_number;
+  }
+  /** 기등록된 아이디 수집 */
+  registered_id: number[];
+  /** 웹에서 등록된 예약 알림의 경우 */
+  web_id: { [id: string]: NodeJS.Timeout } = {};
   /** 세션 재접속 시 기존 정보를 이용하여 채팅방에 다시 로그인함 */
   redirect_channel(_is_official: string, _target: string) {
     if (this.channels_orig[_is_official][_target]) {

@@ -260,6 +260,16 @@ export class LocalNotiService {
     }
   }
 
+  /** 기등록 id 불러오기 (Android: 예약된 알림) */
+  GetNotificationIds(_CallBack = (_list: number[]) => { }) {
+    if (isPlatform == 'DesktopPWA') {
+    } else if (isPlatform != 'MobilePWA') {
+      this.noti.getScheduledIds().then((ids) => {
+        _CallBack(ids);
+      });
+    }
+  }
+
   /** 알림 제거하기 */
   ClearNoti(id: any) {
     if (isPlatform == 'DesktopPWA') {
