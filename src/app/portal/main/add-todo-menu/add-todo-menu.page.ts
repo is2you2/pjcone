@@ -323,6 +323,8 @@ export class AddTodoMenuPage implements OnInit {
   /** 이 일을 완료했습니다 */
   doneTodo() {
     this.userInput.done = true;
+    if (this.userInput.noti_id)
+      this.noti.ClearNoti(this.userInput.noti_id);
     this.indexed.saveTextFileToUserPath('', `todo/${this.userInput.id}/done.todo`, () => {
       this.saveData();
     });
@@ -420,6 +422,8 @@ export class AddTodoMenuPage implements OnInit {
         handler: () => {
           this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, (v) => {
             v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+            if (this.userInput.noti_id)
+              this.noti.ClearNoti(this.userInput.noti_id);
             this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
             this.modalCtrl.dismiss();
           });
