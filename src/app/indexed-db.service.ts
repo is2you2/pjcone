@@ -148,7 +148,7 @@ export class IndexedDBService {
   }
 
   /** 모든 파일 리스트로부터 대상 폴더와 겹치는 파일 리스트 추출하기 */
-  GetFileListFromDB(path: string, _CallBack = (_list: any[]) => console.log('GetFileListFromDB act null')) {
+  GetFileListFromDB(path: string, _CallBack = (_list: string[]) => console.log('GetFileListFromDB act null')) {
     if (!this.db) {
       console.log('retry GetFileListFromDB..');
       setTimeout(() => {
