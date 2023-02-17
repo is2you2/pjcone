@@ -167,7 +167,7 @@ func _on_Add_gui_input(event):
 
 # Control 노드를 이용한 화면 크기 검토용
 var window_size:Vector2
-const GEN_MARGIN:= 200
+const GEN_MARGIN:= 600
 var current_time:int
 # add-todo-menu.p5timer.AlertLerpStartFrom
 func _process(_delta):
