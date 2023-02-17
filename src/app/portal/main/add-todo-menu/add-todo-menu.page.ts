@@ -331,7 +331,11 @@ export class AddTodoMenuPage implements OnInit {
       });
     else { // 메모는 이펙트만 생성하고 삭제
       this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
-      this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/done.todo`, () => {
+      this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, (v) => {
+        v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+        if (this.userInput.noti_id)
+          this.noti.ClearNoti(this.userInput.noti_id);
+        this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
         this.modalCtrl.dismiss();
       });
     }
