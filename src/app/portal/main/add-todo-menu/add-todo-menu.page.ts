@@ -394,6 +394,14 @@ export class AddTodoMenuPage implements OnInit {
         triggerWhen_ln: {
           at: new Date(this.userInput.limit),
         },
+        extra_ln: {
+          page: {
+            component: 'AddTodoMenuPage',
+            componentProps: {
+              data: JSON.stringify(this.userInput),
+            },
+          },
+        },
       });
     }
     let received_json = this.received_data ? JSON.parse(this.received_data) : undefined;

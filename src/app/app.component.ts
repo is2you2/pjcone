@@ -13,6 +13,8 @@ import { NakamaService } from './nakama.service';
 import { ChatRoomPage } from './portal/subscribes/chat-room/chat-room.page';
 import { WscService } from './wsc.service';
 import { AdMob } from "@capacitor-community/admob";
+import { AddTodoMenuPage } from './portal/main/add-todo-menu/add-todo-menu.page';
+import { GlobalActService } from './global-act.service';
 /** 페이지가 돌고 있는 플렛폼 구분자 */
 export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'DesktopPWA';
 /** 소켓서버용 */
@@ -36,6 +38,7 @@ export class AppComponent {
     nakama: NakamaService,
     indexed: IndexedDBService,
     modalCtrl: ModalController,
+    global: GlobalActService,
   ) {
     if (platform.is('desktop'))
       isPlatform = 'DesktopPWA';
@@ -112,6 +115,14 @@ export class AppComponent {
           case 'MinimalChatPage':
             page = MinimalChatPage;
             noti_id = ev.data.page.componentProps['noti_id'];
+            break;
+          case 'AddTodoMenuPage':
+            page = AddTodoMenuPage;
+            props = {
+              godot: global.godot.contentWindow || global.godot.contentDocument,
+              data: ev.data.page.componentProps['data'],
+            };
+            noti_id = 'todo';
             break;
           default:
             console.warn('준비된 페이지가 아님: ', ev.data.page.component);
