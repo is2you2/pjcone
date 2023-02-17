@@ -15,7 +15,17 @@ var normal_color:Color
 var alert_color:Color
 var lerp_start_from:= 0.0
 var is_add_button:= false
+# 중요도에 따른 개체 배율
+export var importance_ratio:float
+# 중요도에 따른 무게
+export var busy_mass:float
 
+
+onready var collisionShape:= $CollisionShape2D
+onready var CircleSprite:= $CollisionShape2D/Node2D/Sprite
+onready var UI_control:= $CollisionShape2D/Node2D/UI
+onready var Attach_tex:= $CollisionShape2D/Node2D/UI/Attach
+onready var label_control:= $CollisionShape2D/Node2D/UI/Label
 
 # 재시작하기 전까지 ionic으로부터 받은 정보는 공유되지 않는다
 func _ready():
@@ -63,8 +73,20 @@ func _process(_delta):
 	rotation = 0
 	if not is_add_button: # 추가 버튼을 제외한 행동
 		calc_lerpVal()
-		linear_damp = 4 - lerp_value
-		angular_damp = 4 - lerp_value
+		mass = busy_mass + lerp_value
+		var _importance_ratio_little:= importance_ratio + lerp_value / 8.5
+		collisionShape.shape.radius = 64 * _importance_ratio_little
+		CircleSprite.scale.x = _importance_ratio_little
+		CircleSprite.scale.y = _importance_ratio_little
+		var _ratio:= 128 * _importance_ratio_little
+		var _half_ratio:= _ratio / 2
+		var _height:= _half_ratio * .9
+		UI_control.rect_position.x = - _half_ratio
+		UI_control.rect_position.y = - _height / 2
+		UI_control.rect_size.x = _ratio
+		UI_control.rect_size.y = _height
+		linear_damp = 5 - lerp_value
+		angular_damp = 5 - lerp_value
 		$CollisionShape2D/Node2D/Sprite.modulate = normal_color.linear_interpolate(alert_color, color_lerp_with_limit)
 		$CollisionShape2D/Node2D/UI.update()
 

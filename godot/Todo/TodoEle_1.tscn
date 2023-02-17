@@ -19,6 +19,8 @@ mass = 25.0
 linear_damp = 3.5
 angular_damp = 3.5
 script = ExtResource( 2 )
+importance_ratio = 0.65
+busy_mass = 25.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource( 1 )
