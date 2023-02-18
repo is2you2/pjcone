@@ -12,6 +12,7 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { isPlatform } from 'src/app/app.component';
+import { GlobalActService } from 'src/app/global-act.service';
 
 interface LogForm {
   /** 이 로그를 발생시킨 사람, 리모트인 경우에만 넣기, 로컬일 경우 비워두기 */
@@ -50,6 +51,7 @@ export class AddTodoMenuPage implements OnInit {
     private nakama: NakamaService,
     private alertCtrl: AlertController,
     private noti: LocalNotiService,
+    private global: GlobalActService,
   ) { }
 
   /** 작성된 내용 */
@@ -324,7 +326,11 @@ export class AddTodoMenuPage implements OnInit {
   doneTodo() {
     this.userInput.done = true;
     if (this.userInput.noti_id)
-      this.noti.ClearNoti(this.userInput.noti_id);
+      if (isPlatform == 'DesktopPWA') {
+        clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
+        delete this.nakama.web_noti_id[this.userInput.noti_id];
+      }
+    this.noti.ClearNoti(this.userInput.noti_id);
     if (this.userInput.importance != '0')
       this.indexed.saveTextFileToUserPath('', `todo/${this.userInput.id}/done.todo`, () => {
         this.saveData();
@@ -334,7 +340,11 @@ export class AddTodoMenuPage implements OnInit {
       this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, (v) => {
         v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
         if (this.userInput.noti_id)
-          this.noti.ClearNoti(this.userInput.noti_id);
+          if (isPlatform == 'DesktopPWA') {
+            clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
+            delete this.nakama.web_noti_id[this.userInput.noti_id];
+          }
+        this.noti.ClearNoti(this.userInput.noti_id);
         this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
         this.modalCtrl.dismiss();
       });
@@ -377,18 +387,31 @@ export class AddTodoMenuPage implements OnInit {
     if (!this.userInput.id) // 할 일 구분자 생성 (내 기록은 날짜시간, 그룹채널 기록은 채널-메시지 경로: isOfficial/target/channel_id/msg_id)
       this.userInput.id = new Date(this.userInput.create_at).toISOString().replace(/[:|.]/g, '_');
     if (this.userInput.noti_id) {  // 알림 아이디가 있다면 삭제 후 재배정
+      if (isPlatform == 'DesktopPWA') {
+        clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
+        delete this.nakama.web_noti_id[this.userInput.noti_id];
+      }
       this.noti.ClearNoti(this.userInput.noti_id);
     } // 알림 아이디가 없다면 새로 배정
     this.userInput.noti_id = this.nakama.get_noti_id();
     // 알림 예약 생성
     if (isPlatform == 'DesktopPWA') { // 웹은 예약 발송이 없으므로 지금부터 수를 세야함
-      setTimeout(() => {
+      let schedule = setTimeout(() => {
         this.noti.PushLocal({
           id: this.userInput.noti_id,
           title: this.userInput.title,
           body: this.userInput.description,
+        }, undefined, (_ev) => {
+          this.modalCtrl.create({
+            component: AddTodoMenuPage,
+            componentProps: {
+              godot: this.global.godot.contentWindow || this.global.godot.contentDocument,
+              data: JSON.stringify(this.userInput),
+            },
+          }).then(v => v.present());
         });
       }, new Date(this.userInput.limit).getTime() - new Date().getTime());
+      this.nakama.web_noti_id[this.userInput.noti_id] = schedule;
     } else if (isPlatform != 'MobilePWA') { // 모바일은 예약 발송을 설정
       this.noti.PushLocal({
         id: this.userInput.noti_id,
@@ -442,7 +465,11 @@ export class AddTodoMenuPage implements OnInit {
           this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, (v) => {
             v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
             if (this.userInput.noti_id)
-              this.noti.ClearNoti(this.userInput.noti_id);
+              if (isPlatform == 'DesktopPWA') {
+                clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
+                delete this.nakama.web_noti_id[this.userInput.noti_id];
+              }
+            this.noti.ClearNoti(this.userInput.noti_id);
             this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
             this.modalCtrl.dismiss();
           });

@@ -4,7 +4,7 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { Channel, ChannelMessage, Client, Group, GroupUser, Notification, Session, Socket, User, WriteStorageObject } from "@heroiclabs/nakama-js";
-import { SOCKET_SERVER_ADDRESS } from './app.component';
+import { isPlatform, SOCKET_SERVER_ADDRESS } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
@@ -17,6 +17,8 @@ import { ChatRoomPage } from './portal/subscribes/chat-room/chat-room.page';
 import { ApiReadStorageObjectId } from '@heroiclabs/nakama-js/dist/api.gen';
 import { LanguageSettingService } from './language-setting.service';
 import { AdMob } from '@capacitor-community/admob';
+import { AddTodoMenuPage } from './portal/main/add-todo-menu/add-todo-menu.page';
+import { GlobalActService } from './global-act.service';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -55,6 +57,7 @@ export class NakamaService {
     private alertCtrl: AlertController,
     private communityServer: WscService,
     private lang: LanguageSettingService,
+    private global: GlobalActService,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -86,6 +89,7 @@ export class NakamaService {
   initialize() {
     // 기등록 알림 id 검토
     this.noti.GetNotificationIds((list) => this.registered_id = list);
+    this.set_todo_web_notification();
     // 개인 정보 설정
     this.indexed.loadTextFromUserPath('link-account', (e, v) => {
       if (e && v) this.uuid = v;
@@ -149,6 +153,39 @@ export class NakamaService {
       if (this.users.self['online'])
         this.init_all_sessions();
     });
+  }
+  /** 시작시 해야할 일 알림을 설정 (웹 전용) */
+  set_todo_web_notification() {
+    if (isPlatform == 'DesktopPWA') {
+      this.indexed.GetFileListFromDB('info.todo', _list => {
+        _list.forEach(info => {
+          this.indexed.loadTextFromUserPath(info, (e, v) => {
+            if (e && v) {
+              let noti_info = JSON.parse(v);
+              let schedule_at = new Date(noti_info.limit).getTime() - new Date().getTime();
+              if (schedule_at > 0) {
+                let schedule = setTimeout(() => {
+                  this.noti.PushLocal({
+                    id: noti_info.noti_id,
+                    title: noti_info.title,
+                    body: noti_info.description,
+                  }, undefined, (_ev) => {
+                    this.modalCtrl.create({
+                      component: AddTodoMenuPage,
+                      componentProps: {
+                        godot: this.global.godot.contentWindow || this.global.godot.contentDocument,
+                        data: v,
+                      },
+                    }).then(v => v.present());
+                  });
+                }, schedule_at);
+                this.web_noti_id[noti_info.noti_id] = schedule;
+              }
+            }
+          });
+        });
+      });
+    }
   }
   /** 공식 테스트 서버를 대상으로 Nakama 클라이언트 구성을 진행합니다.
    * @param _is_official 공식 서버 여부
@@ -733,6 +770,10 @@ export class NakamaService {
    * 새 할 일이 생성될 때마다 추가됨  
    * 2000부터 시작 */
   noti_id = 2000;
+  /** 웹용 지연 알림 구성 보조용  
+   * { noti_id: settimeout }
+   */
+  web_noti_id = {};
   /** 로컬알림에 사용될 채널별 id 구성용 */
   get_noti_id(): number {
     this.noti_id = this.check_If_RegisteredId(this.noti_id + 1);
@@ -754,10 +795,6 @@ export class NakamaService {
   }
   /** 기등록된 아이디 수집 */
   registered_id: number[];
-  /** 웹에서 등록된 예약 알림의 경우  
-   * { id: timeout }
-  */
-  web_id = {};
   /** 세션 재접속 시 기존 정보를 이용하여 채팅방에 다시 로그인함 */
   redirect_channel(_is_official: string, _target: string) {
     if (this.channels_orig[_is_official][_target]) {
