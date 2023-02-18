@@ -395,6 +395,7 @@ export class AddTodoMenuPage implements OnInit {
         title: this.userInput.title,
         body: this.userInput.description,
         smallIcon_ln: 'todo',
+        group_ln: 'todo',
         triggerWhen_ln: {
           at: new Date(this.userInput.limit),
         },
