@@ -7,6 +7,10 @@ const routes: Routes = [
   {
     path: '',
     component: GroupServerPage
+  },
+  {
+    path: 'server-detail',
+    loadChildren: () => import('./server-detail/server-detail.module').then( m => m.ServerDetailPageModule)
   }
 ];
 

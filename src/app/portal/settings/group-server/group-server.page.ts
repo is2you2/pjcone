@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 import * as p5 from "p5";
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
+import { ServerDetailPage } from './server-detail/server-detail.page';
 
 @Component({
   selector: 'app-group-server',
@@ -22,6 +24,7 @@ export class GroupServerPage implements OnInit {
     public statusBar: StatusManageService,
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
+    private modalCtrl: ModalController,
   ) { }
 
   info: string;
@@ -44,6 +47,10 @@ export class GroupServerPage implements OnInit {
 
   /** 서버 연결하기 */
   link_group(_is_official: string, _target: string) {
+    if (this.isViewDetail_pressed) {
+      this.isViewDetail_pressed = false;
+      return;
+    }
     if (this.statusBar.groupServer[_is_official][_target] == 'offline' || this.statusBar.groupServer[_is_official][_target] == 'missing') {
       this.statusBar.groupServer[_is_official][_target] = 'pending';
       this.nakama.catch_group_server_header('pending');
@@ -117,6 +124,19 @@ export class GroupServerPage implements OnInit {
     setTimeout(() => {
       this.add_custom_tog = false;
     }, 1000);
+  }
+
+  /** 버튼이 눌렸는지를 검토하여 행동을 분리 */
+  isViewDetail_pressed = false;
+  /** 그룹 서버 정보 상세보기 */
+  view_detail(info: any) {
+    this.isViewDetail_pressed = true;
+    this.modalCtrl.create({
+      component: ServerDetailPage,
+      componentProps: {
+        data: info,
+      },
+    }).then(v => v.present());
   }
 
   /** 사설 서버 삭제 */
