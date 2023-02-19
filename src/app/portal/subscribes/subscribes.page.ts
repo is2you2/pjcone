@@ -57,21 +57,19 @@ export class SubscribesPage implements OnInit {
       if (!v.cancelled) {
         try { // 양식에 맞게 끝까지 동작한다면 우리 데이터가 맞다
           let json: any[] = JSON.parse(v.text.trim());
-          if (this.wsc.client.readyState != this.wsc.client.OPEN) {
-            this.p5toast.show({
-              text: this.lang.text['Subscribes']['needLinkWithCommServ'],
-            });
-            return;
-          }
           for (let i = 0, j = json.length; i < j; i++)
             switch (json[i].type) {
               case 'link': // 계정 연결처리
+                if (!this.check_comm_server_is_online())
+                  return
                 this.weblink.initialize({
                   pid: json[i].value,
                   uuid: this.nakama.uuid,
                 });
                 break;
               case 'tools': // 도구모음, 단일 대상 서버 생성 액션시
+                if (!this.check_comm_server_is_online())
+                  return
                 this.create_tool_server(json[i].value);
                 break;
               case 'server': // 그룹 서버 자동등록처리
@@ -81,6 +79,16 @@ export class SubscribesPage implements OnInit {
                     data: json[i].value,
                   },
                 }).then(v => v.present());
+                return;
+              case 'comm_server':
+                this.wsc.client.close();
+                if (json[i].value.useSSL)
+                  this.wsc.socket_header = 'wss';
+                else this.wsc.socket_header = 'ws';
+                localStorage.setItem('wsc_socket_header', this.wsc.socket_header);
+                this.wsc.address_override = json[i].value.address_override.replace(/[^0-9.]/g, '');
+                localStorage.setItem('wsc_address_override', this.wsc.address_override);
+                this.wsc.initialize();
                 break;
               case 'group': // 서버 및 그룹 자동 등록처리
                 this.nakama.try_add_group(json[i]);
@@ -103,6 +111,17 @@ export class SubscribesPage implements OnInit {
         lateable: true,
       });
     });
+  }
+
+  /** 커뮤니티 서버 온라인 여부 확인 */
+  check_comm_server_is_online(): boolean {
+    let result = this.wsc.client.readyState == this.wsc.client.OPEN;
+    if (!result) {
+      this.p5toast.show({
+        text: this.lang.text['Subscribes']['needLinkWithCommServ'],
+      });
+    }
+    return result;
   }
 
   /** 도구모음 서버 만들기 */

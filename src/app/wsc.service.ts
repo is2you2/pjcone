@@ -56,7 +56,8 @@ export class WscService {
       keys.forEach(key => this.disconnected[key]());
       this.statusBar.settings['communityServer'] = 'missing';
       setTimeout(() => {
-        this.statusBar.settings['communityServer'] = 'offline';
+        if (this.statusBar.settings['communityServer'] == 'missing')
+          this.statusBar.settings['communityServer'] = 'offline';
       }, 1500);
       this.p5toast.show({
         text: this.lang.text['WscClient']['Disconnected'],

@@ -30,4 +30,5 @@ SPDX-License-Identifier: MIT -->
     <ion-label>{{lang.text['CommunityServer']['isSSL']}}</ion-label>
     <ion-toggle [(ngModel)]="useSSL" slot="end" style="pointer-events: none;"></ion-toggle>
   </ion-item>
+  <img *ngIf="address_override" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="Loading">
 </ion-content>
