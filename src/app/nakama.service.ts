@@ -1161,7 +1161,7 @@ export class NakamaService {
           }
           this.groups[_is_official][_target][user_group.group.id]
             = { ...this.groups[_is_official][_target][user_group.group.id], ...user_group.group };
-          this.join_chat_with_modulation(user_group.group.id, 3, _is_official, _target, (c) => {
+          this.join_chat_with_modulation(user_group.group.id, 3, _is_official, _target, (_c) => {
             this.redirect_channel(_is_official, _target);
             this.save_groups_with_less_info();
           });
@@ -1287,7 +1287,7 @@ export class NakamaService {
                 this.update_from_channel_msg(c, _is_official, _target);
               });
             else if (c.group_id)  // 그룹 채팅
-              this.join_chat_with_modulation(c.group_id, 3, _is_official, _target, () => {
+              this.join_chat_with_modulation(c.group_id, 3, _is_official, _target, (_c) => {
                 this.update_from_channel_msg(c, _is_official, _target);
               });
           } else { // 평상시에
@@ -1337,7 +1337,6 @@ export class NakamaService {
       delete msg['msgDate'];
       delete msg['msgTime'];
       delete msg['isLastRead'];
-      channel_info['last_read_id'] = channel_info['last_comment_id'];
       SepByDate['msg'].push(msg);
     }
     this.saveMessageByDate(SepByDate, channel_info, _is_official, _target);
