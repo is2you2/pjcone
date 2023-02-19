@@ -41,12 +41,14 @@ export class ServerDetailPage implements OnInit {
   readasQRCodeFromId() {
     try {
       let except_some = {
-        address: this.dedicated_info.address,
-        port: this.dedicated_info.port,
-        key: this.dedicated_info.key,
-        useSSL: this.dedicated_info.useSSL,
+        type: 'server',
+        value: {
+          address: this.dedicated_info.address,
+          port: this.dedicated_info.port,
+          key: this.dedicated_info.key,
+          useSSL: this.dedicated_info.useSSL,
+        }
       };
-      except_some['type'] = 'group';
       let qr: string = new QRCode({
         content: `[${JSON.stringify(except_some)}]`,
         padding: 4,

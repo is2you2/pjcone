@@ -12,6 +12,7 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { ToolServerService, UnivToolForm } from 'src/app/tool-server.service';
 import { WeblinkService } from 'src/app/weblink.service';
 import { WscService } from 'src/app/wsc.service';
+import { ServerDetailPage } from '../settings/group-server/server-detail/server-detail.page';
 import { ChatRoomPage } from './chat-room/chat-room.page';
 import { QRelsePage } from './qrelse/qrelse.page';
 
@@ -74,7 +75,12 @@ export class SubscribesPage implements OnInit {
                 this.create_tool_server(json[i].value);
                 break;
               case 'server': // 그룹 서버 자동등록처리
-                this.nakama.add_group_server(json[i].value);
+                this.modalCtrl.create({
+                  component: ServerDetailPage,
+                  componentProps: {
+                    data: json[i].value,
+                  },
+                }).then(v => v.present());
                 break;
               case 'group': // 서버 및 그룹 자동 등록처리
                 this.nakama.try_add_group(json[i]);
