@@ -47,8 +47,8 @@ export class GroupServerPage implements OnInit {
 
   /** 서버 연결하기 */
   link_group(_is_official: string, _target: string) {
-    if (this.isViewDetail_pressed) {
-      this.isViewDetail_pressed = false;
+    if (this.isOverrideButtonPressed) {
+      this.isOverrideButtonPressed = false;
       return;
     }
     if (this.statusBar.groupServer[_is_official][_target] == 'offline' || this.statusBar.groupServer[_is_official][_target] == 'missing') {
@@ -127,10 +127,10 @@ export class GroupServerPage implements OnInit {
   }
 
   /** 버튼이 눌렸는지를 검토하여 행동을 분리 */
-  isViewDetail_pressed = false;
+  isOverrideButtonPressed = false;
   /** 그룹 서버 정보 상세보기 */
   view_detail(info: any) {
-    this.isViewDetail_pressed = true;
+    this.isOverrideButtonPressed = true;
     this.modalCtrl.create({
       component: ServerDetailPage,
       componentProps: {
@@ -141,6 +141,7 @@ export class GroupServerPage implements OnInit {
 
   /** 사설 서버 삭제 */
   remove_server(_is_official: string, _target: string) {
+    this.isOverrideButtonPressed = true;
     // 로그인 상태일 경우 로그오프처리
     if (this.statusBar.groupServer[_is_official][_target] == 'online') {
       this.nakama.servers[_is_official][_target].client.sessionLogout(
