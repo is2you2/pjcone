@@ -163,7 +163,7 @@ export class NakamaService {
             if (e && v) {
               let noti_info = JSON.parse(v);
               let schedule_at = new Date(noti_info.limit).getTime() - new Date().getTime();
-              if (schedule_at > 0) {
+              if (!noti_info['done'] && schedule_at > 0) {
                 let schedule = setTimeout(() => {
                   this.noti.PushLocal({
                     id: noti_info.noti_id,
