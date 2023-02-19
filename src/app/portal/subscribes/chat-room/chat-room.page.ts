@@ -283,7 +283,7 @@ export class ChatRoomPage implements OnInit {
           });
       else { // 오프라인 기반 리스트 알려주기
         if (this.info['redirect']['type'] == 3) // 그룹대화라면 공개여부 검토
-          if (this.info['status'] != 'missing' && !this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open']) {
+          if (!this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open']) {
             let tmp = [{
               content: {
                 msg: this.lang.text['ChatRoom']['closed_group_must_online'],

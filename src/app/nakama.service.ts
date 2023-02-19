@@ -1345,7 +1345,7 @@ export class NakamaService {
 
   /** 날짜별로 대화 기록 저장하기 */
   saveMessageByDate(info: any, channel_info: any, _is_official: string, _target: string) {
-    if (!info.length) return;
+    if (!info.msg.length) return;
     let SepByDate = JSON.parse(JSON.stringify(info));
     this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/channels/${channel_info.id}/chats/${SepByDate['target']}`, (e, v) => {
       let base: any[] = [];
