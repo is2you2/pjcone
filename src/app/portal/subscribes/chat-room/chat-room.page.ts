@@ -617,6 +617,13 @@ export class ChatRoomPage implements OnInit {
           path: _path,
         },
       }).then(v => {
+        v.onDidDismiss().then((_v) => {
+          this.noti.Current = this.info['cnoti_id'];
+          if (this.info['cnoti_id'])
+            this.noti.ClearNoti(this.info['cnoti_id']);
+          this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
+        });
+        this.noti.Current = 'IonicViewerPage';
         v.present();
         this.lock_modal_open = false;
       });
@@ -633,6 +640,13 @@ export class ChatRoomPage implements OnInit {
           path: _path,
         },
       }).then(v => {
+        v.onDidDismiss().then((_v) => {
+          this.noti.Current = this.info['cnoti_id'];
+          if (this.info['cnoti_id'])
+            this.noti.ClearNoti(this.info['cnoti_id']);
+          this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
+        });
+        this.noti.Current = 'GodotViewerPage';
         v.present();
         this.lock_modal_open = false;
       });
@@ -665,6 +679,13 @@ export class ChatRoomPage implements OnInit {
         this.modalCtrl.create({
           component: ProfilePage,
         }).then(v => {
+          v.onDidDismiss().then((_v) => {
+            this.noti.Current = this.info['cnoti_id'];
+            if (this.info['cnoti_id'])
+              this.noti.ClearNoti(this.info['cnoti_id']);
+            this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
+          });
+          this.noti.Current = 'ProfilePage';
           v.present();
           this.lock_modal_open = false;
         });
@@ -677,6 +698,13 @@ export class ChatRoomPage implements OnInit {
             has_admin: false,
           },
         }).then(v => {
+          v.onDidDismiss().then((_v) => {
+            this.noti.Current = this.info['cnoti_id'];
+            if (this.info['cnoti_id'])
+              this.noti.ClearNoti(this.info['cnoti_id']);
+            this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
+          });
+          this.noti.Current = 'OthersProfilePage';
           v.present();
           this.lock_modal_open = false;
         });
