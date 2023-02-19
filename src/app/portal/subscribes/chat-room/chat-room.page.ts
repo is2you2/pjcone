@@ -405,13 +405,12 @@ export class ChatRoomPage implements OnInit {
       if (v) { // 파일이 존재하는 경우
         if (!msg.content['text'])
           msg.content['text'] = this.lang.text['ChatRoom']['downloaded'];
-        if (msg.content['filesize'] < this.FILESIZE_LIMIT)
-          this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
-            msg.content['type'],
-            v => {
-              let url = URL.createObjectURL(v);
-              this.modulate_thumbnail(msg, url);
-            });
+        this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
+          msg.content['type'],
+          v => {
+            let url = URL.createObjectURL(v);
+            this.modulate_thumbnail(msg, url);
+          });
         this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
       } else { // 가지고 있는 파일이 아닐 경우
         try { // 전송중이라면 무시
