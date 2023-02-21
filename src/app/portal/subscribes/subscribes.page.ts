@@ -6,6 +6,7 @@ import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { ModalController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
+import { MinimalChatPage } from 'src/app/minimal-chat/minimal-chat.page';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
@@ -89,6 +90,17 @@ export class SubscribesPage implements OnInit {
                 this.wsc.address_override = json[i].value.address_override.replace(/[^0-9.]/g, '');
                 localStorage.setItem('wsc_address_override', this.wsc.address_override);
                 this.wsc.initialize();
+                break;
+              case 'group_dedi': // 그룹사설 채팅 접근
+                this.modalCtrl.create({
+                  component: MinimalChatPage,
+                  componentProps: {
+                    address: json[i].value.address,
+                    name: this.nakama.users.self['display_name'],
+                  },
+                }).then(v => {
+                  v.present();
+                });
                 break;
               case 'group': // 서버 및 그룹 자동 등록처리
                 this.nakama.try_add_group(json[i]);

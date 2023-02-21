@@ -33,7 +33,7 @@
     <ion-input [(ngModel)]="dedicated_info.port" class="ion-text-right" type="number" placeholder="7350">
     </ion-input>
   </ion-item>
-  <ion-item button (click)="dedicated_info.useSSL =! dedicated_info.useSSL">
+  <ion-item button disabled>
     <ion-label>{{lang.text['GroupServer']['isSSL']}}</ion-label>
     <ion-toggle [(ngModel)]="dedicated_info.useSSL" slot="end" style="pointer-events: none;"></ion-toggle>
   </ion-item>

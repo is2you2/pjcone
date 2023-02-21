@@ -7,7 +7,8 @@ SPDX-License-Identifier: MIT -->
       <ion-back-button defaultHref=""></ion-back-button>
     </ion-buttons>
     <ion-title>{{header_title}}</ion-title>
-    <div style="margin: 8px 16px;" slot="end">{{lang.text['MinimalChat']['concurrent_users']}}: {{client.ConnectedNow[target]}}</div>
+    <div style="margin: 8px 16px;" slot="end">{{lang.text['MinimalChat']['concurrent_users']}}:
+      {{client.ConnectedNow[target]}}</div>
   </ion-toolbar>
 </ion-header>
 
@@ -16,6 +17,10 @@ SPDX-License-Identifier: MIT -->
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
         <div id="main_div" class="main">
+          <ion-item-divider>
+            <ion-label>{{lang.text['MinimalChat']['shareAddress']}}</ion-label>
+          </ion-item-divider>
+          <img *ngIf="isCustomDedicated" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="Loading">
           <p *ngFor="let msg of client.userInput[target].logs">
             <font *ngIf="!msg.target" color="#{{msg.color}}">{{msg.text}}</font>
             <font *ngIf="msg.target" color="#ddd">
@@ -41,14 +46,15 @@ SPDX-License-Identifier: MIT -->
                   {{lang.text['MinimalChat']['new_chat']}}
                 </ion-button>
               </td>
-              <td *ngIf="client.status[target] == 'unlinked' || client.status[target] == 'idle' || client.status[target] == 'custom'">
+              <td
+                *ngIf="client.status[target] == 'unlinked' || client.status[target] == 'idle' || client.status[target] == 'custom'">
                 <ion-button (click)="quit_chat()" expand="block">
                   {{lang.text['MinimalChat']['exit_chat']}}
                 </ion-button>
               </td>
               <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'custom'" style="width: 100%;">
-                <ion-input type="text" [placeholder]="lang.text['MinimalChat']['input_placeholder']" (ionFocus)="focus_on_input(120)" (keyup.enter)="send()"
-                  [(ngModel)]="client.userInput[target].text">
+                <ion-input type="text" [placeholder]="lang.text['MinimalChat']['input_placeholder']"
+                  (ionFocus)="focus_on_input(120)" (keyup.enter)="send()" [(ngModel)]="client.userInput[target].text">
                 </ion-input>
               </td>
               <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'custom'">
