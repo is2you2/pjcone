@@ -1513,12 +1513,23 @@ export class NakamaService {
         break;
     }
     this.ModulateTimeDate(c);
+    this.check_sender_and_show_name(c, _is_official, _target);
     this.saveListedMessage([c], this.channels_orig[_is_official][_target][c.channel_id], _is_official, _target);
     if (!isNewChannel && this.channels_orig[_is_official][_target][c.channel_id]['update'])
       this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
     let hasFile = c.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
     this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile + (c.content['msg'] || c.content['noti'] || '');
     this.save_channels_with_less_info();
+  }
+
+  /** 발신인 표시를 위한 메시지 추가 가공 */
+  check_sender_and_show_name(c: ChannelMessage, _is_official: string, _target: string) {
+    c['color'] = (c.sender_id.replace(/[^8-9a-f]/g, '') + 'abcdef').substring(0, 6);
+    if (c.sender_id == this.servers[_is_official][_target].session.user_id) {
+      c['user_display_name'] = this.users.self['display_name'];
+      c['is_me'] = true;
+    } else c['user_display_name'] = this.load_other_user(c.sender_id, _is_official, _target)['display_name'];
+    c['user_display_name'] = c['user_display_name'] || this.lang.text['Profile']['noname_user'];
   }
 
   /** 채널 정보를 분석하여 메시지 변형 (행동은 하지 않음)

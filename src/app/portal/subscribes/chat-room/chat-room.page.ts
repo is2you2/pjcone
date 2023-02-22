@@ -171,7 +171,7 @@ export class ChatRoomPage implements OnInit {
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'] = (c: any) => {
         this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        this.check_sender_and_show_name(c);
+        this.nakama.check_sender_and_show_name(c, this.isOfficial, this.target);
         if (c.content['filename']) this.ModulateFileEmbedMessage(c);
         this.info['last_read_id'] = this.info['last_comment_id'];
         this.messages.push(c);
@@ -196,16 +196,6 @@ export class ChatRoomPage implements OnInit {
 
   ionViewWillEnter() {
     this.follow_resize();
-  }
-
-  /** 발신인 표시를 위한 메시지 추가 가공 */
-  check_sender_and_show_name(c: ChannelMessage) {
-    c['color'] = (c.sender_id.replace(/[^8-9a-f]/g, '') + 'abcdef').substring(0, 6);
-    if (c.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id) {
-      c['user_display_name'] = this.nakama.users.self['display_name'];
-      c['is_me'] = true;
-    } else c['user_display_name'] = this.nakama.load_other_user(c.sender_id, this.isOfficial, this.target)['display_name'];
-    c['user_display_name'] = c['user_display_name'] || this.lang.text['Profile']['noname_user'];
   }
 
   p5canvas: p5;
@@ -257,7 +247,7 @@ export class ChatRoomPage implements OnInit {
             this.info['is_new'] = false;
             v.messages.forEach(msg => {
               msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
-              this.check_sender_and_show_name(msg);
+              this.nakama.check_sender_and_show_name(msg, this.isOfficial, this.target);
               if (!this.info['last_comment']) {
                 let hasFile = msg.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
                 this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
@@ -396,7 +386,7 @@ export class ChatRoomPage implements OnInit {
 
   /** 메시지 정보 상세 */
   message_detail(msg: any) {
-    console.warn('긴 클릭시 행동.. 메시지 상세 정보 표시: ', msg);
+    console.log('긴 클릭시 행동.. 메시지 상세 정보 표시: ', msg);
   }
 
   /** 메시지 내 파일 정보, 파일 다운받기 */
