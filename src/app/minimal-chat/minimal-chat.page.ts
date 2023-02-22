@@ -14,6 +14,8 @@ import { StatusManageService } from '../status-manage.service';
 import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
 import { P5ToastService } from '../p5-toast.service';
+import { LocalGroupServerService } from '../local-group-server.service';
+import { isPlatform } from '../app.component';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -35,6 +37,7 @@ export class MinimalChatPage implements OnInit {
     private nakama: NakamaService,
     private sanitizer: DomSanitizer,
     private p5toast: P5ToastService,
+    private local_server: LocalGroupServerService,
   ) { }
 
   uuid = this.device.uuid;
@@ -48,6 +51,9 @@ export class MinimalChatPage implements OnInit {
   content_panel: HTMLElement;
   /** 그룹사설서버 여부 */
   isCustomDedicated = false;
+  isLocalAddress = false;
+  addresses: any[];
+  isMobileApp = false;
   QRCodeSRC: any;
 
   reply_act: ILocalNotificationAction[];
@@ -91,9 +97,32 @@ export class MinimalChatPage implements OnInit {
     }
   }
 
+  /** 주인장이 공유할 IP주소를 선택합니다 */
+  SelectOtherAddress(ev: any) {
+    let address_text: string = ev.detail.value;
+    let extract = address_text.substring(address_text.indexOf('(') + 1, address_text.indexOf(')'));
+    this.readasQRCodeFromId(extract);
+  }
+
   /** 그룹채팅인지 랜덤채팅인지 분류 */
   target: 'dedicated_groupchat' | 'community_ranchat' = 'community_ranchat';
   ngOnInit() {
+    this.isMobileApp = isPlatform == 'Android' || isPlatform == 'iOS';
+    this.local_server.funcs.onCheck = (v: any) => {
+      let keys = Object.keys(v);
+      let results: any[] = [];
+      keys.forEach(key => {
+        if (v[key]['ipv4Addresses'].length)
+          v[key]['ipv4Addresses'].forEach((_address: any) => {
+            results.push({
+              address: _address,
+              key: key,
+            });
+          });
+        this.addresses = results;
+      });
+    }
+    this.local_server.check_addresses();
     this.nakama.removeBanner();
     this.header_title = this.lang.text['MinimalChat']['header_title_ranchat'];
     let get_address = this.params.get('address');
@@ -105,7 +134,9 @@ export class MinimalChatPage implements OnInit {
       this.client.status[this.target] = 'custom';
       this.Header = 'simplechat';
       this.isCustomDedicated = true;
-      this.readasQRCodeFromId(get_address);
+      this.isLocalAddress = get_address == 'ws://127.0.0.1';
+      if (!this.isLocalAddress)
+        this.readasQRCodeFromId(get_address);
     }
     this.noti.RemoveListener(`send${this.target}`);
     this.noti.RemoveListener(`reconn${this.target}`);

@@ -40,7 +40,7 @@ export class DedicatedSettingsPage implements OnInit {
       let results: string[] = [];
       keys.forEach(key => {
         if (v[key]['ipv4Addresses'].length)
-          v[key]['ipv4Addresses'].forEach(address => {
+          v[key]['ipv4Addresses'].forEach((address: any) => {
             results.push(`${address} (${key})`);
           });
       });
