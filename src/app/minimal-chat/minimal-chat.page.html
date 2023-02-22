@@ -17,10 +17,12 @@ SPDX-License-Identifier: MIT -->
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
         <div id="main_div" class="main">
-          <ion-item-divider>
-            <ion-label>{{lang.text['MinimalChat']['shareAddress']}}</ion-label>
-          </ion-item-divider>
-          <img *ngIf="isCustomDedicated" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="Loading">
+          <div *ngIf="isCustomDedicated">
+            <ion-item-divider>
+              <ion-label>{{lang.text['MinimalChat']['shareAddress']}}</ion-label>
+            </ion-item-divider>
+            <img [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="Loading">
+          </div>
           <p *ngFor="let msg of client.userInput[target].logs">
             <font *ngIf="!msg.target" color="#{{msg.color}}">{{msg.text}}</font>
             <font *ngIf="msg.target" color="#ddd">
