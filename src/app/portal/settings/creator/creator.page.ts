@@ -16,17 +16,15 @@ export class CreatorPage implements OnInit {
     public lang: LanguageSettingService,
   ) { }
 
-  /** 번역가 페이지 정보 */
   info = {
-    /** 번역가 표시명 */
-    name: '그림또따',
+    name: undefined,
   };
 
   ngOnInit() {
     new p5((p: p5) => {
       p.setup = () => {
         p.loadJSON(`assets/data/infos/${this.lang.lang}/creator.json`, v => {
-          this.info = { ...v, ...this.info };
+          this.info = v;
           p.remove();
         }, e => {
           console.error('번역가 정보 불러오기 실패: ', e);

@@ -60,7 +60,7 @@ export class LanguageSettingService {
           (v: p5.Table) => {
             // 지원하지 않는 언어라면 기본값으로 Fallback
             if (!v.columns.includes(this.lang))
-              this.lang = 'ko';
+              this.lang = 'en';
             this.ASyncTranslation(v, 0, v.rows.length);
             p.remove();
           }, e => {

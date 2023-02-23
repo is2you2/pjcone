@@ -137,6 +137,7 @@ SPDX-License-Identifier: MIT -->
     <ion-select #LangSel style="pointer-events: none;" [value]="lang.lang" [placeholder]="lang.lang"
       (ionChange)="LanguageChanged($event)">
       <ion-select-option *ngIf="client.is_admin" value="#">#</ion-select-option>
+      <ion-select-option value="en">English</ion-select-option>
       <ion-select-option value="ko">한국어</ion-select-option>
     </ion-select>
   </ion-item>
