@@ -61,6 +61,7 @@ export class LanguageSettingService {
             // 지원하지 않는 언어라면 기본값으로 Fallback
             if (!v.columns.includes(this.lang))
               this.lang = 'en';
+            localStorage.setItem('lang', this.lang);
             this.ASyncTranslation(v, 0, v.rows.length);
             p.remove();
           }, e => {
