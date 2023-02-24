@@ -310,6 +310,8 @@ export class ChatRoomPage implements OnInit {
             let json: any[] = JSON.parse(v.trim());
             for (let i = json.length - 1; i >= 0; i--) {
               this.ModulateFileEmbedMessage(json[i]);
+              this.nakama.translate_updates(json[i]);
+              json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
               this.nakama.ModulateTimeDate(json[i]);
               this.messages.unshift(json[i]);
               this.modulate_chatmsg(0, this.messages.length);
@@ -325,6 +327,8 @@ export class ChatRoomPage implements OnInit {
           let json: any[] = JSON.parse(v.trim());
           for (let i = json.length - 1; i >= 0; i--) {
             this.ModulateFileEmbedMessage(json[i]);
+            this.nakama.translate_updates(json[i]);
+            json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
             this.nakama.ModulateTimeDate(json[i]);
             this.messages.unshift(json[i]);
             this.modulate_chatmsg(0, this.messages.length);

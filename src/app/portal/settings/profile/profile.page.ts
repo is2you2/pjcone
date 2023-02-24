@@ -120,7 +120,7 @@ export class ProfilePage implements OnInit {
         let all_channels = this.nakama.rearrange_channels();
         all_channels.forEach(channel => {
           servers[i].socket.writeChatMessage(channel.id, {
-            user: 'modify_img',
+            user_update: 'modify_img',
             noti: `: ${this.nakama.users.self['display_name']}`,
           });
         });
@@ -258,7 +258,7 @@ export class ProfilePage implements OnInit {
           if (all_channels)
             all_channels.forEach((channelId: any) => {
               servers[i].socket.writeChatMessage(channelId, {
-                user: 'modify_data',
+                user_update: 'modify_data',
                 noti: this.original_profile['display_name'] == this.nakama.users.self['display_name']
                   ? `: ${this.original_profile['display_name']}`
                   : `: ${this.original_profile['display_name']} -> ${this.nakama.users.self['display_name']}`,

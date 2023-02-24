@@ -1469,7 +1469,7 @@ export class NakamaService {
       case 0: // 사용자가 작성한 일반적인 메시지
         if (c.content['gupdate']) // 그룹 정보 업데이트
           this.update_group_info(c, _is_official, _target);
-        if (c.content['user']) // 그룹 사용자 정보 변경
+        if (c.content['user_update']) // 그룹 사용자 정보 변경
           this.update_group_user_info(c, _is_official, _target);
         if (is_new) {
           this.channels_orig[_is_official][_target][msg.channel_id]['is_new'] = !is_me;
@@ -1544,16 +1544,16 @@ export class NakamaService {
         break;
       case 3: // 열린 그룹에 들어온 사용자 알림
       case 4: // 채널에 새로 들어온 사람 알림
-        c.content['user'] = target;
+        c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserJoin']}: ${target['display_name']}`;
         break;
       case 5: // 그룹에 있던 사용자 나감(들어오려다가 포기한 사람 포함)
         console.warn('그룹원 탈퇴와 참여 예정자의 포기를 구분할 수 있는지: ', c);
-        c.content['user'] = target;
+        c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserOut']}: ${target['display_name']}`;
         break;
       case 6: // 누군가 그룹에서 내보내짐 (kick)
-        c.content['user'] = target;
+        c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserKick']}: ${target['display_name']}`;
         break;
       default:
@@ -1612,8 +1612,8 @@ export class NakamaService {
 
   /** 사용자 및 그룹 업데이트 안내 문구 번역 구성 */
   translate_updates(msg: any) {
-    if (msg.content['user'])
-      switch (msg.content['user']) {
+    if (msg.content['user_update'])
+      switch (msg.content['user_update']) {
         case 'modify_data': // 프로필 또는 이미지가 변경됨
           msg.content['noti'] = `${this.lang.text['Profile']['user_profile_changed']}${msg.content['noti']}`;
           break;
@@ -1638,7 +1638,7 @@ export class NakamaService {
   /** 그룹 사용자 상태 변경 처리 */
   async update_group_user_info(c: ChannelMessage, _is_official: string, _target: string) {
     this.translate_updates(c);
-    switch (c.content['user']) {
+    switch (c.content['user_update']) {
       case 'modify_data': // 프로필 또는 이미지가 변경됨
         await this.servers[_is_official][_target].client.getUsers(
           this.servers[_is_official][_target].session, [c.sender_id]
