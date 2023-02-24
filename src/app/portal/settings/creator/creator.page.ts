@@ -25,6 +25,8 @@ export class CreatorPage implements OnInit {
 
   ngOnInit() {
     this.isMobileApp = isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA';
+    // 기능 구현 전까지 숨기기
+    this.isMobileApp = false;
     new p5((p: p5) => {
       p.setup = () => {
         p.loadJSON(`assets/data/infos/${this.lang.lang}/creator.json`, v => {
