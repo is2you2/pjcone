@@ -3,6 +3,7 @@
 
 import { Component, OnInit } from '@angular/core';
 import * as p5 from "p5";
+import { isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 
 @Component({
@@ -20,7 +21,10 @@ export class CreatorPage implements OnInit {
     name: undefined,
   };
 
+  isMobileApp = false;
+
   ngOnInit() {
+    this.isMobileApp = isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA';
     new p5((p: p5) => {
       p.setup = () => {
         p.loadJSON(`assets/data/infos/${this.lang.lang}/creator.json`, v => {
@@ -34,4 +38,8 @@ export class CreatorPage implements OnInit {
     });
   }
 
+  /** 개발자에게 커피를 사주세요 */
+  inAppPurchaseClicked() {
+    console.log('커피 버튼');
+  }
 }

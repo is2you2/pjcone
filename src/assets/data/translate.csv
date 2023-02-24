@@ -262,6 +262,8 @@ OnlyForAdmin,관리자 전용메뉴입니다,This is the admin menu
 CannotUseDataURL,데이터 URL은 사용할 수 없습니다.,You cannot use DataURL
 ## CreatorInfo,,
 creatorComment,제작자의 한마디,A word from the maker
+Ifyoulike,이 앱이 마음에 드신다면,If you like this app
+giveacoffeetodev,개발자에게 커피를 사주세요,Give a coffee to developer
 ## GlobalAct,,
 FailedToDownloadGodot,기능 다운로드 실패,Failed to download tool
 ## IndexedDB,,

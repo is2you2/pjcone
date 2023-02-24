@@ -28,4 +28,12 @@ SPDX-License-Identifier: MIT -->
   <div>
     <textarea class="infobox content_size" disabled>{{'ⓒ 2023 ' + info.name}}</textarea>
   </div>
+  <div *ngIf="isMobileApp">
+    <ion-item-divider>
+      <ion-label>{{lang.text['CreatorInfo']['Ifyoulike']}}</ion-label>
+    </ion-item-divider>
+    <ion-item button (click)="inAppPurchaseClicked()">
+      <ion-label>{{lang.text['CreatorInfo']['giveacoffeetodev']}}</ion-label>
+    </ion-item>
+  </div>
 </ion-content>
