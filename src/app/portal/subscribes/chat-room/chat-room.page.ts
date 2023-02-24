@@ -264,6 +264,7 @@ export class ChatRoomPage implements OnInit {
               if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
               this.nakama.ModulateTimeDate(msg);
               this.messages.unshift(msg);
+              this.modulate_chatmsg(0, this.messages.length);
             });
             this.next_cursor = v.next_cursor;
             this.prev_cursor = v.prev_cursor;
@@ -307,11 +308,12 @@ export class ChatRoomPage implements OnInit {
         this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop(), (e, v) => {
           if (e && v) {
             let json: any[] = JSON.parse(v.trim());
-            for (let i = 0, j = json.length; i < j; i++) {
+            for (let i = json.length - 1; i >= 0; i--) {
               this.ModulateFileEmbedMessage(json[i]);
               this.nakama.ModulateTimeDate(json[i]);
+              this.messages.unshift(json[i]);
+              this.modulate_chatmsg(0, this.messages.length);
             }
-            this.messages = [...json, ...this.messages];
           }
           this.next_cursor = null;
           this.pullable = Boolean(this.LocalHistoryList.length);
@@ -321,11 +323,12 @@ export class ChatRoomPage implements OnInit {
       this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop(), (e, v) => {
         if (e && v) {
           let json: any[] = JSON.parse(v.trim());
-          for (let i = 0, j = json.length; i < j; i++) {
+          for (let i = json.length - 1; i >= 0; i--) {
             this.ModulateFileEmbedMessage(json[i]);
             this.nakama.ModulateTimeDate(json[i]);
+            this.messages.unshift(json[i]);
+            this.modulate_chatmsg(0, this.messages.length);
           }
-          this.messages = [...json, ...this.messages];
         }
         this.pullable = Boolean(this.LocalHistoryList.length);
       });
@@ -441,6 +444,29 @@ export class ChatRoomPage implements OnInit {
         }
       }
     });
+  }
+
+  /** 메시지 추가시마다 메시지 상태를 업데이트 (기존 html 연산) */
+  modulate_chatmsg(i: number, j: number) {
+    // 1회성 보여주기 양식 생성 (채팅방 전용 정보)
+    if (!this.messages[i]['showInfo'])
+      this.messages[i]['showInfo'] = {};
+    // 날짜 표시
+    let NeedShowMsgDate = Boolean(this.messages[i]['msgDate']);
+    this.messages[i]['showInfo']['date'] = NeedShowMsgDate;
+    // 발신인과 시간 표시
+    let NeedShowSender = !this.messages[i].content.noti && this.messages[i].user_display_name;
+    this.messages[i]['showInfo']['sender'] = NeedShowSender;
+    // 이전 메시지와 정보를 비교하여 이전 메시지의 상태를 결정
+    if (i - 1 >= 0) {
+      NeedShowMsgDate = NeedShowMsgDate && (!this.messages[i - 1] || this.messages[i]['msgDate'] != this.messages[i - 1]['msgDate']);
+      NeedShowSender = NeedShowSender && (!this.messages[i - 1] || this.messages[i - 1]['isLastRead'] || this.messages[i].sender_id != this.messages[i - 1].sender_id || this.messages[i - 1].content.noti || this.messages[i]['msgDate'] != this.messages[i - 1]['msgDate'])
+    }
+    // 다음 메시지와 정보를 비교하여 다음 메시지의 상태를 결정
+    if (i + 1 < j) {
+      this.messages[i + 1]['showInfo']['date'] = this.messages[i]['msgDate'] != this.messages[i + 1]['msgDate'];
+      this.messages[i + 1]['showInfo']['sender'] = this.messages[i].sender_id != this.messages[i + 1].sender_id;
+    }
   }
 
   /** 메시지에 썸네일 콘텐츠를 생성 */

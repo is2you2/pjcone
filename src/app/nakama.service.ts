@@ -1337,6 +1337,7 @@ export class NakamaService {
       delete msg['msgDate'];
       delete msg['msgTime'];
       delete msg['isLastRead'];
+      delete msg['showInfo'];
       SepByDate['msg'].push(msg);
     }
     this.saveMessageByDate(SepByDate, channel_info, _is_official, _target);
