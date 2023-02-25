@@ -57,14 +57,6 @@ const routes: Routes = [
     loadChildren: () => import('./admin/notification/notification.module').then( m => m.NotificationPageModule)
   },
   {
-    path: 'receive-act',
-    loadChildren: () => import('./receive-act/receive-act.module').then( m => m.ReceiveActPageModule)
-  },
-  {
-    path: 'send-act',
-    loadChildren: () => import('./send-act/send-act.module').then( m => m.SendActPageModule)
-  },
-  {
     path: 'tool-management',
     loadChildren: () => import('./tool-management/tool-management.module').then( m => m.ToolManagementPageModule)
   },
