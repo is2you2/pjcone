@@ -88,8 +88,10 @@ export class NakamaService {
 
   initialize() {
     // 기등록 알림 id 검토
-    this.noti.GetNotificationIds((list) => this.registered_id = list);
-    this.set_todo_web_notification();
+    this.noti.GetNotificationIds((list) => {
+      this.registered_id = list;
+      this.set_todo_notification();
+    });
     // 개인 정보 설정
     this.indexed.loadTextFromUserPath('link-account', (e, v) => {
       if (e && v) this.uuid = v;
@@ -155,8 +157,8 @@ export class NakamaService {
     });
   }
   /** 시작시 해야할 일 알림을 설정 (웹 전용) */
-  set_todo_web_notification() {
-    if (isPlatform == 'DesktopPWA') {
+  set_todo_notification() {
+    if (isPlatform == 'DesktopPWA') { // 웹 알림을 페이지에 추가
       this.indexed.GetFileListFromDB('info.todo', _list => {
         _list.forEach(info => {
           this.indexed.loadTextFromUserPath(info, (e, v) => {
@@ -180,6 +182,44 @@ export class NakamaService {
                   });
                 }, schedule_at);
                 this.web_noti_id[noti_info.noti_id] = schedule;
+              }
+            }
+          });
+        });
+      });
+    } else if (isPlatform != 'MobilePWA') { // 앱 업데이트시 삭제되는 알림들을 재등록
+      this.indexed.GetFileListFromDB('info.todo', _list => {
+        _list.forEach(info => {
+          this.indexed.loadTextFromUserPath(info, (e, v) => {
+            if (e && v) {
+              let noti_info = JSON.parse(v);
+              let schedule_at = new Date(noti_info.limit).getTime();
+              let not_registered = true;
+              for (let i = 0, j = this.registered_id.length; i < j; i++)
+                if (this.registered_id[i] == noti_info.id) {
+                  this.registered_id.splice(i, 1);
+                  not_registered = false;
+                  break;
+                }
+              if (!noti_info['done'] && not_registered && schedule_at > new Date().getTime()) {
+                this.noti.PushLocal({
+                  id: noti_info.noti_id,
+                  title: noti_info.title,
+                  body: noti_info.description,
+                  smallIcon_ln: 'todo',
+                  group_ln: 'todo',
+                  triggerWhen_ln: {
+                    at: new Date(noti_info.limit),
+                  },
+                  extra_ln: {
+                    page: {
+                      component: 'AddTodoMenuPage',
+                      componentProps: {
+                        data: JSON.stringify(noti_info),
+                      },
+                    },
+                  },
+                });
               }
             }
           });
