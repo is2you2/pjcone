@@ -5,12 +5,11 @@ import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import * as QRCode from "qrcode-svg";
-import { DomSanitizer } from '@angular/platform-browser';
 import { isPlatform } from 'src/app/app.component';
 import clipboard from "clipboardy";
 import { StatusManageService } from 'src/app/status-manage.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
+import { GlobalActService } from 'src/app/global-act.service';
 
 @Component({
   selector: 'app-add-group',
@@ -23,9 +22,9 @@ export class AddGroupPage implements OnInit {
     private navCtrl: NavController,
     private p5toast: P5ToastService,
     private nakama: NakamaService,
-    private sanitizer: DomSanitizer,
     private statusBar: StatusManageService,
     public lang: LanguageSettingService,
+    private global: GlobalActService,
   ) { }
 
   QRCodeSRC: any;
@@ -36,31 +35,6 @@ export class AddGroupPage implements OnInit {
       this.userInput = tmp;
     this.servers = this.nakama.get_all_server_info(true, true);
     this.userInput.server = this.servers[this.index];
-  }
-
-  /** 그룹ID를 QRCode로 그려내기 */
-  readasQRCodeFromId() {
-    try {
-      let info = {
-        type: 'group',
-        id: this.userInput.id,
-        title: this.userInput.name,
-      };
-      let qr: string = new QRCode({
-        content: `[${JSON.stringify(info)}]`,
-        padding: 4,
-        width: 16,
-        height: 16,
-        color: "#bbb",
-        background: "#111",
-        ecl: "M",
-      }).svg();
-      this.QRCodeSRC = this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);
-    } catch (e) {
-      this.p5toast.show({
-        text: `${this.lang.text['LinkAccount']['failed_to_gen_qr']}: ${e}`,
-      });
-    }
   }
 
   /** 사용자가 작성한 그룹 정보 */
@@ -146,7 +120,11 @@ export class AddGroupPage implements OnInit {
     }).then(v => {
       this.userInput.id = v.id;
       this.userInput.creator_id = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session.user_id;
-      this.readasQRCodeFromId();
+      this.QRCodeSRC = this.global.readasQRCodeFromId({
+        type: 'group',
+        id: this.userInput.id,
+        title: this.userInput.name,
+      });
       this.nakama.save_group_info(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target);
       this.nakama.join_chat_with_modulation(v.id, 3, this.servers[this.index].isOfficial, this.servers[this.index].target, (c) => {
         this.isSavedWell = true;

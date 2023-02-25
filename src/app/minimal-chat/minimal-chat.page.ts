@@ -2,20 +2,19 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { DomSanitizer, Title } from '@angular/platform-browser';
+import { Title } from '@angular/platform-browser';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { ILocalNotificationAction, ILocalNotificationActionType } from '@awesome-cordova-plugins/local-notifications/ngx';
 import { ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
-import * as QRCode from "qrcode-svg";
 import * as p5 from 'p5';
 import { StatusManageService } from '../status-manage.service';
 import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
-import { P5ToastService } from '../p5-toast.service';
 import { LocalGroupServerService } from '../local-group-server.service';
 import { isPlatform } from '../app.component';
+import { GlobalActService } from '../global-act.service';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -35,9 +34,8 @@ export class MinimalChatPage implements OnInit {
     private statusBar: StatusManageService,
     public lang: LanguageSettingService,
     private nakama: NakamaService,
-    private sanitizer: DomSanitizer,
-    private p5toast: P5ToastService,
     private local_server: LocalGroupServerService,
+    private global: GlobalActService,
   ) { }
 
   uuid = this.device.uuid;
@@ -72,36 +70,16 @@ export class MinimalChatPage implements OnInit {
     }
   }
 
-  readasQRCodeFromId(_address: string) {
-    try {
-      let except_some = {
-        type: 'group_dedi',
-        value: {
-          address: _address,
-        }
-      };
-      let qr: string = new QRCode({
-        content: `[${JSON.stringify(except_some)}]`,
-        padding: 4,
-        width: 8,
-        height: 8,
-        color: "#bbb",
-        background: "#111",
-        ecl: "M",
-      }).svg();
-      this.QRCodeSRC = this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);
-    } catch (e) {
-      this.p5toast.show({
-        text: `${this.lang.text['LinkAccount']['failed_to_gen_qr']}: ${e}`,
-      });
-    }
-  }
-
   /** 주인장이 공유할 IP주소를 선택합니다 */
   SelectOtherAddress(ev: any) {
     let address_text: string = ev.detail.value;
     let extract = address_text.substring(address_text.indexOf('(') + 1, address_text.indexOf(')'));
-    this.readasQRCodeFromId(extract);
+    this.QRCodeSRC = this.global.readasQRCodeFromId({
+      type: 'group_dedi',
+      value: {
+        address: extract,
+      }
+    });
   }
 
   /** 그룹채팅인지 랜덤채팅인지 분류 */
@@ -136,7 +114,12 @@ export class MinimalChatPage implements OnInit {
       this.isCustomDedicated = true;
       this.isLocalAddress = get_address == 'ws://127.0.0.1';
       if (!this.isLocalAddress)
-        this.readasQRCodeFromId(get_address);
+        this.QRCodeSRC = this.global.readasQRCodeFromId({
+          type: 'group_dedi',
+          value: {
+            address: get_address,
+          }
+        });
     }
     this.noti.RemoveListener(`send${this.target}`);
     this.noti.RemoveListener(`reconn${this.target}`);

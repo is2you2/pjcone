@@ -2,10 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
 import { ModalController, NavParams } from '@ionic/angular';
-import * as QRCode from "qrcode-svg";
-import { P5ToastService } from 'src/app/p5-toast.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -13,6 +10,7 @@ import { ProfilePage } from '../profile/profile.page';
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { Notification } from '@heroiclabs/nakama-js';
 import { LanguageSettingService } from 'src/app/language-setting.service';
+import { GlobalActService } from 'src/app/global-act.service';
 
 @Component({
   selector: 'app-group-detail',
@@ -23,13 +21,12 @@ export class GroupDetailPage implements OnInit {
 
   constructor(
     private navParams: NavParams,
-    private sanitizer: DomSanitizer,
-    private p5toast: P5ToastService,
     public nakama: NakamaService,
     public modalCtrl: ModalController,
     public statusBar: StatusManageService,
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
+    private global: GlobalActService,
   ) { }
 
   QRCodeSRC: any;
@@ -45,7 +42,11 @@ export class GroupDetailPage implements OnInit {
     this.info = this.navParams.get('info');
     this.info_orig = { ...this.navParams.get('info') };
     this.nakama.socket_reactive['group_detail'] = this;
-    this.readasQRCodeFromId();
+    this.QRCodeSRC = this.global.readasQRCodeFromId({
+      id: this.info.id,
+      name: this.info.name,
+      type: 'group',
+    });
     let _is_official: string = this.info.server['isOfficial'];
     let _target: string = this.info.server['target'];
     this.has_admin = this.statusBar.groupServer[_is_official][_target] == 'online';
@@ -165,27 +166,6 @@ export class GroupDetailPage implements OnInit {
     reader.readAsDataURL(ev.target.files[0]);
   }
 
-  readasQRCodeFromId() {
-    try {
-      let except_some = { id: this.info.id, name: this.info.name };
-      except_some['type'] = 'group';
-      let qr: string = new QRCode({
-        content: `[${JSON.stringify(except_some)}]`,
-        padding: 4,
-        width: 8,
-        height: 8,
-        color: "#bbb",
-        background: "#111",
-        ecl: "M",
-      }).svg();
-      this.QRCodeSRC = this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);
-    } catch (e) {
-      this.p5toast.show({
-        text: `${this.lang.text['LinkAccount']['failed_to_gen_qr']}: ${e}`,
-      });
-    }
-  }
-
   remove_group() {
     this.need_edit = false;
     if (this.info['status'] == 'online')
@@ -233,7 +213,7 @@ export class GroupDetailPage implements OnInit {
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;
       if (userInfo['is_me']) {
-      this.modalCtrl.create({
+        this.modalCtrl.create({
           component: ProfilePage,
         }).then(v => {
           v.present();

@@ -4,6 +4,8 @@
 import { Injectable } from '@angular/core';
 import { LanguageSettingService } from './language-setting.service';
 import { P5ToastService } from './p5-toast.service';
+import * as QRCode from "qrcode-svg";
+import { DomSanitizer } from '@angular/platform-browser';
 
 /** 고도엔진과 공유되는 키값 */
 interface GodotFrameKeys {
@@ -26,6 +28,7 @@ export class GlobalActService {
   constructor(
     private p5toast: P5ToastService,
     private lang: LanguageSettingService,
+    private sanitizer: DomSanitizer,
   ) { }
 
 
@@ -46,6 +49,26 @@ export class GlobalActService {
         gets[KeyVal[0]].push(KeyVal[1]);
       }
       return gets;
+    }
+  }
+
+  /** json을 받아서 QR코드 이미지로 돌려주기 */
+  readasQRCodeFromId(json: any) {
+    try {
+      let qr: string = new QRCode({
+        content: `[${JSON.stringify(json)}]`,
+        padding: 4,
+        width: 8,
+        height: 8,
+        color: "#bbb",
+        background: "#111",
+        ecl: "M",
+      }).svg();
+      return this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);
+    } catch (e) {
+      this.p5toast.show({
+        text: `${this.lang.text['LinkAccount']['failed_to_gen_qr']}: ${e}`,
+      });
     }
   }
 

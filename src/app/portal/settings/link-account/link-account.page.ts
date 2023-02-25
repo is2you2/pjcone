@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { NavController } from '@ionic/angular';
-import * as QRCode from "qrcode-svg";
 import { SOCKET_SERVER_ADDRESS } from 'src/app/app.component';
+import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
@@ -23,7 +22,6 @@ const HEADER = 'LinkAccount';
 export class LinkAccountPage implements OnInit {
 
   constructor(
-    private sanitizer: DomSanitizer,
     private p5toast: P5ToastService,
     private nakama: NakamaService,
     private navCtrl: NavController,
@@ -31,6 +29,7 @@ export class LinkAccountPage implements OnInit {
     private indexed: IndexedDBService,
     private device: Device,
     public lang: LanguageSettingService,
+    private global: GlobalActService
   ) { }
 
   /** 기기 아이디가 이미 덮어씌워진 상태인지 */
@@ -62,7 +61,7 @@ export class LinkAccountPage implements OnInit {
             this.navCtrl.back();
           }, 500);
         } catch (_e) {
-          this.createQRCode({
+          this.QRCodeSRC = this.global.readasQRCodeFromId({
             type: 'link',
             value: v,
           });
@@ -80,26 +79,6 @@ export class LinkAccountPage implements OnInit {
     this.nakama.uuid = this.device.uuid;
     this.indexed.removeFileFromUserPath('link-account');
     this.nakama.logout_all_server();
-  }
-
-  /** 그룹ID를 QRCode로 그려내기 */
-  createQRCode(info: any) {
-    try {
-      let qr: string = new QRCode({
-        content: `[${JSON.stringify(info)}]`,
-        padding: 4,
-        width: 16,
-        height: 16,
-        color: "#bbb",
-        background: "#111",
-        ecl: "M",
-      }).svg();
-      this.QRCodeSRC = this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);
-    } catch (e) {
-      this.p5toast.show({
-        text: `${this.lang.text['LinkAccount']['failed_to_gen_qr']}: ${e}`,
-      });
-    }
   }
 
   ionViewWillLeave() {

@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
 import { ModalController, NavParams } from '@ionic/angular';
-import * as QRCode from "qrcode-svg";
+import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -20,10 +19,10 @@ export class ServerDetailPage implements OnInit {
     private navParams: NavParams,
     public lang: LanguageSettingService,
     private p5toast: P5ToastService,
-    private sanitizer: DomSanitizer,
     private statusBar: StatusManageService,
     private indexed: IndexedDBService,
     private nakama: NakamaService,
+    private global: GlobalActService,
   ) { }
 
   dedicated_info: ServerInfo;
@@ -33,37 +32,17 @@ export class ServerDetailPage implements OnInit {
 
   ngOnInit() {
     this.dedicated_info = this.navParams.get('data');
-    this.readasQRCodeFromId();
+    this.QRCodeSRC = this.global.readasQRCodeFromId({
+      type: 'server',
+      value: {
+        address: this.dedicated_info.address,
+        port: this.dedicated_info.port,
+        key: this.dedicated_info.key,
+        useSSL: this.dedicated_info.useSSL,
+      }
+    });
     // 이미 target값이 등록되었는지 검토
     this.isTargetAlreadyExist = Boolean(this.statusBar.groupServer['unofficial'][this.dedicated_info.target || this.dedicated_info.name]);
-  }
-
-  readasQRCodeFromId() {
-    try {
-      let except_some = {
-        type: 'server',
-        value: {
-          address: this.dedicated_info.address,
-          port: this.dedicated_info.port,
-          key: this.dedicated_info.key,
-          useSSL: this.dedicated_info.useSSL,
-        }
-      };
-      let qr: string = new QRCode({
-        content: `[${JSON.stringify(except_some)}]`,
-        padding: 4,
-        width: 8,
-        height: 8,
-        color: "#bbb",
-        background: "#111",
-        ecl: "M",
-      }).svg();
-      this.QRCodeSRC = this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);
-    } catch (e) {
-      this.p5toast.show({
-        text: `${this.lang.text['LinkAccount']['failed_to_gen_qr']}: ${e}`,
-      });
-    }
   }
 
   apply_changed_info() {
