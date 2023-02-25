@@ -1577,7 +1577,10 @@ export class NakamaService {
    * @return c.modulated
    */
   modulation_channel_message(c: ChannelMessage, _is_official: string, _target: string) {
-    let is_me = c.sender_id == this.servers[_is_official][_target].session.user_id;
+    let is_me = false;
+    if (this.statusBar.groupServer[_is_official][_target] && this.statusBar.groupServer[_is_official][_target] != 'missing')
+      is_me = c.sender_id == this.servers[_is_official][_target].session.user_id;
+    else is_me = c.content['user_update'];
     let target = is_me ? this.users.self : this.load_other_user(c.sender_id, _is_official, _target);
     switch (c.code) {
       case 0: // 사용자가 작성한 일반적인 메시지
