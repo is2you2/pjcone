@@ -87,7 +87,7 @@ export class LanguageSettingService {
       }, 0);
     } else { // 전부 불러온 후
       this.Callback_nakama(this.text['GroupServer']['DevTestServer']);
-      this.Callback_WscClient(this);
+      this.Callback_WscClient();
     }
   }
 }
