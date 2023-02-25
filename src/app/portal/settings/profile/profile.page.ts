@@ -121,7 +121,7 @@ export class ProfilePage implements OnInit {
         all_channels.forEach(channel => {
           servers[i].socket.writeChatMessage(channel.id, {
             user_update: 'modify_img',
-            noti: `: ${this.nakama.users.self['display_name']}`,
+            noti_form: `: ${this.nakama.users.self['display_name']}`,
           });
         });
       }).catch(e => {
@@ -259,7 +259,7 @@ export class ProfilePage implements OnInit {
             all_channels.forEach((channelId: any) => {
               servers[i].socket.writeChatMessage(channelId, {
                 user_update: 'modify_data',
-                noti: this.original_profile['display_name'] == this.nakama.users.self['display_name']
+                noti_form: this.original_profile['display_name'] == this.nakama.users.self['display_name']
                   ? `: ${this.original_profile['display_name']}`
                   : `: ${this.original_profile['display_name']} -> ${this.nakama.users.self['display_name']}`,
               });

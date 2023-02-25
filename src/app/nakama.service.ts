@@ -1660,10 +1660,10 @@ export class NakamaService {
     if (msg.content['user_update'])
       switch (msg.content['user_update']) {
         case 'modify_data': // 프로필 또는 이미지가 변경됨
-          msg.content['noti'] = `${this.lang.text['Profile']['user_profile_changed']}${msg.content['noti']}`;
+          msg.content['noti'] = `${this.lang.text['Profile']['user_profile_changed']}${msg.content['noti_form']}`;
           break;
         case 'modify_img': // 프로필 또는 이미지가 변경됨
-          msg.content['noti'] = `${this.lang.text['Profile']['user_img_changed']}${msg.content['noti']}`;
+          msg.content['noti'] = `${this.lang.text['Profile']['user_img_changed']}${msg.content['noti_form']}`;
           break;
       }
     if (msg.content['gupdate'])
