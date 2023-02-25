@@ -14,6 +14,7 @@ import { WscService } from 'src/app/wsc.service';
 import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 import { GroupDetailPage } from './group-detail/group-detail.page';
 import { ToolManagementPage } from './tool-management/tool-management.page';
+import { LocalNotiService } from '../../local-noti.service';
 
 @Component({
   selector: 'app-settings',
@@ -31,6 +32,7 @@ export class SettingsPage implements OnInit {
     public client: WscService,
     private bgmode: BackgroundMode,
     public lang: LanguageSettingService,
+    public noti: LocalNotiService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;

@@ -5,6 +5,7 @@ import { Injectable } from '@angular/core';
 import { isPlatform } from './app.component';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { ILocalNotification, ILocalNotificationAction, ILocalNotificationProgressBar, ILocalNotificationTrigger, LocalNotifications } from '@awesome-cordova-plugins/local-notifications/ngx';
+import { IndexedDBService } from './indexed-db.service';
 
 declare var cordova: any;
 
@@ -117,11 +118,6 @@ interface TotalNotiForm {
   lang_wn?: string;
   /** Web.Noti: 미확인 */
   requireInteraction_wn?: boolean;
-  /** 조용한 알림 여부  
-   * Web.Noti: 미확인  
-   * 모바일: 미확인
-   */
-  silent?: boolean;
   /** Web.Noti: 미확인 */
   tag_wn?: string;
   /** 기본 진동 모드 여부 */
@@ -137,11 +133,29 @@ export class LocalNotiService {
   constructor(
     private noti: LocalNotifications,
     private bgmode: BackgroundMode,
-  ) { }
+    private indexed: IndexedDBService,
+  ) {
+    setTimeout(() => {
+      this.load_settings();
+    }, 0);
+  }
+
+  /** settings에 해당하는 값을 변경한 후 저장함 */
+  change_settings(key: string, value: any) {
+    this.settings[key] = value;
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.settings), 'notification_settings');
+  }
+
+  /** 설정값 복구 */
+  load_settings() {
+    this.indexed.loadTextFromUserPath('notification_settings', (e, v) => {
+      if (e && v) this.settings = JSON.parse(v);
+    });
+  }
 
   settings = {
-    /** 알림 소리 사용 여부 */
-    sound: true,
+    /** 조용한 알림 */
+    silent: false,
     /** 알림 진동 사용 여부 */
     vibrate: false,
   }
@@ -183,7 +197,7 @@ export class LocalNotiService {
         icon: `assets/icon/${opt.icon || header || 'favicon'}.png`,
         image: opt.image,
         lang: opt.lang_wn,
-        silent: opt.silent,
+        silent: this.settings.silent,
         tag: opt.tag_wn,
         actions: opt.actions_wn,
         data: opt.data_wn,
@@ -239,8 +253,7 @@ export class LocalNotiService {
         input['progressBar'] = opt.progressBar_ln;
       if (opt.priority_ln)
         input['priority'] = opt.priority_ln;
-      if (opt.silent)
-        input['silent'] = opt.silent;
+      input['silent'] = this.settings.silent;
       if (opt.timeoutAfter_ln)
         input['timeoutAfter'] = opt.timeoutAfter_ln;
       if (opt.wakeup_ln)
