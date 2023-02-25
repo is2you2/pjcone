@@ -175,6 +175,7 @@ export class ChatRoomPage implements OnInit {
         if (c.content['filename']) this.ModulateFileEmbedMessage(c);
         this.info['last_read_id'] = this.info['last_comment_id'];
         this.messages.push(c);
+        this.modulate_chatmsg(this.messages.length - 1, this.messages.length);
         setTimeout(() => {
           this.info['is_new'] = false;
           this.nakama.has_new_channel_msg = false;
@@ -461,15 +462,19 @@ export class ChatRoomPage implements OnInit {
     // 발신인과 시간 표시
     let NeedShowSender = !this.messages[i].content.noti && this.messages[i].user_display_name;
     this.messages[i]['showInfo']['sender'] = NeedShowSender;
-    // 이전 메시지와 정보를 비교하여 이전 메시지의 상태를 결정
+    // 이전 메시지와 정보를 비교하여 이전 메시지와 지금 메시지의 상태를 결정
     if (i - 1 >= 0) {
-      NeedShowMsgDate = NeedShowMsgDate && (!this.messages[i - 1] || this.messages[i]['msgDate'] != this.messages[i - 1]['msgDate']);
-      NeedShowSender = NeedShowSender && (!this.messages[i - 1] || this.messages[i - 1]['isLastRead'] || this.messages[i].sender_id != this.messages[i - 1].sender_id || this.messages[i - 1].content.noti || this.messages[i]['msgDate'] != this.messages[i - 1]['msgDate'])
+      NeedShowMsgDate = NeedShowMsgDate && (this.messages[i]['msgDate'] != this.messages[i - 1]['msgDate']);
+      NeedShowSender = NeedShowSender && (this.messages[i - 1]['isLastRead'] || this.messages[i].sender_id != this.messages[i - 1].sender_id || this.messages[i - 1].content.noti || this.messages[i]['msgDate'] != this.messages[i - 1]['msgDate']);
+      this.messages[i]['showInfo']['date'] = NeedShowMsgDate;
+      this.messages[i]['showInfo']['sender'] = NeedShowSender;
     }
     // 다음 메시지와 정보를 비교하여 다음 메시지의 상태를 결정
     if (i + 1 < j) {
-      this.messages[i + 1]['showInfo']['date'] = this.messages[i]['msgDate'] != this.messages[i + 1]['msgDate'];
-      this.messages[i + 1]['showInfo']['sender'] = this.messages[i].sender_id != this.messages[i + 1].sender_id;
+      NeedShowMsgDate = NeedShowMsgDate && (this.messages[i]['msgDate'] != this.messages[i + 1]['msgDate']);
+      NeedShowSender = NeedShowSender && (this.messages[i]['isLastRead'] || this.messages[i].sender_id != this.messages[i + 1].sender_id || this.messages[i].content.noti || this.messages[i]['msgDate'] != this.messages[i + 1]['msgDate']);
+      this.messages[i + 1]['showInfo']['date'] = NeedShowMsgDate;
+      this.messages[i + 1]['showInfo']['sender'] = NeedShowSender;
     }
   }
 
