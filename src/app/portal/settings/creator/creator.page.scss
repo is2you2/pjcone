@@ -1,3 +1,10 @@
-.content_size{
+.content_size {
     height: 12vh;
+}
+
+.fore-gradient {
+    position: relative;
+    background-image: linear-gradient(to top, #000f, #0000);
+    width: 100%;
+    height: 100%;
 }
