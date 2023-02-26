@@ -682,7 +682,7 @@ export class NakamaService {
 
   /** 서버로부터 알림 업데이트하기 (알림 리스트 재정렬 포함됨) */
   update_notifications(_is_official: string, _target: string) {
-    this.servers[_is_official][_target].client.listNotifications(this.servers[_is_official][_target].session, 3)
+    this.servers[_is_official][_target].client.listNotifications(this.servers[_is_official][_target].session, 1)
       .then(v => {
         this.noti_origin[_is_official][_target] = {};
         for (let i = 0, j = v.notifications.length; i < j; i++)
@@ -1847,7 +1847,7 @@ export class NakamaService {
   }
 
   /** 들어오는 알림에 반응하기 */
-  async act_on_notification(v: Notification, _is_official: string, _target: string) {
+  act_on_notification(v: Notification, _is_official: string, _target: string) {
     /** 처리과정에서 알림이 지워졌는지 여부 */
     let is_removed = false;
     v['server'] = this.servers[_is_official][_target].info;
@@ -1880,7 +1880,7 @@ export class NakamaService {
             break;
         }
         is_removed = true;
-        await this.servers[_is_official][_target].client.deleteNotifications(
+        this.servers[_is_official][_target].client.deleteNotifications(
           this.servers[_is_official][_target].session, [v['id']]).then(b => {
             if (!b) console.warn('알림 거부처리 검토 필요');
             this.update_notifications(_is_official, _target);
@@ -2188,7 +2188,7 @@ export class NakamaService {
           }).then(v => {
             v.present();
           });
-          return;
+          break;
         case 'group': // 그룹 자동 등록 시도
           this.try_add_group(json[i]);
           break;

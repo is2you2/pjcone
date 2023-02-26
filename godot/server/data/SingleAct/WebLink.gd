@@ -41,10 +41,8 @@ func _received(id:int, _try_left:= 5):
 						'addresses': addresses
 					}
 					send_to(int(pid), JSON.print(result).to_utf8())
-				{ 'pid': var pid, 'uuid' }: # 다른 기기에게 연결
-					send_to(int(pid), raw_data)
-				_: # 준비되지 않은 행동
-					Root.logging(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)
+				_: # 그 외 모든 경우
+					send_to(int(json['pid']), raw_data)
 		else: # 형식 오류
 			Root.logging(HEADER, str('UnExpected form: ', data), Root.LOG_ERR)
 	else: # 패킷 오류

@@ -1,5 +1,8 @@
+// SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
+// SPDX-License-Identifier: MIT
+
 import { Component, OnInit } from '@angular/core';
-import { NavController } from '@ionic/angular';
+import { ModalController, NavController } from '@ionic/angular';
 import { isPlatform, SOCKET_SERVER_ADDRESS } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -8,6 +11,8 @@ import { WscService } from 'src/app/wsc.service';
 import * as p5 from "p5";
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { NakamaService } from 'src/app/nakama.service';
+import { WeblinkService } from 'src/app/weblink.service';
+import { QRelsePage } from '../../subscribes/qrelse/qrelse.page';
 
 const HEADER = 'QRShare';
 
@@ -26,6 +31,8 @@ export class QrSharePage implements OnInit {
     private global: GlobalActService,
     private codescan: BarcodeScanner,
     private nakama: NakamaService,
+    private weblink: WeblinkService,
+    private modalCtrl: ModalController,
   ) { }
 
   HideSender = false;
@@ -60,8 +67,10 @@ export class QrSharePage implements OnInit {
         });
       });
     });
+    // 브라우저 여부에 따라 송신 설정 토글
     let isBrowser = isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA';
     this.HideSender = !isBrowser;
+    // 커뮤니티 서버와 연결
     this.wsc.disconnected[HEADER] = () => {
       this.navCtrl.back();
     }
@@ -69,18 +78,15 @@ export class QrSharePage implements OnInit {
     this.websocket.onmessage = (msg: any) => {
       msg.data.text().then(v => {
         try {
+          if (!this.QRCodeSRC) throw new Error("QR코드 생성 우선처리");
           let json = JSON.parse(v);
-          if (!json.uuid) throw new Error("uuid 받기 실패");
-          this.p5toast.show({
-            text: this.lang.text['LinkAccount']['link_account_succ'],
-            lateable: true,
-          });
+          this.nakama.act_from_QRInfo(json['value']);
           setTimeout(() => {
             this.navCtrl.back();
           }, 500);
         } catch (_e) {
           this.QRCodeSRC = this.global.readasQRCodeFromId({
-            type: 'link',
+            type: 'QRShare',
             value: v,
           });
         }
@@ -112,12 +118,50 @@ export class QrSharePage implements OnInit {
       resultDisplayDuration: 0,
     }).then(v => {
       if (!v.cancelled) {
-        let pid = v.text.trim();
-        console.log('뭘 받았습니까: ', pid);
+        let json = JSON.parse(v.text.trim())[0];
+        console.log('뭘 받았습니까: ', json);
+        switch (json['type']) {
+          case 'QRShare': // 빠른 QR공유
+            /** 선택된 모든 정보를 json[]로 구성 */
+            let sendData = [];
+            if (this.selected_data['uuid'])
+              sendData.push({
+                type: 'link',
+                value: this.selected_data['uuid'],
+              });
+            if (this.selected_data['group_server'])
+              for (let i = 0, j = this.selected_data['group_server'].length; i < j; i++)
+                sendData.push({
+                  type: 'server',
+                  value: {
+                    address: this.selected_data['group_server'][i].address,
+                    port: this.selected_data['group_server'][i].port,
+                    key: this.selected_data['group_server'][i].key,
+                    useSSL: this.selected_data['group_server'][i].useSSL,
+                  }
+                });
+            if (this.selected_data['group'])
+              for (let i = 0, j = this.selected_data['group'].length; i < j; i++)
+                sendData.push({
+                  type: 'group',
+                  id: this.selected_data['group'][i].id,
+                  name: this.selected_data['group'][i].name,
+                });
+            this.weblink.initialize({
+              pid: json['value'],
+              value: JSON.stringify(sendData),
+            });
+            break;
+          default: // 빠른 QR공유용 구성이 아닐 때
+            this.modalCtrl.create({
+              component: QRelsePage,
+              componentProps: { result: v },
+            }).then(v => v.present());
+            break;
+        }
       }
     }).catch(_e => {
       console.error(_e);
-      console.log('보내기 예정인 값 검토: ', this.selected_data);
       this.p5toast.show({
         text: this.lang.text['Subscribes']['CameraPermissionDenied'],
       });
@@ -126,7 +170,9 @@ export class QrSharePage implements OnInit {
 
   ToggleShareUUID() {
     this.select_uuid = !this.select_uuid;
-    this.selected_data['uuid'] = this.nakama.uuid;
+    if (this.select_uuid)
+      this.selected_data['uuid'] = this.nakama.uuid;
+    else delete this.selected_data['uuid'];
     this.remove_groupserver_info();
   }
 
@@ -155,10 +201,10 @@ export class QrSharePage implements OnInit {
 
   /** 발신 예정인 그룹 정보 */
   SelectGroup(_ev: any) {
-    if (typeof this.selected_group != 'string') {
+    if (this.selected_group.length && typeof this.selected_group != 'string') {
       this.selected_data['group'] = this.selected_group;
       this.remove_groupserver_info();
-    }
+    } else delete this.selected_data['group'];
   }
 
   /** 다른 정보를 수정할 때 그룹 서버 정보를 삭제 */
@@ -174,5 +220,6 @@ export class QrSharePage implements OnInit {
 
   ionViewWillLeave() {
     delete this.wsc.disconnected[HEADER];
+    this.websocket.close();
   }
 }
