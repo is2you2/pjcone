@@ -52,6 +52,7 @@ export class QrSharePage implements OnInit {
   selected_data = {};
 
   ngOnInit() {
+    this.read_info();
     // 그룹 서버 정보 가져오기
     let group_server_keys = Object.keys(this.nakama.servers['unofficial']);
     group_server_keys.forEach(gskey => this.group_servers.push(this.nakama.servers['unofficial'][gskey].info));
@@ -92,7 +93,6 @@ export class QrSharePage implements OnInit {
         }
       });
     }
-    this.read_info();
   }
 
   read_info() {
