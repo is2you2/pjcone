@@ -53,24 +53,26 @@ export class QrSharePage implements OnInit {
 
   ngOnInit() {
     this.read_info();
-    // 그룹 서버 정보 가져오기
-    let group_server_keys = Object.keys(this.nakama.servers['unofficial']);
-    group_server_keys.forEach(gskey => this.group_servers.push(this.nakama.servers['unofficial'][gskey].info));
-    // 상태가 missing 이 아닌 서버 내 그룹 정보 가져오기
-    let isOfficial = Object.keys(this.nakama.groups);
-    isOfficial.forEach(_is_official => {
-      let Target = Object.keys(this.nakama.groups[_is_official]);
-      Target.forEach(_target => {
-        let GroupIds = Object.keys(this.nakama.groups[_is_official][_target]);
-        GroupIds.forEach(_gid => {
-          if (this.nakama.groups[_is_official][_target][_gid]['online'] != 'missing')
-            this.group_list.push(this.nakama.groups[_is_official][_target][_gid]);
-        });
-      });
-    });
     // 브라우저 여부에 따라 송신 설정 토글
     let isBrowser = isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA';
     this.HideSender = !isBrowser;
+    if (this.HideSender) {
+      // 그룹 서버 정보 가져오기
+      let group_server_keys = Object.keys(this.nakama.servers['unofficial']);
+      group_server_keys.forEach(gskey => this.group_servers.push(this.nakama.servers['unofficial'][gskey].info));
+      // 상태가 missing 이 아닌 서버 내 그룹 정보 가져오기
+      let isOfficial = Object.keys(this.nakama.groups);
+      isOfficial.forEach(_is_official => {
+        let Target = Object.keys(this.nakama.groups[_is_official]);
+        Target.forEach(_target => {
+          let GroupIds = Object.keys(this.nakama.groups[_is_official][_target]);
+          GroupIds.forEach(_gid => {
+            if (this.nakama.groups[_is_official][_target][_gid]['online'] != 'missing')
+              this.group_list.push(this.nakama.groups[_is_official][_target][_gid]);
+          });
+        });
+      });
+    }
     // 커뮤니티 서버와 연결
     this.wsc.disconnected[HEADER] = () => {
       this.navCtrl.back();
