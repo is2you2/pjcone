@@ -295,7 +295,7 @@ DeletedServer,삭제된 서버,Deleted server
 GroupUserJoin,사용자 그룹참여,User joined
 GroupUserOut,사용자 그룹탈퇴,User leaved
 GroupUserKick,사용자 강제퇴장,User kicked
-ReqContServer,서버 선택,Select server
+ReqContServer,서버,Server
 ReqContUserName,사용자명,User name
 ReqContTitle,그룹 참가 요청,Request to join
 ReqContAccept,수락,Accept
