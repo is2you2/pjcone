@@ -23,22 +23,22 @@ SPDX-License-Identifier: MIT -->
               <font color="#888"> {{msg['msgDate']}} </font>
             </div>
             <div class="message_form" *ngIf="msg['showInfo']['sender']">
-              <span style="margin-right: 8px;" (click)="user_detail(msg)">
+              <span class="message_span_form" (click)="user_detail(msg)">
                 <b>
                   <font
                     color="#{{(msg['is_me'] && nakama.users.self['online']) || (!msg['is_me'] && nakama.users[isOfficial][target][msg.sender_id]['online']) ? msg.color : '888'}}">
                     {{msg.user_display_name}}</font>
                 </b>
               </span>
-              <span style="font-size: 12px; color: #888;">{{msg['msgTime']}}</span>
+              <span class="time_form">{{msg['msgTime']}}</span>
             </div>
-            <div *ngIf="msg.content['filename']" style="display: flex;" (click)="file_detail(msg)">
+            <div *ngIf="msg.content['filename']" class="file_message_form" (click)="file_detail(msg)">
               <div *ngIf="!msg.content['img']" class="file_button">
                 <p class="file_info"> {{msg.content['filename']}} </p>
                 <div *ngIf="msg.content['text']" class="text_seperator"></div>
                 <p *ngIf="msg.content['text']" class="file_text_thumbnail"> {{msg.content['text']}} </p>
               </div>
-              <div *ngIf="msg.content['img']" style="margin-top: 4px; max-width: 192px; max-height: 192px;">
+              <div *ngIf="msg.content['img']" class="file_name_form">
                 <img [src]="msg.content['img']" alt="msg.content['filename']">
               </div>
               <div
@@ -49,7 +49,14 @@ SPDX-License-Identifier: MIT -->
             <div *ngIf="msg.content['noti']" class="notice_form">
               <div class="notice"> {{msg.content['noti']}} </div>
             </div>
-            <p *ngIf="msg.content['msg']" style="margin: 4px 0px 0px 0px;"> {{msg.content['msg']}} </p>
+            <p *ngIf="msg.content['msg']" class="message_content_form">
+              <span *ngFor="let part of msg.content['msg']">
+                <span *ngIf="!part.href">
+                  {{part.text}}
+                </span>
+                <a *ngIf="part.href" [href]="part.text" target="_blank">{{part.text}}</a>
+              </span>
+            </p>
             <div *ngIf="msg['isLastRead']" class="read_last_here">
               {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
           </div>

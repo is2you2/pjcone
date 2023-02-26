@@ -101,7 +101,7 @@ export class SubscribesPage implements OnInit {
                 }).then(v => {
                   v.present();
                 });
-                break;
+                return;
               case 'group': // 서버 및 그룹 자동 등록처리
                 this.nakama.try_add_group(json[i]);
                 break;

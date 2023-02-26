@@ -1558,9 +1558,44 @@ export class NakamaService {
     this.saveListedMessage([c], this.channels_orig[_is_official][_target][c.channel_id], _is_official, _target);
     if (!isNewChannel && this.channels_orig[_is_official][_target][c.channel_id]['update'])
       this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
+    let original_msg = msg.content['msg'];
+    this.content_to_hyperlink(c);
     let hasFile = c.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
-    this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile + (c.content['msg'] || c.content['noti'] || '');
+    this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile + (original_msg || c.content['noti'] || '');
     this.save_channels_with_less_info();
+  }
+
+  /** 메시지 내 하이퍼링크가 있는 경우 검토 */
+  content_to_hyperlink(msg: any) {
+    let content: string = msg.content['msg'];
+    msg.content['msg'] = [{ text: msg.content['msg'] }]; // 모든 메시지를 배열처리
+    if (content) { // 메시지가 포함되어있는 경우에 한함
+      let index = content.indexOf('http://');
+      if (index < 0)
+        index = content.indexOf('https://');
+      if (index >= 0) { // 주소가 있는 경우 추출
+        let result_msg = [];
+        let front_msg: string;
+        if (index != 0) {
+          front_msg = content.substring(0, index);
+          result_msg.push({ text: front_msg });
+        }
+        let AddrHead = content.substring(index);
+        let EndOfAddress = AddrHead.indexOf(' ');
+        let result: string;
+        let end_msg: string;
+        if (EndOfAddress < 0) {
+          result = AddrHead;
+          result_msg.push({ text: result, href: true });
+        } else {
+          result = AddrHead.substring(0, EndOfAddress);
+          result_msg.push({ text: result, href: true });
+          end_msg = AddrHead.substring(EndOfAddress);
+          result_msg.push({ text: end_msg });
+        }
+        msg.content['msg'] = result_msg;
+      }
+    }
   }
 
   /** 발신인 표시를 위한 메시지 추가 가공 */
