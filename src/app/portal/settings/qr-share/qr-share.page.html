@@ -9,19 +9,22 @@
 
 <ion-content>
   <ion-item-divider>
-    <ion-label>기능 설명</ion-label>
+    <ion-label>{{lang.text['Settings']['quickQRshare']}}</ion-label>
   </ion-item-divider>
   <textarea class="infobox" disabled [(ngModel)]="lines" style="height: 24vh; display: block;"></textarea>
   <!-- <div *ngIf="HideSender"> -->
   <div>
     <ion-item-divider>
-      <ion-label>정보 발신</ion-label>
+      <ion-label>{{lang.text['QuickQRShare']['SelectData']}}</ion-label>
     </ion-item-divider>
+    <ion-item button (click)="scanQRCode()">
+      <ion-label class="ion-text-center">{{lang.text['QuickQRShare']['SendData']}}</ion-label>
+    </ion-item>
   </div>
   <ion-item-divider>
-    <ion-label>정보 수신</ion-label>
+    <ion-label>{{lang.text['QuickQRShare']['ReceiveData']}}</ion-label>
     <ion-button *ngIf="!ShowQRInfo" slot="end" (click)="ShowQRInfo = !ShowQRInfo" fill="clear" shape="round">
-      수신QR 보이기
+      {{lang.text['QuickQRShare']['ShowQR']}}
     </ion-button>
   </ion-item-divider>
   <img *ngIf="ShowQRInfo" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="QRCodeSRC">

@@ -9,7 +9,6 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
-import { WscService } from 'src/app/wsc.service';
 import { ChatRoomPage } from './chat-room/chat-room.page';
 import { QRelsePage } from './qrelse/qrelse.page';
 
@@ -26,7 +25,6 @@ export class SubscribesPage implements OnInit {
     private p5toast: P5ToastService,
     public nakama: NakamaService,
     public statusBar: StatusManageService,
-    private wsc: WscService,
     public lang: LanguageSettingService,
   ) { }
 
@@ -50,7 +48,7 @@ export class SubscribesPage implements OnInit {
       resultDisplayDuration: 0,
     }).then(v => {
       if (!v.cancelled) {
-        try { // 양식에 맞게 끝까지 동작한다면 우리 데이터가 맞다
+        try { // 양식에 맞게 끝까지 동작한다면 우리 데이터가 맞다main
           this.nakama.act_from_QRInfo(v.text.trim());
         } catch (_e) { // 양식에 맞춰 행동할 수 없다면 모르는 데이터다
           console.error('scanQRCode_failed: ', _e);
@@ -64,7 +62,6 @@ export class SubscribesPage implements OnInit {
       console.error(_e);
       this.p5toast.show({
         text: this.lang.text['Subscribes']['CameraPermissionDenied'],
-        lateable: true,
       });
     });
   }

@@ -6,6 +6,7 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { WscService } from 'src/app/wsc.service';
 import * as p5 from "p5";
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 
 const HEADER = 'QRShare';
 
@@ -22,6 +23,7 @@ export class QrSharePage implements OnInit {
     private navCtrl: NavController,
     public lang: LanguageSettingService,
     private global: GlobalActService,
+    private codescan: BarcodeScanner,
   ) { }
 
   HideSender = false;
@@ -73,6 +75,27 @@ export class QrSharePage implements OnInit {
       }
     }
     new p5(show);
+  }
+
+  /** 사용자가 선택한 발신 데이터 */
+  selected_data = {};
+  // 웹에 있는 QRCode는 무조건 json[]로 구성되어있어야함
+  scanQRCode() {
+    this.codescan.scan({
+      disableSuccessBeep: true,
+      disableAnimations: true,
+      resultDisplayDuration: 0,
+    }).then(v => {
+      if (!v.cancelled) {
+        let pid = v.text.trim();
+        console.log('뭘 받았습니까: ', pid);
+      }
+    }).catch(_e => {
+      console.error(_e);
+      this.p5toast.show({
+        text: this.lang.text['Subscribes']['CameraPermissionDenied'],
+      });
+    });
   }
 
   ionViewWillLeave() {
