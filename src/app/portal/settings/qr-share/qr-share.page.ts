@@ -160,6 +160,9 @@ export class QrSharePage implements OnInit {
             }).then(v => v.present());
             break;
         }
+        setTimeout(() => {
+          this.navCtrl.back();
+        }, 500);
       }
     }).catch(_e => {
       console.error(_e);
