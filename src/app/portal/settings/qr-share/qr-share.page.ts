@@ -121,14 +121,13 @@ export class QrSharePage implements OnInit {
     }).then(v => {
       if (!v.cancelled) {
         let json = JSON.parse(v.text.trim())[0];
-        console.log('뭘 받았습니까: ', json);
         switch (json['type']) {
           case 'QRShare': // 빠른 QR공유
             /** 선택된 모든 정보를 json[]로 구성 */
             let sendData = [];
             if (this.selected_data['uuid'])
               sendData.push({
-                type: 'link',
+                type: 'link_reverse',
                 value: this.selected_data['uuid'],
               });
             if (this.selected_data['group_server'])
@@ -175,30 +174,28 @@ export class QrSharePage implements OnInit {
     if (this.select_uuid)
       this.selected_data['uuid'] = this.nakama.uuid;
     else delete this.selected_data['uuid'];
-    this.remove_groupserver_info();
   }
 
   /** 발신 예정인 그룹 서버 정보 */
   SelectGroupServer(_ev: any) {
-    if (this.selected_group_server.length && typeof this.selected_group_server != 'string')
+    if (this.selected_group_server.length && typeof this.selected_group_server != 'string') {
       this.selected_data['group_server'] = this.selected_group_server;
-    else delete this.selected_data['group_server'];
-    // 다른 정보들을 검토하여 동시 공유 방지
-    let keys = Object.keys(this.selected_data);
-    if (keys.length > 1) {
-      // UI 상에서 전부 제거처리
-      this.select_uuid = false;
-      this.selected_group = this.lang.text['QuickQRShare']['EmptyData'];
+      // 다른 정보들을 검토하여 동시 공유 방지
+      let keys = Object.keys(this.selected_data);
       // 키값 삭제
+      let isKeyRemoved = false;
       keys.forEach(key => {
-        if (key != 'group_server')
-          delete this.selected_data[key];
+        if (key != 'group_server' && key != 'uuid')
+          isKeyRemoved = true;
       });
-      console.log(this.selected_data);
-      this.p5toast.show({
-        text: this.lang.text['QuickQRShare']['groupserver_dataonly'],
-      });
-    }
+      if (isKeyRemoved) {
+        // UI 상에서 전부 제거처리
+        this.selected_group = this.lang.text['QuickQRShare']['EmptyData'];
+        this.p5toast.show({
+          text: this.lang.text['QuickQRShare']['groupserver_dataonly'],
+        });
+      }
+    } else delete this.selected_data['group_server'];
   }
 
   /** 발신 예정인 그룹 정보 */

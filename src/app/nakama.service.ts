@@ -2155,6 +2155,17 @@ export class NakamaService {
             uuid: this.uuid,
           });
           break;
+        case 'link_reverse': // 게정 연결처리 (빠른 QR공유)
+          this.uuid = json[i].value;
+          this.indexed.saveTextFileToUserPath(this.uuid, 'link-account');
+          this.p5toast.show({
+            text: this.lang.text['LinkAccount']['link_account_succ'],
+            lateable: true,
+          });
+          this.logout_all_server();
+          this.users.self['online'] = true;
+          this.init_all_sessions();
+          break;
         case 'tools': // 도구모음, 단일 대상 서버 생성 액션시
           if (!this.check_comm_server_is_online())
             return
