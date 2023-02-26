@@ -351,9 +351,6 @@ export class ChatRoomPage implements OnInit {
     this.isHidden = !this.isHidden;
     setTimeout(() => {
       this.p5canvas.windowResized();
-      setTimeout(() => {
-        this.content_panel.scrollIntoView({ block: 'start' });
-      }, 0);
     }, 120);
   }
 
