@@ -245,9 +245,12 @@ GroupRemoved,그룹 삭제됨,Group removed
 open_link,열기,Open
 ## QuickQRShare,,
 SelectData,공유할 정보 고르기,Choose information to share
+GroupServer,그룹 서버,Group server
+EmptyData,없음,Null
 ReceiveData,정보 수신,Receiving information
 SendData,발신,Send
 ShowQR,수신QR 보이기,Show QR
+groupserver_dataonly,그룹 서버 정보는 사용자 등록 절차가 있어 다른 정보와 같이 작성할 수 없습니다.,Group server information cannot be written together with other information because there is a user registration process.
 ## UseAsServer,,
 Title,이 기기를 기능 서버로,Use this device as a functional server
 UserNotice,사용 유의사항,Precautions for use

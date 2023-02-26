@@ -7,6 +7,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { WscService } from 'src/app/wsc.service';
 import * as p5 from "p5";
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { NakamaService } from 'src/app/nakama.service';
 
 const HEADER = 'QRShare';
 
@@ -24,6 +25,7 @@ export class QrSharePage implements OnInit {
     public lang: LanguageSettingService,
     private global: GlobalActService,
     private codescan: BarcodeScanner,
+    private nakama: NakamaService,
   ) { }
 
   HideSender = false;
@@ -32,7 +34,17 @@ export class QrSharePage implements OnInit {
   websocket: WebSocket;
   lines: string;
 
+  select_uuid = false;
+  /** 등록된 그룹서버 리스트 받아오기 */
+  group_servers = [];
+  selected_group_server: any;
+  /** 사용자가 선택한 발신 데이터 */
+  selected_data = {};
+
   ngOnInit() {
+    let group_server_keys = Object.keys(this.nakama.servers['unofficial']);
+    group_server_keys.forEach(gskey => this.group_servers.push(this.nakama.servers['unofficial'][gskey].info));
+    console.log('그룹서버 리스트: ', this.group_servers);
     let isBrowser = isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA';
     this.HideSender = !isBrowser;
     this.wsc.disconnected[HEADER] = () => {
@@ -77,8 +89,6 @@ export class QrSharePage implements OnInit {
     new p5(show);
   }
 
-  /** 사용자가 선택한 발신 데이터 */
-  selected_data = {};
   // 웹에 있는 QRCode는 무조건 json[]로 구성되어있어야함
   scanQRCode() {
     this.codescan.scan({
@@ -92,10 +102,55 @@ export class QrSharePage implements OnInit {
       }
     }).catch(_e => {
       console.error(_e);
+      console.log('보내기 예정인 값 검토: ', this.selected_data);
       this.p5toast.show({
         text: this.lang.text['Subscribes']['CameraPermissionDenied'],
       });
     });
+  }
+
+  ToggleShareUUID() {
+    this.select_uuid = !this.select_uuid;
+    this.selected_data['uuid'] = this.nakama.uuid;
+    this.remove_groupserver_info();
+  }
+
+  /** 발신 예정인 그룹 서버 정보 */
+  SelectGroupServer(_ev: any) {
+    console.log('선택된 것은: ', this.selected_group_server);
+    if (this.selected_group_server.length)
+      this.selected_data['group_server'] = this.selected_group_server;
+    else delete this.selected_data['group_server'];
+    // 다른 정보들을 검토하여 동시 공유 방지
+    let keys = Object.keys(this.selected_data);
+    if (keys.length > 1) {
+      // UI 상에서 전부 제거처리
+      this.select_uuid = false;
+      // 키값 삭제
+      keys.forEach(key => {
+        if (key != 'group_server')
+          delete this.selected_data[key];
+      });
+      console.log(this.selected_data);
+      this.p5toast.show({
+        text: this.lang.text['QuickQRShare']['groupserver_dataonly'],
+      });
+    }
+  }
+
+  /** 다른 정보를 수정할 때 그룹 서버 정보를 삭제 */
+  remove_groupserver_info() {
+    this.selected_group_server.length = 0;
+    let interval = setInterval(() => { }, 50);
+    setTimeout(() => {
+      clearInterval(interval);
+    }, 500);
+    if (this.selected_data['group_server']) {
+      this.p5toast.show({
+        text: this.lang.text['QuickQRShare']['groupserver_dataonly'],
+      });
+      delete this.selected_data['group_server'];
+    }
   }
 
   ionViewWillLeave() {
