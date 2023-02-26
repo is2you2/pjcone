@@ -244,8 +244,9 @@ GroupRemoved,그룹 삭제됨,Group removed
 ## Licenses,,
 open_link,열기,Open
 ## QuickQRShare,,
-SelectData,공유할 정보 고르기,Choose information to share
+SelectData,공유할 정보,Information to share
 GroupServer,그룹 서버,Group server
+Group,그룹,Group
 EmptyData,없음,Null
 ReceiveData,정보 수신,Receiving information
 SendData,발신,Send

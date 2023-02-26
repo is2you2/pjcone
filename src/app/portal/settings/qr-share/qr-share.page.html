@@ -25,7 +25,15 @@
       <ion-label>{{lang.text['QuickQRShare']['GroupServer']}}</ion-label>
       <ion-select [(ngModel)]="selected_group_server" (ionChange)="SelectGroupServer($event)" multiple="true"
         [placeholder]="lang.text['QuickQRShare']['EmptyData']">
-        <ion-select-option *ngFor="let gs of group_servers" [value]="gs['target']">{{gs['name'] + ' (' + gs['target'] +
+        <ion-select-option *ngFor="let gs of group_servers" [value]="gs">{{gs['name'] + ' (' + gs['target'] + ')'}}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label>{{lang.text['QuickQRShare']['Group']}}</ion-label>
+      <ion-select [(ngModel)]="selected_group" (ionChange)="SelectGroup($event)" multiple="true"
+        [placeholder]="lang.text['QuickQRShare']['EmptyData']">
+        <ion-select-option *ngFor="let gid of group_list" [value]="gid">{{gid['name'] + ' (' + gid['server']['target'] +
           ')'}}</ion-select-option>
       </ion-select>
     </ion-item>

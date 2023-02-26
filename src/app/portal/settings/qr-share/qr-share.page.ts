@@ -37,14 +37,29 @@ export class QrSharePage implements OnInit {
   select_uuid = false;
   /** 등록된 그룹서버 리스트 받아오기 */
   group_servers = [];
-  selected_group_server: any;
+  selected_group_server: any = [];
+  /** 등록된 그룹 리스트 받아오기 */
+  group_list = [];
+  selected_group: any = [];
   /** 사용자가 선택한 발신 데이터 */
   selected_data = {};
 
   ngOnInit() {
+    // 그룹 서버 정보 가져오기
     let group_server_keys = Object.keys(this.nakama.servers['unofficial']);
     group_server_keys.forEach(gskey => this.group_servers.push(this.nakama.servers['unofficial'][gskey].info));
-    console.log('그룹서버 리스트: ', this.group_servers);
+    // 상태가 missing 이 아닌 서버 내 그룹 정보 가져오기
+    let isOfficial = Object.keys(this.nakama.groups);
+    isOfficial.forEach(_is_official => {
+      let Target = Object.keys(this.nakama.groups[_is_official]);
+      Target.forEach(_target => {
+        let GroupIds = Object.keys(this.nakama.groups[_is_official][_target]);
+        GroupIds.forEach(_gid => {
+          if (this.nakama.groups[_is_official][_target][_gid]['online'] != 'missing')
+            this.group_list.push(this.nakama.groups[_is_official][_target][_gid]);
+        });
+      });
+    });
     let isBrowser = isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA';
     this.HideSender = !isBrowser;
     this.wsc.disconnected[HEADER] = () => {
@@ -117,8 +132,7 @@ export class QrSharePage implements OnInit {
 
   /** 발신 예정인 그룹 서버 정보 */
   SelectGroupServer(_ev: any) {
-    console.log('선택된 것은: ', this.selected_group_server);
-    if (this.selected_group_server.length)
+    if (this.selected_group_server.length && typeof this.selected_group_server != 'string')
       this.selected_data['group_server'] = this.selected_group_server;
     else delete this.selected_data['group_server'];
     // 다른 정보들을 검토하여 동시 공유 방지
@@ -126,6 +140,7 @@ export class QrSharePage implements OnInit {
     if (keys.length > 1) {
       // UI 상에서 전부 제거처리
       this.select_uuid = false;
+      this.selected_group = this.lang.text['QuickQRShare']['EmptyData'];
       // 키값 삭제
       keys.forEach(key => {
         if (key != 'group_server')
@@ -138,13 +153,17 @@ export class QrSharePage implements OnInit {
     }
   }
 
+  /** 발신 예정인 그룹 정보 */
+  SelectGroup(_ev: any) {
+    if (typeof this.selected_group != 'string') {
+      this.selected_data['group'] = this.selected_group;
+      this.remove_groupserver_info();
+    }
+  }
+
   /** 다른 정보를 수정할 때 그룹 서버 정보를 삭제 */
   remove_groupserver_info() {
-    this.selected_group_server.length = 0;
-    let interval = setInterval(() => { }, 50);
-    setTimeout(() => {
-      clearInterval(interval);
-    }, 500);
+    this.selected_group_server = this.lang.text['QuickQRShare']['EmptyData'];
     if (this.selected_data['group_server']) {
       this.p5toast.show({
         text: this.lang.text['QuickQRShare']['groupserver_dataonly'],
