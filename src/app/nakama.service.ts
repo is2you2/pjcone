@@ -2189,7 +2189,7 @@ export class NakamaService {
             v.present();
           });
           return;
-        case 'group': // 서버 및 그룹 자동 등록처리
+        case 'group': // 그룹 자동 등록 시도
           this.try_add_group(json[i]);
           break;
         default: // 동작 미정 알림(debug)

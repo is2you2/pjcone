@@ -1,0 +1,28 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>빠른 QR공유</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="portal/settings"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item-divider>
+    <ion-label>기능 설명</ion-label>
+  </ion-item-divider>
+  <textarea class="infobox" disabled [(ngModel)]="lines" style="height: 24vh; display: block;"></textarea>
+  <!-- <div *ngIf="HideSender"> -->
+  <div>
+    <ion-item-divider>
+      <ion-label>정보 발신</ion-label>
+    </ion-item-divider>
+  </div>
+  <ion-item-divider>
+    <ion-label>정보 수신</ion-label>
+    <ion-button *ngIf="!ShowQRInfo" slot="end" (click)="ShowQRInfo = !ShowQRInfo" fill="clear" shape="round">
+      수신QR 보이기
+    </ion-button>
+  </ion-item-divider>
+  <img *ngIf="ShowQRInfo" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="QRCodeSRC">
+</ion-content>

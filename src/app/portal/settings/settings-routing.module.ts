@@ -60,6 +60,10 @@ const routes: Routes = [
     path: 'tool-management',
     loadChildren: () => import('./tool-management/tool-management.module').then( m => m.ToolManagementPageModule)
   },
+  {
+    path: 'qr-share',
+    loadChildren: () => import('./qr-share/qr-share.module').then( m => m.QrSharePageModule)
+  },
 ];
 
 @NgModule({
