@@ -276,19 +276,21 @@ export class ChatRoomPage implements OnInit {
           });
       else { // 오프라인 기반 리스트 알려주기
         if (this.info['redirect']['type'] == 3) // 그룹대화라면 공개여부 검토
-          if (!this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open']) {
+          if (this.nakama.groups[this.isOfficial][this.target]
+            && !this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open']) {
             let tmp = [{
               content: {
-                msg: this.lang.text['ChatRoom']['closed_group_must_online'],
+                msg: [{ text: this.lang.text['ChatRoom']['closed_group_must_online'] }],
               }
             }, {
               content: {
-                msg: this.lang.text['ChatRoom']['closed_group_not_allow'],
+                msg: [{ text: this.lang.text['ChatRoom']['closed_group_not_allow'] }],
               }
             }];
             this.next_cursor = undefined;
             this.isHistoryLoaded = true;
             tmp.forEach(tmsg => this.messages.push(tmsg));
+            console.log(this.messages);
             return;
           }
         this.LoadLocalChatHistory();

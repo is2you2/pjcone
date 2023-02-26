@@ -19,10 +19,11 @@ SPDX-License-Identifier: MIT -->
             <ion-label>{{lang.text['ChatRoom']['fetch_previous_chat']}}</ion-label>
           </ion-item>
           <div *ngFor="let msg of messages" (click)="message_detail(msg)">
-            <div *ngIf="msg['showInfo']['date']" style="text-align: center; font-size: 16px; padding-top: 8px;">
+            <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
+              style="text-align: center; font-size: 16px; padding-top: 8px;">
               <font color="#888"> {{msg['msgDate']}} </font>
             </div>
-            <div class="message_form" *ngIf="msg['showInfo']['sender']">
+            <div class="message_form" *ngIf="msg['showInfo'] && msg['showInfo']['sender']">
               <span class="message_span_form" (click)="user_detail(msg)">
                 <b>
                   <font
@@ -51,9 +52,7 @@ SPDX-License-Identifier: MIT -->
             </div>
             <p *ngIf="msg.content['msg']" class="message_content_form">
               <span *ngFor="let part of msg.content['msg']">
-                <span *ngIf="!part.href">
-                  {{part.text}}
-                </span>
+                <span *ngIf="!part.href"> {{part.text}} </span>
                 <a *ngIf="part.href" [href]="part.text" target="_blank">{{part.text}}</a>
               </span>
             </p>
