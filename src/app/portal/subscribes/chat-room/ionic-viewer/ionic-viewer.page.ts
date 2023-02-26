@@ -57,6 +57,10 @@ export class IonicViewerPage implements OnInit {
             img = p.createImg(this.FileURL, this.FileInfo['filename']);
             img.id(IMAGE_ELEMENT_ID);
             img.parent(canvasDiv);
+            img.style("position", 'relative');
+            setTimeout(() => {
+              RePositioningImage();
+            }, 50);
             if (isPlatform == 'Android' || isPlatform == 'iOS') {
               iframe_sub = document.createElement('iframe');
               iframe_sub.setAttribute("src", this.FileURL);
@@ -67,6 +71,19 @@ export class IonicViewerPage implements OnInit {
               canvasDiv.appendChild(iframe_sub);
             }
             p.noLoop();
+          }
+          /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
+          let RePositioningImage = () => {
+            let canvasHeight = this.ContentBox.offsetHeight - this.FileHeader.offsetHeight;
+            if (img.size()['height'] < canvasHeight) {
+              img.style("top", '50%');
+              img.style("transform", 'translateY(-50%');
+            }
+          }
+          p.windowResized = () => {
+            setTimeout(() => {
+              RePositioningImage();
+            }, 50);
           }
           p.mouseClicked = (ev: any) => {
             if (ev.target.id == IMAGE_ELEMENT_ID) {
@@ -92,7 +109,9 @@ export class IonicViewerPage implements OnInit {
             mediaObject = p.createAudio([this.FileURL], () => {
               canvasDiv.appendChild(mediaObject['elt']);
               canvas.parent(canvasDiv);
-              ResizeAudio();
+              setTimeout(() => {
+                ResizeAudio();
+              }, 50);
               mediaObject.showControls();
               mediaObject.play();
             });
@@ -122,7 +141,9 @@ export class IonicViewerPage implements OnInit {
             mediaObject = p.createVideo([this.FileURL], () => {
               canvasDiv.appendChild(mediaObject['elt']);
               canvas.parent(canvasDiv);
-              ResizeVideo();
+              setTimeout(() => {
+                ResizeVideo();
+              }, 50);
               mediaObject.showControls();
               mediaObject.play();
             });
