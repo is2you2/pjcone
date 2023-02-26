@@ -29,7 +29,7 @@ commServer,커뮤니티 서버,Community server
 useDeviceAsServer,이 기기를 기능 서버로,Use this device as a functional server
 ManageGroup,그룹 관리,Manage group
 CreateGroup,그룹 생성하기,Create a group
-Community,커뮤니티,Community
+Community,커뮤니티 도구,Community tools
 joinRanchat,랜덤채팅 참여,Join random chat
 joinDediChat,사설 그룹채팅,Join group chat
 joinDedi_placeholder,기본,Default

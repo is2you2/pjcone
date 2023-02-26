@@ -19,6 +19,10 @@ import { LanguageSettingService } from './language-setting.service';
 import { AdMob } from '@capacitor-community/admob';
 import { AddTodoMenuPage } from './portal/main/add-todo-menu/add-todo-menu.page';
 import { GlobalActService } from './global-act.service';
+import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
+import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
+import { WeblinkService } from './weblink.service';
+import { ToolServerService, UnivToolForm } from './tool-server.service';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -58,6 +62,8 @@ export class NakamaService {
     private communityServer: WscService,
     private lang: LanguageSettingService,
     private global: GlobalActService,
+    private tools: ToolServerService,
+    private weblink: WeblinkService,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -2135,5 +2141,100 @@ export class NakamaService {
         console.error('파일 다시 받기 실패: ', info, i);
       }
     });
+  }
+
+  act_from_QRInfo(v: string) {
+    let json: any[] = JSON.parse(v);
+    for (let i = 0, j = json.length; i < j; i++)
+      switch (json[i].type) {
+        case 'link': // 계정 연결처리
+          if (!this.check_comm_server_is_online())
+            return
+          this.weblink.initialize({
+            pid: json[i].value,
+            uuid: this.uuid,
+          });
+          break;
+        case 'tools': // 도구모음, 단일 대상 서버 생성 액션시
+          if (!this.check_comm_server_is_online())
+            return
+          this.create_tool_server(json[i].value);
+          break;
+        case 'server': // 그룹 서버 자동등록처리
+          this.modalCtrl.create({
+            component: ServerDetailPage,
+            componentProps: {
+              data: json[i].value,
+            },
+          }).then(v => v.present());
+          return;
+        case 'comm_server':
+          this.communityServer.client.close();
+          if (json[i].value.useSSL)
+            this.communityServer.socket_header = 'wss';
+          else this.communityServer.socket_header = 'ws';
+          localStorage.setItem('wsc_socket_header', this.communityServer.socket_header);
+          this.communityServer.address_override = json[i].value.address_override.replace(/[^0-9.]/g, '');
+          localStorage.setItem('wsc_address_override', this.communityServer.address_override);
+          this.communityServer.initialize();
+          break;
+        case 'group_dedi': // 그룹사설 채팅 접근
+          this.modalCtrl.create({
+            component: MinimalChatPage,
+            componentProps: {
+              address: json[i].value.address,
+              name: this.users.self['display_name'],
+            },
+          }).then(v => {
+            v.present();
+          });
+          return;
+        case 'group': // 서버 및 그룹 자동 등록처리
+          this.try_add_group(json[i]);
+          break;
+        default: // 동작 미정 알림(debug)
+          throw new Error("지정된 틀 아님");
+      }
+  }
+
+  /** 커뮤니티 서버 온라인 여부 확인 */
+  check_comm_server_is_online(): boolean {
+    let result = this.communityServer.client.readyState == this.communityServer.client.OPEN;
+    if (!result) {
+      this.p5toast.show({
+        text: this.lang.text['Subscribes']['needLinkWithCommServ'],
+      });
+    }
+    return result;
+  }
+
+  /** 도구모음 서버 만들기 */
+  create_tool_server(data: UnivToolForm) {
+    let PORT: number;
+    /** 메시지 받기 행동 구성 */
+    let onMessage = (_json: any) => console.warn(`${data.name}_create_tool_server_onMessage: ${_json}`);
+    switch (data.name) {
+      case 'engineppt':
+        PORT = 12021;
+        onMessage = (json: any) => {
+          console.log('engineppt init test: ', json);
+        };
+        break;
+      default:
+        throw new Error(`지정된 툴 정보가 아님: ${data}`);
+    }
+    this.tools.initialize(data.name, PORT, () => {
+      this.tools.check_addresses(data.name, (v: any) => {
+        let keys = Object.keys(v);
+        let local_addresses = [];
+        for (let i = 0, j = keys.length; i < j; i++)
+          local_addresses = [...local_addresses, ...v[keys[i]]['ipv4Addresses']];
+        this.weblink.initialize({
+          from: 'mobile',
+          pid: data.client,
+          addresses: local_addresses,
+        });
+      });
+    }, onMessage);
   }
 }

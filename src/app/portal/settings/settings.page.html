@@ -75,7 +75,8 @@ SPDX-License-Identifier: MIT -->
   <ion-item-divider>
     <ion-label>{{lang.text['Settings']['Community']}}</ion-label>
   </ion-item-divider>
-  <ion-item button [disabled]="will_enter" (click)="start_minimalchat()">
+  <ion-item button [disabled]="statusBar.settings['communityServer'] != 'online' || will_enter"
+    (click)="start_minimalchat()">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[statusBar.settings['community_ranchat']]"></div>
     <ion-label class="form_margin">{{lang.text['Settings']['joinRanchat']}}</ion-label>
