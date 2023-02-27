@@ -179,6 +179,7 @@ export class QrSharePage implements OnInit {
     else delete this.selected_data['uuid'];
   }
 
+  ShowExceptionInfoYet = true;
   /** 발신 예정인 그룹 서버 정보 */
   SelectGroupServer(_ev: any) {
     if (this.selected_group_server.length && typeof this.selected_group_server != 'string') {
@@ -191,14 +192,13 @@ export class QrSharePage implements OnInit {
         if (key != 'group_server' && key != 'uuid')
           isKeyRemoved = true;
       });
-      if (isKeyRemoved) {
-        // UI 상에서 전부 제거처리
-        this.selected_group = this.lang.text['QuickQRShare']['EmptyData'];
+      if (this.ShowExceptionInfoYet && isKeyRemoved) {
         this.p5toast.show({
           text: this.lang.text['QuickQRShare']['groupserver_dataonly'],
         });
+        this.ShowExceptionInfoYet = false;
       }
-    } else delete this.selected_data['group_server'];
+    }
   }
 
   /** 발신 예정인 그룹 정보 */
@@ -211,12 +211,11 @@ export class QrSharePage implements OnInit {
 
   /** 다른 정보를 수정할 때 그룹 서버 정보를 삭제 */
   remove_groupserver_info() {
-    this.selected_group_server = this.lang.text['QuickQRShare']['EmptyData'];
-    if (this.selected_data['group_server']) {
+    if (this.ShowExceptionInfoYet && this.selected_data['group_server']) {
       this.p5toast.show({
         text: this.lang.text['QuickQRShare']['groupserver_dataonly'],
       });
-      delete this.selected_data['group_server'];
+      this.ShowExceptionInfoYet = false;
     }
   }
 
