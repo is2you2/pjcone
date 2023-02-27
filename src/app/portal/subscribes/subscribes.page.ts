@@ -78,10 +78,8 @@ export class SubscribesPage implements OnInit {
         },
       }).then(v => {
         this.nakama.go_to_chatroom_without_admob_act(v);
-        if (info['status'] == 'missing') { // 삭제된 서버인 경우 읽은척하기
-          delete info['is_new'];
-          this.nakama.rearrange_channels();
-        }
+        delete info['is_new'];
+        this.nakama.rearrange_channels();
         this.lock_chatroom = false;
       });
     }
