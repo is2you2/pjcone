@@ -5,7 +5,7 @@ import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
-import { ModalController, Platform } from '@ionic/angular';
+import { AlertController, ModalController, Platform } from '@ionic/angular';
 import { IndexedDBService } from './indexed-db.service';
 import { LocalNotiService } from './local-noti.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
@@ -15,6 +15,7 @@ import { WscService } from './wsc.service';
 import { AdMob } from "@capacitor-community/admob";
 import { AddTodoMenuPage } from './portal/main/add-todo-menu/add-todo-menu.page';
 import { GlobalActService } from './global-act.service';
+import { LanguageSettingService } from './language-setting.service';
 /** 페이지가 돌고 있는 플렛폼 구분자 */
 export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'DesktopPWA';
 /** 소켓서버용 */
@@ -39,6 +40,8 @@ export class AppComponent {
     indexed: IndexedDBService,
     modalCtrl: ModalController,
     global: GlobalActService,
+    alertCtrl: AlertController,
+    lang: LanguageSettingService,
   ) {
     if (platform.is('desktop'))
       isPlatform = 'DesktopPWA';
@@ -102,28 +105,63 @@ export class AppComponent {
         let props: any = ev.data.page.componentProps;
         let noti_id: string;
         switch (ev.data.page.component) {
-          case 'ChatRoomPage':
+          case 'ChatRoomPage': {
             page = ChatRoomPage;
-            let _cid = ev.data.page.componentProps['info']['id'];
-            let _is_official = ev.data.page.componentProps['info']['isOfficial'];
-            let _target = ev.data.page.componentProps['info']['target'];
-            noti_id = ev.data.page.componentProps['info']['noti_id'];
+            let _cid = props['info']['id'];
+            let _is_official = props['info']['isOfficial'];
+            let _target = props['info']['target'];
+            noti_id = props['info']['noti_id'];
             props = {
               info: nakama.channels_orig[_is_official][_target][_cid]
             };
+          }
             break;
           case 'MinimalChatPage':
             page = MinimalChatPage;
-            noti_id = ev.data.page.componentProps['noti_id'];
+            noti_id = props['noti_id'];
             break;
           case 'AddTodoMenuPage':
             page = AddTodoMenuPage;
             props = {
               godot: global.godot.contentWindow || global.godot.contentDocument,
-              data: ev.data.page.componentProps['data'],
+              data: props['data'],
             };
             noti_id = 'todo';
             break;
+          case 'NakamaReqContTitle': // 서버 진입 알림
+            let this_server = nakama.servers[props.data.isOfficial][props.data.Target];
+            let msg = '';
+            msg += `${lang.text['Nakama']['ReqContServer']}: ${props.data.serverName}<br>`;
+            msg += `${lang.text['Nakama']['ReqContUserName']}: ${props.data.userName}`;
+            alertCtrl.create({
+              header: lang.text['Nakama']['ReqContTitle'],
+              message: msg,
+              buttons: [{
+                text: lang.text['Nakama']['ReqContAccept'],
+                handler: () => {
+                  this_server.client.addGroupUsers(this_server.session, props.data.group_id, [props.data.user_id])
+                    .then(v => {
+                      if (!v) console.warn('밴인 경우인 것 같음, 확인 필요');
+                      this_server.client.deleteNotifications(this_server.session, [props.data.noti_id])
+                        .then(b => {
+                          if (b) nakama.update_notifications(props.data.isOfficial, props.data.Target);
+                          else console.warn('알림 지우기 실패: ', b);
+                        });
+                    });
+                }
+              }, {
+                text: lang.text['Nakama']['ReqContReject'],
+                handler: () => {
+                  this_server.client.kickGroupUsers(this_server.session, props.data.group_id, [props.data.user_id])
+                    .then(b => {
+                      if (!b) console.warn('그룹 참여 거절을 kick한 경우 오류');
+                      this_server.client.deleteNotifications(this_server.session, [props.data.noti_id]);
+                      nakama.update_notifications(props.data.isOfficial, props.data.Target);
+                    })
+                }
+              }],
+            }).then(v => v.present());
+            return;
           default:
             console.warn('준비된 페이지가 아님: ', ev.data.page.component);
             break;

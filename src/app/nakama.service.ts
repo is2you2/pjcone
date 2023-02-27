@@ -1778,7 +1778,6 @@ export class NakamaService {
       case -3: // 상대방이 친구 요청 수락
       case -4: // 상대방이 그룹 참가 수락
       case -6: // 친구가 다른 게임에 참여
-        this.noti.ClearNoti(this_noti['id']);
         this.noti.RemoveListener(`check${this_noti.code}`);
         this.noti.ClearNoti(this_noti.code);
         this_server.client.deleteNotifications(this_server.session, [this_noti['id']])
@@ -1803,6 +1802,8 @@ export class NakamaService {
                     this_server.client.addGroupUsers(this_server.session, this_noti['content']['group_id'], [v.users[0].id])
                       .then(v => {
                         if (!v) console.warn('밴인 경우인 것 같음, 확인 필요');
+                        this.noti.RemoveListener(`check${this_noti.code}`);
+                        this.noti.ClearNoti(this_noti.code);
                         this_server.client.deleteNotifications(this_server.session, [this_noti['id']])
                           .then(b => {
                             if (b) this.update_notifications(_is_official, _target);
@@ -1977,6 +1978,22 @@ export class NakamaService {
           //   title: this.lang.text['Nakama']['LocalNotiCheck'],
           // }],
           icon: this.groups[_is_official][_target][v.content['group_id']]['img'],
+          extra_ln: {
+            page: {
+              component: 'NakamaReqContTitle',
+              componentProps: {
+                data: {
+                  noti_id: v.id,
+                  serverName: this.servers[_is_official][_target].info.name,
+                  userName: this.load_other_user(v.sender_id, _is_official, _target)['display_name'],
+                  group_id: v.content['group_id'],
+                  user_id: v.sender_id,
+                  isOfficial: _is_official,
+                  Target: _target,
+                },
+              },
+            },
+          },
           smallIcon_ln: 'diychat',
           autoCancel_ln: true,
           iconColor_ln: '271e38',
