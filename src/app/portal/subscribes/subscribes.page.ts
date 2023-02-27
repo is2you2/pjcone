@@ -78,7 +78,8 @@ export class SubscribesPage implements OnInit {
         },
       }).then(v => {
         this.nakama.go_to_chatroom_without_admob_act(v);
-        delete info['is_new'];
+        if (info['status'] != 'online' || info['status'] != 'pending')
+          delete info['is_new'];
         this.nakama.rearrange_channels();
         this.lock_chatroom = false;
       });

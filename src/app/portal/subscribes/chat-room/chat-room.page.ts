@@ -245,6 +245,7 @@ export class ChatRoomPage implements OnInit {
         this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
           this.nakama.servers[this.isOfficial][this.target].session,
           this.info['id'], 15, false, this.next_cursor).then(v => {
+            this.info['is_new'] = false;
             v.messages.forEach(msg => {
               msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
               this.nakama.check_sender_and_show_name(msg, this.isOfficial, this.target);
