@@ -68,7 +68,7 @@ export class CommunityServerPage implements OnInit {
     this.QRCodeSRC = this.global.readasQRCodeFromId({
       type: 'comm_server',
       value: {
-        address_override: this.address_override.replace(/[^0-9.]/g, ''),
+        address_override: this.address_override.replace(/[ ]/g, ''),
         useSSL: this.useSSL,
       }
     });
