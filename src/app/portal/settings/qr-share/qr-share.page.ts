@@ -40,6 +40,8 @@ export class QrSharePage implements OnInit {
   QRCodeSRC: any;
   websocket: WebSocket;
   lines: string;
+  /** 전송 예정인 키의 갯수 */
+  ActKeyLength = 0;
 
   select_uuid = false;
   /** 등록된 그룹서버 리스트 받아오기 */
@@ -177,6 +179,7 @@ export class QrSharePage implements OnInit {
     if (this.select_uuid)
       this.selected_data['uuid'] = this.nakama.uuid;
     else delete this.selected_data['uuid'];
+    this.ActKeyLength = Object.keys(this.selected_data).length;
   }
 
   ShowExceptionInfoYet = true;
@@ -199,6 +202,7 @@ export class QrSharePage implements OnInit {
         this.ShowExceptionInfoYet = false;
       }
     }
+    this.ActKeyLength = Object.keys(this.selected_data).length;
   }
 
   /** 발신 예정인 그룹 정보 */
@@ -207,6 +211,7 @@ export class QrSharePage implements OnInit {
       this.selected_data['group'] = this.selected_group;
       this.remove_groupserver_info();
     } else delete this.selected_data['group'];
+    this.ActKeyLength = Object.keys(this.selected_data).length;
   }
 
   /** 다른 정보를 수정할 때 그룹 서버 정보를 삭제 */
