@@ -36,6 +36,7 @@ export class SettingsPage implements OnInit {
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
+  GroupServerCount = 0;
 
   EventListenerAct = (ev: any) => {
     ev.detail.register(10, (processNextHandler) => {
@@ -172,6 +173,7 @@ export class SettingsPage implements OnInit {
   /** 프로필 썸네일 */
   profile_filter: string;
   ionViewWillEnter() {
+    this.GroupServerCount = this.nakama.get_all_server_info().length;
     this.nakama.socket_reactive['settings'] = this;
     if (this.nakama.users.self['online'])
       this.profile_filter = "filter: grayscale(0) contrast(1);";
