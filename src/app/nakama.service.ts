@@ -948,11 +948,7 @@ export class NakamaService {
       });
     });
     result.sort((a, b) => {
-      if (a['last_comment_time'] > b['last_comment_time'])
-        return -1;
-      if (a['last_comment_time'] < b['last_comment_time'])
-        return 1;
-      return 0;
+      return (new Date(b['last_comment_time']) as any) - (new Date(a['last_comment_time']) as any);
     });
     result.sort((a, b) => {
       if (a['is_new'])

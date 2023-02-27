@@ -291,7 +291,6 @@ export class ChatRoomPage implements OnInit {
             this.next_cursor = undefined;
             this.isHistoryLoaded = true;
             tmp.forEach(tmsg => this.messages.push(tmsg));
-            console.log(this.messages);
             return;
           }
         this.LoadLocalChatHistory();
