@@ -4,7 +4,7 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { Channel, ChannelMessage, Client, Group, GroupUser, Notification, Session, Socket, User, WriteStorageObject } from "@heroiclabs/nakama-js";
-import { isPlatform, SOCKET_SERVER_ADDRESS } from './app.component';
+import { isPlatform } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
@@ -77,17 +77,17 @@ export class NakamaService {
   /** 구성: this > Official > TargetKey > Client */
   servers: { [id: string]: { [id: string]: NakamaGroup } } = {
     'official': {
-      'default': {
-        info: {
-          name: '개발 테스트 서버', // lang.CallbackOnce 에서 처리됨
-          address: SOCKET_SERVER_ADDRESS,
-          isOfficial: 'official',
-          target: 'default',
-          key: 'defaultkey',
-          port: 7350,
-          useSSL: true,
-        }
-      }
+      // 'default': {
+      //   info: {
+      //     name: '개발 테스트 서버', // lang.CallbackOnce 에서 처리됨
+      //     address: SOCKET_SERVER_ADDRESS,
+      //     isOfficial: 'official',
+      //     target: 'default',
+      //     key: 'defaultkey',
+      //     port: 7350,
+      //     useSSL: true,
+      //   }
+      // }
     },
     'unofficial': {},
   };
@@ -128,11 +128,11 @@ export class NakamaService {
       // 채널 불러오기
       this.load_channel_list();
     });
-    this.lang.Callback_nakama = (DevTestServer: string) => {
-      this.servers['official']['default'].info.name = DevTestServer;
-    }
+    // this.lang.Callback_nakama = (DevTestServer: string) => {
+    //   this.servers['official']['default'].info.name = DevTestServer;
+    // }
     // 공식서버 연결처리
-    this.init_server(this.servers['official']['default'].info);
+    // this.init_server(this.servers['official']['default'].info);
     // 저장된 사설서버들 정보 불러오기
     this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
       if (e && v) { // 내용이 있을 때에만 동작

@@ -187,7 +187,6 @@ failed_to_gen_qr,QRCode 생성 실패,QRCode generation failed
 ## GroupServer,,
 AboutServerAndAccount,서버와 계정에 대해서,About servers and accounts
 JoinedServerList,참여중인 서버 목록,List of participating servers
-DevTestServer,개발 테스트 서버,Development test server
 HideOfficialDefault,가리기,Hide
 ServerDetail,서버정보,Server info
 RemoveUnofficial,삭제,Delete
