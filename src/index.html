@@ -29,6 +29,7 @@
         // manifest.webmanifest 와 sw.js 파일을 함께 변경해야 합니다
         // manifest.icons[i].source / 캐시 경로 ... /pjcone_pwa/**/*
         // .register('/pjcone_pwa/assets/sw.js')
+        // 이거 바꿀 때 바로 위에 있는 기반 href도 변경하기 -_-;;
         .then(() => { console.log('Service Worker Registered'); })
         .catch(e => {
           console.error('Service Worker Register failed: ', e);

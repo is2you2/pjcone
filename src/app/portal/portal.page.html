@@ -1,16 +1,16 @@
 <ion-content>
   <ion-tabs>
     <ion-tab-bar slot="bottom">
-      <ion-tab-button (click)="subscribe_button()" tab="subscribes">
+      <ion-tab-button [disabled]="lang.OnLoading" (click)="subscribe_button()" tab="subscribes">
         <ion-icon name="flash"></ion-icon>
         <ion-badge *ngIf="nakama.has_new_channel_msg" color="danger" mode="md"></ion-badge>
         <ion-label>{{lang.text['Portal']['Link']}}</ion-label>
       </ion-tab-button>
-      <ion-tab-button tab="main">
+      <ion-tab-button [disabled]="lang.OnLoading" tab="main">
         <ion-icon name="apps"></ion-icon>
         <ion-label>{{lang.text['Portal']['Main']}}</ion-label>
       </ion-tab-button>
-      <ion-tab-button (click)="setting_button()">
+      <ion-tab-button [disabled]="lang.OnLoading" (click)="setting_button()">
         <ion-icon name="send"></ion-icon>
         <ion-label>{{lang.text['Portal']['Settings']}}</ion-label>
       </ion-tab-button>
