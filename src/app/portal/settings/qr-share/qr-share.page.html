@@ -39,7 +39,7 @@ SPDX-License-Identifier: MIT -->
           ')'}}</ion-select-option>
       </ion-select>
     </ion-item>
-    <ion-item button (click)="scanQRCode()">
+    <ion-item [disabled]="!ActKeyLength" button (click)="scanQRCode()">
       <ion-label class="ion-text-center">{{lang.text['QuickQRShare']['SendData']}}</ion-label>
     </ion-item>
   </div>

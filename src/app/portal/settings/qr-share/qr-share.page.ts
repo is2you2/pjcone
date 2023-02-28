@@ -201,7 +201,7 @@ export class QrSharePage implements OnInit {
         });
         this.ShowExceptionInfoYet = false;
       }
-    }
+    } else delete this.selected_data['group_server'];
     this.ActKeyLength = Object.keys(this.selected_data).length;
   }
 
