@@ -194,9 +194,12 @@ export class AddTodoMenuPage implements OnInit {
     }, 50);
   }
 
-  /** 첨푸아리 삭제 */
+  /** 이름이 없으면 지울 이미지 없음, 이름이 있으면 존재하던 파일을 삭제함 */
+  isImageRemoved = '';
+  /** 첨부파일 삭제 */
   remove_attach() {
     this.indexed.removeFileFromUserPath('todo/add_tmp.attach');
+    this.isImageRemoved = this.userInput.attach['filename'];
     delete this.userInput.attach;
     URL.revokeObjectURL(this.ImageURL);
     this.ImageURL = undefined;
@@ -447,6 +450,8 @@ export class AddTodoMenuPage implements OnInit {
       createTime: new Date().getTime(),
       translateCode: this.isModify ? 'ModifyTodo' : 'CreateTodo',
     });
+    if (this.isModify && this.isImageRemoved)
+      this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/${this.isImageRemoved}`);
     this.isLogsHidden = true;
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, () => {
