@@ -449,6 +449,7 @@ export class AddTodoMenuPage implements OnInit {
             else v.resize(128, v.height / v.width * 128);
             let canvas = p.createCanvas(128, 128);
             canvas.hide();
+            p.smooth();
             p.image(v, -(v.width - 128) / 2, -(v.height - 128) / 2);
             p.saveFrames('', 'png', 1, 1, c => {
               this.indexed.saveFileToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
