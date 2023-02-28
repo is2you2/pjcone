@@ -10,6 +10,8 @@ import clipboard from "clipboardy";
 import * as p5 from "p5";
 import { LanguageSettingService } from 'src/app/language-setting.service';
 
+const HEADER = 'ADMIN_NOTI';
+
 @Component({
   selector: 'app-notification',
   templateUrl: './notification.page.html',
@@ -33,6 +35,9 @@ export class NotificationPage implements OnInit {
 
   cant_use_clipboard = false;
   ngOnInit() {
+    this.client.disconnected[HEADER] = () => {
+      this.navCtrl.back();
+    }
     this.cant_use_clipboard = isPlatform != 'DesktopPWA';
     if (!this.client.is_admin) {
       this.p5toast.show({
@@ -84,5 +89,9 @@ export class NotificationPage implements OnInit {
     }));
     delete this.userInput.img_url;
     delete this.userInput.text;
+  }
+
+  ionViewWillLeave() {
+    delete this.client.disconnected[HEADER];
   }
 }
