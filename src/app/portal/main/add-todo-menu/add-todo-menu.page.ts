@@ -440,6 +440,27 @@ export class AddTodoMenuPage implements OnInit {
       if (received_json)
         this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/${received_json.attach['filename']}`);
       this.indexed.saveFileToUserPath(copy_img, `todo/${this.userInput.id}/${this.userInput.attach['filename']}`);
+      new p5((p: p5) => {
+        p.setup = () => {
+          p.loadImage(copy_img, v => {
+            let isLandscapeImage = v.width > v.height;
+            if (isLandscapeImage)
+              v.resize(v.width / v.height * 128, 128);
+            else v.resize(128, v.height / v.width * 128);
+            let canvas = p.createCanvas(128, 128);
+            canvas.hide();
+            p.image(v, -(v.width - 128) / 2, -(v.height - 128) / 2);
+            p.saveFrames('', 'png', 1, 1, c => {
+              this.indexed.saveFileToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
+                `todo/${this.userInput.id}/thumbnail.png`);
+              p.remove();
+            });
+          }, e => {
+            console.error('Todo-등록된 이미지 불러오기 실패: ', e);
+            p.remove();
+          });
+        }
+      });
     }
     this.userInput.written = new Date().getTime();
     this.userInput.limit = new Date(this.userInput.limit).getTime();
@@ -450,8 +471,10 @@ export class AddTodoMenuPage implements OnInit {
       createTime: new Date().getTime(),
       translateCode: this.isModify ? 'ModifyTodo' : 'CreateTodo',
     });
-    if (this.isModify && this.isImageRemoved)
+    if (this.isModify && this.isImageRemoved) {
       this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/${this.isImageRemoved}`);
+      this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/thumbnail.png`);
+    }
     this.isLogsHidden = true;
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, () => {

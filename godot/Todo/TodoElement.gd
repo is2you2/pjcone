@@ -37,10 +37,10 @@ func _ready():
 # 다시 로드되기 전까지는 경로가 업데이트되지 않는 오류가 있다
 func try_to_load_attach():
 	var dir:= Directory.new()
-	var check_exist:= dir.file_exists('user://todo/%s/%s' % [info.id, info.attach.filename])
+	var check_exist:= dir.file_exists('user://todo/%s/%s' % [info.id, 'thumbnail.png'])
 	if check_exist:
 		var img:= Image.new()
-		img.load('user://todo/%s/%s' % [info.id, info.attach.filename])
+		img.load('user://todo/%s/%s' % [info.id, 'thumbnail.png'])
 		var tex:= ImageTexture.new()
 		tex.create_from_image(img)
 		$CollisionShape2D/Node2D/UI/Attach.texture = tex
