@@ -41,7 +41,7 @@ export class WscService {
    * 다른 서버, 클라이언트를 생성하는 등의 다양한 역할을 수행할 수 있다.
    */
   initialize() {
-    this.address_override = (localStorage.getItem('wsc_address_override') || '').replace(/[^0-9.]/g, '');
+    this.address_override = (localStorage.getItem('wsc_address_override') || '');
     this.socket_header = localStorage.getItem('wsc_socket_header') || 'wss';
     this.statusBar.settings['communityServer'] = 'pending';
     this.lang.Callback_WscClient = () => this.set_bgmode_text();

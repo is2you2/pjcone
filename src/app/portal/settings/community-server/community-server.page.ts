@@ -42,7 +42,7 @@ export class CommunityServerPage implements OnInit {
     this.QRCodeSRC = this.global.readasQRCodeFromId({
       type: 'comm_server',
       value: {
-        address_override: this.address_override.replace(/[^0-9.]/g, ''),
+        address_override: this.address_override,
         useSSL: this.useSSL,
       }
     });
@@ -57,7 +57,7 @@ export class CommunityServerPage implements OnInit {
 
   on_address_changed(_ev: any) {
     if (_ev.detail.value != this.wsc.address_override) {
-      this.wsc.address_override = this.address_override.replace(/[^0-9.]/g, '');
+      this.wsc.address_override = this.address_override;
       if (!this.wsc.address_override) {
         this.useSSL = false;
         this.toggle_useSSL();
@@ -84,7 +84,7 @@ export class CommunityServerPage implements OnInit {
     this.QRCodeSRC = this.global.readasQRCodeFromId({
       type: 'comm_server',
       value: {
-        address_override: this.address_override.replace(/[^0-9.]/g, ''),
+        address_override: this.address_override,
         useSSL: this.useSSL,
       }
     });

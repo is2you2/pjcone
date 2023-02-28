@@ -2198,7 +2198,7 @@ export class NakamaService {
             this.communityServer.socket_header = 'wss';
           else this.communityServer.socket_header = 'ws';
           localStorage.setItem('wsc_socket_header', this.communityServer.socket_header);
-          this.communityServer.address_override = json[i].value.address_override.replace(/[^0-9.]/g, '');
+          this.communityServer.address_override = json[i].value.address_override;
           localStorage.setItem('wsc_address_override', this.communityServer.address_override);
           this.communityServer.initialize();
           break;
