@@ -167,7 +167,7 @@ export class MinimalChatPage implements OnInit {
         let data = JSON.parse(v);
         let isMe = this.uuid == data['uid'];
         let target = isMe ? (name || this.lang.text['MinimalChat']['name_me']) : (data['name'] || (this.client.status[this.target] == 'custom' ? this.lang.text['MinimalChat']['name_stranger_group'] : this.lang.text['MinimalChat']['name_stranger_ran']));
-        let color = data['uid'] ? (data['uid'].replace(/[^8-9a-f]/g, '') + 'abcdef').substring(0, 6) : '888';
+        let color = data['uid'] ? (data['uid'].replace(/[^4-79a-b]/g, '') + 'abcdef').substring(0, 6) : '888';
         if (data['msg'])
           this.client.userInput[this.target].logs.push({ color: color, text: data['msg'], target: target });
         else if (data['type']) {
