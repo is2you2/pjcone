@@ -176,6 +176,7 @@ export class GroupServerPage implements OnInit {
     this.servers = this.nakama.get_all_server_info();
     // 그룹서버 정리
     delete this.statusBar.groupServer[_is_official][_target];
+    this.nakama.save_groups_with_less_info();
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
     // 파일로부터 일치하는 정보 삭제
     this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
