@@ -563,7 +563,7 @@ export class NakamaService {
             this.indexed.saveTextFileToUserPath(JSON.stringify(this.users.self['img']), 'servers/self/profile.img');
           }
         }
-      })
+      });
     // 단발적으로 다른 사용자 정보 업데이트
     if (this.groups[_is_official][_target])
       this.instant_group_user_update(_is_official, _target);
@@ -664,6 +664,9 @@ export class NakamaService {
                 this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
               else delete this.users[_is_official][_target][userId]['avatar_url'];
               this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
+            }).catch(_e => {
+              delete this.users[_is_official][_target][userId]['img'];
+              this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
             });
       });
     return this.users[_is_official][_target][userId];
@@ -679,6 +682,7 @@ export class NakamaService {
     this.indexed.saveTextFileToUserPath(JSON.stringify(copied), `servers/${_is_official}/${_target}/users/${copied['id']}/profile.json`);
     if (userInfo['img'])
       this.indexed.saveTextFileToUserPath(userInfo['img'], `servers/${_is_official}/${_target}/users/${userInfo['id']}/profile.img`);
+    else this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${userInfo['id']}/profile.img`);
   }
 
   /** 서버로부터 알림 업데이트하기 (알림 리스트 재정렬 포함됨) */
@@ -1757,6 +1761,9 @@ export class NakamaService {
             delete this.load_other_user(c.sender_id, _is_official, _target)['img'];
             this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${c.sender_id}/profile.img`)
           }
+        }).catch(_e => {
+          delete this.users[_is_official][_target][c.sender_id]['img'];
+          this.save_other_user(this.users[_is_official][_target][c.sender_id], _is_official, _target);
         });
         break;
       default:
