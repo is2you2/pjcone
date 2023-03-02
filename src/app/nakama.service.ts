@@ -1557,11 +1557,11 @@ export class NakamaService {
     }
     this.ModulateTimeDate(c);
     this.check_sender_and_show_name(c, _is_official, _target);
-    this.saveListedMessage([c], this.channels_orig[_is_official][_target][c.channel_id], _is_official, _target);
-    if (!isNewChannel && this.channels_orig[_is_official][_target][c.channel_id]['update'])
-      this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
     let original_msg = msg.content['msg'];
     this.content_to_hyperlink(c);
+    if (!isNewChannel && this.channels_orig[_is_official][_target][c.channel_id]['update'])
+      this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
+    this.saveListedMessage([c], this.channels_orig[_is_official][_target][c.channel_id], _is_official, _target);
     let hasFile = c.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
     this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile + (original_msg || c.content['noti'] || '');
     this.save_channels_with_less_info();

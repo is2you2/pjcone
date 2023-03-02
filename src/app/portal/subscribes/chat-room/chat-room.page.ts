@@ -317,7 +317,6 @@ export class ChatRoomPage implements OnInit {
               this.nakama.translate_updates(json[i]);
               json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
               this.nakama.ModulateTimeDate(json[i]);
-              this.nakama.content_to_hyperlink(json[i]);
               this.messages.unshift(json[i]);
               this.modulate_chatmsg(0, this.messages.length);
             }
@@ -335,7 +334,6 @@ export class ChatRoomPage implements OnInit {
             this.nakama.translate_updates(json[i]);
             json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
             this.nakama.ModulateTimeDate(json[i]);
-            this.nakama.content_to_hyperlink(json[i]);
             this.messages.unshift(json[i]);
             this.modulate_chatmsg(0, this.messages.length);
           }
