@@ -23,6 +23,7 @@ import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { WeblinkService } from './weblink.service';
 import { ToolServerService, UnivToolForm } from './tool-server.service';
+import { QrSharePage } from './portal/settings/qr-share/qr-share.page';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -2178,6 +2179,11 @@ export class NakamaService {
           this.logout_all_server();
           this.users.self['online'] = true;
           this.init_all_sessions();
+          break;
+        case 'QRShare':
+          this.modalCtrl.create({
+            component: QrSharePage,
+          }).then(v => v.present());
           break;
         case 'tools': // 도구모음, 단일 대상 서버 생성 액션시
           if (!this.check_comm_server_is_online())

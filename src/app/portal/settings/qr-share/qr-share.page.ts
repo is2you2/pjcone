@@ -163,7 +163,9 @@ export class QrSharePage implements OnInit {
             break;
         }
         setTimeout(() => {
-          this.navCtrl.back();
+          if (this.modalCtrl['injector']['source'] != 'QrSharePageModule')
+            this.modalCtrl.dismiss();
+          else this.navCtrl.back();
         }, 500);
       }
     }).catch(_e => {
@@ -227,5 +229,10 @@ export class QrSharePage implements OnInit {
   ionViewWillLeave() {
     delete this.wsc.disconnected[HEADER];
     this.websocket.close();
+  }
+
+  go_back() {
+    if (this.modalCtrl['injector']['source'] != 'ProfilePageModule')
+      this.modalCtrl.dismiss();
   }
 }
