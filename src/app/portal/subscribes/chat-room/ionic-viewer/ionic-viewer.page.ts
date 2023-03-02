@@ -120,6 +120,7 @@ export class IonicViewerPage implements OnInit {
           let ResizeAudio = () => {
             if (this.FileInfo['viewer'] != 'audio') return;
             let canvasWidth = this.ContentBox.offsetWidth;
+            mediaObject['elt'].setAttribute('style', 'position: relative; top: 50%; transform: translateY(-50%);');
             mediaObject['size'](canvasWidth, 25);
           }
           p.windowResized = () => {
@@ -155,6 +156,7 @@ export class IonicViewerPage implements OnInit {
             let canvasHeight = this.ContentBox.offsetHeight - this.FileHeader.offsetHeight;
             let width = mediaObject['width'];
             let height = mediaObject['height'];
+            mediaObject['elt'].setAttribute('style', 'position: relative; top: 50%; transform: translateY(-50%);');
             if (width > height) { // 가로 영상
               width = canvasWidth;
               height = height / mediaObject['width'] * width;
