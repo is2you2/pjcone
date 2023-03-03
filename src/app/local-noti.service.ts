@@ -141,8 +141,8 @@ export class LocalNotiService {
   }
 
   /** settings에 해당하는 값을 변경한 후 저장함 */
-  change_settings(key: string, value: any) {
-    this.settings[key] = value;
+  change_silent_settings(key: string) {
+    this.settings.silent[key] = !this.settings.silent[key];
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.settings), 'notification_settings');
   }
 
@@ -150,12 +150,26 @@ export class LocalNotiService {
   load_settings() {
     this.indexed.loadTextFromUserPath('notification_settings', (e, v) => {
       if (e && v) this.settings = JSON.parse(v);
+      // 아래, 구 버전 호환성 코드
+      if (typeof this.settings.silent == 'boolean')
+        this.settings.silent = {
+          icon_mono: this.settings.silent,
+          diychat: this.settings.silent,
+          simplechat: this.settings.silent,
+          todo: this.settings.silent,
+        };
+      // 여기까지, 전부 호환된다고 판단되는 경우 삭제
     });
   }
 
   settings = {
     /** 조용한 알림 */
-    silent: false,
+    silent: {
+      icon_mono: true,
+      diychat: true,
+      simplechat: true,
+      todo: true,
+    },
     /** 알림 진동 사용 여부 */
     vibrate: false,
   }
@@ -197,7 +211,7 @@ export class LocalNotiService {
         icon: `assets/icon/${opt.icon || header || 'favicon'}.png`,
         image: opt.image,
         lang: opt.lang_wn,
-        silent: this.settings.silent,
+        silent: !this.settings.silent[opt.icon] || false,
         tag: opt.tag_wn,
         actions: opt.actions_wn,
         data: opt.data_wn,
@@ -253,7 +267,7 @@ export class LocalNotiService {
         input['progressBar'] = opt.progressBar_ln;
       if (opt.priority_ln)
         input['priority'] = opt.priority_ln;
-      input['silent'] = this.settings.silent;
+      input['silent'] = !this.settings.silent[opt.smallIcon_ln] || false;
       if (opt.timeoutAfter_ln)
         input['timeoutAfter'] = opt.timeoutAfter_ln;
       if (opt.wakeup_ln)

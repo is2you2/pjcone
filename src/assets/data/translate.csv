@@ -3,6 +3,34 @@
 Link,연결,Link
 Main,메인,Main
 Settings,설정,Settings
+## TodoDetail,,
+Title,해야할 일,Todo detail
+OnThisDevice,이 기기에서,On this device
+WrittenByMe,내가 작성,Written by me
+TodoComplete,완료,Complete
+TodoMoveTo,이관,Move
+TodoFocus,집중,Focus
+DisplayName,표시명,Display name
+DisplayName_placeholder,짧게,briefly
+Importance,중요도,Importance
+Importance_2,중요함,Important
+Importance_1,기억해야 함,Must remember
+Importance_0,메모,Memo
+limit,기한,Deadline
+description,상세 내용,Description
+description_placeholder,해야할 일 상세 내용,Todo details
+delete_attach,이미지 삭제,Remove image
+attachments,첨부파일,Attachments
+attachments_none,없음,None
+logs,기록,Logs
+remove,삭제,Remove todo
+buttonDisplay_add,추가,Add todo
+buttonDisplay_modify,수정,Modify detail
+needDisplayName,표시명을 작성하여야 합니다.,Display name must be written
+CreateTodo,해야할 일 생성,Create todo
+ModifyTodo,해야할 일 수정,Modify todo
+removeTodo,기록 삭제,Remove todo
+terminateTodo,이 작업은 되돌릴 수 없습니다.,This action cannot be undone.
 ## Main,,
 Title,할 일 목록,Todo
 ## Subscribes,,
@@ -38,7 +66,7 @@ joinDedi_button,참여,Join
 admin_community_menu,커뮤니티 관리자 메뉴,Community manager menu
 admin_noti_all,전체 사용자 공지,All user notice
 notifications,알림,Notifications
-slient_noti,알림 무시,Ignore notifications
+NotificationSetting,알림 설정,Notification settings
 batteryOptimization,배터리 최적화 제외 설정,Battery Optimization Exclusion Settings
 ToolManage,도구 관리,Manage tools
 ToolList,도구 리스트,Tool list
@@ -49,34 +77,12 @@ AppLanguage,언어 설정,Languages
 userPrivacyTerms,개인정보처리방침,Privacy policy
 LicenseNotice,라이선스 고지,License Notice
 UserGuideLink,사용자 가이드,User guide
-## TodoDetail,,
-Title,해야할 일,Todo detail
-OnThisDevice,이 기기에서,On this device
-WrittenByMe,내가 작성,Written by me
-TodoComplete,완료,Complete
-TodoMoveTo,이관,Move
-TodoFocus,집중,Focus
-DisplayName,표시명,Display name
-DisplayName_placeholder,짧게,briefly
-Importance,중요도,Importance
-Importance_2,중요함,Important
-Importance_1,기억해야 함,Must remember
-Importance_0,메모,Memo
-limit,기한,Deadline
-description,상세 내용,Description
-description_placeholder,해야할 일 상세 내용,Todo details
-delete_attach,이미지 삭제,Remove image
-attachments,첨부파일,Attachments
-attachments_none,없음,None
-logs,기록,Logs
-remove,삭제,Remove todo
-buttonDisplay_add,추가,Add todo
-buttonDisplay_modify,수정,Modify detail
-needDisplayName,표시명을 작성하여야 합니다.,Display name must be written
-CreateTodo,해야할 일 생성,Create todo
-ModifyTodo,해야할 일 수정,Modify todo
-removeTodo,기록 삭제,Remove todo
-terminateTodo,이 작업은 되돌릴 수 없습니다.,This action cannot be undone.
+## NotificationSettings,,
+set_alert,알림 받기,Get notifications
+icon_mono,기본 앱 알림,Default
+diychat,Nakama 채널,Nakama channel
+todo,해야할 일,Todo
+simplechat,미니채팅,Mini-chat
 ## ToolManager,,
 Redownload,다시받기,Re-download
 removeTool,삭제,Remove

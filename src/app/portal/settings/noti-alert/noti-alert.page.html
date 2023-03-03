@@ -1,0 +1,34 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{lang.text['Settings']['NotificationSetting']}}</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="portal/settings"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item-divider>
+    <ion-label>{{lang.text['NotificationSettings']['set_alert']}}</ion-label>
+  </ion-item-divider>
+  <ion-item button (click)="toggle_silent_set('icon_mono')">
+    <img class="img_icon_size" src="assets/icon/favicon.png" alt="">
+    <ion-label>{{lang.text['NotificationSettings']['icon_mono']}}</ion-label>
+    <ion-toggle [(ngModel)]="noti.settings.silent.icon_mono" class="ignore_toggles"></ion-toggle>
+  </ion-item>
+  <ion-item button (click)="toggle_silent_set('diychat')">
+    <img class="img_icon_size" src="assets/icon/diychat.png" alt="">
+    <ion-label>{{lang.text['NotificationSettings']['diychat']}}</ion-label>
+    <ion-toggle [(ngModel)]="noti.settings.silent.diychat" class="ignore_toggles"></ion-toggle>
+  </ion-item>
+  <ion-item button (click)="toggle_silent_set('todo')">
+    <img class="img_icon_size" src="assets/icon/todo.png" alt="">
+    <ion-label>{{lang.text['NotificationSettings']['todo']}}</ion-label>
+    <ion-toggle [(ngModel)]="noti.settings.silent.todo" class="ignore_toggles"></ion-toggle>
+  </ion-item>
+  <ion-item button (click)="toggle_silent_set('simplechat')">
+    <img class="img_icon_size" src="assets/icon/simplechat.png" alt="">
+    <ion-label>{{lang.text['NotificationSettings']['simplechat']}}</ion-label>
+    <ion-toggle [(ngModel)]="noti.settings.silent.simplechat" class="ignore_toggles"></ion-toggle>
+  </ion-item>
+</ion-content>
