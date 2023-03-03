@@ -48,7 +48,7 @@ CameraPermissionDenied,카메라 권한을 얻지 못했습니다,Failed to get 
 Title,설정,Settings
 CommunityAds,커뮤니티 광고,Community Ads
 AdsContact,광고 문의,Ads Contact
-UserInfo,사용자 정보,User info
+env_info,사용 환경 설정,Preferences
 myInfo,내 정보,My info
 takeOverUser,사용자 인계,User override
 ManageServer,서버 관리,Manage server
