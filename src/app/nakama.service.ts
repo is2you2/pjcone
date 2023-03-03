@@ -1520,12 +1520,12 @@ export class NakamaService {
           this.update_group_user_info(c, _is_official, _target);
         if (is_new) {
           this.channels_orig[_is_official][_target][msg.channel_id]['is_new'] = !is_me;
-          this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_time'] = msg.create_time;
           if (!this.subscribe_lock)
             this.has_new_channel_msg = !is_me;
-          this.rearrange_channels();
         }
+        this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_time'] = msg.create_time;
         this.channels_orig[_is_official][_target][c.channel_id]['last_comment_id'] = c.message_id;
+        this.rearrange_channels();
         break;
       case 3: // 열린 그룹 상태에서 사용자 들어오기 요청
       case 4: // 채널에 새로 들어온 사람 알림
