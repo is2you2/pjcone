@@ -328,30 +328,30 @@ export class AddTodoMenuPage implements OnInit {
   /** 이 일을 완료했습니다 */
   doneTodo() {
     this.userInput.done = true;
-    if (this.userInput.noti_id)
-      if (isPlatform == 'DesktopPWA') {
-        clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
-        delete this.nakama.web_noti_id[this.userInput.noti_id];
-      }
-    this.noti.ClearNoti(this.userInput.noti_id);
-    if (this.userInput.importance != '0')
-      this.indexed.saveTextFileToUserPath('', `todo/${this.userInput.id}/done.todo`, () => {
-        this.saveData();
-      });
-    else { // 메모는 이펙트만 생성하고 삭제
-      this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
-      this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, (v) => {
-        v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-        if (this.userInput.noti_id)
-          if (isPlatform == 'DesktopPWA') {
-            clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
-            delete this.nakama.web_noti_id[this.userInput.noti_id];
-          }
-        this.noti.ClearNoti(this.userInput.noti_id);
-        this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
-        this.modalCtrl.dismiss();
-      });
-    }
+    // if (this.userInput.noti_id)
+    //   if (isPlatform == 'DesktopPWA') {
+    //     clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
+    //     delete this.nakama.web_noti_id[this.userInput.noti_id];
+    //   }
+    // this.noti.ClearNoti(this.userInput.noti_id);
+    // if (this.userInput.importance != '0')
+    //   this.indexed.saveTextFileToUserPath('', `todo/${this.userInput.id}/done.todo`, () => {
+    //     this.saveData();
+    //   });
+    // else { // 메모는 이펙트만 생성하고 삭제
+    this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
+    this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, (v) => {
+      v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+      if (this.userInput.noti_id)
+        if (isPlatform == 'DesktopPWA') {
+          clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
+          delete this.nakama.web_noti_id[this.userInput.noti_id];
+        }
+      this.noti.ClearNoti(this.userInput.noti_id);
+      this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
+      this.modalCtrl.dismiss();
+    });
+    // }
   }
 
   /** 다른 사람에게 일을 부탁합니다 */
