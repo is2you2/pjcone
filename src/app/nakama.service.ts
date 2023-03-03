@@ -1523,9 +1523,6 @@ export class NakamaService {
           if (!this.subscribe_lock)
             this.has_new_channel_msg = !is_me;
         }
-        this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_time'] = msg.create_time;
-        this.channels_orig[_is_official][_target][c.channel_id]['last_comment_id'] = c.message_id;
-        this.rearrange_channels();
         break;
       case 3: // 열린 그룹 상태에서 사용자 들어오기 요청
       case 4: // 채널에 새로 들어온 사람 알림
@@ -1564,6 +1561,9 @@ export class NakamaService {
     this.check_sender_and_show_name(c, _is_official, _target);
     let original_msg = msg.content['msg'];
     this.content_to_hyperlink(c);
+    this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_time'] = msg.create_time;
+    this.channels_orig[_is_official][_target][c.channel_id]['last_comment_id'] = c.message_id;
+    this.rearrange_channels();
     if (!isNewChannel && this.channels_orig[_is_official][_target][c.channel_id]['update'])
       this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
     this.saveListedMessage([c], this.channels_orig[_is_official][_target][c.channel_id], _is_official, _target);
