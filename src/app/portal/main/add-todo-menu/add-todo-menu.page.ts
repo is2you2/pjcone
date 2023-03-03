@@ -416,11 +416,21 @@ export class AddTodoMenuPage implements OnInit {
       }, new Date(this.userInput.limit).getTime() - new Date().getTime());
       this.nakama.web_noti_id[this.userInput.noti_id] = schedule;
     } else if (isPlatform != 'MobilePWA') { // 모바일은 예약 발송을 설정
+      let color = '00bbbb'; // 메모
+      switch (this.userInput.importance) {
+        case '1': // 기억해야 함
+          color = 'dddd0c';
+          break;
+        case '2': // 중요함
+          color = '880000';
+          break;
+      }
       this.noti.PushLocal({
         id: this.userInput.noti_id,
         title: this.userInput.title,
         body: this.userInput.description,
         smallIcon_ln: 'todo',
+        iconColor_ln: color,
         group_ln: 'todo',
         triggerWhen_ln: {
           at: new Date(this.userInput.limit),
