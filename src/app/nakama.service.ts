@@ -209,11 +209,21 @@ export class NakamaService {
                   break;
                 }
               if (!noti_info['done'] && not_registered && schedule_at > new Date().getTime()) {
+                let color = '00bbbb'; // 메모
+                switch (noti_info.importance) {
+                  case '1': // 기억해야 함
+                    color = 'dddd0c';
+                    break;
+                  case '2': // 중요함
+                    color = '880000';
+                    break;
+                }
                 this.noti.PushLocal({
                   id: noti_info.noti_id,
                   title: noti_info.title,
                   body: noti_info.description,
                   smallIcon_ln: 'todo',
+                  iconColor_ln: color,
                   group_ln: 'todo',
                   triggerWhen_ln: {
                     at: new Date(noti_info.limit),
