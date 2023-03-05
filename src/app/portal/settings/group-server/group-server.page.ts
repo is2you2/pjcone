@@ -188,7 +188,7 @@ export class GroupServerPage implements OnInit {
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
     // 파일로부터 일치하는 정보 삭제
     this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
-      if (e) {
+      if (e && v) {
         let lines = v.split('\n');
         for (let i = 0, j = lines.length; i < j; i++) {
           let sep = lines[i].split(',');

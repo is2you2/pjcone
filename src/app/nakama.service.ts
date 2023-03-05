@@ -159,6 +159,18 @@ export class NakamaService {
     this.indexed.loadTextFromUserPath('servers/list.json', (e, v) => {
       if (e && v)
         this.statusBar.groupServer = JSON.parse(v);
+      let isOfficial = Object.keys(this.statusBar.groupServer);
+      isOfficial.forEach(_is_official => {
+        if (!this.servers[_is_official])
+          delete this.statusBar.groupServer[_is_official];
+        else {
+          let Target = Object.keys(this.statusBar.groupServer[_is_official]);
+          Target.forEach(_target => {
+            if (!this.servers[_is_official][_target])
+              delete this.statusBar.groupServer[_is_official][_target];
+          });
+        }
+      });
       if (this.users.self['online'])
         this.init_all_sessions();
     });
