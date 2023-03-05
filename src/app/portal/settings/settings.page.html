@@ -40,19 +40,19 @@ SPDX-License-Identifier: MIT -->
   </ion-item-divider>
   <ion-item button (click)="go_to_page('group-server')">
     <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[statusBar.settings['groupServer']]"></div>
+      [style]="'background-color: ' + statusBar.colors[(statusBar.settings['groupServer']) || 'offline']"></div>
     <ion-label class=" form_margin">{{lang.text['Settings']['groupServer']}}</ion-label>
   </ion-item>
   <ion-item button (click)="go_to_page('community-server')">
     <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[statusBar.settings['communityServer']]"></div>
+      [style]="'background-color: ' + statusBar.colors[(statusBar.settings['communityServer']) || 'offline']"></div>
     <ion-label class=" form_margin">{{lang.text['Settings']['commServer']}}</ion-label>
     <ion-label *ngIf="client.address_override" class="ion-text-right" color="medium">{{client.address_override}}
     </ion-label>
   </ion-item>
   <ion-item button (click)="go_to_page('dedicated-settings')" *ngIf="!cant_dedicated">
     <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[statusBar.settings['dedicatedServer']]"></div>
+      [style]="'background-color: ' + statusBar.colors[(statusBar.settings['dedicatedServer']) || 'offline']"></div>
     <ion-label class="form_margin">{{lang.text['Settings']['useDeviceAsServer']}}</ion-label>
   </ion-item>
   <div *ngIf="GroupServerCount != 0 || groups.length">
@@ -83,12 +83,12 @@ SPDX-License-Identifier: MIT -->
   <ion-item button [disabled]="statusBar.settings['communityServer'] != 'online' || will_enter"
     (click)="start_minimalchat()">
     <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[statusBar.settings['community_ranchat']]"></div>
+      [style]="'background-color: ' + statusBar.colors[(statusBar.settings['community_ranchat']) || 'offline']"></div>
     <ion-label class="form_margin">{{lang.text['Settings']['joinRanchat']}}</ion-label>
   </ion-item>
   <ion-item button [disabled]="will_enter">
     <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[statusBar.settings['dedicated_groupchat']]"></div>
+      [style]="'background-color: ' + statusBar.colors[(statusBar.settings['dedicated_groupchat']) || 'offline']"></div>
     <ion-label class="form_margin">{{lang.text['Settings']['joinDediChat']}}</ion-label>
     <ion-input class="ion-text-center" [placeholder]="lang.text['Settings']['joinDedi_placeholder'] + ': 127.0.0.1'"
       [(ngModel)]="chat_address"></ion-input>

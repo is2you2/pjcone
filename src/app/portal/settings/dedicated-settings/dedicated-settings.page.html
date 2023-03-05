@@ -25,7 +25,7 @@ SPDX-License-Identifier: MIT -->
   </ion-item-divider>
   <ion-item button (click)="start_minimalserver()" [disabled]="block.groupchat">
     <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[statusBar.dedicated.official['groupchat']]"></div>
+      [style]="'background-color: ' + statusBar.colors[(statusBar.dedicated.official['groupchat']) || 'offline']"></div>
     <ion-label class="form_margin">{{lang.text['UseAsServer']['CustomGroupChat']}}</ion-label>
   </ion-item>
 </ion-content>
