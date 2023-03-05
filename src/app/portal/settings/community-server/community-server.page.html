@@ -21,7 +21,7 @@ SPDX-License-Identifier: MIT -->
   </ion-item-divider>
   <ion-item button (click)="reconn_community_server()">
     <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[statusBar.settings['communityServer']]"></div>
+      [style]="'background-color: ' + statusBar.colors[(statusBar.settings['communityServer']) || 'offline']"></div>
     <ion-label class="form_margin">{{lang.text['CommunityServer']['AddressInfo']}}</ion-label>
     <ion-input type="text" class="ion-text-end" [(ngModel)]="address_override" (ionChange)="on_address_changed($event)">
     </ion-input>

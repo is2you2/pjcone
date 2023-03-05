@@ -28,7 +28,7 @@ SPDX-License-Identifier: MIT -->
   </ion-item> -->
   <ion-item *ngFor="let server of servers" button (click)="link_group(server.isOfficial, server.target)">
     <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[statusBar.groupServer[server.isOfficial][server.target]]"></div>
+      [style]="'background-color: ' + statusBar.colors[(statusBar.groupServer[server.isOfficial][server.target]) || 'offline']"></div>
     <ion-label class="form_margin">
       <h2>{{server.name}}</h2>
       <p>{{server.target}} ({{server.address}})</p>
