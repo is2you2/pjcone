@@ -428,7 +428,7 @@ export class NakamaService {
 
   /** 전체 서버 상태를 검토하여 설정-그룹서버의 상태를 조율함 */
   catch_group_server_header(_temporary: string) {
-    let finally_status: string;
+    let finally_status = _temporary;
     this.statusBar.settings['groupServer'] = _temporary as any;
     setTimeout(() => {
       let Targets = Object.keys(this.statusBar.groupServer['official']);
