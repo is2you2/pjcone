@@ -488,7 +488,7 @@ export class AddTodoMenuPage implements OnInit {
     }
     this.isLogsHidden = true;
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, () => {
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
       this.modalCtrl.dismiss();
     });
   }

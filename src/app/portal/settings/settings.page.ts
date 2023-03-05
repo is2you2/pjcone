@@ -246,8 +246,10 @@ export class SettingsPage implements OnInit {
                       User['user']['img'] = v.objects[0].value['img'];
                     this.nakama.save_other_user(User['user'], _is_official, _target);
                   }).catch(_e => {
-                    delete User['user']['img'];
-                    this.nakama.save_other_user(User['user'], _is_official, _target);
+                    if (User['user']['img']) {
+                      delete User['user']['img'];
+                      this.nakama.save_other_user(User['user'], _is_official, _target);
+                    }
                   });
                 else this.nakama.save_other_user(User['user'], _is_official, _target);
               }

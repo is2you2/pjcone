@@ -687,8 +687,10 @@ export class NakamaService {
               else delete this.users[_is_official][_target][userId]['avatar_url'];
               this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
             }).catch(_e => {
-              delete this.users[_is_official][_target][userId]['img'];
-              this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
+              if (this.users[_is_official][_target][userId]['img']) {
+                delete this.users[_is_official][_target][userId]['img'];
+                this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
+              }
             });
       });
     return this.users[_is_official][_target][userId];
@@ -699,8 +701,10 @@ export class NakamaService {
     let copied = { ...userInfo };
     delete copied['img'];
     delete copied['online'];
+    if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
+    if (!this.users[_is_official][_target][userInfo['id']]) this.users[_is_official][_target][userInfo['id']] = {};
     let keys = Object.keys(userInfo);
-    keys.forEach(key => this.load_other_user(userInfo['id'], _is_official, _target)[key] = userInfo[key]);
+    keys.forEach(key => this.users[_is_official][_target][userInfo['id']][key] = userInfo[key]);
     this.indexed.saveTextFileToUserPath(JSON.stringify(copied), `servers/${_is_official}/${_target}/users/${copied['id']}/profile.json`);
     if (userInfo['img'])
       this.indexed.saveTextFileToUserPath(userInfo['img'], `servers/${_is_official}/${_target}/users/${userInfo['id']}/profile.img`);
@@ -1784,8 +1788,10 @@ export class NakamaService {
             this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${c.sender_id}/profile.img`)
           }
         }).catch(_e => {
-          delete this.users[_is_official][_target][c.sender_id]['img'];
-          this.save_other_user(this.users[_is_official][_target][c.sender_id], _is_official, _target);
+          if (this.users[_is_official][_target][c.sender_id]['img']) {
+            delete this.users[_is_official][_target][c.sender_id]['img'];
+            this.save_other_user(this.users[_is_official][_target][c.sender_id], _is_official, _target);
+          }
         });
         break;
       default:
