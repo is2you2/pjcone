@@ -164,6 +164,14 @@ export class GroupServerPage implements OnInit {
         this.nakama.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
       });
     }
+    // 예하 사용자 정보에서 이미지 삭제
+    if (this.nakama.users[_is_official][_target]) {
+      this.indexed.GetFileListFromDB(`servers/${_is_official}/${_target}/users/`, (list) => {
+        for (let i = 0, j = list.length; i < j; i++)
+          if (list[i].indexOf('profile.img') >= 0)
+            this.indexed.removeFileFromUserPath(list[i]);
+      });
+    }
     this.nakama.rearrange_channels();
     // 예하 그룹들 손상처리
     if (this.nakama.groups[_is_official][_target]) {
