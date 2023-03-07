@@ -383,9 +383,10 @@ export class ChatRoomPage implements OnInit {
         /** 업로드가 진행중인 메시지 개체 */
         if (upload.length) { // 첨부 파일이 포함된 경우
           // 로컬에 파일을 저장
-          this.indexed.saveFileToUserPath(this.userInput.file.result, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.ext}`);
-          // 서버에 파일을 업로드
-          this.nakama.WriteStorage_From_channel(v, upload, this.isOfficial, this.target);
+          this.indexed.saveFileToUserPath(this.userInput.file.result, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.ext}`, () => {
+            // 서버에 파일을 업로드
+            this.nakama.WriteStorage_From_channel(v, upload, this.isOfficial, this.target);
+          });
         }
         delete this.userInput.file;
         this.userInput.text = '';
@@ -421,11 +422,10 @@ export class ChatRoomPage implements OnInit {
                   upload.push(base64.substring(seek, next));
                   seek = next;
                 }
-                console.log(upload.length, ' - ', this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['progress'][0], ' = ', upload.length - this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['progress'][0]);
                 this.nakama.WriteStorage_From_channel(msg, upload, this.isOfficial, this.target, this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['progress'][0]);
-                delete this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnProgress'];
               }
               reader.readAsDataURL(blob);
+              delete this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnProgress'];
             });
             return; // 재전송하는 경우에는 파일 열람을 하지 않는다
           }

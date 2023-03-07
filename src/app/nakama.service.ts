@@ -189,7 +189,6 @@ export class NakamaService {
           }
         });
       });
-      console.log(this.channel_transfer);
     });
   }
   /** 시작시 해야할 일 알림을 설정 (웹 전용) */
