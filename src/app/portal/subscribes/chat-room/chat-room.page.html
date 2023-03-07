@@ -53,7 +53,7 @@ SPDX-License-Identifier: MIT -->
             <p *ngIf="msg.content['msg']" class="message_content_form">
               <span *ngFor="let part of msg.content['msg']">
                 <span *ngIf="!part.href"> {{part.text}} </span>
-                <a *ngIf="part.href" [href]="part.text" target="_blank">{{part.text}}</a>
+                <a *ngIf="part.href" [href]="part.text" target="_system">{{part.text}}</a>
               </span>
             </p>
             <div *ngIf="msg['isLastRead']" class="read_last_here">
