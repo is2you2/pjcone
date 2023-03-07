@@ -39,6 +39,8 @@ interface ExtendButtonForm {
   act: Function;
 }
 
+const SIZE_LIMIT = 240000;
+
 @Component({
   selector: 'app-chat-room',
   templateUrl: './chat-room.page.html',
@@ -365,7 +367,6 @@ export class ChatRoomPage implements OnInit {
       result['file_ext'] = this.userInput.file.ext;
       result['type'] = this.userInput.file.type;
       result['msg'] = result['msg'];
-      const SIZE_LIMIT = 240000;
       let seek = 0;
       const RESULT_LIMIT = this.userInput.file.result.length;
       while (seek < RESULT_LIMIT) {
@@ -401,6 +402,34 @@ export class ChatRoomPage implements OnInit {
   file_detail(msg: any) {
     this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (v) => {
       if (v) { // 파일이 존재하는 경우
+        // 전송중 상태로 뜬다면 재발송 검토
+        if (this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]) {
+          // 이전에 전송하다가 짤린 파일이었다면 다시 전송 시작
+          if (this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnProgress']) {
+            this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, msg.content['type'], blob => {
+              let reader: any = new FileReader();
+              reader = reader._realReader ?? reader;
+              reader.onload = (ev: any) => {
+                let base64 = ev.target.result.replace(/"|\\|=/g, '');
+                let upload: string[] = [];
+                let seek = 0;
+                const RESULT_LIMIT = base64.length;
+                while (seek < RESULT_LIMIT) {
+                  let next = seek + SIZE_LIMIT;
+                  if (next > RESULT_LIMIT)
+                    next = RESULT_LIMIT;
+                  upload.push(base64.substring(seek, next));
+                  seek = next;
+                }
+                console.log(upload.length, ' - ', this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['progress'][0], ' = ', upload.length - this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['progress'][0]);
+                this.nakama.WriteStorage_From_channel(msg, upload, this.isOfficial, this.target, this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['progress'][0]);
+                delete this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnProgress'];
+              }
+              reader.readAsDataURL(blob);
+            });
+            return; // 재전송하는 경우에는 파일 열람을 하지 않는다
+          }
+        }
         if (!msg.content['text'])
           msg.content['text'] = this.lang.text['ChatRoom']['downloaded'];
         this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
@@ -411,9 +440,13 @@ export class ChatRoomPage implements OnInit {
           });
         this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
       } else { // 가지고 있는 파일이 아닐 경우
-        try { // 전송중이라면 무시
-          if (this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id])
-            return;
+        try { // 전송받는중이라면 무시
+          if (this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]) {
+            if (this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnProgress']) {
+              delete this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id];
+              throw new Error("Need to download file again");
+            } else return;
+          }
           else throw new Error("Need to download file");
         } catch (_e) { // 전송중이 아니라면 다운받기
           if (isPlatform == 'DesktopPWA') {

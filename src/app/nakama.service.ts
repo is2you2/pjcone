@@ -174,6 +174,23 @@ export class NakamaService {
       if (this.users.self['online'])
         this.init_all_sessions();
     });
+    // 전송중이던 파일 기록을 가져오기
+    this.indexed.GetFileListFromDB('/transfer.history', list => {
+      list.forEach(path => {
+        this.indexed.loadTextFromUserPath(path, (e, v) => {
+          if (e && v) {
+            let sep = path.split('/');
+            let _is_official: string = sep[1];
+            let _target: string = sep[2];
+            let _channel_id: string = sep[4];
+            if (!this.channel_transfer[_is_official][_target]) this.channel_transfer[_is_official][_target] = {};
+            if (!this.channel_transfer[_is_official][_target][_channel_id]) this.channel_transfer[_is_official][_target][_channel_id] = {};
+            this.channel_transfer[_is_official][_target][_channel_id] = JSON.parse(v);
+          }
+        });
+      });
+      console.log(this.channel_transfer);
+    });
   }
   /** 시작시 해야할 일 알림을 설정 (웹 전용) */
   set_todo_notification() {
@@ -2071,7 +2088,7 @@ export class NakamaService {
    * @param msg 메시지 정보
    * @param upload 업로드하려는 내용
    */
-  async WriteStorage_From_channel(msg: any, upload: string[], _is_official: string, _target: string) {
+  async WriteStorage_From_channel(msg: any, upload: string[], _is_official: string, _target: string, startFrom = 0) {
     let _msg = JSON.parse(JSON.stringify(msg));
     let _upload = [...upload];
     if (!this.channel_transfer[_is_official][_target]) this.channel_transfer[_is_official][_target] = {};
@@ -2081,7 +2098,7 @@ export class NakamaService {
         type: 'upload',
         progress: Array.from(Array(_upload.length).keys()),
       };
-    for (let i = 0, j = _upload.length; i < j; i++)
+    for (let i = startFrom, j = _upload.length; i < j; i++)
       await this.servers[_is_official][_target].client.writeStorageObjects(
         this.servers[_is_official][_target].session, [{
           collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
@@ -2111,7 +2128,7 @@ export class NakamaService {
         if (_try_left > 0)
           this.retry_upload_part(msg, info, _is_official, _target, i, _try_left - 1);
         else {
-          console.error('파일 다시 올리기 실패: ', info, i);
+          console.error('파일 다시 올리기 실패: ', e, info, i);
         }
       });
   }
@@ -2126,8 +2143,18 @@ export class NakamaService {
           break;
         }
     }
-    if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'].length)
+    if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'].length) {
       delete this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id];
+      this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/channels/${msg.channel_id}/transfer.history`);
+    } else { // 전송할 것이 남았다면 가끔 기록을 저장하기
+      if (this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'][0] % 7 == 0) {
+        let logging = JSON.parse(JSON.stringify(this.channel_transfer[_is_official][_target][msg.channel_id]));
+        logging[msg.message_id]['OnProgress'] = true;
+        this.indexed.saveTextFileToUserPath(
+          JSON.stringify(logging),
+          `servers/${_is_official}/${_target}/channels/${msg.channel_id}/transfer.history`);
+      }
+    }
   }
   /**
    * 채널 메시지에 기반하여 파일 다운받기
@@ -2145,6 +2172,7 @@ export class NakamaService {
         progress: Array.from(Array(_msg.content['partsize']).keys()),
       }
     let result = [];
+    let isSuccessful = true;
     for (let i = 0, j = _msg.content['partsize']; i < j; i++)
       await this.servers[_is_official][_target].client.readStorageObjects(
         this.servers[_is_official][_target].session, {
@@ -2157,14 +2185,15 @@ export class NakamaService {
         if (v.objects.length) {
           this.when_transfer_success(_msg, _is_official, _target, i);
           result[i] = v.objects[0].value['data'];
-        }
-      }).catch(_e => {
-        this.retry_download_part(_msg, {
+        } else isSuccessful = false;
+      }).catch(async _e => {
+        await this.retry_download_part(_msg, {
           collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
           key: `msg_${_msg.message_id}_${i}`,
           user_id: _msg['sender_id'],
         }, _is_official, _target, i);
       });
+    if (!isSuccessful) return;
     let resultModified = result.join('').replace(/"|\\|=/g, '');
     msg.content['text'] = this.lang.text['ChatRoom']['downloaded'];
     if (resultModified) {
@@ -2183,12 +2212,10 @@ export class NakamaService {
       object_ids: [info],
     }).then(_v => {
       this.when_transfer_success(msg, _is_official, _target, i);
-    }).catch(_e => {
+    }).catch(e => {
       if (_try_left > 0)
         this.retry_upload_part(msg, info, _is_official, _target, i, _try_left - 1);
-      else {
-        console.error('파일 다시 받기 실패: ', info, i);
-      }
+      else console.error('파일 다시 받기 실패: ', e, info, i);
     });
   }
 
