@@ -404,7 +404,9 @@ export class ChatRoomPage implements OnInit {
     this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (v) => {
       if (v) { // 파일이 존재하는 경우
         // 전송중 상태로 뜬다면 재발송 검토
-        if (this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]) {
+        if (this.nakama.channel_transfer[this.isOfficial][this.target]
+          && this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id]
+          && this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]) {
           // 이전에 전송하다가 짤린 파일이었다면 다시 전송 시작
           if (this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnProgress']) {
             this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, msg.content['type'], blob => {
@@ -441,7 +443,9 @@ export class ChatRoomPage implements OnInit {
         this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
       } else { // 가지고 있는 파일이 아닐 경우
         try { // 전송받는중이라면 무시
-          if (this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]) {
+          if (this.nakama.channel_transfer[this.isOfficial][this.target]
+            && this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id]
+            && this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]) {
             if (this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnProgress']) {
               delete this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id];
               throw new Error("Need to download file again");

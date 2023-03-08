@@ -232,7 +232,7 @@ export class QrSharePage implements OnInit {
   }
 
   go_back() {
-    if (this.modalCtrl['injector']['source'] != 'ProfilePageModule')
+    if (this.modalCtrl['injector']['source'] != 'QrSharePageModule')
       this.modalCtrl.dismiss();
   }
 }

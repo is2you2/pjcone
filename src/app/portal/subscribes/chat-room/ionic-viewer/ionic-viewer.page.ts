@@ -55,11 +55,13 @@ export class IonicViewerPage implements OnInit {
             canvas.style('position', 'relative');
             canvas.style('pointer-events', 'none');
             img = p.createImg(this.FileURL, this.FileInfo['filename']);
+            img.hide();
             img.id(IMAGE_ELEMENT_ID);
             img.parent(canvasDiv);
             img.style("position", 'relative');
             setTimeout(() => {
               RePositioningImage();
+              img.show();
             }, 50);
             if (isPlatform == 'Android' || isPlatform == 'iOS') {
               iframe_sub = document.createElement('iframe');
@@ -77,7 +79,8 @@ export class IonicViewerPage implements OnInit {
             let canvasHeight = this.ContentBox.offsetHeight - this.FileHeader.offsetHeight;
             if (img.size()['height'] < canvasHeight) {
               img.style("top", '50%');
-              img.style("transform", 'translateY(-50%');
+              img.style("left", '50%');
+              img.style("transform", 'translateX(-50%) translateY(-50%');
             }
           }
           p.windowResized = () => {
@@ -109,8 +112,10 @@ export class IonicViewerPage implements OnInit {
             mediaObject = p.createAudio([this.FileURL], () => {
               canvasDiv.appendChild(mediaObject['elt']);
               canvas.parent(canvasDiv);
+              mediaObject['elt'].hidden = true;
               setTimeout(() => {
                 ResizeAudio();
+                mediaObject['elt'].hidden = false;
               }, 50);
               mediaObject.showControls();
               mediaObject.play();
@@ -120,7 +125,7 @@ export class IonicViewerPage implements OnInit {
           let ResizeAudio = () => {
             if (this.FileInfo['viewer'] != 'audio') return;
             let canvasWidth = this.ContentBox.offsetWidth;
-            mediaObject['elt'].setAttribute('style', 'position: relative; top: 50%; transform: translateY(-50%);');
+            mediaObject['elt'].setAttribute('style', 'position: relative; top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);');
             mediaObject['size'](canvasWidth, 25);
           }
           p.windowResized = () => {
@@ -142,8 +147,10 @@ export class IonicViewerPage implements OnInit {
             mediaObject = p.createVideo([this.FileURL], () => {
               canvasDiv.appendChild(mediaObject['elt']);
               canvas.parent(canvasDiv);
+              mediaObject['elt'].hidden = true;
               setTimeout(() => {
                 ResizeVideo();
+                mediaObject['elt'].hidden = false;
               }, 50);
               mediaObject.showControls();
               mediaObject.play();
@@ -156,7 +163,7 @@ export class IonicViewerPage implements OnInit {
             let canvasHeight = this.ContentBox.offsetHeight - this.FileHeader.offsetHeight;
             let width = mediaObject['width'];
             let height = mediaObject['height'];
-            mediaObject['elt'].setAttribute('style', 'position: relative; top: 50%; transform: translateY(-50%);');
+            mediaObject['elt'].setAttribute('style', 'position: relative; top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);');
             if (width > height) { // 가로 영상
               width = canvasWidth;
               height = height / mediaObject['width'] * width;
