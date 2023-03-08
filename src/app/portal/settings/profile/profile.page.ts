@@ -198,6 +198,7 @@ export class ProfilePage implements OnInit {
         this.p5toast.show({
           text: this.lang.text['Profile']['copyURIFirst'],
         });
+        this.change_img_smoothly('');
       }
     });
     setTimeout(() => {
@@ -223,33 +224,6 @@ export class ProfilePage implements OnInit {
           await servers[i].client.updateAccount(servers[i].session, {
             display_name: this.nakama.users.self['display_name'],
           }).then(_v => {
-            NeedAnnounceUpdate = true;
-          });
-        if (this.nakama.users.self['img'] != this.original_profile['img'])
-          await servers[i].client.writeStorageObjects(servers[i].session, [{
-            collection: 'user_public',
-            key: 'profile_image',
-            value: { img: this.nakama.users.self['img'] },
-            permission_read: 2,
-            permission_write: 1,
-          }]).then(v => {
-            servers[i].client.updateAccount(servers[i].session, {
-              avatar_url: v.acks[0].version,
-            });
-            NeedAnnounceUpdate = true;
-          });
-        else if (!this.nakama.users.self['img'])
-          await servers[i].client.deleteStorageObjects(servers[i].session, {
-            object_ids: [{
-              collection: 'user_public',
-              key: 'profile_image',
-            }]
-          }).then(v => {
-            if (!v) console.warn('내 프로필 이미지 삭제 실패 로그');
-            delete this.nakama.users.self['avatar_url'];
-            servers[i].client.updateAccount(servers[i].session, {
-              avatar_url: '',
-            });
             NeedAnnounceUpdate = true;
           });
         // 해당 서버 연결된 채널에 고지
