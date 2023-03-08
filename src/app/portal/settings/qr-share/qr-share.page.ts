@@ -137,6 +137,7 @@ export class QrSharePage implements OnInit {
                 sendData.push({
                   type: 'server',
                   value: {
+                    name: this.selected_data['group_server'][i].name,
                     address: this.selected_data['group_server'][i].address,
                     port: this.selected_data['group_server'][i].port,
                     key: this.selected_data['group_server'][i].key,

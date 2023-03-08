@@ -32,17 +32,27 @@ export class ServerDetailPage implements OnInit {
 
   ngOnInit() {
     this.dedicated_info = this.navParams.get('data');
+    let filtered = {
+      name: this.dedicated_info.name,
+      address: this.dedicated_info.address,
+      port: this.dedicated_info.port,
+      key: this.dedicated_info.key,
+      useSSL: this.dedicated_info.useSSL,
+    };
+    if (this.dedicated_info.address == '192.168.0.1')
+      delete filtered.address;
+    if (this.dedicated_info.key == 'defaultkey')
+      delete filtered.key;
+    if (this.dedicated_info.port == 7350)
+      delete filtered.port;
+    if (!this.dedicated_info.useSSL)
+      delete filtered.useSSL;
     this.QRCodeSRC = this.global.readasQRCodeFromId({
       type: 'server',
-      value: {
-        address: this.dedicated_info.address,
-        port: this.dedicated_info.port,
-        key: this.dedicated_info.key,
-        useSSL: this.dedicated_info.useSSL,
-      }
+      value: filtered,
     });
     // 이미 target값이 등록되었는지 검토
-    this.isTargetAlreadyExist = Boolean(this.statusBar.groupServer['unofficial'][this.dedicated_info.target || this.dedicated_info.name]);
+    this.isTargetAlreadyExist = Boolean(this.statusBar.groupServer['unofficial'][this.dedicated_info.target]);
   }
 
   apply_changed_info() {

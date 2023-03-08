@@ -2252,12 +2252,54 @@ export class NakamaService {
           this.create_tool_server(json[i].value);
           break;
         case 'server': // 그룹 서버 자동등록처리
-          this.modalCtrl.create({
-            component: ServerDetailPage,
-            componentProps: {
-              data: json[i].value,
-            },
-          }).then(v => v.present());
+          let hasAlreadyTargetKey = Boolean(this.statusBar.groupServer['unofficial'][json[i].value.name]);
+          if (hasAlreadyTargetKey) {
+            this.p5toast.show({
+              text: `${this.lang.text['Nakama']['AlreadyHaveTargetName']}: ${json[i].value.name}`,
+            });
+            delete json[i].value.name;
+            this.modalCtrl.create({
+              component: ServerDetailPage,
+              componentProps: {
+                data: json[i].value,
+              },
+            }).then(v => v.present());
+          } else {
+            let new_server_info: any = {};
+            new_server_info['name'] = json[i].value.name;
+            new_server_info['target'] = json[i].value.target || json[i].value.name;
+            new_server_info['address'] = json[i].value.address || '192.168.0.1';
+            new_server_info['port'] = json[i].value.port || 7350;
+            new_server_info['useSSL'] = json[i].value.useSSL || false;
+            new_server_info['isOfficial'] = json[i].value.isOfficial || 'unofficial';
+            new_server_info['key'] = json[i].value.key || 'defaultkey';
+            let line = new Date().getTime().toString();
+            line += `,${new_server_info.isOfficial}`;
+            line += `,${new_server_info.name}`;
+            line += `,${new_server_info.target}`;
+            line += `,${new_server_info.address}`;
+            line += `,${new_server_info.port}`;
+            line += `,${new_server_info.useSSL}`;
+            this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
+              let list: string[] = [];
+              if (e && v) list = v.split('\n');
+              for (let i = 0, j = list.length; i < j; i++) {
+                let sep = list[i].split(',');
+                if (sep[3] == new_server_info.target) {
+                  list.splice(i, 1);
+                  break;
+                }
+              }
+              list.push(line);
+              this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv', (_v) => {
+                this.init_server(new_server_info);
+                this.servers[new_server_info.isOfficial][new_server_info.target].info = { ...new_server_info };
+                this.init_session(new_server_info);
+              });
+              this.statusBar.groupServer[new_server_info.isOfficial][new_server_info.target] = 'offline';
+              this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
+            });
+          }
           return;
         case 'comm_server':
           this.communityServer.client.close();
