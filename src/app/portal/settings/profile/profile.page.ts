@@ -121,7 +121,7 @@ export class ProfilePage implements OnInit {
         all_channels.forEach(channel => {
           servers[i].socket.writeChatMessage(channel.id, {
             user_update: 'modify_img',
-            noti_form: `: ${this.nakama.users.self['display_name']}`,
+            noti_form: `: ${this.original_profile['display_name']}`,
           });
         });
       }).catch(e => {
