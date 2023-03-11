@@ -77,10 +77,10 @@ SPDX-License-Identifier: MIT -->
                   {{lang.text['ChatRoom']['chat_extension']}}
                 </ion-button>
               </td>
-              <td style="width: 100%;">
-                <ion-input type="text" [placeholder]="inputPlaceholder" (keyup.enter)="send()"
-                  [(ngModel)]="userInput.text">
-                </ion-input>
+              <td style="width: 100%; vertical-align: bottom;">
+                <textarea [(ngModel)]="userInput.text" (keyup.enter)="send()"
+                  style="width: 100%; height: 36px; resize: none; line-height: 30px; margin-top: 5px;"
+                  [placeholder]="inputPlaceholder"></textarea>
               </td>
               <td>
                 <ion-button (click)="send()" expand="block"

@@ -359,7 +359,7 @@ export class ChatRoomPage implements OnInit {
   send() {
     if (!this.userInput.text && !this.userInput['file']) return;
     let result = {};
-    result['msg'] = this.userInput.text;
+    result['msg'] = this.userInput.text.substring(0, this.userInput.text.lastIndexOf('\n'));
     let upload: string[] = [];
     if (this.userInput.file) { // 파일 첨부시
       result['filename'] = this.userInput.file.name;
