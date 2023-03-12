@@ -9,17 +9,11 @@ var window
 # 앱 시작과 동시에 동작하려는 pck 정보를 받아옴
 func _ready():
 	if OS.has_feature('JavaScript'):
-		window = JavaScript.get_interface('window')
+		window = JavaScriptBridge.get_interface('window')
 		match(window['ext']):
 			'pck':
 				load_pck()
-			'obj':
-				continue
-			'stl':
-				continue
-			'glb':
-				continue
-			'gltf':
+			'obj', 'stl', 'glb', 'gltf':
 				# 파일읽기 준비중 알림
 				$CenterContainer/Label.text = 'Preparing open file ext:\n%s' % window['ext']
 			_: # 예외처리
