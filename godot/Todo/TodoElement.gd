@@ -3,11 +3,11 @@
 extends RigidBody2D
 
 
-export var title:String
+@export var title:String
 
 
 var info:Dictionary
-export var parent_script:NodePath
+@export var parent_script:NodePath
 var window
 var parent_node
 var line_color:Color
@@ -27,8 +27,8 @@ func _ready():
 	if title:
 		$CollisionShape2D/Node2D/UI/Label.text = title
 	if OS.has_feature('JavaScript'):
-		window = JavaScript.get_interface('window')
-	if not parent_script:
+		window = JavaScriptBridge.get_interface('window')
+	if not parent_script.get_name_count():
 		parent_script = '../../..'
 	parent_node = get_node(parent_script)
 
@@ -36,7 +36,7 @@ func _ready():
 # 파일 불러오기 시도
 # 다시 로드되기 전까지는 경로가 업데이트되지 않는 오류가 있다
 func try_to_load_attach():
-	var dir:= Directory.new()
+	var dir:= DirAccess.open('user://todo/')
 	var check_exist:= dir.file_exists('user://todo/%s/%s' % [info.id, 'thumbnail.png'])
 	if check_exist:
 		var img:= Image.new()
@@ -65,8 +65,8 @@ func _process(_delta):
 		calc_lerpVal()
 		linear_damp = 4 - lerp_value
 		angular_damp = 4 - lerp_value
-		$CollisionShape2D/Node2D/Sprite.modulate = normal_color.linear_interpolate(alert_color, color_lerp_with_limit)
-		$CollisionShape2D/Node2D/UI.update()
+		$CollisionShape2D/Node2D/Sprite.modulate = normal_color.lerp(alert_color, color_lerp_with_limit)
+		$CollisionShape2D/Node2D/UI.queue_redraw()
 
 
 func map(value, InputA, InputB, OutputA, OutputB):
@@ -78,10 +78,10 @@ var test_todo_index:= 0
 func _on_UI_gui_input(event):
 	if event is InputEventMouseButton:
 		if not event.pressed:
-			if ($CollisionShape2D/Node2D/UI.rect_size / 2).distance_to(event.position) <= $CollisionShape2D.shape.radius:
+			if ($CollisionShape2D/Node2D/UI.size / 2).distance_to(event.position) <= $CollisionShape2D.shape.radius:
 				if OS.has_feature('JavaScript'): # 웹에서 사용됨
 					if info.has('id'): # 생성된 할 일 정보
-						window.add_todo_menu(JSON.print(info))
+						window.add_todo_menu(JSON.stringify(info))
 					else: # 새로 만들기
 						window.add_todo_menu()
 				else: # 엔진 테스트중
@@ -89,11 +89,12 @@ func _on_UI_gui_input(event):
 						print_debug(info)
 					else: # 새로 만들기
 						test_todo_index = (test_todo_index + 1) % 3
-						parent_node.add_todo([JSON.print({
+						var unix_time:int = Time.get_unix_time_from_system() * 1000
+						parent_node.add_todo([JSON.stringify({
 							'id': 'engine_test_id',
 							'title': '엔진_test_title',
-							'written': OS.get_system_time_msecs(),
-							'limit': OS.get_system_time_msecs() + 10000,
+							'written': unix_time,
+							'limit': unix_time + 10000,
 							'importance': str(test_todo_index),
 							'logs': [],
 							'description': 'test_desc',

@@ -3,7 +3,7 @@
 extends Control
 
 
-onready var target_camera:= $Camera2D
+@onready var target_camera:= $Camera2D
 
 
 # touches 오류 방지
