@@ -45,7 +45,7 @@ export class AddGroupPage implements OnInit {
     description: undefined,
     max_count: undefined,
     lang_tag: undefined,
-    open: false,
+    open: true,
     creator_id: undefined,
     img: undefined,
   }
