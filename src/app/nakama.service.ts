@@ -1446,6 +1446,7 @@ export class NakamaService {
         for (let i = 0, j = base.length; i < j; i++)
           if (base[i]['message_id'] == _msg['message_id']) {
             isDuplicate = true;
+            base[i] = _msg;
             break;
           }
         if (!isDuplicate) added.push(_msg);
