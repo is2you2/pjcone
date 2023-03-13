@@ -356,10 +356,17 @@ export class ChatRoomPage implements OnInit {
     }, 120);
   }
 
-  send() {
-    if (!this.userInput.text && !this.userInput['file']) return;
+  send(with_key = false) {
+    if (with_key && (isPlatform == 'Android' || isPlatform == 'iOS')) return;
+    if (!this.userInput.text.trim() && !this.userInput['file']) {
+      this.userInput.text = '';
+      return;
+    }
     let result = {};
-    result['msg'] = this.userInput.text.substring(0, this.userInput.text.lastIndexOf('\n'));
+    let last_enter = this.userInput.text.lastIndexOf('\n');
+    if (with_key && last_enter >= 0) // 엔터키로 발송시에만 마지막 엔터 짜르기
+      result['msg'] = this.userInput.text.substring(0, last_enter);
+    else if (this.userInput.text) result['msg'] = this.userInput.text;
     let upload: string[] = [];
     if (this.userInput.file) { // 파일 첨부시
       result['filename'] = this.userInput.file.name;

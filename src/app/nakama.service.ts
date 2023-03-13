@@ -1621,7 +1621,7 @@ export class NakamaService {
     let sep_msg = msg.content['msg'].split('\n');
     msg.content['msg'] = [];
     sep_msg.forEach(_msg => {
-      msg.content['msg'].push([{ text: _msg }]);
+      if (_msg) msg.content['msg'].push([{ text: _msg }]);
     });
     for (let i = 0, j = msg.content['msg'].length; i < j; i++)
       if (msg.content['msg'][i][0]['text']) { // 메시지가 포함되어있는 경우에 한함
