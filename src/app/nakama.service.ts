@@ -1614,37 +1614,44 @@ export class NakamaService {
     this.save_channels_with_less_info();
   }
 
-  /** 메시지 내 하이퍼링크가 있는 경우 검토 */
+  /** 메시지를 엔터 단위로 분리, 메시지 내 하이퍼링크가 있는 경우 검토 */
   content_to_hyperlink(msg: any) {
-    let content: string = msg.content['msg'];
-    msg.content['msg'] = [{ text: msg.content['msg'] }]; // 모든 메시지를 배열처리
-    if (content) { // 메시지가 포함되어있는 경우에 한함
-      let index = content.indexOf('http://');
-      if (index < 0)
-        index = content.indexOf('https://');
-      if (index >= 0) { // 주소가 있는 경우 추출
-        let result_msg = [];
-        let front_msg: string;
-        if (index != 0) {
-          front_msg = content.substring(0, index);
-          result_msg.push({ text: front_msg });
+    if (!msg.content['msg']) return;
+    let sep_msg = msg.content['msg'].split('\n');
+    msg.content['msg'] = [];
+    sep_msg.forEach(_msg => {
+      msg.content['msg'].push([{ text: _msg }]);
+    });
+    for (let i = 0, j = msg.content['msg'].length; i < j; i++)
+      if (msg.content['msg'][i][0]['text']) { // 메시지가 포함되어있는 경우에 한함
+        let index = msg.content['msg'][i][0]['text'].indexOf('http://');
+        if (index < 0)
+          index = msg.content['msg'][i][0]['text'].indexOf('https://');
+        if (index >= 0) { // 주소가 있는 경우 추출
+          let result_msg = [];
+          let front_msg: string;
+          if (index != 0) {
+            front_msg = msg.content['msg'][i][0]['text'].substring(0, index);
+            result_msg.push({ text: front_msg });
+          }
+          let AddrHead = msg.content['msg'][i][0]['text'].substring(index);
+          let EndOfAddress = AddrHead.indexOf(' ');
+          let result: string;
+          let end_msg: string;
+          if (EndOfAddress < 0) {
+            result = AddrHead;
+            result_msg.push({ text: result, href: true });
+          } else {
+            result = AddrHead.substring(0, EndOfAddress);
+            result_msg.push({ text: result, href: true });
+            end_msg = AddrHead.substring(EndOfAddress);
+            result_msg.push({ text: end_msg });
+          }
+          msg.content['msg'][i] = result_msg;
+          // } else { // 주소가 없는 경우 양식을 일치시킴
+          //   msg.content['msg'][i] = [msg.content['msg'][i]];
         }
-        let AddrHead = content.substring(index);
-        let EndOfAddress = AddrHead.indexOf(' ');
-        let result: string;
-        let end_msg: string;
-        if (EndOfAddress < 0) {
-          result = AddrHead;
-          result_msg.push({ text: result, href: true });
-        } else {
-          result = AddrHead.substring(0, EndOfAddress);
-          result_msg.push({ text: result, href: true });
-          end_msg = AddrHead.substring(EndOfAddress);
-          result_msg.push({ text: end_msg });
-        }
-        msg.content['msg'] = result_msg;
       }
-    }
   }
 
   /** 발신인 표시를 위한 메시지 추가 가공 */
