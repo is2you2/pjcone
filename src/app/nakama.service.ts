@@ -602,9 +602,8 @@ export class NakamaService {
           }
         }
       });
-    // 단발적으로 다른 사용자 정보 업데이트
-    if (this.groups[_is_official][_target])
-      this.instant_group_user_update(_is_official, _target);
+    // 서버에서 나와 연관있는 모든 사용자 정보 읽어오기
+    this.server_user_info_update(_is_official, _target);
     // 통신 소켓 연결하기
     this.connect_to(_is_official, _target, () => {
       this.get_group_list(_is_official, _target);
@@ -614,22 +613,46 @@ export class NakamaService {
     });
   }
 
-  /** 그룹 내 모든 다른 사용자 정보 업데이트 */
-  instant_group_user_update(_is_official: string, _target: string) {
-    let group_ids = Object.keys(this.groups[_is_official][_target]);
-    group_ids.forEach(_gid => {
-      if (this.groups[_is_official][_target][_gid]['users'])
-        this.groups[_is_official][_target][_gid]['users'].forEach((_user: any) => {
-          if (!_user['is_me'])
-            this.servers[_is_official][_target].client.getUsers(
-              this.servers[_is_official][_target].session, [_user['user']['id']]
-            ).then(_userinfo => {
-              if (_userinfo.users.length) {
-                let keys = Object.keys(_userinfo.users[0]);
-                keys.forEach(key => this.load_other_user(_userinfo.users[0].id, _is_official, _target)[key] = _userinfo.users[0][key]);
-              }
+  /** 이 서버 내 나와 접촉한 모든 사용자 정보 업데이트 */
+  server_user_info_update(_is_official: string, _target: string) {
+    this.indexed.GetFileListFromDB(`${_is_official}/${_target}/users/`, list => {
+      let users = [];
+      list.forEach(path => {
+        let getUserId = path.split('/')[4];
+        if (!users.includes(getUserId) && getUserId != this.servers[_is_official][_target].session.user_id)
+          users.push(getUserId);
+      });
+      users.forEach(userId => {
+        this.servers[_is_official][_target].client.getUsers(
+          this.servers[_is_official][_target].session, [userId]
+        ).then(v => {
+          if (v.users.length) {
+            let keys = Object.keys(v.users[0]);
+            keys.forEach(async key => {
+              if (key == 'avatar_url') // 이미지 업데이트 여부 검토
+                if (this.load_other_user(userId, _is_official, _target)[key] != v.users[0][key]) {
+                  await this.servers[_is_official][_target].client.readStorageObjects(
+                    this.servers[_is_official][_target].session, {
+                    object_ids: [{
+                      collection: 'user_public',
+                      key: 'profile_image',
+                      user_id: userId,
+                    }],
+                  }).then(v => {
+                    if (v.objects.length)
+                      this.load_other_user(userId, _is_official, _target)['img'] = v.objects[0].value['img'];
+                    else this.indexed.removeFileFromUserPath(`server/${_is_official}/${_target}/users/${userId}/profile.img`)
+                  });
+                }
+              this.save_other_user(v.users[0], _is_official, _target);
             });
+          } else { // 없는 사용자 기록 삭제
+            this.indexed.GetFileListFromDB(`${_is_official}/${_target}/users/${userId}`, list => {
+              list.forEach(path => this.indexed.removeFileFromUserPath(path));
+            });
+          }
         });
+      });
     });
   }
 
@@ -1772,7 +1795,7 @@ export class NakamaService {
       }
   }
 
-  /** 그룹 사용자 상태 변경 처리 */
+  /** 그룹 채널 사용자 상태 변경 처리 */
   async update_group_user_info(c: ChannelMessage, _is_official: string, _target: string) {
     this.translate_updates(c);
     switch (c.content['user_update']) {
