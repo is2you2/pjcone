@@ -824,11 +824,8 @@ export class NakamaService {
             if (!this.groups[_is_official][_target][group_id]['users'])
               this.groups[_is_official][_target][group_id]['users'] = [];
             v.group_users.forEach(_user => {
-              let keys = Object.keys(_user.user);
-              keys.forEach(key => {
-                if (_user.user.id != this.servers[_is_official][_target].session.user_id)
-                  this.load_other_user(_user.user.id, _is_official, _target)[key] = _user.user[key]
-              });
+              if (_user.user.id != this.servers[_is_official][_target].session.user_id)
+                this.save_other_user(_user.user, _is_official, _target);
               if (_user.user.id == this.servers[_is_official][_target].session.user_id)
                 _user.user['is_me'] = true;
               else this.save_other_user(_user.user, _is_official, _target);
@@ -942,8 +939,7 @@ export class NakamaService {
                   this.servers[_is_official][_target].session, this.channels_orig[_is_official][_target][_cid]['redirect']['id']
                 ).then(_guser => {
                   _guser.group_users.forEach(_user => {
-                    let keys = Object.keys(_user.user);
-                    keys.forEach(key => this.load_other_user(_user.user.id, _is_official, _target)[key] = _user.user[key]);
+                    this.save_other_user(_user.user.id, _is_official, _target);
                     if (_user.user.id == this.servers[_is_official][_target].session.user_id)
                       _user.user['is_me'] = true;
                     else this.save_other_user(_user.user, _is_official, _target);
@@ -1099,8 +1095,6 @@ export class NakamaService {
                   this.servers[server.info.isOfficial][server.info.target].session, v.groups[i].id
                 ).then(_list => {
                   _list.group_users.forEach(_guser => {
-                    let keys = Object.keys(_guser.user);
-                    keys.forEach(key => this.load_other_user(_guser.user.id, server.info.isOfficial, server.info.target)[key] = _guser.user[key]);
                     this.save_other_user(_guser.user, server.info.isOfficial, server.info.target);
                   });
                 });
@@ -1144,8 +1138,6 @@ export class NakamaService {
                       this.servers[server.info.isOfficial][server.info.target].session, v.groups[i].id
                     ).then(_list => {
                       _list.group_users.forEach(_guser => {
-                        let keys = Object.keys(_guser.user);
-                        keys.forEach(key => this.load_other_user(_guser.user.id, server.info.isOfficial, server.info.target)[key] = _guser.user[key]);
                         this.save_other_user(_guser.user, server.info.isOfficial, server.info.target);
                       });
                     });
@@ -1383,8 +1375,6 @@ export class NakamaService {
               this.servers[_is_official][_target].session, others).then(v => {
                 if (v.users.length)
                   v.users.forEach(_user => {
-                    let keys = Object.keys(_user);
-                    keys.forEach(key => this.load_other_user(_user.id, _is_official, _target)[key] = _user[key]);
                     this.save_other_user(_user, _is_official, _target);
                   });
                 this.count_channel_online_member(p, _is_official, _target);

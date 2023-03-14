@@ -122,8 +122,7 @@ export class GroupDetailPage implements OnInit {
           result.push(form);
         } else { // 다른 사람의 정보인 경우
           let user = this.nakama.load_other_user(ul.group_users[i].user.id, _is_official, _target);
-          let keys = Object.keys(ul.group_users[i].user);
-          keys.forEach(key => user[key] = ul.group_users[i].user[key]);
+          this.nakama.save_other_user(ul.group_users[i].user, _is_official, _target);
           let form = {
             state: ul.group_users[i].state,
             user: user,
