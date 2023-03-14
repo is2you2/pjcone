@@ -12,8 +12,8 @@ SPDX-License-Identifier: MIT -->
 
 <ion-content>
   <ion-item *ngFor="let tool of list; index as i" button>
-    <ion-label>{{tool}}</ion-label>
-    <ion-button (click)="redownload_tool(i)">
+    <ion-label>{{tool.text}}</ion-label>
+    <ion-button [disabled]="tool.toggle" (click)="redownload_tool(i)">
       {{lang.text['ToolManager']['Redownload']}}
     </ion-button>
     <ion-button (click)="remove_tool(i)">

@@ -23,33 +23,37 @@ export class ToolManagementPage implements OnInit {
     private p5toast: P5ToastService,
   ) { }
 
+  /** { text: name, toggle: isDisabled } */
   list = [];
 
   ngOnInit() {
     let data: string[] = this.navParams.get('data');
     data.forEach(path => {
-      this.list.push(path.substring(5));
+      this.list.push({ text: path.substring(5), toggle: false });
     });
   }
 
   /** 툴 다시 다운받기 */
   async redownload_tool(i: number) {
     try {
-      let res = await fetch(`${SERVER_PATH_ROOT}pjcone_pck/${this.list[i]}`);
+      this.list[i]['toggle'] = true;
+      let res = await fetch(`${SERVER_PATH_ROOT}pjcone_pck/${this.list[i]['text']}`);
       if (res.ok) { // 다운로드에 성공한다면
         let blob = await res.blob();
         let reader: any = new FileReader();
         reader = reader._realReader ?? reader;
         reader.onload = (ev: any) => {
-          this.indexed.saveFileToUserPath(ev.target.result.replace(/"|\\|=/g, ''), `acts/${this.list[i]}`, () => {
+          this.indexed.saveFileToUserPath(ev.target.result.replace(/"|\\|=/g, ''), `acts/${this.list[i]['text']}`, () => {
+            this.list[i]['toggle'] = false;
             this.p5toast.show({
-              text: `${this.lang.text['ToolManager']['redownloadSucc']}: ${this.list[i]}`,
+              text: `${this.lang.text['ToolManager']['redownloadSucc']}: ${this.list[i]['text']}`,
             });
           });
         };
         reader.readAsDataURL(blob);
       } else throw new Error("없는거나 다름없지");
     } catch (e) { // 로컬 정보 기반으로 광고
+      this.list[i]['toggle'] = false;
       this.p5toast.show({
         text: `${this.lang.text['ToolManager']['redownloadFailed']}: ${this.list[i]}`,
       });
