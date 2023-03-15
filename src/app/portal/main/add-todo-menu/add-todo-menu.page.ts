@@ -93,10 +93,10 @@ export class AddTodoMenuPage implements OnInit {
     noti_id: undefined,
   };
 
-  /** 저장된 태그 정보  
-   * { text: string, count: number }
-   */
-  saved_tag = [];
+  /** 저장된 태그 정보 */
+  saved_tag: any[] = [];
+  /** { key: count } */
+  saved_tag_orig = {};
 
   /** 사용자에게 보여지는 기한 문자열, 저장시 삭제됨 */
   limitDisplay: string;
@@ -104,7 +104,10 @@ export class AddTodoMenuPage implements OnInit {
   ngOnInit() {
     this.nakama.removeBanner();
     this.indexed.loadTextFromUserPath('todo/tags.json', (e, v) => {
-      if (e && v) this.saved_tag = JSON.parse(v);
+      if (e && v) {
+        this.saved_tag_orig = JSON.parse(v);
+        this.saved_tag = Object.keys(this.saved_tag_orig);
+      }
     });
   }
 
@@ -314,6 +317,9 @@ export class AddTodoMenuPage implements OnInit {
   TagSelChanged(ev: any) {
     let selected: string[] = ev.detail.value;
     this.needInputNewTagName = selected.includes('@new_tag');
+    if (this.needInputNewTagName)
+      selected.splice(selected.lastIndexOf('@new_tag'), 1);
+    this.userInput.tags = selected;
   }
   InputNewTag = '';
   AddNewTag() {
@@ -327,18 +333,52 @@ export class AddTodoMenuPage implements OnInit {
     }
     let exactly_new = true;
     for (let i = 0, j = this.saved_tag.length; i < j; i++)
-      if (this.saved_tag[i]['text'] == this.InputNewTag) {
+      if (this.saved_tag[i] == this.InputNewTag) {
         exactly_new = false;
         break;
       }
     if (exactly_new) {
-      this.saved_tag.push({ text: this.InputNewTag, count: 0 });
+      this.saved_tag.push(this.InputNewTag);
       this.userInput.tags.push(this.InputNewTag);
     }
     setTimeout(() => {
       this.needInputNewTagName = false;
       this.InputNewTag = '';
     }, 0);
+  }
+
+  /** 태그 정보를 저장하기 */
+  saveTagInfo() {
+    // 원본 정보 대비했을 때 대비 가감처리
+    let orig_data: string[] = this.received_data ? JSON.parse(this.received_data)['tags'] : [];
+    let input_data: string[] = JSON.parse(JSON.stringify(this.userInput.tags));
+    let additive = [];
+    let subtractive = [];
+    orig_data.sort();
+    input_data.sort();
+    if (input_data.length) // 비교군이 있는 경우
+      for (let i = 0, j = input_data.length; i < j; i++) {
+        let index = orig_data.indexOf(input_data[i]);
+        if (index >= 0) // 유지되는 값은 무시함
+          orig_data.splice(index, 1);
+        else // 기존에 없던 값이 생겼다면 추가로 판단
+          additive.push(input_data[i]);
+      }
+    // 비교군이 없다면 기존 정보는 삭제된 것으로 판단
+    subtractive = orig_data;
+    // 더 이상 사용하지 않는다면 삭제
+    additive.forEach(added_tag => {
+      if (!this.saved_tag_orig[added_tag])
+        this.saved_tag_orig[added_tag] = 0;
+      this.saved_tag_orig[added_tag] = this.saved_tag_orig[added_tag] + 1;
+    });
+    subtractive.forEach(removed_tag => {
+      if (this.saved_tag_orig[removed_tag])
+        this.saved_tag_orig[removed_tag] = this.saved_tag_orig[removed_tag] - 1;
+      if (this.saved_tag_orig[removed_tag] <= 0)
+        delete this.saved_tag_orig[removed_tag];
+    });
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.saved_tag_orig), 'todo/tags.json');
   }
 
   /** 파일 선택시 로컬에서 반영 */
@@ -395,6 +435,7 @@ export class AddTodoMenuPage implements OnInit {
         }
       this.noti.ClearNoti(this.userInput.noti_id);
       this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
+      this.saveTagInfo();
       this.modalCtrl.dismiss();
     });
     // }
@@ -535,6 +576,7 @@ export class AddTodoMenuPage implements OnInit {
     this.isLogsHidden = true;
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
+      this.saveTagInfo();
       this.modalCtrl.dismiss();
     });
   }
@@ -556,6 +598,7 @@ export class AddTodoMenuPage implements OnInit {
               }
             this.noti.ClearNoti(this.userInput.noti_id);
             this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
+            this.saveTagInfo();
             this.modalCtrl.dismiss();
           });
         },

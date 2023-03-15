@@ -51,7 +51,7 @@ SPDX-License-Identifier: MIT -->
             <ion-select #TagSel style="pointer-events: none;" [value]="userInput.tags" multiple="true"
               [placeholder]="lang.text['TodoDetail']['SelectTag']" (ionChange)="TagSelChanged($event)">
               <ion-select-option value="@new_tag">{{lang.text['TodoDetail']['NewTag']}}</ion-select-option>
-              <ion-select-option *ngFor="let tag of saved_tag" [value]="tag.text">{{tag.text}}</ion-select-option>
+              <ion-select-option *ngFor="let tag of saved_tag" [value]="tag">{{tag}}</ion-select-option>
             </ion-select>
           </ion-item>
           <ion-item *ngIf="needInputNewTagName">
