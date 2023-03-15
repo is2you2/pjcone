@@ -381,6 +381,18 @@ export class AddTodoMenuPage implements OnInit {
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.saved_tag_orig), 'todo/tags.json');
   }
 
+  /** 완료 또는 삭제시 이 할 일에 적용된 태그를 제거 */
+  removeTagInfo() {
+    let input_data: string[] = JSON.parse(JSON.stringify(this.userInput.tags));
+    input_data.forEach(removed_tag => {
+      if (this.saved_tag_orig[removed_tag])
+        this.saved_tag_orig[removed_tag] = this.saved_tag_orig[removed_tag] - 1;
+      if (this.saved_tag_orig[removed_tag] <= 0)
+        delete this.saved_tag_orig[removed_tag];
+    });
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.saved_tag_orig), 'todo/tags.json');
+  }
+
   /** 파일 선택시 로컬에서 반영 */
   inputImageSelected(ev: any) {
     let reader: any = new FileReader();
@@ -435,7 +447,7 @@ export class AddTodoMenuPage implements OnInit {
         }
       this.noti.ClearNoti(this.userInput.noti_id);
       this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
-      this.saveTagInfo();
+      this.removeTagInfo();
       this.modalCtrl.dismiss();
     });
     // }
@@ -598,7 +610,7 @@ export class AddTodoMenuPage implements OnInit {
               }
             this.noti.ClearNoti(this.userInput.noti_id);
             this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
-            this.saveTagInfo();
+            this.removeTagInfo();
             this.modalCtrl.dismiss();
           });
         },
