@@ -46,6 +46,23 @@ SPDX-License-Identifier: MIT -->
             <ion-input [(ngModel)]="userInput.title" class="ion-text-right"
               [placeholder]="lang.text['TodoDetail']['DisplayName_placeholder']"></ion-input>
           </ion-item>
+          <ion-item *ngIf="!needInputNewTagName" button (click)="TagSelClicked()">
+            <ion-label>{{lang.text['TodoDetail']['Tag']}}</ion-label>
+            <ion-select #TagSel style="pointer-events: none;" [value]="userInput.tags" multiple="true"
+              [placeholder]="lang.text['TodoDetail']['SelectTag']" (ionChange)="TagSelChanged($event)">
+              <ion-select-option value="@new_tag">{{lang.text['TodoDetail']['NewTag']}}</ion-select-option>
+              <ion-select-option *ngFor="let tag of saved_tag" [value]="tag.text">{{tag.text}}</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item *ngIf="needInputNewTagName">
+            <ion-label>{{lang.text['TodoDetail']['Tag']}}</ion-label>
+            <ion-input [(ngModel)]="InputNewTag" type="text" class="ion-text-end"
+              [placeholder]="lang.text['TodoDetail']['NewTagName']">
+            </ion-input>
+            <ion-button style="margin-left: 16px;" (click)="AddNewTag()">
+              {{lang.text['TodoDetail']['CreateTag']}}
+            </ion-button>
+          </ion-item>
           <ion-item button (click)="ImporantSelClicked()">
             <ion-label>{{lang.text['TodoDetail']['Importance']}}</ion-label>
             <ion-select #ImporantSel style="pointer-events: none;" [value]="userInput.importance"

@@ -69,6 +69,8 @@ export class AddTodoMenuPage implements OnInit {
     written: undefined,
     /** 기한 */
     limit: undefined,
+    /** 필터용 태그 */
+    tags: [],
     /** 일의 중요도, 가시화 기한의 색상에 영향을 줌 */
     importance: '0',
     /** 이 업무가 연동되어 행해진 기록들 */
@@ -91,11 +93,19 @@ export class AddTodoMenuPage implements OnInit {
     noti_id: undefined,
   };
 
+  /** 저장된 태그 정보  
+   * { text: string, count: number }
+   */
+  saved_tag = [];
+
   /** 사용자에게 보여지는 기한 문자열, 저장시 삭제됨 */
   limitDisplay: string;
   ImageURL: any;
   ngOnInit() {
     this.nakama.removeBanner();
+    this.indexed.loadTextFromUserPath('todo/tags.json', (e, v) => {
+      if (e && v) this.saved_tag = JSON.parse(v);
+    });
   }
 
   /** 하단에 보여지는 버튼 */
@@ -293,6 +303,42 @@ export class AddTodoMenuPage implements OnInit {
         this.AlertLerpStartFrom = .4;
         break;
     }
+  }
+  @ViewChild('TagSel') TagSel: any;
+  /** 새로 지정된 태그가 임시로 기억됨 */
+  NewTagName: string = '';
+  TagSelClicked() {
+    this.TagSel.open();
+  }
+  needInputNewTagName = false;
+  TagSelChanged(ev: any) {
+    let selected: string[] = ev.detail.value;
+    this.needInputNewTagName = selected.includes('@new_tag');
+  }
+  InputNewTag = '';
+  AddNewTag() {
+    this.InputNewTag = this.InputNewTag.trim();
+    if (!this.InputNewTag) {
+      setTimeout(() => {
+        this.needInputNewTagName = false;
+        this.InputNewTag = '';
+      }, 0);
+      return;
+    }
+    let exactly_new = true;
+    for (let i = 0, j = this.saved_tag.length; i < j; i++)
+      if (this.saved_tag[i]['text'] == this.InputNewTag) {
+        exactly_new = false;
+        break;
+      }
+    if (exactly_new) {
+      this.saved_tag.push({ text: this.InputNewTag, count: 0 });
+      this.userInput.tags.push(this.InputNewTag);
+    }
+    setTimeout(() => {
+      this.needInputNewTagName = false;
+      this.InputNewTag = '';
+    }, 0);
   }
 
   /** 파일 선택시 로컬에서 반영 */
