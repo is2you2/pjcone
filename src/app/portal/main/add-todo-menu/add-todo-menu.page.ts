@@ -107,6 +107,8 @@ export class AddTodoMenuPage implements OnInit {
       if (e && v) {
         this.saved_tag_orig = JSON.parse(v);
         this.saved_tag = Object.keys(this.saved_tag_orig);
+        if (this.saved_tag.length)
+          this.needInputNewTagName = false;
       }
     });
   }
@@ -313,7 +315,7 @@ export class AddTodoMenuPage implements OnInit {
   TagSelClicked() {
     this.TagSel.open();
   }
-  needInputNewTagName = false;
+  needInputNewTagName = true;
   TagSelChanged(ev: any) {
     let selected: string[] = ev.detail.value;
     this.needInputNewTagName = selected.includes('@new_tag');
@@ -350,7 +352,8 @@ export class AddTodoMenuPage implements OnInit {
   /** 태그 정보를 저장하기 */
   saveTagInfo() {
     // 원본 정보 대비했을 때 대비 가감처리
-    let orig_data: string[] = this.received_data ? JSON.parse(this.received_data)['tags'] : [];
+    let get_tags_from_orig = this.received_data ? JSON.parse(this.received_data) : {};
+    let orig_data: string[] = get_tags_from_orig['tags'] ?? [];
     let input_data: string[] = this.userInput.tags ? JSON.parse(JSON.stringify(this.userInput.tags)) : [];
     let additive = [];
     let subtractive = [];
