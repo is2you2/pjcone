@@ -46,6 +46,15 @@ SPDX-License-Identifier: MIT -->
             <ion-input [(ngModel)]="userInput.title" class="ion-text-right"
               [placeholder]="lang.text['TodoDetail']['DisplayName_placeholder']"></ion-input>
           </ion-item>
+          <ion-item button (click)="ImporantSelClicked()">
+            <ion-label>{{lang.text['TodoDetail']['Importance']}}</ion-label>
+            <ion-select #ImporantSel style="pointer-events: none;" [value]="userInput.importance"
+              (ionChange)="ImporantSelChanged($event)">
+              <ion-select-option value="2">{{lang.text['TodoDetail']['Importance_2']}}</ion-select-option>
+              <ion-select-option value="1">{{lang.text['TodoDetail']['Importance_1']}}</ion-select-option>
+              <ion-select-option value="0">{{lang.text['TodoDetail']['Importance_0']}}</ion-select-option>
+            </ion-select>
+          </ion-item>
           <ion-item *ngIf="!needInputNewTagName" button (click)="TagSelClicked()">
             <ion-label>{{lang.text['TodoDetail']['Tag']}}</ion-label>
             <ion-select #TagSel style="pointer-events: none;" [value]="userInput.tags" multiple="true"
@@ -62,15 +71,6 @@ SPDX-License-Identifier: MIT -->
             <ion-button style="margin-left: 16px;" (click)="AddNewTag()">
               {{lang.text['TodoDetail']['CreateTag']}}
             </ion-button>
-          </ion-item>
-          <ion-item button (click)="ImporantSelClicked()">
-            <ion-label>{{lang.text['TodoDetail']['Importance']}}</ion-label>
-            <ion-select #ImporantSel style="pointer-events: none;" [value]="userInput.importance"
-              (ionChange)="ImporantSelChanged($event)">
-              <ion-select-option value="2">{{lang.text['TodoDetail']['Importance_2']}}</ion-select-option>
-              <ion-select-option value="1">{{lang.text['TodoDetail']['Importance_1']}}</ion-select-option>
-              <ion-select-option value="0">{{lang.text['TodoDetail']['Importance_0']}}</ion-select-option>
-            </ion-select>
           </ion-item>
           <ion-item button (click)="toggle_calendar()">
             <ion-label>{{lang.text['TodoDetail']['limit']}}</ion-label>
