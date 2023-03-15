@@ -351,7 +351,7 @@ export class AddTodoMenuPage implements OnInit {
   saveTagInfo() {
     // 원본 정보 대비했을 때 대비 가감처리
     let orig_data: string[] = this.received_data ? JSON.parse(this.received_data)['tags'] : [];
-    let input_data: string[] = JSON.parse(JSON.stringify(this.userInput.tags));
+    let input_data: string[] = this.userInput.tags ? JSON.parse(JSON.stringify(this.userInput.tags)) : [];
     let additive = [];
     let subtractive = [];
     orig_data.sort();
@@ -383,7 +383,7 @@ export class AddTodoMenuPage implements OnInit {
 
   /** 완료 또는 삭제시 이 할 일에 적용된 태그를 제거 */
   removeTagInfo() {
-    let input_data: string[] = JSON.parse(JSON.stringify(this.userInput.tags));
+    let input_data: string[] = this.userInput.tags ? JSON.parse(JSON.stringify(this.userInput.tags)) : [];
     input_data.forEach(removed_tag => {
       if (this.saved_tag_orig[removed_tag])
         this.saved_tag_orig[removed_tag] = this.saved_tag_orig[removed_tag] - 1;
