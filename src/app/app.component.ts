@@ -126,7 +126,7 @@ export class AppComponent {
               godot: global.godot.contentWindow || global.godot.contentDocument,
               data: props['data'],
             };
-            noti_id = 'todo';
+            noti_id = JSON.parse(props['data'])['id'];
             break;
           case 'NakamaReqContTitle': // 서버 진입 알림
             let this_server = nakama.servers[props.data.isOfficial][props.data.Target];

@@ -58,7 +58,7 @@ export class AddTodoMenuPage implements OnInit {
   userInput = {
     /** 해야할 일 아이디  
      * 로컬에서 생성하면 날짜시간 정보로 생성  
-     * 리모트에서 생성하면 'isOfficial/target/channel_id/msg_id' 로 생성됨
+     * 리모트에서 생성하면 'todo/isOfficial/target/channel_id/msg_id' 로 생성됨
      */
     id: undefined,
     /** 간략한 제목 설정 */
@@ -150,6 +150,7 @@ export class AddTodoMenuPage implements OnInit {
     if (this.userInput.logs.length) {
       this.userInput.logs.forEach(_log => _log.displayText = this.lang.text['TodoDetail'][_log.translateCode] || _log.translateCode);
     }
+    this.noti.Current = this.userInput.id;
     let date_limit = new Date(this.userInput.limit);
     this.Calendar.value = new Date(date_limit.getTime() - date_limit.getTimezoneOffset() * 60 * 1000).toISOString();
     this.limitDisplay = date_limit.toLocaleString(this.lang.lang);
@@ -625,6 +626,7 @@ export class AddTodoMenuPage implements OnInit {
     this.indexed.removeFileFromUserPath('todo/add_tmp.attach');
     if (this.ImageURL)
       URL.revokeObjectURL(this.ImageURL);
+    this.noti.Current = '';
     this.p5resize.remove();
     this.p5timer.remove();
   }

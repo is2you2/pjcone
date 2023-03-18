@@ -53,7 +53,7 @@ CameraPermissionDenied,카메라 권한을 얻지 못했습니다,Failed to get 
 Title,설정,Settings
 CommunityAds,커뮤니티 광고,Community Ads
 AdsContact,광고 문의,Ads Contact
-env_info,사용 환경 설정,Preferences
+env_info,사용 환경,Preferences
 myInfo,내 정보,My info
 takeOverUser,사용자 인계,User override
 ManageServer,서버 관리,Manage server
@@ -71,7 +71,7 @@ joinDedi_button,참여,Join
 admin_community_menu,커뮤니티 관리자 메뉴,Community manager menu
 admin_noti_all,전체 사용자 공지,All user notice
 notifications,알림,Notifications
-NotificationSetting,알림 설정,Notification settings
+NotificationSetting,알림,Notifications
 batteryOptimization,배터리 최적화 제외 설정,Battery Optimization Exclusion Settings
 ToolManage,도구 관리,Manage tools
 ToolList,도구 리스트,Tool list
