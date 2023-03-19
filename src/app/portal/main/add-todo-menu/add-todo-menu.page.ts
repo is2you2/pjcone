@@ -174,6 +174,12 @@ export class AddTodoMenuPage implements OnInit {
   /** 기록 리스트 켜고 끄기 */
   toggle_logs() {
     this.isLogsHidden = !this.isLogsHidden;
+    if (!this.isLogsHidden) {
+      let bottom_logs = document.getElementById('content');
+      setTimeout(() => {
+        bottom_logs.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
   }
 
   isLimitChangable = false;
