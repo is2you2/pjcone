@@ -233,7 +233,7 @@ ionViewWillEnter() {
 ### 커뮤니티 서버 포트
 - 12000: SingleAct_카운터
 - 12010: Exim4
-- 12011: Minichat 병합, 모바일 사설 그룹 서버
+- 12011: Minichat 병합, 모바일 사설 서버
 - 12012: sc1_custom 페이지
 - 12020: WebLink
 ### 모바일 사설 서버 포트
