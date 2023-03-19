@@ -69,7 +69,7 @@ quickQRshare,빠른 QR공유,Quick QR sharing
 joinDedi_placeholder,기본,Default
 joinDedi_button,참여,Join
 admin_community_menu,커뮤니티 관리자 메뉴,Community manager menu
-admin_noti_all,전체 사용자 공지,All user notice
+admin_noti_all,커뮤니티 전체 공지,Community notice
 notifications,알림,Notifications
 NotificationSetting,알림,Notifications
 batteryOptimization,배터리 최적화 제외 설정,Battery Optimization Exclusion Settings
