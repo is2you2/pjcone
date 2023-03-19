@@ -14,6 +14,11 @@ WriteContent,알림 내용 작성,Write content of notification
 SendNotification,전체 알림 발송,Send
 OnlyForAdmin,관리자 전용메뉴입니다,This is the admin menu
 CannotUseDataURL,데이터 URL은 사용할 수 없습니다.,You cannot use DataURL
+counter_now,실시간 정보,Real-time information
+counter_current,현재 동접,Current
+counter_maximum,동시 최대,Maximum
+counter_stack,누적,Stack
+counter_refresh,새로고침,Refresh count
 ## TodoDetail,,
 Title,해야할 일,Todo detail
 OnThisDevice,이 기기에서,On this device
@@ -81,6 +86,7 @@ joinDedi_placeholder,기본,Default
 joinDedi_button,참여,Join
 admin_community_menu,보조서버 관리자,Assistant server manager
 admin_noti_all,보조서버 전체 공지,Assistant server notice
+admin_req_counter,사용자 수 확인,Check the number of users
 notifications,알림,Notifications
 NotificationSetting,알림,Notifications
 batteryOptimization,배터리 최적화 제외 설정,Battery Optimization Exclusion Settings

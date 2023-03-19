@@ -117,6 +117,19 @@ func _received(id:int, _try_left:= 5):
 						}
 						send_to(administrator_pid, JSON.print(result).to_utf8())
 					return
+				{ 'act': 'req_count' }:
+					if id == administrator_pid:
+						var count_data = {
+							'assistant': JSON.print(counter),
+							'sc1_custom': JSON.print($SC1_custom.counter),
+							'minichat': JSON.print($MiniRanchat.counter),
+						}
+						var result = {
+							'act': 'req_count',
+							'data': JSON.print(count_data),
+						}
+						send_to(administrator_pid, JSON.print(result).to_utf8())
+					return
 				_: # 준비되지 않은 행동
 					Root.logging(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)
 		else: # 형식 오류

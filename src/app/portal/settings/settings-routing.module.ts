@@ -68,6 +68,10 @@ const routes: Routes = [
     path: 'noti-alert',
     loadChildren: () => import('./noti-alert/noti-alert.module').then( m => m.NotiAlertPageModule)
   },
+  {
+    path: 'req-counter',
+    loadChildren: () => import('./admin/req-counter/req-counter.module').then( m => m.ReqCounterPageModule)
+  },
 ];
 
 @NgModule({

@@ -1,0 +1,43 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{lang.text['Settings']['admin_req_counter']}}</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="portal/settings"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item-divider>
+    <ion-label>{{lang.text['Administrator']['counter_now']}}</ion-label>
+  </ion-item-divider>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col class="grid_form grid_title">#</ion-col>
+      <ion-col class="grid_form grid_title grid_title_top">{{lang.text['Administrator']['counter_current']}}</ion-col>
+      <ion-col class="grid_form grid_title grid_title_top">{{lang.text['Administrator']['counter_maximum']}}</ion-col>
+      <ion-col class="grid_form grid_title grid_title_top">{{lang.text['Administrator']['counter_stack']}}</ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col class="grid_form grid_title grid_title_left">Counter</ion-col>
+      <ion-col class="grid_form grid_content">{{calcs.assistant.current}}</ion-col>
+      <ion-col class="grid_form grid_content">{{calcs.assistant.maximum}}</ion-col>
+      <ion-col class="grid_form grid_content">{{calcs.assistant.stack}}</ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col class="grid_form grid_title grid_title_left">SC1_cus</ion-col>
+      <ion-col class="grid_form grid_content">{{calcs.sc1_custom.current}}</ion-col>
+      <ion-col class="grid_form grid_content">{{calcs.sc1_custom.maximum}}</ion-col>
+      <ion-col class="grid_form grid_content">{{calcs.sc1_custom.stack}}</ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col class="grid_form grid_title grid_title_left">Minichat</ion-col>
+      <ion-col class="grid_form grid_content">{{calcs.minichat.current}}</ion-col>
+      <ion-col class="grid_form grid_content">{{calcs.minichat.maximum}}</ion-col>
+      <ion-col class="grid_form grid_content">{{calcs.minichat.stack}}</ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-item button class="grid_form ion-text-center" (click)="refresh_count()">
+    <ion-label>{{lang.text['Administrator']['counter_refresh']}}</ion-label>
+  </ion-item>
+</ion-content>
