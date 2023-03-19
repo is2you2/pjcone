@@ -58,7 +58,7 @@ export class AppComponent {
     client.received['all_noti'] = (ev) => {
       noti.PushLocal({
         id: 2,
-        title: '커뮤니티 알림',
+        title: lang.text.Administrator['AssistServNoti'],
         body: ev['text'],
         smallIcon_ln: 'icon_mono',
         iconColor_ln: 'ffd94e',
@@ -70,8 +70,8 @@ export class AppComponent {
       client.is_admin = true;
       noti.PushLocal({
         id: 0,
-        title: '커뮤니티 관리자',
-        body: ev['text'],
+        title: lang.text['Administrator']['AdminNotiTitle'],
+        body: lang.text['Administrator'][ev['text']],
         smallIcon_ln: 'icon_mono',
         iconColor_ln: 'ffd94e',
         autoCancel_ln: true,

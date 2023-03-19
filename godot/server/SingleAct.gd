@@ -113,7 +113,7 @@ func _received(id:int, _try_left:= 5):
 					if is_admin and administrator_pid:
 						var result = {
 							'act': 'admin_noti',
-							'text': '관리자 기능을 사용합니다',
+							'text': 'CanUseAsAdmin',
 						}
 						send_to(administrator_pid, JSON.print(result).to_utf8())
 					return

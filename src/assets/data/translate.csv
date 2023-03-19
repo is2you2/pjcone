@@ -3,6 +3,17 @@
 Link,연결,Link
 Main,메인,Main
 Settings,설정,Settings
+## Administrator,,
+AdminNotiTitle,보조서버 관리자,Assistant server manager
+CanUseAsAdmin,관리자 기능을 사용합니다,Use admin features
+AssistServNoti,보조서버 알림,Assistant server notification
+AboutThisNotification,이 알림에 대해서,About this notice
+InputMessageInfo,발송 정보 입력,Enter shipping information
+CommunityNotification,보조서버 알림,Assistant server notifications
+WriteContent,알림 내용 작성,Write content of notification
+SendNotification,전체 알림 발송,Send
+OnlyForAdmin,관리자 전용메뉴입니다,This is the admin menu
+CannotUseDataURL,데이터 URL은 사용할 수 없습니다.,You cannot use DataURL
 ## TodoDetail,,
 Title,해야할 일,Todo detail
 OnThisDevice,이 기기에서,On this device
@@ -273,14 +284,6 @@ LoadingAddresses,이곳에 이 기기의 네트워크 주소가 보여집니다.
 NoAddress,연결된 네트워크가 없습니다.,No network connected.
 ## Translator,,
 TranslatorSpeaking,번역가의 한마디,A word from the translator
-## Administrator,,
-AboutThisNotification,이 알림에 대해서,About this notice
-InputMessageInfo,발송 정보 입력,Enter shipping information
-CommunityNotification,보조서버 알림,Assistant server notifications
-WriteContent,알림 내용 작성,Write content of notification
-SendNotification,전체 알림 발송,Send
-OnlyForAdmin,관리자 전용메뉴입니다,This is the admin menu
-CannotUseDataURL,데이터 URL은 사용할 수 없습니다.,You cannot use DataURL
 ## CreatorInfo,,
 creatorComment,제작자의 한마디,A word from the maker
 Ifyoulike,이 앱이 마음에 드신다면,If you like this app

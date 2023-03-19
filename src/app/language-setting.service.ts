@@ -38,6 +38,10 @@ export class LanguageSettingService {
       attachments: 'Attachments',
     },
     TodoDetail: {},
+    Administrator: {
+      AdminNotiTitle: 'Assistant server manager',
+      CanUseAsAdmin: 'Use admin features',
+    },
   };
 
   constructor(
