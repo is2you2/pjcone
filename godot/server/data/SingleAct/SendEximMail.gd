@@ -105,15 +105,17 @@ func _received(id:int, _try_left:= 5):
 
 
 func send_to(id:int, msg:PoolByteArray, _try_left:= 5):
-	var err:= server.get_peer(id).put_packet(msg)
-	if err != OK:
-		if _try_left > 0:
-			Root.logging(HEADER, str('send try left: ', _try_left))
-			yield(get_tree(), "idle_frame")
-			send_to(id, msg, _try_left - 1)
-		else:
-			Root.logging(HEADER, str('send try left out.'), Root.LOG_ERR)
-			server.disconnect_peer(id, 1011, 'send try left out.')
+	var is_exist:= server.get_peer(id)
+	if is_exist:
+		var err:= is_exist.put_packet(msg)
+		if err != OK:
+			if _try_left > 0:
+				Root.logging(HEADER, str('send try left: ', _try_left))
+				yield(get_tree(), "idle_frame")
+				send_to(id, msg, _try_left - 1)
+			else:
+				Root.logging(HEADER, str('send try left out.'), Root.LOG_ERR)
+				server.disconnect_peer(id, 1011, 'send try left out.')
 
 
 # 메일 발송하기

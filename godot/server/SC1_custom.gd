@@ -145,15 +145,17 @@ func _received(id:int, _try_left:= 5):
 
 # 특정 사용자에게 보내기
 func send_to(id:int, msg:PoolByteArray, _try_left:= 5):
-	var err:= server.get_peer(id).put_packet(msg)
-	if err != OK:
-		if _try_left > 0:
-			Root.logging(HEADER, str('send packet error with _try_left: ', _try_left))
-			yield(get_tree(), 'idle_frame')
-			send_to(id, msg, _try_left - 1)
-		else:
-			Root.logging(HEADER, str('send packet error and try left out.'), Root.LOG_ERR)
-			server.disconnect_peer(id, 1011, 'MainServer packet send try left out.')
+	var is_exist:= server.get_peer(id)
+	if is_exist:
+		var err:= is_exist.put_packet(msg)
+		if err != OK:
+			if _try_left > 0:
+				Root.logging(HEADER, str('send packet error with _try_left: ', _try_left))
+				yield(get_tree(), 'idle_frame')
+				send_to(id, msg, _try_left - 1)
+			else:
+				Root.logging(HEADER, str('send packet error and try left out.'), Root.LOG_ERR)
+				server.disconnect_peer(id, 1011, 'MainServer packet send try left out.')
 
 
 func _process(_delta):

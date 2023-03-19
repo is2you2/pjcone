@@ -135,13 +135,15 @@ func _received(id:int, _try_left:= 5):
 			server.disconnect_peer(id, 1011, 'Send try left out')
 
 func send_to(id:int, msg:PoolByteArray, _try_left:= 5):
-	var packet:= server.get_peer(id).put_packet(msg)
-	if packet != OK:
-		if _try_left > 0:
-			yield(get_tree().create_timer(1), "timeout")
-			send_to(id, msg, _try_left - 1)
-		else:
-			server.disconnect_peer(id, 1011, 'Send try left out')
+	var is_exist:= server.get_peer(id)
+	if is_exist:
+		var packet:= is_exist.put_packet(msg)
+		if packet != OK:
+			if _try_left > 0:
+				yield(get_tree().create_timer(1), "timeout")
+				send_to(id, msg, _try_left - 1)
+			else:
+				server.disconnect_peer(id, 1011, 'Send try left out')
 
 func _polling():
 	if server.is_listening():
