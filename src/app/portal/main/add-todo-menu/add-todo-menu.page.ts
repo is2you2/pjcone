@@ -488,6 +488,10 @@ export class AddTodoMenuPage implements OnInit {
     this.userInput.logs.forEach(log => {
       delete log.displayText;
     });
+    if (this.InputNewTag) {
+      this.InputNewTag = this.InputNewTag.trim();
+      this.userInput.tags.push(this.InputNewTag);
+    }
     // 들어올 때와 같은지 검토
     let exactly_same = JSON.stringify(this.userInput) == this.received_data;
     if (exactly_same) {
