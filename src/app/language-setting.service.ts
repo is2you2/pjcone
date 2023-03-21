@@ -22,9 +22,9 @@ export class LanguageSettingService {
     Settings: {},
     Profile: {},
     WscClient: {
-      Disconnected: 'Disconnected from community server.',
+      Disconnected: 'Disconnected from assistant server.',
       OnlineMode: 'Online mode',
-      OnlineMode_text: 'You can receive notification from community server.',
+      OnlineMode_text: 'You can receive notification from assistant server.',
       OfflineMode: 'Offline mode',
       OfflineMode_text: 'You can receive notification from local network.',
     },
