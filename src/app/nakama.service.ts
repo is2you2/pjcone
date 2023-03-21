@@ -607,6 +607,7 @@ export class NakamaService {
     // 통신 소켓 연결하기
     this.connect_to(_is_official, _target, () => {
       this.get_group_list(_is_official, _target);
+      this.redirect_channel(_is_official, _target);
       if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
       if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
       this.update_notifications(_is_official, _target);
@@ -1246,10 +1247,10 @@ export class NakamaService {
       this.servers[_is_official][_target].session,
       this.servers[_is_official][_target].session.user_id)
       .then(v => {
-        v.user_groups.forEach(user_group => {
+        v.user_groups.forEach(async user_group => {
           if (!this.groups[_is_official][_target][user_group.group.id]) { // 로컬에 없던 그룹은 이미지 확인
             this.groups[_is_official][_target][user_group.group.id] = {};
-            this.servers[_is_official][_target].client.readStorageObjects(
+            await this.servers[_is_official][_target].client.readStorageObjects(
               this.servers[_is_official][_target].session, {
               object_ids: [{
                 collection: 'group_public',
@@ -1266,7 +1267,6 @@ export class NakamaService {
           this.groups[_is_official][_target][user_group.group.id]
             = { ...this.groups[_is_official][_target][user_group.group.id], ...user_group.group };
           this.join_chat_with_modulation(user_group.group.id, 3, _is_official, _target, (_c) => {
-            this.redirect_channel(_is_official, _target);
             this.save_groups_with_less_info();
           });
         });
