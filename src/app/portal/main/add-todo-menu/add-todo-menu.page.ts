@@ -490,7 +490,8 @@ export class AddTodoMenuPage implements OnInit {
     });
     if (this.InputNewTag) {
       this.InputNewTag = this.InputNewTag.trim();
-      this.userInput.tags.push(this.InputNewTag);
+      if (!this.userInput.tags.includes(this.InputNewTag))
+        this.userInput.tags.push(this.InputNewTag);
     }
     // 들어올 때와 같은지 검토
     let exactly_same = JSON.stringify(this.userInput) == this.received_data;
