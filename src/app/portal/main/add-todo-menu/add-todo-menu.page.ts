@@ -58,9 +58,11 @@ export class AddTodoMenuPage implements OnInit {
   userInput = {
     /** 해야할 일 아이디  
      * 로컬에서 생성하면 날짜시간 정보로 생성  
-     * 리모트에서 생성하면 'todo/isOfficial/target/channel_id/msg_id' 로 생성됨
+     * 리모트에서 생성하면 'isOfficial/target (/channel_id/msg_id)' 로 생성됨
      */
     id: undefined,
+    /** 저장소 명시 */
+    storeAt: 'local',
     /** 간략한 제목 설정 */
     title: undefined,
     /** 최초 생성날짜 */
@@ -290,7 +292,14 @@ export class AddTodoMenuPage implements OnInit {
   select_attach_image() {
     document.getElementById('file_sel').click();
   }
-
+  @ViewChild('StoreAt') StoreAt: any;
+  StoreAtSelClicked() {
+    this.StoreAt.open();
+  }
+  /** 중요도 변경됨 */
+  StoreAtSelChanged(ev: any) {
+    console.log('StoreAtSelChanged:', ev.detail.value);
+  }
   @ViewChild('ImporantSel') ImporantSel: any;
   ImporantSelClicked() {
     this.ImporantSel.open();
