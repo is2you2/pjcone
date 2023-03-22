@@ -18,25 +18,30 @@ SPDX-License-Identifier: MIT -->
         <div id="main_div" class="main">
           <ion-item *ngIf="!isModify" (click)="StoreAtSelClicked()">
             <ion-label>{{lang.text['TodoDetail']['StoreAt']}}</ion-label>
-            <ion-select #StoreAt style="pointer-events: none;" [value]="userInput.storeAt"
-              (ionChange)="StoreAtSelChanged($event)">
+            <ion-select #StoreAt style="pointer-events: none;" (ionChange)="StoreAtSelChanged($event)">
               <ion-select-option value="local">{{lang.text['TodoDetail']['OnThisDevice']}}</ion-select-option>
+              <ion-select-option *ngFor="let target of AvailableStorageList;" [value]="target">{{target.name}}
+              </ion-select-option>
             </ion-select>
           </ion-item>
           <div *ngIf="isModify">
             <ion-item>
-              <ion-label color="medium">{{lang.text['TodoDetail']['OnThisDevice']}}</ion-label>
-              <ion-label color="medium" class="ion-text-right">{{lang.text['TodoDetail']['WrittenByMe']}}</ion-label>
+              <ion-label color="medium">{{userInput.display_store}}</ion-label>
+              <ion-label color="medium" class="ion-text-right">{{userInput.display_creator}}</ion-label>
+            </ion-item>
+            <ion-item *ngIf="userInput.remote && userInput.remote.channel_id">
+              <ion-label color="medium">{{lang.text['TodoDetail']['ManagerIs']}}</ion-label>
+              <ion-label color="medium" class="ion-text-right">{{userInput.display_manager}}</ion-label>
             </ion-item>
             <ion-grid fixed>
               <ion-row>
                 <ion-col col-33>
-                  <ion-item button color="success" (click)="doneTodo()">
+                  <ion-item button color="success" [disabled]="!isModifiable" (click)="doneTodo()">
                     <ion-label class="ion-text-center">{{lang.text['TodoDetail']['TodoComplete']}}</ion-label>
                   </ion-item>
                 </ion-col>
                 <ion-col col-33>
-                  <ion-item button color="warning" disabled (click)="moveTodo()">
+                  <ion-item button color="warning" [disabled]="!isModifiable || !userInput.remote || !userInput.remote.channel_id" (click)="moveTodo()">
                     <ion-label class="ion-text-center">{{lang.text['TodoDetail']['TodoMoveTo']}}</ion-label>
                   </ion-item>
                 </ion-col>
@@ -120,12 +125,12 @@ SPDX-License-Identifier: MIT -->
           <table id="bottom_buttons" style="width: 100%; background-color: black;">
             <tr>
               <td>
-                <ion-button [disabled]="isButtonClicked" (click)="saveData()" expand="block">
+                <ion-button [disabled]="!isModifiable || isButtonClicked" (click)="saveData()" expand="block">
                   {{buttonDisplay.saveTodo}}
                 </ion-button>
               </td>
               <td *ngIf="isModify">
-                <ion-button color="danger" [disabled]="isButtonClicked" (click)="deleteData()" expand="block">
+                <ion-button color="danger" [disabled]="!isModifiable || isButtonClicked" (click)="deleteData()" expand="block">
                   {{lang.text['TodoDetail']['remove']}}
                 </ion-button>
               </td>

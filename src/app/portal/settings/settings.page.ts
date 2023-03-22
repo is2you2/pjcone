@@ -178,87 +178,8 @@ export class SettingsPage implements OnInit {
     if (this.nakama.users.self['online'])
       this.profile_filter = "filter: grayscale(0) contrast(1);";
     else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
-    this.load_groups();
+    this.groups = this.nakama.rearrange_group_list();
     document.addEventListener('ionBackButton', this.EventListenerAct);
-  }
-  /** 저장된 그룹 업데이트하여 반영 */
-  load_groups() {
-    let tmp_groups = this.nakama.rearrange_group_list();
-    tmp_groups.forEach(async group => {
-      let _is_official = group['server']['isOfficial'];
-      let _target = group['server']['target'];
-      // 온라인이라면 서버정보로 덮어쓰기
-      if (this.statusBar.groupServer[_is_official][_target] == 'online') {
-        if (this.nakama.groups[_is_official][_target][group.id]['status'] != 'missing')
-          await this.nakama.servers[_is_official][_target].client.listGroupUsers(
-            this.nakama.servers[_is_official][_target].session, group['id']
-          ).then(v => { // 삭제된 그룹 여부 검토
-            if (!v.group_users.length) { // 그룹 비활성중
-              this.nakama.groups[_is_official][_target][group.id]['status'] = 'missing';
-              this.nakama.channels_orig[_is_official][_target][group['channel_id']]['status'] = 'missing';
-              this.nakama.save_channels_with_less_info();
-            } else { // 그룹 활성중
-              let am_i_lost = true;
-              for (let i = 0, j = v.group_users.length; i < j; i++)
-                if (v.group_users[i].user.id == this.nakama.servers[_is_official][_target].session.user_id) {
-                  switch (v.group_users[i].state) {
-                    case 0: // superadmin
-                    case 1: // admin
-                    case 2: // member
-                      this.nakama.groups[_is_official][_target][group.id]['status'] = 'online';
-                      break;
-                    case 3: // request
-                      this.nakama.groups[_is_official][_target][group.id]['status'] = 'pending';
-                      break;
-                    default:
-                      console.warn('이해할 수 없는 코드 반환: ', v.group_users[i].state);
-                      this.nakama.groups[_is_official][_target][group.id]['status'] = 'missing';
-                      break;
-                  }
-                  am_i_lost = false;
-                  v.group_users[i]['is_me'] = true;
-                  break;
-                }
-              if (am_i_lost) { // 그룹은 있으나 구성원은 아님
-                this.nakama.groups[_is_official][_target][group.id]['status'] = 'missing';
-                if (group['channel_id']) // 그룹 수락이 안되어있는 경우
-                  this.nakama.channels_orig[_is_official][_target][group['channel_id']]['status'] = 'missing';
-                this.nakama.save_channels_with_less_info();
-              }
-            }
-            if (v.group_users.length)
-              group['users'] = v.group_users;
-            v.group_users.forEach(async User => {
-              if (User['is_me'])
-                User['user'] = this.nakama.users.self;
-              else {
-                if (this.nakama.load_other_user(User['user'].id, _is_official, _target)['avatar_url'] != User['user'].avatar_url
-                  || !this.nakama.load_other_user(User['user'].id, _is_official, _target)['img'])
-                  await this.nakama.servers[_is_official][_target].client.readStorageObjects(
-                    this.nakama.servers[_is_official][_target].session, {
-                    object_ids: [{
-                      collection: 'user_public',
-                      key: 'profile_image',
-                      user_id: User['user']['id'],
-                    }],
-                  }).then(v => {
-                    if (v.objects.length)
-                      User['user']['img'] = v.objects[0].value['img'];
-                    this.nakama.save_other_user(User['user'], _is_official, _target);
-                  }).catch(_e => {
-                    if (User['user']['img']) {
-                      delete User['user']['img'];
-                      this.nakama.save_other_user(User['user'], _is_official, _target);
-                    }
-                  });
-                else this.nakama.save_other_user(User['user'], _is_official, _target);
-              }
-            });
-            this.nakama.save_groups_with_less_info();
-          });
-      }
-    });
-    this.groups = tmp_groups;
   }
   /** 채팅방 이중진입 방지용 */
   will_enter = false;
@@ -304,7 +225,7 @@ export class SettingsPage implements OnInit {
       }).then(v => {
         v.onWillDismiss().then(() => {
           this.nakama.socket_reactive['settings'] = this;
-          this.load_groups();
+          this.groups = this.nakama.rearrange_group_list();
         });
         v.present();
         this.lock_modal_open = false;

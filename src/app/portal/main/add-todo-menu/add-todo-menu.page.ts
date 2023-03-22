@@ -13,6 +13,7 @@ import { NakamaService } from 'src/app/nakama.service';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
+import { StatusManageService } from 'src/app/status-manage.service';
 
 interface LogForm {
   /** 이 로그를 발생시킨 사람, 리모트인 경우에만 넣기, 로컬일 경우 비워두기 */
@@ -25,12 +26,18 @@ interface LogForm {
   displayText?: string;
 }
 
-/** 서버에서 채널로 생성한 경우 */
+/** 서버에서 생성한 경우 */
 interface RemoteInfo {
+  creator_id?: string;
+  name?: string;
+  /** 공유될 때 수신자의 정보에 맞게 재구성되어야 함 */
   isOfficial?: string;
+  /** 공유될 때 수신자의 정보에 맞게 재구성되어야 함 */
   target?: string;
+  group_id?: string;
   channel_id?: string;
-  sender_id?: string;
+  message_id?: string;
+  type?: string;
 }
 
 @Component({
@@ -52,22 +59,28 @@ export class AddTodoMenuPage implements OnInit {
     private alertCtrl: AlertController,
     private noti: LocalNotiService,
     private global: GlobalActService,
+    private statusBar: StatusManageService,
   ) { }
 
   /** 작성된 내용 */
   userInput = {
     /** 해야할 일 아이디  
      * 로컬에서 생성하면 날짜시간 정보로 생성  
-     * 리모트에서 생성하면 'isOfficial/target (/channel_id/msg_id)' 로 생성됨
+     * 리모트에서 생성하면 'isOfficial_target ( _channel_id_message_id )' 로 생성됨  
+     * 그룹에서 공유된 정보는 메시지id를 수신받은 후 메시지id까지 포함하여 생성
      */
     id: undefined,
-    /** 저장소 명시 */
+    /** 저장소 명시  
+     * 구분자: local, isOfficial_target (server), isOfficial_target_group_id (group)
+     */
     storeAt: 'local',
+    /** 사용자에게 보여지는 저장소 정보 */
+    display_store: '',
     /** 간략한 제목 설정 */
     title: undefined,
     /** 최초 생성날짜 */
     create_at: undefined,
-    /** 작성일시 */
+    /** 마지막 수정 일시 */
     written: undefined,
     /** 기한 */
     limit: undefined,
@@ -79,16 +92,20 @@ export class AddTodoMenuPage implements OnInit {
     logs: [] as LogForm[],
     /** 상세 내용 */
     description: undefined,
-    /** remote 정보인 경우 서버, 채널, 작성자 정보 포함됨  
-     * keys: isOfficial, target, channel_id, sender_id
-     */
+    /** 서버에 저장된 경우 필요한 정보를 기입 */
     remote: undefined as RemoteInfo,
+    /** 제작자 표시명 */
+    display_creator: undefined,
     /** 첨부 이미지 정보 */
     attach: {},
     /** 이 업무는 완료되었습니다, 완료 후에도 변경될 수 있음 */
     done: undefined,
-    /** 관할 업무 여부 */
-    is_me: undefined,
+    /** 책임자 id  
+     * remote 정보인 경우 uid, local 정보인 경우 이 정보를 무시 (undefined 로 변경)
+     */
+    manager: undefined,
+    /** 보여지는 책임자 이름 */
+    display_manager: undefined,
     /** 업무 집중 여부 */
     is_focus: undefined,
     /** 알림 아이디 저장 */
@@ -113,6 +130,40 @@ export class AddTodoMenuPage implements OnInit {
           this.needInputNewTagName = false;
       }
     });
+    // 저장소로 사용 가능한 서버와 그룹 수집
+    let servers: RemoteInfo[] = [];
+    let groups: RemoteInfo[] = [];
+    let isOfficial = Object.keys(this.nakama.servers);
+    isOfficial.forEach(_is_official => {
+      let Target = Object.keys(this.nakama.servers[_is_official]);
+      Target.forEach(_target => { // 온라인 그룹만 수집
+        if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+          let serverInfo: RemoteInfo = {
+            name: `${this.nakama.servers[_is_official][_target].info.name} (${this.lang.text['TodoDetail']['Server']})`,
+            isOfficial: _is_official,
+            target: _target,
+            type: `${_is_official}/${_target}`,
+          }
+          servers.push(serverInfo);
+          let GroupId = Object.keys(this.nakama.groups[_is_official][_target]);
+          GroupId.forEach(_gid => {
+            let groupInfo: RemoteInfo = {
+              name: `${this.nakama.groups[_is_official][_target][_gid]['name']} (${this.lang.text['TodoDetail']['Group']})`,
+              isOfficial: _is_official,
+              target: _target,
+              group_id: _gid,
+              channel_id: this.nakama.groups[_is_official][_target][_gid]['channel_id'],
+              type: `${_is_official}/${_target}/${_gid}`,
+            };
+            groups.push(groupInfo);
+          });
+        }
+      });
+    });
+    let merge = [...servers, ...groups];
+    merge.forEach(info => {
+      this.AvailableStorageList.push(info);
+    });
   }
 
   /** 하단에 보여지는 버튼 */
@@ -121,9 +172,11 @@ export class AddTodoMenuPage implements OnInit {
   }
 
   /** 이 할 일을 내가 만들었는지 */
-  isOwner = true;
+  AmICreator = true;
   /** 기존 할 일을 보러 온 것인지 */
   isModify = false;
+  /** 로컬/원격 상태에 따른 수정 가능 여부 */
+  isModifiable = true;
   received_data: string;
   ionViewWillEnter() {
     // 미리 지정된 데이터 정보가 있는지 검토
@@ -144,9 +197,24 @@ export class AddTodoMenuPage implements OnInit {
           URL.revokeObjectURL(this.ImageURL);
         this.ImageURL = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(b));
       });
-    // 수정 가능 여부 검토
-    if (this.userInput['remote']) {
-      this.isOwner = false;
+    // 저장소 표기 적용
+    if (this.userInput.storeAt == 'local') {
+      this.StoreAt.value = this.userInput.storeAt;
+      this.userInput.display_store = this.lang.text['TodoDetail']['OnThisDevice'];
+      this.userInput.display_creator = this.lang.text['TodoDetail']['WrittenByMe'];
+      this.userInput.display_manager = this.lang.text['TodoDetail']['WrittenByMe'];
+    } else if (this.userInput.remote) {
+      this.StoreAt.value = this.userInput.remote;
+      this.StoreAt.placeholder = this.userInput.remote.name;
+      this.userInput.display_store = this.userInput.remote.name;
+      this.AmICreator =
+        this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id == this.userInput.remote.creator_id;
+      this.userInput.display_creator = this.AmICreator ? this.lang.text['TodoDetail']['WrittenByMe'] : this.nakama.load_other_user(this.userInput.remote.creator_id, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
+      let AmIManager = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id == this.userInput.manager;
+      this.userInput.display_manager = AmIManager ? this.nakama.users.self['display_name'] : this.nakama.load_other_user(this.userInput.manager, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
+      if (this.userInput.remote.group_id) {
+        this.isModifiable = this.nakama.groups[this.userInput.remote.isOfficial][this.userInput.remote.target][this.userInput.remote.group_id]['status'] == 'online';
+      } else this.isModifiable = this.statusBar.groupServer[this.userInput.remote.isOfficial][this.userInput.remote.target] == 'online';
     }
     // 로그 정보 게시
     if (this.userInput.logs.length) {
@@ -292,13 +360,22 @@ export class AddTodoMenuPage implements OnInit {
   select_attach_image() {
     document.getElementById('file_sel').click();
   }
+  AvailableStorageList: RemoteInfo[] = [];
   @ViewChild('StoreAt') StoreAt: any;
   StoreAtSelClicked() {
     this.StoreAt.open();
   }
   /** 중요도 변경됨 */
   StoreAtSelChanged(ev: any) {
-    console.log('StoreAtSelChanged:', ev.detail.value);
+    let value: RemoteInfo = ev.detail.value;
+    if (value == 'local') {
+      this.userInput.storeAt = 'local';
+      this.userInput.remote = undefined;
+      this.userInput.manager = undefined;
+    } else {
+      this.userInput.storeAt = value.type;
+      this.userInput.remote = value;
+    }
   }
   @ViewChild('ImporantSel') ImporantSel: any;
   ImporantSelClicked() {
@@ -445,6 +522,7 @@ export class AddTodoMenuPage implements OnInit {
   /** 이 일을 완료했습니다 */
   doneTodo() {
     this.userInput.done = true;
+    // done.todo 를 생성한 후 기록을 남기는 방식
     // if (this.userInput.noti_id)
     //   if (isPlatform == 'DesktopPWA') {
     //     clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
@@ -457,34 +535,23 @@ export class AddTodoMenuPage implements OnInit {
     //   });
     // else { // 메모는 이펙트만 생성하고 삭제
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
-    this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, (v) => {
-      v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-      if (this.userInput.noti_id)
-        if (isPlatform == 'DesktopPWA') {
-          clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
-          delete this.nakama.web_noti_id[this.userInput.noti_id];
-        }
-      this.noti.ClearNoti(this.userInput.noti_id);
-      this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
-      this.removeTagInfo();
-      this.modalCtrl.dismiss();
-    });
+    this.deleteFromStorage();
     // }
   }
 
   /** 다른 사람에게 일을 부탁합니다 */
   moveTodo() {
-    console.warn('업무 이관 행동 필요, is_me 활용');
+    console.warn('업무 이관 행동 필요');
   }
 
   /** 이 일을 집중적으로 하고 있음을 알립니다 */
   focusTodo() {
-    console.warn('업무 집중 행동 필요, is_focus 활용');
+    console.warn('업무 집중 행동 필요... 집중 말고 다른게 필요');
   }
 
   isButtonClicked = false;
   /** 이 해야할 일 정보를 저장 */
-  saveData() {
+  async saveData() {
     if (!this.userInput.title) {
       this.p5toast.show({
         text: this.lang.text['TodoDetail']['needDisplayName'],
@@ -494,13 +561,18 @@ export class AddTodoMenuPage implements OnInit {
     this.isButtonClicked = true;
     let copy_img = this.userInput.attach['img'];
     delete this.userInput.attach['img'];
+    delete this.userInput.display_store;
+    delete this.userInput.display_manager;
+    delete this.userInput.display_creator;
+    delete this.userInput.remote.name;
     this.userInput.logs.forEach(log => {
       delete log.displayText;
     });
-    if (this.InputNewTag) {
-      this.InputNewTag = this.InputNewTag.trim();
-      if (!this.userInput.tags.includes(this.InputNewTag))
-        this.userInput.tags.push(this.InputNewTag);
+    // 새 태그구성이 완료된 경우
+    let trim_tag = this.InputNewTag.trim();
+    if (trim_tag) {
+      if (!this.userInput.tags.includes(trim_tag))
+        this.userInput.tags.push(trim_tag);
     }
     // 들어올 때와 같은지 검토
     let exactly_same = JSON.stringify(this.userInput) == this.received_data;
@@ -510,8 +582,16 @@ export class AddTodoMenuPage implements OnInit {
     } // ^ 같으면 저장 동작을 하지 않음
     if (!this.userInput.create_at) // 생성 날짜 기록
       this.userInput.create_at = new Date().getTime();
-    if (!this.userInput.id) // 할 일 구분자 생성 (내 기록은 날짜시간, 그룹채널 기록은 채널-메시지 경로: isOfficial/target/channel_id/msg_id)
-      this.userInput.id = new Date(this.userInput.create_at).toISOString().replace(/[:|.]/g, '_');
+    if (!this.userInput.id) { // 할 일 구분자 생성 (내 기록은 날짜시간, 서버는 서버-시간 (isOfficial/target/DateTime),
+      //그룹채널 기록은 채널-메시지: isOfficial/target/channel_id/msg_id)
+      if (!this.userInput.remote) // local
+        this.userInput.id = new Date(this.userInput.create_at).toISOString().replace(/[:|.]/g, '_');
+      else if (!this.userInput.remote.channel_id) // server
+        this.userInput.id = `${this.userInput.remote.isOfficial}_${this.userInput.remote.target}_${new Date(this.userInput.create_at).toISOString().replace(/[:|.]/g, '_')}`;
+      else {// group
+        this.userInput.id = `${this.userInput.remote.isOfficial}_${this.userInput.remote.target}_${this.userInput.remote.channel_id}_${this.userInput.remote.message_id}`;
+      }
+    }
     if (this.userInput.noti_id) {  // 알림 아이디가 있다면 삭제 후 재배정
       if (isPlatform == 'DesktopPWA') {
         clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
@@ -605,12 +685,47 @@ export class AddTodoMenuPage implements OnInit {
       createTime: new Date().getTime(),
       translateCode: this.isModify ? 'ModifyTodo' : 'CreateTodo',
     });
-    if (this.isModify && this.isImageRemoved) {
-      this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/${this.isImageRemoved}`);
-      this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/thumbnail.png`);
+    if (this.isModify) {
+      if (this.isImageRemoved) { // 이미지가 삭제된 경우, 파일 삭제
+        this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/${this.isImageRemoved}`);
+        this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/thumbnail.png`);
+      }
+    } else { // 새로 만들기
+      if (this.userInput.remote && !this.userInput.remote.creator_id) { // 원격 생성이면서 최초 생성
+        this.userInput.remote.creator_id = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id;
+        this.userInput.manager = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id;
+      }
     }
     this.isLogsHidden = true;
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
+    if (this.userInput.remote) {
+      let request = {};
+      if (this.userInput.remote.channel_id) {
+        request = {
+          collection: 'group_todo',
+          key: this.userInput.id,
+          permission_read: 2,
+          permission_write: 2,
+          value: this.userInput,
+        };
+      } else {
+        request = {
+          collection: 'server_todo',
+          key: this.userInput.id,
+          permission_read: 1,
+          permission_write: 1,
+          value: this.userInput,
+        };
+      }
+      try {
+        await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
+          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]);
+      } catch (e) {
+        console.error('해야할 일이 서버에 전송되지 않음: ', e);
+        this.modalCtrl.dismiss();
+        return;
+      }
+    }
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
       this.saveTagInfo();
       this.modalCtrl.dismiss();
@@ -625,21 +740,50 @@ export class AddTodoMenuPage implements OnInit {
       buttons: [{
         text: this.lang.text['TodoDetail']['remove'],
         handler: () => {
-          this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, (v) => {
-            v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-            if (this.userInput.noti_id)
-              if (isPlatform == 'DesktopPWA') {
-                clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
-                delete this.nakama.web_noti_id[this.userInput.noti_id];
-              }
-            this.noti.ClearNoti(this.userInput.noti_id);
-            this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
-            this.removeTagInfo();
-            this.modalCtrl.dismiss();
-          });
+          this.deleteFromStorage();
         },
       }]
     }).then(v => v.present());
+  }
+
+  /** 저장소로부터 데이터를 삭제하는 명령 모음 */
+  async deleteFromStorage() {
+    if (this.userInput.remote) {
+      let request = {};
+      if (this.userInput.remote.channel_id) {
+        request = {
+          collection: 'group_todo',
+          key: this.userInput.id,
+        };
+      } else {
+        request = {
+          collection: 'server_todo',
+          key: this.userInput.id,
+        };
+      }
+      try {
+        await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.deleteStorageObjects(
+          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, {
+          object_ids: [request],
+        });
+      } catch (e) {
+        console.error('해야할 일 삭제 요청이 서버에 전송되지 않음: ', e);
+        this.modalCtrl.dismiss();
+        return;
+      }
+    }
+    this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, (v) => {
+      v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+      if (this.userInput.noti_id)
+        if (isPlatform == 'DesktopPWA') {
+          clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
+          delete this.nakama.web_noti_id[this.userInput.noti_id];
+        }
+      this.noti.ClearNoti(this.userInput.noti_id);
+      this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
+      this.removeTagInfo();
+      this.modalCtrl.dismiss();
+    });
   }
 
   ionViewWillLeave() {

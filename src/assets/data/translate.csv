@@ -21,9 +21,12 @@ counter_stack,누적,Stack
 counter_refresh,새로고침,Refresh count
 ## TodoDetail,,
 Title,해야할 일,Todo detail
-StoreAt,저장 위치,Storage location
+Server,서버,Server
+Group,그룹,Group
+StoreAt,저장 위치,Save to
 OnThisDevice,이 기기에서,On this device
 WrittenByMe,내가 작성,Written by me
+ManagerIs,책임자,Manager
 TodoComplete,완료,Done
 TodoMoveTo,이관,Move
 TodoFocus,집중,Focus

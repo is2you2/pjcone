@@ -604,13 +604,92 @@ export class NakamaService {
       });
     // 서버에서 나와 연관있는 모든 사용자 정보 읽어오기
     this.server_user_info_update(_is_official, _target);
+    this.load_groups(_is_official, _target);
     // 통신 소켓 연결하기
     this.connect_to(_is_official, _target, () => {
-      this.get_group_list(_is_official, _target);
+      this.get_group_list_from_server(_is_official, _target);
       this.redirect_channel(_is_official, _target);
       if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
       if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
       this.update_notifications(_is_official, _target);
+    });
+  }
+
+  /** 저장된 그룹 업데이트하여 반영 */
+  load_groups(_is_official: string, _target: string) {
+    let tmp_groups = Object.keys(this.groups[_is_official][_target]);
+    tmp_groups.forEach(async _gid => {
+      // 온라인이라면 서버정보로 덮어쓰기
+      let channel_id = this.groups[_is_official][_target][_gid]['channel_id'];
+      if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+        if (this.groups[_is_official][_target][_gid]['status'] != 'missing')
+          await this.servers[_is_official][_target].client.listGroupUsers(
+            this.servers[_is_official][_target].session, _gid
+          ).then(v => { // 삭제된 그룹 여부 검토
+            if (!v.group_users.length) { // 그룹 비활성중
+              this.groups[_is_official][_target][_gid]['status'] = 'missing';
+              this.channels_orig[_is_official][_target][channel_id]['status'] = 'missing';
+              this.save_channels_with_less_info();
+            } else { // 그룹 활성중
+              let am_i_lost = true;
+              for (let i = 0, j = v.group_users.length; i < j; i++)
+                if (v.group_users[i].user.id == this.servers[_is_official][_target].session.user_id) {
+                  switch (v.group_users[i].state) {
+                    case 0: // superadmin
+                    case 1: // admin
+                    case 2: // member
+                      this.groups[_is_official][_target][_gid]['status'] = 'online';
+                      break;
+                    case 3: // request
+                      this.groups[_is_official][_target][_gid]['status'] = 'pending';
+                      break;
+                    default:
+                      console.warn('이해할 수 없는 코드 반환: ', v.group_users[i].state);
+                      this.groups[_is_official][_target][_gid]['status'] = 'missing';
+                      break;
+                  }
+                  am_i_lost = false;
+                  v.group_users[i]['is_me'] = true;
+                  break;
+                }
+              if (am_i_lost) { // 그룹은 있으나 구성원은 아님
+                this.groups[_is_official][_target][_gid]['status'] = 'missing';
+                if (channel_id) // 그룹 수락이 안되어있는 경우
+                  this.channels_orig[_is_official][_target][channel_id]['status'] = 'missing';
+                this.save_channels_with_less_info();
+              }
+            }
+            if (v.group_users.length)
+              this.groups[_is_official][_target][_gid]['users'] = v.group_users;
+            v.group_users.forEach(async User => {
+              if (User['is_me'])
+                User['user'] = this.users.self;
+              else {
+                if (this.load_other_user(User['user'].id, _is_official, _target)['avatar_url'] != User['user'].avatar_url
+                  || !this.load_other_user(User['user'].id, _is_official, _target)['img'])
+                  await this.servers[_is_official][_target].client.readStorageObjects(
+                    this.servers[_is_official][_target].session, {
+                    object_ids: [{
+                      collection: 'user_public',
+                      key: 'profile_image',
+                      user_id: User['user']['id'],
+                    }],
+                  }).then(v => {
+                    if (v.objects.length)
+                      User['user']['img'] = v.objects[0].value['img'];
+                    this.save_other_user(User['user'], _is_official, _target);
+                  }).catch(_e => {
+                    if (User['user']['img']) {
+                      delete User['user']['img'];
+                      this.save_other_user(User['user'], _is_official, _target);
+                    }
+                  });
+                else this.save_other_user(User['user'], _is_official, _target);
+              }
+            });
+            this.save_groups_with_less_info();
+          });
+      }
     });
   }
 
@@ -1239,8 +1318,10 @@ export class NakamaService {
     }
   }
 
-  /** 연결된 서버에서 자신이 참여한 그룹을 리모트에서 가져오기 */
-  get_group_list(_is_official: string, _target: string) {
+  /** 연결된 서버에서 자신이 참여한 그룹을 리모트에서 가져오기  
+   * ***돌려주는 값이 없는 nakama.initialize 단계 함수, 사용하지 말 것**
+   */
+  get_group_list_from_server(_is_official: string, _target: string) {
     if (!this.groups[_is_official]) this.groups[_is_official] = {};
     if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
     this.servers[_is_official][_target].client.listUserGroups(
