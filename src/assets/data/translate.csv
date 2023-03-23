@@ -35,6 +35,7 @@ DisplayName_placeholder,짧게,briefly
 Tag,태그,Tag
 SelectTag,태그 지정,Select tag
 NewTagName,새 태그 이름,New tag name
+CanAddToServer,서버 저장에 실패했습니다,Server save failed
 CreateTag,추가,Add
 NewTag,새 태그,New tag
 Importance,중요도,Importance

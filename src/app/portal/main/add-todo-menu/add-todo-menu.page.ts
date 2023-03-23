@@ -582,7 +582,7 @@ export class AddTodoMenuPage implements OnInit {
     } // ^ 같으면 저장 동작을 하지 않음
     if (!this.userInput.create_at) // 생성 날짜 기록
       this.userInput.create_at = new Date().getTime();
-    if (!this.userInput.id) { // 할 일 구분자 생성 (내 기록은 날짜시간, 서버는 서버-시간 (isOfficial/target/DateTime),
+    if (!this.userInput.id || !this.isModify) { // 할 일 구분자 생성 (내 기록은 날짜시간, 서버는 서버-시간 (isOfficial/target/DateTime),
       //그룹채널 기록은 채널-메시지: isOfficial/target/channel_id/msg_id)
       if (!this.userInput.remote) // local
         this.userInput.id = new Date(this.userInput.create_at).toISOString().replace(/[:|.]/g, '_');
@@ -592,6 +592,38 @@ export class AddTodoMenuPage implements OnInit {
         this.userInput.id = `${this.userInput.remote.isOfficial}_${this.userInput.remote.target}_${this.userInput.remote.channel_id}_${this.userInput.remote.message_id}`;
       }
     }
+    if (this.userInput.remote) {
+      let request = {};
+      if (this.userInput.remote.channel_id) {
+        request = {
+          collection: 'group_todo',
+          key: this.userInput.id,
+          permission_read: 2,
+          permission_write: 2,
+          value: this.userInput,
+        };
+      } else {
+        request = {
+          collection: 'server_todo',
+          key: this.userInput.id,
+          permission_read: 1,
+          permission_write: 1,
+          value: this.userInput,
+        };
+      }
+      try {
+        await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
+          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]);
+      } catch (e) {
+        console.error('해야할 일이 서버에 전송되지 않음: ', e);
+        this.p5toast.show({
+          text: this.lang.text['TodoDetail']['CanAddToServer'],
+        });
+        this.isButtonClicked = false;
+        return;
+      }
+    }
+    // 알림 예약 생성
     if (this.userInput.noti_id) {  // 알림 아이디가 있다면 삭제 후 재배정
       if (isPlatform == 'DesktopPWA') {
         clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
@@ -600,7 +632,6 @@ export class AddTodoMenuPage implements OnInit {
       this.noti.ClearNoti(this.userInput.noti_id);
     } // 알림 아이디가 없다면 새로 배정
     this.userInput.noti_id = this.nakama.get_noti_id();
-    // 알림 예약 생성
     if (isPlatform == 'DesktopPWA') { // 웹은 예약 발송이 없으므로 지금부터 수를 세야함
       let schedule = setTimeout(() => {
         this.noti.PushLocal({
@@ -698,34 +729,6 @@ export class AddTodoMenuPage implements OnInit {
     }
     this.isLogsHidden = true;
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
-    if (this.userInput.remote) {
-      let request = {};
-      if (this.userInput.remote.channel_id) {
-        request = {
-          collection: 'group_todo',
-          key: this.userInput.id,
-          permission_read: 2,
-          permission_write: 2,
-          value: this.userInput,
-        };
-      } else {
-        request = {
-          collection: 'server_todo',
-          key: this.userInput.id,
-          permission_read: 1,
-          permission_write: 1,
-          value: this.userInput,
-        };
-      }
-      try {
-        await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
-          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]);
-      } catch (e) {
-        console.error('해야할 일이 서버에 전송되지 않음: ', e);
-        this.modalCtrl.dismiss();
-        return;
-      }
-    }
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
       this.saveTagInfo();
       this.modalCtrl.dismiss();
