@@ -78,6 +78,7 @@ export class ChatRoomPage implements OnInit {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
       if (this.nakama.channel_transfer[this.isOfficial][this.target] && this.nakama.channel_transfer[this.isOfficial][this.target][this.info.id])
         delete this.nakama.channel_transfer[this.isOfficial][this.target][this.info.id];
+      this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
       this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`, (list) => {
         list.forEach(path => this.indexed.removeFileFromUserPath(path));
       });
@@ -94,6 +95,7 @@ export class ChatRoomPage implements OnInit {
         this.extended_buttons.forEach(button => {
           button.isHide = true;
         });
+        this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
         this.extended_buttons[0].isHide = false;
       } else {
         this.p5toast.show({

@@ -107,6 +107,7 @@ export class AddGroupPage implements OnInit {
     let client = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].client;
     let session = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session;
     this.userInput['owner'] = session.user_id;
+    this.userInput['status'] = 'online';
 
     this.isSaveClicked = true;
     this.userInput.lang_tag = this.userInput.lang_tag || this.lang.lang;

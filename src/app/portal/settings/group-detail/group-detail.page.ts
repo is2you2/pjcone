@@ -40,7 +40,7 @@ export class GroupDetailPage implements OnInit {
   ngOnInit() {
     this.nakama.removeBanner();
     this.info = this.navParams.get('info');
-    this.info_orig = { ...this.navParams.get('info') };
+    this.info_orig = JSON.parse(JSON.stringify(this.navParams.get('info')));
     this.nakama.socket_reactive['group_detail'] = this;
     this.QRCodeSRC = this.global.readasQRCodeFromId({
       id: this.info.id,
@@ -50,11 +50,11 @@ export class GroupDetailPage implements OnInit {
     let _is_official: string = this.info.server['isOfficial'];
     let _target: string = this.info.server['target'];
     this.has_admin = this.statusBar.groupServer[_is_official][_target] == 'online';
-    if (this.info['users']) {// 사용자 정보가 있다면 로컬 정보 불러오기 처리
+    if (this.info['users'].length) {// 사용자 정보가 있다면 로컬 정보 불러오기 처리
       for (let i = 0, j = this.info['users'].length; i < j; i++)
         if (this.info['users'][i].is_me) // 정보상 나라면
           this.info['users'][i]['user'] = this.nakama.users.self;
-        else // 다른 사람들의 프로필 이미지
+        else if (this.info['users'][i]['user']['id']) // 다른 사람들의 프로필 이미지
           this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], _is_official, _target);
       // 온라인일 경우
       if (this.has_admin) // 여기서만 has_admin이 온라인 여부처럼 동작함
@@ -273,6 +273,7 @@ export class GroupDetailPage implements OnInit {
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, this.info['id'],
     ).then(v => {
       if (v) _CallBack();
+      this.nakama.remove_channel_files(this.info['server']['isOfficial'], this.info['server']['target'], this.info['channel_id']);
     });
   }
 
