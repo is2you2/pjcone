@@ -768,8 +768,6 @@ export class AddTodoMenuPage implements OnInit {
         });
       } catch (e) {
         console.error('해야할 일 삭제 요청이 서버에 전송되지 않음: ', e);
-        this.modalCtrl.dismiss();
-        return;
       }
     }
     this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, (v) => {
