@@ -204,6 +204,7 @@ export class AddTodoMenuPage implements OnInit {
       this.userInput.display_creator = this.lang.text['TodoDetail']['WrittenByMe'];
       this.userInput.display_manager = this.lang.text['TodoDetail']['WrittenByMe'];
     } else if (this.userInput.remote) {
+      this.userInput.remote.name = `${this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info.name} (${this.lang.text['TodoDetail']['Server']})`;
       this.StoreAt.value = this.userInput.remote;
       this.StoreAt.placeholder = this.userInput.remote.name;
       this.userInput.display_store = this.userInput.remote.name;
@@ -564,7 +565,6 @@ export class AddTodoMenuPage implements OnInit {
     delete this.userInput.display_store;
     delete this.userInput.display_manager;
     delete this.userInput.display_creator;
-    delete this.userInput.remote.name;
     this.userInput.logs.forEach(log => {
       delete log.displayText;
     });

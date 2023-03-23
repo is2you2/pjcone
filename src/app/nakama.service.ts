@@ -605,6 +605,7 @@ export class NakamaService {
     // 서버에서 나와 연관있는 모든 사용자 정보 읽어오기
     this.server_user_info_update(_is_official, _target);
     this.load_groups(_is_official, _target);
+    this.load_server_todo(_is_official, _target);
     // 통신 소켓 연결하기
     this.connect_to(_is_official, _target, () => {
       this.get_group_list_from_server(_is_official, _target);
@@ -615,8 +616,24 @@ export class NakamaService {
     });
   }
 
+  /** 서버에 저장시킨 해야할 일 목록 불러오기 */
+  load_server_todo(_is_official: string, _target: string, _cursor?: string) {
+    this.servers[_is_official][_target].client.listStorageObjects(
+      this.servers[_is_official][_target].session, 'server_todo',
+      this.servers[_is_official][_target].session.user_id, 1, _cursor
+    ).then(v => {
+      if (v.objects.length) {
+        let todo_info = v.objects[0].value;
+        let godot = this.global.godot.contentWindow || this.global.godot.contentDocument;
+        if (godot['add_todo']) godot['add_todo'](JSON.stringify(todo_info));
+      }
+      if (v.cursor) this.load_server_todo(_is_official, _target, v.cursor);
+    });
+  }
+
   /** 저장된 그룹 업데이트하여 반영 */
   load_groups(_is_official: string, _target: string) {
+    if (!this.groups[_is_official] || !this.groups[_is_official][_target]) return;
     let tmp_groups = Object.keys(this.groups[_is_official][_target]);
     tmp_groups.forEach(async _gid => {
       // 온라인이라면 서버정보로 덮어쓰기
