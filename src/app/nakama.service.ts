@@ -1258,10 +1258,12 @@ export class NakamaService {
           delete copied_group[_is_official][_target][_gid]['img'];
           if (copied_group[_is_official][_target][_gid]['users'])
             for (let i = 0, j = copied_group[_is_official][_target][_gid]['users'].length; i < j; i++) {
-              delete copied_group[_is_official][_target][_gid]['users'][i]['state'];
-              if (copied_group[_is_official][_target][_gid]['users'][i]['user']['id'])
-                copied_group[_is_official][_target][_gid]['users'][i]['user'] = { id: copied_group[_is_official][_target][_gid]['users'][i]['user']['id'] };
-              else if (!copied_group[_is_official][_target][_gid]['users'][i]['is_me']) copied_group[_is_official][_target][_gid]['users'].splice(i, 1);
+              if (copied_group[_is_official][_target][_gid]['users'][i]) {
+                delete copied_group[_is_official][_target][_gid]['users'][i]['state'];
+                if (copied_group[_is_official][_target][_gid]['users'][i]['user']['id'])
+                  copied_group[_is_official][_target][_gid]['users'][i]['user'] = { id: copied_group[_is_official][_target][_gid]['users'][i]['user']['id'] };
+                else if (!copied_group[_is_official][_target][_gid]['users'][i]['is_me']) copied_group[_is_official][_target][_gid]['users'].splice(i, 1);
+              }
             }
         });
       });
@@ -1304,20 +1306,21 @@ export class NakamaService {
 
   /** 그룹 내에서 사용했던 파일들 전부 삭제 */
   remove_channel_files(_is_official: string, _target: string, channel_id: string, cursor?: string) {
-    this.servers[_is_official][_target].client.listStorageObjects(
-      this.servers[_is_official][_target].session, `file_${channel_id.replace(/[.]/g, '_')}`,
-      this.servers[_is_official][_target].session.user_id, 1, cursor
-    ).then(async v => {
-      for (let i = 0, j = v.objects.length; i < j; i++)
-        await this.servers[_is_official][_target].client.deleteStorageObjects(
-          this.servers[_is_official][_target].session, {
-          object_ids: [{
-            collection: v.objects[i].collection,
-            key: v.objects[i].key,
-          }],
-        });
-      if (v.cursor) this.remove_channel_files(_is_official, _target, channel_id, v.cursor);
-    });
+    if (this.statusBar.groupServer[_is_official][_target] == 'online')
+      this.servers[_is_official][_target].client.listStorageObjects(
+        this.servers[_is_official][_target].session, `file_${channel_id.replace(/[.]/g, '_')}`,
+        this.servers[_is_official][_target].session.user_id, 1, cursor
+      ).then(async v => {
+        for (let i = 0, j = v.objects.length; i < j; i++)
+          await this.servers[_is_official][_target].client.deleteStorageObjects(
+            this.servers[_is_official][_target].session, {
+            object_ids: [{
+              collection: v.objects[i].collection,
+              key: v.objects[i].key,
+            }],
+          });
+        if (v.cursor) this.remove_channel_files(_is_official, _target, channel_id, v.cursor);
+      });
   }
 
   /** 연결된 서버에서 자신이 참여한 그룹을 리모트에서 가져오기  
