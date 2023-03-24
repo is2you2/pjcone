@@ -181,7 +181,6 @@ export class AddTodoMenuPage implements OnInit {
   ionViewWillEnter() {
     // 미리 지정된 데이터 정보가 있는지 검토
     this.received_data = this.navParams.get('data');
-    console.log('뭐였니 이게: ', this.received_data);
     if (this.received_data) { // 이미 있는 데이터 조회
       this.buttonDisplay.saveTodo = this.lang.text['TodoDetail']['buttonDisplay_modify'];
       this.isModify = true;
@@ -199,24 +198,39 @@ export class AddTodoMenuPage implements OnInit {
         this.ImageURL = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(b));
       });
     // 저장소 표기 적용
-    if (this.userInput.storeAt == 'local') {
-      this.StoreAt.value = this.userInput.storeAt;
-      this.userInput.display_store = this.lang.text['TodoDetail']['OnThisDevice'];
-      this.userInput.display_creator = this.lang.text['TodoDetail']['WrittenByMe'];
-      this.userInput.display_manager = this.lang.text['TodoDetail']['WrittenByMe'];
-    } else if (this.userInput.remote) {
-      this.userInput.remote.name = `${this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info.name} (${this.lang.text['TodoDetail']['Server']})`;
-      this.StoreAt.value = this.userInput.remote;
-      this.StoreAt.placeholder = this.userInput.remote.name;
-      this.userInput.display_store = this.userInput.remote.name;
-      this.AmICreator =
-        this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id == this.userInput.remote.creator_id;
-      this.userInput.display_creator = this.AmICreator ? this.lang.text['TodoDetail']['WrittenByMe'] : this.nakama.load_other_user(this.userInput.remote.creator_id, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
-      let AmIManager = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id == this.userInput.manager;
-      this.userInput.display_manager = AmIManager ? this.nakama.users.self['display_name'] : this.nakama.load_other_user(this.userInput.manager, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
-      if (this.userInput.remote.group_id) {
-        this.isModifiable = this.nakama.groups[this.userInput.remote.isOfficial][this.userInput.remote.target][this.userInput.remote.group_id]['status'] == 'online';
-      } else this.isModifiable = this.statusBar.groupServer[this.userInput.remote.isOfficial][this.userInput.remote.target] == 'online';
+    try {
+      if (this.userInput.storeAt == 'local') {
+        this.StoreAt.value = this.userInput.storeAt;
+        this.userInput.display_store = this.lang.text['TodoDetail']['OnThisDevice'];
+        this.userInput.display_creator = this.lang.text['TodoDetail']['WrittenByMe'];
+        this.userInput.display_manager = this.lang.text['TodoDetail']['WrittenByMe'];
+      } else if (this.userInput.remote) {
+        this.StoreAt.placeholder = this.userInput.remote.name;
+        this.userInput.display_store = this.userInput.remote.name;
+        this.StoreAt.value = this.userInput.remote;
+        this.StoreAt.placeholder = this.userInput.remote.name;
+        this.userInput.display_store = this.userInput.remote.name;
+        if (!this.nakama.servers[this.userInput.remote.isOfficial] || !this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]) {
+          this.userInput.display_creator = this.lang.text['TodoDetail']['DeletedServer'];
+          throw new Error("Server deleted");
+        }
+        if (this.statusBar.groupServer[this.userInput.remote.isOfficial][this.userInput.remote.target] != 'online') {
+          this.userInput.display_creator = this.lang.text['TodoDetail']['Disconnected'];
+          this.isModifiable = false;
+          throw new Error("Server disconnected");
+        }
+        this.userInput.remote.name = `${this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info.name} (${this.lang.text['TodoDetail']['Server']})`;
+        this.AmICreator =
+          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id == this.userInput.remote.creator_id;
+        this.userInput.display_creator = this.AmICreator ? this.lang.text['TodoDetail']['WrittenByMe'] : this.nakama.load_other_user(this.userInput.remote.creator_id, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
+        let AmIManager = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id == this.userInput.manager;
+        this.userInput.display_manager = AmIManager ? this.nakama.users.self['display_name'] : this.nakama.load_other_user(this.userInput.manager, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
+        if (this.userInput.remote.group_id) {
+          this.isModifiable = this.nakama.groups[this.userInput.remote.isOfficial][this.userInput.remote.target][this.userInput.remote.group_id]['status'] == 'online';
+        }
+      }
+    } catch (e) {
+      console.log('Server issue: ', e);
     }
     // 로그 정보 게시
     if (this.userInput.logs.length) {
