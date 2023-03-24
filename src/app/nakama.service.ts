@@ -607,8 +607,8 @@ export class NakamaService {
     this.load_groups(_is_official, _target);
     this.load_server_todo(_is_official, _target);
     // 통신 소켓 연결하기
-    this.connect_to(_is_official, _target, () => {
-      this.get_group_list_from_server(_is_official, _target);
+    this.connect_to(_is_official, _target, async () => {
+      await this.get_group_list_from_server(_is_official, _target);
       this.redirect_channel(_is_official, _target);
       if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
       if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
@@ -937,6 +937,7 @@ export class NakamaService {
 
   add_group_user_without_duplicate(user: GroupUser, gid: string, _is_official: string, _target: string) {
     let isAlreadyJoined = false;
+    if (!this.groups[_is_official][_target][gid]['users']) this.groups[_is_official][_target][gid]['users'] = [];
     for (let i = 0, j = this.groups[_is_official][_target][gid]['users'].length; i < j; i++)
       if (this.groups[_is_official][_target][gid]['users'][i]['user']['id'] == user.user['id']) {
         isAlreadyJoined = true;
@@ -1001,7 +1002,9 @@ export class NakamaService {
   }
   /** 기등록된 아이디 수집 */
   registered_id: number[];
-  /** 세션 재접속 시 기존 정보를 이용하여 채팅방에 다시 로그인함 */
+  /** 세션 재접속 시 기존 정보를 이용하여 채팅방에 다시 로그인함  
+   * 개인 채팅에 대해서만 검토
+   */
   redirect_channel(_is_official: string, _target: string) {
     if (this.channels_orig[_is_official][_target]) {
       let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
@@ -1016,7 +1019,8 @@ export class NakamaService {
             if (!this.channels_orig[_is_official][_target][_cid]['cnoti_id'])
               this.channels_orig[_is_official][_target][_cid]['cnoti_id'] = this.get_noti_id();
             switch (this.channels_orig[_is_official][_target][_cid]['redirect']['type']) {
-              case 2:
+              case 2: // 1:1 채팅
+              case 3: // 그룹 채팅
                 this.servers[_is_official][_target].client.listChannelMessages(
                   this.servers[_is_official][_target].session, _cid, 1, false)
                   .then(v => {
@@ -1026,29 +1030,6 @@ export class NakamaService {
                     this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
                     this.save_channels_with_less_info();
                   });
-                break;
-              case 3: // 그룹 채팅인 경우 그룹 유저도 검토
-                await this.servers[_is_official][_target].client.listGroupUsers(
-                  this.servers[_is_official][_target].session, this.channels_orig[_is_official][_target][_cid]['redirect']['id']
-                ).then(_guser => {
-                  _guser.group_users.forEach(_user => {
-                    this.save_other_user(_user.user, _is_official, _target);
-                    if (_user.user.id == this.servers[_is_official][_target].session.user_id)
-                      _user.user['is_me'] = true;
-                    else this.save_other_user(_user.user, _is_official, _target);
-                    _user.user = this.load_other_user(_user.user.id, _is_official, _target);
-                    this.add_group_user_without_duplicate(_user, this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
-                  });
-                  this.servers[_is_official][_target].client.listChannelMessages(
-                    this.servers[_is_official][_target].session, _cid, 1, false)
-                    .then(v => {
-                      if (v.messages.length) {
-                        this.update_from_channel_msg(v.messages[0], _is_official, _target);
-                        this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
-                        this.save_channels_with_less_info();
-                      }
-                    });
-                });
                 break;
               default:
                 console.warn('예상하지 못한 리다이렉션 타입: ', this.channels_orig[_is_official][_target][_cid]['redirect']['type']);
@@ -1280,7 +1261,7 @@ export class NakamaService {
               delete copied_group[_is_official][_target][_gid]['users'][i]['state'];
               if (copied_group[_is_official][_target][_gid]['users'][i]['user']['id'])
                 copied_group[_is_official][_target][_gid]['users'][i]['user'] = { id: copied_group[_is_official][_target][_gid]['users'][i]['user']['id'] };
-              else copied_group[_is_official][_target][_gid]['users'].splice(i, 1);
+              else if (!copied_group[_is_official][_target][_gid]['users'][i]['is_me']) copied_group[_is_official][_target][_gid]['users'].splice(i, 1);
             }
         });
       });
@@ -1340,12 +1321,13 @@ export class NakamaService {
   }
 
   /** 연결된 서버에서 자신이 참여한 그룹을 리모트에서 가져오기  
-   * ***돌려주는 값이 없는 nakama.initialize 단계 함수, 사용하지 말 것**
+   * ***돌려주는 값이 없는 nakama.initialize 단계 함수, 사용하지 말 것**  
+   * 그룹 채팅 채널 접속 및 그룹 사용자 검토도 이곳에서 시도함
    */
-  get_group_list_from_server(_is_official: string, _target: string) {
+  async get_group_list_from_server(_is_official: string, _target: string) {
     if (!this.groups[_is_official]) this.groups[_is_official] = {};
     if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
-    this.servers[_is_official][_target].client.listUserGroups(
+    await this.servers[_is_official][_target].client.listUserGroups(
       this.servers[_is_official][_target].session,
       this.servers[_is_official][_target].session.user_id)
       .then(v => {
@@ -1368,6 +1350,18 @@ export class NakamaService {
           }
           this.groups[_is_official][_target][user_group.group.id]
             = { ...this.groups[_is_official][_target][user_group.group.id], ...user_group.group };
+          this.groups[_is_official][_target][user_group.group.id]['status'] = 'online';
+          await this.servers[_is_official][_target].client.listGroupUsers(
+            this.servers[_is_official][_target].session, user_group.group.id
+          ).then(_guser => {
+            _guser.group_users.forEach(_user => {
+              if (_user.user.id == this.servers[_is_official][_target].session.user_id)
+                _user.user['is_me'] = true;
+              else this.save_other_user(_user.user, _is_official, _target);
+              _user.user = this.load_other_user(_user.user.id, _is_official, _target);
+              this.add_group_user_without_duplicate(_user, user_group.group.id, _is_official, _target);
+            });
+          });
           this.join_chat_with_modulation(user_group.group.id, 3, _is_official, _target, (_c) => {
             this.save_groups_with_less_info();
           });
