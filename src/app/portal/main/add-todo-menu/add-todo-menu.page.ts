@@ -181,6 +181,7 @@ export class AddTodoMenuPage implements OnInit {
   ionViewWillEnter() {
     // 미리 지정된 데이터 정보가 있는지 검토
     this.received_data = this.navParams.get('data');
+    console.log('뭐였니 이게: ', this.received_data);
     if (this.received_data) { // 이미 있는 데이터 조회
       this.buttonDisplay.saveTodo = this.lang.text['TodoDetail']['buttonDisplay_modify'];
       this.isModify = true;
@@ -577,6 +578,36 @@ export class AddTodoMenuPage implements OnInit {
     // 들어올 때와 같은지 검토
     let exactly_same = JSON.stringify(this.userInput) == this.received_data;
     if (exactly_same) {
+      if (this.userInput.remote) {
+        let request = {};
+        if (this.userInput.remote.channel_id) {
+          request = {
+            collection: 'group_todo',
+            key: this.userInput.id,
+            permission_read: 2,
+            permission_write: 2,
+            value: this.userInput,
+          };
+        } else {
+          request = {
+            collection: 'server_todo',
+            key: this.userInput.id,
+            permission_read: 1,
+            permission_write: 1,
+            value: this.userInput,
+          };
+        }
+        try {
+          await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
+            this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]);
+        } catch (e) {
+          console.error('해야할 일이 서버에 전송되지 않음: ', e);
+          this.p5toast.show({
+            text: this.lang.text['TodoDetail']['CanAddToServer'],
+          });
+          this.isButtonClicked = false;
+        }
+      }
       this.modalCtrl.dismiss();
       return;
     } // ^ 같으면 저장 동작을 하지 않음
@@ -590,37 +621,6 @@ export class AddTodoMenuPage implements OnInit {
         this.userInput.id = `${this.userInput.remote.isOfficial}_${this.userInput.remote.target}_${new Date(this.userInput.create_at).toISOString().replace(/[:|.]/g, '_')}`;
       else {// group
         this.userInput.id = `${this.userInput.remote.isOfficial}_${this.userInput.remote.target}_${this.userInput.remote.channel_id}_${this.userInput.remote.message_id}`;
-      }
-    }
-    if (this.userInput.remote) {
-      let request = {};
-      if (this.userInput.remote.channel_id) {
-        request = {
-          collection: 'group_todo',
-          key: this.userInput.id,
-          permission_read: 2,
-          permission_write: 2,
-          value: this.userInput,
-        };
-      } else {
-        request = {
-          collection: 'server_todo',
-          key: this.userInput.id,
-          permission_read: 1,
-          permission_write: 1,
-          value: this.userInput,
-        };
-      }
-      try {
-        await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
-          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]);
-      } catch (e) {
-        console.error('해야할 일이 서버에 전송되지 않음: ', e);
-        this.p5toast.show({
-          text: this.lang.text['TodoDetail']['CanAddToServer'],
-        });
-        this.isButtonClicked = false;
-        return;
       }
     }
     // 알림 예약 생성
@@ -728,6 +728,36 @@ export class AddTodoMenuPage implements OnInit {
       }
     }
     this.isLogsHidden = true;
+    if (this.userInput.remote) {
+      let request = {};
+      if (this.userInput.remote.channel_id) {
+        request = {
+          collection: 'group_todo',
+          key: this.userInput.id,
+          permission_read: 2,
+          permission_write: 2,
+          value: this.userInput,
+        };
+      } else {
+        request = {
+          collection: 'server_todo',
+          key: this.userInput.id,
+          permission_read: 1,
+          permission_write: 1,
+          value: this.userInput,
+        };
+      }
+      try {
+        await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
+          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]);
+      } catch (e) {
+        console.error('해야할 일이 서버에 전송되지 않음: ', e);
+        this.p5toast.show({
+          text: this.lang.text['TodoDetail']['CanAddToServer'],
+        });
+        this.isButtonClicked = false;
+      }
+    }
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
       this.saveTagInfo();
