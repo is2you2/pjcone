@@ -626,6 +626,7 @@ export class NakamaService {
         let todo_info = v.objects[0].value;
         let godot = this.global.godot.contentWindow || this.global.godot.contentDocument;
         if (godot['add_todo']) godot['add_todo'](JSON.stringify(todo_info));
+        this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
       }
       if (v.cursor) this.load_server_todo(_is_official, _target, v.cursor);
     });
