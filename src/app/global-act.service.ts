@@ -92,6 +92,9 @@ export class GlobalActService {
     _godot.setAttribute("src", "assets/html/index.html");
     _godot.setAttribute("frameborder", "0");
     _godot.setAttribute('class', 'full_screen');
+    _godot.setAttribute('allow', 'fullscreen; encrypted-media');
+    _godot.setAttribute('scrolling', 'no');
+    _godot.setAttribute('withCredentials', 'true');
     keys['failed'] = () => {
       this.p5toast.show({
         text: `${this.lang.text['GlobalAct']['FailedToDownloadGodot']}: ${keys.title}`,
