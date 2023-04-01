@@ -17,7 +17,6 @@ const config: CapacitorConfig = {
       Hostname: '*',
     },
   },
-  backgroundColor: '#000000',
 };
 
 export default config;

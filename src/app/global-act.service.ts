@@ -29,8 +29,11 @@ export class GlobalActService {
     private p5toast: P5ToastService,
     private lang: LanguageSettingService,
     private sanitizer: DomSanitizer,
-  ) { }
+  ) {
+    this.isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
 
+  isDarkMode = false;
 
   /** 브라우저에서 딥 링크마냥 행동하기
    * @returns GET 으로 작성된 key-value 쌍
@@ -60,8 +63,8 @@ export class GlobalActService {
         padding: 4,
         width: 8,
         height: 8,
-        color: "#bbb",
-        background: "#111",
+        color: this.isDarkMode ? "#bbb" : '#444',
+        background: this.isDarkMode ? "#111" : '#fff',
         ecl: "M",
       }).svg();
       return this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);
