@@ -1281,6 +1281,7 @@ export class NakamaService {
           this.servers[_is_official][_target].session, info['id'],
         ).then(async v => {
           if (!v) console.warn('그룹 삭제 오류 검토 필요');
+          this.remove_channel_files(_is_official, _target, info['channel_id']);
           this.servers[_is_official][_target].client.deleteStorageObjects(
             this.servers[_is_official][_target].session, {
             object_ids: [{
@@ -1292,7 +1293,6 @@ export class NakamaService {
           }).catch(_e => {
             throw new Error("No group image found");
           });
-          this.remove_channel_files(_is_official, _target, info['channel_id']);
         });
       else throw new Error("not creator");
     } catch (e) {
@@ -1305,7 +1305,7 @@ export class NakamaService {
     }
   }
 
-  /** 그룹 내에서 사용했던 파일들 전부 삭제 */
+  /** 그룹 내에서 사용했던 서버 파일들 전부 삭제 */
   remove_channel_files(_is_official: string, _target: string, channel_id: string, cursor?: string) {
     if (this.statusBar.groupServer[_is_official][_target] == 'online')
       this.servers[_is_official][_target].client.listStorageObjects(

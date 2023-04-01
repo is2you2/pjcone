@@ -90,13 +90,17 @@ export class ChatRoomPage implements OnInit {
     icon: 'log-out',
     act: async () => {
       if (this.info['redirect']['type'] != 3) {
-        await this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
-        this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
-        this.extended_buttons.forEach(button => {
-          button.isHide = true;
-        });
-        this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
-        this.extended_buttons[0].isHide = false;
+        try {
+          await this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
+          this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
+          this.extended_buttons.forEach(button => {
+            button.isHide = true;
+          });
+          this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
+          this.extended_buttons[0].isHide = false;
+        } catch (e) {
+          console.error('채널에서 나오기 실패: ', e);
+        }
       } else {
         this.p5toast.show({
           text: this.lang.text['ChatRoom']['belonging_to_group'],
