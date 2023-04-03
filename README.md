@@ -203,6 +203,11 @@ npx cap sync android
     minSdkVersion = 22,
     cordovaAndroidVersion = '10.1.2',
 ```
+- Android 10 버전 이상에서 사용자 설정에 따른 밝기 모드가 적용되지 않고 다크모드로 동작하는 이슈가 있습니다. [참고 내용](https://github.com/ionic-team/capacitor/issues/5441)  
+android/app/src/main/res/values/styles.xml 을 아래와 같이 변경하면 동작합니다.
+```xml
+  <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
+```
 ## 고도 프레임 사용방법
 - Godot-html은 백그라운드가 켜져있더라도 액션이 멈춤, 통신을 ionic에 의존해야함
 - Component 중복 링크 불가로 엔진 부르기를 할 때 아래 코드를 직접 사용하는 것으로 대체합니다
