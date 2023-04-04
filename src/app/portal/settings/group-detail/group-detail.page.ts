@@ -50,12 +50,16 @@ export class GroupDetailPage implements OnInit {
     let _is_official: string = this.info.server['isOfficial'];
     let _target: string = this.info.server['target'];
     this.has_admin = this.statusBar.groupServer[_is_official][_target] == 'online';
-    if (this.info['users'].length) {// 사용자 정보가 있다면 로컬 정보 불러오기 처리
+    // 사용자 정보가 있다면 로컬 정보 불러오기 처리
+    if (this.info['users'] && this.info['users'].length) {
       for (let i = 0, j = this.info['users'].length; i < j; i++)
         if (this.info['users'][i].is_me) // 정보상 나라면
           this.info['users'][i]['user'] = this.nakama.users.self;
-        else if (this.info['users'][i]['user']['id']) // 다른 사람들의 프로필 이미지
-          this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], _is_official, _target);
+        else if (this.info['users'][i]['user']['id']) { // 다른 사람들의 프로필 이미지
+          if (this.info['users'][i]['user']['id'] != this.nakama.servers[_is_official][_target].session.user_id) {
+            this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], _is_official, _target);
+          } else this.info['users'].splice(i, 1);
+        } else this.info['users'].splice(i, 1);
       // 온라인일 경우
       if (this.has_admin) // 여기서만 has_admin이 온라인 여부처럼 동작함
         if (this.info['status'] != 'missing')

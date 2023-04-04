@@ -650,6 +650,7 @@ export class NakamaService {
               this.save_channels_with_less_info();
             } else { // 그룹 활성중
               let am_i_lost = true;
+              // 내가 이 그룹에 아직 남아있는지 검토
               for (let i = 0, j = v.group_users.length; i < j; i++)
                 if (v.group_users[i].user.id == this.servers[_is_official][_target].session.user_id) {
                   switch (v.group_users[i].state) {
