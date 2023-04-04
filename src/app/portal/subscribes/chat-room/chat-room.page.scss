@@ -35,7 +35,7 @@
 
 .file_text_thumbnail {
     margin-top: 2px;
-    word-break: break-all;
+    display: grid;
 }
 
 .message_content_form {
@@ -84,9 +84,9 @@
 
 #send_thumbnail {
     position: absolute;
-    bottom: 286px;
     background: #bbbb;
     padding: 8px;
+    overflow: auto;
 }
 
 .image_thumbnail {

@@ -37,7 +37,7 @@ SPDX-License-Identifier: MIT -->
               <div *ngIf="!msg.content['img']" class="file_button">
                 <p class="file_info"> {{msg.content['filename']}} </p>
                 <div *ngIf="msg.content['text']" class="text_seperator"></div>
-                <p *ngIf="msg.content['text']" class="file_text_thumbnail"> {{msg.content['text']}} </p>
+                <span *ngFor="let line of msg.content['text']" class="file_text_thumbnail"> {{line}} </span>
               </div>
               <div *ngIf="msg.content['img']" class="file_name_form">
                 <img [src]="msg.content['img']" [alt]="msg.content['filename']">
@@ -77,6 +77,11 @@ SPDX-License-Identifier: MIT -->
               <div>
                 <img *ngIf="userInput.file['typeheader'] == 'image'" class="image_thumbnail"
                   [src]="userInput.file['thumbnail']" [alt]="userInput.file['name']">
+                <div *ngIf="userInput.file['typeheader'] == 'text'" style="display: grid;">
+                  <span *ngFor="let line of userInput.file['thumbnail']">
+                    {{line}}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

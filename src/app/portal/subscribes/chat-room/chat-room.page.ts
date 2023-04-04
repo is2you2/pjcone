@@ -141,6 +141,20 @@ export class ChatRoomPage implements OnInit {
           case 'image': // 이미지인 경우 사용자에게 보여주기
             this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(this.userInput.file['result']);
             break;
+          case 'text':
+            new p5((p: p5) => {
+              p.setup = () => {
+                p.loadStrings(this.userInput.file['result'], v => {
+                  this.userInput.file['thumbnail'] = v;
+                  p.remove();
+                }, e => {
+                  console.error('문자열 불러오기 실패: ', e);
+                  this.userInput.file['thumbnail'] = [];
+                  p.remove();
+                });
+              }
+            });
+            break;
         }
         this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.name})`;
       }
@@ -241,7 +255,7 @@ export class ChatRoomPage implements OnInit {
         p.windowResized = () => {
           setTimeout(() => {
             mainDiv.setAttribute('style', `max-width: ${mainTable.parentElement.offsetWidth}px; max-height: ${mainTable.parentElement.clientHeight - inputTable.offsetHeight - ext_menu.offsetHeight}px`);
-            this.send_thumbnail.setAttribute('style', `width: ${mainTable.parentElement.offsetWidth}px; max-height: 136px`);
+            this.send_thumbnail.setAttribute('style', `width: ${mainTable.parentElement.offsetWidth}px; max-height: 136px; bottom: ${this.isHidden ? 46 : 286}px;`);
           }, 0);
         }
       }
@@ -463,7 +477,7 @@ export class ChatRoomPage implements OnInit {
           }
         }
         if (!msg.content['text'])
-          msg.content['text'] = this.lang.text['ChatRoom']['downloaded'];
+          msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
         this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
           msg.content['type'],
           v => {
@@ -576,11 +590,12 @@ export class ChatRoomPage implements OnInit {
         new p5((p: p5) => {
           p.setup = () => {
             p.loadStrings(ObjectURL, v => {
-              msg.content['text'] = v.join('\n');
+              msg.content['text'] = v;
               URL.revokeObjectURL(ObjectURL);
               p.remove();
             }, e => {
               console.error('텍스트 열람 불가: ', e);
+              msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
               URL.revokeObjectURL(ObjectURL);
               p.remove();
             });
@@ -664,7 +679,7 @@ export class ChatRoomPage implements OnInit {
     this.set_viewer_category(msg);
     this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (b) => {
       if (b) {
-        msg.content['text'] = this.lang.text['ChatRoom']['downloaded'];
+        msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
         if (msg.content['filesize'] < this.FILESIZE_LIMIT) // 너무 크지 않은 파일에 대해서만 자동 썸네일 구성
           this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
             msg.content['type'],

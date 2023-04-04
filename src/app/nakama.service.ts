@@ -2311,8 +2311,8 @@ export class NakamaService {
       });
     if (!isSuccessful) return;
     let resultModified = result.join('').replace(/"|\\|=/g, '');
-    msg.content['text'] = this.lang.text['ChatRoom']['downloaded'];
     if (resultModified) {
+      msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
       this.indexed.saveFileToUserPath(resultModified, `servers/${_is_official}/${_target}/channels/${_msg.channel_id}/files/msg_${_msg.message_id}.${_msg.content['file_ext']}`,
         v => {
           _CallBack(new Blob([v], { type: msg.content['type'] }));
