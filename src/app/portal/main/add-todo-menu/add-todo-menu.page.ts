@@ -138,7 +138,7 @@ export class AddTodoMenuPage implements OnInit {
       Target.forEach(_target => { // 온라인 그룹만 수집
         if (this.statusBar.groupServer[_is_official][_target] == 'online') {
           let serverInfo: RemoteInfo = {
-            name: `${this.nakama.servers[_is_official][_target].info.name} (${this.lang.text['TodoDetail']['Server']})`,
+            name: `${this.nakama.servers[_is_official][_target].info.name} (${this.nakama.servers[_is_official][_target].info.target})`,
             isOfficial: _is_official,
             target: _target,
             type: `${_is_official}/${_target}`,
