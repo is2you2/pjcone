@@ -132,7 +132,6 @@ export class AddTodoMenuPage implements OnInit {
     });
     // 저장소로 사용 가능한 서버와 그룹 수집
     let servers: RemoteInfo[] = [];
-    let groups: RemoteInfo[] = [];
     let isOfficial = Object.keys(this.nakama.servers);
     isOfficial.forEach(_is_official => {
       let Target = Object.keys(this.nakama.servers[_is_official]);
@@ -145,22 +144,10 @@ export class AddTodoMenuPage implements OnInit {
             type: `${_is_official}/${_target}`,
           }
           servers.push(serverInfo);
-          let GroupId = Object.keys(this.nakama.groups[_is_official][_target]);
-          GroupId.forEach(_gid => {
-            let groupInfo: RemoteInfo = {
-              name: `${this.nakama.groups[_is_official][_target][_gid]['name']} (${this.lang.text['TodoDetail']['Group']})`,
-              isOfficial: _is_official,
-              target: _target,
-              group_id: _gid,
-              channel_id: this.nakama.groups[_is_official][_target][_gid]['channel_id'],
-              type: `${_is_official}/${_target}/${_gid}`,
-            };
-            groups.push(groupInfo);
-          });
         }
       });
     });
-    let merge = [...servers, ...groups];
+    let merge = [...servers];
     merge.forEach(info => {
       this.AvailableStorageList.push(info);
     });
