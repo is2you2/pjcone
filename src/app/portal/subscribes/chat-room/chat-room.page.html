@@ -72,7 +72,7 @@ SPDX-License-Identifier: MIT -->
       <td>
         <div>
           <div [hidden]="!userInput.file" id="send_thumbnail" style="width: 100%;">
-            <div *ngIf="userInput.file">
+            <div *ngIf="userInput.file" (click)="removeAttach()">
               <div style="height: 24px; text-align: center; "> {{userInput.file['name']}} </div>
               <div>
                 <img *ngIf="userInput.file['typeheader'] == 'image'" class="image_thumbnail"

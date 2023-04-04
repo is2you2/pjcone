@@ -25,6 +25,8 @@ interface FileInfo {
   ext?: string;
   /** 전체 파일 크기 */
   size?: number;
+  /** 썸네일 구분용 헤더 */
+  typeheader?: string;
   result?: string;
 }
 
@@ -207,6 +209,12 @@ export class ChatRoomPage implements OnInit {
 
   ionViewWillEnter() {
     this.follow_resize();
+  }
+
+  /** 첨부파일 삭제 */
+  removeAttach() {
+    delete this.userInput.file;
+    this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
   }
 
   p5canvas: p5;
