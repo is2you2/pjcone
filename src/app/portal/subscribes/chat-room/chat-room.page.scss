@@ -82,6 +82,22 @@
     margin-top: 4px;
 }
 
+#send_thumbnail {
+    position: absolute;
+    bottom: 286px;
+    background: #888b;
+    padding: 8px;
+}
+
+.image_thumbnail {
+    width: auto;
+    max-height: 96px;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    margin: auto;
+}
+
 .transfer_count {
     align-self: flex-end;
     margin-left: 4px;

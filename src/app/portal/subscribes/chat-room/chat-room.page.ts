@@ -126,6 +126,7 @@ export class ChatRoomPage implements OnInit {
       this.userInput.file['ext'] = ev.target.files[0].name.split('.')[1] || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
       this.userInput.file['size'] = ev.target.files[0].size;
       this.userInput.file['type'] = ev.target.files[0].type;
+      this.userInput.file['typeheader'] = ev.target.files[0].type.split('/')[0];
       let updater = setInterval(() => { }, 110);
       setTimeout(() => {
         clearInterval(updater);
@@ -148,6 +149,7 @@ export class ChatRoomPage implements OnInit {
   /** 최근으로 가는 커서 */
   prev_cursor = '';
   content_panel: HTMLElement;
+  send_thumbnail: HTMLElement;
 
   ngOnInit() {
     this.nakama.removeBanner();
@@ -174,6 +176,7 @@ export class ChatRoomPage implements OnInit {
         break;
     }
     this.content_panel = document.getElementById('content');
+    this.send_thumbnail = document.getElementById('send_thumbnail');
     // 실시간 채팅을 받는 경우 행동처리
     if (this.nakama.channels_orig[this.isOfficial][this.target] &&
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
@@ -225,6 +228,7 @@ export class ChatRoomPage implements OnInit {
         p.windowResized = () => {
           setTimeout(() => {
             mainDiv.setAttribute('style', `max-width: ${mainTable.parentElement.offsetWidth}px; max-height: ${mainTable.parentElement.clientHeight - inputTable.offsetHeight - ext_menu.offsetHeight}px`);
+            this.send_thumbnail.setAttribute('style', `width: ${mainTable.parentElement.offsetWidth}px; max-height: 136px`);
           }, 0);
         }
       }

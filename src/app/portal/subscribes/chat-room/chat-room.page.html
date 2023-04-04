@@ -40,7 +40,7 @@ SPDX-License-Identifier: MIT -->
                 <p *ngIf="msg.content['text']" class="file_text_thumbnail"> {{msg.content['text']}} </p>
               </div>
               <div *ngIf="msg.content['img']" class="file_name_form">
-                <img [src]="msg.content['img']" alt="msg.content['filename']">
+                <img [src]="msg.content['img']" [alt]="msg.content['filename']">
               </div>
               <div
                 *ngIf="nakama.channel_transfer[isOfficial][target] && nakama.channel_transfer[isOfficial][target][msg.channel_id] && nakama.channel_transfer[isOfficial][target][msg.channel_id][msg.message_id]"
@@ -71,6 +71,15 @@ SPDX-License-Identifier: MIT -->
     <tr>
       <td>
         <div>
+          <div [hidden]="!userInput.file" id="send_thumbnail" style="width: 100%;">
+            <div *ngIf="userInput.file">
+              <div style="height: 24px; text-align: center; "> {{userInput.file['name']}} </div>
+              <div>
+                <img *ngIf="userInput.file['typeheader'] == 'image'" class="image_thumbnail"
+                  [src]="userInput.file['result']" [alt]="userInput.file['name']">
+              </div>
+            </div>
+          </div>
           <table id="input_table" style="width: 100%; background-color: black;">
             <tr>
               <td>
