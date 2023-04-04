@@ -28,6 +28,7 @@ interface FileInfo {
   /** 썸네일 구분용 헤더 */
   typeheader?: string;
   result?: string;
+  thumbnail?: any;
 }
 
 interface ExtendButtonForm {
@@ -136,6 +137,11 @@ export class ChatRoomPage implements OnInit {
       reader = reader._realReader ?? reader;
       reader.onload = (ev: any) => {
         this.userInput.file['result'] = ev.target.result.replace(/"|\\|=/g, '');
+        switch (this.userInput.file['typeheader']) {
+          case 'image': // 이미지인 경우 사용자에게 보여주기
+            this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(this.userInput.file['result']);
+            break;
+        }
         this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.name})`;
       }
       reader.readAsDataURL(ev.target.files[0]);

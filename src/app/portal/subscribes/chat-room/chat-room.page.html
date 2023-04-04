@@ -76,7 +76,7 @@ SPDX-License-Identifier: MIT -->
               <div style="height: 24px; text-align: center; "> {{userInput.file['name']}} </div>
               <div>
                 <img *ngIf="userInput.file['typeheader'] == 'image'" class="image_thumbnail"
-                  [src]="userInput.file['result']" [alt]="userInput.file['name']">
+                  [src]="userInput.file['thumbnail']" [alt]="userInput.file['name']">
               </div>
             </div>
           </div>
