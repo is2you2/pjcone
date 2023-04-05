@@ -92,7 +92,7 @@ SPDX-License-Identifier: MIT -->
             (ionChange)="limit_change($event)"></ion-datetime>
           <ion-item>
             <ion-label>{{lang.text['TodoDetail']['description']}}</ion-label>
-            <ion-button *ngIf="ImageURL" (click)="remove_attach()">
+            <ion-button *ngIf="userInput.attach['filename']" (click)="remove_attach()">
               {{lang.text['TodoDetail']['delete_attach']}}
             </ion-button>
           </ion-item>
