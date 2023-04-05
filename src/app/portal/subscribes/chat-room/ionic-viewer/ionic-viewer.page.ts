@@ -59,9 +59,11 @@ export class IonicViewerPage implements OnInit {
             img.id(IMAGE_ELEMENT_ID);
             img.parent(canvasDiv);
             img.style("position", 'relative');
+            img.style('width', 'auto');
+            img.style('height', 'auto');
             setTimeout(() => {
-              RePositioningImage();
               img.show();
+              RePositioningImage();
             }, 50);
             if (isPlatform == 'Android' || isPlatform == 'iOS') {
               iframe_sub = document.createElement('iframe');
@@ -76,12 +78,11 @@ export class IonicViewerPage implements OnInit {
           }
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let RePositioningImage = () => {
-            let canvasHeight = this.ContentBox.offsetHeight - this.FileHeader.offsetHeight;
-            if (img.size()['height'] < canvasHeight) {
+            if (img.size()['height'] < canvasDiv.offsetHeight) {
               img.style("top", '50%');
-              img.style("left", '50%');
-              img.style("transform", 'translateX(-50%) translateY(-50%');
+              img.style("transform", 'translateY(-50%');
             }
+            img.style('margin', 'auto');
           }
           p.windowResized = () => {
             setTimeout(() => {
