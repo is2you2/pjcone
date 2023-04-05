@@ -137,25 +137,26 @@ export class ChatRoomPage implements OnInit {
       reader = reader._realReader ?? reader;
       reader.onload = (ev: any) => {
         this.userInput.file['result'] = ev.target.result.replace(/"|\\|=/g, '');
-        switch (this.userInput.file['typeheader']) {
-          case 'image': // 이미지인 경우 사용자에게 보여주기
-            this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(this.userInput.file['result']);
-            break;
-          case 'text':
-            new p5((p: p5) => {
-              p.setup = () => {
-                p.loadStrings(this.userInput.file['result'], v => {
-                  this.userInput.file['thumbnail'] = v;
-                  p.remove();
-                }, e => {
-                  console.error('문자열 불러오기 실패: ', e);
-                  this.userInput.file['thumbnail'] = [];
-                  p.remove();
-                });
-              }
-            });
-            break;
-        }
+        this.userInput.file['thumbnail'] = [];
+        if (this.userInput.file['size'] < SIZE_LIMIT) // 크기가 작으면 썸네일 생성
+          switch (this.userInput.file['typeheader']) {
+            case 'image': // 이미지인 경우 사용자에게 보여주기
+              this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(this.userInput.file['result']);
+              break;
+            case 'text':
+              new p5((p: p5) => {
+                p.setup = () => {
+                  p.loadStrings(this.userInput.file['result'], v => {
+                    this.userInput.file['thumbnail'] = v;
+                    p.remove();
+                  }, e => {
+                    console.error('문자열 불러오기 실패: ', e);
+                    p.remove();
+                  });
+                }
+              });
+              break;
+          }
         this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.name})`;
       }
       reader.readAsDataURL(ev.target.files[0]);
