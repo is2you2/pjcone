@@ -192,8 +192,6 @@ export class AddTodoMenuPage implements OnInit {
         this.userInput.display_creator = this.lang.text['TodoDetail']['WrittenByMe'];
         this.userInput.display_manager = this.lang.text['TodoDetail']['WrittenByMe'];
       } else if (this.userInput.remote) {
-        this.StoreAt.placeholder = this.userInput.remote.name;
-        this.userInput.display_store = this.userInput.remote.name;
         this.StoreAt.value = this.userInput.remote;
         this.StoreAt.placeholder = this.userInput.remote.name;
         this.userInput.display_store = this.userInput.remote.name;
@@ -206,7 +204,6 @@ export class AddTodoMenuPage implements OnInit {
           this.isModifiable = false;
           throw new Error("Server disconnected");
         }
-        this.userInput.remote.name = `${this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info.name} (${this.lang.text['TodoDetail']['Server']})`;
         this.AmICreator =
           this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id == this.userInput.remote.creator_id;
         this.userInput.display_creator = this.AmICreator ? this.lang.text['TodoDetail']['WrittenByMe'] : this.nakama.load_other_user(this.userInput.remote.creator_id, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
