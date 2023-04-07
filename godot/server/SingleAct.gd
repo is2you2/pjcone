@@ -44,7 +44,7 @@ func _ready():
 	admin_file = Root.html_path + 'admin.txt'
 	var file:= File.new()
 	if file.open(admin_file, File.READ) == OK:
-		$m/vbox/AdminInfo/TargetUUID.text = file.get_as_text()
+		$m/vbox/AdminInfo/TargetUUID.text = file.get_as_text().trim_suffix('\n')
 	file.close()
 
 # esc를 눌러 끄기
