@@ -77,6 +77,9 @@
 
   --chatroom-background: #eee;
   --chatroom-input-background: white;
+
+  --req-counter-title: #bbb;
+  --req-counter-content: #ddd;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -151,6 +154,9 @@
 
     --chatroom-background: black;
     --chatroom-input-background: black;
+
+    --req-counter-title: #3a3a3a;
+    --req-counter-content: #2d2d2d;
   }
 
   /*

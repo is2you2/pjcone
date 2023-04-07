@@ -3,7 +3,7 @@
 }
 
 .grid_title {
-    background-color: #3a3a3a;
+    background-color: var(--req-counter-title);
 }
 
 .grid_title_top {
@@ -15,6 +15,6 @@
 }
 
 .grid_content {
-    background-color: #2d2d2d;
+    background-color: var(--req-counter-content);
     margin: 4px 0px 0px 4px;
 }
