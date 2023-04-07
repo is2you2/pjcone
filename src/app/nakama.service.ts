@@ -650,6 +650,11 @@ export class NakamaService {
     ).then(v => {
       if (v.objects.length) {
         let todo_info = v.objects[0].value;
+        // 현재 내 정보에 맞도록 변환
+        todo_info['remote']['name'] = this.servers[_is_official][_target].info.name;
+        todo_info['remote']['isOfficial'] = _is_official;
+        todo_info['remote']['target'] = _target;
+        todo_info['remote']['type'] = `${_is_official}/${_target}`;
         let godot = this.global.godot.contentWindow || this.global.godot.contentDocument;
         if (godot['add_todo']) godot['add_todo'](JSON.stringify(todo_info));
         this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
