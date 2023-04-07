@@ -607,12 +607,38 @@ export class NakamaService {
     this.load_groups(_is_official, _target);
     this.load_server_todo(_is_official, _target);
     // 통신 소켓 연결하기
-    this.connect_to(_is_official, _target, async () => {
+    this.connect_to(_is_official, _target, async (socket) => {
       await this.get_group_list_from_server(_is_official, _target);
       this.redirect_channel(_is_official, _target);
       if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
       if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
       this.update_notifications(_is_official, _target);
+      this.servers[_is_official][_target].client.readStorageObjects(
+        this.servers[_is_official][_target].session, {
+        object_ids: [{
+          collection: 'self_share',
+          key: 'private_match',
+          user_id: this.servers[_is_official][_target].session.user_id,
+        }]
+      }).then(async v => {
+        try {
+          await socket.joinMatch(v.objects[0].value['match_id']);
+          return; // 매치 진입 성공인 경우
+        } catch (e) {
+          console.log('비공개 셀프 매칭 진입 오류 로그: ', e);
+          socket.createMatch().then(v => {
+            this.servers[_is_official][_target].client.writeStorageObjects(
+              this.servers[_is_official][_target].session, [{
+                collection: 'self_share',
+                key: 'private_match',
+                permission_read: 1,
+                permission_write: 1,
+                value: { match_id: v.match_id },
+              }],
+            );
+          });
+        }
+      });
     });
   }
 
@@ -1444,11 +1470,11 @@ export class NakamaService {
   /** 소켓이 행동할 때 행동중인 무언가가 있을 경우 검토하여 처리 */
   socket_reactive = {};
   /** 소켓 서버에 연결 */
-  connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _CallBack = () => { }) {
+  connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _CallBack = (socket: Socket) => { }) {
     this.servers[_is_official][_target].socket.connect(
       this.servers[_is_official][_target].session, true).then(_v => {
         let socket = this.servers[_is_official][_target].socket;
-        _CallBack();
+        _CallBack(socket);
         // 실시간으로 알림을 받은 경우
         socket.onnotification = (v) => {
           console.log('소켓에서 실시간으로 무언가 받음: ', v);
@@ -1481,6 +1507,12 @@ export class NakamaService {
                 this.count_channel_online_member(p, _is_official, _target);
               });
           }
+        }
+        socket.onmatchpresence = (m) => {
+          console.log('onmatchpre: ', m);
+        }
+        socket.onmatchdata = (m) => {
+          console.log('onmatchdata: ', m);
         }
         socket.onchannelmessage = (c) => {
           console.log('onchamsg: ', c);
