@@ -50,7 +50,9 @@ export class StatusManageService {
     /** 엔진웍스 PPT */
     engineppt: 'offline',
   }
-  /** 설정-그룹서버 관리 목록 */
+  /** 설정-그룹서버 관리 목록  
+   * groupServer[isOfficial][target] = status;
+   */
   groupServer: { [id: string]: PanelStatus } = {
     official: {
       default: 'offline',

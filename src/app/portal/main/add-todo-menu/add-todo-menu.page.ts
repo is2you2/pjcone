@@ -199,8 +199,10 @@ export class AddTodoMenuPage implements OnInit {
           this.userInput.display_creator = this.lang.text['TodoDetail']['DeletedServer'];
           throw new Error("Server deleted");
         }
-        if (this.statusBar.groupServer[this.userInput.remote.isOfficial][this.userInput.remote.target] != 'online') {
+        if (this.statusBar.groupServer[this.userInput.remote.isOfficial]
+          && this.statusBar.groupServer[this.userInput.remote.isOfficial][this.userInput.remote.target] != 'online') {
           this.userInput.display_creator = this.lang.text['TodoDetail']['Disconnected'];
+          this.userInput.display_manager = this.lang.text['TodoDetail']['Disconnected'];
           this.isModifiable = false;
           throw new Error("Server disconnected");
         }
