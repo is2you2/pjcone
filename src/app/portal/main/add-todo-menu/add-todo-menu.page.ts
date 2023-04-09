@@ -773,6 +773,9 @@ export class AddTodoMenuPage implements OnInit {
           this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, {
           object_ids: [request],
         });
+        await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+          .socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
+            encodeURIComponent(`remove,${this.userInput.id}`));
       } catch (e) {
         console.error('해야할 일 삭제 요청이 서버에 전송되지 않음: ', e);
       }
