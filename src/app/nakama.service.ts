@@ -3,7 +3,7 @@
 
 import { Injectable } from '@angular/core';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
-import { Channel, ChannelMessage, Client, Group, GroupUser, Notification, Session, Socket, User, WriteStorageObject } from "@heroiclabs/nakama-js";
+import { Channel, ChannelMessage, Client, Group, GroupUser, Match, Notification, Session, Socket, User, WriteStorageObject } from "@heroiclabs/nakama-js";
 import { isPlatform } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
@@ -45,6 +45,11 @@ interface NakamaGroup {
   client?: Client;
   session?: Session;
   socket?: Socket;
+}
+
+export enum SelfMatchOpCode {
+  /** 해야할 일 생성/수정/삭제/완료 */
+  ADD_TODO = 10,
 }
 
 @Injectable({
@@ -564,6 +569,8 @@ export class NakamaService {
     }
   }
 
+  /** 자기 자신과의 매칭 정보 */
+  self_match: Match;
   /** 로그인 및 회원가입 직후 행동들 */
   after_login(_is_official: any, _target: string, _useSSL: boolean) {
     // 통신 소켓 생성
@@ -622,11 +629,11 @@ export class NakamaService {
         }]
       }).then(async v => {
         try {
-          await socket.joinMatch(v.objects[0].value['match_id']);
+          this.self_match = await socket.joinMatch(v.objects[0].value['match_id']);
           return; // 매치 진입 성공인 경우
         } catch (e) {
-          console.log('비공개 셀프 매칭 진입 오류 로그: ', e);
           socket.createMatch().then(v => {
+            this.self_match = v;
             this.servers[_is_official][_target].client.writeStorageObjects(
               this.servers[_is_official][_target].session, [{
                 collection: 'self_share',
@@ -648,19 +655,21 @@ export class NakamaService {
       this.servers[_is_official][_target].session, 'server_todo',
       this.servers[_is_official][_target].session.user_id, 1, _cursor
     ).then(v => {
-      if (v.objects.length) {
-        let todo_info = v.objects[0].value;
-        // 현재 내 정보에 맞도록 변환
-        todo_info['remote']['name'] = this.servers[_is_official][_target].info.name;
-        todo_info['remote']['isOfficial'] = _is_official;
-        todo_info['remote']['target'] = _target;
-        todo_info['remote']['type'] = `${_is_official}/${_target}`;
-        let godot = this.global.godot.contentWindow || this.global.godot.contentDocument;
-        if (godot['add_todo']) godot['add_todo'](JSON.stringify(todo_info));
-        this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
-      }
+      if (v.objects.length)
+        this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
       if (v.cursor) this.load_server_todo(_is_official, _target, v.cursor);
     });
+  }
+
+  /** 원격 정보를 로컬에 맞게 수정, 그 후 로컬에 다시 저장하기 */
+  modify_remote_info_as_local(todo_info: any, _is_official: string, _target: string) {
+    todo_info['remote']['name'] = this.servers[_is_official][_target].info.name;
+    todo_info['remote']['isOfficial'] = _is_official;
+    todo_info['remote']['target'] = _target;
+    todo_info['remote']['type'] = `${_is_official}/${_target}`;
+    let godot = this.global.godot.contentWindow || this.global.godot.contentDocument;
+    if (godot['add_todo']) godot['add_todo'](JSON.stringify(todo_info));
+    this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
   }
 
   /** 저장된 그룹 업데이트하여 반영 */
@@ -1513,11 +1522,39 @@ export class NakamaService {
               });
           }
         }
-        socket.onmatchpresence = (m) => {
-          console.log('onmatchpre: ', m);
-        }
         socket.onmatchdata = (m) => {
           console.log('onmatchdata: ', m);
+          m['data_str'] = decodeURIComponent(new TextDecoder().decode(m.data));
+          switch (m.op_code) {
+            case SelfMatchOpCode.ADD_TODO:
+              let sep = m['data_str'].split(',');
+              switch (sep[0]) {
+                case 'add':
+                  this.servers[_is_official][_target].client.readStorageObjects(
+                    this.servers[_is_official][_target].session, {
+                    object_ids: [{
+                      collection: sep[1],
+                      key: sep[2],
+                      user_id: this.servers[_is_official][_target].session.user_id,
+                    }],
+                  }).then(v => {
+                    if (v.objects.length)
+                      this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
+                  });
+                  break;
+                case 'done':
+                  break;
+                case 'remove':
+                  break;
+                default:
+                  console.warn('등록되지 않은 할 일 행동: ', m);
+                  break;
+              }
+              break;
+            default:
+              console.warn('예상하지 못한 동기화 정보: ', m);
+              break;
+          }
         }
         socket.onchannelmessage = (c) => {
           console.log('onchamsg: ', c);

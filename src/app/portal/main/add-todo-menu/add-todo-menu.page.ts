@@ -9,7 +9,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { DomSanitizer } from '@angular/platform-browser';
 import { IndexedDBService } from 'src/app/indexed-db.service';
-import { NakamaService } from 'src/app/nakama.service';
+import { NakamaService, SelfMatchOpCode } from 'src/app/nakama.service';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
@@ -578,36 +578,6 @@ export class AddTodoMenuPage implements OnInit {
     // 들어올 때와 같은지 검토
     let exactly_same = JSON.stringify(this.userInput) == this.received_data;
     if (exactly_same) {
-      if (this.userInput.remote) {
-        let request = {};
-        if (this.userInput.remote.channel_id) {
-          request = {
-            collection: 'group_todo',
-            key: this.userInput.id,
-            permission_read: 2,
-            permission_write: 2,
-            value: this.userInput,
-          };
-        } else {
-          request = {
-            collection: 'server_todo',
-            key: this.userInput.id,
-            permission_read: 1,
-            permission_write: 1,
-            value: this.userInput,
-          };
-        }
-        try {
-          await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
-            this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]);
-        } catch (e) {
-          console.error('해야할 일이 서버에 전송되지 않음: ', e);
-          this.p5toast.show({
-            text: this.lang.text['TodoDetail']['CanAddToServer'],
-          });
-          this.isButtonClicked = false;
-        }
-      }
       this.modalCtrl.dismiss();
       return;
     } // ^ 같으면 저장 동작을 하지 않음
@@ -749,7 +719,11 @@ export class AddTodoMenuPage implements OnInit {
       }
       try {
         await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
-          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]);
+          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]).then(async v => {
+            await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+              .socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
+                encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
+          });
       } catch (e) {
         console.error('해야할 일이 서버에 전송되지 않음: ', e);
         this.p5toast.show({
