@@ -50,6 +50,8 @@ interface NakamaGroup {
 export enum SelfMatchOpCode {
   /** 해야할 일 생성/수정/삭제/완료 */
   ADD_TODO = 10,
+  /** 프로필 정보/이미지 수정 */
+  EDIT_PROFILE = 11,
 }
 
 @Injectable({
@@ -1526,7 +1528,7 @@ export class NakamaService {
           console.log('onmatchdata: ', m);
           m['data_str'] = decodeURIComponent(new TextDecoder().decode(m.data));
           switch (m.op_code) {
-            case SelfMatchOpCode.ADD_TODO:
+            case SelfMatchOpCode.ADD_TODO: {
               let sep = m['data_str'].split(',');
               switch (sep[0]) {
                 case 'add':
@@ -1574,6 +1576,38 @@ export class NakamaService {
                   console.warn('등록되지 않은 할 일 행동: ', m);
                   break;
               }
+            }
+              break;
+            case SelfMatchOpCode.EDIT_PROFILE: {
+              switch (m['data_str']) {
+                case 'info':
+                  this.servers[_is_official][_target].client.getAccount(
+                    this.servers[_is_official][_target].session).then(v => {
+                      let keys = Object.keys(v.user);
+                      keys.forEach(key => this.users.self[key] = v.user[key]);
+                      this.save_self_profile();
+                    });
+                  break;
+                case 'image':
+                  this.servers[_is_official][_target].client.readStorageObjects(
+                    this.servers[_is_official][_target].session, {
+                    object_ids: [{
+                      collection: 'user_public',
+                      key: 'profile_image',
+                      user_id: this.servers[_is_official][_target].session.user_id,
+                    }],
+                  }).then(v => {
+                    if (v.objects.length) {
+                      this.indexed.saveTextFileToUserPath(JSON.stringify(v.objects[0].value['img']), 'servers/self/profile.img');
+                      this.users.self['img'] = v.objects[0].value['img'].replace(/"|=|\\/g, '');
+                    } else this.indexed.removeFileFromUserPath('servers/self/profile.img');
+                  });
+                  break;
+                default:
+                  console.warn('예상하지 못한 프로필 동기화 정보: ', m);
+                  break;
+              }
+            }
               break;
             default:
               console.warn('예상하지 못한 동기화 정보: ', m);

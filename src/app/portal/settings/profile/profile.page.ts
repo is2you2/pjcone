@@ -5,7 +5,7 @@ import { Component, OnInit } from '@angular/core';
 import * as p5 from "p5";
 window['p5'] = p5;
 import { IndexedDBService } from 'src/app/indexed-db.service';
-import { NakamaService } from 'src/app/nakama.service';
+import { NakamaService, SelfMatchOpCode } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import clipboard from "clipboardy";
 import { isPlatform } from 'src/app/app.component';
@@ -113,13 +113,15 @@ export class ProfilePage implements OnInit {
         value: { img: this.nakama.users.self['img'] },
         permission_read: 2,
         permission_write: 1,
-      }]).then(v => {
-        servers[i].client.updateAccount(servers[i].session, {
+      }]).then(async v => {
+        await servers[i].socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
+          encodeURIComponent('image'));
+        await servers[i].client.updateAccount(servers[i].session, {
           avatar_url: v.acks[0].version,
         });
         let all_channels = this.nakama.rearrange_channels();
-        all_channels.forEach(channel => {
-          servers[i].socket.writeChatMessage(channel.id, {
+        all_channels.forEach(async channel => {
+          await servers[i].socket.writeChatMessage(channel.id, {
             user_update: 'modify_img',
             noti_form: `: ${this.original_profile['display_name']}`,
           });
@@ -223,8 +225,10 @@ export class ProfilePage implements OnInit {
         if (this.nakama.users.self['display_name'] != this.original_profile['display_name'])
           await servers[i].client.updateAccount(servers[i].session, {
             display_name: this.nakama.users.self['display_name'],
-          }).then(_v => {
+          }).then(async _v => {
             NeedAnnounceUpdate = true;
+            await servers[i].socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
+              encodeURIComponent('info'));
           });
         // 해당 서버 연결된 채널에 고지
         if (NeedAnnounceUpdate && this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]) {
