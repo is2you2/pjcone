@@ -522,7 +522,7 @@ export class AddTodoMenuPage implements OnInit {
   }
 
   /** 이 일을 완료했습니다 */
-  doneTodo() {
+  async doneTodo() {
     this.userInput.done = true;
     // done.todo 를 생성한 후 기록을 남기는 방식
     // if (this.userInput.noti_id)
@@ -537,7 +537,10 @@ export class AddTodoMenuPage implements OnInit {
     //   });
     // else { // 메모는 이펙트만 생성하고 삭제
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
-    this.deleteFromStorage();
+    await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+      .socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
+        encodeURIComponent(`done,${this.userInput.id}`));
+    this.deleteFromStorage(false);
     // }
   }
 
@@ -754,7 +757,7 @@ export class AddTodoMenuPage implements OnInit {
   }
 
   /** 저장소로부터 데이터를 삭제하는 명령 모음 */
-  async deleteFromStorage() {
+  async deleteFromStorage(isDelete = true) {
     if (this.userInput.remote) {
       let request = {};
       if (this.userInput.remote.channel_id) {
@@ -773,9 +776,9 @@ export class AddTodoMenuPage implements OnInit {
           this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, {
           object_ids: [request],
         });
-        await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+        if (isDelete) await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
           .socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
-            encodeURIComponent(`remove,${this.userInput.id}`));
+            encodeURIComponent(`delete,${this.userInput.id}`));
       } catch (e) {
         console.error('해야할 일 삭제 요청이 서버에 전송되지 않음: ', e);
       }

@@ -1543,8 +1543,15 @@ export class NakamaService {
                   });
                   break;
                 case 'done':
+                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
+                    if (e && v) {
+                      let todo_info = JSON.parse(v);
+                      todo_info.done = true;
+                      this.modify_remote_info_as_local(todo_info, _is_official, _target);
+                    }
+                  });
                   break;
-                case 'remove':
+                case 'delete':
                   this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
                     if (e && v) {
                       let todo_info = JSON.parse(v);
