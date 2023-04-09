@@ -8,6 +8,9 @@
 </ion-header>
 
 <ion-content>
+  <ion-item-divider>
+    <ion-label>{{lang.text['ServerDetail']['copy_scan_below']}}</ion-label>
+  </ion-item-divider>
   <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="Loading">
   <ion-item button>
     <ion-label>{{lang.text['GroupServer']['DisplayName']}}</ion-label>
