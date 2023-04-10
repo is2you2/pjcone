@@ -538,9 +538,10 @@ export class AddTodoMenuPage implements OnInit {
     //   });
     // else { // 메모는 이펙트만 생성하고 삭제
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
-    await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-      .socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
-        encodeURIComponent(`done,${this.userInput.id}`));
+    if (this.userInput.remote)
+      await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+        .socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
+          encodeURIComponent(`done,${this.userInput.id}`));
     this.deleteFromStorage(false);
     // }
   }
