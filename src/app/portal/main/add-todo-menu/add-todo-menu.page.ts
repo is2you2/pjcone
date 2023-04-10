@@ -251,6 +251,7 @@ export class AddTodoMenuPage implements OnInit {
   toggle_start_calendar() {
     this.p5resize.windowResized();
     this.isStartCalendarHidden = !this.isStartCalendarHidden;
+    this.isCalendarHidden = true;
   }
 
   isCalendarHidden = true;
@@ -258,6 +259,7 @@ export class AddTodoMenuPage implements OnInit {
   toggle_calendar() {
     this.p5resize.windowResized();
     this.isCalendarHidden = !this.isCalendarHidden;
+    this.isStartCalendarHidden = true;
   }
 
   isLogsHidden = true;
@@ -550,6 +552,7 @@ export class AddTodoMenuPage implements OnInit {
 
   /** 이 일을 완료했습니다 */
   async doneTodo() {
+    this.isButtonClicked = true;
     this.userInput.done = true;
     // done.todo 를 생성한 후 기록을 남기는 방식
     // if (this.userInput.noti_id)
@@ -788,6 +791,7 @@ export class AddTodoMenuPage implements OnInit {
 
   /** 저장소로부터 데이터를 삭제하는 명령 모음 */
   async deleteFromStorage(isDelete = true) {
+    this.isButtonClicked = true;
     if (this.userInput.remote) {
       let request = {};
       if (this.userInput.remote.channel_id) {

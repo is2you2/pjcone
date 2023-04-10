@@ -36,13 +36,13 @@ SPDX-License-Identifier: MIT -->
             <ion-grid fixed>
               <ion-row>
                 <ion-col col-33>
-                  <ion-item button color="success" [disabled]="!isModifiable" (click)="doneTodo()">
+                  <ion-item button color="success" [disabled]="!isModifiable || isButtonClicked" (click)="doneTodo()">
                     <ion-label class="ion-text-center">{{lang.text['TodoDetail']['TodoComplete']}}</ion-label>
                   </ion-item>
                 </ion-col>
                 <ion-col col-33>
                   <ion-item button color="warning"
-                    [disabled]="!isModifiable || !userInput.remote || !userInput.remote.channel_id"
+                    [disabled]="!isModifiable || !userInput.remote || !userInput.remote.channel_id || isButtonClicked"
                     (click)="moveTodo()">
                     <ion-label class="ion-text-center">{{lang.text['TodoDetail']['TodoMoveTo']}}</ion-label>
                   </ion-item>
@@ -88,7 +88,8 @@ SPDX-License-Identifier: MIT -->
           </ion-item>
           <ion-item button (click)="toggle_start_calendar()">
             <ion-label>{{lang.text['TodoDetail']['startFrom']}}</ion-label>
-            <ion-label class="ion-text-right uneditable_data">{{startDisplay || lang.text['TodoDetail']['startImmediatly']}}</ion-label>
+            <ion-label class="ion-text-right uneditable_data">{{startDisplay ||
+              lang.text['TodoDetail']['startImmediatly']}}</ion-label>
           </ion-item>
           <ion-datetime #StartCalendar [hidden]="isStartCalendarHidden" style="display: inline;" [locale]="lang.lang"
             (ionChange)="start_change($event)"></ion-datetime>
