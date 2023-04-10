@@ -58,7 +58,9 @@ func calc_lerpVal():
 		var start_from
 		if info.has('startFrom'):
 			start_from = info.startFrom
-		else: start_from = info.written
+			modulate.a = .5 if info.startFrom > parent_node.current_time else 1
+		else:
+			start_from = info.written
 		lerp_value = clamp(map(parent_node.current_time, start_from, info.limit, 0, 1), 0, 1)
 		color_lerp_with_limit = clamp(map(lerp_value, lerp_start_from, 1, 0, 1), 0, 1)
 
@@ -97,6 +99,7 @@ func _on_UI_gui_input(event):
 							'id': 'engine_test_id',
 							'title': '엔진_test_title',
 							'written': OS.get_system_time_msecs(),
+							'startFrom': OS.get_system_time_msecs() + 5000,
 							'limit': OS.get_system_time_msecs() + 10000,
 							'importance': str(test_todo_index),
 							'logs': [],

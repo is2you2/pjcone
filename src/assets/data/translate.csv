@@ -44,6 +44,8 @@ Importance,중요도,Importance
 Importance_2,중요함,Important
 Importance_1,기억해야 함,Must remember
 Importance_0,메모,Memo
+startFrom,시작일시,Start date
+startImmediatly,즉시 시작,Start immediately
 limit,기한,Deadline
 description,상세 내용,Description
 description_placeholder,해야할 일 상세 내용,Todo details

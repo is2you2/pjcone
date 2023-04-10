@@ -46,6 +46,7 @@ interface RemoteInfo {
   styleUrls: ['./add-todo-menu.page.scss'],
 })
 export class AddTodoMenuPage implements OnInit {
+  @ViewChild('StartCalendar') StartCalendar: any;
   @ViewChild('Calendar') Calendar: any;
 
   constructor(
@@ -119,6 +120,8 @@ export class AddTodoMenuPage implements OnInit {
   /** { key: count } */
   saved_tag_orig = {};
 
+  /** 사용자에게 보여지는 시작일시 문자열 */
+  startDisplay: string;
   /** 사용자에게 보여지는 기한 문자열, 저장시 삭제됨 */
   limitDisplay: string;
   ImageURL: any;
@@ -228,6 +231,11 @@ export class AddTodoMenuPage implements OnInit {
     this.noti.Current = this.userInput.id;
     let date_limit = new Date(this.userInput.limit);
     this.Calendar.value = new Date(date_limit.getTime() - date_limit.getTimezoneOffset() * 60 * 1000).toISOString();
+    if (this.userInput.startFrom) {
+      let date_start = new Date(this.userInput.startFrom);
+      this.startDisplay = date_start.toLocaleString(this.lang.lang);
+      this.startDisplay = this.startDisplay.substring(0, this.startDisplay.lastIndexOf(':'));
+    }
     this.limitDisplay = date_limit.toLocaleString(this.lang.lang);
     this.limitDisplay = this.limitDisplay.substring(0, this.limitDisplay.lastIndexOf(':'));
     this.isLimitChangable = true;
@@ -236,6 +244,13 @@ export class AddTodoMenuPage implements OnInit {
 
   ionViewDidEnter() {
     this.show_count_timer();
+  }
+
+  isStartCalendarHidden = true;
+  /** 달력 켜기끄기 */
+  toggle_start_calendar() {
+    this.p5resize.windowResized();
+    this.isStartCalendarHidden = !this.isStartCalendarHidden;
   }
 
   isCalendarHidden = true;
@@ -255,6 +270,14 @@ export class AddTodoMenuPage implements OnInit {
         bottom_logs.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 50);
     }
+  }
+
+  start_change(ev: any) {
+    if (!this.isLimitChangable) return;
+    this.userInput.startFrom = ev.detail.value;
+    this.startDisplay = new Date(ev.detail.value).toLocaleString(this.lang.lang);
+    this.startDisplay = this.startDisplay.substring(0, this.startDisplay.lastIndexOf(':'))
+    this.startTimeP5Display = new Date(this.userInput.startFrom).getTime();
   }
 
   isLimitChangable = false;
@@ -304,6 +327,7 @@ export class AddTodoMenuPage implements OnInit {
   }
 
   p5timer: p5;
+  startTimeP5Display: number;
   limitTimeP5Display: number;
   /** 평소 기한 가시화 색상 */
   normal_color = '#888b';
@@ -312,7 +336,7 @@ export class AddTodoMenuPage implements OnInit {
   show_count_timer() {
     this.p5timer = new p5((p: p5) => {
       let startAnimLerp = 0;
-      let startTime = new Date(this.userInput.startFrom || this.userInput.written).getTime();
+      this.startTimeP5Display = new Date(this.userInput.startFrom || this.userInput.written).getTime();
       this.limitTimeP5Display = new Date(this.userInput.limit).getTime();
       let currentTime: number;
       let color = p.color(this.normal_color);
@@ -331,7 +355,7 @@ export class AddTodoMenuPage implements OnInit {
         currentTime = new Date().getTime();
         if (this.limitTimeP5Display < currentTime)
           lerpVal = 1;
-        else lerpVal = p.map(currentTime, startTime, this.limitTimeP5Display, 0, 1, true);
+        else lerpVal = p.map(currentTime, this.startTimeP5Display, this.limitTimeP5Display, 0, 1, true);
         if (lerpVal <= this.AlertLerpStartFrom) {
           color = p.color(this.normal_color);
         } else if (lerpVal > this.AlertLerpStartFrom)
@@ -624,7 +648,7 @@ export class AddTodoMenuPage implements OnInit {
             },
           }).then(v => v.present());
         });
-      }, new Date(this.userInput.limit).getTime() - new Date().getTime());
+      }, new Date(this.userInput.limit).getTime() - new Date(this.userInput.startFrom).getTime());
       this.nakama.web_noti_id[this.userInput.noti_id] = schedule;
     } else if (isPlatform != 'MobilePWA') { // 모바일은 예약 발송을 설정
       let color = '00bbbb'; // 메모
@@ -685,6 +709,8 @@ export class AddTodoMenuPage implements OnInit {
       });
     }
     this.userInput.written = new Date().getTime();
+    if (this.userInput.startFrom)
+      this.userInput.startFrom = new Date(this.userInput.startFrom).getTime();
     this.userInput.limit = new Date(this.userInput.limit).getTime();
     this.userInput.logs.push({
       creator: this.userInput.remote ?
