@@ -712,8 +712,13 @@ export class AddTodoMenuPage implements OnInit {
       });
     }
     this.userInput.written = new Date().getTime();
-    if (this.userInput.startFrom)
-      this.userInput.startFrom = new Date(this.userInput.startFrom).getTime();
+    if (this.userInput.startFrom) {
+      let input_value = new Date(this.userInput.startFrom).getTime()
+      let current = new Date().getTime();
+      if (current > input_value)
+        delete this.userInput.startFrom;
+      else this.userInput.startFrom = input_value;
+    }
     this.userInput.limit = new Date(this.userInput.limit).getTime();
     this.userInput.logs.push({
       creator: this.userInput.remote ?
