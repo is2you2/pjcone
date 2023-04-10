@@ -82,6 +82,8 @@ export class AddTodoMenuPage implements OnInit {
     create_at: undefined,
     /** 마지막 수정 일시 */
     written: undefined,
+    /** 보여지는 시간 */
+    startFrom: undefined,
     /** 기한 */
     limit: undefined,
     /** 필터용 태그 */
@@ -310,7 +312,7 @@ export class AddTodoMenuPage implements OnInit {
   show_count_timer() {
     this.p5timer = new p5((p: p5) => {
       let startAnimLerp = 0;
-      let startTime = new Date(this.userInput.written).getTime();
+      let startTime = new Date(this.userInput.startFrom || this.userInput.written).getTime();
       this.limitTimeP5Display = new Date(this.userInput.limit).getTime();
       let currentTime: number;
       let color = p.color(this.normal_color);

@@ -55,7 +55,11 @@ func calc_lerpVal():
 		lerp_value = 1
 		color_lerp_with_limit = 1
 	else:
-		lerp_value = clamp(map(parent_node.current_time, info.written, info.limit, 0, 1), 0, 1)
+		var start_from
+		if info.has('startFrom'):
+			start_from = info.startFrom
+		else: start_from = info.written
+		lerp_value = clamp(map(parent_node.current_time, start_from, info.limit, 0, 1), 0, 1)
 		color_lerp_with_limit = clamp(map(lerp_value, lerp_start_from, 1, 0, 1), 0, 1)
 
 
