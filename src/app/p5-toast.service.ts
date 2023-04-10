@@ -105,6 +105,7 @@ export class P5ToastService {
           content.style("background: #44a6fa88");
           content.style("border-radius: 20px");
           content.style("padding: 12px");
+          content.style("color: white");
 
           if (!this.AlertNow)
             this.AlertNow = this.alert.shift();
