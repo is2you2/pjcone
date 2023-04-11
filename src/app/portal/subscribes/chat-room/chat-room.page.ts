@@ -17,6 +17,7 @@ import { IonicViewerPage } from './ionic-viewer/ionic-viewer.page';
 import { GodotViewerPage } from './godot-viewer/godot-viewer.page';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { DomSanitizer } from '@angular/platform-browser';
+import { VoidDrawPage } from './void-draw/void-draw.page';
 
 interface FileInfo {
   id?: string;
@@ -37,6 +38,8 @@ interface ExtendButtonForm {
   isHide?: boolean;
   /** 아이콘 상대경로-이름, 크기: 64 x 64 px */
   icon?: string;
+  /** 아이콘 대신 사용하는 이미지 경로, 크기: 64 x 64 px */
+  icon_img?: string;
   /** 마우스 커서 스타일 */
   cursor?: string;
   act: Function;
@@ -121,6 +124,21 @@ export class ChatRoomPage implements OnInit {
       document.getElementById('file_sel').click();
     }
   },
+  {
+    title: this.lang.text['ChatRoom']['voidDraw'],
+    icon_img: 'voidDraw.png',
+    isHide: true,
+    act: () => {
+      this.modalCtrl.create({
+        component: VoidDrawPage,
+      }).then(v => {
+        v.onWillDismiss().then(v => {
+          console.log('받는 데이터를 검토하기: ', v);
+        });
+        v.present();
+      });
+    },
+  }
   ];
 
   /** 파일 첨부하기 */

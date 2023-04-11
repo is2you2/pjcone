@@ -116,8 +116,11 @@ SPDX-License-Identifier: MIT -->
           <div *ngFor="let button of extended_buttons" class="ext_button" [hidden]="button.isHide"
             [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'" (click)="button['act']()">
             <div>
-              <ion-icon slot="icon-only" [name]="button['icon'] || 'close-circle'" style="width: 36px; height: 36px;">
+              <ion-icon *ngIf="button['icon']" slot="icon-only" [name]="button['icon'] || 'close-circle'"
+                style="width: 36px; height: 36px;">
               </ion-icon>
+              <img *ngIf="button['icon_img']" class="ext_icon_img" [src]="'assets/icon/' + button['icon_img']"
+                [alt]="button['title']">
             </div>
             <div style="display: inline-block;"> {{button['title']}} </div>
           </div>

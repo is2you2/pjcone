@@ -15,6 +15,10 @@ const routes: Routes = [
   {
     path: 'godot-viewer',
     loadChildren: () => import('./godot-viewer/godot-viewer.module').then( m => m.GodotViewerPageModule)
+  },
+  {
+    path: 'void-draw',
+    loadChildren: () => import('./void-draw/void-draw.module').then( m => m.VoidDrawPageModule)
   }
 ];
 
