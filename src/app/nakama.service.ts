@@ -104,7 +104,7 @@ export class NakamaService {
     // 기등록 알림 id 검토
     this.noti.GetNotificationIds((list) => {
       this.registered_id = list;
-      this.set_todo_notification();
+      this.set_all_todo_notification();
     });
     // 개인 정보 설정
     this.indexed.loadTextFromUserPath('link-account', (e, v) => {
@@ -198,87 +198,70 @@ export class NakamaService {
       });
     });
   }
-  /** 시작시 해야할 일 알림을 설정 (웹 전용) */
-  set_todo_notification() {
-    if (isPlatform == 'DesktopPWA') { // 웹 알림을 페이지에 추가
-      this.indexed.GetFileListFromDB('info.todo', _list => {
-        _list.forEach(info => {
-          this.indexed.loadTextFromUserPath(info, (e, v) => {
-            if (e && v) {
-              let noti_info = JSON.parse(v);
-              let schedule_at = new Date(noti_info.limit).getTime() - new Date().getTime();
-              if (!noti_info['done'] && schedule_at > 0) {
-                let schedule = setTimeout(() => {
-                  this.noti.PushLocal({
-                    id: noti_info.noti_id,
-                    title: noti_info.title,
-                    body: noti_info.description,
-                  }, undefined, (_ev) => {
-                    this.modalCtrl.create({
-                      component: AddTodoMenuPage,
-                      componentProps: {
-                        godot: this.global.godot.contentWindow || this.global.godot.contentDocument,
-                        data: v,
-                      },
-                    }).then(v => v.present());
-                  });
-                }, schedule_at);
-                this.web_noti_id[noti_info.noti_id] = schedule;
-              }
-            }
-          });
+  /** 시작시 해야할 일 알림을 설정 */
+  set_all_todo_notification() {
+    this.indexed.GetFileListFromDB('info.todo', _list => {
+      _list.forEach(info => {
+        this.indexed.loadTextFromUserPath(info, (e, v) => {
+          if (e && v) {
+            let noti_info = JSON.parse(v);
+            this.set_todo_notification(noti_info);
+          }
         });
       });
-    } else if (isPlatform != 'MobilePWA') { // 앱 업데이트시 삭제되는 알림들을 재등록
-      this.indexed.GetFileListFromDB('info.todo', _list => {
-        _list.forEach(info => {
-          this.indexed.loadTextFromUserPath(info, (e, v) => {
-            if (e && v) {
-              let noti_info = JSON.parse(v);
-              let schedule_at = new Date(noti_info.limit).getTime();
-              let not_registered = true;
-              for (let i = 0, j = this.registered_id.length; i < j; i++)
-                if (this.registered_id[i] == noti_info.id) {
-                  this.registered_id.splice(i, 1);
-                  not_registered = false;
-                  break;
-                }
-              if (!noti_info['done'] && not_registered && schedule_at > new Date().getTime()) {
-                let color = '00bbbb'; // 메모
-                switch (noti_info.importance) {
-                  case '1': // 기억해야 함
-                    color = 'dddd0c';
-                    break;
-                  case '2': // 중요함
-                    color = '880000';
-                    break;
-                }
-                this.noti.PushLocal({
-                  id: noti_info.noti_id,
-                  title: noti_info.title,
-                  body: noti_info.description,
-                  smallIcon_ln: 'todo',
-                  iconColor_ln: color,
-                  group_ln: 'todo',
-                  triggerWhen_ln: {
-                    at: new Date(noti_info.limit),
-                  },
-                  extra_ln: {
-                    page: {
-                      component: 'AddTodoMenuPage',
-                      componentProps: {
-                        data: JSON.stringify(noti_info),
-                      },
-                    },
-                  },
-                });
-              }
-            }
-          });
+    });
+  }
+
+  set_todo_notification(noti_info: any) {
+    if (isPlatform == 'DesktopPWA') { // 웹은 예약 발송이 없으므로 지금부터 수를 세야함
+      let schedule = setTimeout(() => {
+        this.noti.PushLocal({
+          id: noti_info.noti_id,
+          title: noti_info.title,
+          body: noti_info.description,
+        }, undefined, (_ev) => {
+          this.modalCtrl.create({
+            component: AddTodoMenuPage,
+            componentProps: {
+              godot: this.global.godot.contentWindow || this.global.godot.contentDocument,
+              data: JSON.stringify(noti_info),
+            },
+          }).then(v => v.present());
         });
+      }, new Date(noti_info.limit).getTime() - new Date(noti_info.startFrom).getTime());
+      this.web_noti_id[noti_info.noti_id] = schedule;
+    } else if (isPlatform != 'MobilePWA') { // 모바일은 예약 발송을 설정
+      let color = '00bbbb'; // 메모
+      switch (noti_info.importance) {
+        case '1': // 기억해야 함
+          color = 'dddd0c';
+          break;
+        case '2': // 중요함
+          color = '880000';
+          break;
+      }
+      this.noti.PushLocal({
+        id: noti_info.noti_id,
+        title: noti_info.title,
+        body: noti_info.description,
+        smallIcon_ln: 'todo',
+        iconColor_ln: color,
+        group_ln: 'todo',
+        triggerWhen_ln: {
+          at: new Date(noti_info.limit),
+        },
+        extra_ln: {
+          page: {
+            component: 'AddTodoMenuPage',
+            componentProps: {
+              data: JSON.stringify(noti_info),
+            },
+          },
+        },
       });
     }
   }
+
   /** 공식 테스트 서버를 대상으로 Nakama 클라이언트 구성을 진행합니다.
    * @param _is_official 공식 서버 여부
    * @param _target 대상 key
@@ -669,6 +652,7 @@ export class NakamaService {
     todo_info['remote']['isOfficial'] = _is_official;
     todo_info['remote']['target'] = _target;
     todo_info['remote']['type'] = `${_is_official}/${_target}`;
+    this.set_todo_notification(todo_info);
     let godot = this.global.godot.contentWindow || this.global.godot.contentDocument;
     if (godot['add_todo']) godot['add_todo'](JSON.stringify(todo_info));
     this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
