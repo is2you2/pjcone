@@ -212,6 +212,7 @@ export class NakamaService {
     });
   }
 
+  /** 해야할 일 알림 추가하기 */
   set_todo_notification(noti_info: any) {
     if (isPlatform == 'DesktopPWA') { // 웹은 예약 발송이 없으므로 지금부터 수를 세야함
       let schedule = setTimeout(() => {
@@ -219,7 +220,7 @@ export class NakamaService {
           id: noti_info.noti_id,
           title: noti_info.title,
           body: noti_info.description,
-        }, undefined, (_ev) => {
+        }, undefined, (_ev: any) => {
           this.modalCtrl.create({
             component: AddTodoMenuPage,
             componentProps: {
@@ -1015,21 +1016,19 @@ export class NakamaService {
     return this.noti_id;
   }
   check_If_RegisteredId(expectation_number: number): number {
-    if (this.registered_id) {
-      let already_registered = false;
-      for (let i = 0, j = this.registered_id.length; i < j; i++)
-        if (this.registered_id[i] == expectation_number) {
-          already_registered = true;
-          this.registered_id.splice(i, 1);
-          break;
-        }
-      if (already_registered)
-        return this.check_If_RegisteredId(expectation_number + 1);
-      else return expectation_number;
-    } else return expectation_number;
+    let already_registered = false;
+    for (let i = 0, j = this.registered_id.length; i < j; i++)
+      if (this.registered_id[i] == expectation_number) {
+        already_registered = true;
+        this.registered_id.splice(i, 1);
+        break;
+      } // ^ 검토할 숫자를 줄이기 위해 기존 정보를 삭제함
+    if (already_registered)
+      return this.check_If_RegisteredId(expectation_number + 1);
+    else return expectation_number;
   }
   /** 기등록된 아이디 수집 */
-  registered_id: number[];
+  registered_id: number[] = [];
   /** 세션 재접속 시 기존 정보를 이용하여 채팅방에 다시 로그인함  
    * 개인 채팅에 대해서만 검토
    */

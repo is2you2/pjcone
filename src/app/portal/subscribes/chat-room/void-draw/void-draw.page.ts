@@ -26,9 +26,6 @@ export class VoidDrawPage implements OnInit {
     let targetDiv = document.getElementById('p5_void_draw');
     this.p5canvas = new p5((p: p5) => {
       p.setup = () => {
-        console.log(targetDiv);
-        console.log(targetDiv.clientWidth, targetDiv.clientHeight);
-        console.log(targetDiv.offsetWidth, targetDiv.offsetHeight);
         let canvas = p.createCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
         canvas.parent(targetDiv);
       }
