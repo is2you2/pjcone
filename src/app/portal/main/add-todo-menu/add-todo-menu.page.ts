@@ -203,11 +203,12 @@ export class AddTodoMenuPage implements OnInit {
         this.userInput.display_manager = this.lang.text['TodoDetail']['Disconnected'];
         if (!this.nakama.servers[this.userInput.remote.isOfficial] || !this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]) {
           this.userInput.display_creator = this.lang.text['TodoDetail']['DeletedServer'];
-          throw new Error("Server deleted");
+          this.isModifiable = true;
+          throw { text: 'Server Deleted', isModifiable: true };
         }
         if (this.statusBar.groupServer[this.userInput.remote.isOfficial]
           && this.statusBar.groupServer[this.userInput.remote.isOfficial][this.userInput.remote.target] != 'online') {
-          throw new Error("Server disconnected");
+          throw { text: "Server disconnected", isModifiable: true };
         } else if (this.statusBar.groupServer[this.userInput.remote.isOfficial][this.userInput.remote.target] == 'online')
           this.isModifiable = true;
         this.AmICreator =
@@ -219,8 +220,8 @@ export class AddTodoMenuPage implements OnInit {
           this.isModifiable = this.nakama.groups[this.userInput.remote.isOfficial][this.userInput.remote.target][this.userInput.remote.group_id]['status'] == 'online';
       }
     } catch (e) {
-      this.isModifiable = false;
-      console.log('Server issue: ', e);
+      this.isModifiable = e.isModifiable;
+      console.log('Server issue: ', e.text);
     }
     // 로그 정보 게시
     if (this.userInput.logs.length) {

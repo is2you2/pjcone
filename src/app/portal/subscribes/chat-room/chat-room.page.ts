@@ -514,11 +514,12 @@ export class ChatRoomPage implements OnInit {
             && this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]) {
             if (this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnProgress']) {
               delete this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id];
-              throw new Error("Need to download file again");
+              throw "Need to download file again";
             } else return;
           }
-          else throw new Error("Need to download file");
-        } catch (_e) { // 전송중이 아니라면 다운받기
+          else throw "Need to download file";
+        } catch (e) { // 전송중이 아니라면 다운받기
+          console.log(e);
           if (isPlatform == 'DesktopPWA') {
             if (!this.isHistoryLoaded)
               this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
@@ -642,8 +643,9 @@ export class ChatRoomPage implements OnInit {
         msg.content['viewer'] = 'video';
       else if (msg.content['type'].indexOf('text/') == 0) // 분류상 텍스트 문서
         msg.content['viewer'] = 'text';
-      else throw new Error("자동지정되지 않은 타입");
-    } catch (error) { // 자동지정 타입이 없는 경우
+      else throw "자동지정되지 않은 타입";
+    } catch (e) { // 자동지정 타입이 없는 경우
+      console.log('viewer: ', e);
       switch (msg.content['file_ext']) {
         // 모델링류
         // case 'obj':

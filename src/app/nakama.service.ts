@@ -1317,13 +1317,14 @@ export class NakamaService {
               key: `group_${info['id']}`,
             }]
           }).then(_v => {
-            throw new Error("Remove group image well");
+            throw "Remove group image well";
           }).catch(_e => {
-            throw new Error("No group image found");
+            throw "No group image found";
           });
         });
-      else throw new Error("not creator");
+      else throw "not a group creator";
     } catch (e) {
+      console.log(e);
       delete this.groups[_is_official][_target][info['id']];
       this.rearrange_group_list();
       this.save_groups_with_less_info();
@@ -2577,7 +2578,7 @@ export class NakamaService {
           this.try_add_group(json[i]);
           break;
         default: // 동작 미정 알림(debug)
-          throw new Error("지정된 틀 아님");
+          throw "지정된 틀 아님";
       }
   }
 
@@ -2605,7 +2606,7 @@ export class NakamaService {
         };
         break;
       default:
-        throw new Error(`지정된 툴 정보가 아님: ${data}`);
+        throw `지정된 툴 정보가 아님: ${data}`;
     }
     this.tools.initialize(data.name, PORT, () => {
       this.tools.check_addresses(data.name, (v: any) => {

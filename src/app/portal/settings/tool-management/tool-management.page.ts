@@ -51,8 +51,9 @@ export class ToolManagementPage implements OnInit {
           });
         };
         reader.readAsDataURL(blob);
-      } else throw new Error("없는거나 다름없지");
+      } else throw "없는 툴이라고 판단됩니다.";
     } catch (e) { // 로컬 정보 기반으로 광고
+      console.log(e);
       this.list[i]['toggle'] = false;
       this.p5toast.show({
         text: `${this.lang.text['ToolManager']['redownloadFailed']}: ${this.list[i]}`,

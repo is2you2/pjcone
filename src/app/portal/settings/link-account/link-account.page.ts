@@ -47,7 +47,7 @@ export class LinkAccountPage implements OnInit {
       msg.data.text().then(v => {
         try {
           let json = JSON.parse(v);
-          if (!json.uuid) throw new Error("uuid 받기 실패");
+          if (!json.uuid) throw "uuid 받기 실패";
           this.nakama.uuid = json.uuid;
           this.indexed.saveTextFileToUserPath(this.nakama.uuid, 'link-account');
           this.p5toast.show({
@@ -60,7 +60,8 @@ export class LinkAccountPage implements OnInit {
           setTimeout(() => {
             this.navCtrl.back();
           }, 500);
-        } catch (_e) {
+        } catch (e) {
+          console.log(e);
           this.QRCodeSRC = this.global.readasQRCodeFromId({
             type: 'link',
             value: v,

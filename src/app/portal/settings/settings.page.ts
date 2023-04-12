@@ -90,8 +90,9 @@ export class SettingsPage implements OnInit {
         this.indexed.saveTextFileToUserPath(text, 'ads_list.txt');
         let lines: string[] = text.split('\n');
         this.listAvailableAds(lines);
-      } else throw new Error("없는거나 다름없지");
+      } else "광고가 없는 것으로 단정합니다";
     } catch (e) { // 로컬 정보 기반으로 광고
+      console.log(e);
       this.indexed.loadTextFromUserPath('ads_list.txt', (e, v) => {
         if (e && v) this.listAvailableAds(v.split('\n'));
       });

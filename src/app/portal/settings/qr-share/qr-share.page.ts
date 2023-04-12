@@ -83,13 +83,14 @@ export class QrSharePage implements OnInit {
     this.websocket.onmessage = (msg: any) => {
       msg.data.text().then(v => {
         try {
-          if (!this.QRCodeSRC) throw new Error("QR코드 생성 우선처리");
+          if (!this.QRCodeSRC) throw "QR코드 생성 우선처리";
           let json = JSON.parse(v);
           this.nakama.act_from_QRInfo(json['value']);
           setTimeout(() => {
             this.navCtrl.back();
           }, 500);
-        } catch (_e) {
+        } catch (e) {
+          console.log(e);
           this.QRCodeSRC = this.global.readasQRCodeFromId({
             type: 'QRShare',
             value: v,

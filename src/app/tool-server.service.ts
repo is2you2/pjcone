@@ -47,7 +47,7 @@ export class ToolServerService {
    */
   initialize(_target: string, _PORT: number, onStart:Function, onMessage: Function) {
     if (!this.statusBar.tools[_target])
-      throw new Error(`그런 툴은 없습니다: ${_target}`);
+      throw `그런 툴은 없습니다: ${_target}`;
     this.statusBar.tools[_target] = 'pending';
     if (isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA') {
       if (this.list[_target] == null) this.list[_target] = {};

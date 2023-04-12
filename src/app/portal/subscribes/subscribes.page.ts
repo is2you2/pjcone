@@ -50,8 +50,8 @@ export class SubscribesPage implements OnInit {
       if (!v.cancelled) {
         try { // 양식에 맞게 끝까지 동작한다면 우리 데이터가 맞다main
           this.nakama.act_from_QRInfo(v.text.trim());
-        } catch (_e) { // 양식에 맞춰 행동할 수 없다면 모르는 데이터다
-          console.error('scanQRCode_failed: ', _e);
+        } catch (e) { // 양식에 맞춰 행동할 수 없다면 모르는 데이터다
+          console.log('scanQRCode_failed: ', e);
           this.modalCtrl.create({
             component: QRelsePage,
             componentProps: { result: v },
@@ -59,7 +59,7 @@ export class SubscribesPage implements OnInit {
         }
       }
     }).catch(_e => {
-      console.error(_e);
+      console.log(_e);
       this.p5toast.show({
         text: this.lang.text['Subscribes']['CameraPermissionDenied'],
       });
