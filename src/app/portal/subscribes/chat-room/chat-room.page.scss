@@ -122,8 +122,9 @@
     text-align: center;
     font-size: 12px;
     display: inherit;
-    background-color: #444;
+    background: var(--chatroom-you-read-here-backgruond);
     margin: 4px 0px;
+    color: var(--chatroom-you-read-here-text);
 }
 
 .ext_icon_img {
