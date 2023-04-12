@@ -7,6 +7,8 @@ import { P5ToastService } from './p5-toast.service';
 import * as QRCode from "qrcode-svg";
 import { DomSanitizer } from '@angular/platform-browser';
 
+export var isDarkMode = false;
+
 /** 고도엔진과 공유되는 키값 */
 interface GodotFrameKeys {
   /** 공식 패키지 이름 */
@@ -30,10 +32,8 @@ export class GlobalActService {
     private lang: LanguageSettingService,
     private sanitizer: DomSanitizer,
   ) {
-    this.isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
-
-  isDarkMode = false;
 
   /** 브라우저에서 딥 링크마냥 행동하기
    * @returns GET 으로 작성된 key-value 쌍
@@ -63,8 +63,8 @@ export class GlobalActService {
         padding: 4,
         width: 8,
         height: 8,
-        color: this.isDarkMode ? "#bbb" : '#444',
-        background: this.isDarkMode ? "#111" : '#fff',
+        color: isDarkMode ? "#bbb" : '#444',
+        background: isDarkMode ? "#111" : '#fff',
         ecl: "M",
       }).svg();
       return this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);

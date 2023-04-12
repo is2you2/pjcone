@@ -1903,7 +1903,7 @@ export class NakamaService {
 
   /** 발신인 표시를 위한 메시지 추가 가공 */
   check_sender_and_show_name(c: ChannelMessage, _is_official: string, _target: string) {
-    c['color'] = (c.sender_id.replace(/[^4-79a-b]/g, '') + 'abcdef').substring(0, 6);
+    c['color'] = (c.sender_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
     if (c.sender_id == this.servers[_is_official][_target].session.user_id) {
       c['user_display_name'] = this.users.self['display_name'];
       c['is_me'] = true;

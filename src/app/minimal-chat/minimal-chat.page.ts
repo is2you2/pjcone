@@ -14,7 +14,7 @@ import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
 import { LocalGroupServerService } from '../local-group-server.service';
 import { isPlatform } from '../app.component';
-import { GlobalActService } from '../global-act.service';
+import { GlobalActService, isDarkMode } from '../global-act.service';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -159,7 +159,7 @@ export class MinimalChatPage implements OnInit {
         });
       }
       this.client.userInput[this.target].logs.length = 0;
-      this.client.userInput[this.target].logs.push({ color: 'bbb', text: this.client.status[this.target] == 'custom' ? this.lang.text['MinimalChat']['joinChat_group'] : this.lang.text['MinimalChat']['joinChat_ran'] });
+      this.client.userInput[this.target].logs.push({ color: isDarkMode ? 'bbb' : '444', text: this.client.status[this.target] == 'custom' ? this.lang.text['MinimalChat']['joinChat_group'] : this.lang.text['MinimalChat']['joinChat_ran'] });
       this.client.initialize(this.target, get_address);
     }
     this.client.funcs[this.target].onmessage = (v: string) => {
@@ -167,7 +167,7 @@ export class MinimalChatPage implements OnInit {
         let data = JSON.parse(v);
         let isMe = this.uuid == data['uid'];
         let target = isMe ? (name || this.lang.text['MinimalChat']['name_me']) : (data['name'] || (this.client.status[this.target] == 'custom' ? this.lang.text['MinimalChat']['name_stranger_group'] : this.lang.text['MinimalChat']['name_stranger_ran']));
-        let color = data['uid'] ? (data['uid'].replace(/[^4-79a-b]/g, '') + 'abcdef').substring(0, 6) : '888';
+        let color = data['uid'] ? (data['uid'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6) : isDarkMode ? '888' : '444';
         if (data['msg'])
           this.client.userInput[this.target].logs.push({ color: color, text: data['msg'], target: target });
         else if (data['type']) {
@@ -236,7 +236,7 @@ export class MinimalChatPage implements OnInit {
                 this.statusBar.settings[this.target] = 'online';
             }, 250);
             this.client.userInput[this.target].logs.length = 0;
-            this.client.userInput[this.target].logs.push({ color: '8bb', text: this.lang.text['MinimalChat']['meet_someone'] });
+            this.client.userInput[this.target].logs.push({ color: isDarkMode ? '8bb' : '488', text: this.lang.text['MinimalChat']['meet_someone'] });
             this.client.status[this.target] = 'linked';
             this.noti.PushLocal({
               id: this.lnId,
@@ -268,7 +268,7 @@ export class MinimalChatPage implements OnInit {
               if (this.statusBar.settings[this.target] == 'pending')
                 this.statusBar.settings[this.target] = 'online';
             }, 250);
-            this.client.userInput[this.target].logs.push({ color: 'b88', text: this.lang.text['MinimalChat']['leave_someone'] });
+            this.client.userInput[this.target].logs.push({ color: isDarkMode ? 'b88' : '844', text: this.lang.text['MinimalChat']['leave_someone'] });
             this.client.status[this.target] = 'unlinked';
             this.noti.PushLocal({
               id: this.lnId,
@@ -408,7 +408,7 @@ export class MinimalChatPage implements OnInit {
       this.client.send(this.target, 'REQ_REGROUPING');
       this.client.status[this.target] = 'unlinked';
       this.client.userInput[this.target].logs.length = 0;
-      this.client.userInput[this.target].logs.push({ color: 'bbb', text: this.lang.text['MinimalChat']['waiting_someone'] });
+      this.client.userInput[this.target].logs.push({ color: isDarkMode ? 'bbb' : '444', text: this.lang.text['MinimalChat']['waiting_someone'] });
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       this.focus_on_input();
       this.req_refreshed = true;
@@ -478,7 +478,7 @@ export class MinimalChatPage implements OnInit {
       setTimeout(() => {
         this.statusBar.settings[this.target] = 'offline';
       }, 1500);
-      this.client.userInput[this.target].logs.push({ color: 'ffa', text: this.client.status[this.target] == 'custom' ? this.lang.text['MinimalChat']['leave_chat_group'] : this.lang.text['MinimalChat']['leave_chat_ran'] });
+      this.client.userInput[this.target].logs.push({ color: isDarkMode ? 'ffa' : '884', text: this.client.status[this.target] == 'custom' ? this.lang.text['MinimalChat']['leave_chat_group'] : this.lang.text['MinimalChat']['leave_chat_ran'] });
       this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     this.noti.RemoveListener(`send${this.target}`);
