@@ -12,7 +12,6 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { NakamaService, SelfMatchOpCode } from 'src/app/nakama.service';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { isPlatform } from 'src/app/app.component';
-import { GlobalActService } from 'src/app/global-act.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 
 interface LogForm {
@@ -59,7 +58,6 @@ export class AddTodoMenuPage implements OnInit {
     private nakama: NakamaService,
     private alertCtrl: AlertController,
     private noti: LocalNotiService,
-    private global: GlobalActService,
     private statusBar: StatusManageService,
   ) { }
 

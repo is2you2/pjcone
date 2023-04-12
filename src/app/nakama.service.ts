@@ -214,6 +214,8 @@ export class NakamaService {
 
   /** 해야할 일 알림 추가하기 */
   set_todo_notification(noti_info: any) {
+    // 시작 시간이 있으면 시작할 때 알림, 시작시간이 없으면 끝날 때 알림
+    let targetTime = noti_info.startFrom || noti_info.limit;
     if (isPlatform == 'DesktopPWA') { // 웹은 예약 발송이 없으므로 지금부터 수를 세야함
       let schedule = setTimeout(() => {
         this.noti.PushLocal({
@@ -229,7 +231,7 @@ export class NakamaService {
             },
           }).then(v => v.present());
         });
-      }, new Date(noti_info.limit).getTime() - new Date(noti_info.startFrom).getTime());
+      }, new Date(targetTime).getTime() - new Date().getTime());
       this.web_noti_id[noti_info.noti_id] = schedule;
     } else if (isPlatform != 'MobilePWA') { // 모바일은 예약 발송을 설정
       let color = '00bbbb'; // 메모
@@ -249,7 +251,7 @@ export class NakamaService {
         iconColor_ln: color,
         group_ln: 'todo',
         triggerWhen_ln: {
-          at: new Date(noti_info.limit),
+          at: new Date(targetTime),
         },
         extra_ln: {
           page: {
