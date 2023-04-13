@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import * as p5 from "p5";
 import { LanguageSettingService } from 'src/app/language-setting.service';
+import { P5ToastService } from 'src/app/p5-toast.service';
 
 @Component({
   selector: 'app-void-draw',
@@ -13,23 +14,97 @@ export class VoidDrawPage implements OnInit {
   constructor(
     public lang: LanguageSettingService,
     public modalCtrl: ModalController,
+    private p5toast: P5ToastService,
   ) { }
 
   ngOnInit() { }
 
   ionViewDidEnter() {
-    this.init_void_draw();
+    this.init_void_draw(300, 550);
+  }
+
+  translate = { x: 0, y: 0 };
+  rotate = 0;
+  /** 정비율 조정만 있을 뿐 */
+  scale = 0;
+
+  reset_transform() {
+    this.translate.x = 0;
+    this.translate.y = 0;
+    this.rotate = 0;
+    this.scale = 0;
   }
 
   p5canvas: p5;
-  init_void_draw() {
+  /** 3단 레이어 구성: 배경, 그리기 기록, 현재 그리기 */
+  init_void_draw(w: number, h: number) {
+    if (w <= 0 || h <= 0) {
+      this.p5toast.show({
+        text: this.lang.text['voidDraw']['sideSIzeIssue'],
+      });
+      console.log('허용할 수 없는 이미지 크기: ', w, '/', h);
+      return;
+    }
+    if (this.p5canvas) // 이미 존재한다면 삭제 후 다시 만들기
+      this.p5canvas.remove();
+    this.reset_transform();
     let targetDiv = document.getElementById('p5_void_draw');
     this.p5canvas = new p5((p: p5) => {
-      const BACKGROUND_COLOR = 245;
+      let bg_color = 255;
+      /** 그려온 것들 */
+      let drawing: p5.Graphics;
+      /** 이번 차례에 그리는 것 */
+      let current: p5.Graphics;
+      let canvas: p5.Renderer;
       p.setup = () => {
-        let canvas = p.createCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
+        canvas = p.createCanvas(w, h);
         canvas.parent(targetDiv);
-        p.background(BACKGROUND_COLOR);
+        this.translate.x = (targetDiv.offsetWidth - w) / 2;
+        this.translate.y = (targetDiv.offsetHeight - h) / 2;
+        canvas.style('position', 'relative');
+        update_transform();
+        new_canvas_animation(0, calc_start_ratio());
+        drawing = p.createGraphics(w, h);
+        current = p.createGraphics(w, h);
+        current.strokeWeight(5);
+        p.background(bg_color);
+        p.image(drawing, 0, 0);
+        p.image(current, 0, 0);
+        p.noFill();
+        drawing.noFill();
+        current.noFill();
+        drawing.clear(255, 255, 255, 255);
+        current.clear(255, 255, 255, 255);
+        drawing.noLoop();
+        current.noLoop();
+      }
+      /** 시작할 때 조정할 배율 계산하기 */
+      let calc_start_ratio = (): number => {
+        let width_ratio = targetDiv.offsetWidth / w;
+        let height_ratio = targetDiv.offsetHeight / h;
+        return p.min(width_ratio, height_ratio);
+      }
+      let update_transform = () => {
+        canvas.style('left', `${this.translate.x}px`);
+        canvas.style('top', `${this.translate.y}px`);
+        canvas.style('transform', `rotate(${this.rotate}deg)`);
+        canvas.style('scale', `${this.scale}`);
+      }
+      /** 새로운 캔버스가 생길 때 생성 애니메이션 */
+      let new_canvas_animation = (value: number, target: number) => {
+        value += .04;
+        this.scale = target * (value < 0.5 ? 2 * value * value : 1 - p.pow(-2 * value + 2, 2) / 2);
+        setTimeout(() => {
+          if (value < 1)
+            new_canvas_animation(value, target);
+          else this.scale = target;
+        }, 1000 / 60);
+      }
+      p.draw = () => {
+        p.background(bg_color);
+        p.image(drawing, 0, 0);
+        p.image(current, 0, 0);
+        update_transform();
       }
       let draw_line: p5.Vector[] = [];
       p.mousePressed = () => {
@@ -53,20 +128,30 @@ export class VoidDrawPage implements OnInit {
         if (p.touches[0])
           universal_released(p.touches[0]['x'], p.touches[0]['y']);
       }
+      /** 엇나가는 그리기 보정 */
+      let retargeting_position = (x: number, y: number): p5.Vector => {
+        let result = p.createVector(x, y);
+        if (this.scale != 1)
+          result = result.div(this.scale);
+        return result;
+      }
       let universal_pressed = (x: number, y: number) => {
         draw_line.length = 0;
         for (let i = 0; i < 4; i++)
-          draw_line.push(p.createVector(x, y));
+          draw_line.push(retargeting_position(x, y));
         draw_curve();
       }
       let universal_dragged = (x: number, y: number) => {
         draw_line.shift();
-        draw_line.push(p.createVector(x, y));
+        draw_line.push(retargeting_position(x, y));
         draw_curve();
       }
       let universal_released = (x: number, y: number) => {
         universal_dragged(x, y);
         draw_line.length = 0;
+        drawing.image(current, 0, 0);
+        drawing.redraw();
+        current.clear(255, 255, 255, 255);
       }
       let universal_translate_change = () => {
         console.log('원본 대비 위치 이동');
@@ -79,17 +164,19 @@ export class VoidDrawPage implements OnInit {
       }
       /** 마지막 4점을 이용한 그림그리기 시도 */
       let draw_curve = () => {
-        console.log('마지막 순간의 속도는...: ', 255 / draw_line[2].dist(draw_line[3]));
-        p.curve(
+        current.curve(
           draw_line[0].x, draw_line[0].y,
           draw_line[1].x, draw_line[1].y,
           draw_line[2].x, draw_line[2].y,
           draw_line[3].x, draw_line[3].y,
         );
+        current.redraw();
       }
       p.windowResized = () => {
-        p.resizeCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
-        p.background(BACKGROUND_COLOR);
+        p.resizeCanvas(w, h);
+        // drawing.resizeCanvas(w,h);
+        current.resizeCanvas(w, h);
+        p.background(bg_color);
       }
     });
   }
@@ -99,7 +186,16 @@ export class VoidDrawPage implements OnInit {
     let returnData = {
       text: 'test_text',
     };
-    this.modalCtrl.dismiss(returnData);
-    this.p5canvas.remove();
+    this.modalCtrl.dismiss(returnData)
+      .then(v => {
+        console.log('여기 뭐 있으려나: ', v);
+        if (this.p5canvas)
+          this.p5canvas.remove();
+      });
+  }
+
+  ionViewDidLeave() {
+    if (this.p5canvas)
+      this.p5canvas.remove();
   }
 }
