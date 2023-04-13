@@ -101,6 +101,6 @@ export class WscService {
   send(msg: string) {
     if (this.client && this.client.readyState == this.client.OPEN)
       this.client.send(msg);
-    else console.warn('메시지 발송 실패: ', msg);
+    else console.log('메시지 발송 실패: ', msg);
   }
 }

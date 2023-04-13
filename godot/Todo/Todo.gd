@@ -147,7 +147,7 @@ func remove_todo(args):
 
 func _on_Add_gui_input(event):
 	if event is InputEventMouseButton:
-		if not event.pressed:
+		if not event.pressed and event.button_index == 1:
 			if window:
 				window.add_todo_menu()
 			else:
