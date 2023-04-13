@@ -106,13 +106,16 @@ export class VoidDrawPage implements OnInit {
       let draw_line: p5.Vector[] = [];
       let StartMouseMiddle: p5.Vector;
       let AlreadyMoving = false;
-      p.mousePressed = () => {
-        if (p.mouseButton == p.LEFT)
+      p.mousePressed = (ev) => {
+        if (p.mouseButton == p.LEFT) {
+          if (ev['target'] != canvas.elt) return;
           universal_pressed(p.mouseX, p.mouseY);
+        }
         if (p.mouseButton == p.CENTER)
           StartMouseMiddle = p.createVector(p.mouseX, p.mouseY);
       }
-      p.mouseDragged = () => {
+      p.mouseDragged = (ev) => {
+        if (ev['target'] != canvas.elt) return;
         if (p.mouseButton == p.LEFT)
           universal_dragged(p.mouseX, p.mouseY);
         if (p.mouseButton == p.CENTER) {
@@ -124,9 +127,11 @@ export class VoidDrawPage implements OnInit {
           }
         }
       }
-      p.mouseReleased = () => {
-        if (p.mouseButton == p.LEFT)
+      p.mouseReleased = (ev) => {
+        if (p.mouseButton == p.LEFT) {
+          if (ev['target'] != canvas.elt) return;
           universal_released(p.mouseX, p.mouseY);
+        }
         if (p.mouseButton == p.CENTER) {
           let dist = StartMouseMiddle.dist(p.createVector(p.mouseX, p.mouseY));
           if (dist < 8 && !AlreadyMoving) // 근거리 클릭은 원복
@@ -135,20 +140,24 @@ export class VoidDrawPage implements OnInit {
         }
       }
       p.mouseWheel = (ev) => {
+        if (ev['target'] != canvas.elt) return;
         if (ev['delta'] > 0) { // 아래 휠
           if (this.scale > .1)
             this.scale -= ev['delta'] / 1000;
         } else this.scale -= ev['delta'] / 1000;
       }
-      p.touchStarted = () => {
+      p.touchStarted = (ev) => {
+        if (ev['target'] != canvas.elt) return;
         if (p.touches[0])
           universal_pressed(p.touches[0]['x'], p.touches[0]['y']);
       }
-      p.touchMoved = () => {
+      p.touchMoved = (ev) => {
+        if (ev['target'] != canvas.elt) return;
         if (p.touches[0])
           universal_dragged(p.touches[0]['x'], p.touches[0]['y']);
       }
-      p.touchEnded = () => {
+      p.touchEnded = (ev) => {
+        if (ev['target'] != canvas.elt) return;
         if (p.touches[0])
           universal_released(p.touches[0]['x'], p.touches[0]['y']);
       }
@@ -207,6 +216,10 @@ export class VoidDrawPage implements OnInit {
         if (this.p5canvas)
           this.p5canvas.remove();
       });
+  }
+
+  MoveMenu() {
+    console.log('이동 메뉴 샘플 로그');
   }
 
   ionViewDidLeave() {
