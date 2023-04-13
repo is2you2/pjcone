@@ -28,13 +28,6 @@ export class VoidDrawPage implements OnInit {
   /** 정비율 조정만 있을 뿐 */
   scale = 0;
 
-  reset_transform() {
-    this.translate.x = 0;
-    this.translate.y = 0;
-    this.rotate = 0;
-    this.scale = 0;
-  }
-
   p5canvas: p5;
   /** 3단 레이어 구성: 배경, 그리기 기록, 현재 그리기 */
   init_void_draw(w: number, h: number) {
@@ -47,7 +40,6 @@ export class VoidDrawPage implements OnInit {
     }
     if (this.p5canvas) // 이미 존재한다면 삭제 후 다시 만들기
       this.p5canvas.remove();
-    this.reset_transform();
     let targetDiv = document.getElementById('p5_void_draw');
     this.p5canvas = new p5((p: p5) => {
       let bg_color = 255;
@@ -61,9 +53,10 @@ export class VoidDrawPage implements OnInit {
         canvas.parent(targetDiv);
         this.translate.x = (targetDiv.offsetWidth - w) / 2;
         this.translate.y = (targetDiv.offsetHeight - h) / 2;
+        this.scale = 0;
         canvas.style('position', 'relative');
         update_transform();
-        new_canvas_animation(0, calc_start_ratio());
+        reset_canvas_animation(0, p.createVector(this.translate.x, this.translate.y), this.rotate, this.scale, calc_start_ratio());
         drawing = p.createGraphics(w, h);
         current = p.createGraphics(w, h);
         current.strokeWeight(5);
@@ -91,13 +84,17 @@ export class VoidDrawPage implements OnInit {
         canvas.style('scale', `${this.scale}`);
       }
       /** 새로운 캔버스가 생길 때 생성 애니메이션 */
-      let new_canvas_animation = (value: number, target: number) => {
-        value += .04;
-        this.scale = target * (value < 0.5 ? 2 * value * value : 1 - p.pow(-2 * value + 2, 2) / 2);
+      let reset_canvas_animation = (lerp: number, start_pos: p5.Vector, start_rot: number, start_scale: number, target_scale: number) => {
+        lerp += .04;
+        let ease = (lerp < 0.5 ? 2 * lerp * lerp : 1 - p.pow(-2 * lerp + 2, 2) / 2);
+        this.translate.x = p.lerp(start_pos.x, (targetDiv.offsetWidth - w) / 2, ease);
+        this.translate.y = p.lerp(start_pos.y, (targetDiv.offsetHeight - h) / 2, ease);
+        this.rotate = p.lerp(start_rot, 0, ease);
+        this.scale = p.lerp(start_scale, target_scale, ease);
         setTimeout(() => {
-          if (value < 1)
-            new_canvas_animation(value, target);
-          else this.scale = target;
+          if (lerp < 1)
+            reset_canvas_animation(lerp, start_pos, start_rot, start_scale, target_scale);
+          else this.scale = target_scale;
         }, 1000 / 60);
       }
       p.draw = () => {
@@ -108,13 +105,24 @@ export class VoidDrawPage implements OnInit {
       }
       let draw_line: p5.Vector[] = [];
       p.mousePressed = () => {
-        universal_pressed(p.mouseX, p.mouseY);
+        if (p.mouseButton == p.LEFT)
+          universal_pressed(p.mouseX, p.mouseY);
+        if (p.mouseButton == p.CENTER)
+          reset_canvas_animation(0, p.createVector(this.translate.x, this.translate.y), this.rotate, this.scale, calc_start_ratio());
       }
       p.mouseDragged = () => {
-        universal_dragged(p.mouseX, p.mouseY);
+        if (p.mouseButton == p.LEFT)
+          universal_dragged(p.mouseX, p.mouseY);
       }
       p.mouseReleased = () => {
-        universal_released(p.mouseX, p.mouseY);
+        if (p.mouseButton == p.LEFT)
+          universal_released(p.mouseX, p.mouseY);
+      }
+      p.mouseWheel = (ev) => {
+        if (ev['delta'] > 0) { // 아래 휠
+          if (this.scale > .1)
+            this.scale -= ev['delta'] / 1000;
+        } else this.scale -= ev['delta'] / 1000;
       }
       p.touchStarted = () => {
         if (p.touches[0])
@@ -152,15 +160,6 @@ export class VoidDrawPage implements OnInit {
         drawing.image(current, 0, 0);
         drawing.redraw();
         current.clear(255, 255, 255, 255);
-      }
-      let universal_translate_change = () => {
-        console.log('원본 대비 위치 이동');
-      }
-      let universal_scale_change = () => {
-        console.log('원본 대비 스케일 조정처리');
-      }
-      let universal_reset_transform = (x: number, y: number) => {
-        console.log('세번째 버튼으로 원상복구');
       }
       /** 마지막 4점을 이용한 그림그리기 시도 */
       let draw_curve = () => {
