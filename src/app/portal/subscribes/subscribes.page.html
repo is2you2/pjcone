@@ -58,7 +58,8 @@ SPDX-License-Identifier: MIT -->
                 lang.text['Subscribes']['noTitiedChat'])}}
               </td>
               <td class="server_target">
-                {{'(' + channel['server']['target'] + ')'}}
+                {{'(' + nakama.servers[channel['server']['isOfficial']][channel['server']['target']]['info']['name'] +
+                ')'}}
               </td>
             </tr>
           </table>
