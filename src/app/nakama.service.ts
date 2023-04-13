@@ -1918,6 +1918,7 @@ export class NakamaService {
    * @return c.modulated
    */
   modulation_channel_message(c: ChannelMessage, _is_official: string, _target: string) {
+    this.translate_updates(c);
     let is_me = false;
     if (this.statusBar.groupServer[_is_official][_target]
       && this.statusBar.groupServer[_is_official][_target] != 'offline'
