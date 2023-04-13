@@ -14,37 +14,31 @@
       <tr>
         <td>
           <img class="menu_icon" src="" alt="">
-          이동
+          {{lang.text['voidDraw']['moveMenu']}}
+        </td>
+      </tr>
+      <tr (click)="new_image()">
+        <td>
+          <img class="menu_icon" src="" alt="">
+          {{lang.text['voidDraw']['newDraw']}}
         </td>
       </tr>
       <tr>
         <td>
           <img class="menu_icon" src="" alt="">
-          새 그림
+          {{lang.text['voidDraw']['strokeColor']}}
         </td>
       </tr>
       <tr>
         <td>
           <img class="menu_icon" src="" alt="">
-          이미지
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <img class="menu_icon" src="" alt="">
-          색상
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <img class="menu_icon" src="" alt="">
-          두께
+          {{lang.text['voidDraw']['strokeWeight']}}
         </td>
       </tr>
       <tr (click)="dismiss_draw()">
         <td>
           <img class="menu_icon" src="" alt="">
-          보내기
+          {{lang.text['voidDraw']['useDraw']}}
         </td>
       </tr>
     </table>

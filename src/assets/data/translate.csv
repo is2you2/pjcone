@@ -333,4 +333,14 @@ LocalNotiTitle,그룹 참가됨,Joined group
 LocalNotiOK,확인,OK
 LocalNotiCheck,검토,Check
 ## voidDraw
-sideSIzeIssue,캔버스의 모든 변은 0보다 커야합니다.,All sides of the canvas must be greater than 0
+sideSIzeIssue,캔버스의 모든 변은 0보다 커야합니다,All sides of the canvas must be greater than 0
+moveMenu,이동,Move
+newDraw,새 그림,New draw
+strokeColor,색상,Color
+strokeWeight,선 두께,Weight
+useDraw,보내기,Send
+UseThisImage,이미지를 준비중...,Preparing image to send...
+CreateNew,새로 만들기,New
+width,가로,Width
+height,세로,Height
+default_size,기본,default

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController } from '@ionic/angular';
 import * as p5 from "p5";
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -15,6 +15,8 @@ export class VoidDrawPage implements OnInit {
     public lang: LanguageSettingService,
     public modalCtrl: ModalController,
     private p5toast: P5ToastService,
+    private alertCtrl: AlertController,
+    private loadingCtrl: LoadingController,
   ) { }
 
   ngOnInit() { }
@@ -205,18 +207,51 @@ export class VoidDrawPage implements OnInit {
     });
   }
 
+  new_image() {
+    const DEFAULT_SIZE = 512;
+    this.alertCtrl.create({
+      header: this.lang.text['voidDraw']['newDraw'],
+      inputs: [{
+        name: 'width',
+        type: 'number',
+        placeholder: `${this.lang.text['voidDraw']['width']} (${this.lang.text['voidDraw']['default_size']}: ${DEFAULT_SIZE})`,
+      }, {
+        name: 'height',
+        type: 'number',
+        placeholder: `${this.lang.text['voidDraw']['height']} (${this.lang.text['voidDraw']['default_size']}: ${DEFAULT_SIZE})`,
+      }, {
+        name: 'image',
+        label: 'image',
+        type: 'checkbox',
+      }],
+      buttons: [{
+        text: this.lang.text['voidDraw']['CreateNew'],
+        handler: (v) => {
+          console.log(v);
+          this.init_void_draw(Number(v['width']) || 512, Number(v['height']) || 512);
+        }
+      }],
+    }).then(v => v.present());
+  }
+
   /** 사용하기를 누른 경우 */
   dismiss_draw() {
-    this.p5canvas.saveFrames('voidDraw', 'png', 1, 1, (img) => {
-      let returnData = {
-        name: `voidDraw_${this.p5canvas.year()}-${this.p5canvas.nf(this.p5canvas.month(), 2)}-${this.p5canvas.nf(this.p5canvas.day(), 2)}.png`,
-        img: img[0]['imageData'],
-      };
-      this.modalCtrl.dismiss(returnData)
-        .then(_v => { // onDidDismiss
-          if (this.p5canvas)
-            this.p5canvas.remove();
-        });
+    this.loadingCtrl.create({
+      message: this.lang.text['voidDraw']['UseThisImage'],
+    }).then(v => {
+      v.present()
+      this.p5canvas.saveFrames('voidDraw', 'png', 1, 1, (img) => {
+        v.dismiss();
+        let returnData = {
+          name: `voidDraw_${this.p5canvas.year()}-${this.p5canvas.nf(this.p5canvas.month(), 2)}-${this.p5canvas.nf(this.p5canvas.day(), 2)}.png`,
+          img: img[0]['imageData'],
+        };
+        this.modalCtrl.dismiss(returnData)
+          .then(_v => { // onDidDismiss
+            if (this.p5canvas)
+              this.p5canvas.remove();
+          });
+      });
     });
   }
 
