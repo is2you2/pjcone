@@ -177,9 +177,11 @@ export class VoidDrawPage implements OnInit {
         draw_curve();
       }
       let universal_dragged = (x: number, y: number) => {
-        draw_line.shift();
-        draw_line.push(retargeting_position(x, y));
-        draw_curve();
+        if (draw_line.length != 0) {
+          draw_line.shift();
+          draw_line.push(retargeting_position(x, y));
+          draw_curve();
+        }
       }
       let universal_released = (x: number, y: number) => {
         universal_dragged(x, y);
