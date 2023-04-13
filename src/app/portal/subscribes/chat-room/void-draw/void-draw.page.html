@@ -10,7 +10,7 @@
 <ion-content>
   <div id="p5_void_draw" class="full_screen" style="display: flex; background-color: grey; overflow: hidden;"></div>
   <div id="interface_table">
-    <table (click)="MoveMenu()">
+    <table>
       <tr>
         <td>
           <img class="menu_icon" src="" alt="">
@@ -20,25 +20,31 @@
       <tr>
         <td>
           <img class="menu_icon" src="" alt="">
-          새 이미지
+          새 그림
         </td>
       </tr>
       <tr>
         <td>
           <img class="menu_icon" src="" alt="">
-          이미지 가져오기
+          이미지
         </td>
       </tr>
       <tr>
         <td>
           <img class="menu_icon" src="" alt="">
-          새 이미지
+          색상
         </td>
       </tr>
       <tr>
         <td>
           <img class="menu_icon" src="" alt="">
-          새 이미지
+          두께
+        </td>
+      </tr>
+      <tr (click)="dismiss_draw()">
+        <td>
+          <img class="menu_icon" src="" alt="">
+          보내기
         </td>
       </tr>
     </table>

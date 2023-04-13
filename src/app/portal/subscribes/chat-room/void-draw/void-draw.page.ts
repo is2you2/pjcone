@@ -207,19 +207,17 @@ export class VoidDrawPage implements OnInit {
 
   /** 사용하기를 누른 경우 */
   dismiss_draw() {
-    let returnData = {
-      text: 'test_text',
-    };
-    this.modalCtrl.dismiss(returnData)
-      .then(v => {
-        console.log('여기 뭐 있으려나: ', v);
-        if (this.p5canvas)
-          this.p5canvas.remove();
-      });
-  }
-
-  MoveMenu() {
-    console.log('이동 메뉴 샘플 로그');
+    this.p5canvas.saveFrames('voidDraw', 'png', 1, 1, (img) => {
+      let returnData = {
+        name: `voidDraw_${this.p5canvas.year()}-${this.p5canvas.nf(this.p5canvas.month(), 2)}-${this.p5canvas.nf(this.p5canvas.day(), 2)}.png`,
+        img: img[0]['imageData'],
+      };
+      this.modalCtrl.dismiss(returnData)
+        .then(_v => { // onDidDismiss
+          if (this.p5canvas)
+            this.p5canvas.remove();
+        });
+    });
   }
 
   ionViewDidLeave() {
