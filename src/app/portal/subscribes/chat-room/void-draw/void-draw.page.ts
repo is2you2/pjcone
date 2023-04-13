@@ -104,19 +104,35 @@ export class VoidDrawPage implements OnInit {
         update_transform();
       }
       let draw_line: p5.Vector[] = [];
+      let StartMouseMiddle: p5.Vector;
+      let AlreadyMoving = false;
       p.mousePressed = () => {
         if (p.mouseButton == p.LEFT)
           universal_pressed(p.mouseX, p.mouseY);
         if (p.mouseButton == p.CENTER)
-          reset_canvas_animation(0, p.createVector(this.translate.x, this.translate.y), this.rotate, this.scale, calc_start_ratio());
+          StartMouseMiddle = p.createVector(p.mouseX, p.mouseY);
       }
       p.mouseDragged = () => {
         if (p.mouseButton == p.LEFT)
           universal_dragged(p.mouseX, p.mouseY);
+        if (p.mouseButton == p.CENTER) {
+          let dist = StartMouseMiddle.dist(p.createVector(p.mouseX, p.mouseY));
+          if (dist > 8 || AlreadyMoving) { // 아니라면 이동
+            this.translate.x = this.translate.x - (StartMouseMiddle.x - p.mouseX);
+            this.translate.y = this.translate.y - (StartMouseMiddle.y - p.mouseY);
+            AlreadyMoving = true;
+          }
+        }
       }
       p.mouseReleased = () => {
         if (p.mouseButton == p.LEFT)
           universal_released(p.mouseX, p.mouseY);
+        if (p.mouseButton == p.CENTER) {
+          let dist = StartMouseMiddle.dist(p.createVector(p.mouseX, p.mouseY));
+          if (dist < 8 && !AlreadyMoving) // 근거리 클릭은 원복
+            reset_canvas_animation(0, p.createVector(this.translate.x, this.translate.y), this.rotate, this.scale, calc_start_ratio());
+          AlreadyMoving = false;
+        }
       }
       p.mouseWheel = (ev) => {
         if (ev['delta'] > 0) { // 아래 휠
