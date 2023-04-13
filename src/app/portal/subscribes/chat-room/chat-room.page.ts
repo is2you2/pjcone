@@ -158,7 +158,7 @@ export class ChatRoomPage implements OnInit {
       reader = reader._realReader ?? reader;
       reader.onload = (ev: any) => {
         this.userInput.file['result'] = ev.target.result.replace(/"|\\|=/g, '');
-        this.userInput.file['thumbnail'] = [];
+        this.userInput.file['thumbnail'] = undefined;
         if (this.userInput.file['size'] < SIZE_LIMIT) // 크기가 작으면 썸네일 생성
           switch (this.userInput.file['typeheader']) {
             case 'image': // 이미지인 경우 사용자에게 보여주기
