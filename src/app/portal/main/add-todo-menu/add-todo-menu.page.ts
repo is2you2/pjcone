@@ -203,12 +203,11 @@ export class AddTodoMenuPage implements OnInit {
         this.userInput.display_manager = this.lang.text['TodoDetail']['Disconnected'];
         if (!this.nakama.servers[this.userInput.remote.isOfficial] || !this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]) {
           this.userInput.display_creator = this.lang.text['TodoDetail']['DeletedServer'];
-          this.isModifiable = true;
-          throw { text: 'Server Deleted', isModifiable: true };
+          throw { text: 'Server Deleted', isModifiable: false };
         }
         if (this.statusBar.groupServer[this.userInput.remote.isOfficial]
           && this.statusBar.groupServer[this.userInput.remote.isOfficial][this.userInput.remote.target] != 'online') {
-          throw { text: "Server disconnected", isModifiable: true };
+          throw { text: "Server disconnected", isModifiable: false };
         } else if (this.statusBar.groupServer[this.userInput.remote.isOfficial][this.userInput.remote.target] == 'online')
           this.isModifiable = true;
         this.AmICreator =
