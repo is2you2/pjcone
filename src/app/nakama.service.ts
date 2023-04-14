@@ -928,7 +928,6 @@ export class NakamaService {
    * 채널 추가에 사용하려는 경우 join_chat_with_modulation() 를 대신 사용하세요
    */
   async add_channels(channel_info: Channel, _is_official: string, _target: string) {
-    if (this.channels_orig[_is_official][_target][channel_info.id] !== undefined && this.channels_orig[_is_official][_target][channel_info.id]['status'] != 'missing') return;
     if (!this.channels_orig[_is_official][_target][channel_info.id])
       this.channels_orig[_is_official][_target][channel_info.id] = {};
     let keys = Object.keys(channel_info);
@@ -1465,7 +1464,6 @@ export class NakamaService {
         result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
       }
     }
-    if (this.channels_orig[_is_official][_target][p.channel_id || p.id] && this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] != 'missing')
       this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] = result_status;
   }
 
