@@ -1186,18 +1186,24 @@ export class NakamaService {
     let servers = this.get_all_online_server();
     servers.forEach(server => {
       server.client.joinGroup(server.session, _info.id)
-        .then(_v => {
-          if (!_v) console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
-          server.client.listGroups(server.session, _info['name']).then(async v => {
+        .then(async v => {
+          if (!v) {
+            console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
+            return;
+          }
+          await server.client.listGroups(server.session, _info['name']).then(async v => {
             for (let i = 0, j = v.groups.length; i < j; i++)
               if (v.groups[i].id == _info['id']) {
                 let pending_group = v.groups[i];
-                pending_group['status'] = 'pending';
+                pending_group['status'] = pending_group.open ? 'online' : 'pending';
                 await this.servers[server.info.isOfficial][server.info.target].client.listGroupUsers(
                   this.servers[server.info.isOfficial][server.info.target].session, v.groups[i].id
                 ).then(_list => {
+                  pending_group['users'] = _list.group_users;
                   _list.group_users.forEach(_guser => {
-                    this.save_other_user(_guser.user, server.info.isOfficial, server.info.target);
+                    if (_guser.user.id == this.servers[server.info.isOfficial][server.info.target].session.user_id)
+                      _guser['is_me'] = true;
+                    else this.save_other_user(_guser.user, server.info.isOfficial, server.info.target);
                   });
                 });
                 await this.servers[server.info.isOfficial][server.info.target].client.readStorageObjects(
@@ -1225,19 +1231,22 @@ export class NakamaService {
                 break;
               }
           });
-        }).catch(e => {
+        }).catch(async e => {
           switch (e.status) {
             case 400: // 그룹에 이미 있는데 그룹추가 시도함
-              server.client.listGroups(server.session, _info['name']).then(async v => {
+              await server.client.listGroups(server.session, _info['name']).then(async v => {
                 for (let i = 0, j = v.groups.length; i < j; i++)
                   if (v.groups[i].id == _info['id']) {
                     let pending_group = v.groups[i];
-                    pending_group['status'] = 'pending';
+                    pending_group['status'] = pending_group.open ? 'online' : 'pending';
                     await this.servers[server.info.isOfficial][server.info.target].client.listGroupUsers(
                       this.servers[server.info.isOfficial][server.info.target].session, v.groups[i].id
                     ).then(_list => {
+                      pending_group['users'] = _list.group_users;
                       _list.group_users.forEach(_guser => {
-                        this.save_other_user(_guser.user, server.info.isOfficial, server.info.target);
+                        if (_guser.user.id == this.servers[server.info.isOfficial][server.info.target].session.user_id)
+                          _guser['is_me'] = true;
+                        else this.save_other_user(_guser.user, server.info.isOfficial, server.info.target);
                       });
                     });
                     this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
@@ -1257,7 +1266,6 @@ export class NakamaService {
   save_group_info(_group: any, _is_official: string, _target: string) {
     if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
     this.groups[_is_official][_target][_group.id] = _group;
-    this.rearrange_group_list();
     this.save_groups_with_less_info();
     this.indexed.saveTextFileToUserPath(_group['img'], `servers/${_is_official}/${_target}/groups/${_group.id}.img`);
     // 내가 그룹의 주인이라면 이미지 변경사항 업로드
@@ -1325,7 +1333,6 @@ export class NakamaService {
     } catch (e) {
       console.log(e);
       delete this.groups[_is_official][_target][info['id']];
-      this.rearrange_group_list();
       this.save_groups_with_less_info();
       this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
       if (this.socket_reactive['settings'])
@@ -1931,15 +1938,18 @@ export class NakamaService {
       case 4: // 채널에 새로 들어온 사람 알림
         c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserJoin']}: ${target['display_name']}`;
+        this.count_channel_online_member(c, _is_official, _target);
         break;
       case 5: // 그룹에 있던 사용자 나감(들어오려다가 포기한 사람 포함)
         console.warn('그룹원 탈퇴와 참여 예정자의 포기를 구분할 수 있는지: ', c);
         c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserOut']}: ${target['display_name']}`;
+        this.count_channel_online_member(c, _is_official, _target);
         break;
       case 6: // 누군가 그룹에서 내보내짐 (kick)
         c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserKick']}: ${target['display_name']}`;
+        this.count_channel_online_member(c, _is_official, _target);
         break;
       default:
         console.warn('예상하지 못한 메시지 코드: ', c);

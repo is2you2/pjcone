@@ -11,6 +11,7 @@ import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { Notification } from '@heroiclabs/nakama-js';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { GlobalActService } from 'src/app/global-act.service';
+import { P5ToastService } from 'src/app/p5-toast.service';
 
 @Component({
   selector: 'app-group-detail',
@@ -27,6 +28,7 @@ export class GroupDetailPage implements OnInit {
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
     private global: GlobalActService,
+    private p5toast: P5ToastService,
   ) { }
 
   QRCodeSRC: any;
@@ -171,14 +173,24 @@ export class GroupDetailPage implements OnInit {
 
   remove_group() {
     this.need_edit = false;
-    if (this.info['status'] == 'online')
-      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
-        this.info['channel_id'], {
-        gupdate: 'remove',
-      }).then(_m => {
-        this.after_remove_group();
+    try {
+      if (this.info['creator_id'] == this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session.user_id) {
+        if (this.info['status'] == 'online')
+          this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
+            this.info['channel_id'], {
+            gupdate: 'remove',
+          }).then(_m => {
+            this.after_remove_group();
+          });
+        else this.after_remove_group();
+      } else {
+        throw this.lang.text['GroupDetail']['YouAreNotCreator'];
+      }
+    } catch (e) {
+      this.p5toast.show({
+        text: e,
       });
-    else this.after_remove_group();
+    }
   }
 
   /** 삭제 알림 그 후에 */
