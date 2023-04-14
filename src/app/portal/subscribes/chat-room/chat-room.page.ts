@@ -636,8 +636,7 @@ export class ChatRoomPage implements OnInit {
       else if (msg.content['type'].indexOf('text/') == 0) // 분류상 텍스트 문서
         msg.content['viewer'] = 'text';
       else throw "자동지정되지 않은 타입";
-    } catch (e) { // 자동지정 타입이 없는 경우
-      console.log('viewer: ', e);
+    } catch (_e) { // 자동지정 타입이 없는 경우
       switch (msg.content['file_ext']) {
         // 모델링류
         // case 'obj':

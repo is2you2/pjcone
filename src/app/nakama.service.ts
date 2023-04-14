@@ -1464,7 +1464,7 @@ export class NakamaService {
         result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
       }
     }
-      this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] = result_status;
+    this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] = result_status;
   }
 
   /** 소켓이 행동할 때 행동중인 무언가가 있을 경우 검토하여 처리 */
