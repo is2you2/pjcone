@@ -588,33 +588,10 @@ export class ChatRoomPage implements OnInit {
     switch (msg.content['viewer']) {
       case 'image':
         if (msg.content['img']) return; // 이미 썸네일이 있다면 제외
-        if (msg.content['file_ext'].toLowerCase() == 'gif') {
-          msg.content['img'] = this.sanitizer.bypassSecurityTrustUrl(ObjectURL);
-          setTimeout(() => {
-            URL.revokeObjectURL(ObjectURL);
-          }, 0);
-        } else { // 멈춘 이미지 (gif 외)
-          new p5((p: p5) => {
-            p.setup = () => {
-              p.smooth();
-              p.loadImage(ObjectURL, v => {
-                const SIDE_LIMIT = 192;
-                if (v.width > v.height) {
-                  if (v.width > SIDE_LIMIT)
-                    v.resize(SIDE_LIMIT, v.height / v.width * SIDE_LIMIT);
-                } else if (v.height > SIDE_LIMIT)
-                  v.resize(v.width / v.height * SIDE_LIMIT, SIDE_LIMIT);
-                msg.content['img'] = v['canvas'].toDataURL();
-                URL.revokeObjectURL(ObjectURL);
-                p.remove();
-              }, e => {
-                console.error('이미지 불러오기 실패: ', e);
-                URL.revokeObjectURL(ObjectURL);
-                p.remove();
-              });
-            }
-          });
-        }
+        msg.content['img'] = this.sanitizer.bypassSecurityTrustUrl(ObjectURL);
+        setTimeout(() => {
+          URL.revokeObjectURL(ObjectURL);
+        }, 0);
         break;
       case 'text':
         new p5((p: p5) => {

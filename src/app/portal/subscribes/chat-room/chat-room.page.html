@@ -40,7 +40,7 @@ SPDX-License-Identifier: MIT -->
                 <span *ngFor="let line of msg.content['text']" class="file_text_thumbnail"> {{line}} </span>
               </div>
               <div *ngIf="msg.content['img']" class="file_name_form">
-                <img [src]="msg.content['img']" [alt]="msg.content['filename']">
+                <img class="file_thumbnail" [src]="msg.content['img']" [alt]="msg.content['filename']">
               </div>
               <div
                 *ngIf="nakama.channel_transfer[isOfficial][target] && nakama.channel_transfer[isOfficial][target][msg.channel_id] && nakama.channel_transfer[isOfficial][target][msg.channel_id][msg.message_id]"
