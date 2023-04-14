@@ -422,6 +422,14 @@ export class ChatRoomPage implements OnInit {
     }, 120);
   }
 
+  /** 확장 메뉴 숨기기 */
+  make_ext_hidden() {
+    this.isHidden = true;
+    setTimeout(() => {
+      this.p5canvas.windowResized();
+    }, 120);
+  }
+
   send(with_key = false) {
     if (with_key && (isPlatform == 'Android' || isPlatform == 'iOS')) return;
     if (!this.userInput.text.trim() && !this.userInput['file']) {
@@ -688,7 +696,7 @@ export class ChatRoomPage implements OnInit {
     this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (b) => {
       if (b) {
         msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
-        if (msg.content['filesize'] < this.FILESIZE_LIMIT) // 너무 크지 않은 파일에 대해서만 자동 썸네일 구성
+        if ((msg.content['filesize'] || 0) < this.FILESIZE_LIMIT) // 너무 크지 않은 파일에 대해서만 자동 썸네일 구성
           this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
             msg.content['type'],
             v => {

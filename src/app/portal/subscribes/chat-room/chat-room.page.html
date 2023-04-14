@@ -96,7 +96,7 @@ SPDX-License-Identifier: MIT -->
               <td style="width: 100%; vertical-align: bottom;">
                 <textarea [(ngModel)]="userInput.text" (keyup.enter)="send(true)"
                   style="width: 100%; height: 36px; resize: none; padding: 6px; margin-top: 5px;"
-                  [placeholder]="inputPlaceholder"></textarea>
+                  (click)="make_ext_hidden()" [placeholder]="inputPlaceholder"></textarea>
               </td>
               <td>
                 <ion-button (click)="send(false)" expand="block"
