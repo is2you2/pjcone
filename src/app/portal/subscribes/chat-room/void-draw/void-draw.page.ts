@@ -22,7 +22,7 @@ export class VoidDrawPage implements OnInit {
   ngOnInit() { }
 
   ionViewDidEnter() {
-    this.init_void_draw(300, 550);
+    this.init_void_draw(432, 432);
   }
 
   translate = { x: 0, y: 0 };
@@ -45,11 +45,11 @@ export class VoidDrawPage implements OnInit {
     let targetDiv = document.getElementById('p5_void_draw');
     this.p5canvas = new p5((p: p5) => {
       let bg_color = 255;
+      let canvas: p5.Renderer;
       /** 그려온 것들 */
       let drawing: p5.Graphics;
       /** 이번 차례에 그리는 것 */
       let current: p5.Graphics;
-      let canvas: p5.Renderer;
       p.setup = () => {
         canvas = p.createCanvas(w, h);
         canvas.parent(targetDiv);
@@ -61,6 +61,9 @@ export class VoidDrawPage implements OnInit {
         reset_canvas_animation(0, p.createVector(this.translate.x, this.translate.y), this.rotate, this.scale, calc_start_ratio());
         drawing = p.createGraphics(w, h);
         current = p.createGraphics(w, h);
+        p.pixelDensity(1);
+        drawing.pixelDensity(1);
+        current.pixelDensity(1);
         current.strokeWeight(5);
         p.background(bg_color);
         p.image(drawing, 0, 0);
@@ -87,17 +90,23 @@ export class VoidDrawPage implements OnInit {
       }
       /** 새로운 캔버스가 생길 때 생성 애니메이션 */
       let reset_canvas_animation = (lerp: number, start_pos: p5.Vector, start_rot: number, start_scale: number, target_scale: number) => {
-        lerp += .04;
-        let ease = (lerp < 0.5 ? 2 * lerp * lerp : 1 - p.pow(-2 * lerp + 2, 2) / 2);
-        this.translate.x = p.lerp(start_pos.x, (targetDiv.offsetWidth - w) / 2, ease);
-        this.translate.y = p.lerp(start_pos.y, (targetDiv.offsetHeight - h) / 2, ease);
-        this.rotate = p.lerp(start_rot, 0, ease);
-        this.scale = p.lerp(start_scale, target_scale, ease);
+        let frameRate = p.frameRate();
+        if (frameRate) {
+          lerp += .04 * 60 / frameRate;
+          let ease = (lerp < 0.5 ? 2 * lerp * lerp : 1 - p.pow(-2 * lerp + 2, 2) / 2);
+          this.translate.x = p.lerp(start_pos.x, (targetDiv.offsetWidth - w) / 2, ease);
+          this.translate.y = p.lerp(start_pos.y, (targetDiv.offsetHeight - h) / 2, ease);
+          this.rotate = p.lerp(start_rot, 0, ease);
+          this.scale = p.lerp(start_scale, target_scale, ease);
+        }
         setTimeout(() => {
           if (lerp < 1)
             reset_canvas_animation(lerp, start_pos, start_rot, start_scale, target_scale);
-          else this.scale = target_scale;
-        }, 1000 / 60);
+          else {
+            this.scale = target_scale;
+            p.noLoop();
+          }
+        }, 1000 / frameRate);
       }
       p.draw = () => {
         p.background(bg_color);
@@ -136,8 +145,10 @@ export class VoidDrawPage implements OnInit {
         }
         if (p.mouseButton == p.CENTER) {
           let dist = StartMouseMiddle.dist(p.createVector(p.mouseX, p.mouseY));
-          if (dist < 8 && !AlreadyMoving) // 근거리 클릭은 원복
+          if (dist < 8 && !AlreadyMoving) {// 근거리 클릭은 원복
+            p.loop();
             reset_canvas_animation(0, p.createVector(this.translate.x, this.translate.y), this.rotate, this.scale, calc_start_ratio());
+          }
           AlreadyMoving = false;
         }
       }
@@ -198,19 +209,17 @@ export class VoidDrawPage implements OnInit {
           draw_line[2].x, draw_line[2].y,
           draw_line[3].x, draw_line[3].y,
         );
+        p.redraw();
         current.redraw();
       }
       p.windowResized = () => {
-        p.resizeCanvas(w, h);
-        // drawing.resizeCanvas(w,h);
-        current.resizeCanvas(w, h);
         p.background(bg_color);
       }
     });
   }
 
   new_image() {
-    const DEFAULT_SIZE = 512;
+    const DEFAULT_SIZE = 432;
     this.alertCtrl.create({
       header: this.lang.text['voidDraw']['newDraw'],
       inputs: [{
@@ -230,7 +239,7 @@ export class VoidDrawPage implements OnInit {
         text: this.lang.text['voidDraw']['CreateNew'],
         handler: (v) => {
           console.log(v);
-          this.init_void_draw(Number(v['width']) || 512, Number(v['height']) || 512);
+          this.init_void_draw(Number(v['width']) || DEFAULT_SIZE, Number(v['height']) || DEFAULT_SIZE);
         }
       }],
     }).then(v => v.present());
