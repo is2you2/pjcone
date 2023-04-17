@@ -234,7 +234,7 @@ export class NakamaService {
       }, new Date(targetTime).getTime() - new Date().getTime());
       this.web_noti_id[noti_info.noti_id] = schedule;
     } else if (isPlatform != 'MobilePWA') { // 모바일은 예약 발송을 설정
-      let schedule_at = new Date(noti_info.limit).getTime();
+      let schedule_at = new Date(targetTime).getTime();
       let not_registered = true;
       for (let i = 0, j = this.registered_id.length; i < j; i++)
         if (this.registered_id[i] == noti_info.id) {
