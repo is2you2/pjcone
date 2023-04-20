@@ -1306,9 +1306,11 @@ export class NakamaService {
             for (let i = 0, j = copied_group[_is_official][_target][_gid]['users'].length; i < j; i++) {
               if (copied_group[_is_official][_target][_gid]['users'][i]) {
                 delete copied_group[_is_official][_target][_gid]['users'][i]['state'];
-                if (copied_group[_is_official][_target][_gid]['users'][i]['user']['id'])
+                if (copied_group[_is_official][_target][_gid]['users'][i]['user']['id']) {
                   copied_group[_is_official][_target][_gid]['users'][i]['user'] = { id: copied_group[_is_official][_target][_gid]['users'][i]['user']['id'] };
-                else if (!copied_group[_is_official][_target][_gid]['users'][i]['is_me']) copied_group[_is_official][_target][_gid]['users'].splice(i, 1);
+                  if (copied_group[_is_official][_target][_gid]['users'][i]['user']['id'] == this.servers[_is_official][_target].session.user_id)
+                    copied_group[_is_official][_target][_gid]['users'][i]['is_me'] = true;
+                } else if (!copied_group[_is_official][_target][_gid]['users'][i]['is_me']) copied_group[_is_official][_target][_gid]['users'].splice(i, 1);
               }
             }
         });
