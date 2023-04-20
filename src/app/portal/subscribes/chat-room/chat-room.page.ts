@@ -267,6 +267,8 @@ export class ChatRoomPage implements OnInit {
   }
 
   p5canvas: p5;
+  /** 마지막에 작성된 내용 보존용 */
+  last_text: string;
   /** 창 조절에 따른 최대 화면 크기 조정 */
   follow_resize() {
     setTimeout(() => {
@@ -280,6 +282,10 @@ export class ChatRoomPage implements OnInit {
             p.windowResized();
           }, 100);
           p.noLoop();
+        }
+        p.keyPressed = () => {
+          if (p.keyCode == p.ENTER)
+            this.last_text = this.userInput.text;
         }
         p.windowResized = () => {
           setTimeout(() => {
@@ -437,10 +443,8 @@ export class ChatRoomPage implements OnInit {
       return;
     }
     let result = {};
-    let last_enter = this.userInput.text.lastIndexOf('\n');
-    if (with_key && last_enter >= 0) // 엔터키로 발송시에만 마지막 엔터 짜르기
-      result['msg'] = this.userInput.text.substring(0, last_enter);
-    else if (this.userInput.text) result['msg'] = this.userInput.text;
+    result['msg'] = this.last_text || this.userInput.text;
+    this.last_text = '';
     let upload: string[] = [];
     if (this.userInput.file) { // 파일 첨부시
       result['filename'] = this.userInput.file.name;
