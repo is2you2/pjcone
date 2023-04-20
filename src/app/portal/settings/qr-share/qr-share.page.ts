@@ -69,8 +69,13 @@ export class QrSharePage implements OnInit {
         Target.forEach(_target => {
           let GroupIds = Object.keys(this.nakama.groups[_is_official][_target]);
           GroupIds.forEach(_gid => {
-            if (this.nakama.groups[_is_official][_target][_gid]['online'] != 'missing')
-              this.group_list.push(this.nakama.groups[_is_official][_target][_gid]);
+            if (this.nakama.groups[_is_official][_target][_gid]['online'] != 'missing') {
+              let group_name = this.nakama.groups[_is_official][_target][_gid]['name'];
+              if (this.nakama.groups[_is_official][_target][_gid]['server']
+                && this.nakama.groups[_is_official][_target][_gid]['server']['name'])
+                group_name += ` (${this.nakama.groups[_is_official][_target][_gid]['server']['name']})`;
+              this.group_list.push(group_name);
+            }
           });
         });
       });
@@ -83,7 +88,7 @@ export class QrSharePage implements OnInit {
     this.websocket.onmessage = (msg: any) => {
       msg.data.text().then(v => {
         try {
-          if (!this.QRCodeSRC) throw "QR코드 생성 우선처리";
+          if (!this.QRCodeSRC) throw "최초진입: QR코드 생성 우선처리";
           let json = JSON.parse(v);
           this.nakama.act_from_QRInfo(json['value']);
           setTimeout(() => {
