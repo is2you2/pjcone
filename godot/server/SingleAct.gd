@@ -130,6 +130,19 @@ func _received(id:int, _try_left:= 5):
 						}
 						send_to(administrator_pid, JSON.print(result).to_utf8())
 					return
+				{ 'act': 'req_battery' }:
+					if id == administrator_pid:
+						var battery_data = {
+							'percent': OS.get_power_percent_left(),
+							'time': OS.get_power_seconds_left(),
+							'state': OS.get_power_state(),
+						}
+						var result = {
+							'act': 'req_battery',
+							'data': JSON.print(battery_data),
+						}
+						send_to(administrator_pid, JSON.print(result).to_utf8())
+					return
 				_: # 준비되지 않은 행동
 					Root.logging(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)
 		else: # 형식 오류

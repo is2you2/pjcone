@@ -10,6 +10,9 @@
 <ion-content>
   <ion-item-divider>
     <ion-label>{{lang.text['Administrator']['counter_now']}}</ion-label>
+    <ion-button slot="end" (click)="refresh_count()" fill="clear" shape="round">
+      {{lang.text['Administrator']['counter_refresh']}}
+    </ion-button>
   </ion-item-divider>
   <ion-grid fixed>
     <ion-row>
@@ -37,7 +40,22 @@
       <ion-col class="grid_form grid_content">{{calcs.minichat.stack}}</ion-col>
     </ion-row>
   </ion-grid>
-  <ion-item button class="grid_form ion-text-center" (click)="refresh_count()">
-    <ion-label>{{lang.text['Administrator']['counter_refresh']}}</ion-label>
+  <ion-item-divider>
+    <ion-label>{{lang.text['Administrator']['battery_now']}}</ion-label>
+    <ion-button slot="end" (click)="refresh_battery()" fill="clear" shape="round">
+      {{lang.text['Administrator']['counter_refresh']}}
+    </ion-button>
+  </ion-item-divider>
+  <ion-item *ngIf="battery.percent != -1" button>
+    <ion-label>{{lang.text['Administrator']['battery_percent']}}</ion-label>
+    <ion-label class="ion-text-right">{{battery.percent + '%'}}</ion-label>
+  </ion-item>
+  <ion-item *ngIf="battery.time != -1" button>
+    <ion-label>{{lang.text['Administrator']['battery_time']}}</ion-label>
+    <ion-label class="ion-text-right">{{battery.time}}</ion-label>
+  </ion-item>
+  <ion-item button>
+    <ion-label>{{lang.text['Administrator']['battery_state']}}</ion-label>
+    <ion-label class="ion-text-right">{{lang.text['Administrator']['battery_state_' + battery.state]}}</ion-label>
   </ion-item>
 </ion-content>

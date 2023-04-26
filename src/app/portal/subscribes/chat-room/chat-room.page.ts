@@ -671,6 +671,8 @@ export class ChatRoomPage implements OnInit {
         case 'webm':
           msg.content['viewer'] = 'video';
           break;
+        // 마크다운
+        case 'md':
         // 텍스트류
         case 'txt':
         case 'cs':
@@ -678,7 +680,6 @@ export class ChatRoomPage implements OnInit {
         case 'py':
         case 'yml':
         case 'gitignore':
-        case 'md':
         case 'json':
         case 'csv':
         case 'ts':
