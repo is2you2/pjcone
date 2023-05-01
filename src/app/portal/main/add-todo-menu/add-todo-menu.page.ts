@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { AlertController, ModalController, NavParams } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import * as p5 from "p5";
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -59,6 +59,7 @@ export class AddTodoMenuPage implements OnInit {
     private alertCtrl: AlertController,
     private noti: LocalNotiService,
     private statusBar: StatusManageService,
+    private loadingCtrl: LoadingController,
   ) { }
 
   /** 작성된 내용 */
@@ -565,10 +566,14 @@ export class AddTodoMenuPage implements OnInit {
     //   });
     // else { // 메모는 이펙트만 생성하고 삭제
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
-    if (this.userInput.remote)
+    if (this.userInput.remote) {
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      loading.present();
       await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
         .socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
           encodeURIComponent(`done,${this.userInput.id}`));
+      loading.dismiss();
+    }
     this.deleteFromStorage(false);
     // }
   }
@@ -692,6 +697,8 @@ export class AddTodoMenuPage implements OnInit {
     }
     this.isLogsHidden = true;
     if (this.userInput.remote) {
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      loading.present();
       let request = {};
       if (this.userInput.remote.channel_id) {
         request = {
@@ -724,6 +731,7 @@ export class AddTodoMenuPage implements OnInit {
         });
         this.isButtonClicked = false;
       }
+      loading.dismiss();
     }
     this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
