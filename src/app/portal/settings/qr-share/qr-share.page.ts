@@ -70,11 +70,11 @@ export class QrSharePage implements OnInit {
           let GroupIds = Object.keys(this.nakama.groups[_is_official][_target]);
           GroupIds.forEach(_gid => {
             if (this.nakama.groups[_is_official][_target][_gid]['online'] != 'missing') {
-              let group_name = this.nakama.groups[_is_official][_target][_gid]['name'];
-              if (this.nakama.groups[_is_official][_target][_gid]['server']
-                && this.nakama.groups[_is_official][_target][_gid]['server']['name'])
-                group_name += ` (${this.nakama.groups[_is_official][_target][_gid]['server']['name']})`;
-              this.group_list.push(group_name);
+              this.group_list.push({
+                id: _gid,
+                name: this.nakama.groups[_is_official][_target][_gid]['name'],
+                server_name: this.nakama.servers[_is_official][_target].info.name,
+              });
             }
           });
         });
@@ -223,7 +223,7 @@ export class QrSharePage implements OnInit {
     this.ActKeyLength = Object.keys(this.selected_data).length;
   }
 
-  /** 다른 정보를 수정할 때 그룹 서버 정보를 삭제 */
+  /** 다른 정보를 수정할 때 그룹 서버 정보가 잘 동작하지 않을 수 있음 알림 */
   remove_groupserver_info() {
     if (this.ShowExceptionInfoYet && this.selected_data['group_server']) {
       this.p5toast.show({
