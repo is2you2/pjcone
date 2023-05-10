@@ -36,9 +36,9 @@ export class AppComponent {
     noti: LocalNotiService,
     client: WscService,
     bgmode: BackgroundMode,
-    nakama: NakamaService,
+    private nakama: NakamaService,
     indexed: IndexedDBService,
-    modalCtrl: ModalController,
+    private modalCtrl: ModalController,
     global: GlobalActService,
     alertCtrl: AlertController,
     lang: LanguageSettingService,
@@ -167,23 +167,37 @@ export class AppComponent {
             break;
         }
         if (noti_id == noti.Current) return;
-        modalCtrl.create({
-          component: page,
-          componentProps: props,
-        }).then(v => {
-          switch (ev.data.page.component) {
-            case 'ChatRoomPage':
-              nakama.go_to_chatroom_without_admob_act(v);
-              break;
-            default:
-              console.warn('준비된 페이지 행동 없음: ', ev.data.page.component);
-              v.present();
-              break;
-          }
-        });
+        this.waiting_open_page(ev, page, props);
       }
     });
     bgmode.enable();
+  }
+
+  /** 앱이 꺼진 상태에서 알림 클릭시 바로 동작하지 않기 때문에 페이지 열기 가능할 때까지 기다림  
+   * 당장은 방법이 없어보이나, 함수를 일단 분리해둠
+   */
+  waiting_open_page(ev: any, page: any, props: any) {
+    if (window['godot'] == 'godot') {
+      this.modalCtrl.create({
+        component: page,
+        componentProps: props,
+      }).then(v => {
+        switch (ev.data.page.component) {
+          case 'ChatRoomPage':
+            this.nakama.go_to_chatroom_without_admob_act(v);
+            break;
+          default:
+            console.warn('준비된 페이지 행동 없음: ', ev.data.page.component);
+            v.present();
+            break;
+        }
+      });
+    } else {
+      console.log('retry open notification clicked..');
+      setTimeout(() => {
+        this.waiting_open_page(ev, page, props);
+      }, 1000);
+    }
   }
 
   init_admob() {
