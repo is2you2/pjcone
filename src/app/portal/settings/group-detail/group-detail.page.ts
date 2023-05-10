@@ -58,9 +58,7 @@ export class GroupDetailPage implements OnInit {
         if (this.info['users'][i].is_me) // 정보상 나라면
           this.info['users'][i]['user'] = this.nakama.users.self;
         else if (this.info['users'][i]['user']['id']) { // 다른 사람들의 프로필 이미지
-          if (this.info['users'][i]['user']['id'] != this.nakama.servers[_is_official][_target].session.user_id) {
-            this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], _is_official, _target);
-          } else this.info['users'].splice(i, 1);
+          this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], _is_official, _target);
         } else this.info['users'].splice(i, 1);
       // 온라인일 경우
       if (this.has_admin) // 여기서만 has_admin이 온라인 여부처럼 동작함
@@ -174,17 +172,22 @@ export class GroupDetailPage implements OnInit {
   remove_group() {
     this.need_edit = false;
     try {
-      if (this.info['creator_id'] == this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session.user_id) {
-        if (this.info['status'] == 'online')
-          this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
-            this.info['channel_id'], {
-            gupdate: 'remove',
-          }).then(_m => {
-            this.after_remove_group();
-          });
-        else this.after_remove_group();
-      } else {
-        throw this.lang.text['GroupDetail']['YouAreNotCreator'];
+      if (this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']]) { // 서버가 아직 있다면
+        if (this.info['creator_id'] == this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session.user_id) {
+          if (this.info['status'] == 'online')
+            this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
+              this.info['channel_id'], {
+              gupdate: 'remove',
+            }).then(_m => {
+              this.after_remove_group();
+            });
+          else this.after_remove_group();
+        } else {
+          throw this.lang.text['GroupDetail']['YouAreNotCreator'];
+        }
+      } else { // 서버 기록이 먼저 삭제된 경우
+        this.nakama.remove_group_list(this.info, this.info['server']['isOfficial'], this.info['server']['target']);
+        this.modalCtrl.dismiss();
       }
     } catch (e) {
       this.p5toast.show({
