@@ -140,6 +140,7 @@ export class ChatRoomPage implements OnInit {
             this.userInput.file.type = 'image/octet-stream';
             this.userInput.file.typeheader = 'image';
             this.userInput.file.result = v.data['img'];
+            this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.name})`;
           }
         });
         v.present();
