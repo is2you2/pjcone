@@ -22,3 +22,20 @@ func _ready():
 	anim.track_set_key_value(0, 1, [origin_scale, -.25, 0, .25, 0])
 	anim.track_set_key_value(1, 1, [origin_scale, -.25, 0, .25, 0])
 	$AnimationPlayer.play("NewPanel")
+
+
+# 위치, 각도, 배율 기본값으로 복구
+func reset_transform():
+	var anim:Animation = $AnimationPlayer.get_animation("ResetTransform")
+	anim.track_set_key_value(0, 0, [rect_position.x, -.25, 0, .25, 0])
+	anim.track_set_key_value(1, 0, [rect_position.y, -.25, 0, .25, 0])
+	anim.track_set_key_value(2, 0, [rect_rotation, -.25, 0, .25, 0])
+	anim.track_set_key_value(3, 0, [rect_scale.x, -.25, 0, .25, 0])
+	anim.track_set_key_value(4, 0, [rect_scale.y, -.25, 0, .25, 0])
+	
+	anim.track_set_key_value(0, 1, [origin_position.x, -.25, 0, .25, 0])
+	anim.track_set_key_value(1, 1, [origin_position.y, -.25, 0, .25, 0])
+	anim.track_set_key_value(2, 1, [0, -.25, 0, .25, 0])
+	anim.track_set_key_value(3, 1, [origin_scale, -.25, 0, .25, 0])
+	anim.track_set_key_value(4, 1, [origin_scale, -.25, 0, .25, 0])
+	$AnimationPlayer.play("ResetTransform")
