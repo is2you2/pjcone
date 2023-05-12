@@ -1,0 +1,38 @@
+extends Control
+
+
+var is_pressed:= false
+var current_draw:Line2D
+
+
+func _on_StackDraw_gui_input(event):
+	if event is InputEventMouseButton:
+		match(event.button_index):
+			1: # 좌클릭
+				if event.is_pressed():
+					is_pressed = true
+					current_draw = Line2D.new()
+					current_draw.default_color = Color.black
+					current_draw.width = 3
+					current_draw.begin_cap_mode = Line2D.LINE_CAP_ROUND
+					current_draw.end_cap_mode = Line2D.LINE_CAP_ROUND
+					add_child(current_draw)
+					current_draw.add_point(event.position)
+				else:
+					current_draw.add_point(event.position)
+					is_pressed = false
+			2: # 우클릭
+				if event.is_pressed():
+					pass
+	if event is InputEventMouseMotion:
+		if is_pressed:
+			current_draw.add_point(event.position)
+
+
+func save_image():
+	var viewport:Viewport = get_node('../..')
+	var img:= viewport.get_texture().get_data()
+	img.flip_y()
+	var buf:= img.save_png_to_buffer()
+	var base64:= Marshalls.raw_to_base64(buf)
+	get_node('../../..').emit_signal("save_as_png", base64)
