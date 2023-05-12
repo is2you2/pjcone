@@ -39,7 +39,7 @@ func load_package_debug(files:PoolStringArray, scr):
 	else: # 정상적으로 불러와짐
 		$CenterContainer.queue_free()
 		print('Godot-debug: 패키지 타겟: ', target)
-		var inst = load('res://Main.tscn')
+		var inst = load('res://ContentViewer.tscn')
 		add_child(inst.instance())
 	get_tree().disconnect("files_dropped", self, 'load_package_debug')
 
