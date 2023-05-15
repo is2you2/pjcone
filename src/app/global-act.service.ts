@@ -77,6 +77,7 @@ export class GlobalActService {
 
   /** 실행중인 iframe-godot 개체를 기억하여 2개 이상 생성될 경우 이전에 진행중인 객체를 삭제, 마지막 실행기만 기억하기 */
   godot: HTMLIFrameElement;
+  godot_window: any;
   /** 마지막에 기록된 프레임 id */
   private last_frame_name: string;
   /** 고도엔진이 시작하자마자 로딩할 내용과 고도 결과물을 담을 iframe id를 전달  
@@ -106,9 +107,9 @@ export class GlobalActService {
     }
     let frame = document.getElementById(_frame_name);
     frame.appendChild(_godot);
-    let _godot_window = _godot.contentWindow || _godot.contentDocument;
+    this.godot_window = _godot.contentWindow || _godot.contentDocument;
     let _keys = Object.keys(keys);
-    _keys.forEach(key => _godot_window[key] = keys[key]);
+    _keys.forEach(key => this.godot_window[key] = keys[key]);
     this.godot = _godot;
     return _godot;
   }

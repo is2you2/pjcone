@@ -123,7 +123,7 @@ export class AppComponent {
           case 'AddTodoMenuPage':
             page = AddTodoMenuPage;
             props = {
-              godot: global.godot.contentWindow || global.godot.contentDocument,
+              godot: global.godot_window,
               data: props['data'],
             };
             noti_id = JSON.parse(props['data'])['id'];

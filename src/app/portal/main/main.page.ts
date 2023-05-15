@@ -67,7 +67,7 @@ export class MainPage implements OnInit {
         this.modalCtrl.create({
           component: AddTodoMenuPage,
           componentProps: {
-            godot: this.app.godot.contentWindow || this.app.godot.contentDocument,
+            godot: this.app.godot_window,
             data: _data,
           },
         }).then(v => v.present());

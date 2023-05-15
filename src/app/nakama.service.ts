@@ -226,7 +226,7 @@ export class NakamaService {
           this.modalCtrl.create({
             component: AddTodoMenuPage,
             componentProps: {
-              godot: this.global.godot.contentWindow || this.global.godot.contentDocument,
+              godot: this.global.godot_window,
               data: JSON.stringify(noti_info),
             },
           }).then(v => v.present());
@@ -666,8 +666,7 @@ export class NakamaService {
     todo_info['remote']['target'] = _target;
     todo_info['remote']['type'] = `${_is_official}/${_target}`;
     this.set_todo_notification(todo_info);
-    let godot = this.global.godot.contentWindow || this.global.godot.contentDocument;
-    if (godot['add_todo']) godot['add_todo'](JSON.stringify(todo_info));
+    if (this.global.godot_window['add_todo']) this.global.godot_window['add_todo'](JSON.stringify(todo_info));
     this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
   }
 

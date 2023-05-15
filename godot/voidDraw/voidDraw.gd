@@ -73,7 +73,7 @@ func new_canvas(args):
 
 
 # 이미지 저장하기 통로
-func save_image():
+func save_image(_args):
 	emit_signal("save_image")
 
 
