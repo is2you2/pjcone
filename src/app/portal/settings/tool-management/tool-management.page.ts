@@ -63,7 +63,7 @@ export class ToolManagementPage implements OnInit {
 
   /** 툴을 기기에서 삭제 */
   remove_tool(i: number) {
-    this.indexed.removeFileFromUserPath(`acts/${this.list[i]}`);
+    this.indexed.removeFileFromUserPath(`acts/${this.list[i].text}`);
     this.list.splice(i, 1);
   }
 
