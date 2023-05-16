@@ -6,6 +6,7 @@ signal save_image
 
 var window # iframe 창
 var new_canvas_func = JavaScript.create_callback(self, 'new_canvas')
+var set_line_weight_func = JavaScript.create_callback(self, 'set_line_weight')
 var save_image_func = JavaScript.create_callback(self, 'save_image')
 
 
@@ -14,6 +15,7 @@ func _ready():
 		window = JavaScript.get_interface('window')
 		window.new_canvas = new_canvas_func
 		window.save_image = save_image_func
+		window.set_line_weight = set_line_weight_func
 		var json = {
 			'width': 432,
 			'height': 432,
@@ -36,6 +38,8 @@ func _ready():
 
 
 const draw_panel:= preload("res://DrawPanel.tscn")
+# 그림판 노드
+var inst:Node
 
 # 새 캔버스 생성하기
 func new_canvas(args):
@@ -62,7 +66,7 @@ func new_canvas(args):
 					printerr('voidDraw_올바르지 않은 이미지 형식: ', json.img_ext)
 			tex = ImageTexture.new()
 			tex.create_from_image(img)
-		var inst:= draw_panel.instance()
+		inst = draw_panel.instance()
 		inst.width = json.width
 		inst.height = json.height
 		connect("save_image", inst, 'save_image')
@@ -75,6 +79,14 @@ func new_canvas(args):
 # 이미지 저장하기 통로
 func save_image(_args):
 	emit_signal("save_image")
+
+
+func set_line_color(args):
+	print_debug('색상 변경: ', args)
+
+
+func set_line_weight(args):
+	inst.set_line_weight(args[0])
 
 
 # 지금 그려진 그림을 사용하기

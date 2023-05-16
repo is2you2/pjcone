@@ -4,6 +4,9 @@ extends Control
 var is_pressed:= false
 var current_draw:Line2D
 
+var color:= Color.black
+var weight:= 3
+
 
 func _on_StackDraw_gui_input(event):
 	if event is InputEventMouseButton:
@@ -12,8 +15,8 @@ func _on_StackDraw_gui_input(event):
 				if event.is_pressed():
 					is_pressed = true
 					current_draw = Line2D.new()
-					current_draw.default_color = Color.black
-					current_draw.width = 3
+					current_draw.default_color = color
+					current_draw.width = weight
 					current_draw.begin_cap_mode = Line2D.LINE_CAP_ROUND
 					current_draw.end_cap_mode = Line2D.LINE_CAP_ROUND
 					add_child(current_draw)

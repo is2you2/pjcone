@@ -73,6 +73,23 @@ export class VoidDrawPage implements OnInit {
     }).then(v => v.present());
   }
 
+  change_line_weight() {
+    this.alertCtrl.create({
+      header: this.lang.text['voidDraw']['newDraw'],
+      inputs: [{
+        name: 'weight',
+        type: 'number',
+        placeholder: `${this.lang.text['voidDraw']['weight']} (${this.lang.text['voidDraw']['default_size']}: 3)`,
+      }],
+      buttons: [{
+        text: this.lang.text['voidDraw']['CreateNew'],
+        handler: (v) => {
+          this.global.godot_window['set_line_weight'](v.weight || 3);
+        }
+      }],
+    }).then(v => v.present());
+  }
+
   /** 사용하기를 누른 경우 */
   dismiss_draw() {
     this.global.godot_window['save_image']();

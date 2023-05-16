@@ -16,6 +16,11 @@ var origin_position:= Vector2(0, 0)
 # 캔버스 시작 크기와 화면에 따른 기본 배율
 var origin_scale:= 1.0
 
+
+var color:Color
+var weight:= 1.0
+
+
 func _ready():
 	if BaseTexture: $DrawPanel/Panel/TextureRect.texture = BaseTexture
 	DrawViewport.size.x = width
@@ -52,6 +57,11 @@ func reset_transform():
 	anim.track_set_key_value(3, 1, [origin_scale, -.25, 0, .25, 0])
 	anim.track_set_key_value(4, 1, [origin_scale, -.25, 0, .25, 0])
 	AnimationPlayerNode.play("ResetTransform")
+
+
+func set_line_weight(weight):
+	$DrawPanel/Panel/StackDraw.weight = weight
+
 
 # 이미지 저장하기 통로
 func save_image():
