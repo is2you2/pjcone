@@ -13,6 +13,7 @@ import { NakamaService, SelfMatchOpCode } from 'src/app/nakama.service';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { isPlatform } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
+import { GlobalActService } from 'src/app/global-act.service';
 
 interface LogForm {
   /** 이 로그를 발생시킨 사람, 리모트인 경우에만 넣기, 로컬일 경우 비워두기 */
@@ -60,6 +61,7 @@ export class AddTodoMenuPage implements OnInit {
     private noti: LocalNotiService,
     private statusBar: StatusManageService,
     private loadingCtrl: LoadingController,
+    private global: GlobalActService,
   ) { }
 
   /** 작성된 내용 */
@@ -565,7 +567,7 @@ export class AddTodoMenuPage implements OnInit {
     //     this.saveData();
     //   });
     // else { // 메모는 이펙트만 생성하고 삭제
-    this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
+    this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
     if (this.userInput.remote) {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
@@ -733,7 +735,7 @@ export class AddTodoMenuPage implements OnInit {
       }
       loading.dismiss();
     }
-    this.navParams.get('godot')['add_todo'](JSON.stringify(this.userInput));
+    this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
       this.saveTagInfo();
       this.modalCtrl.dismiss();
@@ -790,7 +792,7 @@ export class AddTodoMenuPage implements OnInit {
           delete this.nakama.web_noti_id[this.userInput.noti_id];
         }
       this.noti.ClearNoti(this.userInput.noti_id);
-      this.navParams.get('godot')['remove_todo'](JSON.stringify(this.userInput));
+      this.global.godot_window['remove_todo'](JSON.stringify(this.userInput));
       this.removeTagInfo();
       this.modalCtrl.dismiss();
     });
