@@ -29,17 +29,12 @@ func _ready():
 		}
 		new_canvas([JSON.print(json)])
 		yield(get_tree().create_timer(5), "timeout")
-		var json2 = {
-			'width': 768,
-			'height': 432,
-		}
-		new_canvas([JSON.print(json2)])
-		yield(get_tree().create_timer(5), "timeout")
 
 
 const draw_panel:= preload("res://DrawPanel.tscn")
 # 그림판 노드
-var inst:Node
+var inst:ViewportContainer
+
 
 # 새 캔버스 생성하기
 func new_canvas(args):

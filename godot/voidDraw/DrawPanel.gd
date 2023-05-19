@@ -42,6 +42,37 @@ func _ready():
 	AnimationPlayerNode.play("NewPanel")
 
 
+func _input(event):
+	if event is InputEventMouseButton:
+		if event.is_pressed():
+			match(event.button_index):
+				2: # 마우스 좌클릭
+					start_pos = event.position - rect_position
+				3: # 가운데 마우스 클릭
+					reset_transform()
+				4: # 휠 올리기
+					rect_scale_change_to(1.1)
+				5: # 휠 내리기
+					rect_scale_change_to(.9)
+		else:
+			if event.button_index == 2:
+				start_pos = Vector2.ZERO
+	if event is InputEventMouseMotion:
+		if start_pos != Vector2.ZERO:
+			rect_translate_to(event.position)
+
+
+var start_pos:Vector2
+# 노드 이동시키기
+func rect_translate_to(current_pos:Vector2):
+	rect_position = current_pos - start_pos
+
+
+# 배율 변화 주기
+func rect_scale_change_to(ratio:float):
+	rect_scale = rect_scale * ratio
+
+
 # 위치, 각도, 배율 기본값으로 복구
 func reset_transform():
 	var anim:Animation = AnimationPlayerNode.get_animation("ResetTransform")
