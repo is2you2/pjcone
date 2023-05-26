@@ -11,11 +11,6 @@ export var BaseTexture:ImageTexture
 onready var DrawViewport:= $DrawPanel
 onready var AnimationPlayerNode:= $DrawPanel/Panel/AnimationPlayer
 
-# 캔버스 시작 크기에 따른 자동 가운데 위치
-var origin_position:= Vector2(0, 0)
-# 캔버스 시작 크기와 화면에 따른 기본 배율
-var origin_scale:= 1.0
-
 
 var color:Color
 var weight:= 1.0
@@ -31,11 +26,10 @@ func _ready():
 	rect_size = Vector2(width, height)
 	rect_pivot_offset = rect_size / 2
 	var viewport_rect:Vector2 = get_viewport_rect().size
-	origin_position = -rect_pivot_offset + viewport_rect / 2
-	rect_position = origin_position
+	rect_position = -rect_pivot_offset + viewport_rect / 2
 	var width_ratio:float = viewport_rect.x / rect_size.x
 	var height_ratio:float = viewport_rect.y / rect_size.y
-	origin_scale = min(width_ratio, height_ratio)
+	var origin_scale = min(width_ratio, height_ratio)
 	var anim:Animation = AnimationPlayerNode.get_animation("NewPanel")
 	anim.track_set_key_value(0, 1, [origin_scale, -.25, 0, .25, 0])
 	anim.track_set_key_value(1, 1, [origin_scale, -.25, 0, .25, 0])
@@ -51,8 +45,10 @@ func _input(event):
 				3: # 가운데 마우스 클릭
 					reset_transform()
 				4: # 휠 올리기
+					rect_pivot_to(get_viewport_rect().size / 2)
 					rect_scale_change_to(1.1)
 				5: # 휠 내리기
+					rect_pivot_to(get_viewport_rect().size / 2)
 					rect_scale_change_to(.9)
 		else:
 			if event.button_index == 2:
@@ -67,11 +63,15 @@ var start_pos:Vector2
 func rect_translate_to(current_pos:Vector2):
 	rect_position = current_pos - start_pos
 
+# 스케일 중심점을 옮김
+func rect_pivot_to(center:Vector2):
+	print_debug('center: ', center)
+	var relative_pos:Vector2 = (center - rect_position) * rect_scale.x
+	rect_pivot_offset = relative_pos
 
 # 배율 변화 주기
 func rect_scale_change_to(ratio:float):
 	rect_scale = rect_scale * ratio
-
 
 # 위치, 각도, 배율 기본값으로 복구
 func reset_transform():
@@ -81,12 +81,22 @@ func reset_transform():
 	anim.track_set_key_value(2, 0, [rect_rotation, -.25, 0, .25, 0])
 	anim.track_set_key_value(3, 0, [rect_scale.x, -.25, 0, .25, 0])
 	anim.track_set_key_value(4, 0, [rect_scale.y, -.25, 0, .25, 0])
+	anim.track_set_key_value(5, 0, [rect_pivot_offset.x, -.25, 0, .25, 0])
+	anim.track_set_key_value(6, 0, [rect_pivot_offset.y, -.25, 0, .25, 0])
 	
+	var viewport_rect:Vector2 = get_viewport_rect().size
+	var target_pivot_offset = $DrawPanel/Panel.rect_size / 2
+	var origin_position = viewport_rect / 2 - target_pivot_offset
+	var width_ratio:float = viewport_rect.x / $DrawPanel/Panel.rect_size.x
+	var height_ratio:float = viewport_rect.y / $DrawPanel/Panel.rect_size.y
+	var origin_scale = min(width_ratio, height_ratio)
 	anim.track_set_key_value(0, 1, [origin_position.x, -.25, 0, .25, 0])
 	anim.track_set_key_value(1, 1, [origin_position.y, -.25, 0, .25, 0])
 	anim.track_set_key_value(2, 1, [0, -.25, 0, .25, 0])
 	anim.track_set_key_value(3, 1, [origin_scale, -.25, 0, .25, 0])
 	anim.track_set_key_value(4, 1, [origin_scale, -.25, 0, .25, 0])
+	anim.track_set_key_value(5, 1, [target_pivot_offset.x, -.25, 0, .25, 0])
+	anim.track_set_key_value(6, 1, [target_pivot_offset.y, -.25, 0, .25, 0])
 	AnimationPlayerNode.play("ResetTransform")
 
 
