@@ -35,39 +35,40 @@ func _ready():
 	anim.track_set_key_value(1, 1, [origin_scale, -.25, 0, .25, 0])
 	AnimationPlayerNode.play("NewPanel")
 
+var start_pos:Vector2
+var start_rect_pos:Vector2
+var end_rect_pos:Vector2
 
 func _input(event):
 	if event is InputEventMouseButton:
 		if event.is_pressed():
 			match(event.button_index):
 				2: # 마우스 좌클릭
+					start_rect_pos = rect_position
 					start_pos = event.position - rect_position
 				3: # 가운데 마우스 클릭
 					reset_transform()
 				4: # 휠 올리기
-					rect_pivot_to(get_viewport_rect().size / 2)
 					rect_scale_change_to(1.1)
 				5: # 휠 내리기
-					rect_pivot_to(get_viewport_rect().size / 2)
 					rect_scale_change_to(.9)
-		else:
-			if event.button_index == 2:
-				start_pos = Vector2.ZERO
+		else: # Mouse-up
+			match(event.button_index):
+				2: # 좌클릭
+					end_rect_pos = rect_position
+					rect_pivot_to(get_viewport_rect().size / 2)
+					start_pos = Vector2.ZERO
 	if event is InputEventMouseMotion:
 		if start_pos != Vector2.ZERO:
-			rect_translate_to(event.position)
+			rect_position = event.position - start_pos
 
 
-var start_pos:Vector2
-# 노드 이동시키기
-func rect_translate_to(current_pos:Vector2):
-	rect_position = current_pos - start_pos
-
-# 스케일 중심점을 옮김
+# 스케일 중심점을 화면에서의 지정된 위치로 옮김
 func rect_pivot_to(center:Vector2):
-	print_debug('center: ', center)
-	var relative_pos:Vector2 = (center - rect_position) * rect_scale.x
-	rect_pivot_offset = relative_pos
+	var rect_offset:= (end_rect_pos - start_rect_pos) / rect_scale.x
+	rect_position = start_rect_pos + rect_offset
+	rect_pivot_offset = rect_pivot_offset - rect_offset
+
 
 # 배율 변화 주기
 func rect_scale_change_to(ratio:float):
