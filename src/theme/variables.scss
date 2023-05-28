@@ -84,6 +84,8 @@
 
   --req-counter-title: #bbb;
   --req-counter-content: #ddd;
+
+  --voidDraw-menu-background: #ddd;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -165,6 +167,8 @@
 
     --req-counter-title: #3a3a3a;
     --req-counter-content: #2d2d2d;
+
+    --voidDraw-menu-background: #444;
   }
 
   /*

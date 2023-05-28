@@ -13,33 +13,29 @@ SPDX-License-Identifier: MIT -->
 <ion-content>
   <div id="p5_void_draw" class="full_screen" style="display: flex; background-color: grey; overflow: hidden;"></div>
   <div id="interface_table">
-    <table>
+    <table style="width: 100%; background-color: var(--voidDraw-menu-background);">
       <tr>
-        <td>
-          <img class="menu_icon" src="" alt="">
-          {{lang.text['voidDraw']['moveMenu']}}
-        </td>
-      </tr>
-      <tr (click)="new_image()">
-        <td>
+        <td class="menu_text" (click)="new_image()">
           <img class="menu_icon" src="" alt="">
           {{lang.text['voidDraw']['newDraw']}}
         </td>
-      </tr>
-      <tr>
-        <td>
+        <td class="menu_text" (click)="act_history(-1)">
+          <img class="menu_icon" src="" alt="">
+          {{lang.text['voidDraw']['Undo']}}
+        </td>
+        <td class="menu_text" (click)="act_history(1)">
+          <img class="menu_icon" src="" alt="">
+          {{lang.text['voidDraw']['Redo']}}
+        </td>
+        <td class="menu_text">
           <img class="menu_icon" src="" alt="">
           {{lang.text['voidDraw']['strokeColor']}}
         </td>
-      </tr>
-      <tr (click)="change_line_weight()">
-        <td>
+        <td class="menu_text" (click)="change_line_weight()">
           <img class="menu_icon" src="" alt="">
           {{lang.text['voidDraw']['strokeWeight']}}
         </td>
-      </tr>
-      <tr (click)="dismiss_draw()">
-        <td>
+        <td class="menu_text" (click)="dismiss_draw()">
           <img class="menu_icon" src="" alt="">
           {{lang.text['voidDraw']['useDraw']}}
         </td>

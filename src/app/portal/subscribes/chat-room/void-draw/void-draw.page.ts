@@ -85,12 +85,17 @@ export class VoidDrawPage implements OnInit {
         placeholder: `${this.lang.text['voidDraw']['weight']} (${this.lang.text['voidDraw']['default_size']}: 3)`,
       }],
       buttons: [{
-        text: this.lang.text['voidDraw']['CreateNew'],
+        text: this.lang.text['voidDraw']['apply'],
         handler: (v) => {
           this.global.godot_window['set_line_weight'](v.weight || 3);
         }
       }],
     }).then(v => v.present());
+  }
+
+  /** Undo, Redo 등 행동을 위한 함수 */
+  act_history(direction: number) {
+    console.log('어디로 갈까요: ', direction);
   }
 
   /** 사용하기를 누른 경우 */

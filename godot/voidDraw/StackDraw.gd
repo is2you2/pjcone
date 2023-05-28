@@ -17,16 +17,13 @@ func _on_StackDraw_gui_input(event):
 					current_draw = Line2D.new()
 					current_draw.default_color = color
 					current_draw.width = weight
+					current_draw.joint_mode = Line2D.LINE_JOINT_ROUND
 					current_draw.begin_cap_mode = Line2D.LINE_CAP_ROUND
 					current_draw.end_cap_mode = Line2D.LINE_CAP_ROUND
 					add_child(current_draw)
 					current_draw.add_point(event.position)
 				else:
-					current_draw.add_point(event.position)
 					is_pressed = false
-			2: # 우클릭
-				if event.is_pressed():
-					pass
 	if event is InputEventMouseMotion:
 		if is_pressed:
 			current_draw.add_point(event.position)
