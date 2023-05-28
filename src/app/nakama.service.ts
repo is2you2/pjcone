@@ -1644,6 +1644,7 @@ export class NakamaService {
               if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
                 delete this.channels_orig[_is_official][_target][_cid]['status'];
             });
+            this.rearrange_channels();
           }
           if (this.groups[_is_official] && this.groups[_is_official][_target]) {
             let groups_id = Object.keys(this.groups[_is_official][_target]);
