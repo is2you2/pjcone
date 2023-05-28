@@ -35,4 +35,4 @@ func save_image():
 	img.flip_y()
 	var buf:= img.save_png_to_buffer()
 	var base64:= Marshalls.raw_to_base64(buf)
-	get_node('../../..').emit_signal("save_as_png", base64)
+	get_node('../../..').use_canvas(base64)

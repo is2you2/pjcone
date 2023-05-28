@@ -1,9 +1,6 @@
 extends ViewportContainer
 
 
-signal save_as_png
-
-
 export var width:= 432
 export var height:= 432
 export var BaseTexture:ImageTexture
@@ -11,12 +8,19 @@ export var BaseTexture:ImageTexture
 onready var DrawViewport:= $DrawPanel
 onready var AnimationPlayerNode:= $DrawPanel/Panel/AnimationPlayer
 
+var window
+var save_image_func = JavaScript.create_callback(self, 'save_image')
+var set_line_weight_func = JavaScript.create_callback(self, 'set_line_weight')
 
 var color:Color
 var weight:= 1.0
 
 
 func _ready():
+	if OS.has_feature('JavaScript'):
+		window = JavaScript.get_interface('window')
+		window.save_image = save_image_func
+		window.set_line_weight = set_line_weight_func
 	if BaseTexture: $DrawPanel/Panel/TextureRect.texture = BaseTexture
 	DrawViewport.size.x = width
 	DrawViewport.size.y = height
@@ -101,10 +105,18 @@ func reset_transform():
 	AnimationPlayerNode.play("ResetTransform")
 
 
-func set_line_weight(weight):
-	$DrawPanel/Panel/StackDraw.weight = weight
+func set_line_weight(args):
+	$DrawPanel/Panel/StackDraw.weight = args[0]
 
 
 # 이미지 저장하기 통로
-func save_image():
+func save_image(args):
 	$DrawPanel/Panel/StackDraw.save_image()
+
+
+# 지금 그려진 그림을 사용하기
+func use_canvas(base64:String):
+	if OS.has_feature('JavaScript'):
+		window.receive_image(base64)
+	else:
+		print_debug('이미지 사용하기: ', base64)

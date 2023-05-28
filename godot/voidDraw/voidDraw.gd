@@ -1,21 +1,13 @@
 extends Node
 
 
-signal save_image
-
-
-var window # iframe 창
 var new_canvas_func = JavaScript.create_callback(self, 'new_canvas')
-var set_line_weight_func = JavaScript.create_callback(self, 'set_line_weight')
-var save_image_func = JavaScript.create_callback(self, 'save_image')
 
 
 func _ready():
 	if OS.has_feature('JavaScript'):
-		window = JavaScript.get_interface('window')
+		var window = JavaScript.get_interface('window')
 		window.new_canvas = new_canvas_func
-		window.save_image = save_image_func
-		window.set_line_weight = set_line_weight_func
 		var json = {
 			'width': 432,
 			'height': 432,
@@ -64,29 +56,11 @@ func new_canvas(args):
 		inst = draw_panel.instance()
 		inst.width = json.width
 		inst.height = json.height
-		connect("save_image", inst, 'save_image')
 		if tex: inst.BaseTexture = tex
-		inst.connect('save_as_png', self, 'use_canvas')
 		add_child(inst)
 	else: printerr('voidDraw: json import error')
 
 
-# 이미지 저장하기 통로
-func save_image(_args):
-	emit_signal("save_image")
-
 
 func set_line_color(args):
 	print_debug('색상 변경: ', args)
-
-
-func set_line_weight(args):
-	inst.set_line_weight(args[0])
-
-
-# 지금 그려진 그림을 사용하기
-func use_canvas(base64:String):
-	if OS.has_feature('JavaScript'):
-		window.receive_image(base64)
-	else:
-		print_debug('이미지 사용하기: ', base64)
