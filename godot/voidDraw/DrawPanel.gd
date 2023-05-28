@@ -11,6 +11,9 @@ onready var AnimationPlayerNode:= $DrawPanel/Panel/AnimationPlayer
 var window
 var save_image_func = JavaScript.create_callback(self, 'save_image')
 var set_line_weight_func = JavaScript.create_callback(self, 'set_line_weight')
+var undo_draw_func = JavaScript.create_callback(self, 'undo_draw')
+var redo_draw_func = JavaScript.create_callback(self, 'redo_draw')
+
 
 var color:Color
 var weight:= 1.0
@@ -21,6 +24,10 @@ func _ready():
 		window = JavaScript.get_interface('window')
 		window.save_image = save_image_func
 		window.set_line_weight = set_line_weight_func
+		window.undo_draw = undo_draw_func
+		window.redo_draw = redo_draw_func
+		window.current_act = 0
+		window.draw_length = 0
 	if BaseTexture: $DrawPanel/Panel/TextureRect.texture = BaseTexture
 	DrawViewport.size.x = width
 	DrawViewport.size.y = height
@@ -109,9 +116,27 @@ func set_line_weight(args):
 	$DrawPanel/Panel/StackDraw.weight = args[0]
 
 
-# 이미지 저장하기 통로
 func save_image(args):
 	$DrawPanel/Panel/StackDraw.save_image()
+
+
+func undo_draw(args):
+	var children:= $DrawPanel/Panel/StackDraw.get_children()
+	var size:= children.size() - 1
+	for i in range(size, -1, -1):
+		if children[i].visible:
+			children[i].visible = false
+			window.current_act = window.current_act - 1
+			break
+
+
+func redo_draw(args):
+	var children:= $DrawPanel/Panel/StackDraw.get_children()
+	for child in children:
+		if not child.visible:
+			child.visible = true
+			window.current_act = window.current_act + 1
+			break
 
 
 # 지금 그려진 그림을 사용하기

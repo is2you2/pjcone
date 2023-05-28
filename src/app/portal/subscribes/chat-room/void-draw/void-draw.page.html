@@ -15,29 +15,45 @@ SPDX-License-Identifier: MIT -->
   <div id="interface_table">
     <table style="width: 100%; background-color: var(--voidDraw-menu-background);">
       <tr>
-        <td class="menu_text" (click)="new_image()">
-          <img class="menu_icon" src="" alt="">
-          {{lang.text['voidDraw']['newDraw']}}
+        <td class="menu_button">
+          <button class="button_font" (click)="new_image()">
+            <img class="menu_icon" src="" alt="">
+            {{lang.text['voidDraw']['newDraw']}}
+          </button>
         </td>
-        <td class="menu_text" (click)="act_history(-1)">
-          <img class="menu_icon" src="" alt="">
-          {{lang.text['voidDraw']['Undo']}}
+        <td class="menu_button">
+          <button class="button_font"
+            [disabled]="!global.godot_window || !global.godot_window.current_act || global.godot_window.current_act == 0"
+            (click)="act_history(-1)">
+            <img class="menu_icon" src="" alt="">
+            {{lang.text['voidDraw']['Undo']}}
+          </button>
         </td>
-        <td class="menu_text" (click)="act_history(1)">
-          <img class="menu_icon" src="" alt="">
-          {{lang.text['voidDraw']['Redo']}}
+        <td class="menu_button">
+          <button class="button_font"
+            [disabled]="!global.godot_window || global.godot_window.current_act == global.godot_window.draw_length"
+            (click)="act_history(1)">
+            <img class="menu_icon" src="" alt="">
+            {{lang.text['voidDraw']['Redo']}}
+          </button>
         </td>
-        <td class="menu_text">
-          <img class="menu_icon" src="" alt="">
-          {{lang.text['voidDraw']['strokeColor']}}
+        <td class="menu_button">
+          <button class="button_font">
+            <img class="menu_icon" src="" alt="">
+            {{lang.text['voidDraw']['strokeColor']}}
+          </button>
         </td>
-        <td class="menu_text" (click)="change_line_weight()">
-          <img class="menu_icon" src="" alt="">
-          {{lang.text['voidDraw']['strokeWeight']}}
+        <td class="menu_button">
+          <button class="button_font" (click)="change_line_weight()">
+            <img class="menu_icon" src="" alt="">
+            {{lang.text['voidDraw']['strokeWeight']}}
+          </button>
         </td>
-        <td class="menu_text" (click)="dismiss_draw()">
-          <img class="menu_icon" src="" alt="">
-          {{lang.text['voidDraw']['useDraw']}}
+        <td class="menu_button">
+          <button class="button_font" (click)="dismiss_draw()">
+            <img class="menu_icon" src="" alt="">
+            {{lang.text['voidDraw']['useDraw']}}
+          </button>
         </td>
       </tr>
     </table>

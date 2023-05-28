@@ -18,7 +18,7 @@ export class VoidDrawPage implements OnInit {
     public modalCtrl: ModalController,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
-    private global: GlobalActService,
+    public global: GlobalActService,
   ) { }
 
   ngOnInit() { }
@@ -29,6 +29,8 @@ export class VoidDrawPage implements OnInit {
       title: 'voidDraw',
       // new_canvas: 이미지 새로 만들기
       // save_image: 이미지 저장하기
+      // undo_draw: 그리기 되돌리기
+      // redo_draw: 그리기 다시하기
       receive_image: (base64: string) => {
         this.loadingCtrl.create({
           message: this.lang.text['voidDraw']['UseThisImage'],
@@ -95,7 +97,17 @@ export class VoidDrawPage implements OnInit {
 
   /** Undo, Redo 등 행동을 위한 함수 */
   act_history(direction: number) {
-    console.log('어디로 갈까요: ', direction);
+    switch (direction) {
+      case -1: // Undo
+        this.global.godot_window['undo_draw']();
+        break;
+      case 1: // Redo
+        this.global.godot_window['redo_draw']();
+        break;
+      default:
+        console.error('있을 수 없는 동작 요청: ', direction);
+        break;
+    }
   }
 
   /** 사용하기를 누른 경우 */

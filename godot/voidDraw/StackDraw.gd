@@ -7,6 +7,7 @@ var current_draw:Line2D
 var color:= Color.black
 var weight:= 3
 
+onready var parent:= get_node('../../..')
 
 func _on_StackDraw_gui_input(event):
 	if event is InputEventMouseButton:
@@ -22,7 +23,17 @@ func _on_StackDraw_gui_input(event):
 					current_draw.end_cap_mode = Line2D.LINE_CAP_ROUND
 					add_child(current_draw)
 					current_draw.add_point(event.position)
+					var children:= get_children()
+					for child in children:
+						if not child.visible:
+							child.queue_free()
+					parent.window.current_act = children.size()
+					parent.window.draw_length = parent.window.current_act
 				else:
+					if current_draw.points.size() == 1:
+						current_draw.queue_free()
+						parent.window.current_act = get_child_count()
+						parent.window.draw_length = parent.window.current_act
 					is_pressed = false
 	if event is InputEventMouseMotion:
 		if is_pressed:

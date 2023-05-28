@@ -56,7 +56,7 @@ export class ToolManagementPage implements OnInit {
       console.log(e);
       this.list[i]['toggle'] = false;
       this.p5toast.show({
-        text: `${this.lang.text['ToolManager']['redownloadFailed']}: ${this.list[i]}`,
+        text: `${this.lang.text['ToolManager']['redownloadFailed']}: ${this.list[i]['text']}`,
       });
     }
   }
