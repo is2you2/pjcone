@@ -17,8 +17,8 @@ SPDX-License-Identifier: MIT -->
     </ion-item-divider>
     <ion-item *ngFor="let tool of list_local; index as i" button>
       <ion-label>{{tool.text}}</ion-label>
-      <ion-button (click)="remove_local_tool(i)">
-        {{lang.text['ToolManager']['removeTool']}}
+      <ion-button *ngIf="!tool.toggle" (click)="remove_local_tool(i)">
+        {{lang.text['ToolManager']['Sync']}}
       </ion-button>
     </ion-item>
   </div>

@@ -3,9 +3,11 @@ extends ViewportContainer
 
 export var width:= 432
 export var height:= 432
+export var start_weight:= 3.0
 export var BaseTexture:ImageTexture
 
 onready var DrawViewport:= $DrawPanel
+onready var DrawBrush:= $DrawPanel/Panel/StackDraw
 onready var AnimationPlayerNode:= $DrawPanel/Panel/AnimationPlayer
 
 var window
@@ -13,10 +15,6 @@ var save_image_func = JavaScript.create_callback(self, 'save_image')
 var set_line_weight_func = JavaScript.create_callback(self, 'set_line_weight')
 var undo_draw_func = JavaScript.create_callback(self, 'undo_draw')
 var redo_draw_func = JavaScript.create_callback(self, 'redo_draw')
-
-
-var color:Color
-var weight:= 1.0
 
 
 func _ready():
@@ -31,6 +29,7 @@ func _ready():
 	if BaseTexture: $DrawPanel/Panel/TextureRect.texture = BaseTexture
 	DrawViewport.size.x = width
 	DrawViewport.size.y = height
+	DrawBrush.weight = start_weight
 	$DrawPanel/Panel.rect_size = Vector2(width, height)
 	$DrawPanel/Panel.rect_position = Vector2.ZERO
 	rect_scale = Vector2(0, 0)
@@ -69,8 +68,8 @@ func _input(event):
 								rect_scale_change_to(.9)
 				2: # 패닝, 이동
 					var last_other:Vector2 = touches[1 if event.index == 0 else 0]
-					$DrawPanel/Panel/StackDraw.remove_current_draw()
-					$DrawPanel/Panel/StackDraw.is_drawable = false
+					DrawBrush.remove_current_draw()
+					DrawBrush.is_drawable = false
 					tmp['center'] = (last_other + event.position) / 2
 					tmp['dist'] = last_other.distance_to(event.position)
 					tmp['scale'] = rect_scale.x
@@ -82,7 +81,7 @@ func _input(event):
 		else: # Mouse-up
 			var touches_length:= touches.size()
 			if touches_length != 0:
-				$DrawPanel/Panel/StackDraw.is_drawable = true
+				DrawBrush.is_drawable = true
 				if event is InputEventMouseButton:
 					if event.button_index == 2:
 						rect_pivot_to(get_viewport_rect().size / 2)
@@ -148,15 +147,15 @@ func reset_transform():
 
 
 func set_line_weight(args):
-	$DrawPanel/Panel/StackDraw.weight = args[0]
+	DrawBrush.weight = args[0] if args[0] else start_weight
 
 
 func save_image(args):
-	$DrawPanel/Panel/StackDraw.save_image()
+	DrawBrush.save_image()
 
 
 func undo_draw(args):
-	var children:= $DrawPanel/Panel/StackDraw.get_children()
+	var children:= DrawBrush.get_children()
 	var size:= children.size() - 1
 	for i in range(size, -1, -1):
 		if children[i].visible:
@@ -166,7 +165,7 @@ func undo_draw(args):
 
 
 func redo_draw(args):
-	var children:= $DrawPanel/Panel/StackDraw.get_children()
+	var children:= DrawBrush.get_children()
 	for child in children:
 		if not child.visible:
 			child.visible = true

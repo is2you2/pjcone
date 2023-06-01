@@ -77,6 +77,9 @@ export class ToolManagementPage implements OnInit {
 
   remove_local_tool(i: number) {
     this.indexed.removeFileFromUserPath(`acts_local/${this.list_local[i].text}`);
-    this.list_local.splice(i, 1);
+    this.list_local[i]['toggle'] = true;
+    this.p5toast.show({
+      text: `${this.lang.text['ToolManager']['SyncWell']}: ${this.list_local[i]['text']}`,
+    });
   }
 }

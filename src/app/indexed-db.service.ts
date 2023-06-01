@@ -43,7 +43,7 @@ export class IndexedDBService {
   }
 
   /** 고도엔진 시스템 오류 방지를 위해 폴더구조 생성 */
-  createRecursiveDirectory(path: string) {
+  private createRecursiveDirectory(path: string) {
     let lastIndexOf = path.lastIndexOf('/');
     let dir = path.substring(0, lastIndexOf);
     if (!dir) return;

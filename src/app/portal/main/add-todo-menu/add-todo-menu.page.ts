@@ -14,6 +14,7 @@ import { LocalNotiService } from 'src/app/local-noti.service';
 import { isPlatform } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { GlobalActService } from 'src/app/global-act.service';
+import { VoidDrawPage } from '../../subscribes/chat-room/void-draw/void-draw.page';
 
 interface LogForm {
   /** 이 로그를 발생시킨 사람, 리모트인 경우에만 넣기, 로컬일 경우 비워두기 */
@@ -321,7 +322,7 @@ export class AddTodoMenuPage implements OnInit {
   isImageRemoved = '';
   /** 첨부파일 삭제 */
   remove_attach() {
-    this.indexed.removeFileFromUserPath('todo/add_tmp.attach');
+    this.indexed.removeFileFromUserPath(`todo/add_tmp.${this.userInput.attach['file_ext']}`);
     this.isImageRemoved = this.userInput.attach['filename'];
     delete this.userInput.attach;
     URL.revokeObjectURL(this.ImageURL);
@@ -526,13 +527,13 @@ export class AddTodoMenuPage implements OnInit {
     let reader: any = new FileReader();
     reader = reader._realReader ?? reader;
     this.userInput.attach['filename'] = ev.target.files[0]['name'];
-    this.userInput.attach['file_ext'] = ev.target.files[0]['name'].substring(ev.target.files[0]['name'].lastIndexOf('.'));
+    this.userInput.attach['file_ext'] = ev.target.files[0]['name'].substring(ev.target.files[0]['name'].lastIndexOf('.') + 1);
     this.userInput.attach['filesize'] = ev.target.files[0]['size'];
     this.userInput.attach['type'] = ev.target.files[0]['type'];
     this.userInput.attach['viewer'] = 'image';
     reader.onload = (ev: any) => {
       this.userInput.attach['img'] = ev.target.result.replace(/"|\\|=/g, '');
-      this.indexed.saveFileToUserPath(this.userInput.attach['img'], 'todo/add_tmp.attach');
+      this.indexed.saveFileToUserPath(this.userInput.attach['img'], `todo/add_tmp.${this.userInput.attach['file_ext']}`);
     };
     if (this.ImageURL)
       URL.revokeObjectURL(this.ImageURL);
@@ -546,9 +547,69 @@ export class AddTodoMenuPage implements OnInit {
       component: IonicViewerPage,
       componentProps: {
         info: this.userInput.attach,
-        path: this.userInput.attach['img'] ? 'todo/add_tmp.attach' : `todo/${this.userInput.id}/${this.userInput.attach['filename']}`,
+        path: this.userInput.attach['img'] ? `todo/add_tmp.${this.userInput.attach['file_ext']}` : `todo/${this.userInput.id}/${this.userInput.attach['filename']}`,
       }
-    }).then(v => v.present());
+    }).then(v => {
+      v.onDidDismiss().then(v => {
+        let path: string;
+        if (v.data) { // 파일 편집하기를 누른 경우
+          path = this.userInput.attach['img'] ? `todo/add_tmp.${this.userInput.attach['file_ext']}` : `todo/${this.userInput.id}/${this.userInput.attach['filename']}`;
+          this.modalCtrl.create({
+            component: VoidDrawPage,
+            componentProps: {
+              info: this.userInput.attach,
+              path: path,
+              width: v.data.width,
+              height: v.data.height,
+            },
+          }).then(v => {
+            v.onWillDismiss().then(async v => {
+              if (v.data) {
+                let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+                loading.present();
+                this.indexed.removeFileFromUserPath(path);
+                this.userInput.attach = {};
+                this.userInput.attach['filename'] = v.data['name'];
+                this.userInput.attach['ext'] = 'png';
+                this.userInput.attach['type'] = 'image/png';
+                this.userInput.attach['typeheader'] = 'image';
+                this.userInput.attach['img'] = v.data['img'];
+                this.indexed.saveFileToUserPath(this.userInput.attach['img'], `todo/add_tmp.${this.userInput.attach['file_ext']}`, (byteArray) => {
+                  let blob = new Blob([byteArray], { type: this.userInput.attach['type'] });
+                  if (this.ImageURL)
+                    URL.revokeObjectURL(this.ImageURL);
+                  this.ImageURL = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
+                  this.global.CreateGodotIFrame('godot-todo', {
+                    local_url: 'assets/data/godot_pck/todo.pck',
+                    title: 'Todo',
+                    add_todo_menu: (_data: string) => {
+                      this.modalCtrl.create({
+                        component: AddTodoMenuPage,
+                        componentProps: {
+                          godot: this.global.godot_window,
+                          data: _data,
+                        },
+                      }).then(v => v.present());
+                    }
+                  });
+                  let repeat = () => {
+                    if (!this.global.godot_window['add_todo'])
+                      setTimeout(() => {
+                        repeat();
+                      }, 1000);
+                    else loading.dismiss();
+                  } // 바깥 환경 준비 후 완료처리
+                  repeat();
+                });
+              }
+            });
+            v.present();
+          });
+          return;
+        }
+      });
+      v.present()
+    });
   }
 
   /** 이 일을 완료했습니다 */
@@ -799,7 +860,10 @@ export class AddTodoMenuPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    this.indexed.removeFileFromUserPath('todo/add_tmp.attach');
+    console.log('이런 경로입디ㅏ: ', `todo/add_tmp.${this.userInput.attach['file_ext']}`);
+    this.indexed.GetFileListFromDB('todo/add_tmp.', list => {
+      list.forEach(path => this.indexed.removeFileFromUserPath(path));
+    });
     if (this.ImageURL)
       URL.revokeObjectURL(this.ImageURL);
     this.noti.Current = '';

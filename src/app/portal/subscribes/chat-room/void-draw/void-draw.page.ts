@@ -28,6 +28,7 @@ export class VoidDrawPage implements OnInit {
     this.global.CreateGodotIFrame('p5_void_draw', {
       local_url: 'assets/data/godot_pck/voidDraw.pck',
       title: 'voidDraw',
+      image: Boolean(this.navParams.data['path']),
       // new_canvas: 이미지 새로 만들기
       // save_image: 이미지 저장하기
       // undo_draw: 그리기 되돌리기
@@ -98,16 +99,16 @@ export class VoidDrawPage implements OnInit {
 
   change_line_weight() {
     this.alertCtrl.create({
-      header: this.lang.text['voidDraw']['newDraw'],
+      header: this.lang.text['voidDraw']['changeWeight'],
       inputs: [{
         name: 'weight',
         type: 'number',
-        placeholder: `${this.lang.text['voidDraw']['weight']} (${this.lang.text['voidDraw']['default_size']}: 3)`,
+        placeholder: this.lang.text['voidDraw']['weight'],
       }],
       buttons: [{
         text: this.lang.text['voidDraw']['apply'],
         handler: (v) => {
-          this.global.godot_window['set_line_weight'](v.weight || 3);
+          this.global.godot_window['set_line_weight'](v.weight);
         }
       }],
     }).then(v => v.present());

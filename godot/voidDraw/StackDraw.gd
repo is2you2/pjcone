@@ -7,7 +7,7 @@ var is_drawable:= true
 var current_draw:Line2D
 
 var color:= Color.black
-var weight:= 3
+var weight:= 3.0
 
 onready var parent:= get_node('../../..')
 
