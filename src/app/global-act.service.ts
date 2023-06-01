@@ -11,8 +11,10 @@ export var isDarkMode = false;
 
 /** 고도엔진과 공유되는 키값 */
 interface GodotFrameKeys {
-  /** 공식 패키지 이름 */
-  act: string;
+  /** 외부 패키지 주소 */
+  url?: string;
+  /** 내부 패키지 주소, url 에 주소를 생성하여 부여 */
+  local_url?: string;
   /** 패키지 이름 입력(영문), 고도 프로젝트에서는 메인 씬 이름이어야함 */
   title: string;
   /** 패키지 불러오기 행동 실패시 실행됨, 사용금지 */
@@ -99,6 +101,7 @@ export class GlobalActService {
     _godot.setAttribute('allow', 'fullscreen; encrypted-media');
     _godot.setAttribute('scrolling', 'no');
     _godot.setAttribute('withCredentials', 'true');
+    if (keys.local_url) keys['url'] = `${window.location.protocol}//${window.location.host}/${keys['local_url']}`;
     keys['failed'] = () => {
       this.p5toast.show({
         text: `${this.lang.text['GlobalAct']['FailedToDownloadGodot']}: ${keys.title}`,

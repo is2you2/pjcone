@@ -25,7 +25,7 @@ export class VoidDrawPage implements OnInit {
 
   ionViewDidEnter() {
     this.global.CreateGodotIFrame('p5_void_draw', {
-      act: 'voidDraw',
+      local_url: 'assets/data/godot_pck/voidDraw.pck',
       title: 'voidDraw',
       // new_canvas: 이미지 새로 만들기
       // save_image: 이미지 저장하기

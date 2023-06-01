@@ -5,6 +5,7 @@ extends Node
 
 # iframe 창
 var window
+var save_path:= 'user://acts/'
 
 # 앱 시작과 동시에 동작하려는 pck 정보를 받아옴
 func _ready():
@@ -13,12 +14,14 @@ func _ready():
 		window = JavaScript.get_interface('window')
 		# ionic에게 IndexedDB가 생성되었음을 알림
 		window.parent['godot'] = 'godot';
+		if window.local_url:
+			save_path = 'user://acts_local/'
 		var dir:= Directory.new()
-		if not dir.dir_exists('user://acts/'):
-			dir.make_dir('user://acts/')
+		if not dir.dir_exists(save_path):
+			dir.make_dir(save_path)
 		# 행동 방침 가져오기
-		var act:String = window.act
-		$CenterContainer/ColorRect/Label.text = 'Click to download\n"%s" tool.' % window.title
+		var act:String = window.title
+		$CenterContainer/ColorRect/Label.text = '%s\n\nClick to download from:\n%s' % [window.title, window.url]
 		if not act: # 아무런 요청도 없이 프레임만 불러온 경우
 			printerr('Godot: 행동 정보가 비어있음')
 		else: load_package(act)
@@ -45,11 +48,13 @@ func load_package_debug(files:PoolStringArray, scr):
 
 # 동작하려는 pck 정보 불러오기
 func load_package(act_name:String):
-	var is_loaded:= ProjectSettings.load_resource_pack('user://acts/%s.pck' % act_name)
+	var is_loaded:= ProjectSettings.load_resource_pack('%s%s.pck' % [save_path, act_name])
 	if not is_loaded: # 없으면 다운받기
 		printerr('Godot: 패키지를 불러오지 못함: ', act_name)
 		if not $CenterContainer/ColorRect.is_connected("gui_input", self, '_on_Label_gui_input'):
 			$CenterContainer/ColorRect.connect("gui_input", self, '_on_Label_gui_input')
+		if window.local_url: # 공식 내장 패키지인 경우 즉시 불러오기
+			start_download_pck()
 	else: # 패키지를 가지고 있는 경우
 		print('Godot: 패키지 타겟: ', act_name)
 		$CenterContainer.queue_free()
@@ -60,30 +65,31 @@ func load_package(act_name:String):
 
 # 파일 다운로드 시작
 func start_download_pck():
-	var act_name:= 'godot-debug'
-	if OS.has_feature('JavaScript'):
-		act_name = window.act
-	$CenterContainer/ColorRect/Label.text = 'Downloading...\n"%s" tool.' % window.title
+	if not OS.has_feature('JavaScript'):
+		print_debug('웹 기능이 포함되어야 함')
+		return
+	$CenterContainer/ColorRect/Label.text = 'Loading...\n"%s" Tool' % window.title
 	var req:= HTTPRequest.new()
 	req.name = 'HTTPRequest'
-	req.download_file = 'user://acts/%s.pck' % act_name
+	req.download_file = '%s%s.pck' % [save_path, window.title]
 	req.connect("request_completed", self, '_on_HTTPRequest_request_completed')
 	$CenterContainer.add_child(req)
-	var err:= req.request('https://is2you2.github.io/pjcone_pck/%s.pck' % act_name)
+	var err:= req.request(window.url)
 	if err != OK:
 		if OS.has_feature('JavaScript'):
 			window.failed()
+			$CenterContainer/ColorRect/Label.text = '%s\n\nClick to download from:\n%s' % [window.title, window.url]
 		else:
 			printerr('기능 다운로드 실패: ', err)
 
 func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 	if response_code == 200:
 		if OS.has_feature('JavaScript'):
-			load_package(window.act)
+			load_package(window.title)
 		else: # 엔진 내 테스트중
 			load_package('godot-debug')
 	else: # 목표 파일 다운로드 실패
-		$CenterContainer/ColorRect/Label.text = 'Click to download\n"%s" tool.' % window.title
+		$CenterContainer/ColorRect/Label.text = '%s\n\nClick to download from:\n%s' % [window.title, window.url]
 		if OS.has_feature('JavaScript'):
 			window.failed()
 		else:
@@ -93,7 +99,4 @@ func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 func _on_Label_gui_input(event):
 	if event is InputEventMouseButton:
 		if event.pressed:
-			if OS.has_feature('JavaScript'):
-				start_download_pck()
-			else:
-				start_download_pck()
+			start_download_pck()

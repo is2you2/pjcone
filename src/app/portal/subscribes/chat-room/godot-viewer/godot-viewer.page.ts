@@ -31,7 +31,7 @@ export class GodotViewerPage implements OnInit {
       this.cant_dedicated = true;
     this.FileInfo = this.navParams.get('info');
     this.global.CreateGodotIFrame('godot-viewer', {
-      act: 'godot-viewer',
+      local_url: 'assets/data/godot_pck/godot-viewer.pck',
       title: 'ViewerEx',
       path: this.navParams.get('path'),
       ext: this.FileInfo['file_ext']
