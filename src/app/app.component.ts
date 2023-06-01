@@ -103,16 +103,9 @@ export class AppComponent {
         let props: any = ev.data.page.componentProps;
         let noti_id: string;
         switch (ev.data.page.component) {
-          case 'ChatRoomPage': {
+          case 'ChatRoomPage':
             page = ChatRoomPage;
-            let _cid = props['info']['id'];
-            let _is_official = props['info']['isOfficial'];
-            let _target = props['info']['target'];
             noti_id = props['info']['noti_id'];
-            props = {
-              info: nakama.channels_orig[_is_official][_target][_cid]
-            };
-          }
             break;
           case 'MinimalChatPage':
             page = MinimalChatPage;
@@ -183,6 +176,15 @@ export class AppComponent {
       switch (ev.data.page.component) {
         case 'ChatRoomPage':
           if (!this.lang.text['ChatRoom']['YouReadHereLast']) throw 'ChatRoomPage 번역 준비중';
+          if (props.info.noti_id) {
+            let _cid = props['info']['id'];
+            let _is_official = props['info']['isOfficial'];
+            let _target = props['info']['target'];
+            props = {
+              info: this.nakama.channels_orig[_is_official][_target][_cid]
+            };
+            throw 'ChatRoomPage props 재정비';
+          }
           this.nakama.go_to_chatroom_without_admob_act(modal);
           modal.present();
           break;
