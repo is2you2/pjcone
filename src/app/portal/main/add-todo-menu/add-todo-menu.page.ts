@@ -564,9 +564,9 @@ export class AddTodoMenuPage implements OnInit {
             },
           }).then(v => {
             v.onWillDismiss().then(async v => {
+              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+              loading.present();
               if (v.data) {
-                let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-                loading.present();
                 this.indexed.removeFileFromUserPath(path);
                 this.userInput.attach = {};
                 this.userInput.attach['filename'] = v.data['name'];
@@ -579,29 +579,29 @@ export class AddTodoMenuPage implements OnInit {
                   if (this.ImageURL)
                     URL.revokeObjectURL(this.ImageURL);
                   this.ImageURL = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
-                  this.global.CreateGodotIFrame('godot-todo', {
-                    local_url: 'assets/data/godot_pck/todo.pck',
-                    title: 'Todo',
-                    add_todo_menu: (_data: string) => {
-                      this.modalCtrl.create({
-                        component: AddTodoMenuPage,
-                        componentProps: {
-                          godot: this.global.godot_window,
-                          data: _data,
-                        },
-                      }).then(v => v.present());
-                    }
-                  });
-                  let repeat = () => {
-                    if (!this.global.godot_window['add_todo'])
-                      setTimeout(() => {
-                        repeat();
-                      }, 1000);
-                    else loading.dismiss();
-                  } // 바깥 환경 준비 후 완료처리
-                  repeat();
                 });
               }
+              this.global.CreateGodotIFrame('godot-todo', {
+                local_url: 'assets/data/godot_pck/todo.pck',
+                title: 'Todo',
+                add_todo_menu: (_data: string) => {
+                  this.modalCtrl.create({
+                    component: AddTodoMenuPage,
+                    componentProps: {
+                      godot: this.global.godot_window,
+                      data: _data,
+                    },
+                  }).then(v => v.present());
+                }
+              });
+              let repeat = () => {
+                if (!this.global.godot_window['add_todo'])
+                  setTimeout(() => {
+                    repeat();
+                  }, 1000);
+                else loading.dismiss();
+              } // 바깥 환경 준비 후 완료처리
+              repeat();
             });
             v.present();
           });

@@ -147,7 +147,7 @@ func reset_transform():
 
 
 func set_line_weight(args):
-	DrawBrush.weight = args[0] if args[0] else start_weight
+	DrawBrush.weight = float(args[0]) * start_weight
 
 
 func save_image(args):

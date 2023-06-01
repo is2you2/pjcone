@@ -103,12 +103,12 @@ export class VoidDrawPage implements OnInit {
       inputs: [{
         name: 'weight',
         type: 'number',
-        placeholder: this.lang.text['voidDraw']['weight'],
+        placeholder: `${this.lang.text['voidDraw']['weight']} (${this.lang.text['voidDraw']['default_size']}: 1)`,
       }],
       buttons: [{
         text: this.lang.text['voidDraw']['apply'],
         handler: (v) => {
-          this.global.godot_window['set_line_weight'](v.weight);
+          this.global.godot_window['set_line_weight'](v.weight || 1);
         }
       }],
     }).then(v => v.present());
