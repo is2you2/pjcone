@@ -18,7 +18,7 @@ SPDX-License-Identifier: MIT -->
           <ion-label>{{FileInfo.filename}}</ion-label>
           <ion-button *ngIf="FileInfo['viewer'] == 'image'" (click)="modify_image()">{{lang.text['ContentViewer']['Edit']}}
           </ion-button>
-          <ion-button *ngIf="cant_dedicated" (click)="download_file()">{{lang.text['ContentViewer']['Download']}}
+          <ion-button *ngIf="cant_dedicated && FileInfo['else']" (click)="download_file()">{{lang.text['ContentViewer']['Download']}}
           </ion-button>
         </ion-list-header>
       </td>

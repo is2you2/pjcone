@@ -201,6 +201,7 @@ export class IonicViewerPage implements OnInit {
             }, e => {
               console.error('열람할 수 없는 파일: ', e);
               canvasDiv.textContent = '열람할 수 없는 파일입니다.';
+              this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
             });
           }
         });
