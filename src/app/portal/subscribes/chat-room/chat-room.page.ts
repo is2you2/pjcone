@@ -126,7 +126,6 @@ export class ChatRoomPage implements OnInit {
   {
     title: this.lang.text['ChatRoom']['voidDraw'],
     icon_img: 'voidDraw.png',
-    isHide: true,
     act: () => {
       this.modalCtrl.create({
         component: VoidDrawPage,

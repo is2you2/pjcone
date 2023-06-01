@@ -1,30 +1,7 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://DrawPanel.gd" type="Script" id=1]
 [ext_resource path="res://StackDraw.gd" type="Script" id=2]
-
-[sub_resource type="Animation" id=1]
-resource_name = "NewPanel"
-tracks/0/type = "bezier"
-tracks/0/path = NodePath("../..:rect_scale:x")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/keys = {
-"points": PoolRealArray( 0, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0 ),
-"times": PoolRealArray( 0, 1 )
-}
-tracks/1/type = "bezier"
-tracks/1/path = NodePath("../..:rect_scale:y")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/keys = {
-"points": PoolRealArray( 0, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0 ),
-"times": PoolRealArray( 0, 1 )
-}
 
 [sub_resource type="Animation" id=2]
 length = 0.001
@@ -267,8 +244,9 @@ rect_pivot_offset = Vector2( 180, 180 )
 script = ExtResource( 2 )
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="DrawPanel/Panel"]
-anims/NewPanel = SubResource( 1 )
 anims/RESET = SubResource( 2 )
 anims/ResetTransform = SubResource( 3 )
+
+[node name="Node2D" type="Node2D" parent="."]
 
 [connection signal="gui_input" from="DrawPanel/Panel/StackDraw" to="DrawPanel/Panel/StackDraw" method="_on_StackDraw_gui_input"]

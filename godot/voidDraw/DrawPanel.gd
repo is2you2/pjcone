@@ -35,50 +35,85 @@ func _ready():
 	$DrawPanel/Panel.rect_position = Vector2.ZERO
 	rect_scale = Vector2(0, 0)
 	rect_size = Vector2(width, height)
-	rect_pivot_offset = rect_size / 2
+	rect_pivot_offset = $DrawPanel/Panel.rect_size / 2
 	var viewport_rect:Vector2 = get_viewport_rect().size
 	rect_position = -rect_pivot_offset + viewport_rect / 2
-	var width_ratio:float = viewport_rect.x / rect_size.x
-	var height_ratio:float = viewport_rect.y / rect_size.y
-	var origin_scale = min(width_ratio, height_ratio)
-	var anim:Animation = AnimationPlayerNode.get_animation("NewPanel")
-	anim.track_set_key_value(0, 1, [origin_scale, -.25, 0, .25, 0])
-	anim.track_set_key_value(1, 1, [origin_scale, -.25, 0, .25, 0])
-	AnimationPlayerNode.play("NewPanel")
+	reset_transform()
+
 
 var start_pos:Vector2
 var start_rect_pos:Vector2
-var end_rect_pos:Vector2
+
+var touches:= {}
+# dist, center, scale origin
+var tmp:= {}
 
 func _input(event):
-	if event is InputEventMouseButton:
-		if event.is_pressed():
-			match(event.button_index):
-				2: # 마우스 좌클릭
+	if event is InputEventMouseButton or event is InputEventScreenTouch:
+		var index:= 0 if event is InputEventMouseButton else event.index
+		if event.pressed:
+			touches[index] = event.position
+			var touches_length:= touches.size()
+			match(touches_length):
+				1: # 그리기 행동, 또는 마우스 행동
+					if event is InputEventMouseButton:
+						match(event.button_index):
+							2: # 마우스 좌클릭
+								start_rect_pos = rect_position
+								start_pos = event.position - rect_position
+							3: # 가운데 마우스 클릭
+								reset_transform()
+							4: # 휠 올리기
+								rect_scale_change_to(1.1)
+							5: # 휠 내리기
+								rect_scale_change_to(.9)
+				2: # 패닝, 이동
+					var last_other:Vector2 = touches[1 if event.index == 0 else 0]
+					$DrawPanel/Panel/StackDraw.remove_current_draw()
+					$DrawPanel/Panel/StackDraw.is_drawable = false
+					tmp['center'] = (last_other + event.position) / 2
+					tmp['dist'] = last_other.distance_to(event.position)
+					tmp['scale'] = rect_scale.x
 					start_rect_pos = rect_position
-					start_pos = event.position - rect_position
-				3: # 가운데 마우스 클릭
+					start_pos = tmp['center'] - rect_position
+					rect_pivot_to(tmp['center'])
+				3: # 원상복구
 					reset_transform()
-				4: # 휠 올리기
-					rect_scale_change_to(1.1)
-				5: # 휠 내리기
-					rect_scale_change_to(.9)
 		else: # Mouse-up
-			match(event.button_index):
-				2: # 좌클릭
-					end_rect_pos = rect_position
-					rect_pivot_to(get_viewport_rect().size / 2)
-					start_pos = Vector2.ZERO
-	if event is InputEventMouseMotion:
-		if start_pos != Vector2.ZERO:
-			rect_position = event.position - start_pos
+			var touches_length:= touches.size()
+			if touches_length != 0:
+				$DrawPanel/Panel/StackDraw.is_drawable = true
+				if event is InputEventMouseButton:
+					if event.button_index == 2:
+						rect_pivot_to(get_viewport_rect().size / 2)
+				start_pos = Vector2.ZERO
+				touches.clear()
+				tmp.clear()
+	if event is InputEventMouseMotion or event is InputEventScreenDrag:
+		var index:= 0 if event is InputEventMouseMotion else event.index
+		if touches.has(index):
+			touches[index] = event.position
+		var touches_length:= touches.size()
+		match(touches_length):
+			1: # 마우스로 행동 한정
+				if event is InputEventMouseMotion:
+					if start_pos != Vector2.ZERO:
+						rect_position = event.position - start_pos
+			2: # 터치 행동으로 한정
+				if event is InputEventScreenDrag:
+					var last_other:Vector2 = touches[1 if index == 0 else 0]
+					var _scale:float = tmp['scale'] * last_other.distance_to(event.position) / tmp['dist']
+					rect_scale = Vector2(_scale, _scale)
+					if start_pos != Vector2.ZERO:
+						rect_position = start_rect_pos + ((last_other + event.position) / 2 - tmp['center'])
 
 
 # 스케일 중심점을 화면에서의 지정된 위치로 옮김
 func rect_pivot_to(center:Vector2):
-	var rect_offset:= (end_rect_pos - start_rect_pos) / rect_scale.x
-	rect_position = start_rect_pos + rect_offset
-	rect_pivot_offset = rect_pivot_offset - rect_offset
+	var _local:Vector2 = $Node2D.to_local(center)
+	var _pivot_offset = _local - rect_pivot_offset
+	rect_position = rect_position - _pivot_offset + _pivot_offset * rect_scale.x
+	rect_pivot_offset = _local
 
 
 # 배율 변화 주기
