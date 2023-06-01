@@ -63,6 +63,8 @@ export class IonicViewerPage implements OnInit {
             img.style('height', 'auto');
             setTimeout(() => {
               img.show();
+              this.image_info['width'] = img.elt.naturalWidth
+              this.image_info['height'] = img.elt.naturalHeight
               RePositioningImage();
             }, 50);
             if (isPlatform == 'Android' || isPlatform == 'iOS') {
@@ -204,6 +206,13 @@ export class IonicViewerPage implements OnInit {
         });
         break;
     }
+  }
+
+  image_info = {};
+
+  /** 내장 그림판을 이용하여 그림 편집하기 */
+  modify_image() {
+    this.modalCtrl.dismiss(this.image_info);
   }
 
   download_file() {

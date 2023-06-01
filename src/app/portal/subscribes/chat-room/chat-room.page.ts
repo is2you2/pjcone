@@ -737,7 +737,33 @@ export class ChatRoomPage implements OnInit {
           path: _path,
         },
       }).then(v => {
-        v.onDidDismiss().then((_v) => {
+        v.onDidDismiss().then((v) => {
+          if (v.data) { // 파일 편집하기를 누른 경우
+            this.modalCtrl.create({
+              component: VoidDrawPage,
+              componentProps: {
+                info: msg.content,
+                path: _path,
+                width: v.data.width,
+                height: v.data.height,
+              },
+            }).then(v => {
+              v.onWillDismiss().then(v => {
+                if (v.data) {
+                  this.userInput.file = {};
+                  this.userInput.file.name = v.data['name'];
+                  this.userInput.file.ext = 'png';
+                  this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
+                  this.userInput.file.type = 'image/png';
+                  this.userInput.file.typeheader = 'image';
+                  this.userInput.file.result = v.data['img'];
+                  this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.name})`;
+                }
+              });
+              v.present();
+            });
+            return;
+          }
           this.noti.Current = this.info['cnoti_id'];
           if (this.info['cnoti_id'])
             this.noti.ClearNoti(this.info['cnoti_id']);

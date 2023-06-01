@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { AlertController, LoadingController, ModalController } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 
@@ -19,6 +19,7 @@ export class VoidDrawPage implements OnInit {
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
     public global: GlobalActService,
+    private navParams: NavParams,
   ) { }
 
   ngOnInit() { }
@@ -52,6 +53,23 @@ export class VoidDrawPage implements OnInit {
         });
       }
     });
+    if (this.navParams.data['path'])
+      this.create_with_image();
+  }
+
+  /** 다른 이미지로부터 시작하기 */
+  create_with_image() {
+    if (!this.global.godot_window['new_canvas'])
+      setTimeout(() => {
+        this.create_with_image();
+      }, 1000);
+    else { // 준비가 완료되면 이미지를 배경에 삽입합니다
+      this.global.godot_window['new_canvas'](JSON.stringify({
+        width: this.navParams.data.width,
+        height: this.navParams.data.height,
+        path: '/userfs/' + this.navParams.data.path,
+      }));
+    }
   }
 
   new_image() {

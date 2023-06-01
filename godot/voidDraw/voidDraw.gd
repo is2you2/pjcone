@@ -39,18 +39,9 @@ func new_canvas(args):
 	var json = JSON.parse(args[0]).result
 	if json is Dictionary:
 		var tex:ImageTexture
-		if json.has('image'): # 배경 이미지 포함시
-			var data64:= Marshalls.base64_to_raw(json.image)
+		if json.has('path'): # 배경 이미지 포함시
 			var img:= Image.new()
-			match(json.img_ext):
-				'png':
-					img.load_png_from_buffer(data64)
-				'jpg':
-					img.load_jpg_from_buffer(data64)
-				'webp':
-					img.load_webp_from_buffer(data64)
-				_:
-					printerr('voidDraw_올바르지 않은 이미지 형식: ', json.img_ext)
+			img.load(json.path)
 			tex = ImageTexture.new()
 			tex.create_from_image(img)
 		inst = draw_panel.instance()
