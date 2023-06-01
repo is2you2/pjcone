@@ -182,7 +182,9 @@ export class AppComponent {
       });
       switch (ev.data.page.component) {
         case 'ChatRoomPage':
+          if (!this.lang.text['ChatRoom']['YouReadHereLast']) throw 'ChatRoomPage 번역 준비중';
           this.nakama.go_to_chatroom_without_admob_act(modal);
+          modal.present();
           break;
         case 'AddTodoMenuPage':
           if (!this.lang.text['TodoDetail']['WIP']) throw 'AddTodoMenuPage 번역 준비중';
