@@ -25,11 +25,19 @@ export class ToolManagementPage implements OnInit {
 
   /** { text: name, toggle: isDisabled } */
   list = [];
+  list_local = [];
 
   ngOnInit() {
     let data: string[] = this.navParams.get('data');
     data.forEach(path => {
-      this.list.push({ text: path.substring(5), toggle: false });
+      let _path = path.substring(5);
+      if (_path.indexOf('local/') == 0)
+        this.list_local.push({
+          text: _path.substring(6),
+          /** 다운로드시 버튼 비활성용 */
+          toggle: false
+        });
+      else this.list.push({ text: _path, toggle: false });
     });
   }
 
@@ -67,4 +75,8 @@ export class ToolManagementPage implements OnInit {
     this.list.splice(i, 1);
   }
 
+  remove_local_tool(i: number) {
+    this.indexed.removeFileFromUserPath(`acts_local/${this.list_local[i].text}`);
+    this.list_local.splice(i, 1);
+  }
 }

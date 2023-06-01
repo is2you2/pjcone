@@ -56,8 +56,10 @@ export class SettingsPage implements OnInit {
     this.AD_Div = document.getElementById('advertise');
     this.checkAdsInfo();
     // 다운받은 패키지가 있는지 확인
-    this.indexed.GetFileListFromDB('acts/', list => {
-      this.list_tools = list;
+    this.indexed.GetFileListFromDB('acts_local/', local_list => {
+      this.indexed.GetFileListFromDB('acts/', list => {
+        this.list_tools = [...local_list, ...list];
+      });
     });
   }
 
@@ -73,8 +75,10 @@ export class SettingsPage implements OnInit {
       },
     }).then(v => {
       v.onWillDismiss().then(() => {
-        this.indexed.GetFileListFromDB('acts/', list => {
-          this.list_tools = list;
+        this.indexed.GetFileListFromDB('acts_local/', local_list => {
+          this.indexed.GetFileListFromDB('acts/', list => {
+            this.list_tools = [...local_list, ...list];
+          });
         });
       });
       v.present();

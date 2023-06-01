@@ -11,13 +11,29 @@ SPDX-License-Identifier: MIT -->
 </ion-header>
 
 <ion-content>
-  <ion-item *ngFor="let tool of list; index as i" button>
-    <ion-label>{{tool.text}}</ion-label>
-    <ion-button [disabled]="tool.toggle" (click)="redownload_tool(i)">
-      {{lang.text['ToolManager']['Redownload']}}
-    </ion-button>
-    <ion-button (click)="remove_tool(i)">
-      {{lang.text['ToolManager']['removeTool']}}
-    </ion-button>
-  </ion-item>
+  <div *ngIf="list_local.length">
+    <ion-item-divider>
+      <ion-label>{{lang.text['ToolManager']['Official']}}</ion-label>
+    </ion-item-divider>
+    <ion-item *ngFor="let tool of list_local; index as i" button>
+      <ion-label>{{tool.text}}</ion-label>
+      <ion-button (click)="remove_local_tool(i)">
+        {{lang.text['ToolManager']['removeTool']}}
+      </ion-button>
+    </ion-item>
+  </div>
+  <div *ngIf="list.length">
+    <ion-item-divider>
+      <ion-label>{{lang.text['ToolManager']['Unofficial']}}</ion-label>
+    </ion-item-divider>
+    <ion-item *ngFor="let tool of list; index as i" button>
+      <ion-label>{{tool.text}}</ion-label>
+      <ion-button [disabled]="tool.toggle" (click)="redownload_tool(i)">
+        {{lang.text['ToolManager']['Redownload']}}
+      </ion-button>
+      <ion-button (click)="remove_tool(i)">
+        {{lang.text['ToolManager']['removeTool']}}
+      </ion-button>
+    </ion-item>
+  </div>
 </ion-content>

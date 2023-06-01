@@ -125,6 +125,9 @@ diychat,Nakama 채널,Nakama channel
 todo,해야할 일,Todo
 simplechat,미니채팅,Mini-chat
 ## ToolManager,,
+Official,공식 제공 도구,Official tools
+Unofficial,사용자 도구,Custom tools
+Sync,동기화,Sync
 Redownload,다시받기,Re-download
 removeTool,삭제,Remove
 redownloadSucc,다시받기 성공,Re-download successful
