@@ -14,7 +14,6 @@ import { ChatRoomPage } from './portal/subscribes/chat-room/chat-room.page';
 import { WscService } from './wsc.service';
 import { AdMob } from "@capacitor-community/admob";
 import { AddTodoMenuPage } from './portal/main/add-todo-menu/add-todo-menu.page';
-import { GlobalActService } from './global-act.service';
 import { LanguageSettingService } from './language-setting.service';
 /** 페이지가 돌고 있는 플렛폼 구분자 */
 export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'DesktopPWA';
@@ -39,9 +38,8 @@ export class AppComponent {
     private nakama: NakamaService,
     indexed: IndexedDBService,
     private modalCtrl: ModalController,
-    global: GlobalActService,
     alertCtrl: AlertController,
-    lang: LanguageSettingService,
+    private lang: LanguageSettingService,
   ) {
     if (platform.is('desktop'))
       isPlatform = 'DesktopPWA';
@@ -175,24 +173,28 @@ export class AppComponent {
   /** 앱이 꺼진 상태에서 알림 클릭시 바로 동작하지 않기 때문에 페이지 열기 가능할 때까지 기다림  
    * 당장은 방법이 없어보이나, 함수를 일단 분리해둠
    */
-  waiting_open_page(ev: any, page: any, props: any) {
-    if (window['godot'] == 'godot') {
-      this.modalCtrl.create({
+  async waiting_open_page(ev: any, page: any, props: any) {
+    try {
+      if (window['godot'] != 'godot') throw '고도엔진 준비되지 않음';
+      let modal = await this.modalCtrl.create({
         component: page,
         componentProps: props,
-      }).then(v => {
-        switch (ev.data.page.component) {
-          case 'ChatRoomPage':
-            this.nakama.go_to_chatroom_without_admob_act(v);
-            break;
-          default:
-            console.warn('준비된 페이지 행동 없음: ', ev.data.page.component);
-            v.present();
-            break;
-        }
       });
-    } else {
-      console.log('retry open notification clicked..');
+      switch (ev.data.page.component) {
+        case 'ChatRoomPage':
+          this.nakama.go_to_chatroom_without_admob_act(modal);
+          break;
+        case 'AddTodoMenuPage':
+          if (!this.lang.text['TodoDetail']['WIP']) throw 'AddTodoMenuPage 번역 준비중';
+          modal.present();
+          break;
+        default:
+          console.warn('준비된 페이지 행동 없음: ', ev.data.page.component);
+          modal.present();
+          break;
+      }
+    } catch (e) {
+      console.log('retry open notification clicked because... : ', e);
       setTimeout(() => {
         this.waiting_open_page(ev, page, props);
       }, 1000);
