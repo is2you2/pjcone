@@ -101,7 +101,7 @@ export class GlobalActService {
     _godot.setAttribute('allow', 'fullscreen; encrypted-media');
     _godot.setAttribute('scrolling', 'no');
     _godot.setAttribute('withCredentials', 'true');
-    if (keys.local_url) keys['url'] = `${window.location.protocol}//${window.location.host}/${keys['local_url']}`;
+    if (keys.local_url) keys['url'] = `${window.location.protocol}//${window.location.host}${window['sub_path']}${keys['local_url']}`;
     keys['failed'] = () => {
       this.p5toast.show({
         text: `${this.lang.text['GlobalAct']['FailedToDownloadGodot']}: ${keys.title}`,

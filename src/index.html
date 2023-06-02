@@ -23,6 +23,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <!-- https 일 때에만 동작한다는 썰이 있습니다, 검토 필요 -->
   <script defer>
+    // 예하 경로에 의한 경로찾기 오류 완화용
+    var sub_path = '/'
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/assets/sw.js')
