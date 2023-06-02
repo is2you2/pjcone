@@ -66,9 +66,9 @@ func _input(event):
 							3: # 가운데 마우스 클릭
 								reset_transform()
 							4: # 휠 올리기
-								rect_scale_change_to(1.1)
+								rect_scale = rect_scale * 1.1
 							5: # 휠 내리기
-								rect_scale_change_to(.9)
+								rect_scale = rect_scale * .9
 				2: # 패닝, 이동
 					var last_other:Vector2 = touches[1 if event.index == 0 else 0]
 					DrawBrush.remove_current_draw()
@@ -76,9 +76,9 @@ func _input(event):
 					tmp['center'] = (last_other + event.position) / 2
 					tmp['dist'] = last_other.distance_to(event.position)
 					tmp['scale'] = rect_scale.x
+					rect_pivot_to(tmp['center'])
 					start_rect_pos = rect_position
 					start_pos = tmp['center'] - rect_position
-					rect_pivot_to(tmp['center'])
 				3: # 원상복구
 					reset_transform()
 		else: # Mouse-up
@@ -114,13 +114,9 @@ func _input(event):
 func rect_pivot_to(center:Vector2):
 	var _local:Vector2 = $Node2D.to_local(center)
 	var _pivot_offset = _local - rect_pivot_offset
-	rect_position = rect_position - _pivot_offset + _pivot_offset * rect_scale.x
 	rect_pivot_offset = _local
+	rect_position = rect_position - _pivot_offset + _pivot_offset * rect_scale.x
 
-
-# 배율 변화 주기
-func rect_scale_change_to(ratio:float):
-	rect_scale = rect_scale * ratio
 
 # 위치, 각도, 배율 기본값으로 복구
 func reset_transform():
