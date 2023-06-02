@@ -48,8 +48,6 @@ func new_canvas(args):
 		inst = draw_panel.instance()
 		inst.width = json.width
 		inst.height = json.height
-		inst.start_weight = float(max(inst.width, inst.height)) / 144
-		.0
 		if tex: inst.BaseTexture = tex
 		add_child(inst)
 	else: printerr('voidDraw: json import error')
