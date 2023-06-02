@@ -29,17 +29,18 @@ func _ready():
 	if BaseTexture: $DrawPanel/Panel/TextureRect.texture = BaseTexture
 	DrawViewport.size.x = width
 	DrawViewport.size.y = height
-	var viewport_rect:Vector2 = get_viewport_rect().size
-	var width_ratio:float = viewport_rect.x / $DrawPanel/Panel.rect_size.x
-	var height_ratio:float = viewport_rect.y / $DrawPanel/Panel.rect_size.y
-	var origin_scale = min(width_ratio, height_ratio)
-	DrawBrush.weight = origin_scale * 6.4
 	$DrawPanel/Panel.rect_size = Vector2(width, height)
 	$DrawPanel/Panel.rect_position = Vector2.ZERO
+	var viewport_rect:Vector2 = get_viewport_rect().size
 	rect_scale = Vector2(0, 0)
 	rect_size = Vector2(width, height)
 	rect_pivot_offset = $DrawPanel/Panel.rect_size / 2
 	rect_position = -rect_pivot_offset + viewport_rect / 2
+	var width_ratio:float = viewport_rect.x / $DrawPanel/Panel.rect_size.x
+	var height_ratio:float = viewport_rect.y / $DrawPanel/Panel.rect_size.y
+	var origin_scale = min(width_ratio, height_ratio)
+	start_weight = 3 / origin_scale
+	DrawBrush.weight = start_weight
 	reset_transform()
 
 
