@@ -11,17 +11,16 @@ SPDX-License-Identifier: MIT -->
 </ion-header>
 
 <ion-content>
-  <div id="p5_void_draw" class="full_screen" style="display: flex; background-color: grey; overflow: hidden;"></div>
   <div id="interface_table">
-    <table style="width: 100%; background-color: var(--voidDraw-menu-background);">
-      <tr>
-        <td class="menu_button">
+    <table style="width: 100%; height: 100%; background-color: var(--voidDraw-menu-background);">
+      <tr style="height: 56px;">
+        <td>
           <button class="button_font" (click)="new_image()">
             <img class="menu_icon" src="" alt="">
             {{lang.text['voidDraw']['newDraw']}}
           </button>
         </td>
-        <td class="menu_button">
+        <td>
           <button class="button_font"
             [disabled]="!global.godot_window || !global.godot_window.current_act || global.godot_window.current_act == 0"
             (click)="act_history(-1)">
@@ -29,7 +28,7 @@ SPDX-License-Identifier: MIT -->
             {{lang.text['voidDraw']['Undo']}}
           </button>
         </td>
-        <td class="menu_button">
+        <td>
           <button class="button_font"
             [disabled]="!global.godot_window || global.godot_window.current_act == global.godot_window.draw_length"
             (click)="act_history(1)">
@@ -37,23 +36,29 @@ SPDX-License-Identifier: MIT -->
             {{lang.text['voidDraw']['Redo']}}
           </button>
         </td>
-        <td class="menu_button">
+        <td>
           <button disabled class="button_font">
             <img class="menu_icon" src="" alt="">
             {{lang.text['voidDraw']['strokeColor']}}
           </button>
         </td>
-        <td class="menu_button">
+        <td>
           <button class="button_font" (click)="change_line_weight()">
             <img class="menu_icon" src="" alt="">
             {{lang.text['voidDraw']['strokeWeight']}}
           </button>
         </td>
-        <td class="menu_button">
+        <td>
           <button class="button_font" (click)="dismiss_draw()">
             <img class="menu_icon" src="" alt="">
             {{lang.text['voidDraw']['useDraw']}}
           </button>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="6">
+          <div id="p5_void_draw" class="full_screen" style="display: flex; background-color: grey; overflow: hidden;">
+          </div>
         </td>
       </tr>
     </table>
