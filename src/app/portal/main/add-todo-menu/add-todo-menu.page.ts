@@ -570,10 +570,11 @@ export class AddTodoMenuPage implements OnInit {
                 this.indexed.removeFileFromUserPath(path);
                 this.userInput.attach = {};
                 this.userInput.attach['filename'] = v.data['name'];
-                this.userInput.attach['ext'] = 'png';
+                this.userInput.attach['file_ext'] = 'png';
                 this.userInput.attach['type'] = 'image/png';
                 this.userInput.attach['typeheader'] = 'image';
                 this.userInput.attach['img'] = v.data['img'];
+                this.userInput.attach['viewer'] = 'image';
                 this.indexed.saveFileToUserPath(this.userInput.attach['img'], `todo/add_tmp.${this.userInput.attach['file_ext']}`, (byteArray) => {
                   let blob = new Blob([byteArray], { type: this.userInput.attach['type'] });
                   if (this.ImageURL)
@@ -860,7 +861,6 @@ export class AddTodoMenuPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    console.log('이런 경로입디ㅏ: ', `todo/add_tmp.${this.userInput.attach['file_ext']}`);
     this.indexed.GetFileListFromDB('todo/add_tmp.', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path));
     });

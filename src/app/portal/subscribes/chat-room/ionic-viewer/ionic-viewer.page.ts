@@ -33,6 +33,7 @@ export class IonicViewerPage implements OnInit {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
     this.FileInfo = this.navParams.get('info');
+    console.log('무엇을 받았습니까: ', this.navParams.data);
     this.ContentBox = document.getElementById('ContentBox');
     this.FileHeader = document.getElementById('FileHeader');
     this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type'], (blob) => {
