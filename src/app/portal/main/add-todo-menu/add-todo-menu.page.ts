@@ -583,7 +583,7 @@ export class AddTodoMenuPage implements OnInit {
                 });
               }
               this.global.CreateGodotIFrame('godot-todo', {
-                local_url: 'assets/data/godot_pck/todo.pck',
+                local_url: 'assets/data/godot/todo.pck',
                 title: 'Todo',
                 add_todo_menu: (_data: string) => {
                   this.modalCtrl.create({

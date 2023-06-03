@@ -57,7 +57,7 @@ export class MainPage implements OnInit {
 
   ionViewWillEnter() {
     this.app.CreateGodotIFrame('godot-todo', {
-      local_url: 'assets/data/godot_pck/todo.pck',
+      local_url: 'assets/data/godot/todo.pck',
       title: 'Todo',
       /**
        * 해야할 일 추가/수정/열람 메뉴 띄우기
