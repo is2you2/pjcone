@@ -231,7 +231,9 @@ ionViewWillEnter() {
   - iframe 개체가 hidden 되더라도 백그라운드에서 진행됨 (숨기기 무의미)
 - 앱을 빌드할 때 버전을 관리하면
   - android/app/build.gradle 확인
-
+- 앱의 스플래시 화면이 따라오지 않음
+  - icon 구성할 때 debug/release/main을 작업해도 스플래시는 안바뀜
+  - android/app/src/main/res/ 아래 있는 splash 파일들 일괄 수정 필요
 
 ## 사용중인 알림 아이디
 - 10: 커뮤니티 서버 클라이언트
