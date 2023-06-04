@@ -140,6 +140,7 @@ export class ChatRoomPage implements OnInit {
             this.userInput.file.typeheader = 'image';
             this.userInput.file.result = v.data['img'];
             this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.name})`;
+            v.data['loadingCtrl'].dismiss();
           }
         });
         v.present();
@@ -758,6 +759,7 @@ export class ChatRoomPage implements OnInit {
                   this.userInput.file.typeheader = 'image';
                   this.userInput.file.result = v.data['img'];
                   this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.name})`;
+                  v.data['loadingCtrl'].dismiss();
                 }
               });
               v.present();

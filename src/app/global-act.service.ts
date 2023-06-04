@@ -81,7 +81,7 @@ export class GlobalActService {
   godot: HTMLIFrameElement;
   godot_window: any;
   /** 마지막에 기록된 프레임 id */
-  private last_frame_name: string;
+  last_frame_name: string;
   /** 고도엔진이 시작하자마자 로딩할 내용과 고도 결과물을 담을 iframe id를 전달  
    * 이 함수는 고도엔진이 실행되는 페이지의 ionViewWillEnter()에서 진행되어야 합니다
    * @param _act_name 로딩할 pck 파일의 이름
@@ -89,31 +89,41 @@ export class GlobalActService {
    * @param keys 고도엔진 iframe.window에 작성될 값들
    * @returns iframe 개체 돌려주기
    */
-  CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys) {
-    if (this.last_frame_name == _frame_name && this.godot.isConnected) return;
-    if (this.godot) this.godot.remove();
-    this.last_frame_name = _frame_name;
-    let _godot = document.createElement('iframe');
-    _godot.id = 'godot';
-    _godot.setAttribute("src", "assets/html/index.html");
-    _godot.setAttribute("frameborder", "0");
-    _godot.setAttribute('class', 'full_screen');
-    _godot.setAttribute('allow', 'fullscreen; encrypted-media');
-    _godot.setAttribute('scrolling', 'no');
-    _godot.setAttribute('withCredentials', 'true');
-    if (keys.local_url) keys['url'] = `${window.location.protocol}//${window.location.host}${window['sub_path']}${keys['local_url']}`;
-    keys['failed'] = () => {
-      this.p5toast.show({
-        text: `${this.lang.text['GlobalAct']['FailedToDownloadGodot']}: ${keys.title}`,
-        lateable: true,
-      });
-    }
-    let frame = document.getElementById(_frame_name);
-    frame.appendChild(_godot);
-    this.godot_window = _godot.contentWindow || _godot.contentDocument;
-    let _keys = Object.keys(keys);
-    _keys.forEach(key => this.godot_window[key] = keys[key]);
-    this.godot = _godot;
-    return _godot;
+  CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys): Promise<any> {
+    return new Promise((done: any) => {
+      let refresh_it_loading = () => {
+        if (window['godot'] == 'godot')
+          done();
+        else setTimeout(() => {
+          refresh_it_loading();
+        }, 1000);
+      }
+      if (this.last_frame_name == _frame_name && this.godot.isConnected) return;
+      window['godot'] = '';
+      if (this.godot) this.godot.remove();
+      this.last_frame_name = _frame_name;
+      let _godot = document.createElement('iframe');
+      _godot.id = 'godot';
+      _godot.setAttribute("src", "assets/html/index.html");
+      _godot.setAttribute("frameborder", "0");
+      _godot.setAttribute('class', 'full_screen');
+      _godot.setAttribute('allow', 'fullscreen; encrypted-media');
+      _godot.setAttribute('scrolling', 'no');
+      _godot.setAttribute('withCredentials', 'true');
+      if (keys.local_url) keys['url'] = `${window.location.protocol}//${window.location.host}${window['sub_path']}${keys['local_url']}`;
+      keys['failed'] = () => {
+        this.p5toast.show({
+          text: `${this.lang.text['GlobalAct']['FailedToDownloadGodot']}: ${keys.title}`,
+          lateable: true,
+        });
+      }
+      let frame = document.getElementById(_frame_name);
+      frame.appendChild(_godot);
+      this.godot_window = _godot.contentWindow || _godot.contentDocument;
+      let _keys = Object.keys(keys);
+      _keys.forEach(key => this.godot_window[key] = keys[key]);
+      this.godot = _godot;
+      refresh_it_loading();
+    });
   }
 }

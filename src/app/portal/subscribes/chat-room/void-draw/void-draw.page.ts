@@ -23,8 +23,10 @@ export class VoidDrawPage implements OnInit {
   ) { }
 
   ngOnInit() { }
+  mainLoading: HTMLIonLoadingElement;
 
-  ionViewDidEnter() {
+  async ionViewDidEnter() {
+    this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
     this.global.CreateGodotIFrame('p5_void_draw', {
       local_url: 'assets/data/godot/voidDraw.pck',
       title: 'voidDraw',
@@ -34,23 +36,18 @@ export class VoidDrawPage implements OnInit {
       // undo_draw: 그리기 되돌리기
       // redo_draw: 그리기 다시하기
       receive_image: (base64: string) => {
-        this.loadingCtrl.create({
-          message: this.lang.text['voidDraw']['UseThisImage'],
-        }).then(v => {
-          let image = 'data:image/png;base64,' + base64.replace(/"|=|\\/g, '');
-          v.present()
-          let newDate = new Date();
-          let year = newDate.getUTCFullYear();
-          let month = ("0" + (newDate.getMonth() + 1)).slice(-2);
-          let date = ("0" + newDate.getDate()).slice(-2);
-          let hour = ("0" + newDate.getHours()).slice(-2);
-          let minute = ("0" + newDate.getMinutes()).slice(-2);
-          let second = ("0" + newDate.getSeconds()).slice(-2);
-          this.modalCtrl.dismiss({
-            name: `voidDraw_${year}-${month}-${date}_${hour}-${minute}-${second}.png`,
-            img: image,
-          });
-          v.dismiss();
+        let image = 'data:image/png;base64,' + base64.replace(/"|=|\\/g, '');
+        let newDate = new Date();
+        let year = newDate.getUTCFullYear();
+        let month = ("0" + (newDate.getMonth() + 1)).slice(-2);
+        let date = ("0" + newDate.getDate()).slice(-2);
+        let hour = ("0" + newDate.getHours()).slice(-2);
+        let minute = ("0" + newDate.getMinutes()).slice(-2);
+        let second = ("0" + newDate.getSeconds()).slice(-2);
+        this.modalCtrl.dismiss({
+          name: `voidDraw_${year}-${month}-${date}_${hour}-${minute}-${second}.png`,
+          img: image,
+          loadingCtrl: this.mainLoading,
         });
       }
     });
@@ -131,7 +128,10 @@ export class VoidDrawPage implements OnInit {
 
   /** 사용하기를 누른 경우 */
   dismiss_draw() {
-    this.global.godot_window['save_image']();
+    this.mainLoading.present();
+    setTimeout(() => {
+      this.global.godot_window['save_image']();
+    }, 100);
   }
 
   ionViewDidLeave() {

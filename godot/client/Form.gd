@@ -56,7 +56,6 @@ func load_package(act_name:String):
 		if window.local_url: # 공식 내장 패키지인 경우 즉시 불러오기
 			start_download_pck()
 	else: # 패키지를 가지고 있는 경우
-		print('Godot: 패키지 타겟: ', act_name)
 		$CenterContainer.queue_free()
 		var inst = load('res://%s.tscn' % (window.title if window.title else 'Main'))
 		add_child(inst.instance())

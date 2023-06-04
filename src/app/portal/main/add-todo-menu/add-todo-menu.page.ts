@@ -551,23 +551,18 @@ export class AddTodoMenuPage implements OnInit {
       }
     }).then(v => {
       v.onDidDismiss().then(v => {
-        let path: string;
         if (v.data) { // 파일 편집하기를 누른 경우
-          path = this.userInput.attach['img'] ? `todo/add_tmp.${this.userInput.attach['file_ext']}` : `todo/${this.userInput.id}/${this.userInput.attach['filename']}`;
           this.modalCtrl.create({
             component: VoidDrawPage,
             componentProps: {
               info: this.userInput.attach,
-              path: path,
+              path: this.userInput.attach['img'] ? `todo/add_tmp.${this.userInput.attach['file_ext']}` : `todo/${this.userInput.id}/${this.userInput.attach['filename']}`,
               width: v.data.width,
               height: v.data.height,
             },
           }).then(v => {
-            v.onWillDismiss().then(async v => {
-              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-              loading.present();
+            v.onWillDismiss().then(v => {
               if (v.data) {
-                this.indexed.removeFileFromUserPath(path);
                 this.userInput.attach = {};
                 this.userInput.attach['filename'] = v.data['name'];
                 this.userInput.attach['file_ext'] = 'png';
@@ -581,28 +576,8 @@ export class AddTodoMenuPage implements OnInit {
                     URL.revokeObjectURL(this.ImageURL);
                   this.ImageURL = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
                 });
+                v.data['loadingCtrl'].dismiss();
               }
-              this.global.CreateGodotIFrame('godot-todo', {
-                local_url: 'assets/data/godot/todo.pck',
-                title: 'Todo',
-                add_todo_menu: (_data: string) => {
-                  this.modalCtrl.create({
-                    component: AddTodoMenuPage,
-                    componentProps: {
-                      godot: this.global.godot_window,
-                      data: _data,
-                    },
-                  }).then(v => v.present());
-                }
-              });
-              let repeat = () => {
-                if (!this.global.godot_window['add_todo'])
-                  setTimeout(() => {
-                    repeat();
-                  }, 1000);
-                else loading.dismiss();
-              } // 바깥 환경 준비 후 완료처리
-              repeat();
             });
             v.present();
           });
@@ -705,32 +680,54 @@ export class AddTodoMenuPage implements OnInit {
     this.userInput.noti_id = this.nakama.get_noti_id();
     this.nakama.set_todo_notification(this.userInput);
     let received_json = this.received_data ? JSON.parse(this.received_data) : undefined;
-    if (copy_img) {
+    if (copy_img) { // 첨부된 파일이 있다면
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      loading.present();
       if (received_json)
         this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/${received_json.attach['filename']}`);
       this.indexed.saveFileToUserPath(copy_img, `todo/${this.userInput.id}/${this.userInput.attach['filename']}`);
-      new p5((p: p5) => {
-        p.setup = () => {
-          p.loadImage(copy_img, v => {
-            let isLandscapeImage = v.width > v.height;
-            if (isLandscapeImage)
-              v.resize(v.width / v.height * 128, 128);
-            else v.resize(128, v.height / v.width * 128);
-            let canvas = p.createCanvas(128, 128);
-            canvas.hide();
-            p.smooth();
-            p.image(v, -(v.width - 128) / 2, -(v.height - 128) / 2);
-            p.saveFrames('', 'png', 1, 1, c => {
-              this.indexed.saveFileToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
-                `todo/${this.userInput.id}/thumbnail.png`);
+      await new Promise((done: any) => {
+        new p5((p: p5) => {
+          p.setup = () => {
+            p.loadImage(copy_img, v => {
+              let isLandscapeImage = v.width > v.height;
+              if (isLandscapeImage)
+                v.resize(v.width / v.height * 128, 128);
+              else v.resize(128, v.height / v.width * 128);
+              let canvas = p.createCanvas(128, 128);
+              canvas.hide();
+              p.smooth();
+              p.image(v, -(v.width - 128) / 2, -(v.height - 128) / 2);
+              p.saveFrames('', 'png', 1, 1, c => {
+                this.indexed.saveFileToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
+                  `todo/${this.userInput.id}/thumbnail.png`, (_) => {
+                    done();
+                  });
+                p.remove();
+              });
+            }, e => {
+              console.error('Todo-등록된 이미지 불러오기 실패: ', e);
+              done();
               p.remove();
             });
-          }, e => {
-            console.error('Todo-등록된 이미지 불러오기 실패: ', e);
-            p.remove();
-          });
+          }
+        });
+      });
+      this.global.last_frame_name = '';
+      await this.global.CreateGodotIFrame('godot-todo', {
+        local_url: 'assets/data/godot/todo.pck',
+        title: 'Todo',
+        add_todo_menu: (_data: string) => {
+          this.modalCtrl.create({
+            component: AddTodoMenuPage,
+            componentProps: {
+              godot: this.global.godot_window,
+              data: _data,
+            },
+          }).then(v => v.present());
         }
       });
+      loading.dismiss();
     }
     this.userInput.written = new Date().getTime();
     if (this.userInput.startFrom) {
@@ -860,7 +857,7 @@ export class AddTodoMenuPage implements OnInit {
     });
   }
 
-  ionViewWillLeave() {
+  async ionViewWillLeave() {
     this.indexed.GetFileListFromDB('todo/add_tmp.', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path));
     });
@@ -869,5 +866,18 @@ export class AddTodoMenuPage implements OnInit {
     this.noti.Current = '';
     this.p5resize.remove();
     this.p5timer.remove();
+    this.global.CreateGodotIFrame('godot-todo', {
+      local_url: 'assets/data/godot/todo.pck',
+      title: 'Todo',
+      add_todo_menu: (_data: string) => {
+        this.modalCtrl.create({
+          component: AddTodoMenuPage,
+          componentProps: {
+            godot: this.global.godot_window,
+            data: _data,
+          },
+        }).then(v => v.present());
+      }
+    });
   }
 }
