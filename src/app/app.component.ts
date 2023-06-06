@@ -186,7 +186,9 @@ export class AppComponent {
             throw 'ChatRoomPage props 재정비';
           }
           this.nakama.go_to_chatroom_without_admob_act(modal);
-          modal.present();
+          if (props['info']['status'] != 'online' || props['info']['status'] != 'pending')
+            delete props['info']['is_new'];
+          this.nakama.rearrange_channels();
           break;
         case 'AddTodoMenuPage':
           if (!this.lang.text['TodoDetail']['WIP']) throw 'AddTodoMenuPage 번역 준비중';
