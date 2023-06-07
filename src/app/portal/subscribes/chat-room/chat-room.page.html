@@ -61,6 +61,26 @@ SPDX-License-Identifier: MIT -->
             <div *ngIf="msg['isLastRead']" class="read_last_here">
               {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
           </div>
+          <div *ngFor="let msg of sending_msg" (click)="message_detail(msg)">
+            <div *ngIf="msg.content['filename']" class="file_message_form" (click)="file_detail(msg)">
+              <div *ngIf="!msg.content['img']" class="file_button">
+                <p class="file_info"> {{msg.content['filename']}} </p>
+                <div *ngIf="msg.content['text']" class="text_seperator"></div>
+                <span *ngFor="let line of msg.content['text']" class="file_text_thumbnail"> {{line}} </span>
+              </div>
+              <div *ngIf="msg.content['img']" class="file_name_form">
+                <img class="file_thumbnail" [src]="msg.content['img']" [alt]="msg.content['filename']">
+              </div>
+            </div>
+            <div *ngIf="msg.content['msg']" class="message_content_form">
+              <div *ngFor="let line of msg.content['msg']">
+                <span *ngFor="let part of line">
+                  <span *ngIf="!part.href" class="comp_local_content"> {{part.text}} </span>
+                  <a *ngIf="part.href" [href]="part.text" class="comp_local_content" target="_system">{{part.text}}</a>
+                </span>
+              </div>
+            </div>
+          </div>
           <ion-item *ngIf="prev_cursor" hidden [disabled]="!pullable" button (click)="pull_msg_history(false)">
             <ion-label>{{lang.text['ChatRoom']['fetch_next_chat']}}</ion-label>
           </ion-item>

@@ -74,6 +74,10 @@ export class ChatRoomPage implements OnInit {
   /** 마지막에 읽은 메시지를 찾았는지 */
   foundLastRead = false;
   messages = [];
+  /** 발송 시도하였으나 다시 답장받지 못한 메시지 */
+  sending_msg = [];
+  /** 내가 발송한 메시지가 수신되면 썸네일 구성하기 */
+  temporary_open_thumbnail = {};
   /** 확장 버튼 행동들 */
   extended_buttons: ExtendButtonForm[] = [{
     title: this.lang.text['ChatRoom']['remove_chatroom'],
@@ -228,14 +232,15 @@ export class ChatRoomPage implements OnInit {
     }
     this.content_panel = document.getElementById('content');
     this.send_thumbnail = document.getElementById('send_thumbnail');
+    this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     // 실시간 채팅을 받는 경우 행동처리
     if (this.nakama.channels_orig[this.isOfficial][this.target] &&
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'] = (c: any) => {
-        this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.nakama.check_sender_and_show_name(c, this.isOfficial, this.target);
         if (c.content['filename']) this.ModulateFileEmbedMessage(c);
         this.info['last_read_id'] = this.info['last_comment_id'];
+        this.check_if_send_msg(c);
         this.messages.push(c);
         this.modulate_chatmsg(this.messages.length - 1, this.messages.length);
         setTimeout(() => {
@@ -255,6 +260,40 @@ export class ChatRoomPage implements OnInit {
     setTimeout(() => {
       this.content_panel.scrollIntoView({ block: 'start' });
     }, 500);
+  }
+
+  /** 내가 보낸 메시지인지 검토하는 과정  
+   * 내 메시지 한정 썸네일을 생성하거나 열람 함수를 생성
+   */
+  check_if_send_msg(msg: any) {
+    for (let i = 0, j = this.sending_msg.length; i < j; i++) {
+      if (msg.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id
+        && msg.content['local_comp'] == this.sending_msg[i].content['local_comp']) {
+        if (msg.content['filename']) this.auto_open_thumbnail(msg);
+        this.sending_msg.splice(i, 1);
+        break;
+      }
+    }
+  }
+
+  /** 내가 보낸 메시지 한정, 자동으로 썸네일을 생성 (또는 생성 함수를 만들기) */
+  auto_open_thumbnail(msg: any) {
+    try {
+      this.temporary_open_thumbnail[msg.message_id]();
+    } catch (e) {
+      this.temporary_open_thumbnail[msg.message_id] = () => {
+        this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
+          msg.content['type'],
+          v => {
+            let url = URL.createObjectURL(v);
+            this.modulate_thumbnail(msg, url);
+            // setTimeout(() => {
+            //   this.content_panel.scrollIntoView({ block: 'start' });
+            // }, 0);
+          });
+        delete this.temporary_open_thumbnail[msg.message_id];
+      }
+    }
   }
 
   ionViewWillEnter() {
@@ -464,12 +503,20 @@ export class ChatRoomPage implements OnInit {
       }
       result['partsize'] = upload.length;
     }
+    result['local_comp'] = Math.random();
+    let tmp = { content: JSON.parse(JSON.stringify(result)) };
+    this.nakama.content_to_hyperlink(tmp);
+    this.sending_msg.push(tmp);
     this.nakama.servers[this.isOfficial][this.target].socket
       .writeChatMessage(this.info['id'], result).then(v => {
         /** 업로드가 진행중인 메시지 개체 */
         if (upload.length) { // 첨부 파일이 포함된 경우
           // 로컬에 파일을 저장
           this.indexed.saveFileToUserPath(this.userInput.file.result, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.ext}`, () => {
+            this.auto_open_thumbnail({
+              content: result,
+              message_id: v.message_id,
+            });
             // 서버에 파일을 업로드
             this.nakama.WriteStorage_From_channel(v, upload, this.isOfficial, this.target);
           });
