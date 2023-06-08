@@ -570,6 +570,7 @@ export class AddTodoMenuPage implements OnInit {
                 this.userInput.attach['typeheader'] = 'image';
                 this.userInput.attach['img'] = v.data['img'];
                 this.userInput.attach['viewer'] = 'image';
+                this.userInput.attach['creator'] = v.data['creator'];
                 this.indexed.saveFileToUserPath(this.userInput.attach['img'], `todo/add_tmp.${this.userInput.attach['file_ext']}`, (byteArray) => {
                   let blob = new Blob([byteArray], { type: this.userInput.attach['type'] });
                   if (this.ImageURL)

@@ -19,6 +19,11 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { VoidDrawPage } from './void-draw/void-draw.page';
 
+interface ContentCreatorInfo {
+  display_name: string;
+  user_id: string;
+}
+
 interface FileInfo {
   name?: string;
   type?: string;
@@ -27,6 +32,10 @@ interface FileInfo {
   size?: number;
   /** 썸네일 구분용 헤더 */
   typeheader?: string;
+  /** 작업 참여자, 또는 이 작업과 연관된 사람들 */
+  content_related_creator?: ContentCreatorInfo[];
+  /** 콘텐츠를 업로드한 사람, 또는 제작자 */
+  content_creator?: ContentCreatorInfo[];
   result?: string;
   thumbnail?: any;
 }
@@ -142,6 +151,11 @@ export class ChatRoomPage implements OnInit {
             this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
             this.userInput.file.type = 'image/png';
             this.userInput.file.typeheader = 'image';
+            this.userInput.file.content_related_creator = [];
+            this.userInput.file.content_creator = [{
+              user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+              display_name: this.nakama.users.self['display_name'],
+            }];
             this.userInput.file.result = v.data['img'];
             this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.name})`;
             v.data['loadingCtrl'].dismiss();
@@ -150,8 +164,7 @@ export class ChatRoomPage implements OnInit {
         v.present();
       });
     },
-  }
-  ];
+  }];
 
   /** 파일 첨부하기 */
   inputFileSelected(ev: any) {
@@ -492,6 +505,8 @@ export class ChatRoomPage implements OnInit {
       result['file_ext'] = this.userInput.file.ext;
       result['type'] = this.userInput.file.type;
       result['msg'] = result['msg'];
+      result['content_creator'] = this.userInput.file.content_creator;
+      result['content_related_creator'] = this.userInput.file.content_related_creator;
       let seek = 0;
       const RESULT_LIMIT = this.userInput.file.result.length;
       while (seek < RESULT_LIMIT) {
@@ -787,6 +802,18 @@ export class ChatRoomPage implements OnInit {
       }).then(v => {
         v.onDidDismiss().then((v) => {
           if (v.data) { // 파일 편집하기를 누른 경우
+            let related_creators: ContentCreatorInfo[] = [];
+            if (msg.content['content_related_creator'])
+              related_creators.push(...msg.content['content_related_creator']);
+            if (msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
+              let is_already_exist = false;
+              for (let i = 0, j = related_creators.length; i < j; i++)
+                if (related_creators[i].user_id == msg.content['content_creator'][0]['user_id']) {
+                  is_already_exist = true;
+                  break;
+                }
+              if (!is_already_exist) related_creators.push(...msg.content['content_creator']);
+            }
             this.modalCtrl.create({
               component: VoidDrawPage,
               componentProps: {
@@ -804,6 +831,11 @@ export class ChatRoomPage implements OnInit {
                   this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
                   this.userInput.file.type = 'image/png';
                   this.userInput.file.typeheader = 'image';
+                  this.userInput.file.content_related_creator = related_creators;
+                  this.userInput.file.content_creator = [{
+                    user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                    display_name: this.nakama.users.self['display_name'],
+                  }];
                   this.userInput.file.result = v.data['img'];
                   this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.name})`;
                   v.data['loadingCtrl'].dismiss();
