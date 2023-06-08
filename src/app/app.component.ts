@@ -190,6 +190,10 @@ export class AppComponent {
             delete props['info']['is_new'];
           this.nakama.rearrange_channels();
           break;
+        case 'MinimalChatPage':
+          if (!this.lang.text['MinimalChat']['leave_chat_group']) throw 'MinimalChatPage 번역 준비중';
+          modal.present();
+          break;
         case 'AddTodoMenuPage':
           if (!this.lang.text['TodoDetail']['WIP']) throw 'AddTodoMenuPage 번역 준비중';
           modal.present();
