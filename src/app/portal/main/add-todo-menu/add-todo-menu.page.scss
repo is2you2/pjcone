@@ -18,3 +18,11 @@
     padding: 4px 8px;
     text-align: center;
 }
+
+.image_thumbnail {
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    margin: auto;
+}

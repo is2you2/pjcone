@@ -70,7 +70,7 @@ export class IndexedDBService {
    * @param text 문서에 포함될 텍스트
    * @param path 저장될 상대 경로(user://~)
    */
-  saveTextFileToUserPath(text: string, path: string, _CallBack = (_v: any) => { }) {
+  saveTextFileToUserPath(text: string, path: string, _CallBack = (_v: any) => { }): Promise<any> {
     if (!this.db) {
       console.log('retry saveTextFileToUserPath..');
       setTimeout(() => {
@@ -79,19 +79,23 @@ export class IndexedDBService {
       return;
     };
     this.createRecursiveDirectory(path);
-    let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
-      timestamp: new Date(),
-      mode: 33206,
-      contents: new TextEncoder().encode(text),
-    }, `/userfs/${path}`);
-    put.onsuccess = (ev) => {
-      if (ev.type != 'success')
-        console.error('저장 실패: ', path);
-      _CallBack(ev);
-    }
-    put.onerror = (e) => {
-      console.error('IndexedDB saveFileToUserPath failed: ', e);
-    }
+    return new Promise((done, error) => {
+      let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
+        timestamp: new Date(),
+        mode: 33206,
+        contents: new TextEncoder().encode(text),
+      }, `/userfs/${path}`);
+      put.onsuccess = (ev) => {
+        if (ev.type != 'success')
+          console.error('저장 실패: ', path);
+        _CallBack(ev);
+        done(ev);
+      }
+      put.onerror = (e) => {
+        console.error('IndexedDB saveFileToUserPath failed: ', e);
+        error(e);
+      }
+    });
   }
 
   /**
@@ -99,7 +103,7 @@ export class IndexedDBService {
    * @param base64 문서에 포함될 base64 텍스트
    * @param path 저장될 상대 경로(user://~)
    */
-  saveFileToUserPath(base64: string, path: string, _CallBack = (_int8array: Int8Array) => { }) {
+  saveFileToUserPath(base64: string, path: string, _CallBack = (_int8array: Int8Array) => { }): Promise<Int8Array> {
     if (!this.db) {
       console.log('retry saveFileToUserPath..');
       setTimeout(() => {
@@ -107,25 +111,29 @@ export class IndexedDBService {
       }, 1000);
       return;
     };
-    let byteStr = atob(base64.split(',')[1]);
-    let arrayBuffer = new ArrayBuffer(byteStr.length);
-    let int8Array = new Int8Array(arrayBuffer);
-    for (let i = 0, j = byteStr.length; i < j; i++)
-      int8Array[i] = byteStr.charCodeAt(i);
-    this.createRecursiveDirectory(path);
-    let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
-      timestamp: new Date(),
-      mode: 33206,
-      contents: int8Array,
-    }, `/userfs/${path}`);
-    put.onsuccess = (ev) => {
-      if (ev.type != 'success')
-        console.error('저장 실패: ', path);
-      _CallBack(int8Array);
-    }
-    put.onerror = (e) => {
-      console.error('IndexedDB saveFileToUserPath failed: ', e);
-    }
+    return new Promise((done, error) => {
+      let byteStr = atob(base64.split(',')[1]);
+      let arrayBuffer = new ArrayBuffer(byteStr.length);
+      let int8Array = new Int8Array(arrayBuffer);
+      for (let i = 0, j = byteStr.length; i < j; i++)
+        int8Array[i] = byteStr.charCodeAt(i);
+      this.createRecursiveDirectory(path);
+      let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
+        timestamp: new Date(),
+        mode: 33206,
+        contents: int8Array,
+      }, `/userfs/${path}`);
+      put.onsuccess = (ev) => {
+        if (ev.type != 'success')
+          console.error('저장 실패: ', path);
+        _CallBack(int8Array);
+        done(int8Array);
+      }
+      put.onerror = (e) => {
+        console.error('IndexedDB saveFileToUserPath failed: ', e);
+        error(e);
+      }
+    });
   }
 
   /** 파일이 있는지 검토 */
@@ -148,7 +156,7 @@ export class IndexedDBService {
   }
 
   /** 모든 파일 리스트로부터 대상 폴더와 겹치는 파일 리스트 추출하기 */
-  GetFileListFromDB(path: string, _CallBack = (_list: string[]) => console.log('GetFileListFromDB act null')) {
+  GetFileListFromDB(path: string, _CallBack = (_list: string[]) => { }): Promise<string[]> {
     if (!this.db) {
       console.log('retry GetFileListFromDB..');
       setTimeout(() => {
@@ -157,18 +165,22 @@ export class IndexedDBService {
       return;
     };
     let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').getAllKeys();
-    data.onsuccess = (ev) => {
-      const keys: string[] = ev.target['result'];
-      for (let i = keys.length - 1; i >= 0; i--) {
-        if (!keys[i].includes(path))
-          keys.splice(i, 1);
-        else keys[i] = keys[i].substring(8);
+    return new Promise((done, error) => {
+      data.onsuccess = (ev) => {
+        const keys: string[] = ev.target['result'];
+        for (let i = keys.length - 1; i >= 0; i--) {
+          if (!keys[i].includes(path))
+            keys.splice(i, 1);
+          else keys[i] = keys[i].substring(8);
+        }
+        _CallBack(keys);
+        done(keys);
       }
-      _CallBack(keys);
-    }
-    data.onerror = (e) => {
-      console.error('IndexedDB GetFileListFromDir failed: ', e);
-    }
+      data.onerror = (e) => {
+        console.error('IndexedDB GetFileListFromDir failed: ', e);
+        error(e);
+      }
+    });
   }
 
   /** 고도엔진에서 'user://~'에 해당하는 파일 불러오기
@@ -198,7 +210,7 @@ export class IndexedDBService {
      * @param path 'user://~'에 들어가는 사용자 폴더 경로
      * @param _CallBack 받은 Blob 활용하기
      */
-  loadBlobFromUserPath(path: string, mime: string, _CallBack = (_blob: Blob) => console.log('loadBlobFromUserPath act null')) {
+  loadBlobFromUserPath(path: string, mime: string, _CallBack = (_blob: Blob) => { }): Promise<Blob> {
     if (!this.db) {
       console.log('retry loadBlobFromUserPath..');
       setTimeout(() => {
@@ -207,19 +219,24 @@ export class IndexedDBService {
       return;
     };
     let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
-    data.onsuccess = (ev) => {
-      try {
-        let blob = new Blob([ev.target['result']['contents']], { type: mime });
-        _CallBack(blob);
-      } catch (e) {
-        this.p5toast.show({
-          text: `${this.lang.text['IndexedDB']['FailedToOpenFile']}: ${e}`,
-        });
+    return new Promise((done, error) => {
+      data.onsuccess = (ev) => {
+        try {
+          let blob = new Blob([ev.target['result']['contents']], { type: mime });
+          _CallBack(blob);
+          done(blob);
+        } catch (e) {
+          this.p5toast.show({
+            text: `${this.lang.text['IndexedDB']['FailedToOpenFile']}: ${e}`,
+          });
+          error(e);
+        }
       }
-    }
-    data.onerror = (e) => {
-      console.error('IndexedDB loadBlobFromUserPath failed: ', e);
-    }
+      data.onerror = (e) => {
+        console.error('IndexedDB loadBlobFromUserPath failed: ', e);
+        error(e);
+      }
+    });
   }
 
   /** 고도엔진의 'user://~'에 해당하는 파일 다운받기
@@ -258,7 +275,7 @@ export class IndexedDBService {
     }
   }
 
-  removeFileFromUserPath(path: string, _CallBack = (_ev: any) => { }) {
+  removeFileFromUserPath(path: string, _CallBack = (_ev: any) => { }): Promise<any> {
     if (!this.db) {
       console.log('retry removeFileFromUserPath..');
       setTimeout(() => {
@@ -267,11 +284,15 @@ export class IndexedDBService {
       return;
     }
     let data = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').delete(`/userfs/${path}`);
-    data.onsuccess = (ev) => {
-      _CallBack(ev);
-    }
-    data.onerror = (e) => {
-      console.error('IndexedDB removeFileFromUserPath failed: ', e);
-    }
+    return new Promise((done, error) => {
+      data.onsuccess = (ev) => {
+        _CallBack(ev);
+        done(ev);
+      }
+      data.onerror = (e) => {
+        console.error('IndexedDB removeFileFromUserPath failed: ', e);
+        error(e);
+      }
+    });
   }
 }

@@ -18,27 +18,7 @@ import { GodotViewerPage } from './godot-viewer/godot-viewer.page';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { VoidDrawPage } from './void-draw/void-draw.page';
-
-interface ContentCreatorInfo {
-  display_name: string;
-  user_id: string;
-}
-
-interface FileInfo {
-  name?: string;
-  type?: string;
-  ext?: string;
-  /** 전체 파일 크기 */
-  size?: number;
-  /** 썸네일 구분용 헤더 */
-  typeheader?: string;
-  /** 작업 참여자, 또는 이 작업과 연관된 사람들 */
-  content_related_creator?: ContentCreatorInfo[];
-  /** 콘텐츠를 업로드한 사람, 또는 제작자 */
-  content_creator?: ContentCreatorInfo[];
-  result?: string;
-  thumbnail?: any;
-}
+import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 
 interface ExtendButtonForm {
   title: string;
@@ -73,6 +53,7 @@ export class ChatRoomPage implements OnInit {
     private alertCtrl: AlertController,
     public lang: LanguageSettingService,
     private sanitizer: DomSanitizer,
+    private global: GlobalActService,
   ) { }
 
   /** 채널 정보 */
@@ -146,18 +127,21 @@ export class ChatRoomPage implements OnInit {
         v.onWillDismiss().then(v => {
           if (v.data) {
             this.userInput.file = {};
-            this.userInput.file.name = v.data['name'];
-            this.userInput.file.ext = 'png';
+            this.userInput.file.filename = v.data['name'];
+            this.userInput.file.file_ext = 'png';
             this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
             this.userInput.file.type = 'image/png';
             this.userInput.file.typeheader = 'image';
-            this.userInput.file.content_related_creator = [];
+            this.userInput.file.content_related_creator = [{
+              user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+              display_name: this.nakama.users.self['display_name'],
+            }];
             this.userInput.file.content_creator = [{
               user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
               display_name: this.nakama.users.self['display_name'],
             }];
             this.userInput.file.result = v.data['img'];
-            this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.name})`;
+            this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
             v.data['loadingCtrl'].dismiss();
           }
         });
@@ -170,8 +154,8 @@ export class ChatRoomPage implements OnInit {
   inputFileSelected(ev: any) {
     if (ev.target.files.length) {
       this.userInput['file'] = {};
-      this.userInput.file['name'] = ev.target.files[0].name;
-      this.userInput.file['ext'] = ev.target.files[0].name.split('.')[1] || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
+      this.userInput.file['filename'] = ev.target.files[0].name;
+      this.userInput.file['file_ext'] = ev.target.files[0].name.split('.')[1] || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
       this.userInput.file['size'] = ev.target.files[0].size;
       this.userInput.file['type'] = ev.target.files[0].type;
       this.userInput.file['typeheader'] = ev.target.files[0].type.split('/')[0];
@@ -203,7 +187,7 @@ export class ChatRoomPage implements OnInit {
               });
               break;
           }
-        this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.name})`;
+        this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
       }
       reader.readAsDataURL(ev.target.files[0]);
     } else {
@@ -299,7 +283,7 @@ export class ChatRoomPage implements OnInit {
           msg.content['type'],
           v => {
             let url = URL.createObjectURL(v);
-            this.modulate_thumbnail(msg, url);
+            this.global.modulate_thumbnail(msg.content, url);
             // setTimeout(() => {
             //   this.content_panel.scrollIntoView({ block: 'start' });
             // }, 0);
@@ -500,9 +484,9 @@ export class ChatRoomPage implements OnInit {
     this.last_text = '';
     let upload: string[] = [];
     if (this.userInput.file) { // 파일 첨부시
-      result['filename'] = this.userInput.file.name;
+      result['filename'] = this.userInput.file.filename;
       result['filesize'] = this.userInput.file.size;
-      result['file_ext'] = this.userInput.file.ext;
+      result['file_ext'] = this.userInput.file.file_ext;
       result['type'] = this.userInput.file.type;
       result['msg'] = result['msg'];
       result['content_creator'] = this.userInput.file.content_creator;
@@ -527,7 +511,7 @@ export class ChatRoomPage implements OnInit {
         /** 업로드가 진행중인 메시지 개체 */
         if (upload.length) { // 첨부 파일이 포함된 경우
           // 로컬에 파일을 저장
-          this.indexed.saveFileToUserPath(this.userInput.file.result, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.ext}`, () => {
+          this.indexed.saveFileToUserPath(this.userInput.file.result, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.file_ext}`, () => {
             this.auto_open_thumbnail({
               content: result,
               message_id: v.message_id,
@@ -586,7 +570,7 @@ export class ChatRoomPage implements OnInit {
           msg.content['type'],
           v => {
             let url = URL.createObjectURL(v);
-            this.modulate_thumbnail(msg, url);
+            this.global.modulate_thumbnail(msg.content, url);
           });
         this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
       } else { // 가지고 있는 파일이 아닐 경우
@@ -606,7 +590,7 @@ export class ChatRoomPage implements OnInit {
             if (!this.isHistoryLoaded)
               this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
                 let url = URL.createObjectURL(resultModified);
-                this.modulate_thumbnail(msg, url);
+                this.global.modulate_thumbnail(msg.content, url);
               });
           } else if (isPlatform != 'MobilePWA') {
             if (msg.content['viewer'] == 'disabled') {
@@ -619,7 +603,7 @@ export class ChatRoomPage implements OnInit {
                     handler: () => {
                       this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
                         let url = URL.createObjectURL(resultModified);
-                        this.modulate_thumbnail(msg, url);
+                        this.global.modulate_thumbnail(msg.content, url);
                       });
                     }
                   }]
@@ -628,7 +612,7 @@ export class ChatRoomPage implements OnInit {
               if (!this.isHistoryLoaded)
                 this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
                   let url = URL.createObjectURL(resultModified);
-                  this.modulate_thumbnail(msg, url);
+                  this.global.modulate_thumbnail(msg.content, url);
                 });
             }
           }
@@ -658,108 +642,9 @@ export class ChatRoomPage implements OnInit {
     }
   }
 
-  /** 메시지에 썸네일 콘텐츠를 생성 */
-  modulate_thumbnail(msg: any, ObjectURL: string) {
-    switch (msg.content['viewer']) {
-      case 'image':
-        if (msg.content['img']) return; // 이미 썸네일이 있다면 제외
-        msg.content['img'] = this.sanitizer.bypassSecurityTrustUrl(ObjectURL);
-        setTimeout(() => {
-          URL.revokeObjectURL(ObjectURL);
-        }, 0);
-        break;
-      case 'text':
-        new p5((p: p5) => {
-          p.setup = () => {
-            p.loadStrings(ObjectURL, v => {
-              msg.content['text'] = v;
-              URL.revokeObjectURL(ObjectURL);
-              p.remove();
-            }, e => {
-              console.error('텍스트 열람 불가: ', e);
-              msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
-              URL.revokeObjectURL(ObjectURL);
-              p.remove();
-            });
-          }
-        });
-        break;
-      default:
-        console.error('예상하지 못한 카테고리-viewer분류: ', msg);
-        URL.revokeObjectURL(ObjectURL);
-        break;
-    }
-  }
-
-  /** 콘텐츠 카테고리 분류 */
-  set_viewer_category(msg: any) {
-    try { // 자동지정 타입이 있는 경우
-      if (msg.content['type'].indexOf('image/') == 0) // 분류상 이미지
-        msg.content['viewer'] = 'image';
-      else if (msg.content['type'].indexOf('audio/') == 0) // 분류상 소리
-        msg.content['viewer'] = 'audio';
-      else if (msg.content['type'].indexOf('video/') == 0) // 분류상 비디오
-        msg.content['viewer'] = 'video';
-      else if (msg.content['type'].indexOf('text/') == 0) // 분류상 텍스트 문서
-        msg.content['viewer'] = 'text';
-      else throw "자동지정되지 않은 타입";
-    } catch (_e) { // 자동지정 타입이 없는 경우
-      switch (msg.content['file_ext']) {
-        // 모델링류
-        // case 'obj':
-        // case 'stl':
-        // case 'glb':
-        // case 'gltf':
-        // 고도엔진 패키지 파일
-        case 'pck':
-          msg.content['viewer'] = 'godot';
-          break;
-        // 이미지류
-        case 'png':
-        case 'jpeg':
-        case 'jpg':
-        case 'webp':
-        case 'gif':
-          msg.content['viewer'] = 'image';
-          break;
-        // 사운드류
-        case 'wav':
-        case 'ogg':
-        case 'mp3':
-          msg.content['viewer'] = 'audio';
-          break;
-        // 비디오류
-        case 'mp4':
-        case 'ogv':
-        case 'webm':
-          msg.content['viewer'] = 'video';
-          break;
-        // 마크다운
-        case 'md':
-        // 텍스트류
-        case 'txt':
-        case 'cs':
-        case 'gd':
-        case 'py':
-        case 'yml':
-        case 'gitignore':
-        case 'json':
-        case 'csv':
-        case 'ts':
-        case 'js':
-        case 'shader':
-          msg.content['viewer'] = 'text';
-          break;
-        default: // 뷰어 제한 파일
-          msg.content['viewer'] = 'disabled';
-          break;
-      }
-    }
-  }
-
   /** 파일이 포함된 메시지 구조화, 자동 썸네일 작업 */
   ModulateFileEmbedMessage(msg: any) {
-    this.set_viewer_category(msg);
+    this.global.set_viewer_category(msg.content);
     this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (b) => {
       if (b) {
         msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
@@ -768,7 +653,7 @@ export class ChatRoomPage implements OnInit {
             msg.content['type'],
             v => {
               let url = URL.createObjectURL(v);
-              this.modulate_thumbnail(msg, url);
+              this.global.modulate_thumbnail(msg.content, url);
             });
       }
     });
@@ -826,8 +711,8 @@ export class ChatRoomPage implements OnInit {
               v.onWillDismiss().then(v => {
                 if (v.data) {
                   this.userInput.file = {};
-                  this.userInput.file.name = v.data['name'];
-                  this.userInput.file.ext = 'png';
+                  this.userInput.file.filename = v.data['name'];
+                  this.userInput.file.file_ext = 'png';
                   this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
                   this.userInput.file.type = 'image/png';
                   this.userInput.file.typeheader = 'image';
@@ -837,7 +722,7 @@ export class ChatRoomPage implements OnInit {
                     display_name: this.nakama.users.self['display_name'],
                   }];
                   this.userInput.file.result = v.data['img'];
-                  this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.name})`;
+                  this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
                   v.data['loadingCtrl'].dismiss();
                 }
               });

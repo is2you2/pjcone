@@ -6,8 +6,34 @@ import { LanguageSettingService } from './language-setting.service';
 import { P5ToastService } from './p5-toast.service';
 import * as QRCode from "qrcode-svg";
 import { DomSanitizer } from '@angular/platform-browser';
+import * as p5 from "p5";
 
 export var isDarkMode = false;
+
+/** 컨텐츠 제작자 기록 틀 */
+export interface ContentCreatorInfo {
+  /** 콘텐츠 작성 당시 사용한 이름 */
+  display_name: string;
+  /** 공유되는 서버 기반 uid */
+  user_id?: string;
+}
+
+/** 뷰어 동작 호완을 위한 틀 */
+export interface FileInfo {
+  filename?: string;
+  type?: string;
+  file_ext?: string;
+  /** 전체 파일 크기 */
+  size?: number;
+  /** 썸네일 구분용 헤더 */
+  typeheader?: string;
+  /** 작업 참여자, 또는 이 작업과 연관된 사람들 */
+  content_related_creator?: ContentCreatorInfo[];
+  /** 콘텐츠를 업로드한 사람, 또는 제작자 */
+  content_creator?: ContentCreatorInfo[];
+  result?: string;
+  thumbnail?: any;
+}
 
 /** 고도엔진과 공유되는 키값 */
 interface GodotFrameKeys {
@@ -125,5 +151,106 @@ export class GlobalActService {
       this.godot = _godot;
       refresh_it_loading();
     });
+  }
+
+  /** 메시지에 썸네일 콘텐츠를 생성 */
+  modulate_thumbnail(msg_content: any, ObjectURL: string) {
+    switch (msg_content['viewer']) {
+      case 'image':
+        if (msg_content['img']) return; // 이미 썸네일이 있다면 제외
+        msg_content['img'] = this.sanitizer.bypassSecurityTrustUrl(ObjectURL);
+        setTimeout(() => {
+          URL.revokeObjectURL(ObjectURL);
+        }, 0);
+        break;
+      case 'text':
+        new p5((p: p5) => {
+          p.setup = () => {
+            p.loadStrings(ObjectURL, v => {
+              msg_content['text'] = v;
+              URL.revokeObjectURL(ObjectURL);
+              p.remove();
+            }, e => {
+              console.error('텍스트 열람 불가: ', e);
+              msg_content['text'] = [this.lang.text['ChatRoom']['downloaded']];
+              URL.revokeObjectURL(ObjectURL);
+              p.remove();
+            });
+          }
+        });
+        break;
+      default:
+        console.error('예상하지 못한 카테고리-viewer분류: ', msg_content);
+        URL.revokeObjectURL(ObjectURL);
+        break;
+    }
+  }
+
+  /** 콘텐츠 카테고리 분류  
+   * type 키를 검토한 후 file_ext 를 이용하여 검토
+   */
+  set_viewer_category(msg_content: any) {
+    try { // 자동지정 타입이 있는 경우
+      if (msg_content['type'].indexOf('image/') == 0) // 분류상 이미지
+        msg_content['viewer'] = 'image';
+      else if (msg_content['type'].indexOf('audio/') == 0) // 분류상 소리
+        msg_content['viewer'] = 'audio';
+      else if (msg_content['type'].indexOf('video/') == 0) // 분류상 비디오
+        msg_content['viewer'] = 'video';
+      else if (msg_content['type'].indexOf('text/') == 0) // 분류상 텍스트 문서
+        msg_content['viewer'] = 'text';
+      else throw "자동지정되지 않은 타입";
+    } catch (_e) { // 자동지정 타입이 없는 경우
+      switch (msg_content['file_ext']) {
+        // 모델링류
+        // case 'obj':
+        // case 'stl':
+        // case 'glb':
+        // case 'gltf':
+        // 고도엔진 패키지 파일
+        case 'pck':
+          msg_content['viewer'] = 'godot';
+          break;
+        // 이미지류
+        case 'png':
+        case 'jpeg':
+        case 'jpg':
+        case 'webp':
+        case 'gif':
+          msg_content['viewer'] = 'image';
+          break;
+        // 사운드류
+        case 'wav':
+        case 'ogg':
+        case 'mp3':
+          msg_content['viewer'] = 'audio';
+          break;
+        // 비디오류
+        case 'mp4':
+        case 'ogv':
+        case 'webm':
+          msg_content['viewer'] = 'video';
+          break;
+        // 마크다운
+        case 'md':
+        // 텍스트류
+        case 'txt':
+        case 'cs':
+        case 'gd':
+        case 'py':
+        case 'yml':
+        case 'gitignore':
+        case 'json':
+        case 'csv':
+        case 'ts':
+        case 'js':
+        case 'shader':
+          msg_content['viewer'] = 'text';
+          break;
+        default: // 뷰어 제한 파일
+          msg_content['viewer'] = 'disabled';
+          break;
+      }
+    }
   }
 }
