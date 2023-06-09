@@ -101,7 +101,6 @@ SPDX-License-Identifier: MIT -->
             (ionChange)="limit_change($event)"></ion-datetime>
           <textarea class="infobox" [(ngModel)]="userInput.description"
             [placeholder]="lang.text['TodoDetail']['description']"></textarea>
-          <img *ngIf="ImageURL" [src]="ImageURL" alt="attach_image" (click)="go_to_ionic_viewer()">
           <ion-item>
             <ion-label>{{lang.text['TodoDetail']['attachments']}}</ion-label>
             <ion-button class="ion-text-right" (click)="new_attach()">
