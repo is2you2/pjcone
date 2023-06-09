@@ -182,8 +182,19 @@ export class AddTodoMenuPage implements OnInit {
       let tomorrow = new Date(new Date().getTime() + 86400000);
       this.userInput.limit = tomorrow.getTime();
     }
-    if (this.received_data)
-      this.userInput = { ...this.userInput, ...JSON.parse(this.received_data) };
+    if (this.received_data) {
+      // 이전 버전 호환용 코드
+      let received_json = JSON.parse(this.received_data);
+      if (received_json['attach'].constructor != Array) {
+        let copyed = JSON.parse(JSON.stringify(received_json['attach']));
+        received_json['attach'] = [];
+        if (copyed['filename']) { // 파일 정보가 있다면 등록된 이미지가 있는 것으로 간주
+          copyed['path'] = `todo/${received_json['id']}/${copyed['filename']}`;
+          received_json['attach'].push(copyed);
+        }
+      }
+      this.userInput = { ...this.userInput, ...received_json };
+    }
     // 첨부 이미지가 있음
     if (this.userInput.attach.length)
       for (let i = 0, j = this.userInput.attach.length; i < j; i++)
@@ -437,7 +448,6 @@ export class AddTodoMenuPage implements OnInit {
       let modulate_base64 = ev.target.result.replace(/"|\\|=/g, '');
       if (this_file['viewer'] == 'image')
         this_file['img'] = this.sanitizer.bypassSecurityTrustUrl(modulate_base64);
-      this_file['bse64'] = modulate_base64;
       this.indexed.saveFileToUserPath(modulate_base64, this_file['path'], (_) => {
         saving_file.dismiss();
       });
@@ -752,12 +762,12 @@ export class AddTodoMenuPage implements OnInit {
             await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
         }
       }
-      let header_image: string; // 대표 이미지로 선정된 경로
+      let header_image: string; // 대표 이미지로 선정된 경로 (base64)
       // 모든 파일을 새로 등록/재등록
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
         let modulate_base64: string;
         // 이미 존재하는 파일로 알려졌다면 저장 시도하지 않도록 구성, 또는 썸네일 재구성
-        if (!this.userInput.attach[i]['exist'] || (!modulate_base64 && this.userInput.attach[i]['viewer'] == 'image')) {
+        if (!this.userInput.attach[i]['exist'] || (!header_image && this.userInput.attach[i]['viewer'] == 'image')) {
           await new Promise(async (done: any) => {
             let reader: any = new FileReader();
             reader = reader._realReader ?? reader;
