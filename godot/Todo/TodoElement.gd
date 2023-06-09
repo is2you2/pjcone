@@ -21,8 +21,7 @@ var is_add_button:= false
 func _ready():
 	if info.has('title'):
 		title = info.title
-		if info.attach.has('filename'):
-			try_to_load_attach()
+		try_to_load_attach()
 	else: is_add_button = true
 	if title:
 		$CollisionShape2D/Node2D/UI/Label.text = title
