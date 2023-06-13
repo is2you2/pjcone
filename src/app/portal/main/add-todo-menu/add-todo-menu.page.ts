@@ -746,14 +746,18 @@ export class AddTodoMenuPage implements OnInit {
     let received_json = this.received_data ? JSON.parse(this.received_data) : undefined;
     let attach_changed = false;
     { // 첨부파일의 변경사항 여부 확인
-      let received = JSON.stringify(received_json.attach);
-      let current = JSON.parse(JSON.stringify(this.userInput.attach));
-      current.forEach((attach: any) => {
-        delete attach['exist'];
-        delete attach['img'];
-      });
-      current = JSON.stringify(current);
-      attach_changed = received != current;
+      try {
+        let received = JSON.stringify(received_json.attach);
+        let current = JSON.parse(JSON.stringify(this.userInput.attach));
+        current.forEach((attach: any) => {
+          delete attach['exist'];
+          delete attach['img'];
+        });
+        current = JSON.stringify(current);
+        attach_changed = received != current;
+      } catch (_e) {
+        attach_changed = true;
+      }
     }
     if (has_attach && attach_changed) { // 첨부된 파일이 있다면
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
