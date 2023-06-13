@@ -744,7 +744,18 @@ export class AddTodoMenuPage implements OnInit {
     this.userInput.noti_id = this.nakama.get_noti_id();
     this.nakama.set_todo_notification(this.userInput);
     let received_json = this.received_data ? JSON.parse(this.received_data) : undefined;
-    if (has_attach) { // 첨부된 파일이 있다면
+    let attach_changed = false;
+    { // 첨부파일의 변경사항 여부 확인
+      let received = JSON.stringify(received_json.attach);
+      let current = JSON.parse(JSON.stringify(this.userInput.attach));
+      current.forEach((attach: any) => {
+        delete attach['exist'];
+        delete attach['img'];
+      });
+      current = JSON.stringify(current);
+      attach_changed = received != current;
+    }
+    if (has_attach && attach_changed) { // 첨부된 파일이 있다면
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
       if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
