@@ -627,7 +627,10 @@ export class AddTodoMenuPage implements OnInit {
                   display_name: this.nakama.users.self['display_name'],
                 }];
                 this_file['img'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
-                v.data['loadingCtrl'].dismiss();
+                this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
+                this.indexed.saveFileToUserPath(v.data['img'], this_file['path'], (_) => {
+                  v.data['loadingCtrl'].dismiss();
+                });
               }
             });
             v.present();
