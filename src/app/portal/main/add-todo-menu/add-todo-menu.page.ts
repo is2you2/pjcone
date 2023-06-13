@@ -838,7 +838,7 @@ export class AddTodoMenuPage implements OnInit {
         }
       });
       loading.dismiss();
-    } else { // 첨부된게 없다면 모든 이미지 삭제
+    } else if (!has_attach) { // 첨부된게 전혀 없다면 모든 이미지 삭제
       if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
         await this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/thumbnail.png`);
         for (let i = 0, j = received_json.attach.length; i < j; i++)
