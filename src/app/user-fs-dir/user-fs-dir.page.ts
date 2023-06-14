@@ -161,6 +161,7 @@ export class UserFsDirPage implements OnInit {
               type: '',
               viewer: info.viewer,
             },
+            no_edit: true,
             path: info.path,
           },
         }).then(v => v.present());

@@ -28,6 +28,7 @@ export class IonicViewerPage implements OnInit {
   FileURL: string;
   ContentBox: HTMLElement;
   FileHeader: HTMLElement;
+  HasNoEditButton: boolean;
 
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
@@ -35,6 +36,7 @@ export class IonicViewerPage implements OnInit {
     this.FileInfo = this.navParams.get('info');
     this.ContentBox = document.getElementById('ContentBox');
     this.FileHeader = document.getElementById('FileHeader');
+    this.HasNoEditButton = this.navParams.get('no_edit') || false;
     this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type'], (blob) => {
       this.FileURL = URL.createObjectURL(blob);
     });
