@@ -352,7 +352,7 @@ ReqContReject,거절,Reject
 LocalNotiTitle,그룹 참가됨,Joined group
 LocalNotiOK,확인,OK
 LocalNotiCheck,검토,Check
-## voidDraw
+## voidDraw,,
 sideSIzeIssue,캔버스의 모든 변은 0보다 커야합니다,All sides of the canvas must be greater than 0
 newDraw,새 그림,New draw
 Undo,취소,Undo
@@ -368,3 +368,14 @@ weight,선 두께,Stroke weight
 changeWeight,두께 변경,Change weight
 apply,적용,Apply
 default_size,기본,default
+## UserFsDir,,
+Title,앱 저장소 탐색기,InApp Explorer
+CannotOpenFile,이 파일은 열 수 없습니다,This file cannot be opened
+DeleteFile,파일 삭제,Delete file
+CannotBeUndo,이 작업은 되돌릴 수 없습니다,This action cannot be undone
+DeleteAccept,삭제,Delete
+Action,이 앱을..,Action..
+Open,열기,Open
+Download,받기,Download
+Delete,삭제,Delete
+CreateAt,생성일시,Creation date

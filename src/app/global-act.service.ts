@@ -201,56 +201,61 @@ export class GlobalActService {
         msg_content['viewer'] = 'text';
       else throw "자동지정되지 않은 타입";
     } catch (_e) { // 자동지정 타입이 없는 경우
-      switch (msg_content['file_ext']) {
-        // 모델링류
-        // case 'obj':
-        // case 'stl':
-        // case 'glb':
-        // case 'gltf':
-        // 고도엔진 패키지 파일
-        case 'pck':
-          msg_content['viewer'] = 'godot';
-          break;
-        // 이미지류
-        case 'png':
-        case 'jpeg':
-        case 'jpg':
-        case 'webp':
-        case 'gif':
-          msg_content['viewer'] = 'image';
-          break;
-        // 사운드류
-        case 'wav':
-        case 'ogg':
-        case 'mp3':
-          msg_content['viewer'] = 'audio';
-          break;
-        // 비디오류
-        case 'mp4':
-        case 'ogv':
-        case 'webm':
-          msg_content['viewer'] = 'video';
-          break;
-        // 마크다운
-        case 'md':
-        // 텍스트류
-        case 'txt':
-        case 'cs':
-        case 'gd':
-        case 'py':
-        case 'yml':
-        case 'gitignore':
-        case 'json':
-        case 'csv':
-        case 'ts':
-        case 'js':
-        case 'shader':
-          msg_content['viewer'] = 'text';
-          break;
-        default: // 뷰어 제한 파일
-          msg_content['viewer'] = 'disabled';
-          break;
-      }
+      this.set_viewer_category_from_ext(msg_content);
+    }
+  }
+
+  /** 파일 이름의 확장자 부분으로부터 뷰어 카테고리를 분류 */
+  set_viewer_category_from_ext(info: any) {
+    switch (info['file_ext']) {
+      // 모델링류
+      // case 'obj':
+      // case 'stl':
+      // case 'glb':
+      // case 'gltf':
+      // 고도엔진 패키지 파일
+      case 'pck':
+        info['viewer'] = 'godot';
+        break;
+      // 이미지류
+      case 'png':
+      case 'jpeg':
+      case 'jpg':
+      case 'webp':
+      case 'gif':
+        info['viewer'] = 'image';
+        break;
+      // 사운드류
+      case 'wav':
+      case 'ogg':
+      case 'mp3':
+        info['viewer'] = 'audio';
+        break;
+      // 비디오류
+      case 'mp4':
+      case 'ogv':
+      case 'webm':
+        info['viewer'] = 'video';
+        break;
+      // 마크다운
+      case 'md':
+      // 텍스트류
+      case 'txt':
+      case 'cs':
+      case 'gd':
+      case 'py':
+      case 'yml':
+      case 'gitignore':
+      case 'json':
+      case 'csv':
+      case 'ts':
+      case 'js':
+      case 'shader':
+        info['viewer'] = 'text';
+        break;
+      default: // 뷰어 제한 파일
+        info['viewer'] = 'disabled';
+        break;
     }
   }
 }

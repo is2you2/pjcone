@@ -183,6 +183,29 @@ export class IndexedDBService {
     });
   }
 
+  /** 모든 파일 리스트로부터 대상 폴더와 겹치는 파일 리스트 추출하기 */
+  GetFileInfoFromDB(path: string, _CallBack = (_list: any) => { }): Promise<any> {
+    if (!this.db) {
+      console.log('retry GetFileInfoFromDB..');
+      setTimeout(() => {
+        this.GetFileInfoFromDB(path, _CallBack);
+      }, 1000);
+      return;
+    };
+    let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
+    return new Promise((done, error) => {
+      data.onsuccess = (ev) => {
+        const result = ev.target['result'];
+        _CallBack(result);
+        done(result);
+      }
+      data.onerror = (e) => {
+        console.error('IndexedDB GetFileListFromDir failed: ', e);
+        error(e);
+      }
+    });
+  }
+
   /** 고도엔진에서 'user://~'에 해당하는 파일 불러오기
    * @param path 'user://~'에 들어가는 사용자 폴더 경로
    * @param act 불러오기 이후 행동. 인자 2개 필요 (load-return)

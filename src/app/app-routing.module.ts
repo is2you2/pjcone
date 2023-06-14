@@ -14,6 +14,10 @@ const routes: Routes = [
     path: 'others-profile',
     loadChildren: () => import('./others-profile/others-profile.module').then(m => m.OthersProfilePageModule)
   },
+  {
+    path: 'user-fs-dir',
+    loadChildren: () => import('./user-fs-dir/user-fs-dir.module').then( m => m.UserFsDirPageModule)
+  },
 ];
 
 @NgModule({

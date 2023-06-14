@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{lang.text['UserFsDir']['Title']}}</ion-title>
+    <!-- <ion-title>{{lang.text['UserFsDir']['Title']}}</ion-title> -->
+    <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
+      <ion-back-button defaultHref=""></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item *ngIf="CurrentDir != ''" button (click)="MoveToUpDir()">
+      <ion-icon slot="start" name="folder"></ion-icon>
+      <ion-label>..</ion-label>
+    </ion-item>
+    <div *ngFor="let folder of DirList">
+      <ion-item *ngIf="CurrentDir == folder.dir" button (click)="SelectFolder(folder)">
+        <ion-icon slot="start" name="folder"></ion-icon>
+        <ion-label>{{folder.name}}</ion-label>
+      </ion-item>
+    </div>
+    <ion-accordion-group #FileSel>
+      <div *ngFor="let file of FileList; index as i">
+        <ion-accordion *ngIf="CurrentDir == file.dir" [value]="file.path">
+          <ion-item slot="header">
+            <ion-icon slot="start" name="document"></ion-icon>
+            <ion-label>{{file.name}}</ion-label>
+          </ion-item>
+          <ion-list slot="content">
+            <ion-item button>
+              <ion-label>{{lang.text['UserFsDir']['Action']}}</ion-label>
+              <ion-button *ngIf="file.viewer != 'disabled'" class="ion-text-right" (click)="OpenFile(file)">
+                {{lang.text['UserFsDir']['Open']}}
+              </ion-button>
+              <ion-button class="ion-text-right" (click)="DownloadFile(file)">
+                {{lang.text['UserFsDir']['Download`']}}
+              </ion-button>
+              <ion-button class="ion-text-end" (click)="RemoveFile(file, i)">
+                {{lang.text['UserFsDir']['Delete']}}
+              </ion-button>
+            </ion-item>
+            <ion-item button>
+              <ion-label>{{lang.text['UserFsDir']['CreateAt']}}</ion-label>
+              <ion-label class="ion-text-end">{{file.timestamp}}</ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-accordion>
+      </div>
+    </ion-accordion-group>
+  </ion-list>
+</ion-content>
