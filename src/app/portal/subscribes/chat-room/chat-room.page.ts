@@ -19,6 +19,7 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { VoidDrawPage } from './void-draw/void-draw.page';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
+import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 
 interface ExtendButtonForm {
   title: string;
@@ -118,6 +119,47 @@ export class ChatRoomPage implements OnInit {
     }
   },
   {
+    title: this.lang.text['ChatRoom']['attach_inapp_file'],
+    icon: 'document-attach',
+    act: () => {
+      console.log(this.info);
+      this.modalCtrl.create({
+        component: UserFsDirPage,
+        componentProps: {
+          path: `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files`,
+          return: true,
+        }
+      }).then(v => {
+        v.onDidDismiss().then(data => {
+          let file = data.data['info'];
+          console.log('이 자리에서 단순히 파일을 불러오는게 아니라 실제 메시지와 대조해야함');
+          this.indexed.loadBlobFromUserPath(file.path, '', async blob => {
+            let TmpUrl = URL.createObjectURL(blob);
+            setTimeout(() => {
+              URL.revokeObjectURL(TmpUrl);
+            }, 0);
+            this.userInput.file = {};
+            this.userInput.file.filename = file.name;
+            this.userInput.file.file_ext = file.file_ext;
+            this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(TmpUrl);
+            this.userInput.file.type = '';
+            this.userInput.file.typeheader = file.viewer;
+            this.userInput.file.content_related_creator = [{
+              // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+              display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
+            }];
+            this.userInput.file.content_creator = [{
+              user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+              display_name: this.nakama.users.self['display_name'],
+            }];
+            this.userInput.file.result = await this.global.GetBase64ThroughFileReader(blob);
+          });
+        })
+        v.present();
+      });
+    }
+  },
+  {
     title: this.lang.text['ChatRoom']['voidDraw'],
     icon_img: 'voidDraw.png',
     act: () => {
@@ -151,7 +193,7 @@ export class ChatRoomPage implements OnInit {
   }];
 
   /** 파일 첨부하기 */
-  inputFileSelected(ev: any) {
+  async inputFileSelected(ev: any) {
     if (ev.target.files.length) {
       this.userInput['file'] = {};
       this.userInput.file['filename'] = ev.target.files[0].name;
@@ -163,33 +205,28 @@ export class ChatRoomPage implements OnInit {
       setTimeout(() => {
         clearInterval(updater);
       }, 1500);
-      let reader: any = new FileReader();
-      reader = reader._realReader ?? reader;
-      reader.onload = (ev: any) => {
-        this.userInput.file['result'] = ev.target.result.replace(/"|\\|=/g, '');
-        this.userInput.file['thumbnail'] = undefined;
-        if (this.userInput.file['size'] < SIZE_LIMIT) // 크기가 작으면 썸네일 생성
-          switch (this.userInput.file['typeheader']) {
-            case 'image': // 이미지인 경우 사용자에게 보여주기
-              this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(this.userInput.file['result']);
-              break;
-            case 'text':
-              new p5((p: p5) => {
-                p.setup = () => {
-                  p.loadStrings(this.userInput.file['result'], v => {
-                    this.userInput.file['thumbnail'] = v;
-                    p.remove();
-                  }, e => {
-                    console.error('문자열 불러오기 실패: ', e);
-                    p.remove();
-                  });
-                }
-              });
-              break;
-          }
-        this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
-      }
-      reader.readAsDataURL(ev.target.files[0]);
+      this.userInput.file['result'] = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
+      this.userInput.file['thumbnail'] = undefined;
+      if (this.userInput.file['size'] < SIZE_LIMIT) // 크기가 작으면 썸네일 생성
+        switch (this.userInput.file['typeheader']) {
+          case 'image': // 이미지인 경우 사용자에게 보여주기
+            this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(this.userInput.file['result']);
+            break;
+          case 'text':
+            new p5((p: p5) => {
+              p.setup = () => {
+                p.loadStrings(this.userInput.file['result'], v => {
+                  this.userInput.file['thumbnail'] = v;
+                  p.remove();
+                }, e => {
+                  console.error('문자열 불러오기 실패: ', e);
+                  p.remove();
+                });
+              }
+            });
+            break;
+        }
+      this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
     } else {
       delete this.userInput.file;
       this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
@@ -541,24 +578,19 @@ export class ChatRoomPage implements OnInit {
           && this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]) {
           // 이전에 전송하다가 짤린 파일이었다면 다시 전송 시작
           if (this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnProgress']) {
-            this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, msg.content['type'], blob => {
-              let reader: any = new FileReader();
-              reader = reader._realReader ?? reader;
-              reader.onload = (ev: any) => {
-                let base64 = ev.target.result.replace(/"|\\|=/g, '');
-                let upload: string[] = [];
-                let seek = 0;
-                const RESULT_LIMIT = base64.length;
-                while (seek < RESULT_LIMIT) {
-                  let next = seek + SIZE_LIMIT;
-                  if (next > RESULT_LIMIT)
-                    next = RESULT_LIMIT;
-                  upload.push(base64.substring(seek, next));
-                  seek = next;
-                }
-                this.nakama.WriteStorage_From_channel(msg, upload, this.isOfficial, this.target, this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['progress'][0]);
+            this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, msg.content['type'], async blob => {
+              let base64 = await this.global.GetBase64ThroughFileReader(blob);
+              let upload: string[] = [];
+              let seek = 0;
+              const RESULT_LIMIT = base64.length;
+              while (seek < RESULT_LIMIT) {
+                let next = seek + SIZE_LIMIT;
+                if (next > RESULT_LIMIT)
+                  next = RESULT_LIMIT;
+                upload.push(base64.substring(seek, next));
+                seek = next;
               }
-              reader.readAsDataURL(blob);
+              this.nakama.WriteStorage_From_channel(msg, upload, this.isOfficial, this.target, this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['progress'][0]);
               delete this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnProgress'];
             });
             return; // 재전송하는 경우에는 파일 열람을 하지 않는다

@@ -143,30 +143,27 @@ export class GroupDetailPage implements OnInit {
   buttonClickInputFile() {
     if (this.has_admin)
       document.getElementById('file_sel').click();
-  } inputImageSelected(ev: any) {
-    let reader: any = new FileReader();
-    reader = reader._realReader ?? reader;
-    reader.onload = (ev: any) => {
-      this.nakama.limit_image_size(ev, (v) => {
-        this.info.img = v['canvas'].toDataURL();
-        this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.writeStorageObjects(
-          this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, [{
-            collection: 'group_public',
-            key: `group_${this.info.id}`,
-            value: { img: this.info.img },
-            permission_read: 2,
-            permission_write: 1,
-          }]
-        ).then(_info => {
-          this.indexed.saveTextFileToUserPath(JSON.stringify(this.info['img']), `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
-          this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
-            this.info['channel_id'], {
-            gupdate: 'image',
-          });
+  }
+  async inputImageSelected(ev: any) {
+    let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
+    this.nakama.limit_image_size(base64, (v) => {
+      this.info.img = v['canvas'].toDataURL();
+      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.writeStorageObjects(
+        this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, [{
+          collection: 'group_public',
+          key: `group_${this.info.id}`,
+          value: { img: this.info.img },
+          permission_read: 2,
+          permission_write: 1,
+        }]
+      ).then(_info => {
+        this.indexed.saveTextFileToUserPath(JSON.stringify(this.info['img']), `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
+        this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
+          this.info['channel_id'], {
+          gupdate: 'image',
         });
       });
-    };
-    reader.readAsDataURL(ev.target.files[0]);
+    });
   }
 
   remove_group() {

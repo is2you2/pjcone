@@ -1164,11 +1164,11 @@ export class NakamaService {
    * @param ev 클릭 event 또는 {}.target.result = value 로 구성된 이미지 경로
    * @param _CallBack 조율된 이미지 DataURL
    */
-  limit_image_size(ev: any, _CallBack: Function = (_rv: string) => { }) {
+  limit_image_size(base64: string, _CallBack: Function = (_rv: string) => { }) {
     const SIZE_LIMIT = 245000;
     new p5((p: p5) => {
       p.setup = () => {
-        p.loadImage(ev.target.result.replace(/"|\\|=/g, ''), v => {
+        p.loadImage(base64, v => {
           v.resize(window.innerWidth, window.innerWidth * v.height / v.width);
           if (v['canvas'].toDataURL().length > SIZE_LIMIT)
             check_size(v);

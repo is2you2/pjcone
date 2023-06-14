@@ -24,22 +24,30 @@
       <div *ngFor="let file of FileList; index as i">
         <ion-accordion *ngIf="CurrentDir == file.dir" [value]="file.path">
           <ion-item slot="header">
-            <ion-icon slot="start" name="document"></ion-icon>
+            <ion-icon *ngIf="file.viewer == 'image'" slot="start" name="image"></ion-icon>
+            <ion-icon *ngIf="file.viewer != 'image'" slot="start" name="document"></ion-icon>
             <ion-label>{{file.name}}</ion-label>
           </ion-item>
           <ion-list slot="content">
             <ion-item button>
               <ion-label>{{lang.text['UserFsDir']['Action']}}</ion-label>
-              <ion-button *ngIf="file.viewer != 'disabled'" class="ion-text-right" (click)="OpenFile(file)">
+              <ion-button *ngIf="file.viewer != 'disabled' && file.viewer != 'image'" class="ion-text-right"
+                (click)="OpenFile(file)">
                 {{lang.text['UserFsDir']['Open']}}
               </ion-button>
-              <ion-button class="ion-text-right" (click)="DownloadFile(file)">
+              <ion-button *ngIf="WillReturn" (click)="UseFile(file)" class="ion-text-right">
+                {{lang.text['UserFsDir']['Use']}}
+              </ion-button>
+              <ion-button *ngIf="!WillReturn" class="ion-text-right" (click)="DownloadFile(file)">
                 {{lang.text['UserFsDir']['Download']}}
               </ion-button>
-              <ion-button class="ion-text-end" (click)="RemoveFile(file, i)">
+              <ion-button *ngIf="!WillReturn" class="ion-text-end" (click)="RemoveFile(file, i)">
                 {{lang.text['UserFsDir']['Delete']}}
               </ion-button>
             </ion-item>
+            <div *ngIf="file.viewer == 'image'" (click)="OpenFile(file)">
+              <img [src]="file.thumbnail" [alt]="file.name">
+            </div>
             <ion-item button>
               <ion-label>{{lang.text['UserFsDir']['CreateAt']}}</ion-label>
               <ion-label class="ion-text-end">{{file.timestamp}}</ion-label>

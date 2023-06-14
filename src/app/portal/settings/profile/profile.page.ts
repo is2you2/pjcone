@@ -11,6 +11,7 @@ import clipboard from "clipboardy";
 import { isPlatform } from 'src/app/app.component';
 import { ModalController } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
+import { GlobalActService } from 'src/app/global-act.service';
 
 @Component({
   selector: 'app-profile',
@@ -25,6 +26,7 @@ export class ProfilePage implements OnInit {
     private indexed: IndexedDBService,
     private modalCtrl: ModalController,
     public lang: LanguageSettingService,
+    private global: GlobalActService,
   ) { }
 
   /** 부드러운 이미지 교체를 위한 이미지 임시 배정 */
@@ -134,17 +136,13 @@ export class ProfilePage implements OnInit {
 
   change_img_from_file() { document.getElementById('file_sel').click(); }
   /** 파일 선택시 로컬에서 반영 */
-  inputImageSelected(ev: any) {
+  async inputImageSelected(ev: any) {
     let updater = setInterval(() => { }, 110);
     setTimeout(() => {
       clearInterval(updater);
     }, 1500);
-    let reader: any = new FileReader();
-    reader = reader._realReader ?? reader;
-    reader.onload = (ev: any) => {
-      this.nakama.limit_image_size(ev, (v: any) => { this.change_img_smoothly(v['canvas'].toDataURL()) });
-    }
-    reader.readAsDataURL(ev.target.files[0]);
+    let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
+    this.nakama.limit_image_size(base64, (v: any) => { this.change_img_smoothly(v['canvas'].toDataURL()) });
   }
 
   change_content() {
@@ -193,9 +191,7 @@ export class ProfilePage implements OnInit {
       if (v.indexOf('http') == 0) {
         this.change_img_smoothly(v);
       } else if (v.indexOf('data:image') == 0) {
-        this.nakama.limit_image_size({
-          target: { result: [v] },
-        }, (rv) => this.change_img_smoothly(rv['canvas'].toDataURL()));
+        this.nakama.limit_image_size(v, (rv) => this.change_img_smoothly(rv['canvas'].toDataURL()));
       } else {
         this.p5toast.show({
           text: this.lang.text['Profile']['copyURIFirst'],

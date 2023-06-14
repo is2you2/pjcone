@@ -4,6 +4,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
+import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -21,6 +22,7 @@ export class ToolManagementPage implements OnInit {
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
     private p5toast: P5ToastService,
+    private global: GlobalActService,
   ) { }
 
   /** { text: name, toggle: isDisabled } */
@@ -48,17 +50,13 @@ export class ToolManagementPage implements OnInit {
       let res = await fetch(`${SERVER_PATH_ROOT}pjcone_pck/${this.list[i]['text']}`);
       if (res.ok) { // 다운로드에 성공한다면
         let blob = await res.blob();
-        let reader: any = new FileReader();
-        reader = reader._realReader ?? reader;
-        reader.onload = (ev: any) => {
-          this.indexed.saveFileToUserPath(ev.target.result.replace(/"|\\|=/g, ''), `acts/${this.list[i]['text']}`, () => {
-            this.list[i]['toggle'] = false;
-            this.p5toast.show({
-              text: `${this.lang.text['ToolManager']['redownloadSucc']}: ${this.list[i]['text']}`,
-            });
+        let base64 = await this.global.GetBase64ThroughFileReader(blob);
+        this.indexed.saveFileToUserPath(base64, `acts/${this.list[i]['text']}`, () => {
+          this.list[i]['toggle'] = false;
+          this.p5toast.show({
+            text: `${this.lang.text['ToolManager']['redownloadSucc']}: ${this.list[i]['text']}`,
           });
-        };
-        reader.readAsDataURL(blob);
+        });
       } else throw "없는 툴이라고 판단됩니다.";
     } catch (e) { // 로컬 정보 기반으로 광고
       console.log(e);

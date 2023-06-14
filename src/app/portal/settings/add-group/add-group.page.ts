@@ -75,9 +75,7 @@ export class AddGroupPage implements OnInit {
         this.userInput.img = v;
         this.imageURL_placeholder = v;
       } else if (v.indexOf('data:image') == 0) {
-        this.nakama.limit_image_size({
-          target: { result: [v] },
-        }, (rv) => this.userInput.img = rv['canvas'].toDataURL());
+        this.nakama.limit_image_size(v, (rv) => this.userInput.img = rv['canvas'].toDataURL());
       } else {
         this.p5toast.show({
           text: this.lang.text['Profile']['copyURIFirst'],
@@ -180,12 +178,8 @@ export class AddGroupPage implements OnInit {
   }
 
   /** 파일 선택시 로컬에서 반영 */
-  inputImageSelected(ev: any) {
-    let reader: any = new FileReader();
-    reader = reader._realReader ?? reader;
-    reader.onload = (ev: any) => {
-      this.nakama.limit_image_size(ev, (v) => this.userInput.img = v['canvas'].toDataURL())
-    };
-    reader.readAsDataURL(ev.target.files[0]);
+  async inputImageSelected(ev: any) {
+    let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
+    this.nakama.limit_image_size(base64, (v) => this.userInput.img = v['canvas'].toDataURL())
   }
 }

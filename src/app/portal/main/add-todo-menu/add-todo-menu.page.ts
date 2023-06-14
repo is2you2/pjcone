@@ -434,8 +434,6 @@ export class AddTodoMenuPage implements OnInit {
     if (!ev.target.files.length) return;
     let saving_file = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     saving_file.present();
-    let reader: any = new FileReader();
-    reader = reader._realReader ?? reader;
     let this_file = {};
     this_file['filename'] = ev.target.files[0]['name'];
     this_file['file_ext'] = ev.target.files[0]['name'].substring(ev.target.files[0]['name'].lastIndexOf('.') + 1);
@@ -444,15 +442,12 @@ export class AddTodoMenuPage implements OnInit {
     this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
     this.global.set_viewer_category(this_file);
     this.userInput.attach.push(this_file);
-    reader.onload = (ev: any) => {
-      let modulate_base64 = ev.target.result.replace(/"|\\|=/g, '');
-      if (this_file['viewer'] == 'image')
-        this_file['img'] = this.sanitizer.bypassSecurityTrustUrl(modulate_base64);
-      this.indexed.saveFileToUserPath(modulate_base64, this_file['path'], (_) => {
-        saving_file.dismiss();
-      });
-    };
-    reader.readAsDataURL(ev.target.files[0]);
+    let modulate_base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
+    if (this_file['viewer'] == 'image')
+      this_file['img'] = this.sanitizer.bypassSecurityTrustUrl(modulate_base64);
+    this.indexed.saveFileToUserPath(modulate_base64, this_file['path'], (_) => {
+      saving_file.dismiss();
+    });
   }
   AvailableStorageList: RemoteInfo[] = [];
   @ViewChild('StoreAt') StoreAt: any;
@@ -787,16 +782,11 @@ export class AddTodoMenuPage implements OnInit {
         // 이미 존재하는 파일로 알려졌다면 저장 시도하지 않도록 구성, 또는 썸네일 재구성
         if (!this.userInput.attach[i]['exist'] || (!header_image && this.userInput.attach[i]['viewer'] == 'image')) {
           await new Promise(async (done: any) => {
-            let reader: any = new FileReader();
-            reader = reader._realReader ?? reader;
-            reader.onload = async (ev: any) => {
-              modulate_base64 = ev.target.result.replace(/"|\\|=/g, '');
-              this.userInput.attach[i]['path'] = `todo/${this.userInput.id}/${this.userInput.attach[i]['filename']}`;
-              await this.indexed.saveFileToUserPath(modulate_base64, this.userInput.attach[i]['path']);
-              done();
-            };
             let blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
-            reader.readAsDataURL(blob);
+            modulate_base64 = await this.global.GetBase64ThroughFileReader(blob);
+            this.userInput.attach[i]['path'] = `todo/${this.userInput.id}/${this.userInput.attach[i]['filename']}`;
+            await this.indexed.saveFileToUserPath(modulate_base64, this.userInput.attach[i]['path']);
+            done();
           });
         } else delete this.userInput.attach[i]['exist'];
         if (!header_image && this.userInput.attach[i]['viewer'] == 'image')

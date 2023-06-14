@@ -258,4 +258,19 @@ export class GlobalActService {
         break;
     }
   }
+
+  /** base64 정보를 반환하는 간단한 코드 */
+  GetBase64ThroughFileReader(file: any): Promise<string> {
+    return new Promise((done, error) => {
+      let reader: any = new FileReader();
+      reader = reader._realReader ?? reader;
+      reader.onload = (ev: any) => {
+        done(ev.target.result.replace(/"|\\|=/g, ''));
+      }
+      reader.onerror = (ev: any) => {
+        error(ev);
+      }
+      reader.readAsDataURL(file);
+    });
+  }
 }

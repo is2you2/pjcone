@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { AlertController, IonAccordionGroup, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import { GlobalActService } from '../global-act.service';
 import { IndexedDBService } from '../indexed-db.service';
@@ -18,6 +19,7 @@ interface FileDir {
   name?: string;
   /** 파일 확장자 구분용 */
   file_ext?: string;
+  thumbnail?: any;
   /** 콘텐츠 뷰어 지원 여부 */
   viewer?: string;
 }
@@ -35,6 +37,8 @@ export class UserFsDirPage implements OnInit {
   DirList: FileDir[] = [];
   /** 디렉토리 파일 리스트, 이름순 나열 */
   FileList: FileDir[] = [];
+  /** 행동을 반환하기로 했습니까? */
+  WillReturn: boolean;
 
   @ViewChild('FileSel') FileSel: IonAccordionGroup;
 
@@ -47,6 +51,7 @@ export class UserFsDirPage implements OnInit {
     private global: GlobalActService,
     private p5toast: P5ToastService,
     private alertCtrl: AlertController,
+    private sanitizer: DomSanitizer,
   ) { }
 
   ngOnInit() { }
@@ -54,16 +59,17 @@ export class UserFsDirPage implements OnInit {
   ionViewWillEnter() {
     let StartDir = this.navParams.get('path');
     this.CurrentDir = StartDir || '';
-    this.LoadAllIndexedFiles(StartDir || '');
+    this.LoadAllIndexedFiles();
+    this.WillReturn = this.navParams.get('return') || false;
   }
 
   /** 폴더를 선택했을 때 */
-  async LoadAllIndexedFiles(path: string) {
+  async LoadAllIndexedFiles() {
     let loading = await this.loadingCtrl.create({ message: '가상 탐색기 준비중' });
     loading.present();
     this.DirList.length = 0;
     this.FileList.length = 0;
-    await this.indexed.GetFileListFromDB(path, async (_list) => {
+    await this.indexed.GetFileListFromDB('/', async (_list) => {
       for (let i = 0, j = _list.length; i < j; i++) {
         await this.indexed.GetFileInfoFromDB(_list[i], (info) => {
           let _info: FileDir = {
@@ -77,6 +83,12 @@ export class UserFsDirPage implements OnInit {
             case 33206: // 파일인 경우
               _info.file_ext = _info.name.split('.')[1];
               this.global.set_viewer_category_from_ext(_info);
+              if (_info.viewer == 'image')
+                this.indexed.loadBlobFromUserPath(_info.path, '', blob => {
+                  console.log('음냐: ', _info);
+                  let TmpURL = URL.createObjectURL(blob);
+                  _info.thumbnail = this.sanitizer.bypassSecurityTrustUrl(TmpURL);
+                });
               this.FileList.push(_info);
               break;
             case 16893: // 폴더인 경우
@@ -113,6 +125,11 @@ export class UserFsDirPage implements OnInit {
     this.FileSel.value = undefined;
   }
 
+  /** 이 파일을 사용하기 (경로 반환) */
+  UseFile(info: FileDir) {
+    this.modalCtrl.dismiss({ info: info });
+  }
+
   OpenFile(info: FileDir) {
     switch (info.viewer) {
       case 'godot':
@@ -123,6 +140,7 @@ export class UserFsDirPage implements OnInit {
               filename: info.name,
               file_ext: info.file_ext,
               type: '',
+              viewer: info.viewer,
             },
             path: info.path,
           },
@@ -141,6 +159,7 @@ export class UserFsDirPage implements OnInit {
               filename: info.name,
               file_ext: info.file_ext,
               type: '',
+              viewer: info.viewer,
             },
             path: info.path,
           },
@@ -166,5 +185,12 @@ export class UserFsDirPage implements OnInit {
         }
       }]
     }).then(v => v.present());
+  }
+
+  ionViewDidLeave() {
+    this.FileList.forEach(file => {
+      if (file.thumbnail)
+        URL.revokeObjectURL(file.thumbnail);
+    });
   }
 }
