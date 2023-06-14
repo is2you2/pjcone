@@ -58,6 +58,14 @@ export class UserFsDirPage implements OnInit {
 
   ngOnInit() { }
 
+  EventListenerAct = (ev: any) => {
+    ev.detail.register(110, (processNextHandler) => {
+      if (this.CurrentDir == '') {
+        processNextHandler();
+      } else this.MoveToUpDir();
+    });
+  }
+
   ionViewWillEnter() {
     let StartDir = this.navParams.get('path');
     this.CurrentDir = StartDir || '';
@@ -65,6 +73,7 @@ export class UserFsDirPage implements OnInit {
     this.WillReturn = this.navParams.get('return') || false;
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
+    document.addEventListener('ionBackButton', this.EventListenerAct);
   }
 
   /** 폴더를 선택했을 때 */
@@ -196,5 +205,9 @@ export class UserFsDirPage implements OnInit {
       if (file.thumbnail)
         URL.revokeObjectURL(file.thumbnail);
     });
+  }
+
+  ionViewWillLeave() {
+    document.removeEventListener('ionBackButton', this.EventListenerAct);
   }
 }

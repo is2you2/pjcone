@@ -25,6 +25,10 @@ export class VoidDrawPage implements OnInit {
   ngOnInit() { }
   mainLoading: HTMLIonLoadingElement;
 
+  EventListenerAct = (ev: any) => {
+    ev.detail.register(110, () => { });
+  }
+
   async ionViewDidEnter() {
     this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
     this.global.CreateGodotIFrame('p5_void_draw', {
@@ -53,6 +57,7 @@ export class VoidDrawPage implements OnInit {
     });
     if (this.navParams.data['path'])
       this.create_with_image();
+    document.addEventListener('ionBackButton', this.EventListenerAct);
   }
 
   /** 다른 이미지로부터 시작하기 */
@@ -135,5 +140,6 @@ export class VoidDrawPage implements OnInit {
   }
 
   ionViewDidLeave() {
+    document.removeEventListener('ionBackButton', this.EventListenerAct);
   }
 }
