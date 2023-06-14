@@ -172,7 +172,7 @@ export class AddTodoMenuPage implements OnInit {
   /** 로컬/원격 상태에 따른 수정 가능 여부 */
   isModifiable = false;
   received_data: string;
-  ionViewWillEnter() {
+  async ionViewWillEnter() {
     // 미리 지정된 데이터 정보가 있는지 검토
     this.received_data = this.navParams.get('data');
     if (this.received_data) { // 이미 있는 데이터 조회
@@ -197,12 +197,12 @@ export class AddTodoMenuPage implements OnInit {
     }
     // 첨부 이미지가 있음
     if (this.userInput.attach.length)
-      for (let i = 0, j = this.userInput.attach.length; i < j; i++)
-        this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type'], blob => {
-          let url = URL.createObjectURL(blob);
-          this.global.modulate_thumbnail(this.userInput.attach[i], url);
-          this.userInput.attach[i]['exist'] = true;
-        });
+      for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
+        let blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
+        let url = URL.createObjectURL(blob);
+        this.global.modulate_thumbnail(this.userInput.attach[i], url);
+        this.userInput.attach[i]['exist'] = true;
+      }
     // 저장소 표기 적용
     try {
       if (this.userInput.storeAt == 'local') {
@@ -781,13 +781,10 @@ export class AddTodoMenuPage implements OnInit {
         let modulate_base64: string;
         // 이미 존재하는 파일로 알려졌다면 저장 시도하지 않도록 구성, 또는 썸네일 재구성
         if (!this.userInput.attach[i]['exist'] || (!header_image && this.userInput.attach[i]['viewer'] == 'image')) {
-          await new Promise(async (done: any) => {
-            let blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
-            modulate_base64 = await this.global.GetBase64ThroughFileReader(blob);
-            this.userInput.attach[i]['path'] = `todo/${this.userInput.id}/${this.userInput.attach[i]['filename']}`;
-            await this.indexed.saveFileToUserPath(modulate_base64, this.userInput.attach[i]['path']);
-            done();
-          });
+          let blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
+          modulate_base64 = await this.global.GetBase64ThroughFileReader(blob);
+          this.userInput.attach[i]['path'] = `todo/${this.userInput.id}/${this.userInput.attach[i]['filename']}`;
+          await this.indexed.saveFileToUserPath(modulate_base64, this.userInput.attach[i]['path']);
         } else delete this.userInput.attach[i]['exist'];
         if (!header_image && this.userInput.attach[i]['viewer'] == 'image')
           header_image = modulate_base64;
