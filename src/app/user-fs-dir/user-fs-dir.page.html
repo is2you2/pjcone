@@ -25,7 +25,11 @@
         <ion-accordion *ngIf="CurrentDir == file.dir" [value]="file.path">
           <ion-item slot="header">
             <ion-icon *ngIf="file.viewer == 'image'" slot="start" name="image"></ion-icon>
-            <ion-icon *ngIf="file.viewer != 'image'" slot="start" name="document"></ion-icon>
+            <ion-icon *ngIf="file.viewer == 'audio'" slot="start" name="musical-notes"></ion-icon>
+            <ion-icon *ngIf="file.viewer == 'video'" slot="start" name="play-circle"></ion-icon>
+            <ion-icon *ngIf="file.viewer == 'text'" slot="start" name="reader"></ion-icon>
+            <ion-icon *ngIf="file.viewer == 'godot'" slot="start" name="extension-puzzle"></ion-icon>
+            <ion-icon *ngIf="file.viewer == 'disabled'" slot="start" name="document"></ion-icon>
             <ion-label>{{file.name}}</ion-label>
           </ion-item>
           <ion-list slot="content">
