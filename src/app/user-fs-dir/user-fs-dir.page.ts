@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { AlertController, IonAccordionGroup, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { isPlatform } from '../app.component';
 import { GlobalActService } from '../global-act.service';
 import { IndexedDBService } from '../indexed-db.service';
 import { LanguageSettingService } from '../language-setting.service';
@@ -39,6 +40,7 @@ export class UserFsDirPage implements OnInit {
   FileList: FileDir[] = [];
   /** 행동을 반환하기로 했습니까? */
   WillReturn: boolean;
+  cant_dedicated = false;
 
   @ViewChild('FileSel') FileSel: IonAccordionGroup;
 
@@ -61,6 +63,8 @@ export class UserFsDirPage implements OnInit {
     this.CurrentDir = StartDir || '';
     this.LoadAllIndexedFiles();
     this.WillReturn = this.navParams.get('return') || false;
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
+      this.cant_dedicated = true;
   }
 
   /** 폴더를 선택했을 때 */

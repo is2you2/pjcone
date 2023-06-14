@@ -42,7 +42,7 @@
               <ion-button *ngIf="WillReturn" (click)="UseFile(file)" class="ion-text-right">
                 {{lang.text['UserFsDir']['Use']}}
               </ion-button>
-              <ion-button *ngIf="!WillReturn" class="ion-text-right" (click)="DownloadFile(file)">
+              <ion-button *ngIf="!WillReturn && cant_dedicated" class="ion-text-right" (click)="DownloadFile(file)">
                 {{lang.text['UserFsDir']['Download']}}
               </ion-button>
               <ion-button *ngIf="!WillReturn" class="ion-text-end" (click)="RemoveFile(file, i)">
