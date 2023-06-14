@@ -111,8 +111,8 @@ admin_req_counter,서버 상태,Server status
 notifications,알림,Notifications
 NotificationSetting,알림,Notifications
 batteryOptimization,배터리 최적화 제외 설정,Battery Optimization Exclusion Settings
-ToolManage,도구 관리,Manage tools
 ToolList,도구 리스트,Tool list
+InAppExplorer,인앱 탐색기,InApp Explorer
 AppInfo,앱 정보,App info
 AppCreator,제작자,Creator
 AppTranslator,번역가,Translator
@@ -369,7 +369,6 @@ changeWeight,두께 변경,Change weight
 apply,적용,Apply
 default_size,기본,default
 ## UserFsDir,,
-Title,앱 저장소 탐색기,InApp Explorer
 CannotOpenFile,이 파일은 열 수 없습니다,This file cannot be opened
 DeleteFile,파일 삭제,Delete file
 CannotBeUndo,이 작업은 되돌릴 수 없습니다,This action cannot be undone

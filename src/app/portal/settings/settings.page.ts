@@ -15,6 +15,7 @@ import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 import { GroupDetailPage } from './group-detail/group-detail.page';
 import { ToolManagementPage } from './tool-management/tool-management.page';
 import { LocalNotiService } from '../../local-noti.service';
+import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 
 @Component({
   selector: 'app-settings',
@@ -236,6 +237,12 @@ export class SettingsPage implements OnInit {
         this.lock_modal_open = false;
       });
     }
+  }
+
+  open_inapp_explorer() {
+    this.modalCtrl.create({
+      component: UserFsDirPage,
+    }).then(v => v.present());
   }
 
   @ViewChild('LangSel') LangSel: any;
