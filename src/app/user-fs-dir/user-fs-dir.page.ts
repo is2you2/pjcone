@@ -69,7 +69,7 @@ export class UserFsDirPage implements OnInit {
 
   /** 폴더를 선택했을 때 */
   async LoadAllIndexedFiles() {
-    let loading = await this.loadingCtrl.create({ message: '가상 탐색기 준비중' });
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });
     loading.present();
     this.DirList.length = 0;
     this.FileList.length = 0;
@@ -89,7 +89,6 @@ export class UserFsDirPage implements OnInit {
               this.global.set_viewer_category_from_ext(_info);
               if (_info.viewer == 'image')
                 this.indexed.loadBlobFromUserPath(_info.path, '', blob => {
-                  console.log('음냐: ', _info);
                   let TmpURL = URL.createObjectURL(blob);
                   _info.thumbnail = this.sanitizer.bypassSecurityTrustUrl(TmpURL);
                 });
