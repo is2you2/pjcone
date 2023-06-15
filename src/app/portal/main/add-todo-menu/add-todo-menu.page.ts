@@ -206,13 +206,15 @@ export class AddTodoMenuPage implements OnInit {
     // 저장소 표기 적용
     try {
       if (this.userInput.storeAt == 'local') {
-        this.StoreAt.value = this.userInput.storeAt;
+        if (!this.isModify)
+          this.StoreAt.value = this.userInput.storeAt;
         this.userInput.display_store = this.lang.text['TodoDetail']['OnThisDevice'];
         this.userInput.display_creator = this.lang.text['TodoDetail']['WrittenByMe'];
         this.userInput.display_manager = this.lang.text['TodoDetail']['WrittenByMe'];
         this.isModifiable = true;
       } else if (this.userInput.remote) {
-        this.StoreAt.value = this.userInput.remote;
+        if (!this.isModify)
+          this.StoreAt.value = this.userInput.remote;
         this.StoreAt.placeholder = this.userInput.remote.name;
         this.userInput.display_store = this.userInput.remote.name;
         this.userInput.display_creator = this.lang.text['TodoDetail']['Disconnected'];
