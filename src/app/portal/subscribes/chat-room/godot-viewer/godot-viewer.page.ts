@@ -26,6 +26,10 @@ export class GodotViewerPage implements OnInit {
   cant_dedicated: boolean;
   FileInfo: any;
 
+  EventListenerAct = (ev: any) => {
+    ev.detail.register(120, (_processNextHandler: any) => { });
+  }
+
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
@@ -38,7 +42,15 @@ export class GodotViewerPage implements OnInit {
     });
   }
 
+  ionViewDidEnter() {
+    document.addEventListener('ionBackButton', this.EventListenerAct)
+  }
+
   download_file() {
     this.indexed.DownloadFileFromUserPath(this.navParams.get('path'), this.FileInfo['type'], this.FileInfo['filename']);
+  }
+
+  ionViewWillLeave() {
+    document.removeEventListener('ionBackButton', this.EventListenerAct);
   }
 }

@@ -16,6 +16,8 @@ import { GroupDetailPage } from './group-detail/group-detail.page';
 import { ToolManagementPage } from './tool-management/tool-management.page';
 import { LocalNotiService } from '../../local-noti.service';
 import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
+import { AddTodoMenuPage } from '../main/add-todo-menu/add-todo-menu.page';
+import { GlobalActService } from 'src/app/global-act.service';
 
 @Component({
   selector: 'app-settings',
@@ -34,6 +36,7 @@ export class SettingsPage implements OnInit {
     private bgmode: BackgroundMode,
     public lang: LanguageSettingService,
     public noti: LocalNotiService,
+    private app: GlobalActService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
@@ -280,5 +283,25 @@ export class SettingsPage implements OnInit {
     });
     delete this.nakama.users.self['img'];
     clearTimeout(this.refreshAds);
+    this.app.CreateGodotIFrame('godot-todo', {
+      local_url: 'assets/data/godot/todo.pck',
+      title: 'Todo',
+      /**
+       * 해야할 일 추가/수정/열람 메뉴 띄우기
+       * @param _data 해당 해야할 일 정보
+       */
+      add_todo_menu: (_data: string) => {
+        this.modalCtrl.create({
+          component: AddTodoMenuPage,
+          componentProps: {
+            godot: this.app.godot_window,
+            data: _data,
+          },
+        }).then(v => v.present());
+      }
+      // 아래 주석 처리된 key들은 고도쪽에서 추가됨
+      // add_todo: 새 해야할 일 등록
+      // remove_todo: 해야할 일 삭제
+    });
   }
 }

@@ -59,7 +59,7 @@ export class UserFsDirPage implements OnInit {
   ngOnInit() { }
 
   EventListenerAct = (ev: any) => {
-    ev.detail.register(110, (processNextHandler) => {
+    ev.detail.register(110, (processNextHandler: any) => {
       if (this.CurrentDir == '') {
         processNextHandler();
       } else this.MoveToUpDir();
@@ -145,6 +145,7 @@ export class UserFsDirPage implements OnInit {
   OpenFile(info: FileDir) {
     switch (info.viewer) {
       case 'godot':
+        document.removeEventListener('ionBackButton', this.EventListenerAct);
         this.modalCtrl.create({
           component: GodotViewerPage,
           componentProps: {
@@ -156,7 +157,10 @@ export class UserFsDirPage implements OnInit {
             },
             path: info.path,
           },
-        }).then(v => v.present());
+        }).then(v => {
+          v.onDidDismiss().then(_v => document.addEventListener('ionBackButton', this.EventListenerAct));
+          v.present()
+        });
         break;
       case 'disabled':
         this.p5toast.show({
@@ -164,6 +168,7 @@ export class UserFsDirPage implements OnInit {
         });
         break;
       default:
+        document.removeEventListener('ionBackButton', this.EventListenerAct);
         this.modalCtrl.create({
           component: IonicViewerPage,
           componentProps: {
@@ -176,7 +181,10 @@ export class UserFsDirPage implements OnInit {
             no_edit: true,
             path: info.path,
           },
-        }).then(v => v.present());
+        }).then(v => {
+          v.onDidDismiss().then(_v => document.addEventListener('ionBackButton', this.EventListenerAct));
+          v.present()
+        });
         break;
     }
   }
