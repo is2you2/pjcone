@@ -49,8 +49,8 @@
                 {{lang.text['UserFsDir']['Delete']}}
               </ion-button>
             </ion-item>
-            <div *ngIf="file.viewer == 'image'" (click)="OpenFile(file)">
-              <img [src]="file.thumbnail" [alt]="file.name">
+            <div *ngIf="file.viewer == 'image'" class="image_front_form" (click)="OpenFile(file)">
+              <img class="image_front_view" [src]="file.thumbnail" [alt]="file.name">
             </div>
             <ion-item button>
               <ion-label>{{lang.text['UserFsDir']['CreateAt']}}</ion-label>
