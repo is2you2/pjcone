@@ -26,5 +26,12 @@ SPDX-License-Identifier: MIT -->
   <ion-item-divider>
     <ion-label>{{lang.text['QRElse']['contents']}}</ion-label>
   </ion-item-divider>
-  <textarea class="infobox" disabled [(ngModel)]="result.text"></textarea>
+  <div class="infobox content_form">
+    <div *ngFor="let line of result.text">
+      <span *ngFor="let part of line">
+        <span *ngIf="!part.href"> {{part.text}} </span>
+        <a *ngIf="part.href" [href]="part.text" target="_system">{{part.text}}</a>
+      </span>
+    </div>
+  </div>
 </ion-content>

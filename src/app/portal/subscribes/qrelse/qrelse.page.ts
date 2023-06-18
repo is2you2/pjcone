@@ -28,6 +28,16 @@ export class QRelsePage implements OnInit {
 
   ngOnInit() {
     this.result = this.navParams.get('result');
+    this.result.text = this.result.text.split('\n');
+    for (let i = 0, j = this.result.text.length; i < j; i++) {
+      this.result.text[i] = this.result.text[i].split(' ');
+      for (let k = 0, l = this.result.text[i].length; k < l; k++) {
+        let tmp = {}; // [i][k]
+        tmp['href'] = this.result.text[i][k].indexOf('http://') == 0 || this.result.text[i][k].indexOf('https://') == 0;
+        tmp['text'] = this.result.text[i][k];
+        this.result.text[i][k] = tmp;
+      }
+    }
     this.nakama.removeBanner();
   }
 }

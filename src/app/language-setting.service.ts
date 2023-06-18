@@ -42,6 +42,7 @@ export class LanguageSettingService {
       AdminNotiTitle: 'Assistant server manager',
       CanUseAsAdmin: 'Use admin features',
     },
+    QRElse: {},
   };
 
   constructor(
