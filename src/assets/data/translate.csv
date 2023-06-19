@@ -103,6 +103,8 @@ Community,보조 도구,Assistant tools
 joinRanchat,랜덤채팅 참여,Join random chat
 joinDediChat,사설 그룹채팅,Join group chat
 quickQRshare,빠른 QR공유,Quick QR sharing
+InAppExplorer,인앱 탐색기,InApp Explorer
+EnginePPT,엔진PPT,EnginePPT
 joinDedi_placeholder,기본,Default
 joinDedi_button,참여,Join
 admin_community_menu,보조서버 관리자,Assistant server manager
@@ -112,7 +114,6 @@ notifications,알림,Notifications
 NotificationSetting,알림,Notifications
 batteryOptimization,배터리 최적화 제외 설정,Battery Optimization Exclusion Settings
 ToolList,도구 리스트,Tool list
-InAppExplorer,인앱 탐색기,InApp Explorer
 AppInfo,앱 정보,App info
 AppCreator,제작자,Creator
 AppTranslator,번역가,Translator
@@ -382,3 +383,13 @@ Open,열기,Open
 Download,받기,Download
 Delete,삭제,Delete
 CreateAt,생성일시,Creation date
+## EngineWorksPPT,,
+RemoteCont,엔진PPT 리모콘,EnginePPT Controller
+LinkTitle,휴대폰과 연결,Connect with mobile phone
+YouCanSendPCK,휴대폰에 있는 *.pck를 전송하여 시작할 수도 있습니다.,You can also start by sending the *.pck on your phone.
+JustStart,프레젠테이션,Presentation
+DropFileHere,파일을 올려서 시작,Start by uploading a file
+StartLocal,이곳에 *.pck 파일을 드래그하여 시작,Start by dragging your *.pck file here
+FileExtPck,*.pck 파일을 올려주세요,Please upload the *.pck file
+LinkWithQRCode,QRCode를 스캔하여 연결,Connect by scanning the QRCode
+RemoteLinked,휴대폰과 연결되었습니다.,Connected to mobile phone.

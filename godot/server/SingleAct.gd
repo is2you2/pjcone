@@ -100,12 +100,19 @@ func _received(id:int, _try_left:= 5):
 		var json = JSON.parse(data).result
 		if json is Dictionary:
 			match(json):
+				{ 'act': 'req_pid' }: # pid 요청
+					var result = {
+						'act': 'req_pid',
+						'pid': id,
+					}
+					send_to(id, JSON.print(result).to_utf8())
+				{ 'act': 'req_link', 'pid': var _pid }: # 어떤 종류의 연결 요청이 들어옴
+					send_to(_pid, raw_data)
 				{ 'act': 'global_noti', 'text': var _noti, .. }: # 커뮤니티 서버를 통한 알림 전파
 					if id == administrator_pid:
 						$m/vbox/SendAllNoti/AllNotiText.text = _noti
 						$m/vbox/SendAllNotiImg/AllNotiURL.text = json['img']
 						_on_Button_pressed()
-					return
 				{ 'act': 'is_admin', 'uuid': var uuid }:
 					var is_admin = uuid == $m/vbox/AdminInfo/TargetUUID.text
 					if is_admin:
@@ -116,7 +123,6 @@ func _received(id:int, _try_left:= 5):
 							'text': 'CanUseAsAdmin',
 						}
 						send_to(administrator_pid, JSON.print(result).to_utf8())
-					return
 				{ 'act': 'req_count' }:
 					if id == administrator_pid:
 						var count_data = {
@@ -129,7 +135,6 @@ func _received(id:int, _try_left:= 5):
 							'data': JSON.print(count_data),
 						}
 						send_to(administrator_pid, JSON.print(result).to_utf8())
-					return
 				{ 'act': 'req_battery' }:
 					if id == administrator_pid:
 						var battery_data = {
@@ -142,7 +147,6 @@ func _received(id:int, _try_left:= 5):
 							'data': JSON.print(battery_data),
 						}
 						send_to(administrator_pid, JSON.print(result).to_utf8())
-					return
 				_: # 준비되지 않은 행동
 					Root.logging(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)
 		else: # 형식 오류

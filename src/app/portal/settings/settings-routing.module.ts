@@ -72,6 +72,10 @@ const routes: Routes = [
     path: 'req-counter',
     loadChildren: () => import('./admin/req-counter/req-counter.module').then( m => m.ReqCounterPageModule)
   },
+  {
+    path: 'engineppt',
+    loadChildren: () => import('./engineppt/engineppt.module').then( m => m.EnginepptPageModule)
+  },
 ];
 
 @NgModule({

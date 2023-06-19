@@ -45,60 +45,64 @@ export class ToolServerService {
    * @param _PORT 사용을 위한 포트 입력
    * @param onMessage 메시지를 받았을 때 행동 onMessage(json)
    */
-  initialize(_target: string, _PORT: number, onStart:Function, onMessage: Function) {
-    if (!this.statusBar.tools[_target])
-      throw `그런 툴은 없습니다: ${_target}`;
-    this.statusBar.tools[_target] = 'pending';
-    if (isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA') {
-      if (this.list[_target] == null) this.list[_target] = {};
-      else {
-        console.warn('동일한 서버 구성이 이미 존재함: ', this.list);
-        return;
-      }
-      if (!this.list[_target]['server'])
-        this.list[_target]['server'] = cordova.plugins.wsserver;
+  initialize(_target: string, _PORT: number, onStart: Function, onMessage: Function) {
+    try {
+      if (!this.statusBar.tools[_target])
+        throw `그런 툴은 없습니다: ${_target}`;
+      this.statusBar.tools[_target] = 'pending';
+      if (isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA') {
+        if (this.list[_target] == null) this.list[_target] = {};
+        else {
+          console.warn('동일한 서버 구성이 이미 존재함: ', this.list);
+          return;
+        }
+        if (!this.list[_target]['server'])
+          this.list[_target]['server'] = cordova.plugins.wsserver;
 
-      this.list[_target]['server'].start(_PORT, {
-        'onFailure': (_addr, _port, _reason) => {
+        this.list[_target]['server'].start(_PORT, {
+          'onFailure': (_addr, _port, _reason) => {
+            this.onServerClose(_target);
+          },
+          'onOpen': (conn) => {
+            if (this.list[_target]['target'] == conn.remoteAddr)
+              this.list[_target]['users'] = conn.uuid;
+            else {
+              console.log('허용되지 않은 사용자: ', this.list[_target]['target'], '/=', conn.remoteAddr);
+              this.list[_target]['server'].close({ 'uuid': conn.uuid }, 4001, '허용되지 않은 사용자');
+            }
+            this.onClientConnected(_target);
+          },
+          'onMessage': (_conn, msg) => {
+            try {
+              let json = JSON.parse(msg);
+              onMessage(json);
+            } catch (e) {
+              console.error(`Tool-server_json 변환 오류_${msg}: ${e}`);
+            }
+          },
+          'onClose': (_conn, _code, _reason, _wasClean) => {
+            this.stop(_target);
+          },
+          // Other options
+          'origins': [], // validates the 'Origin' HTTP Header.
+          'protocols': [], // validates the 'Sec-WebSocket-Protocol' HTTP Header.
+          'tcpNoDelay': true // disables Nagle's algorithm.
+        }, (_addr, _port) => { // 시작할 때
+          this.onServerOpen(_target);
+          if (onStart) onStart();
+        }, (_reason) => { // 종료될 때
           this.onServerClose(_target);
-        },
-        'onOpen': (conn) => {
-          if (this.list[_target]['target'] == conn.remoteAddr)
-            this.list[_target]['users'] = conn.uuid;
-          else {
-            console.log('허용되지 않은 사용자: ', this.list[_target]['target'], '/=', conn.remoteAddr);
-            this.list[_target]['server'].close({ 'uuid': conn.uuid }, 4001, '허용되지 않은 사용자');
-          }
-          this.onClientConnected(_target);
-        },
-        'onMessage': (_conn, msg) => {
-          try {
-            let json = JSON.parse(msg);
-            onMessage(json);
-          } catch (e) {
-            console.error(`Tool-server_json 변환 오류_${msg}: ${e}`);
-          }
-        },
-        'onClose': (_conn, _code, _reason, _wasClean) => {
-          this.stop(_target);
-        },
-        // Other options
-        'origins': [], // validates the 'Origin' HTTP Header.
-        'protocols': [], // validates the 'Sec-WebSocket-Protocol' HTTP Header.
-        'tcpNoDelay': true // disables Nagle's algorithm.
-      }, (_addr, _port) => { // 시작할 때
-        this.onServerOpen(_target);
-        onStart();
-      }, (_reason) => { // 종료될 때
-        this.onServerClose(_target);
-      });
-    } else {
-      this.onServerClose(_target);
+        });
+      } else { // PWA 앱이라면
+        this.stop(_target);
+      }
+    } catch (error) {
+      console.log('툴 서버 생성 실패: ', error);
     }
   }
 
   /** 사설 서버 종료 */
-  private stop(_target: string) {
+  stop(_target: string) {
     if (isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA') {
       this.list[_target]['server'].stop((_addr, port) => {
         this.onServerClose(_target);

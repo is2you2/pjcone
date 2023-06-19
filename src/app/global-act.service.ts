@@ -83,7 +83,9 @@ export class GlobalActService {
     }
   }
 
-  /** json을 받아서 QR코드 이미지로 돌려주기 */
+  /** json을 받아서 QR코드 이미지로 돌려주기  
+   * 선택적 반환: QRCode 이미지 또는 오류 메시지
+   */
   readasQRCodeFromId(json: any) {
     try {
       let qr: string = new QRCode({

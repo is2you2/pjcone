@@ -24,6 +24,7 @@ import { ServerDetailPage } from './portal/settings/group-server/server-detail/s
 import { WeblinkService } from './weblink.service';
 import { ToolServerService, UnivToolForm } from './tool-server.service';
 import { QrSharePage } from './portal/settings/qr-share/qr-share.page';
+import { EnginepptPage } from './portal/settings/engineppt/engineppt.page';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -2520,11 +2521,6 @@ export class NakamaService {
             component: QrSharePage,
           }).then(v => v.present());
           break;
-        case 'tools': // 도구모음, 단일 대상 서버 생성 액션시
-          if (!this.check_comm_server_is_online())
-            return
-          this.create_tool_server(json[i].value);
-          break;
         case 'server': // 그룹 서버 자동등록처리
           let hasAlreadyTargetKey = Boolean(this.statusBar.groupServer['unofficial'][json[i].value.name]);
           if (hasAlreadyTargetKey) {
@@ -2599,6 +2595,17 @@ export class NakamaService {
         case 'group': // 그룹 자동 등록 시도
           this.try_add_group(json[i]);
           break;
+        case 'EnginePPTLink': // 엔진PPT를 컴퓨터와 연결하기
+          this.modalCtrl.create({
+            component: EnginepptPage,
+            componentProps: {
+              address: json[i].value.address,
+              name: this.users.self['display_name'],
+            },
+          }).then(v => {
+            v.present();
+          });
+          break;
         default: // 동작 미정 알림(debug)
           throw "지정된 틀 아님";
       }
@@ -2613,35 +2620,5 @@ export class NakamaService {
       });
     }
     return result;
-  }
-
-  /** 도구모음 서버 만들기 */
-  create_tool_server(data: UnivToolForm) {
-    let PORT: number;
-    /** 메시지 받기 행동 구성 */
-    let onMessage = (_json: any) => console.warn(`${data.name}_create_tool_server_onMessage: ${_json}`);
-    switch (data.name) {
-      case 'engineppt':
-        PORT = 12021;
-        onMessage = (json: any) => {
-          console.log('engineppt init test: ', json);
-        };
-        break;
-      default:
-        throw `지정된 툴 정보가 아님: ${data}`;
-    }
-    this.tools.initialize(data.name, PORT, () => {
-      this.tools.check_addresses(data.name, (v: any) => {
-        let keys = Object.keys(v);
-        let local_addresses = [];
-        for (let i = 0, j = keys.length; i < j; i++)
-          local_addresses = [...local_addresses, ...v[keys[i]]['ipv4Addresses']];
-        this.weblink.initialize({
-          from: 'mobile',
-          pid: data.client,
-          addresses: local_addresses,
-        });
-      });
-    }, onMessage);
   }
 }

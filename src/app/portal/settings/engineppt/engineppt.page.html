@@ -1,0 +1,34 @@
+<!-- SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
+SPDX-License-Identifier: MIT -->
+
+<ion-header *ngIf="ToggleHeader">
+  <ion-toolbar>
+    <ion-title>{{lang.text['Settings']['EnginePPT']}}</ion-title>
+    <ion-buttons slot="start" (click)="go_back()">
+      <ion-back-button defaultHref="settings"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="Status == 'initPWA'">
+    <div id="p5Drop" style="position: absolute; width: 100%; height: 100%;"></div>
+    <div *ngIf="QRCode">
+      <ion-item-divider>
+        <ion-label>{{lang.text['EngineWorksPPT']['LinkTitle']}}</ion-label>
+      </ion-item-divider>
+      <img [src]="QRCode" style="width: 100%; height: auto;" alt="QRCode Loading">
+    </div>
+    <ion-item-divider>
+      <ion-label>{{lang.text['EngineWorksPPT']['JustStart']}}</ion-label>
+    </ion-item-divider>
+    <ion-item button (click)="buttonClickLinkInputFile()">
+      <ion-label class="ion-text-center">{{lang.text['EngineWorksPPT']['DropFileHere']}}</ion-label>
+    </ion-item>
+    <input hidden type="file" id="file_sel" accept="*" (change)="inputpckselected($event)">
+  </div>
+  <div *ngIf="Status == 'initApp'">
+    initApp
+  </div>
+  <div *ngIf="Status == 'OnPresentation'" class="full_screen" id="engineppt"></div>
+</ion-content>
