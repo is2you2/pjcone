@@ -9,6 +9,7 @@ import { NakamaService } from 'src/app/nakama.service';
 import { AddTodoMenuPage } from './add-todo-menu/add-todo-menu.page';
 import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize } from '@capacitor-community/admob';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
+import { IndexedDBService } from 'src/app/indexed-db.service';
 
 @Component({
   selector: 'app-main',
@@ -22,6 +23,7 @@ export class MainPage implements OnInit {
     public lang: LanguageSettingService,
     private modalCtrl: ModalController,
     private nakama: NakamaService,
+    private indexed: IndexedDBService,
   ) { }
 
   ngOnInit() {
@@ -75,6 +77,10 @@ export class MainPage implements OnInit {
       // 아래 주석 처리된 key들은 고도쪽에서 추가됨
       // add_todo: 새 해야할 일 등록
       // remove_todo: 해야할 일 삭제
+    });
+    // 앱 재시작시 자동으로 동기화할 수 있도록 매번 삭제
+    this.indexed.GetFileListFromDB('acts_local', list => {
+      list.forEach(path => this.indexed.removeFileFromUserPath(path));
     });
   }
 
