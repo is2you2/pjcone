@@ -36,6 +36,9 @@ export class WscService {
   socket_header = 'wss';
   address_override = '';
 
+  /** 서버에서 배정받은 pid 를 기억해둠 */
+  pid: number = 0;
+
   /**
    * 서버와 반드시 연결시도하는 메인 소켓 클라이언트  
    * 다른 서버, 클라이언트를 생성하는 등의 다양한 역할을 수행할 수 있다.
@@ -46,12 +49,18 @@ export class WscService {
     this.statusBar.settings['communityServer'] = 'pending';
     this.lang.Callback_WscClient = () => this.set_bgmode_text();
     const PORT: number = 12000;
+    this.received['req_pid'] = (json: any) => {
+      this.pid = json['pid'];
+      delete this.received['req_pid'];
+    }
     this.client = new WebSocket(`${this.socket_header}://${this.address_override || SOCKET_SERVER_ADDRESS}:${PORT}`);
     this.client.onopen = (_ev) => {
       this.statusBar.settings['communityServer'] = 'online';
+      this.send(JSON.stringify({ act: 'req_pid' }));
       this.set_bgmode_text();
     }
     this.client.onclose = (_ev) => {
+      this.pid = 0;
       let keys = Object.keys(this.disconnected);
       keys.forEach(key => this.disconnected[key]());
       this.statusBar.settings['communityServer'] = 'missing';

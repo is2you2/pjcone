@@ -5,7 +5,7 @@ SPDX-License-Identifier: MIT -->
   <ion-toolbar>
     <ion-title>{{lang.text['Settings']['EnginePPT']}}</ion-title>
     <ion-buttons slot="start" (click)="go_back()">
-      <ion-back-button defaultHref="settings"></ion-back-button>
+      <ion-back-button defaultHref="portal/settings"></ion-back-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -19,6 +19,19 @@ SPDX-License-Identifier: MIT -->
       </ion-item-divider>
       <img [src]="QRCode" style="width: 100%; height: auto;" alt="QRCode Loading">
     </div>
+    <div *ngIf="!LinkedAddress">
+      <ion-item-divider>
+        <ion-label>{{lang.text['EngineWorksPPT']['ManualLink']}}</ion-label>
+      </ion-item-divider>
+      <ion-item>
+        <ion-label>{{lang.text['EngineWorksPPT']['Address']}}</ion-label>
+        <ion-input class="ion-text-end" [(ngModel)]="InputAddress"
+          [placeholder]="lang.text['EngineWorksPPT']['InputAddress'] + ' (127.0.0.1)'"></ion-input>
+      </ion-item>
+      <ion-item button [disabled]="ConnectButtonDisabled" (click)="ConnectToAddress()">
+        <ion-label class="ion-text-center">{{lang.text['EngineWorksPPT']['Connect']}}</ion-label>
+      </ion-item>
+    </div>
     <ion-item-divider>
       <ion-label>{{lang.text['EngineWorksPPT']['JustStart']}}</ion-label>
     </ion-item-divider>
@@ -28,7 +41,13 @@ SPDX-License-Identifier: MIT -->
     <input hidden type="file" id="file_sel" accept="*" (change)="inputpckselected($event)">
   </div>
   <div *ngIf="Status == 'initApp'">
-    initApp
+    <ion-item-divider>
+      <ion-label>{{lang.text['EngineWorksPPT']['Manual']}}</ion-label>
+    </ion-item-divider>
+    <textarea class="infobox" style="height: 280px;" disabled [(ngModel)]="RemoteDesc"></textarea>
+    <ion-item button (click)="CreateEngineController()">
+      <ion-label class="ion-text-center">{{lang.text['EngineWorksPPT']['StartRemote']}}</ion-label>
+    </ion-item>
   </div>
   <div *ngIf="Status == 'OnPresentation'" class="full_screen" id="engineppt"></div>
 </ion-content>

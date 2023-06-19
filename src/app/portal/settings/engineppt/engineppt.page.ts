@@ -7,7 +7,7 @@ import { WscService } from 'src/app/wsc.service';
 import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { LoadingController, ModalController } from '@ionic/angular';
+import { LoadingController, ModalController, NavParams } from '@ionic/angular';
 
 @Component({
   selector: 'app-engineppt',
@@ -25,19 +25,22 @@ export class EnginepptPage implements OnInit {
     private p5toast: P5ToastService,
     private loadingCtrl: LoadingController,
     private modalCtrl: ModalController,
+    private navParams: NavParams,
   ) { }
 
   EventListenerAct = (ev: any) => {
-    ev.detail.register(140, () => { });
+    ev.detail.register(150, () => { });
   }
 
   ToggleHeader = true;
   Status = 'initialize';
   QRCode: any;
+  RemoteDesc: string;
+  InputAddress = '';
+  /** PWA: 컨트롤러로 연결할 주소 */
+  LinkedAddress = '';
 
-  ngOnInit() {
-    document.addEventListener('ionBackButton', this.EventListenerAct);
-  }
+  ngOnInit() { }
 
   ionViewWillEnter() {
     this.prerequisite_check();
@@ -48,23 +51,37 @@ export class EnginepptPage implements OnInit {
     // 모바일 앱인 경우 리모콘 환경설정 유도
     if (isPlatform == 'Android' || isPlatform == 'iOS') {
       this.Status = 'initApp';
-    } else { // 웹인 경우 리모콘 연결 유도
-      this.Status = 'initPWA';
-      // 보조 서버가 있다면 QR코드 보여주기
+      // 보조 서버가 있다면 내 pid 수집
       if (this.assistServer.client && this.assistServer.client.readyState == this.assistServer.client.OPEN) {
-        this.assistServer.received['req_pid'] = (json: any) => {
-          this.QRCode = this.global.readasQRCodeFromId({
-            pid: json['pid'],
-            type: 'EnginePPTLink',
-          });
-        }
         this.assistServer.disconnected['remove_tool_link'] = () => {
           this.QRCode = '';
         }
         this.assistServer.received['req_link'] = (json: any) => {
-          console.log('연결을 요청합니다: ', json);
+          console.log('데이터를 받음: ', json);
         }
-        this.assistServer.send(JSON.stringify({ act: 'req_pid' }));
+      }
+      this.load_info_text();
+      this.StartRemoteContrServer();
+    } else { // 웹인 경우 리모콘 연결 유도
+      this.Status = 'initPWA';
+      // 보조 서버가 있다면 QR코드 보여주기
+      if (this.assistServer.client && this.assistServer.client.readyState == this.assistServer.client.OPEN) {
+        this.QRCode = this.global.readasQRCodeFromId({
+          pid: this.assistServer.pid,
+          type: 'EnginePPTLink',
+        });
+        this.assistServer.disconnected['remove_tool_link'] = () => {
+          this.QRCode = '';
+        }
+        this.assistServer.received['req_link'] = async (json: any) => {
+          try {
+            this.LinkedAddress = await this.CatchAvailableAddress(json.addresses);
+          } catch (error) {
+            this.p5toast.show({
+              text: this.lang.text['EngineWorksPPT']['CannotConnect'],
+            });
+          }
+        }
       }
       setTimeout(() => {
         this.CreateDrop();
@@ -123,15 +140,97 @@ export class EnginepptPage implements OnInit {
     }, 0);
   }
 
+  load_info_text() {
+    this.p5canvas = new p5((p: p5) => {
+      p.loadStrings(`assets/data/infos/${this.lang.lang}/engine_remote.txt`, (v: string[]) => {
+        this.RemoteDesc = v.join('\n');
+      });
+    });
+  }
+
+  StartRemoteContrServer() {
+    this.toolServer.initialize('engineppt', 12021, () => {
+      let computer_pid = this.navParams.get('pid');
+      if (computer_pid) this.RequestLinkThisDevice();
+    }, (json: any) => {
+      console.log('수신받은 메시지는: ', json);
+      switch (json.act) {
+        case 'exit': // 앱 종료시
+          this.Status = 'initApp';
+          break;
+        default:
+          console.log('예상하지 않은 수신값: ', json);
+          break;
+      }
+    });
+  }
+
+  ConnectButtonDisabled = false;
+  /** PWA 앱에서 모바일에 직접 입력한 주소로 진입시도 */
+  async ConnectToAddress() {
+    this.InputAddress = this.InputAddress.trim();
+    if (!this.InputAddress) {
+      this.p5toast.show({
+        text: this.lang.text['EngineWorksPPT']['NeedAddress'],
+      });
+      return;
+    }
+    this.ConnectButtonDisabled = true;
+    try {
+      this.LinkedAddress = await this.CatchAvailableAddress([this.InputAddress]);
+    } catch (error) {
+      this.p5toast.show({
+        text: this.lang.text['EngineWorksPPT']['CannotConnect'],
+      });
+    }
+    this.ConnectButtonDisabled = false;
+  }
+
+  /** 연결 가능한 주소를 확인하여 반환하기 */
+  CatchAvailableAddress(addresses: string[]): Promise<string> {
+    return new Promise(async (done, error) => {
+      let result: any;
+      for (let i = 0, j = addresses.length; i < j; i++) {
+        try {
+          let test = await new Promise((d, e) => {
+            let websocket = new WebSocket(`ws://${addresses[i]}:12021`);
+            websocket.onopen = (_ev) => {
+              d(addresses[i]);
+              websocket.close();
+            }
+            websocket.onclose = (_ev) => {
+              this.LinkedAddress = '';
+              e('failed');
+            }
+          });
+          result = test;
+          break;
+        } catch (e) { }
+      }
+      if (result) done(result);
+      else error('사용할 수 있는 주소 없음');
+    });
+  }
+
+  /** 이 모바일 기기로 연결하라고 신호보내기 */
+  RequestLinkThisDevice() {
+    let json = {
+      act: 'req_link',
+      pid: this.navParams.get('pid'),
+      sender: this.assistServer.pid,
+      addresses: this.toolServer.addresses,
+    }
+    this.assistServer.send(JSON.stringify(json));
+  }
+
   CreateEngineController() {
     this.Status = 'OnPresentation';
-    this.toolServer.initialize('engineppt', 12021, () => {
-
-    }, (json: any) => {
-
-    });
+    document.addEventListener('ionBackButton', this.EventListenerAct);
     setTimeout(() => {
-      console.log('행동하기');
+      this.global.CreateGodotIFrame('engineppt', {
+        local_url: 'assets/data/godot/engineppt.pck',
+        title: 'EnginePPTContr',
+      });
     }, 0);
   }
 
@@ -143,6 +242,7 @@ export class EnginepptPage implements OnInit {
   ionViewWillLeave() {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
     this.toolServer.stop('engineppt');
+    delete this.assistServer.received['req_link'];
     delete this.assistServer.disconnected['remove_tool_link'];
     if (this.p5canvas)
       this.p5canvas.remove();

@@ -12,8 +12,10 @@ interface ListToolServer {
   server?: any;
   /** 연결된 사용자 */
   users?: any;
-  /** 사용 허용된 ip 주소 */
-  target?: string;
+  /** 사용자 연결 시 행동 */
+  OnConnected?: { [id: string]: Function };
+  /** 사용자 연결이 끊길 때 행동 */
+  OnDisconnected?: { [id: string]: Function };
 }
 
 /** 만능참여로 서버 참여시 스캔 정보 양식 */
@@ -39,10 +41,14 @@ export class ToolServerService {
    */
   list: { [id: string]: ListToolServer } = {};
 
+  /** 이 휴대폰의 주소 모음 */
+  addresses: string[] = [];
+
   /**
    * 사설 서버 개설, throwable
-   * @param _target 일괄처리용 구분자
+   * @param _target 일괄처리용 구분자 (툴의 이름)
    * @param _PORT 사용을 위한 포트 입력
+   * @param onStart 서버 시작시 행동
    * @param onMessage 메시지를 받았을 때 행동 onMessage(json)
    */
   initialize(_target: string, _PORT: number, onStart: Function, onMessage: Function) {
@@ -51,24 +57,32 @@ export class ToolServerService {
         throw `그런 툴은 없습니다: ${_target}`;
       this.statusBar.tools[_target] = 'pending';
       if (isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA') {
-        if (this.list[_target] == null) this.list[_target] = {};
-        else {
+        if (this.list[_target] == null) {
+          this.list[_target] = {};
+          this.list[_target].OnConnected = {};
+          this.list[_target].OnDisconnected = {};
+        } else {
           console.warn('동일한 서버 구성이 이미 존재함: ', this.list);
           return;
         }
         if (!this.list[_target]['server'])
           this.list[_target]['server'] = cordova.plugins.wsserver;
-
+        this.check_addresses(_target);
         this.list[_target]['server'].start(_PORT, {
           'onFailure': (_addr, _port, _reason) => {
             this.onServerClose(_target);
           },
           'onOpen': (conn) => {
-            if (this.list[_target]['target'] == conn.remoteAddr)
+            if (!this.list[_target]['users'])
               this.list[_target]['users'] = conn.uuid;
             else {
-              console.log('허용되지 않은 사용자: ', this.list[_target]['target'], '/=', conn.remoteAddr);
+              console.log('1:1 매칭이 완료됨');
               this.list[_target]['server'].close({ 'uuid': conn.uuid }, 4001, '허용되지 않은 사용자');
+            }
+            if (this.list[_target]['OnConnected']) {
+              let keys = Object.keys(this.list[_target].OnConnected);
+              for (let i = 0, j = keys.length; i < j; i++)
+                this.list[_target].OnDisconnected[keys[i]]();
             }
             this.onClientConnected(_target);
           },
@@ -81,7 +95,12 @@ export class ToolServerService {
             }
           },
           'onClose': (_conn, _code, _reason, _wasClean) => {
-            this.stop(_target);
+            if (this.list[_target]['OnDisconnected']) {
+              let keys = Object.keys(this.list[_target].OnDisconnected);
+              for (let i = 0, j = keys.length; i < j; i++)
+                this.list[_target].OnDisconnected[keys[i]]();
+            }
+            this.onServerClose(_target);
           },
           // Other options
           'origins': [], // validates the 'Origin' HTTP Header.
@@ -113,7 +132,6 @@ export class ToolServerService {
 
   /** 서버 시작시(알림바 업데이트) */
   onServerOpen(target: string) {
-    console.log('test onServerOpen: ', target);
     this.statusBar.tools[target] = 'online';
   }
 
@@ -124,6 +142,7 @@ export class ToolServerService {
 
   /** 서버가 종료되었을 때 공통행동(알림바 업데이트) */
   onServerClose(target: string) {
+    delete this.list[target]['users'];
     this.statusBar.tools[target] = 'missing';
     setTimeout(() => {
       this.statusBar.tools[target] = 'offline';
@@ -131,12 +150,15 @@ export class ToolServerService {
   }
 
   /** 기기 주소 검토 */
-  check_addresses(_target: string, onCheck: Function) {
+  check_addresses(_target: string) {
     if (isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA') {
       if (!this.list[_target]['server'])
         this.list[_target]['server'] = cordova.plugins.wsserver;
       this.list[_target]['server'].getInterfaces((result: any) => {
-        onCheck(result);
+        this.addresses.length = 0;
+        let keys = Object.keys(result);
+        for (let i = 0, j = keys.length; i < j; i++)
+          this.addresses = [...this.addresses, ...result[keys[i]]['ipv4Addresses']];
       });
     }
   }

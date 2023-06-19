@@ -104,7 +104,7 @@ joinRanchat,랜덤채팅 참여,Join random chat
 joinDediChat,사설 그룹채팅,Join group chat
 quickQRshare,빠른 QR공유,Quick QR sharing
 InAppExplorer,인앱 탐색기,InApp Explorer
-EnginePPT,엔진PPT,EnginePPT
+EnginePPT,엔진 PPT,Engine PPT
 joinDedi_placeholder,기본,Default
 joinDedi_button,참여,Join
 admin_community_menu,보조서버 관리자,Assistant server manager
@@ -392,4 +392,12 @@ DropFileHere,파일을 올려서 시작,Start by uploading a file
 StartLocal,이곳에 *.pck 파일을 드래그하여 시작,Start by dragging your *.pck file here
 FileExtPck,*.pck 파일을 올려주세요,Please upload the *.pck file
 LinkWithQRCode,QRCode를 스캔하여 연결,Connect by scanning the QRCode
-RemoteLinked,휴대폰과 연결되었습니다.,Connected to mobile phone.
+Manual,사용설명서,User's Guide
+ManualLink,수동으로 연결,Connect manually
+Address,주소,Address
+InputAddress,휴대폰 주소 입력,Enter mobile address
+RemoteLinked,휴대폰과 연결되었습니다,Connected to mobile phone
+Connect,연결,Connect
+NeedAddress,주소를 입력해주세요,Please enter address
+CannotConnect,연결할 수 없습니다,Could not connect
+StartRemote,원격 제어 시작,Start remote control

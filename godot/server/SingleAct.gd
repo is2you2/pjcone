@@ -106,7 +106,7 @@ func _received(id:int, _try_left:= 5):
 						'pid': id,
 					}
 					send_to(id, JSON.print(result).to_utf8())
-				{ 'act': 'req_link', 'pid': var _pid }: # 어떤 종류의 연결 요청이 들어옴
+				{ 'act': 'req_link', 'pid': var _pid, .. }: # pid 사용자에게 메시지 보내기
 					send_to(_pid, raw_data)
 				{ 'act': 'global_noti', 'text': var _noti, .. }: # 커뮤니티 서버를 통한 알림 전파
 					if id == administrator_pid:

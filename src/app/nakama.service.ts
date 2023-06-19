@@ -2599,8 +2599,7 @@ export class NakamaService {
           this.modalCtrl.create({
             component: EnginepptPage,
             componentProps: {
-              address: json[i].value.address,
-              name: this.users.self['display_name'],
+              pid: json[i].pid,
             },
           }).then(v => {
             v.present();
