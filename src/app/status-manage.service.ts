@@ -46,10 +46,7 @@ export class StatusManageService {
     dedicated_groupchat: 'offline'
   };
   /** 설정에 준비된 공식 지원 툴, 직접 작성하여 관리 */
-  tools: PanelStatus = {
-    /** 엔진웍스 PPT */
-    engineppt: 'offline',
-  }
+  tools: PanelStatus = {}
   /** 설정-그룹서버 관리 목록  
    * groupServer[isOfficial][target] = status;
    */

@@ -52,71 +52,66 @@ export class ToolServerService {
    * @param onMessage 메시지를 받았을 때 행동 onMessage(json)
    */
   initialize(_target: string, _PORT: number, onStart: Function, onMessage: Function) {
-    try {
-      if (!this.statusBar.tools[_target])
-        throw `그런 툴은 없습니다: ${_target}`;
-      this.statusBar.tools[_target] = 'pending';
-      if (isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA') {
-        if (this.list[_target] == null) {
-          this.list[_target] = {};
-          this.list[_target].OnConnected = {};
-          this.list[_target].OnDisconnected = {};
-        } else {
-          console.warn('동일한 서버 구성이 이미 존재함: ', this.list);
-          return;
-        }
-        if (!this.list[_target]['server'])
-          this.list[_target]['server'] = cordova.plugins.wsserver;
-        this.check_addresses(_target);
-        this.list[_target]['server'].start(_PORT, {
-          'onFailure': (_addr, _port, _reason) => {
-            this.onServerClose(_target);
-          },
-          'onOpen': (conn) => {
-            if (!this.list[_target]['users'])
-              this.list[_target]['users'] = conn.uuid;
-            else {
-              console.log('1:1 매칭이 완료됨');
-              this.list[_target]['server'].close({ 'uuid': conn.uuid }, 4001, '허용되지 않은 사용자');
-            }
-            if (this.list[_target]['OnConnected']) {
-              let keys = Object.keys(this.list[_target].OnConnected);
-              for (let i = 0, j = keys.length; i < j; i++)
-                this.list[_target].OnDisconnected[keys[i]]();
-            }
-            this.onClientConnected(_target);
-          },
-          'onMessage': (_conn, msg) => {
-            try {
-              let json = JSON.parse(msg);
-              onMessage(json);
-            } catch (e) {
-              console.error(`Tool-server_json 변환 오류_${msg}: ${e}`);
-            }
-          },
-          'onClose': (_conn, _code, _reason, _wasClean) => {
-            if (this.list[_target]['OnDisconnected']) {
-              let keys = Object.keys(this.list[_target].OnDisconnected);
-              for (let i = 0, j = keys.length; i < j; i++)
-                this.list[_target].OnDisconnected[keys[i]]();
-            }
-            this.onServerClose(_target);
-          },
-          // Other options
-          'origins': [], // validates the 'Origin' HTTP Header.
-          'protocols': [], // validates the 'Sec-WebSocket-Protocol' HTTP Header.
-          'tcpNoDelay': true // disables Nagle's algorithm.
-        }, (_addr, _port) => { // 시작할 때
-          this.onServerOpen(_target);
-          if (onStart) onStart();
-        }, (_reason) => { // 종료될 때
-          this.onServerClose(_target);
-        });
-      } else { // PWA 앱이라면
-        this.stop(_target);
+    if (isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA') {
+      if (this.list[_target] == null) {
+        this.statusBar.tools[_target] = 'pending';
+        this.list[_target] = {};
+        this.list[_target].OnConnected = {};
+        this.list[_target].OnDisconnected = {};
+      } else {
+        console.warn('동일한 서버 구성이 이미 존재함: ', this.list);
+        return;
       }
-    } catch (error) {
-      console.log('툴 서버 생성 실패: ', error);
+      if (!this.list[_target]['server'])
+        this.list[_target]['server'] = cordova.plugins.wsserver;
+      this.check_addresses(_target);
+      this.list[_target]['server'].start(_PORT, {
+        'onFailure': (_addr, _port, _reason) => {
+          this.onServerClose(_target);
+        },
+        'onOpen': (conn) => {
+          if (!this.list[_target]['users'])
+            this.list[_target]['users'] = conn.uuid;
+          else {
+            console.log('1:1 매칭이 완료됨');
+            this.list[_target]['server'].close({ 'uuid': conn.uuid }, 4001, '허용되지 않은 사용자');
+          }
+          if (this.list[_target]['OnConnected']) {
+            let keys = Object.keys(this.list[_target].OnConnected);
+            for (let i = 0, j = keys.length; i < j; i++)
+              this.list[_target].OnDisconnected[keys[i]]();
+          }
+          this.onClientConnected(_target);
+        },
+        'onMessage': (_conn, msg) => {
+          try {
+            let json = JSON.parse(msg);
+            onMessage(json);
+          } catch (e) {
+            console.error(`Tool-server_json 변환 오류_${msg}: ${e}`);
+          }
+        },
+        'onClose': (_conn, _code, _reason, _wasClean) => {
+          this.statusBar.tools[_target] = 'online';
+          delete this.list[_target]['users'];
+          if (this.list[_target]['OnDisconnected']) {
+            let keys = Object.keys(this.list[_target].OnDisconnected);
+            for (let i = 0, j = keys.length; i < j; i++)
+              this.list[_target].OnDisconnected[keys[i]]();
+          }
+        },
+        // Other options
+        'origins': [], // validates the 'Origin' HTTP Header.
+        'protocols': [], // validates the 'Sec-WebSocket-Protocol' HTTP Header.
+        'tcpNoDelay': true // disables Nagle's algorithm.
+      }, (_addr, _port) => { // 시작할 때
+        this.onServerOpen(_target);
+        if (onStart) onStart();
+      }, (_reason) => { // 종료될 때
+        this.onServerClose(_target);
+      });
+    } else { // PWA 앱이라면
+      this.stop(_target);
     }
   }
 
@@ -146,7 +141,7 @@ export class ToolServerService {
     this.statusBar.tools[target] = 'missing';
     setTimeout(() => {
       this.statusBar.tools[target] = 'offline';
-    }, 500);
+    }, 1000);
   }
 
   /** 기기 주소 검토 */

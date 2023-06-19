@@ -320,6 +320,7 @@ DedicatedServer,사설 서버,Dedicated server
 CustomGroupChat,사설 그룹채팅 서버,Dedicated group chat
 LoadingAddresses,이곳에 이 기기의 네트워크 주소가 보여집니다.,The network address of this device will display here.
 NoAddress,연결된 네트워크가 없습니다.,No network connected.
+Tool_engineppt,엔진 PPT 리모콘 서버,Engine PPT Remote contr. server
 ## Translator,,
 TranslatorSpeaking,번역가의 한마디,A word from the translator
 ## CreatorInfo,,
@@ -398,6 +399,8 @@ Address,주소,Address
 InputAddress,휴대폰 주소 입력,Enter mobile address
 RemoteLinked,휴대폰과 연결되었습니다,Connected to mobile phone
 Connect,연결,Connect
+ReadyToConnect,서버 주소,Target address
 NeedAddress,주소를 입력해주세요,Please enter address
 CannotConnect,연결할 수 없습니다,Could not connect
+RemoteServer,리모콘 서버,Remote controller server
 StartRemote,원격 제어 시작,Start remote control

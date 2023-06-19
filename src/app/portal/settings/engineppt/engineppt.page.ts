@@ -8,6 +8,7 @@ import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { StatusManageService } from 'src/app/status-manage.service';
 
 @Component({
   selector: 'app-engineppt',
@@ -26,6 +27,7 @@ export class EnginepptPage implements OnInit {
     private loadingCtrl: LoadingController,
     private modalCtrl: ModalController,
     private navParams: NavParams,
+    public statusBar: StatusManageService,
   ) { }
 
   EventListenerAct = (ev: any) => {
@@ -150,8 +152,7 @@ export class EnginepptPage implements OnInit {
 
   StartRemoteContrServer() {
     this.toolServer.initialize('engineppt', 12021, () => {
-      let computer_pid = this.navParams.get('pid');
-      if (computer_pid) this.RequestLinkThisDevice();
+      this.RequestLinkThisDevice();
     }, (json: any) => {
       console.log('수신받은 메시지는: ', json);
       switch (json.act) {
@@ -186,6 +187,8 @@ export class EnginepptPage implements OnInit {
     this.ConnectButtonDisabled = false;
   }
 
+  /** 임시 웹 소켓, 연결을 유지하다가 엔진PPT와 교대함 */
+  TempWs: WebSocket;
   /** 연결 가능한 주소를 확인하여 반환하기 */
   CatchAvailableAddress(addresses: string[]): Promise<string> {
     return new Promise(async (done, error) => {
@@ -193,22 +196,31 @@ export class EnginepptPage implements OnInit {
       for (let i = 0, j = addresses.length; i < j; i++) {
         try {
           let test = await new Promise((d, e) => {
-            let websocket = new WebSocket(`ws://${addresses[i]}:12021`);
-            websocket.onopen = (_ev) => {
+            this.TempWs = new WebSocket(`ws://${addresses[i]}:12021`);
+            this.TempWs.onopen = (_ev) => {
               d(addresses[i]);
-              websocket.close();
             }
-            websocket.onclose = (_ev) => {
+            this.TempWs.onclose = (_ev) => {
               this.LinkedAddress = '';
-              e('failed');
+              e('onclose');
             }
           });
           result = test;
           break;
-        } catch (e) { }
+        } catch (e) {
+          console.log('test: ', e);
+          this.TempWs.close();
+        }
       }
-      if (result) done(result);
-      else error('사용할 수 있는 주소 없음');
+      if (result) {
+        this.p5toast.show({
+          text: `${this.lang.text['EngineWorksPPT']['ReadyToConnect']}: ${result}`,
+        });
+        done(result);
+      } else {
+        this.LinkedAddress = '';
+        error('사용할 수 있는 주소 없음');
+      }
     });
   }
 
@@ -244,6 +256,8 @@ export class EnginepptPage implements OnInit {
     this.toolServer.stop('engineppt');
     delete this.assistServer.received['req_link'];
     delete this.assistServer.disconnected['remove_tool_link'];
+    if (this.TempWs)
+      this.TempWs.close();
     if (this.p5canvas)
       this.p5canvas.remove();
   }

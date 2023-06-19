@@ -22,6 +22,7 @@ export class DedicatedSettingsPage implements OnInit {
 
   info: string;
   addresses = this.lang.text['UseAsServer']['LoadingAddresses'];
+  tools: string[] = [];
 
   ngOnInit() {
     new p5((p: p5) => {
@@ -49,6 +50,14 @@ export class DedicatedSettingsPage implements OnInit {
       else this.addresses = this.lang.text['UseAsServer']['NoAddress'];
     }
     this.server.check_addresses();
+    this.CheckToolsServer();
+  }
+
+  CheckToolsServer() {
+    let keys = Object.keys(this.statusBar.tools);
+    for (let i = 0, j = keys.length; i < j; i++) {
+      this.tools.push(keys[i]);
+    }
   }
 
   /** 중복 클릭 방지용 토글 */
