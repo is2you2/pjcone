@@ -400,6 +400,7 @@ InputAddress,휴대폰 주소 입력,Enter mobile address
 RemoteLinked,휴대폰과 연결되었습니다,Connected to mobile phone
 Connect,연결,Connect
 ReadyToConnect,서버 주소,Target address
+Disconnected,휴대폰 연결 끊김,Disconnected from remote contr.
 NeedAddress,주소를 입력해주세요,Please enter address
 CannotConnect,연결할 수 없습니다,Could not connect
 RemoteServer,리모콘 서버,Remote controller server

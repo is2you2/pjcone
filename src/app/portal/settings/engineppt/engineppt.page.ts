@@ -151,6 +151,12 @@ export class EnginepptPage implements OnInit {
   }
 
   StartRemoteContrServer() {
+    this.toolServer.list['engineppt'].OnDisconnected['showDisconnected'] = () => {
+      if (this.Status == 'OnPresentation')
+        this.p5toast.show({
+          text: this.lang.text['EngineWorksPPT']['Disconnected'],
+        });
+    }
     this.toolServer.initialize('engineppt', 12021, () => {
       this.RequestLinkThisDevice();
     }, (json: any) => {
@@ -202,6 +208,10 @@ export class EnginepptPage implements OnInit {
             }
             this.TempWs.onclose = (_ev) => {
               this.LinkedAddress = '';
+              if (this.Status != 'OnPresentation')
+                this.p5toast.show({
+                  text: this.lang.text['EngineWorksPPT']['Disconnected'],
+                });
               e('onclose');
             }
           });
