@@ -3,7 +3,7 @@
 
 import { Component, OnInit } from '@angular/core';
 import { Channel, ChannelMessage } from '@heroiclabs/nakama-js';
-import { AlertController, ModalController, NavParams } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -55,6 +55,7 @@ export class ChatRoomPage implements OnInit {
     public lang: LanguageSettingService,
     private sanitizer: DomSanitizer,
     private global: GlobalActService,
+    private loadingCtrl: LoadingController,
   ) { }
 
   /** 채널 정보 */
@@ -74,7 +75,9 @@ export class ChatRoomPage implements OnInit {
     title: this.lang.text['ChatRoom']['remove_chatroom'],
     isHide: true,
     icon: 'close-circle',
-    act: () => {
+    act: async () => {
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      loading.present();
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
       if (this.nakama.channel_transfer[this.isOfficial][this.target] && this.nakama.channel_transfer[this.isOfficial][this.target][this.info.id])
         delete this.nakama.channel_transfer[this.isOfficial][this.target][this.info.id];
@@ -83,6 +86,7 @@ export class ChatRoomPage implements OnInit {
         this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
       this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`, (list) => {
         list.forEach(path => this.indexed.removeFileFromUserPath(path));
+        loading.dismiss();
       });
       this.modalCtrl.dismiss();
     }
