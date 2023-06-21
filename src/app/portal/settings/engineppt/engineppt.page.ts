@@ -130,7 +130,8 @@ export class EnginepptPage implements OnInit {
   CreateEnginePPT() {
     this.ToggleHeader = false; // 전체화면하기 좋도록 헤더 삭제
     this.Status = 'OnPresentation';
-    this.p5canvas.remove();
+    if (this.p5canvas)
+      this.p5canvas.remove();
     setTimeout(() => {
       this.TempWs.close();
       this.global.CreateGodotIFrame('engineppt', {
@@ -252,13 +253,35 @@ export class EnginepptPage implements OnInit {
 
   CreateEngineController() {
     this.Status = 'OnPresentation';
+    if (this.p5canvas)
+      this.p5canvas.remove();
     document.addEventListener('ionBackButton', this.EventListenerAct);
+    this.send_device_rotation();
     setTimeout(() => {
       this.global.CreateGodotIFrame('engineppt', {
         local_url: 'assets/data/godot/engineppt.pck',
         title: 'EnginePPTContr',
+        /** 엔진에서 광선 시뮬레이션 후 나온 위치 결과물 */
+        pointer_pos: (x: number, y: number) => {
+          console.log(`testSend_position: (${x}, ${y})`);
+          this.toolServer.send_to('engineppt', `testSend_position: (${x}, ${y})`);
+        }
+        // set_horizontal_rot
+        // set_vertical_rot
       });
     }, 0);
+  }
+
+  p5gyro: p5;
+  send_device_rotation() {
+    this.p5gyro = new p5((p: p5) => {
+      p.draw = () => {
+        if (this.global.godot_window['set_horizontal_rot'])
+          this.global.godot_window['set_horizontal_rot'](p.rotationZ);
+        if (this.global.godot_window['set_vertical_rot'])
+          this.global.godot_window['set_vertical_rot'](p.rotationX);
+      }
+    });
   }
 
   go_back() {
@@ -275,6 +298,8 @@ export class EnginepptPage implements OnInit {
       this.TempWs.close();
     if (this.p5canvas)
       this.p5canvas.remove();
+    if (this.p5gyro)
+      this.p5gyro.remove;
   }
 
 }

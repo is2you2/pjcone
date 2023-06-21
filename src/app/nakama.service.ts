@@ -2599,7 +2599,7 @@ export class NakamaService {
           this.modalCtrl.create({
             component: EnginepptPage,
             componentProps: {
-              pid: json[i].pid,
+              pid: json[i]['pid'],
             },
           }).then(v => {
             v.present();

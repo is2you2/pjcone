@@ -154,6 +154,7 @@ export class ToolServerService {
    * @param msg 메시지
    */
   send_to(_target: string, msg: string) {
+    if (!this.list[_target]['users']) return;
     let id = Object.keys(this.list[_target]['users'])[0];
     this.list[_target]['server'].send({ 'uuid': id }, msg);
   }
