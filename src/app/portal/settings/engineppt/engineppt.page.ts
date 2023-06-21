@@ -135,6 +135,7 @@ export class EnginepptPage implements OnInit {
     this.Status = 'OnPresentation';
     this.p5canvas.remove();
     setTimeout(() => {
+      this.TempWs.close();
       this.global.CreateGodotIFrame('engineppt', {
         local_url: 'assets/data/godot/engineppt.pck',
         title: 'EnginePPT',
