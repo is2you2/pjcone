@@ -70,18 +70,18 @@ export class ToolServerService {
           this.onServerClose(_target);
         },
         'onOpen': (conn) => {
-          if (!this.list[_target]['users'])
+          if (!this.list[_target]['users']) {
             this.list[_target]['users'] = conn.uuid;
-          else {
+            this.statusBar.tools[_target] = 'certified';
+          } else {
             console.log('1:1 매칭이 완료됨');
             this.list[_target]['server'].close({ 'uuid': conn.uuid }, 4001, '허용되지 않은 사용자');
           }
           if (this.list[_target]['OnConnected']) {
             let keys = Object.keys(this.list[_target].OnConnected);
             for (let i = 0, j = keys.length; i < j; i++)
-              this.list[_target].OnDisconnected[keys[i]]();
+              this.list[_target].OnConnected[keys[i]]();
           }
-          this.onClientConnected(_target);
         },
         'onMessage': (_conn, msg) => {
           try {
@@ -105,7 +105,7 @@ export class ToolServerService {
         'protocols': [], // validates the 'Sec-WebSocket-Protocol' HTTP Header.
         'tcpNoDelay': true // disables Nagle's algorithm.
       }, (_addr, _port) => { // 시작할 때
-        this.onServerOpen(_target);
+        this.statusBar.tools[_target] = 'online';
         if (onStart) onStart();
       }, (_reason) => { // 종료될 때
         this.onServerClose(_target);
@@ -123,16 +123,6 @@ export class ToolServerService {
         delete this.list[_target];
       });
     }
-  }
-
-  /** 서버 시작시(알림바 업데이트) */
-  onServerOpen(target: string) {
-    this.statusBar.tools[target] = 'online';
-  }
-
-  /** 서버에 사람이 연결되었을 경우 공통행동(알림바 업데이트) */
-  onClientConnected(target: string) {
-    this.statusBar.tools[target] = 'certified';
   }
 
   /** 서버가 종료되었을 때 공통행동(알림바 업데이트) */

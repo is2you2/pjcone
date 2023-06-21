@@ -55,9 +55,6 @@ export class EnginepptPage implements OnInit {
       this.Status = 'initApp';
       // 보조 서버가 있다면 내 pid 수집
       if (this.assistServer.client && this.assistServer.client.readyState == this.assistServer.client.OPEN) {
-        this.assistServer.disconnected['remove_tool_link'] = () => {
-          this.QRCode = '';
-        }
         this.assistServer.received['req_link'] = (json: any) => {
           console.log('데이터를 받음: ', json);
         }
@@ -139,6 +136,12 @@ export class EnginepptPage implements OnInit {
       this.global.CreateGodotIFrame('engineppt', {
         local_url: 'assets/data/godot/engineppt.pck',
         title: 'EnginePPT',
+        remoteAddr: this.LinkedAddress,
+        p5toast: (msg: string) => {
+          this.p5toast.show({
+            text: msg,
+          });
+        }
       });
     }, 0);
   }
@@ -152,14 +155,15 @@ export class EnginepptPage implements OnInit {
   }
 
   StartRemoteContrServer() {
-    this.toolServer.list['engineppt'].OnDisconnected['showDisconnected'] = () => {
-      if (this.Status == 'OnPresentation')
-        this.p5toast.show({
-          text: this.lang.text['EngineWorksPPT']['Disconnected'],
-        });
-    }
     this.toolServer.initialize('engineppt', 12021, () => {
-      this.RequestLinkThisDevice();
+      this.toolServer.list['engineppt'].OnDisconnected['showDisconnected'] = () => {
+        if (this.Status == 'OnPresentation')
+          this.p5toast.show({
+            text: this.lang.text['EngineWorksPPT']['Disconnected'],
+          });
+      }
+      if (this.assistServer.client && this.assistServer.client.readyState == this.assistServer.client.OPEN)
+        this.RequestLinkThisDevice();
     }, (json: any) => {
       console.log('수신받은 메시지는: ', json);
       switch (json.act) {
