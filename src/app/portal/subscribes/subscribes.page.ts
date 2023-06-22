@@ -10,6 +10,7 @@ import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { AddGroupPage } from '../settings/add-group/add-group.page';
+import { GroupServerPage } from '../settings/group-server/group-server.page';
 import { ChatRoomPage } from './chat-room/chat-room.page';
 import { QRelsePage } from './qrelse/qrelse.page';
 
@@ -97,8 +98,13 @@ export class SubscribesPage implements OnInit {
 
   /** 새 그룹 추가하기 */
   add_new_group() {
-    this.modalCtrl.create({
-      component: AddGroupPage,
+    let all_online_server = this.nakama.get_all_server_info(true, true);
+    if (all_online_server.length)
+      this.modalCtrl.create({
+        component: AddGroupPage,
+      }).then(v => v.present());
+    else this.modalCtrl.create({
+      component: GroupServerPage,
     }).then(v => v.present());
   }
 

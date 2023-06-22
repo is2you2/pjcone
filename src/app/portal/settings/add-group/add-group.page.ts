@@ -183,4 +183,9 @@ export class AddGroupPage implements OnInit {
     let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
     this.nakama.limit_image_size(base64, (v) => this.userInput.img = v['canvas'].toDataURL())
   }
+
+  go_back() {
+    if (this.modalCtrl['injector']['source'] != 'AddGroupPageModule')
+      this.modalCtrl.dismiss();
+  }
 }

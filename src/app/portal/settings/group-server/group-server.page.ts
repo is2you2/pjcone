@@ -201,4 +201,9 @@ export class GroupServerPage implements OnInit {
       }
     });
   }
+
+  go_back() {
+    if (this.modalCtrl['injector']['source'] != 'GroupServerPageModule')
+      this.modalCtrl.dismiss();
+  }
 }
