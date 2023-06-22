@@ -16,6 +16,7 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { VoidDrawPage } from '../../subscribes/chat-room/void-draw/void-draw.page';
 import { GodotViewerPage } from '../../subscribes/chat-room/godot-viewer/godot-viewer.page';
+import { Camera } from '@awesome-cordova-plugins/camera/ngx';
 
 interface LogForm {
   /** 이 로그를 발생시킨 사람, 리모트인 경우에만 넣기, 로컬일 경우 비워두기 */
@@ -64,6 +65,7 @@ export class AddTodoMenuPage implements OnInit {
     private statusBar: StatusManageService,
     private loadingCtrl: LoadingController,
     private global: GlobalActService,
+    private camera: Camera,
   ) { }
 
   /** 작성된 내용 */
@@ -127,7 +129,10 @@ export class AddTodoMenuPage implements OnInit {
   startDisplay: string;
   /** 사용자에게 보여지는 기한 문자열, 저장시 삭제됨 */
   limitDisplay: string;
+  /** 플랫폼 구분 */
+  can_cordova: boolean;
   ngOnInit() {
+    this.can_cordova = isPlatform == 'Android' || isPlatform == 'iOS';
     this.nakama.removeBanner();
     this.indexed.loadTextFromUserPath('todo/tags.json', (e, v) => {
       if (e && v) {
@@ -396,6 +401,38 @@ export class AddTodoMenuPage implements OnInit {
     });
   }
 
+  from_camera() {
+    this.camera.getPicture({
+      destinationType: 0,
+      correctOrientation: true,
+    }).then(async v => {
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      loading.present();
+      let base64 = 'data:image/jpeg;base64,' + v;
+      let this_file: FileInfo = {};
+      let time = new Date();
+      this_file.filename = `Camera_${time.toLocaleString().replace(/:/g, '_')}.jpeg`;
+      this_file.file_ext = 'jpeg';
+      this_file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(base64);
+      this_file.type = 'image/jpeg';
+      this_file.typeheader = 'image';
+      this_file.content_related_creator = [{
+        // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+        display_name: this.nakama.users.self['display_name'],
+      }];
+      this_file.content_creator = [{
+        // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+        display_name: this.nakama.users.self['display_name'],
+      }];
+      this_file['img'] = base64;
+      this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
+      this_file['viewer'] = 'image';
+      await this.indexed.saveFileToUserPath(base64, this_file['path']);
+      loading.dismiss();
+      this.userInput.attach.push(this_file);
+    });
+  }
+
   /** 새 그림 만들기 */
   new_attach() {
     this.modalCtrl.create({
@@ -418,9 +455,8 @@ export class AddTodoMenuPage implements OnInit {
           this_file['viewer'] = 'image';
           this_file['img'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
           this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
-          this.indexed.saveFileToUserPath(v.data['img'], this_file['path'], (_) => {
-            v.data['loadingCtrl'].dismiss();
-          });
+          await this.indexed.saveFileToUserPath(v.data['img'], this_file['path']);
+          v.data['loadingCtrl'].dismiss();
           this.userInput.attach.push(this_file);
         }
       });
@@ -896,11 +932,20 @@ export class AddTodoMenuPage implements OnInit {
         return;
       }
     }
-    this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
-      this.saveTagInfo();
-      this.modalCtrl.dismiss();
-    });
+    let cycle_check = () => {
+      try {
+        this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
+        this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
+          this.saveTagInfo();
+          this.modalCtrl.dismiss();
+        });
+      } catch (e) {
+        setTimeout(() => {
+          cycle_check();
+        }, 100);
+      }
+    }
+    cycle_check();
   }
 
   /** 이 해야할 일 삭제 */

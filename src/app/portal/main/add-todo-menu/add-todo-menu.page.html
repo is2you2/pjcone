@@ -103,6 +103,9 @@ SPDX-License-Identifier: MIT -->
             [placeholder]="lang.text['TodoDetail']['description']"></textarea>
           <ion-item>
             <ion-label>{{lang.text['TodoDetail']['attachments']}}</ion-label>
+            <ion-button *ngIf="can_cordova" class="ion-text-right" (click)="from_camera()">
+              {{lang.text['TodoDetail']['camera']}}
+            </ion-button>
             <ion-button class="ion-text-right" (click)="new_attach()">
               {{lang.text['TodoDetail']['new_attach']}}
             </ion-button>

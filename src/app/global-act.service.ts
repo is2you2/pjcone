@@ -126,7 +126,10 @@ export class GlobalActService {
           refresh_it_loading();
         }, 1000);
       }
-      if (this.last_frame_name == _frame_name && this.godot.isConnected) return;
+      if (this.last_frame_name == _frame_name && this.godot.isConnected) {
+        done();
+        return;
+      };
       window['godot'] = '';
       if (this.godot) this.godot.remove();
       this.last_frame_name = _frame_name;
