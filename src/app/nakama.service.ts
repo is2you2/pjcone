@@ -1404,7 +1404,7 @@ export class NakamaService {
             _guser.group_users.forEach(_user => {
               if (_user.user.id == this.servers[_is_official][_target].session.user_id)
                 _user.user['is_me'] = true;
-              else if (!this.users[_is_official][_target][_user.user['id']]) this.save_other_user(_user.user, _is_official, _target);
+              else this.save_other_user(_user.user, _is_official, _target);
               _user.user = this.load_other_user(_user.user.id, _is_official, _target);
               this.add_group_user_without_duplicate(_user, user_group.group.id, _is_official, _target);
             });

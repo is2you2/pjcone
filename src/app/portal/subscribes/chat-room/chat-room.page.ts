@@ -605,8 +605,8 @@ export class ChatRoomPage implements OnInit {
   }
 
   /** 메시지 정보 상세 */
-  message_detail(msg: any) {
-    console.log('긴 클릭시 행동.. 메시지 상세 정보 표시: ', msg);
+  message_detail(_msg: any) {
+    console.log('msg detail idle log');
   }
 
   /** 메시지 내 파일 정보, 파일 다운받기 */
