@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { NavController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { isPlatform } from 'src/app/app.component';
@@ -19,7 +19,7 @@ import { GlobalActService } from 'src/app/global-act.service';
 export class AddGroupPage implements OnInit {
 
   constructor(
-    private navCtrl: NavController,
+    private modalCtrl: ModalController,
     private p5toast: P5ToastService,
     private nakama: NakamaService,
     private statusBar: StatusManageService,
@@ -125,14 +125,14 @@ export class AddGroupPage implements OnInit {
         title: this.userInput.name,
       });
       this.nakama.save_group_info(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target);
-      this.nakama.join_chat_with_modulation(v.id, 3, this.servers[this.index].isOfficial, this.servers[this.index].target, (c) => {
+      this.nakama.join_chat_with_modulation(v.id, 3, this.servers[this.index].isOfficial, this.servers[this.index].target, (_c) => {
         this.isSavedWell = true;
         localStorage.removeItem('add-group');
         this.p5toast.show({
           text: this.lang.text['AddGroup']['group_created'],
         });
         setTimeout(() => {
-          this.navCtrl.back();
+          this.modalCtrl.dismiss();
         }, 500);
       });
     }).catch(e => {

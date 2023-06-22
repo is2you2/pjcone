@@ -9,6 +9,7 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
+import { AddGroupPage } from '../settings/add-group/add-group.page';
 import { ChatRoomPage } from './chat-room/chat-room.page';
 import { QRelsePage } from './qrelse/qrelse.page';
 
@@ -92,6 +93,13 @@ export class SubscribesPage implements OnInit {
     let _is_official = server_info['isOfficial'];
     let _target = server_info['target'];
     this.nakama.check_notifications(this.nakama.notifications_rearrange[i], _is_official, _target);
+  }
+
+  /** 새 그룹 추가하기 */
+  add_new_group() {
+    this.modalCtrl.create({
+      component: AddGroupPage,
+    }).then(v => v.present());
   }
 
   ionViewWillLeave() {

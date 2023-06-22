@@ -86,6 +86,7 @@ noTitiedChat,제목 없는 채팅방,Untitled chat room
 noMessageHistory,기록된 메시지 없음,No messages logged
 needLinkWithCommServ,보조 서버와 연결되어있어야 합니다.,You must be connected to the community server.
 CameraPermissionDenied,카메라 권한을 얻지 못했습니다,Failed to get camera permission
+AddGroup,새 그룹,Add group
 ## Settings,,
 Title,설정,Settings
 CommunityAds,보조서버 광고,Assistant server Ads

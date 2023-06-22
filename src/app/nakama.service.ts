@@ -1455,7 +1455,7 @@ export class NakamaService {
     if (p['group_id']) { // 그룹 채널인 경우
       if (this.groups[_is_official][_target][p['group_id']] && this.groups[_is_official][_target][p['group_id']]['users']) {
         let user_length = this.groups[_is_official][_target][p['group_id']]['users'].length;
-        if (user_length == 1) result_status = this.users.self['online']; // 그룹에 혼자만 있음
+        if (user_length == 1) result_status = this.users.self['online'] ? 'online' : 'offline'; // 그룹에 혼자만 있음
         else for (let i = 0; i < user_length; i++) { // 2명 이상의 그룹원
           let userId = this.groups[_is_official][_target][p['group_id']]['users'][i]['user']['id'] || this.servers[_is_official][_target].session.user_id;
           if (userId != this.servers[_is_official][_target].session.user_id) // 다른 사람인 경우
@@ -1950,7 +1950,6 @@ export class NakamaService {
         }, 50);
         break;
       case 5: // 그룹에 있던 사용자 나감(들어오려다가 포기한 사람 포함)
-        console.warn('그룹원 탈퇴와 참여 예정자의 포기를 구분할 수 있는지: ', c);
         c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserOut']}: ${target['display_name']}`;
         setTimeout(() => {
