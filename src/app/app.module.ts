@@ -13,6 +13,7 @@ import { BarcodeScanner } from "@awesome-cordova-plugins/barcode-scanner/ngx";
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { Camera } from "@awesome-cordova-plugins/camera/ngx";
+import { File } from "@awesome-cordova-plugins/file/ngx";
 
 @NgModule({
   declarations: [AppComponent],
@@ -25,6 +26,7 @@ import { Camera } from "@awesome-cordova-plugins/camera/ngx";
   })],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     Device,
+    File,
     Camera,
     BackgroundMode,
     NavParams,

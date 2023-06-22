@@ -330,6 +330,13 @@
   dependencies:
     "@types/cordova" "latest"
 
+"@awesome-cordova-plugins/file@^5.46.0":
+  "integrity" "sha512-Ey1FJWJGRFxUO+hVSrorl6lMVYrFLF1X+VZDS6q8Mgbw5k34fX0aZJuAxdDNJQWwk4WGPvcDjOPS697Tv2Yq6g=="
+  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/file/-/file-5.46.0.tgz"
+  "version" "5.46.0"
+  dependencies:
+    "@types/cordova" "latest"
+
 "@awesome-cordova-plugins/local-notifications@^5.46.0":
   "integrity" "sha512-HloIGG+uAjwXXPEbeK7egm0CpIsnk3U0nu91j+z2GfTb3diOYa2UQeaWwH3RDXJmTwLwVakQm9DuAXe1cfzn3A=="
   "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/local-notifications/-/local-notifications-5.46.0.tgz"
@@ -3253,6 +3260,11 @@
   "integrity" "sha512-FU0Lw1jZpuKOgG4v80LrfMAOIMCGfAVPumn7AwaX9S1iU/X3OPZUyoKUgP09q4bxL35IeNPkqNWVKYduAXZ1sg=="
   "resolved" "https://registry.npmjs.org/cordova-plugin-device/-/cordova-plugin-device-2.1.0.tgz"
   "version" "2.1.0"
+
+"cordova-plugin-file@^7.0.0":
+  "integrity" "sha512-mSwy9GE5pHq2ZHhu/wYk/VhrwR5VLk+XQsk3+IiiFmDgcPsrVIyELkM2FZKX09cC6i+bJVTFVKUlwteSStj3ow=="
+  "resolved" "https://registry.npmjs.org/cordova-plugin-file/-/cordova-plugin-file-7.0.0.tgz"
+  "version" "7.0.0"
 
 "cordova-plugin-local-notification-12@github:powowbox/cordova-plugin-local-notification-12":
   "resolved" "git+ssh://git@github.com/powowbox/cordova-plugin-local-notification-12.git#5b4ac81f0bf205cb04d91ae3d039a1daa75bf181"
