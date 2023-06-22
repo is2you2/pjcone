@@ -302,10 +302,10 @@
   dependencies:
     "@types/cordova" "latest"
 
-"@awesome-cordova-plugins/camera@^5.41.0":
-  "integrity" "sha512-Awzs4Khf4lJqPN8DeJQA9AqlT66o2L2PuixCh4xPSYS1BI2l2t0LUkR3XwPFAtz2HbGvnHUk9jr6yXbl0M3AHA=="
-  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/camera/-/camera-5.41.0.tgz"
-  "version" "5.41.0"
+"@awesome-cordova-plugins/camera@^5.46.0":
+  "integrity" "sha512-nQa1NGU673TdeLi7vdYwXWam4w8135pnY97GnM6/wptQWhmMb9p9a+2+sflm5eQISNbqdGLTJOUkefXPIqzagQ=="
+  "resolved" "https://registry.npmjs.org/@awesome-cordova-plugins/camera/-/camera-5.46.0.tgz"
+  "version" "5.46.0"
   dependencies:
     "@types/cordova" "latest"
 

@@ -21,6 +21,7 @@ import { VoidDrawPage } from './void-draw/void-draw.page';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 import { GroupDetailPage } from '../../settings/group-detail/group-detail.page';
+import { Camera } from '@awesome-cordova-plugins/camera/ngx';
 
 interface ExtendButtonForm {
   title: string;
@@ -57,6 +58,7 @@ export class ChatRoomPage implements OnInit {
     private sanitizer: DomSanitizer,
     private global: GlobalActService,
     private loadingCtrl: LoadingController,
+    private camera: Camera,
   ) { }
 
   /** 채널 정보 */
@@ -140,6 +142,33 @@ export class ChatRoomPage implements OnInit {
           });
         }
       }
+    }
+  },
+  {
+    title: this.lang.text['ChatRoom']['useCamera'],
+    icon: 'camera',
+    act: () => {
+      this.camera.getPicture({
+        destinationType: 0,
+        correctOrientation: true,
+      }).then(v => {
+        this.userInput.file = {};
+        let time = new Date();
+        this.userInput.file.filename = `Camera_${time.toLocaleString().replace(/:/g, '_')}.jpeg`;
+        this.userInput.file.file_ext = 'jpeg';
+        this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl('data:image/jpeg;base64,' + v);
+        this.userInput.file.type = 'image/jpeg';
+        this.userInput.file.typeheader = 'image';
+        this.userInput.file.content_related_creator = [{
+          user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+          display_name: this.nakama.users.self['display_name'],
+        }];
+        this.userInput.file.content_creator = [{
+          user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+          display_name: this.nakama.users.self['display_name'],
+        }];
+        this.userInput.file.result = 'data:image/jpeg;base64,' + v;
+      });
     }
   },
   {
@@ -288,6 +317,7 @@ export class ChatRoomPage implements OnInit {
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
     this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
+    this.extended_buttons[3].isHide = isPlatform != 'Android' && isPlatform != 'iOS';
     switch (this.info['redirect']['type']) {
       case 2: // 1:1 대화라면
         if (this.info['status'] != 'missing') {

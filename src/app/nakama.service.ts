@@ -1858,7 +1858,7 @@ export class NakamaService {
         }
         break;
       default:
-        console.warn('예상하지 못한 채널 메시지 코드: ', c.code);
+        console.log('예상하지 못한 채널 메시지 코드: ', c);
         break;
     }
     this.ModulateTimeDate(c);
@@ -2179,7 +2179,6 @@ export class NakamaService {
         break;
       case -1: // 오프라인이거나 채널에 없을 때 알림 받음
         // 모든 채팅에 대한건지, 1:1에 한정인지 검토 필요
-        console.warn('채널에 없을 때 받은 메시지란..: ', v);
         v['request'] = `${v.code}-${v.subject}`;
         let targetType: number;
         if (v['content'] && v['content']['username'])
