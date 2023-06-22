@@ -267,6 +267,7 @@ ServerStatus,서버 상태,Server status
 AddressInfo,보조 서버,Community server
 isSSL,SSL 적용 여부,use SSL
 ## AddGroup,,
+Title,새 그룹 만들기,Create new group
 SelectServer,서버 선택,Select server
 GroupInfo,그룹 정보,Group info
 DisplayName,표시명,Display name

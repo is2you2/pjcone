@@ -35,6 +35,7 @@ export class AddGroupPage implements OnInit {
       this.userInput = tmp;
     this.servers = this.nakama.get_all_server_info(true, true);
     this.userInput.server = this.servers[this.index];
+    this.cant_use_clipboard = isPlatform != 'DesktopPWA';
   }
 
   /** 사용자가 작성한 그룹 정보 */
