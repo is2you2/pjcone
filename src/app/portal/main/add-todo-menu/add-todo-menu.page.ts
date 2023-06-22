@@ -657,18 +657,6 @@ export class AddTodoMenuPage implements OnInit {
   async doneTodo() {
     this.isButtonClicked = true;
     this.userInput.done = true;
-    // done.todo 를 생성한 후 기록을 남기는 방식
-    // if (this.userInput.noti_id)
-    //   if (isPlatform == 'DesktopPWA') {
-    //     clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
-    //     delete this.nakama.web_noti_id[this.userInput.noti_id];
-    //   }
-    // this.noti.ClearNoti(this.userInput.noti_id);
-    // if (this.userInput.importance != '0')
-    //   this.indexed.saveTextFileToUserPath('', `todo/${this.userInput.id}/done.todo`, () => {
-    //     this.saveData();
-    //   });
-    // else { // 메모는 이펙트만 생성하고 삭제
     this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
     if (this.userInput.remote) {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });

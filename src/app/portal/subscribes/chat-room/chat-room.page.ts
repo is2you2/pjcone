@@ -20,6 +20,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { VoidDrawPage } from './void-draw/void-draw.page';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
+import { GroupDetailPage } from '../../settings/group-detail/group-detail.page';
 
 interface ExtendButtonForm {
   title: string;
@@ -83,7 +84,7 @@ export class ChatRoomPage implements OnInit {
         delete this.nakama.channel_transfer[this.isOfficial][this.target][this.info.id];
       if (this.info['redirect']['type'] != 3 ||
         (this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] && this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['status'] != 'online'))
-        this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
+        await this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
       this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`, (list) => {
         list.forEach(path => this.indexed.removeFileFromUserPath(path));
         loading.dismiss();
@@ -102,16 +103,42 @@ export class ChatRoomPage implements OnInit {
           this.extended_buttons.forEach(button => {
             button.isHide = true;
           });
-          this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
           this.extended_buttons[0].isHide = false;
         } catch (e) {
           console.error('채널에서 나오기 실패: ', e);
         }
       } else {
-        this.p5toast.show({
-          text: this.lang.text['ChatRoom']['belonging_to_group'],
-        });
-        return;
+        this.extended_buttons[1].isHide = true;
+      }
+    }
+  },
+  {
+    title: this.lang.text['ChatRoom']['setting_group'],
+    icon: 'settings',
+    act: () => {
+      if (this.info['redirect']['type'] != 3) {
+        this.extended_buttons[2].isHide = true;
+      } else {
+        if (!this.lock_modal_open) {
+          this.lock_modal_open = true;
+          this.modalCtrl.create({
+            component: GroupDetailPage,
+            componentProps: {
+              info: this.nakama.groups[this.isOfficial][this.target][this.info['group_id']],
+            },
+          }).then(v => {
+            v.onWillDismiss().then(data => {
+              if (data.data) { // 탈퇴시
+                this.extended_buttons.forEach(button => {
+                  button.isHide = true;
+                });
+                this.extended_buttons[0].isHide = false;
+              }
+            });
+            v.present();
+            this.lock_modal_open = false;
+          });
+        }
       }
     }
   },
@@ -134,30 +161,37 @@ export class ChatRoomPage implements OnInit {
           return: true,
         }
       }).then(v => {
-        v.onDidDismiss().then(data => {
-          let file = data.data['info'];
-          console.log('이 자리에서 단순히 파일을 불러오는게 아니라 실제 메시지와 대조해야함');
-          this.indexed.loadBlobFromUserPath(file.path, '', async blob => {
-            let TmpUrl = URL.createObjectURL(blob);
-            setTimeout(() => {
-              URL.revokeObjectURL(TmpUrl);
-            }, 0);
-            this.userInput.file = {};
-            this.userInput.file.filename = file.name;
-            this.userInput.file.file_ext = file.file_ext;
-            this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(TmpUrl);
-            this.userInput.file.type = '';
-            this.userInput.file.typeheader = file.viewer;
-            this.userInput.file.content_related_creator = [{
-              // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-              display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
-            }];
-            this.userInput.file.content_creator = [{
-              user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-              display_name: this.nakama.users.self['display_name'],
-            }];
-            this.userInput.file.result = await this.global.GetBase64ThroughFileReader(blob);
-          });
+        v.onDidDismiss().then(async data => {
+          if (data.data) {
+            let file = data.data['info'];
+            let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+            loading.present();
+            try {
+              let blob = await this.indexed.loadBlobFromUserPath(file.path, '');
+              let TmpUrl = URL.createObjectURL(blob);
+              setTimeout(() => {
+                URL.revokeObjectURL(TmpUrl);
+              }, 0);
+              this.userInput.file = {};
+              this.userInput.file.filename = file.name;
+              this.userInput.file.file_ext = file.file_ext;
+              this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(TmpUrl);
+              this.userInput.file.type = '';
+              this.userInput.file.typeheader = file.viewer;
+              this.userInput.file.content_related_creator = [{
+                // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
+              }];
+              this.userInput.file.content_creator = [{
+                user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                display_name: this.nakama.users.self['display_name'],
+              }];
+              this.userInput.file.result = await this.global.GetBase64ThroughFileReader(blob);
+            } catch (e) {
+              console.log('파일 불러오기에 실패함: ', e);
+            }
+            loading.dismiss();
+          }
         })
         v.present();
       });
@@ -261,9 +295,12 @@ export class ChatRoomPage implements OnInit {
             this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
           else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
             this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
+          this.extended_buttons[2].isHide = true;
         }
         break;
       case 3: // 그룹 대화라면
+        this.extended_buttons[1].isHide = true;
+        delete this.extended_buttons[2].isHide;
         break;
       default:
         break;

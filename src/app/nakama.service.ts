@@ -610,7 +610,6 @@ export class NakamaService {
       });
     // 서버에서 나와 연관있는 모든 사용자 정보 읽어오기
     this.server_user_info_update(_is_official, _target);
-    this.load_groups(_is_official, _target);
     this.load_server_todo(_is_official, _target);
     // 통신 소켓 연결하기
     this.connect_to(_is_official, _target, async (socket) => {
@@ -672,79 +671,75 @@ export class NakamaService {
   }
 
   /** 저장된 그룹 업데이트하여 반영 */
-  load_groups(_is_official: string, _target: string) {
-    if (!this.groups[_is_official] || !this.groups[_is_official][_target]) return;
-    let tmp_groups = Object.keys(this.groups[_is_official][_target]);
-    tmp_groups.forEach(async _gid => {
-      // 온라인이라면 서버정보로 덮어쓰기
-      let channel_id = this.groups[_is_official][_target][_gid]['channel_id'];
-      if (this.statusBar.groupServer[_is_official][_target] == 'online') {
-        if (this.groups[_is_official][_target][_gid]['status'] != 'missing')
-          await this.servers[_is_official][_target].client.listGroupUsers(
-            this.servers[_is_official][_target].session, _gid
-          ).then(v => { // 삭제된 그룹 여부 검토
-            if (!v.group_users.length) { // 그룹 비활성중
-              this.groups[_is_official][_target][_gid]['status'] = 'missing';
-              this.channels_orig[_is_official][_target][channel_id]['status'] = 'missing';
-              this.save_channels_with_less_info();
-            } else { // 그룹 활성중
-              let am_i_lost = true;
-              // 내가 이 그룹에 아직 남아있는지 검토
-              for (let i = 0, j = v.group_users.length; i < j; i++)
-                if (v.group_users[i].user.id == this.servers[_is_official][_target].session.user_id) {
-                  switch (v.group_users[i].state) {
-                    case 0: // superadmin
-                    case 1: // admin
-                    case 2: // member
-                      this.groups[_is_official][_target][_gid]['status'] = 'online';
-                      break;
-                    case 3: // request
-                      this.groups[_is_official][_target][_gid]['status'] = 'pending';
-                      break;
-                    default:
-                      console.warn('이해할 수 없는 코드 반환: ', v.group_users[i].state);
-                      this.groups[_is_official][_target][_gid]['status'] = 'missing';
-                      break;
-                  }
-                  am_i_lost = false;
-                  v.group_users[i]['is_me'] = true;
-                  break;
+  async load_groups(_is_official: string, _target: string, _gid: string) {
+    // 온라인이라면 서버정보로 덮어쓰기
+    let channel_id = this.groups[_is_official][_target][_gid]['channel_id'];
+    if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+      if (this.groups[_is_official][_target][_gid]['status'] != 'missing')
+        await this.servers[_is_official][_target].client.listGroupUsers(
+          this.servers[_is_official][_target].session, _gid
+        ).then(v => { // 삭제된 그룹 여부 검토
+          if (!v.group_users.length) { // 그룹 비활성중
+            this.groups[_is_official][_target][_gid]['status'] = 'missing';
+            this.channels_orig[_is_official][_target][channel_id]['status'] = 'missing';
+            this.save_channels_with_less_info();
+          } else { // 그룹 활성중
+            let am_i_lost = true;
+            // 내가 이 그룹에 아직 남아있는지 검토
+            for (let i = 0, j = v.group_users.length; i < j; i++)
+              if (v.group_users[i].user.id == this.servers[_is_official][_target].session.user_id) {
+                switch (v.group_users[i].state) {
+                  case 0: // superadmin
+                  case 1: // admin
+                  case 2: // member
+                    this.groups[_is_official][_target][_gid]['status'] = 'online';
+                    break;
+                  case 3: // request
+                    this.groups[_is_official][_target][_gid]['status'] = 'pending';
+                    break;
+                  default:
+                    console.warn('이해할 수 없는 코드 반환: ', v.group_users[i].state);
+                    this.groups[_is_official][_target][_gid]['status'] = 'missing';
+                    break;
                 }
-              if (am_i_lost) { // 그룹은 있으나 구성원은 아님
-                this.groups[_is_official][_target][_gid]['status'] = 'missing';
-                if (channel_id) // 그룹 수락이 안되어있는 경우
-                  this.channels_orig[_is_official][_target][channel_id]['status'] = 'missing';
-                this.save_channels_with_less_info();
+                am_i_lost = false;
+                v.group_users[i]['is_me'] = true;
+                break;
               }
+            if (am_i_lost) { // 그룹은 있으나 구성원은 아님
+              this.groups[_is_official][_target][_gid]['status'] = 'missing';
+              if (channel_id) // 그룹 수락이 안되어있는 경우
+                this.channels_orig[_is_official][_target][channel_id]['status'] = 'missing';
+              this.save_channels_with_less_info();
             }
-            if (v.group_users.length)
-              this.groups[_is_official][_target][_gid]['users'] = v.group_users;
-            v.group_users.forEach(async User => {
-              if (User['is_me'])
-                User['user'] = this.users.self;
-              else {
-                if (this.load_other_user(User['user'].id, _is_official, _target)['avatar_url'] != User['user'].avatar_url
-                  || !this.load_other_user(User['user'].id, _is_official, _target)['img'])
-                  await this.servers[_is_official][_target].client.readStorageObjects(
-                    this.servers[_is_official][_target].session, {
-                    object_ids: [{
-                      collection: 'user_public',
-                      key: 'profile_image',
-                      user_id: User['user']['id'],
-                    }],
-                  }).then(v => {
-                    if (v.objects.length)
-                      User['user']['img'] = v.objects[0].value['img'];
-                    else delete User['user']['img'];
-                    this.save_other_user(User['user'], _is_official, _target);
-                  });
-                else this.save_other_user(User['user'], _is_official, _target);
-              }
-            });
-            this.save_groups_with_less_info();
+          }
+          if (v.group_users.length)
+            this.groups[_is_official][_target][_gid]['users'] = v.group_users;
+          v.group_users.forEach(async User => {
+            if (User['is_me'])
+              User['user'] = this.users.self;
+            else {
+              if (this.load_other_user(User['user'].id, _is_official, _target)['avatar_url'] != User['user'].avatar_url
+                || !this.load_other_user(User['user'].id, _is_official, _target)['img'])
+                await this.servers[_is_official][_target].client.readStorageObjects(
+                  this.servers[_is_official][_target].session, {
+                  object_ids: [{
+                    collection: 'user_public',
+                    key: 'profile_image',
+                    user_id: User['user']['id'],
+                  }],
+                }).then(v => {
+                  if (v.objects.length)
+                    User['user']['img'] = v.objects[0].value['img'];
+                  else delete User['user']['img'];
+                  this.save_other_user(User['user'], _is_official, _target);
+                });
+              else this.save_other_user(User['user'], _is_official, _target);
+            }
           });
-      }
-    });
+          this.save_groups_with_less_info();
+        });
+    }
   }
 
   /** 이 서버 내 나와 접촉한 모든 사용자 정보 업데이트 */
@@ -840,32 +835,32 @@ export class NakamaService {
           keys.forEach(key => this.users[_is_official][_target][userId][key] = data[key]);
         }
       });
-    }
-    if (!this.users[_is_official][_target][userId]['img'])
-      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
-        if (e && v) {
-          this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
-        } else if (this.users[_is_official][_target][userId]['avatar_url'])
-          if (this.statusBar.groupServer[_is_official][_target] == 'online')
-            this.servers[_is_official][_target].client.readStorageObjects(
-              this.servers[_is_official][_target].session, {
-              object_ids: [{
-                collection: 'user_public',
-                key: 'profile_image',
-                user_id: userId,
-              }]
-            }).then(v => {
-              if (v.objects.length)
-                this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
-              else delete this.users[_is_official][_target][userId]['avatar_url'];
-              this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
-            }).catch(_e => {
-              if (this.users[_is_official][_target][userId]['img']) {
-                delete this.users[_is_official][_target][userId]['img'];
+      if (!this.users[_is_official][_target][userId]['img'])
+        this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
+          if (e && v) {
+            this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
+          } else if (this.users[_is_official][_target][userId]['avatar_url'])
+            if (this.statusBar.groupServer[_is_official][_target] == 'online')
+              this.servers[_is_official][_target].client.readStorageObjects(
+                this.servers[_is_official][_target].session, {
+                object_ids: [{
+                  collection: 'user_public',
+                  key: 'profile_image',
+                  user_id: userId,
+                }]
+              }).then(v => {
+                if (v.objects.length)
+                  this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
+                else delete this.users[_is_official][_target][userId]['avatar_url'];
                 this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
-              }
-            });
-      });
+              }).catch(_e => {
+                if (this.users[_is_official][_target][userId]['img']) {
+                  delete this.users[_is_official][_target][userId]['img'];
+                  this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
+                }
+              });
+        });
+    }
     return this.users[_is_official][_target][userId];
   }
 
@@ -958,10 +953,11 @@ export class NakamaService {
               this.groups[_is_official][_target][group_id]['users'] = [];
             v.group_users.forEach(_user => {
               if (_user.user.id != this.servers[_is_official][_target].session.user_id)
-                this.save_other_user(_user.user, _is_official, _target);
+                if (!this.users[_is_official][_target][_user.user['id']])
+                  this.save_other_user(_user.user, _is_official, _target);
               if (_user.user.id == this.servers[_is_official][_target].session.user_id)
                 _user.user['is_me'] = true;
-              else this.save_other_user(_user.user, _is_official, _target);
+              else if (!this.users[_is_official][_target][_user.user['id']]) this.save_other_user(_user.user, _is_official, _target);
               _user.user = this.load_other_user(_user.user.id, _is_official, _target);
               this.add_group_user_without_duplicate(_user, group_id, _is_official, _target);
             });
@@ -1206,6 +1202,7 @@ export class NakamaService {
               if (v.groups[i].id == _info['id']) {
                 let pending_group = v.groups[i];
                 pending_group['status'] = pending_group.open ? 'online' : 'pending';
+                pending_group['server'] = this.servers[server.info.isOfficial][server.info.target].info;
                 await this.servers[server.info.isOfficial][server.info.target].client.listGroupUsers(
                   this.servers[server.info.isOfficial][server.info.target].session, v.groups[i].id
                 ).then(_list => {
@@ -1348,15 +1345,13 @@ export class NakamaService {
       delete this.groups[_is_official][_target][info['id']];
       this.save_groups_with_less_info();
       this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
-      if (this.socket_reactive['settings'])
-        this.socket_reactive['settings'].groups = this.rearrange_group_list();
     }
   }
 
   /** 그룹 내에서 사용했던 서버 파일들 전부 삭제 */
-  remove_channel_files(_is_official: string, _target: string, channel_id: string, cursor?: string) {
+  async remove_channel_files(_is_official: string, _target: string, channel_id: string, cursor?: string) {
     if (this.statusBar.groupServer[_is_official][_target] == 'online')
-      this.servers[_is_official][_target].client.listStorageObjects(
+      await this.servers[_is_official][_target].client.listStorageObjects(
         this.servers[_is_official][_target].session, `file_${channel_id.replace(/[.]/g, '_')}`,
         this.servers[_is_official][_target].session.user_id, 1, cursor
       ).then(async v => {
@@ -1409,7 +1404,7 @@ export class NakamaService {
             _guser.group_users.forEach(_user => {
               if (_user.user.id == this.servers[_is_official][_target].session.user_id)
                 _user.user['is_me'] = true;
-              else this.save_other_user(_user.user, _is_official, _target);
+              else if (!this.users[_is_official][_target][_user.user['id']]) this.save_other_user(_user.user, _is_official, _target);
               _user.user = this.load_other_user(_user.user.id, _is_official, _target);
               this.add_group_user_without_duplicate(_user, user_group.group.id, _is_official, _target);
             });
@@ -1458,9 +1453,9 @@ export class NakamaService {
   count_channel_online_member(p: any, _is_official: string, _target: string) {
     let result_status = 'pending';
     if (p['group_id']) { // 그룹 채널인 경우
-      if (this.groups[_is_official][_target][p['group_id']]['users']) {
+      if (this.groups[_is_official][_target][p['group_id']] && this.groups[_is_official][_target][p['group_id']]['users']) {
         let user_length = this.groups[_is_official][_target][p['group_id']]['users'].length;
-        if (user_length == 1) result_status = 'online'; // 그룹에 혼자만 있음
+        if (user_length == 1) result_status = this.users.self['online']; // 그룹에 혼자만 있음
         else for (let i = 0; i < user_length; i++) { // 2명 이상의 그룹원
           let userId = this.groups[_is_official][_target][p['group_id']]['users'][i]['user']['id'] || this.servers[_is_official][_target].session.user_id;
           if (userId != this.servers[_is_official][_target].session.user_id) // 다른 사람인 경우
@@ -1839,8 +1834,6 @@ export class NakamaService {
       case 4: // 채널에 새로 들어온 사람 알림
       case 5: // 그룹에 있던 사용자 나감(들어오려다가 포기한 사람 포함)
       case 6: // 누군가 그룹에서 내보내짐 (kick)
-        if (this.socket_reactive['settings'])
-          this.socket_reactive['settings'].groups = this.rearrange_group_list();
         if (this.socket_reactive['group_detail']) // 그룹 상세를 보는 중이라면 업데이트하기
           this.socket_reactive['group_detail'].update_GroupUsersList(_is_official, _target);
         if (c.code == 3 || c.code == 4) break;
@@ -1952,18 +1945,24 @@ export class NakamaService {
       case 4: // 채널에 새로 들어온 사람 알림
         c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserJoin']}: ${target['display_name']}`;
-        this.count_channel_online_member(c, _is_official, _target);
+        setTimeout(() => {
+          this.count_channel_online_member(c, _is_official, _target);
+        }, 50);
         break;
       case 5: // 그룹에 있던 사용자 나감(들어오려다가 포기한 사람 포함)
         console.warn('그룹원 탈퇴와 참여 예정자의 포기를 구분할 수 있는지: ', c);
         c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserOut']}: ${target['display_name']}`;
-        this.count_channel_online_member(c, _is_official, _target);
+        setTimeout(() => {
+          this.count_channel_online_member(c, _is_official, _target);
+        }, 50);
         break;
       case 6: // 누군가 그룹에서 내보내짐 (kick)
         c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserKick']}: ${target['display_name']}`;
-        this.count_channel_online_member(c, _is_official, _target);
+        setTimeout(() => {
+          this.count_channel_online_member(c, _is_official, _target);
+        }, 50);
         break;
       default:
         console.warn('예상하지 못한 메시지 코드: ', c);
@@ -2219,8 +2218,6 @@ export class NakamaService {
       case -4: // 상대방이 그룹 참가 수락
         if (this.socket_reactive['group_detail'] && this.socket_reactive['group_detail'].info.id == v.content['group_id'])
           this.socket_reactive['group_detail'].update_from_notification(v);
-        if (this.socket_reactive['settings'])
-          this.socket_reactive['settings'].groups = this.rearrange_group_list();
         this.groups[_is_official][_target][v.content['group_id']]['status'] = 'online';
         v['request'] = `${v.code}-${v.subject}`;
         this.noti.RemoveListener(`check${v.code}`);
@@ -2282,8 +2279,6 @@ export class NakamaService {
           });
         }
         // 이미 보는 화면이라면 업데이트하기
-        if (this.socket_reactive['settings'])
-          this.socket_reactive['settings'].groups = this.rearrange_group_list();
         if (this.socket_reactive['group_detail'] && this.socket_reactive['group_detail'].info.id == v.content['group_id'])
           this.socket_reactive['group_detail'].update_from_notification(v);
         this.noti.RemoveListener(`check${v.code}`);

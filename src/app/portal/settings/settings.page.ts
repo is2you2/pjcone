@@ -3,7 +3,6 @@
 
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
-import { Group } from '@heroiclabs/nakama-js';
 import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
 import { isPlatform, SERVER_PATH_ROOT } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -12,7 +11,6 @@ import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { WscService } from 'src/app/wsc.service';
 import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
-import { GroupDetailPage } from './group-detail/group-detail.page';
 import { ToolManagementPage } from './tool-management/tool-management.page';
 import { LocalNotiService } from '../../local-noti.service';
 import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
@@ -40,7 +38,6 @@ export class SettingsPage implements OnInit {
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
-  GroupServerCount = 0;
 
   EventListenerAct = (ev: any) => {
     ev.detail.register(10, (processNextHandler) => {
@@ -172,18 +169,13 @@ export class SettingsPage implements OnInit {
     localStorage.setItem('ShowDisableBatteryOptimizations', 'true');
   }
 
-  /** 표시되는 그룹 리스트 */
-  groups: Group[] = [];
   self = {};
   /** 프로필 썸네일 */
   profile_filter: string;
   ionViewWillEnter() {
-    this.GroupServerCount = this.nakama.get_all_server_info().length;
-    this.nakama.socket_reactive['settings'] = this;
     if (this.nakama.users.self['online'])
       this.profile_filter = "filter: grayscale(0) contrast(1);";
     else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
-    this.groups = this.nakama.rearrange_group_list();
     document.addEventListener('ionBackButton', this.EventListenerAct);
   }
   /** 채팅방 이중진입 방지용 */
@@ -217,27 +209,6 @@ export class SettingsPage implements OnInit {
     }
   }
 
-  /** 만들어진 그룹을 관리 */
-  go_to_group_detail(i: number) {
-    if (!this.lock_modal_open) {
-      this.lock_modal_open = true;
-      delete this.nakama.socket_reactive['settings'];
-      this.modalCtrl.create({
-        component: GroupDetailPage,
-        componentProps: {
-          info: this.groups[i],
-        },
-      }).then(v => {
-        v.onWillDismiss().then(() => {
-          this.nakama.socket_reactive['settings'] = this;
-          this.groups = this.nakama.rearrange_group_list();
-        });
-        v.present();
-        this.lock_modal_open = false;
-      });
-    }
-  }
-
   open_inapp_explorer() {
     this.modalCtrl.create({
       component: UserFsDirPage,
@@ -261,31 +232,15 @@ export class SettingsPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    delete this.nakama.socket_reactive['settings'];
     document.removeEventListener('ionBackButton', this.EventListenerAct);
   }
 
   go_back() {
-    let AllUsers = this.nakama.rearrange_all_user();
-    AllUsers.forEach(user => {
-      delete user['img'];
-    });
-    let channels = this.nakama.rearrange_channels();
-    channels.forEach(channel => {
-      if (channel['redirect']['type'] == 2)
-        this.indexed.loadTextFromUserPath(`servers/${channel['server']['isOfficial']}/${channel['server']['target']}/users/${channel['redirect']['id']}/profile.img`, (e, v) => {
-          if (e && v) this.nakama.load_other_user(channel['redirect']['id'], channel['server']['isOfficial'], channel['server']['target'])['img'] = v.replace(/"|=|\\/g, '');
-        });
-    });
     delete this.nakama.users.self['img'];
     clearTimeout(this.refreshAds);
     this.app.CreateGodotIFrame('godot-todo', {
       local_url: 'assets/data/godot/todo.pck',
       title: 'Todo',
-      /**
-       * 해야할 일 추가/수정/열람 메뉴 띄우기
-       * @param _data 해당 해야할 일 정보
-       */
       add_todo_menu: (_data: string) => {
         this.modalCtrl.create({
           component: AddTodoMenuPage,
@@ -295,9 +250,6 @@ export class SettingsPage implements OnInit {
           },
         }).then(v => v.present());
       }
-      // 아래 주석 처리된 key들은 고도쪽에서 추가됨
-      // add_todo: 새 해야할 일 등록
-      // remove_todo: 해야할 일 삭제
     });
   }
 }

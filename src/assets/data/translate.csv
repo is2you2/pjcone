@@ -97,8 +97,6 @@ ManageServer,서버 관리,Manage server
 groupServer,메인 서버,Main server
 commServer,보조 서버,Assistant server
 useDeviceAsServer,이 기기를 기능 서버로,Use this device as a functional server
-ManageGroup,그룹 관리,Manage group
-CreateGroup,그룹 생성하기,Create a group
 Community,보조 도구,Assistant tools
 joinRanchat,랜덤채팅 참여,Join random chat
 joinDediChat,사설 그룹채팅,Join group chat
@@ -175,7 +173,7 @@ chat_extension,기능,Exts
 send_chat,보내기,Send
 remove_chatroom,삭제,Remove
 leave_chatroom,나가기,Leave
-belonging_to_group,이 채널은 그룹에 귀속되어 있습니다.,This channel belongs to a group.
+setting_group,설정,Settings
 attach_file,파일 첨부,Attachments
 attach_inapp_file,인앱 파일,InApp file
 unknown_ext,검토 불가,No review

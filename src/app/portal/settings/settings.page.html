@@ -60,30 +60,6 @@ SPDX-License-Identifier: MIT -->
       [style]="'background-color: ' + statusBar.colors[(statusBar.settings['dedicatedServer']) || 'offline']"></div>
     <ion-label class="form_margin">{{lang.text['Settings']['useDeviceAsServer']}}</ion-label>
   </ion-item>
-  <div *ngIf="GroupServerCount != 0 || groups.length">
-    <ion-item-divider>
-      <ion-label>{{lang.text['Settings']['ManageGroup']}}</ion-label>
-    </ion-item-divider>
-    <ion-item button (click)="go_to_page('add-group')" [disabled]="statusBar.settings['groupServer'] != 'online'">
-      <ion-label>{{lang.text['Settings']['CreateGroup']}}</ion-label>
-    </ion-item>
-    <div *ngFor="let group of groups; index as i">
-      <ion-item button (click)="go_to_group_detail(i)">
-        <div class="additional_form status_bar_single"
-          [style]="'background-color: ' + statusBar.colors[(group['status'] || 'offline')]">
-        </div>
-        <div class="additional_form bg_img_form">
-          <img class="profile_img"
-            [style]="'filter: ' + (group['status'] == 'online' ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
-            [src]="group['img']">
-        </div>
-        <ion-label class="form_margin">
-          <p>{{group['server']['name']}}</p>
-          <h2>{{group['name']}}</h2>
-        </ion-label>
-      </ion-item>
-    </div>
-  </div>
   <ion-item-divider>
     <ion-label>{{lang.text['Settings']['Community']}}</ion-label>
   </ion-item-divider>

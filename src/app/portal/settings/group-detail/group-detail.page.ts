@@ -39,7 +39,10 @@ export class GroupDetailPage implements OnInit {
   /** 진입시 그룹 정보 */
   info_orig: any;
 
-  ngOnInit() {
+  isOfficial: string;
+  target: string
+
+  async ngOnInit() {
     this.nakama.removeBanner();
     this.info = this.navParams.get('info');
     this.info_orig = JSON.parse(JSON.stringify(this.navParams.get('info')));
@@ -49,21 +52,22 @@ export class GroupDetailPage implements OnInit {
       name: this.info.name,
       type: 'group',
     });
-    let _is_official: string = this.info.server['isOfficial'];
-    let _target: string = this.info.server['target'];
-    this.has_admin = this.statusBar.groupServer[_is_official][_target] == 'online';
+    this.isOfficial = this.info.server['isOfficial'];
+    this.target = this.info.server['target'];
+    this.has_admin = this.statusBar.groupServer[this.isOfficial][this.target] == 'online';
+    await this.nakama.load_groups(this.isOfficial, this.target, this.info.id);
     // 사용자 정보가 있다면 로컬 정보 불러오기 처리
     if (this.info['users'] && this.info['users'].length) {
       for (let i = 0, j = this.info['users'].length; i < j; i++)
         if (this.info['users'][i].is_me) // 정보상 나라면
           this.info['users'][i]['user'] = this.nakama.users.self;
         else if (this.info['users'][i]['user']['id']) { // 다른 사람들의 프로필 이미지
-          this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], _is_official, _target);
+          this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], this.isOfficial, this.target);
         } else this.info['users'].splice(i, 1);
       // 온라인일 경우
       if (this.has_admin) // 여기서만 has_admin이 온라인 여부처럼 동작함
         if (this.info['status'] != 'missing')
-          this.state_to_status(_is_official, _target);
+          this.state_to_status(this.isOfficial, this.target);
     }
   }
 
@@ -184,7 +188,7 @@ export class GroupDetailPage implements OnInit {
         }
       } else { // 서버 기록이 먼저 삭제된 경우
         this.nakama.remove_group_list(this.info, this.info['server']['isOfficial'], this.info['server']['target']);
-        this.modalCtrl.dismiss();
+        this.modalCtrl.dismiss({ remove: true });
       }
     } catch (e) {
       this.p5toast.show({
@@ -197,7 +201,7 @@ export class GroupDetailPage implements OnInit {
   after_remove_group() {
     this.leave_channel();
     this.nakama.remove_group_list(this.info, this.info['server']['isOfficial'], this.info['server']['target']);
-    this.modalCtrl.dismiss();
+    this.modalCtrl.dismiss({ remove: true });
   }
 
   /** 그룹 편집사항이 있는지, 그래서 편집해야하는지 여부 검토 */
@@ -275,11 +279,11 @@ export class GroupDetailPage implements OnInit {
       this.after_leave_group(() => {
         this.leave_channel();
         delete this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']];
-        this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss());
+        this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss({ leave: true }));
       });
     else if (this.info['status'] == 'pending') this.after_leave_group(() => {
       delete this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']];
-      this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss());
+      this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss({ leave: true }));
     });
   }
 
