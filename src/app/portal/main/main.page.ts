@@ -47,6 +47,7 @@ export class MainPage implements OnInit {
     };
     /** 광고 정보 불러오기 */
     try { // 파일이 없으면 광고를 보여줌, 파일이 있다면 안보여줌
+      this.nakama.isBannerShowing = false;
       let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/admob.txt`);
       if (!res.ok) "광고가 없다고 생각됩니다";
     } catch (e) { // 로컬 정보 기반으로 광고
