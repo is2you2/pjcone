@@ -208,7 +208,6 @@ export class ChatRoomPage implements OnInit {
               this.userInput.file.type = '';
               this.userInput.file.typeheader = file.viewer;
               this.userInput.file.content_related_creator = [{
-                // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
                 display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
               }];
               this.userInput.file.content_creator = [{
