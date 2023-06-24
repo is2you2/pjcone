@@ -220,7 +220,6 @@ export class AddTodoMenuPage implements OnInit {
       } else if (this.userInput.remote) {
         if (!this.isModify)
           this.StoreAt.value = this.userInput.remote;
-        this.StoreAt.placeholder = this.userInput.remote.name;
         this.userInput.display_store = this.userInput.remote.name;
         this.userInput.display_creator = this.lang.text['TodoDetail']['Disconnected'];
         this.userInput.display_manager = this.lang.text['TodoDetail']['Disconnected'];
@@ -243,7 +242,7 @@ export class AddTodoMenuPage implements OnInit {
       }
     } catch (e) {
       this.isModifiable = e.isModifiable;
-      console.log('Server issue: ', e.text);
+      console.log('Server issue: ', e);
     }
     // 로그 정보 게시
     if (this.userInput.logs.length) {
