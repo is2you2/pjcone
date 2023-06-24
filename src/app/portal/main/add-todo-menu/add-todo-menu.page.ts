@@ -653,11 +653,22 @@ export class AddTodoMenuPage implements OnInit {
                 this_file['file_ext'] = 'png';
                 this_file['type'] = 'image/png';
                 this_file['viewer'] = 'image';
-                this_file['content_related_creator'] = related_creators;
-                this_file['content_creator'] = [{
-                  // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-                  display_name: this.nakama.users.self['display_name'],
-                }];
+                if (v.data['is_modify']) {
+                  this_file['content_related_creator'] = related_creators;
+                  this_file['content_creator'] = [{
+                    // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                    display_name: this.nakama.users.self['display_name'],
+                  }];
+                } else {
+                  this_file['content_related_creator'] = [{
+                    // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                    display_name: this.nakama.users.self['display_name'],
+                  }];
+                  this_file['content_creator'] = [{
+                    // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                    display_name: this.nakama.users.self['display_name'],
+                  }];
+                }
                 this_file['img'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
                 this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
                 this.indexed.saveFileToUserPath(v.data['img'], this_file['path'], (_) => {

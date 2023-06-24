@@ -40,7 +40,7 @@ export class VoidDrawPage implements OnInit {
       // save_image: 이미지 저장하기
       // undo_draw: 그리기 되돌리기
       // redo_draw: 그리기 다시하기
-      receive_image: (base64: string) => {
+      receive_image: (base64: string, is_modify = false) => {
         let image = 'data:image/png;base64,' + base64.replace(/"|=|\\/g, '');
         let newDate = new Date();
         let year = newDate.getUTCFullYear();
@@ -53,6 +53,7 @@ export class VoidDrawPage implements OnInit {
           name: `voidDraw_${year}-${month}-${date}_${hour}-${minute}-${second}.png`,
           img: image,
           loadingCtrl: this.mainLoading,
+          is_modify: is_modify,
         });
       }
     });

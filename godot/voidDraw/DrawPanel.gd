@@ -5,10 +5,13 @@ export var width:= 432
 export var height:= 432
 export var start_weight:= 3.0
 export var BaseTexture:ImageTexture
+# 편집을 시도하는지 여부
+var is_modify:= false
 
 onready var DrawViewport:= $DrawPanel
 onready var DrawBrush:= $DrawPanel/Panel/StackDraw
 onready var AnimationPlayerNode:= $DrawPanel/Panel/AnimationPlayer
+
 
 var window
 var save_image_func = JavaScript.create_callback(self, 'save_image')
@@ -176,6 +179,6 @@ func redo_draw(args):
 # 지금 그려진 그림을 사용하기
 func use_canvas(base64:String):
 	if OS.has_feature('JavaScript'):
-		window.receive_image(base64)
+		window.receive_image(base64, is_modify)
 	else:
 		print_debug('이미지 사용하기: ', base64)

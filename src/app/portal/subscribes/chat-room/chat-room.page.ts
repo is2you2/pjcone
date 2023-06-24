@@ -818,11 +818,22 @@ export class ChatRoomPage implements OnInit {
                   this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
                   this.userInput.file.type = 'image/png';
                   this.userInput.file.typeheader = 'image';
-                  this.userInput.file.content_related_creator = related_creators;
-                  this.userInput.file.content_creator = [{
-                    user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-                    display_name: this.nakama.users.self['display_name'],
-                  }];
+                  if (v.data['is_modify']) {
+                    this.userInput.file.content_related_creator = related_creators;
+                    this.userInput.file.content_creator = [{
+                      user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                      display_name: this.nakama.users.self['display_name'],
+                    }];
+                  } else {
+                    this.userInput.file.content_related_creator = [{
+                      user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                      display_name: this.nakama.users.self['display_name'],
+                    }];
+                    this.userInput.file.content_creator = [{
+                      user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                      display_name: this.nakama.users.self['display_name'],
+                    }];
+                  }
                   this.userInput.file.result = v.data['img'];
                   this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
                   v.data['loadingCtrl'].dismiss();
