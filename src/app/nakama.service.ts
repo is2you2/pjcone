@@ -1314,8 +1314,9 @@ export class NakamaService {
         });
       });
     });
-    this.indexed.saveTextFileToUserPath(JSON.stringify(copied_group), 'servers/groups.json');
-    _CallBack();
+    this.indexed.saveTextFileToUserPath(JSON.stringify(copied_group), 'servers/groups.json', () => {
+      _CallBack();
+    });
   }
 
   /** 그룹 리스트 로컬/리모트에서 삭제하기 (방장일 경우) */

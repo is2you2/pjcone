@@ -87,7 +87,8 @@ export class ChatRoomPage implements OnInit {
       if (this.info['redirect']['type'] != 3 ||
         (this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] && this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['status'] != 'online'))
         await this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
-      this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`, (list) => {
+      await this.nakama.remove_group_list(this.nakama.groups[this.isOfficial][this.target][this.info['group_id']], this.isOfficial, this.target);
+      await this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`, (list) => {
         list.forEach(path => this.indexed.removeFileFromUserPath(path));
         loading.dismiss();
       });
