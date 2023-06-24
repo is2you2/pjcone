@@ -257,14 +257,25 @@ export class EnginepptPage implements OnInit {
       this.p5canvas.remove();
     document.addEventListener('ionBackButton', this.EventListenerAct);
     this.send_device_rotation();
+    let send_ok = true; // 보내도 됨
+    let etc_stack = {};
     setTimeout(() => {
       this.global.CreateGodotIFrame('engineppt', {
         local_url: 'assets/data/godot/engineppt.pck',
         title: 'EnginePPTContr',
         /** 엔진에서 광선 시뮬레이션 후 나온 위치 결과물 */
-        pointer_pos: (x: number, y: number) => {
-          console.log(`testSend_position: (${x}, ${y})`);
-          this.toolServer.send_to('engineppt', `testSend_position: (${x}, ${y})`);
+        pointer_pos: (x: number, y: number, etc: string = '') => {
+          let etc_json = JSON.parse(etc);
+          etc_stack = { ...etc_stack, ...etc_json };
+          if (send_ok) {
+            this.toolServer.send_to('engineppt', JSON.stringify({ x: x, y: y, ...etc_stack }));
+            let keys = Object.keys(etc_stack);
+            keys.forEach(key => delete etc_stack[key]);
+            send_ok = false;
+            setTimeout(() => {
+              send_ok = true;
+            }, 60);
+          }
         }
         // set_horizontal_rot
         // set_vertical_rot

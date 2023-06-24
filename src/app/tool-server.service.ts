@@ -68,6 +68,7 @@ export class ToolServerService {
       this.list[_target]['server'].start(_PORT, {
         'onFailure': (_addr, _port, _reason) => {
           this.onServerClose(_target);
+          this.stop(_target);
         },
         'onOpen': (conn) => {
           if (!this.list[_target]['users']) {
@@ -109,6 +110,7 @@ export class ToolServerService {
         if (onStart) onStart();
       }, (_reason) => { // 종료될 때
         this.onServerClose(_target);
+        this.stop(_target);
       });
     } else { // PWA 앱이라면
       this.stop(_target);
@@ -155,7 +157,6 @@ export class ToolServerService {
    */
   send_to(_target: string, msg: string) {
     if (!this.list[_target]['users']) return;
-    let id = Object.keys(this.list[_target]['users'])[0];
-    this.list[_target]['server'].send({ 'uuid': id }, msg);
+    this.list[_target]['server'].send({ 'uuid': this.list[_target]['users'] }, msg);
   }
 }
