@@ -1446,6 +1446,7 @@ export class NakamaService {
   /** 그룹 서버 및 설정-그룹서버의 상태 조정 */
   set_group_statusBar(_status: 'offline' | 'missing' | 'pending' | 'online' | 'certified', _is_official: string, _target: string) {
     this.statusBar.groupServer[_is_official][_target] = _status;
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
     this.catch_group_server_header(_status);
   }
 
