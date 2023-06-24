@@ -64,15 +64,18 @@ func _input(event):
 				1: # 그리기 행동, 또는 마우스 행동
 					if event is InputEventMouseButton:
 						match(event.button_index):
-							2: # 마우스 좌클릭
+							2: # 마우스 우클릭
 								start_rect_pos = rect_position
 								start_pos = event.position - rect_position
+								show_brush_for_a_while()
 							3: # 가운데 마우스 클릭
 								reset_transform()
 							4: # 휠 올리기
 								rect_scale = rect_scale * 1.1
+								show_brush_for_a_while()
 							5: # 휠 내리기
 								rect_scale = rect_scale * .9
+								show_brush_for_a_while()
 				2: # 패닝, 이동
 					var last_other:Vector2 = touches[1 if event.index == 0 else 0]
 					DrawBrush.remove_current_draw()
@@ -83,6 +86,7 @@ func _input(event):
 					rect_pivot_to(tmp['center'])
 					start_rect_pos = rect_position
 					start_pos = tmp['center'] - rect_position
+					show_brush_for_a_while()
 				3: # 원상복구
 					reset_transform()
 		else: # Mouse-up
@@ -105,6 +109,7 @@ func _input(event):
 				if event is InputEventMouseMotion:
 					if start_pos != Vector2.ZERO:
 						rect_position = event.position - start_pos
+						show_brush_for_a_while()
 			2: # 터치 행동으로 한정
 				if event is InputEventScreenDrag:
 					var last_other:Vector2 = touches[1 if index == 0 else 0]
@@ -112,6 +117,25 @@ func _input(event):
 					rect_scale = Vector2(_scale, _scale)
 					if start_pos != Vector2.ZERO:
 						rect_position = start_rect_pos + ((last_other + event.position) / 2 - tmp['center'])
+					show_brush_for_a_while()
+
+
+var show_tmp_brush:= false
+var start_show_tmp_brush:int
+
+func show_brush_for_a_while():
+	show_tmp_brush = true
+	start_show_tmp_brush = OS.get_ticks_msec()
+	update()
+	yield(get_tree().create_timer(.7), "timeout")
+	if start_show_tmp_brush + 650 <= OS.get_ticks_msec():
+		show_tmp_brush = false
+		update()
+
+# 스케일 변경시마다 잠시동안 화면 가운데에 브러쉬 크기를 가늠해주기
+func _draw():
+	if show_tmp_brush:
+		draw_circle(rect_pivot_offset, DrawBrush.weight / 2, Color('#88' + $DrawPanel/Panel/StackDraw.color.to_html(false)))
 
 
 # 스케일 중심점을 화면에서의 지정된 위치로 옮김
@@ -147,6 +171,8 @@ func reset_transform():
 	anim.track_set_key_value(5, 1, [target_pivot_offset.x, -.25, 0, .25, 0])
 	anim.track_set_key_value(6, 1, [target_pivot_offset.y, -.25, 0, .25, 0])
 	AnimationPlayerNode.play("ResetTransform")
+	
+	show_tmp_brush = false
 
 
 func set_line_weight(args):
