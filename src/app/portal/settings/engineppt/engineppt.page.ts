@@ -7,7 +7,7 @@ import { WscService } from 'src/app/wsc.service';
 import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { LoadingController, ModalController, NavController, NavParams } from '@ionic/angular';
 import { StatusManageService } from 'src/app/status-manage.service';
 
 @Component({
@@ -28,6 +28,7 @@ export class EnginepptPage implements OnInit {
     private modalCtrl: ModalController,
     private navParams: NavParams,
     public statusBar: StatusManageService,
+    private navCtrl: NavController,
   ) { }
 
   EventListenerAct = (ev: any) => {
@@ -133,7 +134,8 @@ export class EnginepptPage implements OnInit {
     if (this.p5canvas)
       this.p5canvas.remove();
     setTimeout(() => {
-      this.TempWs.close();
+      if (this.TempWs && this.TempWs.readyState == this.TempWs.OPEN)
+        this.TempWs.close();
       this.global.CreateGodotIFrame('engineppt', {
         local_url: 'assets/data/godot/engineppt.pck',
         title: 'EnginePPT',
@@ -142,6 +144,11 @@ export class EnginepptPage implements OnInit {
           this.p5toast.show({
             text: msg,
           });
+        },
+        dismiss: () => {
+          if (this.modalCtrl['injector']['source'] != 'EnginepptPageModule')
+            this.modalCtrl.dismiss();
+          else this.navCtrl.back();
         }
       });
     }, 0);
@@ -305,6 +312,7 @@ export class EnginepptPage implements OnInit {
     this.toolServer.stop('engineppt');
     delete this.assistServer.received['req_link'];
     delete this.assistServer.disconnected['remove_tool_link'];
+    this.indexed.removeFileFromUserPath('engineppt/presentation_this.pck');
     if (this.TempWs)
       this.TempWs.close();
     if (this.p5canvas)
