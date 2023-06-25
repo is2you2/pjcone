@@ -162,6 +162,9 @@ export class EnginepptPage implements OnInit {
     });
   }
 
+  /** 모바일에서 PC로 발송 전, base64 쪼개기 상태로 가지고 있음 */
+  SelectedFile: string[] = [];
+
   StartRemoteContrServer() {
     this.toolServer.initialize('engineppt', 12021, () => {
       this.toolServer.list['engineppt'].OnDisconnected['showDisconnected'] = () => {
@@ -175,6 +178,15 @@ export class EnginepptPage implements OnInit {
     }, (json: any) => {
       console.log('수신받은 메시지는: ', json);
       switch (json.act) {
+        case 'react': // 정상 수신 반응, 다음 파트 보내기
+          let part = this.SelectedFile.shift();
+          if (part) { // 보내야할 내용이 더 있다면
+            this.toolServer.send_to('engineppt', JSON.stringify({
+              'act': 'part',
+              'data': part,
+            })); // 없으면 파일 끝 알림
+          } else this.toolServer.send_to('engineppt', JSON.stringify({ 'act': 'eof' }));
+          break;
         case 'exit': // 앱 종료시
           this.Status = 'initApp';
           break;
@@ -206,6 +218,35 @@ export class EnginepptPage implements OnInit {
     this.ConnectButtonDisabled = false;
   }
 
+  buttonClickSelectPckFromMobile() {
+    document.getElementById('mobile_sel').click();
+  }
+  async mobilepckselected(ev: any) {
+    if (!this.toolServer.list['engineppt']['users']) {
+      this.p5toast.show({
+        text: this.lang.text['EngineWorksPPT']['NeedLink'],
+      });
+      return;
+    }
+    let filename = ev.target.files[0].name;
+    let file_ext = filename.substring(filename.lastIndexOf('.') + 1);
+    if (file_ext != 'pck') {
+      this.p5toast.show({
+        text: this.lang.text['EngineWorksPPT']['FileExtPck'],
+      });
+      return;
+    }
+    let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
+    const PACK_SIZE = 220000;
+    let size = Math.ceil(base64.length / PACK_SIZE);
+    this.SelectedFile = base64.match(/(.{1,220000})/g)
+    this.toolServer.send_to('engineppt', JSON.stringify({
+      'act': 'init',
+      'size': size,
+      'total': base64.length,
+    }));
+  }
+
   /** 임시 웹 소켓, 연결을 유지하다가 엔진PPT와 교대함 */
   TempWs: WebSocket;
   /** 연결 가능한 주소를 확인하여 반환하기 */
@@ -214,13 +255,38 @@ export class EnginepptPage implements OnInit {
       let result: any;
       for (let i = 0, j = addresses.length; i < j; i++) {
         try {
-          let test = await new Promise((d, e) => {
+          let test = await new Promise(async (d, e) => {
+            let base64 = ''; // 휴대폰으로부터 파일을 원격받기 할 경우
+            let download_file = await this.loadingCtrl.create({ message: this.lang.text['EngineWorksPPT']['ReceivingFile'] });
             this.TempWs = new WebSocket(`ws://${addresses[i]}:12021`);
             this.TempWs.onopen = (_ev) => {
               d(addresses[i]);
             }
+            this.TempWs.onmessage = (ev) => {
+              let json = JSON.parse(ev.data);
+              switch (json['act']) {
+                case 'init': // 모바일에서 파일을 보내려 합니다
+                  download_file.present();
+                  this.TempWs.send(JSON.stringify({ act: 'react' }));
+                  break;
+                case 'part': // 이전 정보를 정상적으로 전달받았습니다
+                  base64 += json['data'];
+                  this.TempWs.send(JSON.stringify({ act: 'react' }));
+                  break;
+                case 'eof': // 파일 전송을 종료합니다
+                  this.indexed.saveFileToUserPath(base64, 'engineppt/presentation_this.pck', (_) => {
+                    download_file.dismiss();
+                    this.CreateEnginePPT();
+                  });
+                  break;
+                default:
+                  console.log('예상하지 않은 서버 수신값: ', json);
+                  break;
+              }
+            }
             this.TempWs.onclose = (_ev) => {
               this.LinkedAddress = '';
+              download_file.dismiss();
               if (this.Status != 'OnPresentation')
                 this.p5toast.show({
                   text: this.lang.text['EngineWorksPPT']['Disconnected'],
@@ -231,7 +297,6 @@ export class EnginepptPage implements OnInit {
           result = test;
           break;
         } catch (e) {
-          console.log('test: ', e);
           this.TempWs.close();
         }
       }
