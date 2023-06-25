@@ -264,11 +264,11 @@ export class EnginepptPage implements OnInit {
         local_url: 'assets/data/godot/engineppt.pck',
         title: 'EnginePPTContr',
         /** 엔진에서 광선 시뮬레이션 후 나온 위치 결과물 */
-        pointer_pos: (x: number, y: number, etc: string = '') => {
+        pointer_pos: (etc: string = '') => {
           let etc_json = JSON.parse(etc);
           etc_stack = { ...etc_stack, ...etc_json };
           if (send_ok) {
-            this.toolServer.send_to('engineppt', JSON.stringify({ x: x, y: y, ...etc_stack }));
+            this.toolServer.send_to('engineppt', JSON.stringify({ ...etc_stack }));
             let keys = Object.keys(etc_stack);
             keys.forEach(key => delete etc_stack[key]);
             send_ok = false;
