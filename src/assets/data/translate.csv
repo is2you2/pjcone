@@ -127,6 +127,7 @@ icon_mono,기본 앱 알림,Default
 diychat,Nakama 채널,Nakama channel
 todo,해야할 일,Todo
 simplechat,미니채팅,Mini-chat
+engineppt,엔진PPT,EnginePPT
 ## ToolManager,,
 Official,공식 제공 도구,Official tools
 Unofficial,사용자 도구,Custom tools
@@ -414,3 +415,5 @@ StartFromMobile,휴대폰 파일로 시작하기,Start from mobile data
 NeedLink,먼저 사용자를 연결해주세요,You must link user first
 ReceivingFile,파일을 받고 있습니다,Receiving file
 StartRemote,원격 제어 시작,Start remote control
+ClientConnected,연결되었습니다,Connected
+UsePPTRemote,PPT 리모콘으로 사용합니다,Use as presentation remote control

@@ -9,6 +9,7 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { LoadingController, ModalController, NavController, NavParams } from '@ionic/angular';
 import { StatusManageService } from 'src/app/status-manage.service';
+import { LocalNotiService } from 'src/app/local-noti.service';
 
 @Component({
   selector: 'app-engineppt',
@@ -29,6 +30,7 @@ export class EnginepptPage implements OnInit {
     private navParams: NavParams,
     public statusBar: StatusManageService,
     private navCtrl: NavController,
+    private noti: LocalNotiService,
   ) { }
 
   EventListenerAct = (ev: any) => {
@@ -167,6 +169,20 @@ export class EnginepptPage implements OnInit {
 
   StartRemoteContrServer() {
     this.toolServer.initialize('engineppt', 12021, () => {
+      this.toolServer.list['engineppt'].OnConnected['show_noti'] = () => {
+        this.noti.PushLocal({
+          id: 13,
+          title: this.lang.text['EngineWorksPPT']['ClientConnected'],
+          body: this.lang.text['EngineWorksPPT']['UsePPTRemote'],
+          group_ln: 'engineppt',
+          smallIcon_ln: 'engineppt',
+          iconColor_ln: '478cbf',
+          autoCancel_ln: true,
+        }, 'engineppt');
+      }
+      this.toolServer.list['engineppt'].OnDisconnected['remove_noti'] = () => {
+        this.noti.ClearNoti(13);
+      }
       this.toolServer.list['engineppt'].OnDisconnected['showDisconnected'] = () => {
         if (this.Status == 'OnPresentation')
           this.p5toast.show({
@@ -383,7 +399,8 @@ export class EnginepptPage implements OnInit {
     if (this.p5canvas)
       this.p5canvas.remove();
     if (this.p5gyro)
-      this.p5gyro.remove;
+      this.p5gyro.remove();
+    this.noti.ClearNoti(13);
   }
 
 }

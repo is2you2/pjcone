@@ -70,7 +70,9 @@ interface TotalNotiForm {
    * 이 알림이 나타내는 항목 수
    */
   number_ln?: number;
-  /** 알림 아이콘의 색상. 안드로이드 전용 */
+  /** 알림 아이콘의 색상. 안드로이드 전용  
+   * '#' 없이 hex 코드만 (ex. ff0000)
+   */
   iconColor_ln?: string;
   /** 안드로이드 전용. 그룹알림시 그룹 이름. 테스트 안됨  
    * Used to group multiple notifications.
@@ -90,8 +92,7 @@ interface TotalNotiForm {
    */
   ongoing_ln?: boolean;
   /** 안드로이드 전용.  
-   * 알림을 클릭해서 알림이 취소됩니다.  
-   * 정확히 확인이 안됨 ㅡㅡ;
+   * 앱을 진입할 때 알림이 삭제됩니다  
    */
   autoCancel_ln?: boolean;
   /** 소리 설정 */
@@ -157,6 +158,7 @@ export class LocalNotiService {
           diychat: this.settings.silent,
           simplechat: this.settings.silent,
           todo: this.settings.silent,
+          engineppt: this.settings.silent,
         };
       // 여기까지, 전부 호환된다고 판단되는 경우 삭제
     });
@@ -169,6 +171,7 @@ export class LocalNotiService {
       diychat: true,
       simplechat: true,
       todo: true,
+      engineppt: true,
     },
     /** 알림 진동 사용 여부 */
     vibrate: false,

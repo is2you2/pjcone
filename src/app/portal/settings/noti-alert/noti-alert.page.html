@@ -31,4 +31,9 @@
     <ion-label>{{lang.text['NotificationSettings']['simplechat']}}</ion-label>
     <ion-toggle [(ngModel)]="noti.settings.silent.simplechat" class="ignore_toggles"></ion-toggle>
   </ion-item>
+  <ion-item button (click)="toggle_silent_set('engineppt')">
+    <img class="img_icon_size" src="assets/icon/engineppt.png" alt="">
+    <ion-label>{{lang.text['NotificationSettings']['engineppt']}}</ion-label>
+    <ion-toggle [(ngModel)]="noti.settings.silent.engineppt" class="ignore_toggles"></ion-toggle>
+  </ion-item>
 </ion-content>
