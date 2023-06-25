@@ -56,11 +56,13 @@ export class UserFsDirPage implements OnInit {
     private sanitizer: DomSanitizer,
   ) { }
 
+  is_ready = false;
+
   ngOnInit() { }
 
   EventListenerAct = (ev: any) => {
     ev.detail.register(110, (processNextHandler: any) => {
-      if (this.CurrentDir == '') {
+      if (this.CurrentDir == '' && this.is_ready) {
         processNextHandler();
       } else this.MoveToUpDir();
     });
@@ -123,6 +125,7 @@ export class UserFsDirPage implements OnInit {
         return 0;
       });
       loading.dismiss();
+      this.is_ready = true;
     });
   }
 
