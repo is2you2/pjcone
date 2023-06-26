@@ -2,12 +2,14 @@ extends Node
 
 
 var new_canvas_func = JavaScript.create_callback(self, 'new_canvas')
+var open_color_selector_func = JavaScript.create_callback(self, 'open_color_selector')
 
 
 func _ready():
 	if OS.has_feature('JavaScript'):
 		var window = JavaScript.get_interface('window')
 		window.new_canvas = new_canvas_func
+		window.change_color = open_color_selector_func
 		var json = {
 			'width': 432,
 			'height': 432,
@@ -34,8 +36,6 @@ func new_canvas(args):
 	# 기존에 존재하는 캔버스를 삭제 후 새로 생성함
 	var children:= get_children()
 	for child in children:
-		if is_connected("save_image", child, 'save_image'):
-			disconnect("save_image", child, 'save_image')
 		child.queue_free()
 	var json = JSON.parse(args[0]).result
 	if json is Dictionary:
@@ -54,6 +54,15 @@ func new_canvas(args):
 	else: printerr('voidDraw: json import error')
 
 
+onready var color_picker = get_node('../ColorPicker')
 
-func set_line_color(args):
-	print_debug('색상 변경: ', args)
+
+func open_color_selector(args):
+	color_picker.visible = true
+	color_picker.selectedColor = inst.DrawBrush.color
+	inst.DrawViewport.gui_disable_input = true
+
+func set_line_color():
+	color_picker.visible = false
+	inst.DrawBrush.color = color_picker.selectedColor
+	inst.DrawViewport.gui_disable_input = false

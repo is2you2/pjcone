@@ -37,6 +37,7 @@ export class VoidDrawPage implements OnInit {
       title: 'voidDraw',
       image: Boolean(this.navParams.data['path']),
       // new_canvas: 이미지 새로 만들기
+      // change_color: 선 색상 변경하기
       // save_image: 이미지 저장하기
       // undo_draw: 그리기 되돌리기
       // redo_draw: 그리기 다시하기

@@ -1,6 +1,1378 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=62 format=2]
 
+[ext_resource path="res://ColorPicker.gd" type="Script" id=1]
 [ext_resource path="res://voidDraw.gd" type="Script" id=2]
+[ext_resource path="res://round.png" type="Texture" id=3]
+
+[sub_resource type="Gradient" id=35]
+colors = PoolColorArray( 1, 0, 0, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=36]
+gradient = SubResource( 35 )
+width = 64
+
+[sub_resource type="Gradient" id=4]
+colors = PoolColorArray( 1, 0.25, 0, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=5]
+gradient = SubResource( 4 )
+width = 64
+
+[sub_resource type="Gradient" id=37]
+colors = PoolColorArray( 1, 0.5, 0, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=38]
+gradient = SubResource( 37 )
+width = 64
+
+[sub_resource type="Gradient" id=6]
+colors = PoolColorArray( 1, 0.75, 0, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=2]
+gradient = SubResource( 6 )
+width = 64
+
+[sub_resource type="Gradient" id=7]
+colors = PoolColorArray( 1, 1, 0, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=8]
+gradient = SubResource( 7 )
+width = 64
+
+[sub_resource type="Gradient" id=39]
+colors = PoolColorArray( 0.75, 1, 0, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=40]
+gradient = SubResource( 39 )
+width = 64
+
+[sub_resource type="Gradient" id=9]
+colors = PoolColorArray( 0.5, 1, 0, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=10]
+gradient = SubResource( 9 )
+width = 64
+
+[sub_resource type="Gradient" id=41]
+colors = PoolColorArray( 0.25, 1, 0, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=42]
+gradient = SubResource( 41 )
+width = 64
+
+[sub_resource type="Gradient" id=11]
+colors = PoolColorArray( 0, 1, 0, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=12]
+gradient = SubResource( 11 )
+width = 64
+
+[sub_resource type="Gradient" id=43]
+colors = PoolColorArray( 0, 1, 0.25, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=44]
+gradient = SubResource( 43 )
+width = 64
+
+[sub_resource type="Gradient" id=13]
+colors = PoolColorArray( 0, 1, 0.5, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=14]
+gradient = SubResource( 13 )
+width = 64
+
+[sub_resource type="Gradient" id=45]
+colors = PoolColorArray( 0, 1, 0.75, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=46]
+gradient = SubResource( 45 )
+width = 64
+
+[sub_resource type="Gradient" id=15]
+colors = PoolColorArray( 0, 1, 1, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=16]
+gradient = SubResource( 15 )
+width = 64
+
+[sub_resource type="Gradient" id=47]
+colors = PoolColorArray( 0, 0.75, 1, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=48]
+gradient = SubResource( 47 )
+width = 64
+
+[sub_resource type="Gradient" id=17]
+colors = PoolColorArray( 0, 0.5, 1, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=18]
+gradient = SubResource( 17 )
+width = 64
+
+[sub_resource type="Gradient" id=49]
+colors = PoolColorArray( 0, 0.25, 1, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=50]
+gradient = SubResource( 49 )
+width = 64
+
+[sub_resource type="Gradient" id=19]
+colors = PoolColorArray( 0, 0, 1, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=20]
+gradient = SubResource( 19 )
+width = 64
+
+[sub_resource type="Gradient" id=51]
+colors = PoolColorArray( 0.25, 0, 1, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=52]
+gradient = SubResource( 51 )
+width = 64
+
+[sub_resource type="Gradient" id=21]
+colors = PoolColorArray( 0.5, 0, 1, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=22]
+gradient = SubResource( 21 )
+width = 64
+
+[sub_resource type="Gradient" id=53]
+colors = PoolColorArray( 0.75, 0, 1, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=54]
+gradient = SubResource( 53 )
+width = 64
+
+[sub_resource type="Gradient" id=23]
+colors = PoolColorArray( 1, 0, 1, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=24]
+gradient = SubResource( 23 )
+width = 64
+
+[sub_resource type="Gradient" id=55]
+colors = PoolColorArray( 1, 0, 0.75, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=56]
+gradient = SubResource( 55 )
+width = 64
+
+[sub_resource type="Gradient" id=25]
+colors = PoolColorArray( 1, 0, 0.5, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=26]
+gradient = SubResource( 25 )
+width = 64
+
+[sub_resource type="Gradient" id=57]
+colors = PoolColorArray( 1, 0, 0.25, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=58]
+gradient = SubResource( 57 )
+width = 64
+
+[sub_resource type="Gradient" id=27]
+colors = PoolColorArray( 1, 0, 0, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=28]
+gradient = SubResource( 27 )
+width = 64
+
+[sub_resource type="Shader" id=31]
+code = "shader_type canvas_item;
+
+uniform sampler2D mask_texture;
+
+void fragment() {
+    vec4 colour = texture(TEXTURE, UV);
+    colour.a *= texture(mask_texture, UV).a;
+
+    COLOR = colour;
+}"
+
+[sub_resource type="ShaderMaterial" id=32]
+shader = SubResource( 31 )
+shader_param/mask_texture = ExtResource( 3 )
+
+[sub_resource type="Gradient" id=29]
+offsets = PoolRealArray( 0 )
+colors = PoolColorArray( 1, 0, 0, 1 )
+
+[sub_resource type="GradientTexture" id=30]
+gradient = SubResource( 29 )
+
+[sub_resource type="Gradient" id=59]
+colors = PoolColorArray( 1, 1, 1, 1, 0, 0, 0, 1 )
+
+[sub_resource type="GradientTexture" id=60]
+gradient = SubResource( 59 )
+
+[sub_resource type="Animation" id=33]
+resource_name = "Init"
+length = 0.7
+step = 0.025
+tracks/0/type = "bezier"
+tracks/0/path = NodePath("SelectColor:rect_scale:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"points": PoolRealArray( 1e-05, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 0.7 )
+}
+tracks/1/type = "bezier"
+tracks/1/path = NodePath("SelectColor:rect_scale:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"points": PoolRealArray( 1e-05, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 0.7 )
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("ColorBar/Col:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 0.05 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/3/type = "value"
+tracks/3/path = NodePath("ColorBar/Col2:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"times": PoolRealArray( 0, 0.1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/4/type = "value"
+tracks/4/path = NodePath("ColorBar/Col3:visible")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/keys = {
+"times": PoolRealArray( 0, 0.15 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/5/type = "value"
+tracks/5/path = NodePath("ColorBar/Col4:visible")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/keys = {
+"times": PoolRealArray( 0, 0.2 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/6/type = "value"
+tracks/6/path = NodePath("ColorBar/Col5:visible")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/keys = {
+"times": PoolRealArray( 0, 0.25 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/7/type = "value"
+tracks/7/path = NodePath("ColorBar/Col6:visible")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/keys = {
+"times": PoolRealArray( 0, 0.3 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/8/type = "value"
+tracks/8/path = NodePath("ColorBar/Col7:visible")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/keys = {
+"times": PoolRealArray( 0, 0.35 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/9/type = "value"
+tracks/9/path = NodePath("ColorBar/Col8:visible")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/keys = {
+"times": PoolRealArray( 0, 0.4 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/10/type = "value"
+tracks/10/path = NodePath("ColorBar/Col9:visible")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/keys = {
+"times": PoolRealArray( 0, 0.45 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/11/type = "value"
+tracks/11/path = NodePath("ColorBar/Col10:visible")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/12/type = "value"
+tracks/12/path = NodePath("ColorBar/Col11:visible")
+tracks/12/interp = 1
+tracks/12/loop_wrap = true
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/keys = {
+"times": PoolRealArray( 0, 0.55 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/13/type = "value"
+tracks/13/path = NodePath("ColorBar/Col12:visible")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/keys = {
+"times": PoolRealArray( 0, 0.6 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/14/type = "value"
+tracks/14/path = NodePath("ColorBar/Col13:visible")
+tracks/14/interp = 1
+tracks/14/loop_wrap = true
+tracks/14/imported = false
+tracks/14/enabled = true
+tracks/14/keys = {
+"times": PoolRealArray( 0, 0.65 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/15/type = "value"
+tracks/15/path = NodePath("ColorBar/Col14:visible")
+tracks/15/interp = 1
+tracks/15/loop_wrap = true
+tracks/15/imported = false
+tracks/15/enabled = true
+tracks/15/keys = {
+"times": PoolRealArray( 0, 0.075 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/16/type = "value"
+tracks/16/path = NodePath("ColorBar/Col15:visible")
+tracks/16/interp = 1
+tracks/16/loop_wrap = true
+tracks/16/imported = false
+tracks/16/enabled = true
+tracks/16/keys = {
+"times": PoolRealArray( 0, 0.125 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/17/type = "value"
+tracks/17/path = NodePath("ColorBar/Col16:visible")
+tracks/17/interp = 1
+tracks/17/loop_wrap = true
+tracks/17/imported = false
+tracks/17/enabled = true
+tracks/17/keys = {
+"times": PoolRealArray( 0, 0.175 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/18/type = "value"
+tracks/18/path = NodePath("ColorBar/Col17:visible")
+tracks/18/interp = 1
+tracks/18/loop_wrap = true
+tracks/18/imported = false
+tracks/18/enabled = true
+tracks/18/keys = {
+"times": PoolRealArray( 0, 0.225 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/19/type = "value"
+tracks/19/path = NodePath("ColorBar/Col18:visible")
+tracks/19/interp = 1
+tracks/19/loop_wrap = true
+tracks/19/imported = false
+tracks/19/enabled = true
+tracks/19/keys = {
+"times": PoolRealArray( 0, 0.275 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/20/type = "value"
+tracks/20/path = NodePath("ColorBar/Col19:visible")
+tracks/20/interp = 1
+tracks/20/loop_wrap = true
+tracks/20/imported = false
+tracks/20/enabled = true
+tracks/20/keys = {
+"times": PoolRealArray( 0, 0.325 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/21/type = "value"
+tracks/21/path = NodePath("ColorBar/Col20:visible")
+tracks/21/interp = 1
+tracks/21/loop_wrap = true
+tracks/21/imported = false
+tracks/21/enabled = true
+tracks/21/keys = {
+"times": PoolRealArray( 0, 0.375 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/22/type = "value"
+tracks/22/path = NodePath("ColorBar/Col21:visible")
+tracks/22/interp = 1
+tracks/22/loop_wrap = true
+tracks/22/imported = false
+tracks/22/enabled = true
+tracks/22/keys = {
+"times": PoolRealArray( 0, 0.425 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/23/type = "value"
+tracks/23/path = NodePath("ColorBar/Col22:visible")
+tracks/23/interp = 1
+tracks/23/loop_wrap = true
+tracks/23/imported = false
+tracks/23/enabled = true
+tracks/23/keys = {
+"times": PoolRealArray( 0, 0.475 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/24/type = "value"
+tracks/24/path = NodePath("ColorBar/Col23:visible")
+tracks/24/interp = 1
+tracks/24/loop_wrap = true
+tracks/24/imported = false
+tracks/24/enabled = true
+tracks/24/keys = {
+"times": PoolRealArray( 0, 0.525 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/25/type = "value"
+tracks/25/path = NodePath("ColorBar/Col24:visible")
+tracks/25/interp = 1
+tracks/25/loop_wrap = true
+tracks/25/imported = false
+tracks/25/enabled = true
+tracks/25/keys = {
+"times": PoolRealArray( 0, 0.575 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/26/type = "value"
+tracks/26/path = NodePath("ColorBar/Col25:visible")
+tracks/26/interp = 1
+tracks/26/loop_wrap = true
+tracks/26/imported = false
+tracks/26/enabled = true
+tracks/26/keys = {
+"times": PoolRealArray( 0, 0.625 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/27/type = "bezier"
+tracks/27/path = NodePath("BackgroundFade:color:r")
+tracks/27/interp = 1
+tracks/27/loop_wrap = true
+tracks/27/imported = false
+tracks/27/enabled = true
+tracks/27/keys = {
+"points": PoolRealArray( 0, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 0.7 )
+}
+tracks/28/type = "bezier"
+tracks/28/path = NodePath("BackgroundFade:color:g")
+tracks/28/interp = 1
+tracks/28/loop_wrap = true
+tracks/28/imported = false
+tracks/28/enabled = true
+tracks/28/keys = {
+"points": PoolRealArray( 0, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 0.7 )
+}
+tracks/29/type = "bezier"
+tracks/29/path = NodePath("BackgroundFade:color:b")
+tracks/29/interp = 1
+tracks/29/loop_wrap = true
+tracks/29/imported = false
+tracks/29/enabled = true
+tracks/29/keys = {
+"points": PoolRealArray( 0, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 0.7 )
+}
+tracks/30/type = "bezier"
+tracks/30/path = NodePath("BackgroundFade:color:a")
+tracks/30/interp = 1
+tracks/30/loop_wrap = true
+tracks/30/imported = false
+tracks/30/enabled = true
+tracks/30/keys = {
+"points": PoolRealArray( 0, -0.25, 0, 0.25, 0, 0.352941, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 0.7 )
+}
+
+[sub_resource type="Animation" id=34]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/path = NodePath("SelectColor:rect_scale:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"points": PoolRealArray( 1, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0 )
+}
+tracks/1/type = "bezier"
+tracks/1/path = NodePath("SelectColor:rect_scale:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"points": PoolRealArray( 1, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0 )
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("ColorBar/Col:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/3/type = "value"
+tracks/3/path = NodePath("ColorBar/Col2:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/4/type = "value"
+tracks/4/path = NodePath("ColorBar/Col3:visible")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/5/type = "value"
+tracks/5/path = NodePath("ColorBar/Col4:visible")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/6/type = "value"
+tracks/6/path = NodePath("ColorBar/Col5:visible")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/7/type = "value"
+tracks/7/path = NodePath("ColorBar/Col6:visible")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/8/type = "value"
+tracks/8/path = NodePath("ColorBar/Col7:visible")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/9/type = "value"
+tracks/9/path = NodePath("ColorBar/Col8:visible")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/10/type = "value"
+tracks/10/path = NodePath("ColorBar/Col9:visible")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/11/type = "value"
+tracks/11/path = NodePath("ColorBar/Col10:visible")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/12/type = "value"
+tracks/12/path = NodePath("ColorBar/Col11:visible")
+tracks/12/interp = 1
+tracks/12/loop_wrap = true
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/13/type = "value"
+tracks/13/path = NodePath("ColorBar/Col12:visible")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/14/type = "value"
+tracks/14/path = NodePath("ColorBar/Col13:visible")
+tracks/14/interp = 1
+tracks/14/loop_wrap = true
+tracks/14/imported = false
+tracks/14/enabled = true
+tracks/14/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/15/type = "value"
+tracks/15/path = NodePath("ColorBar/Col14:visible")
+tracks/15/interp = 1
+tracks/15/loop_wrap = true
+tracks/15/imported = false
+tracks/15/enabled = true
+tracks/15/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/16/type = "value"
+tracks/16/path = NodePath("ColorBar/Col15:visible")
+tracks/16/interp = 1
+tracks/16/loop_wrap = true
+tracks/16/imported = false
+tracks/16/enabled = true
+tracks/16/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/17/type = "value"
+tracks/17/path = NodePath("ColorBar/Col16:visible")
+tracks/17/interp = 1
+tracks/17/loop_wrap = true
+tracks/17/imported = false
+tracks/17/enabled = true
+tracks/17/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/18/type = "value"
+tracks/18/path = NodePath("ColorBar/Col17:visible")
+tracks/18/interp = 1
+tracks/18/loop_wrap = true
+tracks/18/imported = false
+tracks/18/enabled = true
+tracks/18/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/19/type = "value"
+tracks/19/path = NodePath("ColorBar/Col18:visible")
+tracks/19/interp = 1
+tracks/19/loop_wrap = true
+tracks/19/imported = false
+tracks/19/enabled = true
+tracks/19/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/20/type = "value"
+tracks/20/path = NodePath("ColorBar/Col19:visible")
+tracks/20/interp = 1
+tracks/20/loop_wrap = true
+tracks/20/imported = false
+tracks/20/enabled = true
+tracks/20/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/21/type = "value"
+tracks/21/path = NodePath("ColorBar/Col20:visible")
+tracks/21/interp = 1
+tracks/21/loop_wrap = true
+tracks/21/imported = false
+tracks/21/enabled = true
+tracks/21/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/22/type = "value"
+tracks/22/path = NodePath("ColorBar/Col21:visible")
+tracks/22/interp = 1
+tracks/22/loop_wrap = true
+tracks/22/imported = false
+tracks/22/enabled = true
+tracks/22/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/23/type = "value"
+tracks/23/path = NodePath("ColorBar/Col22:visible")
+tracks/23/interp = 1
+tracks/23/loop_wrap = true
+tracks/23/imported = false
+tracks/23/enabled = true
+tracks/23/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/24/type = "value"
+tracks/24/path = NodePath("ColorBar/Col23:visible")
+tracks/24/interp = 1
+tracks/24/loop_wrap = true
+tracks/24/imported = false
+tracks/24/enabled = true
+tracks/24/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/25/type = "value"
+tracks/25/path = NodePath("ColorBar/Col24:visible")
+tracks/25/interp = 1
+tracks/25/loop_wrap = true
+tracks/25/imported = false
+tracks/25/enabled = true
+tracks/25/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/26/type = "value"
+tracks/26/path = NodePath("ColorBar/Col25:visible")
+tracks/26/interp = 1
+tracks/26/loop_wrap = true
+tracks/26/imported = false
+tracks/26/enabled = true
+tracks/26/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/27/type = "bezier"
+tracks/27/path = NodePath("BackgroundFade:color:r")
+tracks/27/interp = 1
+tracks/27/loop_wrap = true
+tracks/27/imported = false
+tracks/27/enabled = true
+tracks/27/keys = {
+"points": PoolRealArray( 0, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0 )
+}
+tracks/28/type = "bezier"
+tracks/28/path = NodePath("BackgroundFade:color:g")
+tracks/28/interp = 1
+tracks/28/loop_wrap = true
+tracks/28/imported = false
+tracks/28/enabled = true
+tracks/28/keys = {
+"points": PoolRealArray( 0, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0 )
+}
+tracks/29/type = "bezier"
+tracks/29/path = NodePath("BackgroundFade:color:b")
+tracks/29/interp = 1
+tracks/29/loop_wrap = true
+tracks/29/imported = false
+tracks/29/enabled = true
+tracks/29/keys = {
+"points": PoolRealArray( 0, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0 )
+}
+tracks/30/type = "bezier"
+tracks/30/path = NodePath("BackgroundFade:color:a")
+tracks/30/interp = 1
+tracks/30/loop_wrap = true
+tracks/30/imported = false
+tracks/30/enabled = true
+tracks/30/keys = {
+"points": PoolRealArray( 0, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0 )
+}
 
 [node name="voidDraw" type="Node"]
+
+[node name="DrawPanel" type="Node" parent="."]
 script = ExtResource( 2 )
+
+[node name="ColorPicker" type="Control" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 1 )
+
+[node name="BackgroundFade" type="ColorRect" parent="ColorPicker"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0, 0, 0, 0 )
+
+[node name="Center" type="Control" parent="ColorPicker"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+
+[node name="ColorBar" type="Control" parent="ColorPicker"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+
+[node name="Col" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 30.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 36 )
+expand = true
+
+[node name="Col14" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 35.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 5 )
+expand = true
+
+[node name="Col2" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 40.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 38 )
+expand = true
+
+[node name="Col15" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 45.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 2 )
+expand = true
+
+[node name="Col3" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 50.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 8 )
+expand = true
+
+[node name="Col16" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 55.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 40 )
+expand = true
+
+[node name="Col4" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 60.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 10 )
+expand = true
+
+[node name="Col17" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 65.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 42 )
+expand = true
+
+[node name="Col5" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 70.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 12 )
+expand = true
+
+[node name="Col18" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 75.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 44 )
+expand = true
+
+[node name="Col6" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 80.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 14 )
+expand = true
+
+[node name="Col19" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 85.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 46 )
+expand = true
+
+[node name="Col7" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 90.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 16 )
+expand = true
+
+[node name="Col20" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 95.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 48 )
+expand = true
+
+[node name="Col8" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 100.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 18 )
+expand = true
+
+[node name="Col21" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 105.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 50 )
+expand = true
+
+[node name="Col9" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 110.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 20 )
+expand = true
+
+[node name="Col22" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 115.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 52 )
+expand = true
+
+[node name="Col10" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 120.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 22 )
+expand = true
+
+[node name="Col23" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 125.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 54 )
+expand = true
+
+[node name="Col11" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 130.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 24 )
+expand = true
+
+[node name="Col24" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 135.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 56 )
+expand = true
+
+[node name="Col12" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 140.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 26 )
+expand = true
+
+[node name="Col25" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 145.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 58 )
+expand = true
+
+[node name="Col13" type="TextureRect" parent="ColorPicker/ColorBar"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -130.0
+margin_top = -2.0
+margin_right = -46.0
+margin_bottom = 2.0
+rect_rotation = 150.0
+rect_pivot_offset = Vector2( 130, 2 )
+texture = SubResource( 28 )
+expand = true
+
+[node name="SelectColor" type="TextureRect" parent="ColorPicker"]
+material = SubResource( 32 )
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -32.0
+margin_top = -12.0
+margin_right = 32.0
+margin_bottom = 52.0
+rect_pivot_offset = Vector2( 32, 32 )
+texture = SubResource( 30 )
+expand = true
+
+[node name="ToolButton" type="ToolButton" parent="ColorPicker/SelectColor"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Brightness" type="TextureRect" parent="ColorPicker"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -90.0
+margin_top = 83.0
+margin_right = 101.0
+margin_bottom = 113.0
+texture = SubResource( 60 )
+expand = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="ColorPicker"]
+anims/Init = SubResource( 33 )
+anims/RESET = SubResource( 34 )
+
+[connection signal="gui_input" from="ColorPicker" to="ColorPicker" method="_on_ColorPicker_gui_input"]
+[connection signal="visibility_changed" from="ColorPicker" to="ColorPicker" method="_on_ColorPicker_visibility_changed"]
+[connection signal="pressed" from="ColorPicker/SelectColor/ToolButton" to="DrawPanel" method="set_line_color"]
+[connection signal="gui_input" from="ColorPicker/Brightness" to="ColorPicker" method="_on_Brightness_gui_input"]
