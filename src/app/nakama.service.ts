@@ -2288,7 +2288,10 @@ export class NakamaService {
           if (this.socket_reactive['group_detail']) return;
           this.modalCtrl.create({
             component: GroupDetailPage,
-            componentProps: { info: this.groups[_is_official][_target][v.content['group_id']] },
+            componentProps: {
+              info: this.groups[_is_official][_target][v.content['group_id']],
+              server: this.servers[_is_official][_target].info,
+            },
           }).then(v => v.present());
         });
         this.noti.PushLocal({

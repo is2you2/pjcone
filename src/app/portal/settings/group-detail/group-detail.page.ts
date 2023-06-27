@@ -45,6 +45,7 @@ export class GroupDetailPage implements OnInit {
   async ngOnInit() {
     this.nakama.removeBanner();
     this.info = this.navParams.get('info');
+    console.log('이거나 보자: ', this.info);
     this.info_orig = JSON.parse(JSON.stringify(this.navParams.get('info')));
     this.nakama.socket_reactive['group_detail'] = this;
     this.QRCodeSRC = this.global.readasQRCodeFromId({
@@ -52,6 +53,7 @@ export class GroupDetailPage implements OnInit {
       name: this.info.name,
       type: 'group',
     });
+    if (!this.info.server) this.info.server = this.navParams.get('server');
     this.isOfficial = this.info.server['isOfficial'];
     this.target = this.info.server['target'];
     this.has_admin = this.statusBar.groupServer[this.isOfficial][this.target] == 'online';
