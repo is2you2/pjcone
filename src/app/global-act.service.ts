@@ -31,7 +31,10 @@ export interface FileInfo {
   content_related_creator?: ContentCreatorInfo[];
   /** 콘텐츠를 업로드한 사람, 또는 제작자 */
   content_creator?: ContentCreatorInfo[];
-  result?: string;
+  /** 파일 분할 크기 */
+  partsize?: number;
+  path?: string;
+  base64?: string;
   thumbnail?: any;
 }
 
@@ -117,14 +120,20 @@ export class GlobalActService {
    * @param keys 고도엔진 iframe.window에 작성될 값들
    * @returns iframe 개체 돌려주기
    */
-  CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys): Promise<any> {
+  CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys, waiting_key: string = ''): Promise<any> {
     return new Promise((done: any) => {
       let refresh_it_loading = () => {
-        if (window['godot'] == 'godot')
+        try {
+          if (window['godot'] != 'godot')
+            throw 'No godot';
+          if (waiting_key && !this.godot_window[waiting_key])
+            throw 'No act ready';
           done();
-        else setTimeout(() => {
-          refresh_it_loading();
-        }, 1000);
+        } catch (e) {
+          setTimeout(() => {
+            refresh_it_loading();
+          }, 1000);
+        }
       }
       if (this.last_frame_name == _frame_name && this.godot.isConnected) {
         done();
@@ -176,7 +185,7 @@ export class GlobalActService {
               URL.revokeObjectURL(ObjectURL);
               p.remove();
             }, e => {
-              console.error('텍스트 열람 불가: ', e);
+              console.log('텍스트 열람 불가: ', e);
               msg_content['text'] = [this.lang.text['ChatRoom']['downloaded']];
               URL.revokeObjectURL(ObjectURL);
               p.remove();
@@ -185,7 +194,6 @@ export class GlobalActService {
         });
         break;
       default:
-        console.error('예상하지 못한 카테고리-viewer분류: ', msg_content);
         URL.revokeObjectURL(ObjectURL);
         break;
     }

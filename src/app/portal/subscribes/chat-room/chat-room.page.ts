@@ -169,7 +169,7 @@ export class ChatRoomPage implements OnInit {
           user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
           display_name: this.nakama.users.self['display_name'],
         }];
-        this.userInput.file.result = 'data:image/jpeg;base64,' + v;
+        this.userInput.file.base64 = 'data:image/jpeg;base64,' + v;
       });
     }
   },
@@ -216,7 +216,7 @@ export class ChatRoomPage implements OnInit {
                 user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
                 display_name: this.nakama.users.self['display_name'],
               }];
-              this.userInput.file.result = await this.global.GetBase64ThroughFileReader(blob);
+              this.userInput.file.base64 = await this.global.GetBase64ThroughFileReader(blob);
             } catch (e) {
               console.log('파일 불러오기에 실패함: ', e);
             }
@@ -250,7 +250,7 @@ export class ChatRoomPage implements OnInit {
               user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
               display_name: this.nakama.users.self['display_name'],
             }];
-            this.userInput.file.result = v.data['img'];
+            this.userInput.file.base64 = v.data['img'];
             this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
             v.data['loadingCtrl'].dismiss();
           }
@@ -273,17 +273,17 @@ export class ChatRoomPage implements OnInit {
       setTimeout(() => {
         clearInterval(updater);
       }, 1500);
-      this.userInput.file['result'] = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
+      this.userInput.file['base64'] = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
       this.userInput.file['thumbnail'] = undefined;
       if (this.userInput.file['size'] < SIZE_LIMIT) // 크기가 작으면 썸네일 생성
         switch (this.userInput.file['typeheader']) {
           case 'image': // 이미지인 경우 사용자에게 보여주기
-            this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(this.userInput.file['result']);
+            this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(this.userInput.file['base64']);
             break;
           case 'text':
             new p5((p: p5) => {
               p.setup = () => {
-                p.loadStrings(this.userInput.file['result'], v => {
+                p.loadStrings(this.userInput.file['base64'], v => {
                   this.userInput.file['thumbnail'] = v;
                   p.remove();
                 }, e => {
@@ -588,10 +588,10 @@ export class ChatRoomPage implements OnInit {
       this.userInput.text = '';
       return;
     }
-    let result = {};
+    let result: FileInfo = {};
     result['msg'] = this.last_text || this.userInput.text;
     this.last_text = '';
-    let upload: string[] = [];
+    let upload: any[] = [];
     if (this.userInput.file) { // 파일 첨부시
       result['filename'] = this.userInput.file.filename;
       result['filesize'] = this.userInput.file.size;
@@ -600,15 +600,7 @@ export class ChatRoomPage implements OnInit {
       result['msg'] = result['msg'];
       result['content_creator'] = this.userInput.file.content_creator;
       result['content_related_creator'] = this.userInput.file.content_related_creator;
-      let seek = 0;
-      const RESULT_LIMIT = this.userInput.file.result.length;
-      while (seek < RESULT_LIMIT) {
-        let next = seek + SIZE_LIMIT;
-        if (next > RESULT_LIMIT)
-          next = RESULT_LIMIT;
-        upload.push(this.userInput.file.result.substring(seek, next));
-        seek = next;
-      }
+      upload = this.userInput.file.base64.match(/(.{1,220000})/g);
       result['partsize'] = upload.length;
     }
     result['local_comp'] = Math.random();
@@ -620,7 +612,7 @@ export class ChatRoomPage implements OnInit {
         /** 업로드가 진행중인 메시지 개체 */
         if (upload.length) { // 첨부 파일이 포함된 경우
           // 로컬에 파일을 저장
-          this.indexed.saveFileToUserPath(this.userInput.file.result, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.file_ext}`, () => {
+          this.indexed.saveFileToUserPath(this.userInput.file.base64, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.file_ext}`, () => {
             this.auto_open_thumbnail({
               content: result,
               message_id: v.message_id,
@@ -652,16 +644,7 @@ export class ChatRoomPage implements OnInit {
           if (this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnProgress']) {
             this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, msg.content['type'], async blob => {
               let base64 = await this.global.GetBase64ThroughFileReader(blob);
-              let upload: string[] = [];
-              let seek = 0;
-              const RESULT_LIMIT = base64.length;
-              while (seek < RESULT_LIMIT) {
-                let next = seek + SIZE_LIMIT;
-                if (next > RESULT_LIMIT)
-                  next = RESULT_LIMIT;
-                upload.push(base64.substring(seek, next));
-                seek = next;
-              }
+              let upload = base64.match(/(.{1,220000})/g);
               this.nakama.WriteStorage_From_channel(msg, upload, this.isOfficial, this.target, this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['progress'][0]);
               delete this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnProgress'];
             });
@@ -836,7 +819,7 @@ export class ChatRoomPage implements OnInit {
                       display_name: this.nakama.users.self['display_name'],
                     }];
                   }
-                  this.userInput.file.result = v.data['img'];
+                  this.userInput.file.base64 = v.data['img'];
                   this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
                   v.data['loadingCtrl'].dismiss();
                 }

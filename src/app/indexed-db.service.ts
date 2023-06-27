@@ -137,7 +137,7 @@ export class IndexedDBService {
   }
 
   /** 파일이 있는지 검토 */
-  checkIfFileExist(path: string, _CallBack = (_b: boolean) => { console.log('checkIfFileExist act null') }) {
+  checkIfFileExist(path: string, _CallBack = (_b: boolean) => { console.log('checkIfFileExist act null') }): Promise<boolean> {
     if (!this.db) {
       console.log('retry checkIfFileExist..');
       setTimeout(() => {
@@ -145,14 +145,18 @@ export class IndexedDBService {
       }, 1000);
       return;
     }
-    let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').count(`/userfs/${path}`);
-    data.onsuccess = (ev) => {
-      let cursor = ev.target['result'];
-      _CallBack(cursor);
-    }
-    data.onerror = (e) => {
-      console.error('IndexedDB CheckIfFileExist failed: ', e);
-    }
+    return new Promise((done, error) => {
+      let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').count(`/userfs/${path}`);
+      data.onsuccess = (ev) => {
+        let cursor = ev.target['result'];
+        _CallBack(cursor);
+        done(cursor);
+      }
+      data.onerror = (e) => {
+        console.error('IndexedDB CheckIfFileExist failed: ', e);
+        error(e);
+      }
+    });
   }
 
   /** 모든 파일 리스트로부터 대상 폴더와 겹치는 파일 리스트 추출하기 */
@@ -249,9 +253,10 @@ export class IndexedDBService {
           _CallBack(blob);
           done(blob);
         } catch (e) {
-          this.p5toast.show({
-            text: `${this.lang.text['IndexedDB']['FailedToOpenFile']}: ${e}`,
-          });
+          // this.p5toast.show({
+          //   text: `${this.lang.text['IndexedDB']['FailedToOpenFile']}: ${e}`,
+          // });
+          console.error('loadFileFailed: ', e)
           error(e);
         }
       }

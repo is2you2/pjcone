@@ -255,7 +255,7 @@ export class EnginepptPage implements OnInit {
     let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
     const PACK_SIZE = 220000;
     let size = Math.ceil(base64.length / PACK_SIZE);
-    this.SelectedFile = base64.match(/(.{1,220000})/g)
+    this.SelectedFile = base64.match(/(.{1,220000})/g);
     this.toolServer.send_to('engineppt', JSON.stringify({
       'act': 'init',
       'size': size,

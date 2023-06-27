@@ -203,7 +203,11 @@ export class AddTodoMenuPage implements OnInit {
     // 첨부 이미지가 있음
     if (this.userInput.attach.length)
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
-        let blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
+        let blob: Blob;
+        if (this.userInput.remote)
+          blob = await this.nakama.sync_load_file(this.userInput.attach[i],
+            this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
+        else blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
         let url = URL.createObjectURL(blob);
         this.global.modulate_thumbnail(this.userInput.attach[i], url);
         this.userInput.attach[i]['exist'] = true;
@@ -407,12 +411,12 @@ export class AddTodoMenuPage implements OnInit {
     }).then(async v => {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
-      let base64 = 'data:image/jpeg;base64,' + v;
       let this_file: FileInfo = {};
       let time = new Date();
-      this_file.filename = `Camera_${time.toLocaleString().replace(/:/g, '_')}.jpeg`;
+      this_file.filename = `Camera_${time.toLocaleString().replace(/[:|.|\/]/g, '_')}.jpeg`;
       this_file.file_ext = 'jpeg';
-      this_file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(base64);
+      this_file.base64 = 'data:image/jpeg;base64,' + v;
+      this_file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(this_file.base64);
       this_file.type = 'image/jpeg';
       this_file.typeheader = 'image';
       this_file.content_related_creator = [{
@@ -423,10 +427,10 @@ export class AddTodoMenuPage implements OnInit {
         // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
         display_name: this.nakama.users.self['display_name'],
       }];
-      this_file['img'] = base64;
+      this_file['img'] = this_file.base64;
       this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
       this_file['viewer'] = 'image';
-      await this.indexed.saveFileToUserPath(base64, this_file['path']);
+      await this.indexed.saveFileToUserPath(this_file.base64, this_file['path']);
       loading.dismiss();
       this.userInput.attach.push(this_file);
     });
@@ -471,7 +475,7 @@ export class AddTodoMenuPage implements OnInit {
     if (!ev.target.files.length) return;
     let saving_file = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     saving_file.present();
-    let this_file = {};
+    let this_file: FileInfo = {};
     this_file['filename'] = ev.target.files[0]['name'];
     this_file['file_ext'] = ev.target.files[0]['name'].substring(ev.target.files[0]['name'].lastIndexOf('.') + 1);
     this_file['filesize'] = ev.target.files[0]['size'];
@@ -479,10 +483,10 @@ export class AddTodoMenuPage implements OnInit {
     this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
     this.global.set_viewer_category(this_file);
     this.userInput.attach.push(this_file);
-    let modulate_base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
+    this_file.base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
     if (this_file['viewer'] == 'image')
-      this_file['img'] = this.sanitizer.bypassSecurityTrustUrl(modulate_base64);
-    this.indexed.saveFileToUserPath(modulate_base64, this_file['path'], (_) => {
+      this_file['img'] = this.sanitizer.bypassSecurityTrustUrl(this_file.base64);
+    this.indexed.saveFileToUserPath(this_file.base64, this_file['path'], (_) => {
       saving_file.dismiss();
     });
   }
@@ -703,6 +707,20 @@ export class AddTodoMenuPage implements OnInit {
   async doneTodo() {
     this.isButtonClicked = true;
     this.userInput.done = true;
+    if (!this.global.godot_window['add_todo'])
+      await this.global.CreateGodotIFrame('godot-todo', {
+        local_url: 'assets/data/godot/todo.pck',
+        title: 'Todo',
+        add_todo_menu: (_data: string) => {
+          this.modalCtrl.create({
+            component: AddTodoMenuPage,
+            componentProps: {
+              godot: this.global.godot_window,
+              data: _data,
+            },
+          }).then(v => v.present());
+        }
+      }, 'add_todo');
     this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
     if (this.userInput.remote) {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
@@ -761,9 +779,9 @@ export class AddTodoMenuPage implements OnInit {
     if (!this.userInput.id || !this.isModify) { // 할 일 구분자 생성 (내 기록은 날짜시간, 서버는 서버-시간 (isOfficial/target/DateTime),
       //그룹채널 기록은 채널-메시지: isOfficial/target/channel_id/msg_id)
       if (!this.userInput.remote) // local
-        this.userInput.id = new Date(this.userInput.create_at).toISOString().replace(/[:|.]/g, '_');
+        this.userInput.id = new Date(this.userInput.create_at).toISOString().replace(/[:|.|\/]/g, '_');
       else if (!this.userInput.remote.channel_id) // server
-        this.userInput.id = `${this.userInput.remote.isOfficial}_${this.userInput.remote.target}_${new Date(this.userInput.create_at).toISOString().replace(/[:|.]/g, '_')}`;
+        this.userInput.id = `${this.userInput.remote.isOfficial}_${this.userInput.remote.target}_${new Date(this.userInput.create_at).toISOString().replace(/[:|.|\/]/g, '_')}`;
       else {// group
         this.userInput.id = `${this.userInput.remote.isOfficial}_${this.userInput.remote.target}_${this.userInput.remote.channel_id}_${this.userInput.remote.message_id}`;
       }
@@ -815,16 +833,15 @@ export class AddTodoMenuPage implements OnInit {
       let header_image: string; // 대표 이미지로 선정된 경로 (base64)
       // 모든 파일을 새로 등록/재등록
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
-        let modulate_base64: string;
         // 이미 존재하는 파일로 알려졌다면 저장 시도하지 않도록 구성, 또는 썸네일 재구성
         if (!this.userInput.attach[i]['exist'] || (!header_image && this.userInput.attach[i]['viewer'] == 'image')) {
           let blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
-          modulate_base64 = await this.global.GetBase64ThroughFileReader(blob);
+          this.userInput.attach[i].base64 = await this.global.GetBase64ThroughFileReader(blob);
           this.userInput.attach[i]['path'] = `todo/${this.userInput.id}/${this.userInput.attach[i]['filename']}`;
-          await this.indexed.saveFileToUserPath(modulate_base64, this.userInput.attach[i]['path']);
+          await this.indexed.saveFileToUserPath(this.userInput.attach[i].base64, this.userInput.attach[i]['path']);
         } else delete this.userInput.attach[i]['exist'];
         if (!header_image && this.userInput.attach[i]['viewer'] == 'image')
-          header_image = modulate_base64;
+          header_image = this.userInput.attach[i].base64;
       }
       if (header_image) // 대표 이미지가 있다면
         await new Promise((done: any) => {
@@ -867,7 +884,7 @@ export class AddTodoMenuPage implements OnInit {
             },
           }).then(v => v.present());
         }
-      });
+      }, 'add_todo');
       loading.dismiss();
     } else if (!has_attach) { // 첨부된게 전혀 없다면 모든 이미지 삭제
       if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
@@ -913,25 +930,47 @@ export class AddTodoMenuPage implements OnInit {
           collection: 'group_todo',
           key: this.userInput.id,
           permission_read: 2,
-          permission_write: 2,
+          permission_write: 1,
           value: this.userInput,
         };
       } else {
         request = {
           collection: 'server_todo',
           key: this.userInput.id,
-          permission_read: 1,
+          permission_read: 2,
           permission_write: 1,
           value: this.userInput,
         };
       }
       try {
+        this.userInput.attach.forEach(file => delete file.base64);
         await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
           this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]).then(async v => {
             await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
               .socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
                 encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
           });
+        if (has_attach && attach_changed)
+          if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
+            for (let i = 0, j = received_json.attach.length; i < j; i++) {
+              for (let k = 0, l = this.userInput.attach.length; k < l; k++) {
+                if (this.userInput.attach[k]['path'] == received_json.attach[i]['path']) {
+                  received_json.attach[i]['exist'] = true;
+                  received_json.attach[i]['index'] = k;
+                  break;
+                }
+              } // 수정 전에 있던 이미지가 유지되는 경우 삭제하지 않음, 그 외 삭제
+              if (!received_json.attach[i]['exist'] ||
+                (received_json.attach[i]['exist'] && !this.userInput.attach[received_json.attach[i]['index']]))
+                await this.nakama.sync_remove_file(received_json.attach[i]['path'],
+                  this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
+            }
+          }
+        for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
+          await this.nakama.sync_save_file(this.userInput.attach[i],
+            this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
+          delete this.userInput.attach[i].base64;
+        }
         loading.dismiss();
       } catch (e) {
         console.error('해야할 일이 서버에 전송되지 않음: ', e);
@@ -978,6 +1017,8 @@ export class AddTodoMenuPage implements OnInit {
    */
   async deleteFromStorage(isDelete = true) {
     this.isButtonClicked = true;
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    loading.present();
     if (this.userInput.remote) {
       let request = {};
       if (this.userInput.remote.channel_id) {
@@ -994,18 +1035,22 @@ export class AddTodoMenuPage implements OnInit {
       try {
         if (!this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target])
           throw 'Server deleted.';
-        await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.deleteStorageObjects(
-          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, {
+        let isOfficial = this.userInput.remote.isOfficial;
+        let target = this.userInput.remote.target;
+        await this.nakama.servers[isOfficial][target].client.deleteStorageObjects(
+          this.nakama.servers[isOfficial][target].session, {
           object_ids: [request],
         });
-        if (isDelete) await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+        for (let i = 0, j = this.userInput.attach.length; i < j; i++)
+          await this.nakama.sync_remove_file(this.userInput.attach[i].path, isOfficial, target, 'todo_attach');
+        if (isDelete) await this.nakama.servers[isOfficial][target]
           .socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
             encodeURIComponent(`delete,${this.userInput.id}`));
       } catch (e) {
         console.error('해야할 일 삭제 요청이 서버에 전송되지 않음: ', e);
       }
     }
-    this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, (v) => {
+    this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, async (v) => {
       v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
       if (this.userInput.noti_id)
         if (isPlatform == 'DesktopPWA') {
@@ -1013,8 +1058,9 @@ export class AddTodoMenuPage implements OnInit {
           delete this.nakama.web_noti_id[this.userInput.noti_id];
         }
       this.noti.ClearNoti(this.userInput.noti_id);
-      this.global.godot_window['remove_todo'](JSON.stringify(this.userInput));
       this.removeTagInfo();
+      loading.dismiss();
+      this.global.godot_window['remove_todo'](JSON.stringify(this.userInput));
       this.modalCtrl.dismiss();
     });
   }
@@ -1024,8 +1070,10 @@ export class AddTodoMenuPage implements OnInit {
       list.forEach(path => this.indexed.removeFileFromUserPath(path));
     });
     this.noti.Current = '';
-    this.p5resize.remove();
-    this.p5timer.remove();
+    if (this.p5resize)
+      this.p5resize.remove();
+    if (this.p5timer)
+      this.p5timer.remove();
     this.global.CreateGodotIFrame('godot-todo', {
       local_url: 'assets/data/godot/todo.pck',
       title: 'Todo',

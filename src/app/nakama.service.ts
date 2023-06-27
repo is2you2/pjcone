@@ -18,7 +18,7 @@ import { ApiReadStorageObjectId } from '@heroiclabs/nakama-js/dist/api.gen';
 import { LanguageSettingService } from './language-setting.service';
 import { AdMob } from '@capacitor-community/admob';
 import { AddTodoMenuPage } from './portal/main/add-todo-menu/add-todo-menu.page';
-import { GlobalActService } from './global-act.service';
+import { FileInfo, GlobalActService } from './global-act.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { WeblinkService } from './weblink.service';
@@ -2489,6 +2489,108 @@ export class NakamaService {
         this.retry_upload_part(msg, info, _is_official, _target, i, _try_left - 1);
       else console.error('파일 다시 받기 실패: ', e, info, i);
     });
+  }
+
+  /** 로컬 파일을 저장하며 원격에 분산하여 올리기 */
+  async sync_save_file(info: FileInfo, _is_official: string, _target: string, _collection: string) {
+    try {
+      let base64 = info.base64 || await this.global.GetBase64ThroughFileReader(await this.indexed.loadBlobFromUserPath(info.path, info.type || ''));
+      delete info.base64;
+      await this.indexed.saveFileToUserPath(base64, info.path);
+      let separate = base64.match(/(.{1,220000})/g);
+      info.partsize = separate.length;
+      await this.servers[_is_official][_target].client.writeStorageObjects(
+        this.servers[_is_official][_target].session, [{
+          collection: _collection,
+          key: info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
+          permission_read: 2,
+          permission_write: 1,
+          value: info,
+        }]);
+      for (let i = separate.length - 1, j = i; i >= 0; i--)
+        await this.servers[_is_official][_target].client.writeStorageObjects(
+          this.servers[_is_official][_target].session, [{
+            collection: _collection,
+            key: info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${j - i}`,
+            permission_read: 2,
+            permission_write: 1,
+            value: { data: separate.shift() },
+          }]);
+    } catch (e) {
+      console.log('SyncSaveFailed: ', e);
+    }
+  }
+
+  /** 로컬에 있는 파일을 불러오기, 로컬에 없다면 원격에서 요청하여 생성 후 불러오기
+   * @returns 파일의 blob
+   */
+  async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid: string = '') {
+    try {
+      return await this.indexed.loadBlobFromUserPath(info.path, info.type || '');
+    } catch (e) {
+      try {
+        let file_info = await this.servers[_is_official][_target].client.readStorageObjects(
+          this.servers[_is_official][_target].session, {
+          object_ids: [{
+            collection: _collection,
+            key: info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
+            user_id: _userid || this.servers[_is_official][_target].session.user_id,
+          }],
+        });
+        let info_json: FileInfo = file_info.objects[0].value;
+        let merged = '';
+        for (let i = 0; i < info_json.partsize; i++) {
+          let part = await this.servers[_is_official][_target].client.readStorageObjects(
+            this.servers[_is_official][_target].session, {
+            object_ids: [{
+              collection: _collection,
+              key: info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`,
+              user_id: _userid || this.servers[_is_official][_target].session.user_id,
+            }],
+          });
+          merged += part.objects[0].value['data'].replace(/"|=|\\/g, '');
+        }
+        await this.indexed.saveFileToUserPath(merged, info.path);
+        return await this.indexed.loadBlobFromUserPath(info.path, info.type || '');
+      } catch (e) {
+        console.log('SyncLoadFailed:', e);
+        return null;
+      }
+    }
+  }
+
+  /** 로컬 파일을 삭제하며 원격 분산파일도 삭제하기 */
+  async sync_remove_file(path: string, _is_official: string, _target: string, _collection: string, _userid: string = '') {
+    try {
+      await this.indexed.removeFileFromUserPath(path);
+      let file_info = await this.servers[_is_official][_target].client.readStorageObjects(
+        this.servers[_is_official][_target].session, {
+        object_ids: [{
+          collection: _collection,
+          key: path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
+          user_id: _userid || this.servers[_is_official][_target].session.user_id,
+        }],
+      });
+      let info_json: FileInfo = file_info.objects[0].value;
+      for (let i = 0; i < info_json.partsize; i++) {
+        await this.servers[_is_official][_target].client.deleteStorageObjects(
+          this.servers[_is_official][_target].session, {
+          object_ids: [{
+            collection: _collection,
+            key: info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`,
+          }],
+        });
+      }
+      await this.servers[_is_official][_target].client.deleteStorageObjects(
+        this.servers[_is_official][_target].session, {
+        object_ids: [{
+          collection: _collection,
+          key: info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
+        }],
+      });
+    } catch (e) {
+      console.log('SyncRemoveFailed: ', e);
+    }
   }
 
   act_from_QRInfo(v: string) {
