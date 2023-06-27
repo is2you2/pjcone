@@ -34,13 +34,13 @@ SPDX-License-Identifier: MIT -->
               <span class="time_form">{{msg['msgTime']}}</span>
             </div>
             <div *ngIf="msg.content['filename']" class="file_message_form" (click)="file_detail(msg)">
-              <div *ngIf="!msg.content['img']" class="file_button">
+              <div *ngIf="!msg.content['thumbnail']" class="file_button">
                 <p class="file_info"> {{msg.content['filename']}} </p>
                 <div *ngIf="msg.content['text']" class="text_seperator"></div>
                 <span *ngFor="let line of msg.content['text']" class="file_text_thumbnail"> {{line}} </span>
               </div>
-              <div *ngIf="msg.content['img']" class="file_name_form">
-                <img class="file_thumbnail" [src]="msg.content['img']" [alt]="msg.content['filename']">
+              <div *ngIf="msg.content['thumbnail']" class="file_name_form">
+                <img class="file_thumbnail" [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
               </div>
               <div
                 *ngIf="nakama.channel_transfer[isOfficial][target] && nakama.channel_transfer[isOfficial][target][msg.channel_id] && nakama.channel_transfer[isOfficial][target][msg.channel_id][msg.message_id]"
@@ -63,13 +63,13 @@ SPDX-License-Identifier: MIT -->
           </div>
           <div *ngFor="let msg of sending_msg" (click)="message_detail(msg)">
             <div *ngIf="msg.content['filename']" class="file_message_form" (click)="file_detail(msg)">
-              <div *ngIf="!msg.content['img']" class="file_button">
+              <div *ngIf="!msg.content['thumbnail']" class="file_button">
                 <p class="file_info"> {{msg.content['filename']}} </p>
                 <div *ngIf="msg.content['text']" class="text_seperator"></div>
                 <span *ngFor="let line of msg.content['text']" class="file_text_thumbnail"> {{line}} </span>
               </div>
-              <div *ngIf="msg.content['img']" class="file_name_form">
-                <img class="file_thumbnail" [src]="msg.content['img']" [alt]="msg.content['filename']">
+              <div *ngIf="msg.content['thumbnail']" class="file_name_form">
+                <img class="file_thumbnail" [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
               </div>
             </div>
             <div *ngIf="msg.content['msg']" class="message_content_form">

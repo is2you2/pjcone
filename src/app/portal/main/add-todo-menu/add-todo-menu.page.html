@@ -121,7 +121,7 @@ SPDX-License-Identifier: MIT -->
               </ion-button>
             </ion-item>
             <div *ngIf="attach['viewer']">
-              <img *ngIf="attach['viewer'] == 'image' && attach['img']" class="image_thumbnail" [src]="attach['img']"
+              <img *ngIf="attach['viewer'] == 'image' && attach['thumbnail']" class="image_thumbnail" [src]="attach['thumbnail']"
                 [alt]="attach['filename']" (click)="open_ionic_viewer(i)">
               <div *ngIf="attach['viewer'] != 'disabled'">
                 <ion-item button *ngIf="attach['viewer'] == 'godot'" (click)="open_godot_viewer(i)">

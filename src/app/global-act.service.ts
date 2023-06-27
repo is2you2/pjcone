@@ -35,6 +35,7 @@ export interface FileInfo {
   partsize?: number;
   path?: string;
   base64?: string;
+  /** 간소화 썸네일 (ObjectURL) */
   thumbnail?: any;
 }
 
@@ -171,8 +172,8 @@ export class GlobalActService {
   modulate_thumbnail(msg_content: any, ObjectURL: string) {
     switch (msg_content['viewer']) {
       case 'image':
-        if (msg_content['img']) return; // 이미 썸네일이 있다면 제외
-        msg_content['img'] = this.sanitizer.bypassSecurityTrustUrl(ObjectURL);
+        if (msg_content['thumbnail']) return; // 이미 썸네일이 있다면 제외
+        msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(ObjectURL);
         setTimeout(() => {
           URL.revokeObjectURL(ObjectURL);
         }, 0);

@@ -203,16 +203,20 @@ export class AddTodoMenuPage implements OnInit {
     // 첨부 이미지가 있음
     if (this.userInput.attach.length)
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
-        let blob: Blob;
-        if (this.userInput.remote) {
-          let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-          loading.present();
-          blob = await this.nakama.sync_load_file(this.userInput.attach[i],
-            this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
-          loading.dismiss();
-        } else blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
-        let url = URL.createObjectURL(blob);
-        this.global.modulate_thumbnail(this.userInput.attach[i], url);
+        try {
+          let blob: Blob;
+          if (this.userInput.remote) {
+            let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+            loading.present();
+            blob = await this.nakama.sync_load_file(this.userInput.attach[i],
+              this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
+            loading.dismiss();
+          } else blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
+          let url = URL.createObjectURL(blob);
+          this.global.modulate_thumbnail(this.userInput.attach[i], url);
+        } catch (e) {
+          console.log('첨부파일 불러오기 실패: ', e);
+        }
         this.userInput.attach[i]['exist'] = true;
       }
     // 저장소 표기 적용
@@ -430,7 +434,7 @@ export class AddTodoMenuPage implements OnInit {
         // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
         display_name: this.nakama.users.self['display_name'],
       }];
-      this_file['img'] = this_file.base64;
+      this_file['thumbnail'] = this_file.base64;
       this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
       this_file['viewer'] = 'image';
       await this.indexed.saveFileToUserPath(this_file.base64, this_file['path']);
@@ -459,7 +463,7 @@ export class AddTodoMenuPage implements OnInit {
             display_name: this.nakama.users.self['display_name'],
           }];
           this_file['viewer'] = 'image';
-          this_file['img'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
+          this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
           this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
           await this.indexed.saveFileToUserPath(v.data['img'], this_file['path']);
           v.data['loadingCtrl'].dismiss();
@@ -488,7 +492,7 @@ export class AddTodoMenuPage implements OnInit {
     this.userInput.attach.push(this_file);
     this_file.base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
     if (this_file['viewer'] == 'image')
-      this_file['img'] = this.sanitizer.bypassSecurityTrustUrl(this_file.base64);
+      this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(this_file.base64);
     this.indexed.saveFileToUserPath(this_file.base64, this_file['path'], (_) => {
       saving_file.dismiss();
     });
@@ -676,7 +680,7 @@ export class AddTodoMenuPage implements OnInit {
                     display_name: this.nakama.users.self['display_name'],
                   }];
                 }
-                this_file['img'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
+                this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
                 this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
                 this.indexed.saveFileToUserPath(v.data['img'], this_file['path'], (_) => {
                   v.data['loadingCtrl'].dismiss();
@@ -807,7 +811,7 @@ export class AddTodoMenuPage implements OnInit {
         let current = JSON.parse(JSON.stringify(this.userInput.attach));
         current.forEach((attach: any) => {
           delete attach['exist'];
-          delete attach['img'];
+          delete attach['thumbnail'];
         });
         current = JSON.stringify(current);
         attach_changed = received != current;
@@ -897,8 +901,8 @@ export class AddTodoMenuPage implements OnInit {
       }
     }
     this.userInput.attach.forEach(attach => {
-      URL.revokeObjectURL(attach['img']);
-      delete attach['img'];
+      URL.revokeObjectURL(attach['thumbnail']);
+      delete attach['thumbnail'];
       delete attach['exist'];
     });
     this.userInput.written = new Date().getTime();
