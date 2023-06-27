@@ -204,10 +204,13 @@ export class AddTodoMenuPage implements OnInit {
     if (this.userInput.attach.length)
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
         let blob: Blob;
-        if (this.userInput.remote)
+        if (this.userInput.remote) {
+          let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+          loading.present();
           blob = await this.nakama.sync_load_file(this.userInput.attach[i],
             this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
-        else blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
+          loading.dismiss();
+        } else blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
         let url = URL.createObjectURL(blob);
         this.global.modulate_thumbnail(this.userInput.attach[i], url);
         this.userInput.attach[i]['exist'] = true;
