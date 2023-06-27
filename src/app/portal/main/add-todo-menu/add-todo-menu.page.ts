@@ -707,9 +707,10 @@ export class AddTodoMenuPage implements OnInit {
     if (this.userInput.remote) {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
-      await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-        .socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
-          encodeURIComponent(`done,${this.userInput.id}`));
+      if (this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target])
+        await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+          .socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
+            encodeURIComponent(`done,${this.userInput.id}`));
       loading.dismiss();
     }
     this.deleteFromStorage(false);
@@ -991,6 +992,8 @@ export class AddTodoMenuPage implements OnInit {
         };
       }
       try {
+        if (!this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target])
+          throw 'Server deleted.';
         await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.deleteStorageObjects(
           this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, {
           object_ids: [request],
