@@ -69,7 +69,7 @@ export class QrSharePage implements OnInit {
         Target.forEach(_target => {
           let GroupIds = Object.keys(this.nakama.groups[_is_official][_target]);
           GroupIds.forEach(_gid => {
-            if (this.nakama.groups[_is_official][_target][_gid]['online'] != 'missing') {
+            if (this.nakama.groups[_is_official][_target][_gid]['status'] == 'online' || this.nakama.groups[_is_official][_target][_gid]['status'] == 'pending') {
               this.group_list.push({
                 id: _gid,
                 name: this.nakama.groups[_is_official][_target][_gid]['name'],
