@@ -648,6 +648,7 @@ export class AddTodoMenuPage implements OnInit {
               }
             if (!is_already_exist) related_creators.push(...this.userInput.attach[i]['content_creator']);
           }
+          delete this.userInput.attach[i]['exist'];
           this.modalCtrl.create({
             component: VoidDrawPage,
             componentProps: {
