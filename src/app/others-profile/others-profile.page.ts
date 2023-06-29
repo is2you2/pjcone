@@ -106,11 +106,9 @@ export class OthersProfilePage implements OnInit {
     }, 1500);
     new p5((p: p5) => {
       let profile_tmp_img = document.getElementById('profile_tmp_img');
-      let file_sel = document.getElementById('file_sel');
       const LERP_SIZE = .035;
       let lerpVal = 0;
       p.setup = () => {
-        file_sel['value'] = '';
         profile_tmp_img.setAttribute('style', `filter: grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)}) opacity(${lerpVal})`);
         this.tmp_img = _url;
       }

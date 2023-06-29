@@ -45,7 +45,10 @@ export class EnginepptPage implements OnInit {
   /** PWA: 컨트롤러로 연결할 주소 */
   LinkedAddress = '';
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.engine_ppt_file_sel = `engine_ppt_file_sel_${new Date().getTime()}`;
+    this.engine_ppt_mobile_sel = `engine_ppt_mobile_sel_${new Date().getTime()}`;
+  }
 
   ionViewWillEnter() {
     this.prerequisite_check();
@@ -105,8 +108,9 @@ export class EnginepptPage implements OnInit {
     });
   }
 
+  engine_ppt_file_sel = '';
   buttonClickLinkInputFile() {
-    document.getElementById('file_sel').click();
+    document.getElementById(this.engine_ppt_file_sel).click();
   }
   async inputpckselected(ev: any) {
     let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
@@ -234,8 +238,9 @@ export class EnginepptPage implements OnInit {
     this.ConnectButtonDisabled = false;
   }
 
+  engine_ppt_mobile_sel = '';
   buttonClickSelectPckFromMobile() {
-    document.getElementById('mobile_sel').click();
+    document.getElementById(this.engine_ppt_mobile_sel).click();
   }
   async mobilepckselected(ev: any) {
     if (!this.toolServer.list['engineppt']['users']) {

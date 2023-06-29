@@ -36,6 +36,7 @@ export class AddGroupPage implements OnInit {
     this.servers = this.nakama.get_all_server_info(true, true);
     this.userInput.server = this.servers[this.index];
     this.cant_use_clipboard = isPlatform != 'DesktopPWA';
+    this.file_sel_id = `add_group_${new Date().getTime()}`;
   }
 
   /** 사용자가 작성한 그룹 정보 */
@@ -173,9 +174,10 @@ export class AddGroupPage implements OnInit {
     }
   }
 
+  file_sel_id = '';
   /** ionic 버튼을 눌러 input-file 동작 */
   buttonClickLinkInputFile() {
-    document.getElementById('file_sel').click();
+    document.getElementById(this.file_sel_id).click();
   }
 
   /** 파일 선택시 로컬에서 반영 */

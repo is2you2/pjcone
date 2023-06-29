@@ -45,7 +45,7 @@ export class GroupDetailPage implements OnInit {
   async ngOnInit() {
     this.nakama.removeBanner();
     this.info = this.navParams.get('info');
-    console.log('이거나 보자: ', this.info);
+    this.file_sel_id = `group_detail_${this.info.id}_${new Date().getTime()}}`;
     this.info_orig = JSON.parse(JSON.stringify(this.navParams.get('info')));
     this.nakama.socket_reactive['group_detail'] = this;
     this.QRCodeSRC = this.global.readasQRCodeFromId({
@@ -145,10 +145,11 @@ export class GroupDetailPage implements OnInit {
     });
   }
 
+  file_sel_id = '';
   /** ionic 버튼을 눌러 input-file 동작 */
   buttonClickInputFile() {
     if (this.has_admin)
-      document.getElementById('file_sel').click();
+      document.getElementById(this.file_sel_id).click();
   }
   async inputImageSelected(ev: any) {
     let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);

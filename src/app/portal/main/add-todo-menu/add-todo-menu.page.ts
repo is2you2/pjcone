@@ -200,6 +200,7 @@ export class AddTodoMenuPage implements OnInit {
       }
       this.userInput = { ...this.userInput, ...received_json };
     }
+    this.file_sel_id = `todo_${this.userInput.id || 'new_todo_id'}_${new Date().getTime()}`;
     // 첨부 이미지가 있음
     if (this.userInput.attach.length)
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
@@ -473,9 +474,10 @@ export class AddTodoMenuPage implements OnInit {
       v.present();
     });
   }
+  file_sel_id = '';
   /** 파일 첨부 */
   select_attach() {
-    document.getElementById('file_sel').click();
+    document.getElementById(this.file_sel_id).click();
   }
   /** 파일 선택시 로컬에서 반영 */
   async inputImageSelected(ev: any) {

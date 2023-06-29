@@ -178,7 +178,7 @@ export class ChatRoomPage implements OnInit {
     title: this.lang.text['ChatRoom']['attach_file'],
     icon: 'attach',
     act: () => {
-      document.getElementById('file_sel').click();
+      document.getElementById(this.file_sel_id).click();
     }
   },
   {
@@ -308,10 +308,12 @@ export class ChatRoomPage implements OnInit {
   prev_cursor = '';
   content_panel: HTMLElement;
   send_thumbnail: HTMLElement;
+  file_sel_id = '';
 
   ngOnInit() {
     this.nakama.removeBanner();
     this.info = this.navParams.get('info');
+    this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
     this.noti.Current = this.info['cnoti_id'];
     if (this.info['cnoti_id'])
       this.noti.ClearNoti(this.info['cnoti_id']);

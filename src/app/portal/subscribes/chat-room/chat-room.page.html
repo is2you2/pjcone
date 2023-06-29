@@ -132,7 +132,7 @@ SPDX-License-Identifier: MIT -->
     <tr id="ext_menu" [hidden]="isHidden">
       <td>
         <div class="expanded">
-          <input hidden type="file" id="file_sel" accept="*" (change)="inputFileSelected($event)">
+          <input hidden type="file" [id]="file_sel_id" accept="*" (change)="inputFileSelected($event)">
           <div *ngFor="let button of extended_buttons" class="ext_button" [hidden]="button.isHide"
             [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'" (click)="button['act']()">
             <div>

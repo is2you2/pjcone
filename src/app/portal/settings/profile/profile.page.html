@@ -17,7 +17,7 @@ SPDX-License-Identifier: MIT -->
     <img [hidden]="!tmp_img" id="profile_tmp_img" class="profile_img" [src]="tmp_img"
       [alt]="lang.text['Profile']['img_alt']">
     <div class="fore-gradient" (click)="change_img_from_file()"></div>
-    <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
+    <input hidden type="file" [id]="file_sel_id" accept="image/*" (change)="inputImageSelected($event)">
     <div class="username">{{nakama.users.self['display_name'] ?? lang.text['Profile']['noname_user']}}</div>
   </div>
   <ion-item (click)="imageURLPasted()" [hidden]="cant_use_clipboard" [disabled]="imageURL_disabled">

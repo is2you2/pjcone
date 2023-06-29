@@ -44,7 +44,7 @@ SPDX-License-Identifier: MIT -->
   <ion-item (click)="imageURLPasted()" [hidden]="cant_use_clipboard" [disabled]="isSaveClicked || imageURL_disabled">
     <ion-label color="medium">{{imageURL_placeholder}}</ion-label>
   </ion-item>
-  <input hidden type="file" id="file_sel" accept="image/*" (change)="inputImageSelected($event)">
+  <input hidden type="file" [id]="file_sel_id" accept="image/*" (change)="inputImageSelected($event)">
   <ion-item-divider>
     <ion-label>{{lang.text['AddGroup']['JoinThisGroup']}}</ion-label>
   </ion-item-divider>

@@ -38,7 +38,7 @@ SPDX-License-Identifier: MIT -->
     <ion-item button (click)="buttonClickLinkInputFile()">
       <ion-label class="ion-text-center">{{lang.text['EngineWorksPPT']['DropFileHere']}}</ion-label>
     </ion-item>
-    <input hidden type="file" id="file_sel" accept="*" (change)="inputpckselected($event)">
+    <input hidden type="file" [id]="engine_ppt_file_sel" accept="*" (change)="inputpckselected($event)">
   </div>
   <div *ngIf="Status == 'initApp'">
     <ion-item-divider>
@@ -53,7 +53,7 @@ SPDX-License-Identifier: MIT -->
     <ion-item button [disabled]="statusBar.tools['engineppt'] != 'certified'" (click)="buttonClickSelectPckFromMobile()">
       <ion-label>{{lang.text['EngineWorksPPT']['StartFromMobile']}}</ion-label>
     </ion-item>
-    <input hidden type="file" id="mobile_sel" accept="*" (change)="mobilepckselected($event)">
+    <input hidden type="file" [id]="engine_ppt_mobile_sel" accept="*" (change)="mobilepckselected($event)">
     <ion-item button (click)="CreateEngineController()">
       <ion-label class="ion-text-center">{{lang.text['EngineWorksPPT']['StartRemote']}}</ion-label>
     </ion-item>

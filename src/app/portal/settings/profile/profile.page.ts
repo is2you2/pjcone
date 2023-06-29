@@ -39,6 +39,7 @@ export class ProfilePage implements OnInit {
   p5canvas: p5;
   ngOnInit() {
     this.nakama.removeBanner();
+    this.file_sel_id = `self_profile_${new Date().getTime()}`;
     this.original_profile = JSON.parse(JSON.stringify(this.nakama.users.self));
     if (!this.nakama.users.self['img']) {
       this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
@@ -80,7 +81,7 @@ export class ProfilePage implements OnInit {
   change_img_smoothly(_url: string) {
     new p5((p: p5) => {
       let profile_tmp_img = document.getElementById('profile_tmp_img');
-      let file_sel = document.getElementById('file_sel');
+      let file_sel = document.getElementById(this.file_sel_id);
       const LERP_SIZE = .035;
       let lerpVal = 0;
       p.setup = () => {
@@ -134,7 +135,8 @@ export class ProfilePage implements OnInit {
     }
   }
 
-  change_img_from_file() { document.getElementById('file_sel').click(); }
+  file_sel_id = '';
+  change_img_from_file() { document.getElementById(this.file_sel_id).click(); }
   /** 파일 선택시 로컬에서 반영 */
   async inputImageSelected(ev: any) {
     let updater = setInterval(() => { }, 110);
