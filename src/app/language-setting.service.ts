@@ -43,6 +43,7 @@ export class LanguageSettingService {
       CanUseAsAdmin: 'Use admin features',
     },
     QRElse: {},
+    GroupDetail: {},
   };
 
   constructor(
