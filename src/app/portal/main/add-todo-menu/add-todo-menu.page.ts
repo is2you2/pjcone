@@ -494,6 +494,11 @@ export class AddTodoMenuPage implements OnInit {
     this_file['filesize'] = ev.target.files[0]['size'];
     this_file['type'] = ev.target.files[0]['type'];
     this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
+    let has_same_named_file = false;
+    has_same_named_file = await this.indexed.checkIfFileExist(this_file.path)
+    if (this.userInput.id && !has_same_named_file) has_same_named_file = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}/${this_file.filename}`);
+    if (has_same_named_file) // 동명의 파일 등록시 파일 이름 변형
+      this_file.filename = `${this_file.filename.substring(0, this_file.filename.lastIndexOf('.'))}_.${this_file.file_ext}`;
     this.global.set_viewer_category(this_file);
     this.userInput.attach.push(this_file);
     this_file.base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
