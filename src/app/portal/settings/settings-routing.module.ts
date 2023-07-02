@@ -60,6 +60,10 @@ const routes: Routes = [
     path: 'engineppt',
     loadChildren: () => import('./engineppt/engineppt.module').then( m => m.EnginepptPageModule)
   },
+  {
+    path: 'admin-tools',
+    loadChildren: () => import('./admin-tools/admin-tools.module').then( m => m.AdminToolsPageModule)
+  },
 ];
 
 @NgModule({
