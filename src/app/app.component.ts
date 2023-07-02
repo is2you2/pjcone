@@ -49,8 +49,6 @@ export class AppComponent {
       isPlatform = 'iOS';
     noti.initialize();
     this.init_admob();
-    console.warn('관리자 전용 알림: 이 서버의 관리자임을 알려야함');
-    console.warn('서버 전체 알림: 연결된 서버로부터 알림을 받아야 함');
     indexed.initialize(() => {
       nakama.initialize();
     });

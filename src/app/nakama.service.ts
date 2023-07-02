@@ -33,6 +33,8 @@ export interface ServerInfo {
   useSSL?: boolean;
   isOfficial?: string;
   key?: string;
+  /** 이 서버의 관리자 여부 */
+  is_admin?: boolean;
 }
 
 /** 서버마다 구성 */
@@ -559,7 +561,12 @@ export class NakamaService {
     // 그룹 서버 연결 상태 업데이트
     this.set_group_statusBar('online', _is_official, _target);
     // 커뮤니티 서버를 쓰는 관리자모드 검토
-    console.warn('이 사용자가 관리자인지 검토해야함');
+    this.servers[_is_official][_target].client.getAccount(
+      this.servers[_is_official][_target].session).then(v => {
+        let metadata = JSON.parse(v.user.metadata);
+        this.servers[_is_official][_target].info.is_admin = metadata['is_admin'];
+      });
+    console.warn('서버 전체 알림: 연결된 서버로부터 알림을 받아야 함');
     // 개인 정보를 서버에 맞춤
     if (!this.users.self['display_name'])
       this.servers[_is_official][_target].client.getAccount(
