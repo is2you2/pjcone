@@ -2,15 +2,11 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { NavController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { WscService } from 'src/app/wsc.service';
 import clipboard from "clipboardy";
 import * as p5 from "p5";
 import { LanguageSettingService } from 'src/app/language-setting.service';
-
-const HEADER = 'ADMIN_NOTI';
 
 @Component({
   selector: 'app-notification',
@@ -20,9 +16,7 @@ const HEADER = 'ADMIN_NOTI';
 export class NotificationPage implements OnInit {
 
   constructor(
-    private client: WscService,
     private p5toast: P5ToastService,
-    private navCtrl: NavController,
     public lang: LanguageSettingService,
   ) { }
 
@@ -35,16 +29,15 @@ export class NotificationPage implements OnInit {
 
   cant_use_clipboard = false;
   ngOnInit() {
-    this.client.disconnected[HEADER] = () => {
-      this.navCtrl.back();
-    }
+    console.warn('모든 서버와 연결이 끊어졌을 경우 화면 나가기');
     this.cant_use_clipboard = isPlatform != 'DesktopPWA';
-    if (!this.client.is_admin) {
-      this.p5toast.show({
-        text: this.lang.text['Administrator']['OnlyForAdmin'],
-      });
-      this.navCtrl.back();
-    }
+    console.warn('최고 관리자가 아닌 경우 관리 권한 없음 알림, 나가기');
+    // if (!this.client.is_admin) {
+    //   this.p5toast.show({
+    //     text: this.lang.text['Administrator']['OnlyForAdmin'],
+    //   });
+    //   this.navCtrl.back();
+    // }
     new p5((p: p5) => {
       p.setup = () => {
         p.loadStrings(`assets/data/infos/${this.lang.lang}/administrator_notification.txt`, (v: string[]) => {
@@ -82,16 +75,13 @@ export class NotificationPage implements OnInit {
 
   send() {
     if (!this.userInput.text) return;
-    this.client.send(JSON.stringify({
-      act: 'global_noti',
-      img: this.userInput.img_url,
-      text: this.userInput.text,
-    }));
+    console.warn('나카마 서버로 모든 사용자에게 알림 보내기');
+    // this.client.send(JSON.stringify({
+    //   act: 'global_noti',
+    //   img: this.userInput.img_url,
+    //   text: this.userInput.text,
+    // }));
     delete this.userInput.img_url;
     delete this.userInput.text;
-  }
-
-  ionViewWillLeave() {
-    delete this.client.disconnected[HEADER];
   }
 }

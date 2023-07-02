@@ -45,13 +45,6 @@ SPDX-License-Identifier: MIT -->
       [style]="'background-color: ' + statusBar.colors[(statusBar.settings['groupServer']) || 'offline']"></div>
     <ion-label class=" form_margin">{{lang.text['Settings']['groupServer']}}</ion-label>
   </ion-item>
-  <ion-item button (click)="go_to_page('community-server')">
-    <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[(statusBar.settings['communityServer']) || 'offline']"></div>
-    <ion-label class=" form_margin">{{lang.text['Settings']['commServer']}}</ion-label>
-    <ion-label *ngIf="client.address_override" class="ion-text-right" color="medium">{{client.address_override}}
-    </ion-label>
-  </ion-item>
   <ion-item button (click)="go_to_page('dedicated-settings')" *ngIf="!cant_dedicated">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[(statusBar.settings['dedicatedServer']) || 'offline']"></div>
@@ -60,12 +53,13 @@ SPDX-License-Identifier: MIT -->
   <ion-item-divider>
     <ion-label>{{lang.text['Settings']['Community']}}</ion-label>
   </ion-item-divider>
-  <ion-item button [disabled]="statusBar.settings['communityServer'] != 'online' || will_enter"
+  <!-- 미니 랜덤채팅 연결 -->
+  <!-- <ion-item button [disabled]="statusBar.settings['communityServer'] != 'online' || will_enter"
     (click)="start_minimalchat()">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[(statusBar.settings['community_ranchat']) || 'offline']"></div>
     <ion-label class="form_margin">{{lang.text['Settings']['joinRanchat']}}</ion-label>
-  </ion-item>
+  </ion-item> -->
   <ion-item button [disabled]="will_enter">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[(statusBar.settings['dedicated_groupchat']) || 'offline']"></div>
@@ -76,10 +70,11 @@ SPDX-License-Identifier: MIT -->
       {{lang.text['Settings']['joinDedi_button']}}
     </ion-button>
   </ion-item>
-  <ion-item button (click)="go_to_page('qr-share')" [disabled]="statusBar.settings['communityServer'] != 'online'">
+  <!-- 빠른QR공유 페이지 복구 필요 -->
+  <!-- <ion-item button (click)="go_to_page('qr-share')" [disabled]="statusBar.settings['communityServer'] != 'online'">
     <ion-label>{{lang.text['Settings']['quickQRshare']}}</ion-label>
-  </ion-item>
-  <div *ngIf="client.is_admin">
+  </ion-item> -->
+  <!-- <div>
     <ion-item-divider>
       <ion-label>{{lang.text['Settings']['admin_community_menu']}}</ion-label>
     </ion-item-divider>
@@ -89,7 +84,7 @@ SPDX-License-Identifier: MIT -->
     <ion-item button (click)="go_to_page('req-counter')">
       <ion-label>{{lang.text['Settings']['admin_req_counter']}}</ion-label>
     </ion-item>
-  </div>
+  </div> -->
   <ion-item [disabled]="!list_tools.length" button (click)="go_to_tool_list()">
     <ion-label>{{lang.text['Settings']['ToolList']}}</ion-label>
   </ion-item>
@@ -113,7 +108,6 @@ SPDX-License-Identifier: MIT -->
     <ion-label>{{lang.text['Settings']['AppLanguage']}}</ion-label>
     <ion-select #LangSel style="pointer-events: none;" [value]="lang.lang" [placeholder]="lang.lang"
       (ionChange)="LanguageChanged($event)">
-      <ion-select-option *ngIf="client.is_admin" value="#">#</ion-select-option>
       <ion-select-option value="en">English</ion-select-option>
       <ion-select-option value="ko">한국어</ion-select-option>
     </ion-select>

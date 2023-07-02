@@ -3,18 +3,14 @@
 
 import { Component, OnInit } from '@angular/core';
 import { ModalController, NavController } from '@ionic/angular';
-import { isPlatform, SOCKET_SERVER_ADDRESS } from 'src/app/app.component';
+import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { WscService } from 'src/app/wsc.service';
 import * as p5 from "p5";
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { NakamaService } from 'src/app/nakama.service';
-import { WeblinkService } from 'src/app/weblink.service';
 import { QRelsePage } from '../../subscribes/qrelse/qrelse.page';
-
-const HEADER = 'QRShare';
 
 @Component({
   selector: 'app-qr-share',
@@ -24,14 +20,12 @@ const HEADER = 'QRShare';
 export class QrSharePage implements OnInit {
 
   constructor(
-    private wsc: WscService,
     private p5toast: P5ToastService,
     private navCtrl: NavController,
     public lang: LanguageSettingService,
     private global: GlobalActService,
     private codescan: BarcodeScanner,
     private nakama: NakamaService,
-    private weblink: WeblinkService,
     private modalCtrl: ModalController,
   ) { }
 
@@ -80,11 +74,13 @@ export class QrSharePage implements OnInit {
         });
       });
     }
+    console.warn('이 자리에서 매칭 생성하기');
     // 커뮤니티 서버와 연결
-    this.wsc.disconnected[HEADER] = () => {
-      this.navCtrl.back();
-    }
-    this.websocket = new WebSocket(`${this.wsc.socket_header}://${this.wsc.address_override || SOCKET_SERVER_ADDRESS}:12020`);
+    // this.wsc.disconnected[HEADER] = () => {
+    //   this.navCtrl.back();
+    // }
+    // this.websocket = new WebSocket(`${this.wsc.socket_header}://${this.wsc.address_override || SOCKET_SERVER_ADDRESS}:12020`);
+    console.warn('웹 소켓 대신 나카마 서버 매칭을 이용합니다');
     this.websocket.onmessage = (msg: any) => {
       msg.data.text().then(v => {
         try {
@@ -157,10 +153,11 @@ export class QrSharePage implements OnInit {
                   id: this.selected_data['group'][i].id,
                   name: this.selected_data['group'][i].name,
                 });
-            this.weblink.initialize({
-              pid: json['value'],
-              value: JSON.stringify(sendData),
-            });
+            console.warn('이 자리에서 매칭 정보를 공유, 전달하기');
+            // this.weblink.initialize({
+            //   pid: json['value'],
+            //   value: JSON.stringify(sendData),
+            // });
             break;
           default: // 빠른 QR공유용 구성이 아닐 때
             this.modalCtrl.create({
@@ -226,7 +223,6 @@ export class QrSharePage implements OnInit {
   }
 
   ionViewWillLeave() {
-    delete this.wsc.disconnected[HEADER];
     this.websocket.close();
   }
 

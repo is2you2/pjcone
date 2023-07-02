@@ -29,10 +29,6 @@ const routes: Routes = [
     loadChildren: () => import('./group-server/group-server.module').then( m => m.GroupServerPageModule)
   },
   {
-    path: 'community-server',
-    loadChildren: () => import('./community-server/community-server.module').then( m => m.CommunityServerPageModule)
-  },
-  {
     path: 'add-group',
     loadChildren: () => import('./add-group/add-group.module').then( m => m.AddGroupPageModule)
   },
@@ -63,10 +59,6 @@ const routes: Routes = [
   {
     path: 'noti-alert',
     loadChildren: () => import('./noti-alert/noti-alert.module').then( m => m.NotiAlertPageModule)
-  },
-  {
-    path: 'req-counter',
-    loadChildren: () => import('./admin/req-counter/req-counter.module').then( m => m.ReqCounterPageModule)
   },
   {
     path: 'engineppt',

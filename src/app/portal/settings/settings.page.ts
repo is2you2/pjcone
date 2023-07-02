@@ -9,7 +9,6 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
-import { WscService } from 'src/app/wsc.service';
 import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 import { ToolManagementPage } from './tool-management/tool-management.page';
 import { LocalNotiService } from '../../local-noti.service';
@@ -30,7 +29,6 @@ export class SettingsPage implements OnInit {
     public statusBar: StatusManageService,
     public nakama: NakamaService,
     private indexed: IndexedDBService,
-    public client: WscService,
     private bgmode: BackgroundMode,
     public lang: LanguageSettingService,
     public noti: LocalNotiService,

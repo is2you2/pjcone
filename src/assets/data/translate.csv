@@ -95,8 +95,7 @@ AdsContact,광고 문의,Ads Contact
 env_info,사용 환경,Preferences
 myInfo,내 정보,My info
 ManageServer,서버 관리,Manage server
-groupServer,메인 서버,Main server
-commServer,보조 서버,Assistant server
+groupServer,서버 목록,Main server
 useDeviceAsServer,이 기기를 기능 서버로,Use this device as a functional server
 Community,보조 도구,Assistant tools
 joinRanchat,랜덤채팅 참여,Join random chat
@@ -263,11 +262,6 @@ NeedSetDIsplayName,이름을 지정해주세요.,Please specify a display name.
 ## ServerDetail,,
 copy_scan_below,아래를 스캔하여 서버 정보 복제,Duplicate server information by scanning below
 ApplyChangeServerInfo,적용하기,Apply
-## CommunityServer,,
-AboutCommServer,보조 서버에 대해서,About community server
-ServerStatus,서버 상태,Server status
-AddressInfo,보조 서버,Community server
-isSSL,SSL 적용 여부,use SSL
 ## AddGroup,,
 Title,새 그룹 만들기,Create new group
 SelectServer,서버 선택,Select server
@@ -312,7 +306,7 @@ EmptyData,없음,Null
 ReceiveData,정보 수신,Receiving information
 SendData,발신,Send
 ShowQR,수신QR 보이기,Show QR
-groupserver_dataonly,메인 서버 정보는 사용자 등록 절차가 있어 예상하는 것과 다르게 동작할 수 있습니다.,Main server information may behave differently than expected due to the user registration process.
+groupserver_dataonly,서버 정보는 사용자 등록 절차가 있어 예상하는 것과 다르게 동작할 수 있습니다.,Server information may behave differently than expected due to the user registration process.
 ## UseAsServer,,
 Title,이 기기를 기능 서버로,Use this device as a functional server
 UserNotice,사용 유의사항,Precautions for use

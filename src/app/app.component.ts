@@ -11,7 +11,6 @@ import { LocalNotiService } from './local-noti.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { NakamaService } from './nakama.service';
 import { ChatRoomPage } from './portal/subscribes/chat-room/chat-room.page';
-import { WscService } from './wsc.service';
 import { AdMob } from "@capacitor-community/admob";
 import { AddTodoMenuPage } from './portal/main/add-todo-menu/add-todo-menu.page';
 import { LanguageSettingService } from './language-setting.service';
@@ -33,7 +32,6 @@ export class AppComponent {
     router: Router,
     ngZone: NgZone,
     noti: LocalNotiService,
-    client: WscService,
     bgmode: BackgroundMode,
     private nakama: NakamaService,
     indexed: IndexedDBService,
@@ -51,34 +49,8 @@ export class AppComponent {
       isPlatform = 'iOS';
     noti.initialize();
     this.init_admob();
-    client.initialize();
-    // 모든 사용자가 수신할 수 있는 알림
-    client.received['all_noti'] = (ev) => {
-      noti.PushLocal({
-        id: 2,
-        title: lang.text.Administrator['AssistServNoti'],
-        body: ev['text'],
-        smallIcon_ln: 'icon_mono',
-        iconColor_ln: 'ffd94e',
-        image: ev['img'],
-      }, undefined);
-    }
-    // 관리자 전용 알림 설정
-    client.received['admin_noti'] = (ev: any) => {
-      client.is_admin = true;
-      noti.PushLocal({
-        id: 0,
-        title: lang.text['Administrator']['AdminNotiTitle'],
-        body: lang.text['Administrator'][ev['text']],
-        smallIcon_ln: 'icon_mono',
-        iconColor_ln: 'ffd94e',
-        autoCancel_ln: true,
-        timeoutAfter_ln: 8000,
-      }, undefined);
-      setTimeout(() => {
-        noti.ClearNoti(0);
-      }, 8000);
-    };
+    console.warn('관리자 전용 알림: 이 서버의 관리자임을 알려야함');
+    console.warn('서버 전체 알림: 연결된 서버로부터 알림을 받아야 함');
     indexed.initialize(() => {
       nakama.initialize();
     });

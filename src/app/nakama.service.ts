@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 
 import { Injectable } from '@angular/core';
-import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { Channel, ChannelMessage, Client, Group, GroupUser, Match, Notification, Session, Socket, User, WriteStorageObject } from "@heroiclabs/nakama-js";
 import { isPlatform } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
@@ -12,7 +11,6 @@ import * as p5 from 'p5';
 import { LocalNotiService } from './local-noti.service';
 import { AlertController, ModalController } from '@ionic/angular';
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
-import { WscService } from './wsc.service';
 import { ChatRoomPage } from './portal/subscribes/chat-room/chat-room.page';
 import { ApiReadStorageObjectId } from '@heroiclabs/nakama-js/dist/api.gen';
 import { LanguageSettingService } from './language-setting.service';
@@ -21,7 +19,6 @@ import { AddTodoMenuPage } from './portal/main/add-todo-menu/add-todo-menu.page'
 import { FileInfo, GlobalActService } from './global-act.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
-import { WeblinkService } from './weblink.service';
 import { QrSharePage } from './portal/settings/qr-share/qr-share.page';
 import { EnginepptPage } from './portal/settings/engineppt/engineppt.page';
 
@@ -60,17 +57,14 @@ export enum SelfMatchOpCode {
 export class NakamaService {
 
   constructor(
-    private device: Device,
     private p5toast: P5ToastService,
     private statusBar: StatusManageService,
     private indexed: IndexedDBService,
     private noti: LocalNotiService,
     private modalCtrl: ModalController,
     private alertCtrl: AlertController,
-    private communityServer: WscService,
     private lang: LanguageSettingService,
     private global: GlobalActService,
-    private weblink: WeblinkService,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -565,10 +559,7 @@ export class NakamaService {
     // 그룹 서버 연결 상태 업데이트
     this.set_group_statusBar('online', _is_official, _target);
     // 커뮤니티 서버를 쓰는 관리자모드 검토
-    this.communityServer.send(JSON.stringify({
-      act: 'is_admin',
-      uuid: this.servers[_is_official][_target].session.user_id
-    }));
+    console.log('이 사용자가 관리자인지 검토해야함');
     // 개인 정보를 서버에 맞춤
     if (!this.users.self['display_name'])
       this.servers[_is_official][_target].client.getAccount(
@@ -2640,16 +2631,6 @@ export class NakamaService {
             });
           }
           return;
-        case 'comm_server':
-          this.communityServer.client.close();
-          if (json[i].value.useSSL)
-            this.communityServer.socket_header = 'wss';
-          else this.communityServer.socket_header = 'ws';
-          localStorage.setItem('wsc_socket_header', this.communityServer.socket_header);
-          this.communityServer.address_override = json[i].value.address_override;
-          localStorage.setItem('wsc_address_override', this.communityServer.address_override);
-          this.communityServer.initialize();
-          break;
         case 'group_dedi': // 그룹사설 채팅 접근
           this.modalCtrl.create({
             component: MinimalChatPage,
@@ -2677,16 +2658,5 @@ export class NakamaService {
         default: // 동작 미정 알림(debug)
           throw "지정된 틀 아님";
       }
-  }
-
-  /** 커뮤니티 서버 온라인 여부 확인 */
-  check_comm_server_is_online(): boolean {
-    let result = this.communityServer.client.readyState == this.communityServer.client.OPEN;
-    if (!result) {
-      this.p5toast.show({
-        text: this.lang.text['Subscribes']['needLinkWithCommServ'],
-      });
-    }
-    return result;
   }
 }

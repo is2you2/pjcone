@@ -38,8 +38,6 @@ export class StatusManageService {
   settings: PanelStatus = {
     /** 그룹 서버 전반적 동향 */
     groupServer: 'offline',
-    /** 커뮤니티 서버 전반적 동향 */
-    communityServer: 'offline',
     /** 사설서버 전반적 동향 */
     dedicatedServer: 'offline',
     community_ranchat: 'offline',
