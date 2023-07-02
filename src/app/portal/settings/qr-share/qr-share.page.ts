@@ -4,13 +4,14 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController, NavController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
-import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import * as p5 from "p5";
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
-import { NakamaService } from 'src/app/nakama.service';
+import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { QRelsePage } from '../../subscribes/qrelse/qrelse.page';
+import { Match } from '@heroiclabs/nakama-js';
+import { GlobalActService } from 'src/app/global-act.service';
 
 @Component({
   selector: 'app-qr-share',
@@ -32,14 +33,13 @@ export class QrSharePage implements OnInit {
   HideSender = false;
   ShowQRInfo = false;
   QRCodeSRC: any;
-  websocket: WebSocket;
   lines: string;
   /** 전송 예정인 키의 갯수 */
   ActKeyLength = 0;
 
   select_uuid = false;
   /** 등록된 그룹서버 리스트 받아오기 */
-  group_servers = [];
+  servers: ServerInfo[] = [];
   selected_group_server: any = [];
   /** 등록된 그룹 리스트 받아오기 */
   group_list = [];
@@ -52,53 +52,64 @@ export class QrSharePage implements OnInit {
     // 브라우저 여부에 따라 송신 설정 토글
     let isBrowser = isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA';
     this.HideSender = !isBrowser;
-    if (this.HideSender) {
-      // 그룹 서버 정보 가져오기
-      let group_server_keys = Object.keys(this.nakama.servers['unofficial']);
-      group_server_keys.forEach(gskey => this.group_servers.push(this.nakama.servers['unofficial'][gskey].info));
-      // 상태가 missing 이 아닌 서버 내 그룹 정보 가져오기
-      let isOfficial = Object.keys(this.nakama.groups);
-      isOfficial.forEach(_is_official => {
-        let Target = Object.keys(this.nakama.groups[_is_official]);
-        Target.forEach(_target => {
-          let GroupIds = Object.keys(this.nakama.groups[_is_official][_target]);
-          GroupIds.forEach(_gid => {
-            if (this.nakama.groups[_is_official][_target][_gid]['status'] == 'online' || this.nakama.groups[_is_official][_target][_gid]['status'] == 'pending') {
-              this.group_list.push({
-                id: _gid,
-                name: this.nakama.groups[_is_official][_target][_gid]['name'],
-                server_name: this.nakama.servers[_is_official][_target].info.name,
-              });
-            }
-          });
+    this.get_online_server_and_group();
+    for (let i = 0, j = this.servers.length; i < j; i++) {
+      let isOfficial = this.servers[i].isOfficial;
+      let target = this.servers[i].target;
+      // QRShare 매치에 진입
+      this.nakama.servers[isOfficial][target].client.readStorageObjects(
+        this.nakama.servers[isOfficial][target].session, {
+        object_ids: [{
+          collection: 'server_public',
+          key: 'QRShare',
+        }]
+      }).then(async v => {
+        let match = await this.nakama.servers[isOfficial][target].socket.joinMatch(v.objects[0].value['id']);
+        this.servers[i].match = match;
+        this.select_server(0);
+      });
+    }
+    this.nakama.on_socket_disconnected['qr-share'] = () => {
+      this.get_online_server_and_group();
+    }
+  }
+
+  isExpanded = true;
+  index = 0;
+  /** 아코디언에서 서버 선택하기 */
+  select_server(i: number) {
+    this.index = i;
+    this.isExpanded = false;
+    let isOfficial = this.servers[i].isOfficial;
+    let target = this.servers[i].target;
+    this.QRCodeSRC = this.global.readasQRCodeFromId({
+      type: 'QRShare',
+      target: this.nakama.servers[isOfficial][target].session.user_id,
+    });
+  }
+
+  get_online_server_and_group() {
+    // 그룹 서버 정보 가져오기
+    this.servers = this.nakama.get_all_server_info(true, true);
+    // 상태가 missing 이 아닌 서버 내 그룹 정보 가져오기
+    let isOfficial = Object.keys(this.nakama.groups);
+    isOfficial.forEach(_is_official => {
+      let Target = Object.keys(this.nakama.groups[_is_official]);
+      Target.forEach(_target => {
+        let GroupIds = Object.keys(this.nakama.groups[_is_official][_target]);
+        GroupIds.forEach(_gid => {
+          if (this.nakama.groups[_is_official][_target][_gid]['status'] == 'online' || this.nakama.groups[_is_official][_target][_gid]['status'] == 'pending') {
+            this.group_list.push({
+              id: _gid,
+              name: this.nakama.groups[_is_official][_target][_gid]['name'],
+              server_name: this.nakama.servers[_is_official][_target].info.name,
+            });
+          }
         });
       });
-    }
-    console.warn('이 자리에서 매칭 생성하기');
-    // 커뮤니티 서버와 연결
-    // this.wsc.disconnected[HEADER] = () => {
-    //   this.navCtrl.back();
-    // }
-    // this.websocket = new WebSocket(`${this.wsc.socket_header}://${this.wsc.address_override || SOCKET_SERVER_ADDRESS}:12020`);
-    console.warn('웹 소켓 대신 나카마 서버 매칭을 이용합니다');
-    this.websocket.onmessage = (msg: any) => {
-      msg.data.text().then(v => {
-        try {
-          if (!this.QRCodeSRC) throw "최초진입: QR코드 생성 우선처리";
-          let json = JSON.parse(v);
-          this.nakama.act_from_QRInfo(json['value']);
-          setTimeout(() => {
-            this.navCtrl.back();
-          }, 500);
-        } catch (e) {
-          console.log(e);
-          this.QRCodeSRC = this.global.readasQRCodeFromId({
-            type: 'QRShare',
-            value: v,
-          });
-        }
-      });
-    }
+    });
+    if (!this.servers.length) // 사용할 수 있는 그룹 서버가 없다면 돌아가기
+      this.navCtrl.back();
   }
 
   read_info() {
@@ -153,11 +164,11 @@ export class QrSharePage implements OnInit {
                   id: this.selected_data['group'][i].id,
                   name: this.selected_data['group'][i].name,
                 });
-            console.warn('이 자리에서 매칭 정보를 공유, 전달하기');
-            // this.weblink.initialize({
-            //   pid: json['value'],
-            //   value: JSON.stringify(sendData),
-            // });
+            let isOfficial = this.servers[this.index].isOfficial;
+            let target = this.servers[this.index].target;
+            this.nakama.servers[isOfficial][target].socket.sendMatchState(
+              this.servers[this.index].match.match_id, MatchOpCode.QR_SHARE, JSON.stringify(sendData)
+            [json['target']]).then(_v => this.navCtrl.back());
             break;
           default: // 빠른 QR공유용 구성이 아닐 때
             this.modalCtrl.create({
@@ -223,7 +234,13 @@ export class QrSharePage implements OnInit {
   }
 
   ionViewWillLeave() {
-    this.websocket.close();
+    this.servers.forEach(server => {
+      let isOfficial = server.isOfficial;
+      let target = server.target;
+      this.nakama.servers[isOfficial][target].socket.leaveMatch(server.match.match_id);
+      delete server.match;
+    });
+    delete this.nakama.on_socket_disconnected['qr-share'];
   }
 
   go_back() {

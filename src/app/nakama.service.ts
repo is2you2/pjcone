@@ -35,6 +35,9 @@ export interface ServerInfo {
   key?: string;
   /** 이 서버의 관리자 여부 */
   is_admin?: boolean;
+  /** 기능에 따라 일시적으로 사용하는 매칭 정보  
+   * **페이지 벗어날 때 삭제할 것** */
+  match?: Match;
 }
 
 /** 서버마다 구성 */
@@ -46,11 +49,13 @@ interface NakamaGroup {
   socket?: Socket;
 }
 
-export enum SelfMatchOpCode {
+export enum MatchOpCode {
   /** 해야할 일 생성/수정/삭제/완료 */
   ADD_TODO = 10,
   /** 프로필 정보/이미지 수정 */
   EDIT_PROFILE = 11,
+  /** 빠른 QR공유 */
+  QR_SHARE = 12,
 }
 
 @Injectable({
@@ -1469,12 +1474,19 @@ export class NakamaService {
 
   /** 소켓이 행동할 때 행동중인 무언가가 있을 경우 검토하여 처리 */
   socket_reactive = {};
+  /** 소켓이 끊어질 때 행동  
+   * on_socket_disconnected[key] = function(void)
+   */
+  on_socket_disconnected = {};
+  /** 기능 매치 행동  
+   * match_act[key] = function(void)
+   */
+  match_act = {};
   /** 소켓 서버에 연결 */
-  connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _CallBack = (socket: Socket) => { }) {
+  connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _CallBack = (_socket: Socket) => { }) {
     this.servers[_is_official][_target].socket.connect(
       this.servers[_is_official][_target].session, true).then(_v => {
         let socket = this.servers[_is_official][_target].socket;
-        _CallBack(socket);
         // 실시간으로 알림을 받은 경우
         socket.onnotification = (v) => {
           console.log('소켓에서 실시간으로 무언가 받음: ', v);
@@ -1512,7 +1524,7 @@ export class NakamaService {
           console.log('onmatchdata: ', m);
           m['data_str'] = decodeURIComponent(new TextDecoder().decode(m.data));
           switch (m.op_code) {
-            case SelfMatchOpCode.ADD_TODO: {
+            case MatchOpCode.ADD_TODO: {
               let sep = m['data_str'].split(',');
               switch (sep[0]) {
                 case 'add':
@@ -1562,7 +1574,7 @@ export class NakamaService {
               }
             }
               break;
-            case SelfMatchOpCode.EDIT_PROFILE: {
+            case MatchOpCode.EDIT_PROFILE: {
               switch (m['data_str']) {
                 case 'info':
                   this.servers[_is_official][_target].client.getAccount(
@@ -1593,6 +1605,10 @@ export class NakamaService {
               }
             }
               break;
+            case MatchOpCode.QR_SHARE: {
+              this.act_from_QRInfo(m['data_str']);
+            }
+              break;
             default:
               console.warn('예상하지 못한 동기화 정보: ', m);
               break;
@@ -1618,7 +1634,8 @@ export class NakamaService {
             text: `${this.lang.text['Nakama']['DisconnectedFromServer']}: ${this.servers[_is_official][_target].info.name}`,
             lateable: true,
           });
-          this.set_group_statusBar('offline', _is_official, _target);
+          let keys = Object.keys(this.on_socket_disconnected);
+          keys.forEach(key => this.on_socket_disconnected[key]());
           if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
             let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
             channel_ids.forEach(_cid => {
@@ -1633,7 +1650,9 @@ export class NakamaService {
               this.groups[_is_official][_target][_gid]['status'] = 'offline';
             });
           }
+          this.set_group_statusBar('offline', _is_official, _target);
         }
+        _CallBack(socket);
       });
   }
 

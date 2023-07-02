@@ -288,8 +288,9 @@ YouAreNotCreator,그룹 생성자가 아닙니다.,You are not group creator.
 ## Licenses,,
 open_link,열기,Open
 ## QuickQRShare,,
+SelectServer,서버 선택,Share at
 SelectData,공유할 정보,Information to share
-GroupServer,Main 서버,Main server
+GroupServer,서버 정보,Server info
 Group,그룹,Group
 EmptyData,없음,Null
 ReceiveData,정보 수신,Receiving information

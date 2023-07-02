@@ -67,10 +67,9 @@ SPDX-License-Identifier: MIT -->
       {{lang.text['Settings']['joinDedi_button']}}
     </ion-button>
   </ion-item>
-  <!-- 빠른QR공유 페이지 복구 필요 -->
-  <!-- <ion-item button (click)="go_to_page('qr-share')" [disabled]="statusBar.settings['communityServer'] != 'online'">
+  <ion-item button (click)="go_to_page('qr-share')" [disabled]="statusBar.settings['groupServer'] == 'offline'">
     <ion-label>{{lang.text['Settings']['quickQRshare']}}</ion-label>
-  </ion-item> -->
+  </ion-item>
   <ion-item disabled button (click)="go_to_page('tool-management')">
     <ion-label>{{lang.text['Settings']['PluginList']}}</ion-label>
   </ion-item>

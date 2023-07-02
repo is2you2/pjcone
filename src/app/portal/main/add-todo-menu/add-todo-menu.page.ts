@@ -9,7 +9,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { DomSanitizer } from '@angular/platform-browser';
 import { IndexedDBService } from 'src/app/indexed-db.service';
-import { NakamaService, SelfMatchOpCode } from 'src/app/nakama.service';
+import { NakamaService, MatchOpCode } from 'src/app/nakama.service';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { isPlatform } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
@@ -753,7 +753,7 @@ export class AddTodoMenuPage implements OnInit {
       loading.present();
       if (this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target])
         await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-          .socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
+          .socket.sendMatchState(this.nakama.self_match.match_id, MatchOpCode.ADD_TODO,
             encodeURIComponent(`done,${this.userInput.id}`));
       loading.dismiss();
     }
@@ -973,7 +973,7 @@ export class AddTodoMenuPage implements OnInit {
         await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
           this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]).then(async v => {
             await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-              .socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
+              .socket.sendMatchState(this.nakama.self_match.match_id, MatchOpCode.ADD_TODO,
                 encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
           });
         if (has_attach && attach_changed)
@@ -1070,7 +1070,7 @@ export class AddTodoMenuPage implements OnInit {
         for (let i = 0, j = this.userInput.attach.length; i < j; i++)
           await this.nakama.sync_remove_file(this.userInput.attach[i].path, isOfficial, target, 'todo_attach');
         if (isDelete) await this.nakama.servers[isOfficial][target]
-          .socket.sendMatchState(this.nakama.self_match.match_id, SelfMatchOpCode.ADD_TODO,
+          .socket.sendMatchState(this.nakama.self_match.match_id, MatchOpCode.ADD_TODO,
             encodeURIComponent(`delete,${this.userInput.id}`));
       } catch (e) {
         console.error('해야할 일 삭제 요청이 서버에 전송되지 않음: ', e);
