@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { ModalController, NavParams } from '@ionic/angular';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -17,8 +16,6 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 export class ToolManagementPage implements OnInit {
 
   constructor(
-    public modalCtrl: ModalController,
-    private navParams: NavParams,
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
     private p5toast: P5ToastService,
@@ -29,8 +26,8 @@ export class ToolManagementPage implements OnInit {
   list = [];
   list_local = [];
 
-  ngOnInit() {
-    let data: string[] = this.navParams.get('data');
+  async ngOnInit() {
+    let data: string[] = await this.indexed.GetFileListFromDB('acts/');
     data.forEach(path => {
       let _path = path.substring(5);
       if (_path.indexOf('local/') == 0)

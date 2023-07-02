@@ -2166,7 +2166,6 @@ export class NakamaService {
           title: this.servers[_is_official][_target].info.name,
           body: v.content['msg'],
           group_ln: 'all_user_noti',
-          smallIcon_ln: 'diychat',
           iconColor_ln: 'ff754e',
         }, undefined, (_ev: any) => {
           this.check_notifications(v, _is_official, _target);

@@ -54,31 +54,15 @@ export class SettingsPage implements OnInit {
     this.isBatteryOptimizationsShowed = Boolean(localStorage.getItem('ShowDisableBatteryOptimizations'));
     this.AD_Div = document.getElementById('advertise');
     this.checkAdsInfo();
-    // 다운받은 패키지가 있는지 확인
-    this.indexed.GetFileListFromDB('acts/', list => {
-      this.list_tools = [...list];
-    });
+    this.as_admin = this.nakama.get_all_server_info(true, true);
+    for (let i = this.as_admin.length - 1; i >= 0; i--) {
+      if (!this.as_admin[i].is_admin)
+        this.as_admin.splice(i, 1);
+    }
   }
 
-  /** 다운받은 pck 파일들 */
-  list_tools = [];
-
-  /** 도구 관리 페이지 열기 */
-  go_to_tool_list() {
-    this.modalCtrl.create({
-      component: ToolManagementPage,
-      componentProps: {
-        data: this.list_tools,
-      },
-    }).then(v => {
-      v.onWillDismiss().then(() => {
-        this.indexed.GetFileListFromDB('acts/', list => {
-          this.list_tools = [...list];
-        });
-      });
-      v.present();
-    });
-  }
+  /** 관리자로 등록된 서버들 */
+  as_admin = [];
 
   /** 광고 정보 불러오기 */
   async checkAdsInfo() {

@@ -105,7 +105,6 @@ joinDedi_placeholder,기본,Default
 joinDedi_button,참여,Join
 admin_tools,관리자 도구,Admin tools
 admin_req_counter,서버 상태,Server status
-notifications,알림,Notifications
 NotificationSetting,알림,Notifications
 batteryOptimization,배터리 최적화 제외 설정,Battery Optimization Exclusion Settings
 PluginList,플러그인 리스트,Plugin list
@@ -397,3 +396,5 @@ ReceivingFile,파일을 받고 있습니다,Receiving file
 StartRemote,원격 제어 시작,Start remote control
 ClientConnected,연결되었습니다,Connected
 UsePPTRemote,PPT 리모콘으로 사용합니다,Use as presentation remote control
+## AdminTools,,
+NoNotiMsg,메시지를 입력해주세요,Please enter your message
