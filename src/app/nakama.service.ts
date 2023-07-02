@@ -3,7 +3,7 @@
 
 import { Injectable } from '@angular/core';
 import { Channel, ChannelMessage, Client, Group, GroupUser, Match, Notification, Session, Socket, User, WriteStorageObject } from "@heroiclabs/nakama-js";
-import { isPlatform } from './app.component';
+import { isPlatform, SOCKET_SERVER_ADDRESS } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
@@ -79,19 +79,7 @@ export class NakamaService {
 
   /** 구성: this > Official > TargetKey > Client */
   servers: { [id: string]: { [id: string]: NakamaGroup } } = {
-    'official': {
-      // 'default': {
-      //   info: {
-      //     name: '개발 테스트 서버', // lang.CallbackOnce 에서 처리됨
-      //     address: SOCKET_SERVER_ADDRESS,
-      //     isOfficial: 'official',
-      //     target: 'default',
-      //     key: 'defaultkey',
-      //     port: 7350,
-      //     useSSL: true,
-      //   }
-      // }
-    },
+    'official': {},
     'unofficial': {},
   };
 
@@ -126,11 +114,6 @@ export class NakamaService {
       // 채널 불러오기
       this.load_channel_list();
     });
-    // this.lang.Callback_nakama = (DevTestServer: string) => {
-    //   this.servers['official']['default'].info.name = DevTestServer;
-    // }
-    // 공식서버 연결처리
-    // this.init_server(this.servers['official']['default'].info);
     // 저장된 사설서버들 정보 불러오기
     this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
       if (e && v) { // 내용이 있을 때에만 동작
@@ -145,9 +128,24 @@ export class NakamaService {
             port: +sep[5],
             useSSL: Boolean(sep[6] == 'true'),
           }
-          this.servers['unofficial'][info.target] = {};
-          this.servers['unofficial'][info.target].info = info;
+          this.servers[info.isOfficial][info.target] = {};
+          this.servers[info.isOfficial][info.target].info = info;
           this.init_server(info);
+        });
+      }
+      if (!e) { // 파일이 없는 경우 공식 서버를 저장하기
+        this.indexed.saveTextFileToUserPath(`0,official,Project: Cone,default,${SOCKET_SERVER_ADDRESS},7350,true`, 'servers/list_detail.csv', (_v) => {
+          let official_info: ServerInfo = {
+            name: 'Project: Cone',
+            address: SOCKET_SERVER_ADDRESS,
+            isOfficial: 'official',
+            target: 'default',
+            key: 'defaultkey',
+            port: 7350,
+            useSSL: true,
+          }
+          this.init_server(official_info)
+          this.servers[official_info.isOfficial][official_info.target].info = { ...official_info };
         });
       }
       this.catch_group_server_header('offline');
@@ -566,7 +564,6 @@ export class NakamaService {
         let metadata = JSON.parse(v.user.metadata);
         this.servers[_is_official][_target].info.is_admin = metadata['is_admin'];
       });
-    console.warn('서버 전체 알림: 연결된 서버로부터 알림을 받아야 함');
     // 개인 정보를 서버에 맞춤
     if (!this.users.self['display_name'])
       this.servers[_is_official][_target].client.getAccount(
@@ -2086,6 +2083,7 @@ export class NakamaService {
         break;
       case -2: // 친구 요청 받음
         break;
+      case 1: // 전체 알림 수신
       case -1: // 오프라인이거나 채널에 없을 때 알림받음
       // 채널에 없을 때 받은 알림은 메시지가 적혀있지 않아 그 내용을 저장할 수 없음
       case -3: // 상대방이 친구 요청 수락
@@ -2162,6 +2160,18 @@ export class NakamaService {
     let is_removed = false;
     v['server'] = this.servers[_is_official][_target].info;
     switch (v.code) {
+      case 1: // 전체 알림 메시지 수신
+        this.noti.PushLocal({
+          id: v.code,
+          title: this.servers[_is_official][_target].info.name,
+          body: v.content['msg'],
+          group_ln: 'all_user_noti',
+          smallIcon_ln: 'diychat',
+          iconColor_ln: 'ff754e',
+        }, undefined, (_ev: any) => {
+          this.check_notifications(v, _is_official, _target);
+        });
+        break;
       case 0: // 예약된 알림
         v['request'] = `${v.code}-${v.subject}`;
         break;

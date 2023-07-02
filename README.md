@@ -230,6 +230,9 @@ ionViewWillEnter() {
   - icon 구성할 때 debug/release/main을 작업해도 스플래시는 안바뀜
   - android/app/src/main/res/ 아래 있는 splash 파일들 일괄 수정 필요
 
+## Nakama 서버에서 알림
+- 1: 사용자 전체에게 알림 메시지 발송
+
 ## 사용중인 알림 아이디
 - 10: 커뮤니티 서버 클라이언트
 - 11: 랜덤채팅

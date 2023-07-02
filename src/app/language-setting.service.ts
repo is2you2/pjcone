@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 
 import { Injectable } from '@angular/core';
-import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import * as p5 from "p5";
 
 /** 언어 설정에 관하여 */
@@ -46,9 +45,7 @@ export class LanguageSettingService {
     GroupDetail: {},
   };
 
-  constructor(
-    public bgmode: BackgroundMode,
-  ) {
+  constructor() {
     this.lang = navigator.language.split('-')[0];
     let lang_override = localStorage.getItem('lang');
     if (lang_override)
@@ -92,7 +89,6 @@ export class LanguageSettingService {
         this.ASyncTranslation(v, i + 1, j, tmpTitle);
       }, 0);
     } else { // 전부 불러온 후
-      // this.Callback_nakama(this.text['GroupServer']['DevTestServer']);
       this.OnLoading = false;
     }
   }

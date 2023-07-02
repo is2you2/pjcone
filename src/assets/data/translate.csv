@@ -78,14 +78,13 @@ WIP,작업을 완료중입니다...,Work in progress...
 Title,할 일 목록,Todo
 ## Subscribes,,
 Title,연결,Link
-has_noties,검토해야할 연결이 있습니다.,There are connections to review.
+has_noties,검토해야할 알림이 있습니다.,There are notifications to review.
 almighty_link,만능 연결 버튼,Almighty link button
 almighty_button,연결 !,Link !
 Chat,대화,Chat
 noChatList,참여중인 대화가 없습니다.,There are no active conversations.
 noTitiedChat,제목 없는 채팅방,Untitled chat room
 noMessageHistory,기록된 메시지 없음,No messages logged
-needLinkWithCommServ,보조 서버와 연결되어있어야 합니다.,You must be connected to the community server.
 CameraPermissionDenied,카메라 권한을 얻지 못했습니다,Failed to get camera permission
 AddGroup,새 그룹,Add group
 ## Settings,,
@@ -94,10 +93,9 @@ CommunityAds,보조서버 광고,Assistant server Ads
 AdsContact,광고 문의,Ads Contact
 env_info,사용 환경,Preferences
 myInfo,내 정보,My info
-ManageServer,서버 관리,Manage server
 groupServer,서버 목록,Main server
 useDeviceAsServer,이 기기를 기능 서버로,Use this device as a functional server
-Community,보조 도구,Assistant tools
+Tools,도구,Tools
 joinRanchat,랜덤채팅 참여,Join random chat
 joinDediChat,사설 그룹채팅,Join group chat
 quickQRshare,빠른 QR공유,Quick QR sharing
@@ -105,13 +103,12 @@ InAppExplorer,인앱 탐색기,InApp Explorer
 EnginePPT,엔진 PPT,Engine PPT
 joinDedi_placeholder,기본,Default
 joinDedi_button,참여,Join
-admin_community_menu,보조서버 관리자,Assistant server manager
-admin_noti_all,보조서버 전체 공지,Assistant server notice
+admin_tools,관리자 도구,Admin tools
 admin_req_counter,서버 상태,Server status
 notifications,알림,Notifications
 NotificationSetting,알림,Notifications
 batteryOptimization,배터리 최적화 제외 설정,Battery Optimization Exclusion Settings
-ToolList,도구 리스트,Tool list
+PluginList,플러그인 리스트,Plugin list
 AppInfo,앱 정보,App info
 AppCreator,제작자,Creator
 AppTranslator,번역가,Translator
@@ -204,12 +201,6 @@ Filename,파일 이름,Filename
 saveFile,저장,Save
 AlreadyExist,같은 이름의 파일이 이미 있습니다,A file with the same name already exists
 fileSaved,저장되었습니다,File saved
-## WscClient,,
-OnlineMode,온라인 모드,Online mode
-OnlineMode_text,보조 서버로부터 알림을 받을 수 있습니다.,You can receive notifications from the assistant server.
-Disconnected,보조 서버로부터 연결이 끊어졌습니다.,You have been disconnected from the assistant server.
-OfflineMode,오프라인 모드,Offline mode
-OfflineMode_text,사설서버부터 알림을 받을 수 있습니다.,You can receive notifications from private servers.
 ## MinimalChat,,
 concurrent_users,동시접속자,Concurrent users
 shareAddress,주소 공유,Share address
@@ -245,7 +236,6 @@ leave_chat_group,그룹채팅에서 나옵니다.,You leave group chat
 ## GroupServer,,
 AboutServerAndAccount,서버와 계정에 대해서,About servers and accounts
 JoinedServerList,참여중인 서버 목록,List of participating servers
-HideOfficialDefault,가리기,Hide
 ServerDetail,서버정보,Server info
 RemoveUnofficial,삭제,Delete
 RegisterServer,사설 서버 등록하기,Register private server

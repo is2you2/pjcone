@@ -18,14 +18,6 @@ SPDX-License-Identifier: MIT -->
   <ion-item-divider *ngIf="nakama.servers['official']['default'] || servers.length">
     <ion-label>{{lang.text['GroupServer']['JoinedServerList']}}</ion-label>
   </ion-item-divider>
-  <!-- <ion-item *ngIf="nakama.servers['official']['default']" button (click)="link_group('official','default')">
-    <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[statusBar.groupServer.official['default']]"></div>
-    <ion-label class="form_margin">{{nakama.servers['official']['default']['info'].name}}</ion-label>
-    <ion-button (click)="remove_server('official', 'default')">
-      {{lang.text['GroupServer']['HideOfficialDefault']}}
-    </ion-button>
-  </ion-item> -->
   <ion-item *ngFor="let server of servers" button (click)="link_group(server.isOfficial, server.target)">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[(statusBar.groupServer[server.isOfficial][server.target]) || 'offline']"></div>

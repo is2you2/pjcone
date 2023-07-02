@@ -42,7 +42,7 @@ export class GroupServerPage implements OnInit {
         });
       }
     });
-    this.servers = this.nakama.get_all_server_info();
+    this.servers = this.nakama.get_all_server_info(true);
   }
 
   /** 서버 연결하기 */
@@ -113,7 +113,7 @@ export class GroupServerPage implements OnInit {
     this.dedicated_info.key = this.dedicated_info.key || 'defaultkey';
 
     this.nakama.add_group_server(this.dedicated_info, () => {
-      this.servers = this.nakama.get_all_server_info();
+      this.servers = this.nakama.get_all_server_info(true);
       this.dedicated_info.name = undefined;
       this.dedicated_info.address = undefined;
       this.dedicated_info.target = undefined;
@@ -181,7 +181,7 @@ export class GroupServerPage implements OnInit {
       });
     }
     // 그룹서버 리스트 정리
-    this.servers = this.nakama.get_all_server_info();
+    this.servers = this.nakama.get_all_server_info(true);
     // 그룹서버 정리
     delete this.statusBar.groupServer[_is_official][_target];
     this.nakama.save_groups_with_less_info();

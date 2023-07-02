@@ -229,7 +229,7 @@ export class LocalNotiService {
         window.focus();
       };
     } else if (isPlatform != 'MobilePWA') { // 모바일 로컬 푸쉬
-      // 포어그라운드일 때 동작 안함, 포어그라운드면서 해당 화면이면 동작 안함
+      // 포어그라운드면서 해당 화면이면 동작 안함
       if (!this.bgmode.isActive() && this.Current == header) return;
       let input: ILocalNotification = {};
       input['id'] = opt.id;

@@ -45,10 +45,6 @@ const routes: Routes = [
     loadChildren: () => import('./creator/creator.module').then( m => m.CreatorPageModule)
   },
   {
-    path: 'notification',
-    loadChildren: () => import('./admin/notification/notification.module').then( m => m.NotificationPageModule)
-  },
-  {
     path: 'tool-management',
     loadChildren: () => import('./tool-management/tool-management.module').then( m => m.ToolManagementPageModule)
   },
