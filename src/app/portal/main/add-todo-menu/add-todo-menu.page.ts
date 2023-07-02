@@ -724,7 +724,9 @@ export class AddTodoMenuPage implements OnInit {
   async doneTodo() {
     this.isButtonClicked = true;
     this.userInput.done = true;
-    if (!this.global.godot_window['add_todo'])
+    if (!this.global.godot_window['add_todo']) {
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      loading.present();
       await this.global.CreateGodotIFrame('godot-todo', {
         local_url: 'assets/data/godot/todo.pck',
         title: 'Todo',
@@ -738,6 +740,8 @@ export class AddTodoMenuPage implements OnInit {
           }).then(v => v.present());
         }
       }, 'add_todo');
+      loading.dismiss();
+    }
     this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
     if (this.userInput.remote) {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
