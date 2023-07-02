@@ -559,7 +559,7 @@ export class NakamaService {
     // 그룹 서버 연결 상태 업데이트
     this.set_group_statusBar('online', _is_official, _target);
     // 커뮤니티 서버를 쓰는 관리자모드 검토
-    console.log('이 사용자가 관리자인지 검토해야함');
+    console.warn('이 사용자가 관리자인지 검토해야함');
     // 개인 정보를 서버에 맞춤
     if (!this.users.self['display_name'])
       this.servers[_is_official][_target].client.getAccount(
