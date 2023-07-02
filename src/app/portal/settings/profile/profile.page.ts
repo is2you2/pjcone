@@ -178,7 +178,10 @@ export class ProfilePage implements OnInit {
         });
         this.nakama.users.self['online'] = false;
       }
-    } else this.nakama.logout_all_server();
+    } else {
+      delete this.nakama.users.self['password'];
+      this.nakama.logout_all_server();
+    }
     this.p5canvas.loop();
   }
 
