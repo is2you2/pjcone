@@ -183,14 +183,6 @@ export class QrSharePage implements OnInit {
     });
   }
 
-  ToggleShareUUID() {
-    this.select_uuid = !this.select_uuid;
-    if (this.select_uuid)
-      this.selected_data['uuid'] = this.nakama.uuid;
-    else delete this.selected_data['uuid'];
-    this.ActKeyLength = Object.keys(this.selected_data).length;
-  }
-
   ShowExceptionInfoYet = true;
   /** 발신 예정인 그룹 서버 정보 */
   SelectGroupServer(_ev: any) {

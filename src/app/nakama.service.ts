@@ -22,7 +22,6 @@ import { FileInfo, GlobalActService } from './global-act.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { WeblinkService } from './weblink.service';
-import { ToolServerService, UnivToolForm } from './tool-server.service';
 import { QrSharePage } from './portal/settings/qr-share/qr-share.page';
 import { EnginepptPage } from './portal/settings/engineppt/engineppt.page';
 
@@ -71,7 +70,6 @@ export class NakamaService {
     private communityServer: WscService,
     private lang: LanguageSettingService,
     private global: GlobalActService,
-    private tools: ToolServerService,
     private weblink: WeblinkService,
   ) { }
 
@@ -106,11 +104,6 @@ export class NakamaService {
     this.noti.GetNotificationIds((list) => {
       this.registered_id = list;
       this.set_all_todo_notification();
-    });
-    // 개인 정보 설정
-    this.indexed.loadTextFromUserPath('link-account', (e, v) => {
-      if (e && v) this.uuid = v;
-      else this.uuid = this.device.uuid;
     });
     this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
       if (e && v) this.users.self = JSON.parse(v);
@@ -500,7 +493,6 @@ export class NakamaService {
    * }
    */
   noti_origin = {};
-  uuid: string;
   /** 세션처리
    * @param _CallBack 오류시 행동방침
    * @param info.target 대상 key
@@ -508,17 +500,13 @@ export class NakamaService {
   async init_session(info: ServerInfo) {
     try {
       this.servers[info.isOfficial][info.target].session
-        = await this.servers[info.isOfficial][info.target].client.authenticateEmail(this.users.self['email'], this.uuid, false);
+        = await this.servers[info.isOfficial][info.target].client.authenticateEmail(this.users.self['email'], this.users.self['password'], false);
       this.after_login(info.isOfficial, info.target, info.useSSL);
     } catch (e) {
       switch (e.status) {
         case 400: // 이메일/비번이 없거나 하는 등, 요청 정보가 잘못됨
-          if (this.uuid)
-            this.p5toast.show({
-              text: this.lang.text['Nakama']['NeedLoginInfo'],
-            });
-          else this.p5toast.show({
-            text: this.lang.text['Nakama']['NeedLinkUser'],
+          this.p5toast.show({
+            text: this.lang.text['Nakama']['NeedLoginInfo'],
           });
           this.users.self['online'] = false;
           this.set_group_statusBar('offline', info.isOfficial, info.target);
@@ -530,7 +518,7 @@ export class NakamaService {
           this.set_group_statusBar('offline', info.isOfficial, info.target);
           break;
         case 404: // 아이디 없음
-          this.servers[info.isOfficial][info.target].session = await this.servers[info.isOfficial][info.target].client.authenticateEmail(this.users.self['email'], this.uuid, true);
+          this.servers[info.isOfficial][info.target].session = await this.servers[info.isOfficial][info.target].client.authenticateEmail(this.users.self['email'], this.users.self['password'], true);
           if (this.users.self['display_name'])
             this.servers[info.isOfficial][info.target].client.updateAccount(
               this.servers[info.isOfficial][info.target].session, {
@@ -2597,25 +2585,6 @@ export class NakamaService {
     let json: any[] = JSON.parse(v);
     for (let i = 0, j = json.length; i < j; i++)
       switch (json[i].type) {
-        case 'link': // 계정 연결처리
-          if (!this.check_comm_server_is_online())
-            return
-          this.weblink.initialize({
-            pid: json[i].value,
-            uuid: this.uuid,
-          });
-          break;
-        case 'link_reverse': // 게정 연결처리 (빠른 QR공유)
-          this.uuid = json[i].value;
-          this.indexed.saveTextFileToUserPath(this.uuid, 'link-account');
-          this.p5toast.show({
-            text: this.lang.text['LinkAccount']['link_account_succ'],
-            lateable: true,
-          });
-          this.logout_all_server();
-          this.users.self['online'] = true;
-          this.init_all_sessions();
-          break;
         case 'QRShare':
           this.modalCtrl.create({
             component: QrSharePage,

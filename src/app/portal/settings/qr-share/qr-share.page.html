@@ -19,10 +19,6 @@ SPDX-License-Identifier: MIT -->
     <ion-item-divider>
       <ion-label>{{lang.text['QuickQRShare']['SelectData']}}</ion-label>
     </ion-item-divider>
-    <ion-item button (click)="ToggleShareUUID()">
-      <ion-label>{{lang.text['Settings']['takeOverUser']}}</ion-label>
-      <ion-toggle [(ngModel)]="select_uuid" slot="end" style="pointer-events: none;"></ion-toggle>
-    </ion-item>
     <ion-item>
       <ion-label>{{lang.text['QuickQRShare']['GroupServer']}}</ion-label>
       <ion-select [(ngModel)]="selected_group_server" (ionChange)="SelectGroupServer($event)" multiple="true"

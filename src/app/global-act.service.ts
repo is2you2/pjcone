@@ -106,7 +106,7 @@ export class GlobalActService {
       return this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);
     } catch (e) {
       this.p5toast.show({
-        text: `${this.lang.text['LinkAccount']['failed_to_gen_qr']}: ${e}`,
+        text: `${this.lang.text['GlobalAct']['failed_to_gen_qr']}: ${e}`,
       });
     }
   }

@@ -37,6 +37,11 @@ SPDX-License-Identifier: MIT -->
     <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self['email']" (ionChange)="email_modified()"
       [placeholder]="'test@example.com'"></ion-input>
   </ion-item>
+  <ion-item *ngIf="!nakama.users.self['online']">
+    <ion-label>{{lang.text['Profile']['password']}}</ion-label>
+    <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self['password']" (ionChange)="email_modified()"
+      [placeholder]="lang.text['Profile']['at_least']"></ion-input>
+  </ion-item>
   <ion-item>
     <ion-label>{{lang.text['Profile']['user_display_name']}}</ion-label>
     <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self['display_name']"

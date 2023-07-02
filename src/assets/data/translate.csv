@@ -94,7 +94,6 @@ CommunityAds,보조서버 광고,Assistant server Ads
 AdsContact,광고 문의,Ads Contact
 env_info,사용 환경,Preferences
 myInfo,내 정보,My info
-takeOverUser,사용자 인계,User override
 ManageServer,서버 관리,Manage server
 groupServer,메인 서버,Main server
 commServer,보조 서버,Assistant server
@@ -150,6 +149,8 @@ enterURI,이미지 주소 입력하기,Enter image URL
 change_img,이미지 변경,Change image
 login_info,로그인 정보,Login info
 email_address,이메일 주소,Email Address
+password,비밀번호,Password
+at_least,최소 8자리,at least 8 digits
 user_display_name,사용자 표시명,Display name
 login_toggle,로그인,Login
 main_content,메인 콘텐츠,Main contents
@@ -242,12 +243,6 @@ waiting_someone,새로운 상대를 기다립니다..,Waiting for a new opponent
 cannot_start,시작할 수 없어요..,Can not start..
 leave_chat_ran,랜덤채팅에서 벗어납니다.,You leave random chat
 leave_chat_group,그룹채팅에서 나옵니다.,You leave group chat
-## LinkAccount,,
-use_almighty_button_to,아래를 스캔하여 기기id 인계,Scan below to take over device id
-Recovery,원상복구,Recovery
-recovery_device_id,기기 id 되돌리기,Reset device id
-link_account_succ,사용자 연결에 성공했습니다.,User connection was successful.
-failed_to_gen_qr,QRCode 생성 실패,QRCode generation failed
 ## GroupServer,,
 AboutServerAndAccount,서버와 계정에 대해서,About servers and accounts
 JoinedServerList,참여중인 서버 목록,List of participating servers
@@ -337,6 +332,7 @@ giveacoffeetodev,개발자에게 커피를 사주세요,Give a coffee to develop
 ## GlobalAct,,
 FailedToDownloadGodot,기능 다운로드 실패,Failed to download tool
 UnCheckableCreator,확인 불가,Not confirmed
+failed_to_gen_qr,QRCode 생성 실패,QRCode generation failed
 ## IndexedDB,,
 FailedToOpenFile,파일 열기 오류,Failed to open file
 FailedToDownloadFile,다운받기 오류,Failed to download file
