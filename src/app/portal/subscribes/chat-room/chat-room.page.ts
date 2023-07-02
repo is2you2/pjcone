@@ -164,12 +164,14 @@ export class ChatRoomPage implements OnInit {
         this.userInput.file.typeheader = 'image';
         this.userInput.file.content_related_creator = [{
           user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+          timestamp: new Date().toLocaleString(),
           display_name: this.nakama.users.self['display_name'],
         }];
-        this.userInput.file.content_creator = [{
+        this.userInput.file.content_creator = {
           user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+          timestamp: new Date().toLocaleString(),
           display_name: this.nakama.users.self['display_name'],
-        }];
+        };
         this.userInput.file.base64 = 'data:image/jpeg;base64,' + v;
       });
     }
@@ -212,11 +214,13 @@ export class ChatRoomPage implements OnInit {
               this.userInput.file.typeheader = file.viewer;
               this.userInput.file.content_related_creator = [{
                 display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
+                timestamp: new Date().toLocaleString(),
               }];
-              this.userInput.file.content_creator = [{
+              this.userInput.file.content_creator = {
                 user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                timestamp: new Date().toLocaleString(),
                 display_name: this.nakama.users.self['display_name'],
-              }];
+              };
               this.userInput.file.base64 = await this.global.GetBase64ThroughFileReader(blob);
             } catch (e) {
               console.log('파일 불러오기에 실패함: ', e);
@@ -245,12 +249,14 @@ export class ChatRoomPage implements OnInit {
             this.userInput.file.typeheader = 'image';
             this.userInput.file.content_related_creator = [{
               user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+              timestamp: new Date().toLocaleString(),
               display_name: this.nakama.users.self['display_name'],
             }];
-            this.userInput.file.content_creator = [{
+            this.userInput.file.content_creator = {
               user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+              timestamp: new Date().toLocaleString(),
               display_name: this.nakama.users.self['display_name'],
-            }];
+            };
             this.userInput.file.base64 = v.data['img'];
             this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
             v.data['loadingCtrl'].dismiss();
@@ -783,7 +789,7 @@ export class ChatRoomPage implements OnInit {
             if (msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
               let is_already_exist = false;
               for (let i = 0, j = related_creators.length; i < j; i++)
-                if (related_creators[i].user_id == msg.content['content_creator'][0]['user_id']) {
+                if (related_creators[i].user_id == msg.content['content_creator']['user_id']) {
                   is_already_exist = true;
                   break;
                 }
@@ -808,19 +814,22 @@ export class ChatRoomPage implements OnInit {
                   this.userInput.file.typeheader = 'image';
                   if (v.data['is_modify']) {
                     this.userInput.file.content_related_creator = related_creators;
-                    this.userInput.file.content_creator = [{
+                    this.userInput.file.content_creator = {
                       user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                      timestamp: new Date().toLocaleString(),
                       display_name: this.nakama.users.self['display_name'],
-                    }];
+                    };
                   } else {
                     this.userInput.file.content_related_creator = [{
                       user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                      timestamp: new Date().toLocaleString(),
                       display_name: this.nakama.users.self['display_name'],
                     }];
-                    this.userInput.file.content_creator = [{
+                    this.userInput.file.content_creator = {
                       user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                      timestamp: new Date().toLocaleString(),
                       display_name: this.nakama.users.self['display_name'],
-                    }];
+                    };
                   }
                   this.userInput.file.base64 = v.data['img'];
                   this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;

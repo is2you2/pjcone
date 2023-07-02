@@ -14,6 +14,8 @@ export var isDarkMode = false;
 export interface ContentCreatorInfo {
   /** 콘텐츠 작성 당시 사용한 이름 */
   display_name: string;
+  /** 등록일자 */
+  timestamp: string;
   /** 공유되는 서버 기반 uid */
   user_id?: string;
 }
@@ -30,7 +32,7 @@ export interface FileInfo {
   /** 작업 참여자, 또는 이 작업과 연관된 사람들 */
   content_related_creator?: ContentCreatorInfo[];
   /** 콘텐츠를 업로드한 사람, 또는 제작자 */
-  content_creator?: ContentCreatorInfo[];
+  content_creator?: ContentCreatorInfo;
   /** 파일 분할 크기 */
   partsize?: number;
   path?: string;

@@ -429,12 +429,14 @@ export class AddTodoMenuPage implements OnInit {
       this_file.typeheader = 'image';
       this_file.content_related_creator = [{
         // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+        timestamp: new Date().toLocaleString(),
         display_name: this.nakama.users.self['display_name'],
       }];
-      this_file.content_creator = [{
+      this_file.content_creator = {
         // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+        timestamp: new Date().toLocaleString(),
         display_name: this.nakama.users.self['display_name'],
-      }];
+      };
       this_file['thumbnail'] = this_file.base64;
       this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
       this_file['viewer'] = 'image';
@@ -457,12 +459,14 @@ export class AddTodoMenuPage implements OnInit {
           this_file['type'] = 'image/png';
           this_file['content_related_creator'] = [{
             // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            timestamp: new Date().toLocaleString(),
             display_name: this.nakama.users.self['display_name'],
           }];
-          this_file['content_creator'] = [{
+          this_file['content_creator'] = {
             // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            timestamp: new Date().toLocaleString(),
             display_name: this.nakama.users.self['display_name'],
-          }];
+          };
           this_file['viewer'] = 'image';
           this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
           this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
@@ -628,60 +632,63 @@ export class AddTodoMenuPage implements OnInit {
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.saved_tag_orig), 'todo/tags.json');
   }
 
-  open_ionic_viewer(i: number) {
+  open_ionic_viewer(index: number) {
     this.modalCtrl.create({
       component: IonicViewerPage,
       componentProps: {
-        info: this.userInput.attach[i],
-        path: this.userInput.attach[i]['path'],
+        info: this.userInput.attach[index],
+        path: this.userInput.attach[index]['path'],
       },
     }).then(v => {
       v.onDidDismiss().then((v) => {
         if (v.data) { // 파일 편집하기를 누른 경우
           let related_creators: ContentCreatorInfo[] = [];
-          if (this.userInput.attach[i]['content_related_creator'])
-            related_creators.push(...this.userInput.attach[i]['content_related_creator']);
-          if (this.userInput.attach[i]['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
+          if (this.userInput.attach[index]['content_related_creator'])
+            related_creators.push(...this.userInput.attach[index]['content_related_creator']);
+          if (this.userInput.attach[index]['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
             let is_already_exist = false;
             for (let i = 0, j = related_creators.length; i < j; i++)
-              if (related_creators[i].user_id == this.userInput.attach[i]['content_creator'][0]['user_id']) {
+              if (related_creators[i].user_id == this.userInput.attach[index]['content_creator']['user_id']) {
                 is_already_exist = true;
                 break;
               }
-            if (!is_already_exist) related_creators.push(...this.userInput.attach[i]['content_creator']);
+            if (!is_already_exist) related_creators.push(...this.userInput.attach['content_creator']);
           }
-          delete this.userInput.attach[i]['exist'];
+          delete this.userInput.attach[index]['exist'];
           this.modalCtrl.create({
             component: VoidDrawPage,
             componentProps: {
-              info: this.userInput.attach[i],
-              path: this.userInput.attach[i]['path'],
+              info: this.userInput.attach[index],
+              path: this.userInput.attach[index]['path'],
               width: v.data.width,
               height: v.data.height,
             },
           }).then(v => {
             v.onWillDismiss().then(v => {
               if (v.data) {
-                let this_file: FileInfo = this.userInput.attach[i];
+                let this_file: FileInfo = this.userInput.attach[index];
                 this_file['filename'] = v.data['name'];
                 this_file['file_ext'] = 'png';
                 this_file['type'] = 'image/png';
                 this_file['viewer'] = 'image';
                 if (v.data['is_modify']) {
                   this_file['content_related_creator'] = related_creators;
-                  this_file['content_creator'] = [{
+                  this_file['content_creator'] = {
                     // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                    timestamp: new Date().toLocaleString(),
                     display_name: this.nakama.users.self['display_name'],
-                  }];
+                  };
                 } else {
                   this_file['content_related_creator'] = [{
                     // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                    timestamp: new Date().toLocaleString(),
                     display_name: this.nakama.users.self['display_name'],
                   }];
-                  this_file['content_creator'] = [{
+                  this_file['content_creator'] = {
                     // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                    timestamp: new Date().toLocaleString(),
                     display_name: this.nakama.users.self['display_name'],
-                  }];
+                  };
                 }
                 this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
                 this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
