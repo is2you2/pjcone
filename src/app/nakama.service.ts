@@ -1607,6 +1607,7 @@ export class NakamaService {
               break;
             case MatchOpCode.QR_SHARE: {
               this.act_from_QRInfo(m['data_str']);
+              if (this.socket_reactive['qr-share']) this.socket_reactive['qr-share']();
             }
               break;
             default:
@@ -1634,8 +1635,6 @@ export class NakamaService {
             text: `${this.lang.text['Nakama']['DisconnectedFromServer']}: ${this.servers[_is_official][_target].info.name}`,
             lateable: true,
           });
-          let keys = Object.keys(this.on_socket_disconnected);
-          keys.forEach(key => this.on_socket_disconnected[key]());
           if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
             let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
             channel_ids.forEach(_cid => {
@@ -1651,6 +1650,8 @@ export class NakamaService {
             });
           }
           this.set_group_statusBar('offline', _is_official, _target);
+          let keys = Object.keys(this.on_socket_disconnected);
+          keys.forEach(key => this.on_socket_disconnected[key]());
         }
         _CallBack(socket);
       });

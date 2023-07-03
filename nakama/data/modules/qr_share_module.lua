@@ -1,4 +1,5 @@
 local nk = require("nakama")
+local p = {}
 
 function match_init(context, params)
   local state = {}
@@ -8,6 +9,16 @@ function match_init(context, params)
 end
 
 local function match_join(context, dispatcher, tick, state, presences)
+  for _, presence in ipairs(presences) do
+    -- Presence format:
+    -- {
+    --   user_id = "user unique ID",
+    --   session_id = "session ID of the user's current connection",
+    --   username = "user's unique username",
+    --   node = "name of the Nakama node the user is connected to"
+    -- }
+    p[presence.username] = presence
+  end
   return state
 end
 
@@ -16,10 +27,24 @@ local function match_join_attempt(context, dispatcher, tick, state, presence, me
 end
 
 local function match_leave(context, dispatcher, tick, state, presences)
+  for _, presence in ipairs(presences) do
+    p[presence.username] = nil
+  end
   return state
 end
 
 function match_loop(context, dispatcher, tick, state, messages)
+  for _, m in ipairs(messages) do
+    local opcode = 12
+    local presences = nil -- send to all.
+    local sender = nil    -- used if a message should come from a specific user.
+
+    local recv_data = nk.json_decode(m.data)
+    presences = { p[recv_data[1].target] }
+
+    dispatcher.broadcast_message(opcode, m.data, presences, sender)
+  end
+
   return state
 end
 
