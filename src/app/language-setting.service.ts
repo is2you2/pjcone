@@ -72,7 +72,7 @@ export class LanguageSettingService {
     });
   }
   /** nakama 스크립트 상호참조를 우회하여 번역처리 */
-  // Callback_nakama: Function;
+  Callback_nakama: Function;
   OnLoading = true;
   /** 순차적으로 번역처리하기 */
   ASyncTranslation(v: p5.Table, i: number, j: number, tmpTitle?: string) {
@@ -87,6 +87,7 @@ export class LanguageSettingService {
       }, 0);
     } else { // 전부 불러온 후
       this.OnLoading = false;
+      this.Callback_nakama();
     }
   }
 }

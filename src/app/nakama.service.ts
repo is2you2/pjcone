@@ -21,6 +21,7 @@ import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { QrSharePage } from './portal/settings/qr-share/qr-share.page';
 import { EnginepptPage } from './portal/settings/engineppt/engineppt.page';
+import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -73,6 +74,7 @@ export class NakamaService {
     private alertCtrl: AlertController,
     private lang: LanguageSettingService,
     private global: GlobalActService,
+    private bgmode: BackgroundMode,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -191,6 +193,9 @@ export class NakamaService {
         });
       });
     });
+    this.lang.Callback_nakama = () => {
+      this.check_if_online();
+    }
   }
   /** 시작시 해야할 일 알림을 설정 */
   set_all_todo_notification() {
@@ -1475,6 +1480,37 @@ export class NakamaService {
       }
     }
     this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] = result_status;
+  }
+
+  check_if_online() {
+    let as_admin = this.get_all_server_info(true, true);
+    if (as_admin.length) {
+      this.bgmode.setDefaults({
+        title: this.lang.text['GlobalAct']['OnlineMode'],
+        text: this.lang.text['GlobalAct']['OnlineMode_text'],
+        icon: 'icon_mono',
+        color: 'ffd94e', // 모자 밑단 노란색
+      });
+      this.bgmode.configure({
+        title: this.lang.text['GlobalAct']['OnlineMode'],
+        text: this.lang.text['GlobalAct']['OnlineMode_text'],
+        icon: 'icon_mono',
+        color: 'ffd94e', // 모자 밑단 노란색
+      });
+    } else {
+      this.bgmode.setDefaults({
+        title: this.lang.text['GlobalAct']['OfflineMode'],
+        text: this.lang.text['GlobalAct']['OfflineMode_text'],
+        icon: 'icon_mono',
+        color: 'ffd94e', // 모자 밑단 노란색
+      });
+      this.bgmode.configure({
+        title: this.lang.text['GlobalAct']['OfflineMode'],
+        text: this.lang.text['GlobalAct']['OfflineMode_text'],
+        icon: 'icon_mono',
+        color: 'ffd94e', // 모자 밑단 노란색
+      });
+    }
   }
 
   /** 소켓이 행동할 때 행동중인 무언가가 있을 경우 검토하여 처리 */
