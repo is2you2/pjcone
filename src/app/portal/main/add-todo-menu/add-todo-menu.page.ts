@@ -753,7 +753,7 @@ export class AddTodoMenuPage implements OnInit {
       loading.present();
       if (this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target])
         await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-          .socket.sendMatchState(this.nakama.self_match.match_id, MatchOpCode.ADD_TODO,
+          .socket.sendMatchState(this.nakama.self_match[this.userInput.remote.isOfficial][this.userInput.remote.target].match_id, MatchOpCode.ADD_TODO,
             encodeURIComponent(`done,${this.userInput.id}`));
       loading.dismiss();
     }
@@ -973,7 +973,7 @@ export class AddTodoMenuPage implements OnInit {
         await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
           this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]).then(async v => {
             await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-              .socket.sendMatchState(this.nakama.self_match.match_id, MatchOpCode.ADD_TODO,
+              .socket.sendMatchState(this.nakama.self_match[this.userInput.remote.isOfficial][this.userInput.remote.target].match_id, MatchOpCode.ADD_TODO,
                 encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
           });
         if (has_attach && attach_changed)
@@ -1070,7 +1070,7 @@ export class AddTodoMenuPage implements OnInit {
         for (let i = 0, j = this.userInput.attach.length; i < j; i++)
           await this.nakama.sync_remove_file(this.userInput.attach[i].path, isOfficial, target, 'todo_attach');
         if (isDelete) await this.nakama.servers[isOfficial][target]
-          .socket.sendMatchState(this.nakama.self_match.match_id, MatchOpCode.ADD_TODO,
+          .socket.sendMatchState(this.nakama.self_match[isOfficial][target].match_id, MatchOpCode.ADD_TODO,
             encodeURIComponent(`delete,${this.userInput.id}`));
       } catch (e) {
         console.error('해야할 일 삭제 요청이 서버에 전송되지 않음: ', e);

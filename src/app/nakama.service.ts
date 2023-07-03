@@ -56,6 +56,7 @@ export enum MatchOpCode {
   EDIT_PROFILE = 11,
   /** 빠른 QR공유 */
   QR_SHARE = 12,
+  ENGINE_PPT = 13,
 }
 
 @Injectable({
@@ -555,8 +556,10 @@ export class NakamaService {
     }
   }
 
-  /** 자기 자신과의 매칭 정보 */
-  self_match: Match;
+  /** 자기 자신과의 매칭 정보  
+   * self_match[isOfficial][target] = Match
+   */
+  self_match = {};
   /** 로그인 및 회원가입 직후 행동들 */
   after_login(_is_official: any, _target: string, _useSSL: boolean) {
     // 통신 소켓 생성
@@ -615,11 +618,13 @@ export class NakamaService {
         }]
       }).then(async v => {
         try {
-          this.self_match = await socket.joinMatch(v.objects[0].value['match_id']);
+          if (!this.self_match[_is_official]) this.self_match[_is_official] = {};
+          if (!this.self_match[_is_official][_target]) this.self_match[_is_official][_target] = undefined;
+          this.self_match[_is_official][_target] = await socket.joinMatch(v.objects[0].value['match_id']);
           return; // 매치 진입 성공인 경우
         } catch (e) {
           socket.createMatch().then(v => {
-            this.self_match = v;
+            this.self_match[_is_official][_target] = v;
             this.servers[_is_official][_target].client.writeStorageObjects(
               this.servers[_is_official][_target].session, [{
                 collection: 'self_share',
@@ -1608,6 +1613,10 @@ export class NakamaService {
             case MatchOpCode.QR_SHARE: {
               this.act_from_QRInfo(m['data_str']);
               if (this.socket_reactive['qr-share']) this.socket_reactive['qr-share']();
+            }
+              break;
+            case MatchOpCode.ENGINE_PPT: {
+
             }
               break;
             default:

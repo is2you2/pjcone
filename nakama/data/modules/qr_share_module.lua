@@ -1,7 +1,7 @@
 local nk = require("nakama")
 local p = {}
 
-function match_init(context, params)
+local function match_init(context, params)
   local state = {}
   local tick_rate = 1
   local label = "QRShare"
@@ -33,7 +33,7 @@ local function match_leave(context, dispatcher, tick, state, presences)
   return state
 end
 
-function match_loop(context, dispatcher, tick, state, messages)
+local function match_loop(context, dispatcher, tick, state, messages)
   for _, m in ipairs(messages) do
     local opcode = 12
     local presences = nil -- send to all.

@@ -117,7 +117,7 @@ export class ProfilePage implements OnInit {
         permission_read: 2,
         permission_write: 1,
       }]).then(async v => {
-        await servers[i].socket.sendMatchState(this.nakama.self_match.match_id, MatchOpCode.ADD_TODO,
+        await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.ADD_TODO,
           encodeURIComponent('image'));
         await servers[i].client.updateAccount(servers[i].session, {
           avatar_url: v.acks[0].version,
@@ -228,7 +228,7 @@ export class ProfilePage implements OnInit {
             display_name: this.nakama.users.self['display_name'],
           }).then(async _v => {
             NeedAnnounceUpdate = true;
-            await servers[i].socket.sendMatchState(this.nakama.self_match.match_id, MatchOpCode.ADD_TODO,
+            await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.ADD_TODO,
               encodeURIComponent('info'));
           });
         // 해당 서버 연결된 채널에 고지

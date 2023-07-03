@@ -89,7 +89,7 @@ CameraPermissionDenied,카메라 권한을 얻지 못했습니다,Failed to get 
 AddGroup,새 그룹,Add group
 ## Settings,,
 Title,설정,Settings
-CommunityAds,보조서버 광고,Assistant server Ads
+CommunityAds,개발자 광고,Developer Ads
 AdsContact,광고 문의,Ads Contact
 env_info,사용 환경,Preferences
 myInfo,내 정보,My info
@@ -373,7 +373,6 @@ Delete,삭제,Delete
 CreateAt,생성일시,Creation date
 ## EngineWorksPPT,,
 RemoteCont,엔진PPT 리모콘,EnginePPT Controller
-LinkTitle,휴대폰과 연결,Connect with mobile phone
 YouCanSendPCK,휴대폰에 있는 *.pck를 전송하여 시작할 수도 있습니다.,You can also start by sending the *.pck on your phone.
 JustStart,프레젠테이션,Presentation
 DropFileHere,파일을 올려서 시작,Start by uploading a file

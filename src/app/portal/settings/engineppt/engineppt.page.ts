@@ -6,7 +6,7 @@ import { ToolServerService } from 'src/app/tool-server.service';
 import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { LoadingController, ModalController, NavController, NavParams } from '@ionic/angular';
+import { LoadingController, ModalController, NavController } from '@ionic/angular';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { LocalNotiService } from 'src/app/local-noti.service';
 
@@ -25,7 +25,6 @@ export class EnginepptPage implements OnInit {
     private p5toast: P5ToastService,
     private loadingCtrl: LoadingController,
     private modalCtrl: ModalController,
-    private navParams: NavParams,
     public statusBar: StatusManageService,
     private navCtrl: NavController,
     private noti: LocalNotiService,
@@ -37,7 +36,6 @@ export class EnginepptPage implements OnInit {
 
   ToggleHeader = true;
   Status = 'initialize';
-  QRCode: any;
   RemoteDesc: string;
   InputAddress = '';
   /** PWA: 컨트롤러로 연결할 주소 */
@@ -54,43 +52,16 @@ export class EnginepptPage implements OnInit {
 
   /** 선행과제 진행, 플랫폼에 따른 시작 UI */
   prerequisite_check() {
+    this.load_info_text();
     // 모바일 앱인 경우 리모콘 환경설정 유도
     if (isPlatform == 'Android' || isPlatform == 'iOS') {
       this.Status = 'initApp';
-      // 보조 서버가 있다면 내 pid 수집
-      console.warn('엔진PPT 매칭 수립');
-      // if (this.assistServer.client && this.assistServer.client.readyState == this.assistServer.client.OPEN) {
-      //   this.assistServer.received['req_link'] = (json: any) => {
-      //     console.log('데이터를 받음: ', json);
-      //   }
-      // }
-      this.load_info_text();
       this.StartRemoteContrServer();
     } else { // 웹인 경우 리모콘 연결 유도
       this.Status = 'initPWA';
-      console.warn('매칭에서 분류가능한 이 기기의 정보를 명시하기');
-      // 보조 서버가 있다면 QR코드 보여주기
-      // if (this.assistServer.client && this.assistServer.client.readyState == this.assistServer.client.OPEN) {
-      //   this.QRCode = this.global.readasQRCodeFromId({
-      //     pid: this.assistServer.pid,
-      //     type: 'EnginePPTLink',
-      //   });
-      //   this.assistServer.disconnected['remove_tool_link'] = () => {
-      //     this.QRCode = '';
-      //   }
-      //   this.assistServer.received['req_link'] = async (json: any) => {
-      //     try {
-      //       this.LinkedAddress = await this.CatchAvailableAddress(json.addresses);
-      //     } catch (error) {
-      //       this.p5toast.show({
-      //         text: this.lang.text['EngineWorksPPT']['CannotConnect'],
-      //       });
-      //     }
-      //   }
-      // }
       setTimeout(() => {
         this.CreateDrop();
-      }, 0);
+      }, 50);
     }
   }
 
@@ -193,9 +164,6 @@ export class EnginepptPage implements OnInit {
             text: this.lang.text['EngineWorksPPT']['Disconnected'],
           });
       }
-      console.warn('이 기기 IP 주소를 전달하여 PWA에서 진입할 수 있도록 유도하기');
-      // if (this.assistServer.client && this.assistServer.client.readyState == this.assistServer.client.OPEN)
-      //   this.RequestLinkThisDevice();
     }, (json: any) => {
       console.log('수신받은 메시지는: ', json);
       switch (json.act) {
@@ -332,18 +300,6 @@ export class EnginepptPage implements OnInit {
         error('사용할 수 있는 주소 없음');
       }
     });
-  }
-
-  /** 이 모바일 기기로 연결하라고 신호보내기 */
-  RequestLinkThisDevice() {
-    console.warn('RequestLinkThisDevice: func stopped');
-    // let json = {
-    //   act: 'req_link',
-    //   pid: this.navParams.get('pid'),
-    //   sender: this.assistServer.pid,
-    //   addresses: this.toolServer.addresses,
-    // }
-    // this.assistServer.send(JSON.stringify(json));
   }
 
   CreateEngineController() {
