@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT -->
 </ion-header>
 
 <ion-content>
-  <ion-accordion-group *ngIf="servers.length" [disabled]="isSaveClicked" value="colors" expand="inset"
+  <ion-accordion-group *ngIf="servers.length" value="colors" expand="inset"
     [value]="isExpanded" #accordionGroup (click)="isExpanded = true">
     <ion-accordion value="colors">
       <ion-item slot="header">
