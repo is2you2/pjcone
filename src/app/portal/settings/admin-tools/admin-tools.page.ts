@@ -16,7 +16,16 @@ export class AdminToolsPage implements OnInit {
     private p5toast: P5ToastService,
   ) { }
 
+  /** 서버 정보, 온라인 상태의 서버만 불러온다 */
   servers: ServerInfo[] = [];
+  index = 0;
+  isExpanded = true;
+
+  select_server(i: number) {
+    this.index = i;
+    this.isExpanded = false;
+  }
+
   /** 전체 발송 알림 */
   notification = {
     uri: '',
@@ -31,20 +40,31 @@ export class AdminToolsPage implements OnInit {
     }
   }
 
+  is_sending = false;
   /** 모든 접속자에게 알림 메시지 발송 */
-  send_noti_to_server(index: number) {
-    if (!this.notification.msg) {
+  async send_noti_to_server() {
+    if (!this.notification.msg && !this.notification.uri) {
       this.p5toast.show({
         text: this.lang.text['AdminTools']['NoNotiMsg'],
       });
       return;
     }
-    let _is_official = this.servers[index].isOfficial;
-    let _target = this.servers[index].target;
+    this.is_sending = true;
+    let _is_official = this.servers[this.index].isOfficial;
+    let _target = this.servers[this.index].target;
 
-    this.servers[_is_official][_target].client.rpc(
-      this.servers[_is_official][_target].session,
-      'send_noti_all_fn', { msg: 'test_msg' });
+    this.notification.msg = encodeURIComponent(this.notification.msg);
+    this.notification.uri = encodeURIComponent(this.notification.uri);
+
+    try {
+      await this.nakama.servers[_is_official][_target].client.rpc(
+        this.nakama.servers[_is_official][_target].session,
+        'send_noti_all_fn', this.notification);
+    } catch (e) {
+    }
+    this.notification.msg = '';
+    this.notification.uri = '';
+    this.is_sending = false;
   }
 
 }

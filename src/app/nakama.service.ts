@@ -2190,13 +2190,20 @@ export class NakamaService {
     v['server'] = this.servers[_is_official][_target].info;
     switch (v.code) {
       case 1: // 전체 알림 메시지 수신
+        this.servers[_is_official][_target].client.deleteNotifications(
+          this.servers[_is_official][_target].session, [v['id']]).then(b => {
+            if (!b) console.warn('알림 거부처리 검토 필요');
+            this.update_notifications(_is_official, _target);
+          });
         this.noti.PushLocal({
           id: v.code,
           title: this.servers[_is_official][_target].info.name,
-          body: v.content['msg'],
+          body: decodeURIComponent(v.content['msg']),
+          image: decodeURIComponent(v.content['uri']),
+          smallIcon_ln: 'icon_mono',
           group_ln: 'all_user_noti',
           iconColor_ln: 'ff754e',
-        }, undefined, (_ev: any) => {
+        }, 'global_noti_all', (_ev: any) => {
           this.check_notifications(v, _is_official, _target);
         });
         break;

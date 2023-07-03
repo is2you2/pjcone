@@ -53,15 +53,21 @@ export class SettingsPage implements OnInit {
     this.isBatteryOptimizationsShowed = Boolean(localStorage.getItem('ShowDisableBatteryOptimizations'));
     this.AD_Div = document.getElementById('advertise');
     this.checkAdsInfo();
-    this.as_admin = this.nakama.get_all_server_info(true, true);
-    for (let i = this.as_admin.length - 1; i >= 0; i--) {
-      if (!this.as_admin[i].is_admin)
-        this.as_admin.splice(i, 1);
+    this.check_if_admin();
+    this.nakama.on_socket_disconnected['settings_admin_check'] = () => {
+      this.check_if_admin();
     }
   }
 
   /** 관리자로 등록된 서버들 */
   as_admin = [];
+
+  check_if_admin() {
+    this.as_admin = this.nakama.get_all_server_info(true, true);
+    for (let i = this.as_admin.length - 1; i >= 0; i--)
+      if (!this.as_admin[i].is_admin)
+        this.as_admin.splice(i, 1);
+  }
 
   /** 광고 정보 불러오기 */
   async checkAdsInfo() {
@@ -158,6 +164,7 @@ export class SettingsPage implements OnInit {
       this.profile_filter = "filter: grayscale(0) contrast(1);";
     else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
     document.addEventListener('ionBackButton', this.EventListenerAct);
+    this.check_if_admin();
   }
   /** 채팅방 이중진입 방지용 */
   will_enter = false;
@@ -218,6 +225,7 @@ export class SettingsPage implements OnInit {
 
   go_back() {
     delete this.nakama.users.self['img'];
+    delete this.nakama.on_socket_disconnected['settings_admin_check'];
     clearTimeout(this.refreshAds);
     this.app.CreateGodotIFrame('godot-todo', {
       local_url: 'assets/data/godot/todo.pck',

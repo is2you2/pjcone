@@ -8,5 +8,31 @@
 </ion-header>
 
 <ion-content>
-
+  <ion-accordion-group *ngIf="servers.length" [disabled]="isSaveClicked" value="colors" expand="inset"
+    [value]="isExpanded" #accordionGroup (click)="isExpanded = true">
+    <ion-accordion value="colors">
+      <ion-item slot="header">
+        <ion-label>{{lang.text['AddGroup']['SelectServer']}}</ion-label>
+        <ion-label class="ion-text-right">{{servers[index].name}}</ion-label>
+      </ion-item>
+      <ion-list slot="content">
+        <ion-item *ngFor="let server of servers; index as i" button (click)="select_server(i)">
+          <ion-label>{{server.name}}</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-accordion>
+  </ion-accordion-group>
+  <ion-item-divider>
+    <ion-label>{{lang.text['AdminTools']['GlobalNoti']}}</ion-label>
+  </ion-item-divider>
+  <ion-item>
+    <ion-label>{{lang.text['AdminTools']['ImageURL']}}</ion-label>
+    <ion-input class="ion-text-end" [(ngModel)]="notification.uri" [placeholder]="lang.text['AdminTools']['EnterURI']">
+    </ion-input>
+  </ion-item>
+  <textarea class="infobox content_size" [(ngModel)]="notification.msg"
+    [placeholder]="lang.text['AdminTools']['NoNotiMsg']"></textarea>
+  <ion-item button [disabled]="is_sending">
+    <ion-label class="ion-text-center" (click)="send_noti_to_server()">{{lang.text['AdminTools']['Send']}}</ion-label>
+  </ion-item>
 </ion-content>

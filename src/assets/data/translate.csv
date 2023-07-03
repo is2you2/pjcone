@@ -397,4 +397,8 @@ StartRemote,원격 제어 시작,Start remote control
 ClientConnected,연결되었습니다,Connected
 UsePPTRemote,PPT 리모콘으로 사용합니다,Use as presentation remote control
 ## AdminTools,,
-NoNotiMsg,메시지를 입력해주세요,Please enter your message
+GlobalNoti,전체알림 발송,Send all notifications
+ImageURL,이미지 URL,Image URL
+EnterURI,이미지 주소 입력,Enter image url
+NoNotiMsg,전달할 메시지를 입력해주세요,Please enter your message
+Send,발송,Send
