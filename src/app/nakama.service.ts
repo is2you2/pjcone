@@ -1479,6 +1479,10 @@ export class NakamaService {
 
   /** 소켓이 행동할 때 행동중인 무언가가 있을 경우 검토하여 처리 */
   socket_reactive = {};
+  /** 소켓 연결이 시작될 때 행동  
+   * on_socket_connected[key] = function(void)
+   */
+  on_socket_connected = {};
   /** 소켓이 끊어질 때 행동  
    * on_socket_disconnected[key] = function(void)
    */
@@ -1492,6 +1496,8 @@ export class NakamaService {
     this.servers[_is_official][_target].socket.connect(
       this.servers[_is_official][_target].session, true).then(_v => {
         let socket = this.servers[_is_official][_target].socket;
+        let keys = Object.keys(this.on_socket_connected);
+        keys.forEach(key => this.on_socket_connected[key]());
         // 실시간으로 알림을 받은 경우
         socket.onnotification = (v) => {
           console.log('소켓에서 실시간으로 무언가 받음: ', v);

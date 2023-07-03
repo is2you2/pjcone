@@ -317,6 +317,10 @@ giveacoffeetodev,개발자에게 커피를 사주세요,Give a coffee to develop
 FailedToDownloadGodot,기능 다운로드 실패,Failed to download tool
 UnCheckableCreator,확인 불가,Not confirmed
 failed_to_gen_qr,QRCode 생성 실패,QRCode generation failed
+OnlineMode,온라인,Online
+OnlineMode_text,서버에 연결되어 있습니다,You are connected to the server
+OfflineMode,오프라인,Offline
+OfflineMode_text,연결된 서버가 없습니다,No server connected
 ## IndexedDB,,
 FailedToOpenFile,파일 열기 오류,Failed to open file
 FailedToDownloadFile,다운받기 오류,Failed to download file

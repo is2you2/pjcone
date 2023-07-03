@@ -20,18 +20,15 @@ export class LanguageSettingService {
     Main: {},
     Settings: {},
     Profile: {},
-    WscClient: {
-      Disconnected: 'Disconnected from assistant server.',
-      OnlineMode: 'Online mode',
-      OnlineMode_text: 'You can receive notification from assistant server.',
-      OfflineMode: 'Offline mode',
-      OfflineMode_text: 'You can receive notification from local network.',
-    },
     Nakama: {
       UnexpectedLoginErr: 'Login Failed',
     },
     GlobalAct: {
       FailedToDownloadGodot: 'Failed to Download',
+      OnlineMode: 'Online',
+      OnlineMode_text: 'You are connected to the server',
+      OfflineMode: 'Offline',
+      OfflineMode_text: 'No server connected',
     },
     ChatRoom: {
       attachments: 'Attachments',

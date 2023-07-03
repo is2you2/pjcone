@@ -32,7 +32,7 @@ export class AppComponent {
     router: Router,
     ngZone: NgZone,
     noti: LocalNotiService,
-    bgmode: BackgroundMode,
+    private bgmode: BackgroundMode,
     private nakama: NakamaService,
     indexed: IndexedDBService,
     private modalCtrl: ModalController,
@@ -131,6 +131,44 @@ export class AppComponent {
       }
     });
     bgmode.enable();
+    this.check_if_online();
+    nakama.on_socket_connected['connection_check'] = () => {
+      this.check_if_online();
+    }
+    nakama.on_socket_disconnected['connection_check'] = () => {
+      this.check_if_online();
+    }
+  }
+
+  check_if_online() {
+    let as_admin = this.nakama.get_all_server_info(true, true);
+    if (as_admin.length) {
+      this.bgmode.setDefaults({
+        title: this.lang.text['GlobalAct']['OnlineMode'],
+        text: this.lang.text['GlobalAct']['OnlineMode_text'],
+        icon: 'icon_mono',
+        color: 'ffd94e', // 모자 밑단 노란색
+      });
+      this.bgmode.configure({
+        title: this.lang.text['GlobalAct']['OnlineMode'],
+        text: this.lang.text['GlobalAct']['OnlineMode_text'],
+        icon: 'icon_mono',
+        color: 'ffd94e', // 모자 밑단 노란색
+      });
+    } else {
+      this.bgmode.setDefaults({
+        title: this.lang.text['GlobalAct']['OfflineMode'],
+        text: this.lang.text['GlobalAct']['OfflineMode_text'],
+        icon: 'icon_mono',
+        color: 'ffd94e', // 모자 밑단 노란색
+      });
+      this.bgmode.configure({
+        title: this.lang.text['GlobalAct']['OfflineMode'],
+        text: this.lang.text['GlobalAct']['OfflineMode_text'],
+        icon: 'icon_mono',
+        color: 'ffd94e', // 모자 밑단 노란색
+      });
+    }
   }
 
   /** 앱이 꺼진 상태에서 알림 클릭시 바로 동작하지 않기 때문에 페이지 열기 가능할 때까지 기다림  
