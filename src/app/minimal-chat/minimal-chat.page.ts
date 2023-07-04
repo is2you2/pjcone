@@ -379,7 +379,9 @@ export class MinimalChatPage implements OnInit {
         }, this.Header, this.open_this);
       }
     }
-    this.follow_resize();
+    setTimeout(() => {
+      this.follow_resize();
+    }, 0);
   }
 
   p5canvas: p5;

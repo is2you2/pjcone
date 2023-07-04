@@ -56,8 +56,8 @@ SPDX-License-Identifier: MIT -->
               </td>
               <td
                 *ngIf="client.status[target] == 'unlinked' || client.status[target] == 'idle' || client.status[target] == 'custom'">
-                <ion-button (click)="quit_chat()" expand="block">
-                  {{lang.text['MinimalChat']['exit_chat']}}
+                <ion-button (click)="quit_chat()" expand="block" fill="clear">
+                  <ion-icon style="margin: 0;" slot="start" name="exit"></ion-icon>
                 </ion-button>
               </td>
               <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'custom'" style="width: 100%;">
@@ -66,8 +66,8 @@ SPDX-License-Identifier: MIT -->
                 </ion-input>
               </td>
               <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'custom'">
-                <ion-button (click)="send()" expand="block">
-                  {{lang.text['MinimalChat']['send']}}
+                <ion-button (click)="send()" expand="block" fill="clear">
+                  <ion-icon style="margin: 0;" slot="start" name="send"></ion-icon>
                 </ion-button>
               </td>
             </tr>

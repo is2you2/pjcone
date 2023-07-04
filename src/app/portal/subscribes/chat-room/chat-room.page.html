@@ -108,20 +108,20 @@ SPDX-License-Identifier: MIT -->
           <table id="input_table" style="width: 100%; background-color: var(--chatroom-input-background);">
             <tr>
               <td>
-                <ion-button expand="block" [disabled]="!info['status'] || info['status'] == 'offline'"
-                  (click)="open_ext_with_delay()">
-                  {{lang.text['ChatRoom']['chat_extension']}}
+                <ion-button fill="clear" [disabled]="!info['status'] || info['status'] == 'offline'"
+                  (click)="open_ext_with_delay()" class="ion-text-center">
+                  <ion-icon style="margin: 0;" slot="start" name="add"></ion-icon>
                 </ion-button>
               </td>
               <td style="width: 100%; vertical-align: bottom;">
                 <textarea [(ngModel)]="userInput.text" (keyup.enter)="send(true)"
-                  style="width: 100%; height: 36px; resize: none; padding: 6px; margin-top: 5px;"
+                  style="width: 100%; height: 36px; resize: none; padding: 6px; margin-top: 5px; border: 0;"
                   (click)="make_ext_hidden()" [placeholder]="inputPlaceholder"></textarea>
               </td>
               <td>
-                <ion-button (click)="send(false)" expand="block"
+                <ion-button fill="clear" (click)="send(false)" expand="block"
                   [disabled]="!info['status'] || info['status'] == 'missing' || info['status'] == 'offline'">
-                  {{lang.text['ChatRoom']['send_chat']}}
+                  <ion-icon style="margin: 0;" slot="start" name="send"></ion-icon>
                 </ion-button>
               </td>
             </tr>
