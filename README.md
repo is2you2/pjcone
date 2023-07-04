@@ -197,6 +197,7 @@ npx cap sync android
 - Android 빌드 후 버전 정보 변경 (수동): android/variables.gradle
 ```gradle
     minSdkVersion = 22,
+    targetSdkVersion = 31
     cordovaAndroidVersion = '10.1.2',
 ```
 - Android 10 버전 이상에서 사용자 설정에 따른 밝기 모드가 적용되지 않고 다크모드로 동작하는 이슈가 있습니다. [참고 내용](https://github.com/ionic-team/capacitor/issues/5441)  
