@@ -515,7 +515,7 @@ export class AddTodoMenuPage implements OnInit {
   }
   /** 중요도 변경됨 */
   StoreAtSelChanged(ev: any) {
-    let value: RemoteInfo = ev.detail.value;
+    let value: any = ev.detail.value;
     if (value == 'local') {
       this.userInput.storeAt = 'local';
       this.userInput.remote = undefined;
