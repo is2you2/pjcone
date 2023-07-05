@@ -142,7 +142,7 @@ Godot 엔진이 현재 가지고 있는 구조상의 한계를 뛰어넘기 위�
   - [x] 사용자가 사설 서버 등록 및 이용 가능
 
 ## Android 빌드 작업보조 정보글
-- apt install openjdk-8-jdk 로 Java 1.8.0 을 설치한 후 안드로이드 스튜디오에서 버전 변경 (Ctrl + Alt + Shift + S)
+- apt install openjdk-11-jdk 로 Java 1.11.0 을 설치한 후 안드로이드 스튜디오에서 버전 변경 (Ctrl + Alt + Shift + S)
 - 광고 정보를 Application에 추가 작성
 ```xml
 <manifest>
@@ -197,6 +197,7 @@ npx cap sync android
 - Android 빌드 후 버전 정보 변경 (수동): android/variables.gradle
 ```gradle
     minSdkVersion = 22,
+    compileSdkVersion = 31
     targetSdkVersion = 31
     cordovaAndroidVersion = '10.1.2',
 ```
