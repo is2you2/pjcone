@@ -717,8 +717,9 @@ export class NakamaService {
             if (User['is_me'])
               User['user'] = this.users.self;
             else {
-              if (this.load_other_user(User['user'].id, _is_official, _target)['avatar_url'] != User['user'].avatar_url
-                || !this.load_other_user(User['user'].id, _is_official, _target)['img'])
+              if (User['user'].id != this.servers[_is_official][_target].session.user_id
+                && (this.load_other_user(User['user'].id, _is_official, _target)['avatar_url'] != User['user'].avatar_url
+                  || !this.load_other_user(User['user'].id, _is_official, _target)['img']))
                 await this.servers[_is_official][_target].client.readStorageObjects(
                   this.servers[_is_official][_target].session, {
                   object_ids: [{
@@ -746,39 +747,40 @@ export class NakamaService {
       let users = [];
       list.forEach(path => {
         let getUserId = path.split('/')[4];
-        if (!users.includes(getUserId) && getUserId != this.servers[_is_official][_target].session.user_id)
+        if (!users.includes(getUserId))
           users.push(getUserId);
       });
       users.forEach(userId => {
-        this.servers[_is_official][_target].client.getUsers(
-          this.servers[_is_official][_target].session, [userId]
-        ).then(v => {
-          if (v.users.length) {
-            let keys = Object.keys(v.users[0]);
-            keys.forEach(async key => {
-              if (key == 'avatar_url') // 이미지 업데이트 여부 검토
-                if (this.load_other_user(userId, _is_official, _target)[key] != v.users[0][key]) {
-                  await this.servers[_is_official][_target].client.readStorageObjects(
-                    this.servers[_is_official][_target].session, {
-                    object_ids: [{
-                      collection: 'user_public',
-                      key: 'profile_image',
-                      user_id: userId,
-                    }],
-                  }).then(v => {
-                    if (v.objects.length)
-                      this.load_other_user(userId, _is_official, _target)['img'] = v.objects[0].value['img'];
-                    else this.indexed.removeFileFromUserPath(`server/${_is_official}/${_target}/users/${userId}/profile.img`)
-                  });
-                }
-              this.save_other_user(v.users[0], _is_official, _target);
-            });
-          } else { // 없는 사용자 기록 삭제
-            this.indexed.GetFileListFromDB(`${_is_official}/${_target}/users/${userId}`, list => {
-              list.forEach(path => this.indexed.removeFileFromUserPath(path));
-            });
-          }
-        });
+        if (this.servers[_is_official][_target].session.user_id != userId)
+          this.servers[_is_official][_target].client.getUsers(
+            this.servers[_is_official][_target].session, [userId]
+          ).then(v => {
+            if (v.users.length) {
+              let keys = Object.keys(v.users[0]);
+              keys.forEach(async key => {
+                if (key == 'avatar_url') // 이미지 업데이트 여부 검토
+                  if (this.load_other_user(userId, _is_official, _target)[key] != v.users[0][key]) {
+                    await this.servers[_is_official][_target].client.readStorageObjects(
+                      this.servers[_is_official][_target].session, {
+                      object_ids: [{
+                        collection: 'user_public',
+                        key: 'profile_image',
+                        user_id: userId,
+                      }],
+                    }).then(v => {
+                      if (v.objects.length)
+                        this.load_other_user(userId, _is_official, _target)['img'] = v.objects[0].value['img'];
+                      else this.indexed.removeFileFromUserPath(`server/${_is_official}/${_target}/users/${userId}/profile.img`)
+                    });
+                  }
+                this.save_other_user(v.users[0], _is_official, _target);
+              });
+            } else { // 없는 사용자 기록 삭제
+              this.indexed.GetFileListFromDB(`${_is_official}/${_target}/users/${userId}`, list => {
+                list.forEach(path => this.indexed.removeFileFromUserPath(path));
+              });
+            }
+          });
       });
     });
   }
@@ -823,6 +825,8 @@ export class NakamaService {
    * @returns 다른 사람 정보: User
    */
   load_other_user(userId: string, _is_official: string, _target: string) {
+    if (this.servers[_is_official][_target].session.user_id == userId)
+      return this.users.self;
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
     if (!this.users[_is_official][_target][userId]) {
       this.users[_is_official][_target][userId] = {};
