@@ -752,35 +752,7 @@ export class NakamaService {
       });
       users.forEach(userId => {
         if (this.servers[_is_official][_target].session.user_id != userId)
-          this.servers[_is_official][_target].client.getUsers(
-            this.servers[_is_official][_target].session, [userId]
-          ).then(v => {
-            if (v.users.length) {
-              let keys = Object.keys(v.users[0]);
-              keys.forEach(async key => {
-                if (key == 'avatar_url') // 이미지 업데이트 여부 검토
-                  if (this.load_other_user(userId, _is_official, _target)[key] != v.users[0][key]) {
-                    await this.servers[_is_official][_target].client.readStorageObjects(
-                      this.servers[_is_official][_target].session, {
-                      object_ids: [{
-                        collection: 'user_public',
-                        key: 'profile_image',
-                        user_id: userId,
-                      }],
-                    }).then(v => {
-                      if (v.objects.length)
-                        this.load_other_user(userId, _is_official, _target)['img'] = v.objects[0].value['img'];
-                      else this.indexed.removeFileFromUserPath(`server/${_is_official}/${_target}/users/${userId}/profile.img`)
-                    });
-                  }
-                this.save_other_user(v.users[0], _is_official, _target);
-              });
-            } else { // 없는 사용자 기록 삭제
-              this.indexed.GetFileListFromDB(`${_is_official}/${_target}/users/${userId}`, list => {
-                list.forEach(path => this.indexed.removeFileFromUserPath(path));
-              });
-            }
-          });
+          this.load_other_user(userId, _is_official, _target);
       });
     });
   }
@@ -824,9 +796,10 @@ export class NakamaService {
   /** 다른 사람의 정보 반환해주기 (로컬 정보 기반)
    * @returns 다른 사람 정보: User
    */
-  load_other_user(userId: string, _is_official: string, _target: string) {
+  load_other_user(userId: string, _is_official: string, _target: string, _CallBack = (userInfo: any) => { }) {
     if (this.servers[_is_official][_target].session.user_id == userId)
       return this.users.self;
+    let already_use_callback = false;
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
     if (!this.users[_is_official][_target][userId]) {
       this.users[_is_official][_target][userId] = {};
@@ -835,9 +808,31 @@ export class NakamaService {
           let data = JSON.parse(v);
           let keys = Object.keys(data);
           keys.forEach(key => this.users[_is_official][_target][userId][key] = data[key]);
+          if (!already_use_callback) {
+            _CallBack(this.users[_is_official][_target][userId]);
+            already_use_callback = true;
+          }
+        } else {
+          this.servers[_is_official][_target].client.getUsers(
+            this.servers[_is_official][_target].session, [userId])
+            .then(v => {
+              if (v.users.length) {
+                let keys = Object.keys(v.users[0]);
+                keys.forEach(key => this.users[_is_official][_target][userId][key] = v.users[0][key]);
+                if (!already_use_callback) {
+                  _CallBack(this.users[_is_official][_target][userId]);
+                  already_use_callback = true;
+                }
+                this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
+              } else { // 없는 사용자 기록 삭제
+                this.indexed.GetFileListFromDB(`${_is_official}/${_target}/users/${userId}`, list => {
+                  list.forEach(path => this.indexed.removeFileFromUserPath(path));
+                });
+              }
+            });
         }
       });
-      if (!this.users[_is_official][_target][userId]['img'])
+      if (!this.users[_is_official][_target][userId]['img']) {
         this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
           if (e && v) {
             this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
@@ -854,14 +849,23 @@ export class NakamaService {
                 if (v.objects.length)
                   this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
                 else delete this.users[_is_official][_target][userId]['avatar_url'];
+                if (!already_use_callback) {
+                  _CallBack(this.users[_is_official][_target][userId]);
+                  already_use_callback = true;
+                }
                 this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
               }).catch(_e => {
                 if (this.users[_is_official][_target][userId]['img']) {
                   delete this.users[_is_official][_target][userId]['img'];
+                  if (!already_use_callback) {
+                    _CallBack(this.users[_is_official][_target][userId]);
+                    already_use_callback = true;
+                  }
                   this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
                 }
               });
         });
+      } else this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
     }
     return this.users[_is_official][_target][userId];
   }
@@ -869,6 +873,7 @@ export class NakamaService {
   /** 다른 사람의 정보 간소화하여 저장하기 */
   save_other_user(userInfo: any, _is_official: string, _target: string) {
     let copied = JSON.parse(JSON.stringify(userInfo));
+    if (userInfo['id'] == this.servers[_is_official][_target].session.user_id) return;
     delete copied['img'];
     delete copied['online'];
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
@@ -1561,14 +1566,8 @@ export class NakamaService {
                 others.push(info.user_id);
               }
             });
-            this.servers[_is_official][_target].client.getUsers(
-              this.servers[_is_official][_target].session, others).then(v => {
-                if (v.users.length)
-                  v.users.forEach(_user => {
-                    this.save_other_user(_user, _is_official, _target);
-                  });
-                this.count_channel_online_member(p, _is_official, _target);
-              });
+            others.forEach(_userId => this.load_other_user(_userId, _is_official, _target));
+            this.count_channel_online_member(p, _is_official, _target);
           }
         }
         socket.onmatchdata = (m) => {
@@ -2316,6 +2315,15 @@ export class NakamaService {
             this.indexed.saveTextFileToUserPath(img.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${v.content['group_id']}.img`);
           }
         });
+        this.servers[_is_official][_target].client.listGroupUsers(
+          this.servers[_is_official][_target].session, v.content['group_id'])
+          .then(v => {
+            if (v.group_users.length) {
+              v.group_users.forEach(user => {
+                this.load_other_user(user.user.id, _is_official, _target);
+              });
+            }
+          });
         this.join_chat_with_modulation(v.content['group_id'], 3, _is_official, _target, (c) => {
           this.servers[_is_official][_target].client.listChannelMessages(
             this.servers[_is_official][_target].session, c.id, 1, false)
