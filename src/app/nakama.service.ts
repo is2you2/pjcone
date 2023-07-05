@@ -797,8 +797,6 @@ export class NakamaService {
    * @returns 다른 사람 정보: User
    */
   load_other_user(userId: string, _is_official: string, _target: string, _CallBack = (userInfo: any) => { }) {
-    if (this.servers[_is_official][_target].session.user_id == userId)
-      return this.users.self;
     let already_use_callback = false;
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
     if (!this.users[_is_official][_target][userId]) {
