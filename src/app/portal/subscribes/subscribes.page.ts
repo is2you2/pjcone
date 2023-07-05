@@ -103,9 +103,16 @@ export class SubscribesPage implements OnInit {
       this.modalCtrl.create({
         component: AddGroupPage,
       }).then(v => v.present());
-    else this.modalCtrl.create({
-      component: GroupServerPage,
-    }).then(v => v.present());
+    else {
+      this.modalCtrl.create({
+        component: GroupServerPage,
+      }).then(v => {
+        this.p5toast.show({
+          text: this.lang.text['Subscribes']['Disconnected'],
+        });
+        v.present()
+      });
+    }
   }
 
   ionViewWillLeave() {
