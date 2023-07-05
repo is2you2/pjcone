@@ -140,11 +140,23 @@ export class GroupServerPage implements OnInit {
   }
 
   /** 사설 서버 삭제 */
-  remove_server(_is_official: string, _target: string) {
+  async remove_server(_is_official: string, _target: string) {
     this.isOverrideButtonPressed = true;
+    try {
+      await this.nakama.servers[_is_official][_target].client.rpc(
+        this.nakama.servers[_is_official][_target].session,
+        'remove_account_fn', {});
+      this.p5toast.show({
+        text: this.lang.text['GroupServer']['DeleteAccountSucc'],
+      });
+    } catch (e) {
+      this.p5toast.show({
+        text: this.lang.text['GroupServer']['DeleteAccountFailed'],
+      });
+    }
     // 로그인 상태일 경우 로그오프처리
     if (this.statusBar.groupServer[_is_official][_target] == 'online') {
-      this.nakama.servers[_is_official][_target].client.sessionLogout(
+      await this.nakama.servers[_is_official][_target].client.sessionLogout(
         this.nakama.servers[_is_official][_target].session,
         this.nakama.servers[_is_official][_target].session.token,
         this.nakama.servers[_is_official][_target].session.refresh_token,
@@ -152,7 +164,6 @@ export class GroupServerPage implements OnInit {
       if (this.nakama.servers[_is_official][_target].socket)
         this.nakama.servers[_is_official][_target].socket.disconnect(true);
     }
-    delete this.nakama.servers[_is_official][_target];
     // 알림정보 삭제
     if (this.nakama.noti_origin[_is_official] && this.nakama.noti_origin[_is_official][_target])
       delete this.nakama.noti_origin[_is_official][_target];
@@ -180,6 +191,7 @@ export class GroupServerPage implements OnInit {
         this.nakama.groups[_is_official][_target][_gid]['status'] = 'missing';
       });
     }
+    delete this.nakama.servers[_is_official][_target];
     // 그룹서버 리스트 정리
     this.servers = this.nakama.get_all_server_info(true);
     // 그룹서버 정리
