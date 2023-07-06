@@ -4,15 +4,12 @@
       <ion-tab-button [disabled]="lang.OnLoading" (click)="subscribe_button()" tab="subscribes">
         <ion-icon name="chatbubbles"></ion-icon>
         <ion-badge *ngIf="nakama.has_new_channel_msg" color="danger" mode="md"></ion-badge>
-        <ion-label>{{lang.text['Portal']['Chat']}}</ion-label>
       </ion-tab-button>
       <ion-tab-button [disabled]="lang.OnLoading" tab="main">
         <ion-icon name="checkbox"></ion-icon>
-        <ion-label>{{lang.text['Portal']['Todo']}}</ion-label>
       </ion-tab-button>
       <ion-tab-button [disabled]="lang.OnLoading" (click)="setting_button()">
         <ion-icon name="settings"></ion-icon>
-        <ion-label>{{lang.text['Portal']['Settings']}}</ion-label>
       </ion-tab-button>
     </ion-tab-bar>
   </ion-tabs>

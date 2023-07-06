@@ -24,7 +24,6 @@ import { GroupDetailPage } from '../../settings/group-detail/group-detail.page';
 import { Camera } from '@awesome-cordova-plugins/camera/ngx';
 
 interface ExtendButtonForm {
-  title: string;
   /** 버튼 숨기기 */
   isHide?: boolean;
   /** 아이콘 상대경로-이름, 크기: 64 x 64 px */
@@ -75,9 +74,8 @@ export class ChatRoomPage implements OnInit {
   temporary_open_thumbnail = {};
   /** 확장 버튼 행동들 */
   extended_buttons: ExtendButtonForm[] = [{
-    title: this.lang.text['ChatRoom']['remove_chatroom'],
     isHide: true,
-    icon: 'close-circle',
+    icon: 'close-circle-outline',
     act: async () => {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
@@ -97,8 +95,7 @@ export class ChatRoomPage implements OnInit {
     }
   },
   {
-    title: this.lang.text['ChatRoom']['leave_chatroom'],
-    icon: 'log-out',
+    icon: 'log-out-outline',
     act: async () => {
       if (this.info['redirect']['type'] != 3) {
         try {
@@ -117,8 +114,7 @@ export class ChatRoomPage implements OnInit {
     }
   },
   {
-    title: this.lang.text['ChatRoom']['setting_group'],
-    icon: 'settings',
+    icon: 'settings-outline',
     act: () => {
       if (this.info['redirect']['type'] != 3) {
         this.extended_buttons[2].isHide = true;
@@ -148,8 +144,7 @@ export class ChatRoomPage implements OnInit {
     }
   },
   {
-    title: this.lang.text['ChatRoom']['useCamera'],
-    icon: 'camera',
+    icon: 'camera-outline',
     act: () => {
       this.camera.getPicture({
         destinationType: 0,
@@ -177,15 +172,13 @@ export class ChatRoomPage implements OnInit {
     }
   },
   {
-    title: this.lang.text['ChatRoom']['attach_file'],
-    icon: 'attach',
+    icon: 'document-attach-outline',
     act: () => {
       document.getElementById(this.file_sel_id).click();
     }
   },
   {
-    title: this.lang.text['ChatRoom']['attach_inapp_file'],
-    icon: 'document-attach',
+    icon: 'folder-open-outline',
     act: () => {
       console.log(this.info);
       this.modalCtrl.create({
@@ -233,7 +226,6 @@ export class ChatRoomPage implements OnInit {
     }
   },
   {
-    title: this.lang.text['ChatRoom']['voidDraw'],
     icon_img: 'voidDraw.png',
     act: () => {
       this.modalCtrl.create({
