@@ -492,7 +492,6 @@ export class ChatRoomPage implements OnInit {
             this.next_cursor = v.next_cursor;
             this.prev_cursor = v.prev_cursor;
             this.pullable = true;
-            if (!this.foundLastRead) this.pull_msg_history();
             this.nakama.saveListedMessage(this.messages, this.info, this.isOfficial, this.target);
           });
       else { // 오프라인 기반 리스트 알려주기
