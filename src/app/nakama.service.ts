@@ -141,21 +141,6 @@ export class NakamaService {
           this.init_server(info);
         });
       }
-      if (!e) { // 파일이 없는 경우 공식 서버를 저장하기
-        this.indexed.saveTextFileToUserPath(`0,official,Project: Cone,default,${SOCKET_SERVER_ADDRESS},7350,true`, 'servers/list_detail.csv', (_v) => {
-          let official_info: ServerInfo = {
-            name: 'Project: Cone',
-            address: SOCKET_SERVER_ADDRESS,
-            isOfficial: 'official',
-            target: 'default',
-            key: 'defaultkey',
-            port: 7350,
-            useSSL: true,
-          }
-          this.init_server(official_info)
-          this.servers[official_info.isOfficial][official_info.target].info = { ...official_info };
-        });
-      }
       this.catch_group_server_header('offline');
     });
     // 마지막 상태바 정보 불러오기: 사용자의 연결 여부 의사가 반영되어있음
