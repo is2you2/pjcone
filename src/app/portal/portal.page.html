@@ -1,7 +1,7 @@
 <ion-content>
   <ion-tabs>
     <ion-tab-bar slot="bottom">
-      <ion-tab-button (ionSelected)="tabChanges()" [disabled]="lang.OnLoading" (click)="subscribe_button()"
+      <ion-tab-button [disabled]="lang.OnLoading" (click)="subscribe_button()"
         tab="subscribes">
         <ion-icon [name]="SubscribesIcon"></ion-icon>
         <ion-badge *ngIf="nakama.has_new_channel_msg" color="danger" mode="md"></ion-badge>
