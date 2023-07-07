@@ -136,12 +136,16 @@ export class VoidDrawPage implements OnInit {
   /** 사용하기를 누른 경우 */
   dismiss_draw() {
     this.mainLoading.present();
+    this.WithoutSave = false;
     setTimeout(() => {
       this.global.godot_window['save_image']();
     }, 100);
   }
 
+  WithoutSave = true;
   ionViewDidLeave() {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
+    if (this.WithoutSave)
+      this.mainLoading.remove();
   }
 }
