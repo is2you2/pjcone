@@ -96,13 +96,8 @@ export class EnginepptPage implements OnInit {
       });
       return;
     }
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-    loading.present();
     await this.indexed.saveFileToUserPath(base64, 'engineppt/presentation_this.pck');
     this.CreateEnginePPT();
-    setTimeout(() => {
-      loading.dismiss();
-    }, 1000);
   }
 
   CreateEnginePPT() {
