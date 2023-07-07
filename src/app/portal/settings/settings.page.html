@@ -63,9 +63,6 @@ SPDX-License-Identifier: MIT -->
   <ion-item button (click)="go_to_page('qr-share')" [disabled]="statusBar.settings['groupServer'] == 'offline'">
     <ion-label>{{lang.text['Settings']['quickQRshare']}}</ion-label>
   </ion-item>
-  <ion-item disabled button (click)="go_to_page('tool-management')">
-    <ion-label>{{lang.text['Settings']['PluginList']}}</ion-label>
-  </ion-item>
   <ion-item button (click)="go_to_page('engineppt')">
     <ion-label>{{lang.text['Settings']['EnginePPT']}}</ion-label>
   </ion-item>
