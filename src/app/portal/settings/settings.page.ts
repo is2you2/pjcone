@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
 import { isPlatform, SERVER_PATH_ROOT } from 'src/app/app.component';
@@ -20,7 +20,7 @@ import { GlobalActService } from 'src/app/global-act.service';
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
 })
-export class SettingsPage implements OnInit {
+export class SettingsPage implements OnInit, OnDestroy {
 
   constructor(
     private modalCtrl: ModalController,
@@ -35,13 +35,6 @@ export class SettingsPage implements OnInit {
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
-
-  EventListenerAct = (ev: any) => {
-    ev.detail.register(10, (processNextHandler) => {
-      this.go_back();
-      processNextHandler();
-    });
-  }
 
   ngOnInit() {
     this.nakama.removeBanner();
@@ -163,7 +156,6 @@ export class SettingsPage implements OnInit {
     if (this.nakama.users.self['online'])
       this.profile_filter = "filter: grayscale(0) contrast(1);";
     else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
-    document.addEventListener('ionBackButton', this.EventListenerAct);
     this.check_if_admin();
   }
   /** 채팅방 이중진입 방지용 */
@@ -219,11 +211,7 @@ export class SettingsPage implements OnInit {
     });
   }
 
-  ionViewWillLeave() {
-    document.removeEventListener('ionBackButton', this.EventListenerAct);
-  }
-
-  go_back() {
+  ngOnDestroy(): void {
     delete this.nakama.users.self['img'];
     delete this.nakama.on_socket_disconnected['settings_admin_check'];
     clearTimeout(this.refreshAds);
