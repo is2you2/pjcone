@@ -40,6 +40,7 @@ export class LanguageSettingService {
     },
     QRElse: {},
     GroupDetail: {},
+    voidDraw: {},
   };
 
   constructor() {
