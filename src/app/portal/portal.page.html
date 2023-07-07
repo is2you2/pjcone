@@ -1,15 +1,16 @@
 <ion-content>
   <ion-tabs>
     <ion-tab-bar slot="bottom">
-      <ion-tab-button [disabled]="lang.OnLoading" (click)="subscribe_button()" tab="subscribes">
-        <ion-icon name="chatbubbles"></ion-icon>
+      <ion-tab-button (ionSelected)="tabChanges()" [disabled]="lang.OnLoading" (click)="subscribe_button()"
+        tab="subscribes">
+        <ion-icon [name]="SubscribesIcon"></ion-icon>
         <ion-badge *ngIf="nakama.has_new_channel_msg" color="danger" mode="md"></ion-badge>
       </ion-tab-button>
-      <ion-tab-button [disabled]="lang.OnLoading" tab="main">
-        <ion-icon name="checkbox"></ion-icon>
+      <ion-tab-button [disabled]="lang.OnLoading" tab="main" (click)="bottom_tab_selected()">
+        <ion-icon [name]="TodoIcon"></ion-icon>
       </ion-tab-button>
       <ion-tab-button [disabled]="lang.OnLoading" (click)="setting_button()">
-        <ion-icon name="settings"></ion-icon>
+        <ion-icon name="settings-outline"></ion-icon>
       </ion-tab-button>
     </ion-tab-bar>
   </ion-tabs>

@@ -24,6 +24,8 @@ export class PortalPage implements OnInit {
   /** 하단 탭을 눌러 알림 확인함 처리 */
   subscribe_button() {
     this.nakama.has_new_channel_msg = false;
+    this.SubscribesIcon = 'chatbubbles';
+    this.TodoIcon = 'checkbox-outline';
   }
 
   /** 하단 탭을 눌러 설정페이지로 이동 */
@@ -32,5 +34,13 @@ export class PortalPage implements OnInit {
     this.nav.navigateForward('settings', {
       animation: iosTransitionAnimation,
     });
+  }
+
+  SubscribesIcon = 'chatbubbles-outline';
+  TodoIcon = 'checkbox';
+
+  bottom_tab_selected() {
+    this.SubscribesIcon = 'chatbubbles-outline';
+    this.TodoIcon = 'checkbox';
   }
 }
