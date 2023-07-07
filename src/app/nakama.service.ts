@@ -2235,7 +2235,7 @@ export class NakamaService {
           title: this.servers[_is_official][_target].info.name,
           body: decodeURIComponent(v.content['msg']),
           image: decodeURIComponent(v.content['uri']),
-          smallIcon_ln: 'icon_mono',
+          smallIcon_ln: 'diychat',
           group_ln: 'all_user_noti',
           iconColor_ln: 'ff754e',
         }, 'global_noti_all', (_ev: any) => {

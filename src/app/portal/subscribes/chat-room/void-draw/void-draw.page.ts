@@ -32,7 +32,7 @@ export class VoidDrawPage implements OnInit {
   async ionViewDidEnter() {
     document.addEventListener('ionBackButton', this.EventListenerAct);
     this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
-    this.global.CreateGodotIFrame('p5_void_draw', {
+    this.global.CreateGodotIFrame('voidDraw', {
       local_url: 'assets/data/godot/voidDraw.pck',
       title: 'voidDraw',
       image: Boolean(this.navParams.data['path']),

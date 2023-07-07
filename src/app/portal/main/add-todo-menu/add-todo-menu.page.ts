@@ -732,7 +732,7 @@ export class AddTodoMenuPage implements OnInit {
     if (!this.global.godot_window['add_todo']) {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
-      await this.global.CreateGodotIFrame('godot-todo', {
+      await this.global.CreateGodotIFrame('todo', {
         local_url: 'assets/data/godot/todo.pck',
         title: 'Todo',
         add_todo_menu: (_data: string) => {
@@ -898,7 +898,7 @@ export class AddTodoMenuPage implements OnInit {
           });
         });
       this.global.last_frame_name = '';
-      await this.global.CreateGodotIFrame('godot-todo', {
+      await this.global.CreateGodotIFrame('todo', {
         local_url: 'assets/data/godot/todo.pck',
         title: 'Todo',
         add_todo_menu: (_data: string) => {
@@ -1100,7 +1100,7 @@ export class AddTodoMenuPage implements OnInit {
       this.p5resize.remove();
     if (this.p5timer)
       this.p5timer.remove();
-    this.global.CreateGodotIFrame('godot-todo', {
+    this.global.CreateGodotIFrame('todo', {
       local_url: 'assets/data/godot/todo.pck',
       title: 'Todo',
       add_todo_menu: (_data: string) => {

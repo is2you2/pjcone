@@ -111,6 +111,7 @@ export class GlobalActService {
     }
   }
 
+  godot_splash: p5;
   /** 실행중인 iframe-godot 개체를 기억하여 2개 이상 생성될 경우 이전에 진행중인 객체를 삭제, 마지막 실행기만 기억하기 */
   godot: HTMLIFrameElement;
   godot_window: any;
@@ -124,6 +125,8 @@ export class GlobalActService {
    * @returns iframe 개체 돌려주기
    */
   CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys, waiting_key: string = ''): Promise<any> {
+    if (this.godot_splash) this.godot_splash.remove();
+    let ready_to_show = false;
     return new Promise((done: any) => {
       let refresh_it_loading = () => {
         try {
@@ -131,6 +134,7 @@ export class GlobalActService {
             throw 'No godot';
           if (waiting_key && !this.godot_window[waiting_key])
             throw 'No act ready';
+          ready_to_show = true;
           done();
         } catch (e) {
           setTimeout(() => {
@@ -166,6 +170,34 @@ export class GlobalActService {
       let _keys = Object.keys(keys);
       _keys.forEach(key => this.godot_window[key] = keys[key]);
       this.godot = _godot;
+      this.godot_splash = new p5((p: p5) => {
+        let icon: p5.Image;
+        p.setup = () => {
+          let canvas = p.createCanvas(frame.clientWidth, frame.clientHeight);
+          canvas.parent(frame);
+          canvas.style('position: absolute; left: 0;');
+          p.imageMode(p.CENTER);
+          p.loadImage(`assets/icon/${_frame_name}.png`, v => {
+            icon = v;
+          });
+        }
+        let FadeLerp = 1;
+        let splash_bg_color = isDarkMode ? 80 : 200;
+        p.draw = () => {
+          p.clear(255, 255, 255, 255);
+          p.background(splash_bg_color, splash_bg_color, splash_bg_color, 255 * FadeLerp);
+          p.tint(255, 255 * FadeLerp);
+          if (icon) p.image(icon, p.width / 2, p.height / 2);
+          if (ready_to_show) {
+            FadeLerp -= .04;
+            if (FadeLerp <= 0)
+              p.remove();
+          }
+        }
+        p.windowResized = () => {
+          p.resizeCanvas(frame.clientWidth, frame.clientHeight);
+        }
+      });
       refresh_it_loading();
     });
   }

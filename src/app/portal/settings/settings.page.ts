@@ -227,7 +227,7 @@ export class SettingsPage implements OnInit {
     delete this.nakama.users.self['img'];
     delete this.nakama.on_socket_disconnected['settings_admin_check'];
     clearTimeout(this.refreshAds);
-    this.app.CreateGodotIFrame('godot-todo', {
+    this.app.CreateGodotIFrame('todo', {
       local_url: 'assets/data/godot/todo.pck',
       title: 'Todo',
       add_todo_menu: (_data: string) => {

@@ -59,7 +59,7 @@ export class MainPage implements OnInit {
   }
 
   ionViewWillEnter() {
-    this.app.CreateGodotIFrame('godot-todo', {
+    this.app.CreateGodotIFrame('todo', {
       local_url: 'assets/data/godot/todo.pck',
       title: 'Todo',
       /**
