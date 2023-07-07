@@ -177,17 +177,28 @@ export class GlobalActService {
           canvas.parent(frame);
           canvas.style('position: absolute; left: 0;');
           p.imageMode(p.CENTER);
+          p.rectMode(p.CENTER);
+          p.noStroke();
           p.loadImage(`assets/icon/${_frame_name}.png`, v => {
             icon = v;
           });
         }
         let FadeLerp = 1;
+        let loadingRot = 0;
         let splash_bg_color = isDarkMode ? 80 : 200;
+        let loading_box = isDarkMode ? 200 : 80;
         p.draw = () => {
           p.clear(255, 255, 255, 255);
-          p.background(splash_bg_color, splash_bg_color, splash_bg_color, 255 * FadeLerp);
+          p.background(splash_bg_color, 255 * FadeLerp);
           p.tint(255, 255 * FadeLerp);
           if (icon) p.image(icon, p.width / 2, p.height / 2);
+          p.push();
+          p.translate(p.width / 2, p.height / 2 + 80);
+          loadingRot += .07;
+          p.rotate(loadingRot);
+          p.fill(loading_box, 255 * FadeLerp);
+          p.rect(0, 0, 16, 16, 4);
+          p.pop();
           if (ready_to_show) {
             FadeLerp -= .04;
             if (FadeLerp <= 0)
