@@ -9,10 +9,6 @@ const routes: Routes = [
     component: SettingsPage
   },
   {
-    path: 'privacy',
-    loadChildren: () => import('./privacy/privacy.module').then(m => m.PrivacyPageModule)
-  },
-  {
     path: 'licenses',
     loadChildren: () => import('./licenses/licenses.module').then( m => m.LicensesPageModule)
   },
