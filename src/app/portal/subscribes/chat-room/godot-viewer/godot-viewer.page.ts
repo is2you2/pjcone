@@ -45,7 +45,8 @@ export class GodotViewerPage implements OnInit {
       local_url: 'assets/data/godot/godot-viewer.pck',
       title: 'ViewerEx',
       path: this.navParams.get('path'),
-      ext: this.FileInfo['file_ext']
+      ext: this.FileInfo['file_ext'],
+      force_logo: true,
     });
   }
 

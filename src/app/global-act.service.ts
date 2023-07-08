@@ -47,6 +47,10 @@ interface GodotFrameKeys {
   url?: string;
   /** 내부 패키지 주소, url 에 주소를 생성하여 부여 */
   local_url?: string;
+  /** 프로젝트 콘 로고 강제 */
+  force_logo?: boolean;
+  /** 불러와야하는 pck 경로 강제 */
+  pck_path?: string;
   /** 패키지 이름 입력(영문), 고도 프로젝트에서는 메인 씬 이름이어야함 */
   title: string;
   /** 패키지 불러오기 행동 실패시 실행됨, 사용금지 */
@@ -182,7 +186,7 @@ export class GlobalActService {
           p.imageMode(p.CENTER);
           p.rectMode(p.CENTER);
           p.noStroke();
-          p.loadImage(`assets/icon/${_frame_name}.png`, v => {
+          p.loadImage(keys.force_logo ? 'assets/icon/favicon.png' : `assets/icon/${_frame_name}.png`, v => {
             icon = v;
           });
         }

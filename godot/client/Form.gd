@@ -48,7 +48,11 @@ func load_package_debug(files:PoolStringArray, scr):
 
 # 동작하려는 pck 정보 불러오기
 func load_package(act_name:String):
-	var is_loaded:= ProjectSettings.load_resource_pack('%s%s.pck' % [save_path, act_name])
+	var target:= '%s%s.pck' % [save_path, act_name]
+	if OS.has_feature('JavaScript') and window.pck_path:
+		target = window.pck_path
+	printerr('왜 못불러올까: ', target)
+	var is_loaded:= ProjectSettings.load_resource_pack(target)
 	if not is_loaded: # 없으면 다운받기
 		printerr('Godot: 패키지를 불러오지 못함: ', act_name)
 		if not $CenterContainer/ColorRect.is_connected("gui_input", self, '_on_Label_gui_input'):

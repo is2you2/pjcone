@@ -145,7 +145,9 @@ at_least,최소 8자리,at least 8 digits
 user_display_name,사용자 표시명,Display name
 login_toggle,로그인,Login
 main_content,메인 콘텐츠,Main contents
-not_available_yet,기능 준비중,Feature in preparation
+upload,올리기,Upload
+remove_content,삭제,Remove
+ContentRemoved,콘텐츠가 삭제되었습니다,Content has been removed
 no_main_content,없음,Null
 user_img_changed,사용자 이미지 변경,User image changed
 need_email,이메일 주소를 입력해주세요,Please enter your email address
@@ -304,7 +306,7 @@ creatorComment,제작자의 한마디,A word from the maker
 Ifyoulike,이 앱이 마음에 드신다면,If you like this app
 giveacoffeetodev,개발자에게 커피를 사주세요,Give a coffee to developer
 ## GlobalAct,,
-FailedToDownloadGodot,기능 다운로드 실패,Failed to download tool
+FailedToDownloadGodot,씬 실행 실패,Execution scene failed
 UnCheckableCreator,확인 불가,Not confirmed
 failed_to_gen_qr,QRCode 생성 실패,QRCode generation failed
 OnlineMode,온라인,Online

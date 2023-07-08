@@ -54,9 +54,16 @@ SPDX-License-Identifier: MIT -->
     <ion-toggle slot="end" [(ngModel)]="nakama.users.self['online']" style="pointer-events: none;"></ion-toggle>
   </ion-item>
   <ion-item-divider>
-    <ion-label>{{lang.text['Profile']['main_content']}}</ion-label>
+    <ion-label style="width: 100%;">{{lang.text['Profile']['main_content']}}</ion-label>
+    <ion-button class="ion-text-end" style="padding-right: 4px;" (click)="change_content()">
+      {{lang.text['Profile']['upload']}}
+    </ion-button>
+    <ion-button class="ion-text-end" style="padding-right: 8px;" (click)="remove_content()">
+      {{lang.text['Profile']['remove_content']}}
+    </ion-button>
+    <input hidden type="file" [id]="content_sel_id" accept="*" (change)="inputFileSelected($event)">
   </ion-item-divider>
-  <div (click)="change_content()">
-    <textarea class="infobox content_size" disabled>{{lang.text['Profile']['not_available_yet']}}</textarea>
+  <div class="content_size">
+    <div id="my_content" class="full_screen" style="display: flex;"></div>
   </div>
 </ion-content>

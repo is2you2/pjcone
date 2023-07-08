@@ -3,15 +3,14 @@
 
 import { Component, OnInit } from '@angular/core';
 import * as p5 from "p5";
-window['p5'] = p5;
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { NakamaService, MatchOpCode } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import clipboard from "clipboardy";
 import { isPlatform } from 'src/app/app.component';
-import { ModalController } from '@ionic/angular';
+import { LoadingController, ModalController } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
-import { GlobalActService } from 'src/app/global-act.service';
+import { FileInfo, GlobalActService } from 'src/app/global-act.service';
 
 @Component({
   selector: 'app-profile',
@@ -27,6 +26,7 @@ export class ProfilePage implements OnInit {
     private modalCtrl: ModalController,
     public lang: LanguageSettingService,
     private global: GlobalActService,
+    private loadingCtrl: LoadingController,
   ) { }
 
   /** 부드러운 이미지 교체를 위한 이미지 임시 배정 */
@@ -40,6 +40,7 @@ export class ProfilePage implements OnInit {
   ngOnInit() {
     this.nakama.removeBanner();
     this.file_sel_id = `self_profile_${new Date().getTime()}`;
+    this.content_sel_id = `self_content_${new Date().getTime()}`;
     this.original_profile = JSON.parse(JSON.stringify(this.nakama.users.self));
     if (!this.nakama.users.self['img']) {
       this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
@@ -49,6 +50,7 @@ export class ProfilePage implements OnInit {
     this.nakama.socket_reactive['profile'] = (img_url: string) => {
       this.change_img_smoothly(img_url);
     }
+    this.check_user_content();
     this.cant_use_clipboard = isPlatform != 'DesktopPWA';
     let sketch = (p: p5) => {
       let img = document.getElementById('profile_img');
@@ -75,6 +77,159 @@ export class ProfilePage implements OnInit {
       }
     }
     this.p5canvas = new p5(sketch);
+  }
+
+  async check_user_content() {
+    try {
+      let is_exist = await this.indexed.checkIfFileExist('servers/self/content.pck');
+      if (is_exist) {
+        await this.global.CreateGodotIFrame('my_content', {
+          title: 'Profile',
+          pck_path: 'user://servers/self/content.pck',
+          force_logo: true,
+        });
+      } else throw '로컬에 준비된 파일 없음';
+    } catch (e) {
+      this.update_content_from_server();
+    }
+  }
+
+  async update_content_from_server() {
+    let servers = this.nakama.get_all_online_server();
+    for (let i = 0, j = servers.length; i < j; i++) {
+      let target_info: FileInfo;
+      try {
+        let getContent = await servers[i].client.readStorageObjects(
+          servers[i].session, {
+          object_ids: [{
+            collection: 'user_public',
+            key: 'main_content',
+            user_id: servers[i].session.user_id,
+          }],
+        });
+        target_info = getContent.objects[0].value;
+      } catch (e) {
+        continue;
+      }
+      let base64 = '';
+      let is_download_break = false;
+      for (let k = 0, l = target_info.partsize; k < l; k++) {
+        try {
+          let part = servers[i].client.readStorageObjects(
+            servers[i].session, {
+            object_ids: [{
+              collection: 'user_public',
+              key: `main_content_${k}`,
+              user_id: servers[i].session.user_id,
+            }]
+          });
+          base64 += part;
+        } catch (e) {
+          is_download_break = true;
+        }
+      }
+      if (is_download_break) continue;
+      await this.indexed.saveFileToUserPath(base64, 'servers/self/content.pck');
+      await this.global.CreateGodotIFrame('my_content', {
+        title: 'Profile',
+        pck_path: 'user://servers/self/content.pck',
+        force_logo: true,
+      });
+      break;
+    }
+  }
+
+  change_content() {
+    document.getElementById(this.content_sel_id).click();
+  }
+  async inputFileSelected(ev: any) {
+    if (ev.target.files.length) {
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      let this_file: FileInfo = {};
+      this_file.filename = ev.target.files[0].name;
+      this_file.file_ext = ev.target.files[0].name.split('.')[1] || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
+      this_file.size = ev.target.files[0].size;
+      this_file.type = ev.target.files[0].type;
+      this_file.typeheader = ev.target.files[0].type.split('/')[0];
+      let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
+      loading.present();
+      await this.indexed.saveFileToUserPath(base64, 'servers/self/content.pck');
+      let separate = base64.match(/(.{1,220000})/g);
+      this_file.partsize = separate.length;
+      let servers = this.nakama.get_all_online_server();
+      for (let i = 0, j = servers.length; i < j; i++) {
+        try {
+          await servers[i].client.writeStorageObjects(
+            servers[i].session, [{
+              collection: 'user_public',
+              key: `main_content`,
+              permission_read: 2,
+              permission_write: 1,
+              value: this_file,
+            }])
+          for (let k = 0, l = separate.length; k < l; k++)
+            await servers[i].client.writeStorageObjects(
+              servers[i].session, [{
+                collection: 'user_public',
+                key: `main_content_${k}`,
+                permission_read: 2,
+                permission_write: 1,
+                value: { data: separate[k] },
+              }])
+        } catch (e) {
+          continue;
+        }
+      }
+      loading.dismiss();
+      await this.global.CreateGodotIFrame('my_content', {
+        title: 'Profile',
+        pck_path: 'user://servers/self/content.pck',
+        force_logo: true,
+      });
+    }
+  }
+
+  async remove_content() {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    loading.present();
+    await this.indexed.removeFileFromUserPath('servers/self/content.pck');
+    let servers = this.nakama.get_all_online_server();
+    for (let i = 0, j = servers.length; i < j; i++) {
+      try {
+        let getContent = await servers[i].client.readStorageObjects(
+          servers[i].session, {
+          object_ids: [{
+            collection: 'user_public',
+            key: 'main_content',
+            user_id: servers[i].session.user_id,
+          }],
+        });
+        let file_info: FileInfo = getContent.objects[0].value;
+        for (let k = 0, l = file_info.partsize; k < l; k++)
+          await servers[i].client.deleteStorageObjects(
+            servers[i].session, {
+            object_ids: [{
+              collection: 'user_public',
+              key: `main_content_${k}`,
+            }],
+          });
+        await servers[i].client.deleteStorageObjects(
+          servers[i].session, {
+          object_ids: [{
+            collection: 'user_public',
+            key: 'main_content',
+          }],
+        });
+        this.global.last_frame_name = '';
+        this.global.godot.remove();
+      } catch (e) {
+        continue;
+      }
+    }
+    loading.dismiss();
+    this.p5toast.show({
+      text: this.lang.text['Profile']['ContentRemoved'],
+    });
   }
 
   /** 부드러운 이미지 변환 */
@@ -136,6 +291,7 @@ export class ProfilePage implements OnInit {
   }
 
   file_sel_id = '';
+  content_sel_id = '';
   change_img_from_file() { document.getElementById(this.file_sel_id).click(); }
   /** 파일 선택시 로컬에서 반영 */
   async inputImageSelected(ev: any) {
@@ -145,10 +301,6 @@ export class ProfilePage implements OnInit {
     }, 1500);
     let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
     this.nakama.limit_image_size(base64, (v: any) => { this.change_img_smoothly(v['canvas'].toDataURL()) });
-  }
-
-  change_content() {
-    console.log('표시 콘텐츠 수정 클릭');
   }
 
   /** 온라인 전환 자동처리 가능여부 */
