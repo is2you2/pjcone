@@ -184,14 +184,14 @@ export class ProfilePage implements OnInit {
               permission_write: 1,
               value: this_file,
             }])
-          for (let k = separate.length - 1, l = k; k >= 0; k--)
+          for (let k = 0, l = separate.length; k < l; k++)
             await servers[i].client.writeStorageObjects(
               servers[i].session, [{
                 collection: 'user_public',
-                key: `main_content_${l - k}`,
+                key: `main_content_${k}`,
                 permission_read: 2,
                 permission_write: 1,
-                value: { data: separate.shift() },
+                value: { data: separate[k] },
               }])
           await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
             encodeURIComponent('content'));
