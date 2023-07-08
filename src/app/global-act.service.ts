@@ -172,6 +172,9 @@ export class GlobalActService {
       this.godot = _godot;
       this.godot_splash = new p5((p: p5) => {
         let icon: p5.Image;
+        let loading_size = 8;
+        let loading_corner = 2;
+        let loading_dist = 6;
         p.setup = () => {
           let canvas = p.createCanvas(frame.clientWidth, frame.clientHeight);
           canvas.parent(frame);
@@ -183,21 +186,40 @@ export class GlobalActService {
             icon = v;
           });
         }
-        let FadeLerp = 1;
+        let FadeLerp = 2;
         let loadingRot = 0;
         let splash_bg_color = isDarkMode ? 80 : 200;
         let loading_box = isDarkMode ? 200 : 80;
         p.draw = () => {
           p.clear(255, 255, 255, 255);
-          p.background(splash_bg_color, 255 * FadeLerp);
-          p.tint(255, 255 * FadeLerp);
+          p.background(splash_bg_color, p.constrain(255 * FadeLerp, 0, 255));
+          p.tint(255, p.constrain(255 * FadeLerp, 0, 255));
           if (icon) p.image(icon, p.width / 2, p.height / 2);
           p.push();
           p.translate(p.width / 2, p.height / 2 + 80);
           loadingRot += .07;
           p.rotate(loadingRot);
-          p.fill(loading_box, 255 * FadeLerp);
-          p.rect(0, 0, 16, 16, 4);
+          p.fill(loading_box, p.constrain(255 * FadeLerp, 0, 255));
+          p.push();
+          p.translate(-loading_dist, -loading_dist);
+          p.rotate(-loadingRot * 2);
+          p.rect(0, 0, loading_size, loading_size, loading_corner);
+          p.pop();
+          p.push();
+          p.translate(loading_dist, -loading_dist);
+          p.rotate(-loadingRot * 2);
+          p.rect(0, 0, loading_size, loading_size, loading_corner);
+          p.pop();
+          p.push();
+          p.translate(-loading_dist, loading_dist);
+          p.rotate(-loadingRot * 2);
+          p.rect(0, 0, loading_size, loading_size, loading_corner);
+          p.pop();
+          p.push();
+          p.translate(loading_dist, loading_dist);
+          p.rotate(-loadingRot * 2);
+          p.rect(0, 0, loading_size, loading_size, loading_corner);
+          p.pop();
           p.pop();
           if (ready_to_show) {
             FadeLerp -= .04;
