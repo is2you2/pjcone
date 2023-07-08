@@ -50,7 +50,9 @@ export class ProfilePage implements OnInit {
     this.nakama.socket_reactive['profile'] = (img_url: string) => {
       this.change_img_smoothly(img_url);
     }
-    this.check_user_content();
+    setTimeout(() => {
+      this.check_user_content();
+    }, 150);
     this.cant_use_clipboard = isPlatform != 'DesktopPWA';
     let sketch = (p: p5) => {
       let img = document.getElementById('profile_img');
@@ -115,7 +117,7 @@ export class ProfilePage implements OnInit {
       let is_download_break = false;
       for (let k = 0, l = target_info.partsize; k < l; k++) {
         try {
-          let part = servers[i].client.readStorageObjects(
+          let part = await servers[i].client.readStorageObjects(
             servers[i].session, {
             object_ids: [{
               collection: 'user_public',
@@ -123,7 +125,7 @@ export class ProfilePage implements OnInit {
               user_id: servers[i].session.user_id,
             }]
           });
-          base64 += part;
+          base64 += part.objects[0].value['data'];
         } catch (e) {
           is_download_break = true;
         }
@@ -144,13 +146,21 @@ export class ProfilePage implements OnInit {
   }
   async inputFileSelected(ev: any) {
     if (ev.target.files.length) {
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      this.global.last_frame_name = '';
+      this.global.godot.remove();
       let this_file: FileInfo = {};
       this_file.filename = ev.target.files[0].name;
       this_file.file_ext = ev.target.files[0].name.split('.')[1] || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
+      if (this_file.file_ext != 'pck') {
+        this.p5toast.show({
+          text: this.lang.text['EngineWorksPPT']['FileExtPck'],
+        });
+        return;
+      }
       this_file.size = ev.target.files[0].size;
       this_file.type = ev.target.files[0].type;
       this_file.typeheader = ev.target.files[0].type.split('/')[0];
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
       loading.present();
       await this.indexed.saveFileToUserPath(base64, 'servers/self/content.pck');
@@ -220,7 +230,6 @@ export class ProfilePage implements OnInit {
             key: 'main_content',
           }],
         });
-        this.global.last_frame_name = '';
         this.global.godot.remove();
       } catch (e) {
         continue;

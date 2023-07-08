@@ -21,10 +21,13 @@ SPDX-License-Identifier: MIT -->
           <div class="username">{{info['user'].display_name ?? lang.text['Profile']['noname_user']}}</div>
         </div>
         <ion-item-divider>
-          <ion-label>{{lang.text['Profile']['main_content']}}</ion-label>
+          <ion-label style="width: 100%;">{{lang.text['Profile']['main_content']}}</ion-label>
+          <ion-button class="ion-text-end" style="padding-right: 8px;" (click)="update_content_from_server()">
+            {{lang.text['OtherProfile']['refresh']}}
+          </ion-button>
         </ion-item-divider>
-        <div (click)="focus_on_content()">
-          <textarea class="infobox content_size" disabled>{{lang.text['Profile']['no_main_content']}}</textarea>
+        <div class="content_size">
+          <div [id]="user_content_id" class="full_screen" style="display: flex;"></div>
         </div>
       </td>
     </tr>

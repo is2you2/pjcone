@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { ModalController, NavParams } from '@ionic/angular';
+import { LoadingController, ModalController, NavParams } from '@ionic/angular';
 import * as p5 from "p5";
 import { IndexedDBService } from '../indexed-db.service';
 import { LanguageSettingService } from '../language-setting.service';
@@ -10,6 +10,7 @@ import { NakamaService } from '../nakama.service';
 import { P5ToastService } from '../p5-toast.service';
 import { ChatRoomPage } from '../portal/subscribes/chat-room/chat-room.page';
 import { StatusManageService } from "../status-manage.service";
+import { FileInfo, GlobalActService } from '../global-act.service';
 
 @Component({
   selector: 'app-others-profile',
@@ -26,6 +27,8 @@ export class OthersProfilePage implements OnInit {
     private p5toast: P5ToastService,
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
+    private global: GlobalActService,
+    private loadingCtrl: LoadingController,
   ) { }
 
   /** 다른 사용자의 정보 */
@@ -42,13 +45,14 @@ export class OthersProfilePage implements OnInit {
 
   lerpVal: number;
   p5canvas: p5;
-  ngOnInit() {
+  async ngOnInit() {
     this.nakama.removeBanner();
     this.info = this.navParams.get('info');
     this.has_admin = this.navParams.get('has_admin');
     this.group_info = this.navParams.get('group');
     this.isOfficial = this.group_info['server']['isOfficial'];
     this.target = this.group_info['server']['target'];
+    this.user_content_id = `user_content_${this.info['user']['id']}`;
     this.nakama.load_other_user(this.info['user']['id'], this.isOfficial, this.target);
     this.nakama.socket_reactive['others-profile'] = (img_url: string) => {
       this.change_img_smoothly(img_url);
@@ -56,6 +60,15 @@ export class OthersProfilePage implements OnInit {
     this.nakama.socket_reactive['others-online'] = () => {
       this.p5canvas.loop();
     };
+    setTimeout(async () => {
+      let is_exist = await this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`);
+      if (is_exist)
+        await this.global.CreateGodotIFrame(this.user_content_id, {
+          title: 'Profile',
+          pck_path: `user://servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`,
+          force_logo: true,
+        });
+    }, 150);
     this.catch_user_noties();
     let sketch = (p: p5) => {
       let img = document.getElementById('profile_img');
@@ -82,6 +95,50 @@ export class OthersProfilePage implements OnInit {
       }
     }
     this.p5canvas = new p5(sketch);
+  }
+
+  user_content_id = '';
+
+  async update_content_from_server() {
+    this.global.last_frame_name = '';
+    this.global.godot.remove();
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    loading.present();
+    let server = this.nakama.servers[this.isOfficial][this.target];
+    let target_info: FileInfo;
+    try {
+      let getContent = await server.client.readStorageObjects(
+        server.session, {
+        object_ids: [{
+          collection: 'user_public',
+          key: 'main_content',
+          user_id: this.info['user']['id'],
+        }],
+      });
+      target_info = getContent.objects[0].value;
+      let base64 = '';
+      for (let i = 0, j = target_info.partsize; i < j; i++) {
+        let part = await server.client.readStorageObjects(
+          server.session, {
+          object_ids: [{
+            collection: 'user_public',
+            key: `main_content_${i}`,
+            user_id: this.info['user']['id'],
+          }]
+        });
+        base64 += part.objects[i].value['data'];
+      }
+      await this.indexed.saveFileToUserPath(base64, `servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`);
+      await this.global.CreateGodotIFrame(this.user_content_id, {
+        title: 'Profile',
+        pck_path: `user://servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`,
+        force_logo: true,
+      });
+    } catch (e) {
+      await this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`);
+      this.global.godot.remove();
+    }
+    loading.dismiss();
   }
 
   isOfficial: string;
@@ -130,7 +187,6 @@ export class OthersProfilePage implements OnInit {
   onDismissData = {};
   /** 알림에 의해 생성된 버튼들의 반응 */
   notification_react(code: number) {
-    console.log('알림에 따른 행동: ', code);
     switch (code) {
       case 0: // 예약된 메시지
         break;
