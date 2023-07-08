@@ -53,6 +53,9 @@ export class ProfilePage implements OnInit {
     setTimeout(() => {
       this.check_user_content();
     }, 150);
+    this.nakama.socket_reactive['self_profile_content_update'] = () => {
+      this.update_content_from_server();
+    }
     this.cant_use_clipboard = isPlatform != 'DesktopPWA';
     let sketch = (p: p5) => {
       let img = document.getElementById('profile_img');
@@ -97,6 +100,8 @@ export class ProfilePage implements OnInit {
   }
 
   async update_content_from_server() {
+    this.global.last_frame_name = 'content_updated';
+    this.global.godot.remove();
     let servers = this.nakama.get_all_online_server();
     for (let i = 0, j = servers.length; i < j; i++) {
       let target_info: FileInfo;
@@ -111,6 +116,8 @@ export class ProfilePage implements OnInit {
         });
         target_info = getContent.objects[0].value;
       } catch (e) {
+        this.global.last_frame_name = 'content_removed';
+        this.global.godot.remove();
         continue;
       }
       let base64 = '';
@@ -146,7 +153,7 @@ export class ProfilePage implements OnInit {
   }
   async inputFileSelected(ev: any) {
     if (ev.target.files.length) {
-      this.global.last_frame_name = '';
+      this.global.last_frame_name = 'content_update';
       this.global.godot.remove();
       let this_file: FileInfo = {};
       this_file.filename = ev.target.files[0].name;
@@ -186,6 +193,16 @@ export class ProfilePage implements OnInit {
                 permission_write: 1,
                 value: { data: separate.shift() },
               }])
+          await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
+            encodeURIComponent('content'));
+          let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
+          if (all_channels)
+            all_channels.forEach((channelId: any) => {
+              servers[i].socket.writeChatMessage(channelId, {
+                user_update: 'modify_content',
+                noti_form: `: ${this.original_profile['display_name']}`,
+              });
+            });
         } catch (e) {
           continue;
         }
@@ -230,11 +247,22 @@ export class ProfilePage implements OnInit {
             key: 'main_content',
           }],
         });
-        this.global.godot.remove();
       } catch (e) {
-        continue;
       }
+      let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
+      if (all_channels.length)
+        all_channels.forEach((channelId: any) => {
+          if (this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target][channelId]['status'] != 'missing')
+            servers[i].socket.writeChatMessage(channelId, {
+              user_update: 'remove_content',
+              noti_form: `: ${this.original_profile['display_name']}`,
+            });
+        });
+      await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
+        encodeURIComponent('content'));
     }
+    this.global.last_frame_name = 'content_removed';
+    this.global.godot.remove();
     loading.dismiss();
     this.p5toast.show({
       text: this.lang.text['Profile']['ContentRemoved'],
@@ -281,7 +309,7 @@ export class ProfilePage implements OnInit {
         permission_read: 2,
         permission_write: 1,
       }]).then(async v => {
-        await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.ADD_TODO,
+        await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
           encodeURIComponent('image'));
         await servers[i].client.updateAccount(servers[i].session, {
           avatar_url: v.acks[0].version,
@@ -381,6 +409,7 @@ export class ProfilePage implements OnInit {
 
   async ionViewWillLeave() {
     delete this.nakama.socket_reactive['profile'];
+    delete this.nakama.socket_reactive['self_profile_content_update'];
     let keys = Object.keys(this.nakama.users.self);
     let isProfileChanged = false;
     for (let i = 0, j = keys.length; i < j; i++)
@@ -398,7 +427,7 @@ export class ProfilePage implements OnInit {
             display_name: this.nakama.users.self['display_name'],
           }).then(async _v => {
             NeedAnnounceUpdate = true;
-            await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.ADD_TODO,
+            await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
               encodeURIComponent('info'));
           });
         // 해당 서버 연결된 채널에 고지

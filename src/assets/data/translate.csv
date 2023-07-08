@@ -150,6 +150,8 @@ remove_content,삭제,Remove
 ContentRemoved,콘텐츠가 삭제되었습니다,Content has been removed
 no_main_content,없음,Null
 user_img_changed,사용자 이미지 변경,User image changed
+user_content_changed,사용자 콘텐츠 변경,User content changed
+user_content_removed,사용자 콘텐츠 삭제,User content removed
 need_email,이메일 주소를 입력해주세요,Please enter your email address
 need_password,비밀번호를 입력해주세요,Please enter a password
 pasteURI,눌러서 외부이미지 주소 붙여넣기,Click to paste external image address

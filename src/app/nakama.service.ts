@@ -408,6 +408,11 @@ export class NakamaService {
     info.isOfficial = info.isOfficial || 'unofficial';
     info.key = info.key || 'defaultkey';
 
+    if (!this.groups[info.isOfficial][info.target])
+      this.groups[info.isOfficial][info.target] = {};
+    if (!this.channels_orig[info.isOfficial][info.target])
+      this.channels_orig[info.isOfficial][info.target] = {};
+
     let line = new Date().getTime().toString();
     line += `,${info.isOfficial}`;
     line += `,${info.name}`;
@@ -1639,6 +1644,11 @@ export class NakamaService {
                     } else this.indexed.removeFileFromUserPath('servers/self/profile.img');
                   });
                   break;
+                case 'content': {
+                  if (this.socket_reactive['self_profile_content_update'])
+                    this.socket_reactive['self_profile_content_update']();
+                }
+                  break;
                 default:
                   console.warn('예상하지 못한 프로필 동기화 정보: ', m);
                   break;
@@ -2071,6 +2081,12 @@ export class NakamaService {
         case 'modify_img': // 프로필 또는 이미지가 변경됨
           msg.content['noti'] = `${this.lang.text['Profile']['user_img_changed']}${msg.content['noti_form']}`;
           break;
+        case 'modify_content':
+          msg.content['noti'] = `${this.lang.text['Profile']['user_content_changed']}${msg.content['noti_form']}`;
+          break;
+        case 'remove_content':
+          msg.content['noti'] = `${this.lang.text['Profile']['user_content_removed']}${msg.content['noti_form']}`;
+          break;
       }
     if (msg.content['gupdate'])
       switch (msg.content['gupdate']) {
@@ -2131,6 +2147,11 @@ export class NakamaService {
             this.save_other_user(this.users[_is_official][_target][c.sender_id], _is_official, _target);
           }
         });
+        break;
+      case 'modify_content':
+      case 'remove_content':
+        if (this.socket_reactive['other_user_content_update'])
+          this.socket_reactive['other_user_content_update']();
         break;
       default:
         console.warn('예상하지 못한 그룹 사용자 행동: ', c);
