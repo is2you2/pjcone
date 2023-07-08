@@ -131,7 +131,7 @@ export class ProfilePage implements OnInit {
         }
       }
       if (is_download_break) continue;
-      await this.indexed.saveFileToUserPath(base64, 'servers/self/content.pck');
+      await this.indexed.saveFileToUserPath(base64.replace(/"|=|\\/g, ''), 'servers/self/content.pck');
       await this.global.CreateGodotIFrame('my_content', {
         title: 'Profile',
         pck_path: 'user://servers/self/content.pck',
@@ -177,14 +177,14 @@ export class ProfilePage implements OnInit {
               permission_write: 1,
               value: this_file,
             }])
-          for (let k = 0, l = separate.length; k < l; k++)
+          for (let k = separate.length - 1, l = k; k >= 0; k--)
             await servers[i].client.writeStorageObjects(
               servers[i].session, [{
                 collection: 'user_public',
-                key: `main_content_${k}`,
+                key: `main_content_${l - k}`,
                 permission_read: 2,
                 permission_write: 1,
-                value: { data: separate[k] },
+                value: { data: separate.shift() },
               }])
         } catch (e) {
           continue;

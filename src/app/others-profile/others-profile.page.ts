@@ -128,7 +128,7 @@ export class OthersProfilePage implements OnInit {
         });
         base64 += part.objects[i].value['data'];
       }
-      await this.indexed.saveFileToUserPath(base64, `servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`);
+      await this.indexed.saveFileToUserPath(base64.replace(/"|=|\\/g, ''), `servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`);
       await this.global.CreateGodotIFrame(this.user_content_id, {
         title: 'Profile',
         pck_path: `user://servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`,
