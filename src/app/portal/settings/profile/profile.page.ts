@@ -169,13 +169,22 @@ export class ProfilePage implements OnInit {
   toggle_online() {
     this.nakama.users.self['online'] = !this.nakama.users.self['online'];
     if (this.nakama.users.self['online']) {
-      if (this.nakama.users.self['email']) {
+      try {
+        if (!this.nakama.users.self['email']) {
+          this.p5toast.show({
+            text: this.lang.text['Profile']['need_email'],
+          });
+          throw '이메일 공백';
+        }
+        if (!this.nakama.users.self['password']) {
+          this.p5toast.show({
+            text: this.lang.text['Profile']['need_password'],
+          });
+          throw '비밀번호 공백';
+        }
         this.nakama.save_self_profile();
         this.nakama.init_all_sessions();
-      } else {
-        this.p5toast.show({
-          text: this.lang.text['Profile']['need_email'],
-        });
+      } catch (e) {
         this.nakama.users.self['online'] = false;
       }
     } else {

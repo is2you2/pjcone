@@ -29,19 +29,21 @@ SPDX-License-Identifier: MIT -->
       {{lang.text['Profile']['change_img']}}
     </ion-button>
   </ion-item>
-  <ion-item-divider>
-    <ion-label>{{lang.text['Profile']['login_info']}}</ion-label>
-  </ion-item-divider>
-  <ion-item>
-    <ion-label>{{lang.text['Profile']['email_address']}}</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self['email']" (ionChange)="email_modified()"
-      [placeholder]="'test@example.com'"></ion-input>
-  </ion-item>
-  <ion-item *ngIf="!nakama.users.self['online']">
-    <ion-label>{{lang.text['Profile']['password']}}</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self['password']" (ionChange)="email_modified()"
-      [placeholder]="lang.text['Profile']['at_least']"></ion-input>
-  </ion-item>
+  <div *ngIf="!nakama.users.self['online']">
+    <ion-item-divider>
+      <ion-label>{{lang.text['Profile']['login_info']}}</ion-label>
+    </ion-item-divider>
+    <ion-item>
+      <ion-label>{{lang.text['Profile']['email_address']}}</ion-label>
+      <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self['email']" (ionChange)="email_modified()"
+        [placeholder]="'test@example.com'"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>{{lang.text['Profile']['password']}}</ion-label>
+      <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self['password']" (ionChange)="email_modified()"
+        [placeholder]="lang.text['Profile']['at_least']"></ion-input>
+    </ion-item>
+  </div>
   <ion-item>
     <ion-label>{{lang.text['Profile']['user_display_name']}}</ion-label>
     <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self['display_name']"
