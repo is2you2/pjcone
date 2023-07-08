@@ -1545,8 +1545,6 @@ export class NakamaService {
           this.rearrange_notifications();
         }
         socket.onchannelpresence = (p) => {
-          if (this.socket_reactive['others-online'])
-            this.socket_reactive['others-online']();
           if (p.joins !== undefined) { // 참여 검토
             p.joins.forEach(info => {
               if (this.servers[_is_official][_target].session.user_id != info.user_id)
@@ -1564,6 +1562,8 @@ export class NakamaService {
             others.forEach(_userId => this.load_other_user(_userId, _is_official, _target));
             this.count_channel_online_member(p, _is_official, _target);
           }
+          if (this.socket_reactive['others-online'])
+            this.socket_reactive['others-online']();
         }
         socket.onmatchdata = (m) => {
           console.log('onmatchdata: ', m);
