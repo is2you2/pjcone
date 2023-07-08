@@ -14,7 +14,7 @@ SPDX-License-Identifier: MIT -->
   <ion-item-divider>
     <ion-label>{{lang.text['GroupServer']['AboutServerAndAccount']}}</ion-label>
   </ion-item-divider>
-  <textarea class="infobox" disabled [(ngModel)]="info" style="height: 250px;"></textarea>
+  <textarea class="infobox" disabled [(ngModel)]="info" style="height: 180px;"></textarea>
   <ion-item-divider *ngIf="nakama.servers['official']['default'] || servers.length">
     <ion-label>{{lang.text['GroupServer']['JoinedServerList']}}</ion-label>
   </ion-item-divider>
