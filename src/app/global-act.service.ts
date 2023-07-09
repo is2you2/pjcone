@@ -129,7 +129,6 @@ export class GlobalActService {
    * @returns iframe 개체 돌려주기
    */
   CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys, waiting_key: string = ''): Promise<any> {
-    if (this.godot_splash) this.godot_splash.remove();
     let ready_to_show = false;
     return new Promise((done: any) => {
       let refresh_it_loading = () => {
@@ -150,6 +149,7 @@ export class GlobalActService {
         done();
         return;
       };
+      if (this.godot_splash) this.godot_splash.remove();
       window['godot'] = '';
       if (this.godot) this.godot.remove();
       this.last_frame_name = _frame_name;
