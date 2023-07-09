@@ -539,6 +539,8 @@ export class NakamaService {
                 avatar_url: v.acks[0].version,
               });
             });
+          let is_exist = await this.indexed.checkIfFileExist('servers/self/content.pck');
+          if (is_exist) this.sync_save_file({ path: 'servers/self/content.pck' }, info.isOfficial, info.target, 'user_public', 'main_content');
           this.after_login(info.isOfficial, info.target, info.useSSL);
           break;
         default:
@@ -2588,7 +2590,7 @@ export class NakamaService {
   }
 
   /** 로컬 파일을 저장하며 원격에 분산하여 올리기 */
-  async sync_save_file(info: FileInfo, _is_official: string, _target: string, _collection: string) {
+  async sync_save_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _key_force = '') {
     try {
       let base64 = info.base64 || await this.global.GetBase64ThroughFileReader(await this.indexed.loadBlobFromUserPath(info.path, info.type || ''));
       delete info.base64;
@@ -2598,7 +2600,7 @@ export class NakamaService {
       await this.servers[_is_official][_target].client.writeStorageObjects(
         this.servers[_is_official][_target].session, [{
           collection: _collection,
-          key: info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
+          key: _key_force || info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
           permission_read: 2,
           permission_write: 1,
           value: info,
@@ -2607,7 +2609,7 @@ export class NakamaService {
         await this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
             collection: _collection,
-            key: info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${j - i}`,
+            key: `${_key_force}_${j - i}` || (info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${j - i}`),
             permission_read: 2,
             permission_write: 1,
             value: { data: separate.shift() },
@@ -2620,7 +2622,7 @@ export class NakamaService {
   /** 로컬에 있는 파일을 불러오기, 로컬에 없다면 원격에서 요청하여 생성 후 불러오기
    * @returns 파일의 blob
    */
-  async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid: string = '') {
+  async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid = '', _key_force = '') {
     try {
       return await this.indexed.loadBlobFromUserPath(info.path, info.type || '');
     } catch (e) {
@@ -2629,7 +2631,7 @@ export class NakamaService {
           this.servers[_is_official][_target].session, {
           object_ids: [{
             collection: _collection,
-            key: info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
+            key: _key_force || info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
             user_id: _userid || this.servers[_is_official][_target].session.user_id,
           }],
         });
@@ -2640,7 +2642,7 @@ export class NakamaService {
             this.servers[_is_official][_target].session, {
             object_ids: [{
               collection: _collection,
-              key: info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`,
+              key: `${_key_force}_${i}` || (info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`),
               user_id: _userid || this.servers[_is_official][_target].session.user_id,
             }],
           });

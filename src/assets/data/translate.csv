@@ -147,7 +147,6 @@ login_toggle,로그인,Login
 main_content,메인 콘텐츠,Main contents
 upload,올리기,Upload
 remove_content,삭제,Remove
-ContentRemoved,콘텐츠가 삭제되었습니다,Content has been removed
 no_main_content,없음,Null
 user_img_changed,사용자 이미지 변경,User image changed
 user_content_changed,사용자 콘텐츠 변경,User content changed

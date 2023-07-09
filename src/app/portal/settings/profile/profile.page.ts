@@ -102,50 +102,25 @@ export class ProfilePage implements OnInit {
   async update_content_from_server() {
     this.global.last_frame_name = 'content_updated';
     this.global.godot.remove();
+    let load_user_content: FileInfo = { path: 'servers/self/content.pck', }
     let servers = this.nakama.get_all_online_server();
+    let is_saved = false;
     for (let i = 0, j = servers.length; i < j; i++) {
-      let target_info: FileInfo;
       try {
-        let getContent = await servers[i].client.readStorageObjects(
-          servers[i].session, {
-          object_ids: [{
-            collection: 'user_public',
-            key: 'main_content',
-            user_id: servers[i].session.user_id,
-          }],
-        });
-        target_info = getContent.objects[0].value;
+        await this.nakama.sync_load_file(load_user_content, servers[i].info.isOfficial, servers[i].info.target,
+          'user_public', servers[i].session.user_id, 'main_content');
+        is_saved = true;
+        break;
       } catch (e) {
-        this.global.last_frame_name = 'content_removed';
-        this.global.godot.remove();
         continue;
       }
-      let base64 = '';
-      let is_download_break = false;
-      for (let k = 0, l = target_info.partsize; k < l; k++) {
-        try {
-          let part = await servers[i].client.readStorageObjects(
-            servers[i].session, {
-            object_ids: [{
-              collection: 'user_public',
-              key: `main_content_${k}`,
-              user_id: servers[i].session.user_id,
-            }]
-          });
-          base64 += part.objects[0].value['data'];
-        } catch (e) {
-          is_download_break = true;
-        }
-      }
-      if (is_download_break) continue;
-      await this.indexed.saveFileToUserPath(base64.replace(/"|=|\\/g, ''), 'servers/self/content.pck');
+    }
+    if (is_saved)
       await this.global.CreateGodotIFrame('my_content', {
         title: 'Profile',
         pck_path: 'user://servers/self/content.pck',
         force_logo: true,
       });
-      break;
-    }
   }
 
   change_content() {
@@ -169,43 +144,30 @@ export class ProfilePage implements OnInit {
       this_file.typeheader = ev.target.files[0].type.split('/')[0];
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
+      this_file.base64 = base64;
+      this_file.path = 'servers/self/content.pck';
       loading.present();
-      await this.indexed.saveFileToUserPath(base64, 'servers/self/content.pck');
-      let separate = base64.match(/(.{1,220000})/g);
-      this_file.partsize = separate.length;
       let servers = this.nakama.get_all_online_server();
-      for (let i = 0, j = servers.length; i < j; i++) {
-        try {
-          await servers[i].client.writeStorageObjects(
-            servers[i].session, [{
-              collection: 'user_public',
-              key: `main_content`,
-              permission_read: 2,
-              permission_write: 1,
-              value: this_file,
-            }])
-          for (let k = 0, l = separate.length; k < l; k++)
-            await servers[i].client.writeStorageObjects(
-              servers[i].session, [{
-                collection: 'user_public',
-                key: `main_content_${k}`,
-                permission_read: 2,
-                permission_write: 1,
-                value: { data: separate[k] },
-              }])
-          await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
-            encodeURIComponent('content'));
-          let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
-          if (all_channels)
-            all_channels.forEach((channelId: any) => {
-              servers[i].socket.writeChatMessage(channelId, {
-                user_update: 'modify_content',
-                noti_form: `: ${this.original_profile['display_name']}`,
+      if (servers.length)
+        for (let i = 0, j = servers.length; i < j; i++) {
+          try {
+            await this.nakama.sync_save_file(this_file, servers[i].info.isOfficial, servers[i].info.target, 'user_public', 'main_content');
+            await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
+              encodeURIComponent('content'));
+            let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
+            if (all_channels)
+              all_channels.forEach((channelId: any) => {
+                servers[i].socket.writeChatMessage(channelId, {
+                  user_update: 'modify_content',
+                  noti_form: `: ${this.original_profile['display_name']}`,
+                });
               });
-            });
-        } catch (e) {
-          continue;
+          } catch (e) {
+            continue;
+          }
         }
+      else {
+        await this.indexed.saveFileToUserPath(base64, this_file.path);
       }
       loading.dismiss();
       await this.global.CreateGodotIFrame('my_content', {
@@ -217,10 +179,14 @@ export class ProfilePage implements OnInit {
   }
 
   async remove_content() {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-    loading.present();
     await this.indexed.removeFileFromUserPath('servers/self/content.pck');
     let servers = this.nakama.get_all_online_server();
+    let server_len = servers.length;
+    let loading: HTMLIonLoadingElement;
+    if (server_len) {
+      loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      loading.present();
+    }
     for (let i = 0, j = servers.length; i < j; i++) {
       try {
         let getContent = await servers[i].client.readStorageObjects(
@@ -263,10 +229,7 @@ export class ProfilePage implements OnInit {
     }
     this.global.last_frame_name = 'content_removed';
     this.global.godot.remove();
-    loading.dismiss();
-    this.p5toast.show({
-      text: this.lang.text['Profile']['ContentRemoved'],
-    });
+    if (server_len) loading.dismiss();
   }
 
   /** 부드러운 이미지 변환 */
