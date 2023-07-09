@@ -57,7 +57,6 @@ export class GroupDetailPage implements OnInit {
     this.isOfficial = this.info.server['isOfficial'];
     this.target = this.info.server['target'];
     this.has_admin = this.statusBar.groupServer[this.isOfficial][this.target] == 'online';
-    await this.nakama.load_groups(this.isOfficial, this.target, this.info.id);
     // 사용자 정보가 있다면 로컬 정보 불러오기 처리
     if (this.info['users'] && this.info['users'].length) {
       for (let i = 0, j = this.info['users'].length; i < j; i++)

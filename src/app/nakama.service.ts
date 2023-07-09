@@ -1542,7 +1542,6 @@ export class NakamaService {
         keys.forEach(key => this.on_socket_connected[key]());
         // 실시간으로 알림을 받은 경우
         socket.onnotification = (v) => {
-          console.log('소켓에서 실시간으로 무언가 받음: ', v);
           this.act_on_notification(v, _is_official, _target);
           this.rearrange_notifications();
         }
@@ -1568,7 +1567,6 @@ export class NakamaService {
             this.socket_reactive['others-online']();
         }
         socket.onmatchdata = (m) => {
-          console.log('onmatchdata: ', m);
           m['data_str'] = decodeURIComponent(new TextDecoder().decode(m.data));
           switch (m.op_code) {
             case MatchOpCode.ADD_TODO: {
@@ -1672,7 +1670,6 @@ export class NakamaService {
           }
         }
         socket.onchannelmessage = (c) => {
-          console.log('onchamsg: ', c);
           if (!this.channels_orig[_is_official][_target][c.channel_id]) { // 재참가 + 놓친 메시지인 경우 검토
             if (c.user_id_one) // 1:1 채팅
               this.join_chat_with_modulation(c.sender_id, 2, _is_official, _target, () => {
@@ -2163,7 +2160,6 @@ export class NakamaService {
 
   /** 알림 내용 클릭시 행동 */
   check_notifications(this_noti: Notification, _is_official: string, _target: string) {
-    console.log('해당 알림 내용: ', this_noti);
     let this_server = this.servers[_is_official][_target];
     switch (this_noti.code) {
       case 0: // 예약된 알림

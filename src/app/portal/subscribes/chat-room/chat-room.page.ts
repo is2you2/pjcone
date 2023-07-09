@@ -319,6 +319,7 @@ export class ChatRoomPage implements OnInit {
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
     this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
+    this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
     this.extended_buttons[3].isHide = isPlatform != 'Android' && isPlatform != 'iOS';
     switch (this.info['redirect']['type']) {
       case 2: // 1:1 대화라면
@@ -361,6 +362,8 @@ export class ChatRoomPage implements OnInit {
         button.isHide = true;
       });
       this.extended_buttons[0].isHide = false;
+      if (this.info['redirect']['type'] == 3)
+        this.extended_buttons[2].isHide = false;
     }
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
@@ -458,12 +461,12 @@ export class ChatRoomPage implements OnInit {
   /** 서버로부터 메시지 더 받아오기
    * @param isHistory 옛날 정보 불러오기 유무, false면 최신정보 불러오기 진행
    */
-  pull_msg_history(isHistory = true) {
+  async pull_msg_history(isHistory = true) {
     if (!this.pullable) return;
     this.pullable = false;
     if (isHistory) {
-      if ((this.info['status'] == 'online' || this.info['status'] == 'pending')) // 온라인 기반 리스트 받아오기
-        this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
+      try {
+        await this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
           this.nakama.servers[this.isOfficial][this.target].session,
           this.info['id'], 15, false, this.next_cursor).then(v => {
             this.info['is_new'] = false;
@@ -494,7 +497,7 @@ export class ChatRoomPage implements OnInit {
             this.pullable = true;
             this.nakama.saveListedMessage(this.messages, this.info, this.isOfficial, this.target);
           });
-      else { // 오프라인 기반 리스트 알려주기
+      } catch (e) {
         if (this.info['redirect']['type'] == 3) // 그룹대화라면 공개여부 검토
           if (this.nakama.groups[this.isOfficial][this.target]
             && this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]
