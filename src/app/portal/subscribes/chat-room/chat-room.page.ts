@@ -82,9 +82,7 @@ export class ChatRoomPage implements OnInit {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
       if (this.nakama.channel_transfer[this.isOfficial][this.target] && this.nakama.channel_transfer[this.isOfficial][this.target][this.info.id])
         delete this.nakama.channel_transfer[this.isOfficial][this.target][this.info.id];
-      if (this.info['redirect']['type'] == 3 &&
-        this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] &&
-        this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['status'] != 'online')
+      if (this.info['redirect']['type'] == 3)
         await this.nakama.remove_group_list(this.nakama.groups[this.isOfficial][this.target][this.info['group_id']], this.isOfficial, this.target);
       await this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
       await this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`, (list) => {
@@ -308,7 +306,7 @@ export class ChatRoomPage implements OnInit {
   send_thumbnail: HTMLElement;
   file_sel_id = '';
 
-  ngOnInit() {
+  async ngOnInit() {
     this.nakama.removeBanner();
     this.info = this.navParams.get('info');
     this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
@@ -319,7 +317,6 @@ export class ChatRoomPage implements OnInit {
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
     this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
-    this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
     this.extended_buttons[3].isHide = isPlatform != 'Android' && isPlatform != 'iOS';
     switch (this.info['redirect']['type']) {
       case 2: // 1:1 대화라면
@@ -332,6 +329,7 @@ export class ChatRoomPage implements OnInit {
         }
         break;
       case 3: // 그룹 대화라면
+        await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
         this.extended_buttons[1].isHide = true;
         delete this.extended_buttons[2].isHide;
         break;
