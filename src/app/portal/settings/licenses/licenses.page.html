@@ -12,19 +12,6 @@ SPDX-License-Identifier: MIT -->
 
 <ion-content>
   <ion-list-header>
-    <ion-label>Ionic 6</ion-label>
-    <ion-button (click)="open_link('https://ionicframework.com/')">{{lang.text['Licenses']['open_link']}}</ion-button>
-  </ion-list-header>
-  <ion-item-divider>
-    <ion-label>Ionic CLI</ion-label>
-  </ion-item-divider>
-  <textarea class="infobox" disabled [(ngModel)]="licenses['ionic']['cli']"></textarea>
-  <ion-item-divider>
-    <ion-label>Capacitor</ion-label>
-  </ion-item-divider>
-  <textarea class="infobox" disabled [(ngModel)]="licenses['ionic']['capacitor']"></textarea>
-
-  <ion-list-header>
     <ion-label>Godot engine</ion-label>
     <ion-button (click)="open_link('https://godotengine.org/')">{{lang.text['Licenses']['open_link']}}</ion-button>
   </ion-list-header>
@@ -44,22 +31,4 @@ SPDX-License-Identifier: MIT -->
     <ion-label>mbed TLS</ion-label>
   </ion-item-divider>
   <textarea class="infobox" disabled [(ngModel)]="licenses['godot']['mbedtls']"></textarea>
-
-  <ion-list-header>
-    <ion-label>p5js</ion-label>
-    <ion-button (click)="open_link('https://p5js.org/')">{{lang.text['Licenses']['open_link']}}</ion-button>
-  </ion-list-header>
-  <textarea class="infobox" disabled [(ngModel)]="licenses['p5js']"></textarea>
-
-  <ion-list-header>
-    <ion-label>Nakama Client</ion-label>
-    <ion-button (click)="open_link('https://heroiclabs.com/')">{{lang.text['Licenses']['open_link']}}</ion-button>
-  </ion-list-header>
-  <textarea class="infobox" disabled [(ngModel)]="licenses['nakama']"></textarea>
-
-  <ion-list-header>
-    <ion-label>Google Fonts</ion-label>
-    <ion-button (click)="open_link('https://fonts.google.com/noto')">{{lang.text['Licenses']['open_link']}}</ion-button>
-  </ion-list-header>
-  <textarea class="infobox" disabled [(ngModel)]="licenses['notosans']"></textarea>
 </ion-content>

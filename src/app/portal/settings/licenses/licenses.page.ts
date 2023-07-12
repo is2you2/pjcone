@@ -23,31 +23,18 @@ export class LicensesPage implements OnInit {
 
   /** 라이선스 문서 일람 */
   licenses = {
-    ionic: {
-      cli: '',
-      capacitor: '',
-    },
     godot: {
       engine: '',
       enet: '',
       freetype: '',
       mbedtls: '',
     },
-    p5js: '',
-    nakama: '',
-    notosans: '',
   };
 
   p5canvas: p5;
   loadTexts() {
     let loader = (p: p5) => {
       p.setup = () => {
-        p.loadStrings('assets/data/docs/ioniccli.txt', (v: string[]) => {
-          this.licenses.ionic.cli = v.join('\n');
-        });
-        p.loadStrings('assets/data/docs/capacitor.txt', (v: string[]) => {
-          this.licenses.ionic.capacitor = v.join('\n');
-        })
         p.loadStrings('assets/data/docs/godot.txt', (v: string[]) => {
           this.licenses.godot.engine = v.join('\n');
         });
@@ -59,15 +46,6 @@ export class LicensesPage implements OnInit {
         });
         p.loadStrings('assets/data/docs/mbedtls.txt', (v: string[]) => {
           this.licenses.godot.mbedtls = v.join('\n');
-        });
-        p.loadStrings('assets/data/docs/p5js.txt', (v: string[]) => {
-          this.licenses.p5js = v.join('\n');
-        });
-        p.loadStrings('assets/data/docs/nakama.txt', (v: string[]) => {
-          this.licenses.nakama = v.join('\n');
-        });
-        p.loadStrings('assets/data/docs/OFL.txt', (v: string[]) => {
-          this.licenses.notosans = v.join('\n');
         });
       }
     }
