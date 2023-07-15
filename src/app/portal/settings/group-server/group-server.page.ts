@@ -59,7 +59,6 @@ export class GroupServerPage implements OnInit {
     } else { // 활동중이면 로그아웃처리
       if (!this.nakama.on_socket_disconnected['group_unlink_by_user'])
         this.nakama.on_socket_disconnected['group_unlink_by_user'] = () => {
-          console.log('아니 이거 로그 안찍히세요;');
           this.nakama.set_group_statusBar('offline', _is_official, _target);
         }
       this.statusBar.groupServer[_is_official][_target] = 'offline';
@@ -161,6 +160,10 @@ export class GroupServerPage implements OnInit {
     }
     // 로그인 상태일 경우 로그오프처리
     if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+      if (!this.nakama.on_socket_disconnected['group_remove_by_user'])
+        this.nakama.on_socket_disconnected['group_remove_by_user'] = () => {
+          this.nakama.set_group_statusBar('offline', _is_official, _target);
+        }
       await this.nakama.servers[_is_official][_target].client.sessionLogout(
         this.nakama.servers[_is_official][_target].session,
         this.nakama.servers[_is_official][_target].session.token,
@@ -222,6 +225,8 @@ export class GroupServerPage implements OnInit {
   ionViewWillLeave() {
     if (this.nakama.on_socket_disconnected['group_unlink_by_user'])
       delete this.nakama.on_socket_disconnected['group_unlink_by_user'];
+    if (this.nakama.on_socket_disconnected['group_remove_by_user'])
+      delete this.nakama.on_socket_disconnected['group_remove_by_user'];
   }
 
   go_back() {
