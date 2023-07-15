@@ -96,6 +96,7 @@ ServerNTools,서버와 도구,Servers and tools
 joinRanchat,랜덤채팅 참여,Join random chat
 joinDediChat,사설 그룹채팅,Join group chat
 quickQRshare,빠른 QR공유,Quick QR sharing
+QRCodeGen,QR코드 생성기,QRCode Generator
 InAppExplorer,인앱 탐색기,InApp Explorer
 EnginePPT,엔진 PPT,Engine PPT
 joinDedi_placeholder,기본,Default
@@ -394,3 +395,6 @@ ImageURL,이미지 URL,Image URL
 EnterURI,이미지 주소 입력,Enter image url
 NoNotiMsg,전달할 메시지를 입력해주세요,Please enter your message
 Send,발송,Send
+## QRCodeGen,,
+AboutQRCodeGen,이 기능에 대해서,About this feature
+UserInput,사용자 입력,User input

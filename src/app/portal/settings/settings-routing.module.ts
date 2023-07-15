@@ -56,6 +56,10 @@ const routes: Routes = [
     path: 'admin-tools',
     loadChildren: () => import('./admin-tools/admin-tools.module').then( m => m.AdminToolsPageModule)
   },
+  {
+    path: 'qrcode-gen',
+    loadChildren: () => import('./qrcode-gen/qrcode-gen.module').then( m => m.QrcodeGenPageModule)
+  },
 ];
 
 @NgModule({

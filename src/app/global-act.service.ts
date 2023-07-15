@@ -115,6 +115,28 @@ export class GlobalActService {
     }
   }
 
+  /** 문자열을 받아서 QR코드 이미지로 돌려주기  
+   * 선택적 반환: QRCode 이미지 또는 오류 메시지
+   */
+  readasQRCodeFromString(str: any) {
+    try {
+      let qr: string = new QRCode({
+        content: str,
+        padding: 4,
+        width: 8,
+        height: 8,
+        color: isDarkMode ? "#bbb" : '#444',
+        background: isDarkMode ? "#111" : '#fff',
+        ecl: "M",
+      }).svg();
+      return this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);
+    } catch (e) {
+      this.p5toast.show({
+        text: `${this.lang.text['GlobalAct']['failed_to_gen_qr']}: ${e}`,
+      });
+    }
+  }
+
   godot_splash: p5;
   /** 실행중인 iframe-godot 개체를 기억하여 2개 이상 생성될 경우 이전에 진행중인 객체를 삭제, 마지막 실행기만 기억하기 */
   godot: HTMLIFrameElement;
