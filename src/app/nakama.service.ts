@@ -1831,6 +1831,20 @@ export class NakamaService {
       this.count_channel_online_member(c, _is_official, _target);
       this.save_groups_with_less_info();
       _CallBack(c);
+    }).catch(e => {
+      let err_info: string = '';
+      switch (e.code) {
+        case 3: // 사용자 정보 없음 (계정 삭제의 경우)
+          err_info = this.lang.text['Nakama']['AddChannelFailed_Code3'];
+          break;
+        default:
+          err_info = e.message;
+          break;
+      }
+      this.p5toast.show({
+        text: `${this.lang.text['Nakama']['AddChannelFailed']}: ${err_info}`,
+      });
+      _CallBack(undefined);
     });
   }
 

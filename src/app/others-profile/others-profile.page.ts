@@ -235,15 +235,17 @@ export class OthersProfilePage implements OnInit {
     if (!this.lock_create_chat) {
       this.lock_create_chat = true;
       this.nakama.join_chat_with_modulation(this.info['user']['id'], 2, this.isOfficial, this.target, (c) => {
-        this.modalCtrl.create({
-          component: ChatRoomPage,
-          componentProps: {
-            info: c,
-          },
-        }).then(v => {
-          v.present();
-          this.lock_create_chat = false;
-        });
+        if (c)
+          this.modalCtrl.create({
+            component: ChatRoomPage,
+            componentProps: {
+              info: c,
+            },
+          }).then(v => {
+            v.present();
+            this.lock_create_chat = false;
+          });
+        else this.lock_create_chat = false;
       }, true);
     }
   }
