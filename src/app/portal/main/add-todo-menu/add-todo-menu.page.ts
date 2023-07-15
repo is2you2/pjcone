@@ -271,7 +271,6 @@ export class AddTodoMenuPage implements OnInit {
     this.limitDisplay = date_limit.toLocaleString(this.lang.lang);
     this.limitDisplay = this.limitDisplay.substring(0, this.limitDisplay.lastIndexOf(':'));
     this.isLimitChangable = true;
-    this.follow_resize();
   }
 
   ionViewDidEnter() {
@@ -281,7 +280,6 @@ export class AddTodoMenuPage implements OnInit {
   isStartCalendarHidden = true;
   /** 달력 켜기끄기 */
   toggle_start_calendar() {
-    this.p5resize.windowResized();
     this.isStartCalendarHidden = !this.isStartCalendarHidden;
     this.isCalendarHidden = true;
   }
@@ -289,7 +287,6 @@ export class AddTodoMenuPage implements OnInit {
   isCalendarHidden = true;
   /** 달력 켜기끄기 */
   toggle_calendar() {
-    this.p5resize.windowResized();
     this.isCalendarHidden = !this.isCalendarHidden;
     this.isStartCalendarHidden = true;
   }
@@ -322,30 +319,6 @@ export class AddTodoMenuPage implements OnInit {
     this.limitDisplay = new Date(ev.detail.value).toLocaleString(this.lang.lang);
     this.limitDisplay = this.limitDisplay.substring(0, this.limitDisplay.lastIndexOf(':'))
     this.limitTimeP5Display = new Date(this.userInput.limit).getTime();
-  }
-
-  p5resize: p5;
-  /** 창 조절에 따른 최대 화면 크기 조정 */
-  follow_resize() {
-    setTimeout(() => {
-      let sketch = (p: p5) => {
-        let mainTable = document.getElementById('main_table');
-        let mainDiv = document.getElementById('main_div');
-        let buttons_table = document.getElementById('bottom_buttons');
-        p.setup = () => {
-          setTimeout(() => {
-            p.windowResized();
-          }, 100);
-          p.noLoop();
-        }
-        p.windowResized = () => {
-          setTimeout(() => {
-            mainDiv.setAttribute('style', `max-width: ${mainTable.parentElement.offsetWidth}px; max-height: ${mainTable.parentElement.clientHeight - buttons_table.offsetHeight}px`);
-          }, 0);
-        }
-      }
-      this.p5resize = new p5(sketch);
-    }, 50);
   }
 
   /** 첨부파일 삭제 */
@@ -1096,8 +1069,6 @@ export class AddTodoMenuPage implements OnInit {
       list.forEach(path => this.indexed.removeFileFromUserPath(path));
     });
     this.noti.Current = '';
-    if (this.p5resize)
-      this.p5resize.remove();
     if (this.p5timer)
       this.p5timer.remove();
     this.global.CreateGodotIFrame('todo', {

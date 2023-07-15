@@ -304,12 +304,13 @@ export class ChatRoomPage implements OnInit {
   prev_cursor = '';
   content_panel: HTMLElement;
   send_thumbnail: HTMLElement;
-  file_sel_id = '';
+  file_sel_id = 'file_sel_id';
 
   async ngOnInit() {
     this.nakama.removeBanner();
     this.info = this.navParams.get('info');
     this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
+    this.ChannelUserInputId = `chatroom_input_${this.info.id}_${new Date().getTime()}`;
     this.noti.Current = this.info['cnoti_id'];
     if (this.info['cnoti_id'])
       this.noti.ClearNoti(this.info['cnoti_id']);
@@ -338,7 +339,6 @@ export class ChatRoomPage implements OnInit {
     }
     this.content_panel = document.getElementById('content');
     this.send_thumbnail = document.getElementById('send_thumbnail');
-    this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     // 실시간 채팅을 받는 경우 행동처리
     if (this.nakama.channels_orig[this.isOfficial][this.target] &&
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
@@ -370,6 +370,12 @@ export class ChatRoomPage implements OnInit {
     }, 500);
   }
 
+  ionViewDidEnter() {
+    setTimeout(() => {
+      this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  }
+
   /** 내가 보낸 메시지인지 검토하는 과정  
    * 내 메시지 한정 썸네일을 생성하거나 열람 함수를 생성
    */
@@ -395,55 +401,16 @@ export class ChatRoomPage implements OnInit {
           v => {
             let url = URL.createObjectURL(v);
             this.global.modulate_thumbnail(msg.content, url);
-            // setTimeout(() => {
-            //   this.content_panel.scrollIntoView({ block: 'start' });
-            // }, 0);
           });
         delete this.temporary_open_thumbnail[msg.message_id];
       }
     }
   }
 
-  ionViewWillEnter() {
-    this.follow_resize();
-  }
-
   /** 첨부파일 삭제 */
   removeAttach() {
     delete this.userInput.file;
     this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
-  }
-
-  p5canvas: p5;
-  /** 마지막에 작성된 내용 보존용 */
-  last_text: string;
-  /** 창 조절에 따른 최대 화면 크기 조정 */
-  follow_resize() {
-    setTimeout(() => {
-      let sketch = (p: p5) => {
-        let mainTable = document.getElementById('main_table');
-        let mainDiv = document.getElementById('main_div');
-        let inputTable = document.getElementById('input_table');
-        let ext_menu = document.getElementById('ext_menu');
-        p.setup = () => {
-          setTimeout(() => {
-            p.windowResized();
-          }, 100);
-          p.noLoop();
-        }
-        p.keyPressed = () => {
-          if (p.keyCode == p.ENTER)
-            this.last_text = this.userInput.text;
-        }
-        p.windowResized = () => {
-          setTimeout(() => {
-            mainDiv.setAttribute('style', `max-width: ${mainTable.parentElement.offsetWidth}px; max-height: ${mainTable.parentElement.clientHeight - inputTable.offsetHeight - ext_menu.offsetHeight}px`);
-            this.send_thumbnail.setAttribute('style', `width: ${mainTable.parentElement.offsetWidth}px; max-height: 136px; bottom: ${this.isHidden ? 46 : 286}px;`);
-          }, 0);
-        }
-      }
-      this.p5canvas = new p5(sketch);
-    }, 50);
   }
 
   /** 사용자 입력 */
@@ -570,28 +537,42 @@ export class ChatRoomPage implements OnInit {
   /** 핸드폰 가상키보드의 움직임을 고려하여 눈이 덜 불편하도록 지연 */
   open_ext_with_delay() {
     this.isHidden = !this.isHidden;
-    setTimeout(() => {
-      this.p5canvas.windowResized();
-    }, 120);
   }
 
   /** 확장 메뉴 숨기기 */
   make_ext_hidden() {
+    if (isPlatform == 'DesktopPWA') return;
     this.isHidden = true;
-    setTimeout(() => {
-      this.p5canvas.windowResized();
-    }, 120);
+  }
+
+  userInputTextArea: HTMLElement;
+  ChannelUserInputId = 'ChannelUserInputId';
+  check_key(ev: any) {
+    if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+    if (ev.key == 'Enter') {
+      if (isPlatform == 'DesktopPWA') {
+        if (ev.shiftKey) { // shift + enter
+          this.userInputTextArea.style.height = 'auto';
+          this.userInputTextArea.style.height = this.userInputTextArea.scrollHeight + 'px';
+        } else this.send(true);
+      } else {
+        this.userInputTextArea.style.height = 'auto';
+        this.userInputTextArea.style.height = this.userInputTextArea.scrollHeight + 'px';
+      }
+    }
   }
 
   send(with_key = false) {
     if (with_key && (isPlatform == 'Android' || isPlatform == 'iOS')) return;
     if (!this.userInput.text.trim() && !this.userInput['file']) {
-      this.userInput.text = '';
+      setTimeout(() => {
+        this.userInput.text = '';
+      }, 0);
       return;
     }
+    this.userInputTextArea.style.height = '36px';
     let result: FileInfo = {};
-    result['msg'] = this.last_text || this.userInput.text;
-    this.last_text = '';
+    result['msg'] = this.userInput.text;
     let upload: any[] = [];
     if (this.userInput.file) { // 파일 첨부시
       result['filename'] = this.userInput.file.filename;
@@ -932,6 +913,5 @@ export class ChatRoomPage implements OnInit {
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
     this.noti.Current = undefined;
-    this.p5canvas.remove();
   }
 }

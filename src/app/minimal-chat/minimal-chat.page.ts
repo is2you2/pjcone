@@ -379,29 +379,12 @@ export class MinimalChatPage implements OnInit {
         }, this.Header, this.open_this);
       }
     }
-    setTimeout(() => {
-      this.follow_resize();
-    }, 0);
   }
 
-  p5canvas: p5;
-  /** 창 조절에 따른 최대 화면 크기 조정 */
-  follow_resize() {
-    let sketch = (p: p5) => {
-      let mainTable = document.getElementById('main_table');
-      let mainDiv = document.getElementById('main_div');
-      let inputTable = document.getElementById('input_table');
-      p.setup = () => {
-        setTimeout(() => {
-          p.windowResized();
-        }, 100);
-        p.noLoop();
-      }
-      p.windowResized = () => {
-        mainDiv.setAttribute('style', `max-width: ${mainTable.parentElement.offsetWidth}px; max-height: ${mainTable.parentElement.clientHeight - inputTable.offsetHeight}px`);
-      }
-    }
-    this.p5canvas = new p5(sketch);
+  ionViewDidEnter() {
+    setTimeout(() => {
+      this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
   }
 
   /** 랜덤채팅에 참여하기, 대화 끊고 다시 연결 */
@@ -496,6 +479,5 @@ export class MinimalChatPage implements OnInit {
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', 'assets/icon/favicon.png');
     this.noti.Current = undefined;
-    this.p5canvas.remove();
   }
 }
