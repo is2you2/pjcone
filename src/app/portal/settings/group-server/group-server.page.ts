@@ -57,6 +57,11 @@ export class GroupServerPage implements OnInit {
       if (this.nakama.users.self['online'])
         this.nakama.init_session(this.nakama.servers[_is_official][_target].info);
     } else { // 활동중이면 로그아웃처리
+      if (!this.nakama.on_socket_disconnected['group_unlink_by_user'])
+        this.nakama.on_socket_disconnected['group_unlink_by_user'] = () => {
+          console.log('아니 이거 로그 안찍히세요;');
+          this.nakama.set_group_statusBar('offline', _is_official, _target);
+        }
       this.statusBar.groupServer[_is_official][_target] = 'offline';
       this.nakama.catch_group_server_header('offline');
       if (this.nakama.servers[_is_official][_target].session) {
@@ -212,6 +217,11 @@ export class GroupServerPage implements OnInit {
         this.indexed.saveTextFileToUserPath(lines.join('\n'), 'servers/list_detail.csv');
       }
     });
+  }
+
+  ionViewWillLeave() {
+    if (this.nakama.on_socket_disconnected['group_unlink_by_user'])
+      delete this.nakama.on_socket_disconnected['group_unlink_by_user'];
   }
 
   go_back() {

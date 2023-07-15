@@ -1447,7 +1447,6 @@ export class NakamaService {
   /** 그룹 서버 및 설정-그룹서버의 상태 조정 */
   set_group_statusBar(_status: 'offline' | 'missing' | 'pending' | 'online' | 'certified', _is_official: string, _target: string) {
     this.statusBar.groupServer[_is_official][_target] = _status;
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
     this.catch_group_server_header(_status);
   }
 
@@ -1687,10 +1686,6 @@ export class NakamaService {
           }
         }
         socket.ondisconnect = (_e) => {
-          this.p5toast.show({
-            text: `${this.lang.text['Nakama']['DisconnectedFromServer']}: ${this.servers[_is_official][_target].info.name}`,
-            lateable: true,
-          });
           if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
             let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
             channel_ids.forEach(_cid => {
@@ -1705,7 +1700,7 @@ export class NakamaService {
               this.groups[_is_official][_target][_gid]['status'] = 'offline';
             });
           }
-          this.set_group_statusBar('offline', _is_official, _target);
+          this.set_group_statusBar('pending', _is_official, _target);
           let keys = Object.keys(this.on_socket_disconnected);
           keys.forEach(key => this.on_socket_disconnected[key]());
         }
@@ -2727,39 +2722,17 @@ export class NakamaService {
               },
             }).then(v => v.present());
           } else {
-            let new_server_info: any = {};
-            new_server_info['name'] = json[i].value.name;
-            new_server_info['target'] = json[i].value.target || json[i].value.name;
-            new_server_info['address'] = json[i].value.address || '192.168.0.1';
-            new_server_info['port'] = json[i].value.port || 7350;
-            new_server_info['useSSL'] = json[i].value.useSSL || false;
-            new_server_info['isOfficial'] = json[i].value.isOfficial || 'unofficial';
-            new_server_info['key'] = json[i].value.key || 'defaultkey';
-            let line = new Date().getTime().toString();
-            line += `,${new_server_info.isOfficial}`;
-            line += `,${new_server_info.name}`;
-            line += `,${new_server_info.target}`;
-            line += `,${new_server_info.address}`;
-            line += `,${new_server_info.port}`;
-            line += `,${new_server_info.useSSL}`;
-            this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
-              let list: string[] = [];
-              if (e && v) list = v.split('\n');
-              for (let i = 0, j = list.length; i < j; i++) {
-                let sep = list[i].split(',');
-                if (sep[3] == new_server_info.target) {
-                  list.splice(i, 1);
-                  break;
-                }
-              }
-              list.push(line);
-              this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv', (_v) => {
-                this.init_server(new_server_info);
-                this.servers[new_server_info.isOfficial][new_server_info.target].info = { ...new_server_info };
-                this.init_session(new_server_info);
-              });
-              this.statusBar.groupServer[new_server_info.isOfficial][new_server_info.target] = 'offline';
-              this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
+            let new_server_info: ServerInfo = {
+              name: json[i].value.name,
+              target: json[i].value.target,
+              address: json[i].value.address,
+              port: json[i].value.port,
+              useSSL: json[i].value.useSSL,
+              isOfficial: json[i].value.isOfficial,
+              key: json[i].value.key,
+            };
+            this.add_group_server(new_server_info, () => {
+              this.init_session(new_server_info);
             });
           }
           return;
