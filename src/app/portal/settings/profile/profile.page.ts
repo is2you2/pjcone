@@ -107,9 +107,9 @@ export class ProfilePage implements OnInit {
     let is_saved = false;
     for (let i = 0, j = servers.length; i < j; i++) {
       try {
-        await this.nakama.sync_load_file(load_user_content, servers[i].info.isOfficial, servers[i].info.target,
+        let blob = await this.nakama.sync_load_file(load_user_content, servers[i].info.isOfficial, servers[i].info.target,
           'user_public', servers[i].session.user_id, 'main_content');
-        is_saved = true;
+        is_saved = Boolean(blob);
         break;
       } catch (e) {
         continue;
@@ -314,6 +314,7 @@ export class ProfilePage implements OnInit {
       if (this.nakama.users.self['online'])
         this.toggle_online();
       this.nakama.users.self['online'] = false;
+      delete this.nakama.users.self['password'];
     }
   }
   /** 채도 변화자 */

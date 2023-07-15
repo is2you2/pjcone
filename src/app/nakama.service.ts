@@ -504,12 +504,15 @@ export class NakamaService {
             text: this.lang.text['Nakama']['NeedLoginInfo'],
           });
           this.users.self['online'] = false;
+          delete this.users.self['password'];
           this.set_group_statusBar('offline', info.isOfficial, info.target);
           break;
         case 401: // 비밀번호 잘못됨
           this.p5toast.show({
             text: this.lang.text['Nakama']['NeedAccountReset'],
           });
+          this.users.self['online'] = false;
+          delete this.users.self['password'];
           this.set_group_statusBar('offline', info.isOfficial, info.target);
           break;
         case 404: // 아이디 없음

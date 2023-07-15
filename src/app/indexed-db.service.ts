@@ -35,7 +35,6 @@ export class IndexedDBService {
         _CallBack();
       }
     } else {
-      console.log('retry initialize..');
       setTimeout(() => {
         this.initialize(_CallBack);
       }, 1000);
@@ -72,7 +71,6 @@ export class IndexedDBService {
    */
   saveTextFileToUserPath(text: string, path: string, _CallBack = (_v: any) => { }): Promise<any> {
     if (!this.db) {
-      console.log('retry saveTextFileToUserPath..');
       setTimeout(() => {
         this.saveTextFileToUserPath(text, path, _CallBack)
       }, 1000);
@@ -105,7 +103,6 @@ export class IndexedDBService {
    */
   saveFileToUserPath(base64: string, path: string, _CallBack = (_int8array: Int8Array) => { }): Promise<Int8Array> {
     if (!this.db) {
-      console.log('retry saveFileToUserPath..');
       setTimeout(() => {
         this.saveFileToUserPath(base64, path, _CallBack);
       }, 1000);
@@ -137,9 +134,8 @@ export class IndexedDBService {
   }
 
   /** 파일이 있는지 검토 */
-  checkIfFileExist(path: string, _CallBack = (_b: boolean) => { console.log('checkIfFileExist act null') }): Promise<boolean> {
+  checkIfFileExist(path: string, _CallBack = (_b: boolean) => { }): Promise<boolean> {
     if (!this.db) {
-      console.log('retry checkIfFileExist..');
       setTimeout(() => {
         this.checkIfFileExist(path, _CallBack);
       }, 1000);
@@ -162,7 +158,6 @@ export class IndexedDBService {
   /** 모든 파일 리스트로부터 대상 폴더와 겹치는 파일 리스트 추출하기 */
   GetFileListFromDB(path: string, _CallBack = (_list: string[]) => { }): Promise<string[]> {
     if (!this.db) {
-      console.log('retry GetFileListFromDB..');
       setTimeout(() => {
         this.GetFileListFromDB(path, _CallBack);
       }, 1000);
@@ -190,7 +185,6 @@ export class IndexedDBService {
   /** 모든 파일 리스트로부터 대상 폴더와 겹치는 파일 리스트 추출하기 */
   GetFileInfoFromDB(path: string, _CallBack = (_list: any) => { }): Promise<any> {
     if (!this.db) {
-      console.log('retry GetFileInfoFromDB..');
       setTimeout(() => {
         this.GetFileInfoFromDB(path, _CallBack);
       }, 1000);
@@ -216,7 +210,6 @@ export class IndexedDBService {
    */
   loadTextFromUserPath(path: string, _CallBack = (_e: boolean, _v: string) => console.log('loadTextFromUserPath act null')) {
     if (!this.db) {
-      console.log('retry loadTextFromUserPath..');
       setTimeout(() => {
         this.loadTextFromUserPath(path, _CallBack);
       }, 1000);
@@ -239,7 +232,6 @@ export class IndexedDBService {
      */
   loadBlobFromUserPath(path: string, mime: string, _CallBack = (_blob: Blob) => { }): Promise<Blob> {
     if (!this.db) {
-      console.log('retry loadBlobFromUserPath..');
       setTimeout(() => {
         this.loadBlobFromUserPath(path, mime, _CallBack);
       }, 1000);
@@ -273,7 +265,6 @@ export class IndexedDBService {
    */
   DownloadFileFromUserPath(path: string, mime: string, filename: string) {
     if (!this.db) {
-      console.log('retry DownloadFileFromUserPath..');
       setTimeout(() => {
         this.DownloadFileFromUserPath(path, mime, filename);
       }, 1000);
@@ -305,7 +296,6 @@ export class IndexedDBService {
 
   removeFileFromUserPath(path: string, _CallBack = (_ev: any) => { }): Promise<any> {
     if (!this.db) {
-      console.log('retry removeFileFromUserPath..');
       setTimeout(() => {
         this.removeFileFromUserPath(path, _CallBack);
       }, 1000);

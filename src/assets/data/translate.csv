@@ -320,7 +320,7 @@ FailedToOpenFile,파일 열기 오류,Failed to open file
 FailedToDownloadFile,다운받기 오류,Failed to download file
 ## Nakama,,
 AlreadyHaveTargetName,이미 같은 구분자를 쓰는 서버가 있습니다,There is already a server using the same key
-NeedLoginInfo,로그인 정보를 입력해주세요,Please enter your login information
+NeedLoginInfo,로그인 정보를 확인해주세요,Please check your login information
 NeedLinkUser,사용자를 연결해주세요,Please link user device info
 NeedAccountReset,비밀번호를 확인해주세요,Please check your password
 RegisterUserSucc,회원가입이 완료되었습니다,Sign up is complete
