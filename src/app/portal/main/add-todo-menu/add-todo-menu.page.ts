@@ -467,6 +467,15 @@ export class AddTodoMenuPage implements OnInit {
     this_file['filesize'] = ev.target.files[0]['size'];
     this_file['type'] = ev.target.files[0]['type'];
     this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
+    this_file['content_related_creator'] = [{
+      timestamp: new Date().toLocaleString(),
+      display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
+    }];
+    this_file['content_creator'] = {
+      // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+      timestamp: new Date().toLocaleString(),
+      display_name: this.nakama.users.self['display_name'],
+    };
     let has_same_named_file = false;
     has_same_named_file = await this.indexed.checkIfFileExist(this_file.path)
     if (this.userInput.id && !has_same_named_file) has_same_named_file = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}/${this_file.filename}`);

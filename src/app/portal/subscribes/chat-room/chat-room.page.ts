@@ -266,6 +266,15 @@ export class ChatRoomPage implements OnInit {
       this.userInput.file['size'] = ev.target.files[0].size;
       this.userInput.file['type'] = ev.target.files[0].type;
       this.userInput.file['typeheader'] = ev.target.files[0].type.split('/')[0];
+      this.userInput.file['content_related_creator'] = [{
+        timestamp: new Date().toLocaleString(),
+        display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
+      }];
+      this.userInput.file['content_creator'] = {
+        user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+        timestamp: new Date().toLocaleString(),
+        display_name: this.nakama.users.self['display_name'],
+      };
       let updater = setInterval(() => { }, 110);
       setTimeout(() => {
         clearInterval(updater);
