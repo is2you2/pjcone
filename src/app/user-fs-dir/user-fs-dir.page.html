@@ -1,7 +1,6 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>{{lang.text['Settings']['InAppExplorer']}}</ion-title>
-    <!-- <ion-title>{{lang.text['UserFsDir']['Title']}}</ion-title> -->
     <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
       <ion-back-button defaultHref=""></ion-back-button>
     </ion-buttons>
@@ -10,10 +9,19 @@
 
 <ion-content>
   <ion-list>
-    <ion-item *ngIf="CurrentDir != ''" button (click)="MoveToUpDir()">
-      <ion-icon slot="start" name="folder"></ion-icon>
-      <ion-label>..</ion-label>
-    </ion-item>
+    <div *ngIf="CurrentDir != ''">
+      <ion-item button>
+        <ion-icon slot="start" name="folder"></ion-icon>
+        <ion-label>.</ion-label>
+        <ion-button (click)="RemoveDirectoryRecursive()">
+          {{lang.text['UserFsDir']['RemoveCurrentDir']}}
+        </ion-button>
+      </ion-item>
+      <ion-item button (click)="MoveToUpDir()">
+        <ion-icon slot="start" name="folder"></ion-icon>
+        <ion-label>..</ion-label>
+      </ion-item>
+    </div>
     <div *ngFor="let folder of DirList">
       <ion-item *ngIf="CurrentDir == folder.dir" button (click)="SelectFolder(folder)">
         <ion-icon slot="start" name="folder"></ion-icon>

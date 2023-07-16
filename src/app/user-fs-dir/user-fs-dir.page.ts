@@ -196,6 +196,23 @@ export class UserFsDirPage implements OnInit {
     this.indexed.DownloadFileFromUserPath(info.path, '', info.name);
   }
 
+  RemoveDirectoryRecursive() {
+    this.alertCtrl.create({
+      header: this.lang.text['UserFsDir']['RemoveFolder'],
+      message: this.lang.text['UserFsDir']['RemoveThisFolder'],
+      buttons: [{
+        text: this.lang.text['UserFsDir']['RemoveApply'],
+        handler: () => {
+          this.indexed.GetFileListFromDB(this.CurrentDir, (list) => {
+            list.forEach(path => this.indexed.removeFileFromUserPath(path))
+            this.LoadAllIndexedFiles();
+            this.MoveToUpDir();
+          })
+        }
+      }],
+    }).then(v => v.present());
+  }
+
   RemoveFile(info: FileDir, i: number) {
     this.alertCtrl.create({
       header: this.lang.text['UserFsDir']['DeleteFile'],
