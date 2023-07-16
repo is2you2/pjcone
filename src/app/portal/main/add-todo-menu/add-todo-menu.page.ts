@@ -96,8 +96,6 @@ export class AddTodoMenuPage implements OnInit {
     tags: [],
     /** 일의 중요도, 가시화 기한의 색상에 영향을 줌 */
     importance: '0',
-    /** 이 업무가 연동되어 행해진 기록들 */
-    logs: [] as LogForm[],
     /** 상세 내용 */
     description: undefined,
     /** 서버에 저장된 경우 필요한 정보를 기입 */
@@ -256,10 +254,6 @@ export class AddTodoMenuPage implements OnInit {
       this.isModifiable = e.isModifiable;
       console.log('Server issue: ', e);
     }
-    // 로그 정보 게시
-    if (this.userInput.logs.length) {
-      this.userInput.logs.forEach(_log => _log.displayText = this.lang.text['TodoDetail'][_log.translateCode] || _log.translateCode);
-    }
     this.noti.Current = this.userInput.id;
     let date_limit = new Date(this.userInput.limit);
     this.Calendar.value = new Date(date_limit.getTime() - date_limit.getTimezoneOffset() * 60 * 1000).toISOString();
@@ -289,18 +283,6 @@ export class AddTodoMenuPage implements OnInit {
   toggle_calendar() {
     this.isCalendarHidden = !this.isCalendarHidden;
     this.isStartCalendarHidden = true;
-  }
-
-  isLogsHidden = true;
-  /** 기록 리스트 켜고 끄기 */
-  toggle_logs() {
-    this.isLogsHidden = !this.isLogsHidden;
-    if (!this.isLogsHidden) {
-      let bottom_logs = document.getElementById('content');
-      setTimeout(() => {
-        bottom_logs.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 50);
-    }
   }
 
   start_change(ev: any) {
@@ -767,9 +749,6 @@ export class AddTodoMenuPage implements OnInit {
     delete this.userInput.display_store;
     delete this.userInput.display_manager;
     delete this.userInput.display_creator;
-    this.userInput.logs.forEach(log => {
-      delete log.displayText;
-    });
     // 새 태그구성이 완료된 경우
     let trim_tag = this.InputNewTag.trim();
     if (trim_tag) {
@@ -915,20 +894,12 @@ export class AddTodoMenuPage implements OnInit {
       else this.userInput.startFrom = input_value;
     }
     this.userInput.limit = new Date(this.userInput.limit).getTime();
-    this.userInput.logs.push({
-      creator: this.userInput.remote ?
-        this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id
-        : '',
-      createTime: new Date().getTime(),
-      translateCode: this.isModify ? 'ModifyTodo' : 'CreateTodo',
-    });
     if (!this.isModify) { // 새로 만들 때
       if (this.userInput.remote && !this.userInput.remote.creator_id) { // 원격 생성이면서 최초 생성
         this.userInput.remote.creator_id = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id;
         this.userInput.manager = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id;
       }
     }
-    this.isLogsHidden = true;
     if (this.userInput.remote) { // 서버에 저장한다면
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
