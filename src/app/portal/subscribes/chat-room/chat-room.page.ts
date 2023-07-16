@@ -549,16 +549,16 @@ export class ChatRoomPage implements OnInit {
   ChannelUserInputId = 'ChannelUserInputId';
   check_key(ev: any) {
     if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-    if (ev.key == 'Enter') {
-      if (isPlatform == 'DesktopPWA') {
-        if (ev.shiftKey) { // shift + enter
-          this.userInputTextArea.style.height = 'auto';
-          this.userInputTextArea.style.height = this.userInputTextArea.scrollHeight + 'px';
-        } else this.send(true);
+    if (isPlatform == 'DesktopPWA') {
+      if (ev.key == 'Enter' && !ev.shiftKey && ev.type == 'keydown') {
+        this.send(true);
       } else {
-        this.userInputTextArea.style.height = 'auto';
+        this.userInputTextArea.style.height = '36px';
         this.userInputTextArea.style.height = this.userInputTextArea.scrollHeight + 'px';
       }
+    } else {
+      this.userInputTextArea.style.height = '36px';
+      this.userInputTextArea.style.height = this.userInputTextArea.scrollHeight + 'px';
     }
   }
 
@@ -568,6 +568,7 @@ export class ChatRoomPage implements OnInit {
       setTimeout(() => {
         this.userInput.text = '';
       }, 0);
+      this.userInputTextArea.style.height = '36px';
       return;
     }
     this.userInputTextArea.style.height = '36px';
@@ -589,24 +590,37 @@ export class ChatRoomPage implements OnInit {
     let tmp = { content: JSON.parse(JSON.stringify(result)) };
     this.nakama.content_to_hyperlink(tmp);
     this.sending_msg.push(tmp);
-    this.nakama.servers[this.isOfficial][this.target].socket
-      .writeChatMessage(this.info['id'], result).then(v => {
-        /** 업로드가 진행중인 메시지 개체 */
-        if (upload.length) { // 첨부 파일이 포함된 경우
-          // 로컬에 파일을 저장
-          this.indexed.saveFileToUserPath(this.userInput.file.base64, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.file_ext}`, () => {
-            this.auto_open_thumbnail({
-              content: result,
-              message_id: v.message_id,
+    try {
+      this.nakama.servers[this.isOfficial][this.target].socket
+        .writeChatMessage(this.info['id'], result).then(v => {
+          /** 업로드가 진행중인 메시지 개체 */
+          if (upload.length) { // 첨부 파일이 포함된 경우
+            // 로컬에 파일을 저장
+            this.indexed.saveFileToUserPath(this.userInput.file.base64, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.file_ext}`, () => {
+              this.auto_open_thumbnail({
+                content: result,
+                message_id: v.message_id,
+              });
+              // 서버에 파일을 업로드
+              this.nakama.WriteStorage_From_channel(v, upload, this.isOfficial, this.target);
             });
-            // 서버에 파일을 업로드
-            this.nakama.WriteStorage_From_channel(v, upload, this.isOfficial, this.target);
-          });
-        }
-        delete this.userInput.file;
+          }
+          delete this.userInput.file;
+          this.userInput.text = '';
+          this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
+        });
+    } catch (e) {
+      setTimeout(() => {
         this.userInput.text = '';
-        this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
-      });
+      }, 0);
+      this.userInputTextArea.style.height = '36px';
+      setTimeout(() => {
+        for (let i = this.sending_msg.length - 1; i >= 0; i--) {
+          if (this.sending_msg[i]['content']['local_comp'] == result['local_comp'])
+            this.sending_msg.splice(i, 1);
+        }
+      }, 1500);
+    }
   }
 
   /** 메시지 정보 상세 */

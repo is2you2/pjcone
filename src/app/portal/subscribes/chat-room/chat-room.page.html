@@ -114,8 +114,9 @@ SPDX-License-Identifier: MIT -->
                 </ion-button>
               </td>
               <td style="width: 100%; vertical-align: bottom;">
-                <textarea [id]="ChannelUserInputId" [(ngModel)]="userInput.text" (keydown)="check_key($event)"
-                  class="TextAreaInput" (click)="make_ext_hidden()" [placeholder]="inputPlaceholder"></textarea>
+                <textarea [id]="ChannelUserInputId" [(ngModel)]="userInput.text" (keyup)="check_key($event)"
+                  (keydown)="check_key($event)" class="TextAreaInput" (click)="make_ext_hidden()"
+                  [placeholder]="inputPlaceholder"></textarea>
               </td>
               <td>
                 <ion-button fill="clear" (click)="send(false)" expand="block"
