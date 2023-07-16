@@ -100,8 +100,6 @@ export class ProfilePage implements OnInit {
   }
 
   async update_content_from_server() {
-    this.global.last_frame_name = 'content_updated';
-    this.global.godot.remove();
     let load_user_content: FileInfo = { path: 'servers/self/content.pck', }
     let servers = this.nakama.get_all_online_server();
     let is_saved = false;
@@ -115,12 +113,15 @@ export class ProfilePage implements OnInit {
         continue;
       }
     }
-    if (is_saved)
+    if (is_saved) {
+      this.global.last_frame_name = 'content_updated';
+      this.global.godot.remove();
       await this.global.CreateGodotIFrame('my_content', {
         title: 'Profile',
         pck_path: 'user://servers/self/content.pck',
         force_logo: true,
       });
+    }
   }
 
   change_content() {
