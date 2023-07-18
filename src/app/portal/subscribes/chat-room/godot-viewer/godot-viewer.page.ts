@@ -41,8 +41,8 @@ export class GodotViewerPage implements OnInit {
 
   ionViewDidEnter() {
     document.addEventListener('ionBackButton', this.EventListenerAct)
-    this.global.CreateGodotIFrame('godot-viewer', {
-      local_url: 'assets/data/godot/godot-viewer.pck',
+    this.global.CreateGodotIFrame('viewer', {
+      local_url: 'assets/data/godot/viewer.pck',
       title: 'ViewerEx',
       path: this.navParams.get('path'),
       ext: this.FileInfo['file_ext'],
