@@ -185,13 +185,13 @@ export class LocalNotiService {
 
   /** 권한 요청 처리 */
   initialize() {
-    if (isPlatform == 'DesktopPWA') {
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
       if (!("Notification" in window)) {
         console.error('Notification 미지원 브라우저입니다');
       }
       Notification.requestPermission().then(v => {
         if (v != 'granted')
-          console.warn('알림 거절', v);
+          console.log('알림 거절', v);
       }, e => {
         console.error('지원하지 않는 브라우저:', e);
       });
