@@ -172,8 +172,8 @@ export class GlobalActService {
         return;
       };
       if (this.godot_splash) this.godot_splash.remove();
-      window['godot'] = '';
       if (this.godot) this.godot.remove();
+      window['godot'] = '';
       this.last_frame_name = _frame_name;
       let _godot = document.createElement('iframe');
       _godot.id = 'godot';
