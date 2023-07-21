@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { AlertController, IonAccordionGroup, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { AlertController, IonAccordionGroup, LoadingController, LoadingOptions, ModalController, NavParams } from '@ionic/angular';
 import { isPlatform } from '../app.component';
 import { GlobalActService } from '../global-act.service';
 import { IndexedDBService } from '../indexed-db.service';
@@ -8,6 +8,7 @@ import { LanguageSettingService } from '../language-setting.service';
 import { P5ToastService } from '../p5-toast.service';
 import { GodotViewerPage } from '../portal/subscribes/chat-room/godot-viewer/godot-viewer.page';
 import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ionic-viewer.page';
+import { File } from '@awesome-cordova-plugins/file/ngx';
 
 /** userfs 의 파일과 폴더 형식 */
 interface FileDir {
@@ -54,6 +55,7 @@ export class UserFsDirPage implements OnInit {
     private p5toast: P5ToastService,
     private alertCtrl: AlertController,
     private sanitizer: DomSanitizer,
+    private file: File,
   ) { }
 
   is_ready = false;
@@ -194,6 +196,46 @@ export class UserFsDirPage implements OnInit {
 
   DownloadFile(info: FileDir) {
     this.indexed.DownloadFileFromUserPath(info.path, '', info.name);
+  }
+
+  ExportDirectoryRecursive() {
+    this.alertCtrl.create({
+      header: this.lang.text['UserFsDir']['ExportDirTitle'],
+      message: this.lang.text['UserFsDir']['ExportDirMsg'],
+      buttons: [{
+        text: this.lang.text['UserFsDir']['ExportConfirm'],
+        handler: async () => {
+          let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });
+          loading.present();
+          this.indexed.GetFileListFromDB(this.CurrentDir, list => {
+            list.forEach(async path => {
+              let FileInfo = await this.indexed.GetFileInfoFromDB(path);
+              let blob = await this.indexed.loadBlobFromUserPath(path, '');
+              let last_sep = path.lastIndexOf('/');
+              let only_path = path.substring(0, last_sep);
+              let filename = path.substring(last_sep + 1);
+              await this.CreateFolderRecursive(only_path);
+              try {
+                if (FileInfo.mode == 16893) throw '이거 폴더임';
+                await this.file.writeFile(this.file.externalDataDirectory + only_path + '/', filename, blob, {
+                  replace: true,
+                });
+              } catch (e) {
+                console.error(path, ': 파일 저장 실패: ', e);
+              }
+            });
+          });
+          loading.dismiss();
+        }
+      }]
+    }).then(v => v.present());
+  }
+
+  async CreateFolderRecursive(folder_path: string) {
+    let sep = folder_path.lastIndexOf('/') + 1;
+    let forward_folder = folder_path.substring(0, sep);
+    let folder_name = folder_path.substring(sep);
+    await this.file.createDir(this.file.externalDataDirectory + forward_folder, folder_name, true);
   }
 
   RemoveDirectoryRecursive() {

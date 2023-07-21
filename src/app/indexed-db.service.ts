@@ -245,9 +245,6 @@ export class IndexedDBService {
           _CallBack(blob);
           done(blob);
         } catch (e) {
-          // this.p5toast.show({
-          //   text: `${this.lang.text['IndexedDB']['FailedToOpenFile']}: ${e}`,
-          // });
           console.error('loadFileFailed: ', e)
           error(e);
         }

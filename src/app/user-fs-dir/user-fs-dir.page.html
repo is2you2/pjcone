@@ -13,6 +13,9 @@
       <ion-item button>
         <ion-icon slot="start" name="folder"></ion-icon>
         <ion-label>.</ion-label>
+        <ion-button *ngIf="!cant_dedicated" (click)="ExportDirectoryRecursive()">
+          {{lang.text['UserFsDir']['ExportDir']}}
+        </ion-button>
         <ion-button (click)="RemoveDirectoryRecursive()">
           {{lang.text['UserFsDir']['RemoveCurrentDir']}}
         </ion-button>
