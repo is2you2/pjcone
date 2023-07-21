@@ -722,7 +722,6 @@ export class AddTodoMenuPage implements OnInit {
       loading.dismiss();
     }
     this.deleteFromStorage(false);
-    // }
   }
 
   /** 다른 사람에게 일을 부탁합니다 */
@@ -961,20 +960,11 @@ export class AddTodoMenuPage implements OnInit {
         return;
       }
     }
-    let cycle_check = () => {
-      try {
-        this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
-        this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
-          this.saveTagInfo();
-          this.modalCtrl.dismiss();
-        });
-      } catch (e) {
-        setTimeout(() => {
-          cycle_check();
-        }, 100);
-      }
-    }
-    cycle_check();
+    this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
+      this.saveTagInfo();
+      this.modalCtrl.dismiss();
+    });
   }
 
   /** 이 해야할 일 삭제 */
