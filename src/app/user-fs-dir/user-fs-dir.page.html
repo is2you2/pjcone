@@ -25,6 +25,13 @@
         <ion-label>..</ion-label>
       </ion-item>
     </div>
+    <div *ngIf="cant_dedicated && CurrentDir == ''">
+      <ion-item button (click)="SelectImportFolder()">
+        <ion-icon slot="start" name="arrow-down-circle"></ion-icon>
+        <ion-label> {{lang.text['UserFsDir']['ImportFolder']}} </ion-label>
+      </ion-item>
+      <input hidden type="file" id="folder_sel_id" webkitdirectory directory (change)="inputImageSelected($event)">
+    </div>
     <div *ngFor="let folder of DirList">
       <ion-item *ngIf="CurrentDir == folder.dir" button (click)="SelectFolder(folder)">
         <ion-icon slot="start" name="folder"></ion-icon>

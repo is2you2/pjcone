@@ -117,13 +117,13 @@ export class UserFsDirPage implements OnInit {
         });
       }
       this.FileList.sort((a, b) => {
-        if (a.path < b.path) return 1;
-        if (a.path > b.path) return -1;
+        if (a.path > b.path) return 1;
+        if (a.path < b.path) return -1;
         return 0;
       });
       this.DirList.sort((a, b) => {
-        if (a.path < b.path) return 1;
-        if (a.path > b.path) return -1;
+        if (a.path > b.path) return 1;
+        if (a.path < b.path) return -1;
         return 0;
       });
       loading.dismiss();
@@ -236,6 +236,25 @@ export class UserFsDirPage implements OnInit {
     let forward_folder = folder_path.substring(0, sep);
     let folder_name = folder_path.substring(sep);
     await this.file.createDir(this.file.externalDataDirectory + forward_folder, folder_name, true);
+  }
+
+  SelectImportFolder() {
+    if (this.cant_dedicated) {
+      let input = document.getElementById('folder_sel_id');
+      input.click();
+    } else {
+      console.log('폴더 수입 준비중');
+    }
+  }
+  async inputImageSelected(ev: any) {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });
+    loading.present();
+    for (let i = 0, j = ev.target.files.length; i < j; i++) {
+      let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[i]);
+      await this.indexed.saveFileToUserPath(base64, ev.target.files[i].webkitRelativePath);
+    }
+    this.LoadAllIndexedFiles();
+    loading.dismiss();
   }
 
   RemoveDirectoryRecursive() {

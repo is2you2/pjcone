@@ -362,6 +362,7 @@ Open,열기,Open
 Download,받기,Download
 Delete,삭제,Delete
 CreateAt,생성일시,Creation date
+ImportFolder,폴더 수입,Import folder
 ExportDir,추출,Export
 ExportDirTitle,폴더 추출,Export folder
 ExportDirMsg,예하 파일들을 추출합니다,Extract subordinate files
