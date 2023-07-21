@@ -89,8 +89,10 @@ export class ProfilePage implements OnInit {
       let is_exist = await this.indexed.checkIfFileExist('servers/self/content.pck');
       if (is_exist) {
         await this.global.CreateGodotIFrame('my_content', {
-          title: 'Profile',
-          pck_path: 'user://servers/self/content.pck',
+          title: 'ViewerEx',
+          ext: 'pck',
+          local_url: 'assets/data/godot/viewer.pck',
+          path: 'servers/self/content.pck',
           force_logo: true,
         });
       } else throw '로컬에 준비된 파일 없음';
@@ -117,8 +119,10 @@ export class ProfilePage implements OnInit {
       this.global.last_frame_name = 'content_updated';
       this.global.godot.remove();
       await this.global.CreateGodotIFrame('my_content', {
-        title: 'Profile',
-        pck_path: 'user://servers/self/content.pck',
+        title: 'ViewerEx',
+        ext: 'pck',
+        local_url: 'assets/data/godot/viewer.pck',
+        path: 'servers/self/content.pck',
         force_logo: true,
       });
     }
@@ -172,8 +176,10 @@ export class ProfilePage implements OnInit {
       }
       loading.dismiss();
       await this.global.CreateGodotIFrame('my_content', {
-        title: 'Profile',
-        pck_path: 'user://servers/self/content.pck',
+        title: 'ViewerEx',
+        ext: 'pck',
+        local_url: 'assets/data/godot/viewer.pck',
+        path: 'servers/self/content.pck',
         force_logo: true,
       });
     }

@@ -67,8 +67,10 @@ export class OthersProfilePage implements OnInit {
       let is_exist = await this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`);
       if (is_exist)
         await this.global.CreateGodotIFrame(this.user_content_id, {
-          title: 'Profile',
-          pck_path: `user://servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`,
+          title: 'ViewerEx',
+          ext: 'pck',
+          local_url: 'assets/data/godot/viewer.pck',
+          path: `servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`,
           force_logo: true,
         });
     }, 150);
@@ -133,8 +135,10 @@ export class OthersProfilePage implements OnInit {
       }
       await this.indexed.saveFileToUserPath(base64.replace(/"|=|\\/g, ''), `servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`);
       await this.global.CreateGodotIFrame(this.user_content_id, {
-        title: 'Profile',
-        pck_path: `user://servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`,
+        title: 'ViewerEx',
+        ext: 'pck',
+        local_url: 'assets/data/godot/viewer.pck',
+        path: `servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`,
         force_logo: true,
       });
     } catch (e) {
