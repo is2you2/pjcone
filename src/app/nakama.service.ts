@@ -92,6 +92,9 @@ export class NakamaService {
   };
 
   initialize() {
+    this.lang.Callback_nakama = () => {
+      this.check_if_online();
+    }
     // 기등록 알림 id 검토
     this.noti.GetNotificationIds((list) => {
       this.registered_id = list;
@@ -178,9 +181,6 @@ export class NakamaService {
         });
       });
     });
-    this.lang.Callback_nakama = () => {
-      this.check_if_online();
-    }
   }
   /** 시작시 해야할 일 알림을 설정 */
   set_all_todo_notification() {
