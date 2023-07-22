@@ -43,6 +43,8 @@ export class UserFsDirPage implements OnInit {
   WillReturn: boolean;
   cant_dedicated = false;
 
+  InAppBrowser = true;
+
   @ViewChild('FileSel') FileSel: IonAccordionGroup;
 
   constructor(
@@ -238,12 +240,51 @@ export class UserFsDirPage implements OnInit {
     await this.file.createDir(this.file.externalDataDirectory + forward_folder, folder_name, true);
   }
 
+  ExternalFolder = [];
+  async BrowseExternalFiles() {
+    this.ExternalFolder.length = 0;
+    this.InAppBrowser = false;
+    this.ExternalFolder = await this.file.listDir(this.file.externalApplicationStorageDirectory, 'files');
+  }
+
+  async importFolderMiddleAct(entry: any) {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });
+    loading.present();
+    await this.importThisFolder(entry);
+    this.InAppBrowser = true;
+    loading.dismiss();
+  }
+
+  /** 이 폴더와 파일 재귀 임포팅 */
+  async importThisFolder(entry: any) {
+    let path = entry.nativeURL.substring(0, entry.nativeURL.length - 1);
+    let last_sep = path.lastIndexOf('/');
+    let RecursiveEntry = await this.file.listDir(path.substring(0, last_sep) + '/', path.substring(last_sep + 1));
+    for (let i = 0, j = RecursiveEntry.length; i < j; i++)
+      if (RecursiveEntry[i].isDirectory)
+        await this.importThisFolder(RecursiveEntry[i]);
+      else {
+        let target_path = RecursiveEntry[i].nativeURL.split('org.pjcone.portal/files/')[1];
+        let target_sep = RecursiveEntry[i].nativeURL.lastIndexOf('/') + 1;
+        let target_folder = RecursiveEntry[i].nativeURL.substring(0, target_sep);
+        console.log(target_path);
+        console.log(target_folder);
+        console.log(RecursiveEntry[i].name);
+        try {
+          let readFile = await this.file.readAsDataURL(target_folder, RecursiveEntry[i].name);
+          console.log(readFile);
+        } catch (e) {
+          console.log('불러오기 실패: ', e);
+        }
+      }
+  }
+
   SelectImportFolder() {
     if (this.cant_dedicated) {
       let input = document.getElementById('folder_sel_id');
       input.click();
     } else {
-      console.log('폴더 수입 준비중');
+      this.BrowseExternalFiles();
     }
   }
   async inputImageSelected(ev: any) {
