@@ -46,15 +46,15 @@ export class MainPage implements OnInit {
       position: BannerAdPosition.BOTTOM_CENTER,
     };
     /** 광고 정보 불러오기 */
-    try { // 파일이 없으면 광고를 보여줌, 파일이 있다면 안보여줌
+    try { // 파일이 있으면 보여주고, 없다면 보여주지 않음
       this.nakama.isBannerShowing = false;
       let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/admob.txt`);
-      if (!res.ok) "광고가 없다고 생각됩니다";
-    } catch (e) { // 로컬 정보 기반으로 광고
-      console.log(e);
+      if (!res.ok) throw "광고가 없다고 생각됩니다";
       AdMob.showBanner(options).then(() => {
         this.nakama.isBannerShowing = true;
       });
+    } catch (e) { // 로컬 정보 기반으로 광고
+      console.log(e);
     }
   }
 
