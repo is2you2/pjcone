@@ -32,7 +32,7 @@ export class VoidDrawPage implements OnInit {
   async ionViewDidEnter() {
     document.addEventListener('ionBackButton', this.EventListenerAct);
     this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
-    this.global.CreateGodotIFrame('voidDraw', {
+    await this.global.CreateGodotIFrame('voidDraw', {
       local_url: 'assets/data/godot/voidDraw.pck',
       title: 'voidDraw',
       image: Boolean(this.navParams.data['path']),
@@ -57,24 +57,13 @@ export class VoidDrawPage implements OnInit {
           is_modify: is_modify,
         });
       }
-    });
+    }, 'new_canvas');
     if (this.navParams.data['path'])
-      this.create_with_image();
-  }
-
-  /** 다른 이미지로부터 시작하기 */
-  create_with_image() {
-    if (!this.global.godot_window['new_canvas'])
-      setTimeout(() => {
-        this.create_with_image();
-      }, 1000);
-    else { // 준비가 완료되면 이미지를 배경에 삽입합니다
       this.global.godot_window['new_canvas'](JSON.stringify({
         width: this.navParams.data.width,
         height: this.navParams.data.height,
         path: '/userfs/' + this.navParams.data.path,
       }));
-    }
   }
 
   new_image() {
