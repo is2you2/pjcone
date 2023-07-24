@@ -22,6 +22,10 @@ const routes: Routes = [
     path: 'add-todo-menu',
     loadChildren: () => import('./portal/main/add-todo-menu/add-todo-menu.module').then( m => m.AddTodoMenuPageModule)
   },
+  {
+    path: 'chat-room',
+    loadChildren: () => import('./portal/subscribes/chat-room/chat-room.module').then( m => m.ChatRoomPageModule)
+  },
 ];
 
 @NgModule({

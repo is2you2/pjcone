@@ -3,7 +3,7 @@
 
 import { Component, OnInit } from '@angular/core';
 import { Channel, ChannelMessage } from '@heroiclabs/nakama-js';
-import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController, NavController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -22,6 +22,7 @@ import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-a
 import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 import { GroupDetailPage } from '../../settings/group-detail/group-detail.page';
 import { Camera } from '@awesome-cordova-plugins/camera/ngx';
+import { ActivatedRoute, Router } from '@angular/router';
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -46,7 +47,9 @@ export class ChatRoomPage implements OnInit {
 
   constructor(
     public modalCtrl: ModalController,
-    private navParams: NavParams,
+    private navCtrl: NavController,
+    private route: ActivatedRoute,
+    private router: Router,
     public nakama: NakamaService,
     private noti: LocalNotiService,
     private p5toast: P5ToastService,
@@ -89,7 +92,7 @@ export class ChatRoomPage implements OnInit {
         list.forEach(path => this.indexed.removeFileFromUserPath(path));
         loading.dismiss();
       });
-      this.modalCtrl.dismiss();
+      this.navCtrl.back();
     }
   },
   {
@@ -317,7 +320,10 @@ export class ChatRoomPage implements OnInit {
 
   async ngOnInit() {
     this.nakama.removeBanner();
-    this.info = this.navParams.get('info');
+    this.route.queryParams.subscribe(_p => {
+      const navParams = this.router.getCurrentNavigation().extras.state;
+      if (navParams) this.info = navParams.info;
+    })
     this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
     this.ChannelUserInputId = `chatroom_input_${this.info.id}_${new Date().getTime()}`;
     this.noti.Current = this.info['cnoti_id'];

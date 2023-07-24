@@ -3,7 +3,7 @@
 
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
-import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
+import { iosTransitionAnimation, mdTransitionAnimation, ModalController, NavController } from '@ionic/angular';
 import { isPlatform, SERVER_PATH_ROOT } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -219,13 +219,12 @@ export class SettingsPage implements OnInit, OnDestroy {
       local_url: 'assets/data/godot/todo.pck',
       title: 'Todo',
       add_todo_menu: (_data: string) => {
-        this.modalCtrl.create({
-          component: AddTodoMenuPage,
-          componentProps: {
-            godot: this.app.godot_window,
+        this.nav.navigateForward('add-todo-menu', {
+          animation: mdTransitionAnimation,
+          state: {
             data: _data,
           },
-        }).then(v => v.present());
+        });
       }
     });
   }

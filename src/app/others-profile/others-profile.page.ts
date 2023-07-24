@@ -8,7 +8,6 @@ import { IndexedDBService } from '../indexed-db.service';
 import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
 import { P5ToastService } from '../p5-toast.service';
-import { ChatRoomPage } from '../portal/subscribes/chat-room/chat-room.page';
 import { StatusManageService } from "../status-manage.service";
 import { FileInfo, GlobalActService } from '../global-act.service';
 
@@ -239,17 +238,10 @@ export class OthersProfilePage implements OnInit {
     if (!this.lock_create_chat) {
       this.lock_create_chat = true;
       this.nakama.join_chat_with_modulation(this.info['user']['id'], 2, this.isOfficial, this.target, (c) => {
-        if (c)
-          this.modalCtrl.create({
-            component: ChatRoomPage,
-            componentProps: {
-              info: c,
-            },
-          }).then(v => {
-            v.present();
-            this.lock_create_chat = false;
-          });
-        else this.lock_create_chat = false;
+        if (c) {
+          this.nakama.go_to_chatroom_without_admob_act(c);
+          this.lock_create_chat = false;
+        } else this.lock_create_chat = false;
       }, true);
     }
   }

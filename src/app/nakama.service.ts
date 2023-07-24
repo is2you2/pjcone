@@ -9,9 +9,8 @@ import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 import * as p5 from 'p5';
 import { LocalNotiService } from './local-noti.service';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
-import { ChatRoomPage } from './portal/subscribes/chat-room/chat-room.page';
 import { ApiReadStorageObjectId } from '@heroiclabs/nakama-js/dist/api.gen';
 import { LanguageSettingService } from './language-setting.service';
 import { AdMob } from '@capacitor-community/admob';
@@ -75,6 +74,7 @@ export class NakamaService {
     private lang: LanguageSettingService,
     private global: GlobalActService,
     private bgmode: BackgroundMode,
+    private navCtrl: NavController,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -300,11 +300,15 @@ export class NakamaService {
   }
 
   /** subscribe과 localPush의 채팅방 입장 행동을 통일함 */
-  go_to_chatroom_without_admob_act(v: HTMLIonModalElement) {
+  go_to_chatroom_without_admob_act(_info: any) {
     this.removeBanner();
+    this.navCtrl.navigateForward('chat-room', {
+      animation: mdTransitionAnimation,
+      state: {
+        info: _info,
+      },
+    });
     this.has_new_channel_msg = false;
-    v.onWillDismiss().then(() => this.resumeBanner());
-    v.present();
     this.rearrange_channels();
     this.save_channels_with_less_info();
   }
@@ -1879,12 +1883,7 @@ export class NakamaService {
       }, this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'], (ev: any) => {
         // 알림 아이디가 같으면 진입 허용
         if (ev['id'] == this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']) {
-          this.modalCtrl.create({
-            component: ChatRoomPage,
-            componentProps: {
-              info: this.channels_orig[_is_official][_target][msg.channel_id],
-            },
-          }).then(v => this.go_to_chatroom_without_admob_act(v));
+          this.go_to_chatroom_without_admob_act(this.channels_orig[_is_official][_target][msg.channel_id]);
         }
       });
     }

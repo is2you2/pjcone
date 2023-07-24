@@ -11,7 +11,6 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { AddGroupPage } from '../settings/add-group/add-group.page';
 import { GroupServerPage } from '../settings/group-server/group-server.page';
-import { ChatRoomPage } from './chat-room/chat-room.page';
 import { QRelsePage } from './qrelse/qrelse.page';
 
 @Component({
@@ -73,18 +72,10 @@ export class SubscribesPage implements OnInit {
   go_to_chatroom(info: any) {
     if (!this.lock_chatroom) {
       this.lock_chatroom = true;
-      this.modalCtrl.create({
-        component: ChatRoomPage,
-        componentProps: {
-          info: info,
-        },
-      }).then(v => {
-        this.nakama.go_to_chatroom_without_admob_act(v);
-        if (info['status'] != 'online' || info['status'] != 'pending')
-          delete info['is_new'];
-        this.nakama.rearrange_channels();
-        this.lock_chatroom = false;
-      });
+      this.nakama.go_to_chatroom_without_admob_act(info);
+      if (info['status'] != 'online' || info['status'] != 'pending')
+        delete info['is_new'];
+      this.lock_chatroom = false;
     }
   }
 
