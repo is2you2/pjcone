@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import * as p5 from "p5";
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -17,17 +17,7 @@ import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-a
 import { VoidDrawPage } from '../../subscribes/chat-room/void-draw/void-draw.page';
 import { GodotViewerPage } from '../../subscribes/chat-room/godot-viewer/godot-viewer.page';
 import { Camera } from '@awesome-cordova-plugins/camera/ngx';
-
-interface LogForm {
-  /** 이 로그를 발생시킨 사람, 리모트인 경우에만 넣기, 로컬일 경우 비워두기 */
-  creator?: string;
-  /** 로그 생성 시점 */
-  createTime?: number;
-  /** 번역코드 */
-  translateCode?: string;
-  /** 사용자에게 보여지는 문자열 */
-  displayText?: string;
-}
+import { ActivatedRoute, Router } from '@angular/router';
 
 /** 서버에서 생성한 경우 */
 interface RemoteInfo {
@@ -53,7 +43,8 @@ export class AddTodoMenuPage implements OnInit {
   @ViewChild('Calendar') Calendar: any;
 
   constructor(
-    private navParams: NavParams,
+    private route: ActivatedRoute,
+    private router: Router,
     public modalCtrl: ModalController,
     public lang: LanguageSettingService,
     private p5toast: P5ToastService,
@@ -66,6 +57,7 @@ export class AddTodoMenuPage implements OnInit {
     private loadingCtrl: LoadingController,
     private global: GlobalActService,
     private camera: Camera,
+    private navCtrl: NavController,
   ) { }
 
   /** 작성된 내용 */
@@ -129,6 +121,16 @@ export class AddTodoMenuPage implements OnInit {
   limitDisplay: string;
   /** 플랫폼 구분 */
   can_cordova: boolean;
+
+  add_todo_menu = (_data: string) => {
+    this.navCtrl.navigateForward('add-todo-menu', {
+      animation: mdTransitionAnimation,
+      state: {
+        data: _data,
+      },
+    });
+  }
+
   ngOnInit() {
     this.can_cordova = isPlatform == 'Android' || isPlatform == 'iOS';
     this.nakama.removeBanner();
@@ -161,6 +163,11 @@ export class AddTodoMenuPage implements OnInit {
     merge.forEach(info => {
       this.AvailableStorageList.push(info);
     });
+    // 미리 지정된 데이터 정보가 있는지 검토
+    this.route.queryParams.subscribe(_p => {
+      const navParams = this.router.getCurrentNavigation().extras.state;
+      if (navParams) this.received_data = navParams.data;
+    })
   }
 
   /** 하단에 보여지는 버튼 */
@@ -176,8 +183,6 @@ export class AddTodoMenuPage implements OnInit {
   isModifiable = false;
   received_data: string;
   async ionViewWillEnter() {
-    // 미리 지정된 데이터 정보가 있는지 검토
-    this.received_data = this.navParams.get('data');
     if (this.received_data) { // 이미 있는 데이터 조회
       this.buttonDisplay.saveTodo = this.lang.text['TodoDetail']['buttonDisplay_modify'];
       this.isModify = true;
@@ -699,15 +704,7 @@ export class AddTodoMenuPage implements OnInit {
       await this.global.CreateGodotIFrame('todo', {
         local_url: 'assets/data/godot/todo.pck',
         title: 'Todo',
-        add_todo_menu: (_data: string) => {
-          this.modalCtrl.create({
-            component: AddTodoMenuPage,
-            componentProps: {
-              godot: this.global.godot_window,
-              data: _data,
-            },
-          }).then(v => v.present());
-        }
+        add_todo_menu: this.add_todo_menu
       }, 'add_todo');
       loading.dismiss();
     }
@@ -757,7 +754,7 @@ export class AddTodoMenuPage implements OnInit {
     // 들어올 때와 같은지 검토
     let exactly_same = JSON.stringify(this.userInput) == this.received_data;
     if (exactly_same) {
-      this.modalCtrl.dismiss();
+      this.navCtrl.back();
       return;
     } // ^ 같으면 저장 동작을 하지 않음
     if (!this.userInput.create_at) // 생성 날짜 기록
@@ -861,15 +858,7 @@ export class AddTodoMenuPage implements OnInit {
       await this.global.CreateGodotIFrame('todo', {
         local_url: 'assets/data/godot/todo.pck',
         title: 'Todo',
-        add_todo_menu: (_data: string) => {
-          this.modalCtrl.create({
-            component: AddTodoMenuPage,
-            componentProps: {
-              godot: this.global.godot_window,
-              data: _data,
-            },
-          }).then(v => v.present());
-        }
+        add_todo_menu: this.add_todo_menu
       }, 'add_todo');
       loading.dismiss();
     } else if (!has_attach) { // 첨부된게 전혀 없다면 모든 이미지 삭제
@@ -963,7 +952,7 @@ export class AddTodoMenuPage implements OnInit {
     this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
       this.saveTagInfo();
-      this.modalCtrl.dismiss();
+      this.navCtrl.back();
     });
   }
 
@@ -1030,7 +1019,7 @@ export class AddTodoMenuPage implements OnInit {
       this.removeTagInfo();
       loading.dismiss();
       this.global.godot_window['remove_todo'](JSON.stringify(this.userInput));
-      this.modalCtrl.dismiss();
+      this.navCtrl.back();
     });
   }
 
@@ -1044,15 +1033,7 @@ export class AddTodoMenuPage implements OnInit {
     this.global.CreateGodotIFrame('todo', {
       local_url: 'assets/data/godot/todo.pck',
       title: 'Todo',
-      add_todo_menu: (_data: string) => {
-        this.modalCtrl.create({
-          component: AddTodoMenuPage,
-          componentProps: {
-            godot: this.global.godot_window,
-            data: _data,
-          },
-        }).then(v => v.present());
-      }
+      add_todo_menu: this.add_todo_menu
     });
   }
 }

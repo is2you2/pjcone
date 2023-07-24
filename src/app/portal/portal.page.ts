@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
+import { iosTransitionAnimation, NavController } from '@ionic/angular';
 import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
 

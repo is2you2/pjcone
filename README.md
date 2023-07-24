@@ -226,7 +226,8 @@ ionViewWillEnter() {
   - InputMap 관련 정보를 받아올 수 없음
   - 직접 명시했을 뿐, project.godot 및 환경 설정에 포함되는 모든 정보들을 이용할 수 없음
   - InputMouse 류 행동과 InputTouch 류 행동을 분리, 상호간 시뮬레이션 하지 않음
-- 예상했던대로, modal 및 nav.push로 고도 HTML5 개체를 불렀다가 돌아가거나, nav.root으로 이전 기록을 삭제하는 경우 고도 HTML5 개체도 삭제됨
+- nav.push로 고도 HTML5 개체를 불렀다가 돌아가거나, nav.root으로 이전 기록을 삭제하는 경우 고도 HTML5 개체도 삭제됨
+  - modal 위에서 실행될 경우 modal의 부모페이지가 남아있다면 메모리 누적됨
   - 또한, nav.root 에서 페이지에 돌아올 수 있도록 구성된 경우 백그라운드에서 계속 운용
   - iframe 개체를 지워도 고도엔진 개체 삭제 (정지)
   - iframe 개체가 hidden 되더라도 백그라운드에서 진행됨 (숨기기 무의미)

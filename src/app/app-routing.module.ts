@@ -18,6 +18,10 @@ const routes: Routes = [
     path: 'user-fs-dir',
     loadChildren: () => import('./user-fs-dir/user-fs-dir.module').then( m => m.UserFsDirPageModule)
   },
+  {
+    path: 'add-todo-menu',
+    loadChildren: () => import('./portal/main/add-todo-menu/add-todo-menu.module').then( m => m.AddTodoMenuPageModule)
+  },
 ];
 
 @NgModule({
