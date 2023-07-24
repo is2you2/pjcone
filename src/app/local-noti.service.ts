@@ -196,9 +196,9 @@ export class LocalNotiService {
         console.error('지원하지 않는 브라우저:', e);
       });
     } else if (isPlatform == 'MobilePWA') { // 모바일 웹
-      if (!window['swReg']) {
+      if (!window['swReg'])
         console.error('Notification 미지원 브라우저입니다');
-      \ else if (window['swReg'].showNotification) 
+      else if (window['swReg'].showNotification)
         window['swReg'].showNotification('Notification granted');
     } // 모바일은 별도 초기화 과정 없음
   }
