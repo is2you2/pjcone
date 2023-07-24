@@ -48,7 +48,7 @@ export class MainPage implements OnInit {
     try { // 파일이 있으면 보여주고, 없다면 보여주지 않음
       this.nakama.isBannerShowing = false;
       let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/admob.txt`);
-      if (!res.ok) throw "광고가 없다고 생각됩니다";
+      if (!res.ok) throw "준비된 광고가 없습니다";
       AdMob.showBanner(options).then(() => {
         this.nakama.isBannerShowing = true;
       });

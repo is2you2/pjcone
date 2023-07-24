@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <title>Project: Cone</title>
 
-  <base href="/" />
+  <base id="site_base" href="/" />
 
   <meta name="color-scheme" content="light dark" />
   <meta name="viewport"
@@ -24,15 +24,20 @@
   <!-- https 일 때에만 동작한다는 썰이 있습니다, 검토 필요 -->
   <script defer>
     // 예하 경로에 의한 경로찾기 오류 완화용
-    var sub_path = '/'
+    let base = document.getElementById('site_base');
+    var sub_path = base.getAttribute('href');
+    var swReg;
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
-        .register('/assets/sw.js')
+        .register(`${sub_path}assets/sw.js`)
         // manifest.webmanifest 와 sw.js 파일을 함께 변경해야 합니다
         // manifest.icons[i].source / 캐시 경로 ... /pjcone_pwa/**/*
         // .register('/pjcone_pwa/assets/sw.js')
         // 이거 바꿀 때 바로 위에 있는 기반 href도 변경하기 -_-;;
-        .then(() => { console.log('Service Worker Registered'); })
+        .then((reg) => {
+          console.log('Service Worker Registered');
+          swReg = reg;
+        })
         .catch(e => {
           console.error('Service Worker Register failed: ', e);
         });

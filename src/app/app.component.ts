@@ -48,6 +48,9 @@ export class AppComponent {
     else if (platform.is('iphone'))
       isPlatform = 'iOS';
     noti.initialize();
+    lang.Callback_nakama = () => {
+      nakama.check_if_online();
+    }
     this.init_admob();
     indexed.initialize(() => {
       nakama.initialize();

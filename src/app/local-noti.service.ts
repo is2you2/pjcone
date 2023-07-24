@@ -181,11 +181,11 @@ export class LocalNotiService {
   /** 웹에서 앱 아이디를 따라 알림 관리  
    * { id: Notification }
    */
-  WebNoties = {} as { [id: string]: Notification };
+  WebNoties = {} as { [id: string]: any };
 
   /** 권한 요청 처리 */
   initialize() {
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+    if (isPlatform == 'DesktopPWA') {
       if (!("Notification" in window)) {
         console.error('Notification 미지원 브라우저입니다');
       }
@@ -195,6 +195,11 @@ export class LocalNotiService {
       }, e => {
         console.error('지원하지 않는 브라우저:', e);
       });
+    } else if (isPlatform == 'MobilePWA') { // 모바일 웹
+      if (!window['swReg']) {
+        console.error('Notification 미지원 브라우저입니다');
+      \ else if (window['swReg'].showNotification) 
+        window['swReg'].showNotification('Notification granted');
     } // 모바일은 별도 초기화 과정 없음
   }
   /**
@@ -203,7 +208,7 @@ export class LocalNotiService {
    * @param _action_wm 클릭시 행동 (Web.Noti)
    */
   PushLocal(opt: TotalNotiForm, header: string = 'favicon', _action_wm: Function = () => { }) {
-    if (isPlatform == 'DesktopPWA') {
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
       // 창을 바라보는 중이라면 무시됨, 바라보는 중이면서 같은 화면이면 무시됨
       if (document.hasFocus() && this.Current == header) return;
       if (opt.triggerWhen_ln) return; // 웹에는 예약 기능이 없음
@@ -222,13 +227,20 @@ export class LocalNotiService {
         requireInteraction: opt.requireInteraction_wn,
         dir: opt.dir_wn,
       }
-      this.WebNoties[opt.id] = new Notification(opt.title, { ...input });
-
-      this.WebNoties[opt.id].onclick = () => {
-        _action_wm();
-        window.focus();
-      };
-    } else if (isPlatform != 'MobilePWA') { // 모바일 로컬 푸쉬
+      if (isPlatform == 'DesktopPWA') {
+        this.WebNoties[opt.id] = new Notification(opt.title, { ...input });
+        this.WebNoties[opt.id].onclick = () => {
+          _action_wm();
+          window.focus();
+        };
+      } else if (window['swReg'] && window['swReg'].showNotification) {
+        this.WebNoties[opt.id] = window['swReg'].showNotification(opt.title, { ...input });
+        this.WebNoties[opt.id].onclick = () => {
+          _action_wm();
+          window.focus();
+        };
+      }
+    } else { // 모바일 로컬 푸쉬
       // 포어그라운드면서 해당 화면이면 동작 안함
       if (!this.bgmode.isActive() && this.Current == header) return;
       let input: ILocalNotification = {};
