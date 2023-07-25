@@ -1007,7 +1007,7 @@ export class AddTodoMenuPage implements OnInit {
         }
       this.noti.ClearNoti(this.userInput.noti_id);
       this.removeTagInfo();
-      if (this.global.godot_window['remove_todo'])
+      if (isDelete && this.global.godot_window['remove_todo'])
         this.global.godot_window['remove_todo'](JSON.stringify(this.userInput));
       loading.dismiss();
       this.navCtrl.back();
