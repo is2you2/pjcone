@@ -18,6 +18,7 @@
     "@angular/forms": "~13.2.2",
     "@angular/platform-browser": "~13.2.2",
     "@angular/platform-browser-dynamic": "~13.2.2",
+    "@angular/pwa": "^13.3.11",
     "@angular/router": "~13.2.2",
     "@angular/service-worker": "~13.2.2",
     "@awesome-cordova-plugins/background-mode": "^5.46.0",
