@@ -193,10 +193,10 @@ export class IonicViewerPage implements OnInit {
                   let firstCopy = touches[0].copy();
                   let dist = firstCopy.dist(touches[1]);
                   endPos = firstCopy.add(touches[1]).div(2).copy();
+                  let centerPos = endPos.copy()
                   endPos.sub(startPos);
                   TransformImage();
-                  // 더 나은 중심점 이동방식 필요
-                  ScaleImage(p.createVector(canvasDiv.clientWidth / 2, canvasDiv.clientHeight / 2), dist / dist_two);
+                  ScaleImage(centerPos, dist / dist_two);
                   break;
               }
             }
