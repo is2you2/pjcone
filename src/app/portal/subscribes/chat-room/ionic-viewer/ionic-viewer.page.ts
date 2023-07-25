@@ -51,27 +51,26 @@ export class IonicViewerPage implements OnInit {
     switch (this.FileInfo['viewer']) {
       case 'image': // 이미지
         this.p5canvas = new p5((p: p5) => {
-          const IMAGE_ELEMENT_ID = 'ImageEle';
-          let img: p5.Element;
           let iframe_sub: HTMLIFrameElement;
           p.setup = () => {
+            canvasDiv.style.maxWidth = '100%';
+            canvasDiv.style.overflow = 'hidden';
+            this.ContentBox.style.overflow = 'hidden';
             let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
             canvas.style('margin', '0');
             canvas.style('position', 'relative');
             canvas.style('pointer-events', 'none');
-            img = p.createImg(this.FileURL, this.FileInfo['filename']);
-            img.hide();
-            img.id(IMAGE_ELEMENT_ID);
-            img.parent(canvasDiv);
-            img.style("position", 'relative');
-            img.style('width', 'auto');
-            img.style('height', 'auto');
-            setTimeout(() => {
-              img.show();
-              this.image_info['width'] = img.elt.naturalWidth
-              this.image_info['height'] = img.elt.naturalHeight
+            canvasDiv.style.backgroundImage = `url(${this.FileURL})`;
+            canvasDiv.style.backgroundRepeat = 'no-repeat';
+            if (isPlatform != 'DesktopPWA') {
+              canvasDiv.style.pointerEvents = 'none';
+            }
+            p.loadImage(this.FileURL, v => {
+              this.image_info['width'] = v.width;
+              this.image_info['height'] = v.height;
+              imageOriginalSize = p.createVector(v.width, v.height);
               RePositioningImage();
-            }, 50);
+            });
             if (isPlatform == 'Android' || isPlatform == 'iOS') {
               iframe_sub = document.createElement('iframe');
               iframe_sub.setAttribute("src", this.FileURL);
@@ -85,25 +84,62 @@ export class IonicViewerPage implements OnInit {
           }
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let RePositioningImage = () => {
-            if (img.size()['height'] < canvasDiv.offsetHeight) {
-              img.style("top", '50%');
-              img.style("transform", 'translateY(-50%');
-            }
-            img.style('margin', 'auto');
+            canvasDiv.style.backgroundSize = `${canvasDiv.clientWidth}px`;
+            canvasDiv.style.backgroundPositionX = '0px';
+            let imageRatio = canvasDiv.clientWidth / imageOriginalSize.x;
+            let centerHeight =
+              canvasDiv.clientHeight / 2 - imageOriginalSize.y * imageRatio / 2;
+            canvasDiv.style.backgroundPositionY = `${centerHeight}px`;
           }
           p.windowResized = () => {
             setTimeout(() => {
               RePositioningImage();
             }, 50);
           }
-          p.mouseClicked = (ev: any) => {
-            if (ev.target.id == IMAGE_ELEMENT_ID) {
-              if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
-                window.open(this.FileURL);
-              else {
-                img.remove();
-                iframe_sub.hidden = false;
-              }
+          let imageOriginalSize: p5.Vector;
+          let lastPos: p5.Vector;
+          let startPos: p5.Vector;
+          let endPos: p5.Vector;
+          let lastScale: number;
+          let TransformImage = () => {
+            canvasDiv.style.backgroundPositionX = `${lastPos.x + endPos.x}px`
+            canvasDiv.style.backgroundPositionY = `${lastPos.y + endPos.y}px`;
+          }
+          let ScaleImage = (ratio: number) => {
+            let beforeCalced = lastScale;
+            let Calced = lastScale * ratio;
+            canvasDiv.style.backgroundSize = `${Calced}px`;
+            let posX = Number(canvasDiv.style.backgroundPositionX.split('px')[0]);
+            let posY = Number(canvasDiv.style.backgroundPositionY.split('px')[0]);
+            let widthMoved = (beforeCalced - Calced) / 2;
+            let heightMoved = widthMoved / imageOriginalSize.x * imageOriginalSize.y;
+            canvasDiv.style.backgroundPositionX = `${posX + widthMoved}px`
+            canvasDiv.style.backgroundPositionY = `${posY + heightMoved}px`;
+          }
+          p.mousePressed = () => {
+            if (p.mouseButton == p.CENTER)
+              RePositioningImage();
+            if (isPlatform == 'DesktopPWA') {
+              lastPos =
+                p.createVector(
+                  Number(canvasDiv.style.backgroundPositionX.split('px')[0]),
+                  Number(canvasDiv.style.backgroundPositionY.split('px')[0]));
+              startPos = p.createVector(p.mouseX, p.mouseY);
+            }
+          }
+          p.mouseWheel = (ev: any) => {
+            lastScale = Number(canvasDiv.style.backgroundSize.split('px')[0]);
+            ScaleImage(1 - ev.delta / 1000);
+          }
+          p.mouseDragged = () => {
+            if (isPlatform == 'DesktopPWA') {
+              endPos = p.createVector(p.mouseX, p.mouseY);
+              endPos.sub(startPos);
+              TransformImage();
+            }
+          }
+          p.mouseReleased = () => {
+            if (isPlatform == 'DesktopPWA') {
             }
           }
         });
