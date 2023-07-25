@@ -12,7 +12,6 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 import { LocalNotiService } from '../../local-noti.service';
 import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
-import { AddTodoMenuPage } from '../main/add-todo-menu/add-todo-menu.page';
 import { GlobalActService } from 'src/app/global-act.service';
 
 @Component({

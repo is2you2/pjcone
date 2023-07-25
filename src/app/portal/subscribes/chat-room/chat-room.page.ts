@@ -23,6 +23,7 @@ import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 import { GroupDetailPage } from '../../settings/group-detail/group-detail.page';
 import { Camera } from '@awesome-cordova-plugins/camera/ngx';
 import { ActivatedRoute, Router } from '@angular/router';
+import { File } from '@awesome-cordova-plugins/file/ngx';
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -61,6 +62,7 @@ export class ChatRoomPage implements OnInit {
     private global: GlobalActService,
     private loadingCtrl: LoadingController,
     private camera: Camera,
+    private file: File,
   ) { }
 
   /** 채널 정보 */
@@ -151,6 +153,7 @@ export class ChatRoomPage implements OnInit {
         destinationType: 0,
         correctOrientation: true,
       }).then(v => {
+        if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
         this.userInput.file = {};
         let time = new Date();
         this.userInput.file.filename = `Camera_${time.toLocaleString().replace(/:/g, '_')}.jpeg`;
@@ -175,13 +178,14 @@ export class ChatRoomPage implements OnInit {
   {
     icon: 'document-attach-outline',
     act: () => {
+      if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
       document.getElementById(this.file_sel_id).click();
     }
   },
   {
     icon: 'folder-open-outline',
     act: () => {
-      console.log(this.info);
+      if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
       this.modalCtrl.create({
         component: UserFsDirPage,
         componentProps: {
@@ -229,6 +233,7 @@ export class ChatRoomPage implements OnInit {
   {
     icon_img: 'voidDraw.png',
     act: () => {
+      if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
       this.modalCtrl.create({
         component: VoidDrawPage,
       }).then(v => {
@@ -684,13 +689,13 @@ export class ChatRoomPage implements OnInit {
           else throw "Need to download file";
         } catch (e) { // 전송중이 아니라면 다운받기
           console.log(e);
-          if (isPlatform == 'DesktopPWA') {
+          if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
             if (!this.isHistoryLoaded)
               this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
                 let url = URL.createObjectURL(resultModified);
                 this.global.modulate_thumbnail(msg.content, url);
               });
-          } else if (isPlatform != 'MobilePWA') {
+          } else {
             if (msg.content['viewer'] == 'disabled') {
               if (!this.isHistoryLoaded)
                 this.alertCtrl.create({
@@ -879,7 +884,7 @@ export class ChatRoomPage implements OnInit {
 
   /** 열람 불가 파일 다운로드로 유도 */
   alert_download(msg: any, path: string) {
-    if (isPlatform == 'DesktopPWA')
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.alertCtrl.create({
         header: this.lang.text['ChatRoom']['viewer_not_support'],
         message: this.lang.text['ChatRoom']['cannot_open_file'],
@@ -890,9 +895,45 @@ export class ChatRoomPage implements OnInit {
           }
         }]
       }).then(v => v.present());
-    else this.p5toast.show({
-      text: this.lang.text['ChatRoom']['cannot_open_file'],
-    });
+    else {
+      this.alertCtrl.create({
+        header: this.lang.text['ContentViewer']['Filename'],
+        inputs: [{
+          name: 'filename',
+          placeholder: msg.content['filename'],
+          type: 'text',
+        }],
+        buttons: [{
+          text: this.lang.text['ContentViewer']['saveFile'],
+          handler: async (input) => {
+            let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+            loading.present();
+            let filename = input['filename'] ? `${input['filename'].replace(/:|\?|\/|\\|<|>/g, '')}.${msg.content['file_ext']}` : msg.content['filename'];
+            let blob = await this.indexed.loadBlobFromUserPath(path, msg.content['type']);
+            this.file.writeFile(this.file.externalDataDirectory, filename, blob)
+              .then(_v => {
+                loading.dismiss();
+                this.p5toast.show({
+                  text: this.lang.text['ContentViewer']['fileSaved'],
+                });
+              }).catch(e => {
+                loading.dismiss();
+                switch (e.code) {
+                  case 12:
+                    this.p5toast.show({
+                      text: this.lang.text['ContentViewer']['AlreadyExist'],
+                    });
+                    this.alert_download(msg, path);
+                    break;
+                  default:
+                    console.log('준비되지 않은 오류 반환: ', e);
+                    break;
+                }
+              });
+          }
+        }]
+      }).then(v => v.present());
+    }
   }
 
   /** 사용자 정보보기 */

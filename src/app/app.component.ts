@@ -5,14 +5,12 @@ import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
-import { AlertController, ModalController, Platform } from '@ionic/angular';
+import { AlertController, ModalController, NavController, Platform, mdTransitionAnimation } from '@ionic/angular';
 import { IndexedDBService } from './indexed-db.service';
 import { LocalNotiService } from './local-noti.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { NakamaService } from './nakama.service';
-import { ChatRoomPage } from './portal/subscribes/chat-room/chat-room.page';
 import { AdMob } from "@capacitor-community/admob";
-import { AddTodoMenuPage } from './portal/main/add-todo-menu/add-todo-menu.page';
 import { LanguageSettingService } from './language-setting.service';
 /** 페이지가 돌고 있는 플렛폼 구분자 */
 export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'DesktopPWA';
@@ -29,6 +27,7 @@ export const SERVER_PATH_ROOT: string = 'https://is2you2.github.io/';
 export class AppComponent {
   constructor(
     private platform: Platform,
+    private navCtrl: NavController,
     router: Router,
     ngZone: NgZone,
     noti: LocalNotiService,
@@ -47,8 +46,8 @@ export class AppComponent {
       isPlatform = 'Android';
     else if (platform.is('iphone'))
       isPlatform = 'iOS';
-    noti.initialize();
     lang.Callback_nakama = () => {
+      noti.initialize();
       nakama.check_if_online();
     }
     this.init_admob();
@@ -77,7 +76,6 @@ export class AppComponent {
         let noti_id: string;
         switch (ev.data.page.component) {
           case 'ChatRoomPage':
-            page = ChatRoomPage;
             noti_id = props['info']['noti_id'];
             break;
           case 'MinimalChatPage':
@@ -85,7 +83,6 @@ export class AppComponent {
             noti_id = props['noti_id'];
             break;
           case 'AddTodoMenuPage':
-            page = AddTodoMenuPage;
             props = {
               data: props['data'],
             };
@@ -175,7 +172,12 @@ export class AppComponent {
           break;
         case 'AddTodoMenuPage':
           if (!this.lang.text['TodoDetail']['WIP']) throw 'AddTodoMenuPage 번역 준비중';
-          modal.present();
+          this.navCtrl.navigateForward('add-todo-menu', {
+            animation: mdTransitionAnimation,
+            state: {
+              data: props['data'],
+            },
+          });
           break;
         default:
           console.warn('준비된 페이지 행동 없음: ', ev.data.page.component);

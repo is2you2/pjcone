@@ -86,25 +86,25 @@ SPDX-License-Identifier: MIT -->
           </ion-item>
           <div id="content"></div>
         </div>
+        <div [hidden]="!userInput.file" id="send_thumbnail">
+          <div *ngIf="userInput.file" (click)="removeAttach()">
+            <div style="height: 24px; text-align: center; "> {{userInput.file['filename']}} </div>
+            <div *ngIf="userInput.file['thumbnail']">
+              <img *ngIf="userInput.file['typeheader'] == 'image'" class="image_thumbnail"
+                [src]="userInput.file['thumbnail']" [alt]="userInput.file['name']">
+              <div *ngIf="userInput.file['typeheader'] == 'text'" style="display: grid;">
+                <span *ngFor="let line of userInput.file['thumbnail']">
+                  {{line}}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </td>
     </tr>
     <tr>
       <td>
         <div>
-          <div [hidden]="!userInput.file" id="send_thumbnail" style="width: 100%;">
-            <div *ngIf="userInput.file" (click)="removeAttach()">
-              <div style="height: 24px; text-align: center; "> {{userInput.file['filename']}} </div>
-              <div *ngIf="userInput.file['thumbnail']">
-                <img *ngIf="userInput.file['typeheader'] == 'image'" class="image_thumbnail"
-                  [src]="userInput.file['thumbnail']" [alt]="userInput.file['name']">
-                <div *ngIf="userInput.file['typeheader'] == 'text'" style="display: grid;">
-                  <span *ngFor="let line of userInput.file['thumbnail']">
-                    {{line}}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
           <table id="input_table" style="width: 100%; background-color: var(--chatroom-input-background);">
             <tr>
               <td>

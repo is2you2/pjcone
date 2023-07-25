@@ -97,10 +97,15 @@
 }
 
 #send_thumbnail {
-    position: absolute;
+    width: 100%;
+    max-width: 100vw;
+    height: fit-content;
+    max-height: 160px;
+    transform: translateY(-100%);
+    position: relative;
     background: #bbbb;
     padding: 8px;
-    overflow: auto;
+    overflow: hidden;
 }
 
 .image_thumbnail {

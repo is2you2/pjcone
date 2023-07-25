@@ -771,7 +771,7 @@ export class AddTodoMenuPage implements OnInit {
     }
     // 알림 예약 생성
     if (this.userInput.noti_id) {  // 알림 아이디가 있다면 삭제 후 재배정
-      if (isPlatform == 'DesktopPWA') {
+      if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
         clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
         delete this.nakama.web_noti_id[this.userInput.noti_id];
       }
@@ -1011,7 +1011,7 @@ export class AddTodoMenuPage implements OnInit {
     this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, async (v) => {
       v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
       if (this.userInput.noti_id)
-        if (isPlatform == 'DesktopPWA') {
+        if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
           clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
           delete this.nakama.web_noti_id[this.userInput.noti_id];
         }

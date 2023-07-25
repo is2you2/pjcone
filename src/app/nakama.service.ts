@@ -14,7 +14,6 @@ import { GroupDetailPage } from './portal/settings/group-detail/group-detail.pag
 import { ApiReadStorageObjectId } from '@heroiclabs/nakama-js/dist/api.gen';
 import { LanguageSettingService } from './language-setting.service';
 import { AdMob } from '@capacitor-community/admob';
-import { AddTodoMenuPage } from './portal/main/add-todo-menu/add-todo-menu.page';
 import { FileInfo, GlobalActService } from './global-act.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
@@ -197,24 +196,23 @@ export class NakamaService {
   set_todo_notification(noti_info: any) {
     // 시작 시간이 있으면 시작할 때 알림, 시작시간이 없으면 끝날 때 알림
     let targetTime = noti_info.startFrom || noti_info.limit;
-    if (isPlatform == 'DesktopPWA') { // 웹은 예약 발송이 없으므로 지금부터 수를 세야함
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') { // 웹은 예약 발송이 없으므로 지금부터 수를 세야함
       let schedule = setTimeout(() => {
         this.noti.PushLocal({
           id: noti_info.noti_id,
           title: noti_info.title,
           body: noti_info.description,
         }, undefined, (_ev: any) => {
-          this.modalCtrl.create({
-            component: AddTodoMenuPage,
-            componentProps: {
-              godot: this.global.godot_window,
+          this.navCtrl.navigateForward('add-todo-menu', {
+            animation: mdTransitionAnimation,
+            state: {
               data: JSON.stringify(noti_info),
             },
-          }).then(v => v.present());
+          });
         });
       }, new Date(targetTime).getTime() - new Date().getTime());
       this.web_noti_id[noti_info.noti_id] = schedule;
-    } else if (isPlatform != 'MobilePWA') { // 모바일은 예약 발송을 설정
+    } else { // 모바일은 예약 발송을 설정
       let schedule_at = new Date(targetTime).getTime();
       let not_registered = true;
       for (let i = 0, j = this.registered_id.length; i < j; i++)
@@ -1604,7 +1602,7 @@ export class NakamaService {
                       this.indexed.GetFileListFromDB(`todo/${sep[1]}`, (v) => {
                         v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
                         if (todo_info.noti_id)
-                          if (isPlatform == 'DesktopPWA') {
+                          if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
                             clearTimeout(this.web_noti_id[todo_info.noti_id]);
                             delete this.web_noti_id[todo_info.noti_id];
                           }
@@ -1879,9 +1877,9 @@ export class NakamaService {
         iconColor_ln: '271e38',
       }, this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'], (ev: any) => {
         // 알림 아이디가 같으면 진입 허용
-        if (ev['id'] == this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']) {
+        if (ev && ev['id'] == this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']) {
           this.go_to_chatroom_without_admob_act(this.channels_orig[_is_official][_target][msg.channel_id]);
-        }
+        } else this.go_to_chatroom_without_admob_act(this.channels_orig[_is_official][_target][msg.channel_id]);
       });
     }
     switch (c.code) {

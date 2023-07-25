@@ -185,7 +185,7 @@ export class LocalNotiService {
 
   /** 권한 요청 처리 */
   initialize() {
-    if (isPlatform == 'DesktopPWA') {
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
       if (!("Notification" in window)) {
         console.error('Notification 미지원 브라우저입니다');
       }
@@ -195,11 +195,6 @@ export class LocalNotiService {
       }, e => {
         console.error('지원하지 않는 브라우저:', e);
       });
-    } else if (isPlatform == 'MobilePWA') { // 모바일 웹
-      if (!window['swReg'])
-        console.error('Notification 미지원 브라우저입니다');
-      else if (window['swReg'].showNotification)
-        window['swReg'].showNotification('Notification granted');
     } // 모바일은 별도 초기화 과정 없음
   }
   /**
@@ -233,7 +228,7 @@ export class LocalNotiService {
           _action_wm();
           window.focus();
         };
-      } else if (window['swReg'] && window['swReg'].showNotification) {
+      } else if (window['swReg'] && window['swReg'].active) {
         this.WebNoties[opt.id] = window['swReg'].showNotification(opt.title, { ...input });
         this.WebNoties[opt.id].onclick = () => {
           _action_wm();
@@ -304,8 +299,8 @@ export class LocalNotiService {
 
   /** 기등록 id 불러오기 (Android: 예약된 알림) */
   GetNotificationIds(_CallBack = (_list: number[]) => { }) {
-    if (isPlatform == 'DesktopPWA') {
-    } else if (isPlatform != 'MobilePWA') {
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+    } else {
       this.noti.getScheduledIds().then((ids) => {
         _CallBack(ids);
       });
@@ -327,8 +322,8 @@ export class LocalNotiService {
    * eventName — The name of the event. Available events: schedule(예약됨), trigger(발생됨), click(눌렀을 때), update, clear, clearall, cancel, cancelall. Custom event names are possible for actions 
    */
   SetListener(ev: string, subscribe: Function = (v: any, eopts: any) => console.warn(`${ev}: ${v}/${eopts}`)) {
-    if (isPlatform == 'DesktopPWA') {
-    } else if (isPlatform != 'MobilePWA') {
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+    } else {
       this.listeners[ev] = (v: any, eopts: any) => {
         subscribe(v, eopts);
       }
@@ -340,8 +335,8 @@ export class LocalNotiService {
    * eventName — The name of the event. Available events: schedule(예약됨), trigger(발생됨), click(눌렀을 때), update, clear, clearall, cancel, cancelall. Custom event names are possible for actions 
    */
   RemoveListener(ev: string) {
-    if (isPlatform == 'DesktopPWA') {
-    } else if (isPlatform != 'MobilePWA') {
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+    } else {
       cordova.plugins.notification.local.un(ev, this.listeners[ev]);
       delete this.listeners[ev];
     }
