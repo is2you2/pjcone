@@ -52,7 +52,7 @@ export class IonicViewerPage implements OnInit {
       case 'image': // 이미지
         this.p5canvas = new p5((p: p5) => {
           let iframe_sub: HTMLIFrameElement;
-          p.setup = () => {
+          p.setup = async () => {
             canvasDiv.style.maxWidth = '100%';
             canvasDiv.style.overflow = 'hidden';
             this.ContentBox.style.overflow = 'hidden';
@@ -62,14 +62,18 @@ export class IonicViewerPage implements OnInit {
             canvas.style('pointer-events', 'none');
             canvasDiv.style.backgroundImage = `url(${this.FileURL})`;
             canvasDiv.style.backgroundRepeat = 'no-repeat';
-            if (isPlatform != 'DesktopPWA') {
-              canvasDiv.style.pointerEvents = 'none';
-            }
+            canvasDiv.style.pointerEvents = 'none';
+            let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+            loading.present();
             p.loadImage(this.FileURL, v => {
               this.image_info['width'] = v.width;
               this.image_info['height'] = v.height;
               imageOriginalSize = p.createVector(v.width, v.height);
               RePositioningImage();
+              loading.dismiss();
+            }, e => {
+              console.error('viewer-loadImageFailed: ', e);
+              loading.dismiss();
             });
             if (isPlatform == 'Android' || isPlatform == 'iOS') {
               iframe_sub = document.createElement('iframe');
@@ -105,16 +109,17 @@ export class IonicViewerPage implements OnInit {
             canvasDiv.style.backgroundPositionX = `${lastPos.x + endPos.x}px`
             canvasDiv.style.backgroundPositionY = `${lastPos.y + endPos.y}px`;
           }
-          let ScaleImage = (ratio: number) => {
+          let ScaleImage = (center: p5.Vector, ratio: number) => {
             let beforeCalced = lastScale;
             let Calced = lastScale * ratio;
-            canvasDiv.style.backgroundSize = `${Calced}px`;
             let posX = Number(canvasDiv.style.backgroundPositionX.split('px')[0]);
             let posY = Number(canvasDiv.style.backgroundPositionY.split('px')[0]);
-            let widthMoved = (beforeCalced - Calced) / 2;
-            let heightMoved = widthMoved / imageOriginalSize.x * imageOriginalSize.y;
+            let widthMoved = (beforeCalced - Calced) * p.map(center.x, posX, posX + beforeCalced, 0, 1);
+            let scaledImageHeight = (beforeCalced - Calced) / imageOriginalSize.x * imageOriginalSize.y;
+            let heightMoved = scaledImageHeight * p.map(center.y, posY, posY + beforeCalced / imageOriginalSize.x * imageOriginalSize.y, 0, 1);
             canvasDiv.style.backgroundPositionX = `${posX + widthMoved}px`
             canvasDiv.style.backgroundPositionY = `${posY + heightMoved}px`;
+            canvasDiv.style.backgroundSize = `${Calced}px`;
           }
           p.mousePressed = () => {
             if (p.mouseButton == p.CENTER)
@@ -129,7 +134,7 @@ export class IonicViewerPage implements OnInit {
           }
           p.mouseWheel = (ev: any) => {
             lastScale = Number(canvasDiv.style.backgroundSize.split('px')[0]);
-            ScaleImage(1 - ev.delta / 1000);
+            ScaleImage(p.createVector(canvasDiv.clientWidth / 2, canvasDiv.clientHeight / 2), 1 - ev.delta / 1000);
           }
           p.mouseDragged = () => {
             if (isPlatform == 'DesktopPWA') {
