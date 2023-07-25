@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, NgZone, OnInit, ViewChild } from '@angular/core';
 import { AlertController, LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import * as p5 from "p5";
@@ -58,6 +58,7 @@ export class AddTodoMenuPage implements OnInit {
     private global: GlobalActService,
     private camera: Camera,
     private navCtrl: NavController,
+    private ngZone: NgZone,
   ) { }
 
   /** 작성된 내용 */
@@ -123,11 +124,13 @@ export class AddTodoMenuPage implements OnInit {
   can_cordova: boolean;
 
   add_todo_menu = (_data: string) => {
-    this.navCtrl.navigateForward('add-todo-menu', {
-      animation: mdTransitionAnimation,
-      state: {
-        data: _data,
-      },
+    this.ngZone.run(() => {
+      this.navCtrl.navigateForward('add-todo-menu', {
+        animation: mdTransitionAnimation,
+        state: {
+          data: _data,
+        },
+      });
     });
   }
 
@@ -949,6 +952,14 @@ export class AddTodoMenuPage implements OnInit {
         return;
       }
     }
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    loading.present();
+    await this.global.CreateGodotIFrame('todo', {
+      local_url: 'assets/data/godot/todo.pck',
+      title: 'Todo',
+      add_todo_menu: this.add_todo_menu
+    }, 'add_todo');
+    loading.dismiss();
     this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
       this.saveTagInfo();
@@ -1017,8 +1028,13 @@ export class AddTodoMenuPage implements OnInit {
         }
       this.noti.ClearNoti(this.userInput.noti_id);
       this.removeTagInfo();
-      loading.dismiss();
+      await this.global.CreateGodotIFrame('todo', {
+        local_url: 'assets/data/godot/todo.pck',
+        title: 'Todo',
+        add_todo_menu: this.add_todo_menu
+      }, 'remove_todo');
       this.global.godot_window['remove_todo'](JSON.stringify(this.userInput));
+      loading.dismiss();
       this.navCtrl.back();
     });
   }

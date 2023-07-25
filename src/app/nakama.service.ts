@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Channel, ChannelMessage, Client, Group, GroupUser, Match, Notification, Session, Socket, User, WriteStorageObject } from "@heroiclabs/nakama-js";
 import { isPlatform } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
@@ -74,6 +74,7 @@ export class NakamaService {
     private global: GlobalActService,
     private bgmode: BackgroundMode,
     private navCtrl: NavController,
+    private ngZone: NgZone,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -203,11 +204,13 @@ export class NakamaService {
           title: noti_info.title,
           body: noti_info.description,
         }, undefined, (_ev: any) => {
-          this.navCtrl.navigateForward('add-todo-menu', {
-            animation: mdTransitionAnimation,
-            state: {
-              data: JSON.stringify(noti_info),
-            },
+          this.ngZone.run(() => {
+            this.navCtrl.navigateForward('add-todo-menu', {
+              animation: mdTransitionAnimation,
+              state: {
+                data: JSON.stringify(noti_info),
+              },
+            });
           });
         });
       }, new Date(targetTime).getTime() - new Date().getTime());
@@ -297,11 +300,13 @@ export class NakamaService {
   /** subscribe과 localPush의 채팅방 입장 행동을 통일함 */
   go_to_chatroom_without_admob_act(_info: any) {
     this.removeBanner();
-    this.navCtrl.navigateForward('chat-room', {
-      animation: mdTransitionAnimation,
-      state: {
-        info: _info,
-      },
+    this.ngZone.run(() => {
+      this.navCtrl.navigateForward('chat-room', {
+        animation: mdTransitionAnimation,
+        state: {
+          info: _info,
+        },
+      });
     });
     this.has_new_channel_msg = false;
     this.rearrange_channels();

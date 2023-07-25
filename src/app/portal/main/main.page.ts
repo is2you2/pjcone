@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { NavController, mdTransitionAnimation } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -19,6 +19,7 @@ export class MainPage implements OnInit {
 
   constructor(
     private app: GlobalActService,
+    private ngZone: NgZone,
     public lang: LanguageSettingService,
     private nakama: NakamaService,
     private indexed: IndexedDBService,
@@ -57,8 +58,9 @@ export class MainPage implements OnInit {
     }
   }
 
-  ionViewWillEnter() {
-    this.app.CreateGodotIFrame('todo', {
+  async ionViewWillEnter() {
+    console.log('계속 뜰듯?');
+    await this.app.CreateGodotIFrame('todo', {
       local_url: 'assets/data/godot/todo.pck',
       title: 'Todo',
       /**
@@ -66,17 +68,19 @@ export class MainPage implements OnInit {
        * @param _data 해당 해야할 일 정보
        */
       add_todo_menu: (_data: string) => {
-        this.navCtrl.navigateForward('add-todo-menu', {
-          animation: mdTransitionAnimation,
-          state: {
-            data: _data,
-          },
+        this.ngZone.run(() => {
+          this.navCtrl.navigateForward('add-todo-menu', {
+            animation: mdTransitionAnimation,
+            state: {
+              data: _data,
+            },
+          });
         });
       }
       // 아래 주석 처리된 key들은 고도쪽에서 추가됨
       // add_todo: 새 해야할 일 등록
       // remove_todo: 해야할 일 삭제
-    });
+    }, 'add_todo');
     // 앱 재시작시 자동으로 동기화할 수 있도록 매번 삭제
     this.indexed.GetFileListFromDB('acts_local', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path));
@@ -84,6 +88,7 @@ export class MainPage implements OnInit {
   }
 
   ionViewDidEnter() {
+    console.log('여기가 뜨나');
     this.nakama.resumeBanner();
   }
 }

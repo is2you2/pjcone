@@ -66,6 +66,8 @@ func add_todo(args):
 			$Todos/Todo_Add.global_position = window_size / 2
 			$Todos/Todo_Add.sleeping = true
 		var new_todo # 해야할 일 정보
+		yield(get_tree(), "idle_frame")
+		yield(get_tree(), "idle_frame")
 		# 기존에 가지고 있는 해야할 일인지 정보 검토
 		var children:= $Todos/TodoElements.get_children()
 		var check_exist:= false

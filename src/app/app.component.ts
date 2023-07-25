@@ -29,7 +29,7 @@ export class AppComponent {
     private platform: Platform,
     private navCtrl: NavController,
     router: Router,
-    ngZone: NgZone,
+    private ngZone: NgZone,
     noti: LocalNotiService,
     bgmode: BackgroundMode,
     private nakama: NakamaService,
@@ -172,11 +172,13 @@ export class AppComponent {
           break;
         case 'AddTodoMenuPage':
           if (!this.lang.text['TodoDetail']['WIP']) throw 'AddTodoMenuPage 번역 준비중';
-          this.navCtrl.navigateForward('add-todo-menu', {
-            animation: mdTransitionAnimation,
-            state: {
-              data: props['data'],
-            },
+          this.ngZone.run(() => {
+            this.navCtrl.navigateForward('add-todo-menu', {
+              animation: mdTransitionAnimation,
+              state: {
+                data: props['data'],
+              },
+            });
           });
           break;
         default:
