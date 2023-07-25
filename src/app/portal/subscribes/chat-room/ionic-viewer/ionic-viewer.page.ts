@@ -101,10 +101,10 @@ export class IonicViewerPage implements OnInit {
             }, 50);
           }
           let imageOriginalSize: p5.Vector;
-          let lastPos: p5.Vector;
-          let startPos: p5.Vector;
-          let endPos: p5.Vector;
-          let lastScale: number;
+          let lastPos: p5.Vector = p.createVector();
+          let startPos: p5.Vector = p.createVector();
+          let endPos: p5.Vector = p.createVector();
+          let lastScale: number = 1;
           let TransformImage = () => {
             canvasDiv.style.backgroundPositionX = `${lastPos.x + endPos.x}px`;
             canvasDiv.style.backgroundPositionY = `${lastPos.y + endPos.y}px`;
@@ -159,7 +159,6 @@ export class IonicViewerPage implements OnInit {
                     Number(canvasDiv.style.backgroundPositionX.split('px')[0]),
                     Number(canvasDiv.style.backgroundPositionY.split('px')[0]));
                 startPos = touches[ev.changedTouches[0].identifier].copy();
-                TransformImage();
                 break;
               case 2: // 두번째 손가락이 들어옴
                 lastPos =
@@ -194,16 +193,10 @@ export class IonicViewerPage implements OnInit {
                   let firstCopy = touches[0].copy();
                   let dist = firstCopy.dist(touches[1]);
                   endPos = firstCopy.add(touches[1]).div(2).copy();
-
-                  // canvasDiv.style.backgroundPositionX = `${endPos.x}px`;
-                  // canvasDiv.style.backgroundPositionY = `${endPos.y}px`;
-
                   endPos.sub(startPos);
                   TransformImage();
-                  // console.log(startPos, '/', dist, '/', dist_two, ' /= ', dist / dist_two);
-                  // ScaleImage(p.createVector(0, 0), dist / dist_two);
-                  // ScaleImage(p.createVector(canvasDiv.clientWidth / 2, canvasDiv.clientHeight / 2), dist / dist_two);
-                  // ScaleImage(startPos, dist / dist_two);
+                  // 더 나은 중심점 이동방식 필요
+                  ScaleImage(p.createVector(canvasDiv.clientWidth / 2, canvasDiv.clientHeight / 2), dist / dist_two);
                   break;
               }
             }
