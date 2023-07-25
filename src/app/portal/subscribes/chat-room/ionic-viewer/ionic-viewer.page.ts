@@ -106,7 +106,7 @@ export class IonicViewerPage implements OnInit {
           let endPos: p5.Vector;
           let lastScale: number;
           let TransformImage = () => {
-            canvasDiv.style.backgroundPositionX = `${lastPos.x + endPos.x}px`
+            canvasDiv.style.backgroundPositionX = `${lastPos.x + endPos.x}px`;
             canvasDiv.style.backgroundPositionY = `${lastPos.y + endPos.y}px`;
           }
           let ScaleImage = (center: p5.Vector, ratio: number) => {
@@ -144,46 +144,87 @@ export class IonicViewerPage implements OnInit {
             }
           }
           let touches: { [id: string]: p5.Vector } = {};
+          /** 두 점 사이의 거리 */
+          let dist_two: number;
           let Repositioning = false;
           p.touchStarted = (ev: any) => {
-            console.log('터치가 시작됨: ', ev.changedTouches[0]);
-            touches[ev.changedTouches[0].identifier] =
-              p.createVector(ev.changedTouches[0].clientX, ev.changedTouches[0].clientY);
-            switch (ev.changedTouches[0].identifier) {
-              case 0: // 첫 탭
+            for (let i = 0, j = ev.changedTouches.length; i < j; i++)
+              touches[ev.changedTouches[i].identifier] =
+                p.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
+            let size = Object.keys(touches).length;
+            switch (size) {
+              case 1: // 첫 탭
                 lastPos =
                   p.createVector(
                     Number(canvasDiv.style.backgroundPositionX.split('px')[0]),
                     Number(canvasDiv.style.backgroundPositionY.split('px')[0]));
-                startPos = touches[0];
+                startPos = touches[ev.changedTouches[0].identifier].copy();
+                TransformImage();
+                break;
+              case 2: // 두번째 손가락이 들어옴
+                lastPos =
+                  p.createVector(
+                    Number(canvasDiv.style.backgroundPositionX.split('px')[0]),
+                    Number(canvasDiv.style.backgroundPositionY.split('px')[0]));
+                let firstCopy = touches[0].copy();
+                dist_two = firstCopy.dist(touches[1]);
+                startPos = firstCopy.add(touches[1]).div(2).copy();
+                lastScale = Number(canvasDiv.style.backgroundSize.split('px')[0]);
+                TransformImage();
+                break;
+              default: // 그 이상은 정렬
+                Repositioning = true;
+                RePositioningImage();
                 break;
             }
-            if (ev.changedTouches[0].identifier >= 2)
-              Repositioning = true;
           }
           p.touchMoved = (ev: any) => {
             if (!Repositioning) {
-              touches[ev.changedTouches[0].identifier] =
-                p.createVector(ev.changedTouches[0].clientX, ev.changedTouches[0].clientY);
+              for (let i = 0, j = ev.changedTouches.length; i < j; i++)
+                touches[ev.changedTouches[i].identifier] =
+                  p.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
               let size = Object.keys(touches).length;
               switch (size) {
                 case 1: // 이동
-                  endPos = touches[0];
+                  endPos = touches[ev.changedTouches[0].identifier].copy();
                   endPos.sub(startPos);
                   TransformImage();
                   break;
                 case 2: // 이동, 스케일
+                  let firstCopy = touches[0].copy();
+                  let dist = firstCopy.dist(touches[1]);
+                  endPos = firstCopy.add(touches[1]).div(2).copy();
+
+                  // canvasDiv.style.backgroundPositionX = `${endPos.x}px`;
+                  // canvasDiv.style.backgroundPositionY = `${endPos.y}px`;
+
+                  endPos.sub(startPos);
+                  TransformImage();
+                  // console.log(startPos, '/', dist, '/', dist_two, ' /= ', dist / dist_two);
+                  // ScaleImage(p.createVector(0, 0), dist / dist_two);
+                  // ScaleImage(p.createVector(canvasDiv.clientWidth / 2, canvasDiv.clientHeight / 2), dist / dist_two);
+                  // ScaleImage(startPos, dist / dist_two);
                   break;
               }
-              console.log('움직인다: ', ev.changedTouches[0].identifier);
             }
           }
           p.touchEnded = (ev: any) => {
             if ('changedTouches' in ev) {
-              console.log('뗀다: ', ev.changedTouches[0].identifier);
-              delete touches[ev.changedTouches[0].identifier];
-              if (!Object.keys(touches).length)
-                Repositioning = false;
+              for (let i = 0, j = ev.changedTouches.length; i < j; i++)
+                delete touches[ev.changedTouches[i].identifier];
+              let size = Object.keys(touches).length;
+              switch (size) {
+                case 1: // 아직 이동중
+                  lastPos =
+                    p.createVector(
+                      Number(canvasDiv.style.backgroundPositionX.split('px')[0]),
+                      Number(canvasDiv.style.backgroundPositionY.split('px')[0]));
+                  startPos = touches[Object.keys(touches)[0]].copy();
+                  break;
+                case 0: // 손을 전부 뗌
+                  Repositioning = false;
+                  break;
+              }
             }
           }
         });
