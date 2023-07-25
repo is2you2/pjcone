@@ -701,17 +701,8 @@ export class AddTodoMenuPage implements OnInit {
   async doneTodo() {
     this.isButtonClicked = true;
     this.userInput.done = true;
-    if (!this.global.godot_window['add_todo']) {
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      loading.present();
-      await this.global.CreateGodotIFrame('todo', {
-        local_url: 'assets/data/godot/todo.pck',
-        title: 'Todo',
-        add_todo_menu: this.add_todo_menu
-      }, 'add_todo');
-      loading.dismiss();
-    }
-    this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
+    if (this.global.godot_window['add_todo'])
+      this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
     if (this.userInput.remote) {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
@@ -858,11 +849,6 @@ export class AddTodoMenuPage implements OnInit {
           });
         });
       this.global.last_frame_name = '';
-      await this.global.CreateGodotIFrame('todo', {
-        local_url: 'assets/data/godot/todo.pck',
-        title: 'Todo',
-        add_todo_menu: this.add_todo_menu
-      }, 'add_todo');
       loading.dismiss();
     } else if (!has_attach) { // 첨부된게 전혀 없다면 모든 이미지 삭제
       if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
@@ -952,15 +938,8 @@ export class AddTodoMenuPage implements OnInit {
         return;
       }
     }
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-    loading.present();
-    await this.global.CreateGodotIFrame('todo', {
-      local_url: 'assets/data/godot/todo.pck',
-      title: 'Todo',
-      add_todo_menu: this.add_todo_menu
-    }, 'add_todo');
-    loading.dismiss();
-    this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
+    if (this.global.godot_window['add_todo'])
+      this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
       this.saveTagInfo();
       this.navCtrl.back();
@@ -1028,12 +1007,8 @@ export class AddTodoMenuPage implements OnInit {
         }
       this.noti.ClearNoti(this.userInput.noti_id);
       this.removeTagInfo();
-      await this.global.CreateGodotIFrame('todo', {
-        local_url: 'assets/data/godot/todo.pck',
-        title: 'Todo',
-        add_todo_menu: this.add_todo_menu
-      }, 'remove_todo');
-      this.global.godot_window['remove_todo'](JSON.stringify(this.userInput));
+      if (this.global.godot_window['remove_todo'])
+        this.global.godot_window['remove_todo'](JSON.stringify(this.userInput));
       loading.dismiss();
       this.navCtrl.back();
     });

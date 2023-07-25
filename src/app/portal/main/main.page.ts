@@ -59,7 +59,6 @@ export class MainPage implements OnInit {
   }
 
   async ionViewWillEnter() {
-    console.log('계속 뜰듯?');
     await this.app.CreateGodotIFrame('todo', {
       local_url: 'assets/data/godot/todo.pck',
       title: 'Todo',
@@ -88,7 +87,6 @@ export class MainPage implements OnInit {
   }
 
   ionViewDidEnter() {
-    console.log('여기가 뜨나');
     this.nakama.resumeBanner();
   }
 }
