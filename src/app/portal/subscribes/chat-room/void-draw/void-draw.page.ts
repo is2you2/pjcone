@@ -24,6 +24,7 @@ export class VoidDrawPage implements OnInit {
 
   ngOnInit() { }
   mainLoading: HTMLIonLoadingElement;
+  initialized = false;
 
   EventListenerAct = (ev: any) => {
     ev.detail.register(130, (_processNextHandler: any) => { });
@@ -58,12 +59,18 @@ export class VoidDrawPage implements OnInit {
         });
       }
     }, 'new_canvas');
+    this.initialized = true;
     if (this.navParams.data['path'])
       this.global.godot_window['new_canvas'](JSON.stringify({
         width: this.navParams.data.width,
         height: this.navParams.data.height,
         path: '/userfs/' + this.navParams.data.path,
       }));
+  }
+
+  change_color() {
+    if (this.initialized)
+      this.global.godot_window.change_color()
   }
 
   new_image() {

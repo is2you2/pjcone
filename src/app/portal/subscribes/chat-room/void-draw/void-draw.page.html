@@ -34,8 +34,10 @@ SPDX-License-Identifier: MIT -->
           </div>
         </td>
         <td>
-          <div class="button_font" (click)="global.godot_window.change_color()">
-            <ion-icon class="icon_button" slot="start" name="color-palette"></ion-icon>
+          <div class="button_font" (click)="change_color()">
+            <ion-icon
+              [color]="!initialized ? 'medium' : 'dark'"
+              class="icon_button" slot="start" name="color-palette"></ion-icon>
           </div>
         </td>
         <td>
