@@ -128,7 +128,7 @@ export class ChatRoomPage implements OnInit {
             component: GroupDetailPage,
             componentProps: {
               info: this.nakama.groups[this.isOfficial][this.target][this.info['group_id']],
-              server: this.nakama.servers[this.isOfficial][this.target].info,
+              server: { isOfficial: this.isOfficial, target: this.target },
             },
           }).then(v => {
             v.onWillDismiss().then(data => {
