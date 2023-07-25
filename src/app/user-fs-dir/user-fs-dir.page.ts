@@ -300,7 +300,7 @@ export class UserFsDirPage implements OnInit {
 
   RemoveDirectoryRecursive() {
     this.alertCtrl.create({
-      header: this.lang.text['UserFsDir']['RemoveFolder'],
+      header: this.CurrentDir.substring(this.CurrentDir.lastIndexOf('/') + 1),
       message: this.lang.text['UserFsDir']['RemoveThisFolder'],
       buttons: [{
         text: this.lang.text['UserFsDir']['RemoveApply'],
