@@ -143,8 +143,47 @@ export class IonicViewerPage implements OnInit {
               TransformImage();
             }
           }
-          p.mouseReleased = () => {
-            if (isPlatform == 'DesktopPWA') {
+          let touches: { [id: string]: p5.Vector } = {};
+          let Repositioning = false;
+          p.touchStarted = (ev: any) => {
+            console.log('터치가 시작됨: ', ev.changedTouches[0]);
+            touches[ev.changedTouches[0].identifier] =
+              p.createVector(ev.changedTouches[0].clientX, ev.changedTouches[0].clientY);
+            switch (ev.changedTouches[0].identifier) {
+              case 0: // 첫 탭
+                lastPos =
+                  p.createVector(
+                    Number(canvasDiv.style.backgroundPositionX.split('px')[0]),
+                    Number(canvasDiv.style.backgroundPositionY.split('px')[0]));
+                startPos = touches[0];
+                break;
+            }
+            if (ev.changedTouches[0].identifier >= 2)
+              Repositioning = true;
+          }
+          p.touchMoved = (ev: any) => {
+            if (!Repositioning) {
+              touches[ev.changedTouches[0].identifier] =
+                p.createVector(ev.changedTouches[0].clientX, ev.changedTouches[0].clientY);
+              let size = Object.keys(touches).length;
+              switch (size) {
+                case 1: // 이동
+                  endPos = touches[0];
+                  endPos.sub(startPos);
+                  TransformImage();
+                  break;
+                case 2: // 이동, 스케일
+                  break;
+              }
+              console.log('움직인다: ', ev.changedTouches[0].identifier);
+            }
+          }
+          p.touchEnded = (ev: any) => {
+            if ('changedTouches' in ev) {
+              console.log('뗀다: ', ev.changedTouches[0].identifier);
+              delete touches[ev.changedTouches[0].identifier];
+              if (!Object.keys(touches).length)
+                Repositioning = false;
             }
           }
         });
