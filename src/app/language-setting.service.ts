@@ -63,7 +63,16 @@ export class LanguageSettingService {
             if (!v.columns.includes(this.lang))
               this.lang = 'en';
             localStorage.setItem('lang', this.lang);
-            this.ASyncTranslation(v, 0, v.rows.length);
+            let tmpTitle: string;
+            for (let i = 0, j = v.rows.length; i < j; i++) {
+              if (v.rows[i]['obj']['#'].charAt(0) == '#') {
+                tmpTitle = v.rows[i]['obj']['#'].substring(3);
+                if (!this.text[tmpTitle])
+                  this.text[tmpTitle] = {};
+              } else this.text[tmpTitle][v.rows[i]['obj']['#']] = v.rows[i]['obj'][this.lang];
+            }
+            this.OnLoading = false;
+            this.Callback_nakama();
             p.remove();
           }, e => {
             console.error('내부 문서 읽기 실패: ', e);
@@ -75,20 +84,4 @@ export class LanguageSettingService {
   /** nakama 스크립트 상호참조를 우회하여 번역처리 */
   Callback_nakama: Function;
   OnLoading = true;
-  /** 순차적으로 번역처리하기 */
-  ASyncTranslation(v: p5.Table, i: number, j: number, tmpTitle?: string) {
-    if (i < j) {
-      if (v.rows[i]['obj']['#'].charAt(0) == '#') {
-        tmpTitle = v.rows[i]['obj']['#'].substring(3);
-        if (!this.text[tmpTitle])
-          this.text[tmpTitle] = {};
-      } else this.text[tmpTitle][v.rows[i]['obj']['#']] = v.rows[i]['obj'][this.lang];
-      setTimeout(() => {
-        this.ASyncTranslation(v, i + 1, j, tmpTitle);
-      }, 0);
-    } else { // 전부 불러온 후
-      this.OnLoading = false;
-      this.Callback_nakama();
-    }
-  }
 }
