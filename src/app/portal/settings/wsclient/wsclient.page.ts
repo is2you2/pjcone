@@ -21,13 +21,23 @@ export class WsclientPage implements OnInit, OnDestroy {
   send_msg: string;
 
   logs: Logs[] = [];
+  logsDiv: HTMLElement;
 
   constructor(
     public lang: LanguageSettingService,
     public statusBar: StatusManageService,
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.logsDiv = document.getElementById('logs');
+  }
+
+  scroll_down() {
+    setTimeout(() => {
+      let scrollHeight = this.logsDiv.scrollHeight;
+      this.logsDiv.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+    }, 0);
+  }
 
   connect_to_server() {
     switch (this.status) {
@@ -42,6 +52,7 @@ export class WsclientPage implements OnInit, OnDestroy {
             time: this.createTimestamp(),
             color: '#34aa43',
           });
+          this.scroll_down();
         }
         this.client.onmessage = async (ev: any) => {
           try {
@@ -53,12 +64,14 @@ export class WsclientPage implements OnInit, OnDestroy {
               text: `${this.lang.text['WSClient']['Received']}: ${received_test}`,
               time: this.createTimestamp(),
             });
+            this.scroll_down();
           } catch (e) {
             this.logs.push({
               text: `${this.lang.text['WSClient']['RecvError']}: ${e}`,
               time: this.createTimestamp(),
               color: this.statusBar.colors['missing'],
             });
+            this.scroll_down();
           }
         }
         this.client.onerror = (e) => {
@@ -68,6 +81,7 @@ export class WsclientPage implements OnInit, OnDestroy {
             time: this.createTimestamp(),
             color: this.statusBar.colors['missing'],
           });
+          this.scroll_down();
         }
         this.client.onclose = () => {
           this.logs.push({
@@ -75,6 +89,7 @@ export class WsclientPage implements OnInit, OnDestroy {
             time: this.createTimestamp(),
             color: this.statusBar.colors['missing'],
           });
+          this.scroll_down();
           this.status = 'missing';
           setTimeout(() => {
             this.status = 'offline'
