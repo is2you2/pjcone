@@ -49,6 +49,7 @@ export class OthersProfilePage implements OnInit {
     this.info = this.navParams.get('info');
     this.has_admin = this.navParams.get('has_admin');
     this.group_info = this.navParams.get('group');
+    this.CanCreateChat = !this.navParams.get('blockCreateChat');
     this.isOfficial = this.group_info['server']['isOfficial'];
     this.target = this.group_info['server']['target'];
     this.user_content_id = `user_content_${this.info['user']['id']}`;
@@ -241,6 +242,7 @@ export class OthersProfilePage implements OnInit {
         if (c) {
           this.nakama.go_to_chatroom_without_admob_act(c);
           this.lock_create_chat = false;
+          this.modalCtrl.dismiss();
         } else this.lock_create_chat = false;
       }, true);
     }

@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit } from '@angular/core';
-import { Channel, ChannelMessage } from '@heroiclabs/nakama-js';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChannelMessage } from '@heroiclabs/nakama-js';
 import { AlertController, LoadingController, ModalController, NavController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
@@ -44,7 +44,7 @@ const SIZE_LIMIT = 240000;
   templateUrl: './chat-room.page.html',
   styleUrls: ['./chat-room.page.scss'],
 })
-export class ChatRoomPage implements OnInit {
+export class ChatRoomPage implements OnInit, OnDestroy {
 
   constructor(
     public modalCtrl: ModalController,
@@ -325,69 +325,79 @@ export class ChatRoomPage implements OnInit {
 
   ngOnInit() {
     this.nakama.removeBanner();
-    this.route.queryParams.subscribe(async _p => {
+    this.nakama.ChatroomLinkAct = (c: any) => {
+      delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
+      this.messages.length = 0;
+      this.info = c;
+      this.init_chatroom();
+    }
+    this.route.queryParams.subscribe(_p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
       if (navParams) this.info = navParams.info;
-      this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
-      this.ChannelUserInputId = `chatroom_input_${this.info.id}_${new Date().getTime()}`;
-      this.noti.Current = this.info['cnoti_id'];
-      if (this.info['cnoti_id'])
-        this.noti.ClearNoti(this.info['cnoti_id']);
-      this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
-      this.isOfficial = this.info['server']['isOfficial'];
-      this.target = this.info['server']['target'];
-      this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
-      this.extended_buttons[3].isHide = isPlatform != 'Android' && isPlatform != 'iOS';
-      switch (this.info['redirect']['type']) {
-        case 2: // 1:1 대화라면
-          if (this.info['status'] != 'missing') {
-            if (!this.info['redirect']) // 채널 최초 생성 오류 방지용
-              this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
-            else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
-              this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
-            this.extended_buttons[2].isHide = true;
-          }
-          break;
-        case 3: // 그룹 대화라면
-          await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
-          this.extended_buttons[1].isHide = true;
-          delete this.extended_buttons[2].isHide;
-          break;
-        default:
-          break;
-      }
-      this.content_panel = document.getElementById('content');
-      this.send_thumbnail = document.getElementById('send_thumbnail');
-      // 실시간 채팅을 받는 경우 행동처리
-      if (this.nakama.channels_orig[this.isOfficial][this.target] &&
-        this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
-        this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'] = (c: any) => {
-          this.nakama.check_sender_and_show_name(c, this.isOfficial, this.target);
-          if (c.content['filename']) this.ModulateFileEmbedMessage(c);
-          this.info['last_read_id'] = this.info['last_comment_id'];
-          this.check_if_send_msg(c);
-          this.messages.push(c);
-          this.modulate_chatmsg(this.messages.length - 1, this.messages.length);
-          setTimeout(() => {
-            this.info['is_new'] = false;
-            this.nakama.has_new_channel_msg = false;
-            this.content_panel.scrollIntoView({ block: 'start' });
-          }, 0);
-        }
-      if (this.info['status'] == 'missing') {
-        this.extended_buttons.forEach(button => {
-          button.isHide = true;
-        });
-        this.extended_buttons[0].isHide = false;
-        if (this.info['redirect']['type'] == 3)
-          this.extended_buttons[2].isHide = false;
-      }
-      // 마지막 대화 기록을 받아온다
-      this.pull_msg_history();
-      setTimeout(() => {
-        this.content_panel.scrollIntoView({ block: 'start' });
-      }, 500);
+      this.init_chatroom();
     });
+  }
+
+  async init_chatroom() {
+    this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
+    this.ChannelUserInputId = `chatroom_input_${this.info.id}_${new Date().getTime()}`;
+    this.noti.Current = this.info['cnoti_id'];
+    if (this.info['cnoti_id'])
+      this.noti.ClearNoti(this.info['cnoti_id']);
+    this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
+    this.isOfficial = this.info['server']['isOfficial'];
+    this.target = this.info['server']['target'];
+    this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
+    this.extended_buttons[3].isHide = isPlatform != 'Android' && isPlatform != 'iOS';
+    switch (this.info['redirect']['type']) {
+      case 2: // 1:1 대화라면
+        if (this.info['status'] != 'missing') {
+          if (!this.info['redirect']) // 채널 최초 생성 오류 방지용
+            this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
+          else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
+            this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
+          this.extended_buttons[2].isHide = true;
+        }
+        break;
+      case 3: // 그룹 대화라면
+        await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
+        this.extended_buttons[1].isHide = true;
+        delete this.extended_buttons[2].isHide;
+        break;
+      default:
+        break;
+    }
+    this.content_panel = document.getElementById('content');
+    this.send_thumbnail = document.getElementById('send_thumbnail');
+    // 실시간 채팅을 받는 경우 행동처리
+    if (this.nakama.channels_orig[this.isOfficial][this.target] &&
+      this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
+      this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'] = (c: any) => {
+        this.nakama.check_sender_and_show_name(c, this.isOfficial, this.target);
+        if (c.content['filename']) this.ModulateFileEmbedMessage(c);
+        this.info['last_read_id'] = this.info['last_comment_id'];
+        this.check_if_send_msg(c);
+        this.messages.push(c);
+        this.modulate_chatmsg(this.messages.length - 1, this.messages.length);
+        setTimeout(() => {
+          this.info['is_new'] = false;
+          this.nakama.has_new_channel_msg = false;
+          this.content_panel.scrollIntoView({ block: 'start' });
+        }, 0);
+      }
+    if (this.info['status'] == 'missing') {
+      this.extended_buttons.forEach(button => {
+        button.isHide = true;
+      });
+      this.extended_buttons[0].isHide = false;
+      if (this.info['redirect']['type'] == 3)
+        this.extended_buttons[2].isHide = false;
+    }
+    // 마지막 대화 기록을 받아온다
+    this.pull_msg_history();
+    setTimeout(() => {
+      this.content_panel.scrollIntoView({ block: 'start' });
+    }, 500);
   }
 
   ionViewDidEnter() {
@@ -983,5 +993,9 @@ export class ChatRoomPage implements OnInit {
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
     this.noti.Current = undefined;
+  }
+
+  ngOnDestroy(): void {
+    this.nakama.ChatroomLinkAct = undefined;
   }
 }

@@ -247,6 +247,7 @@ export class GroupDetailPage implements OnInit {
             info: userInfo,
             group: this.info,
             has_admin: this.has_admin,
+            blockCreateChat: true,
           }
         }).then(v => {
           v.onDidDismiss().then(v => {
