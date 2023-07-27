@@ -218,7 +218,9 @@ export class AddTodoMenuPage implements OnInit {
             blob = await this.nakama.sync_load_file(this.userInput.attach[i],
               this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
             loading.dismiss();
-          } else blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
+          } else if (this.userInput.attach[i].viewer == 'image' || this.userInput.attach[i].viewer == 'text')
+            blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
+          if (!blob) continue;
           let url = URL.createObjectURL(blob);
           this.global.modulate_thumbnail(this.userInput.attach[i], url);
         } catch (e) {
@@ -454,7 +456,7 @@ export class AddTodoMenuPage implements OnInit {
     let this_file: FileInfo = {};
     this_file['filename'] = ev.target.files[0]['name'];
     this_file['file_ext'] = ev.target.files[0]['name'].substring(ev.target.files[0]['name'].lastIndexOf('.') + 1);
-    this_file['filesize'] = ev.target.files[0]['size'];
+    this_file['size'] = ev.target.files[0]['size'];
     this_file['type'] = ev.target.files[0]['type'];
     this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
     this_file['content_related_creator'] = [{
@@ -782,6 +784,7 @@ export class AddTodoMenuPage implements OnInit {
         current.forEach((attach: any) => {
           delete attach['exist'];
           delete attach['thumbnail'];
+          delete attach['base64'];
         });
         current = JSON.stringify(current);
         attach_changed = received != current;
@@ -861,6 +864,7 @@ export class AddTodoMenuPage implements OnInit {
       URL.revokeObjectURL(attach['thumbnail']);
       delete attach['thumbnail'];
       delete attach['exist'];
+      delete attach['base64'];
     });
     this.userInput.written = new Date().getTime();
     if (this.userInput.startFrom) {

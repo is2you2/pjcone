@@ -39,6 +39,8 @@ export interface FileInfo {
   base64?: string;
   /** 간소화 썸네일 (ObjectURL) */
   thumbnail?: any;
+  /** 뷰어 구분자 */
+  viewer?: string;
 }
 
 /** 고도엔진과 공유되는 키값 */
