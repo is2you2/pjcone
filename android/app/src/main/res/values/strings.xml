@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Project: Cone</string>
+    <string name="title_activity_main">Project: Cone</string>
+    <string name="package_name">org.pjcone.portal</string>
+    <string name="custom_url_scheme">org.pjcone.portal</string>
+    <string name="admob_app_id">ca-app-pub-6577630868247944~1018072194</string>
+</resources>
