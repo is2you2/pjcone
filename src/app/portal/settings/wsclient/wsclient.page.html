@@ -1,0 +1,37 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{lang.text['Settings']['WSClient']}}</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="portal/settings"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item-divider>
+    <ion-label>{{lang.text['WSClient']['connInfo']}}</ion-label>
+  </ion-item-divider>
+  <ion-item button [disabled]="status != 'offline'">
+    <div class="additional_form status_bar_single" [style]="'background-color: ' + statusBar.colors[status]"></div>
+    <ion-label class="form_margin">{{lang.text['WSClient']['address']}}</ion-label>
+    <ion-input class="ion-text-end" placeholder="127.0.0.1:0000" [(ngModel)]="address"></ion-input>
+  </ion-item>
+  <ion-item button [disabled]="status == 'pending' || status == 'missing'" (click)="connect_to_server()">
+    <ion-label class="ion-text-center">{{lang.text['WSClient']['button_' + status]}}</ion-label>
+  </ion-item>
+  <ion-item *ngIf="status == 'online'">
+    <ion-input [(ngModel)]="send_msg" (keydown.enter)="send()"
+      [placeholder]="lang.text['WSClient']['inputmsg']"></ion-input>
+    <ion-button (click)="send()">
+      {{lang.text['WSClient']['send']}}
+    </ion-button>
+  </ion-item>
+  <ion-item-divider>
+    <ion-label>{{lang.text['WSClient']['logs']}}</ion-label>
+  </ion-item-divider>
+  <div id="logs">
+    <div *ngFor="let log of logs" [style]="'color: ' + log.color">
+      {{log.time}} {{log.text}}
+    </div>
+  </div>
+</ion-content>

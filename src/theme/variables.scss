@@ -86,6 +86,8 @@
   --req-counter-content: #ddd;
 
   --voidDraw-menu-background: #ddd;
+
+  --wsclient-logs-background: #eee;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -169,6 +171,8 @@
     --req-counter-content: #2d2d2d;
 
     --voidDraw-menu-background: #444;
+
+    --wsclient-logs-background: #222;
   }
 
   /*

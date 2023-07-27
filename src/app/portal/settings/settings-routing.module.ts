@@ -60,6 +60,10 @@ const routes: Routes = [
     path: 'qrcode-gen',
     loadChildren: () => import('./qrcode-gen/qrcode-gen.module').then( m => m.QrcodeGenPageModule)
   },
+  {
+    path: 'wsclient',
+    loadChildren: () => import('./wsclient/wsclient.module').then( m => m.WsclientPageModule)
+  },
 ];
 
 @NgModule({
