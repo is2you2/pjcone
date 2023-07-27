@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT -->
       <tr style="height: 56px;">
         <td>
           <div class="button_font" (click)="new_image()">
-            <ion-icon class="icon_button" slot="start" name="add"></ion-icon>
+            <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start" name="add"></ion-icon>
           </div>
         </td>
         <td>
@@ -35,19 +35,20 @@ SPDX-License-Identifier: MIT -->
         </td>
         <td>
           <div class="button_font" (click)="change_color()">
-            <ion-icon
-              [color]="!initialized ? 'medium' : 'dark'"
-              class="icon_button" slot="start" name="color-palette"></ion-icon>
+            <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start"
+              name="color-palette"></ion-icon>
           </div>
         </td>
         <td>
           <div class="button_font" (click)="change_line_weight()">
-            <ion-icon class="icon_button" slot="start" name="pencil"></ion-icon>
+            <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start"
+              name="pencil"></ion-icon>
           </div>
         </td>
         <td>
           <div class="button_font" (click)="dismiss_draw()">
-            <ion-icon class="icon_button" slot="start" name="checkmark"></ion-icon>
+            <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start"
+              name="checkmark"></ion-icon>
           </div>
         </td>
       </tr>

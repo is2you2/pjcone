@@ -74,6 +74,7 @@ export class VoidDrawPage implements OnInit {
   }
 
   new_image() {
+    if (!this.initialized) return;
     const DEFAULT_SIZE = 432;
     this.alertCtrl.create({
       header: this.lang.text['voidDraw']['newDraw'],
@@ -98,6 +99,7 @@ export class VoidDrawPage implements OnInit {
   }
 
   change_line_weight() {
+    if (!this.initialized) return;
     this.alertCtrl.create({
       header: this.lang.text['voidDraw']['changeWeight'],
       inputs: [{
