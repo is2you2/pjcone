@@ -9,10 +9,6 @@
 
 <ion-content>
   <ion-item-divider>
-    <ion-label>{{lang.text['QRCodeGen']['AboutQRCodeGen']}}</ion-label>
-  </ion-item-divider>
-  <textarea class="infobox" disabled [(ngModel)]="info"></textarea>
-  <ion-item-divider>
     <ion-label>{{lang.text['QRCodeGen']['UserInput']}}</ion-label>
   </ion-item-divider>
   <textarea class="infobox" [(ngModel)]="userInput" (keyup)="textarea_changed($event)"
