@@ -142,6 +142,14 @@ Godot 엔진이 현재 가지고 있는 구조상의 한계를 뛰어넘기 위�
   - [x] 사용자가 사설 서버 등록 및 이용 가능
 
 ## Android 빌드 작업보조 정보글
+- android 폴더 활용하기
+  - 최초 빌드시 android 폴더를 삭제한 후 플랫폼 빌드를 실행
+  - 아래 설명을 따라 jdk 버전 변경하기
+  - npx cap update
+  - jetifier 실행
+    - npx jetify
+    - npx cap sync android
+  - 변경된 사항 복구하기 진행
 - 프로젝트 재구성 후 빌드가 동작하지 않는다면 다음 중 하나를 실행
   - npm i -g npm@latest
   - npm config set user 0
