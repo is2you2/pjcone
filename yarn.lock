@@ -117,35 +117,12 @@
     rxjs "6.6.7"
     source-map "0.7.3"
 
-"@angular-devkit/core@13.3.11":
-  version "13.3.11"
-  resolved "https://registry.npmjs.org/@angular-devkit/core/-/core-13.3.11.tgz"
-  integrity sha512-rfqoLMRYhlz0wzKlHx7FfyIyQq8dKTsmbCoIVU1cEIH0gyTMVY7PbVzwRRcO6xp5waY+0hA+0Brriujpuhkm4w==
-  dependencies:
-    ajv "8.9.0"
-    ajv-formats "2.1.1"
-    fast-json-stable-stringify "2.1.0"
-    magic-string "0.25.7"
-    rxjs "6.6.7"
-    source-map "0.7.3"
-
 "@angular-devkit/schematics@^13.0.1", "@angular-devkit/schematics@13.2.6":
   version "13.2.6"
   resolved "https://registry.npmjs.org/@angular-devkit/schematics/-/schematics-13.2.6.tgz"
   integrity sha512-mPgSqdnZRuPSMeUA+T+mwVCrq2yhXpcYm1/Rjbhy09CyHs4wSrFv21WHCrE6shlvXpcmwr0n+I0DIeagAPmjUA==
   dependencies:
     "@angular-devkit/core" "13.2.6"
-    jsonc-parser "3.0.0"
-    magic-string "0.25.7"
-    ora "5.4.1"
-    rxjs "6.6.7"
-
-"@angular-devkit/schematics@13.3.11":
-  version "13.3.11"
-  resolved "https://registry.npmjs.org/@angular-devkit/schematics/-/schematics-13.3.11.tgz"
-  integrity sha512-ben+EGXpCrClnIVAAnEQmhQdKmnnqFhMp5BqMxgOslSYBAmCutLA6rBu5vsc8kZcGian1wt+lueF7G1Uk5cGBg==
-  dependencies:
-    "@angular-devkit/core" "13.3.11"
     jsonc-parser "3.0.0"
     magic-string "0.25.7"
     ora "5.4.1"
@@ -197,7 +174,7 @@
     "@angular-eslint/bundled-angular-compiler" "13.0.1"
     "@typescript-eslint/experimental-utils" "5.3.0"
 
-"@angular/cli@^13.0.0", "@angular/cli@13.2.6":
+"@angular/cli@13.2.6":
   version "13.2.6"
   resolved "https://registry.npmjs.org/@angular/cli/-/cli-13.2.6.tgz"
   integrity sha512-xIjEaQI5sWemXXc7GXLm4u9UL5sjtrQL/y1PJvvk/Jsa8+kIT+MutOfZfC7zcdAh9fqHd8mokH3guFV8BJdFxA==
@@ -284,15 +261,6 @@
   integrity sha512-3rpeS2n+mfey9FqJg/NQKPiyHC47vgldWXmuz5FmOCHrOY54AaFfoiwQcdxzh6Lxx/CUVm0TlOS8S/xI9iEqXw==
   dependencies:
     tslib "^2.3.0"
-
-"@angular/pwa@^13.3.11":
-  version "13.3.11"
-  resolved "https://registry.npmjs.org/@angular/pwa/-/pwa-13.3.11.tgz"
-  integrity sha512-lIGZ6PUVCW6GPC7AZOMv3gbIXp5GIyY4OosL12pFpkVCcrxbRlDa1HYzniMHhLl2LTUmf+lDUdgdhImRtdv/jw==
-  dependencies:
-    "@angular-devkit/schematics" "13.3.11"
-    "@schematics/angular" "13.3.11"
-    parse5-html-rewriting-stream "6.0.1"
 
 "@angular/router@>=12.0.0", "@angular/router@~13.2.2":
   version "13.2.7"
@@ -1757,15 +1725,6 @@
   dependencies:
     "@angular-devkit/core" "13.2.6"
     "@angular-devkit/schematics" "13.2.6"
-    jsonc-parser "3.0.0"
-
-"@schematics/angular@13.3.11":
-  version "13.3.11"
-  resolved "https://registry.npmjs.org/@schematics/angular/-/angular-13.3.11.tgz"
-  integrity sha512-imKBnKYEse0SBVELZO/753nkpt3eEgpjrYkB+AFWF9YfO/4RGnYXDHoH8CFkzxPH9QQCgNrmsVFNiYGS+P/S1A==
-  dependencies:
-    "@angular-devkit/core" "13.3.11"
-    "@angular-devkit/schematics" "13.3.11"
     jsonc-parser "3.0.0"
 
 "@socket.io/component-emitter@~3.1.0":
