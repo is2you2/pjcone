@@ -193,6 +193,20 @@ export class NakamaService {
     });
   }
 
+  AddTodoLinkAct: Function;
+  open_add_todo_page(info: string) {
+    if (this.AddTodoLinkAct)
+      this.AddTodoLinkAct(info);
+    else this.ngZone.run(() => {
+      this.navCtrl.navigateForward('add-todo-menu', {
+        animation: mdTransitionAnimation,
+        state: {
+          data: info,
+        },
+      });
+    });
+  }
+
   /** 해야할 일 알림 추가하기 */
   set_todo_notification(noti_info: any) {
     // 시작 시간이 있으면 시작할 때 알림, 시작시간이 없으면 끝날 때 알림
@@ -204,14 +218,7 @@ export class NakamaService {
           title: noti_info.title,
           body: noti_info.description,
         }, undefined, (_ev: any) => {
-          this.ngZone.run(() => {
-            this.navCtrl.navigateForward('add-todo-menu', {
-              animation: mdTransitionAnimation,
-              state: {
-                data: JSON.stringify(noti_info),
-              },
-            });
-          });
+          this.open_add_todo_page(JSON.stringify(noti_info));
         });
       }, new Date(targetTime).getTime() - new Date().getTime());
       this.web_noti_id[noti_info.noti_id] = schedule;
@@ -302,7 +309,12 @@ export class NakamaService {
   /** subscribe과 localPush의 채팅방 입장 행동을 통일함 */
   go_to_chatroom_without_admob_act(_info: any) {
     this.removeBanner();
-    this.ngZone.run(() => {
+    this.has_new_channel_msg = false;
+    this.rearrange_channels();
+    this.save_channels_with_less_info();
+    if (this.ChatroomLinkAct)
+      this.ChatroomLinkAct(_info);
+    else this.ngZone.run(() => {
       this.navCtrl.navigateForward('chat-room', {
         animation: mdTransitionAnimation,
         state: {
@@ -310,11 +322,6 @@ export class NakamaService {
         },
       });
     });
-    this.has_new_channel_msg = false;
-    this.rearrange_channels();
-    this.save_channels_with_less_info();
-    if (this.ChatroomLinkAct)
-      this.ChatroomLinkAct(_info);
   }
 
   /** 모든 pending 세션 켜기 */

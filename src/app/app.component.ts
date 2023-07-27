@@ -5,7 +5,7 @@ import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
-import { AlertController, ModalController, NavController, Platform, mdTransitionAnimation } from '@ionic/angular';
+import { AlertController, ModalController, Platform } from '@ionic/angular';
 import { IndexedDBService } from './indexed-db.service';
 import { LocalNotiService } from './local-noti.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
@@ -27,9 +27,8 @@ export const SERVER_PATH_ROOT: string = 'https://is2you2.github.io/';
 export class AppComponent {
   constructor(
     private platform: Platform,
-    private navCtrl: NavController,
     router: Router,
-    private ngZone: NgZone,
+    ngZone: NgZone,
     noti: LocalNotiService,
     bgmode: BackgroundMode,
     private nakama: NakamaService,
@@ -172,14 +171,7 @@ export class AppComponent {
           break;
         case 'AddTodoMenuPage':
           if (!this.lang.text['TodoDetail']['WIP']) throw 'AddTodoMenuPage 번역 준비중';
-          this.ngZone.run(() => {
-            this.navCtrl.navigateForward('add-todo-menu', {
-              animation: mdTransitionAnimation,
-              state: {
-                data: props['data'],
-              },
-            });
-          });
+          this.nakama.open_add_todo_page(props['data']);
           break;
         default:
           console.warn('준비된 페이지 행동 없음: ', ev.data.page.component);

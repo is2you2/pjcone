@@ -267,11 +267,10 @@ export class GlobalActService {
   modulate_thumbnail(msg_content: any, ObjectURL: string) {
     switch (msg_content['viewer']) {
       case 'image':
-        if (msg_content['thumbnail']) return; // 이미 썸네일이 있다면 제외
         msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(ObjectURL);
         setTimeout(() => {
           URL.revokeObjectURL(ObjectURL);
-        }, 0);
+        }, 100);
         break;
       case 'text':
         new p5((p: p5) => {

@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
-import { iosTransitionAnimation, mdTransitionAnimation, ModalController, NavController } from '@ionic/angular';
+import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
 import { isPlatform, SERVER_PATH_ROOT } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -31,7 +31,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     public lang: LanguageSettingService,
     public noti: LocalNotiService,
     private app: GlobalActService,
-    private ngZone: NgZone,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
@@ -219,14 +218,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       local_url: 'assets/data/godot/todo.pck',
       title: 'Todo',
       add_todo_menu: (_data: string) => {
-        this.ngZone.run(() => {
-          this.nav.navigateForward('add-todo-menu', {
-            animation: mdTransitionAnimation,
-            state: {
-              data: _data,
-            },
-          });
-        });
+        this.nakama.open_add_todo_page(_data);
       }
     });
   }

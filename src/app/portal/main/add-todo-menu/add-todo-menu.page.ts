@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, NgZone, OnInit, ViewChild } from '@angular/core';
-import { AlertController, LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AlertController, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import * as p5 from "p5";
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -38,7 +38,7 @@ interface RemoteInfo {
   templateUrl: './add-todo-menu.page.html',
   styleUrls: ['./add-todo-menu.page.scss'],
 })
-export class AddTodoMenuPage implements OnInit {
+export class AddTodoMenuPage implements OnInit, OnDestroy {
   @ViewChild('StartCalendar') StartCalendar: any;
   @ViewChild('Calendar') Calendar: any;
 
@@ -58,7 +58,6 @@ export class AddTodoMenuPage implements OnInit {
     private global: GlobalActService,
     private camera: Camera,
     private navCtrl: NavController,
-    private ngZone: NgZone,
   ) { }
 
   /** 작성된 내용 */
@@ -123,20 +122,37 @@ export class AddTodoMenuPage implements OnInit {
   /** 플랫폼 구분 */
   can_cordova: boolean;
 
-  add_todo_menu = (_data: string) => {
-    this.ngZone.run(() => {
-      this.navCtrl.navigateForward('add-todo-menu', {
-        animation: mdTransitionAnimation,
-        state: {
-          data: _data,
-        },
-      });
-    });
-  }
-
   ngOnInit() {
     this.can_cordova = isPlatform == 'Android' || isPlatform == 'iOS';
     this.nakama.removeBanner();
+    // 미리 지정된 데이터 정보가 있는지 검토
+    this.route.queryParams.subscribe(_p => {
+      const navParams = this.router.getCurrentNavigation().extras.state;
+      if (navParams) this.received_data = navParams.data;
+    })
+    this.nakama.AddTodoLinkAct = async (info: string) => {
+      this.nakama.removeBanner();
+      this.p5timer.remove();
+      this.received_data = info;
+      this.userInput = JSON.parse(this.received_data);
+      await this.ionViewWillEnter();
+      this.show_count_timer();
+    };
+  }
+
+  /** 하단에 보여지는 버튼 */
+  buttonDisplay = {
+    saveTodo: this.lang.text['TodoDetail']['buttonDisplay_add'],
+  }
+
+  /** 이 할 일을 내가 만들었는지 */
+  AmICreator = true;
+  /** 기존 할 일을 보러 온 것인지 */
+  isModify = false;
+  /** 로컬/원격 상태에 따른 수정 가능 여부 */
+  isModifiable = false;
+  received_data: string;
+  async ionViewWillEnter() {
     this.indexed.loadTextFromUserPath('todo/tags.json', (e, v) => {
       if (e && v) {
         this.saved_tag_orig = JSON.parse(v);
@@ -166,45 +182,15 @@ export class AddTodoMenuPage implements OnInit {
     merge.forEach(info => {
       this.AvailableStorageList.push(info);
     });
-    // 미리 지정된 데이터 정보가 있는지 검토
-    this.route.queryParams.subscribe(_p => {
-      const navParams = this.router.getCurrentNavigation().extras.state;
-      if (navParams) this.received_data = navParams.data;
-    })
-  }
-
-  /** 하단에 보여지는 버튼 */
-  buttonDisplay = {
-    saveTodo: this.lang.text['TodoDetail']['buttonDisplay_add'],
-  }
-
-  /** 이 할 일을 내가 만들었는지 */
-  AmICreator = true;
-  /** 기존 할 일을 보러 온 것인지 */
-  isModify = false;
-  /** 로컬/원격 상태에 따른 수정 가능 여부 */
-  isModifiable = false;
-  received_data: string;
-  async ionViewWillEnter() {
+    let received_json: any;
     if (this.received_data) { // 이미 있는 데이터 조회
       this.buttonDisplay.saveTodo = this.lang.text['TodoDetail']['buttonDisplay_modify'];
+      received_json = JSON.parse(this.received_data);
+      this.userInput = { ...this.userInput, ...received_json };
       this.isModify = true;
     } else { // 새로 만드는 경우
       let tomorrow = new Date(new Date().getTime() + 86400000);
       this.userInput.limit = tomorrow.getTime();
-    }
-    if (this.received_data) {
-      // 이전 버전 호환용 코드
-      let received_json = JSON.parse(this.received_data);
-      if (received_json['attach'].constructor != Array) {
-        let copyed = JSON.parse(JSON.stringify(received_json['attach']));
-        received_json['attach'] = [];
-        if (copyed['filename']) { // 파일 정보가 있다면 등록된 이미지가 있는 것으로 간주
-          copyed['path'] = `todo/${received_json['id']}/${copyed['filename']}`;
-          received_json['attach'].push(copyed);
-        }
-      }
-      this.userInput = { ...this.userInput, ...received_json };
     }
     this.file_sel_id = `todo_${this.userInput.id || 'new_todo_id'}_${new Date().getTime()}`;
     // 첨부 이미지가 있음
@@ -267,6 +253,8 @@ export class AddTodoMenuPage implements OnInit {
     this.noti.Current = this.userInput.id;
     let date_limit = new Date(this.userInput.limit);
     this.Calendar.value = new Date(date_limit.getTime() - date_limit.getTimezoneOffset() * 60 * 1000).toISOString();
+    if (received_json)
+      this.limitTimeP5Display = new Date(received_json['limit']).getTime();
     if (this.userInput.startFrom) {
       let date_start = new Date(this.userInput.startFrom);
       this.startDisplay = date_start.toLocaleString(this.lang.lang);
@@ -329,7 +317,6 @@ export class AddTodoMenuPage implements OnInit {
     this.p5timer = new p5((p: p5) => {
       let startAnimLerp = 0;
       this.startTimeP5Display = new Date(this.userInput.startFrom || this.userInput.written).getTime();
-      this.limitTimeP5Display = new Date(this.userInput.limit).getTime();
       let currentTime: number;
       let color = p.color(this.normal_color);
       p.setup = () => {
@@ -402,7 +389,6 @@ export class AddTodoMenuPage implements OnInit {
         timestamp: new Date().toLocaleString(),
         display_name: this.nakama.users.self['display_name'],
       };
-      this_file['thumbnail'] = this_file.base64;
       this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
       this_file['viewer'] = 'image';
       await this.indexed.saveFileToUserPath(this_file.base64, this_file['path']);
@@ -1028,7 +1014,13 @@ export class AddTodoMenuPage implements OnInit {
     this.global.CreateGodotIFrame('todo', {
       local_url: 'assets/data/godot/todo.pck',
       title: 'Todo',
-      add_todo_menu: this.add_todo_menu
+      add_todo_menu: (_data: string) => {
+        this.nakama.open_add_todo_page(_data);
+      }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.nakama.AddTodoLinkAct = undefined;
   }
 }

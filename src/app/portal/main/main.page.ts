@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, NgZone, OnInit } from '@angular/core';
-import { NavController, mdTransitionAnimation } from '@ionic/angular';
+import { Component, OnInit } from '@angular/core';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
@@ -19,11 +18,9 @@ export class MainPage implements OnInit {
 
   constructor(
     private app: GlobalActService,
-    private ngZone: NgZone,
     public lang: LanguageSettingService,
     private nakama: NakamaService,
     private indexed: IndexedDBService,
-    private navCtrl: NavController,
   ) { }
 
   ngOnInit() {
@@ -67,14 +64,7 @@ export class MainPage implements OnInit {
        * @param _data 해당 해야할 일 정보
        */
       add_todo_menu: (_data: string) => {
-        this.ngZone.run(() => {
-          this.navCtrl.navigateForward('add-todo-menu', {
-            animation: mdTransitionAnimation,
-            state: {
-              data: _data,
-            },
-          });
-        });
+        this.nakama.open_add_todo_page(_data);
       }
       // 아래 주석 처리된 key들은 고도쪽에서 추가됨
       // add_todo: 새 해야할 일 등록
