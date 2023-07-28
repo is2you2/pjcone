@@ -42,7 +42,7 @@ SPDX-License-Identifier: MIT -->
       </div>
       <div class="additional_form bg_img_form">
         <img *ngIf="channel['info']" class="profile_img"
-          [style]="channel['status'] == 'online' ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'"
+          [style]="(channel['status'] == 'online' || (channel['redirect']['type'] == 3 && channel['status'] == 'pending')) ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'"
           [src]="channel['info']['img']">
       </div>
       <ion-label>
