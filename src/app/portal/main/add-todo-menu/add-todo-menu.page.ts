@@ -679,7 +679,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         path: this.userInput.attach[i]['path'],
       },
     }).then(v => {
-      v.onDidDismiss().then(v => {
+      v.onDidDismiss().then(async v => {
         if (v.data) { // 파일 편집하기를 누른 경우
           let related_creators: ContentCreatorInfo[] = [];
           if (this.userInput.attach[i]['content_related_creator'])
@@ -694,10 +694,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             if (!is_already_exist) related_creators.push(...this.userInput.attach['content_creator']);
           }
           delete this.userInput.attach[i]['exist'];
+          await this.indexed.saveFileToUserPath(v.data.base64, 'tmp_files/modify_image.png')
           this.modalCtrl.create({
             component: VoidDrawPage,
             componentProps: {
-              path: v.data.path,
+              path: 'tmp_files/modify_image.png',
               width: v.data.width,
               height: v.data.height,
             },

@@ -43,15 +43,6 @@ func modify_image(args):
 	var img:= viewport.get_texture().get_data()
 	img.flip_y()
 	var buf:= img.save_png_to_buffer()
-	var dir:= Directory.new()
-	var dir_exist:= dir.dir_exists('user://tmp_files/')
-	if not dir_exist:
-		dir.make_dir_recursive('user://tmp_files/')
-	var file:= File.new()
-	var err:= file.open('user://tmp_files/modify_image.png', File.WRITE)
-	if err == OK:
-		file.store_buffer(buf)
-	else: printerr('tmp_files/modify_image.png save err: ', err)
-	file.close()
+	var base64:= Marshalls.raw_to_base64(buf)
 	if OS.has_feature('JavaScript'):
-		window.receive_image('tmp_files/modify_image.png', img.get_width(), img.get_height())
+		window.receive_image(base64, img.get_width(), img.get_height())

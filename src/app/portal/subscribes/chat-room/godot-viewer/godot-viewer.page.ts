@@ -48,9 +48,9 @@ export class GodotViewerPage implements OnInit {
       ext: this.FileInfo['file_ext'],
       force_logo: true,
       // modify_image
-      receive_image: (path: string, width: number, height: number) => {
+      receive_image: (base64: string, width: number, height: number) => {
         this.modalCtrl.dismiss({
-          path: path,
+          base64: ',' + base64,
           width: width,
           height: height,
         });

@@ -878,7 +878,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           path: _path,
         },
       }).then(v => {
-        v.onDidDismiss().then((v) => {
+        v.onDidDismiss().then(async (v) => {
           if (v.data) { // 파일 편집하기를 누른 경우
             let related_creators: ContentCreatorInfo[] = [];
             if (msg.content['content_related_creator'])
@@ -892,10 +892,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 }
               if (!is_already_exist) related_creators.push(msg.content['content_creator']);
             }
+            await this.indexed.saveFileToUserPath(v.data.base64, 'tmp_files/modify_image.png');
             this.modalCtrl.create({
               component: VoidDrawPage,
               componentProps: {
-                path: v.data.path,
+                path: 'tmp_files/modify_image.png',
                 width: v.data.width,
                 height: v.data.height,
               },
