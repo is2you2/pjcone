@@ -389,7 +389,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         timestamp: new Date().toLocaleString(),
         display_name: this.nakama.users.self['display_name'],
       };
-      this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
+      this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
       this_file['viewer'] = 'image';
       await this.indexed.saveFileToUserPath(this_file.base64, this_file['path']);
       loading.dismiss();
@@ -420,7 +420,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           };
           this_file['viewer'] = 'image';
           this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
-          this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
+          this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
           await this.indexed.saveFileToUserPath(v.data['img'], this_file['path']);
           v.data['loadingCtrl'].dismiss();
           this.userInput.attach.push(this_file);
@@ -444,7 +444,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this_file['file_ext'] = ev.target.files[0]['name'].substring(ev.target.files[0]['name'].lastIndexOf('.') + 1);
     this_file['size'] = ev.target.files[0]['size'];
     this_file['type'] = ev.target.files[0]['type'];
-    this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
+    this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
     this_file['content_related_creator'] = [{
       timestamp: new Date().toLocaleString(),
       display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
@@ -655,7 +655,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                   };
                 }
                 this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
-                this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
+                this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
                 this.indexed.saveFileToUserPath(v.data['img'], this_file['path'], (_) => {
                   v.data['loadingCtrl'].dismiss();
                 });
@@ -730,7 +730,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                   };
                 }
                 this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
-                this_file['path'] = `todo/add_tmp.${this_file['filename']}`;
+                this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
                 this.indexed.saveFileToUserPath(v.data['img'], this_file['path'], (_) => {
                   v.data['loadingCtrl'].dismiss();
                 });
@@ -1065,7 +1065,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   async ionViewWillLeave() {
-    this.indexed.GetFileListFromDB('todo/add_tmp.', list => {
+    this.indexed.GetFileListFromDB('tmp_files/', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path));
     });
     this.noti.Current = '';
