@@ -6,13 +6,10 @@
     height: 100%;
 }
 
-.menu_icon {
-    max-width: 36px;
-    max-height: 36px;
-}
-
-.button_panel{
+.button_panel {
+    width: 100%;
     height: 56px;
+    background-color: var(--voidDraw-menu-background);
 }
 
 .button_font {
