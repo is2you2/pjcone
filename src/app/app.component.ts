@@ -52,6 +52,10 @@ export class AppComponent {
     this.init_admob();
     indexed.initialize(() => {
       nakama.initialize();
+      // 앱 재시작시 자동으로 동기화할 수 있도록 매번 삭제
+      indexed.GetFileListFromDB('acts_local', list => {
+        list.forEach(path => indexed.removeFileFromUserPath(path));
+      });
     });
     // 모바일 기기 특정 설정
     if (isPlatform == 'Android' || isPlatform == 'iOS') {

@@ -70,10 +70,6 @@ export class MainPage implements OnInit {
       // add_todo: 새 해야할 일 등록
       // remove_todo: 해야할 일 삭제
     }, 'add_todo');
-    // 앱 재시작시 자동으로 동기화할 수 있도록 매번 삭제
-    this.indexed.GetFileListFromDB('acts_local', list => {
-      list.forEach(path => this.indexed.removeFileFromUserPath(path));
-    });
   }
 
   ionViewDidEnter() {
