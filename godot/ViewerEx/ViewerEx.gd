@@ -5,11 +5,13 @@ extends Node
 
 # iframe 창
 var window
+var modify_image_func = JavaScript.create_callback(self, 'modify_image')
 
 # 앱 시작과 동시에 동작하려는 pck 정보를 받아옴
 func _ready():
 	if OS.has_feature('JavaScript'):
 		window = JavaScript.get_interface('window')
+		window.modify_image = modify_image_func
 		match(window['ext']):
 			'pck':
 				load_pck()
@@ -34,3 +36,17 @@ func load_pck():
 		$CenterContainer.queue_free()
 		var inst = load('res://ContentViewer.tscn')
 		add_child(inst.instance())
+
+func modify_image(args):
+	var viewport:Viewport = get_viewport()
+	var img:= viewport.get_texture().get_data()
+	img.flip_y()
+	var buf:= img.save_png_to_buffer()
+	var file:= File.new()
+	var err:= file.open('user://tmp_modify_image.png', File.WRITE)
+	if err == OK:
+		file.store_buffer(buf)
+	else: printerr('tmp_modify_image.png save err: ', err)
+	file.close()
+	if OS.has_feature('JavaScript'):
+		window.receive_image('tmp_modify_image.png', img.get_width(), img.get_height())

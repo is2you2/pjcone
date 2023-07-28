@@ -4,6 +4,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
+import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 
 @Component({
@@ -20,6 +21,7 @@ export class VoidDrawPage implements OnInit {
     private loadingCtrl: LoadingController,
     public global: GlobalActService,
     private navParams: NavParams,
+    private indexed: IndexedDBService,
   ) { }
 
   ngOnInit() { }
@@ -162,6 +164,7 @@ export class VoidDrawPage implements OnInit {
   WithoutSave = true;
   ionViewDidLeave() {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
+    this.indexed.removeFileFromUserPath('tmp_modify_image.png');
     if (this.WithoutSave)
       this.mainLoading.remove();
   }

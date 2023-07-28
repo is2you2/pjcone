@@ -47,7 +47,19 @@ export class GodotViewerPage implements OnInit {
       path: this.navParams.get('path'),
       ext: this.FileInfo['file_ext'],
       force_logo: true,
+      // modify_image
+      receive_image: (path: string, width: number, height: number) => {
+        this.modalCtrl.dismiss({
+          path: path,
+          width: width,
+          height: height,
+        });
+      }
     });
+  }
+
+  snapshot_modify() {
+    this.global.godot_window['modify_image']();
   }
 
   download_file() {
