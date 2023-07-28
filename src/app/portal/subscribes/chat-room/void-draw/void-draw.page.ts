@@ -131,13 +131,32 @@ export class VoidDrawPage implements OnInit {
     }
   }
 
+  is_cropping = false;
+
+  open_crop_tool() {
+    if (!this.initialized) return;
+    this.global.godot_window['open_crop_tool']();
+    this.is_cropping = true;
+  }
+
+  apply_crop() {
+    if (!this.initialized) return;
+    this.global.godot_window['resize_canvas']();
+    this.is_cropping = false;
+  }
+
   /** 사용하기를 누른 경우 */
   dismiss_draw() {
-    this.mainLoading.present();
-    this.WithoutSave = false;
-    setTimeout(() => {
-      this.global.godot_window['save_image']();
-    }, 100);
+    if (this.is_cropping) {
+      this.global.godot_window['resize_canvas']();
+      this.is_cropping = false;
+    } else {
+      this.mainLoading.present();
+      this.WithoutSave = false;
+      setTimeout(() => {
+        this.global.godot_window['save_image']();
+      }, 100);
+    }
   }
 
   WithoutSave = true;

@@ -13,40 +13,40 @@ SPDX-License-Identifier: MIT -->
 <ion-content>
   <div id="interface_table">
     <table style="width: 100%; height: 100%; background-color: var(--voidDraw-menu-background);">
-      <tr style="height: 56px;">
+      <tr class="button_panel">
         <td>
-          <div class="button_font" (click)="new_image()">
+          <div class="button_panel button_font" (click)="new_image()">
             <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start" name="add"></ion-icon>
           </div>
         </td>
         <td>
-          <div class="button_font" (click)="act_history(-1)">
+          <div class="button_panel button_font" (click)="act_history(-1)">
             <ion-icon
               [color]="(!global.godot_window || !global.godot_window.current_act || global.godot_window.current_act == 0) ? 'medium' : 'dark'"
               class="icon_button" slot="start" name="arrow-undo"></ion-icon>
           </div>
         </td>
         <td>
-          <div class="button_font" (click)="act_history(1)">
+          <div class="button_panel button_font" (click)="act_history(1)">
             <ion-icon
               [color]="(!global.godot_window || global.godot_window.current_act == global.godot_window.draw_length) ? 'medium' : 'dark'"
               class="icon_button" slot="start" name="arrow-redo"></ion-icon>
           </div>
         </td>
         <td>
-          <div class="button_font" (click)="change_color()">
+          <div class="button_panel button_font" (click)="change_color()">
             <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start"
               name="color-palette"></ion-icon>
           </div>
         </td>
         <td>
-          <div class="button_font" (click)="change_line_weight()">
+          <div class="button_panel button_font" (click)="change_line_weight()">
             <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start"
               name="pencil"></ion-icon>
           </div>
         </td>
         <td>
-          <div class="button_font" (click)="dismiss_draw()">
+          <div class="button_panel button_font" (click)="dismiss_draw()">
             <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start"
               name="checkmark"></ion-icon>
           </div>
@@ -55,6 +55,18 @@ SPDX-License-Identifier: MIT -->
       <tr>
         <td colspan="6">
           <div id="voidDraw" class="full_screen" style="display: flex; background-color: grey; overflow: hidden;">
+          </div>
+        </td>
+      </tr>
+      <tr class="button_panel">
+        <td>
+          <div *ngIf="!is_cropping" class="button_panel button_font" (click)="open_crop_tool()">
+            <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start"
+              name="crop"></ion-icon>
+          </div>
+          <div *ngIf="is_cropping" class="button_panel button_font" (click)="apply_crop()">
+            <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start"
+              name="checkmark-circle-outline"></ion-icon>
           </div>
         </td>
       </tr>

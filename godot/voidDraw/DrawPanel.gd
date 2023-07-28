@@ -18,7 +18,13 @@ var save_image_func = JavaScript.create_callback(self, 'save_image')
 var set_line_weight_func = JavaScript.create_callback(self, 'set_line_weight')
 var undo_draw_func = JavaScript.create_callback(self, 'undo_draw')
 var redo_draw_func = JavaScript.create_callback(self, 'redo_draw')
-
+var open_crop_tool_func = JavaScript.create_callback(self, 'open_crop_tool')
+var resize_canvas_func = JavaScript.create_callback(self, 'resize_canvas')
+enum ContrStatus{
+	Drawing = 0,
+	Cropping = 1,
+	CropScaling = 2,
+}
 
 func _ready():
 	if OS.has_feature('JavaScript'):
@@ -27,12 +33,16 @@ func _ready():
 		window.set_line_weight = set_line_weight_func
 		window.undo_draw = undo_draw_func
 		window.redo_draw = redo_draw_func
+		window.open_crop_tool = open_crop_tool_func
+		window.resize_canvas = resize_canvas_func
 		window.current_act = 0
 		window.draw_length = 0
-	if BaseTexture: $DrawPanel/Panel/TextureRect.texture = BaseTexture
 	DrawViewport.size.x = width
 	DrawViewport.size.y = height
 	$DrawPanel/Panel.rect_size = Vector2(width, height)
+	if BaseTexture:
+		$DrawPanel/Panel/TextureRect.texture = BaseTexture
+		$DrawPanel/Panel/TextureRect.rect_min_size = $DrawPanel/Panel.rect_size
 	$DrawPanel/Panel.rect_position = Vector2.ZERO
 	var viewport_rect:Vector2 = get_viewport_rect().size
 	rect_scale = Vector2(0, 0)
@@ -47,6 +57,40 @@ func _ready():
 	reset_transform()
 
 
+var control = ContrStatus.Drawing
+var stack_crop_pos:Vector2
+func open_crop_tool(args):
+	$Crop.rect_position = Vector2.ZERO
+	$Crop.rect_size = rect_size
+	$Crop.show()
+	control = ContrStatus.Cropping
+	$DrawPanel.gui_disable_input = true
+	$Crop.update()
+
+
+func resize_canvas(args):
+	DrawViewport.size = $Crop.rect_size
+	$DrawPanel/Panel.rect_size = $Crop.rect_size
+	$DrawPanel/Panel.rect_position = -$Crop.rect_position - stack_crop_pos
+	stack_crop_pos = stack_crop_pos + $Crop.rect_position
+	var viewport_rect:Vector2 = get_viewport_rect().size
+	rect_scale = Vector2(0, 0)
+	rect_size = $Crop.rect_size
+	rect_pivot_offset = $DrawPanel/Panel.rect_size / 2
+	rect_position = -rect_pivot_offset + viewport_rect / 2
+	var width_ratio:float = viewport_rect.x / $DrawPanel/Panel.rect_size.x
+	var height_ratio:float = viewport_rect.y / $DrawPanel/Panel.rect_size.y
+	var origin_scale = min(width_ratio, height_ratio)
+	start_weight = 3 / origin_scale
+	DrawBrush.weight = start_weight
+	reset_transform()
+	$Crop.hide()
+	$DrawPanel/Panel.rect_size = $DrawPanel/Panel.rect_size - $DrawPanel/Panel.rect_position
+	$DrawPanel/Panel/TextureRect.rect_size = $DrawPanel/Panel/TextureRect.rect_min_size
+	$DrawPanel.gui_disable_input = false
+	control = ContrStatus.Drawing
+
+
 var start_pos:Vector2
 var start_rect_pos:Vector2
 
@@ -54,6 +98,8 @@ var touches:= {}
 # dist, center, scale origin
 var tmp:= {}
 
+var last_crop_pos:Vector2
+var is_crop_moving:= false
 func _input(event):
 	if event is InputEventMouseButton or event is InputEventScreenTouch:
 		var index:= 0 if event is InputEventMouseButton else event.index
@@ -64,6 +110,11 @@ func _input(event):
 				1: # 그리기 행동, 또는 마우스 행동
 					if event is InputEventMouseButton:
 						match(event.button_index):
+							1: # 마우스 좌클릭
+								match(control):
+									ContrStatus.Cropping:
+										last_crop_pos = event.position
+										is_crop_moving = true
 							2: # 마우스 우클릭
 								start_rect_pos = rect_position
 								start_pos = event.position - rect_position
@@ -93,9 +144,13 @@ func _input(event):
 			var touches_length:= touches.size()
 			if touches_length != 0:
 				DrawBrush.is_drawable = true
+				if event is InputEventScreenTouch:
+					last_crop_pos = Vector2.ZERO
+					is_crop_moving = false
 				if event is InputEventMouseButton:
-					if event.button_index == 2:
-						rect_pivot_to(get_viewport_rect().size / 2)
+					match(event.button_index):
+						2: # 좌클릭 (패닝)
+							rect_pivot_to(get_viewport_rect().size / 2)
 				start_pos = Vector2.ZERO
 				touches.clear()
 				tmp.clear()
@@ -107,6 +162,10 @@ func _input(event):
 		match(touches_length):
 			1: # 마우스로 행동 한정
 				if event is InputEventMouseMotion:
+					if control == ContrStatus.Cropping and is_crop_moving:
+						var diff = event.position - last_crop_pos
+						$Crop.rect_position = $Crop.rect_position + diff / rect_scale.x
+						last_crop_pos = event.position
 					if start_pos != Vector2.ZERO:
 						rect_position = event.position - start_pos
 						show_brush_for_a_while()
@@ -127,6 +186,8 @@ func show_brush_for_a_while():
 	show_tmp_brush = true
 	start_show_tmp_brush = OS.get_ticks_msec()
 	update()
+	if $Crop.visible:
+		$Crop.update()
 	yield(get_tree().create_timer(.7), "timeout")
 	if start_show_tmp_brush + 650 <= OS.get_ticks_msec():
 		show_tmp_brush = false

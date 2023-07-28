@@ -12,6 +12,7 @@ var weight:= 3.0
 onready var parent:= get_node('../../..')
 
 func _on_StackDraw_gui_input(event):
+	if parent.control != 0: return
 	if event is InputEventMouseButton or event is InputEventScreenTouch:
 		var index = 1 if event is InputEventScreenTouch else event.button_index
 		match(index):
