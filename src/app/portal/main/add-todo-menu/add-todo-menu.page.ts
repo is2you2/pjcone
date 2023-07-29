@@ -462,8 +462,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.global.set_viewer_category(this_file);
     this.userInput.attach.push(this_file);
     this_file.base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
+    let FileURL = URL.createObjectURL(ev.target.files[0]);
     if (this_file['viewer'] == 'image')
-      this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(this_file.base64);
+      this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
+    setTimeout(() => {
+      URL.revokeObjectURL(FileURL);
+    }, 0);
     this.indexed.saveFileToUserPath(this_file.base64, this_file['path'], (_) => {
       saving_file.dismiss();
     });

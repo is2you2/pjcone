@@ -287,27 +287,30 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       setTimeout(() => {
         clearInterval(updater);
       }, 1500);
-      this.userInput.file['base64'] = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
+      let FileURL = URL.createObjectURL(ev.target.files[0]);
+      setTimeout(() => {
+        URL.revokeObjectURL(FileURL);
+      }, 0);
       this.userInput.file['thumbnail'] = undefined;
-      if (this.userInput.file['size'] < SIZE_LIMIT) // 크기가 작으면 썸네일 생성
-        switch (this.userInput.file['typeheader']) {
-          case 'image': // 이미지인 경우 사용자에게 보여주기
-            this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(this.userInput.file['base64']);
-            break;
-          case 'text':
-            new p5((p: p5) => {
-              p.setup = () => {
-                p.loadStrings(this.userInput.file['base64'], v => {
-                  this.userInput.file['thumbnail'] = v;
-                  p.remove();
-                }, e => {
-                  console.error('문자열 불러오기 실패: ', e);
-                  p.remove();
-                });
-              }
-            });
-            break;
-        }
+      switch (this.userInput.file['typeheader']) {
+        case 'image': // 이미지인 경우 사용자에게 보여주기
+          this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
+          break;
+        case 'text':
+          new p5((p: p5) => {
+            p.setup = () => {
+              p.loadStrings(FileURL, v => {
+                this.userInput.file['thumbnail'] = v;
+                p.remove();
+              }, e => {
+                console.error('문자열 불러오기 실패: ', e);
+                p.remove();
+              });
+            }
+          });
+          break;
+      }
+      this.userInput.file['base64'] = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
       this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
     } else {
       delete this.userInput.file;
