@@ -60,13 +60,13 @@ export class IonicViewerPage implements OnInit {
             canvas.style('margin', '0');
             canvas.style('position', 'relative');
             canvas.style('pointer-events', 'none');
-            canvasDiv.style.backgroundImage = `url(${this.FileURL})`;
-            canvasDiv.style.backgroundRepeat = 'no-repeat';
-            canvasDiv.style.pointerEvents = 'none';
             let img = document.createElement('img');
             img.hidden = true;
             img.src = this.FileURL;
             img.onload = () => {
+              canvasDiv.style.backgroundImage = `url(${this.FileURL})`;
+              canvasDiv.style.backgroundRepeat = 'no-repeat';
+              canvasDiv.style.pointerEvents = 'none';
               this.image_info['width'] = img.naturalWidth;
               this.image_info['height'] = img.naturalHeight;
               imageOriginalSize = p.createVector(img.naturalWidth, img.naturalHeight);
