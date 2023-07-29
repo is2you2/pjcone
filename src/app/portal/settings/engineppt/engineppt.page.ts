@@ -84,11 +84,10 @@ export class EnginepptPage implements OnInit {
     document.getElementById(this.engine_ppt_file_sel).click();
   }
   async inputpckselected(ev: any) {
-    let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
-    this.StartPresentation(ev.target.files[0].name, base64);
+    this.StartPresentation(ev.target.files[0].name, ev.target.files[0]);
   }
 
-  async StartPresentation(filename: string, base64: any) {
+  async StartPresentation(filename: string, blob: Blob) {
     let file_ext = filename.substring(filename.lastIndexOf('.') + 1);
     if (file_ext != 'pck') {
       this.p5toast.show({
@@ -96,7 +95,7 @@ export class EnginepptPage implements OnInit {
       });
       return;
     }
-    await this.indexed.saveBase64ToUserPath(base64, 'engineppt/presentation_this.pck');
+    await this.indexed.saveBlobToUserPath(blob, 'engineppt/presentation_this.pck');
     this.CreateEnginePPT();
   }
 
