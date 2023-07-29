@@ -391,7 +391,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       };
       this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
       this_file['viewer'] = 'image';
-      await this.indexed.saveFileToUserPath(this_file.base64, this_file['path']);
+      await this.indexed.saveBase64ToUserPath(this_file.base64, this_file['path']);
       loading.dismiss();
       this.userInput.attach.push(this_file);
     });
@@ -421,7 +421,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           this_file['viewer'] = 'image';
           this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
           this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
-          await this.indexed.saveFileToUserPath(v.data['img'], this_file['path']);
+          await this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path']);
           v.data['loadingCtrl'].dismiss();
           this.userInput.attach.push(this_file);
         }
@@ -461,14 +461,14 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       this_file.filename = `${this_file.filename.substring(0, this_file.filename.lastIndexOf('.'))}_.${this_file.file_ext}`;
     this.global.set_viewer_category(this_file);
     this.userInput.attach.push(this_file);
-    this_file.base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
+    this_file.blob = ev.target.files[0];
     let FileURL = URL.createObjectURL(ev.target.files[0]);
     if (this_file['viewer'] == 'image')
       this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
     setTimeout(() => {
       URL.revokeObjectURL(FileURL);
     }, 0);
-    this.indexed.saveFileToUserPath(this_file.base64, this_file['path'], (_) => {
+    this.indexed.saveBlobToUserPath(ev.target.files[0], this_file['path'], (_) => {
       saving_file.dismiss();
     });
   }
@@ -660,7 +660,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 }
                 this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
                 this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
-                this.indexed.saveFileToUserPath(v.data['img'], this_file['path'], (_) => {
+                this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path'], (_) => {
                   v.data['loadingCtrl'].dismiss();
                 });
               }
@@ -698,7 +698,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             if (!is_already_exist) related_creators.push(...this.userInput.attach['content_creator']);
           }
           delete this.userInput.attach[i]['exist'];
-          await this.indexed.saveFileToUserPath(v.data.base64, 'tmp_files/modify_image.png')
+          await this.indexed.saveBase64ToUserPath(v.data.base64, 'tmp_files/modify_image.png')
           this.modalCtrl.create({
             component: VoidDrawPage,
             componentProps: {
@@ -736,7 +736,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 }
                 this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
                 this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
-                this.indexed.saveFileToUserPath(v.data['img'], this_file['path'], (_) => {
+                this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path'], (_) => {
                   v.data['loadingCtrl'].dismiss();
                 });
               }
@@ -836,6 +836,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           delete attach['exist'];
           delete attach['thumbnail'];
           delete attach['base64'];
+          delete attach['blob'];
         });
         current = JSON.stringify(current);
         attach_changed = received != current;
@@ -865,14 +866,15 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       // 모든 파일을 새로 등록/재등록
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
         // 이미 존재하는 파일로 알려졌다면 저장 시도하지 않도록 구성, 또는 썸네일 재구성
+        let blob: Blob;
         if (!this.userInput.attach[i]['exist'] || (!header_image && this.userInput.attach[i]['viewer'] == 'image')) {
-          let blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
-          this.userInput.attach[i].base64 = await this.global.GetBase64ThroughFileReader(blob);
+          blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
           this.userInput.attach[i]['path'] = `todo/${this.userInput.id}/${this.userInput.attach[i]['filename']}`;
-          await this.indexed.saveFileToUserPath(this.userInput.attach[i].base64, this.userInput.attach[i]['path']);
+          await this.indexed.saveBlobToUserPath(blob, this.userInput.attach[i]['path']);
         } else delete this.userInput.attach[i]['exist'];
-        if (!header_image && this.userInput.attach[i]['viewer'] == 'image')
-          header_image = this.userInput.attach[i].base64;
+        if (!header_image && this.userInput.attach[i]['viewer'] == 'image') {
+          header_image = URL.createObjectURL(blob);
+        }
       }
       if (header_image) // 대표 이미지가 있다면
         await new Promise((done: any) => {
@@ -888,15 +890,17 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 p.smooth();
                 p.image(v, -(v.width - 128) / 2, -(v.height - 128) / 2);
                 p.saveFrames('', 'png', 1, 1, c => {
-                  this.indexed.saveFileToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
+                  this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
                     `todo/${this.userInput.id}/thumbnail.png`, (_) => {
                       done();
                     });
+                  URL.revokeObjectURL(header_image);
                   p.remove();
                 });
               }, e => {
                 console.error('Todo-등록된 이미지 불러오기 실패: ', e);
                 done();
+                URL.revokeObjectURL(header_image);
                 p.remove();
               });
             }
@@ -916,6 +920,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       delete attach['thumbnail'];
       delete attach['exist'];
       delete attach['base64'];
+      delete attach['blob'];
     });
     this.userInput.written = new Date().getTime();
     if (this.userInput.startFrom) {
@@ -954,7 +959,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         };
       }
       try {
-        this.userInput.attach.forEach(file => delete file.base64);
+        this.userInput.attach.forEach(file => {
+          URL.revokeObjectURL(file['thumbnail']);
+          delete file['thumbnail'];
+          delete file['exist'];
+          delete file['base64'];
+          delete file['blob'];
+        });
         await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
           this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]).then(async v => {
             await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
@@ -980,7 +991,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
           await this.nakama.sync_save_file(this.userInput.attach[i],
             this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
-          delete this.userInput.attach[i].base64;
         }
         loading.dismiss();
       } catch (e) {

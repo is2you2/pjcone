@@ -292,7 +292,7 @@ export class UserFsDirPage implements OnInit {
     loading.present();
     for (let i = 0, j = ev.target.files.length; i < j; i++) {
       let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[i]);
-      await this.indexed.saveFileToUserPath(base64, ev.target.files[i].webkitRelativePath);
+      await this.indexed.saveBase64ToUserPath(base64, ev.target.files[i].webkitRelativePath);
     }
     this.LoadAllIndexedFiles();
     loading.dismiss();

@@ -172,7 +172,7 @@ export class ProfilePage implements OnInit {
           }
         }
       else {
-        await this.indexed.saveFileToUserPath(base64, this_file.path);
+        await this.indexed.saveBase64ToUserPath(base64, this_file.path);
       }
       loading.dismiss();
       await this.global.CreateGodotIFrame('my_content', {

@@ -629,7 +629,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           /** 업로드가 진행중인 메시지 개체 */
           if (upload.length) { // 첨부 파일이 포함된 경우
             // 로컬에 파일을 저장
-            this.indexed.saveFileToUserPath(this.userInput.file.base64, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.file_ext}`, () => {
+            this.indexed.saveBase64ToUserPath(this.userInput.file.base64, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.file_ext}`, () => {
               this.auto_open_thumbnail({
                 content: result,
                 message_id: v.message_id,
@@ -895,7 +895,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 }
               if (!is_already_exist) related_creators.push(msg.content['content_creator']);
             }
-            await this.indexed.saveFileToUserPath(v.data.base64, 'tmp_files/modify_image.png');
+            await this.indexed.saveBase64ToUserPath(v.data.base64, 'tmp_files/modify_image.png');
             this.modalCtrl.create({
               component: VoidDrawPage,
               componentProps: {

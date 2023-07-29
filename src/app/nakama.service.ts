@@ -2585,7 +2585,7 @@ export class NakamaService {
     let resultModified = result.join('').replace(/"|\\|=/g, '');
     if (resultModified) {
       msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
-      this.indexed.saveFileToUserPath(resultModified, `servers/${_is_official}/${_target}/channels/${_msg.channel_id}/files/msg_${_msg.message_id}.${_msg.content['file_ext']}`,
+      this.indexed.saveBase64ToUserPath(resultModified, `servers/${_is_official}/${_target}/channels/${_msg.channel_id}/files/msg_${_msg.message_id}.${_msg.content['file_ext']}`,
         v => {
           _CallBack(new Blob([v], { type: msg.content['type'] }));
         });
@@ -2612,7 +2612,7 @@ export class NakamaService {
     try {
       let base64 = info.base64 || await this.global.GetBase64ThroughFileReader(await this.indexed.loadBlobFromUserPath(info.path, info.type || ''));
       delete info.base64;
-      await this.indexed.saveFileToUserPath(base64, info.path);
+      await this.indexed.saveBase64ToUserPath(base64, info.path);
       let separate = base64.match(/(.{1,220000})/g);
       info.partsize = separate.length;
       await this.servers[_is_official][_target].client.writeStorageObjects(
@@ -2666,7 +2666,7 @@ export class NakamaService {
           });
           merged += part.objects[0].value['data'].replace(/"|=|\\/g, '');
         }
-        await this.indexed.saveFileToUserPath(merged, info.path);
+        await this.indexed.saveBase64ToUserPath(merged, info.path);
         return await this.indexed.loadBlobFromUserPath(info.path, info.type || '');
       } catch (e) {
         console.log('SyncLoadFailed:', e);

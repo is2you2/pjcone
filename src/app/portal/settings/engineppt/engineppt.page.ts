@@ -96,7 +96,7 @@ export class EnginepptPage implements OnInit {
       });
       return;
     }
-    await this.indexed.saveFileToUserPath(base64, 'engineppt/presentation_this.pck');
+    await this.indexed.saveBase64ToUserPath(base64, 'engineppt/presentation_this.pck');
     this.CreateEnginePPT();
   }
 
@@ -259,7 +259,7 @@ export class EnginepptPage implements OnInit {
                   this.TempWs.send(JSON.stringify({ act: 'react' }));
                   break;
                 case 'eof': // 파일 전송을 종료합니다
-                  this.indexed.saveFileToUserPath(base64, 'engineppt/presentation_this.pck', (_) => {
+                  this.indexed.saveBase64ToUserPath(base64, 'engineppt/presentation_this.pck', (_) => {
                     download_file.dismiss();
                     this.CreateEnginePPT();
                   });

@@ -36,7 +36,8 @@ export interface FileInfo {
   /** 파일 분할 크기 */
   partsize?: number;
   path?: string;
-  base64?: string;
+  base64?: any;
+  blob?: any;
   /** 간소화 썸네일 (ObjectURL) */
   thumbnail?: any;
   /** 뷰어 구분자 */

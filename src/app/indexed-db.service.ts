@@ -101,10 +101,10 @@ export class IndexedDBService {
    * @param base64 문서에 포함될 base64 텍스트
    * @param path 저장될 상대 경로(user://~)
    */
-  saveFileToUserPath(base64: string, path: string, _CallBack = (_int8array: Int8Array) => { }): Promise<Int8Array> {
+  saveBase64ToUserPath(base64: string, path: string, _CallBack = (_int8array: Int8Array) => { }): Promise<Int8Array> {
     if (!this.db) {
       setTimeout(() => {
-        this.saveFileToUserPath(base64, path, _CallBack);
+        this.saveBase64ToUserPath(base64, path, _CallBack);
       }, 1000);
       return;
     };
@@ -114,6 +114,46 @@ export class IndexedDBService {
       let int8Array = new Int8Array(arrayBuffer);
       for (let i = 0, j = byteStr.length; i < j; i++)
         int8Array[i] = byteStr.charCodeAt(i);
+      this.createRecursiveDirectory(path);
+      let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
+        timestamp: new Date(),
+        mode: 33206,
+        contents: int8Array,
+      }, `/userfs/${path}`);
+      put.onsuccess = (ev) => {
+        if (ev.type != 'success')
+          console.error('저장 실패: ', path);
+        _CallBack(int8Array);
+        done(int8Array);
+      }
+      put.onerror = (e) => {
+        console.error('IndexedDB saveFileToUserPath failed: ', e);
+        error(e);
+      }
+    });
+  }
+
+  /**
+   * 파일 공유용
+   * @param blob 파일정보 | blob
+   * @param path 저장될 상대 경로(user://~)
+   */
+  saveBlobToUserPath(blob: Blob, path: string, _CallBack = (_int8array: Int8Array) => { }): Promise<Int8Array> {
+    if (!this.db) {
+      setTimeout(() => {
+        this.saveBlobToUserPath(blob, path, _CallBack);
+      }, 1000);
+      return;
+    };
+    return new Promise(async (done, error) => {
+      let int8Array: Int8Array;
+      try {
+        let arrayBuffer = await blob.arrayBuffer();
+        int8Array = new Int8Array(arrayBuffer);
+      } catch (e) {
+        console.error('saveFileToUserPath failed: ', e);
+        return;
+      }
       this.createRecursiveDirectory(path);
       let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
         timestamp: new Date(),
