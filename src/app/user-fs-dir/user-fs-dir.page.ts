@@ -290,10 +290,8 @@ export class UserFsDirPage implements OnInit {
   async inputImageSelected(ev: any) {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });
     loading.present();
-    for (let i = 0, j = ev.target.files.length; i < j; i++) {
-      let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[i]);
-      await this.indexed.saveBase64ToUserPath(base64, ev.target.files[i].webkitRelativePath);
-    }
+    for (let i = 0, j = ev.target.files.length; i < j; i++)
+      await this.indexed.saveBlobToUserPath(ev.target.files[i], ev.target.files[i].webkitRelativePath);
     this.LoadAllIndexedFiles();
     loading.dismiss();
   }
