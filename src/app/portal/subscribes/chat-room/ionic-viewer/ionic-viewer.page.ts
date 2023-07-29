@@ -63,18 +63,16 @@ export class IonicViewerPage implements OnInit {
             canvasDiv.style.backgroundImage = `url(${this.FileURL})`;
             canvasDiv.style.backgroundRepeat = 'no-repeat';
             canvasDiv.style.pointerEvents = 'none';
-            let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-            loading.present();
-            p.loadImage(this.FileURL, v => {
-              this.image_info['width'] = v.width;
-              this.image_info['height'] = v.height;
-              imageOriginalSize = p.createVector(v.width, v.height);
+            let img = document.createElement('img');
+            img.hidden = true;
+            img.src = this.FileURL;
+            img.onload = () => {
+              this.image_info['width'] = img.naturalWidth;
+              this.image_info['height'] = img.naturalHeight;
+              imageOriginalSize = p.createVector(img.naturalWidth, img.naturalHeight);
               RePositioningImage();
-              loading.dismiss();
-            }, e => {
-              console.error('viewer-loadImageFailed: ', e);
-              loading.dismiss();
-            });
+              img.remove();
+            }
             if (isPlatform == 'Android' || isPlatform == 'iOS') {
               iframe_sub = document.createElement('iframe');
               iframe_sub.setAttribute("src", this.FileURL);
