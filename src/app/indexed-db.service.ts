@@ -127,7 +127,7 @@ export class IndexedDBService {
         done(int8Array);
       }
       put.onerror = (e) => {
-        console.error('IndexedDB saveFileToUserPath failed: ', e);
+        console.error('IndexedDB saveBase64ToUserPath failed: ', e);
         error(e);
       }
     });
@@ -151,8 +151,8 @@ export class IndexedDBService {
         let arrayBuffer = await blob.arrayBuffer();
         int8Array = new Int8Array(arrayBuffer);
       } catch (e) {
-        console.error('saveFileToUserPath failed: ', e);
-        return;
+        console.error('saveBlobToUserPath to arraybuffer failed: ', e);
+        error(e);
       }
       this.createRecursiveDirectory(path);
       let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
@@ -167,7 +167,7 @@ export class IndexedDBService {
         done(int8Array);
       }
       put.onerror = (e) => {
-        console.error('IndexedDB saveFileToUserPath failed: ', e);
+        console.error('IndexedDB saveBlobToUserPath failed: ', e);
         error(e);
       }
     });

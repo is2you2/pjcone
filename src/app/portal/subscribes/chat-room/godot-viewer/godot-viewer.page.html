@@ -15,7 +15,7 @@ SPDX-License-Identifier: MIT -->
     <tr style="height: 0;">
       <td>
         <ion-list-header>
-          <ion-label>{{FileInfo.filename}}</ion-label>
+          <ion-label text-wrap>{{FileInfo.filename}}</ion-label>
           <ion-button (click)="snapshot_modify()">{{lang.text['ContentViewer']['Edit']}}
           </ion-button>
           <ion-button (click)="download_file()">{{lang.text['ContentViewer']['Download']}}

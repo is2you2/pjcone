@@ -91,7 +91,7 @@ SPDX-License-Identifier: MIT -->
             [placeholder]="lang.text['TodoDetail']['description']"></textarea>
           <div *ngFor="let attach of userInput.attach; index as i">
             <ion-item>
-              <ion-label>{{attach.filename}}</ion-label>
+              <ion-label text-wrap>{{attach.filename}}</ion-label>
               <ion-button (click)="remove_attach(i)">
                 {{lang.text['TodoDetail']['delete_attach']}}
               </ion-button>

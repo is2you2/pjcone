@@ -460,18 +460,26 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (has_same_named_file) // 동명의 파일 등록시 파일 이름 변형
       this_file.filename = `${this_file.filename.substring(0, this_file.filename.lastIndexOf('.'))}_.${this_file.file_ext}`;
     this.global.set_viewer_category(this_file);
-    this.userInput.attach.push(this_file);
     this_file.blob = ev.target.files[0];
     let FileURL = URL.createObjectURL(ev.target.files[0]);
     if (this_file['viewer'] == 'image')
       this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
-    setTimeout(() => {
-      URL.revokeObjectURL(FileURL);
-    }, 0);
-    this.indexed.saveBlobToUserPath(ev.target.files[0], this_file['path'], (_) => {
+    try {
+      await this.indexed.saveBlobToUserPath(ev.target.files[0], this_file['path']);
+      this.userInput.attach.push(this_file);
+      setTimeout(() => {
+        URL.revokeObjectURL(FileURL);
+      }, 0);
       saving_file.dismiss();
-    });
+    } catch (e) {
+      console.error('파일 올리기 실패: ', e);
+      this.p5toast.show({
+        text: this.lang.text['TodoDetail']['load_failed'],
+      });
+      saving_file.dismiss();
+    }
   }
+
   AvailableStorageList: RemoteInfo[] = [];
   @ViewChild('StoreAt') StoreAt: any;
   StoreAtSelClicked() {
