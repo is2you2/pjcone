@@ -33,7 +33,6 @@ func _ready():
 
 
 # 파일 불러오기 시도
-# 다시 로드되기 전까지는 경로가 업데이트되지 않는 오류가 있다
 func try_to_load_attach():
 	var dir:= Directory.new()
 	var check_exist:= dir.file_exists('user://todo/%s/%s' % [info.id, 'thumbnail.png'])
@@ -43,8 +42,6 @@ func try_to_load_attach():
 		var tex:= ImageTexture.new()
 		tex.create_from_image(img)
 		$CollisionShape2D/Node2D/UI/Attach.texture = tex
-	else:
-		printerr('다시 로드되기 전까지는 경로가 업데이트 되지 않음')
 
 
 var lerp_value:= 0.0

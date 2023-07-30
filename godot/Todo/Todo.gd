@@ -112,6 +112,12 @@ func add_todo(args):
 				new_todo.normal_color = Color('#88dddd0c')
 				new_todo.alert_color = Color('#88880000')
 				new_todo.lerp_start_from = .4
+		if json.has('custom_color'):
+			new_todo.line_color = Color(json.custom_color)
+			new_todo.normal_color = Color(json.custom_color)
+			new_todo.normal_color.a = .15
+			new_todo.alert_color = Color(json.custom_color)
+			new_todo.alert_color.a = .53
 		# 필수 정보 입력
 		new_todo.name = json.id
 		new_todo.info = json

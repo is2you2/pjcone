@@ -1625,7 +1625,6 @@ export class NakamaService {
                         this.noti.ClearNoti(todo_info.noti_id);
                         let godot = this.global.godot.contentWindow || this.global.godot.contentDocument;
                         godot['remove_todo'](JSON.stringify(todo_info));
-                        this.removeTodoTagInfoImmediatly(todo_info);
                       });
                     }
                   });
@@ -1721,23 +1720,6 @@ export class NakamaService {
         }
         _CallBack(socket);
       });
-  }
-
-  /** 할 일 정보로부터 태그 삭제하기 */
-  removeTodoTagInfoImmediatly(todo_info: any) {
-    this.indexed.loadTextFromUserPath('todo/tags.json', (e, v) => {
-      if (e && v) {
-        let saved_tag_orig = JSON.parse(v);
-        let input_data: string[] = todo_info.tags ? JSON.parse(JSON.stringify(todo_info.tags)) : [];
-        input_data.forEach(removed_tag => {
-          if (saved_tag_orig[removed_tag])
-            saved_tag_orig[removed_tag] = saved_tag_orig[removed_tag] - 1;
-          if (saved_tag_orig[removed_tag] <= 0)
-            delete saved_tag_orig[removed_tag];
-        });
-        this.indexed.saveTextFileToUserPath(JSON.stringify(saved_tag_orig), 'todo/tags.json');
-      }
-    });
   }
 
   /** 현재 보여지는 메시지들을 저장함  

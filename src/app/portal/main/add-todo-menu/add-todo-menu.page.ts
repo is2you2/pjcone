@@ -84,8 +84,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     startFrom: undefined,
     /** 기한 */
     limit: undefined,
-    /** 필터용 태그 */
-    tags: [],
+    /** 사용자 지정 할 일 색상 */
+    custom_color: undefined,
     /** 일의 중요도, 가시화 기한의 색상에 영향을 줌 */
     importance: '0',
     /** 상세 내용 */
@@ -109,11 +109,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     /** 알림 아이디 저장 */
     noti_id: undefined,
   };
-
-  /** 저장된 태그 정보 */
-  saved_tag: any[] = [];
-  /** { key: count } */
-  saved_tag_orig = {};
 
   /** 사용자에게 보여지는 시작일시 문자열 */
   startDisplay: string;
@@ -153,14 +148,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   isModifiable = false;
   received_data: string;
   async ionViewWillEnter() {
-    this.indexed.loadTextFromUserPath('todo/tags.json', (e, v) => {
-      if (e && v) {
-        this.saved_tag_orig = JSON.parse(v);
-        this.saved_tag = Object.keys(this.saved_tag_orig);
-        if (this.saved_tag.length)
-          this.needInputNewTagName = false;
-      }
-    });
     // 저장소로 사용 가능한 서버와 그룹 수집
     let servers: RemoteInfo[] = [];
     let isOfficial = Object.keys(this.nakama.servers);
@@ -522,91 +509,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         break;
     }
   }
-  @ViewChild('TagSel') TagSel: any;
-  /** 새로 지정된 태그가 임시로 기억됨 */
-  NewTagName: string = '';
-  TagSelClicked() {
-    this.TagSel.open();
-  }
-  needInputNewTagName = true;
-  TagSelChanged(ev: any) {
-    let selected: string[] = ev.detail.value;
-    this.needInputNewTagName = selected.includes('@new_tag');
-    if (this.needInputNewTagName)
-      selected.splice(selected.lastIndexOf('@new_tag'), 1);
-    this.userInput.tags = selected;
-  }
-  InputNewTag = '';
-  AddNewTag() {
-    this.InputNewTag = this.InputNewTag.trim();
-    if (!this.InputNewTag) {
-      setTimeout(() => {
-        this.needInputNewTagName = false;
-        this.InputNewTag = '';
-      }, 0);
-      return;
-    }
-    let exactly_new = true;
-    for (let i = 0, j = this.saved_tag.length; i < j; i++)
-      if (this.saved_tag[i] == this.InputNewTag) {
-        exactly_new = false;
-        break;
-      }
-    if (exactly_new) {
-      this.saved_tag.push(this.InputNewTag);
-      this.userInput.tags.push(this.InputNewTag);
-    }
-    setTimeout(() => {
-      this.needInputNewTagName = false;
-      this.InputNewTag = '';
-    }, 0);
-  }
 
-  /** 태그 정보를 저장하기 */
-  saveTagInfo() {
-    // 원본 정보 대비했을 때 대비 가감처리
-    let get_tags_from_orig = this.received_data ? JSON.parse(this.received_data) : {};
-    let orig_data: string[] = get_tags_from_orig['tags'] ?? [];
-    let input_data: string[] = this.userInput.tags ? JSON.parse(JSON.stringify(this.userInput.tags)) : [];
-    let additive = [];
-    let subtractive = [];
-    orig_data.sort();
-    input_data.sort();
-    if (input_data.length) // 비교군이 있는 경우
-      for (let i = 0, j = input_data.length; i < j; i++) {
-        let index = orig_data.indexOf(input_data[i]);
-        if (index >= 0) // 유지되는 값은 무시함
-          orig_data.splice(index, 1);
-        else // 기존에 없던 값이 생겼다면 추가로 판단
-          additive.push(input_data[i]);
-      }
-    // 비교군이 없다면 기존 정보는 삭제된 것으로 판단
-    subtractive = orig_data;
-    // 더 이상 사용하지 않는다면 삭제
-    additive.forEach(added_tag => {
-      if (!this.saved_tag_orig[added_tag])
-        this.saved_tag_orig[added_tag] = 0;
-      this.saved_tag_orig[added_tag] = this.saved_tag_orig[added_tag] + 1;
-    });
-    subtractive.forEach(removed_tag => {
-      if (this.saved_tag_orig[removed_tag])
-        this.saved_tag_orig[removed_tag] = this.saved_tag_orig[removed_tag] - 1;
-      if (this.saved_tag_orig[removed_tag] <= 0)
-        delete this.saved_tag_orig[removed_tag];
-    });
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.saved_tag_orig), 'todo/tags.json');
-  }
-
-  /** 완료 또는 삭제시 이 할 일에 적용된 태그를 제거 */
-  removeTagInfo() {
-    let input_data: string[] = this.userInput.tags ? JSON.parse(JSON.stringify(this.userInput.tags)) : [];
-    input_data.forEach(removed_tag => {
-      if (this.saved_tag_orig[removed_tag])
-        this.saved_tag_orig[removed_tag] = this.saved_tag_orig[removed_tag] - 1;
-      if (this.saved_tag_orig[removed_tag] <= 0)
-        delete this.saved_tag_orig[removed_tag];
-    });
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.saved_tag_orig), 'todo/tags.json');
+  toggle_custom_color() {
+    if (this.userInput.custom_color)
+      this.userInput.custom_color = undefined;
+    else this.userInput.custom_color = '#000000';
   }
 
   open_ionic_viewer(index: number) {
@@ -800,12 +707,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     delete this.userInput.display_store;
     delete this.userInput.display_manager;
     delete this.userInput.display_creator;
-    // 새 태그구성이 완료된 경우
-    let trim_tag = this.InputNewTag.trim();
-    if (trim_tag) {
-      if (!this.userInput.tags.includes(trim_tag))
-        this.userInput.tags.push(trim_tag);
-    }
     // 들어올 때와 같은지 검토
     let exactly_same = JSON.stringify(this.userInput) == this.received_data;
     if (exactly_same) {
@@ -1014,7 +915,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (this.global.godot_window['add_todo'])
       this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
-      this.saveTagInfo();
       this.navCtrl.back();
     });
   }
@@ -1079,7 +979,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           delete this.nakama.web_noti_id[this.userInput.noti_id];
         }
       this.noti.ClearNoti(this.userInput.noti_id);
-      this.removeTagInfo();
       if (isDelete && this.global.godot_window['remove_todo'])
         this.global.godot_window['remove_todo'](JSON.stringify(this.userInput));
       loading.dismiss();
