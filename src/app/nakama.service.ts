@@ -241,6 +241,8 @@ export class NakamaService {
             color = '880000';
             break;
         }
+        if (noti_info['custom_color'])
+          color = noti_info['custom_color'];
         this.noti.PushLocal({
           id: noti_info.noti_id,
           title: noti_info.title,
