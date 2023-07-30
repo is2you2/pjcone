@@ -333,7 +333,7 @@ export class IonicViewerPage implements OnInit {
         } catch (e) {
           console.log('open file failed: ', e);
           this.p5toast.show({
-            text: `${this.lang.text['ChatRoom']['cannot_open_file']}`,
+            text: `${this.lang.text['ChatRoom']['cannot_open_file']}: ${e.message}`,
           });
         }
         break;
