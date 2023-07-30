@@ -9,6 +9,8 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
+import { FileInfo } from 'src/app/global-act.service';
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -26,26 +28,27 @@ export class IonicViewerPage implements OnInit {
     private p5toast: P5ToastService,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
+    private fileOpener: FileOpener,
   ) { }
 
-  FileInfo: any;
+  blob: Blob;
+  FileInfo: FileInfo;
   p5canvas: p5;
   FileURL: string;
   ContentBox: HTMLElement;
   FileHeader: HTMLElement;
   HasNoEditButton: boolean;
 
-  ngOnInit() {
+  async ngOnInit() {
     this.FileInfo = this.navParams.get('info');
     this.ContentBox = document.getElementById('ContentBox');
     this.FileHeader = document.getElementById('FileHeader');
     this.HasNoEditButton = this.navParams.get('no_edit') || false;
-    this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type'], (blob) => {
-      this.FileURL = URL.createObjectURL(blob);
-    });
+    this.blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type']);
+    this.FileURL = URL.createObjectURL(this.blob);
   }
 
-  ionViewDidEnter() {
+  async ionViewDidEnter() {
     let canvasDiv = document.getElementById('p5canvas');
     // 경우에 따라 로딩하는 캔버스를 구분
     switch (this.FileInfo['viewer']) {
@@ -300,7 +303,7 @@ export class IonicViewerPage implements OnInit {
           }
         });
         break;
-      default: // 텍스트 파일과 모르는 파일들
+      case 'text': // 텍스트 파일
         this.p5canvas = new p5((p: p5) => {
           p.setup = () => {
             let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
@@ -322,6 +325,17 @@ export class IonicViewerPage implements OnInit {
             });
           }
         });
+        break;
+      case 'disabled':
+        try {
+          await this.file.writeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`, this.blob);
+          this.fileOpener.open(this.file.externalDataDirectory + `viewer_tmp.${this.FileInfo.file_ext}`, this.FileInfo['type'] || `application/${this.FileInfo['file_ext']}`);
+        } catch (e) {
+          console.log('open file failed: ', e);
+          this.p5toast.show({
+            text: `${this.lang.text['ChatRoom']['cannot_open_file']}`,
+          });
+        }
         break;
     }
   }
@@ -382,5 +396,6 @@ export class IonicViewerPage implements OnInit {
       this.p5canvas.remove();
     if (this.FileURL)
       URL.revokeObjectURL(this.FileURL);
+    this.file.removeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
   }
 }

@@ -14,6 +14,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { Camera } from "@awesome-cordova-plugins/camera/ngx";
 import { File } from "@awesome-cordova-plugins/file/ngx";
+import { FileOpener } from "@awesome-cordova-plugins/file-opener/ngx";
 
 @NgModule({
   declarations: [AppComponent],
@@ -32,6 +33,7 @@ import { File } from "@awesome-cordova-plugins/file/ngx";
     NavParams,
     LocalNotifications,
     BarcodeScanner,
+    FileOpener,
   ],
   bootstrap: [AppComponent],
 })

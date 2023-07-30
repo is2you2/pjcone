@@ -702,36 +702,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           else throw "Need to download file";
         } catch (e) { // 전송중이 아니라면 다운받기
           console.log(e);
-          if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-            if (!this.isHistoryLoaded)
-              this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
-                let url = URL.createObjectURL(resultModified);
-                this.global.modulate_thumbnail(msg.content, url);
-              });
-          } else {
-            if (msg.content['viewer'] == 'disabled') {
-              if (!this.isHistoryLoaded)
-                this.alertCtrl.create({
-                  header: this.lang.text['ChatRoom']['cannot_open_from_mobile'],
-                  message: this.lang.text['ChatRoom']['cannot_open_with_viewer'],
-                  buttons: [{
-                    text: this.lang.text['ChatRoom']['download_anyway'],
-                    handler: () => {
-                      this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
-                        let url = URL.createObjectURL(resultModified);
-                        this.global.modulate_thumbnail(msg.content, url);
-                      });
-                    }
-                  }]
-                }).then(v => v.present());
-            } else {
-              if (!this.isHistoryLoaded)
-                this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
-                  let url = URL.createObjectURL(resultModified);
-                  this.global.modulate_thumbnail(msg.content, url);
-                });
-            }
-          }
+          if (!this.isHistoryLoaded)
+            this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
+              let url = URL.createObjectURL(resultModified);
+              this.global.modulate_thumbnail(msg.content, url);
+            });
         }
       }
     });
@@ -780,9 +755,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     switch (msg.content['viewer']) {
       case 'godot':
         this.open_godot_viewer(msg, path);
-        break;
-      case 'disabled':
-        this.alert_download(msg, path);
         break;
       default:
         this.open_ionic_viewer(msg, path);
@@ -956,60 +928,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         v.present();
         this.lock_modal_open = false;
       });
-    }
-  }
-
-  /** 열람 불가 파일 다운로드로 유도 */
-  alert_download(msg: any, path: string) {
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
-      this.alertCtrl.create({
-        header: this.lang.text['ChatRoom']['viewer_not_support'],
-        message: this.lang.text['ChatRoom']['cannot_open_file'],
-        buttons: [{
-          text: this.lang.text['ChatRoom']['export_download'],
-          handler: () => {
-            this.indexed.DownloadFileFromUserPath(path, msg.content['type'], msg.content['filename']);
-          }
-        }]
-      }).then(v => v.present());
-    else {
-      this.alertCtrl.create({
-        header: this.lang.text['ContentViewer']['Filename'],
-        inputs: [{
-          name: 'filename',
-          placeholder: msg.content['filename'],
-          type: 'text',
-        }],
-        buttons: [{
-          text: this.lang.text['ContentViewer']['saveFile'],
-          handler: async (input) => {
-            let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-            loading.present();
-            let filename = input['filename'] ? `${input['filename'].replace(/:|\?|\/|\\|<|>/g, '')}.${msg.content['file_ext']}` : msg.content['filename'];
-            let blob = await this.indexed.loadBlobFromUserPath(path, msg.content['type']);
-            this.file.writeFile(this.file.externalDataDirectory, filename, blob)
-              .then(_v => {
-                loading.dismiss();
-                this.p5toast.show({
-                  text: this.lang.text['ContentViewer']['fileSaved'],
-                });
-              }).catch(e => {
-                loading.dismiss();
-                switch (e.code) {
-                  case 12:
-                    this.p5toast.show({
-                      text: this.lang.text['ContentViewer']['AlreadyExist'],
-                    });
-                    this.alert_download(msg, path);
-                    break;
-                  default:
-                    console.log('준비되지 않은 오류 반환: ', e);
-                    break;
-                }
-              });
-          }
-        }]
-      }).then(v => v.present());
     }
   }
 

@@ -330,7 +330,7 @@ export class GlobalActService {
       case 'png':
       case 'jpeg':
       case 'jpg':
-      case 'webp':
+      // case 'webp':
       case 'gif':
         info['viewer'] = 'image';
         break;
@@ -362,7 +362,7 @@ export class GlobalActService {
       case 'shader':
         info['viewer'] = 'text';
         break;
-      default: // 뷰어 제한 파일
+      default: // 뷰어 제한 파일 (파일 오프너 활용됨)
         info['viewer'] = 'disabled';
         break;
     }
