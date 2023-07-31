@@ -163,6 +163,7 @@ export class GroupServerPage implements OnInit {
       if (!this.nakama.on_socket_disconnected['group_remove_by_user'])
         this.nakama.on_socket_disconnected['group_remove_by_user'] = () => {
           this.nakama.set_group_statusBar('offline', _is_official, _target);
+          delete this.statusBar.groupServer[_is_official][_target];
         }
       await this.nakama.servers[_is_official][_target].client.sessionLogout(
         this.nakama.servers[_is_official][_target].session,

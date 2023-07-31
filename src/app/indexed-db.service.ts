@@ -90,7 +90,6 @@ export class IndexedDBService {
         done(ev);
       }
       put.onerror = (e) => {
-        console.error('IndexedDB saveFileToUserPath failed: ', e);
         error(e);
       }
     });
@@ -127,7 +126,6 @@ export class IndexedDBService {
         done(int8Array);
       }
       put.onerror = (e) => {
-        console.error('IndexedDB saveBase64ToUserPath failed: ', e);
         error(e);
       }
     });
@@ -151,7 +149,6 @@ export class IndexedDBService {
         let arrayBuffer = await blob.arrayBuffer();
         int8Array = new Int8Array(arrayBuffer);
       } catch (e) {
-        console.error('saveBlobToUserPath to arraybuffer failed: ', e);
         error(e);
       }
       this.createRecursiveDirectory(path);
@@ -167,7 +164,6 @@ export class IndexedDBService {
         done(int8Array);
       }
       put.onerror = (e) => {
-        console.error('IndexedDB saveBlobToUserPath failed: ', e);
         error(e);
       }
     });
@@ -189,7 +185,6 @@ export class IndexedDBService {
         done(cursor);
       }
       data.onerror = (e) => {
-        console.error('IndexedDB CheckIfFileExist failed: ', e);
         error(e);
       }
     });
@@ -216,7 +211,6 @@ export class IndexedDBService {
         done(keys);
       }
       data.onerror = (e) => {
-        console.error('IndexedDB GetFileListFromDir failed: ', e);
         error(e);
       }
     });
@@ -238,7 +232,6 @@ export class IndexedDBService {
         done(result);
       }
       data.onerror = (e) => {
-        console.error('IndexedDB GetFileListFromDir failed: ', e);
         error(e);
       }
     });
@@ -285,12 +278,10 @@ export class IndexedDBService {
           _CallBack(blob);
           done(blob);
         } catch (e) {
-          console.error('loadFileFailed: ', e)
           error(e);
         }
       }
       data.onerror = (e) => {
-        console.error('IndexedDB loadBlobFromUserPath failed: ', e);
         error(e);
       }
     });
@@ -345,7 +336,6 @@ export class IndexedDBService {
         done(ev);
       }
       data.onerror = (e) => {
-        console.error('IndexedDB removeFileFromUserPath failed: ', e);
         error(e);
       }
     });
