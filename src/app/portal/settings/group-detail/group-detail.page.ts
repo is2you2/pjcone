@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
@@ -18,7 +18,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
   templateUrl: './group-detail.page.html',
   styleUrls: ['./group-detail.page.scss'],
 })
-export class GroupDetailPage implements OnInit {
+export class GroupDetailPage implements OnInit, OnDestroy {
 
   constructor(
     private navParams: NavParams,
@@ -60,9 +60,12 @@ export class GroupDetailPage implements OnInit {
     // 사용자 정보가 있다면 로컬 정보 불러오기 처리
     if (this.info['users'] && this.info['users'].length) {
       for (let i = 0, j = this.info['users'].length; i < j; i++)
-        if (this.info['users'][i].is_me) // 정보상 나라면
+        if (this.info['users'][i].is_me) { // 정보상 나라면
           this.info['users'][i]['user'] = this.nakama.users.self;
-        else if (this.info['users'][i]['user']['id']) { // 다른 사람들의 프로필 이미지
+          this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
+            if (e && v) this.nakama.users.self['img'] = v.replace(/"|\\|=/g, '');
+          });
+        } else if (this.info['users'][i]['user']['id']) { // 다른 사람들의 프로필 이미지
           this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], this.isOfficial, this.target);
         } else this.info['users'].splice(i, 1);
       // 온라인일 경우
@@ -316,5 +319,9 @@ export class GroupDetailPage implements OnInit {
     this.need_edit = this.info['description'] != this.info_orig['description'];
     if (this.need_edit)
       this.edit_group();
+  }
+
+  ngOnDestroy(): void {
+    delete this.nakama.users.self['img'];
   }
 }
