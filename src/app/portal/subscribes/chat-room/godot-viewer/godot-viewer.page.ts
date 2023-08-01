@@ -39,9 +39,9 @@ export class GodotViewerPage implements OnInit {
     this.FileInfo = this.navParams.get('info');
   }
 
-  ionViewDidEnter() {
+  async ionViewDidEnter() {
     document.addEventListener('ionBackButton', this.EventListenerAct)
-    this.global.CreateGodotIFrame('viewer', {
+    await this.global.CreateGodotIFrame('viewer', {
       local_url: 'assets/data/godot/viewer.pck',
       title: 'ViewerEx',
       path: this.navParams.get('path'),
@@ -55,7 +55,12 @@ export class GodotViewerPage implements OnInit {
           height: height,
         });
       }
-    });
+    }, 'create_thumbnail');
+    let file_exist = await this.indexed.checkIfFileExist(`${this.navParams.get('path')}_thumbnail.png`);
+    if (!file_exist) {
+      this.global.godot_window['filename'] = this.FileInfo.filename;
+      this.global.godot_window['create_thumbnail']();
+    }
   }
 
   snapshot_modify() {

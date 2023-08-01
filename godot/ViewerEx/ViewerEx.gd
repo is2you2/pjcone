@@ -6,12 +6,14 @@ extends Node
 # iframe 창
 var window
 var modify_image_func = JavaScript.create_callback(self, 'modify_image')
+var create_thumbnail_func = JavaScript.create_callback(self, 'create_thumbnail')
 
 # 앱 시작과 동시에 동작하려는 pck 정보를 받아옴
 func _ready():
 	if OS.has_feature('JavaScript'):
 		window = JavaScript.get_interface('window')
 		window.modify_image = modify_image_func
+		window.create_thumbnail = create_thumbnail_func
 		match(window['ext']):
 			'pck':
 				load_pck()
@@ -38,11 +40,27 @@ func load_pck():
 		add_child(inst.instance())
 
 
-func modify_image(args):
+func screen_to_base64() -> Dictionary:
 	var viewport:Viewport = get_viewport()
 	var img:= viewport.get_texture().get_data()
 	img.flip_y()
 	var buf:= img.save_png_to_buffer()
-	var base64:= Marshalls.raw_to_base64(buf)
-	if OS.has_feature('JavaScript'):
-		window.receive_image(base64, img.get_width(), img.get_height())
+	var result = {
+		'base64': Marshalls.raw_to_base64(buf),
+		'width': img.get_width(),
+		'height': img.get_height(),
+	}
+	return result
+
+
+func modify_image(args):
+	var screen:= screen_to_base64()
+	window.receive_image(screen.base64, screen.width, screen.height)
+
+
+func create_thumbnail(args):
+	var dir:= Directory.new()
+	var thumbnail_exist:= dir.file_exists('%s_thumbnail.png' % [window.path])
+	if not thumbnail_exist:
+		var screen:= screen_to_base64()
+		window.create_thumbnail_p5(screen.base64)

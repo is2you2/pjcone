@@ -3,7 +3,7 @@
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChannelMessage } from '@heroiclabs/nakama-js';
-import { AlertController, LoadingController, ModalController, NavController, NavParams } from '@ionic/angular';
+import { LoadingController, ModalController, NavController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -23,7 +23,6 @@ import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 import { GroupDetailPage } from '../../settings/group-detail/group-detail.page';
 import { Camera } from '@awesome-cordova-plugins/camera/ngx';
 import { ActivatedRoute, Router } from '@angular/router';
-import { File } from '@awesome-cordova-plugins/file/ngx';
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -56,13 +55,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private p5toast: P5ToastService,
     private statusBar: StatusManageService,
     private indexed: IndexedDBService,
-    private alertCtrl: AlertController,
     public lang: LanguageSettingService,
     private sanitizer: DomSanitizer,
     private global: GlobalActService,
     private loadingCtrl: LoadingController,
     private camera: Camera,
-    private file: File,
   ) { }
 
   /** 채널 정보 */
@@ -433,6 +430,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           msg.content['type'],
           v => {
             let url = URL.createObjectURL(v);
+            msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
             this.global.modulate_thumbnail(msg.content, url);
           });
         delete this.temporary_open_thumbnail[msg.message_id];
@@ -453,8 +451,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
   inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
 
-  /** 자동 열람 파일 크기 제한 */
-  FILESIZE_LIMIT = 5000000;
   pullable = true;
   /** 서버로부터 메시지 더 받아오기
    * @param isHistory 옛날 정보 불러오기 유무, false면 최신정보 불러오기 진행
@@ -658,7 +654,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 메시지 정보 상세 */
   message_detail(_msg: any) {
-    console.log('msg detail idle log');
+    console.log('msg detail idle log: ', _msg);
   }
 
   /** 메시지 내 파일 정보, 파일 다운받기 */
@@ -686,6 +682,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           msg.content['type'],
           v => {
             let url = URL.createObjectURL(v);
+            msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
             this.global.modulate_thumbnail(msg.content, url);
           });
         this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
@@ -705,6 +702,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (!this.isHistoryLoaded)
             this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
               let url = URL.createObjectURL(resultModified);
+              msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
               this.global.modulate_thumbnail(msg.content, url);
             });
         }
@@ -739,13 +737,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (b) => {
       if (b) {
         msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
-        if ((msg.content['filesize'] || 0) < this.FILESIZE_LIMIT) // 너무 크지 않은 파일에 대해서만 자동 썸네일 구성
-          this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
-            msg.content['type'],
-            v => {
-              let url = URL.createObjectURL(v);
-              this.global.modulate_thumbnail(msg.content, url);
-            });
+        this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
+          msg.content['type'],
+          v => {
+            let url = URL.createObjectURL(v);
+            msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+            this.global.modulate_thumbnail(msg.content, url);
+          });
       }
     });
   }
@@ -858,6 +856,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         },
       }).then(v => {
         v.onDidDismiss().then(async (v) => {
+          if (!msg.content['thumbnail']) this.global.modulate_thumbnail(msg.content, '');
           if (v.data) { // 파일 편집하기를 누른 경우
             let related_creators: ContentCreatorInfo[] = [];
             if (msg.content['content_related_creator'])

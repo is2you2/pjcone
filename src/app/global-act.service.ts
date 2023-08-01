@@ -7,6 +7,7 @@ import { P5ToastService } from './p5-toast.service';
 import * as QRCode from "qrcode-svg";
 import { DomSanitizer } from '@angular/platform-browser';
 import * as p5 from "p5";
+import { IndexedDBService } from './indexed-db.service';
 
 export var isDarkMode = false;
 
@@ -56,8 +57,13 @@ interface GodotFrameKeys {
   pck_path?: string;
   /** 패키지 이름 입력(영문), 고도 프로젝트에서는 메인 씬 이름이어야함 */
   title: string;
-  /** 패키지 불러오기 행동 실패시 실행됨, 사용금지 */
-  failed?: any;
+  /** **ViewerEX 전용**  
+   * 썸네일 미지원 패키지로부터 썸네일을 생성시 실행됨, ViewerEX 전용
+   */
+  create_thumbnail_p5?: Function;
+  /** **사용금지**  
+   * 패키지 불러오기 행동 실패시 실행됨 */
+  failed?: Function;
   /** 고도엔진과 상호작용하기 위한 값들, 고도엔진에서 JavaScript.get_interface('window')[id]로 접근 */
   [id: string]: any;
 }
@@ -72,6 +78,7 @@ export class GlobalActService {
     private p5toast: P5ToastService,
     private lang: LanguageSettingService,
     private sanitizer: DomSanitizer,
+    private indexed: IndexedDBService,
   ) {
     isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
@@ -187,6 +194,44 @@ export class GlobalActService {
       _godot.setAttribute('scrolling', 'no');
       _godot.setAttribute('withCredentials', 'true');
       if (keys.local_url) keys['url'] = `${window.location.protocol}//${window.location.host}${window['sub_path']}${keys['local_url']}`;
+      if (_frame_name == 'viewer')
+        keys['create_thumbnail_p5'] = async (base64: string) => {
+          new p5((p: p5) => {
+            p.setup = () => {
+              let window_path: string = this.godot_window['path'];
+              p.loadImage('data:image/png;base64,' + base64, v => {
+                p.createCanvas(v.width, v.height);
+                p.image(v, 0, 0)
+                p.textSize(p.height / 16);
+                p.textWrap(p.CHAR);
+                let margin_ratio = p.height / 24;
+                p.push()
+                p.translate(margin_ratio / 6, margin_ratio / 6);
+                p.fill('#000')
+                p.text(this.godot_window['filename'],
+                  margin_ratio, margin_ratio,
+                  p.width - margin_ratio * 2, p.height - margin_ratio * 2);
+                p.filter(p.BLUR, 3);
+                p.pop();
+                p.fill('#fff');
+                p.text(this.godot_window['filename'],
+                  margin_ratio, margin_ratio,
+                  p.width - margin_ratio * 2, p.height - margin_ratio * 2);
+                p.saveFrames('', 'png', 1, 1, async c => {
+                  try {
+                    await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
+                      `${window_path}_thumbnail.png`);
+                  } catch (e) {
+                  }
+                  p.remove();
+                });
+              }, e => {
+                console.error('create_thumbnail_load thumbnail failed: ', e);
+                p.remove();
+              });
+            }
+          });
+        }
       keys['failed'] = () => {
         this.p5toast.show({
           text: `${this.lang.text['GlobalAct']['FailedToDownloadGodot']}: ${keys.title}`,
@@ -265,7 +310,7 @@ export class GlobalActService {
   }
 
   /** 메시지에 썸네일 콘텐츠를 생성 */
-  modulate_thumbnail(msg_content: any, ObjectURL: string) {
+  async modulate_thumbnail(msg_content: FileInfo, ObjectURL: string) {
     switch (msg_content['viewer']) {
       case 'image':
         msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(ObjectURL);
@@ -289,8 +334,17 @@ export class GlobalActService {
           }
         });
         break;
-      default:
-        URL.revokeObjectURL(ObjectURL);
+      default: // 대안 썸네일이 있는지 확인하기
+        try {
+          let blob = await this.indexed.loadBlobFromUserPath(`${msg_content['path']}_thumbnail.png`, 'image/png');
+          let FileURL = URL.createObjectURL(blob);
+          msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
+          setTimeout(() => {
+            URL.revokeObjectURL(FileURL);
+          }, 0);
+        } catch (e) {
+        }
+        if (ObjectURL) URL.revokeObjectURL(ObjectURL);
         break;
     }
   }
