@@ -48,7 +48,8 @@
             <ion-icon *ngIf="file.viewer == 'text'" slot="start" name="reader"></ion-icon>
             <ion-icon *ngIf="file.viewer == 'godot'" slot="start" name="extension-puzzle"></ion-icon>
             <ion-icon *ngIf="file.viewer == 'disabled'" slot="start" name="document"></ion-icon>
-            <ion-label>{{file.name}}</ion-label>
+            <ion-label *ngIf="FileSel.value == file.path" text-wrap>{{file.name}}</ion-label>
+            <ion-label *ngIf="FileSel.value != file.path">{{file.name}}</ion-label>
           </ion-item>
           <ion-list slot="content">
             <ion-item button>
