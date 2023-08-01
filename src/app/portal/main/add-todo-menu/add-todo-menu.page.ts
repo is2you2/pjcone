@@ -193,11 +193,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             loading.dismiss();
           } else if (this.userInput.attach[i].viewer == 'image' || this.userInput.attach[i].viewer == 'text')
             blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
+          else throw '번외 썸네일 필요';
           if (!blob) continue;
           let url = URL.createObjectURL(blob);
           this.global.modulate_thumbnail(this.userInput.attach[i], url);
         } catch (e) {
-          console.log('첨부파일 불러오기 실패: ', e);
+          this.global.modulate_thumbnail(this.userInput.attach[i], '');
         }
         this.userInput.attach[i]['exist'] = true;
       }
@@ -514,6 +515,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (this.userInput.custom_color)
       this.userInput.custom_color = undefined;
     else this.userInput.custom_color = '#000000';
+  }
+
+  open_content_viewer(index: number) {
+    if (this.userInput.attach[index].viewer == 'godot')
+      this.open_godot_viewer(index);
+    else this.open_ionic_viewer(index);
   }
 
   open_ionic_viewer(index: number) {
