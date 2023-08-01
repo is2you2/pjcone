@@ -35,6 +35,7 @@ export class LicensesPage implements OnInit {
   loadTexts() {
     let loader = (p: p5) => {
       p.setup = () => {
+        p.noCanvas();
         p.loadStrings('assets/data/docs/godot.txt', (v: string[]) => {
           this.licenses.godot.engine = v.join('\n');
         });

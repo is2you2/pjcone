@@ -789,6 +789,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         await new Promise((done: any) => {
           new p5((p: p5) => {
             p.setup = () => {
+              p.noCanvas();
               p.loadImage(header_image, v => {
                 let isLandscapeImage = v.width > v.height;
                 if (isLandscapeImage)

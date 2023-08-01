@@ -29,6 +29,7 @@ export class CreatorPage implements OnInit {
     this.isMobileApp = false;
     new p5((p: p5) => {
       p.setup = () => {
+        p.noCanvas();
         p.loadJSON(`assets/data/infos/${this.lang.lang}/creator.json`, v => {
           this.info = v;
           p.remove();

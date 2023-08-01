@@ -127,6 +127,7 @@ export class EnginepptPage implements OnInit {
 
   load_info_text() {
     this.p5canvas = new p5((p: p5) => {
+      p.noCanvas();
       p.loadStrings(`assets/data/infos/${this.lang.lang}/engine_remote.txt`, (v: string[]) => {
         this.RemoteDesc = v.join('\n');
       });
@@ -331,6 +332,9 @@ export class EnginepptPage implements OnInit {
   p5gyro: p5;
   send_device_rotation() {
     this.p5gyro = new p5((p: p5) => {
+      p.setup = () => {
+        p.noCanvas();
+      }
       p.draw = () => {
         if (this.global.godot_window['set_horizontal_rot'])
           this.global.godot_window['set_horizontal_rot'](p.rotationZ);

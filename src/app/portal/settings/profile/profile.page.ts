@@ -61,6 +61,9 @@ export class ProfilePage implements OnInit {
       let img = document.getElementById('profile_img');
       let tmp_img = document.getElementById('profile_tmp_img');
       const LERP_SIZE = .025;
+      p.setup = () => {
+        p.noCanvas();
+      }
       p.draw = () => {
         if (this.nakama.users.self['online']) {
           if (this.lerpVal < 1) {
@@ -247,6 +250,7 @@ export class ProfilePage implements OnInit {
       const LERP_SIZE = .035;
       let lerpVal = 0;
       p.setup = () => {
+        p.noCanvas();
         file_sel['value'] = '';
         profile_tmp_img.setAttribute('style', `filter: grayscale(${this.nakama.users.self['online'] ? 0 : .9}) contrast(${this.nakama.users.self['online'] ? 1 : 1.4}) opacity(${lerpVal})`);
         this.tmp_img = _url;

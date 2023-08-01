@@ -198,6 +198,7 @@ export class GlobalActService {
         keys['create_thumbnail_p5'] = async (base64: string) => {
           new p5((p: p5) => {
             p.setup = () => {
+              p.noCanvas();
               let window_path: string = this.godot_window['path'];
               p.loadImage('data:image/png;base64,' + base64, v => {
                 p.createCanvas(v.width, v.height);
@@ -321,6 +322,7 @@ export class GlobalActService {
       case 'text':
         new p5((p: p5) => {
           p.setup = () => {
+            p.noCanvas();
             p.loadStrings(ObjectURL, v => {
               msg_content['text'] = v;
               URL.revokeObjectURL(ObjectURL);

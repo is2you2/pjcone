@@ -29,6 +29,7 @@ export class TranslatorPage implements OnInit {
   ngOnInit() {
     new p5((p: p5) => {
       p.setup = () => {
+        p.noCanvas();
         p.loadJSON(`assets/data/infos/${this.lang.lang}/translator.json`, v => {
           this.info = v;
           p.remove();

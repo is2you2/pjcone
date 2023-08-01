@@ -1182,6 +1182,7 @@ export class NakamaService {
     const SIZE_LIMIT = 245000;
     new p5((p: p5) => {
       p.setup = () => {
+        p.noCanvas();
         p.loadImage(base64, v => {
           v.resize(window.innerWidth, window.innerWidth * v.height / v.width);
           if (v['canvas'].toDataURL().length > SIZE_LIMIT)

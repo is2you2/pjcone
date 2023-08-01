@@ -59,10 +59,7 @@ export class IonicViewerPage implements OnInit {
             canvasDiv.style.maxWidth = '100%';
             canvasDiv.style.overflow = 'hidden';
             this.ContentBox.style.overflow = 'hidden';
-            let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
-            canvas.style('margin', '0');
-            canvas.style('position', 'relative');
-            canvas.style('pointer-events', 'none');
+            p.noCanvas();
             let img = document.createElement('img');
             img.hidden = true;
             img.src = this.FileURL;
@@ -227,14 +224,10 @@ export class IonicViewerPage implements OnInit {
         this.p5canvas = new p5((p: p5) => {
           var mediaObject: p5.MediaElement;
           p.setup = () => {
-            let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
-            canvas.style('margin', '0');
-            canvas.style('position', 'relative');
-            canvas.style('pointer-events', 'none');
+            p.noCanvas();
             p.noLoop();
             mediaObject = p.createAudio([this.FileURL], () => {
               canvasDiv.appendChild(mediaObject['elt']);
-              canvas.parent(canvasDiv);
               mediaObject['elt'].hidden = true;
               setTimeout(() => {
                 ResizeAudio();
@@ -262,14 +255,10 @@ export class IonicViewerPage implements OnInit {
         this.p5canvas = new p5((p: p5) => {
           var mediaObject: p5.MediaElement;
           p.setup = () => {
-            let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
-            canvas.style('margin', '0');
-            canvas.style('position', 'relative');
-            canvas.style('pointer-events', 'none');
+            p.noCanvas();
             p.noLoop();
             mediaObject = p.createVideo([this.FileURL], () => {
               canvasDiv.appendChild(mediaObject['elt']);
-              canvas.parent(canvasDiv);
               mediaObject['elt'].hidden = true;
               setTimeout(() => {
                 ResizeVideo();
@@ -306,10 +295,7 @@ export class IonicViewerPage implements OnInit {
       case 'text': // 텍스트 파일
         this.p5canvas = new p5((p: p5) => {
           p.setup = () => {
-            let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
-            canvas.style('margin', '0');
-            canvas.style('position', 'relative');
-            canvas.style('pointer-events', 'none');
+            p.noCanvas();
             p.noLoop();
             p.loadStrings(this.FileURL, v => {
               let textArea = document.createElement("textarea");

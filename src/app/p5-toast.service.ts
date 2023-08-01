@@ -81,6 +81,7 @@ export class P5ToastService {
         /** 읽기 종료 시간 예측 */
         let WillReadEndAt = 0;
         p.setup = () => {
+          p.noCanvas();
           div = p.createDiv();
           div.style("position: absolute; left: 0; top: 0; z-index: 1");
           div.style("width: 100%; height: fit-content");

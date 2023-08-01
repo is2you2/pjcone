@@ -296,6 +296,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         case 'text':
           new p5((p: p5) => {
             p.setup = () => {
+              p.noCanvas();
               p.loadStrings(FileURL, v => {
                 this.userInput.file['thumbnail'] = v;
                 p.remove();
@@ -654,7 +655,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 메시지 정보 상세 */
   message_detail(_msg: any) {
-    console.log('msg detail idle log: ', _msg);
+    console.log('');
   }
 
   /** 메시지 내 파일 정보, 파일 다운받기 */

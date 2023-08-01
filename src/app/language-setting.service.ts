@@ -57,6 +57,7 @@ export class LanguageSettingService {
   load_selected_lang() {
     new p5((p: p5) => {
       p.setup = () => {
+        p.noCanvas();
         p.loadTable(`assets/data/translate.csv`, 'csv', 'header',
           (v: p5.Table) => {
             // 지원하지 않는 언어라면 기본값으로 Fallback

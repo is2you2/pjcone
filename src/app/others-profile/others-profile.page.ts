@@ -79,6 +79,9 @@ export class OthersProfilePage implements OnInit {
       let img = document.getElementById('profile_img');
       let tmp_img = document.getElementById('profile_tmp_img');
       const LERP_SIZE = .025;
+      p.setup = () => {
+        p.noCanvas();
+      }
       p.draw = () => {
         if (this.info['user']['online']) {
           if (this.lerpVal < 1) {
@@ -173,6 +176,7 @@ export class OthersProfilePage implements OnInit {
       const LERP_SIZE = .035;
       let lerpVal = 0;
       p.setup = () => {
+        p.noCanvas();
         profile_tmp_img.setAttribute('style', `filter: grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)}) opacity(${lerpVal})`);
         this.tmp_img = _url;
       }

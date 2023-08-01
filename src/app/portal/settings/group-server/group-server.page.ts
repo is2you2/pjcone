@@ -33,6 +33,7 @@ export class GroupServerPage implements OnInit {
   ngOnInit() {
     new p5((p: p5) => {
       p.setup = () => {
+        p.noCanvas();
         p.loadStrings(`assets/data/infos/${this.lang.lang}/group-server.txt`, v => {
           this.info = v.join('\n');
           p.remove();
