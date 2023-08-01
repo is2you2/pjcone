@@ -276,12 +276,12 @@ export class IonicViewerPage implements OnInit {
             let width = mediaObject['width'];
             let height = mediaObject['height'];
             mediaObject['elt'].setAttribute('style', 'position: relative; top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);');
-            if (width > height) { // 가로 영상
-              width = canvasWidth;
-              height = height / mediaObject['width'] * width;
-            } else { // 세로 영상
+            if (width < height) { // 가로 영상
               height = canvasHeight;
               width = width / mediaObject['height'] * height;
+            } else { // 세로 영상
+              width = canvasWidth;
+              height = (height / mediaObject['width'] * width) || (canvasHeight / 2);
             }
             mediaObject['size'](width, height);
           }
