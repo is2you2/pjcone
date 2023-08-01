@@ -382,6 +382,7 @@ export class IonicViewerPage implements OnInit {
       this.p5canvas.remove();
     if (this.FileURL)
       URL.revokeObjectURL(this.FileURL);
-    this.file.removeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
+    let is_exist = this.file.checkFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
+    if (is_exist) this.file.removeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
   }
 }
