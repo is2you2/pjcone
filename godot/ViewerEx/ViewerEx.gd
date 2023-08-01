@@ -40,27 +40,25 @@ func load_pck():
 		add_child(inst.instance())
 
 
-func screen_to_base64() -> Dictionary:
+func modify_image(args):
 	var viewport:Viewport = get_viewport()
 	var img:= viewport.get_texture().get_data()
 	img.flip_y()
 	var buf:= img.save_png_to_buffer()
-	var result = {
-		'base64': Marshalls.raw_to_base64(buf),
-		'width': img.get_width(),
-		'height': img.get_height(),
-	}
-	return result
-
-
-func modify_image(args):
-	var screen:= screen_to_base64()
-	window.receive_image(screen.base64, screen.width, screen.height)
+	window.receive_image(Marshalls.raw_to_base64(buf), img.width, img.height)
 
 
 func create_thumbnail(args):
 	var dir:= Directory.new()
 	var thumbnail_exist:= dir.file_exists('%s_thumbnail.png' % [window.path])
 	if not thumbnail_exist:
-		var screen:= screen_to_base64()
-		window.create_thumbnail_p5(screen.base64)
+		var viewport:Viewport = get_viewport()
+		var img:= viewport.get_texture().get_data()
+		img.flip_y()
+		var width:= img.get_width()
+		var height:= img.get_height()
+		if width < height:
+			img.resize(float(width) / float(height) * 192, 192)
+		else: img.resize(192, float(height) / float(width) * 192)
+		var buf:= img.save_png_to_buffer()
+		window.create_thumbnail_p5(Marshalls.raw_to_base64(buf))
