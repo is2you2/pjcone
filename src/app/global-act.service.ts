@@ -195,7 +195,7 @@ export class GlobalActService {
       _godot.setAttribute('withCredentials', 'true');
       if (keys.local_url) keys['url'] = `${window.location.protocol}//${window.location.host}${window['sub_path']}${keys['local_url']}`;
       if (_frame_name == 'viewer')
-        keys['create_thumbnail_p5'] = async (base64: string) => {
+        keys['create_thumbnail_p5'] = async (base64: string, info: FileInfo = undefined) => {
           new p5((p: p5) => {
             p.setup = () => {
               p.noCanvas();
@@ -203,18 +203,18 @@ export class GlobalActService {
               p.loadImage('data:image/png;base64,' + base64, v => {
                 p.createCanvas(v.width, v.height);
                 p.image(v, 0, 0)
-                p.textSize(p.height / 16);
+                p.textSize(16);
                 p.textWrap(p.CHAR);
                 let margin_ratio = p.height / 24;
                 p.push()
                 p.translate(margin_ratio / 6, margin_ratio / 6);
-                p.fill('#000')
+                p.fill(0)
                 p.text(this.godot_window['filename'],
                   margin_ratio, margin_ratio,
                   p.width - margin_ratio * 2, p.height - margin_ratio * 2);
                 p.filter(p.BLUR, 3);
                 p.pop();
-                p.fill('#fff');
+                p.fill(255);
                 p.text(this.godot_window['filename'],
                   margin_ratio, margin_ratio,
                   p.width - margin_ratio * 2, p.height - margin_ratio * 2);
@@ -222,6 +222,7 @@ export class GlobalActService {
                   try {
                     await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
                       `${window_path}_thumbnail.png`);
+                    this.modulate_thumbnail(info, '');
                   } catch (e) {
                   }
                   p.remove();

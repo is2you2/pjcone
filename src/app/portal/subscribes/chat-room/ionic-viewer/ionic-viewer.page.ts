@@ -10,7 +10,7 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
-import { FileInfo } from 'src/app/global-act.service';
+import { FileInfo, GlobalActService } from 'src/app/global-act.service';
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -29,6 +29,7 @@ export class IonicViewerPage implements OnInit {
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
     private fileOpener: FileOpener,
+    private global: GlobalActService,
   ) { }
 
   blob: Blob;
@@ -239,7 +240,6 @@ export class IonicViewerPage implements OnInit {
           }
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let ResizeAudio = () => {
-            if (this.FileInfo['viewer'] != 'audio') return;
             let canvasWidth = this.ContentBox.offsetWidth;
             mediaObject['elt'].setAttribute('style', 'position: relative; top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);');
             mediaObject['size'](canvasWidth, 25);
@@ -267,10 +267,10 @@ export class IonicViewerPage implements OnInit {
               mediaObject.showControls();
               mediaObject.play();
             });
+            p['VideoMedia'] = mediaObject;
           }
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let ResizeVideo = () => {
-            if (this.FileInfo['viewer'] != 'video') return;
             let canvasWidth = this.ContentBox.offsetWidth;
             let canvasHeight = this.ContentBox.offsetHeight - this.FileHeader.offsetHeight;
             let width = mediaObject['width'];
@@ -377,7 +377,49 @@ export class IonicViewerPage implements OnInit {
     }
   }
 
-  ionViewWillLeave() {
+  async ionViewWillLeave() {
+    if (this.FileInfo.viewer == 'video') { // 비디오라면 썸네일 구성
+      try {
+        let size = this.p5canvas['VideoMedia'].size();
+        let width: number, height: number;
+        if (size.width > size.height) {
+          width = 192;
+          height = size.height / size.width * 192;
+        } else {
+          width = size.width / size.height * 192;
+          height = 192;
+        }
+        this.p5canvas.createCanvas(width, height);
+        this.p5canvas.image(this.p5canvas['VideoMedia'], 0, 0, width, height);
+        this.p5canvas.fill(255, 128);
+        this.p5canvas.rect(0, 0, width, height);
+        this.p5canvas.textWrap(this.p5canvas.CHAR);
+        this.p5canvas.textSize(16);
+        let margin_ratio = height / 16;
+        this.p5canvas.push()
+        this.p5canvas.translate(margin_ratio / 6, margin_ratio / 6);
+        this.p5canvas.fill(0)
+        this.p5canvas.text(this.FileInfo['filename'],
+          margin_ratio, margin_ratio,
+          width - margin_ratio * 2, height - margin_ratio * 2);
+        this.p5canvas.filter(this.p5canvas.BLUR, 3);
+        this.p5canvas.pop();
+        this.p5canvas.fill(255);
+        this.p5canvas.text(this.FileInfo['filename'],
+          margin_ratio, margin_ratio,
+          width - margin_ratio * 2, height - margin_ratio * 2);
+        this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
+          try {
+            await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
+              `${this.FileInfo.path}_thumbnail.png`);
+            this.global.modulate_thumbnail(this.FileInfo, '');
+          } catch (e) {
+          }
+        });
+      } catch (e) {
+        console.log('작업중 오류보기: ', e);
+      }
+    }
     if (this.p5canvas)
       this.p5canvas.remove();
     if (this.FileURL)

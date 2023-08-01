@@ -61,4 +61,4 @@ func create_thumbnail(args):
 			img.resize(float(width) / float(height) * 192, 192)
 		else: img.resize(192, float(height) / float(width) * 192)
 		var buf:= img.save_png_to_buffer()
-		window.create_thumbnail_p5(Marshalls.raw_to_base64(buf))
+		window.create_thumbnail_p5(Marshalls.raw_to_base64(buf), args[0])

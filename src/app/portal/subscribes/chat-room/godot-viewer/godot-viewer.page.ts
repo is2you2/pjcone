@@ -56,11 +56,6 @@ export class GodotViewerPage implements OnInit {
         });
       }
     }, 'create_thumbnail');
-    let file_exist = await this.indexed.checkIfFileExist(`${this.navParams.get('path')}_thumbnail.png`);
-    if (!file_exist) {
-      this.global.godot_window['filename'] = this.FileInfo.filename;
-      this.global.godot_window['create_thumbnail']();
-    }
   }
 
   snapshot_modify() {
@@ -113,5 +108,7 @@ export class GodotViewerPage implements OnInit {
 
   ionViewWillLeave() {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
+    this.global.godot_window['filename'] = this.FileInfo.filename;
+    this.global.godot_window['create_thumbnail'](this.FileInfo);
   }
 }

@@ -401,12 +401,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }, 500);
   }
 
-  ionViewDidEnter() {
-    setTimeout(() => {
-      this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 0);
-  }
-
   /** 내가 보낸 메시지인지 검토하는 과정  
    * 내 메시지 한정 썸네일을 생성하거나 열람 함수를 생성
    */
@@ -857,7 +851,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         },
       }).then(v => {
         v.onDidDismiss().then(async (v) => {
-          if (!msg.content['thumbnail']) this.global.modulate_thumbnail(msg.content, '');
           if (v.data) { // 파일 편집하기를 누른 경우
             let related_creators: ContentCreatorInfo[] = [];
             if (msg.content['content_related_creator'])
