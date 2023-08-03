@@ -620,7 +620,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             if (!is_already_exist) related_creators.push(...this.userInput.attach['content_creator']);
           }
           delete this.userInput.attach[i]['exist'];
-          await this.indexed.saveBase64ToUserPath(v.data.base64, 'tmp_files/modify_image.png')
+          await this.indexed.saveBase64ToUserPath(v.data.base64, 'tmp_files/modify_image.png');
           this.modalCtrl.create({
             component: VoidDrawPage,
             componentProps: {

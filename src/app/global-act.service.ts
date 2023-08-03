@@ -313,13 +313,15 @@ export class GlobalActService {
 
   FileManagerIFrame: HTMLIFrameElement;
   FileManager: any;
+  partsize_req: { [id: string]: Function } = {};
   /** 파일 매니저 만들기 (대용량 호환용 고도엔진 프레임) */
-  async CreateFileManager(): Promise<void> {
+  async CreateFileManager(force = false): Promise<void> {
     return new Promise((done) => {
-      if (this.FileManagerIFrame && this.FileManagerIFrame.isConnected) {
+      if (this.FileManagerIFrame && this.FileManagerIFrame.isConnected && !force) {
         done();
         return;
       }
+      if (this.FileManagerIFrame && force) this.FileManagerIFrame.remove();
       let refresh_it_loading = () => {
         try {
           if (!this.FileManager['end_of_manage_file'])
@@ -343,11 +345,52 @@ export class GlobalActService {
       this.FileManagerIFrame = _iframe;
       this.FileManagerIFrame.hidden = true;
       this.FileManager = _iframe.contentWindow || _iframe.contentDocument;
-      this.FileManager['self_destroy'] = () => {
-        this.FileManagerIFrame.remove();
+      // check_file_partsize_info (path)
+      this.FileManager['get_partsize'] = (path: string, partsize: number) => {
+        let path_key = path.replace('/', '_');
+        this.partsize_req[`${path_key}_len`](partsize);
+      }
+      // req_file_part(path, index)
+      this.FileManager['get_part_data'] = (path: string, base64: string) => {
+        let path_key = path.replace('/', '_');
+        this.partsize_req[`${path_key}_data`](base64);
       }
       refresh_it_loading();
     });
+  }
+
+  /** 파일 경로를 큐에 추가하고 계속하여 정보를 받습니다  
+   * 여기서 추가한 것은 반드시 큐를 제거해야함
+   * @returns 파일 전체 길이 (number) / 120000 기준
+   */
+  async req_file_len(path: string): Promise<number> {
+    let path_key = path.replace('/', '_');
+    return new Promise(async (done) => {
+      await this.CreateFileManager(true);
+      this.partsize_req[`${path_key}_len`] = (part_len: number) => {
+        done(part_len);
+      }
+      this.FileManager['check_file_partsize_info'](path);
+    });
+  }
+
+  /** 파일의 부분 base64 정보 받기 */
+  async req_file_part_base64(path: string, index: number, full_length: number): Promise<string> {
+    let path_key = path.replace('/', '_');
+    return new Promise(async (done) => {
+      await this.CreateFileManager();
+      this.partsize_req[`${path_key}_data`] = (base64: string) => {
+        done(base64);
+      }
+      this.FileManager['req_file_part'](path, index, full_length);
+    });
+  }
+
+  /** 사용된 함수들 삭제 */
+  remove_req_file_info(path: string) {
+    let path_key = path.replace('/', '_');
+    delete this.partsize_req[`${path_key}_len`];
+    delete this.partsize_req[`${path_key}_data`];
   }
 
   /** 메시지에 썸네일 콘텐츠를 생성 */

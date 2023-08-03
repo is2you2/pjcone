@@ -2459,26 +2459,27 @@ export class NakamaService {
   /**
    * 채널에서 백그라운드 파일 발송 요청
    * @param msg 메시지 정보
-   * @param upload 업로드하려는 내용
+   * @param path 파일 경로
    */
-  async WriteStorage_From_channel(msg: any, upload: string[], _is_official: string, _target: string, startFrom = 0) {
+  async WriteStorage_From_channel(msg: any, path: string, _is_official: string, _target: string, startFrom = 0) {
     let _msg = JSON.parse(JSON.stringify(msg));
-    let _upload = [...upload];
+    let part_len = await this.global.req_file_len(path);
+    let partsize = Math.ceil(part_len / 120000);
     if (!this.channel_transfer[_is_official][_target]) this.channel_transfer[_is_official][_target] = {};
     if (!this.channel_transfer[_is_official][_target][msg.channel_id]) this.channel_transfer[_is_official][_target][msg.channel_id] = {};
     if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id])
       this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id] = {
         type: 'upload',
-        progress: Array.from(Array(_upload.length).keys()),
+        progress: Array.from(Array(partsize).keys()),
       };
-    for (let i = startFrom, j = _upload.length; i < j; i++)
+    for (let i = startFrom; i < partsize; i++)
       await this.servers[_is_official][_target].client.writeStorageObjects(
         this.servers[_is_official][_target].session, [{
           collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
           key: `msg_${_msg.message_id}_${i}`,
           permission_read: 2,
           permission_write: 1,
-          value: { data: _upload[i] },
+          value: { data: await this.global.req_file_part_base64(path, i, part_len) },
         }]).then(_f => {
           this.when_transfer_success(msg, _is_official, _target, i);
         }).catch(async _e => {
@@ -2487,9 +2488,10 @@ export class NakamaService {
             key: `msg_${_msg.message_id}_${i}`,
             permission_read: 2,
             permission_write: 1,
-            value: { data: _upload[i] },
+            value: { data: await this.global.req_file_part_base64(path, i, part_len) },
           }, _is_official, _target, i);
         });
+    this.global.remove_req_file_info(path);
   }
   /** 업로드 실패한 파트 다시 올리기 */
   async retry_upload_part(msg: any, info: WriteStorageObject, _is_official: string, _target: string, i: number, _try_left = 10) {
@@ -2595,6 +2597,7 @@ export class NakamaService {
   /** 로컬 파일을 저장하며 원격에 분산하여 올리기 */
   async sync_save_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _key_force = '') {
     try {
+      // 여기서 파일 정보를 받아와야함 (전체 길이, 파트 수)
       let base64 = info.base64 || await this.global.GetBase64ThroughFileReader(await this.indexed.loadBlobFromUserPath(info.path, info.type || ''));
       delete info.base64;
       await this.indexed.saveBase64ToUserPath(base64, info.path);
@@ -2608,7 +2611,9 @@ export class NakamaService {
           permission_write: 1,
           value: info,
         }]);
-      for (let i = separate.length - 1, j = i; i >= 0; i--)
+      // 여기서 전체 길이로 for문을 돌리고 매 회차마다 파트를 받아서 base64 변환 후 집어넣어야 함
+      for (let i = separate.length - 1, j = i; i >= 0; i--) {
+
         await this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
             collection: _collection,
@@ -2617,6 +2622,7 @@ export class NakamaService {
             permission_write: 1,
             value: { data: separate.shift() },
           }]);
+      }
     } catch (e) {
       console.log('SyncSaveFailed: ', e);
     }

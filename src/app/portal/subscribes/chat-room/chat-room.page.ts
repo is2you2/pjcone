@@ -36,8 +36,6 @@ interface ExtendButtonForm {
   act: Function;
 }
 
-const SIZE_LIMIT = 240000;
-
 @Component({
   selector: 'app-chat-room',
   templateUrl: './chat-room.page.html',
@@ -149,7 +147,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.camera.getPicture({
         destinationType: 0,
         correctOrientation: true,
-      }).then(v => {
+      }).then(async v => {
+        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+        loading.present();
         if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
         this.userInput.file = {};
         let time = new Date();
@@ -168,7 +168,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           timestamp: new Date().toLocaleString(),
           display_name: this.nakama.users.self['display_name'],
         };
-        this.userInput.file.base64 = 'data:image/jpeg;base64,' + v;
+        await this.indexed.saveBase64ToUserPath('data:image/jpeg;base64,' + v, `tmp_files/chatroom/${this.userInput.file.filename}`, (raw) => {
+          this.userInput.file.blob = new Blob([raw], { type: this.userInput.file['type'] })
+        });
+        loading.dismiss();
       });
     }
   },
@@ -216,7 +219,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 timestamp: new Date().toLocaleString(),
                 display_name: this.nakama.users.self['display_name'],
               };
-              this.userInput.file.base64 = await this.global.GetBase64ThroughFileReader(blob);
+              this.userInput.file.blob = blob;
+              await this.indexed.saveBlobToUserPath(blob, `tmp_files/chatroom/${this.userInput.file.filename}`);
             } catch (e) {
               console.log('파일 불러오기에 실패함: ', e);
             }
@@ -234,7 +238,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.modalCtrl.create({
         component: VoidDrawPage,
       }).then(v => {
-        v.onWillDismiss().then(v => {
+        v.onWillDismiss().then(async v => {
           if (v.data) {
             this.userInput.file = {};
             this.userInput.file.filename = v.data['name'];
@@ -252,7 +256,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               timestamp: new Date().toLocaleString(),
               display_name: this.nakama.users.self['display_name'],
             };
-            this.userInput.file.base64 = v.data['img'];
+            await this.indexed.saveBase64ToUserPath(v.data['img'], `tmp_files/chatroom/${this.userInput.file.filename}`)
             this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
             v.data['loadingCtrl'].dismiss();
           }
@@ -265,6 +269,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 파일 첨부하기 */
   async inputFileSelected(ev: any) {
     if (ev.target.files.length) {
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      loading.present();
       this.userInput['file'] = {};
       this.userInput.file['filename'] = ev.target.files[0].name;
       this.userInput.file['file_ext'] = ev.target.files[0].name.split('.')[1] || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
@@ -308,8 +314,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           });
           break;
       }
-      this.userInput.file['base64'] = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
+      await this.indexed.saveBlobToUserPath(ev.target.files[0], `tmp_files/chatroom/${this.userInput.file.filename}`)
+      this.userInput.file.blob = ev.target.files[0];
       this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
+      loading.dismiss();
     } else {
       delete this.userInput.file;
       this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
@@ -598,7 +606,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.userInputTextArea.style.height = '36px';
     let result: FileInfo = {};
     result['msg'] = this.userInput.text;
-    let upload: any[] = [];
+    let FileAttach = false;
     if (this.userInput.file) { // 파일 첨부시
       result['filename'] = this.userInput.file.filename;
       result['filesize'] = this.userInput.file.size;
@@ -607,8 +615,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       result['msg'] = result['msg'];
       result['content_creator'] = this.userInput.file.content_creator;
       result['content_related_creator'] = this.userInput.file.content_related_creator;
-      upload = this.userInput.file.base64.match(/(.{1,220000})/g);
-      result['partsize'] = upload.length;
+      FileAttach = true;
     }
     result['local_comp'] = Math.random();
     let tmp = { content: JSON.parse(JSON.stringify(result)) };
@@ -618,15 +625,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.nakama.servers[this.isOfficial][this.target].socket
         .writeChatMessage(this.info['id'], result).then(v => {
           /** 업로드가 진행중인 메시지 개체 */
-          if (upload.length) { // 첨부 파일이 포함된 경우
+          if (FileAttach) { // 첨부 파일이 포함된 경우
             // 로컬에 파일을 저장
-            this.indexed.saveBase64ToUserPath(this.userInput.file.base64, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.file_ext}`, () => {
+            let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.file_ext}`;
+            this.indexed.saveBlobToUserPath(this.userInput.file.blob, path, () => {
               this.auto_open_thumbnail({
                 content: result,
                 message_id: v.message_id,
               });
               // 서버에 파일을 업로드
-              this.nakama.WriteStorage_From_channel(v, upload, this.isOfficial, this.target);
+              this.nakama.WriteStorage_From_channel(v, path, this.isOfficial, this.target);
             });
           }
           delete this.userInput.file;
@@ -654,7 +662,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 메시지 내 파일 정보, 파일 다운받기 */
   file_detail(msg: any) {
-    this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (v) => {
+    let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+    this.indexed.checkIfFileExist(path, (v) => {
       if (v) { // 파일이 존재하는 경우
         // 전송중 상태로 뜬다면 재발송 검토
         if (this.nakama.channel_transfer[this.isOfficial][this.target]
@@ -662,25 +671,20 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           && this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]) {
           // 이전에 전송하다가 짤린 파일이었다면 다시 전송 시작
           if (this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnProgress']) {
-            this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, msg.content['type'], async blob => {
-              let base64 = await this.global.GetBase64ThroughFileReader(blob);
-              let upload = base64.match(/(.{1,220000})/g);
-              this.nakama.WriteStorage_From_channel(msg, upload, this.isOfficial, this.target, this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['progress'][0]);
-              delete this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnProgress'];
-            });
+            this.nakama.WriteStorage_From_channel(msg, path, this.isOfficial, this.target, this.nakama.channel_transfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['progress'][0]);
             return; // 재전송하는 경우에는 파일 열람을 하지 않는다
           }
         }
         if (!msg.content['text'])
           msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
-        this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
+        this.indexed.loadBlobFromUserPath(path,
           msg.content['type'],
           v => {
             let url = URL.createObjectURL(v);
-            msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+            msg.content['path'] = path;
             this.global.modulate_thumbnail(msg.content, url);
           });
-        this.open_viewer(msg, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`);
+        this.open_viewer(msg, path);
       } else { // 가지고 있는 파일이 아닐 경우
         try { // 전송받는중이라면 무시
           if (this.nakama.channel_transfer[this.isOfficial][this.target]
@@ -697,7 +701,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (!this.isHistoryLoaded)
             this.nakama.ReadStorage_From_channel(msg, this.isOfficial, this.target, (resultModified) => {
               let url = URL.createObjectURL(resultModified);
-              msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+              msg.content['path'] = path;
               this.global.modulate_thumbnail(msg.content, url);
             });
         }
@@ -728,15 +732,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 파일이 포함된 메시지 구조화, 자동 썸네일 작업 */
   ModulateFileEmbedMessage(msg: any) {
+    let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
     this.global.set_viewer_category(msg.content);
-    this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`, (b) => {
+    this.indexed.checkIfFileExist(path, (b) => {
       if (b) {
         msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
-        this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
+        this.indexed.loadBlobFromUserPath(path,
           msg.content['type'],
           v => {
             let url = URL.createObjectURL(v);
-            msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+            msg.content['path'] = path;
             this.global.modulate_thumbnail(msg.content, url);
           });
       }
@@ -788,7 +793,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 height: v.data.height,
               },
             }).then(v => {
-              v.onWillDismiss().then(v => {
+              v.onWillDismiss().then(async v => {
                 if (v.data) {
                   try {
                     this.userInput.file = {};
@@ -816,7 +821,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                         display_name: this.nakama.users.self['display_name'],
                       };
                     }
-                    this.userInput.file.base64 = v.data['img'];
+                    await this.indexed.saveBase64ToUserPath(v.data['img'], `tmp_files/chatroom/${this.userInput.file.filename}`);
                     this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
                   } catch (e) {
                     console.error('이미지 편집 사용 불가: ', e);
@@ -864,16 +869,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 }
               if (!is_already_exist) related_creators.push(msg.content['content_creator']);
             }
-            await this.indexed.saveBase64ToUserPath(v.data.base64, 'tmp_files/modify_image.png');
+            await this.indexed.saveBase64ToUserPath(v.data.base64, 'tmp_files/chatroom/modify_image.png');
             this.modalCtrl.create({
               component: VoidDrawPage,
               componentProps: {
-                path: 'tmp_files/modify_image.png',
+                path: 'tmp_files/chatroom/modify_image.png',
                 width: v.data.width,
                 height: v.data.height,
               },
             }).then(v => {
-              v.onWillDismiss().then(v => {
+              v.onWillDismiss().then(async v => {
                 if (v.data) {
                   try {
                     this.userInput.file = {};
@@ -901,7 +906,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                         display_name: this.nakama.users.self['display_name'],
                       };
                     }
-                    this.userInput.file.base64 = v.data['img'];
+                    await this.indexed.saveBase64ToUserPath(v.data['img'], `tmp_files/chatroom/${this.userInput.file.filename}`)
                     this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
                   } catch (e) {
                     console.error('godot-이미지 편집 사용 불가: ', e);
