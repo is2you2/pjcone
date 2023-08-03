@@ -930,7 +930,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 이 해야할 일 삭제 */
   deleteData() {
     this.alertCtrl.create({
-      header: this.lang.text['TodoDetail']['removeTodo'],
+      header: this.lang.text['TodoDetail']['remove'],
       message: this.lang.text['TodoDetail']['terminateTodo'],
       buttons: [{
         text: this.lang.text['TodoDetail']['remove'],
