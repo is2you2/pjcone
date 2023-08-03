@@ -7,7 +7,6 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize } from '@capacitor-community/admob';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
-import { IndexedDBService } from 'src/app/indexed-db.service';
 
 @Component({
   selector: 'app-main',
@@ -17,10 +16,9 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 export class MainPage implements OnInit {
 
   constructor(
-    private app: GlobalActService,
+    private global: GlobalActService,
     public lang: LanguageSettingService,
     private nakama: NakamaService,
-    private indexed: IndexedDBService,
   ) { }
 
   ngOnInit() {
@@ -56,7 +54,7 @@ export class MainPage implements OnInit {
   }
 
   async ionViewWillEnter() {
-    await this.app.CreateGodotIFrame('todo', {
+    await this.global.CreateGodotIFrame('todo', {
       local_url: 'assets/data/godot/todo.pck',
       title: 'Todo',
       /**

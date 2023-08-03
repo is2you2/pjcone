@@ -30,7 +30,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     private bgmode: BackgroundMode,
     public lang: LanguageSettingService,
     public noti: LocalNotiService,
-    private app: GlobalActService,
+    private global: GlobalActService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
@@ -214,7 +214,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     delete this.nakama.users.self['img'];
     delete this.nakama.on_socket_disconnected['settings_admin_check'];
     clearTimeout(this.refreshAds);
-    this.app.CreateGodotIFrame('todo', {
+    this.global.CreateGodotIFrame('todo', {
       local_url: 'assets/data/godot/todo.pck',
       title: 'Todo',
       add_todo_menu: (_data: string) => {

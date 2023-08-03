@@ -311,6 +311,45 @@ export class GlobalActService {
     });
   }
 
+  FileManagerIFrame: HTMLIFrameElement;
+  FileManager: any;
+  /** 파일 매니저 만들기 (대용량 호환용 고도엔진 프레임) */
+  async CreateFileManager(): Promise<void> {
+    return new Promise((done) => {
+      if (this.FileManagerIFrame && this.FileManagerIFrame.isConnected) {
+        done();
+        return;
+      }
+      let refresh_it_loading = () => {
+        try {
+          if (!this.FileManager['end_of_manage_file'])
+            throw 'File manager not ready';
+          done();
+        } catch (e) {
+          setTimeout(() => {
+            refresh_it_loading();
+          }, 1000);
+        }
+      }
+      let _iframe = document.createElement('iframe');
+      _iframe.id = 'file_manager';
+      _iframe.setAttribute("src", "assets/FileManager/index.html");
+      _iframe.setAttribute("frameborder", "0");
+      _iframe.setAttribute('class', 'full_screen');
+      _iframe.setAttribute('allow', 'fullscreen; encrypted-media');
+      _iframe.setAttribute('scrolling', 'no');
+      _iframe.setAttribute('withCredentials', 'true');
+      document.body.appendChild(_iframe);
+      this.FileManagerIFrame = _iframe;
+      this.FileManagerIFrame.hidden = true;
+      this.FileManager = _iframe.contentWindow || _iframe.contentDocument;
+      this.FileManager['self_destroy'] = () => {
+        this.FileManagerIFrame.remove();
+      }
+      refresh_it_loading();
+    });
+  }
+
   /** 메시지에 썸네일 콘텐츠를 생성 */
   async modulate_thumbnail(msg_content: FileInfo, ObjectURL: string) {
     switch (msg_content['viewer']) {
@@ -379,6 +418,7 @@ export class GlobalActService {
       // case 'stl':
       // case 'glb':
       // case 'gltf':
+      // case 'blender':
       // 고도엔진 패키지 파일
       case 'pck':
         info['viewer'] = 'godot';

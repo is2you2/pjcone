@@ -221,6 +221,7 @@ export class EnginepptPage implements OnInit {
       });
       return;
     }
+    await this.indexed.saveBlobToUserPath(ev.target.files[0], 'tmp_files/engineppt_selected.pck')
     let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
     const PACK_SIZE = 220000;
     let size = Math.ceil(base64.length / PACK_SIZE);

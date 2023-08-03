@@ -225,7 +225,7 @@ android/app/src/main/res/values/styles.xml 을 아래와 같이 변경하면 동
 ```
 ```javascript
 ionViewWillEnter() {
-  this.app.CreateGodotIFrame('godot-main-frame', { key: value, ... });
+  this.global.CreateGodotIFrame('godot-main-frame', { key: value, ... });
 }
 ```
 - GodotViewer 구성 제한사항
