@@ -45,7 +45,7 @@ func modify_image(args):
 	var img:= viewport.get_texture().get_data()
 	img.flip_y()
 	var buf:= img.save_png_to_buffer()
-	window.receive_image(Marshalls.raw_to_base64(buf), img.width, img.height)
+	window.receive_image(Marshalls.raw_to_base64(buf), img.get_width(), img.get_height())
 
 
 func create_thumbnail(args):
