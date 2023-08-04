@@ -162,22 +162,6 @@ export class NakamaService {
       if (this.users.self['online'])
         this.init_all_sessions();
     });
-    // 전송중이던 파일 기록을 가져오기
-    this.indexed.GetFileListFromDB('/transfer.history', list => {
-      list.forEach(path => {
-        this.indexed.loadTextFromUserPath(path, (e, v) => {
-          if (e && v) {
-            let sep = path.split('/');
-            let _is_official: string = sep[1];
-            let _target: string = sep[2];
-            let _channel_id: string = sep[4];
-            if (!this.channel_transfer[_is_official][_target]) this.channel_transfer[_is_official][_target] = {};
-            if (!this.channel_transfer[_is_official][_target][_channel_id]) this.channel_transfer[_is_official][_target][_channel_id] = {};
-            this.channel_transfer[_is_official][_target][_channel_id] = JSON.parse(v);
-          }
-        });
-      });
-    });
   }
   /** 시작시 해야할 일 알림을 설정 */
   set_all_todo_notification() {
@@ -2448,150 +2432,70 @@ export class NakamaService {
     this.noti_origin[_is_official][_target][v.id] = v;
   }
 
-  /** 채널별 파일 송/수신 경과  
-   * 송수신을 시작하면 길이에 해당하는 배열을 만든 후 소거법으로 완료된 파트를 삭제  
-   * channel_transfer[isOfficial][target][channel_id][message_id] = [...partsize.length - completed];
-   */
-  channel_transfer = {
-    'official': {},
-    'unofficial': {},
-  };
   /**
    * 채널에서 백그라운드 파일 발송 요청
    * @param msg 메시지 정보
-   * @param path 파일 경로
+   * @param path indexedDB 파일 경로
    */
   async WriteStorage_From_channel(msg: any, path: string, _is_official: string, _target: string, startFrom = 0) {
     let _msg = JSON.parse(JSON.stringify(msg));
     let part_len = await this.global.req_file_len(path);
     let partsize = Math.ceil(part_len / 120000);
-    if (!this.channel_transfer[_is_official][_target]) this.channel_transfer[_is_official][_target] = {};
-    if (!this.channel_transfer[_is_official][_target][msg.channel_id]) this.channel_transfer[_is_official][_target][msg.channel_id] = {};
-    if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id])
-      this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id] = {
-        type: 'upload',
-        progress: Array.from(Array(partsize).keys()),
-      };
     for (let i = startFrom; i < partsize; i++)
-      await this.servers[_is_official][_target].client.writeStorageObjects(
-        this.servers[_is_official][_target].session, [{
-          collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
-          key: `msg_${_msg.message_id}_${i}`,
-          permission_read: 2,
-          permission_write: 1,
-          value: { data: await this.global.req_file_part_base64(path, i, part_len) },
-        }]).then(_f => {
-          this.when_transfer_success(msg, _is_official, _target, i);
-        }).catch(async _e => {
-          await this.retry_upload_part(msg, {
+      try {
+        await this.servers[_is_official][_target].client.writeStorageObjects(
+          this.servers[_is_official][_target].session, [{
             collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
             key: `msg_${_msg.message_id}_${i}`,
             permission_read: 2,
             permission_write: 1,
             value: { data: await this.global.req_file_part_base64(path, i, part_len) },
-          }, _is_official, _target, i);
+          }])
+        msg.content['transfer_index'] = partsize - i;
+      } catch (e) {
+        this.p5toast.show({
+          text: `${this.lang.text['Nakama']['FailedUpload']}: ${e}`,
         });
-    this.global.remove_req_file_info(path);
-  }
-  /** 업로드 실패한 파트 다시 올리기 */
-  async retry_upload_part(msg: any, info: WriteStorageObject, _is_official: string, _target: string, i: number, _try_left = 10) {
-    await this.servers[_is_official][_target].client.writeStorageObjects(
-      this.servers[_is_official][_target].session, [info])
-      .then(_v => {
-        this.when_transfer_success(msg, _is_official, _target, i);
-      }).catch(e => {
-        if (_try_left > 0)
-          this.retry_upload_part(msg, info, _is_official, _target, i, _try_left - 1);
-        else {
-          console.error('파일 다시 올리기 실패: ', e, info, i);
-        }
-      });
+        break;
+      }
+    setTimeout(() => {
+      delete msg.content['transfer_index'];
+      this.global.remove_req_file_info(path);
+    }, 100);
   }
 
-  /** 파일 전송에 성공했다면 */
-  when_transfer_success(msg: any, _is_official: string, _target: string, index: number) {
-    if (this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'].shift() != index) {
-      this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'].unshift(index);
-      for (let i = 0, j = this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'].length; i < j; i++)
-        if (this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'][i] == index) {
-          this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'].splice(index, 1);
-          break;
-        }
-    }
-    if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'].length) {
-      delete this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id];
-      this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/channels/${msg.channel_id}/transfer.history`);
-    } else { // 전송할 것이 남았다면 가끔 기록을 저장하기
-      if (this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]['progress'][0] % 7 == 0) {
-        let logging = JSON.parse(JSON.stringify(this.channel_transfer[_is_official][_target][msg.channel_id]));
-        logging[msg.message_id]['OnProgress'] = true;
-        this.indexed.saveTextFileToUserPath(
-          JSON.stringify(logging),
-          `servers/${_is_official}/${_target}/channels/${msg.channel_id}/transfer.history`);
-      }
-    }
-  }
   /**
    * 채널 메시지에 기반하여 파일 다운받기
    * @param msg 메시지 정보
    */
-  async ReadStorage_From_channel(msg: any, _is_official: string, _target: string, _CallBack = (_blob: Blob) => { }) {
+  async ReadStorage_From_channel(msg: any, path: string, _is_official: string, _target: string, _CallBack = (_blob: Blob) => { }, startFrom = 0) {
     let _msg = JSON.parse(JSON.stringify(msg));
-    if (!this.channel_transfer[_is_official][_target]) this.channel_transfer[_is_official][_target] = {};
-    if (!this.channel_transfer[_is_official][_target][msg.channel_id]) this.channel_transfer[_is_official][_target][msg.channel_id] = {};
     // 이미 진행중이라면 무시
-    if (this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id]) return;
-    if (!this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id])
-      this.channel_transfer[_is_official][_target][msg.channel_id][msg.message_id] = {
-        type: 'download',
-        progress: Array.from(Array(_msg.content['partsize']).keys()),
-      }
-    let result = [];
-    let isSuccessful = true;
-    for (let i = 0, j = _msg.content['partsize']; i < j; i++)
-      await this.servers[_is_official][_target].client.readStorageObjects(
-        this.servers[_is_official][_target].session, {
-        object_ids: [{
-          collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
-          key: `msg_${_msg.message_id}_${i}`,
-          user_id: _msg['sender_id'],
-        }]
-      }).then(v => {
-        if (v.objects.length) {
-          this.when_transfer_success(_msg, _is_official, _target, i);
-          result[i] = v.objects[0].value['data'];
-        } else isSuccessful = false;
-      }).catch(async _e => {
-        await this.retry_download_part(_msg, {
-          collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
-          key: `msg_${_msg.message_id}_${i}`,
-          user_id: _msg['sender_id'],
-        }, _is_official, _target, i);
-      });
-    if (!isSuccessful) return;
-    let resultModified = result.join('').replace(/"|\\|=/g, '');
-    if (resultModified) {
-      msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
-      this.indexed.saveBase64ToUserPath(resultModified, `servers/${_is_official}/${_target}/channels/${_msg.channel_id}/files/msg_${_msg.message_id}.${_msg.content['file_ext']}`,
-        v => {
-          _CallBack(new Blob([v], { type: msg.content['type'] }));
+    for (let i = startFrom, j = _msg.content['partsize']; i < j; i++)
+      try {
+        let v = await this.servers[_is_official][_target].client.readStorageObjects(
+          this.servers[_is_official][_target].session, {
+          object_ids: [{
+            collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
+            key: `msg_${_msg.message_id}_${i}`,
+            user_id: _msg['sender_id'],
+          }]
         });
-    } else this.p5toast.show({
-      text: this.lang.text['Nakama']['MissingFile'],
-    });
-  }
-  /** 다운로드 실패한 파트 다시 받기 */
-  async retry_download_part(msg: any, info: ApiReadStorageObjectId, _is_official: string, _target: string, i: number, _try_left = 10) {
-    await this.servers[_is_official][_target].client.readStorageObjects(
-      this.servers[_is_official][_target].session, {
-      object_ids: [info],
-    }).then(_v => {
-      this.when_transfer_success(msg, _is_official, _target, i);
-    }).catch(e => {
-      if (_try_left > 0)
-        this.retry_upload_part(msg, info, _is_official, _target, i, _try_left - 1);
-      else console.error('파일 다시 받기 실패: ', e, info, i);
-    });
+        await this.global.save_file_part(path, i, v.objects[0].value['data']);
+        msg.content['transfer_index'] = j - i;
+      } catch (e) {
+        this.p5toast.show({
+          text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
+        });
+        break;
+      }
+    setTimeout(async () => {
+      let blob = await this.indexed.loadBlobFromUserPath(path, _msg.content['type'] || '')
+      if (_CallBack) _CallBack(blob);
+      msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
+      delete msg.content['transfer_index'];
+      this.global.remove_req_file_info(path);
+    }, 100);
   }
 
   /** 로컬 파일을 저장하며 원격에 분산하여 올리기 */

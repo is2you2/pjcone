@@ -324,7 +324,7 @@ export class GlobalActService {
       if (this.FileManagerIFrame && force) this.FileManagerIFrame.remove();
       let refresh_it_loading = () => {
         try {
-          if (!this.FileManager['end_of_manage_file'])
+          if (!this.FileManager['req_file_write'])
             throw 'File manager not ready';
           done();
         } catch (e) {
@@ -354,6 +354,14 @@ export class GlobalActService {
       this.FileManager['get_part_data'] = (path: string, base64: string) => {
         let path_key = path.replace('/', '_');
         this.partsize_req[`${path_key}_data`](base64);
+      }
+      // req_file_write(path, index, base64)
+      this.FileManager['save_part'] = (path: string) => {
+        let path_key = path.replace('/', '_');
+        this.partsize_req[`${path_key}_saved`]();
+      }
+      this.FileManager['self_destory'] = () => {
+        this.FileManagerIFrame.remove();
       }
       refresh_it_loading();
     });
@@ -386,11 +394,25 @@ export class GlobalActService {
     });
   }
 
+  /** 파일 파트 저장하기 */
+  async save_file_part(path: string, index: number, base64: string): Promise<void> {
+    let path_key = path.replace('/', '_');
+    return new Promise(async (done) => {
+      await this.CreateFileManager();
+      this.partsize_req[`${path_key}_saved`] = () => {
+        done();
+      }
+      this.FileManager['req_file_write'](path, index, base64);
+    });
+  }
+
   /** 사용된 함수들 삭제 */
   remove_req_file_info(path: string) {
     let path_key = path.replace('/', '_');
     delete this.partsize_req[`${path_key}_len`];
     delete this.partsize_req[`${path_key}_data`];
+    delete this.partsize_req[`${path_key}_saved`];
+    this.indexed.removeFileFromUserPath(`${path}.history`);
   }
 
   /** 메시지에 썸네일 콘텐츠를 생성 */
