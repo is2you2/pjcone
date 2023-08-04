@@ -77,7 +77,7 @@ func req_file_part(args):
 	var err:= file.open(path, File.READ)
 	if err == OK:
 		file.seek(120000 * args[1])
-		var size:= 120000 if 120000 * (args[1] + 1) < args[2] else args[2] - 120000 * (args[1] - 1)
+		var size:= 120000 if 120000 * (args[1] + 1) < args[2] else args[2] - 120000 * args[1]
 		var buf:= file.get_buffer(size)
 		base64 = Marshalls.raw_to_base64(buf)
 	file.close()

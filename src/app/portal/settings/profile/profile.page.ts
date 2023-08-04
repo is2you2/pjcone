@@ -151,8 +151,7 @@ export class ProfilePage implements OnInit {
       this_file.type = ev.target.files[0].type;
       this_file.typeheader = ev.target.files[0].type.split('/')[0];
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
-      this_file.base64 = base64;
+      this_file.blob = ev.target.files[0];
       this_file.path = 'servers/self/content.pck';
       loading.present();
       let servers = this.nakama.get_all_online_server();
@@ -174,9 +173,7 @@ export class ProfilePage implements OnInit {
             continue;
           }
         }
-      else {
-        await this.indexed.saveBase64ToUserPath(base64, this_file.path);
-      }
+      else await this.indexed.saveBlobToUserPath(ev.target.files[0], this_file.path);
       loading.dismiss();
       await this.global.CreateGodotIFrame('my_content', {
         title: 'ViewerEx',

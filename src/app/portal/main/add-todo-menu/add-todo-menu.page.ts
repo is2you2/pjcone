@@ -363,7 +363,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       let time = new Date();
       this_file.filename = `Camera_${time.toLocaleString().replace(/[:|.|\/]/g, '_')}.jpeg`;
       this_file.file_ext = 'jpeg';
-      this_file.base64 = 'data:image/jpeg;base64,' + v;
+      this.indexed.saveBase64ToUserPath('data:image/jpeg;base64,' + v, 'tmp_files/todo/attach.jpeg', (raw) => {
+        this_file.blob = new Blob([raw], { type: this_file['type'] });
+      });
       this_file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(this_file.base64);
       this_file.type = 'image/jpeg';
       this_file.typeheader = 'image';
@@ -409,6 +411,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           this_file['viewer'] = 'image';
           this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
           this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
+          this.indexed.saveBase64ToUserPath(v.data['img'], 'tmp_files/todo/attach.jpeg', (raw) => {
+            this_file.blob = new Blob([raw], { type: this_file['type'] });
+          });
           await this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path']);
           v.data['loadingCtrl'].dismiss();
           this.userInput.attach.push(this_file);
@@ -433,6 +438,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this_file['size'] = ev.target.files[0]['size'];
     this_file['type'] = ev.target.files[0]['type'];
     this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
+    this_file['blob'] = ev.target.files[0];
     this_file['content_related_creator'] = [{
       timestamp: new Date().toLocaleString(),
       display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
@@ -582,6 +588,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 }
                 this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
                 this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
+                this.indexed.saveBase64ToUserPath(v.data['img'], 'tmp_files/todo/attach.jpeg', (raw) => {
+                  this_file.blob = new Blob([raw], { type: this_file['type'] });
+                });
                 this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path'], (_) => {
                   v.data['loadingCtrl'].dismiss();
                 });
@@ -657,6 +666,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                   };
                 }
                 this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
+                this.indexed.saveBase64ToUserPath(v.data['img'], 'tmp_files/todo/attach.jpeg', (raw) => {
+                  this_file.blob = new Blob([raw], { type: this_file['type'] });
+                });
                 this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
                 this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path'], (_) => {
                   v.data['loadingCtrl'].dismiss();
@@ -837,7 +849,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       delete attach['thumbnail'];
       delete attach['exist'];
       delete attach['base64'];
-      delete attach['blob'];
     });
     this.userInput.written = new Date().getTime();
     if (this.userInput.startFrom) {
@@ -881,7 +892,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           delete file['thumbnail'];
           delete file['exist'];
           delete file['base64'];
-          delete file['blob'];
         });
         await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
           this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]).then(async v => {
@@ -995,7 +1005,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   async ionViewWillLeave() {
-    this.indexed.GetFileListFromDB('tmp_files/', list => {
+    this.indexed.GetFileListFromDB('tmp_files', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path));
     });
     this.noti.Current = '';

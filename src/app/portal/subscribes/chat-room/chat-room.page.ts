@@ -993,7 +993,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.indexed.GetFileListFromDB('tmp_files/', list => {
+    this.indexed.GetFileListFromDB('tmp_files', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path));
     });
     this.nakama.ChatroomLinkAct = undefined;

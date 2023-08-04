@@ -11,7 +11,6 @@ import * as p5 from 'p5';
 import { LocalNotiService } from './local-noti.service';
 import { AlertController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
-import { ApiReadStorageObjectId } from '@heroiclabs/nakama-js/dist/api.gen';
 import { LanguageSettingService } from './language-setting.service';
 import { AdMob } from '@capacitor-community/admob';
 import { FileInfo, GlobalActService } from './global-act.service';
@@ -2501,30 +2500,30 @@ export class NakamaService {
   /** 로컬 파일을 저장하며 원격에 분산하여 올리기 */
   async sync_save_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _key_force = '') {
     try {
-      // 여기서 파일 정보를 받아와야함 (전체 길이, 파트 수)
-      let base64 = info.base64 || await this.global.GetBase64ThroughFileReader(await this.indexed.loadBlobFromUserPath(info.path, info.type || ''));
-      delete info.base64;
-      await this.indexed.saveBase64ToUserPath(base64, info.path);
-      let separate = base64.match(/(.{1,220000})/g);
-      info.partsize = separate.length;
+      let copied_info = JSON.parse(JSON.stringify(info));
+      await this.indexed.saveBlobToUserPath(info.blob, copied_info.path);
+      await this.global.CreateFileManager(true);
+      if (!copied_info['filesize'])
+        copied_info['filesize'] = await this.global.req_file_len(copied_info.path);
+      copied_info.partsize = Math.ceil(copied_info['filesize'] / 120000);
+      delete copied_info['blob'];
       await this.servers[_is_official][_target].client.writeStorageObjects(
         this.servers[_is_official][_target].session, [{
           collection: _collection,
-          key: _key_force || info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
+          key: _key_force || copied_info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
           permission_read: 2,
           permission_write: 1,
-          value: info,
+          value: copied_info,
         }]);
       // 여기서 전체 길이로 for문을 돌리고 매 회차마다 파트를 받아서 base64 변환 후 집어넣어야 함
-      for (let i = separate.length - 1, j = i; i >= 0; i--) {
-
+      for (let i = 0; i < copied_info.partsize; i++) {
         await this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
             collection: _collection,
-            key: `${_key_force}_${j - i}` || (info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${j - i}`),
+            key: _key_force ? `${_key_force}_${i}` : (copied_info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`),
             permission_read: 2,
             permission_write: 1,
-            value: { data: separate.shift() },
+            value: { data: await this.global.req_file_part_base64(copied_info.path, i, copied_info['filesize']) },
           }]);
       }
     } catch (e) {
@@ -2536,35 +2535,33 @@ export class NakamaService {
    * @returns 파일의 blob
    */
   async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid = '', _key_force = '') {
+    let copied_info = JSON.parse(JSON.stringify(info));
     try {
-      return await this.indexed.loadBlobFromUserPath(info.path, info.type || '');
+      return await this.indexed.loadBlobFromUserPath(copied_info.path, copied_info.type || '');
     } catch (e) {
       try {
         let file_info = await this.servers[_is_official][_target].client.readStorageObjects(
           this.servers[_is_official][_target].session, {
           object_ids: [{
             collection: _collection,
-            key: _key_force || info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
+            key: _key_force || copied_info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
             user_id: _userid || this.servers[_is_official][_target].session.user_id,
           }],
         });
         let info_json: FileInfo = file_info.objects[0].value;
-        let merged = '';
         for (let i = 0; i < info_json.partsize; i++) {
           let part = await this.servers[_is_official][_target].client.readStorageObjects(
             this.servers[_is_official][_target].session, {
             object_ids: [{
               collection: _collection,
-              key: `${_key_force}_${i}` || (info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`),
+              key: _key_force ? `${_key_force}_${i}` : (info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`),
               user_id: _userid || this.servers[_is_official][_target].session.user_id,
             }],
           });
-          merged += part.objects[0].value['data'].replace(/"|=|\\/g, '');
+          await this.global.save_file_part(info_json.path, i, part.objects[0].value['data'].replace(/"|=|\\/g, ''));
         }
-        await this.indexed.saveBase64ToUserPath(merged, info.path);
-        return await this.indexed.loadBlobFromUserPath(info.path, info.type || '');
+        return await this.indexed.loadBlobFromUserPath(info_json.path, info_json.type || '');
       } catch (e) {
-        console.log('SyncLoadFailed:', e);
         return null;
       }
     }
