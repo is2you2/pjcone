@@ -735,6 +735,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 파일이 포함된 메시지 구조화, 자동 썸네일 작업 */
   ModulateFileEmbedMessage(msg: any) {
     let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+    this.indexed.checkIfFileExist(`${path}.history`, b => {
+      if (b) this.indexed.loadTextFromUserPath(`${path}.history`, (e, v) => {
+        if (e && v) {
+          let json = JSON.parse(v);
+          msg.content['transfer_index'] = msg.content['partsize'] - json['index'];
+        }
+      });
+    });
     this.global.set_viewer_category(msg.content);
     this.indexed.checkIfFileExist(path, (b) => {
       if (b) {

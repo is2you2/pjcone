@@ -93,7 +93,7 @@ func req_file_write(args):
 	var file:= File.new()
 	var err:= file.open(path, File.READ_WRITE)
 	if err == OK:
-		file.seek_end()
+		file.seek(120000 * args[1])
 		var buf:= Marshalls.base64_to_raw(args[2])
 		file.store_buffer(buf)
 	file.flush()
