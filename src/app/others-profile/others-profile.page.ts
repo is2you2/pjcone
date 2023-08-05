@@ -213,7 +213,7 @@ export class OthersProfilePage implements OnInit {
         ).then(v => {
           if (!v) console.warn('밴 유저에 대한것 같음, 확인 필요');
           this.p5toast.show({
-            text: `${this.lang.text['OtherProfile']['added_to_group']}: ${this.info['user']['display_name'] || '이름 없는 사용자'}`,
+            text: `${this.lang.text['OtherProfile']['added_to_group']}: ${this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']}`,
           });
           this.nakama.servers[this.isOfficial][this.target].client.deleteNotifications(
             this.nakama.servers[this.isOfficial][this.target].session,
@@ -286,7 +286,7 @@ export class OthersProfilePage implements OnInit {
       this.group_info['group_id'] || this.group_info['id'], [this.info['user']['id']]
     ).then(_v => {
       this.p5toast.show({
-        text: `${this.lang.text['OtherProfile']['kicked_from_group']}: ${this.info['user']['display_name'] || '이름 없는 사용자'}`,
+        text: `${this.lang.text['OtherProfile']['kicked_from_group']}: ${this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']}`,
       });
       this.modalCtrl.dismiss({
         id: this.info['user']['id'],

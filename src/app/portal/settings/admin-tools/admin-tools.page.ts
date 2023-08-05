@@ -24,6 +24,7 @@ export class AdminToolsPage implements OnInit {
   select_server(i: number) {
     this.index = i;
     this.isExpanded = false;
+    this.refresh_all_user();
   }
 
   /** 전체 발송 알림 */
@@ -38,6 +39,7 @@ export class AdminToolsPage implements OnInit {
       if (!this.servers[i].is_admin)
         this.servers.splice(i, 1);
     }
+    this.refresh_all_user();
   }
 
   is_sending = false;
@@ -67,4 +69,50 @@ export class AdminToolsPage implements OnInit {
     this.is_sending = false;
   }
 
+  all_users = [];
+  current_user_page = 1;
+  all_user_page = 1;
+  /** 한번에 보여지는 사용자 수 */
+  LIST_PAGE_SIZE = 5;
+  current_size: number[] = [];
+
+  refresh_all_user() {
+    this.all_users.length = 0;
+    this.current_size.length = 0;
+    let _is_official = this.servers[this.index].isOfficial;
+    let _target = this.servers[this.index].target;
+    this.nakama.servers[_is_official][_target].client.rpc(
+      this.nakama.servers[_is_official][_target].session,
+      'query_all_users', {}).then(v => {
+        this.all_users = v.payload as any;
+        this.all_user_page = Math.ceil(this.all_users.length / this.LIST_PAGE_SIZE);
+        this.current_user_page = 0;
+        this.change_user_list_page(1);
+      }).catch(e => {
+        console.error('사용자 리스트 돌려받기 오류: ', e);
+      });
+  }
+
+  change_user_list_page(forward: number) {
+    switch (forward) {
+      case 1: // 다음 페이지
+        if (this.current_user_page < this.all_user_page) {
+          this.current_user_page += 1;
+          if (this.current_user_page == this.all_user_page)
+            this.current_size = Array(this.all_users.length % this.LIST_PAGE_SIZE);
+          else this.current_size = Array(this.LIST_PAGE_SIZE);
+          for (let i = 0, j = this.current_size.length; i < j; i++)
+            this.current_size[i] = (this.current_user_page - 1) * this.LIST_PAGE_SIZE + i;
+        }
+        break;
+      case -1: // 이전 페이지
+        if (this.current_user_page - 1 > 0) {
+          this.current_user_page -= 1;
+          this.current_size = Array(this.LIST_PAGE_SIZE);
+          for (let i = 0, j = this.current_size.length; i < j; i++)
+            this.current_size[i] = (this.current_user_page - 1) * this.LIST_PAGE_SIZE + i;
+        }
+        break;
+    }
+  }
 }
