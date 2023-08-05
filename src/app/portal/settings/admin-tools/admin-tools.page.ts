@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { IonAccordionGroup } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -76,6 +77,8 @@ export class AdminToolsPage implements OnInit {
   LIST_PAGE_SIZE = 5;
   current_size: number[] = [];
 
+  @ViewChild('UserSel') UserSel: IonAccordionGroup;
+
   refresh_all_user() {
     this.all_users.length = 0;
     this.current_size.length = 0;
@@ -85,6 +88,7 @@ export class AdminToolsPage implements OnInit {
       this.nakama.servers[_is_official][_target].session,
       'query_all_users', {}).then(v => {
         this.all_users = v.payload as any;
+        this.all_users.forEach(user => user['create_time_display'] = new Date(user.create_time).toLocaleString());
         this.all_user_page = Math.ceil(this.all_users.length / this.LIST_PAGE_SIZE);
         this.current_user_page = 0;
         this.change_user_list_page(1);
@@ -114,5 +118,6 @@ export class AdminToolsPage implements OnInit {
         }
         break;
     }
+    this.UserSel.value = undefined;
   }
 }
