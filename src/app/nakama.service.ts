@@ -2558,7 +2558,7 @@ export class NakamaService {
               user_id: _userid || this.servers[_is_official][_target].session.user_id,
             }],
           });
-          await this.global.save_file_part(info_json.path, i, part.objects[0].value['data'].replace(/"|=|\\/g, ''));
+          await this.global.save_file_part(info_json.path, i, part.objects[0].value['data']);
         }
         return await this.indexed.loadBlobFromUserPath(info_json.path, info_json.type || '');
       } catch (e) {
