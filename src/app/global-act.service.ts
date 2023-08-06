@@ -313,11 +313,18 @@ export class GlobalActService {
 
   FileManagerIFrame: HTMLIFrameElement;
   FileManager: any;
+  isFileManagerOnInit = false;
   partsize_req: { [id: string]: Function } = {};
   /** 파일 매니저 만들기 (대용량 호환용 고도엔진 프레임) */
   async CreateFileManager(force = false): Promise<void> {
     return new Promise((done) => {
+      if (this.isFileManagerOnInit) {
+        done();
+        return;
+      }
+      this.isFileManagerOnInit = true;
       if (this.FileManagerIFrame && this.FileManagerIFrame.isConnected && !force) {
+        this.isFileManagerOnInit = false;
         done();
         return;
       }
@@ -326,6 +333,7 @@ export class GlobalActService {
         try {
           if (!this.FileManager['req_file_write'])
             throw 'File manager not ready';
+          this.isFileManagerOnInit = false;
           done();
         } catch (e) {
           setTimeout(() => {
