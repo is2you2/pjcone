@@ -93,7 +93,7 @@ export class AdminToolsPage implements OnInit {
         this.all_users = v.payload as any;
         for (let i = 0, j = this.all_users.length; i < j; i++) {
           this.nakama.save_other_user(this.all_users[i], _is_official, _target);
-          this.all_users[i] = this.nakama.load_other_user(this.all_users[i].user_id, _is_official, _target);
+          this.all_users[i] = this.nakama.load_other_user(this.all_users[i].user_id || this.all_users[i].id, _is_official, _target);
         }
         this.all_user_page = Math.ceil(this.all_users.length / this.LIST_PAGE_SIZE);
         this.current_user_page = 0;
@@ -130,7 +130,7 @@ export class AdminToolsPage implements OnInit {
   start_private_chat(user: any) {
     let _is_official = this.servers[this.index].isOfficial;
     let _target = this.servers[this.index].target;
-    this.nakama.join_chat_with_modulation(user.user_id, 2, _is_official, _target, (c) => {
+    this.nakama.join_chat_with_modulation(user.user_id || user.id, 2, _is_official, _target, (c) => {
       if (c) this.nakama.go_to_chatroom_without_admob_act(c);
     }, true);
   }
@@ -148,14 +148,14 @@ export class AdminToolsPage implements OnInit {
           try {
             await this.nakama.servers[_is_official][_target].client.rpc(
               this.nakama.servers[_is_official][_target].session,
-              'remove_account_fn', { user_id: user.user_id });
+              'remove_account_fn', { user_id: user.user_id || user.id });
             this.p5toast.show({
               text: `${this.lang.text['AdminTools']['UserLeaved']}: ${user.display_name}`,
             })
             this.refresh_all_user();
           } catch (e) {
             this.p5toast.show({
-              text: `${this.lang.text['AdminTools']['UserLeavedFailed']}: ${e}`,
+              text: `${this.lang.text['AdminTools']['UserLeavedFailed']}: ${e.statusText}`,
             })
           }
 

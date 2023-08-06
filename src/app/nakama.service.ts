@@ -1491,6 +1491,83 @@ export class NakamaService {
       this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] = result_status;
   }
 
+  /** 사설 서버 삭제 */
+  async remove_server(_is_official: string, _target: string) {
+    try {
+      await this.servers[_is_official][_target].client.rpc(
+        this.servers[_is_official][_target].session,
+        'remove_account_fn', { user_id: this.servers[_is_official][_target].session.user_id });
+      this.p5toast.show({
+        text: this.lang.text['GroupServer']['DeleteAccountSucc'],
+      });
+    } catch (e) {
+      this.p5toast.show({
+        text: this.lang.text['GroupServer']['DeleteAccountFailed'],
+      });
+    }
+    // 로그인 상태일 경우 로그오프처리
+    if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+      if (!this.on_socket_disconnected['group_remove_by_user'])
+        this.on_socket_disconnected['group_remove_by_user'] = () => {
+          this.set_group_statusBar('offline', _is_official, _target);
+          delete this.statusBar.groupServer[_is_official][_target];
+        }
+      await this.servers[_is_official][_target].client.sessionLogout(
+        this.servers[_is_official][_target].session,
+        this.servers[_is_official][_target].session.token,
+        this.servers[_is_official][_target].session.refresh_token,
+      )
+      if (this.servers[_is_official][_target].socket)
+        this.servers[_is_official][_target].socket.disconnect(true);
+    }
+    // 알림정보 삭제
+    if (this.noti_origin[_is_official] && this.noti_origin[_is_official][_target])
+      delete this.noti_origin[_is_official][_target];
+    this.rearrange_notifications();
+    // 예하 채널들 손상처리
+    if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
+      let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
+      channel_ids.forEach(_cid => {
+        this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
+      });
+    }
+    // 예하 사용자 정보에서 이미지 삭제
+    if (this.users[_is_official][_target]) {
+      this.indexed.GetFileListFromDB(`servers/${_is_official}/${_target}/users/`, (list) => {
+        for (let i = 0, j = list.length; i < j; i++)
+          if (list[i].indexOf('profile.img') >= 0)
+            this.indexed.removeFileFromUserPath(list[i]);
+      });
+    }
+    this.rearrange_channels();
+    // 예하 그룹들 손상처리
+    if (this.groups[_is_official][_target]) {
+      let group_ids = Object.keys(this.groups[_is_official][_target]);
+      group_ids.forEach(_gid => {
+        this.groups[_is_official][_target][_gid]['status'] = 'missing';
+      });
+    }
+    delete this.servers[_is_official][_target];
+    // 그룹서버 정리
+    delete this.statusBar.groupServer[_is_official][_target];
+    this.save_groups_with_less_info();
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
+    // 파일로부터 일치하는 정보 삭제
+    this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
+      if (e && v) {
+        let lines = v.split('\n');
+        for (let i = 0, j = lines.length; i < j; i++) {
+          let sep = lines[i].split(',');
+          if (sep[3] == _target) {
+            lines.splice(i, 1);
+            break;
+          }
+        }
+        this.indexed.saveTextFileToUserPath(lines.join('\n'), 'servers/list_detail.csv');
+      }
+    });
+  }
+
   check_if_online() {
     let as_admin = this.get_all_server_info(true, true);
     if (as_admin.length) {
@@ -2233,6 +2310,9 @@ export class NakamaService {
     let is_removed = false;
     v['server'] = this.servers[_is_official][_target].info;
     switch (v.code) {
+      case 404:
+        this.remove_server(_is_official, _target);
+        break;
       case 1: // 전체 알림 메시지 수신
         this.servers[_is_official][_target].client.deleteNotifications(
           this.servers[_is_official][_target].session, [v['id']]).then(b => {

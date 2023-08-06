@@ -144,84 +144,11 @@ export class GroupServerPage implements OnInit {
     }).then(v => v.present());
   }
 
-  /** 사설 서버 삭제 */
   async remove_server(_is_official: string, _target: string) {
     this.isOverrideButtonPressed = true;
-    try {
-      await this.nakama.servers[_is_official][_target].client.rpc(
-        this.nakama.servers[_is_official][_target].session,
-        'remove_account_fn', { user_id: this.nakama.servers[_is_official][_target].session.user_id });
-      this.p5toast.show({
-        text: this.lang.text['GroupServer']['DeleteAccountSucc'],
-      });
-    } catch (e) {
-      this.p5toast.show({
-        text: this.lang.text['GroupServer']['DeleteAccountFailed'],
-      });
-    }
-    // 로그인 상태일 경우 로그오프처리
-    if (this.statusBar.groupServer[_is_official][_target] == 'online') {
-      if (!this.nakama.on_socket_disconnected['group_remove_by_user'])
-        this.nakama.on_socket_disconnected['group_remove_by_user'] = () => {
-          this.nakama.set_group_statusBar('offline', _is_official, _target);
-          delete this.statusBar.groupServer[_is_official][_target];
-        }
-      await this.nakama.servers[_is_official][_target].client.sessionLogout(
-        this.nakama.servers[_is_official][_target].session,
-        this.nakama.servers[_is_official][_target].session.token,
-        this.nakama.servers[_is_official][_target].session.refresh_token,
-      )
-      if (this.nakama.servers[_is_official][_target].socket)
-        this.nakama.servers[_is_official][_target].socket.disconnect(true);
-    }
-    // 알림정보 삭제
-    if (this.nakama.noti_origin[_is_official] && this.nakama.noti_origin[_is_official][_target])
-      delete this.nakama.noti_origin[_is_official][_target];
-    this.nakama.rearrange_notifications();
-    // 예하 채널들 손상처리
-    if (this.nakama.channels_orig[_is_official] && this.nakama.channels_orig[_is_official][_target]) {
-      let channel_ids = Object.keys(this.nakama.channels_orig[_is_official][_target]);
-      channel_ids.forEach(_cid => {
-        this.nakama.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
-      });
-    }
-    // 예하 사용자 정보에서 이미지 삭제
-    if (this.nakama.users[_is_official][_target]) {
-      this.indexed.GetFileListFromDB(`servers/${_is_official}/${_target}/users/`, (list) => {
-        for (let i = 0, j = list.length; i < j; i++)
-          if (list[i].indexOf('profile.img') >= 0)
-            this.indexed.removeFileFromUserPath(list[i]);
-      });
-    }
-    this.nakama.rearrange_channels();
-    // 예하 그룹들 손상처리
-    if (this.nakama.groups[_is_official][_target]) {
-      let group_ids = Object.keys(this.nakama.groups[_is_official][_target]);
-      group_ids.forEach(_gid => {
-        this.nakama.groups[_is_official][_target][_gid]['status'] = 'missing';
-      });
-    }
-    delete this.nakama.servers[_is_official][_target];
+    await this.nakama.remove_server(_is_official, _target);
     // 그룹서버 리스트 정리
     this.servers = this.nakama.get_all_server_info(true);
-    // 그룹서버 정리
-    delete this.statusBar.groupServer[_is_official][_target];
-    this.nakama.save_groups_with_less_info();
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
-    // 파일로부터 일치하는 정보 삭제
-    this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
-      if (e && v) {
-        let lines = v.split('\n');
-        for (let i = 0, j = lines.length; i < j; i++) {
-          let sep = lines[i].split(',');
-          if (sep[3] == _target) {
-            lines.splice(i, 1);
-            break;
-          }
-        }
-        this.indexed.saveTextFileToUserPath(lines.join('\n'), 'servers/list_detail.csv');
-      }
-    });
   }
 
   ionViewWillLeave() {
