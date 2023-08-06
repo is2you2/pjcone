@@ -122,6 +122,14 @@ export class AdminToolsPage implements OnInit {
     this.UserSel.value = undefined;
   }
 
+  start_private_chat(user: any) {
+    let _is_official = this.servers[this.index].isOfficial;
+    let _target = this.servers[this.index].target;
+    this.nakama.join_chat_with_modulation(user.user_id, 2, _is_official, _target, (c) => {
+      if (c) this.nakama.go_to_chatroom_without_admob_act(c);
+    }, true);
+  }
+
   remove_user(user: any) {
     let _is_official = this.servers[this.index].isOfficial;
     let _target = this.servers[this.index].target;
