@@ -3,7 +3,7 @@ local nk = require("nakama")
 
 local function query_all_users(context, payload)
     local query = [[
-  SELECT username, display_name, create_time
+  SELECT username
   FROM users
   ORDER BY create_time DESC
 ]]
@@ -13,7 +13,13 @@ local function query_all_users(context, payload)
 
     local users = {}
     for i, row in ipairs(rows) do
-        users[i] = { username = row.username, display_name = row.display_name, create_time = row.create_time }
+        if row.username ~= "" then
+            local username = { row.username }
+            local get_user = nk.users_get_username(username)
+            for _, u in ipairs(get_user) do
+                users[i] = u
+            end
+        end
     end
 
     return nk.json_encode(users)

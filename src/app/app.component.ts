@@ -134,7 +134,6 @@ export class AppComponent {
       }
     });
     bgmode.enable();
-    nakama.check_if_online();
     nakama.on_socket_connected['connection_check'] = () => {
       nakama.check_if_online();
     }

@@ -18,29 +18,6 @@ export class LanguageSettingService {
   text = {
     Portal: {},
     Main: {},
-    Settings: {},
-    Profile: {},
-    Nakama: {
-      UnexpectedLoginErr: 'Login Failed',
-    },
-    GlobalAct: {
-      FailedToDownloadGodot: 'Failed to Download',
-      OnlineMode: 'Online',
-      OnlineMode_text: 'You are connected to the server',
-      OfflineMode: 'Offline',
-      OfflineMode_text: 'No server connected',
-    },
-    ChatRoom: {
-      attachments: 'Attachments',
-    },
-    TodoDetail: {},
-    Administrator: {
-      AdminNotiTitle: 'Assistant server manager',
-      CanUseAsAdmin: 'Use admin features',
-    },
-    QRElse: {},
-    GroupDetail: {},
-    voidDraw: {},
   };
 
   constructor() {

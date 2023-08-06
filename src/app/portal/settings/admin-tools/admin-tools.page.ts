@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonAccordionGroup } from '@ionic/angular';
+import { AlertController, IonAccordionGroup } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -15,6 +15,7 @@ export class AdminToolsPage implements OnInit {
     public lang: LanguageSettingService,
     private nakama: NakamaService,
     private p5toast: P5ToastService,
+    private alertCtrl: AlertController,
   ) { }
 
   /** 서버 정보, 온라인 상태의 서버만 불러온다 */
@@ -119,5 +120,34 @@ export class AdminToolsPage implements OnInit {
         break;
     }
     this.UserSel.value = undefined;
+  }
+
+  remove_user(user: any) {
+    let _is_official = this.servers[this.index].isOfficial;
+    let _target = this.servers[this.index].target;
+    this.alertCtrl.create({
+      header: user.display_name,
+      message: this.lang.text['AdminTools']['ForceLeave'],
+      buttons: [{
+        text: this.lang.text['AdminTools']['ApplyLeave'],
+        cssClass: 'danger',
+        handler: async () => {
+          try {
+            await this.nakama.servers[_is_official][_target].client.rpc(
+              this.nakama.servers[_is_official][_target].session,
+              'remove_account_fn', { user_id: user.user_id });
+            this.p5toast.show({
+              text: `${this.lang.text['AdminTools']['UserLeaved']}: ${user.display_name}`,
+            })
+            this.refresh_all_user();
+          } catch (e) {
+            this.p5toast.show({
+              text: `${this.lang.text['AdminTools']['UserLeavedFailed']}: ${e}`,
+            })
+          }
+
+        }
+      }]
+    }).then(v => v.present());
   }
 }
