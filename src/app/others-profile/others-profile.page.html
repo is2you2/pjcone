@@ -18,7 +18,7 @@ SPDX-License-Identifier: MIT -->
           <img [hidden]="!info['user'].img" id="profile_img" class="profile_img" [src]="info['user'].img" alt="프로필 이미지">
           <img [hidden]="!tmp_img" id="profile_tmp_img" class="profile_img" [src]="tmp_img" alt="프로필 이미지">
           <div class="fore-gradient"></div>
-          <div class="username">{{info['user'].display_name ?? lang.text['Profile']['noname_user']}}</div>
+          <div class="username">{{info['user'].display_name || lang.text['Profile']['noname_user']}}</div>
         </div>
         <ion-item-divider>
           <ion-label style="width: 100%;">{{lang.text['Profile']['main_content']}}</ion-label>
