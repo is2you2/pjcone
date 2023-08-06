@@ -150,7 +150,7 @@ export class GroupServerPage implements OnInit {
     try {
       await this.nakama.servers[_is_official][_target].client.rpc(
         this.nakama.servers[_is_official][_target].session,
-        'remove_account_fn', {});
+        'remove_account_fn', { user_id: this.nakama.servers[_is_official][_target].session.user_id });
       this.p5toast.show({
         text: this.lang.text['GroupServer']['DeleteAccountSucc'],
       });
