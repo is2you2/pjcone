@@ -35,6 +35,9 @@ func _on_ColorPicker_gui_input(event):
 				current.v = 1
 			selectedColor = current
 			$SelectColor.texture.gradient.set_color(0, current)
+			$Alpha.texture.gradient.set_color(0, current)
+			current.a = 0
+			$Alpha.texture.gradient.set_color(1, current)
 
 
 func float_map(value, InputA, InputB, OutputA, OutputB):
@@ -55,3 +58,28 @@ func change_value(v:float):
 	is_init_value = false
 	selectedColor = current
 	$SelectColor.texture.gradient.set_color(0, current)
+	$Alpha.texture.gradient.set_color(0, current)
+	current.a = 0
+	$Alpha.texture.gradient.set_color(1, current)
+
+
+func _on_Alpha_gui_input(event):
+	if event is InputEventScreenDrag:
+		change_alpha(1 - event.position.x / 191.0)
+
+
+func change_alpha(v:float):
+	var children:= $ColorBar.get_children()
+	for child in children:
+		var orig_color_0:Color = child.texture.gradient.get_color(0)
+		orig_color_0.a = v
+		child.texture.gradient.set_color(0, orig_color_0)
+	var current:Color = $SelectColor.texture.gradient.get_color(0)
+	current.a = v
+	is_init_value = false
+	selectedColor = current
+	$SelectColor.texture.gradient.set_color(0, current)
+	current.a = 1
+	$Alpha.texture.gradient.set_color(0, current)
+	current.a = 0
+	$Alpha.texture.gradient.set_color(1, current)

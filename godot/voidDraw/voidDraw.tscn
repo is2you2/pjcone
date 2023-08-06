@@ -1,4 +1,4 @@
-[gd_scene load_steps=61 format=2]
+[gd_scene load_steps=64 format=2]
 
 [ext_resource path="res://ColorPicker.gd" type="Script" id=1]
 [ext_resource path="res://voidDraw.gd" type="Script" id=2]
@@ -207,6 +207,12 @@ colors = PoolColorArray( 1, 1, 1, 1, 0, 0, 0, 1 )
 
 [sub_resource type="GradientTexture" id=60]
 gradient = SubResource( 59 )
+
+[sub_resource type="Gradient" id=61]
+colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
+
+[sub_resource type="GradientTexture" id=62]
+gradient = SubResource( 61 )
 
 [sub_resource type="Animation" id=33]
 resource_name = "Init"
@@ -582,6 +588,29 @@ tracks/31/keys = {
 "points": PoolRealArray( 1e-05, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0 ),
 "times": PoolRealArray( 0, 0.7 )
 }
+tracks/32/type = "bezier"
+tracks/32/path = NodePath("Alpha:rect_scale:y")
+tracks/32/interp = 1
+tracks/32/loop_wrap = true
+tracks/32/imported = false
+tracks/32/enabled = true
+tracks/32/keys = {
+"points": PoolRealArray( 1e-05, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 0.7 )
+}
+
+[sub_resource type="Animation" id=63]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/path = NodePath("Alpha:rect_scale:y")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"points": PoolRealArray( 1, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0 )
+}
 
 [node name="voidDraw" type="Node"]
 
@@ -597,7 +626,7 @@ script = ExtResource( 1 )
 [node name="BackgroundFade" type="ColorRect" parent="ColorPicker"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color( 0, 0, 0, 0 )
+color = Color( 0, 0, 0, 0.352941 )
 
 [node name="Center" type="Control" parent="ColorPicker"]
 anchor_left = 0.5
@@ -611,7 +640,6 @@ anchor_bottom = 1.0
 mouse_filter = 1
 
 [node name="Col" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -626,7 +654,6 @@ texture = SubResource( 36 )
 expand = true
 
 [node name="Col14" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -641,7 +668,6 @@ texture = SubResource( 5 )
 expand = true
 
 [node name="Col2" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -656,7 +682,6 @@ texture = SubResource( 38 )
 expand = true
 
 [node name="Col15" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -671,7 +696,6 @@ texture = SubResource( 2 )
 expand = true
 
 [node name="Col3" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -686,7 +710,6 @@ texture = SubResource( 8 )
 expand = true
 
 [node name="Col16" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -701,7 +724,6 @@ texture = SubResource( 40 )
 expand = true
 
 [node name="Col4" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -716,7 +738,6 @@ texture = SubResource( 10 )
 expand = true
 
 [node name="Col17" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -731,7 +752,6 @@ texture = SubResource( 42 )
 expand = true
 
 [node name="Col5" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -746,7 +766,6 @@ texture = SubResource( 12 )
 expand = true
 
 [node name="Col18" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -761,7 +780,6 @@ texture = SubResource( 44 )
 expand = true
 
 [node name="Col6" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -776,7 +794,6 @@ texture = SubResource( 14 )
 expand = true
 
 [node name="Col19" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -791,7 +808,6 @@ texture = SubResource( 46 )
 expand = true
 
 [node name="Col7" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -806,7 +822,6 @@ texture = SubResource( 16 )
 expand = true
 
 [node name="Col20" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -821,7 +836,6 @@ texture = SubResource( 48 )
 expand = true
 
 [node name="Col8" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -836,7 +850,6 @@ texture = SubResource( 18 )
 expand = true
 
 [node name="Col21" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -851,7 +864,6 @@ texture = SubResource( 50 )
 expand = true
 
 [node name="Col9" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -866,7 +878,6 @@ texture = SubResource( 20 )
 expand = true
 
 [node name="Col22" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -881,7 +892,6 @@ texture = SubResource( 52 )
 expand = true
 
 [node name="Col10" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -896,7 +906,6 @@ texture = SubResource( 22 )
 expand = true
 
 [node name="Col23" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -911,7 +920,6 @@ texture = SubResource( 54 )
 expand = true
 
 [node name="Col11" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -926,7 +934,6 @@ texture = SubResource( 24 )
 expand = true
 
 [node name="Col24" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -941,7 +948,6 @@ texture = SubResource( 56 )
 expand = true
 
 [node name="Col12" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -956,7 +962,6 @@ texture = SubResource( 26 )
 expand = true
 
 [node name="Col25" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -971,7 +976,6 @@ texture = SubResource( 58 )
 expand = true
 
 [node name="Col13" type="TextureRect" parent="ColorPicker/ColorBar"]
-visible = false
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -995,7 +999,6 @@ margin_left = -32.0
 margin_top = -12.0
 margin_right = 32.0
 margin_bottom = 52.0
-rect_scale = Vector2( 1e-05, 1e-05 )
 rect_pivot_offset = Vector2( 32, 32 )
 texture = SubResource( 30 )
 expand = true
@@ -1010,16 +1013,30 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 margin_left = -90.0
-margin_top = 83.0
+margin_top = 67.0
 margin_right = 101.0
-margin_bottom = 113.0
+margin_bottom = 97.0
 texture = SubResource( 60 )
+expand = true
+
+[node name="Alpha" type="TextureRect" parent="ColorPicker"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -90.0
+margin_top = 108.0
+margin_right = 101.0
+margin_bottom = 138.0
+texture = SubResource( 62 )
 expand = true
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="ColorPicker"]
 anims/Init = SubResource( 33 )
+anims/RESET = SubResource( 63 )
 
 [connection signal="gui_input" from="ColorPicker" to="ColorPicker" method="_on_ColorPicker_gui_input"]
 [connection signal="visibility_changed" from="ColorPicker" to="ColorPicker" method="_on_ColorPicker_visibility_changed"]
 [connection signal="pressed" from="ColorPicker/SelectColor/ToolButton" to="DrawPanel" method="set_line_color"]
 [connection signal="gui_input" from="ColorPicker/Brightness" to="ColorPicker" method="_on_Brightness_gui_input"]
+[connection signal="gui_input" from="ColorPicker/Alpha" to="ColorPicker" method="_on_Alpha_gui_input"]
