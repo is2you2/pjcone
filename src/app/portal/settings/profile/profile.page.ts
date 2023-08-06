@@ -164,10 +164,11 @@ export class ProfilePage implements OnInit {
             let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
             if (all_channels)
               all_channels.forEach((channelId: any) => {
-                servers[i].socket.writeChatMessage(channelId, {
-                  user_update: 'modify_content',
-                  noti_form: `: ${this.original_profile['display_name']}`,
-                });
+                if (this.original_profile['display_name'] !== undefined)
+                  servers[i].socket.writeChatMessage(channelId, {
+                    user_update: 'modify_content',
+                    noti_form: `: ${this.original_profile['display_name']}`,
+                  });
               });
           } catch (e) {
             continue;
@@ -226,10 +227,11 @@ export class ProfilePage implements OnInit {
       if (all_channels.length)
         all_channels.forEach((channelId: any) => {
           if (this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target][channelId]['status'] != 'missing')
-            servers[i].socket.writeChatMessage(channelId, {
-              user_update: 'remove_content',
-              noti_form: `: ${this.original_profile['display_name']}`,
-            });
+            if (this.original_profile['display_name'] !== undefined)
+              servers[i].socket.writeChatMessage(channelId, {
+                user_update: 'remove_content',
+                noti_form: `: ${this.original_profile['display_name']}`,
+              });
         });
       await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
         encodeURIComponent('content'));
@@ -287,10 +289,11 @@ export class ProfilePage implements OnInit {
         });
         let all_channels = this.nakama.rearrange_channels();
         all_channels.forEach(async channel => {
-          await servers[i].socket.writeChatMessage(channel.id, {
-            user_update: 'modify_img',
-            noti_form: `: ${this.original_profile['display_name']}`,
-          });
+          if (this.original_profile['display_name'] !== undefined)
+            await servers[i].socket.writeChatMessage(channel.id, {
+              user_update: 'modify_img',
+              noti_form: `: ${this.original_profile['display_name']}`,
+            });
         });
       }).catch(e => {
         console.error('inputImageSelected_err: ', e);
@@ -407,12 +410,13 @@ export class ProfilePage implements OnInit {
           let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
           if (all_channels)
             all_channels.forEach((channelId: any) => {
-              servers[i].socket.writeChatMessage(channelId, {
-                user_update: 'modify_data',
-                noti_form: this.original_profile['display_name'] == this.nakama.users.self['display_name']
-                  ? `: ${this.original_profile['display_name']}`
-                  : `: ${this.original_profile['display_name']} -> ${this.nakama.users.self['display_name']}`,
-              });
+              if (this.original_profile['display_name'] !== undefined)
+                servers[i].socket.writeChatMessage(channelId, {
+                  user_update: 'modify_data',
+                  noti_form: this.original_profile['display_name'] == this.nakama.users.self['display_name']
+                    ? `: ${this.original_profile['display_name']}`
+                    : `: ${this.original_profile['display_name']} -> ${this.nakama.users.self['display_name']}`,
+                });
             });
         }
       }
