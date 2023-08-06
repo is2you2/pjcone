@@ -735,14 +735,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (!this.userInput.create_at) // 생성 날짜 기록
       this.userInput.create_at = new Date().getTime();
     if (!this.userInput.id || !this.isModify) { // 할 일 구분자 생성 (내 기록은 날짜시간, 서버는 서버-시간 (isOfficial/target/DateTime),
-      //그룹채널 기록은 채널-메시지: isOfficial/target/channel_id/msg_id)
       if (!this.userInput.remote) // local
         this.userInput.id = new Date(this.userInput.create_at).toISOString().replace(/[:|.|\/]/g, '_');
-      else if (!this.userInput.remote.channel_id) // server
-        this.userInput.id = `${this.userInput.remote.isOfficial}_${this.userInput.remote.target}_${new Date(this.userInput.create_at).toISOString().replace(/[:|.|\/]/g, '_')}`;
-      else {// group
-        this.userInput.id = `${this.userInput.remote.isOfficial}_${this.userInput.remote.target}_${this.userInput.remote.channel_id}_${this.userInput.remote.message_id}`;
-      }
+      else this.userInput.id = `${this.userInput.remote.isOfficial}_${this.userInput.remote.target}_${new Date(this.userInput.create_at).toISOString().replace(/[:|.|\/]/g, '_')}`;
     }
     // 알림 예약 생성
     if (this.userInput.noti_id) {  // 알림 아이디가 있다면 삭제 후 재배정
@@ -869,23 +864,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
       let request = {};
-      if (this.userInput.remote.channel_id) {
-        request = {
-          collection: 'group_todo',
-          key: this.userInput.id,
-          permission_read: 2,
-          permission_write: 1,
-          value: this.userInput,
-        };
-      } else {
-        request = {
-          collection: 'server_todo',
-          key: this.userInput.id,
-          permission_read: 2,
-          permission_write: 1,
-          value: this.userInput,
-        };
-      }
+      request = {
+        collection: 'server_todo',
+        key: this.userInput.id,
+        permission_read: 2,
+        permission_write: 1,
+        value: this.userInput,
+      };
       try {
         this.userInput.attach.forEach(file => {
           URL.revokeObjectURL(file['thumbnail']);
@@ -932,9 +917,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
     if (this.global.godot_window['add_todo'])
       this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, (_ev) => {
-      this.navCtrl.back();
-    });
+    await this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`);
+    this.navCtrl.back();
   }
 
   /** 이 해야할 일 삭제 */
@@ -952,7 +936,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   /** 저장소로부터 데이터를 삭제하는 명령 모음  
-   * @param isDelete 삭제 여부를 검토하여 셀프 계정 공유에 활용
+   * @param isDelete 삭제 여부를 검토하여 애니메이션 토글
    */
   async deleteFromStorage(isDelete = true) {
     this.isButtonClicked = true;
@@ -960,17 +944,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     loading.present();
     if (this.userInput.remote) {
       let request = {};
-      if (this.userInput.remote.channel_id) {
-        request = {
-          collection: 'group_todo',
-          key: this.userInput.id,
-        };
-      } else {
-        request = {
-          collection: 'server_todo',
-          key: this.userInput.id,
-        };
-      }
+      request = {
+        collection: 'server_todo',
+        key: this.userInput.id,
+      };
       try {
         if (!this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target])
           throw 'Server deleted.';
