@@ -2524,13 +2524,14 @@ export class NakamaService {
     let partsize = Math.ceil(part_len / 120000);
     for (let i = startFrom; i < partsize; i++)
       try {
+        let part = await this.global.req_file_part_base64(path, i, part_len);
         await this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
             collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
             key: `msg_${_msg.message_id}_${i}`,
             permission_read: 2,
             permission_write: 1,
-            value: { data: await this.global.req_file_part_base64(path, i, part_len) },
+            value: { data: part },
           }])
         msg.content['transfer_index'] = partsize - i;
       } catch (e) {
@@ -2599,13 +2600,14 @@ export class NakamaService {
         }]);
       // 여기서 전체 길이로 for문을 돌리고 매 회차마다 파트를 받아서 base64 변환 후 집어넣어야 함
       for (let i = 0; i < copied_info.partsize; i++) {
+        let part = await this.global.req_file_part_base64(copied_info.path, i, copied_info['filesize']);
         await this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
             collection: _collection,
             key: _key_force ? `${_key_force}_${i}` : (copied_info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`),
             permission_read: 2,
             permission_write: 1,
-            value: { data: await this.global.req_file_part_base64(copied_info.path, i, copied_info['filesize']) },
+            value: { data: part },
           }]);
       }
     } catch (e) {
