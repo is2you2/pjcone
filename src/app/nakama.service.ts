@@ -1152,6 +1152,7 @@ export class NakamaService {
           delete channels_copy[_is_official][_target][_cid]['presences'];
           delete channels_copy[_is_official][_target][_cid]['cnoti_id'];
         });
+        if (!ChannelIds.length) delete channels_copy[_is_official][_target];
       });
     });
     this.indexed.saveTextFileToUserPath(JSON.stringify(channels_copy), 'servers/channels.json');
@@ -1313,6 +1314,7 @@ export class NakamaService {
               }
             }
         });
+        if (!GroupId.length) delete copied_group[_is_official][_target];
       });
     });
     this.indexed.saveTextFileToUserPath(JSON.stringify(copied_group), 'servers/groups.json', () => {
