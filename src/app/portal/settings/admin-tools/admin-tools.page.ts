@@ -3,6 +3,7 @@ import { AlertController, IonAccordionGroup } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import { StatusManageService } from 'src/app/status-manage.service';
 
 @Component({
   selector: 'app-admin-tools',
@@ -16,6 +17,7 @@ export class AdminToolsPage implements OnInit {
     private nakama: NakamaService,
     private p5toast: P5ToastService,
     private alertCtrl: AlertController,
+    public statusBar: StatusManageService,
   ) { }
 
   /** 서버 정보, 온라인 상태의 서버만 불러온다 */
@@ -89,7 +91,10 @@ export class AdminToolsPage implements OnInit {
       this.nakama.servers[_is_official][_target].session,
       'query_all_users', {}).then(v => {
         this.all_users = v.payload as any;
-        this.all_users.forEach(user => user['create_time_display'] = new Date(user.create_time).toLocaleString());
+        for (let i = 0, j = this.all_users.length; i < j; i++) {
+          this.nakama.save_other_user(this.all_users[i], _is_official, _target);
+          this.all_users[i] = this.nakama.load_other_user(this.all_users[i].user_id, _is_official, _target);
+        }
         this.all_user_page = Math.ceil(this.all_users.length / this.LIST_PAGE_SIZE);
         this.current_user_page = 0;
         this.change_user_list_page(1);
