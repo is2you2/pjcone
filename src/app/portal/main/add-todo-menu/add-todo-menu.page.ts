@@ -753,6 +753,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     let attach_changed = false;
     { // 첨부파일의 변경사항 여부 확인
       try {
+        received_json.attach.forEach(attach => {
+          delete attach['exist'];
+          delete attach['thumbnail'];
+          delete attach['base64'];
+          delete attach['blob'];
+        });
         let received = JSON.stringify(received_json.attach);
         let current = JSON.parse(JSON.stringify(this.userInput.attach));
         current.forEach((attach: any) => {
