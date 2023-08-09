@@ -358,12 +358,12 @@ export class GlobalActService {
         let path_key = path.replace('/', '_');
         this.partsize_req[`${path_key}_len`](partsize);
       }
-      // req_file_part(path, index)
+      // req_file_part(path, index, full_len)
       this.FileManager['get_part_data'] = (path: string, base64: string) => {
         let path_key = path.replace('/', '_');
         this.partsize_req[`${path_key}_data`](base64);
       }
-      // req_file_write(path, index, base64)
+      // req_file_write(path, index, full_len, base64)
       this.FileManager['save_part'] = (path: string) => {
         let path_key = path.replace('/', '_');
         this.partsize_req[`${path_key}_saved`]();
@@ -398,19 +398,33 @@ export class GlobalActService {
       this.partsize_req[`${path_key}_data`] = (base64: string) => {
         done(base64);
       }
-      this.FileManager['req_file_part'](path, index, full_length);
+      let check_recursive = () => {
+        if (this.FileManager['req_file_part'])
+          this.FileManager['req_file_part'](path, index, full_length);
+        else setTimeout(() => {
+          check_recursive();
+        }, 1000);
+      }
+      check_recursive();
     });
   }
 
   /** 파일 파트 저장하기 */
-  async save_file_part(path: string, index: number, base64: string): Promise<void> {
+  async save_file_part(path: string, index: number, full_len: number, base64: string): Promise<void> {
     let path_key = path.replace('/', '_');
     return new Promise(async (done) => {
       await this.CreateFileManager();
       this.partsize_req[`${path_key}_saved`] = () => {
         done();
       }
-      this.FileManager['req_file_write'](path, index, base64);
+      let check_recursive = () => {
+        if (this.FileManager['req_file_write'])
+          this.FileManager['req_file_write'](path, index, full_len, base64);
+        else setTimeout(() => {
+          check_recursive();
+        }, 1000);
+      }
+      check_recursive();
     });
   }
 
@@ -420,7 +434,9 @@ export class GlobalActService {
     delete this.partsize_req[`${path_key}_len`];
     delete this.partsize_req[`${path_key}_data`];
     delete this.partsize_req[`${path_key}_saved`];
-    this.indexed.removeFileFromUserPath(`${path}.history`);
+    setTimeout(() => {
+      this.indexed.removeFileFromUserPath(`${path}.history`);
+    }, 0);
   }
 
   /** 메시지에 썸네일 콘텐츠를 생성 */

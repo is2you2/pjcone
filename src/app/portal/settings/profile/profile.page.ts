@@ -140,7 +140,7 @@ export class ProfilePage implements OnInit {
       this.global.godot.remove();
       let this_file: FileInfo = {};
       this_file.filename = ev.target.files[0].name;
-      this_file.file_ext = ev.target.files[0].name.split('.')[1] || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
+      this_file.file_ext = ev.target.files[0].name.split('.').pop() || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
       if (this_file.file_ext != 'pck') {
         this.p5toast.show({
           text: this.lang.text['EngineWorksPPT']['FileExtPck'],

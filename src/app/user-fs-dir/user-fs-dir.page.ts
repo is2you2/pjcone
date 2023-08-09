@@ -100,7 +100,7 @@ export class UserFsDirPage implements OnInit {
           _info.dir = _list[i].substring(0, _list[i].lastIndexOf('/'));
           switch (_info.mode) {
             case 33206: // 파일인 경우
-              _info.file_ext = _info.name.split('.')[1];
+              _info.file_ext = _info.name.split('.').pop();
               this.global.set_viewer_category_from_ext(_info);
               if (_info.viewer == 'image')
                 this.indexed.loadBlobFromUserPath(_info.path, '', blob => {

@@ -66,12 +66,21 @@ func make_history_file(path:String, type:String, index:int):
 	file.close()
 
 
+# 전송작업 파일 삭제
+func remove_history_file(path:String):
+	var dir:= Directory.new()
+	var err:= dir.remove(path)
+
+
 # 요청하는 파일 파트 돌려주기
 # args[0]: path, [1]: index, [2]: full_len
 func req_file_part(args):
 	var path:String = 'user://%s' % args[0]
 	make_recursive(path)
-	make_history_file(path, 'upload', args[1])
+	var part_len:int = args[2] / 120000
+	if args[1] < part_len:
+		make_history_file(path, 'upload', args[1])
+	else: remove_history_file(path)
 	var file:= File.new()
 	var base64:String
 	var err:= file.open(path, File.READ)
@@ -85,11 +94,14 @@ func req_file_part(args):
 
 
 # 수신 받은 파일 파트를 이어서 쓰기
-# args[0]: path, [1]: index, [2]: base64_part
+# args[0]: path, [1]: index, [2]: full_len, [3]: base64_part
 func req_file_write(args):
 	var path:String = 'user://%s' % args[0]
 	make_recursive(path)
-	make_history_file(path, 'download', args[1])
+	var part_len:int = args[2] / 120000
+	if args[1] < part_len:
+		make_history_file(path, 'download', args[1])
+	else: remove_history_file(path)
 	var file:= File.new()
 	var err:= file.open(path, File.READ_WRITE)
 	if err == OK:

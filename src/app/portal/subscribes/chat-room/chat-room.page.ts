@@ -270,7 +270,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       loading.present();
       this.userInput['file'] = {};
       this.userInput.file['filename'] = ev.target.files[0].name;
-      this.userInput.file['file_ext'] = ev.target.files[0].name.split('.')[1] || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
+      this.userInput.file['file_ext'] = ev.target.files[0].name.split('.').pop() || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
       this.userInput.file['size'] = ev.target.files[0].size;
       this.userInput.file['type'] = ev.target.files[0].type;
       this.userInput.file['typeheader'] = ev.target.files[0].type.split('/')[0];
@@ -671,6 +671,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.indexed.loadTextFromUserPath(`${path}.history`, async (e, v) => {
             if (e && v) {
               let json = JSON.parse(v);
+              delete msg.content['text'];
               // 이전에 중단된 전송을 이어서하기
               switch (json['type']) {
                 case 'upload':
@@ -739,6 +740,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (b) this.indexed.loadTextFromUserPath(`${path}.history`, (e, v) => {
         if (e && v) {
           let json = JSON.parse(v);
+          delete msg.content['text'];
           msg.content['transfer_index'] = msg.content['partsize'] - json['index'];
         }
       });
