@@ -304,8 +304,13 @@ export class UserFsDirPage implements OnInit {
         text: this.lang.text['UserFsDir']['RemoveApply'],
         handler: () => {
           this.indexed.GetFileListFromDB(this.CurrentDir, (list) => {
-            list.forEach(path => this.indexed.removeFileFromUserPath(path))
-            this.LoadAllIndexedFiles();
+            list.forEach(async path => await this.indexed.removeFileFromUserPath(path))
+            for (let i = this.DirList.length - 1; i >= 0; i--)
+              if (this.DirList[i].path.indexOf(this.CurrentDir) == 0)
+                this.DirList.splice(i, 1);
+            for (let i = this.FileList.length - 1; i >= 0; i--)
+              if (this.FileList[i].path.indexOf(this.CurrentDir) == 0)
+                this.FileList.splice(i, 1);
             this.MoveToUpDir();
           })
         }
