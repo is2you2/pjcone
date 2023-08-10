@@ -211,10 +211,10 @@ export class LocalNotiService {
       const input: NotificationOptions = {
         badge: `${opt.badge}`,
         body: opt.body,
-        icon: `assets/icon/${opt.icon || header || 'favicon'}.png`,
+        icon: `assets/icon/${opt.icon || opt.smallIcon_ln || header || 'favicon'}.png`,
         image: opt.image,
         lang: opt.lang_wn,
-        silent: !this.settings.silent[opt.icon] || false,
+        silent: !this.settings.silent[opt.icon || opt.smallIcon_ln] || false,
         tag: opt.tag_wn,
         actions: opt.actions_wn,
         data: opt.data_wn,
