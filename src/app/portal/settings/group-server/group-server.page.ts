@@ -3,7 +3,6 @@
 
 import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import * as p5 from "p5";
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -31,18 +30,6 @@ export class GroupServerPage implements OnInit {
   servers: ServerInfo[];
 
   ngOnInit() {
-    new p5((p: p5) => {
-      p.setup = () => {
-        p.noCanvas();
-        p.loadStrings(`assets/data/infos/${this.lang.lang}/group-server.txt`, v => {
-          this.info = v.join('\n');
-          p.remove();
-        }, e => {
-          console.error('그룹서버 설명 파일 불러오기 실패: ', e);
-          p.remove();
-        });
-      }
-    });
     this.servers = this.nakama.get_all_server_info(true);
   }
 
