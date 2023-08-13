@@ -5,6 +5,8 @@ import { Component, OnInit } from '@angular/core';
 import { iosTransitionAnimation, NavController } from '@ionic/angular';
 import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
+import * as p5 from 'p5';
+import { GlobalActService } from '../global-act.service';
 
 @Component({
   selector: 'app-portal',
@@ -17,15 +19,43 @@ export class PortalPage implements OnInit {
     private nav: NavController,
     public lang: LanguageSettingService,
     public nakama: NakamaService,
+    private global: GlobalActService,
   ) { }
 
   ngOnInit() { }
+
+  ionViewWillEnter() {
+    this.create_p5sensor();
+  }
+
+  p5sensor: p5;
+  create_p5sensor() {
+    if (!this.p5sensor && this.TodoIcon == 'checkbox') {
+      this.p5sensor = new p5((p: p5) => {
+        p.setup = () => {
+          p.noCanvas();
+        }
+        p.draw = () => {
+          if (this.global.godot_window['acc_input'])
+            this.global.godot_window['acc_input'](p.accelerationX, p.accelerationY);
+        }
+      });
+    }
+  }
+
+  remove_p5sensor() {
+    if (this.p5sensor) {
+      this.p5sensor.remove();
+      this.p5sensor = null;
+    }
+  }
 
   /** 하단 탭을 눌러 알림 확인함 처리 */
   subscribe_button() {
     this.nakama.has_new_channel_msg = false;
     this.SubscribesIcon = 'chatbubbles';
     this.TodoIcon = 'checkbox-outline';
+    this.remove_p5sensor();
   }
 
   /** 하단 탭을 눌러 설정페이지로 이동 */
@@ -42,5 +72,10 @@ export class PortalPage implements OnInit {
   bottom_tab_selected() {
     this.SubscribesIcon = 'chatbubbles-outline';
     this.TodoIcon = 'checkbox';
+    this.create_p5sensor();
+  }
+
+  ionViewDidLeave() {
+    this.remove_p5sensor();
   }
 }

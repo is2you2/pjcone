@@ -5,6 +5,7 @@ extends Node
 var window # iframe 창
 var add_todo_func = JavaScript.create_callback(self, 'add_todo')
 var remove_todo_func = JavaScript.create_callback(self, 'remove_todo')
+var acc_input_func = JavaScript.create_callback(self, 'acc_input')
 
 # 할 일 개체를 잡을 때 패닝 막기 ($Centered/CenterCamera)
 var block_panning:= false
@@ -35,10 +36,18 @@ func _ready():
 		window = JavaScript.get_interface('window')
 		window.add_todo = add_todo_func
 		window.remove_todo = remove_todo_func
+		window.acc_input = acc_input_func
 	else: # 엔진에서 테스트중일 때
 		print_debug('on test...')
 	greater_gravity_at_start()
+	screen_ratio = get_viewport().size.y / 50
 
+var input_area_pos:Vector2
+var screen_ratio:= 0.0
+# 폰을 움직여서 중력장을 움직임
+func acc_input(args):
+	input_area_pos.x = -args[0] * screen_ratio
+	input_area_pos.y = args[1] * screen_ratio
 
 var gravity_value:= 3860
 const GRAVITY_TARGET:= 2240
@@ -180,5 +189,5 @@ var current_time:int
 func _process(_delta):
 	current_time = OS.get_system_time_msecs()
 	window_size = $Todos.rect_size
-	$Todos/Area2D.position = window_size / 2
+	$Todos/Area2D.position = window_size / 2 + input_area_pos
 	$Todos/Area2D/CollisionShape2D.shape.radius = window_size.x + GEN_MARGIN if window_size.x > window_size.y else window_size.y + GEN_MARGIN
