@@ -4,7 +4,7 @@ extends Control
 
 
 onready var target_camera:= $Camera2D
-
+onready var parent:= get_node('../..')
 
 # touches 오류 방지
 var mutex:= Mutex.new()
@@ -14,7 +14,6 @@ var touches:Dictionary = {}
 var tmp:Dictionary = {}
 # 판넬 움직이기
 func _input(event):
-	# 터치 시작과 종료
 	if event is InputEventScreenTouch or event is InputEventMouseButton:
 		var index = 0 if event is InputEventMouseButton else event.index
 		if event.pressed: # 등록
@@ -30,11 +29,22 @@ func _input(event):
 				touches.erase(index)
 				mutex.unlock()
 				tmp.clear()
+		if event is InputEventMouseButton:
+			match(event.button_index):
+				1, 2: # 좌우 클릭
+					pass
+				4: # 휠 위로
+					wheel_zoom_act(.95)
+				5: # 휠 아래로
+					wheel_zoom_act(1.1)
+				_: # 가운데 클릭 및 기타 버튼
+					reset_viewport()
 	if event is InputEventScreenDrag or event is InputEventMouseMotion:
 		var touches_length:= touches.size()
 		if touches_length:
 			var index = 0 if event is InputEventMouseMotion else event.index
 			if touches_length == 1: # 패닝
+				if parent.block_panning: return
 				var last_info:Vector2 = touches[index]
 				target_camera.translate((last_info - event.position) * target_camera.zoom.x)
 				mutex.lock()
@@ -56,16 +66,6 @@ func _input(event):
 				mutex.lock()
 				touches[index] = event.position
 				mutex.unlock()
-	if event is InputEventMouseButton:
-		match(event.button_index):
-			1, 2: # 좌우 클릭
-				pass
-			4: # 휠 위로
-				wheel_zoom_act(.95)
-			5: # 휠 아래로
-				wheel_zoom_act(1.1)
-			_: # 가운데 클릭 및 기타 버튼
-				reset_viewport()
 
 
 # 마우스 휠: 확대/축소 행동

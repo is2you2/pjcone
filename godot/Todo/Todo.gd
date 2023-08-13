@@ -6,6 +6,8 @@ var window # iframe 창
 var add_todo_func = JavaScript.create_callback(self, 'add_todo')
 var remove_todo_func = JavaScript.create_callback(self, 'remove_todo')
 
+# 할 일 개체를 잡을 때 패닝 막기 ($Centered/CenterCamera)
+var block_panning:= false
 
 # 앱 시작과 동시에 동작하려는 pck 정보를 받아옴
 func _ready():
@@ -164,7 +166,6 @@ func _on_Add_gui_input(event):
 					'written': OS.get_system_time_msecs(),
 					'limit': OS.get_system_time_msecs() + 10000,
 					'importance': '0',
-					'logs': [],
 					'description': 'test_desc',
 					'remote': null,
 					'attach': {},

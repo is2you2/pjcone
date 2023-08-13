@@ -79,6 +79,9 @@ var test_todo_index:= 0
 # 클릭 받아내기
 func _on_UI_gui_input(event):
 	if event is InputEventMouseButton:
+		if event.pressed:
+			parent_node.block_panning = true
+			mode = RigidBody2D.MODE_STATIC
 		if not event.pressed and event.button_index == 1:
 			if ($CollisionShape2D/Node2D/UI.rect_size / 2).distance_to(event.position) <= $CollisionShape2D.shape.radius:
 				if OS.has_feature('JavaScript'): # 웹에서 사용됨
@@ -98,8 +101,11 @@ func _on_UI_gui_input(event):
 							'startFrom': OS.get_system_time_msecs() + 5000,
 							'limit': OS.get_system_time_msecs() + 10000,
 							'importance': str(test_todo_index),
-							'logs': [],
 							'description': 'test_desc',
 							'remote': null,
 							'attach': {},
 						})])
+			parent_node.block_panning = false
+			mode = RigidBody2D.MODE_RIGID
+	if parent_node.block_panning and event is InputEventMouseMotion:
+		translate(event.relative)
