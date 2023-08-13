@@ -76,6 +76,8 @@ func map(value, InputA, InputB, OutputA, OutputB):
 
 
 var test_todo_index:= 0
+var block_todo_click:= false
+var drag_tick:= 0
 # 클릭 받아내기
 func _on_UI_gui_input(event):
 	if event is InputEventMouseButton:
@@ -83,7 +85,7 @@ func _on_UI_gui_input(event):
 			parent_node.block_panning = true
 			mode = RigidBody2D.MODE_STATIC
 		if not event.pressed and event.button_index == 1:
-			if ($CollisionShape2D/Node2D/UI.rect_size / 2).distance_to(event.position) <= $CollisionShape2D.shape.radius:
+			if ($CollisionShape2D/Node2D/UI.rect_size / 2).distance_to(event.position) <= $CollisionShape2D.shape.radius and not block_todo_click:
 				if OS.has_feature('JavaScript'): # 웹에서 사용됨
 					if info.has('id'): # 생성된 할 일 정보
 						window.add_todo_menu(JSON.print(info))
@@ -106,6 +108,11 @@ func _on_UI_gui_input(event):
 							'attach': {},
 						})])
 			parent_node.block_panning = false
+			block_todo_click = false
 			mode = RigidBody2D.MODE_RIGID
+			drag_tick = 0
 	if parent_node.block_panning and event is InputEventMouseMotion:
+		drag_tick = drag_tick + 1
+		if drag_tick > 5:
+			block_todo_click = true
 		translate(event.relative)
