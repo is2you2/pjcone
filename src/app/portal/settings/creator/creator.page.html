@@ -19,8 +19,17 @@ SPDX-License-Identifier: MIT -->
   <ion-item-divider>
     <ion-label>{{lang.text['CreatorInfo']['creatorComment']}}</ion-label>
   </ion-item-divider>
-  <div>
-    <textarea class="infobox content_size" disabled>{{info['text']}}</textarea>
+  <textarea class="infobox content_size" disabled>{{info['text']}}</textarea>
+  <ion-item-divider>
+    <ion-label>{{lang.text['CreatorInfo']['thanks_to']}}</ion-label>
+  </ion-item-divider>
+  <div class="infobox content_size">
+    <span *ngFor="let user of special_thanks_to">
+      <span *ngIf="!user.url">
+        {{user[lang.lang]}}
+      </span>
+      <a *ngIf="user.url" [href]="user.url" target="_system">{{user[lang.lang]}}</a>
+    </span>
   </div>
   <div *ngIf="isMobileApp">
     <ion-item-divider>

@@ -20,6 +20,7 @@ export class CreatorPage implements OnInit {
   info = {
     name: undefined,
   };
+  special_thanks_to = [];
 
   isMobileApp = false;
 
@@ -32,6 +33,18 @@ export class CreatorPage implements OnInit {
         p.noCanvas();
         p.loadJSON(`assets/data/infos/${this.lang.lang}/creator.json`, v => {
           this.info = v;
+          p.remove();
+        }, e => {
+          console.error('번역가 정보 불러오기 실패: ', e);
+          p.remove();
+        });
+      }
+    });
+    new p5((p: p5) => {
+      p.setup = () => {
+        p.noCanvas();
+        p.loadJSON(`assets/data/infos/thanks_to.json`, v => {
+          this.special_thanks_to = v;
           p.remove();
         }, e => {
           console.error('번역가 정보 불러오기 실패: ', e);
