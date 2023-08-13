@@ -9,6 +9,12 @@ var acc_input_func = JavaScript.create_callback(self, 'acc_input')
 
 # 할 일 개체를 잡을 때 패닝 막기 ($Centered/CenterCamera)
 var block_panning:= false
+# 현재 잡힌 할 일 개체
+var grabbed_todo
+
+func release_grabbed_todo():
+	if grabbed_todo:
+		grabbed_todo.release_grab_todo()
 
 # 앱 시작과 동시에 동작하려는 pck 정보를 받아옴
 func _ready():

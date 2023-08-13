@@ -107,12 +107,18 @@ func _on_UI_gui_input(event):
 							'remote': null,
 							'attach': {},
 						})])
-			parent_node.block_panning = false
-			block_todo_click = false
-			mode = RigidBody2D.MODE_RIGID
-			drag_tick = 0
+			release_grab_todo()
 	if parent_node.block_panning and event is InputEventMouseMotion:
 		drag_tick = drag_tick + 1
 		if drag_tick > 5:
 			block_todo_click = true
+			parent_node.grabbed_todo = self
 		translate(event.relative)
+
+# 해야할 일 떼기
+func release_grab_todo():
+	parent_node.block_panning = false
+	parent_node.grabbed_todo = null
+	block_todo_click = false
+	mode = RigidBody2D.MODE_RIGID
+	drag_tick = 0

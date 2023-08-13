@@ -20,6 +20,8 @@ func _input(event):
 			mutex.lock()
 			touches[index] = event.position
 			mutex.unlock()
+			if touches.size() > 1:
+				parent.release_grabbed_todo()
 			if touches.size() > 2: # 기본값으로 복구
 				reset_viewport()
 		else: # 삭제
