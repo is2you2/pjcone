@@ -50,7 +50,7 @@ SPDX-License-Identifier: MIT -->
       [style]="'background-color: ' + statusBar.colors[(statusBar.settings['dedicatedServer']) || 'offline']"></div>
     <ion-label class="form_margin">{{lang.text['Settings']['useDeviceAsServer']}}</ion-label>
   </ion-item>
-  <ion-item button [disabled]="will_enter">
+  <ion-item *ngIf="can_use_http" button [disabled]="will_enter">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[(statusBar.settings['dedicated_groupchat']) || 'offline']"></div>
     <ion-label class="form_margin">{{lang.text['Settings']['joinDediChat']}}</ion-label>

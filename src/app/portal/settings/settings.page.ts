@@ -34,6 +34,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
+  can_use_http = false;
 
   ngOnInit() {
     this.nakama.removeBanner();
@@ -49,6 +50,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.nakama.on_socket_disconnected['settings_admin_check'] = () => {
       this.check_if_admin();
     }
+    this.can_use_http = window.location.protocol == 'http:';
   }
 
   /** 관리자로 등록된 서버들 */
