@@ -28,7 +28,7 @@ export class GroupServerPage implements OnInit {
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
     private modalCtrl: ModalController,
-    private global: GlobalActService,
+    public global: GlobalActService,
     private loadingCtrl: LoadingController,
   ) { }
 
