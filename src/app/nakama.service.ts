@@ -1194,12 +1194,12 @@ export class NakamaService {
     let servers = this.get_all_online_server();
     servers.forEach(server => {
       server.client.joinGroup(server.session, _info.id)
-        .then(async v => {
+        .then(v => {
           if (!v) {
             console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
             return;
           }
-          await server.client.listGroups(server.session, _info['name']).then(async v => {
+          server.client.listGroups(server.session, _info['name']).then(async v => {
             for (let i = 0, j = v.groups.length; i < j; i++)
               if (v.groups[i].id == _info['id']) {
                 let pending_group = v.groups[i];
@@ -1234,6 +1234,8 @@ export class NakamaService {
                       .then(v => {
                         if (v.messages.length)
                           this.update_from_channel_msg(v.messages[0], server.info.isOfficial, server.info.target);
+                        this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
+                        this.save_groups_with_less_info();
                       });
                   });
                 }
