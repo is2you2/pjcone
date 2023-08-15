@@ -7,7 +7,6 @@ import { LoadingController, ModalController, NavController } from '@ionic/angula
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 import * as p5 from "p5";
-import { ProfilePage } from '../../settings/profile/profile.page';
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -22,6 +21,7 @@ import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 import { GroupDetailPage } from '../../settings/group-detail/group-detail.page';
 import { Camera } from '@awesome-cordova-plugins/camera/ngx';
 import { ActivatedRoute, Router } from '@angular/router';
+import { GroupServerPage } from '../../settings/group-server/group-server.page';
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -951,7 +951,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.lock_modal_open = true;
       if (msg['is_me']) // 내 정보
         this.modalCtrl.create({
-          component: ProfilePage,
+          component: GroupServerPage,
         }).then(v => {
           v.onDidDismiss().then((_v) => {
             this.noti.Current = this.info['cnoti_id'];
@@ -959,7 +959,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.noti.ClearNoti(this.info['cnoti_id']);
             this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
           });
-          this.noti.Current = 'ProfilePage';
+          this.noti.Current = 'GroupServerPage';
           v.present();
           this.lock_modal_open = false;
         });

@@ -6,12 +6,12 @@ import { ModalController, NavParams } from '@ionic/angular';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
-import { ProfilePage } from '../profile/profile.page';
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { Notification } from '@heroiclabs/nakama-js';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import { GroupServerPage } from '../group-server/group-server.page';
 
 @Component({
   selector: 'app-group-detail',
@@ -238,7 +238,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
       this.lock_modal_open = true;
       if (userInfo['is_me']) {
         this.modalCtrl.create({
-          component: ProfilePage,
+          component: GroupServerPage,
         }).then(v => {
           v.present();
           this.lock_modal_open = false;

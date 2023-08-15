@@ -13,10 +13,6 @@ const routes: Routes = [
     loadChildren: () => import('./licenses/licenses.module').then( m => m.LicensesPageModule)
   },
   {
-    path: 'profile',
-    loadChildren: () => import('./profile/profile.module').then( m => m.ProfilePageModule)
-  },
-  {
     path: 'dedicated-settings',
     loadChildren: () => import('./dedicated-settings/dedicated-settings.module').then( m => m.DedicatedSettingsPageModule)
   },

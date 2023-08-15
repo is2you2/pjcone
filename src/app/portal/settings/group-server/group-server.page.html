@@ -11,59 +11,131 @@ SPDX-License-Identifier: MIT -->
 </ion-header>
 
 <ion-content>
-  <ion-item-divider *ngIf="nakama.servers['official']['default'] || servers.length">
-    <ion-label>{{lang.text['GroupServer']['JoinedServerList']}}</ion-label>
-  </ion-item-divider>
-  <ion-item *ngFor="let server of servers" button (click)="link_group(server.isOfficial, server.target)">
-    <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[(statusBar.groupServer[server.isOfficial][server.target]) || 'offline']">
-    </div>
-    <ion-label class="form_margin">
-      <h2>{{server.name}}</h2>
-      <p>{{server.target}} ({{server.address}})</p>
-    </ion-label>
-    <ion-button (click)="view_detail(server)">
-      {{lang.text['GroupServer']['ServerDetail']}}
-    </ion-button>
-    <ion-button (click)="remove_server(server.isOfficial, server.target)">
-      {{statusBar.groupServer[server.isOfficial][server.target] == 'online' ? lang.text['GroupServer']['RemoveAccount']
-      :
-      lang.text['GroupServer']['RemoveUnofficial']}}
+  <div class="profile_img_form">
+    <img [hidden]="!nakama.users.self['img']" id="profile_img" class="profile_img" [src]="nakama.users.self['img']"
+      [alt]="lang.text['Profile']['img_alt']">
+    <img [hidden]="!tmp_img" id="profile_tmp_img" class="profile_img" [src]="tmp_img"
+      [alt]="lang.text['Profile']['img_alt']">
+    <div class="fore-gradient" (click)="change_img_from_file()"></div>
+    <input hidden type="file" [id]="file_sel_id" accept="image/*" (change)="inputImageSelected($event)">
+    <div class="username">{{nakama.users.self['display_name'] || lang.text['Profile']['noname_user']}}</div>
+  </div>
+  <ion-item (click)="imageURLPasted()" [hidden]="cant_use_clipboard" [disabled]="imageURL_disabled">
+    <ion-label color="medium">{{lang.text['Profile']['pasteURI']}}</ion-label>
+  </ion-item>
+  <ion-item [hidden]="!cant_use_clipboard">
+    <ion-input type="text" [placeholder]="lang.text['Profile']['enterURI']" [(ngModel)]="url_input"></ion-input>
+    <ion-button (click)="change_img_smoothly(url_input)">
+      {{lang.text['Profile']['change_img']}}
     </ion-button>
   </ion-item>
-
+  <div *ngIf="!nakama.users.self['online']">
+    <ion-item-divider>
+      <ion-label>{{lang.text['Profile']['login_info']}}</ion-label>
+    </ion-item-divider>
+    <ion-item>
+      <ion-label>{{lang.text['Profile']['email_address']}}</ion-label>
+      <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self['email']" (ionChange)="email_modified()"
+        [placeholder]="'test@example.com'"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>{{lang.text['Profile']['password']}}</ion-label>
+      <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self['password']"
+        [placeholder]="lang.text['Profile']['at_least']"></ion-input>
+    </ion-item>
+  </div>
+  <ion-item>
+    <ion-label>{{lang.text['Profile']['user_display_name']}}</ion-label>
+    <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self['display_name']"
+      [placeholder]="lang.text['Profile']['name_placeholder']"></ion-input>
+  </ion-item>
+  <ion-item button (click)="toggle_online()">
+    <ion-label>{{lang.text['Profile']['login_toggle']}}</ion-label>
+    <ion-toggle slot="end" [(ngModel)]="nakama.users.self['online']" style="pointer-events: none;"></ion-toggle>
+  </ion-item>
   <ion-item-divider>
-    <ion-label>{{lang.text['GroupServer']['RegisterServer']}}</ion-label>
+    <ion-label style="width: 100%;">{{lang.text['Profile']['main_content']}}</ion-label>
+    <ion-button class="ion-text-end" style="padding-right: 4px;" (click)="change_content()">
+      {{lang.text['Profile']['upload']}}
+    </ion-button>
+    <ion-button class="ion-text-end" style="padding-right: 8px;" (click)="remove_content()">
+      {{lang.text['Profile']['remove_content']}}
+    </ion-button>
+    <input hidden type="file" [id]="content_sel_id" accept="*" (change)="inputFileSelected($event)">
   </ion-item-divider>
-  <ion-item button [disabled]="add_custom_tog">
-    <ion-label>{{lang.text['GroupServer']['DisplayName']}}</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.name"
-      [placeholder]="lang.text['GroupServer']['DisplayName_placeholder']"></ion-input>
-  </ion-item>
-  <ion-item button [disabled]="add_custom_tog">
-    <ion-label>{{lang.text['GroupServer']['DivisionName']}}</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.target"
-      [placeholder]="dedicated_info.name || lang.text['GroupServer']['DivisionName_placeholder']"></ion-input>
-  </ion-item>
-  <ion-item button [disabled]="add_custom_tog">
-    <ion-label>{{lang.text['GroupServer']['Address']}}</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.address" placeholder="192.168.0.1"></ion-input>
-  </ion-item>
-  <ion-item button [disabled]="add_custom_tog">
-    <ion-label>{{lang.text['GroupServer']['Key']}}</ion-label>
-    <ion-input disabled [(ngModel)]="dedicated_info.key" class="ion-text-right" placeholder="defaultkey">
-    </ion-input>
-  </ion-item>
-  <ion-item button [disabled]="add_custom_tog">
-    <ion-label>{{lang.text['GroupServer']['Port']}}</ion-label>
-    <ion-input disabled [(ngModel)]="dedicated_info.port" class="ion-text-right" type="number" placeholder="7350">
-    </ion-input>
-  </ion-item>
-  <ion-item button (click)="dedicated_info.useSSL =! dedicated_info.useSSL" [disabled]="add_custom_tog">
-    <ion-label>{{lang.text['GroupServer']['isSSL']}}</ion-label>
-    <ion-toggle [(ngModel)]="dedicated_info.useSSL" slot="end" style="pointer-events: none;"></ion-toggle>
-  </ion-item>
-  <ion-item button (click)="add_custom_dedicated()" [disabled]="add_custom_tog">
-    <ion-label class="ion-text-center">{{lang.text['GroupServer']['submit']}}</ion-label>
-  </ion-item>
+  <div [hidden]="global.last_frame_name != 'my_content'" class="content_size">
+    <div id="my_content" class="full_screen" style="display: flex;"></div>
+  </div>
+
+  <!-- 위, 프로필 정보 병합 -->
+
+  <div *ngIf="nakama.users.self['online']">
+    <ion-item-divider *ngIf="nakama.servers['official']['default'] || servers.length">
+      <ion-label>{{lang.text['GroupServer']['JoinedServerList']}}</ion-label>
+    </ion-item-divider>
+    <ion-item *ngFor="let server of servers" button (click)="link_group(server.isOfficial, server.target)">
+      <div class="additional_form status_bar_single"
+        [style]="'background-color: ' + statusBar.colors[(statusBar.groupServer[server.isOfficial][server.target]) || 'offline']">
+      </div>
+      <ion-label class="form_margin">
+        <h2>{{server.name}}</h2>
+        <p>{{server.target}} ({{server.address}})</p>
+      </ion-label>
+      <ion-button (click)="view_detail(server)">
+        {{lang.text['GroupServer']['ServerDetail']}}
+      </ion-button>
+      <ion-button (click)="remove_server(server.isOfficial, server.target)">
+        {{statusBar.groupServer[server.isOfficial][server.target] == 'online' ?
+        lang.text['GroupServer']['RemoveAccount']
+        :
+        lang.text['GroupServer']['RemoveUnofficial']}}
+      </ion-button>
+    </ion-item>
+    <ion-item button id="RegisterNewServer">
+      <ion-label class="ion-text-center">{{lang.text['GroupServer']['RegisterServer']}}</ion-label>
+    </ion-item>
+
+    <ion-modal trigger="RegisterNewServer" [initialBreakpoint]=".5" [breakpoints]="[.5, .6, .7, .8, .9, 1]">
+      <ng-template>
+        <ion-content>
+          <ion-item>
+            <ion-label class="ion-text-center">{{lang.text['GroupServer']['RegisterServer']}}</ion-label>
+          </ion-item>
+          <ion-item button [disabled]="add_custom_tog">
+            <ion-label>{{lang.text['GroupServer']['DisplayName']}}</ion-label>
+            <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.name"
+              [placeholder]="lang.text['GroupServer']['DisplayName_placeholder']"></ion-input>
+          </ion-item>
+          <ion-item button [disabled]="add_custom_tog">
+            <ion-label>{{lang.text['GroupServer']['DivisionName']}}</ion-label>
+            <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.target"
+              [placeholder]="dedicated_info.name || lang.text['GroupServer']['DivisionName_placeholder']"></ion-input>
+          </ion-item>
+          <ion-item button [disabled]="add_custom_tog">
+            <ion-label>{{lang.text['GroupServer']['Address']}}</ion-label>
+            <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.address"
+              placeholder="192.168.0.1"></ion-input>
+          </ion-item>
+          <ion-item button [disabled]="add_custom_tog">
+            <ion-label>{{lang.text['GroupServer']['Key']}}</ion-label>
+            <ion-input disabled [(ngModel)]="dedicated_info.key" class="ion-text-right" placeholder="defaultkey">
+            </ion-input>
+          </ion-item>
+          <ion-item button [disabled]="add_custom_tog">
+            <ion-label>{{lang.text['GroupServer']['Port']}}</ion-label>
+            <ion-input disabled [(ngModel)]="dedicated_info.port" class="ion-text-right" type="number"
+              placeholder="7350">
+            </ion-input>
+          </ion-item>
+          <ion-item button (click)="dedicated_info.useSSL =! dedicated_info.useSSL" [disabled]="add_custom_tog">
+            <ion-label>{{lang.text['GroupServer']['isSSL']}}</ion-label>
+            <ion-toggle [(ngModel)]="dedicated_info.useSSL" slot="end" style="pointer-events: none;"></ion-toggle>
+          </ion-item>
+          <ion-item button (click)="add_custom_dedicated()" [disabled]="add_custom_tog">
+            <ion-label class="ion-text-center">{{lang.text['GroupServer']['submit']}}</ion-label>
+          </ion-item>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+  </div>
 </ion-content>
