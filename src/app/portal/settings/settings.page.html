@@ -27,9 +27,7 @@ SPDX-License-Identifier: MIT -->
     <div class="additional_form bg_img_form">
       <img class="profile_img" [style]="profile_filter" [src]="nakama.users.self['img']">
     </div>
-    <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[(statusBar.settings['groupServer']) || 'offline']"></div>
-    <ion-label class="form_margin">{{lang.text['Settings']['groupServer']}}</ion-label>
+    <ion-label>{{lang.text['Settings']['groupServer']}}</ion-label>
   </ion-item>
   <ion-item button (click)="go_to_page('noti-alert')">
     <ion-label>{{lang.text['Settings']['NotificationSetting']}}</ion-label>
