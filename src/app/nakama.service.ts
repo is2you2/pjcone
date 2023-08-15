@@ -1346,7 +1346,11 @@ export class NakamaService {
       else throw "not a group creator";
     } catch (e) {
       console.log(e);
-      delete this.groups[_is_official][_target][info['id']];
+      try {
+        delete this.groups[_is_official][_target][info['id']];
+      } catch (e) {
+        console.log(e);
+      }
       this.save_groups_with_less_info();
       this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
     }
