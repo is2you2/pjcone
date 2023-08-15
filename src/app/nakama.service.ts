@@ -2327,16 +2327,38 @@ export class NakamaService {
             if (!b) console.warn('알림 거부처리 검토 필요');
             this.update_notifications(_is_official, _target);
           });
+        let decode_body = decodeURIComponent(v.content['msg']);
+        let decode_image = decodeURIComponent(v.content['uri']);
         this.noti.PushLocal({
           id: v.code,
           title: this.servers[_is_official][_target].info.name,
-          body: decodeURIComponent(v.content['msg']),
-          image: decodeURIComponent(v.content['uri']),
+          body: decode_body,
+          image: decode_image,
+          extra_ln: {
+            type: 'AllUserNotification',
+            title: this.servers[_is_official][_target].info.name,
+            body: decode_body,
+            image: decode_image,
+            isOfficial: _is_official,
+            target: _target,
+            noti_id: v.id,
+          },
           smallIcon_ln: 'diychat',
           group_ln: 'all_user_noti',
           iconColor_ln: 'ff754e',
         }, 'global_noti_all', (_ev: any) => {
-          this.check_notifications(v, _is_official, _target);
+          this.alertCtrl.create({
+            header: this.servers[_is_official][_target].info.name,
+            message: `<img *ngIf="${decode_image}" src="${decode_image}" alt="noti_image" style="border-radius: 2px">
+<div>${decode_body}</div>`,
+            buttons: [{
+              text: '확인',
+              handler: () => {
+                this.servers[_is_official][_target].client.deleteNotifications(
+                  this.servers[_is_official][_target].session, [v.id]);
+              }
+            }]
+          }).then(v => v.present());
         });
         break;
       case 0: // 예약된 알림

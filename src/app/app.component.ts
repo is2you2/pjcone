@@ -73,7 +73,7 @@ export class AppComponent {
       });
     }
     noti.SetListener('click', (ev: any) => {
-      if (ev.data.page) {
+      try { // 페이지 연결 행동이 필요한 알림
         let page: any;
         let props: any = ev.data.page.componentProps;
         let noti_id: string;
@@ -125,12 +125,34 @@ export class AppComponent {
               }],
             }).then(v => v.present());
             return;
+          case 'AllUserNotification':
+            break;
           default:
             console.warn('준비된 페이지가 아님: ', ev.data.page.component);
             break;
         }
         if (noti_id == noti.Current) return;
         this.waiting_open_page(ev, page, props);
+      } catch (e) { // 페이지 연결이 없는 알림
+        switch (ev.data.type) {
+          case 'AllUserNotification':
+            alertCtrl.create({
+              header: ev.data.title,
+              message: `<img *ngIf="${ev.data.image}" src="${ev.data.image}" alt="noti_image" style="border-radius: 2px">
+<div>${ev.data.body}</div>`,
+              buttons: [{
+                text: '확인',
+                handler: () => {
+                  nakama.servers[ev.data.isOfficial][ev.data.target].client.deleteNotifications(
+                    nakama.servers[ev.data.isOfficial][ev.data.target].session, [ev.data.noti_id]);
+                }
+              }]
+            }).then(v => v.present());
+            break;
+          default:
+            console.log('준비된 알림 행동 없음: ', ev.data);
+            break;
+        }
       }
     });
     bgmode.enable();
