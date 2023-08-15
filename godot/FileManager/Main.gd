@@ -48,8 +48,9 @@ func make_recursive(path:String):
 	# 파일이 없으면 파일 생성
 	if not dir.file_exists(path):
 		var file:= File.new()
-		file.open(path, File.WRITE)
-		file.flush()
+		var err:= file.open(path, File.WRITE)
+		if err != OK:
+			printerr('make_recursive file_create_err: ', err)
 		file.close()
 
 # 전송작업 파일 생성
@@ -62,14 +63,15 @@ func make_history_file(path:String, type:String, index:int):
 			'index': index,
 		}
 		file.store_string(JSON.print(json))
-	file.flush()
+		file.flush()
+	else: printerr('make_history_file file_open_err: ', err)
 	file.close()
 
 
 # 전송작업 파일 삭제
 func remove_history_file(path:String):
 	var dir:= Directory.new()
-	var err:= dir.remove(path)
+	var err:= dir.remove('%s.history' % path)
 
 
 # 요청하는 파일 파트 돌려주기
@@ -89,6 +91,7 @@ func req_file_part(args):
 		var size:= 120000 if 120000 * (args[1] + 1) < args[2] else args[2] - 120000 * args[1]
 		var buf:= file.get_buffer(size)
 		base64 = Marshalls.raw_to_base64(buf)
+	else: printerr('req_file_part file_open_err: ', err)
 	file.close()
 	window.get_part_data(args[0], base64)
 
@@ -103,11 +106,13 @@ func req_file_write(args):
 		make_history_file(path, 'download', args[1])
 	else: remove_history_file(path)
 	var file:= File.new()
+	var dir:= Directory.new()
 	var err:= file.open(path, File.READ_WRITE)
 	if err == OK:
 		file.seek(120000 * args[1])
-		var buf:= Marshalls.base64_to_raw(args[2])
+		var buf:= Marshalls.base64_to_raw(args[3])
 		file.store_buffer(buf)
-	file.flush()
+		file.flush()
+	else: printerr('req_file_write file_open_err: ', err)
 	file.close()
 	window.save_part(args[0])
