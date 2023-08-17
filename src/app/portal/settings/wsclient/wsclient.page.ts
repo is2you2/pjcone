@@ -48,7 +48,7 @@ export class WsclientPage implements OnInit, OnDestroy {
         this.client.onopen = () => {
           this.status = 'online';
           this.logs.push({
-            text: `${this.lang.text['WSClient']['Connected']}: ws://${this.address}`,
+            text: `${this.lang.text['WSClient']['Connected']}: ${this.address}`,
             time: this.createTimestamp(),
             color: '#34aa43',
           });
@@ -77,7 +77,7 @@ export class WsclientPage implements OnInit, OnDestroy {
         this.client.onerror = (e) => {
           console.log(e);
           this.logs.push({
-            text: `${this.lang.text['WSClient']['SocketError']}: ${e}`,
+            text: `${this.lang.text['WSClient']['SocketError']}: ${e['message'] || e}`,
             time: this.createTimestamp(),
             color: this.statusBar.colors['missing'],
           });
