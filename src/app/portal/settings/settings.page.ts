@@ -154,7 +154,8 @@ export class SettingsPage implements OnInit, OnDestroy {
   /** 프로필 썸네일 */
   profile_filter: string;
   ionViewWillEnter() {
-    if (this.nakama.users.self['online'])
+    // [style] = "'background-color: ' + statusBar.colors[(statusBar.settings['groupServer']) || 'offline']" > </div>
+    if (this.statusBar.settings['groupServer'] == 'online')
       this.profile_filter = "filter: grayscale(0) contrast(1);";
     else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
     this.check_if_admin();
