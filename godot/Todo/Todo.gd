@@ -52,8 +52,16 @@ var input_area_pos:Vector2
 var screen_ratio:= 0.0
 # 폰을 움직여서 중력장을 움직임
 func acc_input(args):
-	input_area_pos.x = -args[0] * screen_ratio
-	input_area_pos.y = args[1] * screen_ratio
+	if abs(args[0]) > 7:
+		$Todos/Todo_Add.mode = RigidBody2D.MODE_STATIC
+		input_area_pos.x = -args[0] * screen_ratio
+	elif abs(args[1]) > 7:
+		$Todos/Todo_Add.mode = RigidBody2D.MODE_STATIC
+		input_area_pos.y = args[1] * screen_ratio
+	else:
+		input_area_pos = Vector2.ZERO
+		if $Todos/Todo_Add.mode == RigidBody2D.MODE_RIGID:
+			$Todos/Todo_Add.mode = RigidBody2D.MODE_RIGID
 
 var gravity_value:= 3860
 const GRAVITY_TARGET:= 2240
