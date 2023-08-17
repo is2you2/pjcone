@@ -389,16 +389,20 @@ export class GroupServerPage implements OnInit {
         });
       } catch (e) {
       }
-      let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
-      if (all_channels.length)
-        all_channels.forEach((channelId: any) => {
-          if (this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target][channelId]['status'] != 'missing')
-            if (this.original_profile['display_name'] !== undefined)
-              servers[i].socket.writeChatMessage(channelId, {
-                user_update: 'remove_content',
-                noti_form: `: ${this.original_profile['display_name']}`,
-              });
-        });
+      try {
+        let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
+        if (all_channels.length)
+          all_channels.forEach((channelId: any) => {
+            if (this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target][channelId]['status'] != 'missing')
+              if (this.original_profile['display_name'] !== undefined)
+                servers[i].socket.writeChatMessage(channelId, {
+                  user_update: 'remove_content',
+                  noti_form: `: ${this.original_profile['display_name']}`,
+                });
+          });
+      } catch (e) {
+        console.log('변경을 알릴 채널 없음: ', e);
+      }
       await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
         encodeURIComponent('content'));
     }
