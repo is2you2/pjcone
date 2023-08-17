@@ -391,7 +391,7 @@ export class NakamaService {
   }
 
   /** 그룹 서버 추가하기 */
-  add_group_server(info: ServerInfo, _CallBack = () => { }) {
+  add_group_server(info: ServerInfo, _CallBack = () => { }): Promise<void> {
     // 같은 이름 거르기
     if (this.statusBar.groupServer['unofficial'][info.target || info.name]) {
       this.p5toast.show({
@@ -420,17 +420,20 @@ export class NakamaService {
     line += `,${info.address}`;
     line += `,${info.port}`;
     line += `,${info.useSSL}`;
-    this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
-      let list: string[] = [];
-      if (e && v) list = v.split('\n');
-      list.push(line);
-      this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv', (_v) => {
-        this.init_server(info);
-        this.servers[info.isOfficial][info.target].info = { ...info };
-        _CallBack();
+    return new Promise((done) => {
+      this.indexed.loadTextFromUserPath('servers/list_detail.csv', async (e, v) => {
+        let list: string[] = [];
+        if (e && v) list = v.split('\n');
+        list.push(line);
+        this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv', (_v) => {
+          this.init_server(info);
+          this.servers[info.isOfficial][info.target].info = { ...info };
+          _CallBack();
+        });
+        this.statusBar.groupServer[info.isOfficial][info.target] = 'offline';
+        await this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
+        done();
       });
-      this.statusBar.groupServer[info.isOfficial][info.target] = 'offline';
-      this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
     });
   }
 
@@ -1190,77 +1193,78 @@ export class NakamaService {
   }
 
   /** 연결된 서버들에 그룹 진입 요청 시도 */
-  try_add_group(_info: any) {
-    let servers = this.get_all_online_server();
-    servers.forEach(server => {
-      server.client.joinGroup(server.session, _info.id)
-        .then(v => {
+  try_add_group(_info: any): Promise<void> {
+    return new Promise(async (done, err) => {
+      let servers = this.get_all_online_server();
+      for (let i = 0, j = servers.length; i < j; i++)
+        try {
+          let v: any = await servers[i].client.joinGroup(servers[i].session, _info.id);
           if (!v) {
             console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
             return;
           }
-          server.client.listGroups(server.session, _info['name']).then(async v => {
-            for (let i = 0, j = v.groups.length; i < j; i++)
-              if (v.groups[i].id == _info['id']) {
-                let pending_group = v.groups[i];
-                pending_group['status'] = pending_group.open ? 'online' : 'pending';
-                pending_group['server'] = this.servers[server.info.isOfficial][server.info.target].info;
-                await this.servers[server.info.isOfficial][server.info.target].client.listGroupUsers(
-                  this.servers[server.info.isOfficial][server.info.target].session, v.groups[i].id
-                ).then(_list => {
-                  pending_group['users'] = _list.group_users;
-                  _list.group_users.forEach(_guser => {
-                    if (_guser.user.id == this.servers[server.info.isOfficial][server.info.target].session.user_id)
-                      _guser['is_me'] = true;
-                    else this.save_other_user(_guser.user, server.info.isOfficial, server.info.target);
-                  });
+          v = await servers[i].client.listGroups(servers[i].session, _info['name']);
+          for (let k = 0, l = v.groups.length; k < l; k++)
+            if (v.groups[k].id == _info['id']) {
+              let pending_group = v.groups[k];
+              pending_group['status'] = pending_group.open ? 'online' : 'pending';
+              pending_group['server'] = this.servers[servers[i].info.isOfficial][servers[i].info.target].info;
+              await this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listGroupUsers(
+                this.servers[servers[i].info.isOfficial][servers[i].info.target].session, v.groups[k].id
+              ).then(_list => {
+                pending_group['users'] = _list.group_users;
+                _list.group_users.forEach(_guser => {
+                  if (_guser.user.id == this.servers[servers[i].info.isOfficial][servers[i].info.target].session.user_id)
+                    _guser['is_me'] = true;
+                  else this.save_other_user(_guser.user, servers[i].info.isOfficial, servers[i].info.target);
                 });
-                await this.servers[server.info.isOfficial][server.info.target].client.readStorageObjects(
-                  this.servers[server.info.isOfficial][server.info.target].session, {
-                  object_ids: [{
-                    collection: 'group_public',
-                    key: `group_${v.groups[i].id}`,
-                    user_id: v.groups[i].creator_id,
-                  }],
-                }).then(gimg => {
-                  if (gimg.objects.length)
-                    pending_group['img'] = gimg.objects[0].value['img'];
+              });
+              await this.servers[servers[i].info.isOfficial][servers[i].info.target].client.readStorageObjects(
+                this.servers[servers[i].info.isOfficial][servers[i].info.target].session, {
+                object_ids: [{
+                  collection: 'group_public',
+                  key: `group_${v.groups[k].id}`,
+                  user_id: v.groups[k].creator_id,
+                }],
+              }).then(gimg => {
+                if (gimg.objects.length)
+                  pending_group['img'] = gimg.objects[0].value['img'];
+              });
+              this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
+              if (pending_group.open) { // 열린 그룹이라면 즉시 채널에 참가
+                this.join_chat_with_modulation(pending_group.id, 3, servers[i].info.isOfficial, servers[i].info.target, (c) => {
+                  this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listChannelMessages(
+                    this.servers[servers[i].info.isOfficial][servers[i].info.target].session, c.id, 1, false)
+                    .then(v => {
+                      if (v.messages.length)
+                        this.update_from_channel_msg(v.messages[0], servers[i].info.isOfficial, servers[i].info.target);
+                      this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
+                      this.save_groups_with_less_info();
+                    });
                 });
-                this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
-                if (pending_group.open) { // 열린 그룹이라면 즉시 채널에 참가
-                  this.join_chat_with_modulation(pending_group.id, 3, server.info.isOfficial, server.info.target, (c) => {
-                    this.servers[server.info.isOfficial][server.info.target].client.listChannelMessages(
-                      this.servers[server.info.isOfficial][server.info.target].session, c.id, 1, false)
-                      .then(v => {
-                        if (v.messages.length)
-                          this.update_from_channel_msg(v.messages[0], server.info.isOfficial, server.info.target);
-                        this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
-                        this.save_groups_with_less_info();
-                      });
-                  });
-                }
-                break;
               }
-          });
-        }).catch(async e => {
+              done();
+              break;
+            }
+        } catch (e) {
           switch (e.status) {
             case 400: // 그룹에 이미 있는데 그룹추가 시도함
-              await server.client.listGroups(server.session, _info['name']).then(async v => {
+              await servers[i].client.listGroups(servers[i].session, _info['name']).then(async v => {
                 for (let i = 0, j = v.groups.length; i < j; i++)
                   if (v.groups[i].id == _info['id']) {
                     let pending_group = v.groups[i];
                     pending_group['status'] = pending_group.open ? 'online' : 'pending';
-                    await this.servers[server.info.isOfficial][server.info.target].client.listGroupUsers(
-                      this.servers[server.info.isOfficial][server.info.target].session, v.groups[i].id
+                    await this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listGroupUsers(
+                      this.servers[servers[i].info.isOfficial][servers[i].info.target].session, v.groups[i].id
                     ).then(_list => {
                       pending_group['users'] = _list.group_users;
                       _list.group_users.forEach(_guser => {
-                        if (_guser.user.id == this.servers[server.info.isOfficial][server.info.target].session.user_id)
+                        if (_guser.user.id == this.servers[servers[i].info.isOfficial][servers[i].info.target].session.user_id)
                           _guser['is_me'] = true;
-                        else this.save_other_user(_guser.user, server.info.isOfficial, server.info.target);
+                        else this.save_other_user(_guser.user, servers[i].info.isOfficial, servers[i].info.target);
                       });
                     });
-                    this.save_group_info(pending_group, server.info.isOfficial, server.info.target);
+                    this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
                     break;
                   }
               });
@@ -1269,7 +1273,8 @@ export class NakamaService {
               console.error('그룹 추가 오류: ', e);
               break;
           }
-        });
+        }
+      err('AllListDone');
     });
   }
 
@@ -2713,12 +2718,12 @@ export class NakamaService {
     }
   }
 
-  act_from_QRInfo(v: string) {
+  async act_from_QRInfo(v: string) {
     let json: any[] = JSON.parse(v);
     for (let i = 0, j = json.length; i < j; i++)
       switch (json[i].type) {
         case 'QRShare':
-          this.modalCtrl.create({
+          await this.modalCtrl.create({
             component: QrSharePage,
           }).then(v => v.present());
           break;
@@ -2729,7 +2734,7 @@ export class NakamaService {
               text: `${this.lang.text['Nakama']['AlreadyHaveTargetName']}: ${json[i].value.name}`,
             });
             delete json[i].value.name;
-            this.modalCtrl.create({
+            await this.modalCtrl.create({
               component: ServerDetailPage,
               componentProps: {
                 data: json[i].value,
@@ -2745,13 +2750,12 @@ export class NakamaService {
               isOfficial: json[i].value.isOfficial,
               key: json[i].value.key,
             };
-            this.add_group_server(new_server_info, () => {
-              this.init_session(new_server_info);
-            });
+            await this.add_group_server(new_server_info);
+            await this.init_session(new_server_info);
           }
           return;
         case 'group_dedi': // 그룹사설 채팅 접근
-          this.modalCtrl.create({
+          await this.modalCtrl.create({
             component: MinimalChatPage,
             componentProps: {
               address: json[i].value.address,
@@ -2762,10 +2766,10 @@ export class NakamaService {
           });
           break;
         case 'group': // 그룹 자동 등록 시도
-          this.try_add_group(json[i]);
+          await this.try_add_group(json[i]);
           break;
         case 'EnginePPTLink': // 엔진PPT를 컴퓨터와 연결하기
-          this.modalCtrl.create({
+          await this.modalCtrl.create({
             component: EnginepptPage,
             componentProps: {
               pid: json[i]['pid'],
