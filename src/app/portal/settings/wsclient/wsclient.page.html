@@ -14,7 +14,7 @@
   <ion-item button [disabled]="status != 'offline'">
     <div class="additional_form status_bar_single" [style]="'background-color: ' + statusBar.colors[status]"></div>
     <ion-label class="form_margin">{{lang.text['WSClient']['address']}}</ion-label>
-    <ion-input class="ion-text-end" placeholder="127.0.0.1:0000" [(ngModel)]="address"></ion-input>
+    <ion-input class="ion-text-end" placeholder="ws://127.0.0.1:0000" [(ngModel)]="address"></ion-input>
   </ion-item>
   <ion-item button [disabled]="status == 'pending' || status == 'missing'" (click)="connect_to_server()">
     <ion-label class="ion-text-center">{{lang.text['WSClient']['button_' + status]}}</ion-label>

@@ -44,7 +44,7 @@ export class WsclientPage implements OnInit, OnDestroy {
       case 'offline': // 연결하기
         if (this.client) this.client.close();
         this.status = 'pending'
-        this.client = new WebSocket(`ws://${this.address}`);
+        this.client = new WebSocket(this.address);
         this.client.onopen = () => {
           this.status = 'online';
           this.logs.push({
