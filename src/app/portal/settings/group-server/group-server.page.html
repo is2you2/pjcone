@@ -40,7 +40,7 @@ SPDX-License-Identifier: MIT -->
     </ion-item>
     <ion-item>
       <ion-label>{{lang.text['Profile']['password']}}</ion-label>
-      <ion-input class="ion-text-right" [(ngModel)]="nakama.users.self['password']"
+      <ion-input class="ion-text-right" type="password" [(ngModel)]="nakama.users.self['password']"
         [placeholder]="lang.text['Profile']['at_least']"></ion-input>
     </ion-item>
   </div>
