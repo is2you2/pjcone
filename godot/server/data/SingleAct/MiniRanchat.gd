@@ -113,7 +113,7 @@ func _received(id:int, _try_left:= 5):
 		if json is Dictionary:
 			match(json):
 				{'name', 'type', ..}: # 그룹채팅용 폼 무시
-					pass				
+					pass
 				_:
 					send_to(id, raw_data)
 					send_to(matched[id], raw_data)

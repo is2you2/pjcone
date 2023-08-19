@@ -7,6 +7,7 @@ import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
 import * as p5 from 'p5';
 import { GlobalActService } from '../global-act.service';
+import { StatusManageService } from '../status-manage.service';
 
 @Component({
   selector: 'app-portal',
@@ -20,9 +21,16 @@ export class PortalPage implements OnInit {
     public lang: LanguageSettingService,
     public nakama: NakamaService,
     private global: GlobalActService,
+    public statusBar: StatusManageService,
   ) { }
 
-  ngOnInit() { }
+  ShowOnlineStatus = true;
+
+  ngOnInit() {
+    setTimeout(() => {
+      this.ShowOnlineStatus = false;
+    }, 5000);
+  }
 
   ionViewWillEnter() {
     this.create_p5sensor();
