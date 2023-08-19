@@ -22,6 +22,7 @@ import { GroupDetailPage } from '../../settings/group-detail/group-detail.page';
 import { Camera } from '@awesome-cordova-plugins/camera/ngx';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GroupServerPage } from '../../settings/group-server/group-server.page';
+import { QrSharePage } from '../../settings/qr-share/qr-share.page';
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -261,6 +262,20 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         v.present();
       });
     },
+  }, {
+    icon: 'qr-code-outline',
+    act: () => {
+      this.modalCtrl.create({
+        component: QrSharePage,
+      }).then(v => {
+        v.onDidDismiss().then(v => {
+          if (v.data)
+            this.userInput.quickShare = v.data;
+          else delete this.userInput.quickShare;
+        });
+        v.present();
+      });
+    }
   }];
 
   /** 파일 첨부하기 */
@@ -448,6 +463,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 사용자 입력 */
   userInput = {
     file: undefined as FileInfo,
+    quickShare: undefined as Array<any>,
     text: '',
   }
   inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
@@ -617,6 +633,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       result['content_related_creator'] = this.userInput.file.content_related_creator;
       FileAttach = true;
     }
+    if (this.userInput.quickShare)
+      result['quickShare'] = this.userInput.quickShare;
     result['local_comp'] = Math.random();
     let tmp = { content: JSON.parse(JSON.stringify(result)) };
     this.nakama.content_to_hyperlink(tmp);
@@ -635,6 +653,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               });
             });
           }
+          delete this.userInput.quickShare;
           delete this.userInput.file;
           this.userInput.text = '';
           this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];

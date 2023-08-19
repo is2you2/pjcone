@@ -16,7 +16,6 @@ import { AdMob } from '@capacitor-community/admob';
 import { FileInfo, GlobalActService } from './global-act.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
-import { QrSharePage } from './portal/settings/qr-share/qr-share.page';
 import { EnginepptPage } from './portal/settings/engineppt/engineppt.page';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 
@@ -52,8 +51,6 @@ export enum MatchOpCode {
   ADD_TODO = 10,
   /** 프로필 정보/이미지 수정 */
   EDIT_PROFILE = 11,
-  /** 빠른 QR공유 */
-  QR_SHARE = 12,
   ENGINE_PPT = 13,
 }
 
@@ -1747,10 +1744,6 @@ export class NakamaService {
               }
             }
               break;
-            case MatchOpCode.QR_SHARE: {
-              this.act_from_QRInfo(m['data_str']);
-              if (this.socket_reactive['qr-share']) this.socket_reactive['qr-share']();
-            }
               break;
             case MatchOpCode.ENGINE_PPT: {
 
@@ -2722,11 +2715,6 @@ export class NakamaService {
     let json: any[] = JSON.parse(v);
     for (let i = 0, j = json.length; i < j; i++)
       switch (json[i].type) {
-        case 'QRShare':
-          await this.modalCtrl.create({
-            component: QrSharePage,
-          }).then(v => v.present());
-          break;
         case 'server': // 그룹 서버 자동등록처리
           let hasAlreadyTargetKey = Boolean(this.statusBar.groupServer['unofficial'][json[i].value.name]);
           if (hasAlreadyTargetKey) {
