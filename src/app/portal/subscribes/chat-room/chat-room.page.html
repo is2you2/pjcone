@@ -33,6 +33,9 @@ SPDX-License-Identifier: MIT -->
               </span>
               <span class="time_form">{{msg['msgTime']}}</span>
             </div>
+            <div *ngIf="msg.content['quickShare']" class="quickShare_form" (click)="quickShare_act(msg)">
+              {{lang.text['ChatRoom']['QuickShare']}}
+            </div>
             <div *ngIf="msg.content['filename']" class="file_message_form" (click)="file_detail(msg)">
               <div *ngIf="!msg.content['thumbnail']" class="file_button">
                 <p class="file_info"> {{msg.content['filename']}} </p>
@@ -60,6 +63,9 @@ SPDX-License-Identifier: MIT -->
               {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
           </div>
           <div *ngFor="let msg of sending_msg" (click)="message_detail(msg)">
+            <div *ngIf="msg.content['quickShare']" class="quickShare_form" (click)="quickShare_act(msg)">
+              {{lang.text['ChatRoom']['QuickShare']}}
+            </div>
             <div *ngIf="msg.content['filename']" class="file_message_form" (click)="file_detail(msg)">
               <div *ngIf="!msg.content['thumbnail']" class="file_button">
                 <p class="file_info"> {{msg.content['filename']}} </p>

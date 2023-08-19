@@ -29,7 +29,7 @@ export class PortalPage implements OnInit {
   ngOnInit() {
     setTimeout(() => {
       this.ShowOnlineStatus = false;
-    }, 5000);
+    }, 8000);
   }
 
   ionViewWillEnter() {

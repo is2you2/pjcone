@@ -23,6 +23,7 @@ import { Camera } from '@awesome-cordova-plugins/camera/ngx';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { QrSharePage } from '../../settings/qr-share/qr-share.page';
+import { P5ToastService } from 'src/app/p5-toast.service';
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -57,6 +58,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private global: GlobalActService,
     private loadingCtrl: LoadingController,
     private camera: Camera,
+    private p5toast: P5ToastService,
   ) { }
 
   /** 채널 정보 */
@@ -269,9 +271,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         component: QrSharePage,
       }).then(v => {
         v.onDidDismiss().then(v => {
-          if (v.data)
+          if (v.data) {
             this.userInput.quickShare = v.data;
-          else delete this.userInput.quickShare;
+            this.inputPlaceholder = this.lang.text['ChatRoom']['QuickShare_placeholder'];
+          } else {
+            delete this.userInput.quickShare;
+            this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
+          }
         });
         v.present();
       });
@@ -367,6 +373,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
+    this.nakama.opened_page_info['channel'] = {
+      isOfficial: this.isOfficial,
+      target: this.target,
+      id: this.info.id,
+    }
     this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
     this.extended_buttons[3].isHide = isPlatform != 'Android' && isPlatform != 'iOS';
     switch (this.info['redirect']['type']) {
@@ -611,7 +622,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   send(with_key = false) {
     if (with_key && (isPlatform == 'Android' || isPlatform == 'iOS')) return;
-    if (!this.userInput.text.trim() && !this.userInput['file']) {
+    if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+    if (!this.userInput.text.trim() && !this.userInput['file'] && !this.userInput['quickShare']) {
       setTimeout(() => {
         this.userInput.text = '';
       }, 0);
@@ -728,6 +740,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           });
         }
       }
+    });
+  }
+
+  /** QR행동처럼 처리하기 */
+  async quickShare_act(_msg: any) {
+    await this.nakama.act_from_QRInfo(JSON.stringify(_msg.content['quickShare']).trim());
+    this.p5toast.show({
+      text: this.lang.text['QuickQRShare']['success_received'],
+      lateable: true,
     });
   }
 
@@ -1017,6 +1038,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.indexed.GetFileListFromDB('tmp_files', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path));
     });
+    delete this.nakama.opened_page_info['channel'];
     this.nakama.ChatroomLinkAct = undefined;
   }
 }

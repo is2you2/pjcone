@@ -1230,7 +1230,11 @@ export class NakamaService {
               this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
               if (pending_group.open) { // 열린 그룹이라면 즉시 채널에 참가
                 this.join_chat_with_modulation(pending_group.id, 3, servers[i].info.isOfficial, servers[i].info.target, (c) => {
-                  this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listChannelMessages(
+                  if (!this.opened_page_info['channel']
+                    || this.opened_page_info['channel']['isOfficial'] != servers[i].info.isOfficial
+                    || this.opened_page_info['channel']['target'] != servers[i].info.target
+                    || this.opened_page_info['channel']['id'] != c.id
+                  ) this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listChannelMessages(
                     this.servers[servers[i].info.isOfficial][servers[i].info.target].session, c.id, 1, false)
                     .then(v => {
                       if (v.messages.length)
@@ -1855,6 +1859,10 @@ export class NakamaService {
     msg['msgTime'] = `${("00" + currentTime.getHours()).slice(-2)}:${("00" + currentTime.getMinutes()).slice(-2)}`;
   }
 
+  /** 열린 채널에서 행동이 중첩되지 않도록 검토하는 용도  
+   * 구분(e.g. channel) > { isOfficial, target, ... }
+   */
+  opened_page_info = {};
   /** 채널 정보를 변형한 후 추가하기 */
   async join_chat_with_modulation(targetId: string, type: number, _is_official: string, _target: string, _CallBack = (_c: Channel) => { }, isNewChannel = false) {
     if (!this.channels_orig[_is_official][_target]) this.channels_orig[_is_official][_target] = {};
@@ -1884,7 +1892,11 @@ export class NakamaService {
           break;
       }
       this.add_channels(c, _is_official, _target);
-      this.servers[_is_official][_target].client.listChannelMessages(
+      if (!this.opened_page_info['channel']
+        || this.opened_page_info['channel']['isOfficial'] != _is_official
+        || this.opened_page_info['channel']['target'] != _target
+        || this.opened_page_info['channel']['id'] != c.id
+      ) this.servers[_is_official][_target].client.listChannelMessages(
         this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
           if (m.messages.length)
             this.update_from_channel_msg(m.messages[0], _is_official, _target, isNewChannel);
@@ -2754,7 +2766,11 @@ export class NakamaService {
           });
           break;
         case 'group': // 그룹 자동 등록 시도
-          await this.try_add_group(json[i]);
+          try {
+            await this.try_add_group(json[i]);
+          } catch (e) {
+            console.log('failed to add group: ', e);
+          }
           break;
         case 'EnginePPTLink': // 엔진PPT를 컴퓨터와 연결하기
           await this.modalCtrl.create({

@@ -46,6 +46,18 @@
     display: grid;
 }
 
+.quickShare_form {
+    border-radius: 16px;
+    width: 156px;
+    height: 64px;
+    padding: 8px;
+    margin: 8px 0px 8px 0px;
+    text-align: center;
+    vertical-align: middle;
+    word-break: keep-all;
+    background-color: var(--chatroom-you-read-here-backgruond);
+}
+
 .message_content_form {
     margin: 4px 0px 0px 0px;
 }
