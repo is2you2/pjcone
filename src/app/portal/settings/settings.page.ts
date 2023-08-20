@@ -3,7 +3,7 @@
 
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
-import { iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
+import { iosTransitionAnimation, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { isPlatform, SERVER_PATH_ROOT } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -13,6 +13,8 @@ import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 import { LocalNotiService } from '../../local-noti.service';
 import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 import { GlobalActService } from 'src/app/global-act.service';
+import { File } from '@awesome-cordova-plugins/file/ngx';
+import { P5ToastService } from 'src/app/p5-toast.service';
 
 @Component({
   selector: 'app-settings',
@@ -31,6 +33,9 @@ export class SettingsPage implements OnInit, OnDestroy {
     public lang: LanguageSettingService,
     public noti: LocalNotiService,
     private global: GlobalActService,
+    private file: File,
+    private p5toast: P5ToastService,
+    private loadingCtrl: LoadingController,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
@@ -211,6 +216,43 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.nav.navigateForward(`settings/${_page}`, {
       animation: iosTransitionAnimation,
     });
+  }
+
+  async download_serverfile() {
+    if (isPlatform == 'Android' || isPlatform == 'iOS') {
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      loading.present();
+      let filename = 'nakama.zip';
+      let blob = await fetch('assets/data/nakama,zip').then(r => r.blob());
+      try {
+        await this.file.writeFile(this.file.externalDataDirectory, filename, blob);
+        loading.dismiss();
+        this.p5toast.show({
+          text: this.lang.text['ContentViewer']['fileSaved'],
+        });
+      } catch (e) {
+        try {
+          await this.file.writeExistingFile(this.file.externalDataDirectory, filename, blob);
+          loading.dismiss();
+          this.p5toast.show({
+            text: this.lang.text['ContentViewer']['fileSaved'],
+          });
+        } catch (e) {
+          loading.dismiss();
+          this.p5toast.show({
+            text: this.lang.text['ContentViewer']['fileSaveFailed'],
+          });
+        }
+      }
+    } else {
+      let link = document.createElement("a");
+      link.download = 'nakama.zip';
+      link.href = 'assets/data/nakama.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      link.remove();
+    }
   }
 
   ngOnDestroy(): void {
