@@ -345,12 +345,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   next_cursor = '';
   /** 최근으로 가는 커서 */
   prev_cursor = '';
-  content_panel: HTMLElement;
   send_thumbnail: HTMLElement;
   file_sel_id = 'file_sel_id';
+  ChatLogs: HTMLElement;
 
   ngOnInit() {
     this.nakama.removeBanner();
+    this.ChatLogs = document.getElementById('chatroom_div');
     this.nakama.ChatroomLinkAct = (c: any) => {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
       this.messages.length = 0;
@@ -398,7 +399,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       default:
         break;
     }
-    this.content_panel = document.getElementById('content');
     this.send_thumbnail = document.getElementById('send_thumbnail');
     // 실시간 채팅을 받는 경우 행동처리
     if (this.nakama.channels_orig[this.isOfficial][this.target] &&
@@ -413,7 +413,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         setTimeout(() => {
           this.info['is_new'] = false;
           this.nakama.has_new_channel_msg = false;
-          this.content_panel.scrollIntoView({ block: 'start' });
+          let scrollHeight = this.ChatLogs.scrollHeight;
+          this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
         }, 0);
       }
     if (this.info['status'] == 'missing') {
@@ -427,7 +428,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
     setTimeout(() => {
-      this.content_panel.scrollIntoView({ block: 'start' });
+      let scrollHeight = this.ChatLogs.scrollHeight;
+      this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
     }, 500);
   }
 
@@ -686,7 +688,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 메시지 정보 상세 */
   message_detail(_msg: any) {
-    console.log('_msg: ', _msg);
+    console.log('');
   }
 
   /** 메시지 내 파일 정보, 파일 다운받기 */

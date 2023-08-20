@@ -46,7 +46,7 @@ export class MinimalChatPage implements OnInit {
   lnId = 11;
   /** 새 대화 버튼 disabled 토글 */
   req_refreshed = false;
-  content_panel: HTMLElement;
+  minimal_chat_log: HTMLElement;
   /** 그룹사설서버 여부 */
   isCustomDedicated = false;
   isLocalAddress = false;
@@ -127,7 +127,7 @@ export class MinimalChatPage implements OnInit {
     this.noti.ClearNoti(this.lnId);
     this.title.setTitle(get_address ? this.lang.text['MinimalChat']['WebTitle_group'] : this.lang.text['MinimalChat']['WebTitle_ran']);
     this.noti.Current = this.Header;
-    this.content_panel = document.getElementById('content');
+    this.minimal_chat_log = document.getElementById('minimal_chat_div');
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', `assets/icon/simplechat.png`);
 
@@ -383,7 +383,8 @@ export class MinimalChatPage implements OnInit {
 
   ionViewDidEnter() {
     setTimeout(() => {
-      this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      let scrollHeight = this.minimal_chat_log.scrollHeight;
+      this.minimal_chat_log.scrollTo({ top: scrollHeight, behavior: 'smooth' });
     }, 0);
   }
 
@@ -394,7 +395,8 @@ export class MinimalChatPage implements OnInit {
       this.client.status[this.target] = 'unlinked';
       this.client.userInput[this.target].logs.length = 0;
       this.client.userInput[this.target].logs.push({ color: isDarkMode ? 'bbb' : '444', text: this.lang.text['MinimalChat']['waiting_someone'] });
-      this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      let scrollHeight = this.minimal_chat_log.scrollHeight;
+      this.minimal_chat_log.scrollTo({ top: scrollHeight, behavior: 'smooth' });
       this.focus_on_input();
       this.req_refreshed = true;
       setTimeout(() => {
@@ -433,7 +435,8 @@ export class MinimalChatPage implements OnInit {
   /** 모바일 키보드 높이 맞추기용 */
   focus_on_input(force?: number) {
     setTimeout(() => {
-      this.content_panel.scrollIntoView({ block: 'start' });
+      let scrollHeight = this.minimal_chat_log.scrollHeight;
+      this.minimal_chat_log.scrollTo({ top: scrollHeight, behavior: 'smooth' });
     }, force || 0);
   }
 
@@ -464,7 +467,8 @@ export class MinimalChatPage implements OnInit {
         this.statusBar.settings[this.target] = 'offline';
       }, 1500);
       this.client.userInput[this.target].logs.push({ color: isDarkMode ? 'ffa' : '884', text: this.client.status[this.target] == 'custom' ? this.lang.text['MinimalChat']['leave_chat_group'] : this.lang.text['MinimalChat']['leave_chat_ran'] });
-      this.content_panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      let scrollHeight = this.minimal_chat_log.scrollHeight;
+      this.minimal_chat_log.scrollTo({ top: scrollHeight, behavior: 'smooth' });
     }
     this.noti.RemoveListener(`send${this.target}`);
     this.noti.RemoveListener(`reconn${this.target}`);

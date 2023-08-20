@@ -14,7 +14,7 @@ SPDX-License-Identifier: MIT -->
   <table id="main_table" style="width: 100%; height: 100%; background-color: var(--chatroom-background);">
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
-        <div id="main_div" class="main">
+        <div id="chatroom_div" class="main">
           <ion-item [disabled]="next_cursor === undefined || !pullable" button (click)="pull_msg_history()">
             <ion-label>{{lang.text['ChatRoom']['fetch_previous_chat']}}</ion-label>
           </ion-item>
@@ -88,7 +88,6 @@ SPDX-License-Identifier: MIT -->
           <ion-item *ngIf="prev_cursor" hidden [disabled]="!pullable" button (click)="pull_msg_history(false)">
             <ion-label>{{lang.text['ChatRoom']['fetch_next_chat']}}</ion-label>
           </ion-item>
-          <div id="content"></div>
         </div>
         <div [hidden]="!userInput.file" id="send_thumbnail">
           <div *ngIf="userInput.file" (click)="removeAttach()">
