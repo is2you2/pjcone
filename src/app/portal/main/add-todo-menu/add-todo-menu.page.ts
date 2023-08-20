@@ -365,6 +365,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       this_file.file_ext = 'jpeg';
       this.indexed.saveBase64ToUserPath('data:image/jpeg;base64,' + v, 'tmp_files/todo/attach.jpeg', (raw) => {
         this_file.blob = new Blob([raw], { type: this_file['type'] });
+        this_file.size = this_file.blob.size;
       });
       this_file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(this_file.base64);
       this_file.type = 'image/jpeg';
@@ -454,7 +455,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (has_same_named_file) // 동명의 파일 등록시 파일 이름 변형
       this_file.filename = `${this_file.filename.substring(0, this_file.filename.lastIndexOf('.'))}_.${this_file.file_ext}`;
     this.global.set_viewer_category(this_file);
-    this_file.blob = ev.target.files[0];
     let FileURL = URL.createObjectURL(ev.target.files[0]);
     if (this_file['viewer'] == 'image')
       this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
@@ -590,6 +590,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
                 this.indexed.saveBase64ToUserPath(v.data['img'], 'tmp_files/todo/attach.jpeg', (raw) => {
                   this_file.blob = new Blob([raw], { type: this_file['type'] });
+                  this_file.size = this_file.blob.size;
                 });
                 this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path'], (_) => {
                   v.data['loadingCtrl'].dismiss();
@@ -668,6 +669,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
                 this.indexed.saveBase64ToUserPath(v.data['img'], 'tmp_files/todo/attach.jpeg', (raw) => {
                   this_file.blob = new Blob([raw], { type: this_file['type'] });
+                  this_file.size = this_file.blob.size;
                 });
                 this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
                 this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path'], (_) => {

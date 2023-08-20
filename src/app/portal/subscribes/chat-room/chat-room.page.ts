@@ -636,7 +636,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     let FileAttach = false;
     if (this.userInput.file) { // 파일 첨부시
       result['filename'] = this.userInput.file.filename;
-      result['filesize'] = this.userInput.file.size;
+      result['filesize'] = this.userInput.file.size || this.userInput.file.blob.size;
       result['file_ext'] = this.userInput.file.file_ext;
       result['type'] = this.userInput.file.type;
       result['partsize'] = Math.ceil(result['filesize'] / 120000);
@@ -686,7 +686,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 메시지 정보 상세 */
   message_detail(_msg: any) {
-    console.log('');
+    console.log('_msg: ', _msg);
   }
 
   /** 메시지 내 파일 정보, 파일 다운받기 */
