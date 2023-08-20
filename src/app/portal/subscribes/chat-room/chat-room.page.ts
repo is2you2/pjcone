@@ -231,10 +231,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   },
   {
     icon_img: 'voidDraw.png',
-    act: () => {
+    act: async () => {
       if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+      let props = {}
+      if (this.userInput.file && this.userInput.file.typeheader == 'image') {
+        await this.indexed.saveBlobToUserPath(this.userInput.file.blob, `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`)
+        let thumbnail_image = document.getElementById('ChatroomSelectedImage');
+        props['path'] = `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`;
+        props['width'] = thumbnail_image['naturalWidth'];
+        props['height'] = thumbnail_image['naturalHeight'];
+      }
       this.modalCtrl.create({
         component: VoidDrawPage,
+        componentProps: props,
       }).then(v => {
         v.onWillDismiss().then(async v => {
           if (v.data) {
