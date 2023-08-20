@@ -60,6 +60,8 @@ export class AppComponent {
       let json = [];
       if (init['open_profile']) // 프로필 화면 유도
         json.push({ type: 'open_profile' });
+      if (init['open_subscribes'])
+        json.push({ type: 'open_subscribes' })
       if (init['tmp_user']) { // 임시 사용자 정보 기입, 첫 데이터로 반영
         let sep = init['tmp_user'][0].split(',');
         nakama.users.self['email'] = sep[0];

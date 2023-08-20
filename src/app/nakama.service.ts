@@ -2727,6 +2727,12 @@ export class NakamaService {
     }
   }
 
+  /** 다른 페이지에서 QR에 의한 행동 규정이 필요할 때 등록  
+   * 이 곳에 등록된 것은 삭제되지 않음  
+   * act_callback_link['key'] = Function()
+   */
+  act_callback_link = {};
+
   async act_from_QRInfo(v: string) {
     let json: any[] = JSON.parse(v);
     for (let i = 0, j = json.length; i < j; i++)
@@ -2735,6 +2741,9 @@ export class NakamaService {
           this.modalCtrl.create({
             component: GroupServerPage,
           }).then(v => v.present());
+          break;
+        case 'open_subscribes':
+          this.act_callback_link['portal_tab_subscribes']();
           break;
         case 'tmp_user': // 빠른 임시 진입을 위해 사용자 정보를 임의로 기입
           break;

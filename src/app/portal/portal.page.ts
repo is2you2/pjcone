@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit } from '@angular/core';
-import { iosTransitionAnimation, NavController } from '@ionic/angular';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { IonTabs, iosTransitionAnimation, NavController } from '@ionic/angular';
 import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
 import * as p5 from 'p5';
@@ -15,6 +15,8 @@ import { StatusManageService } from '../status-manage.service';
   styleUrls: ['./portal.page.scss'],
 })
 export class PortalPage implements OnInit {
+
+  @ViewChild(IonTabs) ionTabs: IonTabs;
 
   constructor(
     private nav: NavController,
@@ -30,6 +32,10 @@ export class PortalPage implements OnInit {
     setTimeout(() => {
       this.ShowOnlineStatus = false;
     }, 8000);
+    this.nakama.act_callback_link['portal_tab_subscribes'] = () => {
+      this.ionTabs.select('subscribes');
+      this.subscribe_button();
+    }
   }
 
   ionViewWillEnter() {
