@@ -365,7 +365,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     });
   }
 
+  last_message_viewer = {
+    user_id: undefined,
+    message: undefined,
+    color: undefined,
+  };
+
   async init_chatroom() {
+    this.init_last_message_viewer();
     this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
     this.ChannelUserInputId = `chatroom_input_${this.info.id}_${new Date().getTime()}`;
     this.noti.Current = this.info['cnoti_id'];
@@ -414,7 +421,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.info['is_new'] = false;
           this.nakama.has_new_channel_msg = false;
           let scrollHeight = this.ChatLogs.scrollHeight;
-          this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+          if (scrollHeight < this.ChatLogs.scrollTop + this.ChatLogs.clientHeight + (scrollHeight * .12)) {
+            this.init_last_message_viewer();
+            this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+          } else {
+            this.last_message_viewer['user_id'] = c.sender_id;
+            this.last_message_viewer['message'] = c.content['msg'];
+            this.last_message_viewer['color'] = c.color;
+            console.log('정리: ', this.last_message_viewer);
+          }
         }, 0);
       }
     if (this.info['status'] == 'missing') {
@@ -431,6 +446,18 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       let scrollHeight = this.ChatLogs.scrollHeight;
       this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
     }, 500);
+  }
+
+  init_last_message_viewer() {
+    delete this.last_message_viewer['user_id'];
+    delete this.last_message_viewer['message'];
+    delete this.last_message_viewer['color'];
+  }
+
+  /** 가장 최근 메시지 보기 */
+  scroll_down_logs() {
+    this.init_last_message_viewer();
+    this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
   }
 
   /** 내가 보낸 메시지인지 검토하는 과정  
@@ -601,8 +628,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 확장 메뉴 숨기기 */
   make_ext_hidden() {
-    if (isPlatform == 'DesktopPWA') return;
-    this.isHidden = true;
+    let scrollHeight = this.ChatLogs.scrollHeight;
+    if (scrollHeight < this.ChatLogs.scrollTop + this.ChatLogs.clientHeight + 240)
+      this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+    if (isPlatform != 'DesktopPWA')
+      this.isHidden = true;
   }
 
   userInputTextArea: HTMLElement;
@@ -613,12 +643,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (ev.key == 'Enter' && !ev.shiftKey && ev.type == 'keydown') {
         this.send(true);
       } else {
-        this.userInputTextArea.style.height = '36px';
-        this.userInputTextArea.style.height = this.userInputTextArea.scrollHeight + 'px';
+        setTimeout(() => {
+          this.userInputTextArea.style.height = '36px';
+          this.userInputTextArea.style.height = this.userInputTextArea.scrollHeight + 'px';
+        }, 0);
       }
     } else {
-      this.userInputTextArea.style.height = '36px';
-      this.userInputTextArea.style.height = this.userInputTextArea.scrollHeight + 'px';
+      setTimeout(() => {
+        this.userInputTextArea.style.height = '36px';
+        this.userInputTextArea.style.height = this.userInputTextArea.scrollHeight + 'px';
+      }, 0);
     }
   }
 
@@ -675,8 +709,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     } catch (e) {
       setTimeout(() => {
         this.userInput.text = '';
+        this.userInputTextArea.style.height = '36px';
       }, 0);
-      this.userInputTextArea.style.height = '36px';
       setTimeout(() => {
         for (let i = this.sending_msg.length - 1; i >= 0; i--) {
           if (this.sending_msg[i]['content']['local_comp'] == result['local_comp'])
@@ -688,7 +722,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 메시지 정보 상세 */
   message_detail(_msg: any) {
-    console.log('');
   }
 
   /** 메시지 내 파일 정보, 파일 다운받기 */

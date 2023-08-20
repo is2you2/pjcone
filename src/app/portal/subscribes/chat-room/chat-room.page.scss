@@ -120,6 +120,18 @@
     overflow: hidden;
 }
 
+.bottom_thumbnail {
+    width: 100%;
+    max-width: 100vw;
+    height: fit-content;
+    max-height: 96px;
+    transform: translateY(-100%);
+    position: relative;
+    background: #bbbe;
+    padding: 8px;
+    overflow: hidden;
+}
+
 .image_thumbnail {
     width: auto;
     max-height: 96px;
