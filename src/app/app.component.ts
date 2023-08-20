@@ -12,6 +12,7 @@ import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { NakamaService } from './nakama.service';
 import { AdMob } from "@capacitor-community/admob";
 import { LanguageSettingService } from './language-setting.service';
+import { GlobalActService } from './global-act.service';
 /** 페이지가 돌고 있는 플렛폼 구분자 */
 export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'DesktopPWA';
 /** 이미지 등 자료 링크용(웹 사이트 host) */
@@ -34,6 +35,7 @@ export class AppComponent {
     private modalCtrl: ModalController,
     alertCtrl: AlertController,
     private lang: LanguageSettingService,
+    global: GlobalActService,
   ) {
     if (platform.is('desktop'))
       isPlatform = 'DesktopPWA';
@@ -54,6 +56,36 @@ export class AppComponent {
       indexed.GetFileListFromDB('acts_local', list => {
         list.forEach(path => indexed.removeFileFromUserPath(path));
       });
+      let init = global.CatchGETs();
+      console.log('읽어봐: ', init);
+      let json = [];
+      if (init['server']) { // 그룹 서버 등록
+        for (let i = 0, j = init['server'].length; i < j; i++) {
+          let sep = init['server'][i].split(',');
+          json.push({
+            type: 'server',
+            value: {
+              name: sep[0],
+              target: sep[0],
+              address: sep[1],
+              port: sep[2] || 7350,
+              useSSL: sep[3] || false,
+              key: sep[4] || 'defaultkey',
+              isOfficial: 'unofficial',
+            },
+          });
+        }
+      }
+      if (init['group_dedi']) { // 그룹 사설 채팅 진입, 1개만 받음
+        json.push({
+          type: 'group_dedi',
+          value: {
+            address: `ws://${init['group_dedi'][0]}`,
+          },
+        })
+      }
+      console.log('json 구현: ', json);
+      nakama.act_from_QRInfo(JSON.stringify(json));
     });
     // 모바일 기기 특정 설정
     if (isPlatform == 'Android' || isPlatform == 'iOS') {

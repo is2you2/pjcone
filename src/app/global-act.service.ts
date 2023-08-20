@@ -97,7 +97,7 @@ export class GlobalActService {
         const KeyVal = CatchGETs[i].split('=');
         if (!gets[KeyVal[0]])
           gets[KeyVal[0]] = [];
-        gets[KeyVal[0]].push(KeyVal[1]);
+        gets[KeyVal[0]].push(decodeURIComponent(KeyVal[1]));
       }
       return gets;
     }

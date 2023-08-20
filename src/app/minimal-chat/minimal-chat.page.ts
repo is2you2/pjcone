@@ -77,7 +77,7 @@ export class MinimalChatPage implements OnInit {
     this.QRCodeSRC = this.global.readasQRCodeFromId({
       type: 'group_dedi',
       value: {
-        address: extract,
+        address: `ws://${extract}`,
       }
     });
   }
