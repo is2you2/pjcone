@@ -1059,9 +1059,8 @@ export class NakamaService {
                 this.servers[_is_official][_target].client.listChannelMessages(
                   this.servers[_is_official][_target].session, _cid, 1, false)
                   .then(v => {
-                    if (v.messages.length) {
+                    if (v.messages.length)
                       this.update_from_channel_msg(v.messages[0], _is_official, _target);
-                    }
                     this.count_channel_online_member(this.channels_orig[_is_official][_target][_cid], _is_official, _target);
                     this.save_channels_with_less_info();
                   });
@@ -1467,7 +1466,7 @@ export class NakamaService {
   }
 
   /** 채널 상태 검토 */
-  count_channel_online_member(p: any, _is_official: string, _target: string) {
+  async count_channel_online_member(p: any, _is_official: string, _target: string) {
     let result_status = 'pending';
     try {
       if (p['group_id']) { // 그룹 채널인 경우
@@ -1496,6 +1495,12 @@ export class NakamaService {
             });
         else {
           let targetId = this.channels_orig[_is_official][_target][p.channel_id || p.id]['redirect']['id'];
+          let user = await this.servers[_is_official][_target].client.getUsers(
+            this.servers[_is_official][_target].session, [targetId]);
+          let keys = Object.keys(user.users[0]);
+          keys.forEach(key => {
+            this.users[_is_official][_target][targetId][key] = user.users[0][key];
+          });
           result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
         }
       }
