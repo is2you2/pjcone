@@ -369,6 +369,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     user_id: undefined,
     message: undefined,
     color: undefined,
+    is_me: undefined,
   };
 
   async init_chatroom() {
@@ -425,6 +426,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.init_last_message_viewer();
             this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
           } else {
+            this.last_message_viewer['is_me'] = c.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id;
             this.last_message_viewer['user_id'] = c.sender_id;
             this.last_message_viewer['message'] = c.content['msg'];
             this.last_message_viewer['color'] = c.color;
@@ -451,6 +453,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     delete this.last_message_viewer['user_id'];
     delete this.last_message_viewer['message'];
     delete this.last_message_viewer['color'];
+    delete this.last_message_viewer['is_me'];
   }
 
   /** 가장 최근 메시지 보기 */
