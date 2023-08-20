@@ -18,6 +18,7 @@ import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { EnginepptPage } from './portal/settings/engineppt/engineppt.page';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
+import { GroupServerPage } from './portal/settings/group-server/group-server.page';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -2727,6 +2728,13 @@ export class NakamaService {
     let json: any[] = JSON.parse(v);
     for (let i = 0, j = json.length; i < j; i++)
       switch (json[i].type) {
+        case 'open_profile': // 프로필 페이지 열기 유도
+          this.modalCtrl.create({
+            component: GroupServerPage,
+          }).then(v => v.present());
+          break;
+        case 'tmp_user': // 빠른 임시 진입을 위해 사용자 정보를 임의로 기입
+          break;
         case 'server': // 그룹 서버 자동등록처리
           let hasAlreadyTargetKey = Boolean(this.statusBar.groupServer['unofficial'][json[i].value.name]);
           if (hasAlreadyTargetKey) {

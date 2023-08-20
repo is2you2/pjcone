@@ -56,9 +56,18 @@ export class AppComponent {
       indexed.GetFileListFromDB('acts_local', list => {
         list.forEach(path => indexed.removeFileFromUserPath(path));
       });
-      let init = global.CatchGETs();
-      console.log('읽어봐: ', init);
+      let init = global.CatchGETs() || {};
       let json = [];
+      if (init['open_profile']) // 프로필 화면 유도
+        json.push({ type: 'open_profile' });
+      if (init['tmp_user']) { // 임시 사용자 정보 기입, 첫 데이터로 반영
+        let sep = init['tmp_user'][0].split(',');
+        nakama.users.self['email'] = sep[0];
+        nakama.users.self['password'] = sep[1];
+        nakama.users.self['display_name'] = sep[2];
+        nakama.users.self['online'] = true;
+        nakama.save_self_profile();
+      }
       if (init['server']) { // 그룹 서버 등록
         for (let i = 0, j = init['server'].length; i < j; i++) {
           let sep = init['server'][i].split(',');
@@ -68,8 +77,8 @@ export class AppComponent {
               name: sep[0],
               target: sep[0],
               address: sep[1],
-              port: sep[2] || 7350,
-              useSSL: sep[3] || false,
+              useSSL: sep[2] || false,
+              port: sep[3] || 7350,
               key: sep[4] || 'defaultkey',
               isOfficial: 'unofficial',
             },
@@ -77,14 +86,14 @@ export class AppComponent {
         }
       }
       if (init['group_dedi']) { // 그룹 사설 채팅 진입, 1개만 받음
-        json.push({
-          type: 'group_dedi',
-          value: {
-            address: `ws://${init['group_dedi'][0]}`,
-          },
-        })
+        if (window.location.protocol == 'http:') // 보안 연결이 아닐 때에만 동작
+          json.push({
+            type: 'group_dedi',
+            value: {
+              address: `ws://${init['group_dedi'][0]}`,
+            },
+          })
       }
-      console.log('json 구현: ', json);
       nakama.act_from_QRInfo(JSON.stringify(json));
     });
     // 모바일 기기 특정 설정
