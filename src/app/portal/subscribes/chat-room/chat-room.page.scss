@@ -127,7 +127,7 @@
     max-height: 96px;
     transform: translateY(-100%);
     position: relative;
-    background: #bbbe;
+    background: var(--chatroom-last-msg-viewer-bg);
     padding: 8px;
     overflow: hidden;
 }
