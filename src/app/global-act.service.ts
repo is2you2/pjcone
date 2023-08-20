@@ -429,7 +429,8 @@ export class GlobalActService {
   }
 
   /** 사용된 함수들 삭제 */
-  remove_req_file_info(path: string) {
+  remove_req_file_info(msg: any, path: string) {
+    delete msg.content['transfer_index'];
     let path_key = path.replace('/', '_');
     delete this.partsize_req[`${path_key}_len`];
     delete this.partsize_req[`${path_key}_data`];

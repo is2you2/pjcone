@@ -2585,8 +2585,7 @@ export class NakamaService {
         break;
       }
     setTimeout(() => {
-      delete msg.content['transfer_index'];
-      this.global.remove_req_file_info(path);
+      this.global.remove_req_file_info(msg, path);
     }, 100);
   }
 
@@ -2619,8 +2618,7 @@ export class NakamaService {
       let blob = await this.indexed.loadBlobFromUserPath(path, _msg.content['type'] || '')
       if (_CallBack) _CallBack(blob);
       msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
-      delete msg.content['transfer_index'];
-      this.global.remove_req_file_info(path);
+      this.global.remove_req_file_info(msg, path);
     }, 100);
   }
 
