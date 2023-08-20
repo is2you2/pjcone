@@ -21,7 +21,9 @@ export class QrcodeGenPage implements OnInit {
   ngOnInit() { }
 
   textarea_changed(_ev: any) {
-    this.QRCode = this.global.readasQRCodeFromString(this.userInput);
+    if (this.userInput)
+      this.QRCode = this.global.readasQRCodeFromString(this.userInput);
+    else this.QRCode = undefined;
   }
 
 }
