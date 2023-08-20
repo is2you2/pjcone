@@ -428,7 +428,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.last_message_viewer['user_id'] = c.sender_id;
             this.last_message_viewer['message'] = c.content['msg'];
             this.last_message_viewer['color'] = c.color;
-            console.log('정리: ', this.last_message_viewer);
           }
         }, 0);
       }
@@ -629,8 +628,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 확장 메뉴 숨기기 */
   make_ext_hidden() {
     let scrollHeight = this.ChatLogs.scrollHeight;
-    if (scrollHeight < this.ChatLogs.scrollTop + this.ChatLogs.clientHeight + 240)
+    if (scrollHeight < this.ChatLogs.scrollTop + this.ChatLogs.clientHeight + 240) {
       this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+      setTimeout(() => {
+        this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+      }, 150);
+    }
     if (isPlatform != 'DesktopPWA')
       this.isHidden = true;
   }
