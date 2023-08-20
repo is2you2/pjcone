@@ -1874,7 +1874,7 @@ export class NakamaService {
   /** 채널 정보를 변형한 후 추가하기 */
   async join_chat_with_modulation(targetId: string, type: number, _is_official: string, _target: string, _CallBack = (_c: Channel) => { }, isNewChannel = false) {
     if (!this.channels_orig[_is_official][_target]) this.channels_orig[_is_official][_target] = {};
-    await this.servers[_is_official][_target].socket.joinChat(targetId, type, true, false).then(c => {
+    await this.servers[_is_official][_target].socket.joinChat(targetId, type, true, false).then(async c => {
       c['redirect'] = {
         id: targetId,
         type: type,
@@ -1899,7 +1899,7 @@ export class NakamaService {
           console.error('예상하지 못한 채널 정보: ', type);
           break;
       }
-      this.add_channels(c, _is_official, _target);
+      await this.add_channels(c, _is_official, _target);
       if (!this.opened_page_info['channel']
         || this.opened_page_info['channel']['isOfficial'] != _is_official
         || this.opened_page_info['channel']['target'] != _target
