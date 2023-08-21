@@ -375,6 +375,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.nakama.check_sender_and_show_name(c, this.isOfficial, this.target);
         if (c.content['filename']) this.ModulateFileEmbedMessage(c);
         this.info['last_read_id'] = this.info['last_comment_id'];
+        this.nakama.save_channels_with_less_info();
         this.check_if_send_msg(c);
         this.messages.push(c);
         this.modulate_chatmsg(this.messages.length - 1, this.messages.length);
@@ -496,6 +497,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   msg['isLastRead'] = true;
                   this.foundLastRead = true;
                   this.info['last_read_id'] = this.info['last_comment_id'];
+                  this.nakama.save_channels_with_less_info();
                 }
               } else this.foundLastRead = true;
               this.nakama.translate_updates(msg);
