@@ -17,7 +17,6 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { VoidDrawPage } from './void-draw/void-draw.page';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
-import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 import { GroupDetailPage } from '../../settings/group-detail/group-detail.page';
 import { Camera } from '@awesome-cordova-plugins/camera/ngx';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -179,54 +178,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     act: () => {
       if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
       document.getElementById(this.file_sel_id).click();
-    }
-  },
-  {
-    icon: 'folder-open-outline',
-    act: () => {
-      if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-      this.modalCtrl.create({
-        component: UserFsDirPage,
-        componentProps: {
-          path: `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files`,
-          return: true,
-        }
-      }).then(v => {
-        v.onDidDismiss().then(async data => {
-          if (data.data) {
-            let file = data.data['info'];
-            let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-            loading.present();
-            try {
-              let blob = await this.indexed.loadBlobFromUserPath(file.path, '');
-              let TmpUrl = URL.createObjectURL(blob);
-              setTimeout(() => {
-                URL.revokeObjectURL(TmpUrl);
-              }, 0);
-              this.userInput.file = {};
-              this.userInput.file.filename = file.name;
-              this.userInput.file.file_ext = file.file_ext;
-              this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(TmpUrl);
-              this.userInput.file.type = '';
-              this.userInput.file.typeheader = file.viewer;
-              this.userInput.file.content_related_creator = [{
-                display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
-                timestamp: new Date().toLocaleString(),
-              }];
-              this.userInput.file.content_creator = {
-                user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-                timestamp: new Date().toLocaleString(),
-                display_name: this.nakama.users.self['display_name'],
-              };
-              this.userInput.file.blob = blob;
-            } catch (e) {
-              console.log('파일 불러오기에 실패함: ', e);
-            }
-            loading.dismiss();
-          }
-        })
-        v.present();
-      });
     }
   },
   {
