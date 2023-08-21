@@ -523,6 +523,7 @@ export class GroupServerPage implements OnInit {
       }
     } else {
       delete this.nakama.users.self['password'];
+      delete this.nakama.users.self['display_name'];
       this.nakama.logout_all_server();
     }
     this.p5canvas.loop();
