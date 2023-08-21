@@ -76,9 +76,9 @@ export class AppComponent {
           json.push({
             type: 'server',
             value: {
-              name: sep[0],
-              target: sep[0],
-              address: sep[1],
+              name: sep[0] || 'No named server',
+              target: sep[0] || 'No named server',
+              address: sep[1] || '192.168.0.2',
               useSSL: sep[2] || false,
               port: sep[3] || 7350,
               key: sep[4] || 'defaultkey',
