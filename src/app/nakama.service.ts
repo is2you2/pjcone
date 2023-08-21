@@ -2780,7 +2780,7 @@ export class NakamaService {
             await this.add_group_server(new_server_info);
             await this.init_session(new_server_info);
           }
-          return;
+          break;
         case 'group_dedi': // 그룹사설 채팅 접근
           await this.modalCtrl.create({
             component: MinimalChatPage,
