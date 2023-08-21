@@ -109,7 +109,8 @@ export class AdminToolsPage implements OnInit {
         if (this.current_user_page < this.all_user_page) {
           this.current_user_page += 1;
           if (this.current_user_page == this.all_user_page)
-            this.current_size = Array(this.all_users.length % this.LIST_PAGE_SIZE);
+            this.current_size = Array((this.all_users.length % this.LIST_PAGE_SIZE) == 0 ?
+              this.LIST_PAGE_SIZE : (this.all_users.length % this.LIST_PAGE_SIZE));
           else this.current_size = Array(this.LIST_PAGE_SIZE);
           for (let i = 0, j = this.current_size.length; i < j; i++)
             this.current_size[i] = (this.current_user_page - 1) * this.LIST_PAGE_SIZE + i;
