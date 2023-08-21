@@ -342,6 +342,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
+    this.info = this.nakama.channels_orig[this.isOfficial][this.target][this.info.id];
     this.nakama.opened_page_info['channel'] = {
       isOfficial: this.isOfficial,
       target: this.target,

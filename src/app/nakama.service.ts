@@ -1155,6 +1155,8 @@ export class NakamaService {
           delete channels_copy[_is_official][_target][_cid]['update'];
           delete channels_copy[_is_official][_target][_cid]['presences'];
           delete channels_copy[_is_official][_target][_cid]['cnoti_id'];
+          if (!channels_copy[_is_official][_target][_cid]['is_new'])
+            delete channels_copy[_is_official][_target][_cid]['is_new'];
         });
         if (!ChannelIds.length) delete channels_copy[_is_official][_target];
       });

@@ -238,8 +238,6 @@ export class AppComponent {
             throw 'ChatRoomPage props 재정비';
           }
           this.nakama.go_to_chatroom_without_admob_act(props.info);
-          if (props['info']['status'] != 'online' || props['info']['status'] != 'pending')
-            delete props['info']['is_new'];
           break;
         case 'MinimalChatPage':
           if (!this.lang.text['MinimalChat']['leave_chat_group']) throw 'MinimalChatPage 번역 준비중';
