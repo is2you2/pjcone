@@ -87,6 +87,16 @@ export class AppComponent {
           });
         }
       }
+      if (init['group']) { // 그룹 진입 추가
+        for (let i = 0, j = init['group'].length; i < j; i++) {
+          let sep = init['group'][i].split(',');
+          json.push({
+            type: 'group',
+            name: sep[0],
+            id: sep[1],
+          });
+        }
+      }
       if (init['group_dedi']) { // 그룹 사설 채팅 진입, 1개만 받음
         if (window.location.protocol == 'http:') // 보안 연결이 아닐 때에만 동작
           json.push({
