@@ -1206,7 +1206,7 @@ export class NakamaService {
             console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
             return;
           }
-          v = await servers[i].client.listGroups(servers[i].session, _info['name']);
+          v = await servers[i].client.listGroups(servers[i].session, decodeURIComponent(_info['name']));
           for (let k = 0, l = v.groups.length; k < l; k++)
             if (v.groups[k].id == _info['id']) {
               let pending_group = v.groups[k];
@@ -1359,14 +1359,13 @@ export class NakamaService {
         });
       else throw "not a group creator";
     } catch (e) {
-      console.log(e);
       try {
         delete this.groups[_is_official][_target][info['id']];
-      } catch (e) {
-        console.log(e);
-      }
+      } catch (e) { }
       this.save_groups_with_less_info();
-      this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
+      try {
+        await this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
+      } catch (e) { }
     }
   }
 

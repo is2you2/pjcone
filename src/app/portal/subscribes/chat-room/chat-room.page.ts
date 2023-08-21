@@ -361,7 +361,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
         break;
       case 3: // 그룹 대화라면
-        await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
+        if (this.info['status'] != 'missing')
+          await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
         this.extended_buttons[1].isHide = true;
         delete this.extended_buttons[2].isHide;
         break;
@@ -400,8 +401,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         button.isHide = true;
       });
       this.extended_buttons[0].isHide = false;
-      if (this.info['redirect']['type'] == 3)
-        this.extended_buttons[2].isHide = false;
     }
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
