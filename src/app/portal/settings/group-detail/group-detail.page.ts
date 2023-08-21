@@ -284,11 +284,11 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     if (this.info['status'] == 'online')
       this.after_leave_group(() => {
         this.leave_channel();
-        delete this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']];
+        this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']]['status'] = 'missing';
         this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss({ leave: true }));
       });
     else if (this.info['status'] == 'pending') this.after_leave_group(() => {
-      delete this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']];
+      this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']]['status'] = 'missing';
       this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss({ leave: true }));
     });
   }
