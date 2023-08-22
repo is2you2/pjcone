@@ -4,6 +4,9 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
+import clipboard from "clipboardy";
+import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
+
 
 @Component({
   selector: 'app-admin-tools',
@@ -18,6 +21,7 @@ export class AdminToolsPage implements OnInit {
     private p5toast: P5ToastService,
     private alertCtrl: AlertController,
     public statusBar: StatusManageService,
+    private mClipboard: Clipboard,
   ) { }
 
   /** 서버 정보, 온라인 상태의 서버만 불러온다 */
@@ -134,6 +138,11 @@ export class AdminToolsPage implements OnInit {
     this.nakama.join_chat_with_modulation(user.user_id || user.id, 2, _is_official, _target, (c) => {
       if (c) this.nakama.go_to_chatroom_without_admob_act(c);
     }, true);
+  }
+
+  copy_id(id: string) {
+    this.mClipboard.copy(id)
+      .catch(_e => clipboard.write(id));
   }
 
   remove_user(user: any) {
