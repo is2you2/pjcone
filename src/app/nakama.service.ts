@@ -1343,24 +1343,24 @@ export class NakamaService {
   /** 그룹 리스트 로컬/리모트에서 삭제하기 (방장일 경우) */
   async remove_group_list(info: any, _is_official: string, _target: string) {
     try { // 내가 방장이면 해산처리 우선, 이 외의 경우 기록 삭제
-      if (this.servers[_is_official][_target] && info['creator_id'] == this.servers[_is_official][_target].session.user_id)
-        await this.servers[_is_official][_target].client.deleteGroup(
-          this.servers[_is_official][_target].session, info['id'],
-        ).then(async v => {
-          if (!v) console.warn('그룹 삭제 오류 검토 필요');
-          this.remove_channel_files(_is_official, _target, info['channel_id']);
-          this.servers[_is_official][_target].client.deleteStorageObjects(
+      if (this.servers[_is_official][_target] && info['creator_id'] == this.servers[_is_official][_target].session.user_id) {
+        let v = await this.servers[_is_official][_target].client.deleteGroup(
+          this.servers[_is_official][_target].session, info['id']);
+        if (!v) console.warn('그룹 삭제 오류 검토 필요');
+        await this.remove_channel_files(_is_official, _target, info['channel_id']);
+        try {
+          await this.servers[_is_official][_target].client.deleteStorageObjects(
             this.servers[_is_official][_target].session, {
             object_ids: [{
               collection: 'group_public',
               key: `group_${info['id']}`,
             }]
-          }).then(_v => {
-            throw "Remove group image well";
-          }).catch(_e => {
-            throw "No group image found";
           });
-        });
+          throw "Remove group image well";
+        } catch (e) {
+          throw "No group image found";
+        }
+      }
       else throw "not a group creator";
     } catch (e) {
       try {
