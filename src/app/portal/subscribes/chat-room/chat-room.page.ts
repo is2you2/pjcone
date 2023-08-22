@@ -642,11 +642,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (!this.userInput.text.trim() && !this.userInput['file'] && !this.userInput['quickShare']) {
       setTimeout(() => {
         this.userInput.text = '';
+        this.userInputTextArea.style.height = '36px';
       }, 0);
-      this.userInputTextArea.style.height = '36px';
       return;
     }
-    this.userInputTextArea.style.height = '36px';
     let result: FileInfo = {};
     result['msg'] = this.userInput.text;
     let FileAttach = false;
@@ -684,6 +683,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           delete this.userInput.quickShare;
           delete this.userInput.file;
           this.userInput.text = '';
+          this.userInputTextArea.style.height = '36px';
           this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
         });
     } catch (e) {
