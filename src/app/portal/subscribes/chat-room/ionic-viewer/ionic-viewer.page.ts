@@ -11,6 +11,8 @@ import { File } from '@awesome-cordova-plugins/file/ngx';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
 import { FileInfo, GlobalActService } from 'src/app/global-act.service';
+import { ShareContentToOtherPage } from 'src/app/share-content-to-other/share-content-to-other.page';
+import { NakamaService } from 'src/app/nakama.service';
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -29,7 +31,8 @@ export class IonicViewerPage implements OnInit {
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
     private fileOpener: FileOpener,
-    private global: GlobalActService,
+    public global: GlobalActService,
+    private nakama: NakamaService,
   ) { }
 
   blob: Blob;
@@ -375,6 +378,27 @@ export class IonicViewerPage implements OnInit {
         }]
       }).then(v => v.present());
     }
+  }
+
+  ShareContent() {
+    let channels = this.nakama.rearrange_channels();
+    for (let i = channels.length - 1; i >= 0; i--) {
+      if (channels[i]['status'] == 'missing' || channels[i]['status'] == 'offline')
+        channels.splice(i, 1);
+    }
+    if (channels.length)
+      this.modalCtrl.create({
+        component: ShareContentToOtherPage,
+        componentProps: {
+          file: this.FileInfo,
+          channels: channels,
+        }
+      }).then(v => {
+        v.present();
+      });
+    else this.p5toast.show({
+      text: this.lang.text['ShareContentToOther']['NoChannelToShare'],
+    });
   }
 
   async ionViewWillLeave() {

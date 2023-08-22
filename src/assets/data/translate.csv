@@ -168,6 +168,7 @@ saveFile,저장,Save
 AlreadyExist,같은 이름의 파일이 이미 있습니다,A file with the same name already exists
 fileSaved,저장되었습니다,File saved
 fileSaveFailed,파일 저장에 실패했습니다,Failed to save file
+ShareContent,다른 채널에 공유하기,Share to other channels
 ## MinimalChat,,
 concurrent_users,동시접속자,Concurrent users
 shareAddress,주소 공유,Share address
@@ -404,3 +405,7 @@ RecvError,수신 오류,ReceiveError
 SocketError,소켓오류,onError
 inputmsg,메시지 입력,Input message
 send,발송,Send
+## ShareContentToOther,,
+Title,콘텐츠 공유하기,Share content
+NoChannelToShare,가용 채널이 없습니다,No channels available
+AvailableChannels,공유 가능한 채널,Shareable channels
