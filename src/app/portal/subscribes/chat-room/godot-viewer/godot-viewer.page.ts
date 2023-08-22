@@ -8,7 +8,9 @@ import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
+import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import { ShareContentToOtherPage } from 'src/app/share-content-to-other/share-content-to-other.page';
 
 @Component({
   selector: 'app-godot-viewer',
@@ -27,6 +29,7 @@ export class GodotViewerPage implements OnInit {
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
     private p5toast: P5ToastService,
+    private nakama: NakamaService,
   ) { }
 
   FileInfo: any;
@@ -104,6 +107,28 @@ export class GodotViewerPage implements OnInit {
         }]
       }).then(v => v.present());
     }
+  }
+
+  ShareContent() {
+    let channels = this.nakama.rearrange_channels();
+    for (let i = channels.length - 1; i >= 0; i--) {
+      if (channels[i]['status'] == 'missing' || channels[i]['status'] == 'offline')
+        channels.splice(i, 1);
+    }
+    if (channels.length)
+      this.modalCtrl.create({
+        component: ShareContentToOtherPage,
+        componentProps: {
+          file: this.FileInfo,
+          channels: channels,
+        }
+      }).then(v => {
+        v.onDidDismiss().then((_v) => this.modalCtrl.dismiss());
+        v.present();
+      });
+    else this.p5toast.show({
+      text: this.lang.text['ShareContentToOther']['NoChannelToShare'],
+    });
   }
 
   ionViewWillLeave() {

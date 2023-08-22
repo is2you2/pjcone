@@ -394,6 +394,7 @@ export class IonicViewerPage implements OnInit {
           channels: channels,
         }
       }).then(v => {
+        v.onDidDismiss().then((_v) => this.modalCtrl.dismiss());
         v.present();
       });
     else this.p5toast.show({

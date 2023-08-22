@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { LanguageSettingService } from '../language-setting.service';
 import { ModalController, NavParams } from '@ionic/angular';
 import { StatusManageService } from '../status-manage.service';
+import { NakamaService } from '../nakama.service';
 
 @Component({
   selector: 'app-share-content-to-other',
@@ -15,6 +16,7 @@ export class ShareContentToOtherPage implements OnInit {
     private navParams: NavParams,
     public modalCtrl: ModalController,
     public statusBar: StatusManageService,
+    private nakama: NakamaService,
   ) { }
 
   channels: any[];
@@ -24,6 +26,7 @@ export class ShareContentToOtherPage implements OnInit {
   }
 
   go_to_chatroom(channel: any) {
-    console.log('무엇을 받았는가: ', channel);
+    this.nakama.go_to_chatroom_without_admob_act(channel, this.navParams.get('file'));
+    this.modalCtrl.dismiss();
   }
 }

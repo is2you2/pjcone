@@ -255,7 +255,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.userInput.file['file_ext'] = ev.target.files[0].name.split('.').pop() || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
       this.userInput.file['size'] = ev.target.files[0].size;
       this.userInput.file['type'] = ev.target.files[0].type;
-      this.userInput.file['typeheader'] = ev.target.files[0].type.split('/')[0];
       this.userInput.file['content_related_creator'] = [{
         timestamp: new Date().toLocaleString(),
         display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
@@ -269,31 +268,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       setTimeout(() => {
         clearInterval(updater);
       }, 1500);
-      let FileURL = URL.createObjectURL(ev.target.files[0]);
-      setTimeout(() => {
-        URL.revokeObjectURL(FileURL);
-      }, 0);
-      this.userInput.file['thumbnail'] = undefined;
-      switch (this.userInput.file['typeheader']) {
-        case 'image': // 이미지인 경우 사용자에게 보여주기
-          this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
-          break;
-        case 'text':
-          new p5((p: p5) => {
-            p.setup = () => {
-              p.noCanvas();
-              p.loadStrings(FileURL, v => {
-                this.userInput.file['thumbnail'] = v;
-                p.remove();
-              }, e => {
-                console.error('문자열 불러오기 실패: ', e);
-                p.remove();
-              });
-            }
-          });
-          break;
-      }
       this.userInput.file.blob = ev.target.files[0];
+      this.create_selected_thumbnail();
       this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
       loading.dismiss();
     } else {
@@ -313,7 +289,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.nakama.removeBanner();
     this.ChatLogs = document.getElementById('chatroom_div');
-    this.nakama.ChatroomLinkAct = (c: any) => {
+    this.nakama.ChatroomLinkAct = (c: any, _fileinfo: FileInfo) => {
+      this.userInput.file = _fileinfo;
+      if (this.userInput.file) this.create_selected_thumbnail();
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
       this.messages.length = 0;
       this.info = c;
@@ -322,8 +300,39 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.route.queryParams.subscribe(_p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
       if (navParams) this.info = navParams.info;
+      this.userInput.file = navParams.file;
+      if (this.userInput.file) this.create_selected_thumbnail();
       this.init_chatroom();
     });
+  }
+
+  /** 선택한 파일의 썸네일 만들기 */
+  create_selected_thumbnail() {
+    let FileURL = URL.createObjectURL(this.userInput.file.blob);
+    this.userInput.file['typeheader'] = this.userInput.file.blob.type.split('/')[0];
+    setTimeout(() => {
+      URL.revokeObjectURL(FileURL);
+    }, 0);
+    this.userInput.file['thumbnail'] = undefined;
+    switch (this.userInput.file['typeheader']) {
+      case 'image': // 이미지인 경우 사용자에게 보여주기
+        this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
+        break;
+      case 'text':
+        new p5((p: p5) => {
+          p.setup = () => {
+            p.noCanvas();
+            p.loadStrings(FileURL, v => {
+              this.userInput.file['thumbnail'] = v;
+              p.remove();
+            }, e => {
+              console.error('문자열 불러오기 실패: ', e);
+              p.remove();
+            });
+          }
+        });
+        break;
+    }
   }
 
   last_message_viewer = {
