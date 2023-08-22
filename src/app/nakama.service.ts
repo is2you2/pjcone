@@ -290,18 +290,19 @@ export class NakamaService {
   /** 채팅 채널이 열려있는 경우 행동시키기 */
   ChatroomLinkAct: Function;
   /** subscribe과 localPush의 채팅방 입장 행동을 통일함 */
-  go_to_chatroom_without_admob_act(_info: any) {
+  go_to_chatroom_without_admob_act(_info: any, _file?: FileInfo) {
     this.removeBanner();
     this.has_new_channel_msg = false;
     this.rearrange_channels();
     this.save_channels_with_less_info();
     if (this.ChatroomLinkAct)
-      this.ChatroomLinkAct(_info);
+      this.ChatroomLinkAct(_info, _file);
     else this.ngZone.run(() => {
       this.navCtrl.navigateForward('chat-room', {
         animation: mdTransitionAnimation,
         state: {
           info: _info,
+          file: _file,
         },
       });
     });
@@ -2625,10 +2626,10 @@ export class NakamaService {
         break;
       }
     setTimeout(async () => {
-      let blob = await this.indexed.loadBlobFromUserPath(path, _msg.content['type'] || '')
-      if (_CallBack) _CallBack(blob);
       msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
       this.global.remove_req_file_info(msg, path);
+      let blob = await this.indexed.loadBlobFromUserPath(path, _msg.content['type'] || '')
+      if (_CallBack) _CallBack(blob);
     }, 100);
   }
 
