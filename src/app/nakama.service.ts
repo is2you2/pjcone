@@ -322,24 +322,27 @@ export class NakamaService {
   }
 
   /** 모든 서버 로그아웃처리 */
-  logout_all_server() {
-    let IsOfficials = Object.keys(this.statusBar.groupServer);
-    IsOfficials.forEach(_is_official => {
-      let Targets = Object.keys(this.statusBar.groupServer[_is_official]);
-      Targets.forEach(_target => {
-        if (this.statusBar.groupServer[_is_official][_target] == 'online') {
-          this.statusBar.groupServer[_is_official][_target] = 'pending';
-          this.catch_group_server_header('pending');
-          if (this.servers[_is_official][_target].session)
-            this.servers[_is_official][_target].client.sessionLogout(
-              this.servers[_is_official][_target].session,
-              this.servers[_is_official][_target].session.token,
-              this.servers[_is_official][_target].session.refresh_token,
-            );
-          if (this.servers[_is_official][_target].socket)
-            this.servers[_is_official][_target].socket.disconnect(true);
-        }
+  logout_all_server(): Promise<void> {
+    return new Promise((done) => {
+      let IsOfficials = Object.keys(this.statusBar.groupServer);
+      IsOfficials.forEach(_is_official => {
+        let Targets = Object.keys(this.statusBar.groupServer[_is_official]);
+        Targets.forEach(async _target => {
+          if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+            this.statusBar.groupServer[_is_official][_target] = 'pending';
+            this.catch_group_server_header('pending');
+            if (this.servers[_is_official][_target].session)
+              await this.servers[_is_official][_target].client.sessionLogout(
+                this.servers[_is_official][_target].session,
+                this.servers[_is_official][_target].session.token,
+                this.servers[_is_official][_target].session.refresh_token,
+              );
+            if (this.servers[_is_official][_target].socket)
+              this.servers[_is_official][_target].socket.disconnect(true);
+          }
+        });
       });
+      done();
     });
   }
 

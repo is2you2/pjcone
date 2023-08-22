@@ -504,7 +504,7 @@ export class GroupServerPage implements OnInit {
   }
   /** 채도 변화자 */
   lerpVal: number;
-  toggle_online() {
+  async toggle_online() {
     this.nakama.users.self['online'] = !this.nakama.users.self['online'];
     if (this.nakama.users.self['online']) {
       this.announce_update_profile = false;
@@ -527,9 +527,10 @@ export class GroupServerPage implements OnInit {
         this.nakama.users.self['online'] = false;
       }
     } else {
+      await this.nakama.logout_all_server();
       delete this.nakama.users.self['password'];
       delete this.nakama.users.self['display_name'];
-      this.nakama.logout_all_server();
+      this.change_img_smoothly('');
     }
     this.p5canvas.loop();
   }
