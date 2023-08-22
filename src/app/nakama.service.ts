@@ -1978,6 +1978,7 @@ export class NakamaService {
         } else this.go_to_chatroom_without_admob_act(this.channels_orig[_is_official][_target][msg.channel_id]);
       });
     }
+    if (is_me) this.noti.ClearNoti(this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']);
     switch (c.code) {
       case 0: // 사용자가 작성한 일반적인 메시지
         if (c.content['gupdate']) // 그룹 정보 업데이트
