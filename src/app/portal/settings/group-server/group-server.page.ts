@@ -85,6 +85,7 @@ export class GroupServerPage implements OnInit {
       }
     }
     this.p5canvas = new p5(sketch);
+    this.announce_update_profile = this.original_profile['display_name'] !== undefined;
   }
 
   /** 서버 연결하기 */
@@ -193,6 +194,8 @@ export class GroupServerPage implements OnInit {
     this.servers = this.nakama.get_all_server_info(true);
   }
 
+  announce_update_profile = true;
+
   async ionViewWillLeave() {
     if (this.nakama.on_socket_disconnected['group_unlink_by_user'])
       delete this.nakama.on_socket_disconnected['group_unlink_by_user'];
@@ -226,7 +229,7 @@ export class GroupServerPage implements OnInit {
           let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
           if (all_channels)
             all_channels.forEach((channelId: any) => {
-              if (this.original_profile['display_name'] !== undefined)
+              if (this.announce_update_profile)
                 servers[i].socket.writeChatMessage(channelId, {
                   user_update: 'modify_data',
                   noti_form: this.original_profile['display_name'] == this.nakama.users.self['display_name']
@@ -330,7 +333,7 @@ export class GroupServerPage implements OnInit {
             let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
             if (all_channels)
               all_channels.forEach((channelId: any) => {
-                if (this.original_profile['display_name'] !== undefined)
+                if (this.announce_update_profile)
                   servers[i].socket.writeChatMessage(channelId, {
                     user_update: 'modify_content',
                     noti_form: `: ${this.original_profile['display_name']}`,
@@ -394,7 +397,7 @@ export class GroupServerPage implements OnInit {
         if (all_channels.length)
           all_channels.forEach((channelId: any) => {
             if (this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target][channelId]['status'] != 'missing')
-              if (this.original_profile['display_name'] !== undefined)
+              if (this.announce_update_profile)
                 servers[i].socket.writeChatMessage(channelId, {
                   user_update: 'remove_content',
                   noti_form: `: ${this.original_profile['display_name']}`,
@@ -459,7 +462,7 @@ export class GroupServerPage implements OnInit {
         });
         let all_channels = this.nakama.rearrange_channels();
         all_channels.forEach(async channel => {
-          if (this.original_profile['display_name'] !== undefined)
+          if (this.announce_update_profile)
             await servers[i].socket.writeChatMessage(channel.id, {
               user_update: 'modify_img',
               noti_form: `: ${this.original_profile['display_name']}`,
@@ -503,6 +506,7 @@ export class GroupServerPage implements OnInit {
   toggle_online() {
     this.nakama.users.self['online'] = !this.nakama.users.self['online'];
     if (this.nakama.users.self['online']) {
+      this.announce_update_profile = false;
       try {
         if (!this.nakama.users.self['email']) {
           this.p5toast.show({
