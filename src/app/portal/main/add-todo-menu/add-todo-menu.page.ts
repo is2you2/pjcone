@@ -363,10 +363,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       let time = new Date();
       this_file.filename = `Camera_${time.toLocaleString().replace(/[:|.|\/]/g, '_')}.jpeg`;
       this_file.file_ext = 'jpeg';
-      this.indexed.saveBase64ToUserPath('data:image/jpeg;base64,' + v, 'tmp_files/todo/attach.jpeg', (raw) => {
-        this_file.blob = new Blob([raw], { type: this_file['type'] });
-        this_file.size = this_file.blob.size;
-      });
+      this_file.base64 = 'data:image/jpeg;base64,' + v;
       this_file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(this_file.base64);
       this_file.type = 'image/jpeg';
       this_file.typeheader = 'image';
@@ -382,7 +379,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       };
       this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
       this_file['viewer'] = 'image';
-      await this.indexed.saveBase64ToUserPath(this_file.base64, this_file['path']);
+      let raw = await this.indexed.saveBase64ToUserPath(this_file.base64, this_file['path']);
+      this_file.blob = new Blob([raw], { type: this_file['type'] });
+      this_file.size = this_file.blob.size;
       loading.dismiss();
       this.userInput.attach.push(this_file);
     });
