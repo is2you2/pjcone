@@ -763,7 +763,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     });
   }
 
-  /** 메시지 추가시마다 메시지 상태를 업데이트 (기존 html 연산) */
+  /** 메시지 추가시마다 메시지 상태를 업데이트 (기존 html 연산)  
+   * 메시지 자료형들(사용자 이름 보이기, 시간 보이기 등)을 메시지에 연산하는 것으로, 원래는 html에서 *ngIf 등으로 동작했었다  
+   * 연산 줄이기 용도
+   */
   modulate_chatmsg(i: number, j: number) {
     // 1회성 보여주기 양식 생성 (채팅방 전용 정보)
     if (!this.messages[i]['showInfo'])

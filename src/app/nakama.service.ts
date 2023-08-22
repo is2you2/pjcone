@@ -2037,13 +2037,21 @@ export class NakamaService {
     this.save_channels_with_less_info();
   }
 
-  /** 메시지를 엔터 단위로 분리, 메시지 내 하이퍼링크가 있는 경우 검토 */
+  /** 메시지를 엔터 단위로 분리, 메시지 내 하이퍼링크가 있는 경우 검토  
+   * 이 곳에서 메시지가 작은 단위별로 쪼개지며 메시지에 필요한 정보가 구성된다
+   */
   content_to_hyperlink(msg: any) {
     if (!msg.content['msg']) return;
     let sep_msg = msg.content['msg'].split('\n');
     msg.content['msg'] = [];
     sep_msg.forEach(_msg => {
-      if (_msg) msg.content['msg'].push([{ text: _msg }]);
+      let currentPart = { text: _msg };
+      if (_msg) msg.content['msg'].push([currentPart]);
+      let hasEmoji = currentPart.text.match(/\p{Emoji}+/gu);
+      try {
+        if (currentPart.text.length == hasEmoji[0].length)
+          currentPart['size'] = 48;
+      } catch (e) { }
     });
     for (let i = 0, j = msg.content['msg'].length; i < j; i++)
       if (msg.content['msg'][i][0]['text']) { // 메시지가 포함되어있는 경우에 한함
