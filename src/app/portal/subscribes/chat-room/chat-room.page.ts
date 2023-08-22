@@ -727,7 +727,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     throw '전송작업 중, 썸네일 열기';
                   break;
                 case 'download':
-                  this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target, undefined, json['index']);
+                  this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
                   break;
               }
             }
@@ -748,11 +748,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       } else { // 파일 자체가 없음
         if (!this.isHistoryLoaded) { // 서버와 연결되어 있음
           await this.global.CreateFileManager();
-          this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target, (resultModified) => {
-            let url = URL.createObjectURL(resultModified);
-            msg.content['path'] = path;
-            this.global.modulate_thumbnail(msg.content, url);
-          });
+          this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target);
         }
       }
     });

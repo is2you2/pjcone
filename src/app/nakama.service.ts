@@ -2605,7 +2605,7 @@ export class NakamaService {
    * 채널 메시지에 기반하여 파일 다운받기
    * @param msg 메시지 정보
    */
-  async ReadStorage_From_channel(msg: any, path: string, _is_official: string, _target: string, _CallBack = (_blob: Blob) => { }, startFrom = 0) {
+  async ReadStorage_From_channel(msg: any, path: string, _is_official: string, _target: string, startFrom = 0) {
     let _msg = JSON.parse(JSON.stringify(msg));
     // 이미 진행중이라면 무시
     for (let i = startFrom, j = _msg.content['partsize']; i < j; i++)
@@ -2630,8 +2630,10 @@ export class NakamaService {
       msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
       this.global.remove_req_file_info(msg, path);
       let blob = await this.indexed.loadBlobFromUserPath(path, _msg.content['type'] || '')
-      if (_CallBack) _CallBack(blob);
-    }, 100);
+      let url = URL.createObjectURL(blob);
+      msg.content['path'] = path;
+      this.global.modulate_thumbnail(msg.content, url);
+    }, 300);
   }
 
   /** 로컬 파일을 저장하며 원격에 분산하여 올리기 */
