@@ -10,6 +10,8 @@ import { NakamaService } from '../nakama.service';
 import { P5ToastService } from '../p5-toast.service';
 import { StatusManageService } from "../status-manage.service";
 import { FileInfo, GlobalActService } from '../global-act.service';
+import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
+import clipboard from "clipboardy";
 
 @Component({
   selector: 'app-others-profile',
@@ -28,6 +30,7 @@ export class OthersProfilePage implements OnInit {
     public lang: LanguageSettingService,
     private global: GlobalActService,
     private loadingCtrl: LoadingController,
+    private mClipboard: Clipboard,
   ) { }
 
   /** 다른 사용자의 정보 */
@@ -293,6 +296,11 @@ export class OthersProfilePage implements OnInit {
         act: 'kick',
       });
     });
+  }
+
+  copy_id() {
+    this.mClipboard.copy(this.info['user'].id)
+      .catch(_e => clipboard.write(this.info['user'].id));
   }
 
   focus_on_content() {

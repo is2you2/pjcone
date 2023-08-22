@@ -12,6 +12,9 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { GroupServerPage } from '../group-server/group-server.page';
+import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
+import clipboard from "clipboardy";
+
 
 @Component({
   selector: 'app-group-detail',
@@ -29,6 +32,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     public lang: LanguageSettingService,
     private global: GlobalActService,
     private p5toast: P5ToastService,
+    private mClipboard: Clipboard,
   ) { }
 
   QRCodeSRC: any;
@@ -312,6 +316,11 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         delete this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['info'];
       }
     this.nakama.save_channels_with_less_info();
+  }
+
+  copy_id() {
+    this.mClipboard.copy(this.info.id)
+      .catch(_e => clipboard.write(this.info.id));
   }
 
   ionViewWillLeave() {
