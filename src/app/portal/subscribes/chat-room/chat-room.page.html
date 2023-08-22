@@ -106,8 +106,9 @@ SPDX-License-Identifier: MIT -->
         <div *ngIf="!userInput.file && last_message_viewer.user_id" class="bottom_thumbnail"
           (click)="scroll_down_logs()">
           <span [style]="'margin-right: 8px; color: #' + last_message_viewer.color">
-            <b>{{last_message_viewer.is_me ? nakama.users.self['display_name'] :
-              nakama.users[isOfficial][target][last_message_viewer.user_id].display_name}}</b></span>
+            <b>{{(last_message_viewer.is_me ? nakama.users.self['display_name'] :
+              nakama.users[isOfficial][target][last_message_viewer.user_id].display_name)
+              || lang.text['Profile']['noname_user']}}</b></span>
           <span *ngFor="let line of last_message_viewer.message">
             <span *ngFor="let part of line">
               <span *ngIf="!part.href"> {{part.text}} </span>
