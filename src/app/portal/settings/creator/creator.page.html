@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT -->
 </ion-header>
 
 <ion-content>
-  <div class="profile_img_form">
+  <div class="profile_img_form" (click)="go_to_creator_page()">
     <img class="profile_img" src="assets/data/creator_img.jpg" alt="CreatorImg">
     <div class="fore-gradient"></div>
     <div class="username">{{info.name}}</div>
