@@ -10,6 +10,7 @@ import clipboard from "clipboardy";
 import { StatusManageService } from 'src/app/status-manage.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { GlobalActService } from 'src/app/global-act.service';
+import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 
 @Component({
   selector: 'app-add-group',
@@ -25,6 +26,7 @@ export class AddGroupPage implements OnInit {
     private statusBar: StatusManageService,
     public lang: LanguageSettingService,
     private global: GlobalActService,
+    private mClipboard: Clipboard,
   ) { }
 
   QRCodeSRC: any;
@@ -35,7 +37,6 @@ export class AddGroupPage implements OnInit {
       this.userInput = tmp;
     this.servers = this.nakama.get_all_server_info(true, true);
     this.userInput.server = this.servers[this.index];
-    this.cant_use_clipboard = isPlatform != 'DesktopPWA';
     this.file_sel_id = `add_group_${new Date().getTime()}`;
   }
 
@@ -64,29 +65,38 @@ export class AddGroupPage implements OnInit {
     this.isExpanded = false;
   }
 
-  /** 클립보드 사용가능 여부 */
-  cant_use_clipboard = false;
   imageURL_disabled = false;
   imageURL_placeholder = this.lang.text['Profile']['pasteURI'];
   /** 외부 주소 붙여넣기 */
   imageURLPasted() {
-    if (isPlatform != 'DesktopPWA') return;
     this.imageURL_disabled = true;
-    clipboard.read().then(v => {
-      if (v.indexOf('http') == 0) {
-        this.userInput.img = v;
-        this.imageURL_placeholder = v;
-      } else if (v.indexOf('data:image') == 0) {
-        this.nakama.limit_image_size(v, (rv) => this.userInput.img = rv['canvas'].toDataURL());
-      } else {
-        this.p5toast.show({
-          text: this.lang.text['Profile']['copyURIFirst'],
-        });
-      }
-    });
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+      clipboard.read().then(v => {
+        this.check_if_clipboard_available(v);
+      });
+    } else {
+      this.mClipboard.paste().then(v => {
+        this.check_if_clipboard_available(v);
+      }, e => {
+        console.log('클립보드 자료받기 오류: ', e);
+      });
+    }
     setTimeout(() => {
       this.imageURL_disabled = false;
     }, 1500);
+  }
+
+  check_if_clipboard_available(v: string) {
+    if (v.indexOf('http') == 0) {
+      this.userInput.img = v;
+      this.imageURL_placeholder = v;
+    } else if (v.indexOf('data:image') == 0) {
+      this.nakama.limit_image_size(v, (rv) => this.userInput.img = rv['canvas'].toDataURL());
+    } else {
+      this.p5toast.show({
+        text: this.lang.text['Profile']['copyURIFirst'],
+      });
+    }
   }
 
   /** 공개여부 토글 */

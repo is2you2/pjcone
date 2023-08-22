@@ -15,6 +15,7 @@ import { environment } from '../environments/environment';
 import { Camera } from "@awesome-cordova-plugins/camera/ngx";
 import { File } from "@awesome-cordova-plugins/file/ngx";
 import { FileOpener } from "@awesome-cordova-plugins/file-opener/ngx";
+import { Clipboard } from "@awesome-cordova-plugins/clipboard/ngx";
 
 @NgModule({
   declarations: [AppComponent],
@@ -34,6 +35,7 @@ import { FileOpener } from "@awesome-cordova-plugins/file-opener/ngx";
     LocalNotifications,
     BarcodeScanner,
     FileOpener,
+    Clipboard,
   ],
   bootstrap: [AppComponent],
 })

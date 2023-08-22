@@ -13,6 +13,7 @@ import clipboard from "clipboardy";
 import { isPlatform } from 'src/app/app.component';
 import * as p5 from 'p5';
 import { FileInfo, GlobalActService } from 'src/app/global-act.service';
+import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 
 @Component({
   selector: 'app-group-server',
@@ -30,6 +31,7 @@ export class GroupServerPage implements OnInit {
     private modalCtrl: ModalController,
     public global: GlobalActService,
     private loadingCtrl: LoadingController,
+    private mClipboard: Clipboard,
   ) { }
 
   info: string;
@@ -56,7 +58,6 @@ export class GroupServerPage implements OnInit {
     this.nakama.socket_reactive['self_profile_content_update'] = () => {
       this.update_content_from_server();
     }
-    this.cant_use_clipboard = isPlatform != 'DesktopPWA';
     let sketch = (p: p5) => {
       let img = document.getElementById('profile_img');
       let tmp_img = document.getElementById('profile_tmp_img');
@@ -533,28 +534,37 @@ export class GroupServerPage implements OnInit {
     this.p5canvas.loop();
   }
 
-  /** 클립보드 사용가능 여부 */
-  cant_use_clipboard = false;
   imageURL_disabled = false;
   /** 외부 주소 붙여넣기 */
   imageURLPasted() {
-    if (isPlatform != 'DesktopPWA') return;
     this.imageURL_disabled = true;
-    clipboard.read().then(v => {
-      if (v.indexOf('http') == 0) {
-        this.change_img_smoothly(v);
-      } else if (v.indexOf('data:image') == 0) {
-        this.nakama.limit_image_size(v, (rv) => this.change_img_smoothly(rv['canvas'].toDataURL()));
-      } else {
-        this.p5toast.show({
-          text: this.lang.text['Profile']['copyURIFirst'],
-        });
-        this.change_img_smoothly('');
-      }
-    });
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+      clipboard.read().then(v => {
+        this.check_if_clipboard_available(v);
+      });
+    } else {
+      this.mClipboard.paste().then(v => {
+        this.check_if_clipboard_available(v);
+      }, e => {
+        console.log('클립보드 자료받기 오류: ', e);
+      });
+    }
     setTimeout(() => {
       this.imageURL_disabled = false;
     }, 1500);
+  }
+
+  check_if_clipboard_available(v: string) {
+    if (v.indexOf('http') == 0) {
+      this.change_img_smoothly(v);
+    } else if (v.indexOf('data:image') == 0) {
+      this.nakama.limit_image_size(v, (rv) => this.change_img_smoothly(rv['canvas'].toDataURL()));
+    } else {
+      this.p5toast.show({
+        text: this.lang.text['Profile']['copyURIFirst'],
+      });
+      this.change_img_smoothly('');
+    }
   }
 
   go_back() {

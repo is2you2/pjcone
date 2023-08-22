@@ -309,6 +309,13 @@
   dependencies:
     "@types/cordova" latest
 
+"@awesome-cordova-plugins/clipboard@^5.46.0":
+  version "5.46.0"
+  resolved "https://registry.npmjs.org/@awesome-cordova-plugins/clipboard/-/clipboard-5.46.0.tgz"
+  integrity sha512-B/RHBXs6AEt+hlt7UNi74vX1cdBjq9Ya9RbYKGKc11A+qZCTtFwp87NmTmRAkIkRk5yGTAZvLLTnSM/WClygcA==
+  dependencies:
+    "@types/cordova" latest
+
 "@awesome-cordova-plugins/core@^5.1.0":
   version "5.41.0"
   resolved "https://registry.npmjs.org/@awesome-cordova-plugins/core/-/core-5.41.0.tgz"
@@ -3248,6 +3255,11 @@ copy-webpack-plugin@10.2.1:
     normalize-path "^3.0.0"
     schema-utils "^4.0.0"
     serialize-javascript "^6.0.0"
+
+cordova-clipboard@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.npmjs.org/cordova-clipboard/-/cordova-clipboard-1.3.0.tgz"
+  integrity sha512-IGk4LZm/DJ0Xk/jgakHm4wa+A/lrRP3QfzMAHDG7oWLJS4ISOpfI32Wez4ndnENItRslGyBVyJyKD83CxELCAw==
 
 "cordova-plugin-background-mode@bitbucket:TheBosZ/cordova-plugin-run-in-background":
   version "0.8.0"
