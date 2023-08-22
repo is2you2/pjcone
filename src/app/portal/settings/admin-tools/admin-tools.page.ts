@@ -149,7 +149,7 @@ export class AdminToolsPage implements OnInit {
     let _is_official = this.servers[this.index].isOfficial;
     let _target = this.servers[this.index].target;
     this.alertCtrl.create({
-      header: user.display_name,
+      header: user.display_name || this.lang.text['Profile']['noname_user'],
       message: this.lang.text['AdminTools']['ForceLeave'],
       buttons: [{
         text: this.lang.text['AdminTools']['ApplyLeave'],
@@ -160,7 +160,7 @@ export class AdminToolsPage implements OnInit {
               this.nakama.servers[_is_official][_target].session,
               'remove_account_fn', { user_id: user.user_id || user.id });
             this.p5toast.show({
-              text: `${this.lang.text['AdminTools']['UserLeaved']}: ${user.display_name}`,
+              text: `${this.lang.text['AdminTools']['UserLeaved']}: ${user.display_name || this.lang.text['Profile']['noname_user']}`,
             })
             this.refresh_all_user();
           } catch (e) {
