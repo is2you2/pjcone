@@ -46,6 +46,17 @@ export class WeblinkGenPage implements OnInit {
   result_address = 'https://is2you2.github.io/pjcone_pwa/';
   information_changed() {
     this.result_address = this.userInput.root || 'https://is2you2.github.io/pjcone_pwa/';
+    let count = 0;
+    if (this.userInput.open_profile) {
+      this.result_address += count ? '&' : '?';
+      this.result_address += 'open_profile=true';
+      count++;
+    }
+    if (this.userInput.open_subscribes) {
+      this.result_address += count ? '&' : '?';
+      this.result_address += 'open_subscribes=true';
+      count++;
+    }
   }
 
   copy_result_address() {
