@@ -19,7 +19,7 @@ SPDX-License-Identifier: MIT -->
     <textarea class="infobox" style="height: 280px;" disabled [(ngModel)]="RemoteDesc"></textarea>
   </div>
   <div *ngIf="Status == 'initPWA'">
-    <div *ngIf="!LinkedAddress">
+    <div *ngIf="!LinkedAddress && !isSSLConnect">
       <ion-item-divider>
         <ion-label>{{lang.text['EngineWorksPPT']['ManualLink']}}</ion-label>
       </ion-item-divider>

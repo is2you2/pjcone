@@ -40,10 +40,12 @@ export class EnginepptPage implements OnInit {
   InputAddress = '';
   /** PWA: 컨트롤러로 연결할 주소 */
   LinkedAddress = '';
+  isSSLConnect = false;
 
   ngOnInit() {
     this.engine_ppt_file_sel = `engine_ppt_file_sel_${new Date().getTime()}`;
     this.engine_ppt_mobile_sel = `engine_ppt_mobile_sel_${new Date().getTime()}`;
+    this.isSSLConnect = window.location.protocol == 'https:';
   }
 
   ionViewWillEnter() {
