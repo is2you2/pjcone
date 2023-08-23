@@ -75,7 +75,7 @@ export class EnginepptPage implements OnInit {
         let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
         canvas.parent(parent);
         canvas.drop(async (file: any) => {
-          this.StartPresentation(file.name, file.data);
+          this.StartPresentation(file.name, file.file);
         });
       }
     });
