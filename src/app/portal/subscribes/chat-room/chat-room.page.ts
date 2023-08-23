@@ -264,10 +264,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         timestamp: new Date().toLocaleString(),
         display_name: this.nakama.users.self['display_name'],
       };
-      let updater = setInterval(() => { }, 110);
-      setTimeout(() => {
-        clearInterval(updater);
-      }, 1500);
       this.userInput.file.blob = ev.target.files[0];
       this.create_selected_thumbnail();
       this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
@@ -312,12 +308,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   p5canvas: p5;
   CreateDrop() {
-    let parent = document.getElementById('p5Drop');
+    let parent = document.getElementById('p5Drop_chatroom');
     this.p5canvas = new p5((p: p5) => {
       p.setup = () => {
         let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
         canvas.parent(parent);
-        canvas.id('p5drop_canvas');
         canvas.drop(async (file: any) => {
           this.userInput['file'] = {};
           this.userInput.file['filename'] = file.name;
@@ -333,10 +328,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             timestamp: new Date().toLocaleString(),
             display_name: this.nakama.users.self['display_name'],
           };
-          let updater = setInterval(() => { }, 110);
-          setTimeout(() => {
-            clearInterval(updater);
-          }, 1500);
           this.userInput.file.blob = file.file;
           this.create_selected_thumbnail();
         });
@@ -1095,5 +1086,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     });
     delete this.nakama.opened_page_info['channel'];
     this.nakama.ChatroomLinkAct = undefined;
+    if (this.p5canvas)
+      this.p5canvas.remove()
   }
 }

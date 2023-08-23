@@ -133,6 +133,67 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       await this.ionViewWillEnter();
       this.show_count_timer();
     };
+    if (isPlatform == 'DesktopPWA')
+      setTimeout(() => {
+        this.CreateDrop();
+      }, 0);
+  }
+
+  p5canvas: p5;
+  CreateDrop() {
+    let parent = document.getElementById('p5Drop_todo');
+    this.p5canvas = new p5((p: p5) => {
+      p.setup = () => {
+        let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
+        canvas.parent(parent);
+        canvas.drop(async (file: any) => {
+          let saving_file = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+          saving_file.present();
+          let this_file: FileInfo = {};
+          this_file['filename'] = file['name'];
+          this_file['file_ext'] = file['name'].substring(file['name'].lastIndexOf('.') + 1);
+          this_file['size'] = file['size'];
+          this_file['type'] = file['type'];
+          this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
+          this_file['blob'] = file.file;
+          this_file['content_related_creator'] = [{
+            timestamp: new Date().toLocaleString(),
+            display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
+          }];
+          this_file['content_creator'] = {
+            // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            timestamp: new Date().toLocaleString(),
+            display_name: this.nakama.users.self['display_name'],
+          };
+          let has_same_named_file = false;
+          has_same_named_file = await this.indexed.checkIfFileExist(this_file.path)
+          if (this.userInput.id && !has_same_named_file) has_same_named_file = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}/${this_file.filename}`);
+          if (has_same_named_file) // 동명의 파일 등록시 파일 이름 변형
+            this_file.filename = `${this_file.filename.substring(0, this_file.filename.lastIndexOf('.'))}_.${this_file.file_ext}`;
+          this.global.set_viewer_category(this_file);
+          let FileURL = URL.createObjectURL(file.file);
+          if (this_file['viewer'] == 'image')
+            this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
+          try {
+            await this.indexed.saveBlobToUserPath(file.file, this_file['path']);
+            this.userInput.attach.push(this_file);
+            setTimeout(() => {
+              URL.revokeObjectURL(FileURL);
+            }, 0);
+            saving_file.dismiss();
+          } catch (e) {
+            console.error('파일 올리기 실패: ', e);
+            this.p5toast.show({
+              text: this.lang.text['TodoDetail']['load_failed'],
+            });
+            saving_file.dismiss();
+          }
+        });
+      }
+      p.mouseMoved = (ev: any) => {
+        parent.style.pointerEvents = ev['dataTransfer'] ? 'all' : 'none';
+      }
+    });
   }
 
   /** 하단에 보여지는 버튼 */
@@ -1006,5 +1067,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.nakama.AddTodoLinkAct = undefined;
+    if (this.p5canvas)
+      this.p5canvas.remove();
   }
 }
