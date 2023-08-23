@@ -53,6 +53,8 @@ export enum MatchOpCode {
   /** 프로필 정보/이미지 수정 */
   EDIT_PROFILE = 11,
   ENGINE_PPT = 13,
+  /** 새로운 채널에 참여됨 */
+  ADD_CHANNEL = 14,
 }
 
 @Injectable({
@@ -1249,6 +1251,8 @@ export class NakamaService {
                   pending_group['img'] = gimg.objects[0].value['img'];
               });
               this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
+              await servers[i].socket.sendMatchState(this.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.ADD_CHANNEL,
+                encodeURIComponent(''));
               if (pending_group.open) { // 열린 그룹이라면 즉시 채널에 참가
                 this.join_chat_with_modulation(pending_group.id, 3, servers[i].info.isOfficial, servers[i].info.target, (c) => {
                   if (!this.opened_page_info['channel']
@@ -1776,9 +1780,10 @@ export class NakamaService {
               }
             }
               break;
+            case MatchOpCode.ENGINE_PPT: { }
               break;
-            case MatchOpCode.ENGINE_PPT: {
-
+            case MatchOpCode.ADD_CHANNEL: {
+              this.get_group_list_from_server(_is_official, _target);
             }
               break;
             default:
