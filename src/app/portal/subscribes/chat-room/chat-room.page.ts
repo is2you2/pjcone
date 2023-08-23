@@ -304,6 +304,47 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (this.userInput.file) this.create_selected_thumbnail();
       this.init_chatroom();
     });
+    if (isPlatform == 'DesktopPWA')
+      setTimeout(() => {
+        this.CreateDrop();
+      }, 0);
+  }
+
+  p5canvas: p5;
+  CreateDrop() {
+    let parent = document.getElementById('p5Drop');
+    this.p5canvas = new p5((p: p5) => {
+      p.setup = () => {
+        let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
+        canvas.parent(parent);
+        canvas.id('p5drop_canvas');
+        canvas.drop(async (file: any) => {
+          this.userInput['file'] = {};
+          this.userInput.file['filename'] = file.name;
+          this.userInput.file['file_ext'] = file.name.split('.').pop() || file.type || this.lang.text['ChatRoom']['unknown_ext'];
+          this.userInput.file['size'] = file.size;
+          this.userInput.file['type'] = file.type;
+          this.userInput.file['content_related_creator'] = [{
+            timestamp: new Date().toLocaleString(),
+            display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
+          }];
+          this.userInput.file['content_creator'] = {
+            user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            timestamp: new Date().toLocaleString(),
+            display_name: this.nakama.users.self['display_name'],
+          };
+          let updater = setInterval(() => { }, 110);
+          setTimeout(() => {
+            clearInterval(updater);
+          }, 1500);
+          this.userInput.file.blob = file.file;
+          this.create_selected_thumbnail();
+        });
+      }
+      p.mouseMoved = (ev: any) => {
+        parent.style.pointerEvents = ev['dataTransfer'] ? 'all' : 'none';
+      }
+    });
   }
 
   /** 선택한 파일의 썸네일 만들기 */

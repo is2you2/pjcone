@@ -286,7 +286,7 @@ giveacoffeetodev,개발자에게 커피를 사주세요,Give a coffee to develop
 thanks_to,도움주신 분들,Thanks to
 ## GlobalAct,,
 FailedToDownloadGodot,씬 실행 실패,Execution scene failed
-UnCheckableCreator,확인 불가,Not confirmed
+UnCheckableCreator,외부 파일 게시,Publish external files
 failed_to_gen_qr,QRCode 생성 실패,QRCode generation failed
 OnlineMode,온라인,Online
 OnlineMode_text,서버에 연결되어 있습니다,You are connected to the server

@@ -61,9 +61,10 @@ export class EnginepptPage implements OnInit {
       this.StartRemoteContrServer();
     } else { // 웹인 경우 리모콘 연결 유도
       this.Status = 'initPWA';
-      setTimeout(() => {
-        this.CreateDrop();
-      }, 50);
+      if (isPlatform == 'DesktopPWA')
+        setTimeout(() => {
+          this.CreateDrop();
+        }, 50);
     }
   }
 
