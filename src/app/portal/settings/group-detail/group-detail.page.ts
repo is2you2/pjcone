@@ -323,6 +323,13 @@ export class GroupDetailPage implements OnInit, OnDestroy {
       .catch(_e => clipboard.write(this.info.id));
   }
 
+  /** 시작 진입 주소 생성 */
+  copy_startup_address() {
+    let startup_address = `https://is2you2.github.io/pjcone_pwa/?group=${this.info['name']},${this.info['id']}&open_subscribes=true`;
+    this.mClipboard.copy(startup_address)
+      .catch(_e => clipboard.write(startup_address));
+  }
+
   ionViewWillLeave() {
     delete this.nakama.socket_reactive['group_detail'];
     this.need_edit = this.info['description'] != this.info_orig['description'];

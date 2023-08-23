@@ -220,7 +220,7 @@ NeedSetDIsplayName,이름을 지정해주세요.,Please specify a display name.
 DeleteAccountSucc,회원탈퇴 되었습니다,Membership has been withdrawn
 DeleteAccountFailed,서버 기록만 삭제됩니다,Only server records are deleted
 ## ServerDetail,,
-copy_scan_below,아래를 스캔하여 서버 정보 복제,Duplicate server information by scanning below
+copy_scan_below,QR코드를 클릭하여 초대 주소 공유,Click the QR code to share the invitation address
 ApplyChangeServerInfo,적용하기,Apply
 ## AddGroup,,
 Title,새 채널 만들기,Create new channel
@@ -248,7 +248,7 @@ NotAcceptYet,아직 수락되지 않았습니다,Not yet accepted
 MissedGroup,더 이상 채널구성원이 아닙니다,No longer a channel member
 NoDetailGroup,설명 없는 채널,No description
 Members,채널 구성원,Members
-invite_scan_below,아래를 스캔하여 채널에 초대,Scan below to invite to channel
+invite_scan_below,QR코드를 클릭하여 초대 주소 공유,Click the QR code to share the invitation address
 BreakupGroup,채널 해산,Breakup
 LeaveGroup,떠나기,Leave group
 GroupInfoUpdated,채널 정보 업데이트됨,Channel info updated

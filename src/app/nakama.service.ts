@@ -2824,6 +2824,17 @@ export class NakamaService {
           });
           break;
         case 'group': // 그룹 자동 등록 시도
+          // 시작과 동시에 진입할 때 서버 연결 시간을 고려함
+          await new Promise((done: any) => {
+            let check_initialize = () => {
+              if (this.statusBar.settings.groupServer == 'online')
+                done();
+              else setTimeout(() => {
+                done();
+              }, 8000);
+            }
+            check_initialize();
+          });
           try {
             await this.try_add_group(json[i]);
           } catch (e) {
