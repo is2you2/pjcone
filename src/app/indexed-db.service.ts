@@ -241,22 +241,30 @@ export class IndexedDBService {
    * @param path 'user://~'에 들어가는 사용자 폴더 경로
    * @param act 불러오기 이후 행동. 인자 2개 필요 (load-return)
    */
-  loadTextFromUserPath(path: string, _CallBack = (_e: boolean, _v: string) => console.log('loadTextFromUserPath act null')) {
+  loadTextFromUserPath(path: string, _CallBack = (_e: boolean, _v: string) => { }): Promise<string> {
     if (!this.db) {
       setTimeout(() => {
         this.loadTextFromUserPath(path, _CallBack);
       }, 1000);
       return;
     };
-    let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
-    data.onsuccess = (ev) => {
-      if (ev.target['result'])
-        _CallBack(true, new TextDecoder().decode(ev.target['result']['contents']));
-      else _CallBack(false, `No file: , ${path}`);
-    }
-    data.onerror = (e) => {
-      console.error('IndexedDB loadTextFromUserPath failed: ', e);
-    }
+    return new Promise((done) => {
+      let data = this.db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
+      data.onsuccess = (ev) => {
+        if (ev.target['result']) {
+          let result = new TextDecoder().decode(ev.target['result']['contents']);
+          _CallBack(true, result);
+          done(result);
+        } else {
+          _CallBack(false, `No file: , ${path}`);
+          done(undefined);
+        }
+      }
+      data.onerror = (e) => {
+        console.error('IndexedDB loadTextFromUserPath failed: ', e);
+        done(undefined);
+      }
+    });
   }
 
   /** 고도엔진의 'user://~'에 해당하는 파일 Blob 상태로 받기

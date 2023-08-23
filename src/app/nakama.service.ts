@@ -796,7 +796,7 @@ export class NakamaService {
   /** 다른 사람의 정보 반환해주기 (로컬 정보 기반)
    * @returns 다른 사람 정보: User
    */
-  load_other_user(userId: string, _is_official: string, _target: string, _CallBack = (userInfo: any) => { }) {
+  load_other_user(userId: string, _is_official: string, _target: string, _CallBack = (_userInfo: any) => { }) {
     try {
       if (this.servers[_is_official][_target].session.user_id == userId)
         return this.users.self; // 만약 그게 나라면 내 정보 반환
@@ -1063,6 +1063,17 @@ export class NakamaService {
               this.channels_orig[_is_official][_target][_cid]['cnoti_id'] = this.get_noti_id();
             switch (this.channels_orig[_is_official][_target][_cid]['redirect']['type']) {
               case 2: // 1:1 채팅
+                try {
+                  this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target)['img']
+                    = (await this.servers[_is_official][_target].client.readStorageObjects(
+                      this.servers[_is_official][_target].session, {
+                      object_ids: [{
+                        collection: 'user_public',
+                        key: 'profile_image',
+                        user_id: this.channels_orig[_is_official][_target][_cid]['redirect']['id'],
+                      }]
+                    })).objects[0].value['img'];
+                } catch (e) { }
               case 3: // 그룹 채팅
                 this.servers[_is_official][_target].client.listChannelMessages(
                   this.servers[_is_official][_target].session, _cid, 1, false)
@@ -1393,7 +1404,7 @@ export class NakamaService {
   }
 
   /** 연결된 서버에서 자신이 참여한 그룹을 리모트에서 가져오기  
-   * ***돌려주는 값이 없는 nakama.initialize 단계 함수, 사용하지 말 것**  
+   * ***돌려주는 값이 없는 nakama.initialize 단계 함수, 다른 용도로는 사용하지 말 것**  
    * 그룹 채팅 채널 접속 및 그룹 사용자 검토도 이곳에서 시도함
    */
   async get_group_list_from_server(_is_official: string, _target: string) {
