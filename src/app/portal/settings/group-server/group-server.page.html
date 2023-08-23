@@ -121,7 +121,8 @@ SPDX-License-Identifier: MIT -->
               placeholder="7350">
             </ion-input>
           </ion-item>
-          <ion-item button (click)="dedicated_info.useSSL =! dedicated_info.useSSL" [disabled]="add_custom_tog">
+          <ion-item button (click)="dedicated_info.useSSL =! dedicated_info.useSSL"
+            [disabled]="add_custom_tog || isSSLConnect">
             <ion-label>{{lang.text['GroupServer']['isSSL']}}</ion-label>
             <ion-toggle [(ngModel)]="dedicated_info.useSSL" slot="end" style="pointer-events: none;"></ion-toggle>
           </ion-item>

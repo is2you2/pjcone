@@ -37,8 +37,12 @@ export class GroupServerPage implements OnInit {
   info: string;
   servers: ServerInfo[];
 
+  isSSLConnect = false;
+
   ngOnInit() {
     this.servers = this.nakama.get_all_server_info(true);
+    this.isSSLConnect = window.location.protocol == 'https:';
+    if (this.isSSLConnect) this.dedicated_info.useSSL = true;
 
     this.nakama.removeBanner();
     this.file_sel_id = `self_profile_${new Date().getTime()}`;
