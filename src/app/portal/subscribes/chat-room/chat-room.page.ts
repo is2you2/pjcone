@@ -226,26 +226,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 파일 첨부하기 */
   async inputFileSelected(ev: any) {
     if (ev.target.files.length) {
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      loading.present();
-      this.userInput['file'] = {};
-      this.userInput.file['filename'] = ev.target.files[0].name;
-      this.userInput.file['file_ext'] = ev.target.files[0].name.split('.').pop() || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
-      this.userInput.file['size'] = ev.target.files[0].size;
-      this.userInput.file['type'] = ev.target.files[0].type;
-      this.userInput.file['content_related_creator'] = [{
-        timestamp: new Date().toLocaleString(),
-        display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
-      }];
-      this.userInput.file['content_creator'] = {
-        user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-        timestamp: new Date().toLocaleString(),
-        display_name: this.nakama.users.self['display_name'],
-      };
-      this.userInput.file.blob = ev.target.files[0];
-      this.create_selected_thumbnail();
-      this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
-      loading.dismiss();
+      await this.selected_blobFile_callback_act(ev.target.files[0]);
     } else {
       delete this.userInput.file;
       this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
@@ -292,28 +273,36 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
         canvas.parent(parent);
         canvas.drop(async (file: any) => {
-          this.userInput['file'] = {};
-          this.userInput.file['filename'] = file.name;
-          this.userInput.file['file_ext'] = file.name.split('.').pop() || file.type || this.lang.text['ChatRoom']['unknown_ext'];
-          this.userInput.file['size'] = file.size;
-          this.userInput.file['type'] = file.type;
-          this.userInput.file['content_related_creator'] = [{
-            timestamp: new Date().toLocaleString(),
-            display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
-          }];
-          this.userInput.file['content_creator'] = {
-            user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-            timestamp: new Date().toLocaleString(),
-            display_name: this.nakama.users.self['display_name'],
-          };
-          this.userInput.file.blob = file.file;
-          this.create_selected_thumbnail();
+          await this.selected_blobFile_callback_act(file.file);
         });
       }
       p.mouseMoved = (ev: any) => {
         parent.style.pointerEvents = ev['dataTransfer'] ? 'all' : 'none';
       }
     });
+  }
+
+  async selected_blobFile_callback_act(blob: any) {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    loading.present();
+    this.userInput['file'] = {};
+    this.userInput.file['filename'] = blob.name;
+    this.userInput.file['file_ext'] = blob.name.split('.').pop() || blob.type || this.lang.text['ChatRoom']['unknown_ext'];
+    this.userInput.file['size'] = blob.size;
+    this.userInput.file['type'] = blob.type;
+    this.userInput.file['content_related_creator'] = [{
+      timestamp: new Date().toLocaleString(),
+      display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
+    }];
+    this.userInput.file['content_creator'] = {
+      user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+      timestamp: new Date().toLocaleString(),
+      display_name: this.nakama.users.self['display_name'],
+    };
+    this.userInput.file.blob = blob;
+    this.create_selected_thumbnail();
+    this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
+    loading.dismiss();
   }
 
   /** 선택한 파일의 썸네일 만들기 */
