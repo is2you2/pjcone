@@ -69,6 +69,7 @@ quickQRshare,정보 공유,Sharing information
 DevKit,보조 도구,Tools
 QRCodeGen,QR코드 생성기,QRCode Generator
 WSClient,웹소켓 클라이언트,Websocket client
+WebLinkGen,웹 링크 생성기,Weblink generator
 ServerFiles,서버 파일,Server files
 InAppExplorer,인앱 탐색기,InApp Explorer
 EnginePPT,엔진 PPT,Engine PPT
@@ -409,3 +410,4 @@ send,발송,Send
 Title,콘텐츠 공유하기,Share content
 NoChannelToShare,가용 채널이 없습니다,No channels available
 AvailableChannels,공유 가능한 채널,Shareable channels
+## WebLinkGen,,

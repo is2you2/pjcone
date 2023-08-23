@@ -60,6 +60,10 @@ const routes: Routes = [
     path: 'wsclient',
     loadChildren: () => import('./wsclient/wsclient.module').then( m => m.WsclientPageModule)
   },
+  {
+    path: 'weblink-gen',
+    loadChildren: () => import('./weblink-gen/weblink-gen.module').then( m => m.WeblinkGenPageModule)
+  },
 ];
 
 @NgModule({
