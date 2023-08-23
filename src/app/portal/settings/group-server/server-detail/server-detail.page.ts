@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { ModalController, NavParams } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -6,6 +7,7 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
+import clipboard from "clipboardy";
 
 @Component({
   selector: 'app-server-detail',
@@ -23,6 +25,7 @@ export class ServerDetailPage implements OnInit {
     private indexed: IndexedDBService,
     private nakama: NakamaService,
     private global: GlobalActService,
+    private mClipboard: Clipboard,
   ) { }
 
   dedicated_info: ServerInfo;
@@ -53,6 +56,14 @@ export class ServerDetailPage implements OnInit {
     });
     // 이미 target값이 등록되었는지 검토
     this.isTargetAlreadyExist = Boolean(this.statusBar.groupServer['unofficial'][this.dedicated_info.target]);
+  }
+
+  /** 시작 진입 주소 생성 */
+  copy_startup_address() {
+    let startup_address =
+      `https://is2you2.github.io/pjcone_pwa/?server=${this.dedicated_info['name'] || ''},${this.dedicated_info['address'] || ''},${this.dedicated_info.useSSL || ''},${this.dedicated_info.port || ''},${this.dedicated_info.key || ''}&open_profile=true`;
+    this.mClipboard.copy(startup_address)
+      .catch(_e => clipboard.write(startup_address));
   }
 
   apply_changed_info() {

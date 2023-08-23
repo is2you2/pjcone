@@ -11,7 +11,7 @@
   <ion-item-divider>
     <ion-label>{{lang.text['ServerDetail']['copy_scan_below']}}</ion-label>
   </ion-item-divider>
-  <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="Loading">
+  <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="Loading" (click)="copy_startup_address()">
   <ion-item button>
     <ion-label>{{lang.text['GroupServer']['DisplayName']}}</ion-label>
     <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.name"
