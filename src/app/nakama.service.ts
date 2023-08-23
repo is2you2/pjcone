@@ -2047,9 +2047,9 @@ export class NakamaService {
     sep_msg.forEach(_msg => {
       let currentPart = { text: _msg };
       if (_msg) msg.content['msg'].push([currentPart]);
-      let hasEmoji = currentPart.text.match(/\p{Emoji}+/gu);
       try {
-        if (currentPart.text.length == hasEmoji[0].length)
+        let hasEmoji = currentPart.text.match(/\p{Emoji}+/gu)[0].replace(/[0-9]/g, '');
+        if (currentPart.text.length == hasEmoji.length)
           currentPart['size'] = 48;
       } catch (e) { }
     });
