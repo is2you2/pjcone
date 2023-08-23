@@ -17,7 +17,7 @@ export class IndexedDBService {
   ) { }
 
   /** IndexedDB */
-  private db: IDBDatabase;
+  db: IDBDatabase;
 
   /** 이 동작은 반드시 고도엔진 웹 페이지가 우선 작업한 후에 동작해줘야한다. 우선권을 뺏어가면 안됨
    * localStorage: IndexedDB 키에서 고도가 미리 준비한 경우 'godot'를 값으로 지정한다

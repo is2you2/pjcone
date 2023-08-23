@@ -49,7 +49,6 @@ export class LanguageSettingService {
                   this.text[tmpTitle] = {};
               } else this.text[tmpTitle][v.rows[i]['obj']['#']] = v.rows[i]['obj'][this.lang];
             }
-            this.OnLoading = false;
             this.Callback_nakama();
             p.remove();
           }, e => {
@@ -61,5 +60,4 @@ export class LanguageSettingService {
   }
   /** nakama 스크립트 상호참조를 우회하여 번역처리 */
   Callback_nakama: Function;
-  OnLoading = true;
 }

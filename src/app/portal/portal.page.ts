@@ -3,11 +3,11 @@
 
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonTabs, iosTransitionAnimation, NavController } from '@ionic/angular';
-import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
 import * as p5 from 'p5';
 import { GlobalActService } from '../global-act.service';
 import { StatusManageService } from '../status-manage.service';
+import { IndexedDBService } from '../indexed-db.service';
 
 @Component({
   selector: 'app-portal',
@@ -20,10 +20,10 @@ export class PortalPage implements OnInit {
 
   constructor(
     private nav: NavController,
-    public lang: LanguageSettingService,
     public nakama: NakamaService,
     private global: GlobalActService,
     public statusBar: StatusManageService,
+    public indexed: IndexedDBService,
   ) { }
 
   ShowOnlineStatus = true;
