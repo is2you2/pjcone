@@ -458,31 +458,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       component: VoidDrawPage,
     }).then(v => {
       v.onWillDismiss().then(async v => {
-        if (v.data) {
-          let this_file: FileInfo = {};
-          this_file['filename'] = v.data['name'];
-          this_file['file_ext'] = 'png';
-          this_file['type'] = 'image/png';
-          this_file['content_related_creator'] = [{
-            // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-            timestamp: new Date().toLocaleString(),
-            display_name: this.nakama.users.self['display_name'],
-          }];
-          this_file['content_creator'] = {
-            // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-            timestamp: new Date().toLocaleString(),
-            display_name: this.nakama.users.self['display_name'],
-          };
-          this_file['viewer'] = 'image';
-          this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
-          this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
-          this.indexed.saveBase64ToUserPath(v.data['img'], 'tmp_files/todo/attach.jpeg', (raw) => {
-            this_file.blob = new Blob([raw], { type: this_file['type'] });
-          });
-          await this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path']);
-          v.data['loadingCtrl'].dismiss();
-          this.userInput.attach.push(this_file);
-        }
+        if (v.data) this.voidDraw_fileAct_callback(v);
       });
       v.present();
     });
@@ -585,41 +561,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             },
           }).then(v => {
             v.onWillDismiss().then(v => {
-              if (v.data) {
-                let this_file: FileInfo = this.userInput.attach[index];
-                this_file['filename'] = v.data['name'];
-                this_file['file_ext'] = 'png';
-                this_file['type'] = 'image/png';
-                this_file['viewer'] = 'image';
-                if (v.data['is_modify']) {
-                  this_file['content_related_creator'] = related_creators;
-                  this_file['content_creator'] = {
-                    // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-                    timestamp: new Date().toLocaleString(),
-                    display_name: this.nakama.users.self['display_name'],
-                  };
-                } else {
-                  this_file['content_related_creator'] = [{
-                    // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-                    timestamp: new Date().toLocaleString(),
-                    display_name: this.nakama.users.self['display_name'],
-                  }];
-                  this_file['content_creator'] = {
-                    // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-                    timestamp: new Date().toLocaleString(),
-                    display_name: this.nakama.users.self['display_name'],
-                  };
-                }
-                this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
-                this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
-                this.indexed.saveBase64ToUserPath(v.data['img'], 'tmp_files/todo/attach.jpeg', (raw) => {
-                  this_file.blob = new Blob([raw], { type: this_file['type'] });
-                  this_file.size = this_file.blob.size;
-                });
-                this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path'], (_) => {
-                  v.data['loadingCtrl'].dismiss();
-                });
-              }
+              if (v.data) this.voidDraw_fileAct_callback(v, related_creators, index);
             });
             v.present();
           });
@@ -664,42 +606,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             },
           }).then(v => {
             v.onWillDismiss().then(v => {
-              if (v.data) {
-                let this_file: FileInfo = {};
-                this.userInput.attach.push(this_file);
-                this_file['filename'] = v.data['name'];
-                this_file['file_ext'] = 'png';
-                this_file['type'] = 'image/png';
-                this_file['viewer'] = 'image';
-                if (v.data['is_modify']) {
-                  this_file['content_related_creator'] = related_creators;
-                  this_file['content_creator'] = {
-                    // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-                    timestamp: new Date().toLocaleString(),
-                    display_name: this.nakama.users.self['display_name'],
-                  };
-                } else {
-                  this_file['content_related_creator'] = [{
-                    // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-                    timestamp: new Date().toLocaleString(),
-                    display_name: this.nakama.users.self['display_name'],
-                  }];
-                  this_file['content_creator'] = {
-                    // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-                    timestamp: new Date().toLocaleString(),
-                    display_name: this.nakama.users.self['display_name'],
-                  };
-                }
-                this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
-                this.indexed.saveBase64ToUserPath(v.data['img'], 'tmp_files/todo/attach.jpeg', (raw) => {
-                  this_file.blob = new Blob([raw], { type: this_file['type'] });
-                  this_file.size = this_file.blob.size;
-                });
-                this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
-                this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path'], (_) => {
-                  v.data['loadingCtrl'].dismiss();
-                });
-              }
+              if (v.data) this.voidDraw_fileAct_callback(v, related_creators, i);
             });
             v.present();
           });
@@ -707,6 +614,47 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       });
       this.noti.Current = 'GodotViewerPage';
       v.present();
+    });
+  }
+
+  voidDraw_fileAct_callback(v: any, related_creators?: any, index?: number) {
+    let this_file: FileInfo;
+    if (index !== undefined) this_file = this.userInput.attach[index];
+    else {
+      this_file = {};
+      this.userInput.attach.push(this_file);
+    }
+    this_file['filename'] = v.data['name'];
+    this_file['file_ext'] = 'png';
+    this_file['type'] = 'image/png';
+    this_file['viewer'] = 'image';
+    if (v.data['is_modify']) {
+      this_file['content_related_creator'] = related_creators;
+      this_file['content_creator'] = {
+        // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+        timestamp: new Date().toLocaleString(),
+        display_name: this.nakama.users.self['display_name'],
+      };
+    } else {
+      this_file['content_related_creator'] = [{
+        // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+        timestamp: new Date().toLocaleString(),
+        display_name: this.nakama.users.self['display_name'],
+      }];
+      this_file['content_creator'] = {
+        // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+        timestamp: new Date().toLocaleString(),
+        display_name: this.nakama.users.self['display_name'],
+      };
+    }
+    this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
+    this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
+    this.indexed.saveBase64ToUserPath(v.data['img'], 'tmp_files/todo/attach.jpeg', (raw) => {
+      this_file.blob = new Blob([raw], { type: this_file['type'] });
+      this_file.size = this_file.blob.size;
+    });
+    this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path'], (_) => {
+      v.data['loadingCtrl'].dismiss();
     });
   }
 
