@@ -57,6 +57,11 @@ export class WeblinkGenPage implements OnInit {
       this.result_address += 'open_subscribes=true';
       count++;
     }
+    if (this.userInput.use_tmp_user) {
+      this.result_address += count ? '&' : '?';
+      this.result_address += `tmp_user=${this.userInput.tmp_user.email || ''},${this.userInput.tmp_user.password || ''},${this.userInput.tmp_user.display_name || ''}`;
+      count++;
+    }
   }
 
   copy_result_address() {
