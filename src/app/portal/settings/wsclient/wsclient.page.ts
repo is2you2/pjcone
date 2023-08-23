@@ -20,6 +20,8 @@ export class WsclientPage implements OnInit, OnDestroy {
   status = 'offline';
   send_msg: string;
 
+  placeholder_address = 'ws://127.0.0.1:0000';
+
   logs: Logs[] = [];
   logsDiv: HTMLElement;
 
@@ -30,6 +32,8 @@ export class WsclientPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.logsDiv = document.getElementById('logs');
+    let is_ssl = window.location.protocol == 'https:';
+    if (is_ssl) this.placeholder_address = 'wss://127.0.0.1:0000';
   }
 
   scroll_down() {
@@ -44,11 +48,11 @@ export class WsclientPage implements OnInit, OnDestroy {
       case 'offline': // 연결하기
         if (this.client) this.client.close();
         this.status = 'pending'
-        this.client = new WebSocket(this.address);
+        this.client = new WebSocket(this.address || this.placeholder_address);
         this.client.onopen = () => {
           this.status = 'online';
           this.logs.push({
-            text: `${this.lang.text['WSClient']['Connected']}: ${this.address}`,
+            text: `${this.lang.text['WSClient']['Connected']}: ${this.address || this.placeholder_address}`,
             time: this.createTimestamp(),
             color: '#34aa43',
           });
