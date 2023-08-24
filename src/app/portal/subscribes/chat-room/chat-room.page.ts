@@ -50,7 +50,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private router: Router,
     public nakama: NakamaService,
     private noti: LocalNotiService,
-    private statusBar: StatusManageService,
+    public statusBar: StatusManageService,
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
     private sanitizer: DomSanitizer,
