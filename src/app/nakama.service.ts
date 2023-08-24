@@ -2187,6 +2187,7 @@ export class NakamaService {
           });
         break;
       case 'remove': // 그룹이 삭제됨
+      case 'force_remove': // 그룹이 강제 삭제됨
         this.groups[_is_official][_target][c.group_id]['status'] = 'missing';
         delete this.groups[_is_official][_target][c.group_id]['img'];
         this.save_groups_with_less_info();
@@ -2226,6 +2227,9 @@ export class NakamaService {
           break;
         case 'remove': // 그룹이 삭제됨
           msg.content['noti'] = this.lang.text['GroupDetail']['GroupRemoved'];
+          break;
+        case 'force_remove': // 그룹이 삭제됨
+          msg.content['noti'] = this.lang.text['GroupDetail']['GroupForceRemoved'];
           break;
       }
   }

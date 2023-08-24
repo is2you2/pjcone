@@ -66,18 +66,15 @@ export class AdminToolsPage implements OnInit {
       return;
     }
     this.is_sending = true;
-    let _is_official = this.servers[this.index].isOfficial;
-    let _target = this.servers[this.index].target;
 
     this.notification.msg = encodeURIComponent(this.notification.msg);
     this.notification.uri = encodeURIComponent(this.notification.uri);
 
     try {
-      await this.nakama.servers[_is_official][_target].client.rpc(
-        this.nakama.servers[_is_official][_target].session,
+      await this.nakama.servers[this.isOfficial][this.target].client.rpc(
+        this.nakama.servers[this.isOfficial][this.target].session,
         'send_noti_all_fn', this.notification);
-    } catch (e) {
-    }
+    } catch (e) { }
     this.notification.msg = '';
     this.notification.uri = '';
     this.is_sending = false;
@@ -101,15 +98,13 @@ export class AdminToolsPage implements OnInit {
   refresh_all_user() {
     this.all_users.length = 0;
     this.current_user_size.length = 0;
-    let _is_official = this.servers[this.index].isOfficial;
-    let _target = this.servers[this.index].target;
-    this.nakama.servers[_is_official][_target].client.rpc(
-      this.nakama.servers[_is_official][_target].session,
+    this.nakama.servers[this.isOfficial][this.target].client.rpc(
+      this.nakama.servers[this.isOfficial][this.target].session,
       'query_all_users', {}).then(v => {
         this.all_users = v.payload as any;
         for (let i = 0, j = this.all_users.length; i < j; i++) {
-          this.nakama.save_other_user(this.all_users[i], _is_official, _target);
-          this.all_users[i] = this.nakama.load_other_user(this.all_users[i].user_id || this.all_users[i].id, _is_official, _target);
+          this.nakama.save_other_user(this.all_users[i], this.isOfficial, this.target);
+          this.all_users[i] = this.nakama.load_other_user(this.all_users[i].user_id || this.all_users[i].id, this.isOfficial, this.target);
         }
         this.all_user_page = Math.ceil(this.all_users.length / this.LIST_PAGE_SIZE);
         this.current_user_page = 0;
@@ -122,16 +117,14 @@ export class AdminToolsPage implements OnInit {
   refresh_all_groups() {
     this.all_groups.length = 0;
     this.current_group_size.length = 0;
-    let _is_official = this.servers[this.index].isOfficial;
-    let _target = this.servers[this.index].target;
-    this.nakama.servers[_is_official][_target].client.rpc(
-      this.nakama.servers[_is_official][_target].session,
+    this.nakama.servers[this.isOfficial][this.target].client.rpc(
+      this.nakama.servers[this.isOfficial][this.target].session,
       'query_all_groups', {}).then(v => {
         let recv_all_groups = v.payload as any;
         for (let i = 0, j = recv_all_groups.length; i < j; i++) {
           let keys = Object.keys(recv_all_groups[i]);
-          keys.forEach(key => this.nakama.groups[_is_official][_target][recv_all_groups[i]['id']][key] = recv_all_groups[i][key]);
-          this.all_groups.push(this.nakama.groups[_is_official][_target][recv_all_groups[i]['id']]);
+          keys.forEach(key => this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']][key] = recv_all_groups[i][key]);
+          this.all_groups.push(this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']]);
         }
         this.all_group_page = Math.ceil(this.all_groups.length / this.LIST_PAGE_SIZE);
         this.current_group_page = 0;
@@ -150,6 +143,34 @@ export class AdminToolsPage implements OnInit {
         break;
       }
     this.UserSel.value = user_id;
+  }
+
+  /** 그룹 강제 해산 */
+  force_breakup_group(group: any) {
+    this.alertCtrl.create({
+      header: group.name,
+      message: this.lang.text['AdminTools']['ForceBreakUp'],
+      buttons: [{
+        text: this.lang.text['GroupDetail']['BreakupGroup'],
+        cssClass: 'danger',
+        handler: async () => {
+          try {
+            await this.nakama.servers[this.isOfficial][this.target].client.rpc(
+              this.nakama.servers[this.isOfficial][this.target].session,
+              'force_remove_group', { group_id: group.id });
+            this.p5toast.show({
+              text: `${this.lang.text['AdminTools']['ForceBreaked']}: ${group.name}`,
+            })
+            this.refresh_all_user();
+            this.refresh_all_groups();
+          } catch (e) {
+            this.p5toast.show({
+              text: `${this.lang.text['AdminTools']['ForceBreakedFailed']}: ${e.statusText}`,
+            })
+          }
+        }
+      }]
+    }).then(v => v.present());
   }
 
   change_user_list_page(forward: number) {
@@ -203,9 +224,7 @@ export class AdminToolsPage implements OnInit {
   }
 
   start_private_chat(user: any) {
-    let _is_official = this.servers[this.index].isOfficial;
-    let _target = this.servers[this.index].target;
-    this.nakama.join_chat_with_modulation(user.user_id || user.id, 2, _is_official, _target, (c) => {
+    this.nakama.join_chat_with_modulation(user.user_id || user.id, 2, this.isOfficial, this.target, (c) => {
       if (c) this.nakama.go_to_chatroom_without_admob_act(c);
     }, true);
   }
@@ -216,8 +235,6 @@ export class AdminToolsPage implements OnInit {
   }
 
   remove_user(user: any) {
-    let _is_official = this.servers[this.index].isOfficial;
-    let _target = this.servers[this.index].target;
     this.alertCtrl.create({
       header: user.display_name || this.lang.text['Profile']['noname_user'],
       message: this.lang.text['AdminTools']['ForceLeave'],
@@ -226,8 +243,8 @@ export class AdminToolsPage implements OnInit {
         cssClass: 'danger',
         handler: async () => {
           try {
-            await this.nakama.servers[_is_official][_target].client.rpc(
-              this.nakama.servers[_is_official][_target].session,
+            await this.nakama.servers[this.isOfficial][this.target].client.rpc(
+              this.nakama.servers[this.isOfficial][this.target].session,
               'remove_account_fn', { user_id: user.user_id || user.id });
             this.p5toast.show({
               text: `${this.lang.text['AdminTools']['UserLeaved']}: ${user.display_name || this.lang.text['Profile']['noname_user']}`,
@@ -239,7 +256,6 @@ export class AdminToolsPage implements OnInit {
               text: `${this.lang.text['AdminTools']['UserLeavedFailed']}: ${e.statusText}`,
             })
           }
-
         }
       }]
     }).then(v => v.present());
