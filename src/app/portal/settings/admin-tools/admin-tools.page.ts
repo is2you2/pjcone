@@ -17,7 +17,7 @@ export class AdminToolsPage implements OnInit {
 
   constructor(
     public lang: LanguageSettingService,
-    private nakama: NakamaService,
+    public nakama: NakamaService,
     private p5toast: P5ToastService,
     private alertCtrl: AlertController,
     public statusBar: StatusManageService,
@@ -26,13 +26,19 @@ export class AdminToolsPage implements OnInit {
 
   /** 서버 정보, 온라인 상태의 서버만 불러온다 */
   servers: ServerInfo[] = [];
+  isOfficial: string;
+  target: string;
+
   index = 0;
   isExpanded = true;
 
   select_server(i: number) {
     this.index = i;
+    this.isOfficial = this.servers[i].isOfficial;
+    this.target = this.servers[i].target;
     this.isExpanded = false;
     this.refresh_all_user();
+    this.refresh_all_groups();
   }
 
   /** 전체 발송 알림 */
@@ -47,7 +53,7 @@ export class AdminToolsPage implements OnInit {
       if (!this.servers[i].is_admin)
         this.servers.splice(i, 1);
     }
-    this.refresh_all_user();
+    this.select_server(0);
   }
 
   is_sending = false;
@@ -80,15 +86,21 @@ export class AdminToolsPage implements OnInit {
   all_users = [];
   current_user_page = 1;
   all_user_page = 1;
-  /** 한번에 보여지는 사용자 수 */
+  current_user_size: number[] = [];
+
+  all_groups = [];
+  current_group_page = 1;
+  all_group_page = 1;
+  current_group_size: number[] = [];
+  /** 한번에 보여지는 정보 수 */
   LIST_PAGE_SIZE = 5;
-  current_size: number[] = [];
 
   @ViewChild('UserSel') UserSel: IonAccordionGroup;
+  @ViewChild('GroupSel') GroupSel: IonAccordionGroup;
 
   refresh_all_user() {
     this.all_users.length = 0;
-    this.current_size.length = 0;
+    this.current_user_size.length = 0;
     let _is_official = this.servers[this.index].isOfficial;
     let _target = this.servers[this.index].target;
     this.nakama.servers[_is_official][_target].client.rpc(
@@ -107,29 +119,87 @@ export class AdminToolsPage implements OnInit {
       });
   }
 
+  refresh_all_groups() {
+    this.all_groups.length = 0;
+    this.current_group_size.length = 0;
+    let _is_official = this.servers[this.index].isOfficial;
+    let _target = this.servers[this.index].target;
+    this.nakama.servers[_is_official][_target].client.rpc(
+      this.nakama.servers[_is_official][_target].session,
+      'query_all_groups', {}).then(v => {
+        let recv_all_groups = v.payload as any;
+        for (let i = 0, j = recv_all_groups.length; i < j; i++) {
+          let keys = Object.keys(recv_all_groups[i]);
+          keys.forEach(key => this.nakama.groups[_is_official][_target][recv_all_groups[i]['id']][key] = recv_all_groups[i][key]);
+          this.all_groups.push(this.nakama.groups[_is_official][_target][recv_all_groups[i]['id']]);
+        }
+        this.all_group_page = Math.ceil(this.all_groups.length / this.LIST_PAGE_SIZE);
+        this.current_group_page = 0;
+        this.change_group_list_page(1);
+      }).catch(e => {
+        console.error('그룹 리스트 돌려받기 오류: ', e);
+      });
+  }
+
+  /** 해당 uid 를 페이지에서 찾기 */
+  find_current_user_id(user_id: string) {
+    for (let i = 0, j = this.all_users.length; i < j; i++)
+      if (this.all_users[i].id == user_id) {
+        this.current_user_page = Math.floor(i / 5);
+        this.change_user_list_page(1);
+        break;
+      }
+    this.UserSel.value = user_id;
+  }
+
   change_user_list_page(forward: number) {
     switch (forward) {
       case 1: // 다음 페이지
         if (this.current_user_page < this.all_user_page) {
           this.current_user_page += 1;
           if (this.current_user_page == this.all_user_page)
-            this.current_size = Array((this.all_users.length % this.LIST_PAGE_SIZE) == 0 ?
+            this.current_user_size = Array((this.all_users.length % this.LIST_PAGE_SIZE) == 0 ?
               this.LIST_PAGE_SIZE : (this.all_users.length % this.LIST_PAGE_SIZE));
-          else this.current_size = Array(this.LIST_PAGE_SIZE);
-          for (let i = 0, j = this.current_size.length; i < j; i++)
-            this.current_size[i] = (this.current_user_page - 1) * this.LIST_PAGE_SIZE + i;
+          else this.current_user_size = Array(this.LIST_PAGE_SIZE);
+          for (let i = 0, j = this.current_user_size.length; i < j; i++)
+            this.current_user_size[i] = (this.current_user_page - 1) * this.LIST_PAGE_SIZE + i;
         }
         break;
       case -1: // 이전 페이지
         if (this.current_user_page - 1 > 0) {
           this.current_user_page -= 1;
-          this.current_size = Array(this.LIST_PAGE_SIZE);
-          for (let i = 0, j = this.current_size.length; i < j; i++)
-            this.current_size[i] = (this.current_user_page - 1) * this.LIST_PAGE_SIZE + i;
+          this.current_user_size = Array(this.LIST_PAGE_SIZE);
+          for (let i = 0, j = this.current_user_size.length; i < j; i++)
+            this.current_user_size[i] = (this.current_user_page - 1) * this.LIST_PAGE_SIZE + i;
         }
         break;
     }
     this.UserSel.value = undefined;
+  }
+
+  change_group_list_page(forward: number) {
+    switch (forward) {
+      case 1: // 다음 페이지
+        if (this.current_group_page < this.all_group_page) {
+          this.current_group_page += 1;
+          if (this.current_group_page == this.all_group_page)
+            this.current_group_size = Array((this.all_groups.length % this.LIST_PAGE_SIZE) == 0 ?
+              this.LIST_PAGE_SIZE : (this.all_groups.length % this.LIST_PAGE_SIZE));
+          else this.current_group_size = Array(this.LIST_PAGE_SIZE);
+          for (let i = 0, j = this.current_group_size.length; i < j; i++)
+            this.current_group_size[i] = (this.current_group_page - 1) * this.LIST_PAGE_SIZE + i;
+        }
+        break;
+      case -1: // 이전 페이지
+        if (this.current_group_page - 1 > 0) {
+          this.current_group_page -= 1;
+          this.current_group_size = Array(this.LIST_PAGE_SIZE);
+          for (let i = 0, j = this.current_group_size.length; i < j; i++)
+            this.current_group_size[i] = (this.current_group_page - 1) * this.LIST_PAGE_SIZE + i;
+        }
+        break;
+    }
+    this.GroupSel.value = undefined;
   }
 
   start_private_chat(user: any) {
@@ -163,6 +233,7 @@ export class AdminToolsPage implements OnInit {
               text: `${this.lang.text['AdminTools']['UserLeaved']}: ${user.display_name || this.lang.text['Profile']['noname_user']}`,
             })
             this.refresh_all_user();
+            this.refresh_all_groups();
           } catch (e) {
             this.p5toast.show({
               text: `${this.lang.text['AdminTools']['UserLeavedFailed']}: ${e.statusText}`,

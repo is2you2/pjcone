@@ -52,28 +52,102 @@
     </table>
   </ion-item-divider>
   <ion-accordion-group #UserSel>
-    <div *ngFor="let ui of current_size">
-      <ion-accordion [value]="all_users[ui].username">
+    <div *ngFor="let i of current_user_size">
+      <ion-accordion [value]="all_users[i].id">
         <ion-item button slot="header">
           <div class="additional_form bg_img_form">
-            <img *ngIf="all_users[ui].img" class="profile_img" [src]="all_users[ui].img">
+            <img *ngIf="all_users[i].img" class="profile_img" [src]="all_users[i].img">
           </div>
           <div class="additional_form status_bar_single"
-            [style]="'background-color: ' + statusBar.colors[all_users[ui].online === undefined ? 'pending' : all_users[ui].online ? 'online' : 'offline']">
+            [style]="'background-color: ' + statusBar.colors[all_users[i].online === undefined ? 'pending' : all_users[i].online ? 'online' : 'offline']">
           </div>
-          <ion-label class="form_margin">{{all_users[ui].display_name ||
+          <ion-label class="form_margin">{{all_users[i].display_name ||
             lang.text['Profile']['noname_user']}}</ion-label>
         </ion-item>
         <ion-list slot="content">
-          <ion-item (click)="copy_id(all_users[ui].id)">
-            <ion-label color="medium" class="ion-text-center" text-wrap>{{all_users[ui].id}}</ion-label>
+          <ion-item (click)="copy_id(all_users[i].id)">
+            <ion-label color="medium" class="ion-text-center" text-wrap>{{all_users[i].id}}</ion-label>
           </ion-item>
-          <ion-item button (click)="start_private_chat(all_users[ui])">
+          <ion-item button (click)="start_private_chat(all_users[i])">
             <ion-label>{{lang.text['OtherProfile']['privacy_chat']}}</ion-label>
           </ion-item>
-          <ion-item button (click)="remove_user(all_users[ui])">
+          <ion-item button (click)="remove_user(all_users[i])">
             <ion-label color="danger">{{lang.text['AdminTools']['ForceLeave']}}</ion-label>
           </ion-item>
+        </ion-list>
+      </ion-accordion>
+    </div>
+  </ion-accordion-group>
+  <ion-item-divider>
+    <ion-label>{{lang.text['AdminTools']['GroupList']}}</ion-label>
+    <table slot="end" style="margin-right: 8px;">
+      <tr>
+        <td (click)="change_group_list_page(-1)">
+          <ion-icon slot="start" class="icon_style" name="arrow-back-circle-outline"></ion-icon>
+        </td>
+        <td>{{current_group_page}}</td>
+        <td>/</td>
+        <td>{{all_group_page}}</td>
+        <td (click)="change_group_list_page(1)">
+          <ion-icon slot="start" class="icon_style" name="arrow-forward-circle-outline"></ion-icon>
+        </td>
+      </tr>
+    </table>
+  </ion-item-divider>
+  <ion-accordion-group #GroupSel>
+    <div *ngFor="let i of current_group_size">
+      <ion-accordion [value]="all_groups[i].name">
+        <ion-item button slot="header">
+          <div class="additional_form bg_img_form">
+            <img *ngIf="all_groups[i].img" class="profile_img" [src]="all_groups[i].img">
+          </div>
+          <div class="additional_form status_bar_single"
+            [style]="'background-color: ' + statusBar.colors[all_groups[i].open ? 'online' : 'pending']">
+          </div>
+          <ion-label class="form_margin">{{all_groups[i].name}}</ion-label>
+        </ion-item>
+        <ion-list slot="content">
+          <ion-item (click)="copy_id(all_groups[i].id)">
+            <ion-label color="medium" class="ion-text-center" text-wrap>{{all_groups[i].id}}</ion-label>
+          </ion-item>
+          <ion-item disabled>
+            <ion-label>{{lang.text['AddGroup']['LanguageTag']}}</ion-label>
+            <ion-label class="ion-text-end">{{all_groups[i].lang_tag}}</ion-label>
+          </ion-item>
+          <ion-item (click)="copy_id(all_groups[i].creator_id); find_current_user_id(all_groups[i].creator_id)">
+            <ion-label color="medium">{{lang.text['AdminTools']['GroupCreator']}}</ion-label>
+            <ion-label color="medium" class="ion-text-end">
+              {{nakama.users[isOfficial][target][all_groups[i].creator_id] ?
+              nakama.users[isOfficial][target][all_groups[i].creator_id].display_name : nakama.users.self.display_name}}
+            </ion-label>
+          </ion-item>
+          <ion-accordion-group #GroupUserSel>
+            <ion-accordion [value]="all_groups[i].name + '_user'">
+              <ion-item button slot="header">
+                <ion-label>{{lang.text['AdminTools']['GroupUserCounter']}}</ion-label>
+                <ion-label class="ion-text-end">{{all_groups[i].edge_count + ' / ' +
+                  all_groups[i].max_count}}</ion-label>
+              </ion-item>
+              <ion-list slot="content">
+                <div *ngFor="let user of all_groups[i].users">
+                  <ion-item button (click)="copy_id(user.user.id); find_current_user_id(user.user.id)">
+                    <div class="additional_form bg_img_form">
+                      <img
+                        *ngIf="user.is_me ? nakama.users.self.img : nakama.users[isOfficial][target][user.user.id]['img']"
+                        class="profile_img"
+                        [src]="user.is_me ? nakama.users.self.img : nakama.users[isOfficial][target][user.user.id]['img']">
+                    </div>
+                    <ion-label>{{(user.is_me ? nakama.users.self.display_name :
+                      user.user.display_name) || lang.text['Profile']['noname_user']}}</ion-label>
+                  </ion-item>
+                </div>
+              </ion-list>
+            </ion-accordion>
+          </ion-accordion-group>
+          <ion-item-divider>
+            <ion-label>{{lang.text['AddGroup']['GroupDetail_placeholder']}}</ion-label>
+          </ion-item-divider>
+          <textarea class="infobox" disabled [(ngModel)]="all_groups[i].description"></textarea>
         </ion-list>
       </ion-accordion>
     </div>

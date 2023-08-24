@@ -388,6 +388,9 @@ ForceLeave,회원 탈퇴,Withdraw user
 ApplyLeave,탈퇴,Withdraw
 UserLeaved,사용자 탈퇴됨,Withdrawn
 UserLeavedFailed,사용자 탈퇴 실패,Withdrawn failed
+GroupList,그룹채널 목록,Group channels
+GroupCreator,생성자,Creator
+GroupUserCounter,그룹 인원,Group members
 ## QRCodeGen,,
 AboutQRCodeGen,이 기능에 대해서,About this feature
 UserInput,사용자 입력,User input
