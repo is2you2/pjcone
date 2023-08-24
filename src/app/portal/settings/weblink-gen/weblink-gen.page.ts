@@ -82,6 +82,7 @@ export class WeblinkGenPage implements OnInit {
       count++;
     }
     if (this.userInput.open_subscribes) {
+      this.result_address += count ? '&' : '?';
       this.result_address += 'open_subscribes=true';
       count++;
     }
