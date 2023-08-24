@@ -24,7 +24,8 @@ SPDX-License-Identifier: MIT -->
     <ion-label>{{lang.text['CreatorInfo']['thanks_to']}}</ion-label>
   </ion-item-divider>
   <div class="infobox content_size thanks_bg">
-    <span *ngFor="let user of special_thanks_to">
+    <span *ngFor="let user of special_thanks_to; let i = index">
+      <span *ngIf="i != 0">{{', '}}</span>
       <span *ngIf="!user.url">
         {{user[lang.lang]}}
       </span>
