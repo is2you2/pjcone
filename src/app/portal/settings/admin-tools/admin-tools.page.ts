@@ -123,6 +123,8 @@ export class AdminToolsPage implements OnInit {
         let recv_all_groups = v.payload as any;
         for (let i = 0, j = recv_all_groups.length; i < j; i++) {
           let keys = Object.keys(recv_all_groups[i]);
+          if (!this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']])
+            this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']] = {};
           keys.forEach(key => this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']][key] = recv_all_groups[i][key]);
           this.all_groups.push(this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']]);
         }
