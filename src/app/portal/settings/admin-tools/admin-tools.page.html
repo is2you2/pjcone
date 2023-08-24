@@ -122,7 +122,7 @@
             <ion-label color="medium">{{lang.text['AdminTools']['GroupCreator']}}</ion-label>
             <ion-label color="medium" class="ion-text-end">
               {{nakama.users[isOfficial][target][all_groups[i].creator_id] ?
-              nakama.users[isOfficial][target][all_groups[i].creator_id].display_name : nakama.users.self.display_name}}
+              nakama.users[isOfficial][target][all_groups[i].creator_id]['display_name'] : nakama.users.self['display_name']}}
             </ion-label>
           </ion-item>
           <ion-accordion-group #GroupUserSel>
@@ -137,11 +137,11 @@
                   <ion-item button (click)="copy_id(user.user.id); find_current_user_id(user.user.id)">
                     <div class="additional_form bg_img_form">
                       <img
-                        *ngIf="user.is_me ? nakama.users.self.img : nakama.users[isOfficial][target][user.user.id]['img']"
+                        *ngIf="user.is_me ? nakama.users.self['img'] : nakama.users[isOfficial][target][user.user.id]['img']"
                         class="profile_img"
-                        [src]="user.is_me ? nakama.users.self.img : nakama.users[isOfficial][target][user.user.id]['img']">
+                        [src]="user.is_me ? nakama.users.self['img'] : nakama.users[isOfficial][target][user.user.id]['img']">
                     </div>
-                    <ion-label>{{(user.is_me ? nakama.users.self.display_name :
+                    <ion-label>{{(user.is_me ? nakama.users.self['display_name'] :
                       user.user.display_name) || lang.text['Profile']['noname_user']}}</ion-label>
                   </ion-item>
                 </div>
