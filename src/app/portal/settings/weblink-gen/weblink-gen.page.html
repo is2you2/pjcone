@@ -22,15 +22,23 @@
     <ion-input class="ion-text-end" [(ngModel)]="userInput.root" placeholder="https://is2you2.github.io/pjcone_pwa/"
       (ionChange)="baseURLChanged($event)"></ion-input>
   </ion-item>
-  <ion-item button (click)="userInput.open_profile = !userInput.open_profile; information_changed()">
-    <ion-label>{{lang.text['WebLinkGen']['OpenProfile']}}</ion-label>
-    <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.open_profile" slot="end"></ion-toggle>
-  </ion-item>
   <ion-item>
     <ion-label>{{lang.text['QuickQRShare']['GroupServer']}}</ion-label>
     <ion-select (ionChange)="SelectGroupServer($event)" multiple="true"
       [placeholder]="lang.text['QuickQRShare']['EmptyData']">
       <ion-select-option *ngFor="let gs of servers" [value]="gs">{{gs['name']}} </ion-select-option>
+    </ion-select>
+  </ion-item>
+  <ion-item button (click)="userInput.open_profile = !userInput.open_profile; information_changed()">
+    <ion-label>{{lang.text['WebLinkGen']['OpenProfile']}}</ion-label>
+    <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.open_profile" slot="end"></ion-toggle>
+  </ion-item>
+  <ion-item>
+    <ion-label>{{lang.text['QuickQRShare']['Group']}}</ion-label>
+    <ion-select (ionChange)="SelectGroupChannel($event)" multiple="true"
+      [placeholder]="lang.text['QuickQRShare']['EmptyData']">
+      <ion-select-option *ngFor="let ginfo of groups" [value]="ginfo">{{ginfo['name'] + ' (' +
+        ginfo['server']['name'] + ')'}}</ion-select-option>
     </ion-select>
   </ion-item>
   <ion-item button (click)="userInput.open_subscribes = !userInput.open_subscribes; information_changed()">

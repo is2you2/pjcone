@@ -33,16 +33,23 @@ export class WeblinkGenPage implements OnInit {
   }
 
   servers: ServerInfo[] = [];
+  groups = [];
 
   isSSLConnect = false;
 
   ngOnInit() {
     this.isSSLConnect = window.location.protocol == 'https:';
     this.servers = this.nakama.get_all_server_info();
+    this.groups = this.nakama.rearrange_group_list();
   }
 
   SelectGroupServer(ev: any) {
     this.userInput.servers = ev.detail.value;
+    this.information_changed();
+  }
+
+  SelectGroupChannel(ev: any) {
+    this.userInput.groups = ev.detail.value;
     this.information_changed();
   }
 
@@ -57,19 +64,24 @@ export class WeblinkGenPage implements OnInit {
   information_changed() {
     this.result_address = this.userInput.root || 'https://is2you2.github.io/pjcone_pwa/';
     let count = 0;
-    if (this.userInput.open_profile) {
-      this.result_address += count ? '&' : '?';
-      this.result_address += 'open_profile=true';
-      count++;
-    }
     for (let i = 0, j = this.userInput.servers.length; i < j; i++) {
       this.result_address += count ? '&' : '?';
       this.result_address += 'server=';
       this.result_address += `${this.userInput.servers[i].name || ''},${this.userInput.servers[i].address || ''},${this.userInput.servers[i].useSSL || ''},${this.userInput.servers[i].port || 7350},${this.userInput.servers[i].key || ''}`;
       count++;
     }
-    if (this.userInput.open_subscribes) {
+    if (this.userInput.open_profile) {
       this.result_address += count ? '&' : '?';
+      this.result_address += 'open_profile=true';
+      count++;
+    }
+    for (let i = 0, j = this.userInput.groups.length; i < j; i++) {
+      this.result_address += count ? '&' : '?';
+      this.result_address += 'group=';
+      this.result_address += `${this.userInput.groups[i]['name']},${this.userInput.groups[i]['id']}`;
+      count++;
+    }
+    if (this.userInput.open_subscribes) {
       this.result_address += 'open_subscribes=true';
       count++;
     }
