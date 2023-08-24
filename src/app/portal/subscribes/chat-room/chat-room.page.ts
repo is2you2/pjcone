@@ -245,19 +245,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.nakama.removeBanner();
     this.ChatLogs = document.getElementById('chatroom_div');
     this.nakama.ChatroomLinkAct = (c: any, _fileinfo: FileInfo) => {
-      this.userInput.file = _fileinfo;
-      if (this.userInput.file) this.create_selected_thumbnail();
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
       this.messages.length = 0;
       this.info = c;
       this.init_chatroom();
+      this.userInput.file = _fileinfo;
+      if (this.userInput.file) this.create_selected_thumbnail();
     }
     this.route.queryParams.subscribe(_p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
       if (navParams) this.info = navParams.info;
+      this.init_chatroom();
       this.userInput.file = navParams.file;
       if (this.userInput.file) this.create_selected_thumbnail();
-      this.init_chatroom();
     });
     if (isPlatform == 'DesktopPWA')
       setTimeout(() => {
@@ -299,14 +299,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       timestamp: new Date().toLocaleString(),
       display_name: this.nakama.users.self['display_name'],
     };
-    this.userInput.file.blob = blob;
     this.create_selected_thumbnail();
     this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
     loading.dismiss();
   }
 
   /** 선택한 파일의 썸네일 만들기 */
-  create_selected_thumbnail() {
+  async create_selected_thumbnail() {
+    this.userInput.file.blob = await this.indexed.loadBlobFromUserPath(this.userInput.file.path, this.userInput.file.type);
     let FileURL = URL.createObjectURL(this.userInput.file.blob);
     this.userInput.file['typeheader'] = this.userInput.file.blob.type.split('/')[0];
     setTimeout(() => {
