@@ -46,7 +46,7 @@ SPDX-License-Identifier: MIT -->
   </ion-item-divider>
   <ion-item button *ngFor="let user of info['users']" (click)="open_user_profile(user)">
     <div class="additional_form status_bar_single"
-      [style]="'background-color: ' + statusBar.colors[user.status || info['status'] || 'offline']">
+      [style]="'background-color: ' + statusBar.colors[user.user['online'] ? 'online' : 'offline']">
     </div>
     <div class="additional_form bg_img_form">
       <img class="profile_img"

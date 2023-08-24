@@ -72,41 +72,6 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         } else if (this.info['users'][i]['user']['id']) { // 다른 사람들의 프로필 이미지
           this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], this.isOfficial, this.target);
         } else this.info['users'].splice(i, 1);
-      // 온라인일 경우
-      if (this.has_admin) // 여기서만 has_admin이 온라인 여부처럼 동작함
-        if (this.info['status'] != 'missing')
-          this.state_to_status(this.isOfficial, this.target);
-    }
-  }
-
-  /** 그룹원 상태를 그룹 사용자 상태에 덮어쓰기 */
-  state_to_status(_is_official: string, _target: string) {
-    for (let i = 0, j = this.info['users'].length; i < j; i++) {
-      // 아래, 사용자별 램프 조정
-      switch (this.info['users'][i].state) {
-        case 0: // SuperAdmin
-        case 1: // Admin
-          this.info['users'][i].status = 'certified';
-          break;
-        case 2: // Member
-          this.info['users'][i].status = 'online';
-          break;
-        case 3: // Request
-          this.info['users'][i].status = 'pending';
-          break;
-        default:
-          console.warn('존재하지 않는 나카마 그룹원의 상태: ', this.info['users'][i].state);
-          break;
-      }
-      // 내 정보라면 방장 여부 검토
-      if (this.info['users'][i]['is_me']) {
-        if (this.info['creator_id'] == this.nakama.servers[_is_official][_target].session.user_id)
-          this.has_admin = true;
-        this.info['status'] = this.info['users'][i].status;
-        if (this.info['status'] == 'certified')
-          this.info['status'] = 'online';
-        else this.has_admin = false;
-      }
     }
   }
 
@@ -147,7 +112,6 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         }
       }
       this.info['users'] = result;
-      this.state_to_status(_is_official, _target);
     });
   }
 
