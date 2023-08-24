@@ -10,8 +10,6 @@
       </ion-tab-button>
       <ion-tab-button [disabled]="!indexed.db" (click)="setting_button()">
         <ion-icon name="settings-outline"></ion-icon>
-        <ion-badge *ngIf="ShowOnlineStatus" [color]="statusBar.settings.groupServer == 'online' ? 'success' : 'medium'"
-          mode="md"></ion-badge>
       </ion-tab-button>
     </ion-tab-bar>
   </ion-tabs>

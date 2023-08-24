@@ -22,16 +22,10 @@ export class PortalPage implements OnInit {
     private nav: NavController,
     public nakama: NakamaService,
     private global: GlobalActService,
-    public statusBar: StatusManageService,
     public indexed: IndexedDBService,
   ) { }
 
-  ShowOnlineStatus = true;
-
   ngOnInit() {
-    setTimeout(() => {
-      this.ShowOnlineStatus = false;
-    }, 8000);
     this.nakama.act_callback_link['portal_tab_subscribes'] = () => {
       this.ionTabs.select('subscribes');
       this.subscribe_button();

@@ -7,6 +7,7 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize } from '@capacitor-community/admob';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
+import { StatusManageService } from 'src/app/status-manage.service';
 
 @Component({
   selector: 'app-main',
@@ -19,6 +20,7 @@ export class MainPage implements OnInit {
     private global: GlobalActService,
     public lang: LanguageSettingService,
     private nakama: NakamaService,
+    public statusBar: StatusManageService,
   ) { }
 
   ngOnInit() {
