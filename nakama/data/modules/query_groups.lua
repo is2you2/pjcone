@@ -16,6 +16,8 @@ local function query_all_groups(context, payload)
         local id = { row.id }
         local get_group = nk.groups_get_id(id)
         for _, u in ipairs(get_group) do
+            local users = nk.group_users_list(row.id);
+            u['users'] = users
             groups[i] = u
         end
     end
