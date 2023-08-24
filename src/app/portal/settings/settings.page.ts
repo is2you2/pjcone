@@ -11,7 +11,6 @@ import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 import { LocalNotiService } from '../../local-noti.service';
-import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 import { GlobalActService } from 'src/app/global-act.service';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -197,9 +196,9 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   open_inapp_explorer() {
-    this.modalCtrl.create({
-      component: UserFsDirPage,
-    }).then(v => v.present());
+    this.nav.navigateForward('user-fs-dir', {
+      animation: iosTransitionAnimation,
+    });
   }
 
   @ViewChild('LangSel') LangSel: any;

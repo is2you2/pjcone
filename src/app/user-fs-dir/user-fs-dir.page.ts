@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { AlertController, IonAccordionGroup, LoadingController, LoadingOptions, ModalController, NavParams } from '@ionic/angular';
+import { AlertController, IonAccordionGroup, LoadingController, ModalController } from '@ionic/angular';
 import { isPlatform } from '../app.component';
 import { GlobalActService } from '../global-act.service';
 import { IndexedDBService } from '../indexed-db.service';
@@ -39,8 +39,6 @@ export class UserFsDirPage implements OnInit {
   DirList: FileDir[] = [];
   /** 디렉토리 파일 리스트, 이름순 나열 */
   FileList: FileDir[] = [];
-  /** 행동을 반환하기로 했습니까? */
-  WillReturn: boolean;
   cant_dedicated = false;
 
   InAppBrowser = true;
@@ -52,7 +50,6 @@ export class UserFsDirPage implements OnInit {
     private indexed: IndexedDBService,
     private loadingCtrl: LoadingController,
     public lang: LanguageSettingService,
-    private navParams: NavParams,
     private global: GlobalActService,
     private p5toast: P5ToastService,
     private alertCtrl: AlertController,
@@ -73,10 +70,8 @@ export class UserFsDirPage implements OnInit {
   }
 
   ionViewWillEnter() {
-    let StartDir = this.navParams.get('path');
-    this.CurrentDir = StartDir || '';
+    this.CurrentDir = '';
     this.LoadAllIndexedFiles();
-    this.WillReturn = this.navParams.get('return') || false;
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
     document.addEventListener('ionBackButton', this.EventListenerAct);
@@ -144,11 +139,6 @@ export class UserFsDirPage implements OnInit {
     this.FileSel.value = undefined;
   }
 
-  /** 이 파일을 사용하기 (경로 반환) */
-  UseFile(info: FileDir) {
-    this.modalCtrl.dismiss({ info: info });
-  }
-
   OpenFile(info: FileDir) {
     switch (info.viewer) {
       case 'godot':
@@ -161,6 +151,7 @@ export class UserFsDirPage implements OnInit {
               file_ext: info.file_ext,
               type: '',
               viewer: info.viewer,
+              path: info.path,
             },
             path: info.path,
           },
@@ -184,6 +175,7 @@ export class UserFsDirPage implements OnInit {
               file_ext: info.file_ext,
               type: '',
               viewer: info.viewer,
+              path: info.path,
             },
             no_edit: true,
             path: info.path,
