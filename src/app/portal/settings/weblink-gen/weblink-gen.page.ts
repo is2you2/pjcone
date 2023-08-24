@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from 'clipboardy';
 import { LanguageSettingService } from 'src/app/language-setting.service';
+import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 
 @Component({
   selector: 'app-weblink-gen',
@@ -13,6 +14,7 @@ export class WeblinkGenPage implements OnInit {
   constructor(
     public lang: LanguageSettingService,
     private mClipboard: Clipboard,
+    private nakama: NakamaService,
   ) { }
 
   userInput = {
@@ -25,15 +27,23 @@ export class WeblinkGenPage implements OnInit {
       password: undefined,
       display_name: undefined,
     },
-    servers: [],
+    servers: [] as ServerInfo[],
     groups: [],
     group_dedi: undefined,
   }
+
+  servers: ServerInfo[] = [];
 
   isSSLConnect = false;
 
   ngOnInit() {
     this.isSSLConnect = window.location.protocol == 'https:';
+    this.servers = this.nakama.get_all_server_info();
+  }
+
+  SelectGroupServer(ev: any) {
+    this.userInput.servers = ev.detail.value;
+    this.information_changed();
   }
 
   baseURLChanged(ev: any) {
@@ -50,6 +60,12 @@ export class WeblinkGenPage implements OnInit {
     if (this.userInput.open_profile) {
       this.result_address += count ? '&' : '?';
       this.result_address += 'open_profile=true';
+      count++;
+    }
+    for (let i = 0, j = this.userInput.servers.length; i < j; i++) {
+      this.result_address += count ? '&' : '?';
+      this.result_address += 'server=';
+      this.result_address += `${this.userInput.servers[i].name || ''},${this.userInput.servers[i].address || ''},${this.userInput.servers[i].useSSL || ''},${this.userInput.servers[i].port || 7350},${this.userInput.servers[i].key || ''}`;
       count++;
     }
     if (this.userInput.open_subscribes) {

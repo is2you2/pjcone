@@ -26,6 +26,13 @@
     <ion-label>{{lang.text['WebLinkGen']['OpenProfile']}}</ion-label>
     <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.open_profile" slot="end"></ion-toggle>
   </ion-item>
+  <ion-item>
+    <ion-label>{{lang.text['QuickQRShare']['GroupServer']}}</ion-label>
+    <ion-select (ionChange)="SelectGroupServer($event)" multiple="true"
+      [placeholder]="lang.text['QuickQRShare']['EmptyData']">
+      <ion-select-option *ngFor="let gs of servers" [value]="gs">{{gs['name']}} </ion-select-option>
+    </ion-select>
+  </ion-item>
   <ion-item button (click)="userInput.open_subscribes = !userInput.open_subscribes; information_changed()">
     <ion-label>{{lang.text['WebLinkGen']['OpenChannelTab']}}</ion-label>
     <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.open_subscribes" slot="end"></ion-toggle>
