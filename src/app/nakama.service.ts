@@ -979,6 +979,8 @@ export class NakamaService {
         console.error('예상하지 못한 채널 종류: ', this.channels_orig[_is_official][_target][channel_info.id]);
         break;
     }
+    await this.servers[_is_official][_target].socket.sendMatchState(this.self_match[_is_official][_target].match_id, MatchOpCode.ADD_CHANNEL,
+      encodeURIComponent(''));
     this.rearrange_channels();
   }
 
