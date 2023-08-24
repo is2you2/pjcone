@@ -120,7 +120,7 @@ export class AddGroupPage implements OnInit {
     this.userInput['status'] = 'online';
 
     this.isSaveClicked = true;
-    this.userInput.lang_tag = this.userInput.lang_tag || this.lang.lang;
+    this.userInput.lang_tag = this.userInput.lang_tag || navigator.language.split('-')[0] || this.lang.lang;
     this.userInput.max_count = this.userInput.max_count || 2;
     client.createGroup(session, {
       name: this.userInput.name,

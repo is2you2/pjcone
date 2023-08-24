@@ -528,7 +528,7 @@ export class NakamaService {
             this.servers[info.isOfficial][info.target].client.updateAccount(
               this.servers[info.isOfficial][info.target].session, {
               display_name: this.users.self['display_name'],
-              lang_tag: this.lang.lang,
+              lang_tag: navigator.language.split('-')[0] || this.lang.lang,
             });
           this.p5toast.show({
             text: `${this.lang.text['Nakama']['RegisterUserSucc']}: ${info.target}`,
