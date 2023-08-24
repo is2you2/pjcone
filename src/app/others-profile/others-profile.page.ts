@@ -79,7 +79,7 @@ export class OthersProfilePage implements OnInit {
     }, 150);
     this.catch_user_noties();
     let sketch = (p: p5) => {
-      let img = document.getElementById('profile_img');
+      let img = document.getElementById('other_profile_img');
       let tmp_img = document.getElementById('profile_tmp_img');
       const LERP_SIZE = .025;
       p.setup = () => {
