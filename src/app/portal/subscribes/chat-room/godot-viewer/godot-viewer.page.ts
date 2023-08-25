@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { File } from '@awesome-cordova-plugins/file/ngx';
-import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { AlertController, IonModal, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { ContentCreatorInfo, GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -92,6 +92,8 @@ export class GodotViewerPage implements OnInit {
       }
     }, 'create_thumbnail');
   }
+
+  @ViewChild(IonModal) ShowContentInfoGodot: IonModal;
 
   snapshot_modify() {
     this.global.godot_window['modify_image']();

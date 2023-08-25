@@ -26,7 +26,8 @@ SPDX-License-Identifier: MIT -->
                   <ion-item button *ngIf="FileInfo['viewer'] == 'image' && !HasNoEditButton" (click)="modify_image()">
                     <ion-label>{{lang.text['ContentViewer']['Edit']}}</ion-label>
                   </ion-item>
-                  <ion-item button *ngIf="FileInfo['content_creator']" id="ShowContentInfoIonic">
+                  <ion-item button *ngIf="FileInfo['content_creator']" id="ShowContentInfoIonic"
+                    (click)="open_bottom_modal()">
                     <ion-label>{{lang.text['ContentViewer']['ContentInfo']}}</ion-label>
                   </ion-item>
                   <ion-item button (click)="ShareContent()">
@@ -49,7 +50,7 @@ SPDX-License-Identifier: MIT -->
     </tr>
   </table>
 
-  <ion-modal trigger="ShowContentInfoIonic" [initialBreakpoint]=".5" [breakpoints]="[.5, .6, .7, .8, .9, 1]">
+  <ion-modal trigger="ShowContentInfoIonic" [initialBreakpoint]=".5" [breakpoints]="[.5, 1]">
     <ng-template>
       <ion-content>
         <ion-item-divider>
@@ -58,9 +59,9 @@ SPDX-License-Identifier: MIT -->
         <ion-item>
           <ion-label>{{lang.text['ContentInfo']['LastPost']}}</ion-label>
           <ion-label class="ion-text-end">
-            {{content_creator.user_id ? (content_creator.is_me ? nakama.users.self['display_name'] :
+            {{(content_creator.user_id ? (content_creator.is_me ? nakama.users.self['display_name'] :
             nakama.users[isOfficial][target][content_creator.user_id]['display_name'])
-            : content_creator.display_name}}</ion-label>
+            : content_creator.display_name) || lang.text['Profile']['noname_user']}}</ion-label>
         </ion-item>
         <ion-item *ngIf="content_creator.various">
           <ion-label>{{lang.text['ContentInfo']['SourceFrom']}}</ion-label>
@@ -81,7 +82,8 @@ SPDX-License-Identifier: MIT -->
           </ion-item-divider>
           <ion-item>
             <ion-label>{{lang.text['ContentInfo']['Publisher']}}</ion-label>
-            <ion-label class="ion-text-end">{{worker.publisher || worker.display_name}}</ion-label>
+            <ion-label class="ion-text-end">{{worker.publisher ||
+              worker.display_name||lang.text['Profile']['noname_user']}}</ion-label>
           </ion-item>
           <ion-item>
             <ion-label>{{lang.text['ContentInfo']['SourceFrom']}}</ion-label>
@@ -93,6 +95,9 @@ SPDX-License-Identifier: MIT -->
               *ngIf="worker.various == 'voidDraw'">{{lang.text['GlobalAct']['FromVoidDraw']}}</ion-label>
           </ion-item>
         </div>
+        <ion-item button (click)="ShowContentInfoIonic.dismiss()">
+          <ion-label class="ion-text-center">{{lang.text['ContentInfo']['CloseModal']}}</ion-label>
+        </ion-item>
       </ion-content>
     </ng-template>
   </ion-modal>

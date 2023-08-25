@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit } from '@angular/core';
-import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { AlertController, IonModal, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import * as p5 from "p5";
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -32,7 +32,7 @@ export class IonicViewerPage implements OnInit {
     private loadingCtrl: LoadingController,
     private fileOpener: FileOpener,
     public global: GlobalActService,
-    private nakama: NakamaService,
+    public nakama: NakamaService,
   ) { }
 
   blob: Blob;
@@ -47,6 +47,7 @@ export class IonicViewerPage implements OnInit {
   content_related_creator: ContentCreatorInfo[];
   isOfficial: string;
   target: string;
+  useP5Navigator = true;
 
   async ngOnInit() {
     this.FileInfo = this.navParams.get('info');
@@ -163,6 +164,7 @@ export class IonicViewerPage implements OnInit {
             canvasDiv.style.backgroundSize = `${Calced}px`;
           }
           p.mousePressed = () => {
+            if (!this.useP5Navigator) return;
             if (p.mouseButton == p.CENTER)
               RePositioningImage();
             if (isPlatform == 'DesktopPWA') {
@@ -174,10 +176,12 @@ export class IonicViewerPage implements OnInit {
             }
           }
           p.mouseWheel = (ev: any) => {
+            if (!this.useP5Navigator) return;
             lastScale = Number(canvasDiv.style.backgroundSize.split('px')[0]);
             ScaleImage(p.createVector(canvasDiv.clientWidth / 2, canvasDiv.clientHeight / 2), 1 - ev.delta / 1000);
           }
           p.mouseDragged = () => {
+            if (!this.useP5Navigator) return;
             if (isPlatform == 'DesktopPWA') {
               endPos = p.createVector(p.mouseX, p.mouseY);
               endPos.sub(startPos);
@@ -189,6 +193,7 @@ export class IonicViewerPage implements OnInit {
           let dist_two: number;
           let Repositioning = false;
           p.touchStarted = (ev: any) => {
+            if (!this.useP5Navigator) return;
             for (let i = 0, j = ev.changedTouches.length; i < j; i++)
               touches[ev.changedTouches[i].identifier] =
                 p.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
@@ -219,6 +224,7 @@ export class IonicViewerPage implements OnInit {
             }
           }
           p.touchMoved = (ev: any) => {
+            if (!this.useP5Navigator) return;
             if (!Repositioning) {
               for (let i = 0, j = ev.changedTouches.length; i < j; i++)
                 touches[ev.changedTouches[i].identifier] =
@@ -243,6 +249,7 @@ export class IonicViewerPage implements OnInit {
             }
           }
           p.touchEnded = (ev: any) => {
+            if (!this.useP5Navigator) return;
             if ('changedTouches' in ev) {
               for (let i = 0, j = ev.changedTouches.length; i < j; i++)
                 delete touches[ev.changedTouches[i].identifier];
@@ -366,6 +373,16 @@ export class IonicViewerPage implements OnInit {
         }
         break;
     }
+  }
+
+  @ViewChild(IonModal) ShowContentInfoIonic: IonModal;
+
+  open_bottom_modal() {
+    this.ShowContentInfoIonic.onDidDismiss().then(_v => {
+      this.useP5Navigator = true;
+    });
+    this.useP5Navigator = false;
+    this.ShowContentInfoIonic.present();
   }
 
   image_info = {};
