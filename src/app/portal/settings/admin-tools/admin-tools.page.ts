@@ -120,20 +120,14 @@ export class AdminToolsPage implements OnInit {
     this.nakama.servers[this.isOfficial][this.target].client.rpc(
       this.nakama.servers[this.isOfficial][this.target].session,
       'query_all_groups', {}).then(v => {
-        let recv_all_groups = v.payload as any;
-        for (let i = 0, j = recv_all_groups.length; i < j; i++) {
-          let keys = Object.keys(recv_all_groups[i]);
-          if (!this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']])
-            this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']] = {};
-          keys.forEach(key => this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']][key] = recv_all_groups[i][key]);
-          for (let i = 0, j = this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']]['users'].length; i < j; i++) {
-            if (this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']]['users'][i].user.user_id == this.nakama.servers[this.isOfficial][this.target].session.user_id) {
-              this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']]['users'][i]['is_me'] = true;
-              this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']]['users'][i].user = this.nakama.users.self;
-            } else this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']]['users'][i].user = this.nakama.load_other_user(this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']]['users'][i].user.user_id, this.isOfficial, this.target);
+        this.all_groups = v.payload as any;
+        for (let i = 0, j = this.all_groups.length; i < j; i++)
+          for (let k = 0, l = this.all_groups[i]['users'].length; k < l; k++) {
+            if (this.all_groups[i]['users'][k].user.user_id == this.nakama.servers[this.isOfficial][this.target].session.user_id) {
+              this.all_groups[i]['users'][k]['is_me'] = true;
+              this.all_groups[i]['users'][k].user = this.nakama.users.self;
+            } else this.all_groups[i]['users'][k].user = this.nakama.load_other_user(this.all_groups[i]['users'][k].user.user_id, this.isOfficial, this.target);
           }
-          this.all_groups.push(this.nakama.groups[this.isOfficial][this.target][recv_all_groups[i]['id']]);
-        }
         this.all_group_page = Math.ceil(this.all_groups.length / this.LIST_PAGE_SIZE);
         this.current_group_page = 0;
         this.change_group_list_page(1);
