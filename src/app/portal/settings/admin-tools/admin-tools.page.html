@@ -121,8 +121,9 @@
           <ion-item (click)="copy_id(all_groups[i].creator_id); find_current_user_id(all_groups[i].creator_id)">
             <ion-label color="medium">{{lang.text['AdminTools']['GroupCreator']}}</ion-label>
             <ion-label color="medium" class="ion-text-end">
-              {{nakama.users[isOfficial][target][all_groups[i].creator_id] ?
-              nakama.users[isOfficial][target][all_groups[i].creator_id]['display_name'] : nakama.users.self['display_name']}}
+              {{(nakama.users[isOfficial][target][all_groups[i].creator_id] ?
+              nakama.users[isOfficial][target][all_groups[i].creator_id]['display_name'] :
+              nakama.users.self['display_name']) || lang.text['Profile']['noname_user']}}
             </ion-label>
           </ion-item>
           <ion-accordion-group #GroupUserSel>
