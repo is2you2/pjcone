@@ -61,7 +61,11 @@ export class GodotViewerPage implements OnInit {
         this.content_related_creator.splice(1, 1);
       }
     } catch (e) { }
-    this.content_related_creator.reverse();
+    this.content_related_creator.sort((a, b) => {
+      if (a.timestamp > b.timestamp) return -1;
+      else if (a.timestamp < b.timestamp) return 1;
+      else return 0;
+    });
     if (this.content_creator.user_id)
       this.content_creator.is_me =
         this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_creator.user_id;
