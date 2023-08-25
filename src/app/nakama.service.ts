@@ -1405,7 +1405,7 @@ export class NakamaService {
               key: v.objects[i].key,
             }],
           });
-        if (v.cursor) this.remove_channel_files(_is_official, _target, channel_id, v.cursor);
+        if (v.cursor) await this.remove_channel_files(_is_official, _target, channel_id, v.cursor);
       });
   }
 
