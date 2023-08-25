@@ -4,11 +4,8 @@ SPDX-License-Identifier: MIT -->
 <ion-header>
   <ion-toolbar>
     <ion-title>{{lang.text['Main']['Title']}}</ion-title>
-    <ion-title slot="end">
-      <div class="header_online_circle"
-        [style]="'background-color: ' + statusBar.colors[statusBar.settings.groupServer]">
-      </div>
-    </ion-title>
+    <div class="header_online_circle" [style]="'background-color: ' + statusBar.colors[statusBar.settings.groupServer]">
+    </div>
   </ion-toolbar>
 </ion-header>
 
