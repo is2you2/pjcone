@@ -10,10 +10,9 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
-import { FileInfo, GlobalActService } from 'src/app/global-act.service';
+import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { ShareContentToOtherPage } from 'src/app/share-content-to-other/share-content-to-other.page';
 import { NakamaService } from 'src/app/nakama.service';
-import { ContentInfoPage } from 'src/app/content-info/content-info.page';
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -44,6 +43,11 @@ export class IonicViewerPage implements OnInit {
   FileHeader: HTMLElement;
   HasNoEditButton: boolean;
 
+  content_creator: ContentCreatorInfo;
+  content_related_creator: ContentCreatorInfo[];
+  isOfficial: string;
+  target: string;
+
   async ngOnInit() {
     this.FileInfo = this.navParams.get('info');
     this.ContentBox = document.getElementById('ContentBox');
@@ -51,6 +55,33 @@ export class IonicViewerPage implements OnInit {
     this.HasNoEditButton = this.navParams.get('no_edit') || false;
     this.blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type']);
     this.FileURL = URL.createObjectURL(this.blob);
+    this.CreateContentInfo();
+  }
+
+  CreateContentInfo() {
+    this.isOfficial = this.navParams.get('isOfficial');
+    this.target = this.navParams.get('target');
+    this.content_creator = this.FileInfo['content_creator'];
+    this.content_creator.timeDisplay = new Date(this.content_creator.timestamp).toLocaleString();
+    this.content_related_creator = this.FileInfo['content_related_creator'];
+    try { // 중복 정보 통합
+      if (this.content_related_creator[0].timestamp == this.content_related_creator[1].timestamp) { // 외부에서 가져온 파일
+        if (this.content_related_creator[0].various)
+          this.content_related_creator[0].publisher = this.content_related_creator[1].display_name;
+        this.content_related_creator.splice(1, 1);
+      }
+    } catch (e) { }
+    this.content_related_creator.reverse();
+    if (this.content_creator.user_id)
+      this.content_creator.is_me =
+        this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_creator.user_id;
+    for (let i = 0, j = this.content_related_creator.length; i < j; i++) {
+      if (this.content_related_creator[i].user_id) {
+        this.content_related_creator[i].is_me =
+          this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_related_creator[i].user_id;
+      }
+      this.content_related_creator[i].timeDisplay = new Date(this.content_related_creator[i].timestamp).toLocaleString();
+    }
   }
 
   async ionViewDidEnter() {
@@ -408,17 +439,6 @@ export class IonicViewerPage implements OnInit {
     else this.p5toast.show({
       text: this.lang.text['ShareContentToOther']['NoChannelToShare'],
     });
-  }
-
-  open_content_info() {
-    this.modalCtrl.create({
-      component: ContentInfoPage,
-      componentProps: {
-        info: this.FileInfo,
-        isOfficial: this.navParams.get('isOfficial'),
-        target: this.navParams.get('target'),
-      }
-    }).then(v => v.present());
   }
 
   async ionViewWillLeave() {
