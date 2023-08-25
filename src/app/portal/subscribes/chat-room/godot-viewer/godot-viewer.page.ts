@@ -29,7 +29,7 @@ export class GodotViewerPage implements OnInit {
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
     private p5toast: P5ToastService,
-    private nakama: NakamaService,
+    public nakama: NakamaService,
   ) { }
 
   FileInfo: any;
