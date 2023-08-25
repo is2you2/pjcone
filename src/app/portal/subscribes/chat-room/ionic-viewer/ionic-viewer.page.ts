@@ -127,18 +127,18 @@ export class IonicViewerPage implements OnInit {
           }
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let RePositioningImage = () => {
-            if (this.image_info['width'] > this.image_info['height']) {
+            if (this.image_info['width'] < this.image_info['height']) {
+              let tmp_width = this.image_info['width'] * canvasDiv.clientHeight / this.image_info['height'];
+              canvasDiv.style.backgroundSize = `${tmp_width}px`;
+              canvasDiv.style.backgroundPositionX = `${(canvasDiv.clientWidth - tmp_width) / 2}px`;
+              canvasDiv.style.backgroundPositionY = `0px`;
+            } else {
               canvasDiv.style.backgroundSize = `${canvasDiv.clientWidth}px`;
               canvasDiv.style.backgroundPositionX = '0px';
               let imageRatio = canvasDiv.clientWidth / imageOriginalSize.x;
               let centerHeight =
                 canvasDiv.clientHeight / 2 - imageOriginalSize.y * imageRatio / 2;
               canvasDiv.style.backgroundPositionY = `${centerHeight}px`;
-            } else {
-              let tmp_width = this.image_info['width'] * canvasDiv.clientHeight / this.image_info['height'];
-              canvasDiv.style.backgroundSize = `${tmp_width}px`;
-              canvasDiv.style.backgroundPositionX = `${(canvasDiv.clientWidth - tmp_width) / 2}px`;
-              canvasDiv.style.backgroundPositionY = `0px`;
             }
           }
           p.windowResized = () => {
