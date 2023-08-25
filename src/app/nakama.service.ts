@@ -1395,16 +1395,18 @@ export class NakamaService {
     if (this.statusBar.groupServer[_is_official][_target] == 'online')
       await this.servers[_is_official][_target].client.listStorageObjects(
         this.servers[_is_official][_target].session, `file_${channel_id.replace(/[.]/g, '_')}`,
-        this.servers[_is_official][_target].session.user_id, 1, cursor
+        this.servers[_is_official][_target].session.user_id, 10, cursor
       ).then(async v => {
+        let ApiDeleteObject = [];
         for (let i = 0, j = v.objects.length; i < j; i++)
-          await this.servers[_is_official][_target].client.deleteStorageObjects(
-            this.servers[_is_official][_target].session, {
-            object_ids: [{
-              collection: v.objects[i].collection,
-              key: v.objects[i].key,
-            }],
+          ApiDeleteObject.push({
+            collection: v.objects[i].collection,
+            key: v.objects[i].key,
           });
+        await this.servers[_is_official][_target].client.deleteStorageObjects(
+          this.servers[_is_official][_target].session, {
+          object_ids: ApiDeleteObject,
+        });
         if (v.cursor) await this.remove_channel_files(_is_official, _target, channel_id, v.cursor);
       });
   }
