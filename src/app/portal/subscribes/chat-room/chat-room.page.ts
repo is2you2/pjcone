@@ -159,13 +159,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.userInput.file.typeheader = 'image';
         this.userInput.file.content_related_creator = [{
           user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-          timestamp: new Date().toLocaleString(),
+          timestamp: new Date().getTime(),
           display_name: this.nakama.users.self['display_name'],
+          various: 'camera',
         }];
         this.userInput.file.content_creator = {
           user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-          timestamp: new Date().toLocaleString(),
+          timestamp: new Date().getTime(),
           display_name: this.nakama.users.self['display_name'],
+          various: 'camera',
         };
         await this.indexed.saveBase64ToUserPath('data:image/jpeg;base64,' + v, `tmp_files/chatroom/${this.userInput.file.filename}`, (raw) => {
           this.userInput.file.blob = new Blob([raw], { type: this.userInput.file['type'] })
@@ -186,19 +188,21 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     act: async () => {
       if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
       let props = {}
-      if (this.userInput.file && this.userInput.file.typeheader == 'image') {
+      let content_related_creator: ContentCreatorInfo[];
+      if (this.userInput.file && this.userInput.file.typeheader == 'image') { // 선택한 파일을 편집하는 경우
         await this.indexed.saveBlobToUserPath(this.userInput.file.blob, `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`)
         let thumbnail_image = document.getElementById('ChatroomSelectedImage');
         props['path'] = `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`;
         props['width'] = thumbnail_image['naturalWidth'];
         props['height'] = thumbnail_image['naturalHeight'];
+        content_related_creator = this.userInput.file.content_related_creator;
       }
       this.modalCtrl.create({
         component: VoidDrawPage,
         componentProps: props,
       }).then(v => {
         v.onWillDismiss().then(async v => {
-          if (v.data) await this.voidDraw_fileAct_callback(v);
+          if (v.data) await this.voidDraw_fileAct_callback(v, content_related_creator);
         });
         v.present();
       });
@@ -291,13 +295,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.userInput.file['size'] = blob.size;
     this.userInput.file['type'] = blob.type;
     this.userInput.file['content_related_creator'] = [{
-      timestamp: new Date().toLocaleString(),
-      display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
+      user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+      timestamp: new Date().getTime(),
+      display_name: this.nakama.users.self['display_name'],
+      various: 'loaded',
     }];
     this.userInput.file['content_creator'] = {
       user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-      timestamp: new Date().toLocaleString(),
+      timestamp: new Date().getTime(),
       display_name: this.nakama.users.self['display_name'],
+      various: 'loaded',
     };
     this.userInput.file.blob = blob;
     this.create_selected_thumbnail();
@@ -839,13 +846,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         componentProps: {
           info: msg.content,
           path: _path,
+          isOfficial: this.isOfficial,
+          target: this.target,
         },
       }).then(v => {
         v.onDidDismiss().then((v) => {
           if (v.data) { // 파일 편집하기를 누른 경우
             let related_creators: ContentCreatorInfo[] = [];
             if (msg.content['content_related_creator'])
-              related_creators.push(...msg.content['content_related_creator']);
+              related_creators = [...msg.content['content_related_creator']];
             if (msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
               let is_already_exist = false;
               for (let i = 0, j = related_creators.length; i < j; i++)
@@ -890,13 +899,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         componentProps: {
           info: msg.content,
           path: _path,
+          isOfficial: this.isOfficial,
+          target: this.target,
         },
       }).then(v => {
         v.onDidDismiss().then(async (v) => {
           if (v.data) { // 파일 편집하기를 누른 경우
             let related_creators: ContentCreatorInfo[] = [];
             if (msg.content['content_related_creator'])
-              related_creators.push(...msg.content['content_related_creator']);
+              related_creators = [...msg.content['content_related_creator']];
             if (msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
               let is_already_exist = false;
               for (let i = 0, j = related_creators.length; i < j; i++)
@@ -941,23 +952,26 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
       this.userInput.file.type = 'image/png';
       this.userInput.file.typeheader = 'image';
-      if (v.data['is_modify']) {
+      if (related_creators) {
         this.userInput.file.content_related_creator = related_creators;
         this.userInput.file.content_creator = {
           user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-          timestamp: new Date().toLocaleString(),
+          timestamp: new Date().getTime(),
           display_name: this.nakama.users.self['display_name'],
+          various: 'voidDraw',
         };
       } else {
         this.userInput.file.content_related_creator = [{
           user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-          timestamp: new Date().toLocaleString(),
+          timestamp: new Date().getTime(),
           display_name: this.nakama.users.self['display_name'],
+          various: 'voidDraw',
         }];
         this.userInput.file.content_creator = {
           user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-          timestamp: new Date().toLocaleString(),
+          timestamp: new Date().getTime(),
           display_name: this.nakama.users.self['display_name'],
+          various: 'voidDraw',
         };
       }
       await this.indexed.saveBase64ToUserPath(v.data['img'], `tmp_files/chatroom/${this.userInput.file.filename}`, (raw) => {

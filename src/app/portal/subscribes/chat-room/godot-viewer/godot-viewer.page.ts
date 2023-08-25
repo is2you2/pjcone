@@ -5,6 +5,7 @@ import { Component, OnInit } from '@angular/core';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
+import { ContentInfoPage } from 'src/app/content-info/content-info.page';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -129,6 +130,17 @@ export class GodotViewerPage implements OnInit {
     else this.p5toast.show({
       text: this.lang.text['ShareContentToOther']['NoChannelToShare'],
     });
+  }
+
+  open_content_info() {
+    this.modalCtrl.create({
+      component: ContentInfoPage,
+      componentProps: {
+        info: this.FileInfo,
+        isOfficial: this.navParams.get('isOfficial'),
+        target: this.navParams.get('target'),
+      }
+    }).then(v => v.present());
   }
 
   ionViewWillLeave() {

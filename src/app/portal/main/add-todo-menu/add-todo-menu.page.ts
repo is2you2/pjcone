@@ -167,13 +167,14 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
     this_file['blob'] = blob;
     this_file['content_related_creator'] = [{
-      timestamp: new Date().toLocaleString(),
-      display_name: this.lang.text['GlobalAct']['UnCheckableCreator'],
+      timestamp: new Date().getTime(),
+      display_name: this.nakama.users.self['display_name'],
+      various: 'loaded',
     }];
     this_file['content_creator'] = {
-      // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-      timestamp: new Date().toLocaleString(),
+      timestamp: new Date().getTime(),
       display_name: this.nakama.users.self['display_name'],
+      various: 'loaded',
     };
     let has_same_named_file = false;
     has_same_named_file = await this.indexed.checkIfFileExist(this_file.path)
@@ -433,14 +434,14 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       this_file.type = 'image/jpeg';
       this_file.typeheader = 'image';
       this_file.content_related_creator = [{
-        // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-        timestamp: new Date().toLocaleString(),
+        timestamp: new Date().getTime(),
         display_name: this.nakama.users.self['display_name'],
+        various: 'camera',
       }];
       this_file.content_creator = {
-        // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-        timestamp: new Date().toLocaleString(),
+        timestamp: new Date().getTime(),
         display_name: this.nakama.users.self['display_name'],
+        various: 'camera',
       };
       this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
       this_file['viewer'] = 'image';
@@ -541,15 +542,16 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         if (v.data) { // 파일 편집하기를 누른 경우
           let related_creators: ContentCreatorInfo[] = [];
           if (this.userInput.attach[index]['content_related_creator'])
-            related_creators.push(...this.userInput.attach[index]['content_related_creator']);
+            related_creators = [...this.userInput.attach[index]['content_related_creator']];
           if (this.userInput.attach[index]['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
             let is_already_exist = false;
             for (let i = 0, j = related_creators.length; i < j; i++)
-              if (related_creators[i].user_id == this.userInput.attach[index]['content_creator']['user_id']) {
+              if (related_creators[i].user_id !== undefined && this.userInput.attach[index]['content_creator']['user_id'] !== undefined
+                && related_creators[i].user_id == this.userInput.attach[index]['content_creator']['user_id']) {
                 is_already_exist = true;
                 break;
               }
-            if (!is_already_exist) related_creators.push(...this.userInput.attach['content_creator']);
+            if (!is_already_exist) related_creators.push(this.userInput.attach[index]['content_creator']);
           }
           delete this.userInput.attach[index]['exist'];
           this.modalCtrl.create({
@@ -585,15 +587,16 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         if (v.data) { // 파일 편집하기를 누른 경우
           let related_creators: ContentCreatorInfo[] = [];
           if (this.userInput.attach[i]['content_related_creator'])
-            related_creators.push(...this.userInput.attach[i]['content_related_creator']);
+            related_creators = [...this.userInput.attach[i]['content_related_creator']];
           if (this.userInput.attach[i]['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
             let is_already_exist = false;
             for (let i = 0, j = related_creators.length; i < j; i++)
-              if (related_creators[i].user_id == this.userInput.attach[i]['content_creator']['user_id']) {
+              if (related_creators[i].user_id !== undefined && this.userInput.attach[i]['content_creator']['user_id'] !== undefined
+                && related_creators[i].user_id == this.userInput.attach[i]['content_creator']['user_id']) {
                 is_already_exist = true;
                 break;
               }
-            if (!is_already_exist) related_creators.push(...this.userInput.attach['content_creator']);
+            if (!is_already_exist) related_creators.push(this.userInput.attach[i]['content_creator']);
           }
           delete this.userInput.attach[i]['exist'];
           await this.indexed.saveBase64ToUserPath(v.data.base64, 'tmp_files/modify_image.png');
@@ -628,23 +631,23 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this_file['file_ext'] = 'png';
     this_file['type'] = 'image/png';
     this_file['viewer'] = 'image';
-    if (v.data['is_modify']) {
+    if (related_creators) {
       this_file['content_related_creator'] = related_creators;
       this_file['content_creator'] = {
-        // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-        timestamp: new Date().toLocaleString(),
+        timestamp: new Date().getTime(),
         display_name: this.nakama.users.self['display_name'],
+        various: 'voidDraw',
       };
     } else {
       this_file['content_related_creator'] = [{
-        // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-        timestamp: new Date().toLocaleString(),
+        timestamp: new Date().getTime(),
         display_name: this.nakama.users.self['display_name'],
+        various: 'voidDraw',
       }];
       this_file['content_creator'] = {
-        // user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-        timestamp: new Date().toLocaleString(),
+        timestamp: new Date().getTime(),
         display_name: this.nakama.users.self['display_name'],
+        various: 'voidDraw',
       };
     }
     this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);

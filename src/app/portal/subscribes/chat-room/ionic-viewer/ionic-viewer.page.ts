@@ -13,6 +13,7 @@ import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
 import { FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { ShareContentToOtherPage } from 'src/app/share-content-to-other/share-content-to-other.page';
 import { NakamaService } from 'src/app/nakama.service';
+import { ContentInfoPage } from 'src/app/content-info/content-info.page';
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -407,6 +408,17 @@ export class IonicViewerPage implements OnInit {
     else this.p5toast.show({
       text: this.lang.text['ShareContentToOther']['NoChannelToShare'],
     });
+  }
+
+  open_content_info() {
+    this.modalCtrl.create({
+      component: ContentInfoPage,
+      componentProps: {
+        info: this.FileInfo,
+        isOfficial: this.navParams.get('isOfficial'),
+        target: this.navParams.get('target'),
+      }
+    }).then(v => v.present());
   }
 
   async ionViewWillLeave() {

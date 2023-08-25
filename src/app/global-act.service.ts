@@ -14,11 +14,22 @@ export var isDarkMode = false;
 /** 컨텐츠 제작자 기록 틀 */
 export interface ContentCreatorInfo {
   /** 콘텐츠 작성 당시 사용한 이름 */
-  display_name: string;
+  display_name?: string;
   /** 등록일자 */
-  timestamp: string;
+  timestamp: number;
+  /** 시간 보여주기용 */
+  timeDisplay?: string;
+  /** 앱 내 편집기를 제외한 직접 만든 파일 외  
+   * loaded: 외부에서 파일을 가져온 경우  
+   * camera: 카메라 직접 촬영
+   */
+  various?: 'loaded' | 'camera' | 'voidDraw';
+  /** 콘텐츠 뷰어에서 최초 게시자 알리기 용 */
+  publisher?: string;
   /** 공유되는 서버 기반 uid */
   user_id?: string;
+  /** 서버인 경우 나인지 검토 */
+  is_me?: boolean;
 }
 
 /** 뷰어 동작 호완을 위한 틀 */

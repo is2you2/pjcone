@@ -30,6 +30,10 @@ const routes: Routes = [
     path: 'share-content-to-other',
     loadChildren: () => import('./share-content-to-other/share-content-to-other.module').then( m => m.ShareContentToOtherPageModule)
   },
+  {
+    path: 'content-info',
+    loadChildren: () => import('./content-info/content-info.module').then( m => m.ContentInfoPageModule)
+  },
 ];
 
 @NgModule({
