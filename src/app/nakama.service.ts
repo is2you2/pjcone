@@ -2846,7 +2846,9 @@ export class NakamaService {
           try {
             await this.try_add_group(json[i]);
           } catch (e) {
-            console.log('failed to add group: ', e);
+            this.p5toast.show({
+              text: `${this.lang.text['Nakama']['FailedToAddGroup']}: ${e}`,
+            });
           }
           break;
         case 'EnginePPTLink': // 엔진PPT를 컴퓨터와 연결하기
