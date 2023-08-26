@@ -724,6 +724,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let has_history = await this.indexed.checkIfFileExist(`${path}.history`);
           // 파일 송수신중인건 아님
           if (!has_history) throw '썸네일 열기';
+          msg.content['text'] = [this.lang.text['TodoDetail']['WIP']];
           // 아래는 부분적으로 진행된 파일이 검토될 때
           this.indexed.loadTextFromUserPath(`${path}.history`, async (e, v) => {
             if (e && v) {
@@ -758,6 +759,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       } else { // 파일 자체가 없음
         if (!this.isHistoryLoaded) { // 서버와 연결되어 있음
+          msg.content['text'] = [this.lang.text['TodoDetail']['WIP']];
           await this.global.CreateFileManager();
           this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target);
         }

@@ -65,18 +65,6 @@ export class IonicViewerPage implements OnInit {
     this.content_creator = this.FileInfo['content_creator'];
     this.content_creator.timeDisplay = new Date(this.content_creator.timestamp).toLocaleString();
     this.content_related_creator = this.FileInfo['content_related_creator'];
-    try { // 중복 정보 통합
-      if (this.content_related_creator[0].timestamp == this.content_related_creator[1].timestamp) { // 외부에서 가져온 파일
-        if (this.content_related_creator[0].various)
-          this.content_related_creator[0].publisher = this.content_related_creator[1].display_name;
-        this.content_related_creator.splice(1, 1);
-      }
-    } catch (e) { }
-    this.content_related_creator.sort((a, b) => {
-      if (a.timestamp > b.timestamp) return -1;
-      else if (a.timestamp < b.timestamp) return 1;
-      else return 0;
-    });
     if (this.content_creator.user_id)
       this.content_creator.is_me =
         this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_creator.user_id;
@@ -87,6 +75,24 @@ export class IonicViewerPage implements OnInit {
       }
       this.content_related_creator[i].timeDisplay = new Date(this.content_related_creator[i].timestamp).toLocaleString();
     }
+    try { // 중복 정보 통합
+      this.content_related_creator[0].publisher
+        = this.content_related_creator[0].is_me ? this.nakama.users.self['display_name']
+          : this.nakama.users[this.isOfficial][this.target][this.content_related_creator[0].user_id]['display_name'];
+      if (this.content_related_creator[0].timestamp == this.content_related_creator[1].timestamp) { // 외부에서 가져온 파일
+        this.content_related_creator[0].publisher = this.content_related_creator[1].is_me ? this.nakama.users.self['display_name']
+          : this.nakama.users[this.isOfficial][this.target][this.content_related_creator[1].user_id]['display_name'];;
+        this.content_related_creator.splice(1, 1);
+      }
+    } catch (e) {
+      if (!this.content_related_creator[0].publisher)
+        this.content_related_creator[0].publisher = this.content_related_creator[0].display_name;
+    }
+    this.content_related_creator.sort((a, b) => {
+      if (a.timestamp > b.timestamp) return -1;
+      else if (a.timestamp < b.timestamp) return 1;
+      else return 0;
+    });
   }
 
   async ionViewDidEnter() {
