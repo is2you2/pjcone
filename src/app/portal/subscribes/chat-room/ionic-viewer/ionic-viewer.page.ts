@@ -133,7 +133,7 @@ export class IonicViewerPage implements OnInit {
           }
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let RePositioningImage = () => {
-            if (this.image_info['width'] < this.image_info['height']) {
+            if (this.image_info['width'] / this.image_info['height'] < canvasDiv.clientWidth / canvasDiv.clientHeight) {
               let tmp_width = this.image_info['width'] * canvasDiv.clientHeight / this.image_info['height'];
               canvasDiv.style.backgroundSize = `${tmp_width}px`;
               canvasDiv.style.backgroundPositionX = `${(canvasDiv.clientWidth - tmp_width) / 2}px`;
