@@ -1407,7 +1407,7 @@ export class NakamaService {
           this.servers[_is_official][_target].session, {
           object_ids: ApiDeleteObject,
         });
-        if (v.cursor) await this.remove_channel_files(_is_official, _target, channel_id, v.cursor);
+        if (v.cursor) this.remove_channel_files(_is_official, _target, channel_id, v.cursor);
       });
   }
 

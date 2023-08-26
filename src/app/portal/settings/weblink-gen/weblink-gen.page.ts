@@ -87,6 +87,12 @@ export class WeblinkGenPage implements OnInit {
       count++;
     }
     if (this.userInput.use_tmp_user) {
+      const availableStrings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      const StringLen = availableStrings.length;
+      let randomLength = 8 + Math.floor(Math.random() * 8);
+      this.userInput.tmp_user.password = '';
+      for (let i = 0; i < randomLength; i++)
+        this.userInput.tmp_user.password += availableStrings.charAt(Math.floor(Math.random() * StringLen));
       this.result_address += count ? '&' : '?';
       this.result_address += `tmp_user=${this.userInput.tmp_user.email || ''},${this.userInput.tmp_user.password || ''},${this.userInput.tmp_user.display_name || ''}`;
       count++;
