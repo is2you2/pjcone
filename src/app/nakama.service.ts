@@ -1277,32 +1277,32 @@ export class NakamaService {
         } catch (e) {
           switch (e.status) {
             case 400: // 그룹에 이미 있는데 그룹추가 시도함
-              await servers[i].client.listGroups(servers[i].session, _info['name']).then(async v => {
-                for (let i = 0, j = v.groups.length; i < j; i++)
-                  if (v.groups[i].id == _info['id']) {
-                    let pending_group = v.groups[i];
-                    pending_group['status'] = pending_group.open ? 'online' : 'pending';
-                    await this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listGroupUsers(
-                      this.servers[servers[i].info.isOfficial][servers[i].info.target].session, v.groups[i].id
-                    ).then(_list => {
-                      pending_group['users'] = _list.group_users;
-                      _list.group_users.forEach(_guser => {
-                        if (_guser.user.id == this.servers[servers[i].info.isOfficial][servers[i].info.target].session.user_id)
-                          _guser['is_me'] = true;
-                        else this.save_other_user(_guser.user, servers[i].info.isOfficial, servers[i].info.target);
-                      });
+              let v = await servers[i].client.listGroups(servers[i].session, decodeURIComponent(_info['name']))
+              for (let i = 0, j = v.groups.length; i < j; i++)
+                if (v.groups[i].id == _info['id']) {
+                  let pending_group = v.groups[i];
+                  await this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listGroupUsers(
+                    this.servers[servers[i].info.isOfficial][servers[i].info.target].session, v.groups[i].id
+                  ).then(_list => {
+                    pending_group['users'] = _list.group_users;
+                    _list.group_users.forEach(_guser => {
+                      if (_guser.user.id == this.servers[servers[i].info.isOfficial][servers[i].info.target].session.user_id)
+                        _guser['is_me'] = true;
+                      else this.save_other_user(_guser.user, servers[i].info.isOfficial, servers[i].info.target);
                     });
-                    this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
-                    break;
-                  }
-              });
+                  });
+                  this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
+                  break;
+                }
+              err(this.lang.text['Nakama']['GroupAlreadyJoined']);
               break;
             default:
               console.error('그룹 추가 오류: ', e);
+              err(e)
               break;
           }
         }
-      err('AllListDone');
+      err(this.lang.text['Nakama']['GroupAllListDone']);
     });
   }
 
