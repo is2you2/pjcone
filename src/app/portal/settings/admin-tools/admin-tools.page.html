@@ -32,7 +32,7 @@
   </ion-item>
   <textarea class="infobox content_size" [(ngModel)]="notification.msg"
     [placeholder]="lang.text['AdminTools']['NoNotiMsg']"></textarea>
-  <ion-item button [disabled]="is_sending || !notification.msg">
+  <ion-item button [disabled]="is_sending || (!notification.msg && !notification.uri)">
     <ion-label class="ion-text-center" (click)="send_noti_to_server()">{{lang.text['AdminTools']['Send']}}</ion-label>
   </ion-item>
   <ion-item-divider>
