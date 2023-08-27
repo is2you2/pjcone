@@ -81,8 +81,7 @@ SPDX-License-Identifier: MIT -->
       <ion-button (click)="remove_server(server.isOfficial, server.target)">
         {{statusBar.groupServer[server.isOfficial][server.target] == 'online' ?
         lang.text['GroupServer']['RemoveAccount']
-        :
-        lang.text['GroupServer']['RemoveUnofficial']}}
+        : lang.text['GroupServer']['RemoveUnofficial']}}
       </ion-button>
     </ion-item>
     <ion-item button id="RegisterNewServer">

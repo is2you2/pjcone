@@ -166,6 +166,7 @@ export class GroupServerPage implements OnInit {
 
     this.nakama.add_group_server(this.dedicated_info, () => {
       this.servers = this.nakama.get_all_server_info(true);
+      this.link_group(this.dedicated_info.isOfficial, this.dedicated_info.target);
       this.dedicated_info.name = undefined;
       this.dedicated_info.address = undefined;
       this.dedicated_info.target = undefined;
