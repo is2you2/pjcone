@@ -55,9 +55,9 @@
       <ion-input class="ion-text-end" (ionChange)="information_changed()" [(ngModel)]="userInput.tmp_user.email"
         placeholder="test@example.com"></ion-input>
     </ion-item>
-    <ion-item disabled>
+    <ion-item>
       <ion-label>{{lang.text['Profile']['password']}}</ion-label>
-      <ion-input class="ion-text-end" type="password" [(ngModel)]="userInput.tmp_user.password"
+      <ion-input disabled class="ion-text-end" type="password" [(ngModel)]="userInput.tmp_user.password"
         [placeholder]="lang.text['Profile']['at_least']"></ion-input>
     </ion-item>
     <ion-item>
