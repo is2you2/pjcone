@@ -320,6 +320,7 @@ export class IndexedDBService {
         link.remove();
         URL.revokeObjectURL(url);
       } catch (e) {
+        console.log('DownloadFileFromUserPath: ', e);
         this.p5toast.show({
           text: `${this.lang.text['IndexedDB']['FailedToDownloadFile']}: ${e}`,
         });

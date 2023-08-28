@@ -74,7 +74,9 @@ export class AdminToolsPage implements OnInit {
       await this.nakama.servers[this.isOfficial][this.target].client.rpc(
         this.nakama.servers[this.isOfficial][this.target].session,
         'send_noti_all_fn', this.notification);
-    } catch (e) { }
+    } catch (e) {
+      console.log('send_noti_to_server: ', e);
+    }
     this.notification.msg = '';
     this.notification.uri = '';
     this.is_sending = false;
@@ -166,6 +168,7 @@ export class AdminToolsPage implements OnInit {
             this.refresh_all_user();
             this.refresh_all_groups();
           } catch (e) {
+            console.log('force_breakup_group: ', e);
             this.p5toast.show({
               text: `${this.lang.text['AdminTools']['ForceBreakedFailed']}: ${e.statusText}`,
             })
@@ -254,6 +257,7 @@ export class AdminToolsPage implements OnInit {
             this.refresh_all_user();
             this.refresh_all_groups();
           } catch (e) {
+            console.log('remove_user: ', e);
             this.p5toast.show({
               text: `${this.lang.text['AdminTools']['UserLeavedFailed']}: ${e.statusText}`,
             })

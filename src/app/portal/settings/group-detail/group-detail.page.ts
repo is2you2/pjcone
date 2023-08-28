@@ -164,6 +164,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         this.modalCtrl.dismiss({ remove: true });
       }
     } catch (e) {
+      console.log('remove_group: ', e);
       this.p5toast.show({
         text: e,
       });

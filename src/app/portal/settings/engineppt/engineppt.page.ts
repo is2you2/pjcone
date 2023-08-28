@@ -286,6 +286,7 @@ export class EnginepptPage implements OnInit {
           result = test;
           break;
         } catch (e) {
+          console.log('CatchAvailableAddress: ', e);
           this.TempWs.close();
         }
       }

@@ -130,6 +130,7 @@ export class GlobalActService {
       }).svg();
       return this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);
     } catch (e) {
+      console.log('readasQRCodeFromId: ', e);
       this.p5toast.show({
         text: `${this.lang.text['GlobalAct']['failed_to_gen_qr']}: ${e}`,
       });
@@ -152,6 +153,7 @@ export class GlobalActService {
       }).svg();
       return this.sanitizer.bypassSecurityTrustUrl(`data:image/svg+xml;base64,${btoa(qr)}`);
     } catch (e) {
+      console.log('readasQRCodeFromString: ', e);
       this.p5toast.show({
         text: `${this.lang.text['GlobalAct']['failed_to_gen_qr']}: ${e}`,
       });
@@ -235,6 +237,7 @@ export class GlobalActService {
                       `${window_path}_thumbnail.png`);
                     this.modulate_thumbnail(info, '');
                   } catch (e) {
+                    console.log('p.saveFrames: ', e);
                   }
                   p.remove();
                 });
@@ -486,6 +489,7 @@ export class GlobalActService {
             URL.revokeObjectURL(FileURL);
           }, 0);
         } catch (e) {
+          console.log('modulate_thumbnail: ', e);
         }
         if (ObjectURL) URL.revokeObjectURL(ObjectURL);
         break;

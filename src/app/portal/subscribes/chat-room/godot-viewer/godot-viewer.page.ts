@@ -74,6 +74,7 @@ export class GodotViewerPage implements OnInit {
         this.content_related_creator.splice(1, 1);
       }
     } catch (e) {
+      console.log('CreateContentInfo: ', e);
       if (!this.content_related_creator[0].publisher)
         this.content_related_creator[0].publisher = this.content_related_creator[0].display_name;
     }

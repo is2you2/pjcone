@@ -230,6 +230,7 @@ export class SettingsPage implements OnInit, OnDestroy {
           text: this.lang.text['ContentViewer']['fileSaved'],
         });
       } catch (e) {
+        console.log('download_serverfile: ', e);
         try {
           await this.file.writeExistingFile(this.file.externalDataDirectory, filename, blob);
           loading.dismiss();
@@ -237,6 +238,7 @@ export class SettingsPage implements OnInit, OnDestroy {
             text: this.lang.text['ContentViewer']['fileSaved'],
           });
         } catch (e) {
+          console.log('download_serverfile_rewrite: ', e);
           loading.dismiss();
           this.p5toast.show({
             text: this.lang.text['ContentViewer']['fileSaveFailed'],

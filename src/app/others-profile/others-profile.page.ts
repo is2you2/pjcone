@@ -148,6 +148,7 @@ export class OthersProfilePage implements OnInit {
         force_logo: true,
       });
     } catch (e) {
+      console.log('update_content_from_server:', e);
       await this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`);
       this.global.godot.remove();
     }

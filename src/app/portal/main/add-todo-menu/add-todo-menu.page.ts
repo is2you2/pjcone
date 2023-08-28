@@ -264,6 +264,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           let url = URL.createObjectURL(blob);
           this.global.modulate_thumbnail(this.userInput.attach[i], url);
         } catch (e) {
+          console.log('maybe no url: ', e);
           this.global.modulate_thumbnail(this.userInput.attach[i], '');
         }
         this.userInput.attach[i]['exist'] = true;

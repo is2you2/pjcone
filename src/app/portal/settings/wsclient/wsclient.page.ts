@@ -70,6 +70,7 @@ export class WsclientPage implements OnInit, OnDestroy {
             });
             this.scroll_down();
           } catch (e) {
+            console.log('connect_to_server: ', e);
             this.logs.push({
               text: `${this.lang.text['WSClient']['RecvError']}: ${e}`,
               time: this.createTimestamp(),

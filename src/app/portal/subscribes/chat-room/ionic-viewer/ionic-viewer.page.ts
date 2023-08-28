@@ -85,6 +85,7 @@ export class IonicViewerPage implements OnInit {
         this.content_related_creator.splice(1, 1);
       }
     } catch (e) {
+      console.log('CreateContentInfo: ', e);
       if (!this.content_related_creator[0].publisher)
         this.content_related_creator[0].publisher = this.content_related_creator[0].display_name;
     }
@@ -505,6 +506,7 @@ export class IonicViewerPage implements OnInit {
               `${this.FileInfo.path}_thumbnail.png`);
             this.global.modulate_thumbnail(this.FileInfo, '');
           } catch (e) {
+            console.log('ionic-viewer_ionViewWillLeave: ', e);
           }
         });
       } catch (e) {

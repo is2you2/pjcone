@@ -275,6 +275,7 @@ export class GroupServerPage implements OnInit {
         });
       } else throw '로컬에 준비된 파일 없음';
     } catch (e) {
+      console.log('check_user_content: ', e);
       this.update_content_from_server();
     }
   }
@@ -290,6 +291,7 @@ export class GroupServerPage implements OnInit {
         is_saved = Boolean(blob);
         break;
       } catch (e) {
+        console.log('update_content_from_server: ', e);
         continue;
       }
     }
@@ -346,6 +348,7 @@ export class GroupServerPage implements OnInit {
                   });
               });
           } catch (e) {
+            console.log('inputFileSelected: ', e);
             continue;
           }
         }
@@ -397,6 +400,7 @@ export class GroupServerPage implements OnInit {
           }],
         });
       } catch (e) {
+        console.log('remove_content: ', e);
       }
       try {
         let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
@@ -529,6 +533,7 @@ export class GroupServerPage implements OnInit {
         this.nakama.save_self_profile();
         this.nakama.init_all_sessions();
       } catch (e) {
+        console.log('toggle_online: ', e);
         this.nakama.users.self['online'] = false;
       }
     } else {

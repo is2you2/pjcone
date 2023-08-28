@@ -505,6 +505,7 @@ export class NakamaService {
         = await this.servers[info.isOfficial][info.target].client.authenticateEmail(this.users.self['email'], this.users.self['password'], false);
       this.after_login(info.isOfficial, info.target, info.useSSL);
     } catch (e) {
+      console.log('init_session: ', e);
       switch (e.status) {
         case 400: // 이메일/비번이 없거나 하는 등, 요청 정보가 잘못됨
           this.p5toast.show({
@@ -630,6 +631,7 @@ export class NakamaService {
           this.self_match[_is_official][_target] = await socket.joinMatch(v.objects[0].value['match_id']);
           return; // 매치 진입 성공인 경우
         } catch (e) {
+          console.log('connect_to: ', e);
           socket.createMatch().then(v => {
             this.self_match[_is_official][_target] = v;
             this.servers[_is_official][_target].client.writeStorageObjects(
@@ -802,7 +804,9 @@ export class NakamaService {
     try {
       if (this.servers[_is_official][_target].session.user_id == userId)
         return this.users.self; // 만약 그게 나라면 내 정보 반환
-    } catch (e) { }
+    } catch (e) {
+      console.log('load_other_user_is_me_check: ', e);
+    }
     let already_use_callback = false;
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
     if (!this.users[_is_official][_target][userId]) {
@@ -1077,7 +1081,9 @@ export class NakamaService {
                         user_id: this.channels_orig[_is_official][_target][_cid]['redirect']['id'],
                       }]
                     })).objects[0].value['img'];
-                } catch (e) { }
+                } catch (e) {
+                  console.log('redirect_channel: ', e);
+                }
               case 3: // 그룹 채팅
                 this.servers[_is_official][_target].client.listChannelMessages(
                   this.servers[_is_official][_target].session, _cid, 1, false)
@@ -1275,6 +1281,7 @@ export class NakamaService {
               break;
             }
         } catch (e) {
+          console.log('try_add_group_already_joined: ', e);
           switch (e.status) {
             case 400: // 그룹에 이미 있는데 그룹추가 시도함
               let v = await servers[i].client.listGroups(servers[i].session, decodeURIComponent(_info['name']))
@@ -1380,13 +1387,18 @@ export class NakamaService {
       }
       else throw "not a group creator";
     } catch (e) {
+      console.log(e);
       try {
         delete this.groups[_is_official][_target][info['id']];
-      } catch (e) { }
+      } catch (e) {
+        console.log(e);
+      }
       this.save_groups_with_less_info();
       try {
         await this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
-      } catch (e) { }
+      } catch (e) {
+        console.log(e);
+      }
     }
   }
 
@@ -1533,6 +1545,7 @@ export class NakamaService {
         }
       }
     } catch (e) {
+      console.log('count_channel_online_member: ', e);
       result_status = this.statusBar.groupServer[_is_official][_target] == 'offline' ? 'offline' : 'missing';
     }
     if (!this.channels_orig[_is_official][_target][p.channel_id || p.id])
@@ -1551,6 +1564,7 @@ export class NakamaService {
         text: this.lang.text['GroupServer']['DeleteAccountSucc'],
       });
     } catch (e) {
+      console.log('remove_server: ', e);
       this.p5toast.show({
         text: this.lang.text['GroupServer']['DeleteAccountFailed'],
       });
@@ -2071,7 +2085,9 @@ export class NakamaService {
         let hasEmoji = currentPart.text.match(/\p{Emoji}+/gu)[0].replace(/[0-9]/g, '');
         if (currentPart.text.length == hasEmoji.length)
           currentPart['size'] = 48;
-      } catch (e) { }
+      } catch (e) {
+        console.log('content_to_hyperlink: ', e);
+      }
     });
     for (let i = 0, j = msg.content['msg'].length; i < j; i++)
       if (msg.content['msg'][i][0]['text']) { // 메시지가 포함되어있는 경우에 한함
@@ -2623,6 +2639,7 @@ export class NakamaService {
           }])
         msg.content['transfer_index'] = partsize - i;
       } catch (e) {
+        console.log('WriteStorage_From_channel: ', e);
         this.p5toast.show({
           text: `${this.lang.text['Nakama']['FailedUpload']}: ${e}`,
         });
@@ -2653,6 +2670,7 @@ export class NakamaService {
         await this.global.save_file_part(path, i, j, v.objects[0].value['data']);
         msg.content['transfer_index'] = j - i;
       } catch (e) {
+        console.log('ReadStorage_From_channel: ', e);
         this.p5toast.show({
           text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
         });
@@ -2711,6 +2729,7 @@ export class NakamaService {
     try {
       return await this.indexed.loadBlobFromUserPath(copied_info.path, copied_info.type || '');
     } catch (e) {
+      console.log('sync_load_file: ', e);
       try {
         let file_info = await this.servers[_is_official][_target].client.readStorageObjects(
           this.servers[_is_official][_target].session, {
@@ -2734,6 +2753,7 @@ export class NakamaService {
         }
         return await this.indexed.loadBlobFromUserPath(info_json.path, info_json.type || '');
       } catch (e) {
+        console.log('sync_load_file_return_null: ', e);
         return null;
       }
     }
@@ -2846,6 +2866,7 @@ export class NakamaService {
           try {
             await this.try_add_group(json[i]);
           } catch (e) {
+            console.log('QRAct_try_add_group_catch: ', e);
             this.p5toast.show({
               text: `${this.lang.text['Nakama']['FailedToAddGroup']}: ${e}`,
             });

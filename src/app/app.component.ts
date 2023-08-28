@@ -185,6 +185,7 @@ export class AppComponent {
         if (noti_id == noti.Current) return;
         this.waiting_open_page(ev, page, props);
       } catch (e) { // 페이지 연결이 없는 알림
+        console.log('클릭행동 catch: ', e);
         switch (ev.data.type) {
           case 'AllUserNotification':
             alertCtrl.create({
