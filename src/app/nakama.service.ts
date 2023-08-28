@@ -13,7 +13,7 @@ import { AlertController, ModalController, NavController, mdTransitionAnimation 
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 import { LanguageSettingService } from './language-setting.service';
 import { AdMob } from '@capacitor-community/admob';
-import { CHECK_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
+import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { EnginepptPage } from './portal/settings/engineppt/engineppt.page';
@@ -2625,7 +2625,7 @@ export class NakamaService {
   async WriteStorage_From_channel(msg: any, path: string, _is_official: string, _target: string, startFrom = 0) {
     let _msg = JSON.parse(JSON.stringify(msg));
     let file_info = await this.global.req_file_info(path);
-    let partsize = Math.ceil(file_info.contents.length / CHECK_BINARY_LIMIT);
+    let partsize = Math.ceil(file_info.contents.length / FILE_BINARY_LIMIT);
     for (let i = startFrom; i < partsize; i++)
       try {
         let part = await this.global.req_file_part_base64(file_info, i);
@@ -2691,9 +2691,8 @@ export class NakamaService {
     try {
       let copied_info = JSON.parse(JSON.stringify(info));
       await this.indexed.saveBlobToUserPath(info.blob, copied_info.path);
-      await this.global.CreateFileManager();
       let file_info = await this.global.req_file_info(copied_info.path);
-      copied_info.partsize = Math.ceil((copied_info['filesize'] || file_info.contents.length) / CHECK_BINARY_LIMIT);
+      copied_info.partsize = Math.ceil((copied_info['filesize'] || file_info.contents.length) / FILE_BINARY_LIMIT);
       delete copied_info['blob'];
       await this.servers[_is_official][_target].client.writeStorageObjects(
         this.servers[_is_official][_target].session, [{

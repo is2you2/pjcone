@@ -133,6 +133,35 @@ export class IndexedDBService {
 
   /**
    * 파일 공유용
+   * @param Int8Array 바이트 배열
+   * @param path 저장될 상대 경로(user://~)
+   */
+  saveInt8ArrayToUserPath(int8Array: Int8Array, path: string): Promise<void> {
+    if (!this.db) {
+      setTimeout(async () => {
+        return await this.saveInt8ArrayToUserPath(int8Array, path);
+      }, 1000);
+    };
+    return new Promise((done, error) => {
+      this.createRecursiveDirectory(path);
+      let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
+        timestamp: new Date(),
+        mode: 33206,
+        contents: int8Array,
+      }, `/userfs/${path}`);
+      put.onsuccess = (ev) => {
+        if (ev.type != 'success')
+          console.error('저장 실패: ', path);
+        done();
+      }
+      put.onerror = (e) => {
+        error(e);
+      }
+    });
+  }
+
+  /**
+   * 파일 공유용
    * @param blob 파일정보 | blob
    * @param path 저장될 상대 경로(user://~)
    */

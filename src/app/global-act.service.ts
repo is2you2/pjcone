@@ -10,7 +10,8 @@ import * as p5 from "p5";
 import { IndexedDBService } from './indexed-db.service';
 
 export var isDarkMode = false;
-export const CHECK_BINARY_LIMIT = 120000;
+/** 파일 입출 크기 제한 */
+export const FILE_BINARY_LIMIT = 120000;
 
 /** 컨텐츠 제작자 기록 틀 */
 export interface ContentCreatorInfo {
@@ -326,70 +327,6 @@ export class GlobalActService {
     });
   }
 
-  FileManagerIFrame: HTMLIFrameElement;
-  FileManager: any;
-  isFileManagerOnInit = false;
-  partsize_req: { [id: string]: Function } = {};
-  /** 파일 매니저 만들기 (대용량 호환용 고도엔진 프레임) */
-  async CreateFileManager(force = false): Promise<void> {
-    return new Promise((done) => {
-      if (this.isFileManagerOnInit) {
-        done();
-        return;
-      }
-      this.isFileManagerOnInit = true;
-      if (this.FileManagerIFrame && this.FileManagerIFrame.isConnected && !force) {
-        this.isFileManagerOnInit = false;
-        done();
-        return;
-      }
-      if (this.FileManagerIFrame && force) this.FileManagerIFrame.remove();
-      let refresh_it_loading = () => {
-        try {
-          if (!this.FileManager['req_file_write'])
-            throw 'File manager not ready';
-          this.isFileManagerOnInit = false;
-          done();
-        } catch (e) {
-          setTimeout(() => {
-            refresh_it_loading();
-          }, 1000);
-        }
-      }
-      let _iframe = document.createElement('iframe');
-      _iframe.id = 'file_manager';
-      _iframe.setAttribute("src", "assets/FileManager/index.html");
-      _iframe.setAttribute("frameborder", "0");
-      _iframe.setAttribute('class', 'full_screen');
-      _iframe.setAttribute('allow', 'fullscreen; encrypted-media');
-      _iframe.setAttribute('scrolling', 'no');
-      _iframe.setAttribute('withCredentials', 'true');
-      document.body.appendChild(_iframe);
-      this.FileManagerIFrame = _iframe;
-      this.FileManagerIFrame.hidden = true;
-      this.FileManager = _iframe.contentWindow || _iframe.contentDocument;
-      // check_file_partsize_info (path)
-      this.FileManager['get_partsize'] = (path: string, partsize: number) => {
-        let path_key = path.replace('/', '_');
-        this.partsize_req[`${path_key}_len`](partsize);
-      }
-      // req_file_part(path, index, full_len)
-      this.FileManager['get_part_data'] = (path: string, base64: string) => {
-        let path_key = path.replace('/', '_');
-        this.partsize_req[`${path_key}_data`](base64);
-      }
-      // req_file_write(path, index, full_len, base64)
-      this.FileManager['save_part'] = (path: string) => {
-        let path_key = path.replace('/', '_');
-        this.partsize_req[`${path_key}_saved`]();
-      }
-      this.FileManager['self_destory'] = () => {
-        this.FileManagerIFrame.remove();
-      }
-      refresh_it_loading();
-    });
-  }
-
   /** 파일 경로를 큐에 추가하고 계속하여 정보를 받습니다  
    * 여기서 추가한 것은 반드시 큐를 제거해야함
    * @returns 파일 전체 길이 (number) / 120000 기준
@@ -405,7 +342,7 @@ export class GlobalActService {
   async req_file_part_base64(file_info: any, index: number): Promise<string> {
     return new Promise(async (done) => {
       var binary = '';
-      var bytes = new Uint8Array(file_info.contents.slice(index * CHECK_BINARY_LIMIT, (index + 1) * CHECK_BINARY_LIMIT));
+      var bytes = new Uint8Array(file_info.contents.slice(index * FILE_BINARY_LIMIT, (index + 1) * FILE_BINARY_LIMIT));
       for (var i = 0, j = bytes.byteLength; i < j; i++)
         binary += String.fromCharCode(bytes[i]);
       let base64 = btoa(binary);
@@ -413,22 +350,35 @@ export class GlobalActService {
     });
   }
 
+  /** 저장중인 파일 관리  
+   * save_file_req[path_key] = IndexedDBFileInfo;
+   */
+  save_file_req = {};
   /** 파일 파트 저장하기 */
   async save_file_part(path: string, index: number, full_len: number, base64: string): Promise<void> {
     let path_key = path.replace('/', '_');
     return new Promise(async (done) => {
-      await this.CreateFileManager();
-      this.partsize_req[`${path_key}_saved`] = () => {
+      let int8Array = this.save_file_req[path_key];
+      if (!int8Array) { // 작업중이던 파일이 없는 경우 직접 파일 불러오기
+        let get_file_info = await this.indexed.GetFileInfoFromDB(path);
+        if (get_file_info) {
+          this.save_file_req[path_key] = Array.from(get_file_info);
+          int8Array = this.save_file_req[path_key];
+        }
+      }
+      if (!int8Array) { // 파일이 없는 경우 저장하여 생성
+        let _int8array = await this.indexed.saveBase64ToUserPath(',' + base64, path);
+        this.save_file_req[path_key] = Array.from(_int8array);
+        done();
+      } else { // 기존 파일이 있는 경우 겹쳐서 저장하기
+        let binary = atob(base64);
+        for (let i = 0, j = binary.length; i < j; i++) {
+          let _index = index * FILE_BINARY_LIMIT + i;
+          int8Array[_index] = binary.charCodeAt(i);
+        }
+        await this.indexed.saveInt8ArrayToUserPath(new Int8Array(int8Array), path);
         done();
       }
-      let check_recursive = () => {
-        if (this.FileManager['req_file_write'])
-          this.FileManager['req_file_write'](path, index, full_len, base64);
-        else setTimeout(() => {
-          check_recursive();
-        }, 1000);
-      }
-      check_recursive();
     });
   }
 
@@ -436,9 +386,7 @@ export class GlobalActService {
   remove_req_file_info(msg: any, path: string) {
     delete msg.content['transfer_index'];
     let path_key = path.replace('/', '_');
-    delete this.partsize_req[`${path_key}_len`];
-    delete this.partsize_req[`${path_key}_data`];
-    delete this.partsize_req[`${path_key}_saved`];
+    delete this.save_file_req[path_key];
     setTimeout(() => {
       this.indexed.removeFileFromUserPath(`${path}.history`);
     }, 0);

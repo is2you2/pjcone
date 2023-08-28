@@ -763,7 +763,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       } else { // 파일 자체가 없음
         if (!this.isHistoryLoaded) { // 서버와 연결되어 있음
           msg.content['text'] = [this.lang.text['TodoDetail']['WIP']];
-          await this.global.CreateFileManager();
           this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target);
         }
       }
