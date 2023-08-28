@@ -10,6 +10,7 @@ import * as p5 from "p5";
 import { IndexedDBService } from './indexed-db.service';
 
 export var isDarkMode = false;
+export const CHECK_BINARY_LIMIT = 120000;
 
 /** 컨텐츠 제작자 기록 틀 */
 export interface ContentCreatorInfo {
@@ -393,33 +394,22 @@ export class GlobalActService {
    * 여기서 추가한 것은 반드시 큐를 제거해야함
    * @returns 파일 전체 길이 (number) / 120000 기준
    */
-  async req_file_len(path: string): Promise<number> {
-    let path_key = path.replace('/', '_');
+  async req_file_info(path: string): Promise<any> {
     return new Promise(async (done) => {
-      await this.CreateFileManager(true);
-      this.partsize_req[`${path_key}_len`] = (part_len: number) => {
-        done(part_len);
-      }
-      this.FileManager['check_file_partsize_info'](path);
+      let info = await this.indexed.GetFileInfoFromDB(path);
+      done(info);
     });
   }
 
   /** 파일의 부분 base64 정보 받기 */
-  async req_file_part_base64(path: string, index: number, full_length: number): Promise<string> {
-    let path_key = path.replace('/', '_');
+  async req_file_part_base64(file_info: any, index: number): Promise<string> {
     return new Promise(async (done) => {
-      await this.CreateFileManager();
-      this.partsize_req[`${path_key}_data`] = (base64: string) => {
-        done(base64);
-      }
-      let check_recursive = () => {
-        if (this.FileManager['req_file_part'])
-          this.FileManager['req_file_part'](path, index, full_length);
-        else setTimeout(() => {
-          check_recursive();
-        }, 1000);
-      }
-      check_recursive();
+      var binary = '';
+      var bytes = new Uint8Array(file_info.contents.slice(index * CHECK_BINARY_LIMIT, (index + 1) * CHECK_BINARY_LIMIT));
+      for (var i = 0, j = bytes.byteLength; i < j; i++)
+        binary += String.fromCharCode(bytes[i]);
+      let base64 = btoa(binary);
+      done(base64);
     });
   }
 

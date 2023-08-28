@@ -13,7 +13,7 @@ import { AlertController, ModalController, NavController, mdTransitionAnimation 
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 import { LanguageSettingService } from './language-setting.service';
 import { AdMob } from '@capacitor-community/admob';
-import { FileInfo, GlobalActService } from './global-act.service';
+import { CHECK_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { EnginepptPage } from './portal/settings/engineppt/engineppt.page';
@@ -2624,11 +2624,11 @@ export class NakamaService {
    */
   async WriteStorage_From_channel(msg: any, path: string, _is_official: string, _target: string, startFrom = 0) {
     let _msg = JSON.parse(JSON.stringify(msg));
-    let part_len = await this.global.req_file_len(path);
-    let partsize = Math.ceil(part_len / 120000);
+    let file_info = await this.global.req_file_info(path);
+    let partsize = Math.ceil(file_info.contents.length / CHECK_BINARY_LIMIT);
     for (let i = startFrom; i < partsize; i++)
       try {
-        let part = await this.global.req_file_part_base64(path, i, part_len);
+        let part = await this.global.req_file_part_base64(file_info, i);
         await this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
             collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
@@ -2691,10 +2691,9 @@ export class NakamaService {
     try {
       let copied_info = JSON.parse(JSON.stringify(info));
       await this.indexed.saveBlobToUserPath(info.blob, copied_info.path);
-      await this.global.CreateFileManager(true);
-      if (!copied_info['filesize'])
-        copied_info['filesize'] = await this.global.req_file_len(copied_info.path);
-      copied_info.partsize = Math.ceil(copied_info['filesize'] / 120000);
+      await this.global.CreateFileManager();
+      let file_info = await this.global.req_file_info(copied_info.path);
+      copied_info.partsize = Math.ceil((copied_info['filesize'] || file_info.contents.length) / CHECK_BINARY_LIMIT);
       delete copied_info['blob'];
       await this.servers[_is_official][_target].client.writeStorageObjects(
         this.servers[_is_official][_target].session, [{
@@ -2706,7 +2705,7 @@ export class NakamaService {
         }]);
       // 여기서 전체 길이로 for문을 돌리고 매 회차마다 파트를 받아서 base64 변환 후 집어넣어야 함
       for (let i = 0; i < copied_info.partsize; i++) {
-        let part = await this.global.req_file_part_base64(copied_info.path, i, copied_info['filesize']);
+        let part = await this.global.req_file_part_base64(file_info, i);
         await this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
             collection: _collection,
