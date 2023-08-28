@@ -1364,7 +1364,9 @@ export class NakamaService {
     });
   }
 
-  /** 그룹 리스트 로컬/리모트에서 삭제하기 (방장일 경우) */
+  /** 그룹 리스트 로컬/리모트에서 삭제하기 (방장일 경우)  
+   * 그룹 이미지 삭제처리
+   */
   async remove_group_list(info: any, _is_official: string, _target: string) {
     try { // 내가 방장이면 해산처리 우선, 이 외의 경우 기록 삭제
       if (this.servers[_is_official][_target] && info['creator_id'] == this.servers[_is_official][_target].session.user_id) {
@@ -1388,12 +1390,6 @@ export class NakamaService {
       else throw "not a group creator";
     } catch (e) {
       console.log(e);
-      try {
-        delete this.groups[_is_official][_target][info['id']];
-      } catch (e) {
-        console.log(e);
-      }
-      this.save_groups_with_less_info();
       try {
         await this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
       } catch (e) {

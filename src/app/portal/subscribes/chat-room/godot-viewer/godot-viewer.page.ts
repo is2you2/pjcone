@@ -51,18 +51,22 @@ export class GodotViewerPage implements OnInit {
   CreateContentInfo() {
     this.isOfficial = this.navParams.get('isOfficial');
     this.target = this.navParams.get('target');
-    this.content_creator = this.FileInfo['content_creator'];
-    this.content_creator.timeDisplay = new Date(this.content_creator.timestamp).toLocaleString();
-    this.content_related_creator = this.FileInfo['content_related_creator'];
-    if (this.content_creator.user_id)
-      this.content_creator.is_me =
-        this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_creator.user_id;
-    for (let i = 0, j = this.content_related_creator.length; i < j; i++) {
-      if (this.content_related_creator[i].user_id) {
-        this.content_related_creator[i].is_me =
-          this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_related_creator[i].user_id;
+    try {
+      this.content_creator = this.FileInfo['content_creator'];
+      this.content_creator.timeDisplay = new Date(this.content_creator.timestamp).toLocaleString();
+      this.content_related_creator = this.FileInfo['content_related_creator'];
+      if (this.content_creator.user_id)
+        this.content_creator.is_me =
+          this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_creator.user_id;
+      for (let i = 0, j = this.content_related_creator.length; i < j; i++) {
+        if (this.content_related_creator[i].user_id) {
+          this.content_related_creator[i].is_me =
+            this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_related_creator[i].user_id;
+        }
+        this.content_related_creator[i].timeDisplay = new Date(this.content_related_creator[i].timestamp).toLocaleString();
       }
-      this.content_related_creator[i].timeDisplay = new Date(this.content_related_creator[i].timestamp).toLocaleString();
+    } catch (e) {
+      console.log('user-fs: ', e);
     }
     try { // 중복 정보 통합
       this.content_related_creator[0].publisher
@@ -75,14 +79,22 @@ export class GodotViewerPage implements OnInit {
       }
     } catch (e) {
       console.log('CreateContentInfo: ', e);
-      if (!this.content_related_creator[0].publisher)
-        this.content_related_creator[0].publisher = this.content_related_creator[0].display_name;
+      try {
+        if (!this.content_related_creator[0].publisher)
+          this.content_related_creator[0].publisher = this.content_related_creator[0].display_name;
+      } catch (e) {
+        console.log('user-fs: ', e);
+      }
     }
-    this.content_related_creator.sort((a, b) => {
-      if (a.timestamp > b.timestamp) return -1;
-      else if (a.timestamp < b.timestamp) return 1;
-      else return 0;
-    });
+    try {
+      this.content_related_creator.sort((a, b) => {
+        if (a.timestamp > b.timestamp) return -1;
+        else if (a.timestamp < b.timestamp) return 1;
+        else return 0;
+      });
+    } catch (e) {
+      console.log('user-fs: ', e);
+    }
   }
 
   async ionViewDidEnter() {
