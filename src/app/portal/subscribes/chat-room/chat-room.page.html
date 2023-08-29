@@ -7,7 +7,8 @@ SPDX-License-Identifier: MIT -->
     <ion-buttons slot="start">
       <ion-back-button defaultHref="subscribes"></ion-back-button>
     </ion-buttons>
-    <div class="header_online_circle" [style]="'background-color: ' + statusBar.colors[info['status']]">
+    <div class="header_online_circle"
+      [style]="'background-color: ' + statusBar.colors[info.info['status'] == 'offline' ? 'offline' : info['status']]">
     </div>
   </ion-toolbar>
 </ion-header>

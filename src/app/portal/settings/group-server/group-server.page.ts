@@ -533,7 +533,6 @@ export class GroupServerPage implements OnInit {
         this.nakama.save_self_profile();
         this.nakama.init_all_sessions();
       } catch (e) {
-        console.log('toggle_online: ', e);
         this.nakama.users.self['online'] = false;
       }
     } else {

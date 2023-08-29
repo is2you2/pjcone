@@ -22,7 +22,6 @@ import { Camera } from '@awesome-cordova-plugins/camera/ngx';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { QrSharePage } from '../../settings/qr-share/qr-share.page';
-import { P5ToastService } from 'src/app/p5-toast.service';
 import { QuickShareReviewPage } from './quick-share-review/quick-share-review.page';
 
 interface ExtendButtonForm {
@@ -58,7 +57,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private global: GlobalActService,
     private loadingCtrl: LoadingController,
     private camera: Camera,
-    private p5toast: P5ToastService,
   ) { }
 
   /** 채널 정보 */
@@ -544,7 +542,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.nakama.saveListedMessage(this.messages, this.info, this.isOfficial, this.target);
           });
       } catch (e) {
-        console.log('pull_msg_history: ', e);
         if (this.info['redirect']['type'] == 3) // 그룹대화라면 공개여부 검토
           if (this.nakama.groups[this.isOfficial][this.target]
             && this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]
