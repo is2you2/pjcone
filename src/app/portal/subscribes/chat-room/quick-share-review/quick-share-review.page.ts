@@ -53,5 +53,6 @@ export class QuickShareReviewPage implements OnInit {
       text: this.lang.text['QuickQRShare']['success_received'],
       lateable: true,
     });
+    this.modalCtrl.dismiss();
   }
 }
