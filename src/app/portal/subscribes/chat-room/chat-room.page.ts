@@ -23,6 +23,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { QrSharePage } from '../../settings/qr-share/qr-share.page';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import { QuickShareReviewPage } from './quick-share-review/quick-share-review.page';
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -777,11 +778,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** QR행동처럼 처리하기 */
   async quickShare_act(_msg: any) {
-    await this.nakama.act_from_QRInfo(JSON.stringify(_msg.content['quickShare']).trim());
-    this.p5toast.show({
-      text: this.lang.text['QuickQRShare']['success_received'],
-      lateable: true,
-    });
+    this.modalCtrl.create({
+      component: QuickShareReviewPage,
+      componentProps: {
+        data: _msg.content['quickShare']
+      },
+    }).then(v => v.present());
   }
 
   /** 메시지 추가시마다 메시지 상태를 업데이트 (기존 html 연산)  

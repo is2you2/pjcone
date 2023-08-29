@@ -2809,13 +2809,13 @@ export class NakamaService {
             }).then(v => v.present());
           } else {
             let new_server_info: ServerInfo = {
-              name: json[i].value.name,
-              target: json[i].value.target,
-              address: json[i].value.address,
+              name: decodeURIComponent(json[i].value.name),
+              target: decodeURIComponent(json[i].value.target),
+              address: decodeURIComponent(json[i].value.address),
               port: json[i].value.port,
               useSSL: json[i].value.useSSL,
               isOfficial: json[i].value.isOfficial,
-              key: json[i].value.key,
+              key: decodeURIComponent(json[i].value.key),
             };
             await this.add_group_server(new_server_info);
             await this.init_session(new_server_info);

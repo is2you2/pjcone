@@ -19,6 +19,10 @@ const routes: Routes = [
   {
     path: 'void-draw',
     loadChildren: () => import('./void-draw/void-draw.module').then( m => m.VoidDrawPageModule)
+  },
+  {
+    path: 'quick-share-review',
+    loadChildren: () => import('./quick-share-review/quick-share-review.module').then( m => m.QuickShareReviewPageModule)
   }
 ];
 
