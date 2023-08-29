@@ -161,6 +161,7 @@ export class GroupServerPage implements OnInit {
     this.add_custom_tog = true;
 
     this.dedicated_info.port = this.dedicated_info.port || 7350;
+    if (this.isSSLConnect) this.dedicated_info.useSSL = true;
     this.dedicated_info.useSSL = this.dedicated_info.useSSL || false;
     this.dedicated_info.key = this.dedicated_info.key || 'defaultkey';
 
@@ -172,6 +173,7 @@ export class GroupServerPage implements OnInit {
       this.dedicated_info.target = undefined;
       this.dedicated_info.port = undefined;
       this.dedicated_info.useSSL = undefined;
+      if (this.isSSLConnect) this.dedicated_info.useSSL = true;
       this.dedicated_info.isOfficial = undefined;
     });
     this.RegisterServer.dismiss();
