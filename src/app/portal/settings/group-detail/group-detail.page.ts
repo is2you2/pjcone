@@ -60,7 +60,12 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     if (!this.info.server) this.info.server = this.navParams.get('server');
     this.isOfficial = this.info.server['isOfficial'];
     this.target = this.info.server['target'];
-    this.has_admin = this.statusBar.groupServer[this.isOfficial][this.target] == 'online';
+    try {
+      this.has_admin = this.info['creator_id'] == this.nakama.servers[this.isOfficial][this.target].session.user_id;
+    } catch (e) {
+      console.log('check is admin failed: ', e);
+      this.has_admin = false;
+    }
     // 사용자 정보가 있다면 로컬 정보 불러오기 처리
     if (this.info['users'] && this.info['users'].length) {
       for (let i = 0, j = this.info['users'].length; i < j; i++)
