@@ -87,7 +87,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       } catch (e) {
         console.log('DeleteGroupFailed: ', e);
       }
-      await this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.group_id);
+      await this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
       this.nakama.save_groups_with_less_info();
       await this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`, (list) => {
         list.forEach(path => this.indexed.removeFileFromUserPath(path));

@@ -1369,11 +1369,12 @@ export class NakamaService {
    */
   async remove_group_list(info: any, _is_official: string, _target: string) {
     try { // 내가 방장이면 해산처리 우선, 이 외의 경우 기록 삭제
-      if (this.servers[_is_official][_target] && info['creator_id'] == this.servers[_is_official][_target].session.user_id) {
+      let is_creator = info['creator_id'] == this.servers[_is_official][_target].session.user_id;
+      if (this.servers[_is_official][_target] && is_creator) {
         let v = await this.servers[_is_official][_target].client.deleteGroup(
           this.servers[_is_official][_target].session, info['id']);
         if (!v) console.warn('그룹 삭제 오류 검토 필요');
-        await this.remove_channel_files(_is_official, _target, info['channel_id']);
+        await this.remove_channel_files(_is_official, _target, info['channel_id'], is_creator);
         try {
           await this.servers[_is_official][_target].client.deleteStorageObjects(
             this.servers[_is_official][_target].session, {
@@ -1386,8 +1387,7 @@ export class NakamaService {
         } catch (e) {
           throw "No group image found";
         }
-      }
-      else throw "not a group creator";
+      } else throw "not a group creator";
     } catch (e) {
       console.log(e);
       try {
@@ -1399,23 +1399,13 @@ export class NakamaService {
   }
 
   /** 그룹 내에서 사용했던 서버 파일들 전부 삭제 */
-  async remove_channel_files(_is_official: string, _target: string, channel_id: string, cursor?: string) {
+  async remove_channel_files(_is_official: string, _target: string, channel_id: string, is_creator?: boolean) {
     if (this.statusBar.groupServer[_is_official][_target] == 'online')
-      await this.servers[_is_official][_target].client.listStorageObjects(
-        this.servers[_is_official][_target].session, `file_${channel_id.replace(/[.]/g, '_')}`,
-        this.servers[_is_official][_target].session.user_id, 10, cursor
-      ).then(async v => {
-        let ApiDeleteObject = [];
-        for (let i = 0, j = v.objects.length; i < j; i++)
-          ApiDeleteObject.push({
-            collection: v.objects[i].collection,
-            key: v.objects[i].key,
-          });
-        await this.servers[_is_official][_target].client.deleteStorageObjects(
-          this.servers[_is_official][_target].session, {
-          object_ids: ApiDeleteObject,
-        });
-        if (v.cursor) this.remove_channel_files(_is_official, _target, channel_id, v.cursor);
+      await this.servers[_is_official][_target].client.rpc(
+        this.servers[_is_official][_target].session,
+        'remove_channel_file', {
+        collection: `file_${channel_id.replace(/[.]/g, '_')}`,
+        is_creator: is_creator,
       });
   }
 

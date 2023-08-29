@@ -1,6 +1,5 @@
 local nk = require("nakama")
 
-
 local function force_remove_group(context, payload)
     local json = nk.json_decode(payload)
     local channel_id = nk.channel_id_build('', json.group_id, 3)
