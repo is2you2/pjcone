@@ -7,7 +7,14 @@ local function remove_channel_file(context, payload)
 
         local will_remove_id = {}
         for index, r in ipairs(records) do
-            will_remove_id[index] = { collection = r.collection, key = r.key, user_id = r.user_id }
+            if json.key then
+                local _index = string.find(r.key, json.key)
+                if _index == 1 then
+                    will_remove_id[index] = { collection = r.collection, key = r.key, user_id = r.user_id }
+                end
+            else
+                will_remove_id[index] = { collection = r.collection, key = r.key, user_id = r.user_id }
+            end
         end
         nk.storage_delete(will_remove_id)
         if cursor then

@@ -847,8 +847,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (this.userInput.remote) { // 서버에 저장한다면
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
-      let request = {};
-      request = {
+      let request = {
         collection: 'server_todo',
         key: this.userInput.id,
         permission_read: 2,
@@ -927,8 +926,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
     if (this.userInput.remote) {
-      let request = {};
-      request = {
+      let request = {
         collection: 'server_todo',
         key: this.userInput.id,
       };

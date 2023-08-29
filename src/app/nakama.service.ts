@@ -2756,15 +2756,12 @@ export class NakamaService {
         }],
       });
       let info_json: FileInfo = file_info.objects[0].value;
-      for (let i = 0; i < info_json.partsize; i++) {
-        await this.servers[_is_official][_target].client.deleteStorageObjects(
-          this.servers[_is_official][_target].session, {
-          object_ids: [{
-            collection: _collection,
-            key: info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`,
-          }],
-        });
-      }
+      await this.servers[_is_official][_target].client.rpc(
+        this.servers[_is_official][_target].session,
+        'remove_channel_file', {
+        collection: _collection,
+        key: info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + '_',
+      });
       await this.servers[_is_official][_target].client.deleteStorageObjects(
         this.servers[_is_official][_target].session, {
         object_ids: [{
