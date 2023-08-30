@@ -65,9 +65,7 @@ export class GodotViewerPage implements OnInit {
         }
         this.content_related_creator[i].timeDisplay = new Date(this.content_related_creator[i].timestamp).toLocaleString();
       }
-    } catch (e) {
-      console.log('user-fs: ', e);
-    }
+    } catch (e) { }
     try { // 중복 정보 통합
       this.content_related_creator[0].publisher
         = this.content_related_creator[0].is_me ? this.nakama.users.self['display_name']
@@ -78,13 +76,10 @@ export class GodotViewerPage implements OnInit {
         this.content_related_creator.splice(1, 1);
       }
     } catch (e) {
-      console.log('CreateContentInfo: ', e);
       try {
         if (!this.content_related_creator[0].publisher)
           this.content_related_creator[0].publisher = this.content_related_creator[0].display_name;
-      } catch (e) {
-        console.log('user-fs: ', e);
-      }
+      } catch (e) { }
     }
     try {
       this.content_related_creator.sort((a, b) => {
@@ -92,9 +87,7 @@ export class GodotViewerPage implements OnInit {
         else if (a.timestamp < b.timestamp) return 1;
         else return 0;
       });
-    } catch (e) {
-      console.log('user-fs: ', e);
-    }
+    } catch (e) { }
   }
 
   async ionViewDidEnter() {

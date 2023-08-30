@@ -78,7 +78,6 @@ export class SettingsPage implements OnInit, OnDestroy {
         this.listAvailableAds(lines);
       } else "광고가 없는 것으로 단정합니다";
     } catch (e) { // 로컬 정보 기반으로 광고
-      console.log(e);
       this.indexed.loadTextFromUserPath('ads_list.txt', (e, v) => {
         if (e && v) this.listAvailableAds(v.split('\n'));
       });

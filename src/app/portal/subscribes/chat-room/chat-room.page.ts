@@ -469,7 +469,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     try {
       this.temporary_open_thumbnail[msg.message_id]();
     } catch (e) {
-      console.log('auto_open_thumbnail: ', e);
       this.temporary_open_thumbnail[msg.message_id] = () => {
         this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
           msg.content['type'],
@@ -704,7 +703,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
         });
     } catch (e) {
-      console.log('send: ', e);
       setTimeout(() => {
         this.userInput.text = '';
         this.userInputTextArea.style.height = '36px';
@@ -752,7 +750,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }
           });
         } catch (e) {
-          console.log(e);
           if (!msg.content['text'])
             msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
           this.indexed.loadBlobFromUserPath(path,

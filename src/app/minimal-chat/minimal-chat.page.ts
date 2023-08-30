@@ -228,7 +228,6 @@ export class MinimalChatPage implements OnInit {
             this.statusBar.settings[this.target] = 'online';
         }, 250);
       } catch (e) {
-        console.log(e);
         switch (v) {
           case 'GOT_MATCHED':
             this.statusBar.settings[this.target] = 'certified';

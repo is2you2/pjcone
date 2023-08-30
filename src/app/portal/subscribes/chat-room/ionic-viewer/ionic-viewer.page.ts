@@ -76,9 +76,7 @@ export class IonicViewerPage implements OnInit {
         }
         this.content_related_creator[i].timeDisplay = new Date(this.content_related_creator[i].timestamp).toLocaleString();
       }
-    } catch (e) {
-      console.log('user-fs: ', e);
-    }
+    } catch (e) { }
     try { // 중복 정보 통합
       this.content_related_creator[0].publisher
         = this.content_related_creator[0].is_me ? this.nakama.users.self['display_name']
@@ -89,13 +87,10 @@ export class IonicViewerPage implements OnInit {
         this.content_related_creator.splice(1, 1);
       }
     } catch (e) {
-      console.log('CreateContentInfo: ', e);
       try {
         if (!this.content_related_creator[0].publisher)
           this.content_related_creator[0].publisher = this.content_related_creator[0].display_name;
-      } catch (e) {
-        console.log('user-fs: ', e);
-      }
+      } catch (e) { }
     }
     try {
       this.content_related_creator.sort((a, b) => {
@@ -103,9 +98,7 @@ export class IonicViewerPage implements OnInit {
         else if (a.timestamp < b.timestamp) return 1;
         else return 0;
       });
-    } catch (e) {
-      console.log('usef-fs: ', e);
-    }
+    } catch (e) { }
   }
 
   async ionViewDidEnter() {
@@ -517,9 +510,7 @@ export class IonicViewerPage implements OnInit {
             await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
               `${this.FileInfo.path}_thumbnail.png`);
             this.global.modulate_thumbnail(this.FileInfo, '');
-          } catch (e) {
-            console.log('ionic-viewer_ionViewWillLeave: ', e);
-          }
+          } catch (e) { }
         });
       } catch (e) {
         console.log('작업중 오류보기: ', e);

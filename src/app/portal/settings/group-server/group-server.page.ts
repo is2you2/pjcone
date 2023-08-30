@@ -229,8 +229,10 @@ export class GroupServerPage implements OnInit {
             display_name: this.nakama.users.self['display_name'],
           }).then(async _v => {
             NeedAnnounceUpdate = true;
-            await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
-              encodeURIComponent('info'));
+            try {
+              await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
+                encodeURIComponent('info'));
+            } catch (e) { }
           });
         // 해당 서버 연결된 채널에 고지
         if (NeedAnnounceUpdate && this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]) {
