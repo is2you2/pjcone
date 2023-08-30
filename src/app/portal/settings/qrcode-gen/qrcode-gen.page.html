@@ -10,6 +10,9 @@
 <ion-content>
   <ion-item-divider>
     <ion-label>{{lang.text['QRCodeGen']['UserInput']}}</ion-label>
+    <ion-button (click)="userInput = ''; QRCode = ''" slot="end" style="padding-right: 16px;">
+      {{lang.text['QRCodeGen']['Reset']}}
+    </ion-button>
   </ion-item-divider>
   <textarea class="infobox" [(ngModel)]="userInput" (keyup)="textarea_changed($event)"
     [placeholder]="lang.text['QRCodeGen']['InputHere']"></textarea>
