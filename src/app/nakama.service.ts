@@ -2072,9 +2072,7 @@ export class NakamaService {
         let hasEmoji = currentPart.text.match(/\p{Emoji}+/gu)[0].replace(/[0-9]/g, '');
         if (currentPart.text.length == hasEmoji.length)
           currentPart['size'] = 48;
-      } catch (e) {
-        console.log('content_to_hyperlink: ', e);
-      }
+      } catch (e) { }
     });
     for (let i = 0, j = msg.content['msg'].length; i < j; i++)
       if (msg.content['msg'][i][0]['text']) { // 메시지가 포함되어있는 경우에 한함
