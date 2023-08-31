@@ -83,10 +83,17 @@ export class IonicViewerPage implements OnInit {
           : this.nakama.users[this.isOfficial][this.target][this.content_related_creator[0].user_id]['display_name'];
       if (this.content_related_creator[0].timestamp == this.content_related_creator[1].timestamp) { // 외부에서 가져온 파일
         this.content_related_creator[0].publisher = this.content_related_creator[1].is_me ? this.nakama.users.self['display_name']
-          : this.nakama.users[this.isOfficial][this.target][this.content_related_creator[1].user_id]['display_name'];;
+          : this.nakama.users[this.isOfficial][this.target][this.content_related_creator[1].user_id]['display_name'];
         this.content_related_creator.splice(1, 1);
       }
     } catch (e) {
+      try { // 오프라인 재검토
+        this.content_related_creator[0].publisher = this.content_related_creator[1].display_name;
+        if (this.content_related_creator[0].timestamp == this.content_related_creator[1].timestamp) { // 외부에서 가져온 파일
+          this.content_related_creator[0].publisher = this.content_related_creator[1].display_name
+          this.content_related_creator.splice(1, 1);
+        }
+      } catch (e) { }
       try {
         if (!this.content_related_creator[0].publisher)
           this.content_related_creator[0].publisher = this.content_related_creator[0].display_name;
