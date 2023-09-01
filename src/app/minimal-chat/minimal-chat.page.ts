@@ -1,11 +1,11 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { ILocalNotificationAction, ILocalNotificationActionType } from '@awesome-cordova-plugins/local-notifications/ngx';
-import { ModalController, NavParams } from '@ionic/angular';
+import { IonInput, ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
 import * as p5 from 'p5';
@@ -381,6 +381,8 @@ export class MinimalChatPage implements OnInit {
     }
   }
 
+  @ViewChild('minimalchat_input') minimalchat_input: IonInput;
+
   ionViewDidEnter() {
     setTimeout(() => {
       let scrollHeight = this.minimal_chat_log.scrollHeight;
@@ -434,6 +436,7 @@ export class MinimalChatPage implements OnInit {
 
   /** 모바일 키보드 높이 맞추기용 */
   focus_on_input(force?: number) {
+    this.minimalchat_input.setFocus();
     setTimeout(() => {
       let scrollHeight = this.minimal_chat_log.scrollHeight;
       this.minimal_chat_log.scrollTo({ top: scrollHeight, behavior: 'smooth' });

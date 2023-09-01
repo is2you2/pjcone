@@ -60,7 +60,7 @@ SPDX-License-Identifier: MIT -->
         </ion-button>
       </td>
       <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'custom'" style="width: 100%;">
-        <ion-input type="text" [placeholder]="lang.text['MinimalChat']['input_placeholder']"
+        <ion-input #minimalchat_input id="minimalchat_input" type="text" [placeholder]="lang.text['MinimalChat']['input_placeholder']"
           (ionFocus)="focus_on_input(120)" (keyup.enter)="send()" [(ngModel)]="client.userInput[target].text">
         </ion-input>
       </td>
