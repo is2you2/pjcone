@@ -37,41 +37,38 @@ SPDX-License-Identifier: MIT -->
         </div>
       </td>
     </tr>
+  </table>
+</ion-content>
+
+<ion-footer>
+  <table id="input_table" style="width: 100%;">
     <tr>
-      <td>
-        <div style="width: 100%;">
-          <table id="input_table" style="width: 100%; background-color: var(--chatroom-background);">
-            <tr>
-              <td *ngIf="client.status[target] == 'idle'">
-                <ion-button (click)="join_ranchat()" expand="block">
-                  {{lang.text['MinimalChat']['start_chat']}}
-                </ion-button>
-              </td>
-              <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'unlinked'">
-                <ion-button (click)="join_ranchat()" expand="block" [disabled]="req_refreshed">
-                  {{lang.text['MinimalChat']['new_chat']}}
-                </ion-button>
-              </td>
-              <td
-                *ngIf="client.status[target] == 'unlinked' || client.status[target] == 'idle' || client.status[target] == 'custom'">
-                <ion-button (click)="quit_chat()" expand="block" fill="clear">
-                  <ion-icon name="exit"></ion-icon>
-                </ion-button>
-              </td>
-              <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'custom'" style="width: 100%;">
-                <ion-input type="text" [placeholder]="lang.text['MinimalChat']['input_placeholder']"
-                  (ionFocus)="focus_on_input(120)" (keyup.enter)="send()" [(ngModel)]="client.userInput[target].text">
-                </ion-input>
-              </td>
-              <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'custom'">
-                <ion-button (click)="send()" expand="block" fill="clear">
-                  <ion-icon name="send"></ion-icon>
-                </ion-button>
-              </td>
-            </tr>
-          </table>
-        </div>
+      <td *ngIf="client.status[target] == 'idle'">
+        <ion-button (click)="join_ranchat()" expand="block">
+          {{lang.text['MinimalChat']['start_chat']}}
+        </ion-button>
+      </td>
+      <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'unlinked'">
+        <ion-button (click)="join_ranchat()" expand="block" [disabled]="req_refreshed">
+          {{lang.text['MinimalChat']['new_chat']}}
+        </ion-button>
+      </td>
+      <td
+        *ngIf="client.status[target] == 'unlinked' || client.status[target] == 'idle' || client.status[target] == 'custom'">
+        <ion-button (click)="quit_chat()" expand="block" fill="clear">
+          <ion-icon name="exit"></ion-icon>
+        </ion-button>
+      </td>
+      <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'custom'" style="width: 100%;">
+        <ion-input type="text" [placeholder]="lang.text['MinimalChat']['input_placeholder']"
+          (ionFocus)="focus_on_input(120)" (keyup.enter)="send()" [(ngModel)]="client.userInput[target].text">
+        </ion-input>
+      </td>
+      <td *ngIf="client.status[target] == 'linked' || client.status[target] == 'custom'">
+        <ion-button (click)="send()" expand="block" fill="clear">
+          <ion-icon name="send"></ion-icon>
+        </ion-button>
       </td>
     </tr>
   </table>
-</ion-content>
+</ion-footer>
