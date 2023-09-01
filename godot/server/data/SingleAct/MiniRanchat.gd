@@ -70,6 +70,7 @@ func _connected(id:int, _proto:='EMPTY_PROTO'):
 		counter.maximum = counter.current
 	Root.logging(HEADER, str('Conntected: %s' % counter))
 	var _count:= str('Current:%d' % counter.current).to_utf8()
+	send_to(id, str(id).to_utf8())
 	for user in pid_list:
 		send_to(user, _count)
 	mutex.unlock()
