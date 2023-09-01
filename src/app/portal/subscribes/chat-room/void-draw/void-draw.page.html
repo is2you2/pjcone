@@ -18,24 +18,21 @@ SPDX-License-Identifier: MIT -->
           <tr class="button_panel">
             <td>
               <div class="button_panel button_font" (click)="new_image()">
-                <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start"
-                  name="add"></ion-icon>
+                <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" name="add"></ion-icon>
               </div>
             </td>
             <td>
               <div *ngIf="!is_cropping" class="button_panel button_font" (click)="open_crop_tool()">
-                <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start"
-                  name="crop"></ion-icon>
+                <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" name="crop"></ion-icon>
               </div>
               <div *ngIf="is_cropping" class="button_panel button_font" (click)="apply_crop()">
-                <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start"
+                <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button"
                   name="checkmark-circle-outline"></ion-icon>
               </div>
             </td>
             <td>
               <div class="button_panel button_font" (click)="dismiss_draw()">
-                <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start"
-                  name="checkmark"></ion-icon>
+                <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" name="checkmark"></ion-icon>
               </div>
             </td>
           </tr>
@@ -54,26 +51,25 @@ SPDX-License-Identifier: MIT -->
               <div class="button_panel button_font" (click)="act_history(-1)">
                 <ion-icon
                   [color]="(!global.godot_window || !global.godot_window.current_act || global.godot_window.current_act == 0) ? 'medium' : 'dark'"
-                  class="icon_button" slot="start" name="arrow-undo"></ion-icon>
+                  class="icon_button" name="arrow-undo"></ion-icon>
               </div>
             </td>
             <td>
               <div class="button_panel button_font" (click)="act_history(1)">
                 <ion-icon
                   [color]="(!global.godot_window || global.godot_window.current_act == global.godot_window.draw_length) ? 'medium' : 'dark'"
-                  class="icon_button" slot="start" name="arrow-redo"></ion-icon>
+                  class="icon_button" name="arrow-redo"></ion-icon>
               </div>
             </td>
             <td>
               <div class="button_panel button_font" (click)="change_color()">
-                <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start"
+                <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button"
                   name="color-palette"></ion-icon>
               </div>
             </td>
             <td>
               <div class="button_panel button_font" (click)="change_line_weight()">
-                <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" slot="start"
-                  name="pencil"></ion-icon>
+                <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" name="pencil"></ion-icon>
               </div>
             </td>
           </tr>
