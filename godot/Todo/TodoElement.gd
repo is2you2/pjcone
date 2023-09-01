@@ -110,7 +110,7 @@ func _on_UI_gui_input(event):
 			release_grab_todo()
 	if parent_node.block_panning and event is InputEventMouseMotion:
 		drag_tick = drag_tick + 1
-		if drag_tick > 5:
+		if drag_tick > 15:
 			block_todo_click = true
 			parent_node.grabbed_todo = self
 		translate(event.relative)
