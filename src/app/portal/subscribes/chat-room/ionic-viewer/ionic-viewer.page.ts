@@ -378,6 +378,7 @@ export class IonicViewerPage implements OnInit {
               textArea.setAttribute('style', 'height: 100%; display: block;');
               textArea.textContent = v.join('\n');
               canvasDiv.appendChild(textArea);
+              p['TextArea'] = textArea;
             }, e => {
               console.error('열람할 수 없는 파일: ', e);
               canvasDiv.textContent = '열람할 수 없는 파일입니다.';
@@ -415,6 +416,29 @@ export class IonicViewerPage implements OnInit {
   /** 내장 그림판을 이용하여 그림 편집하기 */
   async modify_image() {
     switch (this.FileInfo['viewer']) {
+      case 'text': // 텍스트를 이미지화하기
+        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+        loading.present();
+        this.image_info['width'] = this.p5canvas['TextArea'].clientWidth;
+        this.image_info['height'] = this.p5canvas['TextArea'].scrollHeight;
+        this.p5canvas.createCanvas(this.image_info['width'], this.image_info['height']);
+        this.p5canvas.textSize(16);
+        this.p5canvas.textWrap(this.p5canvas.WORD);
+        let margin = this.p5canvas.width * .05;
+        this.p5canvas.text(this.p5canvas['TextArea'].textContent,
+          margin, margin, this.p5canvas.width - margin * 2);
+        this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
+          try {
+            loading.dismiss();
+            await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
+              'tmp_files/text_edit/text_copy.png');
+            this.image_info['path'] = 'tmp_files/text_edit/text_copy.png';
+            this.modalCtrl.dismiss(this.image_info);
+          } catch (e) {
+            console.log('파일 저장 오류: ', e);
+          }
+        });
+        break;
       case 'video': // 마지막 프레임 저장하기
         try {
           let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
