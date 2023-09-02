@@ -874,7 +874,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.modalCtrl.create({
               component: VoidDrawPage,
               componentProps: {
-                path: _path,
+                path: v.data.path || _path,
                 width: v.data.width,
                 height: v.data.height,
               },

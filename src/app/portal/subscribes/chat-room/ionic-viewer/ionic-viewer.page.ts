@@ -333,6 +333,8 @@ export class IonicViewerPage implements OnInit {
               canvasDiv.appendChild(mediaObject['elt']);
               mediaObject['elt'].hidden = true;
               setTimeout(() => {
+                this.image_info['width'] = mediaObject['elt']['videoWidth'];
+                this.image_info['height'] = mediaObject['elt']['videoHeight'];
                 ResizeVideo();
                 mediaObject['elt'].hidden = false;
               }, 50);
@@ -411,8 +413,34 @@ export class IonicViewerPage implements OnInit {
   image_info = {};
 
   /** 내장 그림판을 이용하여 그림 편집하기 */
-  modify_image() {
-    this.modalCtrl.dismiss(this.image_info);
+  async modify_image() {
+    switch (this.FileInfo['viewer']) {
+      case 'video': // 마지막 프레임 저장하기
+        try {
+          let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+          loading.present();
+          this.p5canvas['VideoMedia'].pause();
+          this.p5canvas.createCanvas(this.image_info['width'], this.image_info['height']);
+          this.p5canvas.image(this.p5canvas['VideoMedia'], 0, 0, this.image_info['width'], this.image_info['height']);
+          this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
+            try {
+              loading.dismiss();
+              await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
+                'tmp_files/video_edit/frame.png');
+              this.image_info['path'] = 'tmp_files/video_edit/frame.png';
+              this.modalCtrl.dismiss(this.image_info);
+            } catch (e) {
+              console.log('파일 저장 오류: ', e);
+            }
+          });
+        } catch (e) {
+          console.log('재생중인 비디오 이미지 추출 오류: ', e);
+        }
+        break;
+      default:
+        this.modalCtrl.dismiss(this.image_info);
+        break;
+    }
   }
 
   download_file() {
@@ -517,7 +545,9 @@ export class IonicViewerPage implements OnInit {
             await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
               `${this.FileInfo.path}_thumbnail.png`);
             this.global.modulate_thumbnail(this.FileInfo, '');
-          } catch (e) { }
+          } catch (e) {
+            console.log('썸네일 저장 오류: ', e);
+          }
         });
       } catch (e) {
         console.log('작업중 오류보기: ', e);
