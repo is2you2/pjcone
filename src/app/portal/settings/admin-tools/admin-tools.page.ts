@@ -106,7 +106,20 @@ export class AdminToolsPage implements OnInit {
         this.all_users = v.payload as any;
         for (let i = 0, j = this.all_users.length; i < j; i++) {
           this.nakama.save_other_user(this.all_users[i], this.isOfficial, this.target);
-          this.all_users[i] = this.nakama.load_other_user(this.all_users[i].user_id || this.all_users[i].id, this.isOfficial, this.target);
+          let user_id = this.all_users[i].id || this.all_users[i].user_id;
+          this.all_users[i] = this.nakama.load_other_user(user_id, this.isOfficial, this.target);
+          if (typeof this.all_users[i].metadata == 'object') {
+            if (this.all_users[i].metadata.is_manager !== undefined)
+              for (let k = 0, l = this.all_users[i].metadata.is_manager.length; k < l; i++) {
+                if (this.all_users[i].metadata.is_manager === undefined)
+                  break;
+                if (!this.PromotableGroup[user_id])
+                  this.PromotableGroup[user_id] = {};
+                if (!this.PromotableGroup[user_id][this.all_users[i].metadata.is_manager[k]])
+                  this.PromotableGroup[user_id][this.all_users[i].metadata.is_manager[k]] = { promoted: true };
+                else this.PromotableGroup[user_id][this.all_users[i].metadata.is_manager[k]]['promoted'] = true;
+              }
+          }
         }
         this.all_user_page = Math.ceil(this.all_users.length / this.LIST_PAGE_SIZE);
         this.current_user_page = 0;
@@ -116,16 +129,38 @@ export class AdminToolsPage implements OnInit {
       });
   }
 
+  /** 사용자별 승격 가능 그룹  
+   * PromotableGroup[user_id] = { group_ids: { promoted: boolean, name: group_name }, ... };
+   */
+  PromotableGroup = {};
+
   promote_as_manager(userInfo: any) {
     if (typeof userInfo.metadata == 'object') { // 내 정보가 아님, 읽을 수 있음
       let _metadata = userInfo.metadata;
-      _metadata['manager'] = true;
-      this.nakama.servers[this.isOfficial][this.target].client.rpc(
-        this.nakama.servers[this.isOfficial][this.target].session,
-        'update_user_metadata_fn', {
-        user_id: userInfo.user_id || userInfo.id,
-        metadata: _metadata,
-      });
+      let promoted_group = [];
+      let userId = userInfo.id || userInfo.user_id;
+      let keys = Object.keys(this.PromotableGroup[userId]);
+      for (let i = 0, j = keys.length; i < j; i++)
+        if (this.PromotableGroup[userId][keys[i]].promoted)
+          promoted_group.push(keys[i]);
+      if (promoted_group.length)
+        _metadata['is_manager'] = promoted_group;
+      else delete _metadata['is_manager'];
+      try {
+        this.nakama.servers[this.isOfficial][this.target].client.rpc(
+          this.nakama.servers[this.isOfficial][this.target].session,
+          'update_user_metadata_fn', {
+          user_id: userId,
+          metadata: _metadata,
+        });
+        this.p5toast.show({
+          text: this.lang.text['AdminTools']['PromoteAsWell'],
+        });
+      } catch (e) {
+        this.p5toast.show({
+          text: this.lang.text['AdminTools']['PromoteError'],
+        });
+      }
     }
   }
 
@@ -138,11 +173,25 @@ export class AdminToolsPage implements OnInit {
         this.all_groups = v.payload as any;
         for (let i = 0, j = this.all_groups.length; i < j; i++)
           for (let k = 0, l = this.all_groups[i]['users'].length; k < l; k++) {
+            let userId = this.all_groups[i]['users'][k].user.id || this.all_groups[i]['users'][k].user.user_id;
+            let group_id = this.all_groups[i].id || this.all_groups[i].group_id;
+            if (!this.PromotableGroup[userId])
+              this.PromotableGroup[userId] = {};
+            if (!this.PromotableGroup[userId][group_id])
+              this.PromotableGroup[userId][group_id] = {
+                promoted: false
+              };
+            this.PromotableGroup[userId][group_id]['name'] = this.all_groups[i].name;
             if (this.all_groups[i]['users'][k].user.user_id == this.nakama.servers[this.isOfficial][this.target].session.user_id) {
               this.all_groups[i]['users'][k]['is_me'] = true;
               this.all_groups[i]['users'][k].user = this.nakama.users.self;
             } else this.all_groups[i]['users'][k].user = this.nakama.load_other_user(this.all_groups[i]['users'][k].user.user_id, this.isOfficial, this.target);
           }
+        let user_ids = Object.keys(this.PromotableGroup);
+        user_ids.forEach(user_id => {
+          let keys = Object.keys(this.PromotableGroup[user_id]);
+          this.PromotableGroup[user_id]['keys'] = keys;
+        });
         this.all_group_page = Math.ceil(this.all_groups.length / this.LIST_PAGE_SIZE);
         this.current_group_page = 0;
         this.change_group_list_page(1);
