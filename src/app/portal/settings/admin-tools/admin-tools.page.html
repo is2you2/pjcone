@@ -65,7 +65,7 @@
             lang.text['Profile']['noname_user']}}</ion-label>
         </ion-item>
         <ion-list slot="content">
-          <ion-item (click)="copy_id(all_users[i].id)">
+          <ion-item (click)="copy_id(all_users[i].id || all_users[i].user_id)">
             <ion-label color="medium" class="ion-text-center" text-wrap>{{all_users[i].id}}</ion-label>
           </ion-item>
           <ion-item disabled>
@@ -73,7 +73,7 @@
             <ion-label class="ion-text-end">{{all_users[i].lang_tag}}</ion-label>
           </ion-item>
           <ion-accordion-group #PromoteSel *ngIf="PromotableGroup[all_users[i].id || all_users[i].user_id]">
-            <ion-accordion [value]="all_users[i].id">
+            <ion-accordion [value]="all_users[i].id || all_users[i].user_id">
               <ion-item button slot="header">
                 <ion-label>{{lang.text['AdminTools']['promote_as_manager']}}</ion-label>
               </ion-item>

@@ -161,7 +161,9 @@ export class AdminToolsPage implements OnInit {
           text: this.lang.text['AdminTools']['PromoteError'],
         });
       }
-    }
+    } else this.p5toast.show({
+      text: this.lang.text['AdminTools']['AlreadyAdmin'],
+    });
   }
 
   /** 모든 그룹 승격 토글 */
