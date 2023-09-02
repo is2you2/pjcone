@@ -1077,9 +1077,7 @@ export class NakamaService {
                         user_id: this.channels_orig[_is_official][_target][_cid]['redirect']['id'],
                       }]
                     })).objects[0].value['img'];
-                } catch (e) {
-                  console.log('redirect_channel: ', e);
-                }
+                } catch (e) { }
               case 3: // 그룹 채팅
                 this.servers[_is_official][_target].client.listChannelMessages(
                   this.servers[_is_official][_target].session, _cid, 1, false)

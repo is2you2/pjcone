@@ -401,6 +401,7 @@ GroupUserCounter,그룹 인원,Group members
 ForceBreakUp,이 그룹을 해산합니다,Disband this group
 ForceBreaked,그룹 해산됨,Group breakup
 ForceBreakedFailed,그룹 해산 실패,Breakup failed
+promote_as_manager,매니저 권한 부여,Promote as manager
 ## QRCodeGen,,
 AboutQRCodeGen,이 기능에 대해서,About this feature
 UserInput,사용자 입력,User input

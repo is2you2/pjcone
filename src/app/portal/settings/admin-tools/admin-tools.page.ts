@@ -116,6 +116,19 @@ export class AdminToolsPage implements OnInit {
       });
   }
 
+  promote_as_manager(userInfo: any) {
+    if (typeof userInfo.metadata == 'object') { // 내 정보가 아님, 읽을 수 있음
+      let _metadata = userInfo.metadata;
+      _metadata['manager'] = true;
+      this.nakama.servers[this.isOfficial][this.target].client.rpc(
+        this.nakama.servers[this.isOfficial][this.target].session,
+        'update_user_metadata_fn', {
+        user_id: userInfo.user_id || userInfo.id,
+        metadata: _metadata,
+      });
+    }
+  }
+
   refresh_all_groups() {
     this.all_groups.length = 0;
     this.current_group_size.length = 0;
