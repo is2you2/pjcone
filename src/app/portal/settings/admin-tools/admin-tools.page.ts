@@ -164,6 +164,15 @@ export class AdminToolsPage implements OnInit {
     }
   }
 
+  /** 모든 그룹 승격 토글 */
+  promote_toggle_all_group(userInfo: any) {
+    let userId = userInfo.id || userInfo.user_id;
+    this.PromotableGroup[userId]['toggle_log'] = !this.PromotableGroup[userId]['toggle_log'];
+    this.PromotableGroup[userId]['keys'].forEach((group_id: string) => {
+      this.PromotableGroup[userId][group_id]['promoted'] = this.PromotableGroup[userId]['toggle_log'];
+    });
+  }
+
   refresh_all_groups() {
     this.all_groups.length = 0;
     this.current_group_size.length = 0;
