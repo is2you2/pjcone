@@ -663,6 +663,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       return;
     }
     this.userInputTextArea.focus();
+    this.isHidden = true;
     let result: FileInfo = {};
     result['msg'] = this.userInput.text;
     let FileAttach = false;
