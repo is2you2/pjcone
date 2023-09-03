@@ -501,13 +501,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.nakama.servers[value.isOfficial][value.target].session)
         .then(async v => {
           let user_metadata = JSON.parse(v.user.metadata);
+          this.WorkerGroups.length = 0;
+          this.AvailableWorker = {};
           if (user_metadata['is_admin']) {
             // 관리자인 경우 모든 그룹 및 사용자 받기
             let groups = (await this.nakama.servers[value.isOfficial][value.target].client.rpc(
               this.nakama.servers[value.isOfficial][value.target].session,
               'query_all_groups', {})).payload as any[];
-            this.AvailableWorker = {};
-            this.WorkerGroups.length = 0;
             for (let i = 0, j = groups.length; i < j; i++) {
               // 그룹 별 사용자 링크
               if (!this.AvailableWorker[groups[i].id])
@@ -521,13 +521,27 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               // 가용 그룹 표기
               this.WorkerGroups.push({
                 id: groups[i].id,
-                name: groups[i].name
+                name: groups[i].name,
               });
             }
             this.isManager = true;
           } else if (user_metadata['is_manager']) {
             // 매니저인 경우 매니저인 그룹만 사용자 받기
-            console.log('나는 매니저다');
+            for (let i = 0, j = user_metadata['is_manager'].length; i < j; i++) {
+              let group = this.nakama.groups[value.isOfficial][value.target][user_metadata['is_manager'][i]];
+              if (!this.AvailableWorker[group.id])
+                this.AvailableWorker[group.id] = [];
+              for (let k = 0, l = group.users.length; k < l; k++) {
+                let user = this.nakama.load_other_user(group.users[k].user.user_id || group.users[k].user.id,
+                  value.isOfficial, value.target);
+                delete user.todo_checked; // 기존 정보 무시
+                this.AvailableWorker[group.id].push(user);
+              }
+              this.WorkerGroups.push({
+                id: group.id,
+                name: group.name,
+              });
+            }
             this.isManager = true;
           }
         });
