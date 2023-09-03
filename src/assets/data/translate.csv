@@ -42,6 +42,7 @@ needDisplayName,표시명을 작성하여야 합니다.,Display name must be wri
 terminateTodo,이 작업은 되돌릴 수 없습니다.,This action cannot be undone.
 WIP,작업을 완료중입니다...,Work in progress...
 ManageWorker,작업자 관리,Manage workers
+ToggleWorkers,모든 사용자 선택,Select all users
 ## Subscribes,,
 Title,채널,Channels
 has_noties,검토해야할 알림이 있습니다.,There are notifications to review.

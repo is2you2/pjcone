@@ -315,6 +315,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           this.userInput.workers[i]['name'] = this.nakama.load_other_user(this.userInput.workers[i]['id'],
             this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
         } catch (e) { }
+      this.isWorkerDone();
     }
   }
 
@@ -547,6 +548,22 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         });
     }
   }
+
+  /** 전체 토글 기록용 */
+  toggle_logs = {};
+  /** 이 그룹 내 모든 사용자 토글 */
+  toggle_all_user(group_id: string) {
+    this.toggle_logs[group_id] = !this.toggle_logs[group_id];
+    for (let i = 0, j = this.AvailableWorker[group_id].length; i < j; i++)
+      this.AvailableWorker[group_id][i]['todo_checked'] = this.toggle_logs[group_id];
+  }
+
+  worker_done = 0;
+  /** 작업자 작업 여부 변경됨 */
+  isWorkerDone() {
+    console.log('작업자 완료 여부를 검토하여 worker_done에 반영하기');
+  }
+
   @ViewChild('ImporantSel') ImporantSel: any;
   ImporantSelClicked() {
     this.ImporantSel.open();
