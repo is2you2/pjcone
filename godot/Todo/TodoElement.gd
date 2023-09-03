@@ -84,8 +84,9 @@ func _on_UI_gui_input(event):
 		if event.pressed:
 			parent_node.block_panning = true
 			mode = RigidBody2D.MODE_STATIC
-		if not event.pressed and event.button_index == 1:
-			if ($CollisionShape2D/Node2D/UI.rect_size / 2).distance_to(event.position) <= $CollisionShape2D.shape.radius and not block_todo_click:
+		if not event.pressed:
+			release_grab_todo()
+			if event.button_index == 1 and ($CollisionShape2D/Node2D/UI.rect_size / 2).distance_to(event.position) <= $CollisionShape2D.shape.radius and not block_todo_click:
 				if OS.has_feature('JavaScript'): # 웹에서 사용됨
 					if info.has('id'): # 생성된 할 일 정보
 						window.add_todo_menu(JSON.print(info))
@@ -107,7 +108,6 @@ func _on_UI_gui_input(event):
 							'remote': null,
 							'attach': {},
 						})])
-			release_grab_todo()
 	if parent_node.block_panning and event is InputEventMouseMotion:
 		drag_tick = drag_tick + 1
 		if drag_tick > 15:
