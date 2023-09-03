@@ -86,6 +86,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     limit: undefined,
     /** 사용자 지정 할 일 색상 */
     custom_color: undefined,
+    /** 등록된 작업자 */
+    workers: undefined as any[],
     /** 일의 중요도, 가시화 기한의 색상에 영향을 줌 */
     importance: '0',
     /** 상세 내용 */
@@ -98,12 +100,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     attach: [] as FileInfo[],
     /** 이 업무는 완료되었습니다, 완료 후에도 변경될 수 있음 */
     done: undefined,
-    /** 책임자 id  
-     * remote 정보인 경우 uid, local 정보인 경우 이 정보를 무시 (undefined 로 변경)
-     */
-    manager: undefined,
-    /** 보여지는 책임자 이름 */
-    display_manager: undefined,
     /** 업무 집중 여부 */
     is_focus: undefined,
     /** 알림 아이디 저장 */
@@ -275,14 +271,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           this.StoreAt.value = this.userInput.storeAt;
         this.userInput.display_store = this.lang.text['TodoDetail']['OnThisDevice'];
         this.userInput.display_creator = this.lang.text['TodoDetail']['WrittenByMe'];
-        this.userInput.display_manager = this.lang.text['TodoDetail']['WrittenByMe'];
         this.isModifiable = true;
       } else if (this.userInput.remote) {
         if (!this.isModify)
           this.StoreAt.value = this.userInput.remote;
         this.userInput.display_store = this.userInput.remote.name;
         this.userInput.display_creator = this.lang.text['TodoDetail']['Disconnected'];
-        this.userInput.display_manager = this.lang.text['TodoDetail']['Disconnected'];
         if (!this.nakama.servers[this.userInput.remote.isOfficial] || !this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]) {
           this.userInput.display_creator = this.lang.text['TodoDetail']['DeletedServer'];
           throw { text: 'Server Deleted', isModifiable: true };
@@ -295,8 +289,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.AmICreator =
           this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id == this.userInput.remote.creator_id;
         this.userInput.display_creator = this.AmICreator ? this.lang.text['TodoDetail']['WrittenByMe'] : this.nakama.load_other_user(this.userInput.remote.creator_id, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
-        let AmIManager = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id == this.userInput.manager;
-        this.userInput.display_manager = AmIManager ? this.nakama.users.self['display_name'] : this.nakama.load_other_user(this.userInput.manager, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
         if (this.userInput.remote.group_id)
           this.isModifiable = this.nakama.groups[this.userInput.remote.isOfficial][this.userInput.remote.target][this.userInput.remote.group_id]['status'] == 'online';
       }
@@ -317,6 +309,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.limitDisplay = date_limit.toLocaleString(this.lang.lang);
     this.limitDisplay = this.limitDisplay.substring(0, this.limitDisplay.lastIndexOf(':'));
     this.isLimitChangable = true;
+    if (this.userInput.workers) { // 작업자 이름 동기화 시도
+      for (let i = 0, j = this.userInput.workers.length; i < j; i++)
+        try {
+          this.userInput.workers[i]['name'] = this.nakama.load_other_user(this.userInput.workers[i]['id'],
+            this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
+        } catch (e) { }
+    }
   }
 
   ionViewDidEnter() {
@@ -480,16 +479,58 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   StoreAtSelClicked() {
     this.StoreAt.open();
   }
-  /** 중요도 변경됨 */
+
+  isManager = false;
+  /** 가용 작업자 */
+  AvailableWorker = {};
+  /** 가용 작업자 그룹 (구분용) */
+  WorkerGroups = [];
+  /** 저장소 변경됨 */
   StoreAtSelChanged(ev: any) {
     let value: any = ev.detail.value;
     if (value == 'local') {
       this.userInput.storeAt = 'local';
       this.userInput.remote = undefined;
-      this.userInput.manager = undefined;
+      this.isManager = false;
+      this.userInput.workers = undefined;
     } else {
       this.userInput.storeAt = value.type;
       this.userInput.remote = value;
+      this.userInput.workers = [];
+      this.nakama.servers[value.isOfficial][value.target].client.getAccount(
+        this.nakama.servers[value.isOfficial][value.target].session)
+        .then(async v => {
+          let user_metadata = JSON.parse(v.user.metadata);
+          if (user_metadata['is_admin']) {
+            // 관리자인 경우 모든 그룹 및 사용자 받기
+            let groups = (await this.nakama.servers[value.isOfficial][value.target].client.rpc(
+              this.nakama.servers[value.isOfficial][value.target].session,
+              'query_all_groups', {})).payload as any[];
+            this.AvailableWorker = {};
+            this.WorkerGroups.length = 0;
+            for (let i = 0, j = groups.length; i < j; i++) {
+              // 그룹 별 사용자 링크
+              if (!this.AvailableWorker[groups[i].id])
+                this.AvailableWorker[groups[i].id] = [];
+              for (let k = 0, l = groups[i].users.length; k < l; k++) {
+                let user = this.nakama.load_other_user(groups[i].users[k].user.user_id,
+                  value.isOfficial, value.target);
+                delete user.todo_checked; // 기존 정보 무시
+                this.AvailableWorker[groups[i].id].push(user);
+              }
+              // 가용 그룹 표기
+              this.WorkerGroups.push({
+                id: groups[i].id,
+                name: groups[i].name
+              });
+            }
+            this.isManager = true;
+          } else if (user_metadata['is_manager']) {
+            // 매니저인 경우 매니저인 그룹만 사용자 받기
+            console.log('나는 매니저다');
+            this.isManager = true;
+          }
+        });
     }
   }
   @ViewChild('ImporantSel') ImporantSel: any;
@@ -685,16 +726,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.deleteFromStorage(false);
   }
 
-  /** 다른 사람에게 일을 부탁합니다 */
-  moveTodo() {
-    console.warn('업무 이관 행동 필요');
-  }
-
-  /** 이 일을 집중적으로 하고 있음을 알립니다 */
-  focusTodo() {
-    console.warn('업무 집중 행동 필요... 집중 말고 다른게 필요');
-  }
-
   isButtonClicked = false;
   /** 이 해야할 일 정보를 저장 */
   async saveData() {
@@ -707,7 +738,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.isButtonClicked = true;
     let has_attach = Boolean(this.userInput.attach.length);
     delete this.userInput.display_store;
-    delete this.userInput.display_manager;
     delete this.userInput.display_creator;
     // 들어올 때와 같은지 검토
     let exactly_same = JSON.stringify(this.userInput) == this.received_data;
@@ -734,6 +764,24 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.nakama.set_todo_notification(this.userInput);
     let received_json = this.received_data ? JSON.parse(this.received_data) : undefined;
     let attach_changed = false;
+    if (this.userInput.workers) { // 작업자 지정처리
+      this.userInput.workers.length = 0;
+      let keys = Object.keys(this.AvailableWorker);
+      let check_duplicate = [];
+      for (let i = 0, j = keys.length; i < j; i++)
+        for (let k = 0, l = this.AvailableWorker[keys[i]].length; k < l; k++) {
+          let target_id = this.AvailableWorker[keys[i]][k].id || this.AvailableWorker[keys[i]][k].user_id;
+          if (this.AvailableWorker[keys[i]][k].todo_checked && !check_duplicate.includes(target_id)) {
+            this.userInput.workers.push({
+              id: target_id,
+              name: this.nakama.load_other_user(target_id, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'],
+            });
+            check_duplicate.push(target_id);
+          }
+        }
+      if (!this.userInput.workers.length) // 없는 정보라면 무시
+        this.userInput.workers = undefined;
+    }
     { // 첨부파일의 변경사항 여부 확인
       try {
         received_json.attach.forEach(attach => {
@@ -844,10 +892,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
     this.userInput.limit = new Date(this.userInput.limit).getTime();
     if (!this.isModify) { // 새로 만들 때
-      if (this.userInput.remote && !this.userInput.remote.creator_id) { // 원격 생성이면서 최초 생성
+      if (this.userInput.remote && !this.userInput.remote.creator_id) // 원격 생성이면서 최초 생성
         this.userInput.remote.creator_id = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id;
-        this.userInput.manager = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id;
-      }
     }
     if (this.userInput.remote) { // 서버에 저장한다면
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
@@ -866,7 +912,15 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           delete file['exist'];
           delete file['base64'];
         });
-        await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
+        if (this.userInput.workers) {
+          console.log('작업자용 rpc 사용 필요');
+          await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
+            this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]).then(async v => {
+              await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+                .socket.sendMatchState(this.nakama.self_match[this.userInput.remote.isOfficial][this.userInput.remote.target].match_id, MatchOpCode.ADD_TODO,
+                  encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
+            });
+        } else await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
           this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]).then(async v => {
             await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
               .socket.sendMatchState(this.nakama.self_match[this.userInput.remote.isOfficial][this.userInput.remote.target].match_id, MatchOpCode.ADD_TODO,

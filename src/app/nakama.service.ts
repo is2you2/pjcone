@@ -880,6 +880,9 @@ export class NakamaService {
     if (userInfo['id'] == this.servers[_is_official][_target].session.user_id) return;
     delete copied['img'];
     delete copied['online'];
+    // 할 일 업무 분배 보조 자료
+    delete copied['todo_checked'];
+    delete copied['todo_done'];
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
     if (!this.users[_is_official][_target][userInfo['id']]) this.users[_is_official][_target][userInfo['id']] = {};
     let keys = Object.keys(userInfo);
