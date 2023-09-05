@@ -636,7 +636,7 @@ export class NakamaService {
               this.servers[_is_official][_target].session, [{
                 collection: 'self_share',
                 key: 'private_match',
-                permission_read: 1,
+                permission_read: 2,
                 permission_write: 1,
                 value: { match_id: v.match_id },
               }],
