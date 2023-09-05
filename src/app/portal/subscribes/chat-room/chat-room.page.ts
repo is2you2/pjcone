@@ -410,7 +410,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.info['is_new'] = false;
           this.nakama.has_new_channel_msg = false;
           let scrollHeight = this.ChatLogs.scrollHeight;
-          if (scrollHeight < this.ChatLogs.scrollTop + this.ChatLogs.clientHeight + (scrollHeight * .12)) {
+          if (scrollHeight < this.ChatLogs.scrollTop + this.ChatLogs.clientHeight + 120) {
             this.init_last_message_viewer();
             this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
           } else {
@@ -621,7 +621,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 확장 메뉴 숨기기 */
   make_ext_hidden() {
     let scrollHeight = this.ChatLogs.scrollHeight;
-    if (scrollHeight < this.ChatLogs.scrollTop + this.ChatLogs.clientHeight + 240) {
+    if (scrollHeight < this.ChatLogs.scrollTop + this.ChatLogs.clientHeight + 120) {
       this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
       setTimeout(() => {
         this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
