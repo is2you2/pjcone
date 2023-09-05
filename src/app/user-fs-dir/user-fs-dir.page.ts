@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { AlertController, IonAccordionGroup, LoadingController, ModalController } from '@ionic/angular';
+import { AlertController, IonAccordionGroup, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { isPlatform } from '../app.component';
 import { GlobalActService } from '../global-act.service';
 import { IndexedDBService } from '../indexed-db.service';
@@ -55,17 +55,27 @@ export class UserFsDirPage implements OnInit {
     private alertCtrl: AlertController,
     private sanitizer: DomSanitizer,
     private file: File,
+    private navCtrl: NavController,
   ) { }
 
   is_ready = false;
 
   ngOnInit() { }
 
+  initLoadingElement: HTMLIonLoadingElement;
+
   EventListenerAct = (ev: any) => {
     ev.detail.register(110, (processNextHandler: any) => {
-      if (this.CurrentDir == '' && this.is_ready) {
-        processNextHandler();
-      } else this.MoveToUpDir();
+      if (this.is_ready) {
+        if (this.CurrentDir == '') {
+          processNextHandler();
+        } else this.MoveToUpDir();
+      } else {
+        this.initLoadingElement.dismiss();
+        if (this.modalCtrl['injector']['source'] != 'UserFsDirPageModule')
+          this.modalCtrl.dismiss();
+        else this.navCtrl.back();
+      }
     });
   }
 
@@ -79,8 +89,8 @@ export class UserFsDirPage implements OnInit {
 
   /** 폴더를 선택했을 때 */
   async LoadAllIndexedFiles() {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });
-    loading.present();
+    this.initLoadingElement = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });
+    this.initLoadingElement.present();
     this.DirList.length = 0;
     this.FileList.length = 0;
     await this.indexed.GetFileListFromDB('/', async (_list) => {
@@ -123,7 +133,7 @@ export class UserFsDirPage implements OnInit {
         if (a.path < b.path) return -1;
         return 0;
       });
-      loading.dismiss();
+      this.initLoadingElement.dismiss();
       this.is_ready = true;
     });
   }
