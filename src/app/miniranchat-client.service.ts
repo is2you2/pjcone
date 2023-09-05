@@ -28,12 +28,16 @@ export class MiniranchatClientService {
       logs: [],
       /** 작성 텍스트 */
       text: '',
+      /** 마지막 메시지 썸네일 구성 */
+      last_message: {},
     },
     'community_ranchat': {
       /** 채팅, 로그 등 대화창에 표기되는 모든 것 */
       logs: [],
       /** 작성 텍스트 */
       text: '',
+      /** 마지막 메시지 썸네일 구성 */
+      last_message: {},
     },
   }
 

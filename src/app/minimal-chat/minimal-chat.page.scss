@@ -14,3 +14,15 @@ p {
 .default_text {
     color: var(--miniranchat-default-text);
 }
+
+.bottom_thumbnail {
+    width: 100%;
+    max-width: 100vw;
+    height: fit-content;
+    max-height: 96px;
+    transform: translateY(-100%);
+    position: absolute;
+    background: var(--chatroom-last-msg-viewer-bg);
+    padding: 8px;
+    overflow: hidden;
+}
