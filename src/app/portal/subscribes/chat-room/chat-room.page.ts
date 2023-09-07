@@ -80,7 +80,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       loading.present();
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
       if (this.info['redirect']['type'] == 3)
-        await this.nakama.remove_group_list(this.nakama.groups[this.isOfficial][this.target][this.info['group_id']], this.isOfficial, this.target);
+        await this.nakama.remove_group_list(
+          this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target);
       try {
         delete this.nakama.groups[this.isOfficial][this.target][this.info['group_id']];
       } catch (e) {

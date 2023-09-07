@@ -198,6 +198,33 @@ export class IndexedDBService {
     });
   }
 
+  /**
+   * 파일 정보로 저장하기
+   * @param file GetFileInfoFromDB 로 받은 파일/폴더 정보
+   * @param path 저장될 상대 경로(user://~)
+   */
+  saveFileToUserPath(file: any, path: string, _CallBack = (_v: any) => { }): Promise<any> {
+    if (!this.db) {
+      setTimeout(() => {
+        this.saveFileToUserPath(file, path, _CallBack)
+      }, 1000);
+      return;
+    };
+    this.createRecursiveDirectory(path);
+    return new Promise((done, error) => {
+      let put = this.db.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put(file, `/userfs/${path}`);
+      put.onsuccess = (ev) => {
+        if (ev.type != 'success')
+          console.error('저장 실패: ', path);
+        _CallBack(ev);
+        done(ev);
+      }
+      put.onerror = (e) => {
+        error(e);
+      }
+    });
+  }
+
   /** 파일이 있는지 검토 */
   checkIfFileExist(path: string, _CallBack = (_b: boolean) => { }): Promise<boolean> {
     if (!this.db) {

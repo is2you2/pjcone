@@ -676,7 +676,7 @@ export class NakamaService {
   async load_groups(_is_official: string, _target: string, _gid: string) {
     // 온라인이라면 서버정보로 덮어쓰기
     let channel_id = this.groups[_is_official][_target][_gid]['channel_id'];
-    if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+    try {
       if (this.groups[_is_official][_target][_gid]['status'] != 'missing')
         await this.servers[_is_official][_target].client.listGroupUsers(
           this.servers[_is_official][_target].session, _gid
@@ -742,7 +742,7 @@ export class NakamaService {
           });
           this.save_groups_with_less_info();
         });
-    }
+    } catch (e) { }
   }
 
   /** 이 서버 내 나와 접촉한 모든 사용자 정보 업데이트 */
@@ -766,6 +766,7 @@ export class NakamaService {
    */
   users = {
     self: {},
+    deleted: {},
     official: {},
     unofficial: {},
   };
@@ -1351,12 +1352,14 @@ export class NakamaService {
             for (let i = 0, j = copied_group[_is_official][_target][_gid]['users'].length; i < j; i++) {
               if (copied_group[_is_official][_target][_gid]['users'][i]) {
                 delete copied_group[_is_official][_target][_gid]['users'][i]['state'];
-                if (copied_group[_is_official][_target][_gid]['users'][i]['user']['id']) {
-                  copied_group[_is_official][_target][_gid]['users'][i]['user'] = { id: copied_group[_is_official][_target][_gid]['users'][i]['user']['id'] };
-                  if (this.servers[_is_official][_target] && this.servers[_is_official][_target].session
-                    && copied_group[_is_official][_target][_gid]['users'][i]['user']['id'] == this.servers[_is_official][_target].session.user_id)
-                    copied_group[_is_official][_target][_gid]['users'][i]['is_me'] = true;
-                } else if (!copied_group[_is_official][_target][_gid]['users'][i]['is_me']) copied_group[_is_official][_target][_gid]['users'].splice(i, 1);
+                try { // 삭제된 그룹에서 발생하는 오류 무시용
+                  if (copied_group[_is_official][_target][_gid]['users'][i]['user']['id']) {
+                    copied_group[_is_official][_target][_gid]['users'][i]['user'] = { id: copied_group[_is_official][_target][_gid]['users'][i]['user']['id'] };
+                    if (this.servers[_is_official][_target] && this.servers[_is_official][_target].session
+                      && copied_group[_is_official][_target][_gid]['users'][i]['user']['id'] == this.servers[_is_official][_target].session.user_id)
+                      copied_group[_is_official][_target][_gid]['users'][i]['is_me'] = true;
+                  } else if (!copied_group[_is_official][_target][_gid]['users'][i]['is_me']) copied_group[_is_official][_target][_gid]['users'].splice(i, 1);
+                } catch (e) { }
               }
             }
         });
@@ -1404,13 +1407,14 @@ export class NakamaService {
 
   /** 그룹 내에서 사용했던 서버 파일들 전부 삭제 */
   async remove_channel_files(_is_official: string, _target: string, channel_id: string, is_creator?: boolean) {
-    if (this.statusBar.groupServer[_is_official][_target] == 'online')
+    try {
       await this.servers[_is_official][_target].client.rpc(
         this.servers[_is_official][_target].session,
         'remove_channel_file', {
         collection: `file_${channel_id.replace(/[.]/g, '_')}`,
         is_creator: is_creator,
       });
+    } catch (error) { }
   }
 
   /** 연결된 서버에서 자신이 참여한 그룹을 리모트에서 가져오기  
@@ -1473,12 +1477,14 @@ export class NakamaService {
       Target.forEach(_target => {
         let groupId = Object.keys(this.groups[_is_official][_target])
         groupId.forEach(_gid => {
-          if (this.servers[_is_official][_target])
+          try {
             this.groups[_is_official][_target][_gid]['server'] = this.servers[_is_official][_target].info;
-          else this.groups[_is_official][_target][_gid]['server'] = {
-            name: this.lang.text['Nakama']['DeletedServer'],
-            isOfficial: _is_official,
-            target: _target,
+          } catch (e) {
+            this.groups[_is_official][_target][_gid]['server'] = {
+              name: this.lang.text['Nakama']['DeletedServer'],
+              isOfficial: _is_official,
+              target: _target,
+            }
           }
           result.push(this.groups[_is_official][_target][_gid]);
         });
@@ -1555,56 +1561,67 @@ export class NakamaService {
         text: this.lang.text['GroupServer']['DeleteAccountSucc'],
       });
     } catch (e) {
-      console.log('remove_server: ', e);
+      console.log('remove_server_err: ', e);
       this.p5toast.show({
         text: this.lang.text['GroupServer']['DeleteAccountFailed'],
       });
     }
     // 로그인 상태일 경우 로그오프처리
     if (this.statusBar.groupServer[_is_official][_target] == 'online') {
-      if (!this.on_socket_disconnected['group_remove_by_user'])
-        this.on_socket_disconnected['group_remove_by_user'] = () => {
-          this.set_group_statusBar('offline', _is_official, _target);
-          delete this.statusBar.groupServer[_is_official][_target];
-        }
-      await this.servers[_is_official][_target].client.sessionLogout(
-        this.servers[_is_official][_target].session,
-        this.servers[_is_official][_target].session.token,
-        this.servers[_is_official][_target].session.refresh_token,
-      )
-      if (this.servers[_is_official][_target].socket)
-        this.servers[_is_official][_target].socket.disconnect(true);
+      try {
+        await this.servers[_is_official][_target].client.sessionLogout(
+          this.servers[_is_official][_target].session,
+          this.servers[_is_official][_target].session.token,
+          this.servers[_is_official][_target].session.refresh_token,
+        )
+      } catch (e) { }
+      try {
+        if (this.servers[_is_official][_target].socket)
+          this.servers[_is_official][_target].socket.disconnect(true);
+      } catch (e) { }
     }
     // 알림정보 삭제
-    if (this.noti_origin[_is_official] && this.noti_origin[_is_official][_target])
+    try {
       delete this.noti_origin[_is_official][_target];
+    } catch (e) { }
     this.rearrange_notifications();
     // 예하 채널들 손상처리
-    if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
+    try {
       let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
+      if (!this.channels_orig['deleted']) this.channels_orig['deleted'] = {};
+      if (!this.channels_orig['deleted'][_target]) this.channels_orig['deleted'][_target] = {};
       channel_ids.forEach(_cid => {
+        this.channels_orig[_is_official][_target][_cid]['info']['status'] = 'missing';
         this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
+        this.channels_orig['deleted'][_target][_cid] = JSON.parse(JSON.stringify(this.channels_orig[_is_official][_target][_cid]));
       });
-    }
-    // 예하 사용자 정보에서 이미지 삭제
-    if (this.users[_is_official][_target]) {
-      this.indexed.GetFileListFromDB(`servers/${_is_official}/${_target}/users/`, (list) => {
-        for (let i = 0, j = list.length; i < j; i++)
-          if (list[i].indexOf('profile.img') >= 0)
-            this.indexed.removeFileFromUserPath(list[i]);
-      });
-    }
+      delete this.channels_orig[_is_official][_target];
+    } catch (e) { }
     this.rearrange_channels();
-    // 예하 그룹들 손상처리
-    if (this.groups[_is_official][_target]) {
-      let group_ids = Object.keys(this.groups[_is_official][_target]);
-      group_ids.forEach(_gid => {
-        this.groups[_is_official][_target][_gid]['status'] = 'missing';
-      });
+    // 관련 파일들 전부 이관
+    let list = await this.indexed.GetFileListFromDB(`servers/unofficial/${_target}`);
+    for (let i = 0, j = list.length; i < j; i++) {
+      let file = await this.indexed.GetFileInfoFromDB(list[i]);
+      await this.indexed.saveFileToUserPath(file, list[i].replace('/official/', '/deleted/').replace('/unofficial/', '/deleted/'));
+      await this.indexed.removeFileFromUserPath(list[i]);
     }
-    delete this.servers[_is_official][_target];
+    // 예하 그룹들 손상처리
+    try {
+      if (!this.groups['deleted']) this.groups['deleted'] = {};
+      if (!this.groups['deleted'][_target]) this.groups['deleted'][_target] = {};
+      let group_ids = Object.keys(this.groups['deleted'][_target]);
+      group_ids.forEach(_gid => {
+        this.groups['deleted'][_target][_gid]['server']['name'] = this.lang.text['Nakama']['DeletedServer'];
+        this.groups['deleted'][_target][_gid]['server']['isOfficial'] = 'deleted';
+        this.groups['deleted'][_target][_gid]['status'] = 'missing';
+        this.groups['deleted'][_target][_gid] = JSON.parse(JSON.stringify(this.groups[_is_official][_target][_gid]));
+      });
+      delete this.groups[_is_official][_target];
+    } catch (e) { }
     // 그룹서버 정리
+    this.set_group_statusBar('offline', _is_official, _target);
     delete this.statusBar.groupServer[_is_official][_target];
+    delete this.servers[_is_official][_target];
     this.save_groups_with_less_info();
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
     // 파일로부터 일치하는 정보 삭제
@@ -2146,11 +2163,11 @@ export class NakamaService {
   modulation_channel_message(c: ChannelMessage, _is_official: string, _target: string) {
     this.translate_updates(c);
     let is_me = false;
-    if (this.statusBar.groupServer[_is_official][_target]
-      && this.statusBar.groupServer[_is_official][_target] != 'offline'
-      && this.statusBar.groupServer[_is_official][_target] != 'missing')
+    try {
       is_me = c.sender_id == this.servers[_is_official][_target].session.user_id;
-    else is_me = c.content['user_update'];
+    } catch (error) {
+      is_me = c.content['user_update'];
+    }
     let target = is_me ? this.users.self : this.load_other_user(c.sender_id, _is_official, _target);
     switch (c.code) {
       case 0: // 사용자가 작성한 일반적인 메시지
