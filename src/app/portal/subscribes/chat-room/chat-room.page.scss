@@ -126,11 +126,8 @@
     max-width: 100vw;
     height: fit-content;
     max-height: 96px;
-    transform: translateY(-100%);
-    position: relative;
-    background: var(--chatroom-last-msg-viewer-bg);
-    padding: 8px;
     overflow: hidden;
+    padding: 8px;
 }
 
 .image_thumbnail {
@@ -140,6 +137,16 @@
     object-fit: contain;
     display: block;
     margin: auto;
+    padding: 8px;
+}
+
+.thumnails {
+    width: 100%;
+    height: fit-content;
+    position: relative;
+    transform: translateY(-100%);
+    background: var(--chatroom-last-msg-viewer-bg);
+    padding: 8px;
 }
 
 .transfer_count {

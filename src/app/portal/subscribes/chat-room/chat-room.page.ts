@@ -246,7 +246,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   next_cursor = '';
   /** 최근으로 가는 커서 */
   prev_cursor = '';
-  send_thumbnail: HTMLElement;
   file_sel_id = 'file_sel_id';
   ChatLogs: HTMLElement;
 
@@ -394,7 +393,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       default:
         break;
     }
-    this.send_thumbnail = document.getElementById('send_thumbnail');
     // 실시간 채팅을 받는 경우 행동처리
     if (this.nakama.channels_orig[this.isOfficial][this.target] &&
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])

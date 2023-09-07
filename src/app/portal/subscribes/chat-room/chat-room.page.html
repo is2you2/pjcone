@@ -94,33 +94,38 @@ SPDX-License-Identifier: MIT -->
             <ion-label>{{lang.text['ChatRoom']['fetch_next_chat']}}</ion-label>
           </ion-item>
         </div>
-        <div [hidden]="!userInput.file" id="send_thumbnail">
-          <div *ngIf="userInput.file" (click)="removeAttach()">
-            <div style="text-align: center; "> {{userInput.file['filename']}} </div>
-            <div *ngIf="userInput.file['thumbnail']">
-              <img id="ChatroomSelectedImage" *ngIf="userInput.file['typeheader'] == 'image'" class="image_thumbnail"
-                [src]="userInput.file['thumbnail']" [alt]="userInput.file['name']">
-              <div *ngIf="userInput.file['typeheader'] == 'text'" style="display: grid;">
-                <span *ngFor="let line of userInput.file['thumbnail']">
-                  {{line}}
-                </span>
+        <table class="thumnails">
+          <tr *ngIf="userInput.file">
+            <td>
+              <div *ngIf="userInput.file" (click)="removeAttach()">
+                <div style="text-align: center; "> {{userInput.file['filename']}} </div>
+                <div *ngIf="userInput.file['thumbnail']">
+                  <img id="ChatroomSelectedImage" *ngIf="userInput.file['typeheader'] == 'image'"
+                    class="image_thumbnail" [src]="userInput.file['thumbnail']" [alt]="userInput.file['name']">
+                  <div *ngIf="userInput.file['typeheader'] == 'text'" style="display: grid;">
+                    <span *ngFor="let line of userInput.file['thumbnail']">
+                      {{line}}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-        <div *ngIf="!userInput.file && last_message_viewer.user_id" class="bottom_thumbnail"
-          (click)="scroll_down_logs()">
-          <span [style]="'margin-right: 8px; color: #' + last_message_viewer.color">
-            <b>{{(last_message_viewer.is_me ? nakama.users.self['display_name'] :
-              nakama.users[isOfficial][target][last_message_viewer.user_id].display_name)
-              || lang.text['Profile']['noname_user']}}</b></span>
-          <span *ngFor="let line of last_message_viewer.message">
-            <span *ngFor="let part of line">
-              <span *ngIf="!part.href"> {{part.text}} </span>
-              <a *ngIf="part.href" [href]="part.text" target="_system">{{part.text}}</a>
-            </span>
-          </span>
-        </div>
+            </td>
+          </tr>
+          <tr *ngIf="last_message_viewer.user_id" (click)="scroll_down_logs()">
+            <td class="bottom_thumbnail">
+              <span [style]="'margin-right: 8px; color: #' + last_message_viewer.color">
+                <b>{{(last_message_viewer.is_me ? nakama.users.self['display_name'] :
+                  nakama.users[isOfficial][target][last_message_viewer.user_id].display_name)
+                  || lang.text['Profile']['noname_user']}}</b></span>
+              <span *ngFor="let line of last_message_viewer.message">
+                <span *ngFor="let part of line">
+                  <span *ngIf="!part.href"> {{part.text}} </span>
+                  <a *ngIf="part.href" [href]="part.text" target="_system">{{part.text}}</a>
+                </span>
+              </span>
+            </td>
+          </tr>
+        </table>
       </td>
     </tr>
     <tr>
