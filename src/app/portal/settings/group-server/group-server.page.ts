@@ -207,9 +207,6 @@ export class GroupServerPage implements OnInit {
   async ionViewWillLeave() {
     if (this.nakama.on_socket_disconnected['group_unlink_by_user'])
       delete this.nakama.on_socket_disconnected['group_unlink_by_user'];
-    if (this.nakama.on_socket_disconnected['group_remove_by_user'])
-      delete this.nakama.on_socket_disconnected['group_remove_by_user'];
-
     delete this.nakama.socket_reactive['profile'];
     delete this.nakama.socket_reactive['self_profile_content_update'];
     let keys = Object.keys(this.nakama.users.self);

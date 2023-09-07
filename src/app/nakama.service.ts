@@ -333,7 +333,8 @@ export class NakamaService {
         let Targets = Object.keys(this.statusBar.groupServer[_is_official]);
         Targets.forEach(async _target => {
           if (this.statusBar.groupServer[_is_official][_target] == 'online') {
-            this.statusBar.groupServer[_is_official][_target] = 'pending';
+            if (this.statusBar.groupServer[_is_official][_target])
+              this.statusBar.groupServer[_is_official][_target] = 'pending';
             this.catch_group_server_header('pending');
             if (this.servers[_is_official][_target].session)
               await this.servers[_is_official][_target].client.sessionLogout(
@@ -1490,7 +1491,8 @@ export class NakamaService {
 
   /** 그룹 서버 및 설정-그룹서버의 상태 조정 */
   set_group_statusBar(_status: 'offline' | 'missing' | 'pending' | 'online' | 'certified', _is_official: string, _target: string) {
-    this.statusBar.groupServer[_is_official][_target] = _status;
+    if (this.statusBar.groupServer[_is_official][_target])
+      this.statusBar.groupServer[_is_official][_target] = _status;
     this.catch_group_server_header(_status);
   }
 
