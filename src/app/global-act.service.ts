@@ -426,9 +426,7 @@ export class GlobalActService {
           setTimeout(() => {
             URL.revokeObjectURL(FileURL);
           }, 0);
-        } catch (e) {
-          console.log('modulate_thumbnail: ', e);
-        }
+        } catch (e) { }
         if (ObjectURL) URL.revokeObjectURL(ObjectURL);
         break;
     }

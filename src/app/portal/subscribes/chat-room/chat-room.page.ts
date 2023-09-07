@@ -419,7 +419,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
         }, 0);
       }
-    if (this.info['status'] == 'missing') {
+    if (this.info['status'] === undefined || this.info['status'] == 'missing') {
       this.extended_buttons.forEach(button => {
         button.isHide = true;
       });
@@ -505,7 +505,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.pullable = false;
     if (isHistory) {
       try {
-        if (this.info['status'] == 'missing') throw 'Channel missing';
+        if (this.info['status'] === undefined || this.info['status'] == 'missing') throw 'Channel missing';
         await this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
           this.nakama.servers[this.isOfficial][this.target].session,
           this.info['id'], 15, false, this.next_cursor).then(v => {

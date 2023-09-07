@@ -836,9 +836,7 @@ export class NakamaService {
                   });
                 }
               });
-          } catch (e) {
-            console.log('사용자 불러오기 실패: ', e);
-          }
+          } catch (e) { }
         }
       });
       if (!this.users[_is_official][_target][userId]['img']) {
@@ -874,9 +872,7 @@ export class NakamaService {
                     this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
                   }
                 });
-            } catch (e) {
-              console.log('사용자 이미지 불러오기 실패: ', e);
-            }
+            } catch (e) { }
         });
       } else this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
     }
