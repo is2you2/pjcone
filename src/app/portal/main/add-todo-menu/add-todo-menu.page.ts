@@ -252,7 +252,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
             loading.present();
             blob = await this.nakama.sync_load_file(this.userInput.attach[i],
-              this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
+              this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id);
             loading.dismiss();
           } else if (this.userInput.attach[i].viewer == 'image' || this.userInput.attach[i].viewer == 'text')
             blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
@@ -316,7 +316,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           this.userInput.workers[i]['name'] = this.nakama.load_other_user(this.userInput.workers[i]['id'],
             this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
         } catch (e) { }
-      this.isWorkerDone();
     }
   }
 
@@ -528,7 +527,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 name: groups[i].name,
               });
             }
-            console.log(this.AvailableWorker);
             this.isManager = true;
           } else if (user_metadata['is_manager']) {
             // 매니저인 경우 매니저인 그룹만 사용자 받기
@@ -565,10 +563,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   worker_done = 0;
-  /** 작업자 작업 여부 변경됨 */
-  isWorkerDone() {
-    console.log('작업자 완료 여부를 검토하여 worker_done에 반영하기');
-  }
 
   @ViewChild('ImporantSel') ImporantSel: any;
   ImporantSelClicked() {
@@ -954,23 +948,25 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session,
             'manage_todo_add_fn', this.userInput);
           for (let i = 0, j = this.userInput.workers.length; i < j; i++) {
-            let match = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.readStorageObjects(
-              this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, {
-              object_ids: [{
-                collection: 'self_share',
-                key: 'private_match',
-                user_id: this.userInput.workers[i].id,
-              }],
-            });
-            if (match.objects.length) { // 가용 매치일 경우에 메시지 발송하기
-              await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-                .socket.joinMatch(match.objects[0].value['match_id']);
-              await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-                .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.ADD_TODO,
-                  encodeURIComponent(`add,server_todo,${this.userInput.id}`));
-              await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-                .socket.leaveMatch(match.objects[0].value['match_id']);
-            }
+            try {
+              let match = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.readStorageObjects(
+                this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, {
+                object_ids: [{
+                  collection: 'self_share',
+                  key: 'private_match',
+                  user_id: this.userInput.workers[i].id,
+                }],
+              });
+              if (match.objects.length) { // 가용 매치일 경우에 메시지 발송하기
+                await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+                  .socket.joinMatch(match.objects[0].value['match_id']);
+                await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+                  .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.ADD_TODO,
+                    encodeURIComponent(`add,server_todo,${this.userInput.id}`));
+                await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+                  .socket.leaveMatch(match.objects[0].value['match_id']);
+              }
+            } catch (e) { }
           }
         } else await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
           this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]).then(async v => {
@@ -1059,12 +1055,36 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         console.error('해야할 일 삭제 요청이 서버에 전송되지 않음: ', e);
       }
     }
-    if (this.userInput.workers) {
-      await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(
-        this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session,
-        'manage_todo_delete_fn', {
-        workers: this.userInput.workers,
-      });
+    if (this.userInput.workers) { // 매니저 기준 행동
+      try {
+        await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(
+          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session,
+          'manage_todo_delete_fn', {
+          id: this.userInput.id,
+          workers: this.userInput.workers,
+        });
+      } catch (e) { }
+      for (let i = 0, j = this.userInput.workers.length; i < j; i++) {
+        try {
+          let match = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.readStorageObjects(
+            this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, {
+            object_ids: [{
+              collection: 'self_share',
+              key: 'private_match',
+              user_id: this.userInput.workers[i].id,
+            }],
+          });
+          if (match.objects.length) { // 가용 매치일 경우에 메시지 발송하기
+            await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+              .socket.joinMatch(match.objects[0].value['match_id']);
+            await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+              .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.ADD_TODO,
+                encodeURIComponent(isDelete ? `delete,${this.userInput.id}` : `done,${this.userInput.id}`));
+            await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+              .socket.leaveMatch(match.objects[0].value['match_id']);
+          }
+        } catch (e) { }
+      }
     }
     this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, async (v) => {
       v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
