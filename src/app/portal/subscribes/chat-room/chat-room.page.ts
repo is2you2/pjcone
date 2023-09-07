@@ -223,14 +223,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.userInput.quickShare = v.data;
             this.inputPlaceholder = this.lang.text['ChatRoom']['QuickShare_placeholder'];
           } else {
-            delete this.userInput.quickShare;
-            this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
+            this.cancel_qrshare();
           }
         });
         v.present();
       });
     }
   }];
+
+  /** 빠른 공유 정보 삭제 */
+  cancel_qrshare() {
+    delete this.userInput.quickShare;
+    this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
+  }
 
   /** 파일 첨부하기 */
   async inputFileSelected(ev: any) {

@@ -95,6 +95,11 @@ SPDX-License-Identifier: MIT -->
           </ion-item>
         </div>
         <table class="thumnails">
+          <tr *ngIf="userInput.quickShare" (click)="cancel_qrshare()">
+            <td style="padding: 8px; text-align: center;">
+              <span>{{lang.text['Settings']['quickQRshare']}}</span>
+            </td>
+          </tr>
           <tr *ngIf="userInput.file">
             <td>
               <div *ngIf="userInput.file" (click)="removeAttach()">
