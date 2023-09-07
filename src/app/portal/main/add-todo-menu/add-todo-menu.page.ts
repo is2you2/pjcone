@@ -130,10 +130,25 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       await this.ionViewWillEnter();
       this.show_count_timer();
     };
+    this.nakama.AddTodoManageUpdateAct = (todo_id: string, user_id: string) => {
+      if (this.userInput.id == todo_id) {
+        for (let i = 0, j = this.userInput.workers.length; i < j; i++)
+          if ((this.userInput.workers[i].user_id || this.userInput.workers[i].id) == user_id) {
+            this.userInput.workers[i].todo_done = true;
+            this.worker_done++;
+            break;
+          }
+      }
+    }
     if (isPlatform == 'DesktopPWA')
       setTimeout(() => {
         this.CreateDrop();
       }, 0);
+    if (this.userInput.workers) {
+      for (let i = 0, j = this.userInput.workers.length; i < j; i++)
+        if (this.userInput.workers[i].todo_done)
+          this.worker_done++;
+    }
   }
 
   p5canvas: p5;
@@ -1054,6 +1069,37 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       } catch (e) {
         console.error('해야할 일 삭제 요청이 서버에 전송되지 않음: ', e);
       }
+      // 지시받은 업무인 경우
+      if (this.userInput.remote.creator_id != this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id) {
+        try { // 서버 rpc로 변경행동 보내기
+          await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(
+            this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session,
+            'manage_todo_done_fn', {
+            id: this.userInput.id,
+            creator_id: this.userInput.remote.creator_id,
+            user_id: this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id,
+          });
+        } catch (e) { }
+        try { // 변경되었음을 매니저에게 알림
+          let match = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.readStorageObjects(
+            this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, {
+            object_ids: [{
+              collection: 'self_share',
+              key: 'private_match',
+              user_id: this.userInput.remote.creator_id,
+            }],
+          });
+          if (match.objects.length) { // 가용 매치일 경우에 메시지 발송하기
+            await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+              .socket.joinMatch(match.objects[0].value['match_id']);
+            await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+              .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.ADD_TODO,
+                encodeURIComponent(`worker,${this.userInput.id},${this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id}`));
+            await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+              .socket.leaveMatch(match.objects[0].value['match_id']);
+          }
+        } catch (e) { }
+      }
     }
     if (this.userInput.workers) { // 매니저 기준 행동
       try {
@@ -1119,6 +1165,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.nakama.AddTodoLinkAct = undefined;
+    this.nakama.AddTodoManageUpdateAct = undefined;
     if (this.p5canvas)
       this.p5canvas.remove();
   }

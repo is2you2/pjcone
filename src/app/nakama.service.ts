@@ -176,6 +176,7 @@ export class NakamaService {
     });
   }
 
+  /** 할 일이 열린 상태에서 다른 할 일 열람시 행동 */
   AddTodoLinkAct: Function;
   open_add_todo_page(info: string) {
     if (this.AddTodoLinkAct)
@@ -817,23 +818,27 @@ export class NakamaService {
             already_use_callback = true;
           }
         } else {
-          this.servers[_is_official][_target].client.getUsers(
-            this.servers[_is_official][_target].session, [userId])
-            .then(v => {
-              if (v.users.length) {
-                let keys = Object.keys(v.users[0]);
-                keys.forEach(key => this.users[_is_official][_target][userId][key] = v.users[0][key]);
-                if (!already_use_callback) {
-                  _CallBack(this.users[_is_official][_target][userId]);
-                  already_use_callback = true;
+          try {
+            this.servers[_is_official][_target].client.getUsers(
+              this.servers[_is_official][_target].session, [userId])
+              .then(v => {
+                if (v.users.length) {
+                  let keys = Object.keys(v.users[0]);
+                  keys.forEach(key => this.users[_is_official][_target][userId][key] = v.users[0][key]);
+                  if (!already_use_callback) {
+                    _CallBack(this.users[_is_official][_target][userId]);
+                    already_use_callback = true;
+                  }
+                  this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
+                } else { // 없는 사용자 기록 삭제
+                  this.indexed.GetFileListFromDB(`${_is_official}/${_target}/users/${userId}`, list => {
+                    list.forEach(path => this.indexed.removeFileFromUserPath(path));
+                  });
                 }
-                this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
-              } else { // 없는 사용자 기록 삭제
-                this.indexed.GetFileListFromDB(`${_is_official}/${_target}/users/${userId}`, list => {
-                  list.forEach(path => this.indexed.removeFileFromUserPath(path));
-                });
-              }
-            });
+              });
+          } catch (e) {
+            console.log('사용자 불러오기 실패: ', e);
+          }
         }
       });
       if (!this.users[_is_official][_target][userId]['img']) {
@@ -841,33 +846,37 @@ export class NakamaService {
           if (e && v) {
             this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
           } else if (this.users[_is_official][_target][userId]['avatar_url'])
-            if (this.statusBar.groupServer[_is_official][_target] == 'online')
-              this.servers[_is_official][_target].client.readStorageObjects(
-                this.servers[_is_official][_target].session, {
-                object_ids: [{
-                  collection: 'user_public',
-                  key: 'profile_image',
-                  user_id: userId,
-                }]
-              }).then(v => {
-                if (v.objects.length)
-                  this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
-                else delete this.users[_is_official][_target][userId]['avatar_url'];
-                if (!already_use_callback) {
-                  _CallBack(this.users[_is_official][_target][userId]);
-                  already_use_callback = true;
-                }
-                this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
-              }).catch(_e => {
-                if (this.users[_is_official][_target][userId]['img']) {
-                  delete this.users[_is_official][_target][userId]['img'];
+            try {
+              if (this.statusBar.groupServer[_is_official][_target] == 'online')
+                this.servers[_is_official][_target].client.readStorageObjects(
+                  this.servers[_is_official][_target].session, {
+                  object_ids: [{
+                    collection: 'user_public',
+                    key: 'profile_image',
+                    user_id: userId,
+                  }]
+                }).then(v => {
+                  if (v.objects.length)
+                    this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
+                  else delete this.users[_is_official][_target][userId]['avatar_url'];
                   if (!already_use_callback) {
                     _CallBack(this.users[_is_official][_target][userId]);
                     already_use_callback = true;
                   }
                   this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
-                }
-              });
+                }).catch(_e => {
+                  if (this.users[_is_official][_target][userId]['img']) {
+                    delete this.users[_is_official][_target][userId]['img'];
+                    if (!already_use_callback) {
+                      _CallBack(this.users[_is_official][_target][userId]);
+                      already_use_callback = true;
+                    }
+                    this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
+                  }
+                });
+            } catch (e) {
+              console.log('사용자 이미지 불러오기 실패: ', e);
+            }
         });
       } else this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
     }
@@ -1661,6 +1670,8 @@ export class NakamaService {
    * match_act[key] = function(void)
    */
   match_act = {};
+  /** 매니저의 할 일이 실시간 업데이트될 수 있도록 도움 (from match) */
+  AddTodoManageUpdateAct: Function;
   /** 소켓 서버에 연결 */
   connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _CallBack = (_socket: Socket) => { }) {
     this.servers[_is_official][_target].socket.connect(
@@ -1700,7 +1711,7 @@ export class NakamaService {
             case MatchOpCode.ADD_TODO: {
               let sep = m['data_str'].split(',');
               switch (sep[0]) {
-                case 'add':
+                case 'add': // 추가
                   this.servers[_is_official][_target].client.readStorageObjects(
                     this.servers[_is_official][_target].session, {
                     object_ids: [{
@@ -1713,7 +1724,7 @@ export class NakamaService {
                       this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
                   });
                   break;
-                case 'done':
+                case 'done': // 완료
                   this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
                     if (e && v) {
                       let todo_info = JSON.parse(v);
@@ -1722,7 +1733,7 @@ export class NakamaService {
                     }
                   });
                   break;
-                case 'delete':
+                case 'delete': // 삭제
                   this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
                     if (e && v) {
                       let todo_info = JSON.parse(v);
@@ -1737,6 +1748,24 @@ export class NakamaService {
                         let godot = this.global.godot.contentWindow || this.global.godot.contentDocument;
                         godot['remove_todo'](JSON.stringify(todo_info));
                       });
+                    }
+                  });
+                  break;
+                case 'worker': // 매니저 입장에서, 작업자 완료
+                  if (this.AddTodoManageUpdateAct)
+                    this.AddTodoManageUpdateAct(sep[1], sep[2]);
+                  // 고도엔진에서 사람 인원에 맞게 추가 표기 필요
+                  console.log('고도엔진에서 작업 인원수를 표기하기 예정');
+                  // 로컬 자료를 변경해야함
+                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
+                    if (e && v) {
+                      let todo_info = JSON.parse(v);
+                      for (let i = 0, j = todo_info.workers.length; i < j; i++)
+                        if ((todo_info.workers[i].user_id || todo_info.workers[i].id) == sep[2]) {
+                          todo_info.workers[i]['todo_done'] = true;
+                          break;
+                        }
+                      this.modify_remote_info_as_local(todo_info, _is_official, _target);
                     }
                   });
                   break;
@@ -2432,12 +2461,14 @@ export class NakamaService {
         switch (targetType) {
           case 2: // 1:1 채팅
             this.join_chat_with_modulation(v['sender_id'], targetType, _is_official, _target, async (c) => {
-              await this.servers[_is_official][_target].client.listChannelMessages(
-                this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
-                  if (m.messages.length) {
-                    this.update_from_channel_msg(m.messages[0], _is_official, _target);
-                  }
-                });
+              try {
+                await this.servers[_is_official][_target].client.listChannelMessages(
+                  this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
+                    if (m.messages.length) {
+                      this.update_from_channel_msg(m.messages[0], _is_official, _target);
+                    }
+                  });
+              } catch (e) { }
             });
             break;
           default:
