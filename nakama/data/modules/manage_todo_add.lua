@@ -21,6 +21,11 @@ local function manage_todo_add(context, payload)
     }
     nk.storage_write(object)
 
+    local workers_json = nk.json_decode(payload)
+    if #workers_json.attach == 0 then
+        workers_json.attach = nil
+    end
+    workers_json.workers = nil
     -- 작업자들 정보 생성
     for i in ipairs(json.workers) do
         local _object = {
@@ -28,7 +33,7 @@ local function manage_todo_add(context, payload)
                 collection = 'server_todo',
                 key = json.id,
                 user_id = json.workers[i].id,
-                value = json,
+                value = workers_json,
                 permission_read = 2,
                 permission_write = 1
             },
