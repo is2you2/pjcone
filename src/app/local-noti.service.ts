@@ -227,12 +227,14 @@ export class LocalNotiService {
         this.WebNoties[opt.id].onclick = () => {
           _action_wm();
           window.focus();
+          this.WebNoties[opt.id].close();
         };
       } else if (window['swReg'] && window['swReg'].active) {
         this.WebNoties[opt.id] = window['swReg'].showNotification(opt.title, { ...input });
         this.WebNoties[opt.id].onclick = () => {
           _action_wm();
           window.focus();
+          this.WebNoties[opt.id].close();
         };
       }
     } else { // 모바일 로컬 푸쉬
