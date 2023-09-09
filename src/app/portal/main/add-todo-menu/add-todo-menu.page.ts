@@ -776,6 +776,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   isButtonClicked = false;
   /** 이 해야할 일 정보를 저장 */
   async saveData() {
+    console.log(this.userInput);
     if (!this.userInput.title) {
       this.p5toast.show({
         text: this.lang.text['TodoDetail']['needDisplayName'],

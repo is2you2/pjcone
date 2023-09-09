@@ -29,7 +29,7 @@ SPDX-License-Identifier: MIT -->
           </ion-item>
           <div *ngIf="isModify">
             <ion-item>
-              <ion-label color="medium">{{userInput.display_store}}</ion-label>
+              <ion-label color="medium">{{ userInput.display_store || lang.text['TodoDetail']['WIP'] }}</ion-label>
               <ion-label color="medium" class="ion-text-right">{{ userInput.display_creator }}</ion-label>
             </ion-item>
             <ion-grid fixed>
