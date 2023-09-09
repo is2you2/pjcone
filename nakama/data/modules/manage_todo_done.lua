@@ -14,7 +14,8 @@ local function manage_todo_done(context, payload)
         for _, todo in ipairs(todos) do
             for _, worker in ipairs(todo.value.workers) do
                 if worker.id == json.user_id then
-                    worker.todo_done = true
+                    worker.timestamp = json.timestamp
+                    worker.isDelete = json.isDelete
                     break
                 end
             end

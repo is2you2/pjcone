@@ -130,11 +130,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       await this.ionViewWillEnter();
       this.show_count_timer();
     };
-    this.nakama.AddTodoManageUpdateAct = (todo_id: string, user_id: string) => {
+    this.nakama.AddTodoManageUpdateAct = (todo_id: string, user_id: string, isDelete: boolean, act_time: number) => {
       if (this.userInput.id == todo_id) {
         for (let i = 0, j = this.userInput.workers.length; i < j; i++)
           if ((this.userInput.workers[i].user_id || this.userInput.workers[i].id) == user_id) {
-            this.userInput.workers[i].todo_done = true;
+            this.userInput.workers[i]['isDelete'] = isDelete;
+            this.userInput.workers[i]['timestamp'] = act_time;
+            this.userInput.workers[i]['displayTime'] = new Date(act_time).toLocaleString();
             this.worker_done++;
             break;
           }
@@ -146,8 +148,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       }, 0);
     if (this.userInput.workers) {
       for (let i = 0, j = this.userInput.workers.length; i < j; i++)
-        if (this.userInput.workers[i].todo_done)
+        if (this.userInput.workers[i].timestamp) {
+          this.userInput.workers[i]['displayTime'] = new Date(this.userInput.workers[i].timestamp).toLocaleString();
           this.worker_done++;
+        }
     }
   }
 
@@ -554,7 +558,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 let user = this.nakama.load_other_user(group.users[k].user.user_id || group.users[k].user.id,
                   value.isOfficial, value.target);
                 delete user.todo_checked; // 기존 정보 무시
-                this.AvailableWorker[group.id].push(user);
+                if ((user.id || user.user_id) != this.nakama.servers[value.isOfficial][value.target].session.user_id)
+                  this.AvailableWorker[group.id].push(user);
               }
               if (!this.AvailableWorker[group.id].length)
                 delete this.AvailableWorker[group.id];
@@ -776,7 +781,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   isButtonClicked = false;
   /** 이 해야할 일 정보를 저장 */
   async saveData() {
-    console.log(this.userInput);
     if (!this.userInput.title) {
       this.p5toast.show({
         text: this.lang.text['TodoDetail']['needDisplayName'],
@@ -1074,6 +1078,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       // 지시받은 업무인 경우
       try {
         if (this.userInput.remote.creator_id != this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id) {
+          let act_time = new Date().getTime();
           try { // 서버 rpc로 변경행동 보내기
             await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(
               this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session,
@@ -1081,6 +1086,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               id: this.userInput.id,
               creator_id: this.userInput.remote.creator_id,
               user_id: this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id,
+              timestamp: act_time,
+              isDelete: isDelete,
             });
           } catch (e) { }
           try { // 변경되었음을 매니저에게 알림
@@ -1097,7 +1104,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 .socket.joinMatch(match.objects[0].value['match_id']);
               await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
                 .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.ADD_TODO,
-                  encodeURIComponent(`worker,${this.userInput.id},${this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id}`));
+                  encodeURIComponent(`worker,${this.userInput.id},${this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id},${isDelete},${act_time}`));
               await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
                 .socket.leaveMatch(match.objects[0].value['match_id']);
             }

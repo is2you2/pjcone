@@ -1768,16 +1768,15 @@ export class NakamaService {
                   break;
                 case 'worker': // 매니저 입장에서, 작업자 완료
                   if (this.AddTodoManageUpdateAct)
-                    this.AddTodoManageUpdateAct(sep[1], sep[2]);
-                  // 고도엔진에서 사람 인원에 맞게 추가 표기 필요
-                  console.log('고도엔진에서 작업 인원수를 표기하기 예정');
+                    this.AddTodoManageUpdateAct(sep[1], sep[2], sep[3] == 'true', Number(sep[4]));
                   // 로컬 자료를 변경해야함
                   this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
                     if (e && v) {
                       let todo_info = JSON.parse(v);
                       for (let i = 0, j = todo_info.workers.length; i < j; i++)
                         if ((todo_info.workers[i].user_id || todo_info.workers[i].id) == sep[2]) {
-                          todo_info.workers[i]['todo_done'] = true;
+                          todo_info.workers[i]['isDelete'] = sep[3] == 'true';
+                          todo_info.workers[i]['timestamp'] = Number(sep[4]);
                           break;
                         }
                       this.modify_remote_info_as_local(todo_info, _is_official, _target);
