@@ -223,6 +223,10 @@ export class LocalNotiService {
         dir: opt.dir_wn,
       }
       if (isPlatform == 'DesktopPWA') {
+        if (this.WebNoties[opt.id]) {
+          this.WebNoties[opt.id].close();
+          delete this.WebNoties[opt.id];
+        }
         this.WebNoties[opt.id] = new Notification(opt.title, { ...input });
         this.WebNoties[opt.id].onclick = () => {
           _action_wm();
@@ -230,6 +234,10 @@ export class LocalNotiService {
           this.WebNoties[opt.id].close();
         };
       } else if (window['swReg'] && window['swReg'].active) {
+        if (this.WebNoties[opt.id]) {
+          this.WebNoties[opt.id].close();
+          delete this.WebNoties[opt.id];
+        }
         this.WebNoties[opt.id] = window['swReg'].showNotification(opt.title, { ...input });
         this.WebNoties[opt.id].onclick = () => {
           _action_wm();
