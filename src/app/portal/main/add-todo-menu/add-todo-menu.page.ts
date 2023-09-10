@@ -495,6 +495,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     await this.selected_blobFile_callback_act(ev.target.files[0]);
   }
 
+  /** 사용가능한 원격 서버 리스트 */
   AvailableStorageList: RemoteInfo[] = [];
   @ViewChild('StoreAt') StoreAt: any;
   StoreAtSelClicked() {
@@ -550,25 +551,38 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             this.isManager = true;
           } else if (user_metadata['is_manager']) {
             // 매니저인 경우 매니저인 그룹만 사용자 받기
-            for (let i = 0, j = user_metadata['is_manager'].length; i < j; i++) {
-              let group = this.nakama.groups[value.isOfficial][value.target][user_metadata['is_manager'][i]];
-              if (!this.AvailableWorker[group.id])
-                this.AvailableWorker[group.id] = [];
-              for (let k = 0, l = group.users.length; k < l; k++) {
-                let user = this.nakama.load_other_user(group.users[k].user.user_id || group.users[k].user.id,
-                  value.isOfficial, value.target);
-                delete user.todo_checked; // 기존 정보 무시
-                if ((user.id || user.user_id) != this.nakama.servers[value.isOfficial][value.target].session.user_id)
-                  this.AvailableWorker[group.id].push(user);
+            for (let i = user_metadata['is_manager'].length - 1; i >= 0; i--) {
+              try {
+                let group = this.nakama.groups[value.isOfficial][value.target][user_metadata['is_manager'][i]];
+                if (!this.AvailableWorker[group.id])
+                  this.AvailableWorker[group.id] = [];
+                for (let k = 0, l = group.users.length; k < l; k++) {
+                  let user = this.nakama.load_other_user(group.users[k].user.user_id || group.users[k].user.id,
+                    value.isOfficial, value.target);
+                  delete user.todo_checked; // 기존 정보 무시
+                  if ((user.id || user.user_id) != this.nakama.servers[value.isOfficial][value.target].session.user_id)
+                    this.AvailableWorker[group.id].push(user);
+                }
+                if (!this.AvailableWorker[group.id].length)
+                  delete this.AvailableWorker[group.id];
+                else this.WorkerGroups.push({
+                  id: group.id,
+                  name: group.name,
+                });
+              } catch (e) {
+                user_metadata['is_manager'].splice(i, 1);
               }
-              if (!this.AvailableWorker[group.id].length)
-                delete this.AvailableWorker[group.id];
-              else this.WorkerGroups.push({
-                id: group.id,
-                name: group.name,
+            } // 사용하지 않는 매니징 그룹을 자동 삭제
+            this.isManager = user_metadata['is_manager'].length;
+            if (!this.isManager) delete user_metadata['is_manager'];
+            try {
+              this.nakama.servers[value.isOfficial][value.target].client.rpc(
+                this.nakama.servers[value.isOfficial][value.target].session,
+                'update_user_metadata_fn', {
+                user_id: this.nakama.servers[value.isOfficial][value.target].session.user_id,
+                metadata: user_metadata,
               });
-            }
-            this.isManager = true;
+            } catch (e) { }
           }
         });
     }
