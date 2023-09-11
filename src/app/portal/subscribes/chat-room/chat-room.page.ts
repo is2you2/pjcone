@@ -238,17 +238,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     icon: 'call-outline',
     isHide: true,
     act: async () => {
-      let match = await this.nakama.servers[this.isOfficial][this.target].socket.createMatch();
       try {
-        await this.nakama.servers[this.isOfficial][this.target].socket
-          .writeChatMessage(this.info['id'], { match: match.match_id });
-        this.webrtc.initialize('audio', undefined, undefined, {
+        await this.webrtc.initialize('audio', undefined, undefined, {
           isOfficial: this.isOfficial,
           target: this.target,
           channel_id: this.info['id'],
-          match_id: match.match_id,
           user_id: this.info['info']['id'] || this.info['info']['user_id'],
         });
+        this.webrtc.CurrentMatch = await this.nakama.servers[this.isOfficial][this.target].socket.createMatch();
+        await this.nakama.servers[this.isOfficial][this.target].socket
+          .writeChatMessage(this.info['id'], { match: this.webrtc.CurrentMatch.match_id });
+        this.scroll_down_logs();
       } catch (e) {
         console.log('webrtc 시작단계 오류: ', e);
       }
@@ -813,7 +813,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** WebRTC 통화 채널에 참가하기 */
   async JoinWebRTCMatch(msg: any) {
     try {
-      this.webrtc.CurrentMatch = await this.nakama.servers[this.isOfficial][this.target].socket.joinMatch(msg.content.match);
+      try {
+        this.webrtc.CurrentMatch = await this.nakama.servers[this.isOfficial][this.target].socket.joinMatch(msg.content.match);
+      } catch (e) {
+        throw e;
+      }
+      await this.webrtc.initialize('audio', undefined, undefined, {
+        isOfficial: this.isOfficial,
+        target: this.target,
+        user_id: this.info['info']['id'] || this.info['info']['user_id'],
+        channel_id: this.info['id'],
+      });
     } catch (e) {
       console.log('참여 실패: ', e);
       switch (e.code) {
@@ -824,7 +834,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           break;
         default:
           this.p5toast.show({
-            text: this.lang.text['ChatRoom']['JoinMatchFailed'],
+            text: `${this.lang.text['ChatRoom']['JoinMatchFailed']}: ${e}`,
           });
           break;
       }

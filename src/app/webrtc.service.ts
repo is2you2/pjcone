@@ -48,7 +48,6 @@ export class WebrtcService {
   // 채팅 로그에는 match_id 만 공유한다
   isOfficial: string;
   target: string;
-  match_id: string;
   channel_id: string;
   user_id: string;
   /** 현재 연결된 매치 */
@@ -67,15 +66,13 @@ export class WebrtcService {
       this.p5toast.show({
         text: this.lang.text['WebRTCDevManager']['AlreadyCalling'],
       });
-      console.log('추가 소리 알림 필요');
-      return;
+      throw this.lang.text['WebRTCDevManager']['AlreadyCalling'];
     }
     this.close_webrtc();
     this.servers = info;
     if (nakama) {
       this.isOfficial = nakama.isOfficial;
       this.target = nakama.target;
-      this.match_id = nakama.match_id;
       this.user_id = nakama.user_id;
       this.channel_id = nakama.channel_id;
     }
@@ -412,7 +409,11 @@ export class WebrtcService {
       .then(() => {
         this.setLocalDescriptionSuccess(this.localPeerConnection);
       }).catch((e: any) => this.setSessionDescriptionError(e));
+    this.createRemoteOfferFromAnswer(description);
+  }
 
+  /** 상대방이 생성한 offer를 받음 */
+  createRemoteOfferFromAnswer(description: any) {
     console.log('remotePeerConnection setRemoteDescription start.');
     this.remotePeerConnection.setRemoteDescription(description)
       .then(() => {
@@ -444,7 +445,11 @@ export class WebrtcService {
       .then(() => {
         this.setLocalDescriptionSuccess(this.remotePeerConnection);
       }).catch((e: any) => this.setSessionDescriptionError(e));
+    this.ReceiveRemoteAnswer(description);
+  }
 
+  /** 상대방으로부터 답변을 받음 */
+  ReceiveRemoteAnswer(description: any) {
     console.log('localPeerConnection setRemoteDescription start.');
     this.localPeerConnection.setRemoteDescription(description)
       .then(() => {
