@@ -7,11 +7,11 @@ export class WebrtcService {
 
   constructor() { }
 
-  localVideo: HTMLVideoElement;
+  localMedia: any;
   localStream: any;
   localPeerConnection: any;
 
-  remoteVideo: HTMLVideoElement;
+  remoteMedia: any;
   remoteStream: any;
   remotePeerConnection: any;
 
@@ -26,35 +26,34 @@ export class WebrtcService {
   /** 기존 내용 삭제 및 WebRTC 기반 구축  
    * 마이크 권한을 확보하고 연결하기
    */
-  initialize() {
-    this.isCallable = false;
-    this.isConnected = false;
+  initialize(type: 'video' | 'audio' | 'video_only') {
+    this.close_webrtc();
     try { // 로컬 정보 생성 및 받기
-      if (this.localVideo) this.localVideo.remove();
-      this.localVideo = document.createElement('video');
-      this.localVideo.id = 'webrtc_video';
-      this.localVideo.style.width = '100%';
-      this.localVideo.style.height = 'fit-content';
-      this.localVideo.autoplay = true;
-      this.localVideo.playsInline = true;
-      document.getElementById('webrtc_local').appendChild(this.localVideo);
+      this.localMedia = document.createElement(type);
+      this.localMedia.id = 'webrtc_video';
+      this.localMedia.style.width = '100%';
+      this.localMedia.style.height = 'fit-content';
+      this.localMedia.autoplay = true;
+      if (type != 'audio')
+        this.localMedia.playsInline = true;
+      document.getElementById('webrtc_local').appendChild(this.localMedia);
 
       // 원격 비디오 테스트 생성
-      if (this.remoteVideo) this.remoteVideo.remove();
-      this.remoteVideo = document.createElement('video');
-      this.remoteVideo.id = 'webrtc_video_remote';
-      this.remoteVideo.style.width = '100%';
-      this.remoteVideo.style.height = 'fit-content';
-      this.remoteVideo.autoplay = true;
-      this.remoteVideo.playsInline = true;
-      document.getElementById('webrtc_remote').appendChild(this.remoteVideo);
+      this.remoteMedia = document.createElement(type);
+      this.remoteMedia.id = 'webrtc_video_remote';
+      this.remoteMedia.style.width = '100%';
+      this.remoteMedia.style.height = 'fit-content';
+      this.remoteMedia.autoplay = true;
+      if (type != 'audio')
+        this.localMedia.playsInline = true;
+      document.getElementById('webrtc_remote').appendChild(this.remoteMedia);
 
       navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: false,
+        video: type == 'video',
+        audio: type != 'video_only',
       }).then((mediaStream) => {
         this.localStream = mediaStream;
-        this.localVideo.srcObject = mediaStream;
+        this.localMedia.srcObject = mediaStream;
         this.isCallable = true;
       })
     } catch (e) {
@@ -159,7 +158,7 @@ export class WebrtcService {
   // Handles remote MediaStream success by adding it as the remoteVideo src.
   gotRemoteMediaStream(event: any) {
     const mediaStream = event.stream;
-    this.remoteVideo.srcObject = mediaStream;
+    this.remoteMedia.srcObject = mediaStream;
     this.remoteStream = mediaStream;
     console.log('Remote peer connection received remote stream.');
   }
@@ -239,9 +238,17 @@ export class WebrtcService {
   /** webrtc 관련 개체 전부 삭제 */
   close_webrtc() {
     this.HangUpCall();
-    this.localVideo.remove();
-    this.remoteVideo.remove();
+    if (this.localMedia) this.localMedia.remove();
+    if (this.remoteMedia) this.remoteMedia.remove();
     this.isCallable = false;
     this.isConnected = false;
+    if (this.localStream) {
+      this.localStream.getVideoTracks().forEach((track: any) => track.stop());
+      this.localStream.getAudioTracks().forEach((track: any) => track.stop());
+    }
+    if (this.remoteStream) {
+      this.remoteStream.getVideoTracks().forEach((track: any) => track.stop());
+      this.remoteStream.getAudioTracks().forEach((track: any) => track.stop());
+    }
   }
 }
