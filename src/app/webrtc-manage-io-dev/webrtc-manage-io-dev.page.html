@@ -1,0 +1,47 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{lang.text['WebRTCDevManager']['Title']}}</ion-title>
+    <ion-buttons slot="start" (click)="saveSetup()">
+      <ion-back-button defaultHref=""></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="VideoInputs.length">
+    <ion-item-divider>
+      <ion-label>{{lang.text['WebRTCDevManager']['VideoIn']}}</ion-label>
+    </ion-item-divider>
+    <ion-radio-group name="videoinput">
+      <ion-item *ngFor="let input of VideoInputs">
+        <ion-label>{{input.label}}</ion-label>
+        <ion-radio [value]="input.deviceId"></ion-radio>
+      </ion-item>
+    </ion-radio-group>
+  </div>
+  <div *ngIf="AudioInputs.length">
+    <ion-item-divider>
+      <ion-label>{{lang.text['WebRTCDevManager']['AudioIn']}}</ion-label>
+    </ion-item-divider>
+    <ion-radio-group name="audioinput">
+      <ion-item *ngFor="let input of AudioInputs">
+        <ion-label>{{input.label}}</ion-label>
+        <ion-radio [value]="input.deviceId"></ion-radio>
+      </ion-item>
+    </ion-radio-group>
+  </div>
+  <div *ngIf="AudioOutputs.length">
+    <ion-item-divider>
+      <ion-label>{{lang.text['WebRTCDevManager']['AudioOut']}}</ion-label>
+    </ion-item-divider>
+    <ion-radio-group name="audiooutput">
+      <ion-item *ngFor="let output of AudioOutputs">
+        <ion-label>{{output.label}}</ion-label>
+        <ion-radio [value]="output.deviceId"></ion-radio>
+      </ion-item>
+    </ion-radio-group>
+  </div>
+  <ion-item button (click)="saveSetup()">
+    <ion-label class="ion-text-center">{{lang.text['WebRTCDevManager']['saveSetup']}}</ion-label>
+  </ion-item>
+</ion-content>

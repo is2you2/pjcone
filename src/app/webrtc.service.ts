@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 import * as p5 from 'p5';
+import { WebrtcManageIoDevPage } from './webrtc-manage-io-dev/webrtc-manage-io-dev.page';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WebrtcService {
 
-  constructor() { }
+  constructor(
+    private modalCtrl: ModalController,
+  ) { }
 
   p5canvas: p5;
 
@@ -168,7 +172,12 @@ export class WebrtcService {
         dev_button.style('height', '40px');
         dev_button.mouseClicked(async () => {
           let list = await this.getDeviceList();
-          console.log('장치 정보: ', list);
+          this.modalCtrl.create({
+            component: WebrtcManageIoDevPage,
+            componentProps: {
+              list: list,
+            },
+          }).then(v => v.present());
         });
 
         hangup_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="close-circle-outline"></ion-icon>');
