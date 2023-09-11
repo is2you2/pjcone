@@ -11,7 +11,7 @@ export class WebrtcManageIoDevPage implements OnInit {
 
   constructor(
     private navParams: NavParams,
-    private modalCtrl: ModalController,
+    public modalCtrl: ModalController,
     public lang: LanguageSettingService,
   ) { }
 

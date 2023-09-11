@@ -178,6 +178,9 @@ export class WebrtcService {
         mute_button.style('width', '40px');
         mute_button.style('height', '40px');
         mute_button.mouseClicked(() => {
+          const audioTracks = this.localStream.getAudioTracks();
+          for (let i = 0, j = audioTracks.length; i < j; i++)
+            audioTracks[i].enabled = false;
           unmute_button.show();
           mute_button.hide();
         });
@@ -191,6 +194,9 @@ export class WebrtcService {
         unmute_button.style('width', '40px');
         unmute_button.style('height', '40px');
         unmute_button.mouseClicked(() => {
+          const audioTracks = this.localStream.getAudioTracks();
+          for (let i = 0, j = audioTracks.length; i < j; i++)
+            audioTracks[i].enabled = true;
           mute_button.show();
           unmute_button.hide();
         });
