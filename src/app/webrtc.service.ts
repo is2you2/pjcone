@@ -22,12 +22,15 @@ export class WebrtcService {
   isCallable = false;
   /** 통화중 여부, 통화중일 땐 통화요청 할 수 없고, 통화 끊기를 할 수 있음 */
   isConnected = false;
+  /** 서버 정보 */
+  servers: RTCConfiguration; // Allows for RTC server configuration.
 
   /** 기존 내용 삭제 및 WebRTC 기반 구축  
    * 마이크 권한을 확보하고 연결하기
    */
-  initialize(type: 'video' | 'audio' | 'video_only') {
+  initialize(type: 'video' | 'audio', info?: RTCConfiguration) {
     this.close_webrtc();
+    this.servers = info;
     try { // 로컬 정보 생성 및 받기
       this.localMedia = document.createElement(type);
       this.localMedia.id = 'webrtc_video';
@@ -50,7 +53,7 @@ export class WebrtcService {
 
       navigator.mediaDevices.getUserMedia({
         video: type == 'video',
-        audio: type != 'video_only',
+        audio: true,
       }).then((mediaStream) => {
         this.localStream = mediaStream;
         this.localMedia.srcObject = mediaStream;
@@ -59,6 +62,12 @@ export class WebrtcService {
     } catch (e) {
       console.log('navigator.getUserMedia error: ', e);
     }
+  }
+
+  /** 입력 장치 정보 불러오기 */
+  async getDeviceList(): Promise<MediaDeviceInfo[]> {
+    let list = await navigator.mediaDevices.enumerateDevices();
+    return list;
   }
 
   /** 상대방에게 연결 요청 */
@@ -76,17 +85,15 @@ export class WebrtcService {
       console.log(`Using audio device: ${audioTracks[0].label}.`);
     }
 
-    const servers: RTCConfiguration = {};  // Allows for RTC server configuration.
-
     // Create peer connections and add behavior.
-    this.localPeerConnection = new RTCPeerConnection(servers);
+    this.localPeerConnection = new RTCPeerConnection(this.servers);
     console.log('Created local peer connection object localPeerConnection.');
 
     this.localPeerConnection.addEventListener('icecandidate', (ev: any) => this.handleConnection(ev));
     this.localPeerConnection.addEventListener(
       'iceconnectionstatechange', (ev: any) => this.handleConnectionChange(ev));
 
-    this.remotePeerConnection = new RTCPeerConnection(servers);
+    this.remotePeerConnection = new RTCPeerConnection(this.servers);
     console.log('Created remote peer connection object remotePeerConnection.');
 
     this.remotePeerConnection.addEventListener('icecandidate', (ev: any) => this.handleConnection(ev));
@@ -250,5 +257,6 @@ export class WebrtcService {
       this.remoteStream.getVideoTracks().forEach((track: any) => track.stop());
       this.remoteStream.getAudioTracks().forEach((track: any) => track.stop());
     }
+    this.servers = undefined;
   }
 }
