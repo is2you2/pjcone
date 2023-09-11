@@ -159,6 +159,9 @@ export_download,추출,Extraction
 YouReadHereLast,여기까지 읽었습니다,You've read this far
 QuickShare,이 곳을 눌러 정보를 공유받습니다,Click here to share information
 QuickShare_placeholder,정보를 공유합니다...,Will share information...
+JoinWebRTCMatch,통화 참여,Join call
+MatchExpiration,통화 채널 만료,Call expiration
+JoinMatchFailed,통화 참여 오류,Failed to join call
 ## ContentViewer,,
 Title,콘텐츠 뷰어,Content Viewer
 ContentInfo,콘텐츠 기록,Content history

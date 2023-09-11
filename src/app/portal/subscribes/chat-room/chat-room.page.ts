@@ -24,6 +24,7 @@ import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { QrSharePage } from '../../settings/qr-share/qr-share.page';
 import { QuickShareReviewPage } from './quick-share-review/quick-share-review.page';
 import { WebrtcService } from 'src/app/webrtc.service';
+import { P5ToastService } from 'src/app/p5-toast.service';
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -59,6 +60,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
     private camera: Camera,
     private webrtc: WebrtcService,
+    private p5toast: P5ToastService,
   ) { }
 
   /** 채널 정보 */
@@ -237,13 +239,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     isHide: true,
     act: async () => {
       let match = await this.nakama.servers[this.isOfficial][this.target].socket.createMatch();
-      this.webrtc.initialize('audio', undefined, undefined, {
-        isOfficial: this.isOfficial,
-        target: this.target,
-        channel_id: this.info['id'],
-        match_id: match.match_id,
-        user_id: this.info['info']['id'] || this.info['info']['user_id'],
-      });
+      try {
+        await this.nakama.servers[this.isOfficial][this.target].socket
+          .writeChatMessage(this.info['id'], { match: match.match_id });
+        this.webrtc.initialize('audio', undefined, undefined, {
+          isOfficial: this.isOfficial,
+          target: this.target,
+          channel_id: this.info['id'],
+          match_id: match.match_id,
+          user_id: this.info['info']['id'] || this.info['info']['user_id'],
+        });
+      } catch (e) {
+        console.log('webrtc 시작단계 오류: ', e);
+      }
     }
   }];
 
@@ -800,6 +808,27 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         data: _msg.content['quickShare']
       },
     }).then(v => v.present());
+  }
+
+  /** WebRTC 통화 채널에 참가하기 */
+  async JoinWebRTCMatch(msg: any) {
+    try {
+      this.webrtc.CurrentMatch = await this.nakama.servers[this.isOfficial][this.target].socket.joinMatch(msg.content.match);
+    } catch (e) {
+      console.log('참여 실패: ', e);
+      switch (e.code) {
+        case 4:
+          this.p5toast.show({
+            text: this.lang.text['ChatRoom']['MatchExpiration'],
+          });
+          break;
+        default:
+          this.p5toast.show({
+            text: this.lang.text['ChatRoom']['JoinMatchFailed'],
+          });
+          break;
+      }
+    }
   }
 
   /** 메시지 추가시마다 메시지 상태를 업데이트 (기존 html 연산)  

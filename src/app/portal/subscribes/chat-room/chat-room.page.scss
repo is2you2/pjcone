@@ -48,8 +48,9 @@
 
 .quickShare_form {
     border-radius: 16px;
-    width: 156px;
-    height: 64px;
+    max-width: 156px;
+    width: fit-content;
+    height: fit-content;
     padding: 8px;
     margin: 8px 0px 8px 0px;
     text-align: center;

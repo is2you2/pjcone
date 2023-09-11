@@ -5,6 +5,7 @@ import { WebrtcManageIoDevPage } from './webrtc-manage-io-dev/webrtc-manage-io-d
 import { P5ToastService } from './p5-toast.service';
 import { LanguageSettingService } from './language-setting.service';
 import { NakamaService } from './nakama.service';
+import { Match } from '@heroiclabs/nakama-js';
 
 @Injectable({
   providedIn: 'root'
@@ -50,6 +51,8 @@ export class WebrtcService {
   match_id: string;
   channel_id: string;
   user_id: string;
+  /** 현재 연결된 매치 */
+  CurrentMatch: Match;
 
   /** 기존 내용 삭제 및 WebRTC 기반 구축  
    * 마이크 권한을 확보하고 연결하기
@@ -469,7 +472,9 @@ export class WebrtcService {
       this.remotePeerConnection.close();
     this.localPeerConnection = null;
     this.remotePeerConnection = null;
-    console.log('Ending call.');
+    try {
+      this.nakama.servers[this.isOfficial][this.target].socket.leaveMatch(this.CurrentMatch.match_id);
+    } catch (e) { }
   }
 
   /** webrtc 관련 개체 전부 삭제 */

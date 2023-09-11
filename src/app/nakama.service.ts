@@ -55,6 +55,8 @@ export enum MatchOpCode {
   ENGINE_PPT = 13,
   /** 새로운 채널에 참여됨 */
   ADD_CHANNEL = 14,
+  /** WebRTC 시그널링 */
+  WEBRTC_SIGNAL = 15,
 }
 
 @Injectable({
@@ -1829,6 +1831,10 @@ export class NakamaService {
               break;
             case MatchOpCode.ADD_CHANNEL: {
               this.get_group_list_from_server(_is_official, _target);
+            }
+              break;
+            case MatchOpCode.WEBRTC_SIGNAL: {
+              console.log('무엇을 받았습니까: ', m);
             }
               break;
             default:
