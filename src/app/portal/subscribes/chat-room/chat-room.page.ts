@@ -235,9 +235,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }, { // 7
     icon: 'call-outline',
     act: () => {
-      this.webrtc.initialize('audio', {
-        iceServers: [],
-      });
+      this.webrtc.initialize('audio');
     }
   }];
 

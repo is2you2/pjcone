@@ -40,12 +40,36 @@ export class WebrtcService {
   /** 서버 정보 */
   servers: RTCConfiguration; // Allows for RTC server configuration.
 
+  // Nakama 서버에서 통화가 사용된 채널에 로그를 남기며, 통화 요청 신호로 간주됨
+  // 채널 채팅 내 통화 기록을 누르면 그 당시 생성된 매치id에 연결을 시도하고 없으면 통화가 종료된 것으로 간주
+  // 채팅 로그에는 match_id 만 공유한다
+  isOfficial: string;
+  target: string;
+  match_id: string;
+
   /** 기존 내용 삭제 및 WebRTC 기반 구축  
    * 마이크 권한을 확보하고 연결하기
+   * @param type 영상통화 / 음성통화
+   * @param media_const 미디어 입출 정보 지정, 빈 값을 넣어 기본 값으로 행동하기
+   * @param info ice 서버 등의 정보 입력
+   * @param nakama 통화가 진행중인 채널 정보
    */
-  async initialize(type: 'video' | 'audio', info?: RTCConfiguration) {
+  async initialize(type: 'video' | 'audio',
+    media_const?: MediaStreamConstraints, info?: RTCConfiguration, nakama?: any) {
+    if (this.OnUse) {
+      this.p5toast.show({
+        text: this.lang.text['WebRTCDevManager']['AlreadyCalling'],
+      });
+      console.log('추가 소리 알림 필요');
+      return;
+    }
     this.close_webrtc();
     this.servers = info;
+    if (nakama) {
+      this.isOfficial = nakama.isOfficial;
+      this.target = nakama.target;
+      this.match_id = nakama.match_id;
+    }
     this.createP5_panel();
     try { // 로컬 정보 생성 및 받기
       this.localMedia = document.createElement(type);
@@ -68,10 +92,11 @@ export class WebrtcService {
       document.body.appendChild(this.remoteMedia);
 
       // 로컬 미디어 정보 관리
-      let mediaStream = await navigator.mediaDevices.getUserMedia({
+      if (!media_const) media_const = {
         video: type == 'video',
         audio: true,
-      });
+      }
+      let mediaStream = await navigator.mediaDevices.getUserMedia(media_const);
       this.localStream = mediaStream;
       this.localMedia.srcObject = mediaStream;
       this.isCallable = true;
@@ -274,7 +299,8 @@ export class WebrtcService {
     console.log('localPeerConnection createOffer start.');
     this.localPeerConnection.createOffer({
       offerToReceiveVideo: 1,
-    }).then((ev: any) => this.createdOffer(ev)).catch(this.setSessionDescriptionError);
+    }).then((ev: any) => this.createdOffer(ev))
+      .catch((e: any) => this.setSessionDescriptionError(e));
   }
 
   private handleConnection(event: any) {
@@ -344,18 +370,18 @@ export class WebrtcService {
     this.localPeerConnection.setLocalDescription(description)
       .then(() => {
         this.setLocalDescriptionSuccess(this.localPeerConnection);
-      }).catch(this.setSessionDescriptionError);
+      }).catch((e: any) => this.setSessionDescriptionError(e));
 
     console.log('remotePeerConnection setRemoteDescription start.');
     this.remotePeerConnection.setRemoteDescription(description)
       .then(() => {
         this.setRemoteDescriptionSuccess(this.remotePeerConnection);
-      }).catch(this.setSessionDescriptionError);
+      }).catch((e: any) => this.setSessionDescriptionError(e));
 
     console.log('remotePeerConnection createAnswer start.');
     this.remotePeerConnection.createAnswer()
-      .then((desc) => this.createdAnswer(desc))
-      .catch(this.setSessionDescriptionError);
+      .then((desc: any) => this.createdAnswer(desc))
+      .catch((e: any) => this.setSessionDescriptionError(e));
   }
 
   // Logs success when localDescription is set.
@@ -376,13 +402,13 @@ export class WebrtcService {
     this.remotePeerConnection.setLocalDescription(description)
       .then(() => {
         this.setLocalDescriptionSuccess(this.remotePeerConnection);
-      }).catch(this.setSessionDescriptionError);
+      }).catch((e: any) => this.setSessionDescriptionError(e));
 
     console.log('localPeerConnection setRemoteDescription start.');
     this.localPeerConnection.setRemoteDescription(description)
       .then(() => {
         this.setRemoteDescriptionSuccess(this.localPeerConnection);
-      }).catch(this.setSessionDescriptionError);
+      }).catch((e: any) => this.setSessionDescriptionError(e));
   }
 
   private setSessionDescriptionError(error: any) {
