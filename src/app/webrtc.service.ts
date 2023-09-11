@@ -4,6 +4,7 @@ import * as p5 from 'p5';
 import { WebrtcManageIoDevPage } from './webrtc-manage-io-dev/webrtc-manage-io-dev.page';
 import { P5ToastService } from './p5-toast.service';
 import { LanguageSettingService } from './language-setting.service';
+import { NakamaService } from './nakama.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,7 @@ export class WebrtcService {
     private modalCtrl: ModalController,
     private p5toast: P5ToastService,
     private lang: LanguageSettingService,
+    private nakama: NakamaService,
   ) { }
 
   p5canvas: p5;
@@ -46,6 +48,7 @@ export class WebrtcService {
   isOfficial: string;
   target: string;
   match_id: string;
+  user_id: string;
 
   /** 기존 내용 삭제 및 WebRTC 기반 구축  
    * 마이크 권한을 확보하고 연결하기
@@ -69,6 +72,7 @@ export class WebrtcService {
       this.isOfficial = nakama.isOfficial;
       this.target = nakama.target;
       this.match_id = nakama.match_id;
+      this.user_id = nakama.user_id;
     }
     this.createP5_panel();
     try { // 로컬 정보 생성 및 받기
@@ -118,6 +122,8 @@ export class WebrtcService {
       let div: p5.Element;
       /** 내용물 개체 */
       let content: p5.Element;
+      /** 현재 상태 알려주기 텍스트 */
+      let status: p5.Element;
       /** 내부 border 처리용 */
       let border: p5.Element;
       // 통신 관련 버튼
@@ -157,6 +163,18 @@ export class WebrtcService {
         content.style("padding: 12px");
         content.style("color: white");
         update_border();
+
+        if (this.isOfficial && this.target) {
+          if (this.user_id) // 1:1 대화인 경우
+            status = p.createDiv(this.nakama.users[this.isOfficial][this.target][this.user_id]['display_name']);
+          status.parent(content);
+          status.style('position', 'absolute');
+          status.style('top', '7px');
+          status.style('left', '50%');
+          status.style('width', 'fit-content');
+          status.style('height', 'fit-content');
+          status.style('transform', 'translateX(-50%)');
+        }
 
         call_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="call-outline"></ion-icon>');
         call_button.parent(content);
