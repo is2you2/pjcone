@@ -37,7 +37,7 @@ export class WebrtcService {
   isCallable = false;
   /** 통화중 여부, 통화중일 땐 통화요청 할 수 없고, 통화 끊기를 할 수 있음 */
   isConnected = false;
-  /** 서버 정보 */
+  /** WebRTC 서버 정보 */
   servers: RTCConfiguration; // Allows for RTC server configuration.
 
   // Nakama 서버에서 통화가 사용된 채널에 로그를 남기며, 통화 요청 신호로 간주됨
@@ -204,6 +204,7 @@ export class WebrtcService {
         dev_button.style('width', '40px');
         dev_button.style('height', '40px');
         dev_button.mouseClicked(async () => {
+          dev_button.elt.disabled = true;
           let list = await this.getDeviceList();
           this.modalCtrl.create({
             component: WebrtcManageIoDevPage,
@@ -212,11 +213,22 @@ export class WebrtcService {
             },
           }).then(v => {
             v.onDidDismiss().then(v => {
+              dev_button.elt.disabled = false;
               try {
-                console.log(v.data);
-              } catch (e) {
-                console.log('장치 관리 오류: ', e);
-              }
+                let info: MediaStreamConstraints = {};
+                if (v.data.videoinput) {
+                  info['video'] = {
+                    deviceId: v.data.videoinput.deviceId,
+                  }
+                }
+                if (v.data.audioinput) {
+                  info['audio'] = {
+                    deviceId: v.data.audioinput.deviceId,
+                  }
+                }
+                this.OnUse = false;
+                this.initialize('audio', info, this.servers);
+              } catch (e) { }
             });
             v.present()
           });
