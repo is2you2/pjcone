@@ -304,6 +304,7 @@ export class EnginepptPage implements OnInit {
 
   CreateEngineController() {
     this.Status = 'OnPresentation';
+    this.noti.ClearNoti(13);
     if (this.p5canvas)
       this.p5canvas.remove();
     document.addEventListener('ionBackButton', this.EventListenerAct);
