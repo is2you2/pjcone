@@ -111,7 +111,7 @@ export class WebrtcService {
     }).then((ev: any) => this.createdOffer(ev)).catch(this.setSessionDescriptionError);
   }
 
-  handleConnection(event: any) {
+  private handleConnection(event: any) {
     const peerConnection = event.target;
     const iceCandidate = event.candidate;
 
@@ -132,18 +132,18 @@ export class WebrtcService {
   }
 
   // Gets the "other" peer connection.
-  getOtherPeer(peerConnection: any) {
+  private getOtherPeer(peerConnection: any) {
     return (peerConnection === this.localPeerConnection) ?
       this.remotePeerConnection : this.localPeerConnection;
   }
 
   // Logs that the connection succeeded.
-  handleConnectionSuccess(peerConnection: any) {
+  private handleConnectionSuccess(peerConnection: any) {
     console.log(`${this.getPeerName(peerConnection)} addIceCandidate success.`);
   };
 
   // Logs changes to the connection state.
-  handleConnectionChange(event: any) {
+  private handleConnectionChange(event: any) {
     const peerConnection = event.target;
     console.log('ICE state change event: ', event);
     console.log(`${this.getPeerName(peerConnection)} ICE state: ` +
@@ -151,19 +151,19 @@ export class WebrtcService {
   }
 
   // Logs that the connection failed.
-  handleConnectionFailure(peerConnection: any, error: any) {
+  private handleConnectionFailure(peerConnection: any, error: any) {
     console.error(`${this.getPeerName(peerConnection)} failed to add ICE Candidate:\n` +
       `${error.toString()}.`);
   }
 
   // Gets the name of a certain peer connection.
-  getPeerName(peerConnection: any) {
+  private getPeerName(peerConnection: any) {
     return (peerConnection === this.localPeerConnection) ?
       'localPeerConnection' : 'remotePeerConnection';
   }
 
   // Handles remote MediaStream success by adding it as the remoteVideo src.
-  gotRemoteMediaStream(event: any) {
+  private gotRemoteMediaStream(event: any) {
     const mediaStream = event.stream;
     this.remoteMedia.srcObject = mediaStream;
     this.remoteStream = mediaStream;
@@ -171,7 +171,7 @@ export class WebrtcService {
   }
 
   // Logs offer creation and sets peer connection session descriptions.
-  createdOffer(description: any) {
+  private createdOffer(description: any) {
     console.log(`Offer from localPeerConnection:\n${description.sdp}`);
 
     console.log('localPeerConnection setLocalDescription start.');
@@ -193,17 +193,17 @@ export class WebrtcService {
   }
 
   // Logs success when localDescription is set.
-  setLocalDescriptionSuccess(peerConnection: any) {
+  private setLocalDescriptionSuccess(peerConnection: any) {
     this.setDescriptionSuccess(peerConnection, 'setLocalDescription');
   }
 
   // Logs success when remoteDescription is set.
-  setRemoteDescriptionSuccess(peerConnection: any) {
+  private setRemoteDescriptionSuccess(peerConnection: any) {
     this.setDescriptionSuccess(peerConnection, 'setRemoteDescription');
   }
 
   // Logs answer to offer creation and sets peer connection session descriptions.
-  createdAnswer(description: any) {
+  private createdAnswer(description: any) {
     console.log(`Answer from remotePeerConnection:\n${description.sdp}.`);
 
     console.log('remotePeerConnection setLocalDescription start.');
@@ -219,12 +219,12 @@ export class WebrtcService {
       }).catch(this.setSessionDescriptionError);
   }
 
-  setSessionDescriptionError(error: any) {
+  private setSessionDescriptionError(error: any) {
     console.error(`Failed to create session description: ${error}.`);
   }
 
   // Logs success when setting session description.
-  setDescriptionSuccess(peerConnection: any, functionName: any) {
+  private setDescriptionSuccess(peerConnection: any, functionName: any) {
     const peerName = this.getPeerName(peerConnection);
     console.log(`${peerName} ${functionName} complete.`);
   }
