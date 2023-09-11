@@ -85,7 +85,7 @@ export class P5ToastService {
           div = p.createDiv();
           div.style("position: absolute; left: 0; top: 0; z-index: 1");
           div.style("width: 100%; height: fit-content");
-          div.style("padding: 32px 32px;");
+          div.style("padding: 32px;");
           div.style("display: flex; justify-content: center;");
           div.style("pointer-events: none");
           update_div();

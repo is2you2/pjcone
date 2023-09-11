@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import * as p5 from 'p5';
 
 @Injectable({
   providedIn: 'root'
@@ -6,6 +7,8 @@ import { Injectable } from '@angular/core';
 export class WebrtcService {
 
   constructor() { }
+
+  p5canvas: p5;
 
   localMedia: any;
   localStream: any;
@@ -18,6 +21,10 @@ export class WebrtcService {
   /** 통화 시작 시간 */
   startTime: number;
 
+  /** WebRTC 자체 사용 여부  
+   * p5 컨트롤러 개체를 다루기 위해 필요함
+   */
+  OnUse = false;
   /** 통화요청 가능 여부, 통화요청을 할 수 있고, 통화 끊기는 할 수 없음 */
   isCallable = false;
   /** 통화중 여부, 통화중일 땐 통화요청 할 수 없고, 통화 끊기를 할 수 있음 */
@@ -31,6 +38,7 @@ export class WebrtcService {
   initialize(type: 'video' | 'audio', info?: RTCConfiguration) {
     this.close_webrtc();
     this.servers = info;
+    this.createP5_panel();
     try { // 로컬 정보 생성 및 받기
       this.localMedia = document.createElement(type);
       this.localMedia.id = 'webrtc_video';
@@ -39,7 +47,7 @@ export class WebrtcService {
       this.localMedia.autoplay = true;
       if (type != 'audio')
         this.localMedia.playsInline = true;
-      document.getElementById('webrtc_local').appendChild(this.localMedia);
+      document.body.appendChild(this.localMedia);
 
       // 원격 비디오 테스트 생성
       this.remoteMedia = document.createElement(type);
@@ -49,7 +57,7 @@ export class WebrtcService {
       this.remoteMedia.autoplay = true;
       if (type != 'audio')
         this.localMedia.playsInline = true;
-      document.getElementById('webrtc_remote').appendChild(this.remoteMedia);
+      document.body.appendChild(this.remoteMedia);
 
       navigator.mediaDevices.getUserMedia({
         video: type == 'video',
@@ -62,6 +70,138 @@ export class WebrtcService {
     } catch (e) {
       console.log('navigator.getUserMedia error: ', e);
     }
+  }
+
+  createP5_panel() {
+    this.OnUse = true;
+    if (this.p5canvas)
+      this.p5canvas.remove();
+    this.p5canvas = new p5((p: p5) => {
+      /** 사용하는 div개체 */
+      let div: p5.Element;
+      /** 내용물 개체 */
+      let content: p5.Element;
+      /** 내부 border 처리용 */
+      let border: p5.Element;
+      // 통신 관련 버튼
+      let call_button: p5.Element;
+      let mute_button: p5.Element;
+      let unmute_button: p5.Element;
+      /** 입력 기기 선택용 */
+      let dev_button: p5.Element;
+      let hangup_button: p5.Element;
+      /** 새 메시지 알림을 위한 외곽선 조정용 */
+      let borderLerp = 1;
+      p.setup = () => {
+        p.noCanvas();
+        div = p.createDiv();
+        div.style("position: absolute; left: 50%; top: 0px; z-index: 1");
+        div.style("transform: translateX(-50%)");
+        div.style("width: fit-content; height: fit-content");
+        div.style("padding: 8px 16px;");
+        div.style("display: flex; justify-content: center;");
+
+        border = p.createDiv();
+        border.parent(div);
+        border.style("display: flex; justify-content: center;");
+        border.style("width: fit-content; height: fit-content");
+        border.style("border-radius: 64px");
+        border.style("background: #44a6fa88");
+        border.style("padding: 12px");
+
+        content = p.createDiv();
+        content.parent(border);
+        content.id('webrtc_content');
+        content.style("display: flex; justify-content: center;");
+        content.style("width: fit-content; height: fit-content");
+        content.style("word-break: break-all");
+        content.style("background: #44a6fa88");
+        content.style("border-radius: 64px");
+        content.style("padding: 12px");
+        content.style("color: white");
+        update_border();
+
+        call_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="call-outline"></ion-icon>');
+        call_button.parent(content);
+        call_button.style('padding', '0px');
+        call_button.style('margin', '4px');
+        call_button.style('border-radius', '32px');
+        call_button.style('width', '40px');
+        call_button.style('height', '40px');
+        call_button.mouseClicked(() => {
+          this.createCall();
+          call_button.hide();
+        });
+
+        mute_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="mic-outline"></ion-icon>');
+        mute_button.parent(content);
+        mute_button.style('padding', '0px');
+        mute_button.style('margin', '4px');
+        mute_button.style('border-radius', '32px');
+        mute_button.style('width', '40px');
+        mute_button.style('height', '40px');
+        mute_button.mouseClicked(() => {
+          unmute_button.show();
+          mute_button.hide();
+        });
+
+        unmute_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="mic-off-outline"></ion-icon>');
+        unmute_button.parent(content);
+        unmute_button.style('background-color', 'grey')
+        unmute_button.style('padding', '0px');
+        unmute_button.style('margin', '4px');
+        unmute_button.style('border-radius', '32px');
+        unmute_button.style('width', '40px');
+        unmute_button.style('height', '40px');
+        unmute_button.mouseClicked(() => {
+          mute_button.show();
+          unmute_button.hide();
+        });
+        unmute_button.hide();
+
+        dev_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="settings-outline"></ion-icon>');
+        dev_button.parent(content);
+        dev_button.style('padding', '0px');
+        dev_button.style('margin', '4px');
+        dev_button.style('border-radius', '32px');
+        dev_button.style('width', '40px');
+        dev_button.style('height', '40px');
+        dev_button.mouseClicked(async () => {
+          let list = await this.getDeviceList();
+          console.log('장치 정보: ', list);
+        });
+
+        hangup_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="close-circle-outline"></ion-icon>');
+        hangup_button.parent(content);
+        hangup_button.style('background-color', 'red');
+        hangup_button.style('padding', '0px');
+        hangup_button.style('margin', '4px');
+        hangup_button.style('border-radius', '32px');
+        hangup_button.style('width', '40px');
+        hangup_button.style('height', '40px');
+        hangup_button.mouseClicked(() => {
+          this.close_webrtc();
+        });
+      }
+
+      p.draw = () => {
+        if (borderLerp > 0)
+          borderLerp -= .03;
+        update_border();
+        if (!this.OnUse) { // 사용하지 않게 되면 퇴장 애니메이션
+          if (this.p5canvas)
+            this.p5canvas.remove();
+        }
+      }
+
+      /** Toast 외곽 조정 */
+      let update_border = () => {
+        let calced = p.lerpColor(p.color('#44a6fabb'), p.color('#ffd94ebb'), borderLerp)['levels'];
+        border.style(`padding: ${4 * borderLerp}px`);
+        content.style(`padding: ${p.lerp(12, 8, borderLerp)}px`);
+        border.style(`background: rgba(${calced[0]}, ${calced[1]}, ${calced[2]}, ${calced[3] / 255})`);
+      }
+    });
   }
 
   /** 입력 장치 정보 불러오기 */
@@ -247,6 +387,7 @@ export class WebrtcService {
     this.HangUpCall();
     if (this.localMedia) this.localMedia.remove();
     if (this.remoteMedia) this.remoteMedia.remove();
+    this.OnUse = false;
     this.isCallable = false;
     this.isConnected = false;
     if (this.localStream) {
