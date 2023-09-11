@@ -14,7 +14,7 @@
     </ion-item-divider>
     <ion-radio-group #VideoIn name="videoinput">
       <ion-item *ngFor="let input of VideoInputs; let i = index">
-        <ion-label>{{input.label}}</ion-label>
+        <ion-label>{{input.label || input.deviceId}}</ion-label>
         <ion-radio [value]="i"></ion-radio>
       </ion-item>
     </ion-radio-group>
@@ -25,7 +25,7 @@
     </ion-item-divider>
     <ion-radio-group #AudioIn name="audioinput">
       <ion-item *ngFor="let input of AudioInputs; let i = index">
-        <ion-label>{{input.label}}</ion-label>
+        <ion-label>{{input.label || input.deviceId}}</ion-label>
         <ion-radio [value]="i"></ion-radio>
       </ion-item>
     </ion-radio-group>
@@ -36,7 +36,7 @@
     </ion-item-divider>
     <ion-radio-group #AudioOut name="audiooutput">
       <ion-item *ngFor="let output of AudioOutputs; let i = index">
-        <ion-label>{{output.label}}</ion-label>
+        <ion-label>{{output.label || output.deviceId}}</ion-label>
         <ion-radio [value]="i"></ion-radio>
       </ion-item>
     </ion-radio-group>
