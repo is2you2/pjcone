@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import * as p5 from 'p5';
 import { WebrtcManageIoDevPage } from './webrtc-manage-io-dev/webrtc-manage-io-dev.page';
+import { P5ToastService } from './p5-toast.service';
+import { LanguageSettingService } from './language-setting.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +12,8 @@ export class WebrtcService {
 
   constructor(
     private modalCtrl: ModalController,
+    private p5toast: P5ToastService,
+    private lang: LanguageSettingService,
   ) { }
 
   p5canvas: p5;
@@ -39,7 +43,7 @@ export class WebrtcService {
   /** 기존 내용 삭제 및 WebRTC 기반 구축  
    * 마이크 권한을 확보하고 연결하기
    */
-  initialize(type: 'video' | 'audio', info?: RTCConfiguration) {
+  async initialize(type: 'video' | 'audio', info?: RTCConfiguration) {
     this.close_webrtc();
     this.servers = info;
     this.createP5_panel();
@@ -63,16 +67,20 @@ export class WebrtcService {
         this.localMedia.playsInline = true;
       document.body.appendChild(this.remoteMedia);
 
-      navigator.mediaDevices.getUserMedia({
+      // 로컬 미디어 정보 관리
+      let mediaStream = await navigator.mediaDevices.getUserMedia({
         video: type == 'video',
         audio: true,
-      }).then((mediaStream) => {
-        this.localStream = mediaStream;
-        this.localMedia.srcObject = mediaStream;
-        this.isCallable = true;
-      })
+      });
+      this.localStream = mediaStream;
+      this.localMedia.srcObject = mediaStream;
+      this.isCallable = true;
     } catch (e) {
       console.log('navigator.getUserMedia error: ', e);
+      this.close_webrtc();
+      this.p5toast.show({
+        text: `${this.lang.text['WebRTCDevManager']['InitErr']}: ${e}`,
+      });
     }
   }
 
