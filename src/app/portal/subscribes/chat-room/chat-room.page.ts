@@ -23,6 +23,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { QrSharePage } from '../../settings/qr-share/qr-share.page';
 import { QuickShareReviewPage } from './quick-share-review/quick-share-review.page';
+import { WebrtcService } from 'src/app/webrtc.service';
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -57,6 +58,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private global: GlobalActService,
     private loadingCtrl: LoadingController,
     private camera: Camera,
+    private webrtc: WebrtcService,
   ) { }
 
   /** 채널 정보 */
@@ -72,7 +74,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 내가 발송한 메시지가 수신되면 썸네일 구성하기 */
   temporary_open_thumbnail = {};
   /** 확장 버튼 행동들 */
-  extended_buttons: ExtendButtonForm[] = [{
+  extended_buttons: ExtendButtonForm[] = [{ // 0
     isHide: true,
     icon: 'close-circle-outline',
     act: async () => {
@@ -96,7 +98,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.navCtrl.back();
     }
   },
-  {
+  { // 1
     icon: 'log-out-outline',
     act: async () => {
       if (this.info['redirect']['type'] != 3) {
@@ -115,7 +117,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     }
   },
-  {
+  { // 2
     icon: 'settings-outline',
     act: () => {
       if (this.info['redirect']['type'] != 3) {
@@ -146,7 +148,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     }
   },
-  {
+  { // 3
     icon: 'camera-outline',
     act: () => {
       this.camera.getPicture({
@@ -182,14 +184,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       });
     }
   },
-  {
+  { // 4
     icon: 'document-attach-outline',
     act: () => {
       if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
       document.getElementById(this.file_sel_id).click();
     }
   },
-  {
+  { // 5
     icon_img: 'voidDraw.png',
     act: async () => {
       if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
@@ -213,7 +215,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         v.present();
       });
     },
-  }, {
+  }, { // 6
     icon: 'qr-code-outline',
     act: () => {
       this.modalCtrl.create({
@@ -228,6 +230,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
         });
         v.present();
+      });
+    }
+  }, { // 7
+    icon: 'call-outline',
+    act: () => {
+      this.webrtc.initialize('audio', {
+        iceServers: [],
       });
     }
   }];
