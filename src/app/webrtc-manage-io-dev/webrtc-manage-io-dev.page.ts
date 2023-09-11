@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { ModalController, NavParams } from '@ionic/angular';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { IonRadioGroup, ModalController, NavParams } from '@ionic/angular';
 import { LanguageSettingService } from '../language-setting.service';
 
 @Component({
@@ -19,6 +19,11 @@ export class WebrtcManageIoDevPage implements OnInit {
   AudioInputs = [];
   AudioOutputs = [];
 
+  @ViewChild('VideoIn') VideoInput: IonRadioGroup;
+  @ViewChild('AudioIn') AudioInput: IonRadioGroup;
+  @ViewChild('AudioOut') AudioOutput: IonRadioGroup;
+
+
   ngOnInit() {
     let io = this.navParams.get('list');
     for (let i = 0, j = io.length; i < j; i++) {
@@ -32,6 +37,13 @@ export class WebrtcManageIoDevPage implements OnInit {
   }
 
   saveSetup() {
-    this.modalCtrl.dismiss();
+    let result = {};
+    if (this.VideoInput && this.VideoInput.value)
+      result['videoinput'] = this.VideoInputs[this.VideoInput.value];
+    if (this.AudioInput && this.AudioInput.value)
+      result['audioinput'] = this.AudioInputs[this.AudioInput.value];
+    if (this.AudioOutput && this.AudioOutput.value)
+      result['audiooutput'] = this.AudioOutputs[this.AudioOutput.value];
+    this.modalCtrl.dismiss(result);
   }
 }

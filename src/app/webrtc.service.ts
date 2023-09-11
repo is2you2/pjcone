@@ -177,7 +177,16 @@ export class WebrtcService {
             componentProps: {
               list: list,
             },
-          }).then(v => v.present());
+          }).then(v => {
+            v.onDidDismiss().then(v => {
+              try {
+                console.log(v.data);
+              } catch (e) {
+                console.log('장치 관리 오류: ', e);
+              }
+            });
+            v.present()
+          });
         });
 
         hangup_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="close-circle-outline"></ion-icon>');
