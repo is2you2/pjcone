@@ -240,7 +240,9 @@ export class LocalNotiService {
           } catch (e) { }
           delete this.WebNoties[opt.id];
         }
-        this.WebNoties[opt.id] = window['swReg'].showNotification(opt.title, { ...input });
+        try {
+          this.WebNoties[opt.id] = window['swReg'].showNotification(opt.title, { ...input });
+        } catch (e) { }
         try {
           this.WebNoties[opt.id].onclick = () => {
             _action_wm();
