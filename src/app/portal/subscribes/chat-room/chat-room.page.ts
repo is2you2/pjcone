@@ -234,8 +234,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }, { // 7
     icon: 'call-outline',
-    act: () => {
-      this.webrtc.initialize('audio');
+    isHide: true,
+    act: async () => {
+      let match = await this.nakama.servers[this.isOfficial][this.target].socket.createMatch();
+      this.webrtc.initialize('audio', undefined, undefined, {
+        isOfficial: this.isOfficial,
+        target: this.target,
+        channel_id: this.info['id'],
+        match_id: match.match_id,
+        user_id: this.info['info']['id'] || this.info['info']['user_id'],
+      });
     }
   }];
 
@@ -395,6 +403,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
             this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
           this.extended_buttons[2].isHide = true;
+          this.extended_buttons[7].isHide = false;
         }
         break;
       case 3: // 그룹 대화라면

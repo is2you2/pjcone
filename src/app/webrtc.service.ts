@@ -48,6 +48,7 @@ export class WebrtcService {
   isOfficial: string;
   target: string;
   match_id: string;
+  channel_id: string;
   user_id: string;
 
   /** 기존 내용 삭제 및 WebRTC 기반 구축  
@@ -73,6 +74,7 @@ export class WebrtcService {
       this.target = nakama.target;
       this.match_id = nakama.match_id;
       this.user_id = nakama.user_id;
+      this.channel_id = nakama.channel_id;
     }
     this.createP5_panel();
     try { // 로컬 정보 생성 및 받기
