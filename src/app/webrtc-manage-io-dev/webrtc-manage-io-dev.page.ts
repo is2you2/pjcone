@@ -38,11 +38,11 @@ export class WebrtcManageIoDevPage implements OnInit {
 
   saveSetup() {
     let result = {};
-    if (this.VideoInput && this.VideoInput.value)
+    if (this.VideoInput && this.VideoInput.value !== undefined)
       result['videoinput'] = this.VideoInputs[this.VideoInput.value];
-    if (this.AudioInput && this.AudioInput.value)
+    if (this.AudioInput && this.AudioInput.value !== undefined)
       result['audioinput'] = this.AudioInputs[this.AudioInput.value];
-    if (this.AudioOutput && this.AudioOutput.value)
+    if (this.AudioOutput && this.AudioOutput.value !== undefined)
       result['audiooutput'] = this.AudioOutputs[this.AudioOutput.value];
     this.modalCtrl.dismiss(result);
   }
