@@ -235,15 +235,19 @@ export class LocalNotiService {
         };
       } else if (window['swReg'] && window['swReg'].active) {
         if (this.WebNoties[opt.id]) {
-          this.WebNoties[opt.id].close();
+          try {
+            this.WebNoties[opt.id].close();
+          } catch (e) { }
           delete this.WebNoties[opt.id];
         }
         this.WebNoties[opt.id] = window['swReg'].showNotification(opt.title, { ...input });
-        this.WebNoties[opt.id].onclick = () => {
-          _action_wm();
-          window.focus();
-          this.WebNoties[opt.id].close();
-        };
+        try {
+          this.WebNoties[opt.id].onclick = () => {
+            _action_wm();
+            window.focus();
+            this.WebNoties[opt.id].close();
+          };
+        } catch (e) { }
       }
     } else { // 모바일 로컬 푸쉬
       // 포어그라운드면서 해당 화면이면 동작 안함
