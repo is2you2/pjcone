@@ -39,6 +39,8 @@ export class WebrtcService {
   isCallable = false;
   /** 통화중 여부, 통화중일 땐 통화요청 할 수 없고, 통화 끊기를 할 수 있음 */
   isConnected = false;
+  /** 응답에 반응하여 진입 후 통화 연결되기 전 */
+  JoinInited = false;
   /** WebRTC 서버 정보 */
   servers: RTCConfiguration; // Allows for RTC server configuration.
 
@@ -97,6 +99,13 @@ export class WebrtcService {
     this.nakama.socket_reactive['WEBRTC_ICE_CANDIDATES'] = (data_str: string) => {
       this.ReceiveIceCandidate(JSON.parse(data_str));
     }
+    this.nakama.socket_reactive['WEBRTC_NEGOCIATENEEDED'] = (data_str: string) => {
+      if (data_str == 'EOL') { // 수신 완료
+        this.createRemoteOfferFromAnswer(JSON.parse(this.ReceivedOfferPart));
+        this.ReceivedOfferPart = '';
+        this.CreateAnswer();
+      } else this.ReceivedOfferPart += data_str;
+    }
     this.servers = info;
     if (nakama) {
       this.isOfficial = nakama.isOfficial;
@@ -123,13 +132,28 @@ export class WebrtcService {
       this.remoteMedia.style.height = 'fit-content';
       this.remoteMedia.autoplay = true;
       if (type == 'video')
-        this.localMedia.playsInline = true;
+        this.remoteMedia.playsInline = true;
       document.body.appendChild(this.remoteMedia);
 
+      let dev_list = await this.getDeviceList();
+      let audioId: string;
+      let videoId: string;
+      for (let i = 0, j = dev_list.length; i < j; i++)
+        if (!audioId || !videoId) {
+          if (!audioId && dev_list[i].kind == 'audioinput')
+            audioId = dev_list[i].deviceId;
+          if (!videoId && dev_list[i].kind == 'videoinput')
+            videoId = dev_list[i].deviceId;
+        } else break;
       // 로컬 미디어 정보 관리
-      if (!media_const) media_const = {
-        video: type == 'video',
-        audio: true,
+      if (!media_const) {
+        media_const = {};
+        if (type == 'video') {
+          media_const['video'] = true;
+          if (videoId) media_const['video'] = { deviceId: videoId };
+        } else media_const['video'] = false;
+        media_const['audio'] = true;
+        if (audioId) media_const['audio'] = { deviceId: audioId };
       }
       this.localStream = await navigator.mediaDevices.getUserMedia(media_const);
       this.localMedia.srcObject = this.localStream;
@@ -142,6 +166,7 @@ export class WebrtcService {
       });
     }
     this.createCall();
+    this.p5canvas['call_button'].elt.disabled = false;
   }
 
   createP5_panel() {
@@ -218,6 +243,7 @@ export class WebrtcService {
         call_button.mouseClicked(() => {
           this.CreateAnswer();
         });
+        call_button.elt.disabled = true;
         p['call_button'] = call_button;
 
         mute_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="mic-outline"></ion-icon>');
@@ -268,7 +294,7 @@ export class WebrtcService {
               list: list,
             },
           }).then(v => {
-            v.onDidDismiss().then(v => {
+            v.onDidDismiss().then(async v => {
               dev_button.elt.disabled = false;
               try {
                 let info: MediaStreamConstraints = {};
@@ -282,8 +308,10 @@ export class WebrtcService {
                     deviceId: v.data.audioinput.deviceId,
                   }
                 }
-                this.OnUse = false;
-                this.initialize(this.TypeIn, info, this.servers);
+                this.PeerConnection.removeStream(this.localStream);
+                this.localStream = await navigator.mediaDevices.getUserMedia(info);
+                this.localMedia.srcObject = this.localStream;
+                this.PeerConnection.addStream(this.localStream);
               } catch (e) { }
             });
             v.present()
@@ -337,12 +365,10 @@ export class WebrtcService {
     // Get local media stream tracks.
     const videoTracks = this.localStream.getVideoTracks();
     const audioTracks = this.localStream.getAudioTracks();
-    if (videoTracks.length > 0) {
+    if (videoTracks.length > 0)
       console.log(`Using video device: ${videoTracks[0].label}.`);
-    }
-    if (audioTracks.length > 0) {
+    if (audioTracks.length > 0)
       console.log(`Using audio device: ${audioTracks[0].label}.`);
-    }
 
     // Create peer connections and add behavior.
     this.PeerConnection = new RTCPeerConnection(this.servers);
@@ -373,6 +399,24 @@ export class WebrtcService {
     this.PeerConnection.addEventListener('addstream', (ev: any) => {
       this.remoteMedia.srcObject = ev.stream;
     });
+    this.PeerConnection.addEventListener('negotiationneeded', async (_ev: any) => {
+      // 스트림 설정 변경시 재협상 필요, sdp 재교환해야함
+      // 교환한 사람쪽에서 이 트리거가 발동됨
+      if (this.JoinInited) { // 응답 받아 진입한 경우에도 동작하므로 구분에 유의한다
+        await this.PeerConnection.createOffer({
+          offerToReceiveVideo: 1,
+        }).then((ev: any) => this.createdOffer(ev))
+          .catch((e: any) => this.setSessionDescriptionError(e));
+
+        let data_str = JSON.stringify(this.LocalOffer);
+        let part = data_str.match(/(.{1,250})/g);
+        for (let i = 0, j = part.length; i < j; i++)
+          await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+            this.CurrentMatch.match_id, MatchOpCode.WEBRTC_NEGOCIATENEEDED, encodeURIComponent(part[i]));
+        await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+          this.CurrentMatch.match_id, MatchOpCode.WEBRTC_NEGOCIATENEEDED, encodeURIComponent('EOL'));
+      }
+    })
   }
 
   /** 전화 요청 생성 */
@@ -460,11 +504,13 @@ export class WebrtcService {
         this.CurrentMatch.match_id, MatchOpCode.WEBRTC_RECEIVE_ANSWER, encodeURIComponent(part[i]));
     await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
       this.CurrentMatch.match_id, MatchOpCode.WEBRTC_RECEIVE_ANSWER, encodeURIComponent('EOL'));
+
+    this.JoinInited = true;
   }
 
   /** 상대방으로부터 답변을 받음 */
   async ReceiveRemoteAnswer(description: any) {
-    console.log('ReceiveRemoteAnswer: PeerConnection.setRemoteDescription');
+    console.log('ReceiveRemoteAnswer: PeerConnection.setRemoteDescription: ', description);
     this.PeerConnection.setRemoteDescription(description)
       .then(() => {
         this.setRemoteDescriptionSuccess(this.PeerConnection);
@@ -516,10 +562,12 @@ export class WebrtcService {
     this.ReceivedOfferPart = '';
     this.ReceivedAnswerPart = '';
     this.TypeIn = undefined;
+    this.JoinInited = false;
     delete this.nakama.socket_reactive['WEBRTC_INIT_REQ_SIGNAL'];
     delete this.nakama.socket_reactive['WEBRTC_REPLY_INIT_SIGNAL'];
     delete this.nakama.socket_reactive['WEBRTC_RECEIVE_ANSWER'];
     delete this.nakama.socket_reactive['WEBRTC_ICE_CANDIDATES'];
+    delete this.nakama.socket_reactive['WEBRTC_NEGOCIATENEEDED'];
     this.IceCandidates.length = 0;
     this.servers = undefined;
   }

@@ -63,6 +63,8 @@ export enum MatchOpCode {
   WEBRTC_RECEIVE_ANSWER = 22,
   /** iceCandidate 정보 교환 */
   WEBRTC_ICE_CANDIDATES = 23,
+  /** Stream 변경 등으로 재교환시 */
+  WEBRTC_NEGOCIATENEEDED = 24,
 }
 
 @Injectable({
@@ -1861,6 +1863,12 @@ export class NakamaService {
               let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
               if (!is_me && this.socket_reactive['WEBRTC_ICE_CANDIDATES'])
                 this.socket_reactive['WEBRTC_ICE_CANDIDATES'](m['data_str']);
+            }
+              break;
+            case MatchOpCode.WEBRTC_NEGOCIATENEEDED: {
+              let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
+              if (!is_me && this.socket_reactive['WEBRTC_NEGOCIATENEEDED'])
+                this.socket_reactive['WEBRTC_NEGOCIATENEEDED'](m['data_str']);
             }
               break;
             default:

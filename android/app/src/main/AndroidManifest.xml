@@ -51,5 +51,8 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MICROPHONE" />
-    <uses-feature android:name="android.hardware.microphone"/>
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="true" />
+    <uses-feature android:name="android.hardware.camera.back" android:required="true" />
+    <uses-feature android:name="android.hardware.microphone" android:required="true"/>
 </manifest>
