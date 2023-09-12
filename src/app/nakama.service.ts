@@ -1890,7 +1890,7 @@ export class NakamaService {
               });
           } else { // 평상시에
             this.update_from_channel_msg(c, _is_official, _target);
-            if (c.content['match'])
+            if (c.content['match'] && c.sender_id != this.servers[_is_official][_target].session.user_id)
               this.JoinWebRTCMatch(c, _is_official, _target, this.channels_orig[_is_official][_target][c.channel_id]);
           }
         }
