@@ -4,7 +4,7 @@ import * as p5 from 'p5';
 import { WebrtcManageIoDevPage } from './webrtc-manage-io-dev/webrtc-manage-io-dev.page';
 import { P5ToastService } from './p5-toast.service';
 import { LanguageSettingService } from './language-setting.service';
-import { NakamaService } from './nakama.service';
+import { MatchOpCode, NakamaService } from './nakama.service';
 import { Match } from '@heroiclabs/nakama-js';
 
 @Injectable({
@@ -23,15 +23,14 @@ export class WebrtcService {
 
   localMedia: any;
   localStream: any;
-  localPeerConnection: any;
+  PeerConnection: any;
 
   remoteMedia: any;
-  remoteStream: any;
-  remotePeerConnection: any;
 
   /** 통화 시작 시간 */
   startTime: number;
 
+  TypeIn: any;
   /** WebRTC 자체 사용 여부  
    * p5 컨트롤러 개체를 다루기 위해 필요함
    */
@@ -52,6 +51,9 @@ export class WebrtcService {
   user_id: string;
   /** 현재 연결된 매치 */
   CurrentMatch: Match;
+  LocalOffer: any;
+  ReceivedOfferPart = '';
+  ReceivedAnswerPart = '';
 
   /** 기존 내용 삭제 및 WebRTC 기반 구축  
    * 마이크 권한을 확보하고 연결하기
@@ -61,14 +63,36 @@ export class WebrtcService {
    * @param nakama 통화가 진행중인 채널 정보
    */
   async initialize(type: 'video' | 'audio',
-    media_const?: MediaStreamConstraints, info?: RTCConfiguration, nakama?: any) {
+    media_const?: MediaStreamConstraints, info?: RTCConfiguration, nakama?: any, LeaveMatch?: boolean) {
     if (this.OnUse) {
       this.p5toast.show({
         text: this.lang.text['WebRTCDevManager']['AlreadyCalling'],
       });
       throw this.lang.text['WebRTCDevManager']['AlreadyCalling'];
     }
-    this.close_webrtc();
+    await this.close_webrtc(LeaveMatch);
+    this.TypeIn = type;
+    this.nakama.socket_reactive['WEBRTC_INIT_REQ_SIGNAL'] = async () => {
+      let data_str = JSON.stringify(this.LocalOffer);
+      let part = data_str.match(/(.{1,250})/g);
+      for (let i = 0, j = part.length; i < j; i++)
+        await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+          this.CurrentMatch.match_id, MatchOpCode.WEBRTC_REPLY_INIT_SIGNAL, encodeURIComponent(part[i]));
+      await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+        this.CurrentMatch.match_id, MatchOpCode.WEBRTC_REPLY_INIT_SIGNAL, encodeURIComponent('EOL'));
+    }
+    this.nakama.socket_reactive['WEBRTC_REPLY_INIT_SIGNAL'] = (data_str: string) => {
+      if (data_str == 'EOL') { // 수신 완료
+        this.createRemoteOfferFromAnswer(JSON.parse(this.ReceivedOfferPart));
+        this.ReceivedOfferPart = '';
+      } else this.ReceivedOfferPart += data_str;
+    }
+    this.nakama.socket_reactive['WEBRTC_RECEIVE_ANSWER'] = (data_str: string) => {
+      if (data_str == 'EOL') { // 수신 완료
+        this.ReceiveRemoteAnswer(JSON.parse(this.ReceivedAnswerPart));
+        this.ReceivedAnswerPart = '';
+      } else this.ReceivedAnswerPart += data_str;
+    }
     this.servers = info;
     if (nakama) {
       this.isOfficial = nakama.isOfficial;
@@ -83,8 +107,9 @@ export class WebrtcService {
       this.localMedia.style.width = '100%';
       this.localMedia.style.height = 'fit-content';
       this.localMedia.autoplay = true;
-      if (type != 'audio')
+      if (type == 'video')
         this.localMedia.playsInline = true;
+      this.localMedia.muted = true;
       document.body.appendChild(this.localMedia);
 
       // 원격 비디오 테스트 생성
@@ -93,7 +118,7 @@ export class WebrtcService {
       this.remoteMedia.style.width = '100%';
       this.remoteMedia.style.height = 'fit-content';
       this.remoteMedia.autoplay = true;
-      if (type != 'audio')
+      if (type == 'video')
         this.localMedia.playsInline = true;
       document.body.appendChild(this.remoteMedia);
 
@@ -113,6 +138,7 @@ export class WebrtcService {
         text: `${this.lang.text['WebRTCDevManager']['InitErr']}: ${e}`,
       });
     }
+    this.createCall();
   }
 
   createP5_panel() {
@@ -140,6 +166,7 @@ export class WebrtcService {
       p.setup = () => {
         p.noCanvas();
         div = p.createDiv();
+        div.id('outterDiv');
         div.style("position: absolute; left: 50%; top: 0px; z-index: 1");
         div.style("transform: translateX(-50%)");
         div.style("width: fit-content; height: fit-content");
@@ -186,9 +213,9 @@ export class WebrtcService {
         call_button.style('width', '40px');
         call_button.style('height', '40px');
         call_button.mouseClicked(() => {
-          this.createCall();
-          call_button.hide();
+          this.CreateAnswer();
         });
+        p['call_button'] = call_button;
 
         mute_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="mic-outline"></ion-icon>');
         mute_button.parent(content);
@@ -253,7 +280,7 @@ export class WebrtcService {
                   }
                 }
                 this.OnUse = false;
-                this.initialize('audio', info, this.servers);
+                this.initialize(this.TypeIn, info, this.servers);
               } catch (e) { }
             });
             v.present()
@@ -315,27 +342,25 @@ export class WebrtcService {
     }
 
     // Create peer connections and add behavior.
-    this.localPeerConnection = new RTCPeerConnection(this.servers);
+    this.PeerConnection = new RTCPeerConnection(this.servers);
     console.log('Created local peer connection object localPeerConnection.');
 
-    this.localPeerConnection.addEventListener('icecandidate', (ev: any) => this.handleConnection(ev));
-    this.localPeerConnection.addEventListener(
-      'iceconnectionstatechange', (ev: any) => this.handleConnectionChange(ev));
-
-    this.remotePeerConnection = new RTCPeerConnection(this.servers);
-    console.log('Created remote peer connection object remotePeerConnection.');
-
-    this.remotePeerConnection.addEventListener('icecandidate', (ev: any) => this.handleConnection(ev));
-    this.remotePeerConnection.addEventListener(
-      'iceconnectionstatechange', (ev: any) => this.handleConnectionChange(ev));
-    this.remotePeerConnection.addEventListener('addstream', (ev: any) => this.gotRemoteMediaStream(ev));
+    this.PeerConnection.addEventListener('icecandidate', (ev: any) => this.handleConnection(ev));
+    this.PeerConnection.addEventListener(
+      'connectionstatechange', (ev: any) => this.handleConnectionChange(ev));
 
     // Add local stream to connection and create offer to connect.
-    this.localPeerConnection.addStream(this.localStream);
+    this.PeerConnection.addStream(this.localStream);
     console.log('Added local stream to localPeerConnection.');
+  }
+
+  /** 전화 요청 생성 */
+  CreateOfffer() {
+    if (this.p5canvas)
+      this.p5canvas['call_button'].hide();
 
     console.log('localPeerConnection createOffer start.');
-    this.localPeerConnection.createOffer({
+    this.PeerConnection.createOffer({
       offerToReceiveVideo: 1,
     }).then((ev: any) => this.createdOffer(ev))
       .catch((e: any) => this.setSessionDescriptionError(e));
@@ -347,81 +372,41 @@ export class WebrtcService {
 
     if (iceCandidate) {
       const newIceCandidate = new RTCIceCandidate(iceCandidate);
-      const otherPeer = this.getOtherPeer(peerConnection);
 
-      otherPeer.addIceCandidate(newIceCandidate)
-        .then(() => {
-          this.handleConnectionSuccess(peerConnection);
-        }).catch((error: any) => {
-          this.handleConnectionFailure(peerConnection, error);
-        });
-
-      console.log(`${this.getPeerName(peerConnection)} ICE candidate:\n` +
+      console.log(`ICE candidate:\n` +
         `${event.candidate.candidate}.`);
     }
   }
 
-  // Gets the "other" peer connection.
-  private getOtherPeer(peerConnection: any) {
-    return (peerConnection === this.localPeerConnection) ?
-      this.remotePeerConnection : this.localPeerConnection;
-  }
-
-  // Logs that the connection succeeded.
-  private handleConnectionSuccess(peerConnection: any) {
-    console.log(`${this.getPeerName(peerConnection)} addIceCandidate success.`);
-  };
-
   // Logs changes to the connection state.
   private handleConnectionChange(event: any) {
-    const peerConnection = event.target;
     console.log('ICE state change event: ', event);
-    console.log(`${this.getPeerName(peerConnection)} ICE state: ` +
-      `${peerConnection.iceConnectionState}.`);
-  }
-
-  // Logs that the connection failed.
-  private handleConnectionFailure(peerConnection: any, error: any) {
-    console.error(`${this.getPeerName(peerConnection)} failed to add ICE Candidate:\n` +
-      `${error.toString()}.`);
-  }
-
-  // Gets the name of a certain peer connection.
-  private getPeerName(peerConnection: any) {
-    return (peerConnection === this.localPeerConnection) ?
-      'localPeerConnection' : 'remotePeerConnection';
-  }
-
-  // Handles remote MediaStream success by adding it as the remoteVideo src.
-  private gotRemoteMediaStream(event: any) {
-    const mediaStream = event.stream;
-    this.remoteMedia.srcObject = mediaStream;
-    this.remoteStream = mediaStream;
-    console.log('Remote peer connection received remote stream.');
   }
 
   // Logs offer creation and sets peer connection session descriptions.
   private createdOffer(description: any) {
     console.log(`Offer from localPeerConnection:\n${description.sdp}`);
+    this.LocalOffer = description;
 
-    console.log('localPeerConnection setLocalDescription start.');
-    this.localPeerConnection.setLocalDescription(description)
+    console.log('createdOffer: PeerConnection.setLocalDescription');
+    this.PeerConnection.setLocalDescription(description)
       .then(() => {
-        this.setLocalDescriptionSuccess(this.localPeerConnection);
+        this.setLocalDescriptionSuccess(this.PeerConnection);
       }).catch((e: any) => this.setSessionDescriptionError(e));
-    this.createRemoteOfferFromAnswer(description);
   }
 
   /** 상대방이 생성한 offer를 받음 */
   createRemoteOfferFromAnswer(description: any) {
-    console.log('remotePeerConnection setRemoteDescription start.');
-    this.remotePeerConnection.setRemoteDescription(description)
+    console.log('createRemoteOfferFromAnswer: PeerConnection.setRemoteDescription');
+    this.PeerConnection.setRemoteDescription(description)
       .then(() => {
-        this.setRemoteDescriptionSuccess(this.remotePeerConnection);
+        this.setRemoteDescriptionSuccess(this.PeerConnection);
       }).catch((e: any) => this.setSessionDescriptionError(e));
+  }
 
-    console.log('remotePeerConnection createAnswer start.');
-    this.remotePeerConnection.createAnswer()
+  /** 응답해주기 */
+  CreateAnswer() {
+    this.PeerConnection.createAnswer()
       .then((desc: any) => this.createdAnswer(desc))
       .catch((e: any) => this.setSessionDescriptionError(e));
   }
@@ -437,23 +422,31 @@ export class WebrtcService {
   }
 
   // Logs answer to offer creation and sets peer connection session descriptions.
-  private createdAnswer(description: any) {
-    console.log(`Answer from remotePeerConnection:\n${description.sdp}.`);
+  private async createdAnswer(description: any) {
+    console.log('createdAnswer: PeerConnection.setLocalDescription');
+    if (this.p5canvas)
+      this.p5canvas['call_button'].hide();
 
-    console.log('remotePeerConnection setLocalDescription start.');
-    this.remotePeerConnection.setLocalDescription(description)
+    this.PeerConnection.setLocalDescription(description)
       .then(() => {
-        this.setLocalDescriptionSuccess(this.remotePeerConnection);
+        this.setLocalDescriptionSuccess(this.PeerConnection);
       }).catch((e: any) => this.setSessionDescriptionError(e));
-    this.ReceiveRemoteAnswer(description);
+
+    let data_str = JSON.stringify(description);
+    let part = data_str.match(/(.{1,250})/g);
+    for (let i = 0, j = part.length; i < j; i++)
+      await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+        this.CurrentMatch.match_id, MatchOpCode.WEBRTC_RECEIVE_ANSWER, encodeURIComponent(part[i]));
+    await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+      this.CurrentMatch.match_id, MatchOpCode.WEBRTC_RECEIVE_ANSWER, encodeURIComponent('EOL'));
   }
 
   /** 상대방으로부터 답변을 받음 */
   ReceiveRemoteAnswer(description: any) {
-    console.log('localPeerConnection setRemoteDescription start.');
-    this.localPeerConnection.setRemoteDescription(description)
+    console.log('ReceiveRemoteAnswer: PeerConnection.setRemoteDescription');
+    this.PeerConnection.setRemoteDescription(description)
       .then(() => {
-        this.setRemoteDescriptionSuccess(this.localPeerConnection);
+        this.setRemoteDescriptionSuccess(this.PeerConnection);
       }).catch((e: any) => this.setSessionDescriptionError(e));
   }
 
@@ -463,28 +456,25 @@ export class WebrtcService {
 
   // Logs success when setting session description.
   private setDescriptionSuccess(peerConnection: any, functionName: any) {
-    const peerName = this.getPeerName(peerConnection);
-    console.log(`${peerName} ${functionName} complete.`);
+    console.log(`Local ${functionName} complete.`);
   }
 
   /** 통화 종료하기 */
-  HangUpCall() {
+  async HangUpCall(leaveMatch: boolean) {
     this.isCallable = true;
     this.isConnected = false;
-    if (this.localPeerConnection)
-      this.localPeerConnection.close();
-    if (this.remotePeerConnection)
-      this.remotePeerConnection.close();
-    this.localPeerConnection = null;
-    this.remotePeerConnection = null;
+    if (this.PeerConnection)
+      this.PeerConnection.close();
+    this.PeerConnection = undefined;
     try {
-      this.nakama.servers[this.isOfficial][this.target].socket.leaveMatch(this.CurrentMatch.match_id);
+      if (leaveMatch)
+        await this.nakama.servers[this.isOfficial][this.target].socket.leaveMatch(this.CurrentMatch.match_id);
     } catch (e) { }
   }
 
   /** webrtc 관련 개체 전부 삭제 */
-  close_webrtc() {
-    this.HangUpCall();
+  async close_webrtc(LeaveMatch = true) {
+    await this.HangUpCall(LeaveMatch);
     if (this.localMedia) this.localMedia.remove();
     if (this.remoteMedia) this.remoteMedia.remove();
     this.OnUse = false;
@@ -494,10 +484,15 @@ export class WebrtcService {
       this.localStream.getVideoTracks().forEach((track: any) => track.stop());
       this.localStream.getAudioTracks().forEach((track: any) => track.stop());
     }
-    if (this.remoteStream) {
-      this.remoteStream.getVideoTracks().forEach((track: any) => track.stop());
-      this.remoteStream.getAudioTracks().forEach((track: any) => track.stop());
-    }
+    this.localMedia = undefined;
+    this.localStream = undefined;
+    this.remoteMedia = undefined;
+    this.ReceivedOfferPart = '';
+    this.ReceivedAnswerPart = '';
+    this.TypeIn = undefined;
+    delete this.nakama.socket_reactive['WEBRTC_INIT_REQ_SIGNAL'];
+    delete this.nakama.socket_reactive['WEBRTC_REPLY_INIT_SIGNAL'];
+    delete this.nakama.socket_reactive['WEBRTC_RECEIVE_ANSWER'];
     this.servers = undefined;
   }
 }

@@ -5,7 +5,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChannelMessage } from '@heroiclabs/nakama-js';
 import { LoadingController, ModalController, NavController } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
-import { NakamaService } from 'src/app/nakama.service';
+import { MatchOpCode, NakamaService } from 'src/app/nakama.service';
 import * as p5 from "p5";
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { StatusManageService } from 'src/app/status-manage.service';
@@ -249,6 +249,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         await this.nakama.servers[this.isOfficial][this.target].socket
           .writeChatMessage(this.info['id'], { match: this.webrtc.CurrentMatch.match_id });
         this.scroll_down_logs();
+        this.webrtc.CreateOfffer();
       } catch (e) {
         console.log('webrtc 시작단계 오류: ', e);
       }
@@ -824,6 +825,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         user_id: this.info['info']['id'] || this.info['info']['user_id'],
         channel_id: this.info['id'],
       });
+      this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+        this.webrtc.CurrentMatch.match_id, MatchOpCode.WEBRTC_INIT_REQ_SIGNAL, encodeURIComponent(''))
     } catch (e) {
       console.log('참여 실패: ', e);
       switch (e.code) {

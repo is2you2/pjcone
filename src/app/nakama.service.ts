@@ -55,8 +55,12 @@ export enum MatchOpCode {
   ENGINE_PPT = 13,
   /** 새로운 채널에 참여됨 */
   ADD_CHANNEL = 14,
-  /** WebRTC 시그널링 */
-  WEBRTC_SIGNAL = 15,
+  /** WebRTC 시작 요청 */
+  WEBRTC_INIT_REQ_SIGNAL = 20,
+  /** 초기 요청에 응답 */
+  WEBRTC_REPLY_INIT_SIGNAL = 21,
+  /** 답변에 반응하기 */
+  WEBRTC_RECEIVE_ANSWER = 22,
 }
 
 @Injectable({
@@ -1833,8 +1837,22 @@ export class NakamaService {
               this.get_group_list_from_server(_is_official, _target);
             }
               break;
-            case MatchOpCode.WEBRTC_SIGNAL: {
-              console.log('무엇을 받았습니까: ', m);
+            case MatchOpCode.WEBRTC_INIT_REQ_SIGNAL: {
+              let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
+              if (!is_me && this.socket_reactive['WEBRTC_INIT_REQ_SIGNAL'])
+                this.socket_reactive['WEBRTC_INIT_REQ_SIGNAL']();
+            }
+              break;
+            case MatchOpCode.WEBRTC_REPLY_INIT_SIGNAL: {
+              let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
+              if (!is_me && this.socket_reactive['WEBRTC_REPLY_INIT_SIGNAL'])
+                this.socket_reactive['WEBRTC_REPLY_INIT_SIGNAL'](m['data_str']);
+            }
+              break;
+            case MatchOpCode.WEBRTC_RECEIVE_ANSWER: {
+              let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
+              if (!is_me && this.socket_reactive['WEBRTC_RECEIVE_ANSWER'])
+                this.socket_reactive['WEBRTC_RECEIVE_ANSWER'](m['data_str']);
             }
               break;
             default:
