@@ -378,14 +378,9 @@ export class WebrtcService {
     // Get local media stream tracks.
     const videoTracks = this.localStream.getVideoTracks();
     const audioTracks = this.localStream.getAudioTracks();
-    if (videoTracks.length > 0)
-      console.log(`Using video device: ${videoTracks[0].label}.`);
-    if (audioTracks.length > 0)
-      console.log(`Using audio device: ${audioTracks[0].label}.`);
 
     // Create peer connections and add behavior.
     this.PeerConnection = new RTCPeerConnection(this.servers);
-    console.log('Created local peer connection object localPeerConnection.');
 
     this.PeerConnection.addEventListener('icecandidate', (ev: any) => this.handleConnection(ev));
     this.PeerConnection.addEventListener(
@@ -408,7 +403,6 @@ export class WebrtcService {
       });
     // Add local stream to connection and create offer to connect.
     this.PeerConnection.addStream(this.localStream);
-    console.log('Added local stream to localPeerConnection.');
     this.PeerConnection.addEventListener('addstream', (ev: any) => {
       this.remoteMedia.srcObject = ev.stream;
     });
@@ -437,7 +431,6 @@ export class WebrtcService {
     if (this.p5canvas)
       this.p5canvas['call_button'].hide();
 
-    console.log('localPeerConnection createOffer start.');
     this.PeerConnection.createOffer({
       offerToReceiveVideo: 1,
     }).then((ev: any) => this.createdOffer(ev))
@@ -463,10 +456,8 @@ export class WebrtcService {
 
   // Logs offer creation and sets peer connection session descriptions.
   private createdOffer(description: any) {
-    console.log(`Offer from localPeerConnection:\n${description.sdp}`);
     this.LocalOffer = description;
 
-    console.log('createdOffer: PeerConnection.setLocalDescription');
     this.PeerConnection.setLocalDescription(description)
       .then(() => {
         this.setLocalDescriptionSuccess(this.PeerConnection);
@@ -475,7 +466,6 @@ export class WebrtcService {
 
   /** 상대방이 생성한 offer를 받음 */
   createRemoteOfferFromAnswer(description: any) {
-    console.log('createRemoteOfferFromAnswer: PeerConnection.setRemoteDescription');
     this.PeerConnection.setRemoteDescription(description)
       .then(() => {
         this.setRemoteDescriptionSuccess(this.PeerConnection);
@@ -501,7 +491,6 @@ export class WebrtcService {
 
   // Logs answer to offer creation and sets peer connection session descriptions.
   private async createdAnswer(description: any) {
-    console.log('createdAnswer: PeerConnection.setLocalDescription');
     if (this.p5canvas)
       this.p5canvas['call_button'].hide();
 
@@ -523,7 +512,6 @@ export class WebrtcService {
 
   /** 상대방으로부터 답변을 받음 */
   async ReceiveRemoteAnswer(description: any) {
-    console.log('ReceiveRemoteAnswer: PeerConnection.setRemoteDescription: ', description);
     this.PeerConnection.setRemoteDescription(description)
       .then(() => {
         this.setRemoteDescriptionSuccess(this.PeerConnection);
