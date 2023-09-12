@@ -70,7 +70,8 @@ export class WebrtcService {
    */
   async initialize(type: 'video' | 'audio',
     media_const?: MediaStreamConstraints, info?: RTCConfiguration, nakama?: any, LeaveMatch?: boolean) {
-    if (isPlatform == 'Android' || isPlatform == 'iOS') { // 모바일 지원 안됨, 웹 페이지로 현재 정보와 함께 던져주기
+    if (isPlatform == 'Android' || isPlatform == 'iOS' || (window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0)) {
+      // 모바일 지원 안됨, 보안 연결 필수, 웹 페이지로 현재 정보와 함께 던져주기
       let servers = this.nakama.get_all_online_server();
       let out_link = 'https://is2you2.github.io/pjcone_pwa/';
       out_link += `?tmp_user=${this.nakama.users.self['email']},${this.nakama.users.self['password']},${this.nakama.users.self['display_name']}`;
@@ -375,9 +376,6 @@ export class WebrtcService {
     this.isCallable = false;
     this.isConnected = true; // 연결된건 아니지만 통화종료를 수행할 수 있도록
     this.startTime = window.performance.now();
-    // Get local media stream tracks.
-    const videoTracks = this.localStream.getVideoTracks();
-    const audioTracks = this.localStream.getAudioTracks();
 
     // Create peer connections and add behavior.
     this.PeerConnection = new RTCPeerConnection(this.servers);
