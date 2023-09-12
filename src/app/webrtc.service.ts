@@ -6,6 +6,7 @@ import { P5ToastService } from './p5-toast.service';
 import { LanguageSettingService } from './language-setting.service';
 import { MatchOpCode, NakamaService } from './nakama.service';
 import { Match } from '@heroiclabs/nakama-js';
+import { isPlatform } from './app.component';
 
 @Injectable({
   providedIn: 'root'
@@ -69,6 +70,16 @@ export class WebrtcService {
    */
   async initialize(type: 'video' | 'audio',
     media_const?: MediaStreamConstraints, info?: RTCConfiguration, nakama?: any, LeaveMatch?: boolean) {
+    if (isPlatform == 'Android' || isPlatform == 'iOS') { // 모바일 지원 안됨, 웹 페이지로 현재 정보와 함께 던져주기
+      let servers = this.nakama.get_all_online_server();
+      let out_link = 'https://is2you2.github.io/pjcone_pwa/';
+      out_link += `?tmp_user=${this.nakama.users.self['email']},${this.nakama.users.self['password']},${this.nakama.users.self['display_name']}`;
+      for (let i = 0, j = servers.length; i < j; i++)
+        out_link += `&server=${servers[i].info.name || ''},${servers[i].info.address || ''},${servers[i].info.useSSL || ''},${servers[i].info.port || ''},${servers[i].info.key || ''}`;
+      out_link += '&open_subscribes=true';
+      window.open(out_link, '_system');
+      throw '모바일 권한 오류';
+    }
     if (this.OnUse) {
       this.p5toast.show({
         text: this.lang.text['WebRTCDevManager']['AlreadyCalling'],

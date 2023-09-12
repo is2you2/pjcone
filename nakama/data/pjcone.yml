@@ -15,6 +15,7 @@ session:
     # encryption_key: defaultencryptionkey
     # refresh_encryption_key: defaultrefreshencryptionkey
     # refresh_token_expiry_sec: 3600
+    # single_socket: true
 
 logger:
     stdout: true
