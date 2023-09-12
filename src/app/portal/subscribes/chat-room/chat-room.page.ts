@@ -824,9 +824,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         target: this.target,
         user_id: this.info['info']['id'] || this.info['info']['user_id'],
         channel_id: this.info['id'],
-      });
-      this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
-        this.webrtc.CurrentMatch.match_id, MatchOpCode.WEBRTC_INIT_REQ_SIGNAL, encodeURIComponent(''))
+      }, false);
+      await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+        msg.content.match, MatchOpCode.WEBRTC_INIT_REQ_SIGNAL, encodeURIComponent(''))
     } catch (e) {
       console.log('참여 실패: ', e);
       switch (e.code) {
