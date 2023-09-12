@@ -5,7 +5,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChannelMessage } from '@heroiclabs/nakama-js';
 import { LoadingController, ModalController, NavController } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
-import { MatchOpCode, NakamaService } from 'src/app/nakama.service';
+import { NakamaService } from 'src/app/nakama.service';
 import * as p5 from "p5";
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { StatusManageService } from 'src/app/status-manage.service';
@@ -24,7 +24,6 @@ import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { QrSharePage } from '../../settings/qr-share/qr-share.page';
 import { QuickShareReviewPage } from './quick-share-review/quick-share-review.page';
 import { WebrtcService } from 'src/app/webrtc.service';
-import { P5ToastService } from 'src/app/p5-toast.service';
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -60,7 +59,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
     private camera: Camera,
     private webrtc: WebrtcService,
-    private p5toast: P5ToastService,
   ) { }
 
   /** 채널 정보 */
@@ -811,37 +809,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }).then(v => v.present());
   }
 
-  /** WebRTC 통화 채널에 참가하기 */
-  async JoinWebRTCMatch(msg: any) {
-    try {
-      try {
-        this.webrtc.CurrentMatch = await this.nakama.servers[this.isOfficial][this.target].socket.joinMatch(msg.content.match);
-      } catch (e) {
-        throw e;
-      }
-      await this.webrtc.initialize('audio', undefined, undefined, {
-        isOfficial: this.isOfficial,
-        target: this.target,
-        user_id: this.info['info']['id'] || this.info['info']['user_id'],
-        channel_id: this.info['id'],
-      }, false);
-      await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
-        msg.content.match, MatchOpCode.WEBRTC_INIT_REQ_SIGNAL, encodeURIComponent(''))
-    } catch (e) {
-      console.log('참여 실패: ', e);
-      switch (e.code) {
-        case 4:
-          this.p5toast.show({
-            text: this.lang.text['ChatRoom']['MatchExpiration'],
-          });
-          break;
-        default:
-          this.p5toast.show({
-            text: `${this.lang.text['ChatRoom']['JoinMatchFailed']}: ${e}`,
-          });
-          break;
-      }
-    }
+  JoinWebRTCMatch(msg: any) {
+    this.nakama.JoinWebRTCMatch(msg, this.isOfficial, this.target, this.info);
   }
 
   /** 메시지 추가시마다 메시지 상태를 업데이트 (기존 html 연산)  

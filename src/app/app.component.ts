@@ -13,6 +13,7 @@ import { NakamaService } from './nakama.service';
 import { AdMob } from "@capacitor-community/admob";
 import { LanguageSettingService } from './language-setting.service';
 import { GlobalActService } from './global-act.service';
+import { WebrtcService } from './webrtc.service';
 /** 페이지가 돌고 있는 플렛폼 구분자 */
 export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'DesktopPWA';
 /** 이미지 등 자료 링크용(웹 사이트 host) */
@@ -36,6 +37,7 @@ export class AppComponent {
     alertCtrl: AlertController,
     private lang: LanguageSettingService,
     global: GlobalActService,
+    _webrtc: WebrtcService,
   ) {
     if (platform.is('desktop'))
       isPlatform = 'DesktopPWA';

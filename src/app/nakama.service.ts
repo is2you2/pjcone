@@ -1697,6 +1697,8 @@ export class NakamaService {
   match_act = {};
   /** 매니저의 할 일이 실시간 업데이트될 수 있도록 도움 (from match) */
   AddTodoManageUpdateAct: Function;
+  /** 수신된 통화에 즉각 반응하기 위한 함수 링크 */
+  WebRTCService: any;
   /** 소켓 서버에 연결 */
   connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', _CallBack = (_socket: Socket) => { }) {
     this.servers[_is_official][_target].socket.connect(
@@ -1888,6 +1890,8 @@ export class NakamaService {
               });
           } else { // 평상시에
             this.update_from_channel_msg(c, _is_official, _target);
+            if (c.content['match'])
+              this.JoinWebRTCMatch(c, _is_official, _target, this.channels_orig[_is_official][_target][c.channel_id]);
           }
         }
         socket.ondisconnect = (_e) => {
@@ -2054,7 +2058,9 @@ export class NakamaService {
           || this.channels_orig[_is_official][_target][msg.channel_id]['info']['display_name']
           || this.channels_orig[_is_official][_target][msg.channel_id]['title']
           || this.lang.text['Subscribes']['noTitiedChat'],
-        body: c.content['msg'] || c.content['noti'] || `(${this.lang.text['ChatRoom']['attachments']})`,
+        body: c.content['msg'] || c.content['noti']
+          || (c.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined)
+          || `(${this.lang.text['ChatRoom']['attachments']})`,
         extra_ln: {
           page: {
             component: 'ChatRoomPage',
@@ -2134,8 +2140,42 @@ export class NakamaService {
       this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
     this.saveListedMessage([c], this.channels_orig[_is_official][_target][c.channel_id], _is_official, _target);
     let hasFile = c.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
-    this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile + (original_msg || c.content['noti'] || '');
+    this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile +
+      (original_msg || c.content['noti'] || (c.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined) || '');
     this.save_channels_with_less_info();
+  }
+
+  /** WebRTC 통화 채널에 참가하기 */
+  async JoinWebRTCMatch(msg: any, _is_official: string, _target: string, c_info: any) {
+    try {
+      try {
+        this.WebRTCService.CurrentMatch = await this.servers[_is_official][_target].socket.joinMatch(msg.content.match);
+      } catch (e) {
+        throw e;
+      }
+      await this.WebRTCService.initialize('audio', undefined, undefined, {
+        isOfficial: _is_official,
+        target: _target,
+        user_id: c_info['info']['id'] || c_info['info']['user_id'],
+        channel_id: c_info['id'],
+      }, false);
+      await this.servers[_is_official][_target].socket.sendMatchState(
+        msg.content.match, MatchOpCode.WEBRTC_INIT_REQ_SIGNAL, encodeURIComponent(''))
+    } catch (e) {
+      console.log('참여 실패: ', e);
+      switch (e.code) {
+        case 4:
+          this.p5toast.show({
+            text: this.lang.text['ChatRoom']['MatchExpiration'],
+          });
+          break;
+        default:
+          this.p5toast.show({
+            text: `${this.lang.text['ChatRoom']['JoinMatchFailed']}: ${e}`,
+          });
+          break;
+      }
+    }
   }
 
   /** 메시지를 엔터 단위로 분리, 메시지 내 하이퍼링크가 있는 경우 검토  

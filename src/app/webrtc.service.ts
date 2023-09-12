@@ -17,7 +17,9 @@ export class WebrtcService {
     private p5toast: P5ToastService,
     private lang: LanguageSettingService,
     private nakama: NakamaService,
-  ) { }
+  ) {
+    this.nakama.WebRTCService = this;
+  }
 
   p5canvas: p5;
 
