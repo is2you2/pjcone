@@ -30,6 +30,8 @@ export class WeblinkGenPage implements OnInit {
     servers: [] as ServerInfo[],
     groups: [],
     group_dedi: undefined,
+    open_prv_channel: '',
+    open_channel: false,
   }
 
   servers: ServerInfo[] = [];
@@ -97,6 +99,18 @@ export class WeblinkGenPage implements OnInit {
       this.result_address += `tmp_user=${this.userInput.tmp_user.email || ''},${this.userInput.tmp_user.password || ''},${this.userInput.tmp_user.display_name || ''}`;
       count++;
     }
+    if (this.userInput.open_prv_channel) {
+      this.result_address += count ? '&' : '?';
+      this.result_address += 'open_prv_channel=';
+      this.result_address += `${this.userInput.open_prv_channel},${this.servers[0].isOfficial},${this.userInput.servers[0].target}`;
+      count++;
+    }
+    if (this.userInput.open_channel) {
+      this.result_address += count ? '&' : '?';
+      this.result_address += 'open_channel=';
+      this.result_address += `${this.userInput.groups[0]['id']},${this.userInput.groups[0]['server']['isOfficial']},${this.userInput.groups[0]['server']['target']}`;
+      count++;
+    }
   }
 
   copy_result_address() {
@@ -104,4 +118,12 @@ export class WeblinkGenPage implements OnInit {
       .catch(_e => clipboard.write(this.result_address));
   }
 
+  async paste_user_id() {
+    if (this.userInput.open_prv_channel)
+      this.userInput.open_prv_channel = '';
+    else await this.mClipboard.paste()
+      .then(v => this.userInput.open_prv_channel = v)
+      .catch(async _e => this.userInput.open_prv_channel = await clipboard.read());
+    this.information_changed();
+  }
 }

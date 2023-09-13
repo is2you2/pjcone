@@ -66,4 +66,17 @@
         [placeholder]="lang.text['Profile']['name_placeholder']"></ion-input>
     </ion-item>
   </div>
+  <ion-item-divider>
+    <ion-label>{{lang.text['WebLinkGen']['AutoOpenChannel']}}</ion-label>
+  </ion-item-divider>
+  <ion-item button (click)="userInput.open_channel = !userInput.open_channel; information_changed()"
+    [disabled]="!userInput.servers.length || !userInput.groups.length || userInput.open_prv_channel != ''">
+    <ion-label>{{lang.text['WebLinkGen']['OpenGroupChannel']}}</ion-label>
+    <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.open_channel" slot="end"></ion-toggle>
+  </ion-item>
+  <ion-item button [disabled]="!userInput.servers.length || userInput.open_channel" (click)="paste_user_id()">
+    <ion-label>{{lang.text['WebLinkGen']['OpenPrivateChannel']}}</ion-label>
+    <ion-label class="ion-text-end" color="medium">{{userInput.open_prv_channel ?
+      userInput.open_prv_channel : lang.text['WebLinkGen']['ClickToPaste']}}</ion-label>
+  </ion-item>
 </ion-content>

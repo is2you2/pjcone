@@ -109,26 +109,22 @@ export class AppComponent {
           })
       }
       if (init['open_prv_channel']) {
-        for (let i = 0, j = init['open_prv_channel'].length; i < j; i++) {
-          let sep = init['open_prv_channel'][i].split(',');
-          json.push({
-            type: 'open_prv_channel',
-            user_id: sep[0],
-            isOfficial: sep[1],
-            target: sep[2],
-          });
-        }
+        let sep = init['open_prv_channel'][0].split(',');
+        json.push({
+          type: 'open_prv_channel',
+          user_id: sep[0],
+          isOfficial: sep[1],
+          target: sep[2],
+        });
       }
       if (init['open_channel']) {
-        for (let i = 0, j = init['open_channel'].length; i < j; i++) {
-          let sep = init['open_channel'][i].split(',');
-          json.push({
-            type: 'open_channel',
-            group_id: sep[0],
-            isOfficial: sep[1],
-            target: sep[2],
-          });
-        }
+        let sep = init['open_channel'][0].split(',');
+        json.push({
+          type: 'open_channel',
+          group_id: sep[0],
+          isOfficial: sep[1],
+          target: sep[2],
+        });
       }
       nakama.act_from_QRInfo(JSON.stringify(json));
     });
