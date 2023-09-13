@@ -2982,6 +2982,21 @@ export class NakamaService {
             v.present();
           });
           break;
+        case 'open_prv_channel': // 1:1 대화 열기 (폰에서 넘어가기 보조용)
+          for (let i = 0; i < 10; i++)
+            try {
+              await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], (c) => {
+                if (c) this.go_to_chatroom_without_admob_act(c);
+              }, true);
+              break;
+            } catch (e) {
+              await new Promise((done) => {
+                setTimeout(() => {
+                  done(undefined);
+                }, 500);
+              });
+            }
+          break;
         default: // 동작 미정 알림(debug)
           throw "지정된 틀 아님";
       }
