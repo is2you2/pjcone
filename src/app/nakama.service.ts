@@ -2953,24 +2953,23 @@ export class NakamaService {
           break;
         case 'group': // 그룹 자동 등록 시도
           // 시작과 동시에 진입할 때 서버 연결 시간을 고려함
-          await new Promise((done: any) => {
-            let check_initialize = () => {
-              if (this.statusBar.settings.groupServer == 'online')
-                done();
-              else setTimeout(() => {
-                done();
-              }, 8000);
+          for (let i = 0, j = 20; i < j; i++)
+            try {
+              await this.try_add_group(json[i]);
+              break;
+            } catch (e) {
+              await new Promise((done) => {
+                setTimeout(() => {
+                  done(undefined);
+                }, 500);
+              });
+              if (i == j - 1) {
+                console.log('QRAct_try_add_group_catch: ', e);
+                this.p5toast.show({
+                  text: `${this.lang.text['Nakama']['FailedToAddGroup']}: ${e}`,
+                });
+              }
             }
-            check_initialize();
-          });
-          try {
-            await this.try_add_group(json[i]);
-          } catch (e) {
-            console.log('QRAct_try_add_group_catch: ', e);
-            this.p5toast.show({
-              text: `${this.lang.text['Nakama']['FailedToAddGroup']}: ${e}`,
-            });
-          }
           break;
         case 'EnginePPTLink': // 엔진PPT를 컴퓨터와 연결하기
           await this.modalCtrl.create({
@@ -2986,6 +2985,21 @@ export class NakamaService {
           for (let i = 0; i < 10; i++)
             try {
               await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], (c) => {
+                if (c) this.go_to_chatroom_without_admob_act(c);
+              }, true);
+              break;
+            } catch (e) {
+              await new Promise((done) => {
+                setTimeout(() => {
+                  done(undefined);
+                }, 500);
+              });
+            }
+          break;
+        case 'open_channel': // 그룹 대화 열기 (폰에서 넘어가기 보조용)
+          for (let i = 0; i < 10; i++)
+            try {
+              await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], (c) => {
                 if (c) this.go_to_chatroom_without_admob_act(c);
               }, true);
               break;
