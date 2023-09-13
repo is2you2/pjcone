@@ -36,12 +36,27 @@ export class WebrtcManageIoDevPage implements OnInit {
     }
   }
 
+  ionViewWillEnter() {
+    try {
+      let video_input = localStorage.getItem('VideoInputDev');
+      this.VideoInput.value = Number(video_input) || 0;
+    } catch (e) { }
+    try {
+      let audio_input = localStorage.getItem('AudioInputDev');
+      this.AudioInput.value = Number(audio_input) || 0;
+    } catch (e) { }
+  }
+
   saveSetup() {
     let result = {};
-    if (this.VideoInput && this.VideoInput.value !== undefined)
+    if (this.VideoInput && this.VideoInput.value !== undefined) {
       result['videoinput'] = this.VideoInputs[this.VideoInput.value];
-    if (this.AudioInput && this.AudioInput.value !== undefined)
+      localStorage.setItem('VideoInputDev', this.VideoInput.value);
+    }
+    if (this.AudioInput && this.AudioInput.value !== undefined) {
       result['audioinput'] = this.AudioInputs[this.AudioInput.value];
+      localStorage.setItem('AudioInputDev', this.AudioInput.value);
+    }
     if (this.AudioOutput && this.AudioOutput.value !== undefined)
       result['audiooutput'] = this.AudioOutputs[this.AudioOutput.value];
     this.modalCtrl.dismiss(result);

@@ -69,7 +69,7 @@ export class WebrtcService {
    * @param nakama 통화가 진행중인 채널 정보
    */
   async initialize(type: 'video' | 'audio',
-    media_const?: MediaStreamConstraints, info?: RTCConfiguration, nakama?: any, LeaveMatch?: boolean) {
+    media_const?: MediaStreamConstraints, nakama?: any, LeaveMatch?: boolean) {
     if (isPlatform == 'Android' || isPlatform == 'iOS' || (window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0)) {
       // 모바일 지원 안됨, 보안 연결 필수, 웹 페이지로 현재 정보와 함께 던져주기
       let servers = this.nakama.get_all_online_server();
@@ -120,7 +120,6 @@ export class WebrtcService {
         this.CreateAnswer();
       } else this.ReceivedOfferPart += data_str;
     }
-    this.servers = info;
     if (nakama) {
       this.isOfficial = nakama.isOfficial;
       this.target = nakama.target;
@@ -152,12 +151,26 @@ export class WebrtcService {
       let dev_list = await this.getDeviceList();
       let audioId: string;
       let videoId: string;
-      for (let i = 0, j = dev_list.length; i < j; i++)
+      let saved_vid_index = Number(localStorage.getItem('VideoInputDev') ?? NaN);
+      let saved_aud_index = Number(localStorage.getItem('AudioInputDev') ?? NaN);
+      for (let i = 0, j = dev_list.length, vid_index = 0, aud_index = 0; i < j; i++)
         if (!audioId || !videoId) {
-          if (!audioId && dev_list[i].kind == 'audioinput')
-            audioId = dev_list[i].deviceId;
-          if (!videoId && dev_list[i].kind == 'videoinput')
-            videoId = dev_list[i].deviceId;
+          if (!audioId && dev_list[i].kind == 'audioinput') {
+            if (Number.isNaN(saved_aud_index)) {
+              audioId = dev_list[i].deviceId;
+              localStorage.setItem('AudioInputDev', `${aud_index}`);
+            } else if (aud_index == saved_aud_index)
+              audioId = dev_list[i].deviceId;
+            aud_index++;
+          }
+          if (!videoId && dev_list[i].kind == 'videoinput') {
+            if (Number.isNaN(saved_vid_index)) {
+              videoId = dev_list[i].deviceId;
+              localStorage.setItem('AudioInputDev', `${vid_index}`);
+            } else if (vid_index == saved_vid_index)
+              videoId = dev_list[i].deviceId;
+            vid_index++;
+          }
         } else break;
       // 로컬 미디어 정보 관리
       if (!media_const) {
@@ -568,6 +581,5 @@ export class WebrtcService {
     delete this.nakama.socket_reactive['WEBRTC_ICE_CANDIDATES'];
     delete this.nakama.socket_reactive['WEBRTC_NEGOCIATENEEDED'];
     this.IceCandidates.length = 0;
-    this.servers = undefined;
   }
 }

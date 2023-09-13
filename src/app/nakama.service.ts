@@ -2153,7 +2153,7 @@ export class NakamaService {
       } catch (e) {
         throw e;
       }
-      await this.WebRTCService.initialize('audio', undefined, undefined, {
+      await this.WebRTCService.initialize('audio', undefined, {
         isOfficial: _is_official,
         target: _target,
         user_id: c_info['info']['id'] || c_info['info']['user_id'],

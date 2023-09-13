@@ -237,7 +237,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     isHide: true,
     act: async () => {
       try {
-        await this.webrtc.initialize('audio', undefined, undefined, {
+        await this.webrtc.initialize('audio', undefined, {
           isOfficial: this.isOfficial,
           target: this.target,
           channel_id: this.info['id'],
