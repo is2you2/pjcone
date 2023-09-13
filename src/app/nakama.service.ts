@@ -2040,6 +2040,7 @@ export class NakamaService {
         text: `${this.lang.text['Nakama']['AddChannelFailed']}: ${err_info}`,
       });
       _CallBack(undefined);
+      throw `${this.lang.text['Nakama']['AddChannelFailed']}: ${err_info}`;
     });
   }
 
