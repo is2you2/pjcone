@@ -284,6 +284,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.nakama.removeBanner();
     this.ChatLogs = document.getElementById('chatroom_div');
+    this.ChatLogs.onscroll = (_ev: any) => {
+      if (this.ChatLogs.scrollHeight == this.ChatLogs.scrollTop + this.ChatLogs.clientHeight)
+        this.init_last_message_viewer();
+    }
     this.nakama.ChatroomLinkAct = (c: any, _fileinfo: FileInfo) => {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
       this.messages.length = 0;

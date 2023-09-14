@@ -130,6 +130,10 @@ export class MinimalChatPage implements OnInit {
     this.title.setTitle(get_address ? this.lang.text['MinimalChat']['WebTitle_group'] : this.lang.text['MinimalChat']['WebTitle_ran']);
     this.noti.Current = this.Header;
     this.minimal_chat_log = document.getElementById('minimal_chat_div');
+    this.minimal_chat_log.onscroll = (_ev: any) => {
+      if (this.minimal_chat_log.scrollHeight == this.minimal_chat_log.scrollTop + this.minimal_chat_log.clientHeight)
+        this.scroll_down();
+    }
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', `assets/icon/simplechat.png`);
 
