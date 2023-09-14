@@ -25,12 +25,20 @@
         <ion-label>..</ion-label>
       </ion-item>
     </div>
-    <div *ngIf="cant_dedicated && CurrentDir == ''">
-      <ion-item button (click)="SelectImportFolder()">
-        <ion-icon slot="start" name="arrow-down-circle"></ion-icon>
-        <ion-label> {{lang.text['UserFsDir']['ImportFolder']}} </ion-label>
-      </ion-item>
-      <input hidden type="file" id="folder_sel_id" webkitdirectory (change)="inputImageSelected($event)">
+    <div *ngIf="CurrentDir == ''">
+      <div *ngIf="cant_dedicated">
+        <ion-item button (click)="SelectImportFolder()">
+          <ion-icon slot="start" name="arrow-down-circle"></ion-icon>
+          <ion-label> {{lang.text['UserFsDir']['ImportFolder']}} </ion-label>
+        </ion-item>
+        <input hidden type="file" id="folder_sel_id" webkitdirectory (change)="inputImageSelected($event)">
+      </div>
+      <div *ngIf="!cant_dedicated">
+        <ion-item button (click)="BrowseExternalFiles()">
+          <ion-icon slot="start" name="arrow-down-circle"></ion-icon>
+          <ion-label>{{lang.text['UserFsDir']['OpenExtFolder']}}</ion-label>
+        </ion-item>
+      </div>
     </div>
     <div *ngFor="let folder of DirList">
       <ion-item *ngIf="CurrentDir == folder.dir" button (click)="SelectFolder(folder)">
@@ -78,12 +86,12 @@
     </ion-accordion-group>
   </ion-list>
   <ion-list *ngIf="!InAppBrowser">
-    <ion-item disabled>
+    <ion-item button (click)="InAppBrowser = true">
       <ion-icon slot="start" name="folder"></ion-icon>
-      <ion-label>/sdcard/Android/data/org.pjcone.portal/files</ion-label>
+      <ion-label color="medium">/sdcard/Android/data/org.pjcone.portal/files</ion-label>
     </ion-item>
     <div *ngFor="let folder of ExternalFolder">
-      <ion-item *ngIf="folder.isDirectory" button (click)="importFolderMiddleAct(folder)">
+      <ion-item *ngIf="folder.isDirectory" button disabled (click)="importFolderMiddleAct(folder)">
         <ion-icon slot="start" name="folder"></ion-icon>
         <ion-label>{{folder.name}}</ion-label>
       </ion-item>

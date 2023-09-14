@@ -247,6 +247,11 @@ export class UserFsDirPage implements OnInit {
     this.ExternalFolder.length = 0;
     this.InAppBrowser = false;
     this.ExternalFolder = await this.file.listDir(this.file.externalApplicationStorageDirectory, 'files');
+    this.ExternalFolder.sort();
+    this.ExternalFolder.sort((a, _b) => {
+      if (a.isDirectory) return -1;
+      else return 1;
+    });
   }
 
   async importFolderMiddleAct(entry: any) {
@@ -261,7 +266,7 @@ export class UserFsDirPage implements OnInit {
   async importThisFolder(entry: any) {
     let path = entry.nativeURL.substring(0, entry.nativeURL.length - 1);
     let last_sep = path.lastIndexOf('/');
-    let RecursiveEntry = await this.file.listDir(path.substring(0, last_sep) + '/', path.substring(last_sep + 1));
+    let RecursiveEntry: any[] = await this.file.listDir(path.substring(0, last_sep) + '/', path.substring(last_sep + 1));
     for (let i = 0, j = RecursiveEntry.length; i < j; i++)
       if (RecursiveEntry[i].isDirectory)
         await this.importThisFolder(RecursiveEntry[i]);
@@ -274,7 +279,7 @@ export class UserFsDirPage implements OnInit {
         console.log(RecursiveEntry[i].name);
         try {
           let readFile = await this.file.readAsDataURL(target_folder, RecursiveEntry[i].name);
-          console.log(readFile);
+          console.log('불러오기 성공: ', readFile);
         } catch (e) {
           console.log('불러오기 실패: ', e);
         }
