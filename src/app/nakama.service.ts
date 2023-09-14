@@ -1383,8 +1383,9 @@ export class NakamaService {
 
   /** 그룹 리스트 로컬/리모트에서 삭제하기 (방장일 경우)  
    * 그룹 이미지 삭제처리
+   * @param [_remove_history=false] 로컬 파일을 남겨두는지 여부
    */
-  async remove_group_list(info: any, _is_official: string, _target: string) {
+  async remove_group_list(info: any, _is_official: string, _target: string, _remove_history = false) {
     try { // 내가 방장이면 해산처리 우선, 이 외의 경우 기록 삭제
       let is_creator = info['creator_id'] == this.servers[_is_official][_target].session.user_id;
       if (this.servers[_is_official][_target] && is_creator) {
@@ -1408,14 +1409,18 @@ export class NakamaService {
     } catch (e) {
       console.log(e);
       try {
-        await this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
+        if (_remove_history)
+          await this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
       } catch (e) {
         console.log(e);
       }
     }
   }
 
-  /** 그룹 내에서 사용했던 서버 파일들 전부 삭제 */
+  /** 그룹 내에서 사용했던 서버 파일들 전부 삭제  
+   * 채널 관리자라면 모든 파일 삭제  
+   * 구성원이라면 자신의 파일만 삭제하기
+   */
   async remove_channel_files(_is_official: string, _target: string, channel_id: string, is_creator?: boolean) {
     try {
       await this.servers[_is_official][_target].client.rpc(
@@ -2317,6 +2322,7 @@ export class NakamaService {
         this.save_groups_with_less_info();
         this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${c.group_id}.img`);
         this.channels_orig[_is_official][_target][c.channel_id]['status'] = 'missing';
+        this.servers[_is_official][_target].socket.leaveChat(c.channel_id);
         break;
       default:
         console.warn('예상하지 못한 그룹 행동: ', c);

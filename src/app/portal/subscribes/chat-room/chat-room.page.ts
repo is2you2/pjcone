@@ -24,6 +24,7 @@ import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { QrSharePage } from '../../settings/qr-share/qr-share.page';
 import { QuickShareReviewPage } from './quick-share-review/quick-share-review.page';
 import { WebrtcService } from 'src/app/webrtc.service';
+import { P5ToastService } from 'src/app/p5-toast.service';
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -59,6 +60,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
     private camera: Camera,
     private webrtc: WebrtcService,
+    private p5toast: P5ToastService,
   ) { }
 
   /** 채널 정보 */
@@ -103,6 +105,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     act: async () => {
       if (this.info['redirect']['type'] != 3) {
         try {
+          await this.nakama.remove_group_list(
+            this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target, false);
           await this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
           this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
           this.extended_buttons.forEach(button => {
@@ -679,7 +683,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }
 
-  send(with_key = false) {
+  async send(with_key = false) {
     if (with_key && (isPlatform == 'Android' || isPlatform == 'iOS')) return;
     if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
     if (!this.userInput.text.trim() && !this.userInput['file'] && !this.userInput['quickShare']) {
@@ -712,7 +716,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.nakama.content_to_hyperlink(tmp);
     this.sending_msg.push(tmp);
     try {
-      this.nakama.servers[this.isOfficial][this.target].socket
+      await this.nakama.servers[this.isOfficial][this.target].socket
         .writeChatMessage(this.info['id'], result).then(v => {
           /** 업로드가 진행중인 메시지 개체 */
           if (FileAttach) { // 첨부 파일이 포함된 경우
@@ -732,6 +736,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
         });
     } catch (e) {
+      switch (e.code) {
+        case 3: // 채널 연결 실패 (삭제된 경우)
+          this.p5toast.show({
+            text: this.lang.text['ChatRoom']['FailedToJoinChannel'],
+          });
+          break;
+        default: // 검토 필요 오류
+          console.log('오류 검토 필요: ', e);
+          this.p5toast.show({
+            text: `${this.lang.text['ChatRoom']['FailedToSend']}: ${e.message}`,
+          });
+          break;
+      }
       setTimeout(() => {
         this.userInput.text = '';
         this.userInputTextArea.style.height = '36px';
