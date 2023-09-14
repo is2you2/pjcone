@@ -39,7 +39,7 @@ SPDX-License-Identifier: MIT -->
   <div *ngIf="nakama.channels.length">
     <ion-item *ngFor="let channel of nakama.channels" button (click)="go_to_chatroom(channel)">
       <div class="additional_form status_bar_double"
-        [style]="'background-color: ' + statusBar.colors[(channel['info'] ? (channel['info']['status'] || channel['status']) : channel['status']) || 'offline']">
+        [style]="'background-color: ' + statusBar.colors[(channel['status'] ? channel['status'] : channel['info']['status']) || 'offline']">
         <div *ngIf="channel['is_new']" class="new_circle"></div>
       </div>
       <div class="additional_form bg_img_form">
