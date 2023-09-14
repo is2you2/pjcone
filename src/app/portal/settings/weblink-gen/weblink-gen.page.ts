@@ -43,6 +43,9 @@ export class WeblinkGenPage implements OnInit {
     this.isSSLConnect = window.location.protocol == 'https:';
     this.servers = this.nakama.get_all_server_info();
     this.groups = this.nakama.rearrange_group_list();
+    for (let i = this.groups.length - 1; i >= 0; i--)
+      if (this.groups[i]['status'] == 'missing')
+        this.groups.splice(i, 1);
   }
 
   SelectGroupServer(ev: any) {
