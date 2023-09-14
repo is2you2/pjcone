@@ -109,6 +109,26 @@ export class NakamaService {
     this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
       if (e && v) this.users.self = JSON.parse(v);
     });
+    // 저장된 사설서버들 정보 불러오기
+    this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
+      if (e && v) { // 내용이 있을 때에만 동작
+        let list: string[] = v.split('\n');
+        list.forEach(ele => {
+          let sep = ele.split(',');
+          let info: ServerInfo = {
+            isOfficial: sep[1],
+            name: sep[2],
+            target: sep[3],
+            address: sep[4],
+            port: +sep[5],
+            useSSL: Boolean(sep[6] == 'true'),
+          }
+          this.servers[info.isOfficial][info.target] = {};
+          this.servers[info.isOfficial][info.target].info = info;
+          this.init_server(info);
+        });
+      }
+      this.catch_group_server_header('offline');
     // 서버별 그룹 정보 불러오기
     this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
       if (e && v)
@@ -131,26 +151,6 @@ export class NakamaService {
       // 채널 불러오기
       this.load_channel_list();
     });
-    // 저장된 사설서버들 정보 불러오기
-    this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
-      if (e && v) { // 내용이 있을 때에만 동작
-        let list: string[] = v.split('\n');
-        list.forEach(ele => {
-          let sep = ele.split(',');
-          let info: ServerInfo = {
-            isOfficial: sep[1],
-            name: sep[2],
-            target: sep[3],
-            address: sep[4],
-            port: +sep[5],
-            useSSL: Boolean(sep[6] == 'true'),
-          }
-          this.servers[info.isOfficial][info.target] = {};
-          this.servers[info.isOfficial][info.target].info = info;
-          this.init_server(info);
-        });
-      }
-      this.catch_group_server_header('offline');
     });
     // 마지막 상태바 정보 불러오기: 사용자의 연결 여부 의사가 반영되어있음
     this.indexed.loadTextFromUserPath('servers/list.json', (e, v) => {
@@ -1572,14 +1572,8 @@ export class NakamaService {
       await this.servers[_is_official][_target].client.rpc(
         this.servers[_is_official][_target].session,
         'remove_account_fn', { user_id: this.servers[_is_official][_target].session.user_id });
-      this.p5toast.show({
-        text: this.lang.text['GroupServer']['DeleteAccountSucc'],
-      });
     } catch (e) {
       console.log('remove_server_err: ', e);
-      this.p5toast.show({
-        text: this.lang.text['GroupServer']['DeleteAccountFailed'],
-      });
     }
     // 로그인 상태일 경우 로그오프처리
     if (this.statusBar.groupServer[_is_official][_target] == 'online') {
@@ -1624,6 +1618,7 @@ export class NakamaService {
     try {
       if (!this.groups['deleted']) this.groups['deleted'] = {};
       if (!this.groups['deleted'][_target]) this.groups['deleted'][_target] = {};
+      this.groups['deleted'][_target] = JSON.parse(JSON.stringify(this.groups[_is_official][_target]));
       let group_ids = Object.keys(this.groups['deleted'][_target]);
       group_ids.forEach(_gid => {
         this.groups['deleted'][_target][_gid]['server']['name'] = this.lang.text['Nakama']['DeletedServer'];
