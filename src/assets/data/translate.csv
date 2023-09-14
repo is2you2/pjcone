@@ -394,7 +394,7 @@ EnterURI,이미지 주소 입력,Enter image url
 NoNotiMsg,전달할 메시지를 입력해주세요,Please enter your message
 Send,발송,Send
 UserList,사용자 목록,Users
-UserCreate,생성날짜,Create at
+UserCreate,생성일시,Create at
 ForceLeave,이 사용자를 삭제합니다,Delete this user
 ApplyLeave,탈퇴,Withdraw
 UserLeaved,사용자 탈퇴됨,Withdrawn
