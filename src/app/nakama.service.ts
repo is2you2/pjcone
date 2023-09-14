@@ -2954,7 +2954,7 @@ export class NakamaService {
           break;
         case 'group': // 그룹 자동 등록 시도
           // 시작과 동시에 진입할 때 서버 연결 시간을 고려함
-          for (let j = 0, k = 10; j < k; j++)
+          for (let j = 0, k = 20; j < k; j++)
             try {
               await this.try_add_group(json[i]);
               break;
@@ -2983,7 +2983,7 @@ export class NakamaService {
           });
           break;
         case 'open_prv_channel': // 1:1 대화 열기 (폰에서 넘어가기 보조용)
-          for (let j = 0; j < 10; j++)
+          for (let j = 0; j < 20; j++)
             try {
               await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], (c) => {
                 if (c) this.go_to_chatroom_without_admob_act(c);
@@ -2998,7 +2998,7 @@ export class NakamaService {
             }
           break;
         case 'open_channel': // 그룹 대화 열기 (폰에서 넘어가기 보조용)
-          for (let j = 0; j < 10; j++)
+          for (let j = 0; j < 20; j++)
             try {
               await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], (c) => {
                 if (c) this.go_to_chatroom_without_admob_act(c);
