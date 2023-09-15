@@ -423,6 +423,23 @@ export class IonicViewerPage implements OnInit {
   /** 내장 그림판을 이용하여 그림 편집하기 */
   async modify_image() {
     switch (this.FileInfo['viewer']) {
+      case 'image': // 이미지인 경우, url 일 때
+        if (this.FileInfo.url) {
+          let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+          loading.present();
+          try {
+            let blob = await fetch(this.FileInfo['url']).then(r => r.blob());
+            await this.indexed.saveBlobToUserPath(blob, `tmp_files/external_image_edit/image_download.${this.FileInfo.file_ext}`);
+            this.image_info['path'] = `tmp_files/external_image_edit/image_download.${this.FileInfo.file_ext}`;
+            this.modalCtrl.dismiss(this.image_info);
+          } catch (e) {
+            this.p5toast.show({
+              text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
+            });
+          }
+          loading.dismiss();
+        } else this.modalCtrl.dismiss(this.image_info);
+        break;
       case 'text': // 텍스트를 이미지화하기
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
         loading.present();
@@ -469,7 +486,7 @@ export class IonicViewerPage implements OnInit {
         }
         break;
       default:
-        this.modalCtrl.dismiss(this.image_info);
+        console.log('편집 불가 파일 정보: ', this.FileInfo);
         break;
     }
   }

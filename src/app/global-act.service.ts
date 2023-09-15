@@ -399,8 +399,7 @@ export class GlobalActService {
     if (msg_content['url']) {
       switch (msg_content['viewer']) {
         case 'text':
-          let fetched = await fetch(msg_content['url']);
-          let text = await fetched.text();
+          let text = await fetch(msg_content['url']).then(r => r.text());
           msg_content['text'] = text.split('\n');
           msg_content['thumbnail'] = text.split('\n');
           break;
