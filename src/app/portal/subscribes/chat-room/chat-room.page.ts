@@ -401,7 +401,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   async create_selected_thumbnail() {
     if (!this.userInput.file.blob || this.userInput.file.blob['size'] === undefined) { // 인앱 탐색기에서 넘어오는 경우
       this.global.set_viewer_category_from_ext(this.userInput.file);
-      this.userInput.file.blob = await this.indexed.loadBlobFromUserPath(this.userInput.file.path, this.userInput.file.type);
+      if (this.userInput.file.url) {
+        this.userInput.file.thumbnail = this.userInput.file.url;
+        this.userInput.file.typeheader = this.userInput.file.viewer;
+        return;
+      } else this.userInput.file.blob = await this.indexed.loadBlobFromUserPath(this.userInput.file.path, this.userInput.file.type);
     }
     let FileURL = URL.createObjectURL(this.userInput.file.blob);
     this.userInput.file['typeheader'] = this.userInput.file.blob.type.split('/')[0] || this.userInput.file.viewer;
