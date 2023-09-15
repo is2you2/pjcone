@@ -129,28 +129,28 @@ export class NakamaService {
         });
       }
       this.catch_group_server_header('offline');
-    // 서버별 그룹 정보 불러오기
-    this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
-      if (e && v)
-        this.groups = JSON.parse(v);
-      let all_groups = this.rearrange_group_list();
-      all_groups.forEach(group => {
-        if (group['status'] != 'missing') {
-          this.indexed.loadTextFromUserPath(`servers/${group['server']['isOfficial']}/${group['server']['target']}/groups/${group.id}.img`, (e, v) => {
-            if (e && v) group['img'] = v.replace(/"|=|\\/g, '');
-          });
-          delete group['status'];
-          let _is_official = group['server']['isOfficial'];
-          let _target = group['server']['target'];
-          if (group['users'])
-            for (let i = 0, j = group['users'].length; i < j; i++)
-              if (!group['users'][i]['is_me'])
-                group['users'][i]['user'] = this.load_other_user(group['users'][i]['user']['id'], _is_official, _target);
-        }
+      // 서버별 그룹 정보 불러오기
+      this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
+        if (e && v)
+          this.groups = JSON.parse(v);
+        let all_groups = this.rearrange_group_list();
+        all_groups.forEach(group => {
+          if (group['status'] != 'missing') {
+            this.indexed.loadTextFromUserPath(`servers/${group['server']['isOfficial']}/${group['server']['target']}/groups/${group.id}.img`, (e, v) => {
+              if (e && v) group['img'] = v.replace(/"|=|\\/g, '');
+            });
+            delete group['status'];
+            let _is_official = group['server']['isOfficial'];
+            let _target = group['server']['target'];
+            if (group['users'])
+              for (let i = 0, j = group['users'].length; i < j; i++)
+                if (!group['users'][i]['is_me'])
+                  group['users'][i]['user'] = this.load_other_user(group['users'][i]['user']['id'], _is_official, _target);
+          }
+        });
+        // 채널 불러오기
+        this.load_channel_list();
       });
-      // 채널 불러오기
-      this.load_channel_list();
-    });
     });
     // 마지막 상태바 정보 불러오기: 사용자의 연결 여부 의사가 반영되어있음
     this.indexed.loadTextFromUserPath('servers/list.json', (e, v) => {
@@ -1521,6 +1521,8 @@ export class NakamaService {
   async count_channel_online_member(p: any, _is_official: string, _target: string) {
     let result_status = 'pending';
     try {
+      if (this.statusBar.groupServer[_is_official][_target] == 'offline')
+        throw '서버 오프라인';
       if (p['group_id']) { // 그룹 채널인 경우
         if (this.groups[_is_official][_target][p['group_id']]
           && this.groups[_is_official][_target][p['group_id']]['users']) {
