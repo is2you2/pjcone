@@ -232,7 +232,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this_file.typeheader = this_file.viewer;
         this.global.modulate_thumbnail(this_file, this_file.url);
         this.userInput.file = this_file;
-        this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
+        this.inputPlaceholder = `(${this.lang.text['ChatRoom']['FileLink']}: ${this.userInput.file.filename})`;
       } catch (e) {
         this.p5toast.show({
           text: `${this.lang.text['ChatRoom']['FailedToPasteData']}: ${e}`,
@@ -1020,9 +1020,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (msg.content['url']) {
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
         loading.present();
-        let file = await fetch(_path).then(r => r.blob());
-        await this.indexed.saveBlobToUserPath(file, 'tmp_files/chatroom/from_url.pck');
-        loading.dismiss();
+        try {
+          let file = await fetch(_path).then(r => r.blob());
+          await this.indexed.saveBlobToUserPath(file, 'tmp_files/chatroom/from_url.pck');
+          loading.dismiss();
+        } catch (e) {
+          loading.dismiss();
+          this.p5toast.show({
+            text: this.lang.text['ContentViewer']['fileSaveFailed'],
+          });
+          return;
+        }
       }
       this.modalCtrl.create({
         component: GodotViewerPage,
