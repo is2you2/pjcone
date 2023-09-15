@@ -25,6 +25,8 @@ import { QrSharePage } from '../../settings/qr-share/qr-share.page';
 import { QuickShareReviewPage } from './quick-share-review/quick-share-review.page';
 import { WebrtcService } from 'src/app/webrtc.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import clipboard from "clipboardy";
+import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -61,6 +63,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private camera: Camera,
     private webrtc: WebrtcService,
     private p5toast: P5ToastService,
+    private mClipboard: Clipboard,
   ) { }
 
   /** 채널 정보 */
@@ -189,13 +192,55 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   },
   { // 4
-    icon: 'document-attach-outline',
+    icon: 'document-outline',
     act: () => {
       if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
       document.getElementById(this.file_sel_id).click();
     }
+  }, { // 5
+    icon: 'document-attach-outline',
+    act: async () => {
+      try {
+        let pasted_url: string;
+        try {
+          pasted_url = await this.mClipboard.paste()
+        } catch (e) {
+          try {
+            pasted_url = await clipboard.read()
+          } catch (e) {
+            throw e;
+          }
+        }
+        let this_file: FileInfo = {};
+        this_file.url = pasted_url;
+        this_file['content_related_creator'] = [{
+          user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+          timestamp: new Date().getTime(),
+          display_name: this.nakama.users.self['display_name'],
+          various: 'link',
+        }];
+        this_file['content_creator'] = {
+          user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+          timestamp: new Date().getTime(),
+          display_name: this.nakama.users.self['display_name'],
+          various: 'link',
+        };
+        this_file.file_ext = this_file.url.split('.').pop().split('?').shift();
+        this_file.filename = `${this.lang.text['ChatRoom']['ExternalLinkFile']}.${this_file.file_ext}`;
+        this.global.set_viewer_category_from_ext(this_file);
+        this_file.type = '';
+        this_file.typeheader = this_file.viewer;
+        this.global.modulate_thumbnail(this_file, this_file.url);
+        this.userInput.file = this_file;
+        this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
+      } catch (e) {
+        this.p5toast.show({
+          text: `${this.lang.text['ChatRoom']['FailedToPasteData']}: ${e}`,
+        });
+      }
+    }
   },
-  { // 5
+  { // 6
     icon_img: 'voidDraw.png',
     act: async () => {
       if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
@@ -219,7 +264,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         v.present();
       });
     },
-  }, { // 6
+  }, { // 7
     icon: 'qr-code-outline',
     act: () => {
       this.modalCtrl.create({
@@ -236,7 +281,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         v.present();
       });
     }
-  }, { // 7
+  }, { // 8
     icon: 'call-outline',
     isHide: true,
     act: async () => {
@@ -418,7 +463,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
             this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
           this.extended_buttons[2].isHide = true;
-          this.extended_buttons[7].isHide = false;
+          this.extended_buttons[8].isHide = false;
         }
         break;
       case 3: // 그룹 대화라면
@@ -489,14 +534,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
    * 내 메시지 한정 썸네일을 생성하거나 열람 함수를 생성
    */
   check_if_send_msg(msg: any) {
-    for (let i = 0, j = this.sending_msg.length; i < j; i++) {
+    for (let i = 0, j = this.sending_msg.length; i < j; i++)
       if (msg.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id
         && msg.content['local_comp'] == this.sending_msg[i].content['local_comp']) {
         if (msg.content['filename']) this.auto_open_thumbnail(msg);
         this.sending_msg.splice(i, 1);
         break;
       }
-    }
   }
 
   /** 내가 보낸 메시지 한정, 자동으로 썸네일을 생성 (또는 생성 함수를 만들기) */
@@ -702,12 +746,18 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     let result: FileInfo = {};
     result['msg'] = this.userInput.text;
     let FileAttach = false;
+    let isURL = false;
     if (this.userInput.file) { // 파일 첨부시
       result['filename'] = this.userInput.file.filename;
-      result['filesize'] = this.userInput.file.size || this.userInput.file.blob.size;
       result['file_ext'] = this.userInput.file.file_ext;
       result['type'] = this.userInput.file.type;
-      result['partsize'] = Math.ceil(result['filesize'] / 120000);
+      try {
+        result['filesize'] = this.userInput.file.size || this.userInput.file.blob.size;
+        result['partsize'] = Math.ceil(result['filesize'] / 120000);
+      } catch (e) {
+        result['url'] = this.userInput.file.url;
+        isURL = true;
+      }
       result['msg'] = result['msg'];
       result['content_creator'] = this.userInput.file.content_creator;
       result['content_related_creator'] = this.userInput.file.content_related_creator;
@@ -723,7 +773,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       await this.nakama.servers[this.isOfficial][this.target].socket
         .writeChatMessage(this.info['id'], result).then(v => {
           /** 업로드가 진행중인 메시지 개체 */
-          if (FileAttach) { // 첨부 파일이 포함된 경우
+          if (FileAttach && !isURL) { // 첨부 파일이 포함된 경우, 링크는 아닌 경우
             // 로컬에 파일을 저장
             let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.file_ext}`;
             this.indexed.saveBlobToUserPath(this.userInput.file.blob, path, () => {
@@ -772,6 +822,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 메시지 내 파일 정보, 파일 다운받기 */
   file_detail(msg: any) {
+    if (msg.content['url']) {
+      msg.content['thumbnail'] = msg.content['url'];
+      this.open_viewer(msg, msg.content['url']);
+      return;
+    }
     let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
     this.indexed.checkIfFileExist(path, async (v) => {
       if (v) { // 파일이 존재하는 경우
@@ -856,6 +911,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.messages[i + 1]['showInfo']['date'] = Boolean(this.messages[i]['msgDate']) && (this.messages[i]['msgDate'] != this.messages[i + 1]['msgDate']);
       this.messages[i + 1]['showInfo']['sender'] = !this.messages[i + 1].content.noti && this.messages[i + 1].user_display_name && (this.messages[i]['isLastRead'] || this.messages[i].sender_id != this.messages[i + 1].sender_id || this.messages[i].content.noti || this.messages[i]['msgDate'] != this.messages[i + 1]['msgDate']);
     }
+    // url 링크 개체 즉시 불러오기
+    if (this.messages[i]['content']['url'])
+      this.messages[i]['content']['thumbnail'] = this.messages[i]['content']['url'];
   }
 
   /** 파일이 포함된 메시지 구조화, 자동 썸네일 작업 */
@@ -905,6 +963,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         component: IonicViewerPage,
         componentProps: {
           info: msg.content,
+          isURL: Boolean(msg.content['url']),
           path: _path,
           isOfficial: this.isOfficial,
           target: this.target,
@@ -951,14 +1010,21 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }
 
-  open_godot_viewer(msg: any, _path: string) {
+  async open_godot_viewer(msg: any, _path: string) {
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;
+      if (msg.content['url']) {
+        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+        loading.present();
+        let file = await fetch(_path).then(r => r.blob());
+        await this.indexed.saveBlobToUserPath(file, 'tmp_files/chatroom/from_url.pck');
+        loading.dismiss();
+      }
       this.modalCtrl.create({
         component: GodotViewerPage,
         componentProps: {
           info: msg.content,
-          path: _path,
+          path: msg.content['url'] ? 'tmp_files/chatroom/from_url.pck' : _path,
           isOfficial: this.isOfficial,
           target: this.target,
         },

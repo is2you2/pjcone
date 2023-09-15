@@ -150,6 +150,11 @@
     padding: 8px;
 }
 
+.thumnail_parts {
+    max-height: 96px;
+    overflow-y: scroll;
+}
+
 .transfer_count {
     align-self: flex-end;
     margin-left: 4px;

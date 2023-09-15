@@ -221,7 +221,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
       let filename = 'nakama.zip';
-      let blob = await fetch('assets/data/nakama,zip').then(r => r.blob());
+      let blob = await fetch('assets/data/nakama.zip').then(r => r.blob());
       try {
         await this.file.writeFile(this.file.externalDataDirectory, filename, blob);
         loading.dismiss();

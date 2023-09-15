@@ -2788,12 +2788,16 @@ export class NakamaService {
         break;
       }
     setTimeout(async () => {
-      msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
-      this.global.remove_req_file_info(msg, path);
-      let blob = await this.indexed.loadBlobFromUserPath(path, _msg.content['type'] || '')
-      let url = URL.createObjectURL(blob);
-      msg.content['path'] = path;
-      this.global.modulate_thumbnail(msg.content, url);
+      if (msg.content['url']) { // 링크
+        msg.content['thumbnail'] = msg.content['url'];
+      } else { // 서버에 업로드된 파일
+        msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
+        this.global.remove_req_file_info(msg, path);
+        let blob = await this.indexed.loadBlobFromUserPath(path, _msg.content['type'] || '')
+        let url = URL.createObjectURL(blob);
+        msg.content['path'] = path;
+        this.global.modulate_thumbnail(msg.content, url);
+      }
     }, 300);
   }
 

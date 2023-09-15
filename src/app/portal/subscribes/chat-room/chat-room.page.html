@@ -98,28 +98,28 @@ SPDX-License-Identifier: MIT -->
           </ion-item>
         </div>
         <table class="thumnails">
-          <tr *ngIf="userInput.quickShare" (click)="cancel_qrshare()">
+          <tr class="thumnail_parts" *ngIf="userInput.quickShare" (click)="cancel_qrshare()">
             <td style="padding: 8px; text-align: center;">
               <span>{{lang.text['Settings']['quickQRshare']}}</span>
             </td>
           </tr>
-          <tr *ngIf="userInput.file">
+          <tr *ngIf="userInput.file" class="thumnail_parts">
             <td>
               <div *ngIf="userInput.file" (click)="removeAttach()">
                 <div style="text-align: center; "> {{userInput.file['filename']}} </div>
                 <div *ngIf="userInput.file['thumbnail']">
                   <img id="ChatroomSelectedImage" *ngIf="userInput.file['typeheader'] == 'image'"
                     class="image_thumbnail" [src]="userInput.file['thumbnail']" [alt]="userInput.file['name']">
-                  <div *ngIf="userInput.file['typeheader'] == 'text'" style="display: grid;">
-                    <span *ngFor="let line of userInput.file['thumbnail']">
-                      {{line}}
-                    </span>
-                  </div>
+                </div>
+                <div *ngIf="userInput.file['typeheader'] == 'text'" style="display: grid;" class="thumnail_parts">
+                  <span *ngFor="let line of userInput.file['thumbnail']">
+                    {{line}}
+                  </span>
                 </div>
               </div>
             </td>
           </tr>
-          <tr *ngIf="last_message_viewer.user_id" (click)="scroll_down_logs()">
+          <tr class="thumnail_parts" *ngIf="last_message_viewer.user_id" (click)="scroll_down_logs()">
             <td class="bottom_thumbnail">
               <span [style]="'margin-right: 8px; color: #' + last_message_viewer.color">
                 <b>{{(last_message_viewer.is_me ? nakama.users.self['display_name'] :

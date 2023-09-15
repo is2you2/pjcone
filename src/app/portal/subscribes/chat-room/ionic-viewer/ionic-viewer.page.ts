@@ -54,8 +54,12 @@ export class IonicViewerPage implements OnInit {
     this.ContentBox = document.getElementById('ContentBox');
     this.FileHeader = document.getElementById('FileHeader');
     this.HasNoEditButton = this.navParams.get('no_edit') || false;
-    this.blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type']);
-    this.FileURL = URL.createObjectURL(this.blob);
+    if (this.navParams.get('isURL')) {
+      this.FileURL = this.FileInfo.url;
+    } else {
+      this.blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type']);
+      this.FileURL = URL.createObjectURL(this.blob);
+    }
     this.CreateContentInfo();
   }
 

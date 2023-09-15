@@ -25,7 +25,7 @@ export interface ContentCreatorInfo {
    * loaded: 외부에서 파일을 가져온 경우  
    * camera: 카메라 직접 촬영
    */
-  various?: 'loaded' | 'camera' | 'voidDraw';
+  various?: 'loaded' | 'camera' | 'voidDraw' | 'link';
   /** 콘텐츠 뷰어에서 최초 게시자 알리기 용 */
   publisher?: string;
   /** 공유되는 서버 기반 uid */
@@ -56,6 +56,8 @@ export interface FileInfo {
   thumbnail?: any;
   /** 뷰어 구분자 */
   viewer?: string;
+  /** 직접 파일이 아닌 url 링크로 받은 경우 */
+  url?: string;
 }
 
 /** 고도엔진과 공유되는 키값 */
@@ -394,6 +396,23 @@ export class GlobalActService {
 
   /** 메시지에 썸네일 콘텐츠를 생성 */
   async modulate_thumbnail(msg_content: FileInfo, ObjectURL: string) {
+    if (msg_content['url']) {
+      switch (msg_content['viewer']) {
+        case 'text':
+          let fetched = await fetch(msg_content['url']);
+          let text = await fetched.text();
+          msg_content['text'] = text.split('\n');
+          msg_content['thumbnail'] = text.split('\n');
+          break;
+        default:
+          msg_content['thumbnail'] = msg_content['url'];
+          break;
+      }
+      setTimeout(() => {
+        URL.revokeObjectURL(ObjectURL);
+      }, 100);
+      return;
+    }
     switch (msg_content['viewer']) {
       case 'image':
         msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(ObjectURL);
