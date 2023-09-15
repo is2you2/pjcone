@@ -582,7 +582,7 @@ export class NakamaService {
               lang_tag: navigator.language.split('-')[0] || this.lang.lang,
             });
           this.p5toast.show({
-            text: `${this.lang.text['Nakama']['RegisterUserSucc']}: ${info.target}`,
+            text: `${this.lang.text['Nakama']['RegisterUserSucc']}: ${info.name}`,
             lateable: true,
           });
           if (this.users.self['img'])
@@ -1179,6 +1179,12 @@ export class NakamaService {
             isOfficial: _is_official,
             target: _target,
           }
+          try {
+            this.channels_orig[_is_official][_target][_cid]['server']['name'] =
+              this.servers[_is_official][_target].info.name;
+          } catch (e) {
+            this.channels_orig[_is_official][_target][_cid]['server']['name'] = this.lang.text['Nakama']['DeletedServer'];
+          }
           switch (this.channels_orig[_is_official][_target][_cid]['redirect']['type']) {
             case 1: // 방 대화
               console.warn('방 대화 기능 준비중...');
@@ -1619,15 +1625,15 @@ export class NakamaService {
     // 로그인 상태일 경우 로그오프처리
     if (this.statusBar.groupServer[_is_official][_target] == 'online') {
       try {
+        if (this.servers[_is_official][_target].socket)
+          this.servers[_is_official][_target].socket.disconnect(true);
+      } catch (e) { }
+      try {
         await this.servers[_is_official][_target].client.sessionLogout(
           this.servers[_is_official][_target].session,
           this.servers[_is_official][_target].session.token,
           this.servers[_is_official][_target].session.refresh_token,
         )
-      } catch (e) { }
-      try {
-        if (this.servers[_is_official][_target].socket)
-          this.servers[_is_official][_target].socket.disconnect(true);
       } catch (e) { }
     }
     // 알림정보 삭제
