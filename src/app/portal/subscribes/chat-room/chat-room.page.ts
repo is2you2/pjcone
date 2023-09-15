@@ -283,7 +283,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }, { // 8
     icon: 'call-outline',
-    isHide: true,
+    isHide: window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0,
     act: async () => {
       try {
         await this.webrtc.initialize('audio', undefined, {
