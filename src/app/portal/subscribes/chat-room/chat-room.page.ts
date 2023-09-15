@@ -467,7 +467,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
             this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
           this.extended_buttons[2].isHide = true;
-          this.extended_buttons[8].isHide = false;
+          this.extended_buttons[8].isHide = this.extended_buttons[8].isHide || false;
         }
         break;
       case 3: // 그룹 대화라면
@@ -475,6 +475,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
         this.extended_buttons[1].isHide = true;
         delete this.extended_buttons[2].isHide;
+        console.log(this.extended_buttons[8].isHide);
+        this.extended_buttons[8].isHide = true;
         break;
       default:
         break;
