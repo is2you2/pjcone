@@ -27,6 +27,6 @@ export class ShareContentToOtherPage implements OnInit {
 
   go_to_chatroom(channel: any) {
     this.nakama.go_to_chatroom_without_admob_act(channel, this.navParams.get('file'));
-    this.modalCtrl.dismiss();
+    this.modalCtrl.dismiss(true);
   }
 }
