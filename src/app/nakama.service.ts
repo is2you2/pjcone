@@ -362,8 +362,8 @@ export class NakamaService {
   }
 
   /** 서버 연결하기 */
-  link_group(_is_official: string, _target: string) {
-    if (this.statusBar.groupServer[_is_official][_target] != 'online') {
+  link_group(_is_official: string, _target: string, _force = false) {
+    if (_force || this.statusBar.groupServer[_is_official][_target] == 'missing' || this.statusBar.groupServer[_is_official][_target] == 'offline') {
       this.statusBar.groupServer[_is_official][_target] = 'pending';
       this.catch_group_server_header('pending');
       if (this.users.self['online'])
@@ -2537,7 +2537,7 @@ export class NakamaService {
             handler: () => {
               delete this.noti_origin[_is_official][_target][this_noti.id];
               this.rearrange_notifications();
-              this.link_group(_is_official, _target)
+              this.link_group(_is_official, _target, true)
             }
           }]
         }).then(v => v.present());
