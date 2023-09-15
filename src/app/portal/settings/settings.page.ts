@@ -255,6 +255,10 @@ export class SettingsPage implements OnInit, OnDestroy {
     }
   }
 
+  open_playstore() {
+    window.open('https://play.google.com/store/apps/details?id=org.pjcone.portal', '_system');
+  }
+
   ngOnDestroy(): void {
     delete this.nakama.users.self['img'];
     delete this.nakama.on_socket_disconnected['settings_admin_check'];
