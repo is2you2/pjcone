@@ -45,7 +45,7 @@
     <ion-label>{{lang.text['WebLinkGen']['OpenChannelTab']}}</ion-label>
     <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.open_subscribes" slot="end"></ion-toggle>
   </ion-item>
-  <ion-item button (click)="userInput.use_tmp_user = !userInput.use_tmp_user; information_changed()">
+  <ion-item button (click)="toggle_tmp_user()">
     <ion-label>{{lang.text['WebLinkGen']['UseTempUser']}}</ion-label>
     <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.use_tmp_user" slot="end"></ion-toggle>
   </ion-item>

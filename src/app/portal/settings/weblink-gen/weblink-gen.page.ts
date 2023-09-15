@@ -116,6 +116,17 @@ export class WeblinkGenPage implements OnInit {
     }
   }
 
+  /** 임시 사용자 토글시 정보 삭제 동작을 포함 */
+  toggle_tmp_user() {
+    this.userInput.use_tmp_user = !this.userInput.use_tmp_user;
+    if (!this.userInput.use_tmp_user) {
+      this.userInput.tmp_user.display_name = undefined;
+      this.userInput.tmp_user.email = undefined;
+      this.userInput.tmp_user.password = undefined;
+    }
+    this.information_changed();
+  }
+
   copy_result_address() {
     this.mClipboard.copy(this.result_address)
       .catch(_e => clipboard.write(this.result_address));
