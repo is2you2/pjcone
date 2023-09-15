@@ -361,6 +361,45 @@ export class NakamaService {
     });
   }
 
+  /** 서버 연결하기 */
+  link_group(_is_official: string, _target: string) {
+    if (this.statusBar.groupServer[_is_official][_target] != 'online') {
+      this.statusBar.groupServer[_is_official][_target] = 'pending';
+      this.catch_group_server_header('pending');
+      if (this.users.self['online'])
+        this.init_session(this.servers[_is_official][_target].info);
+    } else { // 활동중이면 로그아웃처리
+      if (!this.on_socket_disconnected['group_unlink_by_user'])
+        this.on_socket_disconnected['group_unlink_by_user'] = () => {
+          this.set_group_statusBar('offline', _is_official, _target);
+        }
+      this.statusBar.groupServer[_is_official][_target] = 'offline';
+      this.catch_group_server_header('offline');
+      if (this.servers[_is_official][_target].session) {
+        this.servers[_is_official][_target].client.sessionLogout(
+          this.servers[_is_official][_target].session,
+          this.servers[_is_official][_target].session.token,
+          this.servers[_is_official][_target].session.refresh_token,
+        ).then(v => {
+          if (!v) console.warn('로그아웃 오류 검토 필요');
+          if (this.noti_origin[_is_official] && this.noti_origin[_is_official][_target])
+            delete this.noti_origin[_is_official][_target];
+          this.rearrange_notifications();
+        });
+      }
+      if (this.servers[_is_official][_target].socket)
+        this.servers[_is_official][_target].socket.disconnect(true);
+      if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
+        let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
+        channel_ids.forEach(_cid => {
+          if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
+            delete this.channels_orig[_is_official][_target][_cid]['status'];
+        });
+      }
+    }
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
+  }
+
   /** 모든 online 클라이언트 받아오기
    * @returns Nakama.Client[] == 'online'
    */
@@ -2490,6 +2529,18 @@ export class NakamaService {
           });
         break;
       case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
+        this.alertCtrl.create({
+          header: this.servers[_is_official][_target].info.name,
+          message: this.lang.text['Nakama']['LoginAgain'],
+          buttons: [{
+            text: this.lang.text['Profile']['login_toggle'],
+            handler: () => {
+              delete this.noti_origin[_is_official][_target][this_noti.id];
+              this.rearrange_notifications();
+              this.link_group(_is_official, _target)
+            }
+          }]
+        }).then(v => v.present());
         break;
       default:
         console.warn('예상하지 못한 알림 구분: ', this_noti.code);
@@ -2715,7 +2766,7 @@ export class NakamaService {
         v['request'] = `${v.code}-${v.subject}`;
         break;
       case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
-        v['request'] = `${v.code}-${v.subject}`;
+        v['request'] = `${this.servers[_is_official][_target].info.name}: ${this.lang.text['Nakama']['SessionLogout']}`;
         break;
       default:
         console.warn('확인되지 않은 실시간 알림_nakama_noti: ', v);

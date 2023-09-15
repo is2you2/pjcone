@@ -93,47 +93,12 @@ export class GroupServerPage implements OnInit {
     this.announce_update_profile = this.original_profile['display_name'] !== undefined;
   }
 
-  /** 서버 연결하기 */
   link_group(_is_official: string, _target: string) {
     if (this.isOverrideButtonPressed) {
       this.isOverrideButtonPressed = false;
       return;
     }
-    if (this.statusBar.groupServer[_is_official][_target] == 'offline' || this.statusBar.groupServer[_is_official][_target] == 'missing') {
-      this.statusBar.groupServer[_is_official][_target] = 'pending';
-      this.nakama.catch_group_server_header('pending');
-      if (this.nakama.users.self['online'])
-        this.nakama.init_session(this.nakama.servers[_is_official][_target].info);
-    } else { // 활동중이면 로그아웃처리
-      if (!this.nakama.on_socket_disconnected['group_unlink_by_user'])
-        this.nakama.on_socket_disconnected['group_unlink_by_user'] = () => {
-          this.nakama.set_group_statusBar('offline', _is_official, _target);
-        }
-      this.statusBar.groupServer[_is_official][_target] = 'offline';
-      this.nakama.catch_group_server_header('offline');
-      if (this.nakama.servers[_is_official][_target].session) {
-        this.nakama.servers[_is_official][_target].client.sessionLogout(
-          this.nakama.servers[_is_official][_target].session,
-          this.nakama.servers[_is_official][_target].session.token,
-          this.nakama.servers[_is_official][_target].session.refresh_token,
-        ).then(v => {
-          if (!v) console.warn('로그아웃 오류 검토 필요');
-          if (this.nakama.noti_origin[_is_official] && this.nakama.noti_origin[_is_official][_target])
-            delete this.nakama.noti_origin[_is_official][_target];
-          this.nakama.rearrange_notifications();
-        });
-      }
-      if (this.nakama.servers[_is_official][_target].socket)
-        this.nakama.servers[_is_official][_target].socket.disconnect(true);
-      if (this.nakama.channels_orig[_is_official] && this.nakama.channels_orig[_is_official][_target]) {
-        let channel_ids = Object.keys(this.nakama.channels_orig[_is_official][_target]);
-        channel_ids.forEach(_cid => {
-          if (this.nakama.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
-            delete this.nakama.channels_orig[_is_official][_target][_cid]['status'];
-        });
-      }
-    }
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
+    this.nakama.link_group(_is_official, _target);
   }
 
   /** 사설서버 주소 사용자 input */
