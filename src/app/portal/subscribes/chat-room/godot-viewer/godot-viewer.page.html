@@ -63,7 +63,7 @@ SPDX-License-Identifier: MIT -->
             nakama.users[isOfficial][target][content_creator.user_id]['display_name'])
             : content_creator.display_name) || lang.text['Profile']['noname_user']}}</ion-label>
         </ion-item>
-        <ion-item *ngIf="content_creator.various">
+        <ion-item *ngIf="content_creator.various" (click)="copy_url()" button>
           <ion-label>{{lang.text['ContentInfo']['SourceFrom']}}</ion-label>
           <ion-label class="ion-text-end"
             *ngIf="content_creator.various == 'loaded'">{{lang.text['GlobalAct']['variousCreator']}}</ion-label>
@@ -71,8 +71,7 @@ SPDX-License-Identifier: MIT -->
             *ngIf="content_creator.various == 'camera'">{{lang.text['GlobalAct']['FromCamera']}}</ion-label>
           <ion-label class="ion-text-end"
             *ngIf="content_creator.various == 'voidDraw'">{{lang.text['GlobalAct']['FromVoidDraw']}}</ion-label>
-          <ion-label class="ion-text-end"
-            *ngIf="content_creator.various == 'link'">{{lang.text['GlobalAct']['FromURL']}}</ion-label>
+          <ion-label class="ion-text-end" *ngIf="content_creator.various == 'link'">{{FileInfo['url']}}</ion-label>
         </ion-item>
         <ion-item>
           <ion-label>{{lang.text['ContentInfo']['TimeAt']}}</ion-label>
@@ -87,7 +86,7 @@ SPDX-License-Identifier: MIT -->
             <ion-label class="ion-text-end">{{worker.publisher ||
               worker.display_name || lang.text['Profile']['noname_user']}}</ion-label>
           </ion-item>
-          <ion-item>
+          <ion-item button (click)="copy_url()">
             <ion-label>{{lang.text['ContentInfo']['SourceFrom']}}</ion-label>
             <ion-label class="ion-text-end"
               *ngIf="worker.various == 'loaded'">{{lang.text['GlobalAct']['variousCreator']}}</ion-label>
@@ -95,8 +94,7 @@ SPDX-License-Identifier: MIT -->
               *ngIf="worker.various == 'camera'">{{lang.text['GlobalAct']['FromCamera']}}</ion-label>
             <ion-label class="ion-text-end"
               *ngIf="worker.various == 'voidDraw'">{{lang.text['GlobalAct']['FromVoidDraw']}}</ion-label>
-            <ion-label class="ion-text-end"
-              *ngIf="worker.various == 'link'">{{lang.text['GlobalAct']['FromURL']}}</ion-label>
+            <ion-label class="ion-text-end" *ngIf="worker.various == 'link'">{{FileInfo['url']}}</ion-label>
           </ion-item>
         </div>
         <ion-item button (click)="ShowContentInfoGodot.dismiss()">

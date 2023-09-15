@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { AlertController, IonModal, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import clipboard from 'clipboardy';
 import { isPlatform } from 'src/app/app.component';
 import { ContentCreatorInfo, GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -30,6 +32,7 @@ export class GodotViewerPage implements OnInit {
     private loadingCtrl: LoadingController,
     private p5toast: P5ToastService,
     public nakama: NakamaService,
+    private mClipboard: Clipboard,
   ) { }
 
   FileInfo: any;
@@ -185,5 +188,10 @@ export class GodotViewerPage implements OnInit {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
     this.global.godot_window['filename'] = this.FileInfo.filename;
     this.global.godot_window['create_thumbnail'](this.FileInfo);
+  }
+
+  copy_url() {
+    this.mClipboard.copy(this.FileInfo['url'])
+      .catch(_e => clipboard.write(this.FileInfo['url']));
   }
 }

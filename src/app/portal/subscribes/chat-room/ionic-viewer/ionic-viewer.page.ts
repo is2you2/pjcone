@@ -13,6 +13,8 @@ import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { ShareContentToOtherPage } from 'src/app/share-content-to-other/share-content-to-other.page';
 import { NakamaService } from 'src/app/nakama.service';
+import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
+import clipboard from 'clipboardy';
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -33,6 +35,7 @@ export class IonicViewerPage implements OnInit {
     private fileOpener: FileOpener,
     public global: GlobalActService,
     public nakama: NakamaService,
+    private mClipboard: Clipboard,
   ) { }
 
   blob: Blob;
@@ -587,5 +590,10 @@ export class IonicViewerPage implements OnInit {
       URL.revokeObjectURL(this.FileURL);
     let is_exist = this.file.checkFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
     if (is_exist) this.file.removeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
+  }
+
+  copy_url() {
+    this.mClipboard.copy(this.FileInfo['url'])
+      .catch(_e => clipboard.write(this.FileInfo['url']));
   }
 }
