@@ -909,13 +909,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.messages[i]['showInfo']['sender'] = !this.messages[i].content.noti && this.messages[i].user_display_name;
     // 이전 메시지와 정보를 비교하여 이전 메시지와 지금 메시지의 상태를 결정 (실시간 메시지 받기류)
     if (i - 1 >= 0) {
-      this.messages[i]['showInfo']['date'] = Boolean(this.messages[i]['msgDate']) && (this.messages[i]['msgDate'] != this.messages[i - 1]['msgDate']);;
-      this.messages[i]['showInfo']['sender'] = !this.messages[i].content.noti && this.messages[i].user_display_name && (this.messages[i - 1]['isLastRead'] || this.messages[i].sender_id != this.messages[i - 1].sender_id || this.messages[i - 1].content.noti || this.messages[i]['msgDate'] != this.messages[i - 1]['msgDate']);
+      this.messages[i]['showInfo']['date'] = Boolean(this.messages[i]['msgDate']) && (this.messages[i]['msgDate'] != this.messages[i - 1]['msgDate']);
+      this.messages[i]['showInfo']['sender'] = !this.messages[i].content.noti && this.messages[i].user_display_name && (this.messages[i - 1]['isLastRead'] || this.messages[i].sender_id != this.messages[i - 1].sender_id || this.messages[i - 1].content.noti || this.messages[i]['msgDate'] != this.messages[i - 1]['msgDate'] || this.messages[i]['msgTime'] != this.messages[i - 1]['msgTime']);
     }
     // 다음 메시지와 정보를 비교하여 다음 메시지의 상태를 결정 (기록 불러오기류)
     if (i + 1 < j) {
       this.messages[i + 1]['showInfo']['date'] = Boolean(this.messages[i]['msgDate']) && (this.messages[i]['msgDate'] != this.messages[i + 1]['msgDate']);
-      this.messages[i + 1]['showInfo']['sender'] = !this.messages[i + 1].content.noti && this.messages[i + 1].user_display_name && (this.messages[i]['isLastRead'] || this.messages[i].sender_id != this.messages[i + 1].sender_id || this.messages[i].content.noti || this.messages[i]['msgDate'] != this.messages[i + 1]['msgDate']);
+      this.messages[i + 1]['showInfo']['sender'] = !this.messages[i + 1].content.noti && this.messages[i + 1].user_display_name && (this.messages[i]['isLastRead'] || this.messages[i].sender_id != this.messages[i + 1].sender_id || this.messages[i].content.noti || this.messages[i]['msgDate'] != this.messages[i + 1]['msgDate'] || this.messages[i]['msgTime'] != this.messages[i + 1]['msgTime']);
     }
     // url 링크 개체 즉시 불러오기
     if (this.messages[i]['content']['url'])
