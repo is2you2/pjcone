@@ -111,12 +111,12 @@ SPDX-License-Identifier: MIT -->
           </ion-item>
           <ion-item button [disabled]="add_custom_tog">
             <ion-label>{{lang.text['GroupServer']['Key']}}</ion-label>
-            <ion-input disabled [(ngModel)]="dedicated_info.key" class="ion-text-right" placeholder="defaultkey">
+            <ion-input [(ngModel)]="dedicated_info.key" class="ion-text-right" placeholder="defaultkey">
             </ion-input>
           </ion-item>
           <ion-item button [disabled]="add_custom_tog">
             <ion-label>{{lang.text['GroupServer']['Port']}}</ion-label>
-            <ion-input disabled [(ngModel)]="dedicated_info.port" class="ion-text-right" type="number"
+            <ion-input [(ngModel)]="dedicated_info.port" class="ion-text-right" type="number"
               placeholder="7350">
             </ion-input>
           </ion-item>
