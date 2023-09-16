@@ -283,7 +283,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }, { // 8
     icon: 'call-outline',
-    isHide: window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0,
     act: async () => {
       try {
         await this.webrtc.initialize('audio', undefined, {
@@ -466,8 +465,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
           else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
             this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
+          delete this.extended_buttons[1].isHide;
           this.extended_buttons[2].isHide = true;
-          this.extended_buttons[8].isHide = this.extended_buttons[8].isHide || false;
+          this.extended_buttons[8].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
         }
         break;
       case 3: // 그룹 대화라면
@@ -475,7 +475,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
         this.extended_buttons[1].isHide = true;
         delete this.extended_buttons[2].isHide;
-        console.log(this.extended_buttons[8].isHide);
         this.extended_buttons[8].isHide = true;
         break;
       default:
