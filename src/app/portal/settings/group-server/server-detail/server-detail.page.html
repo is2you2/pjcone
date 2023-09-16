@@ -11,7 +11,8 @@
   <ion-item-divider>
     <ion-label>{{lang.text['ServerDetail']['copy_scan_below']}}</ion-label>
   </ion-item-divider>
-  <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="Loading" (click)="copy_startup_address()">
+  <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="Loading"
+    (click)="copy_startup_address()">
   <ion-item button>
     <ion-label>{{lang.text['GroupServer']['DisplayName']}}</ion-label>
     <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.name"
@@ -22,21 +23,21 @@
     <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.target"
       [placeholder]="dedicated_info.name || lang.text['GroupServer']['DivisionName_placeholder']"></ion-input>
   </ion-item>
-  <ion-item button disabled>
+  <ion-item button>
     <ion-label>{{lang.text['GroupServer']['Address']}}</ion-label>
     <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.address" placeholder="192.168.0.1"></ion-input>
   </ion-item>
-  <ion-item button disabled>
+  <ion-item button>
     <ion-label>{{lang.text['GroupServer']['Key']}}</ion-label>
     <ion-input [(ngModel)]="dedicated_info.key" class="ion-text-right" placeholder="defaultkey">
     </ion-input>
   </ion-item>
-  <ion-item button disabled>
+  <ion-item button>
     <ion-label>{{lang.text['GroupServer']['Port']}}</ion-label>
     <ion-input [(ngModel)]="dedicated_info.port" class="ion-text-right" type="number" placeholder="7350">
     </ion-input>
   </ion-item>
-  <ion-item button disabled>
+  <ion-item button (click)="dedicated_info.useSSL = !dedicated_info.useSSL">
     <ion-label>{{lang.text['GroupServer']['isSSL']}}</ion-label>
     <ion-toggle [(ngModel)]="dedicated_info.useSSL" slot="end" style="pointer-events: none;"></ion-toggle>
   </ion-item>

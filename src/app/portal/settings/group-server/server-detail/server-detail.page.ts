@@ -105,9 +105,8 @@ export class ServerDetailPage implements OnInit {
       this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv', (_v) => {
         this.nakama.init_server(this.dedicated_info);
         this.nakama.servers[this.dedicated_info.isOfficial][this.dedicated_info.target].info = { ...this.dedicated_info };
+        this.nakama.link_group(this.dedicated_info.isOfficial, this.dedicated_info.target);
       });
-      this.statusBar.groupServer[this.dedicated_info.isOfficial][this.dedicated_info.target] = 'offline';
-      this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
       this.modalCtrl.dismiss();
     });
   }
