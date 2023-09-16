@@ -157,7 +157,10 @@ export class GroupServerPage implements OnInit {
       componentProps: {
         data: info,
       },
-    }).then(v => v.present());
+    }).then(v => {
+      v.onWillDismiss().then(_v => this.servers = this.nakama.get_all_server_info(true));
+      v.present();
+    });
   }
 
   async remove_server(_is_official: string, _target: string) {

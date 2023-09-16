@@ -23,7 +23,7 @@ import { GroupServerPage } from './portal/settings/group-server/group-server.pag
 /** 서버 상세 정보 */
 export interface ServerInfo {
   /** 표시명, 앱 내 구성키는 target 사용 */
-  name: string;
+  name?: string;
   address?: string;
   /** 앱 내에서 구성하는 key 이름 */
   target?: string;
@@ -1615,13 +1615,17 @@ export class NakamaService {
 
   /** 사설 서버 삭제 */
   async remove_server(_is_official: string, _target: string) {
-    try {
+    try { // 계정 삭제 시도
       await this.servers[_is_official][_target].client.rpc(
         this.servers[_is_official][_target].session,
         'remove_account_fn', { user_id: this.servers[_is_official][_target].session.user_id });
-    } catch (e) {
-      console.log('remove_server_err: ', e);
-    }
+    } catch (e) { }
+    try { // 서버 대안 정보 제거
+      let data = await this.indexed.loadTextFromUserPath('servers/alternatives.json');
+      let json = JSON.parse(data);
+      delete json[_target];
+      await this.indexed.saveTextFileToUserPath(JSON.stringify(json), 'servers/alternatives.json');
+    } catch (e) { }
     // 로그인 상태일 경우 로그오프처리
     if (this.statusBar.groupServer[_is_official][_target] == 'online') {
       try {
