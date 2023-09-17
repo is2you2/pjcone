@@ -14,6 +14,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { GroupServerPage } from '../group-server/group-server.page';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from "clipboardy";
+import { isPlatform } from 'src/app/app.component';
 
 
 @Component({
@@ -49,7 +50,6 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   async ngOnInit() {
     this.nakama.removeBanner();
     this.info = this.navParams.get('info');
-    console.log('info: ', this.info);
     this.file_sel_id = `group_detail_${this.info.id}_${new Date().getTime()}}`;
     this.info_orig = JSON.parse(JSON.stringify(this.navParams.get('info')));
     this.nakama.socket_reactive['group_detail'] = this;
@@ -147,6 +147,40 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         });
       });
     });
+  }
+
+  imageURL_disabled = false;
+  imageURL_placeholder = this.lang.text['Profile']['pasteURI'];
+  /** 외부 주소 붙여넣기 */
+  imageURLPasted() {
+    this.imageURL_disabled = true;
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+      clipboard.read().then(v => {
+        this.check_if_clipboard_available(v);
+      });
+    } else {
+      this.mClipboard.paste().then(v => {
+        this.check_if_clipboard_available(v);
+      }, e => {
+        console.log('클립보드 자료받기 오류: ', e);
+      });
+    }
+    setTimeout(() => {
+      this.imageURL_disabled = false;
+    }, 1500);
+  }
+
+  check_if_clipboard_available(v: string) {
+    if (v.indexOf('http') == 0) {
+      this.info.img = v;
+      this.imageURL_placeholder = v;
+    } else if (v.indexOf('data:image') == 0) {
+      this.nakama.limit_image_size(v, (rv) => this.info.img = rv['canvas'].toDataURL());
+    } else {
+      this.p5toast.show({
+        text: this.lang.text['Profile']['copyURIFirst'],
+      });
+    }
   }
 
   remove_group() {
