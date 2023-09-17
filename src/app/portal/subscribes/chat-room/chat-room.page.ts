@@ -247,12 +247,21 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       let props = {}
       let content_related_creator: ContentCreatorInfo[];
       if (this.userInput.file && this.userInput.file.typeheader == 'image') { // 선택한 파일을 편집하는 경우
-        await this.indexed.saveBlobToUserPath(this.userInput.file.blob, `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`)
-        let thumbnail_image = document.getElementById('ChatroomSelectedImage');
-        props['path'] = `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`;
-        props['width'] = thumbnail_image['naturalWidth'];
-        props['height'] = thumbnail_image['naturalHeight'];
-        content_related_creator = this.userInput.file.content_related_creator;
+        try {
+          if (this.userInput.file.url)
+            this.userInput.file.blob = await fetch(this.userInput.file.url).then(r => r.blob());
+          await this.indexed.saveBlobToUserPath(this.userInput.file.blob, `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`)
+          let thumbnail_image = document.getElementById('ChatroomSelectedImage');
+          props['path'] = `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`;
+          props['width'] = thumbnail_image['naturalWidth'];
+          props['height'] = thumbnail_image['naturalHeight'];
+          content_related_creator = this.userInput.file.content_related_creator;
+        } catch (e) {
+          this.p5toast.show({
+            text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
+          });
+          return;
+        }
       }
       this.modalCtrl.create({
         component: VoidDrawPage,
