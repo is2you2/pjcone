@@ -25,6 +25,7 @@ export class WeblinkGenPage implements OnInit {
     tmp_user: {
       email: undefined,
       password: undefined,
+      pass_placeholder: undefined,
       display_name: undefined,
     },
     servers: [] as ServerInfo[],
@@ -95,11 +96,12 @@ export class WeblinkGenPage implements OnInit {
       const availableStrings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
       const StringLen = availableStrings.length;
       let randomLength = 8 + Math.floor(Math.random() * 8);
-      this.userInput.tmp_user.password = '';
-      for (let i = 0; i < randomLength; i++)
-        this.userInput.tmp_user.password += availableStrings.charAt(Math.floor(Math.random() * StringLen));
+      this.userInput.tmp_user.pass_placeholder = '';
+      if (!this.userInput.tmp_user.password)
+        for (let i = 0; i < randomLength; i++)
+          this.userInput.tmp_user.pass_placeholder += availableStrings.charAt(Math.floor(Math.random() * StringLen));
       this.result_address += count ? '&' : '?';
-      this.result_address += `tmp_user=${this.userInput.tmp_user.email || ''},${this.userInput.tmp_user.password || ''},${this.userInput.tmp_user.display_name || ''}`;
+      this.result_address += `tmp_user=${this.userInput.tmp_user.email || ''},${this.userInput.tmp_user.password || this.userInput.tmp_user.pass_placeholder || ''},${this.userInput.tmp_user.display_name || ''}`;
       count++;
     }
     if (this.userInput.open_prv_channel) {
@@ -123,6 +125,7 @@ export class WeblinkGenPage implements OnInit {
       this.userInput.tmp_user.display_name = undefined;
       this.userInput.tmp_user.email = undefined;
       this.userInput.tmp_user.password = undefined;
+      this.userInput.tmp_user.pass_placeholder = undefined;
     }
     this.information_changed();
   }

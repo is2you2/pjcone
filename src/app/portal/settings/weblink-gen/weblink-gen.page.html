@@ -57,8 +57,9 @@
     </ion-item>
     <ion-item>
       <ion-label>{{lang.text['Profile']['password']}}</ion-label>
-      <ion-input disabled class="ion-text-end" type="password" [(ngModel)]="userInput.tmp_user.password"
-        [placeholder]="lang.text['Profile']['at_least']"></ion-input>
+      <ion-input class="ion-text-end" (ionChange)="information_changed()" type="password"
+        [(ngModel)]="userInput.tmp_user.password"
+        [placeholder]="userInput.tmp_user.pass_placeholder || lang.text['Profile']['at_least']"></ion-input>
     </ion-item>
     <ion-item>
       <ion-label>{{lang.text['Profile']['user_display_name']}}</ion-label>
