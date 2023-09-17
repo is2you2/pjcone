@@ -61,12 +61,14 @@ export class GodotViewerPage implements OnInit {
       if (this.content_creator.user_id)
         this.content_creator.is_me =
           this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_creator.user_id;
+      this.set_various_display(this.content_creator);
       for (let i = 0, j = this.content_related_creator.length; i < j; i++) {
         if (this.content_related_creator[i].user_id) {
           this.content_related_creator[i].is_me =
             this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_related_creator[i].user_id;
         }
         this.content_related_creator[i].timeDisplay = new Date(this.content_related_creator[i].timestamp).toLocaleString();
+        this.set_various_display(this.content_related_creator[i]);
       }
     } catch (e) { }
     try { // 중복 정보 통합
@@ -91,6 +93,27 @@ export class GodotViewerPage implements OnInit {
         else return 0;
       });
     } catch (e) { }
+  }
+
+  set_various_display(target: ContentCreatorInfo) {
+    target['various_display'] = this.lang.text['GlobalAct']['UnknownSource'];
+    switch (target.various) {
+      case 'camera':
+        target['various_display'] = this.lang.text['GlobalAct']['FromCamera'];
+        break;
+      case 'link':
+        target['various_display'] = this.FileInfo.url;
+        break;
+      case 'loaded':
+        target['various_display'] = this.lang.text['GlobalAct']['variousCreator'];
+        break;
+      case 'voidDraw':
+        target['various_display'] = this.lang.text['GlobalAct']['FromVoidDraw'];
+        break;
+      case 'long_text':
+        target['various_display'] = this.lang.text['GlobalAct']['FromAutoLongText'];
+        break;
+    }
   }
 
   async ionViewDidEnter() {
