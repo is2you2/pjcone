@@ -503,10 +503,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         setTimeout(() => {
           this.info['is_new'] = false;
           this.nakama.has_new_channel_msg = false;
-          let scrollHeight = this.ChatLogs.scrollHeight;
-          if (scrollHeight < this.ChatLogs.scrollTop + this.ChatLogs.clientHeight + 120) {
+          if (this.NeedScrollDown()) {
             this.init_last_message_viewer();
-            this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+            this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
           } else {
             this.last_message_viewer['is_me'] = c.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id;
             this.last_message_viewer['user_id'] = c.sender_id;
@@ -538,6 +537,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     delete this.last_message_viewer['is_me'];
   }
 
+  NeedScrollDown(): boolean {
+    return this.ChatLogs.scrollHeight < this.ChatLogs.scrollTop + this.ChatLogs.clientHeight + 200;
+  }
+
   /** 가장 최근 메시지 보기 */
   scroll_down_logs() {
     this.init_last_message_viewer();
@@ -565,10 +568,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.temporary_open_thumbnail[msg.message_id] = () => {
         this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
           msg.content['type'],
-          v => {
+          async v => {
             let url = URL.createObjectURL(v);
             msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
-            this.global.modulate_thumbnail(msg.content, url);
+            await this.global.modulate_thumbnail(msg.content, url);
+            if (this.NeedScrollDown())
+              setTimeout(() => {
+                this.scroll_down_logs();
+              }, 100);
             // 서버에 파일을 업로드
             this.nakama.WriteStorage_From_channel(msg, msg.content['path'], this.isOfficial, this.target);
           });
@@ -713,11 +720,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 확장 메뉴 숨기기 */
   make_ext_hidden() {
-    let scrollHeight = this.ChatLogs.scrollHeight;
-    if (scrollHeight < this.ChatLogs.scrollTop + this.ChatLogs.clientHeight + 120) {
-      this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+    if (this.NeedScrollDown()) {
+      this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
       setTimeout(() => {
-        this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+        this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
       }, 150);
     }
     if (isPlatform != 'DesktopPWA')
