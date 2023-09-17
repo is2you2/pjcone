@@ -188,7 +188,7 @@ export class WebrtcService {
       this.isCallable = true;
     } catch (e) {
       console.log('navigator.getUserMedia error: ', e);
-      this.close_webrtc();
+      await this.close_webrtc();
       this.p5toast.show({
         text: `${this.lang.text['WebRTCDevManager']['InitErr']}: ${e}`,
       });
@@ -354,8 +354,8 @@ export class WebrtcService {
         hangup_button.style('border-radius', '32px');
         hangup_button.style('width', '40px');
         hangup_button.style('height', '40px');
-        hangup_button.mouseClicked(() => {
-          this.close_webrtc();
+        hangup_button.mouseClicked(async () => {
+          await this.close_webrtc();
         });
       }
 
@@ -400,7 +400,7 @@ export class WebrtcService {
         switch (ev.target.connectionState) {
           case 'failed': // 실패
           case 'disconnected': // 연결 끊어짐
-            this.close_webrtc();
+            await this.close_webrtc();
             break;
           case 'connected': // 연결 완료됨, 수신측에서 iceCandidate 공유
             for (let i = 0, j = this.IceCandidates.length; i < j; i++)
@@ -552,8 +552,11 @@ export class WebrtcService {
       this.PeerConnection.close();
     this.PeerConnection = undefined;
     try {
-      if (leaveMatch)
+      if (leaveMatch) {
+        await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+          this.CurrentMatch.match_id, MatchOpCode.WEBRTC_HANGUP, '');
         await this.nakama.servers[this.isOfficial][this.target].socket.leaveMatch(this.CurrentMatch.match_id);
+      }
     } catch (e) { }
   }
 

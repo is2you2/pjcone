@@ -65,6 +65,8 @@ export enum MatchOpCode {
   WEBRTC_ICE_CANDIDATES = 23,
   /** Stream 변경 등으로 재교환시 */
   WEBRTC_NEGOCIATENEEDED = 24,
+  /** 통화 종료함 */
+  WEBRTC_HANGUP = 30,
 }
 
 @Injectable({
@@ -1783,7 +1785,7 @@ export class NakamaService {
           if (this.socket_reactive['others-online'])
             this.socket_reactive['others-online']();
         }
-        socket.onmatchdata = (m) => {
+        socket.onmatchdata = async (m) => {
           m['data_str'] = decodeURIComponent(new TextDecoder().decode(m.data));
           switch (m.op_code) {
             case MatchOpCode.ADD_TODO: {
@@ -1922,6 +1924,11 @@ export class NakamaService {
               let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
               if (!is_me && this.socket_reactive['WEBRTC_NEGOCIATENEEDED'])
                 this.socket_reactive['WEBRTC_NEGOCIATENEEDED'](m['data_str']);
+            }
+              break;
+            case MatchOpCode.WEBRTC_HANGUP: {
+              let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
+              if (!is_me) await this.WebRTCService.close_webrtc();
             }
               break;
             default:
