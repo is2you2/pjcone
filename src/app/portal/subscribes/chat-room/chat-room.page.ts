@@ -761,6 +761,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     result['msg'] = this.userInput.text;
     let FileAttach = false;
     let isURL = false;
+    let isLongText = '';
     if (this.userInput.file) { // 파일 첨부시
       result['filename'] = this.userInput.file.filename;
       result['file_ext'] = this.userInput.file.file_ext;
@@ -772,10 +773,18 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         result['url'] = this.userInput.file.url;
         isURL = true;
       }
-      result['msg'] = result['msg'];
+      if (result['msg'].length > 800) { // 메시지가 충분히 깁니다
+        isLongText = result['msg'];
+        delete result['msg'];
+      } else result['msg'] = result['msg'];
       result['content_creator'] = this.userInput.file.content_creator;
       result['content_related_creator'] = this.userInput.file.content_related_creator;
       FileAttach = true;
+    } else { // 파일은 없지만 메시지가 충분히 깁니다
+      if (result['msg'].length > 800) {
+        this.LongTextMessageAsFile(result);
+        return;
+      }
     }
     if (this.userInput.quickShare)
       result['quickShare'] = this.userInput.quickShare;
@@ -802,6 +811,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.userInput.text = '';
           this.userInputTextArea.style.height = '36px';
           this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
+          if (isLongText) {
+            result['msg'] = isLongText;
+            this.LongTextMessageAsFile(result);
+          }
         });
     } catch (e) {
       switch (e.code) {
@@ -828,6 +841,45 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }, 1500);
     }
+  }
+
+  /** 바로 전달하기 어려운 긴 글은 파일화 시켜서 보내기 */
+  async LongTextMessageAsFile(result: any) {
+    let blob = new Blob([result['msg']]);
+    await this.indexed.saveBlobToUserPath(blob, `tmp_files/chatroom/${this.lang.text['ChatRoom']['LongText']}_${result['msg'].substring(0, 10)}.txt`);
+    let this_file: FileInfo = {};
+    this_file.blob = blob;
+    this_file['content_related_creator'] = [{
+      user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+      timestamp: new Date().getTime(),
+      display_name: this.nakama.users.self['display_name'],
+      various: 'long_text',
+    }];
+    this_file['content_creator'] = {
+      user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+      timestamp: new Date().getTime(),
+      display_name: this.nakama.users.self['display_name'],
+      various: 'long_text',
+    };
+    let file_name_header_part = result['msg'].substring(0, 24);
+    this_file.path = `tmp_files/chatroom/${this.lang.text['ChatRoom']['LongText']}_${file_name_header_part}~.txt`;
+    this_file.file_ext = 'txt';
+    this_file.filename = `[${this.lang.text['ChatRoom']['LongText']}] ${file_name_header_part}~.txt`;
+    this.global.set_viewer_category_from_ext(this_file);
+    this_file.type = 'text/plain';
+    this_file.typeheader = 'text';
+    delete result['msg'];
+    delete this.userInput.quickShare;
+    delete this.userInput.file;
+    this.userInput.text = '';
+    this.userInputTextArea.style.height = '36px';
+    this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
+    this.userInput.file = this_file;
+    this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
+    this.create_selected_thumbnail();
+    this.p5toast.show({
+      text: this.lang.text['ChatRoom']['CreateAsTextFile'],
+    });
   }
 
   /** 메시지 정보 상세 */

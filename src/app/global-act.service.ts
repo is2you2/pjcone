@@ -25,7 +25,7 @@ export interface ContentCreatorInfo {
    * loaded: 외부에서 파일을 가져온 경우  
    * camera: 카메라 직접 촬영
    */
-  various?: 'loaded' | 'camera' | 'voidDraw' | 'link';
+  various?: 'loaded' | 'camera' | 'voidDraw' | 'link' | 'long_text';
   /** 콘텐츠 뷰어에서 최초 게시자 알리기 용 */
   publisher?: string;
   /** 공유되는 서버 기반 uid */
