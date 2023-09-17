@@ -402,12 +402,6 @@ export class WebrtcService {
           case 'disconnected': // 연결 끊어짐
             await this.close_webrtc();
             break;
-          case 'connected': // 연결 완료됨, 수신측에서 iceCandidate 공유
-            for (let i = 0, j = this.IceCandidates.length; i < j; i++)
-              await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
-                this.CurrentMatch.match_id, MatchOpCode.WEBRTC_ICE_CANDIDATES, encodeURIComponent(JSON.stringify(this.IceCandidates[i])));
-            this.IceCandidates.length = 0;
-            break;
           default:
             console.log('연결 상태 변경됨: ', ev.target.connectionState);
             break;
@@ -456,8 +450,17 @@ export class WebrtcService {
       this.IceCandidates.push(new RTCIceCandidate(iceCandidate));
   }
 
+  /** iceCandidate를 수신받으면 잠시 후에 답변발송을 함 */
+  ReplyIceCandidate: any;
   /** ice candidate 공유 받음 */
   ReceiveIceCandidate(newIceCandidate: any) {
+    if (this.ReplyIceCandidate) clearTimeout(this.ReplyIceCandidate);
+    this.ReplyIceCandidate = setTimeout(async () => {
+      for (let i = 0, j = this.IceCandidates.length; i < j; i++)
+        await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+          this.CurrentMatch.match_id, MatchOpCode.WEBRTC_ICE_CANDIDATES, encodeURIComponent(JSON.stringify(this.IceCandidates[i])));
+      this.IceCandidates.length = 0;
+    }, 800);
     this.PeerConnection.addIceCandidate(newIceCandidate)
       .then(() => {
         console.log('Success to add new ice candidate');
