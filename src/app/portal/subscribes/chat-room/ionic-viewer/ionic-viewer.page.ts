@@ -201,6 +201,7 @@ export class IonicViewerPage implements OnInit {
   }
 
   async ionViewDidEnter() {
+    this.forceWrite = false;
     let canvasDiv = document.getElementById('content_viewer_canvas');
     canvasDiv.style.backgroundImage = '';
     document.removeEventListener('ionBackButton', this.EventListenerAct);
@@ -628,6 +629,8 @@ export class IonicViewerPage implements OnInit {
     }
   }
 
+  /** 덮어쓰기 전단계 */
+  forceWrite = false;
   download_file() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.indexed.DownloadFileFromUserPath(this.navParams.get('path'), this.FileInfo['type'], this.FileInfo['filename']);
@@ -646,7 +649,16 @@ export class IonicViewerPage implements OnInit {
             loading.present();
             let filename = input['filename'] ? `${input['filename'].replace(/:|\?|\/|\\|<|>/g, '')}.${this.FileInfo['file_ext']}` : this.FileInfo['filename'];
             let blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type']);
-            this.file.writeFile(this.file.externalDataDirectory, filename, blob)
+            if (this.forceWrite && !input['filename'])
+              this.file.writeExistingFile(this.file.externalDataDirectory, filename, blob)
+                .then(_v => {
+                  this.forceWrite = false;
+                  loading.dismiss();
+                  this.p5toast.show({
+                    text: `${this.lang.text['ContentViewer']['OverWriteFile']}: ${filename}`,
+                  });
+                });
+            else this.file.writeFile(this.file.externalDataDirectory, filename, blob)
               .then(_v => {
                 loading.dismiss();
                 this.p5toast.show({
@@ -659,6 +671,7 @@ export class IonicViewerPage implements OnInit {
                     this.p5toast.show({
                       text: this.lang.text['ContentViewer']['AlreadyExist'],
                     });
+                    this.forceWrite = true;
                     this.download_file();
                     break;
                   default:
