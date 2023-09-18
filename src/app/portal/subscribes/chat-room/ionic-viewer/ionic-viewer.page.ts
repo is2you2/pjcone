@@ -647,7 +647,7 @@ export class IonicViewerPage implements OnInit {
           handler: async (input) => {
             let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
             loading.present();
-            let filename = input['filename'] ? `${input['filename'].replace(/:|\?|\/|\\|<|>/g, '')}.${this.FileInfo['file_ext']}` : this.FileInfo['filename'];
+            let filename = input['filename'] ? input['filename'].replace(/:|\?|\/|\\|<|>/g, '') : this.FileInfo['filename'];
             let blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type']);
             if (this.forceWrite && !input['filename'])
               this.file.writeExistingFile(this.file.externalDataDirectory, filename, blob)
