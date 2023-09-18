@@ -3,7 +3,7 @@
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChannelMessage } from '@heroiclabs/nakama-js';
-import { LoadingController, ModalController, NavController } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 import * as p5 from "p5";
@@ -63,6 +63,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private webrtc: WebrtcService,
     private p5toast: P5ToastService,
     private mClipboard: Clipboard,
+    private alertCtrl: AlertController,
   ) { }
 
   /** 채널 정보 */
@@ -323,7 +324,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 파일 첨부하기 */
   async inputFileSelected(ev: any) {
     if (ev.target.files.length) {
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      loading.present();
       await this.selected_blobFile_callback_act(ev.target.files[0]);
+      loading.dismiss();
     } else {
       delete this.userInput.file;
       this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
@@ -373,10 +377,49 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
         canvas.parent(parent);
         p.pixelDensity(1);
-        canvas.drop(async (file: any) => {
-          await this.selected_blobFile_callback_act(file.file);
+        canvas.drop((file: any) => {
+          let _Millis = p.millis();
+          if (LastDropAt < _Millis - 400) { // 새로운 파일로 인식
+            isMultipleSend = false;
+            Drops.length = 0;
+            Drops.push(file);
+          } else { // 여러 파일 입력으로 인식
+            isMultipleSend = true;
+            Drops.push(file);
+          }
+          LastDropAt = _Millis;
+          clearTimeout(StartAct);
+          StartAct = setTimeout(async () => {
+            if (!isMultipleSend) {
+              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+              loading.present();
+              this.selected_blobFile_callback_act(file.file);
+              loading.dismiss();
+            } else { // 여러 파일 발송 여부 검토 후, 아니라고 하면 첫 파일만
+              this.alertCtrl.create({
+                header: this.lang.text['ChatRoom']['MultipleSend'],
+                message: `${this.lang.text['ChatRoom']['CountFile']}: ${Drops.length}`,
+                buttons: [{
+                  text: this.lang.text['ChatRoom']['Send'],
+                  handler: async () => {
+                    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+                    loading.present();
+                    for (let i = 0, j = Drops.length; i < j; i++) {
+                      await this.selected_blobFile_callback_act(Drops[i].file);
+                      await this.send();
+                    }
+                    loading.dismiss();
+                  }
+                }]
+              }).then(v => v.present());
+            }
+          }, 400);
         });
       }
+      let StartAct: any;
+      let isMultipleSend = false;
+      let LastDropAt = 0;
+      let Drops = [];
       p.mouseMoved = (ev: any) => {
         if (ev['dataTransfer']) {
           parent.style.pointerEvents = 'all';
@@ -390,8 +433,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   async selected_blobFile_callback_act(blob: any) {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-    loading.present();
     this.userInput['file'] = {};
     this.userInput.file['filename'] = blob.name;
     this.userInput.file['file_ext'] = blob.name.split('.').pop() || blob.type || this.lang.text['ChatRoom']['unknown_ext'];
@@ -412,7 +453,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.userInput.file.blob = blob;
     this.create_selected_thumbnail();
     this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
-    loading.dismiss();
   }
 
   /** 선택한 파일의 썸네일 만들기 */
