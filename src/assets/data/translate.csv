@@ -154,6 +154,7 @@ closed_group_not_allow,채널에서 오프라인 기록 열람을 허용하지 �
 cannot_open_from_mobile,모바일에서 열 수 없음,Can not open on mobile
 cannot_open_with_viewer,이 파일은 뷰어로 볼 수 없습니다.,This file cannot be viewed with a viewer.
 download_anyway,그래도 다운로드,Download anyway
+uploading,업로드 중,Uploading
 downloaded,다운로드됨,Downloaded
 viewer_not_support,뷰어가 지원하지 않는 파일,Files not supported by the viewer
 cannot_open_file,파일을 열람할 수 없습니다.,The file cannot be viewed.

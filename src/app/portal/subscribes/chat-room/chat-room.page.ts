@@ -924,9 +924,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           // 이전에 중단된 전송을 이어서하기
           switch (json['type']) {
             case 'upload':
+              msg.content['text'] = [this.lang.text['ChatRoom']['uploading']];
               this.nakama.WriteStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
               // 전송 작업 중일 때는 열람으로 넘겨주기
-              if (msg.content['transfer_index'])
+              if (msg.content['transfer_index'] && this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnTransfer'])
                 throw '전송작업 중, 썸네일 열기';
               break;
             case 'download':
