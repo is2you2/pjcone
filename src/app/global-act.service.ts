@@ -285,7 +285,8 @@ export class GlobalActService {
           p.loadImage(keys.force_logo ? 'assets/icon/favicon.png' : `assets/icon/${_frame_name}.png`, v => {
             icon = v;
           });
-          if (keys.background && isPlatform == 'DesktopPWA')
+          p.pixelDensity(1);
+          if (keys.background)
             p.loadImage(keys.background, v => {
               background = v;
               if (v.width > v.height) {

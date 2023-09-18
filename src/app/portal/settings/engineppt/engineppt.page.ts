@@ -74,10 +74,20 @@ export class EnginepptPage implements OnInit {
     this.p5canvas = new p5((p: p5) => {
       p.setup = () => {
         let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
+        p.pixelDensity(1);
         canvas.parent(parent);
         canvas.drop(async (file: any) => {
           this.StartPresentation(file.name, file.file);
         });
+      }
+      p.mouseMoved = (ev: any) => {
+        if (ev['dataTransfer']) {
+          parent.style.pointerEvents = 'all';
+          parent.style.backgroundColor = '#0008';
+        } else {
+          parent.style.pointerEvents = 'none';
+          parent.style.backgroundColor = 'transparent';
+        }
       }
     });
   }

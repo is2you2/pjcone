@@ -161,6 +161,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       p.setup = () => {
         let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
         canvas.parent(parent);
+        p.pixelDensity(1);
         canvas.drop(async (file: any) => {
           await this.selected_blobFile_callback_act(file.file);
         });
