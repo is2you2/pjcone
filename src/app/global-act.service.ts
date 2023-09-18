@@ -372,46 +372,19 @@ export class GlobalActService {
     });
   }
 
-  /** 저장중인 파일 관리  
-   * save_file_req[path_key] = IndexedDBFileInfo;
-   */
-  save_file_req = {};
   /** 파일 파트 저장하기 */
-  async save_file_part(path: string, index: number, full_len: number, base64: string): Promise<void> {
-    let path_key = path.replace('/', '_');
+  async save_file_part(path: string, index: number, base64: string): Promise<void> {
     return new Promise(async (done) => {
-      let int8Array = this.save_file_req[path_key];
-      if (!int8Array) { // 작업중이던 파일이 없는 경우 직접 파일 불러오기
-        let get_file_info = await this.indexed.GetFileInfoFromDB(path);
-        if (get_file_info) {
-          this.save_file_req[path_key] = Array.from(get_file_info);
-          int8Array = this.save_file_req[path_key];
-        }
-      }
-      if (!int8Array) { // 파일이 없는 경우 저장하여 생성
-        let _int8array = await this.indexed.saveBase64ToUserPath(',' + base64, path);
-        this.save_file_req[path_key] = Array.from(_int8array);
-        done();
-      } else { // 기존 파일이 있는 경우 겹쳐서 저장하기
-        let binary = atob(base64);
-        for (let i = 0, j = binary.length; i < j; i++) {
-          let _index = index * FILE_BINARY_LIMIT + i;
-          int8Array[_index] = binary.charCodeAt(i);
-        }
-        await this.indexed.saveInt8ArrayToUserPath(new Int8Array(int8Array), path);
-        done();
-      }
+      await this.indexed.saveBase64ToUserPath(',' + base64, `${path}_part/${index}.part`);
+      await this.indexed.saveTextFileToUserPath(JSON.stringify({ type: 'download', index: index }), `${path}.history`);
+      done();
     });
   }
 
   /** 사용된 함수들 삭제 */
   remove_req_file_info(msg: any, path: string) {
     delete msg.content['transfer_index'];
-    let path_key = path.replace('/', '_');
-    delete this.save_file_req[path_key];
-    setTimeout(() => {
-      this.indexed.removeFileFromUserPath(`${path}.history`);
-    }, 0);
+    this.indexed.removeFileFromUserPath(`${path}.history`);
   }
 
   /** 메시지에 썸네일 콘텐츠를 생성 */

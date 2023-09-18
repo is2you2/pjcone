@@ -903,59 +903,58 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   /** 메시지 내 파일 정보, 파일 다운받기 */
-  file_detail(msg: any) {
+  async file_detail(msg: any) {
     if (msg.content['url']) {
       msg.content['thumbnail'] = msg.content['url'];
       this.open_viewer(msg, msg.content['url']);
       return;
     }
     let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
-    this.indexed.checkIfFileExist(path, async (v) => {
-      if (v) { // 파일이 존재하는 경우
-        try { // 전송 진행중인지 검토
-          let has_history = await this.indexed.checkIfFileExist(`${path}.history`);
-          // 파일 송수신중인건 아님
-          if (!has_history) throw '썸네일 열기';
+    try { // 전송 진행중인지 검토
+      let has_history = await this.indexed.checkIfFileExist(`${path}.history`);
+      // 파일 송수신중인건 아님
+      if (!has_history) throw '썸네일 열기';
+      msg.content['text'] = [this.lang.text['TodoDetail']['WIP']];
+      // 아래는 부분적으로 진행된 파일이 검토될 때
+      let v = await this.indexed.loadTextFromUserPath(`${path}.history`);
+      let json = JSON.parse(v);
+      delete msg.content['text'];
+      // 이전에 중단된 전송을 이어서하기
+      switch (json['type']) {
+        case 'upload':
+          msg.content['text'] = [this.lang.text['ChatRoom']['uploading']];
+          this.nakama.WriteStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
+          // 전송 작업 중일 때는 열람으로 넘겨주기
+          if (msg.content['transfer_index'] && this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnTransfer'])
+            throw '전송작업 중, 썸네일 열기';
+          break;
+        case 'download':
           msg.content['text'] = [this.lang.text['TodoDetail']['WIP']];
-          // 아래는 부분적으로 진행된 파일이 검토될 때
-          let v = await this.indexed.loadTextFromUserPath(`${path}.history`);
-          let json = JSON.parse(v);
-          delete msg.content['text'];
-          // 이전에 중단된 전송을 이어서하기
-          switch (json['type']) {
-            case 'upload':
-              msg.content['text'] = [this.lang.text['ChatRoom']['uploading']];
-              this.nakama.WriteStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
-              // 전송 작업 중일 때는 열람으로 넘겨주기
-              if (msg.content['transfer_index'] && this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id][msg.message_id]['OnTransfer'])
-                throw '전송작업 중, 썸네일 열기';
-              break;
-            case 'download':
-              msg.content['text'] = [this.lang.text['TodoDetail']['WIP']];
-              await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
-              if (this.NeedScrollDown())
-                setTimeout(() => {
-                  this.scroll_down_logs();
-                }, 400); // nakama.ReadStorage_From_channel 함수 내 modulate_thumbnail 함수가 300 이후에 동작하여 100만큼 밀려 작성
-              break;
-          }
-        } catch (e) {
-          if (!msg.content['text'])
-            msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
-          this.indexed.loadBlobFromUserPath(path,
-            msg.content['type'],
-            v => {
-              let url = URL.createObjectURL(v);
-              msg.content['path'] = path;
-              this.global.modulate_thumbnail(msg.content, url);
-              if (this.NeedScrollDown())
-                setTimeout(() => {
-                  this.scroll_down_logs();
-                }, 100);
-            });
-          this.open_viewer(msg, path);
-        }
-      } else { // 파일 자체가 없음
+          await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
+          if (this.NeedScrollDown())
+            setTimeout(() => {
+              this.scroll_down_logs();
+            }, 100);
+          break;
+      }
+    } catch (e) { // 전송중이던 기록이 없음
+      let isFileExist = await this.indexed.checkIfFileExist(path);
+      if (isFileExist) { // 파일이 존재함
+        if (!msg.content['text'])
+          msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
+        this.indexed.loadBlobFromUserPath(path,
+          msg.content['type'],
+          v => {
+            let url = URL.createObjectURL(v);
+            msg.content['path'] = path;
+            this.global.modulate_thumbnail(msg.content, url);
+            if (this.NeedScrollDown())
+              setTimeout(() => {
+                this.scroll_down_logs();
+              }, 100);
+          });
+        this.open_viewer(msg, path);
+      } else { // 다운받아야 함
         if (!this.isHistoryLoaded) { // 서버와 연결되어 있음
           msg.content['text'] = [this.lang.text['TodoDetail']['WIP']];
           await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target);
@@ -965,7 +964,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }, 400);
         }
       }
-    });
+    }
   }
 
   /** QR행동처럼 처리하기 */

@@ -9,7 +9,7 @@ import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 import * as p5 from 'p5';
 import { LocalNotiService } from './local-noti.service';
-import { AlertController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 import { LanguageSettingService } from './language-setting.service';
 import { AdMob } from '@capacitor-community/admob';
@@ -86,6 +86,7 @@ export class NakamaService {
     private bgmode: BackgroundMode,
     private navCtrl: NavController,
     private ngZone: NgZone,
+    private loadingCtrl: LoadingController,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -2853,11 +2854,12 @@ export class NakamaService {
     if (!this.OnTransfer[_is_official][_target]) this.OnTransfer[_is_official][_target] = {};
     if (!this.OnTransfer[_is_official][_target][msg.channel_id]) this.OnTransfer[_is_official][_target][msg.channel_id] = {};
     if (!this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id])
-    this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id] = { index: _msg.content['partsize'] };
+      this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id] = { index: _msg.content['partsize'] };
     // 이미 진행중이라면 무시
     if (this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['OnTransfer']) return;
     if (!msg.content['transfer_index'])
       msg.content['transfer_index'] = this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id];
+    let isSuccessful = true;
     for (let i = startFrom, j = _msg.content['partsize']; i < j; i++)
       try {
         let v = await this.servers[_is_official][_target].client.readStorageObjects(
@@ -2868,29 +2870,49 @@ export class NakamaService {
             user_id: _msg['sender_id'],
           }]
         });
-        await this.global.save_file_part(path, i, j, v.objects[0].value['data']);
-        this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['index'] = j - 1;
+        await this.global.save_file_part(path, i, v.objects[0].value['data']);
+        this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['index'] = j - i;
         this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['OnTransfer'] = true;
       } catch (e) {
         console.log('ReadStorage_From_channel: ', e);
+        isSuccessful = false;
         this.p5toast.show({
           text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
         });
         break;
       }
-    setTimeout(async () => {
+    if (isSuccessful) {
       if (msg.content['url']) { // 링크
         msg.content['thumbnail'] = msg.content['url'];
       } else { // 서버에 업로드된 파일
         msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
-        delete this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id];
+        delete this.OnTransfer[_is_official][_target][_msg.channel_id][_msg.message_id];
+        let loading = await this.loadingCtrl.create({ message: `${this.lang.text['ChatRoom']['SavingFile']}: ${_msg.content.filename}` });
+        loading.present();
+        let GatheringInt8Array = [];
+        let ByteSize = 0;
+        for (let i = 0, j = _msg.content['partsize']; i < j; i++) {
+          let part = await this.indexed.GetFileInfoFromDB(`${path}_part/${i}.part`);
+          ByteSize += part.contents.length;
+          GatheringInt8Array.push(part);
+        }
+        let SaveForm: Int8Array = new Int8Array(ByteSize);
+        let offset = 0;
+        for (let i = 0, j = GatheringInt8Array.length; i < j; i++) {
+          SaveForm.set(GatheringInt8Array[i].contents, offset);
+          offset += GatheringInt8Array[i].contents.length;
+        }
+        await this.indexed.saveInt8ArrayToUserPath(new Int8Array(SaveForm), path);
+        let list = await this.indexed.GetFileListFromDB(`${path}_part`);
+        list.forEach(path => this.indexed.removeFileFromUserPath(path));
         this.global.remove_req_file_info(msg, path);
+        loading.dismiss();
         let blob = await this.indexed.loadBlobFromUserPath(path, _msg.content['type'] || '')
         let url = URL.createObjectURL(blob);
         msg.content['path'] = path;
-        this.global.modulate_thumbnail(msg.content, url);
+        await this.global.modulate_thumbnail(msg.content, url);
       }
-    }, 300);
+    }
   }
 
   /** 로컬 파일을 저장하며 원격에 분산하여 올리기 */
@@ -2954,7 +2976,7 @@ export class NakamaService {
               user_id: _userid || this.servers[_is_official][_target].session.user_id,
             }],
           });
-          await this.global.save_file_part(info_json.path, i, info_json.partsize, part.objects[0].value['data']);
+          await this.global.save_file_part(info_json.path, i, part.objects[0].value['data']);
         }
         return await this.indexed.loadBlobFromUserPath(info_json.path, info_json.type || '');
       } catch (e) {

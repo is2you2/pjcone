@@ -156,6 +156,7 @@ cannot_open_with_viewer,이 파일은 뷰어로 볼 수 없습니다.,This file 
 download_anyway,그래도 다운로드,Download anyway
 uploading,업로드 중,Uploading
 downloaded,다운로드됨,Downloaded
+SavingFile,파일 저장중,Saving file
 viewer_not_support,뷰어가 지원하지 않는 파일,Files not supported by the viewer
 cannot_open_file,파일을 열람할 수 없습니다.,The file cannot be viewed.
 export_download,추출,Extraction
