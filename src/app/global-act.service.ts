@@ -72,6 +72,8 @@ interface GodotFrameKeys {
   pck_path?: string;
   /** 패키지 이름 입력(영문), 고도 프로젝트에서는 메인 씬 이름이어야함 */
   title: string;
+  /** 배경 이미지, p5 에서 불러올 수 있는 주소로 제공 */
+  background?: string;
   /** **ViewerEX 전용**  
    * 썸네일 미지원 패키지로부터 썸네일을 생성시 실행됨, ViewerEX 전용
    */
@@ -266,6 +268,7 @@ export class GlobalActService {
       this.godot = _godot;
       this.godot_splash = new p5((p: p5) => {
         let icon: p5.Image;
+        let background: p5.Image;
         let loading_size = 8;
         let loading_corner = 2;
         let loading_dist = 6;
@@ -279,6 +282,10 @@ export class GlobalActService {
           p.loadImage(keys.force_logo ? 'assets/icon/favicon.png' : `assets/icon/${_frame_name}.png`, v => {
             icon = v;
           });
+          if (keys.background)
+            p.loadImage(keys.background, v => {
+              background = v;
+            });
         }
         let FadeLerp = 2;
         let loadingRot = 0;
@@ -288,6 +295,7 @@ export class GlobalActService {
           p.clear(255, 255, 255, 255);
           p.background(splash_bg_color, p.constrain(255 * FadeLerp, 0, 255));
           p.tint(255, p.constrain(255 * FadeLerp, 0, 255));
+          if (background) p.image(background, 0, 0);
           if (icon) p.image(icon, p.width / 2, p.height / 2);
           p.push();
           p.translate(p.width / 2, p.height / 2 + 80);
