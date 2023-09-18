@@ -198,38 +198,39 @@ export class IonicViewerPage implements OnInit {
 
   async ionViewDidEnter() {
     let canvasDiv = document.getElementById('p5canvas');
+    canvasDiv.style.backgroundImage = '';
     if (this.p5canvas) this.p5canvas.remove();
     // 경우에 따라 로딩하는 캔버스를 구분
     switch (this.FileInfo['viewer']) {
       case 'image': // 이미지
         this.p5canvas = new p5((p: p5) => {
-          let iframe_sub: HTMLIFrameElement;
+          let iframe_sub: p5.Element;
           p.setup = async () => {
             canvasDiv.style.maxWidth = '100%';
             canvasDiv.style.overflow = 'hidden';
             this.ContentBox.style.overflow = 'hidden';
             p.noCanvas();
-            let img = document.createElement('img');
-            img.hidden = true;
-            img.src = this.FileURL;
-            img.onload = () => {
+            let img = p.createElement('img');
+            img.elt.hidden = true;
+            img.elt.src = this.FileURL;
+            img.elt.onload = () => {
               canvasDiv.style.backgroundImage = `url(${this.FileURL})`;
               canvasDiv.style.backgroundRepeat = 'no-repeat';
               canvasDiv.style.pointerEvents = 'none';
-              this.image_info['width'] = img.naturalWidth;
-              this.image_info['height'] = img.naturalHeight;
-              imageOriginalSize = p.createVector(img.naturalWidth, img.naturalHeight);
+              this.image_info['width'] = img.elt.naturalWidth;
+              this.image_info['height'] = img.elt.naturalHeight;
+              imageOriginalSize = p.createVector(img.elt.naturalWidth, img.elt.naturalHeight);
               RePositioningImage();
               img.remove();
             }
             if (isPlatform == 'Android' || isPlatform == 'iOS') {
-              iframe_sub = document.createElement('iframe');
-              iframe_sub.setAttribute("src", this.FileURL);
-              iframe_sub.setAttribute("frameborder", "0");
-              iframe_sub.setAttribute('class', 'full_screen');
-              iframe_sub.setAttribute('style', 'position: relative; pointer-events: all');
-              iframe_sub.hidden = true;
-              canvasDiv.appendChild(iframe_sub);
+              iframe_sub = p.createElement('iframe');
+              iframe_sub.elt.setAttribute("src", this.FileURL);
+              iframe_sub.elt.setAttribute("frameborder", "0");
+              iframe_sub.elt.setAttribute('class', 'full_screen');
+              iframe_sub.elt.setAttribute('style', 'position: relative; pointer-events: all');
+              iframe_sub.elt.hidden = true;
+              canvasDiv.appendChild(iframe_sub.elt);
             }
             p.noLoop();
           }
@@ -461,12 +462,12 @@ export class IonicViewerPage implements OnInit {
             p.noCanvas();
             p.noLoop();
             p.loadStrings(this.FileURL, v => {
-              let textArea = document.createElement("textarea");
-              textArea.disabled = true;
-              textArea.className = 'infobox';
-              textArea.setAttribute('style', 'height: 100%; display: block;');
-              textArea.textContent = v.join('\n');
-              canvasDiv.appendChild(textArea);
+              let textArea = p.createElement('textarea');
+              textArea.elt.disabled = true;
+              textArea.elt.className = 'infobox';
+              textArea.elt.setAttribute('style', 'height: 100%; display: block;');
+              textArea.elt.textContent = v.join('\n');
+              canvasDiv.appendChild(textArea.elt);
               p['TextArea'] = textArea;
             }, e => {
               console.error('열람할 수 없는 파일: ', e);
