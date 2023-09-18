@@ -348,18 +348,18 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (this.ChatLogs.scrollHeight == this.ChatLogs.scrollTop + this.ChatLogs.clientHeight)
         this.init_last_message_viewer();
     }
-    this.nakama.ChatroomLinkAct = (c: any, _fileinfo: FileInfo) => {
+    this.nakama.ChatroomLinkAct = async (c: any, _fileinfo: FileInfo) => {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
       this.messages.length = 0;
       this.info = c;
-      this.init_chatroom();
+      await this.init_chatroom();
       this.userInput.file = _fileinfo;
       if (this.userInput.file) this.create_selected_thumbnail();
     }
-    this.route.queryParams.subscribe(_p => {
+    this.route.queryParams.subscribe(async _p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
       if (navParams) this.info = navParams.info;
-      this.init_chatroom();
+      await this.init_chatroom();
       this.userInput.file = navParams.file;
       if (this.userInput.file) this.create_selected_thumbnail();
     });
