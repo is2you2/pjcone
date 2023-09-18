@@ -484,8 +484,11 @@ export class IonicViewerPage implements OnInit {
         break;
       case 'godot':
         document.addEventListener('ionBackButton', this.EventListenerAct)
-        let thumbnail = await this.indexed.loadBlobFromUserPath(this.FileInfo['path'] + '_thumbnail.png', '');
-        let ThumbnailURL = URL.createObjectURL(thumbnail);
+        let ThumbnailURL: string;
+        try {
+          let thumbnail = await this.indexed.loadBlobFromUserPath(this.FileInfo['path'] + '_thumbnail.png', '');
+          ThumbnailURL = URL.createObjectURL(thumbnail);
+        } catch (e) { }
         await this.global.CreateGodotIFrame('content_viewer_canvas', {
           local_url: 'assets/data/godot/viewer.pck',
           title: 'ViewerEx',
@@ -506,7 +509,7 @@ export class IonicViewerPage implements OnInit {
             });
           }
         }, 'create_thumbnail');
-        URL.revokeObjectURL(ThumbnailURL);
+        if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
         break;
       case 'disabled':
         try {
