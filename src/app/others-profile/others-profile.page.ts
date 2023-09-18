@@ -43,7 +43,6 @@ export class OthersProfilePage implements OnInit {
   /** 그룹 관리자여부에 따라 그룹 관리 버튼 추가 */
   has_admin = false;
   /** 1:1 대화 버튼 생성여부 */
-  CanCreateChat = true;
 
   lerpVal: number;
   p5canvas: p5;
@@ -52,7 +51,6 @@ export class OthersProfilePage implements OnInit {
     this.info = this.navParams.get('info');
     this.has_admin = this.navParams.get('has_admin');
     this.group_info = this.navParams.get('group');
-    this.CanCreateChat = !this.navParams.get('blockCreateChat');
     this.isOfficial = this.group_info['server']['isOfficial'];
     this.target = this.group_info['server']['target'];
     this.user_content_id = `user_content_${this.info['user']['id']}`;
@@ -249,7 +247,7 @@ export class OthersProfilePage implements OnInit {
         if (c) {
           this.nakama.go_to_chatroom_without_admob_act(c);
           this.lock_create_chat = false;
-          this.modalCtrl.dismiss();
+          this.modalCtrl.dismiss({ dismiss: true });
         } else this.lock_create_chat = false;
       }, true);
     }

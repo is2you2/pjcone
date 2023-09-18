@@ -50,7 +50,7 @@ SPDX-License-Identifier: MIT -->
                   {{lang.text['OtherProfile']['add_friend']}}
                 </ion-button>
               </td>
-              <td *ngIf="CanCreateChat">
+              <td>
                 <ion-button [disabled]="lock_create_chat" (click)="create_chat()" expand="block">
                   {{lang.text['OtherProfile']['privacy_chat']}}
                 </ion-button>
