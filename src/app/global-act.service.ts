@@ -211,7 +211,7 @@ export class GlobalActService {
       _godot.setAttribute('scrolling', 'no');
       _godot.setAttribute('withCredentials', 'true');
       if (keys.local_url) keys['url'] = `${window.location.protocol}//${window.location.host}${window['sub_path']}${keys['local_url']}`;
-      if (_frame_name == 'viewer')
+      if (_frame_name == 'content_viewer_canvas')
         keys['create_thumbnail_p5'] = async (base64: string, info: FileInfo = undefined) => {
           new p5((p: p5) => {
             p.setup = () => {
