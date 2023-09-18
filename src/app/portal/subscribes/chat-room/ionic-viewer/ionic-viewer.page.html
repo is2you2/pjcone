@@ -51,14 +51,15 @@ SPDX-License-Identifier: MIT -->
     <tr>
       <td *ngIf="!NeedDownloadFile">
         <div *ngIf="FileInfo.file_ext != 'pck'" class="full_screen" id="content_viewer_canvas"></div>
-        <div *ngIf="FileInfo.file_ext == 'pck'" class="full_screen" style="display: flex;" id="content_viewer_canvas"></div>
+        <div *ngIf="FileInfo.file_ext == 'pck'" class="full_screen" style="display: flex;" id="content_viewer_canvas">
+        </div>
       </td>
       <td *ngIf="NeedDownloadFile">
         <ion-grid>
           <ion-row class="ion-align-items-center">
             <ion-col size="12" class="ion-text-center">
-              <ion-button [disabled]="isDownloading" class="ion-align-items-center" color="warning"
-                (click)="DownloadCurrentFile()" shape="round">
+              <ion-button [disabled]="isDownloading || MessageInfo.transfer_index" class="ion-align-items-center"
+                color="warning" (click)="DownloadCurrentFile()" shape="round">
                 {{lang.text['ContentViewer']['DownloadThisFile']}}
               </ion-button>
             </ion-col>

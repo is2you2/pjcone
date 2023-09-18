@@ -97,7 +97,8 @@ export class IonicViewerPage implements OnInit {
 
   async reinit_content_data(msg: any) {
     this.NeedDownloadFile = false;
-    this.FileInfo = msg.content;
+    this.MessageInfo = msg;
+    this.FileInfo = this.MessageInfo.content;
     if (this.FileInfo.url) {
       this.FileURL = this.FileInfo.url;
     } else {
@@ -474,7 +475,7 @@ export class IonicViewerPage implements OnInit {
               textArea.elt.setAttribute('style', 'height: 100%; display: block;');
               textArea.elt.textContent = v.join('\n');
               canvasDiv.appendChild(textArea.elt);
-              p['TextArea'] = textArea;
+              p['TextArea'] = textArea.elt;
             }, e => {
               console.error('열람할 수 없는 파일: ', e);
               canvasDiv.textContent = '열람할 수 없는 파일입니다.';
@@ -505,7 +506,7 @@ export class IonicViewerPage implements OnInit {
               path: tmp_path,
               width: width,
               height: height,
-              msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo,
+              msg: this.MessageInfo,
               index: this.RelevanceIndex - 1,
             });
           }
@@ -551,7 +552,7 @@ export class IonicViewerPage implements OnInit {
             await this.indexed.saveBlobToUserPath(blob, this.image_info['path']);
             this.modalCtrl.dismiss({
               ...this.image_info,
-              msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo,
+              msg: this.MessageInfo,
               index: this.RelevanceIndex - 1,
             });
           } catch (e) {
@@ -563,7 +564,7 @@ export class IonicViewerPage implements OnInit {
         } else this.modalCtrl.dismiss({
           ...this.image_info,
           path: this.FileInfo.path,
-          msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo,
+          msg: this.MessageInfo,
           index: this.RelevanceIndex - 1,
         });
         break;
@@ -581,12 +582,14 @@ export class IonicViewerPage implements OnInit {
         this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
           try {
             loading.dismiss();
+            console.log('무엇일까나: ', c);
             this.image_info['path'] = 'tmp_files/text_edit/text_copy.png';
             await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
               this.image_info['path']);
+            console.log('뭐가 없는걸까: ', this.image_info);
             this.modalCtrl.dismiss({
               ...this.image_info,
-              msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo,
+              msg: this.MessageInfo,
               index: this.RelevanceIndex - 1,
             });
           } catch (e) {
@@ -609,7 +612,7 @@ export class IonicViewerPage implements OnInit {
                 this.image_info['path']);
               this.modalCtrl.dismiss({
                 ...this.image_info,
-                msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo,
+                msg: this.MessageInfo,
                 index: this.RelevanceIndex - 1,
               });
             } catch (e) {
