@@ -644,11 +644,15 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   open_ionic_viewer(index: number) {
+    let createRelevances = [];
+    for (let i = 0, j = this.userInput.attach.length; i < j; i++)
+      createRelevances.push({ content: this.userInput.attach[i] });
     this.modalCtrl.create({
       component: IonicViewerPage,
       componentProps: {
-        info: this.userInput.attach[index],
+        info: { content: this.userInput.attach[index] },
         path: this.userInput.attach[index]['path'],
+        relevance: createRelevances,
       },
     }).then(v => {
       v.onDidDismiss().then((v) => {

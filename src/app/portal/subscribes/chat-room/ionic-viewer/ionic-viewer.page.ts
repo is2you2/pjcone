@@ -67,13 +67,21 @@ export class IonicViewerPage implements OnInit {
     this.target = this.navParams.get('target');
     this.HasNoEditButton = this.navParams.get('no_edit') || false;
     this.Relevances = this.navParams.get('relevance');
-    for (let i = 0, j = this.Relevances.length; i < j; i++) {
-      if (this.Relevances[i]['message_id'] == this.MessageInfo['message_id']) {
-        this.RelevanceIndex = i + 1;
-        break;
-      }
-    }
-    this.HaveRelevances = Boolean(this.Relevances.length > 1);
+    if (this.Relevances) {
+      for (let i = 0, j = this.Relevances.length; i < j; i++)
+        if (this.Relevances[i]['message_id'] && this.MessageInfo['message_id']) {
+          if (this.Relevances[i]['message_id'] == this.MessageInfo['message_id']) {
+            this.RelevanceIndex = i + 1;
+            break;
+          }
+        } else {
+          if (this.Relevances[i].content['path'] == this.MessageInfo.content['path']) {
+            this.RelevanceIndex = i + 1;
+            break;
+          }
+        }
+      this.HaveRelevances = Boolean(this.Relevances.length > 1);
+    } else this.HaveRelevances = false;
     if (this.FileInfo.url) {
       this.FileURL = this.FileInfo.url;
     } else {
@@ -89,7 +97,8 @@ export class IonicViewerPage implements OnInit {
     if (this.FileInfo.url) {
       this.FileURL = this.FileInfo.url;
     } else {
-      let path = `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+      let path = this.FileInfo['path'] ||
+        `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
       this.image_info['path'] = path;
       try {
         this.blob = await this.indexed.loadBlobFromUserPath(path, this.FileInfo['type']);
@@ -189,6 +198,7 @@ export class IonicViewerPage implements OnInit {
 
   async ionViewDidEnter() {
     let canvasDiv = document.getElementById('p5canvas');
+    if (this.p5canvas) this.p5canvas.remove();
     // 경우에 따라 로딩하는 캔버스를 구분
     switch (this.FileInfo['viewer']) {
       case 'image': // 이미지
@@ -675,8 +685,7 @@ export class IonicViewerPage implements OnInit {
         console.log('작업중 오류보기: ', e);
       }
     }
-    if (this.p5canvas)
-      this.p5canvas.remove();
+    if (this.p5canvas) this.p5canvas.remove();
     if (this.FileURL)
       URL.revokeObjectURL(this.FileURL);
     let is_exist = this.file.checkFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
