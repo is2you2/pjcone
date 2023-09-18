@@ -374,7 +374,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         });
       }
       p.mouseMoved = (ev: any) => {
-        parent.style.pointerEvents = ev['dataTransfer'] ? 'all' : 'none';
+        if (ev['dataTransfer']) {
+          parent.style.pointerEvents = 'all';
+          parent.style.backgroundColor = '#0008';
+        } else {
+          parent.style.pointerEvents = 'none';
+          parent.style.backgroundColor = 'transparent';
+        }
       }
     });
   }
