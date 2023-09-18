@@ -531,8 +531,14 @@ export class IonicViewerPage implements OnInit {
         if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
         break;
       case 'disabled':
+        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+        loading.present();
         try {
-          await this.file.writeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`, this.blob);
+          try { // 강제로 임시파일 생성
+            await this.file.writeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`, this.blob);
+          } catch (e) {
+            await this.file.writeExistingFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`, this.blob);
+          }
           this.fileOpener.open(this.file.externalDataDirectory + `viewer_tmp.${this.FileInfo.file_ext}`, this.FileInfo['type'] || `application/${this.FileInfo['file_ext']}`);
         } catch (e) {
           console.log('open file failed: ', e);
@@ -540,6 +546,7 @@ export class IonicViewerPage implements OnInit {
             text: `${this.lang.text['ChatRoom']['cannot_open_file']}: ${e.message}`,
           });
         }
+        loading.dismiss();
         break;
     }
   }
@@ -785,8 +792,8 @@ export class IonicViewerPage implements OnInit {
     if (this.p5canvas) this.p5canvas.remove();
     if (this.FileURL)
       URL.revokeObjectURL(this.FileURL);
-    let is_exist = this.file.checkFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
-    if (is_exist) this.file.removeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
+    let is_exist = await this.file.checkFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
+    if (is_exist) await this.file.removeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
   }
 
   copy_url() {
