@@ -105,6 +105,7 @@ export class IonicViewerPage implements OnInit {
       let path = this.FileInfo['path'] ||
         `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
       this.image_info['path'] = path;
+      this.NeedDownloadFile = await this.indexed.checkIfFileExist(`${path}.history`);
       try {
         this.blob = await this.indexed.loadBlobFromUserPath(path, this.FileInfo['type']);
         this.FileURL = URL.createObjectURL(this.blob);
@@ -122,7 +123,10 @@ export class IonicViewerPage implements OnInit {
     if (tmp_calced <= 0 || tmp_calced > this.Relevances.length)
       return;
     this.RelevanceIndex = tmp_calced;
-    this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
+    this.FileInfo = { file_ext: '' };
+    setTimeout(() => {
+      this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
+    }, 0);
   }
 
   async DownloadCurrentFile() {
@@ -485,32 +489,33 @@ export class IonicViewerPage implements OnInit {
         });
         break;
       case 'godot':
-        document.addEventListener('ionBackButton', this.EventListenerAct)
+        document.addEventListener('ionBackButton', this.EventListenerAct);
         let ThumbnailURL: string;
         try {
           let thumbnail = await this.indexed.loadBlobFromUserPath(this.FileInfo['path'] + '_thumbnail.png', '');
           ThumbnailURL = URL.createObjectURL(thumbnail);
         } catch (e) { }
-        await this.global.CreateGodotIFrame('content_viewer_canvas', {
-          local_url: 'assets/data/godot/viewer.pck',
-          title: 'ViewerEx',
-          path: this.FileInfo['path'] || this.navParams.get('path'),
-          ext: this.FileInfo['file_ext'],
-          force_logo: true,
-          background: ThumbnailURL,
-          // modify_image
-          receive_image: async (base64: string, width: number, height: number) => {
-            let tmp_path = 'tmp_files/modify_image.png';
-            await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path);
-            this.modalCtrl.dismiss({
-              path: tmp_path,
-              width: width,
-              height: height,
-              msg: this.MessageInfo,
-              index: this.RelevanceIndex - 1,
-            });
-          }
-        }, 'create_thumbnail');
+        if (!this.NeedDownloadFile)
+          await this.global.CreateGodotIFrame('content_viewer_canvas', {
+            local_url: 'assets/data/godot/viewer.pck',
+            title: 'ViewerEx',
+            path: this.FileInfo['path'] || this.navParams.get('path'),
+            ext: this.FileInfo['file_ext'],
+            force_logo: true,
+            background: ThumbnailURL,
+            // modify_image
+            receive_image: async (base64: string, width: number, height: number) => {
+              let tmp_path = 'tmp_files/modify_image.png';
+              await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path);
+              this.modalCtrl.dismiss({
+                path: tmp_path,
+                width: width,
+                height: height,
+                msg: this.MessageInfo,
+                index: this.RelevanceIndex - 1,
+              });
+            }
+          }, 'create_thumbnail');
         if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
         break;
       case 'disabled':
