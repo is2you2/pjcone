@@ -2805,9 +2805,10 @@ export class NakamaService {
     let _msg = JSON.parse(JSON.stringify(msg));
     let file_info = await this.global.req_file_info(path);
     let partsize = Math.ceil(file_info.contents.length / FILE_BINARY_LIMIT);
+    if (msg.content['onTransfer']) return;
     for (let i = startFrom; i < partsize; i++)
       try {
-        let part = await this.global.req_file_part_base64(file_info, i);
+        let part = await this.global.req_file_part_base64(file_info, i, path);
         await this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
             collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
@@ -2817,6 +2818,7 @@ export class NakamaService {
             value: { data: part },
           }])
         msg.content['transfer_index'] = partsize - i;
+        msg.content['onTransfer'] = true;
       } catch (e) {
         console.log('WriteStorage_From_channel: ', e);
         this.p5toast.show({
@@ -2887,7 +2889,7 @@ export class NakamaService {
         }]);
       // 여기서 전체 길이로 for문을 돌리고 매 회차마다 파트를 받아서 base64 변환 후 집어넣어야 함
       for (let i = 0; i < copied_info.partsize; i++) {
-        let part = await this.global.req_file_part_base64(file_info, i);
+        let part = await this.global.req_file_part_base64(file_info, i, copied_info.path);
         await this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
             collection: _collection,
@@ -2897,6 +2899,7 @@ export class NakamaService {
             value: { data: part },
           }]);
       }
+      this.indexed.removeFileFromUserPath(`${copied_info.path}.history`);
     } catch (e) {
       console.log('SyncSaveFailed: ', e);
     }

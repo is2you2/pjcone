@@ -918,28 +918,26 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (!has_history) throw '썸네일 열기';
           msg.content['text'] = [this.lang.text['TodoDetail']['WIP']];
           // 아래는 부분적으로 진행된 파일이 검토될 때
-          this.indexed.loadTextFromUserPath(`${path}.history`, async (e, v) => {
-            if (e && v) {
-              let json = JSON.parse(v);
-              delete msg.content['text'];
-              // 이전에 중단된 전송을 이어서하기
-              switch (json['type']) {
-                case 'upload':
-                  this.nakama.WriteStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
-                  // 전송 작업 중일 때는 열람으로 넘겨주기
-                  if (msg.content['transfer_index'])
-                    throw '전송작업 중, 썸네일 열기';
-                  break;
-                case 'download':
-                  await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
-                  if (this.NeedScrollDown())
-                    setTimeout(() => {
-                      this.scroll_down_logs();
-                    }, 400); // nakama.ReadStorage_From_channel 함수 내 modulate_thumbnail 함수가 300 이후에 동작하여 100만큼 밀려 작성
-                  break;
-              }
-            }
-          });
+          let v = await this.indexed.loadTextFromUserPath(`${path}.history`);
+          let json = JSON.parse(v);
+          delete msg.content['text'];
+          // 이전에 중단된 전송을 이어서하기
+          switch (json['type']) {
+            case 'upload':
+              this.nakama.WriteStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
+              // 전송 작업 중일 때는 열람으로 넘겨주기
+              if (msg.content['transfer_index'])
+                throw '전송작업 중, 썸네일 열기';
+              break;
+            case 'download':
+              msg.content['text'] = [this.lang.text['TodoDetail']['WIP']];
+              await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
+              if (this.NeedScrollDown())
+                setTimeout(() => {
+                  this.scroll_down_logs();
+                }, 400); // nakama.ReadStorage_From_channel 함수 내 modulate_thumbnail 함수가 300 이후에 동작하여 100만큼 밀려 작성
+              break;
+          }
         } catch (e) {
           if (!msg.content['text'])
             msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
