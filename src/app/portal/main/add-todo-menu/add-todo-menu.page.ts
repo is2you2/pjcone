@@ -15,7 +15,6 @@ import { isPlatform } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { VoidDrawPage } from '../../subscribes/chat-room/void-draw/void-draw.page';
-import { GodotViewerPage } from '../../subscribes/chat-room/godot-viewer/godot-viewer.page';
 import { Camera } from '@awesome-cordova-plugins/camera/ngx';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -638,12 +637,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   open_content_viewer(index: number) {
-    if (this.userInput.attach[index].viewer == 'godot')
-      this.open_godot_viewer(index);
-    else this.open_ionic_viewer(index);
-  }
-
-  open_ionic_viewer(index: number) {
     let createRelevances = [];
     for (let i = 0, j = this.userInput.attach.length; i < j; i++)
       createRelevances.push({ content: this.userInput.attach[i] });
@@ -697,51 +690,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         }
       });
       this.noti.Current = 'IonicViewerPage';
-      v.present();
-    });
-  }
-
-  open_godot_viewer(index: number) {
-    this.modalCtrl.create({
-      component: GodotViewerPage,
-      componentProps: {
-        info: this.userInput.attach[index],
-        path: this.userInput.attach[index]['path'],
-      },
-    }).then(v => {
-      v.onDidDismiss().then(async v => {
-        if (v.data) { // 파일 편집하기를 누른 경우
-          let related_creators: ContentCreatorInfo[] = [];
-          if (this.userInput.attach[index]['content_related_creator'])
-            related_creators = [...this.userInput.attach[index]['content_related_creator']];
-          if (this.userInput.attach[index]['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
-            let is_already_exist = false;
-            for (let i = 0, j = related_creators.length; i < j; i++)
-              if (related_creators[i].user_id !== undefined && this.userInput.attach[i]['content_creator']['user_id'] !== undefined
-                && related_creators[i].user_id == this.userInput.attach[i]['content_creator']['user_id']) {
-                is_already_exist = true;
-                break;
-              }
-            if (!is_already_exist) related_creators.push(this.userInput.attach[index]['content_creator']);
-          }
-          delete this.userInput.attach[index]['exist'];
-          await this.indexed.saveBase64ToUserPath(v.data.base64, 'tmp_files/modify_image.png');
-          this.modalCtrl.create({
-            component: VoidDrawPage,
-            componentProps: {
-              path: 'tmp_files/modify_image.png',
-              width: v.data.width,
-              height: v.data.height,
-            },
-          }).then(v => {
-            v.onWillDismiss().then(v => {
-              if (v.data) this.voidDraw_fileAct_callback(v, related_creators, index + 1);
-            });
-            v.present();
-          });
-        }
-      });
-      this.noti.Current = 'GodotViewerPage';
       v.present();
     });
   }

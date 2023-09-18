@@ -13,10 +13,6 @@ const routes: Routes = [
     loadChildren: () => import('./ionic-viewer/ionic-viewer.module').then( m => m.IonicViewerPageModule)
   },
   {
-    path: 'godot-viewer',
-    loadChildren: () => import('./godot-viewer/godot-viewer.module').then( m => m.GodotViewerPageModule)
-  },
-  {
     path: 'void-draw',
     loadChildren: () => import('./void-draw/void-draw.module').then( m => m.VoidDrawPageModule)
   },

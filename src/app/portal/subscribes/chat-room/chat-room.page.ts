@@ -12,7 +12,6 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { isPlatform } from 'src/app/app.component';
 import { IonicViewerPage } from './ionic-viewer/ionic-viewer.page';
-import { GodotViewerPage } from './godot-viewer/godot-viewer.page';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { VoidDrawPage } from './void-draw/void-draw.page';
@@ -1041,20 +1040,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     });
   }
 
-  /** 콘텐츠 상세보기 뷰어 띄우기 */
-  open_viewer(msg: any, path: string) {
-    switch (msg.content['viewer']) {
-      case 'godot':
-        this.open_godot_viewer(msg, path);
-        break;
-      default:
-        this.open_ionic_viewer(msg, path);
-        break;
-    }
-  }
-
   lock_modal_open = false;
-  open_ionic_viewer(msg: any, _path: string) {
+  open_viewer(msg: any, _path: string) {
     let attaches = [];
     for (let i = 0, j = this.messages.length; i < j; i++)
       if (this.messages[i].content.filename)
@@ -1106,74 +1093,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
         });
         this.noti.Current = 'IonicViewerPage';
-        v.present();
-        this.lock_modal_open = false;
-      });
-    }
-  }
-
-  async open_godot_viewer(msg: any, _path: string) {
-    if (!this.lock_modal_open) {
-      this.lock_modal_open = true;
-      if (msg.content['url']) {
-        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-        loading.present();
-        try {
-          let file = await fetch(_path).then(r => r.blob());
-          await this.indexed.saveBlobToUserPath(file, 'tmp_files/chatroom/from_url.pck');
-          loading.dismiss();
-        } catch (e) {
-          loading.dismiss();
-          this.p5toast.show({
-            text: this.lang.text['ContentViewer']['fileSaveFailed'],
-          });
-          return;
-        }
-      }
-      this.modalCtrl.create({
-        component: GodotViewerPage,
-        componentProps: {
-          info: msg.content,
-          path: msg.content['url'] ? 'tmp_files/chatroom/from_url.pck' : _path,
-          isOfficial: this.isOfficial,
-          target: this.target,
-        },
-      }).then(v => {
-        v.onDidDismiss().then(async (v) => {
-          if (v.data) { // 파일 편집하기를 누른 경우
-            let related_creators: ContentCreatorInfo[] = [];
-            if (msg.content['content_related_creator'])
-              related_creators = [...msg.content['content_related_creator']];
-            if (msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
-              let is_already_exist = false;
-              for (let i = 0, j = related_creators.length; i < j; i++)
-                if (related_creators[i].user_id == msg.content['content_creator']['user_id']) {
-                  is_already_exist = true;
-                  break;
-                }
-              if (!is_already_exist) related_creators.push(msg.content['content_creator']);
-            }
-            await this.indexed.saveBase64ToUserPath(v.data.base64, 'tmp_files/chatroom/modify_image.png');
-            this.modalCtrl.create({
-              component: VoidDrawPage,
-              componentProps: {
-                path: 'tmp_files/chatroom/modify_image.png',
-                width: v.data.width,
-                height: v.data.height,
-              },
-            }).then(v => {
-              v.onWillDismiss().then(async v => {
-                if (v.data) await this.voidDraw_fileAct_callback(v, related_creators);
-              });
-              v.present();
-            });
-          }
-          this.noti.Current = this.info['cnoti_id'];
-          if (this.info['cnoti_id'])
-            this.noti.ClearNoti(this.info['cnoti_id']);
-          this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
-        });
-        this.noti.Current = 'GodotViewerPage';
         v.present();
         this.lock_modal_open = false;
       });

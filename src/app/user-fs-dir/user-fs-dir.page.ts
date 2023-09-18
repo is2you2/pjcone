@@ -6,7 +6,6 @@ import { GlobalActService } from '../global-act.service';
 import { IndexedDBService } from '../indexed-db.service';
 import { LanguageSettingService } from '../language-setting.service';
 import { P5ToastService } from '../p5-toast.service';
-import { GodotViewerPage } from '../portal/subscribes/chat-room/godot-viewer/godot-viewer.page';
 import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 
@@ -151,25 +150,6 @@ export class UserFsDirPage implements OnInit {
 
   OpenFile(info: FileDir) {
     switch (info.viewer) {
-      case 'godot':
-        document.removeEventListener('ionBackButton', this.EventListenerAct);
-        this.modalCtrl.create({
-          component: GodotViewerPage,
-          componentProps: {
-            info: {
-              filename: info.name,
-              file_ext: info.file_ext,
-              type: '',
-              viewer: info.viewer,
-              path: info.path,
-            },
-            path: info.path,
-          },
-        }).then(v => {
-          v.onDidDismiss().then(_v => document.addEventListener('ionBackButton', this.EventListenerAct));
-          v.present()
-        });
-        break;
       case 'disabled':
         this.p5toast.show({
           text: this.lang.text['UserFsDir']['CannotOpenFile'],
