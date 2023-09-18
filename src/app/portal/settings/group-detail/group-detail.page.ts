@@ -131,20 +131,24 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
     this.nakama.limit_image_size(base64, (v) => {
       this.info.img = v['canvas'].toDataURL();
-      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.writeStorageObjects(
-        this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, [{
-          collection: 'group_public',
-          key: `group_${this.info.id}`,
-          value: { img: this.info.img },
-          permission_read: 2,
-          permission_write: 1,
-        }]
-      ).then(_info => {
-        this.indexed.saveTextFileToUserPath(JSON.stringify(this.info['img']), `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
-        this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
-          this.info['channel_id'], {
-          gupdate: 'image',
-        });
+      this.announce_update_group_image(this.info.img);
+    });
+  }
+
+  announce_update_group_image(uri: string) {
+    this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.writeStorageObjects(
+      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, [{
+        collection: 'group_public',
+        key: `group_${this.info.id}`,
+        value: { img: uri },
+        permission_read: 2,
+        permission_write: 1,
+      }]
+    ).then(_info => {
+      this.indexed.saveTextFileToUserPath(JSON.stringify(uri), `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
+      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
+        this.info['channel_id'], {
+        gupdate: 'image',
       });
     });
   }
@@ -174,8 +178,12 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     if (v.indexOf('http') == 0) {
       this.info.img = v;
       this.imageURL_placeholder = v;
+      this.announce_update_group_image(v);
     } else if (v.indexOf('data:image') == 0) {
-      this.nakama.limit_image_size(v, (rv) => this.info.img = rv['canvas'].toDataURL());
+      this.nakama.limit_image_size(v, (rv) => {
+        this.info.img = rv['canvas'].toDataURL()
+        this.announce_update_group_image(this.info.img);
+      });
     } else {
       this.p5toast.show({
         text: this.lang.text['Profile']['copyURIFirst'],
