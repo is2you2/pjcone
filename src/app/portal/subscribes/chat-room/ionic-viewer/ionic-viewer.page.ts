@@ -57,6 +57,7 @@ export class IonicViewerPage implements OnInit {
   HaveRelevances = false;
   NeedDownloadFile = false;
   isDownloading = false;
+  CurrentViewId: string;
 
   EventListenerAct = (ev: any) => {
     ev.detail.register(120, (_processNextHandler: any) => { });
@@ -64,6 +65,7 @@ export class IonicViewerPage implements OnInit {
 
   async ngOnInit() {
     this.MessageInfo = this.navParams.get('info');
+    this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
     this.ContentBox = document.getElementById('ContentBox');
     this.FileHeader = document.getElementById('FileHeader');
@@ -98,6 +100,7 @@ export class IonicViewerPage implements OnInit {
   async reinit_content_data(msg: any) {
     this.NeedDownloadFile = false;
     this.MessageInfo = msg;
+    this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
     if (this.FileInfo.url) {
       this.FileURL = this.FileInfo.url;
@@ -137,8 +140,10 @@ export class IonicViewerPage implements OnInit {
       let json = JSON.parse(v);
       startFrom = json['index'];
     } catch (e) { }
+    let GetViewId = this.Relevances[this.RelevanceIndex - 1].message_id;
     await this.nakama.ReadStorage_From_channel(this.Relevances[this.RelevanceIndex - 1], this.image_info['path'], this.isOfficial, this.target, startFrom);
-    this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
+    if (this.CurrentViewId == GetViewId) // 현재 보고 있을 때에만 열람 시도
+      this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
   }
 
   CreateContentInfo() {
@@ -497,11 +502,12 @@ export class IonicViewerPage implements OnInit {
       case 'godot':
         document.addEventListener('ionBackButton', this.EventListenerAct);
         let ThumbnailURL: string;
+        let GetViewId = this.MessageInfo.message_id;
         try {
           let thumbnail = await this.indexed.loadBlobFromUserPath(this.FileInfo['path'] + '_thumbnail.png', '');
           ThumbnailURL = URL.createObjectURL(thumbnail);
         } catch (e) { }
-        if (!this.NeedDownloadFile)
+        if (!this.NeedDownloadFile && this.CurrentViewId == GetViewId)
           await this.global.CreateGodotIFrame('content_viewer_canvas', {
             local_url: 'assets/data/godot/viewer.pck',
             title: 'ViewerEx',
