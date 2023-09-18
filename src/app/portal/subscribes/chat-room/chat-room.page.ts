@@ -231,6 +231,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this_file.type = '';
         this_file.typeheader = this_file.viewer;
         this.global.modulate_thumbnail(this_file, this_file.url);
+        if (this.NeedScrollDown())
+          setTimeout(() => {
+            this.scroll_down_logs();
+          }, 100);
         this.userInput.file = this_file;
         this.inputPlaceholder = `(${this.lang.text['ChatRoom']['FileLink']}: ${this.userInput.file.filename})`;
       } catch (e) {
@@ -895,7 +899,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   /** 메시지 정보 상세 */
-  message_detail(_msg: any) {
+  message_detail(msg: any) {
   }
 
   /** 메시지 내 파일 정보, 파일 다운받기 */
@@ -927,7 +931,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     throw '전송작업 중, 썸네일 열기';
                   break;
                 case 'download':
-                  this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
+                  await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
+                  if (this.NeedScrollDown())
+                    setTimeout(() => {
+                      this.scroll_down_logs();
+                    }, 400); // nakama.ReadStorage_From_channel 함수 내 modulate_thumbnail 함수가 300 이후에 동작하여 100만큼 밀려 작성
                   break;
               }
             }
@@ -941,13 +949,21 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               let url = URL.createObjectURL(v);
               msg.content['path'] = path;
               this.global.modulate_thumbnail(msg.content, url);
+              if (this.NeedScrollDown())
+                setTimeout(() => {
+                  this.scroll_down_logs();
+                }, 100);
             });
           this.open_viewer(msg, path);
         }
       } else { // 파일 자체가 없음
         if (!this.isHistoryLoaded) { // 서버와 연결되어 있음
           msg.content['text'] = [this.lang.text['TodoDetail']['WIP']];
-          this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target);
+          await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target);
+          if (this.NeedScrollDown())
+            setTimeout(() => {
+              this.scroll_down_logs();
+            }, 400);
         }
       }
     });
@@ -1016,6 +1032,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             let url = URL.createObjectURL(v);
             msg.content['path'] = path;
             this.global.modulate_thumbnail(msg.content, url);
+            if (this.NeedScrollDown())
+              setTimeout(() => {
+                this.scroll_down_logs();
+              }, 100);
           });
       }
     });
