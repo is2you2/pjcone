@@ -272,6 +272,8 @@ export class GlobalActService {
         let loading_size = 8;
         let loading_corner = 2;
         let loading_dist = 6;
+        let backgroundWidth: number;
+        let backgroundHeight: number;
         p.setup = () => {
           let canvas = p.createCanvas(frame.clientWidth, frame.clientHeight);
           canvas.parent(frame);
@@ -285,6 +287,13 @@ export class GlobalActService {
           if (keys.background)
             p.loadImage(keys.background, v => {
               background = v;
+              if (v.width > v.height) {
+                backgroundHeight = p.height;
+                backgroundWidth = v.width / v.height * p.height;
+              } else {
+                backgroundWidth = p.width;
+                backgroundHeight = v.height / v.width * p.width;
+              }
             });
         }
         let FadeLerp = 2;
@@ -295,7 +304,7 @@ export class GlobalActService {
           p.clear(255, 255, 255, 255);
           p.background(splash_bg_color, p.constrain(255 * FadeLerp, 0, 255));
           p.tint(255, p.constrain(255 * FadeLerp, 0, 255));
-          if (background) p.image(background, 0, 0);
+          if (background) p.image(background, p.width / 2, p.height / 2, backgroundWidth, backgroundHeight);
           if (icon) p.image(icon, p.width / 2, p.height / 2);
           p.push();
           p.translate(p.width / 2, p.height / 2 + 80);

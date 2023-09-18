@@ -853,7 +853,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
         }
       }
-      let header_image: string; // 대표 이미지로 선정된 경로 (base64)
+      let header_image: string; // 대표 이미지로 선정된 경로
       // 모든 파일을 새로 등록/재등록
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
         // 이미 존재하는 파일로 알려졌다면 저장 시도하지 않도록 구성, 또는 썸네일 재구성
