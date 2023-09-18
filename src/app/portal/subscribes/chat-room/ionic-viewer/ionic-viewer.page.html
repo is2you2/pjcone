@@ -50,7 +50,8 @@ SPDX-License-Identifier: MIT -->
     </tr>
     <tr>
       <td *ngIf="!NeedDownloadFile">
-        <div class="full_screen" id="p5canvas"></div>
+        <div *ngIf="FileInfo.file_ext != 'pck'" class="full_screen" id="content_viewer_canvas"></div>
+        <div *ngIf="FileInfo.file_ext == 'pck'" class="full_screen" style="display: flex;" id="content_viewer_canvas"></div>
       </td>
       <td *ngIf="NeedDownloadFile">
         <ion-grid>

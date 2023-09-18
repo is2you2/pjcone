@@ -658,32 +658,37 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       v.onDidDismiss().then((v) => {
         if (v.data) { // 파일 편집하기를 누른 경우
           let related_creators: ContentCreatorInfo[] = [];
-          if (this.userInput.attach[index]['content_related_creator'])
-            related_creators = [...this.userInput.attach[index]['content_related_creator']];
-          if (this.userInput.attach[index]['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
+          if (this.userInput.attach[v.data.index]['content_related_creator'])
+            related_creators = [...this.userInput.attach[v.data.index]['content_related_creator']];
+          if (this.userInput.attach[v.data.index]['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
             let is_already_exist = false;
             for (let i = 0, j = related_creators.length; i < j; i++)
-              if (related_creators[i].user_id !== undefined && this.userInput.attach[index]['content_creator']['user_id'] !== undefined
-                && related_creators[i].user_id == this.userInput.attach[index]['content_creator']['user_id']) {
+              if (related_creators[i].user_id !== undefined && this.userInput.attach[v.data.index]['content_creator']['user_id'] !== undefined
+                && related_creators[i].user_id == this.userInput.attach[v.data.index]['content_creator']['user_id']) {
                 is_already_exist = true;
                 break;
               }
-            if (!is_already_exist) related_creators.push(this.userInput.attach[index]['content_creator']);
+            if (!is_already_exist) related_creators.push(this.userInput.attach[v.data.index]['content_creator']);
           }
-          delete this.userInput.attach[index]['exist'];
+          delete this.userInput.attach[v.data.index]['exist'];
           this.modalCtrl.create({
             component: VoidDrawPage,
             componentProps: {
-              path: v.data.path || this.userInput.attach[index]['path'],
+              path: v.data.path || this.userInput.attach[v.data.index]['path'],
               width: v.data.width,
               height: v.data.height,
             },
           }).then(w => {
             w.onWillDismiss().then(w => {
               if (w.data) {
-                if (v.data.path)
-                  this.voidDraw_fileAct_callback(w, related_creators, index + 1);
-                else this.voidDraw_fileAct_callback(w, related_creators, index);
+                switch (v.data.msg.content.viewer) {
+                  case 'image':
+                    this.voidDraw_fileAct_callback(w, related_creators, v.data.index, true);
+                    break;
+                  default:
+                    this.voidDraw_fileAct_callback(w, related_creators, v.data.index);
+                    break;
+                }
               }
             });
             w.present();
@@ -741,14 +746,16 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     });
   }
 
-  voidDraw_fileAct_callback(v: any, related_creators?: any, index?: number) {
+  voidDraw_fileAct_callback(v: any, related_creators?: any, index?: number, overwrite = false) {
     let this_file: FileInfo;
     try {
-      this_file = this.userInput.attach[index];
-      if (this_file === undefined) throw 'undefined attach';
+      if (overwrite) {
+        this_file = {};
+        this.userInput.attach[index] = this_file;
+      } else throw 'not overwrite';
     } catch (e) {
       this_file = {};
-      this.userInput.attach.push(this_file);
+      this.userInput.attach.splice(index + 1, 0, this_file);
     }
     this_file['filename'] = v.data['name'];
     this_file['file_ext'] = 'png';

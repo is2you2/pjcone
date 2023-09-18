@@ -58,6 +58,10 @@ export class IonicViewerPage implements OnInit {
   NeedDownloadFile = false;
   isDownloading = false;
 
+  EventListenerAct = (ev: any) => {
+    ev.detail.register(120, (_processNextHandler: any) => { });
+  }
+
   async ngOnInit() {
     this.MessageInfo = this.navParams.get('info');
     this.FileInfo = this.MessageInfo.content;
@@ -197,8 +201,9 @@ export class IonicViewerPage implements OnInit {
   }
 
   async ionViewDidEnter() {
-    let canvasDiv = document.getElementById('p5canvas');
+    let canvasDiv = document.getElementById('content_viewer_canvas');
     canvasDiv.style.backgroundImage = '';
+    document.removeEventListener('ionBackButton', this.EventListenerAct);
     if (this.p5canvas) this.p5canvas.remove();
     // 경우에 따라 로딩하는 캔버스를 구분
     switch (this.FileInfo['viewer']) {
@@ -477,6 +482,28 @@ export class IonicViewerPage implements OnInit {
           }
         });
         break;
+      case 'godot':
+        document.addEventListener('ionBackButton', this.EventListenerAct)
+        await this.global.CreateGodotIFrame('content_viewer_canvas', {
+          local_url: 'assets/data/godot/viewer.pck',
+          title: 'ViewerEx',
+          path: this.FileInfo['path'] || this.navParams.get('path'),
+          ext: this.FileInfo['file_ext'],
+          force_logo: true,
+          // modify_image
+          receive_image: async (base64: string, width: number, height: number) => {
+            let tmp_path = 'tmp_files/modify_image.png';
+            await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path);
+            this.modalCtrl.dismiss({
+              path: tmp_path,
+              width: width,
+              height: height,
+              msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo,
+              index: this.RelevanceIndex - 1,
+            });
+          }
+        }, 'create_thumbnail');
+        break;
       case 'disabled':
         try {
           await this.file.writeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`, this.blob);
@@ -512,16 +539,25 @@ export class IonicViewerPage implements OnInit {
           loading.present();
           try {
             let blob = await fetch(this.FileInfo['url']).then(r => r.blob());
-            await this.indexed.saveBlobToUserPath(blob, `tmp_files/external_image_edit/image_download.${this.FileInfo.file_ext}`);
             this.image_info['path'] = `tmp_files/external_image_edit/image_download.${this.FileInfo.file_ext}`;
-            this.modalCtrl.dismiss({ ...this.image_info, msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo });
+            await this.indexed.saveBlobToUserPath(blob, this.image_info['path']);
+            this.modalCtrl.dismiss({
+              ...this.image_info,
+              msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo,
+              index: this.RelevanceIndex - 1,
+            });
           } catch (e) {
             this.p5toast.show({
               text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
             });
           }
           loading.dismiss();
-        } else this.modalCtrl.dismiss({ ...this.image_info, msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo });
+        } else this.modalCtrl.dismiss({
+          ...this.image_info,
+          path: this.FileInfo.path,
+          msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo,
+          index: this.RelevanceIndex - 1,
+        });
         break;
       case 'text': // 텍스트를 이미지화하기
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
@@ -540,7 +576,11 @@ export class IonicViewerPage implements OnInit {
             this.image_info['path'] = 'tmp_files/text_edit/text_copy.png';
             await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
               this.image_info['path']);
-            this.modalCtrl.dismiss({ ...this.image_info, msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo });
+            this.modalCtrl.dismiss({
+              ...this.image_info,
+              msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo,
+              index: this.RelevanceIndex - 1,
+            });
           } catch (e) {
             console.log('파일 저장 오류: ', e);
           }
@@ -556,10 +596,14 @@ export class IonicViewerPage implements OnInit {
           this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
             try {
               loading.dismiss();
-              await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
-                'tmp_files/video_edit/frame.png');
               this.image_info['path'] = 'tmp_files/video_edit/frame.png';
-              this.modalCtrl.dismiss({ ...this.image_info, msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo });
+              await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
+                this.image_info['path']);
+              this.modalCtrl.dismiss({
+                ...this.image_info,
+                msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo,
+                index: this.RelevanceIndex - 1,
+              });
             } catch (e) {
               console.log('파일 저장 오류: ', e);
             }
@@ -567,6 +611,9 @@ export class IonicViewerPage implements OnInit {
         } catch (e) {
           console.log('재생중인 비디오 이미지 추출 오류: ', e);
         }
+        break;
+      case 'godot':
+        this.global.godot_window['modify_image']();
         break;
       default:
         console.log('편집 불가 파일 정보: ', this.FileInfo);
@@ -643,48 +690,57 @@ export class IonicViewerPage implements OnInit {
   }
 
   async ionViewWillLeave() {
-    if (this.FileInfo.viewer == 'video') { // 비디오라면 썸네일 구성
-      try {
-        let size = this.p5canvas['VideoMedia'].size();
-        let width: number, height: number;
-        if (size.width > size.height) {
-          width = 192;
-          height = size.height / size.width * 192;
-        } else {
-          width = size.width / size.height * 192;
-          height = 192;
-        }
-        this.p5canvas.createCanvas(width, height);
-        this.p5canvas.image(this.p5canvas['VideoMedia'], 0, 0, width, height);
-        this.p5canvas.fill(255, 128);
-        this.p5canvas.rect(0, 0, width, height);
-        this.p5canvas.textWrap(this.p5canvas.CHAR);
-        this.p5canvas.textSize(16);
-        let margin_ratio = height / 16;
-        this.p5canvas.push()
-        this.p5canvas.translate(margin_ratio / 6, margin_ratio / 6);
-        this.p5canvas.fill(0)
-        this.p5canvas.text(this.FileInfo['filename'],
-          margin_ratio, margin_ratio,
-          width - margin_ratio * 2, height - margin_ratio * 2);
-        this.p5canvas.filter(this.p5canvas.BLUR, 3);
-        this.p5canvas.pop();
-        this.p5canvas.fill(255);
-        this.p5canvas.text(this.FileInfo['filename'],
-          margin_ratio, margin_ratio,
-          width - margin_ratio * 2, height - margin_ratio * 2);
-        this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
-          try {
-            await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
-              `${this.FileInfo.path}_thumbnail.png`);
-            this.global.modulate_thumbnail(this.FileInfo, '');
-          } catch (e) {
-            console.log('썸네일 저장 오류: ', e);
+    document.removeEventListener('ionBackButton', this.EventListenerAct);
+    switch (this.FileInfo.viewer) {
+      case 'video':
+        try {
+          let size = this.p5canvas['VideoMedia'].size();
+          let width: number, height: number;
+          if (size.width > size.height) {
+            width = 192;
+            height = size.height / size.width * 192;
+          } else {
+            width = size.width / size.height * 192;
+            height = 192;
           }
-        });
-      } catch (e) {
-        console.log('작업중 오류보기: ', e);
-      }
+          this.p5canvas.createCanvas(width, height);
+          this.p5canvas.image(this.p5canvas['VideoMedia'], 0, 0, width, height);
+          this.p5canvas.fill(255, 128);
+          this.p5canvas.rect(0, 0, width, height);
+          this.p5canvas.textWrap(this.p5canvas.CHAR);
+          this.p5canvas.textSize(16);
+          let margin_ratio = height / 16;
+          this.p5canvas.push()
+          this.p5canvas.translate(margin_ratio / 6, margin_ratio / 6);
+          this.p5canvas.fill(0)
+          this.p5canvas.text(this.FileInfo['filename'],
+            margin_ratio, margin_ratio,
+            width - margin_ratio * 2, height - margin_ratio * 2);
+          this.p5canvas.filter(this.p5canvas.BLUR, 3);
+          this.p5canvas.pop();
+          this.p5canvas.fill(255);
+          this.p5canvas.text(this.FileInfo['filename'],
+            margin_ratio, margin_ratio,
+            width - margin_ratio * 2, height - margin_ratio * 2);
+          this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
+            try {
+              await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
+                `${this.FileInfo.path}_thumbnail.png`);
+              this.global.modulate_thumbnail(this.FileInfo, '');
+            } catch (e) {
+              console.log('썸네일 저장 오류: ', e);
+            }
+          });
+        } catch (e) {
+          console.log('작업중 오류보기: ', e);
+        }
+        break;
+      case 'godot':
+        try {
+          this.global.godot_window['filename'] = this.FileInfo.filename;
+          this.global.godot_window['create_thumbnail'](this.FileInfo);
+        } catch (e) { }
+        break;
     }
     if (this.p5canvas) this.p5canvas.remove();
     if (this.FileURL)
