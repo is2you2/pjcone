@@ -181,11 +181,13 @@ export class UserFsDirPage implements OnInit {
           component: IonicViewerPage,
           componentProps: {
             info: {
-              filename: info.name,
-              file_ext: info.file_ext,
-              type: '',
-              viewer: info.viewer,
-              path: info.path,
+              content: {
+                filename: info.name,
+                file_ext: info.file_ext,
+                type: '',
+                viewer: info.viewer,
+                path: info.path,
+              }
             },
             no_edit: true,
             path: info.path,
