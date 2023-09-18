@@ -51,13 +51,28 @@ export class IonicViewerPage implements OnInit {
   isOfficial: string;
   target: string;
   useP5Navigator = true;
+  MessageInfo: any;
+  Relevances: any[];
+  RelevanceIndex = 0;
+  HaveRelevances = false;
 
   async ngOnInit() {
-    this.FileInfo = this.navParams.get('info');
+    this.MessageInfo = this.navParams.get('info');
+    this.FileInfo = this.MessageInfo.content;
     this.ContentBox = document.getElementById('ContentBox');
     this.FileHeader = document.getElementById('FileHeader');
+    this.isOfficial = this.navParams.get('isOfficial');
+    this.target = this.navParams.get('target');
     this.HasNoEditButton = this.navParams.get('no_edit') || false;
-    if (this.navParams.get('isURL')) {
+    this.Relevances = this.navParams.get('relevance');
+    for (let i = 0, j = this.Relevances.length; i < j; i++) {
+      if (this.Relevances[i]['message_id'] == this.MessageInfo['message_id']) {
+        this.RelevanceIndex = i + 1;
+        break;
+      }
+    }
+    this.HaveRelevances = Boolean(this.Relevances.length > 1);
+    if (this.FileInfo.url) {
       this.FileURL = this.FileInfo.url;
     } else {
       this.blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type']);
@@ -66,9 +81,29 @@ export class IonicViewerPage implements OnInit {
     this.CreateContentInfo();
   }
 
+  async reinit_content_data(msg: any) {
+    this.FileInfo = msg.content;
+    if (this.FileInfo.url) {
+      this.FileURL = this.FileInfo.url;
+    } else {
+      let path = `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+      this.image_info['path'] = path;
+      this.blob = await this.indexed.loadBlobFromUserPath(path, this.FileInfo['type']);
+      this.FileURL = URL.createObjectURL(this.blob);
+    }
+    this.CreateContentInfo();
+    this.ionViewDidEnter();
+  }
+
+  ChangeToAnother(direction: number) {
+    let tmp_calced = this.RelevanceIndex + direction;
+    if (tmp_calced <= 0 || tmp_calced > this.Relevances.length)
+      return;
+    this.RelevanceIndex = tmp_calced;
+    this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
+  }
+
   CreateContentInfo() {
-    this.isOfficial = this.navParams.get('isOfficial');
-    this.target = this.navParams.get('target');
     try { // 파일 정보 검토
       this.content_creator = this.FileInfo['content_creator'];
       this.content_creator.timeDisplay = new Date(this.content_creator.timestamp).toLocaleString();
@@ -454,14 +489,14 @@ export class IonicViewerPage implements OnInit {
             let blob = await fetch(this.FileInfo['url']).then(r => r.blob());
             await this.indexed.saveBlobToUserPath(blob, `tmp_files/external_image_edit/image_download.${this.FileInfo.file_ext}`);
             this.image_info['path'] = `tmp_files/external_image_edit/image_download.${this.FileInfo.file_ext}`;
-            this.modalCtrl.dismiss(this.image_info);
+            this.modalCtrl.dismiss({ ...this.image_info, msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo });
           } catch (e) {
             this.p5toast.show({
               text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
             });
           }
           loading.dismiss();
-        } else this.modalCtrl.dismiss(this.image_info);
+        } else this.modalCtrl.dismiss({ ...this.image_info, msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo });
         break;
       case 'text': // 텍스트를 이미지화하기
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
@@ -477,10 +512,10 @@ export class IonicViewerPage implements OnInit {
         this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
           try {
             loading.dismiss();
-            await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
-              'tmp_files/text_edit/text_copy.png');
             this.image_info['path'] = 'tmp_files/text_edit/text_copy.png';
-            this.modalCtrl.dismiss(this.image_info);
+            await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
+              this.image_info['path']);
+            this.modalCtrl.dismiss({ ...this.image_info, msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo });
           } catch (e) {
             console.log('파일 저장 오류: ', e);
           }
@@ -499,7 +534,7 @@ export class IonicViewerPage implements OnInit {
               await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
                 'tmp_files/video_edit/frame.png');
               this.image_info['path'] = 'tmp_files/video_edit/frame.png';
-              this.modalCtrl.dismiss(this.image_info);
+              this.modalCtrl.dismiss({ ...this.image_info, msg: this.HaveRelevances ? this.Relevances[this.RelevanceIndex - 1] : this.MessageInfo });
             } catch (e) {
               console.log('파일 저장 오류: ', e);
             }

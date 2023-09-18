@@ -1055,31 +1055,35 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   lock_modal_open = false;
   open_ionic_viewer(msg: any, _path: string) {
+    let attaches = [];
+    for (let i = 0, j = this.messages.length; i < j; i++)
+      if (this.messages[i].content.filename)
+        attaches.push(this.messages[i]);
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;
       this.modalCtrl.create({
         component: IonicViewerPage,
         componentProps: {
-          info: msg.content,
-          isURL: Boolean(msg.content['url']),
+          info: msg,
           path: _path,
           isOfficial: this.isOfficial,
           target: this.target,
+          relevance: attaches,
         },
       }).then(v => {
         v.onDidDismiss().then((v) => {
           if (v.data) { // 파일 편집하기를 누른 경우
             let related_creators: ContentCreatorInfo[] = [];
-            if (msg.content['content_related_creator'])
-              related_creators = [...msg.content['content_related_creator']];
-            if (msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
+            if (v.data.msg.content['content_related_creator'])
+              related_creators = [...v.data.msg.content['content_related_creator']];
+            if (v.data.msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
               let is_already_exist = false;
               for (let i = 0, j = related_creators.length; i < j; i++)
-                if (related_creators[i].user_id == msg.content['content_creator']['user_id']) {
+                if (related_creators[i].user_id == v.data.msg.content['content_creator']['user_id']) {
                   is_already_exist = true;
                   break;
                 }
-              if (!is_already_exist) related_creators.push(msg.content['content_creator']);
+              if (!is_already_exist) related_creators.push(v.data.msg.content['content_creator']);
             }
             this.modalCtrl.create({
               component: VoidDrawPage,
