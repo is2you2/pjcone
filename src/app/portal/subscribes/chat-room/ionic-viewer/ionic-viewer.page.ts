@@ -55,6 +55,8 @@ export class IonicViewerPage implements OnInit {
   Relevances: any[];
   RelevanceIndex = 0;
   HaveRelevances = false;
+  NeedDownloadFile = false;
+  isDownloading = false;
 
   async ngOnInit() {
     this.MessageInfo = this.navParams.get('info');
@@ -82,14 +84,20 @@ export class IonicViewerPage implements OnInit {
   }
 
   async reinit_content_data(msg: any) {
+    this.NeedDownloadFile = false;
     this.FileInfo = msg.content;
     if (this.FileInfo.url) {
       this.FileURL = this.FileInfo.url;
     } else {
       let path = `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
       this.image_info['path'] = path;
-      this.blob = await this.indexed.loadBlobFromUserPath(path, this.FileInfo['type']);
-      this.FileURL = URL.createObjectURL(this.blob);
+      try {
+        this.blob = await this.indexed.loadBlobFromUserPath(path, this.FileInfo['type']);
+        this.FileURL = URL.createObjectURL(this.blob);
+      } catch (e) {
+        this.isDownloading = false;
+        this.NeedDownloadFile = true;
+      }
     }
     this.CreateContentInfo();
     this.ionViewDidEnter();
@@ -100,6 +108,12 @@ export class IonicViewerPage implements OnInit {
     if (tmp_calced <= 0 || tmp_calced > this.Relevances.length)
       return;
     this.RelevanceIndex = tmp_calced;
+    this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
+  }
+
+  async DownloadCurrentFile() {
+    this.isDownloading = true;
+    await this.nakama.ReadStorage_From_channel(this.Relevances[this.RelevanceIndex - 1], this.image_info['path'], this.isOfficial, this.target);
     this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
   }
 
