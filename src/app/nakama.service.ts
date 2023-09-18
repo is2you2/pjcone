@@ -2796,6 +2796,10 @@ export class NakamaService {
     this.noti_origin[_is_official][_target][v.id] = v;
   }
 
+  /** 전송중인 파일 검토  
+   * OnTransfer[isOfficial][target][channel_id][message_id] = index;
+   */
+  OnTransfer = {};
   /**
    * 채널에서 백그라운드 파일 발송 요청
    * @param msg 메시지 정보
@@ -2805,7 +2809,14 @@ export class NakamaService {
     let _msg = JSON.parse(JSON.stringify(msg));
     let file_info = await this.global.req_file_info(path);
     let partsize = Math.ceil(file_info.contents.length / FILE_BINARY_LIMIT);
-    if (msg.content['onTransfer']) return;
+    if (!this.OnTransfer[_is_official]) this.OnTransfer[_is_official] = {};
+    if (!this.OnTransfer[_is_official][_target]) this.OnTransfer[_is_official][_target] = {};
+    if (!this.OnTransfer[_is_official][_target][msg.channel_id]) this.OnTransfer[_is_official][_target][msg.channel_id] = {};
+    if (!this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id])
+      this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id] = { index: partsize };
+    if (this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['OnTransfer']) return;
+    if (!msg.content['transfer_index'])
+      msg.content['transfer_index'] = this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id];
     for (let i = startFrom; i < partsize; i++)
       try {
         let part = await this.global.req_file_part_base64(file_info, i, path);
@@ -2817,8 +2828,8 @@ export class NakamaService {
             permission_write: 1,
             value: { data: part },
           }])
-        msg.content['transfer_index'] = partsize - i;
-        msg.content['onTransfer'] = true;
+        this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['index'] = partsize - i;
+        this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['OnTransfer'] = true;
       } catch (e) {
         console.log('WriteStorage_From_channel: ', e);
         this.p5toast.show({
@@ -2827,6 +2838,7 @@ export class NakamaService {
         break;
       }
     setTimeout(() => {
+      delete this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id];
       this.global.remove_req_file_info(msg, path);
     }, 100);
   }
@@ -2837,7 +2849,15 @@ export class NakamaService {
    */
   async ReadStorage_From_channel(msg: any, path: string, _is_official: string, _target: string, startFrom = 0) {
     let _msg = JSON.parse(JSON.stringify(msg));
+    if (!this.OnTransfer[_is_official]) this.OnTransfer[_is_official] = {};
+    if (!this.OnTransfer[_is_official][_target]) this.OnTransfer[_is_official][_target] = {};
+    if (!this.OnTransfer[_is_official][_target][msg.channel_id]) this.OnTransfer[_is_official][_target][msg.channel_id] = {};
+    if (!this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id])
+    this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id] = { index: _msg.content['partsize'] };
     // 이미 진행중이라면 무시
+    if (this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['OnTransfer']) return;
+    if (!msg.content['transfer_index'])
+      msg.content['transfer_index'] = this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id];
     for (let i = startFrom, j = _msg.content['partsize']; i < j; i++)
       try {
         let v = await this.servers[_is_official][_target].client.readStorageObjects(
@@ -2849,7 +2869,8 @@ export class NakamaService {
           }]
         });
         await this.global.save_file_part(path, i, j, v.objects[0].value['data']);
-        msg.content['transfer_index'] = j - i;
+        this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['index'] = j - 1;
+        this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['OnTransfer'] = true;
       } catch (e) {
         console.log('ReadStorage_From_channel: ', e);
         this.p5toast.show({
@@ -2862,6 +2883,7 @@ export class NakamaService {
         msg.content['thumbnail'] = msg.content['url'];
       } else { // 서버에 업로드된 파일
         msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
+        delete this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id];
         this.global.remove_req_file_info(msg, path);
         let blob = await this.indexed.loadBlobFromUserPath(path, _msg.content['type'] || '')
         let url = URL.createObjectURL(blob);

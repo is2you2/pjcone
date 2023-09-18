@@ -54,7 +54,7 @@ SPDX-License-Identifier: MIT -->
                 <img class="file_thumbnail" [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
               </div>
               <div *ngIf="msg.content['transfer_index']" class="transfer_count">
-                {{msg.content['transfer_index']}}</div>
+                {{msg.content['transfer_index']['index']}}</div>
             </div>
             <div *ngIf="msg.content['noti']" class="notice_form">
               <div class="notice"> {{msg.content['noti']}} </div>

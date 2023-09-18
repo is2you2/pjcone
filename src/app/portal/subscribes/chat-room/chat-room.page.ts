@@ -1011,15 +1011,24 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 파일이 포함된 메시지 구조화, 자동 썸네일 작업 */
   ModulateFileEmbedMessage(msg: any) {
     let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
-    this.indexed.checkIfFileExist(`${path}.history`, b => {
-      if (b) this.indexed.loadTextFromUserPath(`${path}.history`, (e, v) => {
-        if (e && v) {
-          let json = JSON.parse(v);
-          delete msg.content['text'];
-          msg.content['transfer_index'] = msg.content['partsize'] - json['index'];
-        }
+    try {
+      msg.content['transfer_index'] = this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id][msg.message_id];
+    } catch (e) { }
+    if (!msg.content['transfer_index'])
+      this.indexed.checkIfFileExist(`${path}.history`, b => {
+        if (b) this.indexed.loadTextFromUserPath(`${path}.history`, (e, v) => {
+          if (e && v) {
+            let json = JSON.parse(v);
+            delete msg.content['text'];
+            if (!this.nakama.OnTransfer[this.isOfficial]) this.nakama.OnTransfer[this.isOfficial] = {};
+            if (!this.nakama.OnTransfer[this.isOfficial][this.target]) this.nakama.OnTransfer[this.isOfficial][this.target] = {};
+            if (!this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id]) this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id] = {};
+            if (!this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id][msg.message_id])
+              this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id][msg.message_id] = { index: msg.content['partsize'] - json['index'] };
+            msg.content['transfer_index'] = this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id][msg.message_id];
+          }
+        });
       });
-    });
     this.global.set_viewer_category(msg.content);
     this.indexed.checkIfFileExist(path, (b) => {
       if (b) {
