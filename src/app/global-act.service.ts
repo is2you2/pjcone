@@ -8,6 +8,7 @@ import * as QRCode from "qrcode-svg";
 import { DomSanitizer } from '@angular/platform-browser';
 import * as p5 from "p5";
 import { IndexedDBService } from './indexed-db.service';
+import { isPlatform } from './app.component';
 
 export var isDarkMode = false;
 /** 파일 입출 크기 제한 */
@@ -284,7 +285,7 @@ export class GlobalActService {
           p.loadImage(keys.force_logo ? 'assets/icon/favicon.png' : `assets/icon/${_frame_name}.png`, v => {
             icon = v;
           });
-          if (keys.background)
+          if (keys.background && isPlatform == 'DesktopPWA')
             p.loadImage(keys.background, v => {
               background = v;
               if (v.width > v.height) {
