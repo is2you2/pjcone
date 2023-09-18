@@ -58,8 +58,9 @@ SPDX-License-Identifier: MIT -->
         <ion-grid>
           <ion-row class="ion-align-items-center">
             <ion-col size="12" class="ion-text-center">
-              <ion-button [disabled]="isDownloading || MessageInfo.transfer_index" class="ion-align-items-center"
-                color="warning" (click)="DownloadCurrentFile()" shape="round">
+              <ion-button
+                [disabled]="isDownloading || (MessageInfo.content.transfer_index && MessageInfo.content.transfer_index.OnTransfer)"
+                class="ion-align-items-center" color="warning" (click)="DownloadCurrentFile()" shape="round">
                 {{lang.text['ContentViewer']['DownloadThisFile']}}
               </ion-button>
             </ion-col>

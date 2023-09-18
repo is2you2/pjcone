@@ -131,7 +131,13 @@ export class IonicViewerPage implements OnInit {
 
   async DownloadCurrentFile() {
     this.isDownloading = true;
-    await this.nakama.ReadStorage_From_channel(this.Relevances[this.RelevanceIndex - 1], this.image_info['path'], this.isOfficial, this.target);
+    let startFrom = 0;
+    try {
+      let v = await this.indexed.loadTextFromUserPath(`${this.image_info['path']}.history`);
+      let json = JSON.parse(v);
+      startFrom = json['index'];
+    } catch (e) { }
+    await this.nakama.ReadStorage_From_channel(this.Relevances[this.RelevanceIndex - 1], this.image_info['path'], this.isOfficial, this.target, startFrom);
     this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
   }
 
@@ -208,7 +214,7 @@ export class IonicViewerPage implements OnInit {
   async ionViewDidEnter() {
     this.forceWrite = false;
     let canvasDiv = document.getElementById('content_viewer_canvas');
-    canvasDiv.style.backgroundImage = '';
+    if (canvasDiv) canvasDiv.style.backgroundImage = '';
     document.removeEventListener('ionBackButton', this.EventListenerAct);
     if (this.p5canvas) this.p5canvas.remove();
     // 경우에 따라 로딩하는 캔버스를 구분
