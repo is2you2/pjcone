@@ -82,6 +82,12 @@ export class WebrtcService {
       out_link += '&open_subscribes=true';
       out_link += `&open_prv_channel=${nakama.user_id},${nakama.isOfficial},${nakama.target}`;
       try {
+        let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
+        let ServerInfos = JSON.parse(list);
+        for (let i = 0, j = ServerInfos.length; i < j; i++)
+          out_link += `&rtcserver=[${ServerInfos[i].urls}],${ServerInfos[i].username},${ServerInfos[i].credential}`;
+      } catch (e) { }
+      try {
         await this.mClipboard.copy(out_link);
       } catch (error) { }
       window.open(out_link, '_system');
