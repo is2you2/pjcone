@@ -102,6 +102,7 @@ export class IonicViewerPage implements OnInit {
 
   async reinit_content_data(msg: any) {
     this.NeedDownloadFile = false;
+    this.isTextEditMode = false;
     this.MessageInfo = msg;
     this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
@@ -250,6 +251,9 @@ export class IonicViewerPage implements OnInit {
         break;
       case 'long_text':
         target['various_display'] = this.lang.text['GlobalAct']['FromAutoLongText'];
+        break;
+      case 'textedit':
+        target['various_display'] = this.lang.text['GlobalAct']['FromTextEditor'];
         break;
     }
   }
@@ -529,8 +533,7 @@ export class IonicViewerPage implements OnInit {
               textArea.elt.textContent = v.join('\n');
               canvasDiv.appendChild(textArea.elt);
               p['TextArea'] = textArea.elt;
-            }, e => {
-              console.error('열람할 수 없는 파일: ', e);
+            }, _e => {
               canvasDiv.textContent = '열람할 수 없는 파일입니다.';
               this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
             });
@@ -558,6 +561,7 @@ export class IonicViewerPage implements OnInit {
               let tmp_path = 'tmp_files/modify_image.png';
               await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path);
               this.modalCtrl.dismiss({
+                type: 'image',
                 path: tmp_path,
                 width: width,
                 height: height,
@@ -599,6 +603,43 @@ export class IonicViewerPage implements OnInit {
     this.ShowContentInfoIonic.present();
   }
 
+  isTextEditMode = false;
+  open_text_editor() {
+    this.p5canvas['TextArea'].disabled = false;
+    setTimeout(() => {
+      this.isTextEditMode = true;
+      this.p5canvas['TextArea'].focus();
+    }, 500);
+  }
+
+  /** 저장 후 에디터 모드 종료 */
+  async SaveText() {
+    // 채널 채팅에서는 별도 파일첨부로 처리
+    let blob = new Blob([this.p5canvas['TextArea'].value], { type: this.FileInfo.type });
+    blob['name'] = this.FileInfo.filename;
+    if (this.OpenInChannelChat) {
+      this.modalCtrl.dismiss({
+        type: 'text',
+        blob: blob,
+        contentRelated: this.FileInfo.content_related_creator,
+      });
+    } else { // 할 일에서는 직접 파일 수정 후 임시 교체
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      loading.present();
+      let tmp_path = `/tmp_files/texteditor/${this.FileInfo.filename}`;
+      await this.indexed.saveBlobToUserPath(blob, tmp_path);
+      loading.dismiss();
+      this.p5toast.show({
+        text: this.lang.text['ContentViewer']['fileSaved'],
+      });
+      this.modalCtrl.dismiss({
+        type: 'text',
+        blob: blob,
+        path: tmp_path,
+      });
+    }
+  }
+
   image_info = {};
 
   /** 내장 그림판을 이용하여 그림 편집하기 */
@@ -624,6 +665,7 @@ export class IonicViewerPage implements OnInit {
           }
           loading.dismiss();
         } else this.modalCtrl.dismiss({
+          type: 'image',
           ...this.image_info,
           path: this.FileInfo.path,
           msg: this.MessageInfo,
@@ -650,6 +692,7 @@ export class IonicViewerPage implements OnInit {
               this.image_info['path']);
             console.log('뭐가 없는걸까: ', this.image_info);
             this.modalCtrl.dismiss({
+              type: 'image',
               ...this.image_info,
               msg: this.MessageInfo,
               index: this.RelevanceIndex - 1,
@@ -673,6 +716,7 @@ export class IonicViewerPage implements OnInit {
               await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
                 this.image_info['path']);
               this.modalCtrl.dismiss({
+                type: 'image',
                 ...this.image_info,
                 msg: this.MessageInfo,
                 index: this.RelevanceIndex - 1,

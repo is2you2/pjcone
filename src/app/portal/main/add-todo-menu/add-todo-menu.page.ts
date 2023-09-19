@@ -652,43 +652,59 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }).then(v => {
       v.onDidDismiss().then((v) => {
         if (v.data) { // 파일 편집하기를 누른 경우
-          let related_creators: ContentCreatorInfo[] = [];
-          if (this.userInput.attach[v.data.index]['content_related_creator'])
-            related_creators = [...this.userInput.attach[v.data.index]['content_related_creator']];
-          if (this.userInput.attach[v.data.index]['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
-            let is_already_exist = false;
-            for (let i = 0, j = related_creators.length; i < j; i++)
-              if (related_creators[i].user_id !== undefined && this.userInput.attach[v.data.index]['content_creator']['user_id'] !== undefined
-                && related_creators[i].user_id == this.userInput.attach[v.data.index]['content_creator']['user_id']) {
-                is_already_exist = true;
-                break;
+          switch (v.data.type) {
+            case 'image':
+              let related_creators: ContentCreatorInfo[] = [];
+              if (this.userInput.attach[v.data.index]['content_related_creator'])
+                related_creators = [...this.userInput.attach[v.data.index]['content_related_creator']];
+              if (this.userInput.attach[v.data.index]['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
+                let is_already_exist = false;
+                for (let i = 0, j = related_creators.length; i < j; i++)
+                  if (related_creators[i].user_id !== undefined && this.userInput.attach[v.data.index]['content_creator']['user_id'] !== undefined
+                    && related_creators[i].user_id == this.userInput.attach[v.data.index]['content_creator']['user_id']) {
+                    is_already_exist = true;
+                    break;
+                  }
+                if (!is_already_exist) related_creators.push(this.userInput.attach[v.data.index]['content_creator']);
               }
-            if (!is_already_exist) related_creators.push(this.userInput.attach[v.data.index]['content_creator']);
+              delete this.userInput.attach[v.data.index]['exist'];
+              this.modalCtrl.create({
+                component: VoidDrawPage,
+                componentProps: {
+                  path: v.data.path || this.userInput.attach[v.data.index]['path'],
+                  width: v.data.width,
+                  height: v.data.height,
+                },
+              }).then(w => {
+                w.onWillDismiss().then(w => {
+                  if (w.data) {
+                    switch (v.data.msg.content.viewer) {
+                      case 'image':
+                        this.voidDraw_fileAct_callback(w, related_creators, v.data.index, true);
+                        break;
+                      default:
+                        this.voidDraw_fileAct_callback(w, related_creators, v.data.index);
+                        break;
+                    }
+                  }
+                });
+                w.present();
+              });
+              return;
+            case 'text':
+              this.userInput.attach[index].content_related_creator.push(this.userInput.attach[index].content_creator);
+              this.userInput.attach[index].content_creator = {
+                timestamp: new Date().getTime(),
+                display_name: this.nakama.users.self['display_name'],
+                various: 'textedit',
+              };
+              this.userInput.attach[index].blob = v.data.blob;
+              this.userInput.attach[index].path = v.data.path;
+              this.userInput.attach[index].size = v.data.blob['size'];
+              this.userInput.attach[index].filename = `[${this.lang.text['TodoDetail']['EditText']}] ${this.userInput.attach[index].filename}`;
+              delete this.userInput.attach[index]['exist'];
+              break;
           }
-          delete this.userInput.attach[v.data.index]['exist'];
-          this.modalCtrl.create({
-            component: VoidDrawPage,
-            componentProps: {
-              path: v.data.path || this.userInput.attach[v.data.index]['path'],
-              width: v.data.width,
-              height: v.data.height,
-            },
-          }).then(w => {
-            w.onWillDismiss().then(w => {
-              if (w.data) {
-                switch (v.data.msg.content.viewer) {
-                  case 'image':
-                    this.voidDraw_fileAct_callback(w, related_creators, v.data.index, true);
-                    break;
-                  default:
-                    this.voidDraw_fileAct_callback(w, related_creators, v.data.index);
-                    break;
-                }
-              }
-            });
-            w.present();
-          });
-          return;
         }
       });
       this.noti.Current = 'IonicViewerPage';

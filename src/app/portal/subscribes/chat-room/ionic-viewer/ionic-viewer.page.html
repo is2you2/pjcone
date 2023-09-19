@@ -21,13 +21,23 @@ SPDX-License-Identifier: MIT -->
       <td>
         <ion-list-header id="FileHeader">
           <ion-label text-wrap>{{FileInfo.filename}}</ion-label>
-          <ion-button id="menu_trigger">
+          <ion-button *ngIf="isTextEditMode" (click)="reinit_content_data(MessageInfo)">
+            <ion-icon name="close-circle-outline"></ion-icon>
+          </ion-button>
+          <ion-button *ngIf="isTextEditMode" (click)="SaveText()">
+            <ion-icon name="save-outline"></ion-icon>
+          </ion-button>
+          <ion-button *ngIf="!isTextEditMode" id="menu_trigger">
             <ion-icon name="ellipsis-vertical"></ion-icon>
           </ion-button>
-          <ion-popover trigger="menu_trigger" dismissOnSelect>
+          <ion-popover *ngIf="!isTextEditMode" trigger="menu_trigger" dismissOnSelect>
             <ng-template>
               <ion-content>
                 <ion-list>
+                  <ion-item button *ngIf="FileInfo['viewer'] == 'text' && !HasNoEditButton"
+                    (click)="open_text_editor()">
+                    <ion-label>{{lang.text['ContentViewer']['EditText']}}</ion-label>
+                  </ion-item>
                   <ion-item button *ngIf="FileInfo['viewer'] != 'audio' && !HasNoEditButton" (click)="modify_image()">
                     <ion-label>{{lang.text['ContentViewer']['Edit']}}</ion-label>
                   </ion-item>

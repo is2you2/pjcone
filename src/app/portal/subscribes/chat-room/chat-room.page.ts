@@ -463,23 +463,24 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     });
   }
 
-  async selected_blobFile_callback_act(blob: any) {
+  async selected_blobFile_callback_act(blob: any, contentRelated: ContentCreatorInfo[] = [], various = 'loaded') {
     this.userInput['file'] = {};
     this.userInput.file['filename'] = blob.name;
     this.userInput.file['file_ext'] = blob.name.split('.').pop() || blob.type || this.lang.text['ChatRoom']['unknown_ext'];
     this.userInput.file['size'] = blob.size;
     this.userInput.file['type'] = blob.type;
-    this.userInput.file['content_related_creator'] = [{
-      user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-      timestamp: new Date().getTime(),
-      display_name: this.nakama.users.self['display_name'],
-      various: 'loaded',
-    }];
+    this.userInput.file['content_related_creator'] = [
+      ...contentRelated, {
+        user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+        timestamp: new Date().getTime(),
+        display_name: this.nakama.users.self['display_name'],
+        various: various as any,
+      }];
     this.userInput.file['content_creator'] = {
       user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
       timestamp: new Date().getTime(),
       display_name: this.nakama.users.self['display_name'],
-      various: 'loaded',
+      various: various as any,
     };
     this.userInput.file.blob = blob;
     this.create_selected_thumbnail();
@@ -1139,32 +1140,38 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }).then(v => {
         v.onDidDismiss().then((v) => {
           if (v.data) { // 파일 편집하기를 누른 경우
-            let related_creators: ContentCreatorInfo[] = [];
-            if (v.data.msg.content['content_related_creator'])
-              related_creators = [...v.data.msg.content['content_related_creator']];
-            if (v.data.msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
-              let is_already_exist = false;
-              for (let i = 0, j = related_creators.length; i < j; i++)
-                if (related_creators[i].user_id == v.data.msg.content['content_creator']['user_id']) {
-                  is_already_exist = true;
-                  break;
+            switch (v.data.type) {
+              case 'image':
+                let related_creators: ContentCreatorInfo[] = [];
+                if (v.data.msg.content['content_related_creator'])
+                  related_creators = [...v.data.msg.content['content_related_creator']];
+                if (v.data.msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
+                  let is_already_exist = false;
+                  for (let i = 0, j = related_creators.length; i < j; i++)
+                    if (related_creators[i].user_id == v.data.msg.content['content_creator']['user_id']) {
+                      is_already_exist = true;
+                      break;
+                    }
+                  if (!is_already_exist) related_creators.push(v.data.msg.content['content_creator']);
                 }
-              if (!is_already_exist) related_creators.push(v.data.msg.content['content_creator']);
+                this.modalCtrl.create({
+                  component: VoidDrawPage,
+                  componentProps: {
+                    path: v.data.path || _path,
+                    width: v.data.width,
+                    height: v.data.height,
+                  },
+                }).then(v => {
+                  v.onWillDismiss().then(async v => {
+                    if (v.data) await this.voidDraw_fileAct_callback(v, related_creators);
+                  });
+                  v.present();
+                });
+                return;
+              case 'text':
+                this.selected_blobFile_callback_act(v.data.blob, v.data.contentRelated, 'textedit');
+                break;
             }
-            this.modalCtrl.create({
-              component: VoidDrawPage,
-              componentProps: {
-                path: v.data.path || _path,
-                width: v.data.width,
-                height: v.data.height,
-              },
-            }).then(v => {
-              v.onWillDismiss().then(async v => {
-                if (v.data) await this.voidDraw_fileAct_callback(v, related_creators);
-              });
-              v.present();
-            });
-            return;
           }
           this.noti.Current = this.info['cnoti_id'];
           if (this.info['cnoti_id'])
