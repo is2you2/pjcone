@@ -117,13 +117,16 @@ export class IonicViewerPage implements OnInit {
       try {
         this.blob = await this.indexed.loadBlobFromUserPath(path, this.FileInfo['type']);
         this.FileURL = URL.createObjectURL(this.blob);
+        this.CreateContentInfo();
+        this.ionViewDidEnter();
       } catch (e) {
+        this.FileURL = undefined;
+        this.blob = undefined;
         this.isDownloading = false;
         this.NeedDownloadFile = true;
+        this.CreateContentInfo();
       }
     }
-    this.CreateContentInfo();
-    this.ionViewDidEnter();
   }
 
   /** 현재 조회된 모든 파일들 받기 */
