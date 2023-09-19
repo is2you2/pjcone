@@ -4,7 +4,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { ModalController } from '@ionic/angular';
-import { isPlatform } from 'src/app/app.component';
+import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -12,6 +12,7 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { AddGroupPage } from '../settings/add-group/add-group.page';
 import { GroupServerPage } from '../settings/group-server/group-server.page';
 import { QRelsePage } from './qrelse/qrelse.page';
+import { GlobalActService } from 'src/app/global-act.service';
 
 @Component({
   selector: 'app-subscribes',
@@ -27,6 +28,7 @@ export class SubscribesPage implements OnInit {
     public nakama: NakamaService,
     public statusBar: StatusManageService,
     public lang: LanguageSettingService,
+    private global: GlobalActService,
   ) { }
 
   cant_scan = false;
@@ -50,7 +52,9 @@ export class SubscribesPage implements OnInit {
     }).then(async v => {
       if (!v.cancelled) {
         try { // 양식에 맞게 끝까지 동작한다면 우리 데이터가 맞다main
-          await this.nakama.act_from_QRInfo(v.text.trim());
+          if (v.text.trim().indexOf(`${SERVER_PATH_ROOT}pjcone_pwa/?`) != 0)
+            throw '주소 시작이 다름';
+          await this.nakama.AddressToQRCodeAct(this.global.CatchGETs(v.text.trim()));
         } catch (e) { // 양식에 맞춰 행동할 수 없다면 모르는 데이터다
           console.log('scanQRCode_failed: ', e);
           this.modalCtrl.create({

@@ -3021,14 +3021,99 @@ export class NakamaService {
     }
   }
 
+  async AddressToQRCodeAct(init: any) {
+    let json = [];
+    if (init['open_profile']) // 프로필 화면 유도
+      json.push({ type: 'open_profile' });
+    if (init['open_subscribes'])
+      json.push({ type: 'open_subscribes' })
+    if (init['tmp_user']) { // 임시 사용자 정보 기입, 첫 데이터로 반영
+      let sep = init['tmp_user'][0].split(',');
+      this.users.self['email'] = sep[0];
+      this.users.self['password'] = sep[1];
+      this.users.self['display_name'] = sep[2];
+      this.users.self['online'] = true;
+      this.save_self_profile();
+    }
+    if (init['server']) { // 그룹 서버 등록
+      for (let i = 0, j = init['server'].length; i < j; i++) {
+        let sep = init['server'][i].split(',');
+        json.push({
+          type: 'server',
+          value: {
+            name: sep[0] || 'No named server',
+            target: sep[0] || 'No named server',
+            address: sep[1] || '192.168.0.2',
+            useSSL: sep[2] || false,
+            port: sep[3] || 7350,
+            key: sep[4] || 'defaultkey',
+            isOfficial: 'unofficial',
+          },
+        });
+      }
+    }
+    if (init['group']) { // 그룹 진입 추가
+      for (let i = 0, j = init['group'].length; i < j; i++) {
+        let sep = init['group'][i].split(',');
+        json.push({
+          type: 'group',
+          name: sep[0],
+          id: sep[1],
+        });
+      }
+    }
+    if (init['group_dedi']) { // 그룹 사설 채팅 진입, 1개만 받음
+      if (window.location.protocol == 'http:') // 보안 연결이 아닐 때에만 동작
+        json.push({
+          type: 'group_dedi',
+          value: {
+            address: `ws://${init['group_dedi'][0]}`,
+          },
+        })
+    }
+    if (init['open_prv_channel']) {
+      let sep = init['open_prv_channel'][0].split(',');
+      json.push({
+        type: 'open_prv_channel',
+        user_id: sep[0],
+        isOfficial: sep[1],
+        target: sep[2],
+      });
+    }
+    if (init['open_channel']) {
+      let sep = init['open_channel'][0].split(',');
+      json.push({
+        type: 'open_channel',
+        group_id: sep[0],
+        isOfficial: sep[1],
+        target: sep[2],
+      });
+    }
+    if (init['rtcserver']) {
+      for (let i = 0, j = init['rtcserver'].length; i < j; i++) {
+        let sep_array = init['rtcserver'][i].split(']');
+        let array = sep_array[0].split('[')[1];
+        let sep_user = sep_array[1].split(',');
+        json.push({
+          type: 'rtcserver',
+          value: {
+            urls: array.split(','),
+            username: sep_user[1],
+            credential: sep_user[2],
+          },
+        });
+      }
+    }
+    await this.act_from_QRInfo(json);
+  }
+
   /** 다른 페이지에서 QR에 의한 행동 규정이 필요할 때 등록  
    * 이 곳에 등록된 것은 삭제되지 않음  
    * act_callback_link['key'] = Function()
    */
   act_callback_link = {};
 
-  async act_from_QRInfo(v: string) {
-    let json: any[] = JSON.parse(v);
+  async act_from_QRInfo(json: any) {
     for (let i = 0, j = json.length; i < j; i++)
       switch (json[i].type) {
         case 'open_profile': // 프로필 페이지 열기 유도
@@ -3140,7 +3225,13 @@ export class NakamaService {
             }
           break;
         case 'rtcserver':
-          console.log('rtc 정보: ', json[i]);
+          let ServerInfos = [];
+          try {
+            let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
+            ServerInfos = JSON.parse(list);
+          } catch (e) { }
+          ServerInfos.push(json[i].value);
+          await this.indexed.saveTextFileToUserPath(JSON.stringify(ServerInfos), 'servers/webrtc_server.json');
           break;
         default: // 동작 미정 알림(debug)
           throw "지정된 틀 아님";

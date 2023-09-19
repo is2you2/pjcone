@@ -48,7 +48,7 @@ export class QuickShareReviewPage implements OnInit {
     for (let i = 0, j = this.groups.length; i < j; i++)
       if (this.groups[i].grant)
         selected.push(this.groups[i]);
-    await this.nakama.act_from_QRInfo(JSON.stringify(selected).trim());
+    await this.nakama.act_from_QRInfo(selected);
     this.p5toast.show({
       text: this.lang.text['QuickQRShare']['success_received'],
       lateable: true,

@@ -8,7 +8,6 @@ import * as QRCode from "qrcode-svg";
 import { DomSanitizer } from '@angular/platform-browser';
 import * as p5 from "p5";
 import { IndexedDBService } from './indexed-db.service';
-import { isPlatform } from './app.component';
 
 export var isDarkMode = false;
 /** 파일 입출 크기 제한 */
@@ -104,10 +103,9 @@ export class GlobalActService {
   /** 브라우저에서 딥 링크마냥 행동하기
    * @returns GET 으로 작성된 key-value 쌍
   */
-  CatchGETs() {
+  CatchGETs(address: string) {
     /** 입력된 주소 */
-    const ADDRESS = location.href;
-    const sepElement = ADDRESS.split('?');
+    const sepElement = address.split('?');
     if (sepElement.length > 1) {
       const CatchGETs = sepElement[1].split('&');
       let gets = {};
