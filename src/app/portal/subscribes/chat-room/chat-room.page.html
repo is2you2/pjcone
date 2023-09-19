@@ -106,7 +106,7 @@ SPDX-License-Identifier: MIT -->
           <tr *ngIf="userInput.file" class="thumnail_parts">
             <td>
               <div *ngIf="userInput.file" (click)="removeAttach()">
-                <div style="text-align: center; "> {{userInput.file['filename']}} </div>
+                <div style="text-align: center; margin-top: 4px;"> {{userInput.file['filename']}} </div>
                 <div *ngIf="userInput.file['thumbnail']">
                   <img id="ChatroomSelectedImage" *ngIf="userInput.file['typeheader'] == 'image'"
                     class="image_thumbnail" [src]="userInput.file['thumbnail']" [alt]="userInput.file['name']">
@@ -118,6 +118,10 @@ SPDX-License-Identifier: MIT -->
                 </div>
               </div>
             </td>
+          </tr>
+          <tr class="thumnail_parts" *ngIf="ShowGoToBottom && !last_message_viewer.user_id"
+            (click)="scroll_down_logs()">
+            <td style="text-align: center; padding: 4px 0px;">{{lang.text['ChatRoom']['GoToRecent']}}</td>
           </tr>
           <tr class="thumnail_parts" *ngIf="last_message_viewer.user_id" (click)="scroll_down_logs()">
             <td class="bottom_thumbnail">

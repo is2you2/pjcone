@@ -365,12 +365,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   file_sel_id = 'file_sel_id';
   ChatLogs: HTMLElement;
 
+  ShowGoToBottom = false;
+
   ngOnInit() {
     this.nakama.removeBanner();
     this.ChatLogs = document.getElementById('chatroom_div');
     this.ChatLogs.onscroll = (_ev: any) => {
       if (this.ChatLogs.scrollHeight == this.ChatLogs.scrollTop + this.ChatLogs.clientHeight)
+        // 스크롤을 제일 하단으로 내리면 사라짐
         this.init_last_message_viewer();
+      this.ShowGoToBottom = this.ChatLogs.scrollHeight - 220 > this.ChatLogs.scrollTop + this.ChatLogs.clientHeight;
     }
     this.nakama.ChatroomLinkAct = async (c: any, _fileinfo: FileInfo) => {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
