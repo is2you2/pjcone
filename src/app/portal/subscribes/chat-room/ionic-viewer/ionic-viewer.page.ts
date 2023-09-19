@@ -58,6 +58,7 @@ export class IonicViewerPage implements OnInit {
   NeedDownloadFile = false;
   isDownloading = false;
   CurrentViewId: string;
+  OpenInChannelChat = false;
 
   EventListenerAct = (ev: any) => {
     ev.detail.register(120, (_processNextHandler: any) => { });
@@ -65,6 +66,7 @@ export class IonicViewerPage implements OnInit {
 
   async ngOnInit() {
     this.MessageInfo = this.navParams.get('info');
+    this.OpenInChannelChat = this.MessageInfo['code'] !== undefined;
     this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
     this.ContentBox = document.getElementById('ContentBox');
@@ -102,6 +104,7 @@ export class IonicViewerPage implements OnInit {
     this.MessageInfo = msg;
     this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
+    URL.revokeObjectURL(this.FileURL);
     if (this.FileInfo.url) {
       this.FileURL = this.FileInfo.url;
     } else {
@@ -736,6 +739,22 @@ export class IonicViewerPage implements OnInit {
     });
   }
 
+  RemoveFile() {
+    this.alertCtrl.create({
+      header: this.lang.text['ContentViewer']['RemoveFile'],
+      message: this.FileInfo.path,
+      buttons: [{
+        text: this.lang.text['TodoDetail']['remove'],
+        handler: async () => {
+          URL.revokeObjectURL(this.FileURL);
+          await this.indexed.removeFileFromUserPath(this.FileInfo.path);
+          this.RelevanceIndex -= 1;
+          this.ChangeToAnother(1);
+        }
+      }]
+    }).then(v => v.present());
+  }
+
   async ionViewWillLeave() {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
     switch (this.FileInfo.viewer) {
@@ -790,8 +809,7 @@ export class IonicViewerPage implements OnInit {
         break;
     }
     if (this.p5canvas) this.p5canvas.remove();
-    if (this.FileURL)
-      URL.revokeObjectURL(this.FileURL);
+    URL.revokeObjectURL(this.FileURL);
     let is_exist = await this.file.checkFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
     if (is_exist) await this.file.removeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
   }

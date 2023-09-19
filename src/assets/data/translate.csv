@@ -191,6 +191,7 @@ fileSaveFailed,파일 저장에 실패했습니다,Failed to save file
 ShareContent,다른 채널에 공유하기,Share to other channels
 CannotEditFile,편집 불가 파일,Cannot edit file
 DownloadThisFile,파일 다운로드,Download file
+RemoveFile,파일 삭제,Remove file
 ## MinimalChat,,
 concurrent_users,동시접속자,Concurrent users
 shareAddress,주소 공유,Share address

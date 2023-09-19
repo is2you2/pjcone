@@ -324,8 +324,7 @@ export class UserFsDirPage implements OnInit {
 
   ionViewDidLeave() {
     this.FileList.forEach(file => {
-      if (file.thumbnail)
-        URL.revokeObjectURL(file.thumbnail);
+      URL.revokeObjectURL(file.thumbnail);
     });
   }
 
