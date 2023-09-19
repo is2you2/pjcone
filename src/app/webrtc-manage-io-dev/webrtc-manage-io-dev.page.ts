@@ -90,6 +90,7 @@ export class WebrtcManageIoDevPage implements OnInit {
   @ViewChild(IonModal) RegisterServer: IonModal;
 
   async SaveServer() {
+    this.userInput.urls.filter(v => v);
     this.ServerInfos.push(this.userInput);
     this.userInput = {
       urls: [''],

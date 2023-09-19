@@ -396,11 +396,12 @@ export class WebrtcService {
     this.isConnected = true; // 연결된건 아니지만 통화종료를 수행할 수 있도록
     this.startTime = window.performance.now();
 
-    let servers: RTCConfiguration = {};
+    let servers: RTCConfiguration;
     try {
       let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
+      servers = {};
       servers.iceServers = JSON.parse(list);
-    } catch (error) { }
+    } catch (e) { }
     // Create peer connections and add behavior.
     this.PeerConnection = new RTCPeerConnection(servers);
 
