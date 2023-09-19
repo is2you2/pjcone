@@ -8,6 +8,7 @@ import { MatchOpCode, NakamaService } from './nakama.service';
 import { Match } from '@heroiclabs/nakama-js';
 import { isPlatform } from './app.component';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
+import { IndexedDBService } from './indexed-db.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,7 @@ export class WebrtcService {
   constructor(
     private modalCtrl: ModalController,
     private p5toast: P5ToastService,
+    private indexed: IndexedDBService,
     private lang: LanguageSettingService,
     private nakama: NakamaService,
     private mClipboard: Clipboard,
@@ -46,8 +48,6 @@ export class WebrtcService {
   isConnected = false;
   /** 응답에 반응하여 진입 후 통화 연결되기 전 */
   JoinInited = false;
-  /** WebRTC 서버 정보 */
-  servers: RTCConfiguration; // Allows for RTC server configuration.
 
   // Nakama 서버에서 통화가 사용된 채널에 로그를 남기며, 통화 요청 신호로 간주됨
   // 채널 채팅 내 통화 기록을 누르면 그 당시 생성된 매치id에 연결을 시도하고 없으면 통화가 종료된 것으로 간주
@@ -391,13 +391,18 @@ export class WebrtcService {
   }
 
   /** 상대방에게 연결 요청 */
-  createCall() {
+  async createCall() {
     this.isCallable = false;
     this.isConnected = true; // 연결된건 아니지만 통화종료를 수행할 수 있도록
     this.startTime = window.performance.now();
 
+    let servers: RTCConfiguration = {};
+    try {
+      let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
+      servers.iceServers = JSON.parse(list);
+    } catch (error) { }
     // Create peer connections and add behavior.
-    this.PeerConnection = new RTCPeerConnection(this.servers);
+    this.PeerConnection = new RTCPeerConnection(servers);
 
     this.PeerConnection.addEventListener('icecandidate', (ev: any) => this.handleConnection(ev));
     this.PeerConnection.addEventListener(

@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonRadioGroup, ModalController, NavParams } from '@ionic/angular';
+import { IonModal, IonRadioGroup, ModalController, NavParams } from '@ionic/angular';
 import { LanguageSettingService } from '../language-setting.service';
+import { IndexedDBService } from '../indexed-db.service';
 
 @Component({
   selector: 'app-webrtc-manage-io-dev',
@@ -13,8 +14,10 @@ export class WebrtcManageIoDevPage implements OnInit {
     private navParams: NavParams,
     public modalCtrl: ModalController,
     public lang: LanguageSettingService,
+    private indexed: IndexedDBService,
   ) { }
 
+  InOut = [];
   VideoInputs = [];
   AudioInputs = [];
   AudioOutputs = [];
@@ -23,20 +26,32 @@ export class WebrtcManageIoDevPage implements OnInit {
   @ViewChild('AudioIn') AudioInput: IonRadioGroup;
   @ViewChild('AudioOut') AudioOutput: IonRadioGroup;
 
+  ServerInfos = [];
+
+  userInput = {
+    urls: [''],
+    username: '',
+    credential: '',
+  }
+  UserInputUrlsLength = [0];
 
   ngOnInit() {
-    let io = this.navParams.get('list') || [];
-    for (let i = 0, j = io.length; i < j; i++) {
-      if (io[i].kind.indexOf('videoinput') >= 0)
-        this.VideoInputs.push(io[i]);
-      if (io[i].kind.indexOf('audioinput') >= 0)
-        this.AudioInputs.push(io[i]);
-      if (io[i].kind.indexOf('audiooutput') >= 0)
-        this.AudioOutputs.push(io[i]);
+    this.InOut = this.navParams.get('list') || [];
+    for (let i = 0, j = this.InOut.length; i < j; i++) {
+      if (this.InOut[i].kind.indexOf('videoinput') >= 0)
+        this.VideoInputs.push(this.InOut[i]);
+      if (this.InOut[i].kind.indexOf('audioinput') >= 0)
+        this.AudioInputs.push(this.InOut[i]);
+      if (this.InOut[i].kind.indexOf('audiooutput') >= 0)
+        this.AudioOutputs.push(this.InOut[i]);
     }
   }
 
-  ionViewWillEnter() {
+  async ionViewWillEnter() {
+    try {
+      let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
+      this.ServerInfos = JSON.parse(list);
+    } catch (e) { }
     try {
       let video_input = localStorage.getItem('VideoInputDev');
       this.VideoInput.value = Number(video_input) || 0;
@@ -60,5 +75,35 @@ export class WebrtcManageIoDevPage implements OnInit {
     if (this.AudioOutput && this.AudioOutput.value !== undefined)
       result['audiooutput'] = this.AudioOutputs[this.AudioOutput.value];
     this.modalCtrl.dismiss(result);
+  }
+
+  AddServerUrl() {
+    this.userInput.urls.push('');
+    this.UserInputUrlsLength.push(this.UserInputUrlsLength.length);
+  }
+
+  SubtractServerUrl(index: number) {
+    this.userInput.urls.splice(index, 1);
+    this.UserInputUrlsLength.pop();
+  }
+
+  @ViewChild(IonModal) RegisterServer: IonModal;
+
+  async SaveServer() {
+    this.ServerInfos.push(this.userInput);
+    this.userInput = {
+      urls: [''],
+      username: '',
+      credential: '',
+    }
+    this.UserInputUrlsLength.length = 0;
+    this.UserInputUrlsLength.push(0);
+    await this.indexed.saveTextFileToUserPath(JSON.stringify(this.ServerInfos), 'servers/webrtc_server.json');
+    this.RegisterServer.dismiss();
+  }
+
+  async RemoveServer(index: number) {
+    this.ServerInfos.splice(index, 1);
+    await this.indexed.saveTextFileToUserPath(JSON.stringify(this.ServerInfos), 'servers/webrtc_server.json');
   }
 }
