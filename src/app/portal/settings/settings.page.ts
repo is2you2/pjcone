@@ -15,6 +15,7 @@ import { GlobalActService } from 'src/app/global-act.service';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { WebrtcManageIoDevPage } from 'src/app/webrtc-manage-io-dev/webrtc-manage-io-dev.page';
+import { QrSharePage } from './qr-share/qr-share.page';
 
 @Component({
   selector: 'app-settings',
@@ -254,6 +255,15 @@ export class SettingsPage implements OnInit, OnDestroy {
       document.body.removeChild(link);
       link.remove();
     }
+  }
+
+  go_to_qr_share() {
+    this.modalCtrl.create({
+      component: QrSharePage,
+      componentProps: {
+        NoReturn: true,
+      }
+    }).then(v => v.present());
   }
 
   go_to_webrtc_manager() {

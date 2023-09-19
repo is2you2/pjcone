@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from 'clipboardy';
+import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -78,9 +79,9 @@ export class WeblinkGenPage implements OnInit {
     this.information_changed();
   }
 
-  result_address = 'https://is2you2.github.io/pjcone_pwa/';
+  result_address = `${SERVER_PATH_ROOT}pjcone_pwa/`;
   information_changed() {
-    this.result_address = this.userInput.root || 'https://is2you2.github.io/pjcone_pwa/';
+    this.result_address = this.userInput.root || `${SERVER_PATH_ROOT}pjcone_pwa/`;
     let count = 0;
     for (let i = 0, j = this.userInput.servers.length; i < j; i++) {
       this.result_address += count ? '&' : '?';
