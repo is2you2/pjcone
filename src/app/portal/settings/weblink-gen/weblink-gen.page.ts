@@ -101,7 +101,7 @@ export class WeblinkGenPage implements OnInit {
         for (let i = 0; i < randomLength; i++)
           this.userInput.tmp_user.pass_placeholder += availableStrings.charAt(Math.floor(Math.random() * StringLen));
       this.result_address += count ? '&' : '?';
-      this.result_address += `tmp_user=${this.userInput.tmp_user.email || ''},${this.userInput.tmp_user.password || this.userInput.tmp_user.pass_placeholder || ''},${this.userInput.tmp_user.display_name || ''}`;
+      this.result_address += `tmp_user=${this.userInput.tmp_user.email || 'test@example.com'},${this.userInput.tmp_user.password || this.userInput.tmp_user.pass_placeholder || ''},${this.userInput.tmp_user.display_name || ''}`;
       count++;
     }
     if (this.userInput.open_prv_channel) {
