@@ -125,6 +125,24 @@ export class IonicViewerPage implements OnInit {
     this.ionViewDidEnter();
   }
 
+  /** 현재 조회된 모든 파일들 받기 */
+  DownloadAllListFiles() {
+    this.alertCtrl.create({
+      header: this.lang.text['ContentViewer']['DownloadAllFiles'],
+      message: this.lang.text['ContentViewer']['DownloadLoadedList'],
+      buttons: [{
+        text: this.lang.text['ContentViewer']['DownloadThisFile'],
+        handler: async () => {
+          for (let i = 0, j = this.Relevances.length; i < j; i++) {
+            let path = `servers/${this.isOfficial}/${this.target}/channels/${this.Relevances[i].channel_id}/files/msg_${this.Relevances[i].message_id}.${this.Relevances[i].content['file_ext']}`;
+            let FileExist = await this.indexed.checkIfFileExist(path);
+            if (!FileExist) await this.DownloadCurrentFile(i);
+          }
+        },
+      }]
+    }).then(v => v.present());
+  }
+
   ChangeToAnother(direction: number) {
     let tmp_calced = this.RelevanceIndex + direction;
     if (tmp_calced <= 0 || tmp_calced > this.Relevances.length)
@@ -136,18 +154,20 @@ export class IonicViewerPage implements OnInit {
     }, 0);
   }
 
-  async DownloadCurrentFile() {
+  async DownloadCurrentFile(index?: number) {
     this.isDownloading = true;
     let startFrom = 0;
+    let target = this.Relevances[index ?? (this.RelevanceIndex - 1)];
+    let path = `servers/${this.isOfficial}/${this.target}/channels/${target.channel_id}/files/msg_${target.message_id}.${target.content['file_ext']}`;
     try {
-      let v = await this.indexed.loadTextFromUserPath(`${this.image_info['path']}.history`);
+      let v = await this.indexed.loadTextFromUserPath(`${path}.history`);
       let json = JSON.parse(v);
       startFrom = json['index'];
     } catch (e) { }
-    let GetViewId = this.Relevances[this.RelevanceIndex - 1].message_id;
-    await this.nakama.ReadStorage_From_channel(this.Relevances[this.RelevanceIndex - 1], this.image_info['path'], this.isOfficial, this.target, startFrom);
+    let GetViewId = target.message_id;
+    await this.nakama.ReadStorage_From_channel(target, path, this.isOfficial, this.target, startFrom);
     if (this.CurrentViewId == GetViewId) // 현재 보고 있을 때에만 열람 시도
-      this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
+      this.reinit_content_data(target);
   }
 
   // https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript

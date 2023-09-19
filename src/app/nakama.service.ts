@@ -2892,8 +2892,9 @@ export class NakamaService {
       } else { // 서버에 업로드된 파일
         msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
         delete this.OnTransfer[_is_official][_target][_msg.channel_id][_msg.message_id];
-        let loading = await this.loadingCtrl.create({ message: `${this.lang.text['ChatRoom']['SavingFile']}: ${_msg.content.filename}` });
-        loading.present();
+        this.p5toast.show({
+          text: `${this.lang.text['ChatRoom']['SavingFile']}: ${_msg.content.filename}`,
+        });
         let GatheringInt8Array = [];
         let ByteSize = 0;
         for (let i = 0, j = _msg.content['partsize']; i < j; i++) {
@@ -2911,7 +2912,6 @@ export class NakamaService {
         let list = await this.indexed.GetFileListFromDB(`${path}_part`);
         list.forEach(path => this.indexed.removeFileFromUserPath(path));
         this.global.remove_req_file_info(msg, path);
-        loading.dismiss();
         let blob = await this.indexed.loadBlobFromUserPath(path, _msg.content['type'] || '')
         let url = URL.createObjectURL(blob);
         msg.content['path'] = path;
