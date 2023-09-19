@@ -2547,18 +2547,7 @@ export class NakamaService {
           });
         break;
       case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
-        this.alertCtrl.create({
-          header: this.servers[_is_official][_target].info.name,
-          message: this.lang.text['Nakama']['LoginAgain'],
-          buttons: [{
-            text: this.lang.text['Profile']['login_toggle'],
-            handler: () => {
-              delete this.noti_origin[_is_official][_target][this_noti.id];
-              this.rearrange_notifications();
-              this.link_group(_is_official, _target, true)
-            }
-          }]
-        }).then(v => v.present());
+        this.LoginAgain(this.noti_origin, _is_official, _target);
         break;
       default:
         console.warn('예상하지 못한 알림 구분: ', this_noti.code);
@@ -2785,6 +2774,7 @@ export class NakamaService {
         break;
       case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
         v['request'] = `${this.servers[_is_official][_target].info.name}: ${this.lang.text['Nakama']['SessionLogout']}`;
+        this.LoginAgain(v, _is_official, _target);
         break;
       default:
         console.warn('확인되지 않은 실시간 알림_nakama_noti: ', v);
@@ -2795,6 +2785,21 @@ export class NakamaService {
     if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
     if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
     this.noti_origin[_is_official][_target][v.id] = v;
+  }
+
+  LoginAgain(v: Notification, _is_official: string, _target) {
+    this.alertCtrl.create({
+      header: this.servers[_is_official][_target].info.name,
+      message: this.lang.text['Nakama']['LoginAgain'],
+      buttons: [{
+        text: this.lang.text['Profile']['login_toggle'],
+        handler: () => {
+          delete this.noti_origin[_is_official][_target][v.id];
+          this.rearrange_notifications();
+          this.link_group(_is_official, _target, true)
+        }
+      }]
+    }).then(v => v.present());
   }
 
   /** 전송중인 파일 검토  
