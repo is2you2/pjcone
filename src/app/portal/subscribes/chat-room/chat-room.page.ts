@@ -324,10 +324,34 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 파일 첨부하기 */
   async inputFileSelected(ev: any) {
     if (ev.target.files.length) {
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      loading.present();
-      await this.selected_blobFile_callback_act(ev.target.files[0]);
-      loading.dismiss();
+      let is_multiple_files = ev.target.files.length != 1;
+      if (is_multiple_files) {
+        let alert = await this.alertCtrl.create({
+          header: this.lang.text['ChatRoom']['MultipleSend'],
+          message: `${this.lang.text['ChatRoom']['CountFile']}: ${ev.target.files.length}`,
+          buttons: [{
+            text: this.lang.text['ChatRoom']['Send'],
+            handler: async () => {
+              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+              loading.present();
+              for (let i = 0, j = ev.target.files.length; i < j; i++) {
+                await this.selected_blobFile_callback_act(ev.target.files[i]);
+                await this.send();
+              }
+              loading.dismiss();
+              setTimeout(() => {
+                this.scroll_down_logs();
+              }, 300);
+            }
+          }]
+        });
+        alert.present();
+      } else {
+        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+        loading.present();
+        await this.selected_blobFile_callback_act(ev.target.files[0]);
+        loading.dismiss();
+      }
     } else {
       delete this.userInput.file;
       this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
@@ -409,6 +433,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                       await this.send();
                     }
                     loading.dismiss();
+                    setTimeout(() => {
+                      this.scroll_down_logs();
+                    }, 300);
                   }
                 }]
               }).then(v => v.present());
