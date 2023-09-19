@@ -45,6 +45,7 @@ export class IonicViewerPage implements OnInit {
   ContentBox: HTMLElement;
   FileHeader: HTMLElement;
   HasNoEditButton: boolean;
+  CurrentFileSize: string;
 
   content_creator: ContentCreatorInfo;
   content_related_creator: ContentCreatorInfo[];
@@ -149,8 +150,22 @@ export class IonicViewerPage implements OnInit {
       this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
   }
 
+  // https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
+  formatBytes(bytes: number, decimals = 2): string {
+    if (!+bytes) return '0 Bytes'
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+  }
+
   CreateContentInfo() {
     try { // 파일 정보 검토
+      this.CurrentFileSize = this.formatBytes(this.FileInfo.size);
       this.content_creator = this.FileInfo['content_creator'];
       this.content_creator.timeDisplay = new Date(this.content_creator.timestamp).toLocaleString();
       this.content_related_creator = this.FileInfo['content_related_creator'];

@@ -474,6 +474,7 @@ ClickToPaste,이 곳을 눌러서 id 붙여넣기,Click to paste user id
 WorkLogs,작업 기록,Work logs
 LastPost,최종 게시자,Last post
 TimeAt,일시,Date
+FileSize,파일 크기,File size
 SourceFrom,출처,Source
 Publisher,게시자,Publisher
 CloseModal,닫기,Close
