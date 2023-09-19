@@ -165,7 +165,7 @@ export class IonicViewerPage implements OnInit {
 
   CreateContentInfo() {
     try { // 파일 정보 검토
-      this.CurrentFileSize = this.formatBytes(this.FileInfo.size);
+      this.CurrentFileSize = this.formatBytes(this.FileInfo.size || this.FileInfo['filesize']);
       this.content_creator = this.FileInfo['content_creator'];
       this.content_creator.timeDisplay = new Date(this.content_creator.timestamp).toLocaleString();
       this.content_related_creator = this.FileInfo['content_related_creator'];
