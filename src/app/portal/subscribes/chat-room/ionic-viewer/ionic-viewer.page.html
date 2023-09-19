@@ -64,7 +64,8 @@ SPDX-License-Identifier: MIT -->
               <ion-button
                 [disabled]="isDownloading || (MessageInfo.content.transfer_index && MessageInfo.content.transfer_index.OnTransfer == 'download')"
                 class="ion-align-items-center" color="warning" (click)="DownloadCurrentFile()" shape="round">
-                {{lang.text['ContentViewer']['DownloadThisFile']}}
+                {{(MessageInfo.content.transfer_index && MessageInfo.content.transfer_index.OnTransfer == 'download') ?
+                lang.text['ContentViewer']['FileDownloading'] : lang.text['ContentViewer']['DownloadThisFile']}}
               </ion-button>
             </ion-col>
           </ion-row>
