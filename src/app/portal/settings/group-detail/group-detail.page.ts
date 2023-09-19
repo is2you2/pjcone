@@ -14,7 +14,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { GroupServerPage } from '../group-server/group-server.page';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from "clipboardy";
-import { isPlatform } from 'src/app/app.component';
+import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 
 
 @Component({
@@ -53,11 +53,8 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     this.file_sel_id = `group_detail_${this.info.id}_${new Date().getTime()}}`;
     this.info_orig = JSON.parse(JSON.stringify(this.navParams.get('info')));
     this.nakama.socket_reactive['group_detail'] = this;
-    this.QRCodeSRC = this.global.readasQRCodeFromId({
-      id: this.info.id,
-      name: this.info.name,
-      type: 'group',
-    });
+    this.QRCodeSRC = this.global.readasQRCodeFromString(
+      `${SERVER_PATH_ROOT}pjcone_pwa/?group=${this.info.name},${this.info.id}`);
     if (!this.info.server) this.info.server = this.navParams.get('server');
     this.isOfficial = this.info.server['isOfficial'];
     this.target = this.info.server['target'];

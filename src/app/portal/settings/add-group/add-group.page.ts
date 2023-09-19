@@ -29,8 +29,6 @@ export class AddGroupPage implements OnInit {
     private mClipboard: Clipboard,
   ) { }
 
-  QRCodeSRC: any;
-
   ngOnInit() {
     let tmp = JSON.parse(localStorage.getItem('add-group'));
     if (tmp)
@@ -131,11 +129,6 @@ export class AddGroupPage implements OnInit {
     }).then(v => {
       this.userInput.id = v.id;
       this.userInput.creator_id = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session.user_id;
-      this.QRCodeSRC = this.global.readasQRCodeFromId({
-        type: 'group',
-        id: this.userInput.id,
-        title: this.userInput.name,
-      });
       this.nakama.save_group_info(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target);
       this.nakama.join_chat_with_modulation(v.id, 3, this.servers[this.index].isOfficial, this.servers[this.index].target, (_c) => {
         this.isSavedWell = true;

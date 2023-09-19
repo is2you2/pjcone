@@ -13,7 +13,7 @@ import { StatusManageService } from '../status-manage.service';
 import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
 import { LocalGroupServerService } from '../local-group-server.service';
-import { isPlatform } from '../app.component';
+import { SERVER_PATH_ROOT, isPlatform } from '../app.component';
 import { GlobalActService, isDarkMode } from '../global-act.service';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
@@ -74,12 +74,8 @@ export class MinimalChatPage implements OnInit {
   SelectOtherAddress(ev: any) {
     let address_text: string = ev.detail.value;
     let extract = address_text.substring(address_text.indexOf('(') + 1, address_text.indexOf(')'));
-    this.QRCodeSRC = this.global.readasQRCodeFromId({
-      type: 'group_dedi',
-      value: {
-        address: `ws://${extract}`,
-      }
-    });
+    this.QRCodeSRC = this.global.readasQRCodeFromString(
+      `${SERVER_PATH_ROOT}pjcone_pwa/?group_dedi=ws://${extract}`);
   }
 
   /** 마지막 메시지 썸네일 보여주기 토글 */

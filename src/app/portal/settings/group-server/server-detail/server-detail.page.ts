@@ -8,6 +8,7 @@ import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import clipboard from "clipboardy";
+import { SERVER_PATH_ROOT } from 'src/app/app.component';
 
 @Component({
   selector: 'app-server-detail',
@@ -52,10 +53,8 @@ export class ServerDetailPage implements OnInit {
     if (!this.dedicated_info.useSSL)
       delete filtered.useSSL;
     this.Alternative[this.dedicated_info.target] = [];
-    this.QRCodeSRC = this.global.readasQRCodeFromId({
-      type: 'server',
-      value: filtered,
-    });
+    this.QRCodeSRC = this.global.readasQRCodeFromString(
+      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${filtered.name || ''},${filtered.address || ''},${filtered.useSSL || ''},${filtered.port || 7350},${filtered.key || ''}`);
     // 이미 target값이 등록되었는지 검토
     this.isTargetAlreadyExist = Boolean(this.statusBar.groupServer['unofficial'][this.dedicated_info.target]);
   }
