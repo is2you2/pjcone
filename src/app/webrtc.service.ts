@@ -7,6 +7,7 @@ import { LanguageSettingService } from './language-setting.service';
 import { MatchOpCode, NakamaService } from './nakama.service';
 import { Match } from '@heroiclabs/nakama-js';
 import { isPlatform } from './app.component';
+import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +19,7 @@ export class WebrtcService {
     private p5toast: P5ToastService,
     private lang: LanguageSettingService,
     private nakama: NakamaService,
+    private mClipboard: Clipboard,
   ) {
     this.nakama.WebRTCService = this;
   }
@@ -79,6 +81,9 @@ export class WebrtcService {
         out_link += `&server=${servers[i].info.name || ''},${servers[i].info.address || ''},${servers[i].info.useSSL || ''},${servers[i].info.port || ''},${servers[i].info.key || ''}`;
       out_link += '&open_subscribes=true';
       out_link += `&open_prv_channel=${nakama.user_id},${nakama.isOfficial},${nakama.target}`;
+      try {
+        await this.mClipboard.copy(out_link);
+      } catch (error) { }
       window.open(out_link, '_system');
       throw '모바일 권한 오류';
     }
