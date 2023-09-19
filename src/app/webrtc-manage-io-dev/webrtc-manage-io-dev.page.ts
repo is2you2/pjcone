@@ -25,7 +25,7 @@ export class WebrtcManageIoDevPage implements OnInit {
 
 
   ngOnInit() {
-    let io = this.navParams.get('list');
+    let io = this.navParams.get('list') || [];
     for (let i = 0, j = io.length; i < j; i++) {
       if (io[i].kind.indexOf('videoinput') >= 0)
         this.VideoInputs.push(io[i]);

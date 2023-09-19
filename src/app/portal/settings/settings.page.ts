@@ -14,6 +14,7 @@ import { LocalNotiService } from '../../local-noti.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import { WebrtcManageIoDevPage } from 'src/app/webrtc-manage-io-dev/webrtc-manage-io-dev.page';
 
 @Component({
   selector: 'app-settings',
@@ -253,6 +254,12 @@ export class SettingsPage implements OnInit, OnDestroy {
       document.body.removeChild(link);
       link.remove();
     }
+  }
+
+  go_to_webrtc_manager() {
+    this.modalCtrl.create({
+      component: WebrtcManageIoDevPage,
+    }).then(v => v.present());
   }
 
   open_playstore() {
