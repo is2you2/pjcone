@@ -3021,7 +3021,7 @@ export class NakamaService {
     }
   }
 
-  async AddressToQRCodeAct(init: any) {
+  async AddressToQRCodeAct(init: any, NeedReturn = false) {
     let json = [];
     if (init['open_profile']) // 프로필 화면 유도
       json.push({ type: 'open_profile' });
@@ -3104,7 +3104,8 @@ export class NakamaService {
         });
       }
     }
-    await this.act_from_QRInfo(json);
+    if (NeedReturn) return json;
+    else await this.act_from_QRInfo(json);
   }
 
   /** 다른 페이지에서 QR에 의한 행동 규정이 필요할 때 등록  

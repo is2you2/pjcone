@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
+import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -17,25 +18,27 @@ export class QuickShareReviewPage implements OnInit {
     public modalCtrl: ModalController,
     private nakama: NakamaService,
     private p5toast: P5ToastService,
+    private global: GlobalActService,
   ) { }
 
   servers = [];
   groups = [];
+  rtcserver = [];
 
-  ngOnInit() {
+  async ngOnInit() {
     let received = this.navParams.get('data');
-    for (let i = 0, j = received.length; i < j; i++)
-      switch (received[i].type) {
+    let init = this.global.CatchGETs(received);
+    let json = await this.nakama.AddressToQRCodeAct(init, true);
+    for (let i = 0, j = json.length, k = 0; i < j; i++)
+      switch (json[i].type) {
         case 'server':
-          received[i].value.name = decodeURIComponent(received[i].value.name);
-          this.servers.push(received[i]);
+          this.servers.push(json[i]);
           break;
         case 'group':
-          received[i].name = decodeURIComponent(received[i].name);
-          this.groups.push(received[i]);
+          this.groups.push(json[i]);
           break;
-        default:
-          console.warn('예상하지 않은 타입값: ', received[i]);
+        case 'rtcserver':
+          this.rtcserver.push(json[i]);
           break;
       }
   }
@@ -48,6 +51,9 @@ export class QuickShareReviewPage implements OnInit {
     for (let i = 0, j = this.groups.length; i < j; i++)
       if (this.groups[i].grant)
         selected.push(this.groups[i]);
+    for (let i = 0, j = this.rtcserver.length; i < j; i++)
+      if (this.rtcserver[i].grant)
+        selected.push(this.rtcserver[i]);
     await this.nakama.act_from_QRInfo(selected);
     this.p5toast.show({
       text: this.lang.text['QuickQRShare']['success_received'],
