@@ -3139,6 +3139,9 @@ export class NakamaService {
               });
             }
           break;
+        case 'rtcserver':
+          console.log('rtc 정보: ', json[i]);
+          break;
         default: // 동작 미정 알림(debug)
           throw "지정된 틀 아님";
       }

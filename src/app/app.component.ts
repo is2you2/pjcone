@@ -126,6 +126,16 @@ export class AppComponent {
           target: sep[2],
         });
       }
+      if (init['rtcserver']) {
+        for (let i = 0, j = init['group'].length; i < j; i++) {
+          let sep = init['group'][i].split(',');
+          json.push({
+            type: 'group',
+            name: sep[0],
+            id: sep[1],
+          });
+        }
+      }
       nakama.act_from_QRInfo(JSON.stringify(json));
     });
     // 모바일 기기 특정 설정

@@ -2,6 +2,10 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonModal, IonRadioGroup, ModalController, NavParams } from '@ionic/angular';
 import { LanguageSettingService } from '../language-setting.service';
 import { IndexedDBService } from '../indexed-db.service';
+import { GlobalActService } from '../global-act.service';
+import { SERVER_PATH_ROOT } from '../app.component';
+import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
+import clipboard from 'clipboardy';
 
 @Component({
   selector: 'app-webrtc-manage-io-dev',
@@ -15,6 +19,8 @@ export class WebrtcManageIoDevPage implements OnInit {
     public modalCtrl: ModalController,
     public lang: LanguageSettingService,
     private indexed: IndexedDBService,
+    private global: GlobalActService,
+    private mClipboard: Clipboard,
   ) { }
 
   InOut = [];
@@ -27,6 +33,7 @@ export class WebrtcManageIoDevPage implements OnInit {
   @ViewChild('AudioOut') AudioOutput: IonRadioGroup;
 
   ServerInfos = [];
+  QRCodes = [];
 
   userInput = {
     urls: [''],
@@ -51,6 +58,11 @@ export class WebrtcManageIoDevPage implements OnInit {
     try {
       let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
       this.ServerInfos = JSON.parse(list);
+      for (let i = 0, j = this.ServerInfos.length; i < j; i++) {
+        let address = `${SERVER_PATH_ROOT}pjcone_pwa/?rtcserver=[${this.ServerInfos[i].urls}],${this.ServerInfos[i].username},${this.ServerInfos[i].credential}`;
+        let QRCode = this.global.readasQRCodeFromString(address);
+        this.QRCodes[i] = QRCode;
+      }
     } catch (e) { }
     try {
       let video_input = localStorage.getItem('VideoInputDev');
@@ -91,6 +103,9 @@ export class WebrtcManageIoDevPage implements OnInit {
 
   async SaveServer() {
     this.userInput.urls.filter(v => v);
+    let address = `${SERVER_PATH_ROOT}pjcone_pwa/?rtcserver=[${this.userInput.urls}],${this.userInput.username},${this.userInput.credential}`;
+    let QRCode = this.global.readasQRCodeFromString(address);
+    this.QRCodes.push(QRCode);
     this.ServerInfos.push(this.userInput);
     this.userInput = {
       urls: [''],
@@ -101,6 +116,12 @@ export class WebrtcManageIoDevPage implements OnInit {
     this.UserInputUrlsLength.push(0);
     await this.indexed.saveTextFileToUserPath(JSON.stringify(this.ServerInfos), 'servers/webrtc_server.json');
     this.RegisterServer.dismiss();
+  }
+
+  copy_info(index: number) {
+    let address = `${SERVER_PATH_ROOT}pjcone_pwa/?rtcserver=[${this.ServerInfos[index].urls}],${this.ServerInfos[index].username},${this.ServerInfos[index].credential}`;
+    this.mClipboard.copy(address)
+      .catch(_e => clipboard.write(address));
   }
 
   async RemoveServer(index: number) {

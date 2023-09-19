@@ -47,10 +47,10 @@ export class SubscribesPage implements OnInit {
       disableSuccessBeep: true,
       disableAnimations: true,
       resultDisplayDuration: 0,
-    }).then(v => {
+    }).then(async v => {
       if (!v.cancelled) {
         try { // 양식에 맞게 끝까지 동작한다면 우리 데이터가 맞다main
-          this.nakama.act_from_QRInfo(v.text.trim());
+          await this.nakama.act_from_QRInfo(v.text.trim());
         } catch (e) { // 양식에 맞춰 행동할 수 없다면 모르는 데이터다
           console.log('scanQRCode_failed: ', e);
           this.modalCtrl.create({

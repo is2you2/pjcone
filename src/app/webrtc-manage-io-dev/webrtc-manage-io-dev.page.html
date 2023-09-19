@@ -48,14 +48,20 @@
   <ion-item-divider>
     <ion-label>{{lang.text['WebRTCDevManager']['ManageServer']}}</ion-label>
   </ion-item-divider>
-  <div *ngFor="let info of ServerInfos; let i = index">
-    <ion-item>
-      <ion-label>{{info.urls[0]}}</ion-label>
-      <ion-button (click)="RemoveServer(i)">
-        {{lang.text['WebRTCDevManager']['Remove']}}
-      </ion-button>
-    </ion-item>
-  </div>
+  <ion-accordion-group #WebRTCServers>
+    <ion-accordion *ngFor="let info of ServerInfos; let i = index" [value]="i">
+      <ion-item button slot="header">
+        <ion-label>{{info.urls[0]}}</ion-label>
+      </ion-item>
+      <ion-list slot="content">
+        <img *ngIf="QRCodes[i]" [src]="QRCodes[i]" style="width: 100%; height: auto;" alt="Loading"
+          (click)="copy_info(i)">
+        <ion-item button (click)="RemoveServer(i)">
+          <ion-label color="danger" class="ion-text-center">{{lang.text['WebRTCDevManager']['Remove']}}</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-accordion>
+  </ion-accordion-group>
   <ion-item button id="RegisterNewServer">
     <ion-label class="ion-text-center">{{lang.text['WebRTCDevManager']['AddServer']}}</ion-label>
   </ion-item>

@@ -499,7 +499,7 @@ saveSetup,설정 저장하기,Save setting
 InitErr,초기화 실패,Failed to initialize
 AlreadyCalling,다른 통화가 진행중입니다,Another call is in progress
 ManageServer,서버 관리,Manage servers
-Remove,삭제,Remove
+Remove,서버 정보 삭제,Remove server info
 AddServer,가용 서버 추가,Add available servers
 ServerInfo,서버 정보,Server info
 Urls,주소,Urls
