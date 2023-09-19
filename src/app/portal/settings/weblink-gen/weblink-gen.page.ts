@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from 'clipboardy';
+import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 
@@ -15,6 +16,7 @@ export class WeblinkGenPage implements OnInit {
     public lang: LanguageSettingService,
     private mClipboard: Clipboard,
     private nakama: NakamaService,
+    private indexed: IndexedDBService,
   ) { }
 
   userInput = {
@@ -33,10 +35,12 @@ export class WeblinkGenPage implements OnInit {
     group_dedi: undefined,
     open_prv_channel: '',
     open_channel: false,
+    rtcserver: [],
   }
 
   servers: ServerInfo[] = [];
   groups = [];
+  rtcServer = [];
 
   isSSLConnect = false;
 
@@ -44,6 +48,9 @@ export class WeblinkGenPage implements OnInit {
     this.isSSLConnect = window.location.protocol == 'https:';
     this.servers = this.nakama.get_all_server_info();
     this.groups = this.nakama.rearrange_group_list();
+    this.indexed.loadTextFromUserPath('servers/webrtc_server.json', (e, v) => {
+      if (e && v) this.rtcServer = JSON.parse(v);
+    });
     for (let i = this.groups.length - 1; i >= 0; i--)
       if (this.groups[i]['status'] == 'missing')
         this.groups.splice(i, 1);
@@ -56,6 +63,11 @@ export class WeblinkGenPage implements OnInit {
 
   SelectGroupChannel(ev: any) {
     this.userInput.groups = ev.detail.value;
+    this.information_changed();
+  }
+
+  SelectRTCServer(ev: any) {
+    this.userInput.rtcserver = ev.detail.value;
     this.information_changed();
   }
 
@@ -115,6 +127,14 @@ export class WeblinkGenPage implements OnInit {
       this.result_address += 'open_channel=';
       this.result_address += `${this.userInput.groups[0]['id']},${this.userInput.groups[0]['server']['isOfficial']},${this.userInput.groups[0]['server']['target']}`;
       count++;
+    }
+    if (this.userInput.rtcserver.length) {
+      for (let i = 0, j = this.userInput.rtcserver.length; i < j; i++) {
+        this.result_address += count ? '&' : '?';
+        this.result_address += 'rtcserver=';
+        this.result_address += `[${this.userInput.rtcserver[i].urls}],${this.userInput.rtcserver[i].username},${this.userInput.rtcserver[i].credential}`;
+        count++;
+      }
     }
   }
 

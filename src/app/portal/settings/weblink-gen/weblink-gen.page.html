@@ -45,6 +45,14 @@
     <ion-label>{{lang.text['WebLinkGen']['OpenChannelTab']}}</ion-label>
     <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.open_subscribes" slot="end"></ion-toggle>
   </ion-item>
+  <ion-item>
+    <ion-label>{{lang.text['QuickQRShare']['RTCServer']}}</ion-label>
+    <ion-select (ionChange)="SelectRTCServer($event)" multiple="true"
+      [placeholder]="lang.text['QuickQRShare']['EmptyData']">
+      <ion-select-option *ngFor="let server of rtcServer" [value]="server">
+        {{ server.urls[0] }}</ion-select-option>
+    </ion-select>
+  </ion-item>
   <ion-item button (click)="toggle_tmp_user()">
     <ion-label>{{lang.text['WebLinkGen']['UseTempUser']}}</ion-label>
     <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.use_tmp_user" slot="end"></ion-toggle>

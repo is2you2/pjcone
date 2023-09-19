@@ -292,6 +292,7 @@ SelectServer,서버 선택,Share at
 SelectData,공유할 정보,Information to share
 GroupServer,서버 정보,Server info
 Group,채널,Channel
+RTCServer,WebRTC 서버,WebRTC Server
 EmptyData,없음,Null
 ReceiveData,QR코드로 공유,Share by QR code
 SendData,공유,Share
