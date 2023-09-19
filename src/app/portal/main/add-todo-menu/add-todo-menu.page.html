@@ -157,7 +157,7 @@ SPDX-License-Identifier: MIT -->
               {{lang.text['TodoDetail']['add_attach']}}
             </ion-button>
           </ion-item>
-          <input hidden type="file" [id]="file_sel_id" accept="*" (change)="inputImageSelected($event)">
+          <input hidden type="file" [id]="file_sel_id" accept="*" multiple (change)="inputImageSelected($event)">
         </div>
       </td>
     </tr>

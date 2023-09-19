@@ -498,7 +498,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 파일 선택시 로컬에서 반영 */
   async inputImageSelected(ev: any) {
     if (!ev.target.files.length) return;
-    await this.selected_blobFile_callback_act(ev.target.files[0]);
+    for (let i = 0, j = ev.target.files.length; i < j; i++)
+      await this.selected_blobFile_callback_act(ev.target.files[i]);
   }
 
   /** 사용가능한 원격 서버 리스트 */
