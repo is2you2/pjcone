@@ -597,7 +597,7 @@ export class IonicViewerPage implements OnInit {
             // modify_image
             receive_image: async (base64: string, width: number, height: number) => {
               let tmp_path = 'tmp_files/modify_image.png';
-              await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path, undefined, this.targetDB);
+              await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path, undefined, this.indexed.godotDB);
               this.modalCtrl.dismiss({
                 type: 'image',
                 path: tmp_path,
@@ -683,32 +683,30 @@ export class IonicViewerPage implements OnInit {
   /** 내장 그림판을 이용하여 그림 편집하기 */
   async modify_image() {
     switch (this.FileInfo['viewer']) {
-      case 'image': // 이미지인 경우, url 일 때
-        if (this.FileInfo.url) {
-          let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-          loading.present();
-          try {
-            let blob = await fetch(this.FileInfo['url']).then(r => r.blob());
-            this.image_info['path'] = `tmp_files/external_image_edit/image_download.${this.FileInfo.file_ext}`;
-            await this.indexed.saveBlobToUserPath(blob, this.image_info['path'], undefined, this.targetDB);
-            this.modalCtrl.dismiss({
-              ...this.image_info,
-              msg: this.MessageInfo,
-              index: this.RelevanceIndex - 1,
-            });
-          } catch (e) {
-            this.p5toast.show({
-              text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
-            });
-          }
-          loading.dismiss();
-        } else this.modalCtrl.dismiss({
-          type: 'image',
-          ...this.image_info,
-          path: this.FileInfo.path,
-          msg: this.MessageInfo,
-          index: this.RelevanceIndex - 1,
-        });
+      case 'image': { // 이미지인 경우, url 일 때
+        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+        loading.present();
+        try {
+          let blob: Blob;
+          this.image_info['path'] = `tmp_files/external_image_edit/image_download.${this.FileInfo.file_ext}`;
+          if (this.FileInfo['url'])
+            blob = await fetch(this.FileInfo['url']).then(r => r.blob());
+          else blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path || this.navParams.get('path'), (this.FileInfo.type || ''), undefined, this.targetDB);
+          await this.indexed.saveBlobToUserPath(blob, this.image_info['path'], undefined, this.indexed.godotDB);
+          this.modalCtrl.dismiss({
+            type: 'image',
+            ...this.image_info,
+            path: this.image_info['path'],
+            msg: this.MessageInfo,
+            index: this.RelevanceIndex - 1,
+          });
+        } catch (e) {
+          this.p5toast.show({
+            text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
+          });
+        }
+        loading.dismiss();
+      }
         break;
       case 'text': // 텍스트를 이미지화하기
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
@@ -724,11 +722,9 @@ export class IonicViewerPage implements OnInit {
         this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
           try {
             loading.dismiss();
-            console.log('무엇일까나: ', c);
             this.image_info['path'] = 'tmp_files/text_edit/text_copy.png';
-            await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, '', undefined, this.targetDB),
-              this.image_info['path']);
-            console.log('뭐가 없는걸까: ', this.image_info);
+            await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, '', undefined, this.indexed.godotDB),
+              this.image_info['path'], undefined, this.indexed.godotDB);
             this.modalCtrl.dismiss({
               type: 'image',
               ...this.image_info,
@@ -752,7 +748,7 @@ export class IonicViewerPage implements OnInit {
               loading.dismiss();
               this.image_info['path'] = 'tmp_files/video_edit/frame.png';
               await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
-                this.image_info['path'], undefined, this.targetDB);
+                this.image_info['path'], undefined, this.indexed.godotDB);
               this.modalCtrl.dismiss({
                 type: 'image',
                 ...this.image_info,
@@ -874,9 +870,6 @@ export class IonicViewerPage implements OnInit {
 
   async ionViewWillLeave() {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
-    this.indexed.GetFileListFromDB('tmp_files', list => {
-      list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB));
-    }, this.indexed.godotDB);
     switch (this.FileInfo.viewer) {
       case 'video':
         try {
