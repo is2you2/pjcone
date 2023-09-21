@@ -192,6 +192,7 @@ export class GlobalActService {
           if (waiting_key && !this.godot_window[waiting_key])
             throw 'No act ready';
           ready_to_show = true;
+          this.indexed.GetGodotIndexedDB();
           done();
         } catch (e) {
           setTimeout(() => {
