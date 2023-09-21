@@ -7,6 +7,10 @@ SPDX-License-Identifier: MIT -->
     <ion-buttons slot="start">
       <ion-back-button defaultHref="subscribes"></ion-back-button>
     </ion-buttons>
+    <ion-icon *ngIf="!info['HideAutoThumbnail']" class="top_icon" slot="end" name="eye-outline"
+      (click)="toggle_thumbnail()"></ion-icon>
+    <ion-icon *ngIf="info['HideAutoThumbnail']" class="top_icon" slot="end" name="eye-off-outline"
+      (click)="toggle_thumbnail()"></ion-icon>
     <div class="header_online_circle"
       [style]="'background-color: ' + statusBar.colors[info['status'] ? info['status'] : info.info['status']]">
     </div>

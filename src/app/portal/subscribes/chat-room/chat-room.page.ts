@@ -230,7 +230,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.global.set_viewer_category_from_ext(this_file);
         this_file.type = '';
         this_file.typeheader = this_file.viewer;
-        this.global.modulate_thumbnail(this_file, this_file.url);
+        if (!this.info['HideAutoThumbnail'])
+          this.global.modulate_thumbnail(this_file, this_file.url);
         if (this.NeedScrollDown())
           setTimeout(() => {
             this.scroll_down_logs();
@@ -651,9 +652,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
           msg.content['type'],
           async v => {
-            let url = URL.createObjectURL(v);
-            msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
-            await this.global.modulate_thumbnail(msg.content, url);
+            if (!this.info['HideAutoThumbnail']) {
+              let url = URL.createObjectURL(v);
+              msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+              await this.global.modulate_thumbnail(msg.content, url);
+            }
             if (this.NeedScrollDown())
               setTimeout(() => {
                 this.scroll_down_logs();
@@ -1002,7 +1005,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           break;
         case 'download':
           msg.content['text'] = [this.lang.text['TodoDetail']['WIP']];
-          await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
+          let isSuccessful = await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
+          if (isSuccessful && !this.info['HideAutoThumbnail']) {
+            let blob = await this.indexed.loadBlobFromUserPath(path, msg.content['type'] || '')
+            let url = URL.createObjectURL(blob);
+            msg.content['path'] = path;
+            await this.global.modulate_thumbnail(msg.content, url);
+          }
           if (this.NeedScrollDown())
             setTimeout(() => {
               this.scroll_down_logs();
@@ -1017,9 +1026,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.indexed.loadBlobFromUserPath(path,
           msg.content['type'],
           v => {
-            let url = URL.createObjectURL(v);
-            msg.content['path'] = path;
-            this.global.modulate_thumbnail(msg.content, url);
+            if (!this.info['HideAutoThumbnail']) {
+              let url = URL.createObjectURL(v);
+              msg.content['path'] = path;
+              this.global.modulate_thumbnail(msg.content, url);
+            }
             if (this.NeedScrollDown())
               setTimeout(() => {
                 this.scroll_down_logs();
@@ -1029,7 +1040,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       } else { // 다운받아야 함
         if (!this.isHistoryLoaded) { // 서버와 연결되어 있음
           msg.content['text'] = [this.lang.text['TodoDetail']['WIP']];
-          await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target);
+          let isSuccessful = await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target);
+          if (isSuccessful && !this.info['HideAutoThumbnail']) {
+            let blob = await this.indexed.loadBlobFromUserPath(path, msg.content['type'] || '')
+            let url = URL.createObjectURL(blob);
+            msg.content['path'] = path;
+            await this.global.modulate_thumbnail(msg.content, url);
+          }
           if (this.NeedScrollDown())
             setTimeout(() => {
               this.scroll_down_logs();
@@ -1110,7 +1127,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           v => {
             let url = URL.createObjectURL(v);
             msg.content['path'] = path;
-            this.global.modulate_thumbnail(msg.content, url);
+            if (!this.info['HideAutoThumbnail'])
+              this.global.modulate_thumbnail(msg.content, url);
             if (this.NeedScrollDown())
               setTimeout(() => {
                 this.scroll_down_logs();
@@ -1118,6 +1136,26 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           });
       }
     });
+  }
+
+  /** 썸네일 이미지 표시 토글 */
+  async toggle_thumbnail() {
+    this.info['HideAutoThumbnail'] = !this.info['HideAutoThumbnail'];
+    if (this.info['HideAutoThumbnail']) {
+      for (let i = 0, j = this.messages.length; i < j; i++)
+        delete this.messages[i].content['thumbnail'];
+    } else {
+      for (let i = 0, j = this.messages.length; i < j; i++) {
+        let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.messages[i].message_id}.${this.messages[i].content.file_ext}`;
+        this.messages[i].content['path'] = path;
+        try {
+          let blob = await this.indexed.loadBlobFromUserPath(path, this.messages[i].content.file_ext);
+          let FileURL = URL.createObjectURL(blob);
+          this.global.modulate_thumbnail(this.messages[i].content, FileURL);
+        } catch (e) { }
+      }
+    }
+    this.nakama.save_channels_with_less_info();
   }
 
   lock_modal_open = false;

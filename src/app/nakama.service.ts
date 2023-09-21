@@ -2912,12 +2912,9 @@ export class NakamaService {
         let list = await this.indexed.GetFileListFromDB(`${path}_part`);
         list.forEach(path => this.indexed.removeFileFromUserPath(path));
         this.global.remove_req_file_info(msg, path);
-        let blob = await this.indexed.loadBlobFromUserPath(path, _msg.content['type'] || '')
-        let url = URL.createObjectURL(blob);
-        msg.content['path'] = path;
-        await this.global.modulate_thumbnail(msg.content, url);
       }
     }
+    return isSuccessful;
   }
 
   /** 로컬 파일을 저장하며 원격에 분산하여 올리기 */
