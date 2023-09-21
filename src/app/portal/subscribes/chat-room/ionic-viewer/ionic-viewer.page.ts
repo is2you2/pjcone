@@ -109,6 +109,8 @@ export class IonicViewerPage implements OnInit {
     URL.revokeObjectURL(this.FileURL);
     if (this.FileInfo.url) {
       this.FileURL = this.FileInfo.url;
+      this.CreateContentInfo();
+      this.ionViewDidEnter();
     } else {
       let path = this.FileInfo['path'] ||
         `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
