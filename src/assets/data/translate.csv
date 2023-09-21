@@ -183,7 +183,7 @@ Title,콘텐츠 뷰어,Content Viewer
 ContentInfo,콘텐츠 기록,Content history
 Edit,이미지 편집,Edit
 EditText,문서 편집,Edit text
-Download,저장,Save
+Download,외부에 저장,Save external
 creator,제작자,Creator
 related_creator,그 외,Related
 Filename,파일 이름,Filename
