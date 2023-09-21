@@ -2928,11 +2928,11 @@ export class NakamaService {
   }
 
   /** 로컬 파일을 저장하며 원격에 분산하여 올리기 */
-  async sync_save_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _key_force = '') {
+  async sync_save_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _key_force = '', targetDB?: IDBDatabase) {
     try {
       let copied_info = JSON.parse(JSON.stringify(info));
-      await this.indexed.saveBlobToUserPath(info.blob, copied_info.path);
-      let file_info = await this.global.req_file_info(copied_info.path);
+      await this.indexed.saveBlobToUserPath(info.blob, copied_info.path, undefined, targetDB);
+      let file_info = await this.global.req_file_info(copied_info.path, targetDB);
       copied_info.partsize = Math.ceil((copied_info['filesize'] || file_info.contents.length) / FILE_BINARY_LIMIT);
       delete copied_info['blob'];
       await this.servers[_is_official][_target].client.writeStorageObjects(
@@ -2945,7 +2945,7 @@ export class NakamaService {
         }]);
       // 여기서 전체 길이로 for문을 돌리고 매 회차마다 파트를 받아서 base64 변환 후 집어넣어야 함
       for (let i = 0; i < copied_info.partsize; i++) {
-        let part = await this.global.req_file_part_base64(file_info, i, copied_info.path);
+        let part = await this.global.req_file_part_base64(file_info, i, copied_info.path, targetDB);
         await this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
             collection: _collection,
@@ -2955,7 +2955,7 @@ export class NakamaService {
             value: { data: part },
           }]);
       }
-      this.indexed.removeFileFromUserPath(`${copied_info.path}.history`);
+      this.indexed.removeFileFromUserPath(`${copied_info.path}.history`, undefined, targetDB);
     } catch (e) {
       console.log('SyncSaveFailed: ', e);
     }
@@ -2964,10 +2964,10 @@ export class NakamaService {
   /** 로컬에 있는 파일을 불러오기, 로컬에 없다면 원격에서 요청하여 생성 후 불러오기
    * @returns 파일의 blob
    */
-  async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid = '', _key_force = '') {
+  async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid = '', _key_force = '', targetDB?: IDBDatabase) {
     let copied_info = JSON.parse(JSON.stringify(info));
     try {
-      return await this.indexed.loadBlobFromUserPath(copied_info.path, copied_info.type || '');
+      return await this.indexed.loadBlobFromUserPath(copied_info.path, copied_info.type || '', undefined, targetDB);
     } catch (e) {
       try {
         let file_info = await this.servers[_is_official][_target].client.readStorageObjects(
@@ -2988,9 +2988,9 @@ export class NakamaService {
               user_id: _userid || this.servers[_is_official][_target].session.user_id,
             }],
           });
-          await this.global.save_file_part(info_json.path, i, part.objects[0].value['data']);
+          await this.global.save_file_part(info_json.path, i, part.objects[0].value['data'], targetDB);
         }
-        return await this.indexed.loadBlobFromUserPath(info_json.path, info_json.type || '');
+        return await this.indexed.loadBlobFromUserPath(info_json.path, info_json.type || '', undefined, targetDB);
       } catch (e) {
         return null;
       }
@@ -2998,9 +2998,9 @@ export class NakamaService {
   }
 
   /** 로컬 파일을 삭제하며 원격 분산파일도 삭제하기 */
-  async sync_remove_file(path: string, _is_official: string, _target: string, _collection: string, _userid: string = '') {
+  async sync_remove_file(path: string, _is_official: string, _target: string, _collection: string, _userid: string = '', targetDB?: IDBDatabase) {
     try {
-      await this.indexed.removeFileFromUserPath(path);
+      await this.indexed.removeFileFromUserPath(path, undefined, targetDB);
       let file_info = await this.servers[_is_official][_target].client.readStorageObjects(
         this.servers[_is_official][_target].session, {
         object_ids: [{

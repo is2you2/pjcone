@@ -277,7 +277,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
             loading.present();
             blob = await this.nakama.sync_load_file(this.userInput.attach[i],
-              this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id);
+              this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id, undefined, this.indexed.godotDB);
             loading.dismiss();
           } else if (this.userInput.attach[i].viewer == 'image' || this.userInput.attach[i].viewer == 'text')
             blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type'], undefined, this.indexed.godotDB);
@@ -1069,12 +1069,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               if (!received_json.attach[i]['exist'] ||
                 (received_json.attach[i]['exist'] && !this.userInput.attach[received_json.attach[i]['index']]))
                 await this.nakama.sync_remove_file(received_json.attach[i]['path'],
-                  this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
+                  this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', undefined, this.indexed.godotDB);
             }
           }
         for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
           await this.nakama.sync_save_file(this.userInput.attach[i],
-            this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
+            this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', undefined, this.indexed.godotDB);
         }
         loading.dismiss();
       } catch (e) {
@@ -1129,7 +1129,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           object_ids: [request],
         });
         for (let i = 0, j = this.userInput.attach.length; i < j; i++)
-          await this.nakama.sync_remove_file(this.userInput.attach[i].path, isOfficial, target, 'todo_attach');
+          await this.nakama.sync_remove_file(this.userInput.attach[i].path, isOfficial, target, 'todo_attach', undefined, this.indexed.godotDB);
         if (isDelete) await this.nakama.servers[isOfficial][target]
           .socket.sendMatchState(this.nakama.self_match[isOfficial][target].match_id, MatchOpCode.ADD_TODO,
             encodeURIComponent(`delete,${this.userInput.id}`));
