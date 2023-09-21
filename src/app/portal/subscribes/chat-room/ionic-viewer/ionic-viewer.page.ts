@@ -60,6 +60,7 @@ export class IonicViewerPage implements OnInit {
   isDownloading = false;
   CurrentViewId: string;
   OpenInChannelChat = false;
+  targetDB: IDBDatabase;
 
   EventListenerAct = (ev: any) => {
     ev.detail.register(120, (_processNextHandler: any) => { });
@@ -74,6 +75,7 @@ export class IonicViewerPage implements OnInit {
     this.FileHeader = document.getElementById('FileHeader');
     this.isOfficial = this.navParams.get('isOfficial');
     this.target = this.navParams.get('target');
+    this.targetDB = this.navParams.get('targetDB');
     this.HasNoEditButton = this.navParams.get('no_edit') || false;
     switch (this.FileInfo['is_new']) {
       case 'text':
@@ -98,7 +100,7 @@ export class IonicViewerPage implements OnInit {
         if (this.FileInfo.url) {
           this.FileURL = this.FileInfo.url;
         } else {
-          this.blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type']);
+          this.blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type'], undefined, this.targetDB);
           this.FileURL = URL.createObjectURL(this.blob);
         }
         this.CreateContentInfo();
@@ -121,9 +123,9 @@ export class IonicViewerPage implements OnInit {
       let path = this.FileInfo['path'] ||
         `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
       this.image_info['path'] = path;
-      this.NeedDownloadFile = await this.indexed.checkIfFileExist(`${path}.history`);
+      this.NeedDownloadFile = await this.indexed.checkIfFileExist(`${path}.history`, undefined, this.targetDB);
       try {
-        this.blob = await this.indexed.loadBlobFromUserPath(path, this.FileInfo['type']);
+        this.blob = await this.indexed.loadBlobFromUserPath(path, this.FileInfo['type'], undefined, this.targetDB);
         this.FileURL = URL.createObjectURL(this.blob);
         this.CreateContentInfo();
         this.ionViewDidEnter();
@@ -147,7 +149,7 @@ export class IonicViewerPage implements OnInit {
         handler: async () => {
           for (let i = 0, j = this.Relevances.length; i < j; i++) {
             let path = `servers/${this.isOfficial}/${this.target}/channels/${this.Relevances[i].channel_id}/files/msg_${this.Relevances[i].message_id}.${this.Relevances[i].content['file_ext']}`;
-            let FileExist = await this.indexed.checkIfFileExist(path);
+            let FileExist = await this.indexed.checkIfFileExist(path, undefined, this.targetDB);
             if (!FileExist) await this.DownloadCurrentFile(i);
           }
         },
@@ -172,7 +174,7 @@ export class IonicViewerPage implements OnInit {
     let target = this.Relevances[index ?? (this.RelevanceIndex - 1)];
     let path = `servers/${this.isOfficial}/${this.target}/channels/${target.channel_id}/files/msg_${target.message_id}.${target.content['file_ext']}`;
     try {
-      let v = await this.indexed.loadTextFromUserPath(`${path}.history`);
+      let v = await this.indexed.loadTextFromUserPath(`${path}.history`, undefined, this.targetDB);
       let json = JSON.parse(v);
       startFrom = json['index'];
     } catch (e) { }
@@ -573,7 +575,7 @@ export class IonicViewerPage implements OnInit {
         let ThumbnailURL: string;
         let GetViewId = this.MessageInfo.message_id;
         try {
-          let thumbnail = await this.indexed.loadBlobFromUserPath(this.FileInfo['path'] + '_thumbnail.png', '');
+          let thumbnail = await this.indexed.loadBlobFromUserPath(this.FileInfo['path'] + '_thumbnail.png', '', undefined, this.targetDB);
           ThumbnailURL = URL.createObjectURL(thumbnail);
         } catch (e) { }
         if (!this.NeedDownloadFile && this.CurrentViewId == GetViewId)
@@ -587,7 +589,7 @@ export class IonicViewerPage implements OnInit {
             // modify_image
             receive_image: async (base64: string, width: number, height: number) => {
               let tmp_path = 'tmp_files/modify_image.png';
-              await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path);
+              await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path, undefined, this.targetDB);
               this.modalCtrl.dismiss({
                 type: 'image',
                 path: tmp_path,
@@ -655,7 +657,7 @@ export class IonicViewerPage implements OnInit {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
       let tmp_path = `/tmp_files/texteditor/${this.FileInfo.filename}`;
-      await this.indexed.saveBlobToUserPath(blob, tmp_path);
+      await this.indexed.saveBlobToUserPath(blob, tmp_path, undefined, this.targetDB);
       loading.dismiss();
       this.p5toast.show({
         text: this.lang.text['ContentViewer']['fileSaved'],
@@ -680,7 +682,7 @@ export class IonicViewerPage implements OnInit {
           try {
             let blob = await fetch(this.FileInfo['url']).then(r => r.blob());
             this.image_info['path'] = `tmp_files/external_image_edit/image_download.${this.FileInfo.file_ext}`;
-            await this.indexed.saveBlobToUserPath(blob, this.image_info['path']);
+            await this.indexed.saveBlobToUserPath(blob, this.image_info['path'], undefined, this.targetDB);
             this.modalCtrl.dismiss({
               ...this.image_info,
               msg: this.MessageInfo,
@@ -716,7 +718,7 @@ export class IonicViewerPage implements OnInit {
             loading.dismiss();
             console.log('무엇일까나: ', c);
             this.image_info['path'] = 'tmp_files/text_edit/text_copy.png';
-            await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
+            await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, '', undefined, this.targetDB),
               this.image_info['path']);
             console.log('뭐가 없는걸까: ', this.image_info);
             this.modalCtrl.dismiss({
@@ -742,7 +744,7 @@ export class IonicViewerPage implements OnInit {
               loading.dismiss();
               this.image_info['path'] = 'tmp_files/video_edit/frame.png';
               await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
-                this.image_info['path']);
+                this.image_info['path'], undefined, this.targetDB);
               this.modalCtrl.dismiss({
                 type: 'image',
                 ...this.image_info,
@@ -770,7 +772,7 @@ export class IonicViewerPage implements OnInit {
   forceWrite = false;
   download_file() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
-      this.indexed.DownloadFileFromUserPath(this.navParams.get('path'), this.FileInfo['type'], this.FileInfo['filename']);
+      this.indexed.DownloadFileFromUserPath(this.navParams.get('path'), this.FileInfo['type'], this.FileInfo['filename'], this.targetDB);
     else {
       this.alertCtrl.create({
         header: this.lang.text['ContentViewer']['Filename'],
@@ -785,7 +787,7 @@ export class IonicViewerPage implements OnInit {
             let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
             loading.present();
             let filename = input['filename'] ? input['filename'].replace(/:|\?|\/|\\|<|>/g, '') : this.FileInfo['filename'];
-            let blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type']);
+            let blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type'], undefined, this.targetDB);
             if (this.forceWrite && !input['filename'])
               this.file.writeExistingFile(this.file.externalDataDirectory, filename, blob)
                 .then(_v => {
@@ -854,7 +856,7 @@ export class IonicViewerPage implements OnInit {
         text: this.lang.text['TodoDetail']['remove'],
         handler: async () => {
           URL.revokeObjectURL(this.FileURL);
-          await this.indexed.removeFileFromUserPath(this.FileInfo.path);
+          await this.indexed.removeFileFromUserPath(this.FileInfo.path, undefined, this.targetDB);
           this.RelevanceIndex -= 1;
           this.ChangeToAnother(1);
         }
@@ -898,7 +900,7 @@ export class IonicViewerPage implements OnInit {
           this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
             try {
               await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
-                `${this.FileInfo.path}_thumbnail.png`);
+                `${this.FileInfo.path}_thumbnail.png`, undefined, this.targetDB);
               this.global.modulate_thumbnail(this.FileInfo, '');
             } catch (e) {
               console.log('썸네일 저장 오류: ', e);

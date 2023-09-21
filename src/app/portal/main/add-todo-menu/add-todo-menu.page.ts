@@ -509,7 +509,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 type: 'text/plain',
                 viewer: 'text',
                 filename: new_textfile_name,
-              }
+              },
+              targetDB: this.indexed.godotDB,
             },
             no_edit: true,
           },
@@ -707,6 +708,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         info: { content: this.userInput.attach[index] },
         path: this.userInput.attach[index]['path'],
         relevance: createRelevances,
+        targetDB: this.indexed.godotDB,
       },
     }).then(v => {
       v.onDidDismiss().then((v) => {

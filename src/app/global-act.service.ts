@@ -246,7 +246,7 @@ export class GlobalActService {
                 p.saveFrames('', 'png', 1, 1, async c => {
                   try {
                     await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
-                      `${window_path}_thumbnail.png`);
+                      `${window_path}_thumbnail.png`, undefined, this.indexed.godotDB);
                     this.modulate_thumbnail(info, '');
                   } catch (e) {
                     console.log('p.saveFrames: ', e);
