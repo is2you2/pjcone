@@ -488,6 +488,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 새 파일 만들기 */
   new_attach(ev: any) {
     switch (ev.detail.value) {
+      case 'camera':
+        this.from_camera();
+        break;
       case 'text':
         let newDate = new Date();
         let year = newDate.getUTCFullYear();
