@@ -179,7 +179,13 @@ export class IonicViewerPage implements OnInit {
       startFrom = json['index'];
     } catch (e) { }
     let GetViewId = target.message_id;
-    await this.nakama.ReadStorage_From_channel(target, path, this.isOfficial, this.target, startFrom);
+    let isSuccessful = await this.nakama.ReadStorage_From_channel(target, path, this.isOfficial, this.target, startFrom);
+    if (isSuccessful && !this.nakama.channels_orig[this.isOfficial][this.target][target.channel_id]['HideAutoThumbnail']) {
+      let blob = await this.indexed.loadBlobFromUserPath(path, target.content['type'] || '')
+      let url = URL.createObjectURL(blob);
+      target.content['path'] = path;
+      await this.global.modulate_thumbnail(target.content, url);
+    }
     if (this.CurrentViewId == GetViewId) // 현재 보고 있을 때에만 열람 시도
       this.reinit_content_data(target);
   }
