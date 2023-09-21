@@ -944,7 +944,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           header_image = URL.createObjectURL(blob);
         }
       }
-      if (header_image) // 대표 이미지가 있다면
+      if (header_image) { // 대표 이미지가 있다면
         await new Promise((done: any) => {
           new p5((p: p5) => {
             p.setup = () => {
@@ -975,13 +975,16 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             }
           });
         });
-      this.global.last_frame_name = '';
+        this.global.last_frame_name = '';
+      }
       loading.dismiss();
-    } else if (!has_attach) { // 첨부된게 전혀 없다면 모든 이미지 삭제
+    }
+    if (!has_attach && attach_changed) { // 첨부된게 전혀 없다면 모든 이미지 삭제
       if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
         await this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/thumbnail.png`);
         for (let i = 0, j = received_json.attach.length; i < j; i++)
           await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
+        this.global.last_frame_name = '';
       }
     }
     this.userInput.attach.forEach(attach => {
