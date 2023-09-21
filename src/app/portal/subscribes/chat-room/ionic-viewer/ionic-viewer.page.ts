@@ -158,6 +158,7 @@ export class IonicViewerPage implements OnInit {
   }
 
   ChangeToAnother(direction: number) {
+    if (this.p5canvas) this.p5canvas.remove();
     let tmp_calced = this.RelevanceIndex + direction;
     if (tmp_calced <= 0 || tmp_calced > this.Relevances.length)
       return;
