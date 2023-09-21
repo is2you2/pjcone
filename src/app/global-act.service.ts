@@ -247,7 +247,7 @@ export class GlobalActService {
                   try {
                     await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
                       `${window_path}_thumbnail.png`, undefined, this.indexed.godotDB);
-                    this.modulate_thumbnail(info, '');
+                    this.modulate_thumbnail(info, '', this.indexed.godotDB);
                   } catch (e) {
                     console.log('p.saveFrames: ', e);
                   }
@@ -393,7 +393,7 @@ export class GlobalActService {
   }
 
   /** 메시지에 썸네일 콘텐츠를 생성 */
-  async modulate_thumbnail(msg_content: FileInfo, ObjectURL: string) {
+  async modulate_thumbnail(msg_content: FileInfo, ObjectURL: string, targetDB?: IDBDatabase) {
     if (msg_content['url']) {
       switch (msg_content['viewer']) {
         case 'text':
@@ -436,7 +436,7 @@ export class GlobalActService {
         break;
       default: // 대안 썸네일이 있는지 확인하기
         try {
-          let blob = await this.indexed.loadBlobFromUserPath(`${msg_content['path']}_thumbnail.png`, 'image/png');
+          let blob = await this.indexed.loadBlobFromUserPath(`${msg_content['path']}_thumbnail.png`, 'image/png', undefined, targetDB);
           let FileURL = URL.createObjectURL(blob);
           msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
           setTimeout(() => {
