@@ -7,11 +7,15 @@ extends Node
 var window
 var save_path:= 'user://acts/'
 
+var quit_godot_func = JavaScript.create_callback(self, 'quit_godot')
+
 # 앱 시작과 동시에 동작하려는 pck 정보를 받아옴
 func _ready():
 	get_tree().connect("files_dropped", self, 'load_package_debug')
+	yield(get_tree().create_timer(.5), "timeout")
 	if OS.has_feature('JavaScript'):
 		window = JavaScript.get_interface('window')
+		window.quit_godot = quit_godot_func
 		# ionic에게 IndexedDB가 생성되었음을 알림
 		window.parent['godot'] = 'godot';
 		if window.local_url:
@@ -36,7 +40,7 @@ func load_package_debug(files:PoolStringArray, scr):
 		if file.find('.pck') + 1:
 			target = file
 			break
-	var is_loaded:= ProjectSettings.load_resource_pack(target)
+	var is_loaded:= ProjectSettings.load_resource_pack(target, false)
 	if not is_loaded: # 불러오기 실패
 		printerr('Godot: 패키지를 불러오지 못함: ', target)
 	else: # 정상적으로 불러와짐
@@ -51,7 +55,7 @@ func load_package(act_name:String):
 	var target:= '%s%s.pck' % [save_path, act_name]
 	if OS.has_feature('JavaScript') and window.pck_path:
 		target = window.pck_path
-	var is_loaded:= ProjectSettings.load_resource_pack(target)
+	var is_loaded:= ProjectSettings.load_resource_pack(target, false)
 	if not is_loaded: # 없으면 다운받기
 		printerr('Godot: 패키지를 불러오지 못함: ', act_name)
 		if not $CenterContainer/ColorRect.is_connected("gui_input", self, '_on_Label_gui_input'):
@@ -102,3 +106,7 @@ func _on_Label_gui_input(event):
 	if event is InputEventMouseButton:
 		if event.pressed:
 			start_download_pck()
+
+
+func quit_godot():
+	get_tree().quit()

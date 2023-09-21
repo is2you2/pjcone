@@ -81,6 +81,10 @@ interface GodotFrameKeys {
   /** **사용금지**  
    * 패키지 불러오기 행동 실패시 실행됨 */
   failed?: Function;
+  /** **사용금지**  
+   * 고도 프레임을 새로 생성할 때 자동으로 실행됨
+   */
+  quit_godot?: Function;
   /** 고도엔진과 상호작용하기 위한 값들, 고도엔진에서 JavaScript.get_interface('window')[id]로 접근 */
   [id: string]: any;
 }
@@ -199,6 +203,8 @@ export class GlobalActService {
         done();
         return;
       };
+      if (this.godot_window && this.godot_window['quit_godot'])
+        this.godot_window.quit_godot();
       if (this.godot_splash) this.godot_splash.remove();
       if (this.godot) this.godot.remove();
       window['godot'] = '';
