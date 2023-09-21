@@ -54,10 +54,11 @@ export class AppComponent {
       });
       let init = global.CatchGETs(location.href) || {};
       nakama.AddressToQRCodeAct(init);
+      noti.initialize();
+      noti.load_settings();
     });
     lang.Callback_nakama = () => {
       nakama.initialize();
-      noti.initialize();
       nakama.check_if_online();
     }
     this.init_admob();

@@ -135,11 +135,7 @@ export class LocalNotiService {
     private noti: LocalNotifications,
     private bgmode: BackgroundMode,
     private indexed: IndexedDBService,
-  ) {
-    setTimeout(() => {
-      this.load_settings();
-    }, 0);
-  }
+  ) { }
 
   /** settings에 해당하는 값을 변경한 후 저장함 */
   change_silent_settings(key: string) {
