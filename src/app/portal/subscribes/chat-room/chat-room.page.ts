@@ -652,9 +652,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
           msg.content['type'],
           async v => {
+            msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
             if (!this.info['HideAutoThumbnail']) {
               let url = URL.createObjectURL(v);
-              msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
               await this.global.modulate_thumbnail(msg.content, url);
             }
             if (this.NeedScrollDown())
@@ -1006,10 +1006,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         case 'download':
           msg.content['text'] = [this.lang.text['TodoDetail']['WIP']];
           let isSuccessful = await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
+          msg.content['path'] = path;
           if (isSuccessful && !this.info['HideAutoThumbnail']) {
             let blob = await this.indexed.loadBlobFromUserPath(path, msg.content['type'] || '')
             let url = URL.createObjectURL(blob);
-            msg.content['path'] = path;
             await this.global.modulate_thumbnail(msg.content, url);
           }
           if (this.NeedScrollDown())
@@ -1026,9 +1026,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.indexed.loadBlobFromUserPath(path,
           msg.content['type'],
           v => {
+            msg.content['path'] = path;
             if (!this.info['HideAutoThumbnail']) {
               let url = URL.createObjectURL(v);
-              msg.content['path'] = path;
               this.global.modulate_thumbnail(msg.content, url);
             }
             if (this.NeedScrollDown())
@@ -1125,10 +1125,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.indexed.loadBlobFromUserPath(path,
           msg.content['type'],
           v => {
-            let url = URL.createObjectURL(v);
             msg.content['path'] = path;
-            if (!this.info['HideAutoThumbnail'])
+            if (!this.info['HideAutoThumbnail']) {
+              let url = URL.createObjectURL(v);
               this.global.modulate_thumbnail(msg.content, url);
+            }
             if (this.NeedScrollDown())
               setTimeout(() => {
                 this.scroll_down_logs();

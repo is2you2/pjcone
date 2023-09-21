@@ -2846,6 +2846,9 @@ export class NakamaService {
     setTimeout(() => {
       delete this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id];
       this.global.remove_req_file_info(msg, path);
+      this.p5toast.show({
+        text: `${this.lang.text['ChatRoom']['SendFile']}: ${_msg.content.filename}`,
+      });
     }, 100);
   }
 
