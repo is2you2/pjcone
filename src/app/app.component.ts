@@ -47,13 +47,7 @@ export class AppComponent {
       isPlatform = 'Android';
     else if (platform.is('iphone'))
       isPlatform = 'iOS';
-    lang.Callback_nakama = () => {
-      noti.initialize();
-      nakama.check_if_online();
-    }
-    this.init_admob();
     indexed.initialize(() => {
-      nakama.initialize();
       // 앱 재시작시 자동으로 동기화할 수 있도록 매번 삭제
       indexed.GetFileListFromDB('acts_local', list => {
         list.forEach(path => indexed.removeFileFromUserPath(path));
@@ -61,6 +55,12 @@ export class AppComponent {
       let init = global.CatchGETs(location.href) || {};
       nakama.AddressToQRCodeAct(init);
     });
+    lang.Callback_nakama = () => {
+      nakama.initialize();
+      noti.initialize();
+      nakama.check_if_online();
+    }
+    this.init_admob();
     // 모바일 기기 특정 설정
     if (isPlatform == 'Android' || isPlatform == 'iOS') {
       App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
