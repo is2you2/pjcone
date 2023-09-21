@@ -19,7 +19,7 @@ export class MainPage implements OnInit {
   constructor(
     private global: GlobalActService,
     public lang: LanguageSettingService,
-    private nakama: NakamaService,
+    public nakama: NakamaService,
     public statusBar: StatusManageService,
   ) { }
 

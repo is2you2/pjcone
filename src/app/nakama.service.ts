@@ -364,6 +364,13 @@ export class NakamaService {
     });
   }
 
+  /** 모든 세션을 토글 */
+  toggle_all_session() {
+    if (this.statusBar.settings.groupServer == 'online')
+      this.logout_all_server();
+    else this.init_all_sessions();
+  }
+
   /** 서버 연결하기 */
   link_group(_is_official: string, _target: string, _force = false) {
     if (_force || this.statusBar.groupServer[_is_official][_target] == 'missing' || this.statusBar.groupServer[_is_official][_target] == 'offline') {
