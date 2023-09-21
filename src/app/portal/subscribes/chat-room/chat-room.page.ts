@@ -980,7 +980,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 메시지 내 파일 정보, 파일 다운받기 */
   async file_detail(msg: any) {
     if (msg.content['url']) {
-      msg.content['thumbnail'] = msg.content['url'];
+      if (!this.info['HideAutoThumbnail'])
+        msg.content['thumbnail'] = msg.content['url'];
       this.open_viewer(msg, msg.content['url']);
       return;
     }
@@ -1093,7 +1094,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.messages[i + 1]['showInfo']['sender'] = !this.messages[i + 1].content.noti && this.messages[i + 1].user_display_name && (this.messages[i]['isLastRead'] || this.messages[i].sender_id != this.messages[i + 1].sender_id || this.messages[i].content.noti || this.messages[i]['msgDate'] != this.messages[i + 1]['msgDate'] || this.messages[i]['msgTime'] != this.messages[i + 1]['msgTime']);
     }
     // url 링크 개체 즉시 불러오기
-    if (this.messages[i]['content']['url'])
+    if (this.messages[i]['content']['url'] && !this.info['HideAutoThumbnail'])
       this.messages[i]['content']['thumbnail'] = this.messages[i]['content']['url'];
   }
 
@@ -1147,13 +1148,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         delete this.messages[i].content['thumbnail'];
     } else {
       for (let i = 0, j = this.messages.length; i < j; i++) {
-        let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.messages[i].message_id}.${this.messages[i].content.file_ext}`;
-        this.messages[i].content['path'] = path;
-        try {
-          let blob = await this.indexed.loadBlobFromUserPath(path, this.messages[i].content.file_ext);
-          let FileURL = URL.createObjectURL(blob);
-          this.global.modulate_thumbnail(this.messages[i].content, FileURL);
-        } catch (e) { }
+        if (this.messages[i].content['url']) {
+          this.messages[i].content['thumbnail'] = this.messages[i].content['url'];
+        } else {
+          let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.messages[i].message_id}.${this.messages[i].content.file_ext}`;
+          this.messages[i].content['path'] = path;
+          try {
+            let blob = await this.indexed.loadBlobFromUserPath(path, this.messages[i].content.file_ext);
+            let FileURL = URL.createObjectURL(blob);
+            this.global.modulate_thumbnail(this.messages[i].content, FileURL);
+          } catch (e) { }
+        }
       }
     }
     this.nakama.save_channels_with_less_info();
