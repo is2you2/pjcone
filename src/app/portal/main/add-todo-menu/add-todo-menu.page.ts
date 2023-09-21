@@ -284,9 +284,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           else throw '번외 썸네일 필요';
           if (!blob) continue;
           let url = URL.createObjectURL(blob);
-          this.global.modulate_thumbnail(this.userInput.attach[i], url);
+          this.global.modulate_thumbnail(this.userInput.attach[i], url, this.indexed.godotDB);
         } catch (e) {
-          this.global.modulate_thumbnail(this.userInput.attach[i], '');
+          this.global.modulate_thumbnail(this.userInput.attach[i], '', this.indexed.godotDB);
         }
         this.userInput.attach[i]['exist'] = true;
       }

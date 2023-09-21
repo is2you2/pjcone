@@ -65,21 +65,19 @@ export class IndexedDBService {
     let dir = path.substring(0, lastIndexOf);
     if (!dir) return;
     this.checkIfFileExist(dir, b => {
-      if (!b) {
-        let put = targetDB.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
-          timestamp: new Date(),
-          mode: 16893,
-        }, `/userfs/${dir}`);
-        put.onsuccess = (ev) => {
-          if (ev.type != 'success')
-            console.error('저장 실패: ', path);
-          this.createRecursiveDirectory(dir, targetDB);
-        }
-        put.onerror = (e) => {
-          console.error('IndexedDB createRecursiveDirectory failed: ', e);
-        }
+      let put = targetDB.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
+        timestamp: new Date(),
+        mode: 16893,
+      }, `/userfs/${dir}`);
+      put.onsuccess = (ev) => {
+        if (ev.type != 'success')
+          console.error('저장 실패: ', path);
+        this.createRecursiveDirectory(dir, targetDB);
       }
-    })
+      put.onerror = (e) => {
+        console.error('IndexedDB createRecursiveDirectory failed: ', e);
+      }
+    });
   }
 
   /**

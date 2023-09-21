@@ -182,7 +182,7 @@ export class GlobalActService {
    * @param keys 고도엔진 iframe.window에 작성될 값들
    * @returns iframe 개체 돌려주기
    */
-  CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys, waiting_key: string = ''): Promise<any> {
+  CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys, waiting_key: string = '', targetDB = this.indexed.godotDB): Promise<any> {
     let ready_to_show = false;
     return new Promise((done: any) => {
       let refresh_it_loading = () => {
@@ -246,8 +246,8 @@ export class GlobalActService {
                 p.saveFrames('', 'png', 1, 1, async c => {
                   try {
                     await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
-                      `${window_path}_thumbnail.png`, undefined, this.indexed.godotDB);
-                    this.modulate_thumbnail(info, '', this.indexed.godotDB);
+                      `${(this.godot_window['alt_path'] || window_path)}_thumbnail.png`, undefined, targetDB);
+                    this.modulate_thumbnail(info, '', targetDB);
                   } catch (e) {
                     console.log('p.saveFrames: ', e);
                   }

@@ -574,15 +574,23 @@ export class IonicViewerPage implements OnInit {
         document.addEventListener('ionBackButton', this.EventListenerAct);
         let ThumbnailURL: string;
         let GetViewId = this.MessageInfo.message_id;
+        let AlternativePCKPath: string;
+        if (!this.targetDB) { // ionicDB 라면 DB간 파일 교체
+          AlternativePCKPath = 'tmp_files/duplicate/viewer.pck';
+          let blob = await this.indexed.loadBlobFromUserPath(this.FileInfo['path'] || this.navParams.get('path'), '');
+          await this.indexed.saveBlobToUserPath(blob, AlternativePCKPath, undefined, this.indexed.godotDB);
+        }
         try {
-          let thumbnail = await this.indexed.loadBlobFromUserPath(this.FileInfo['path'] + '_thumbnail.png', '', undefined, this.targetDB);
+          let thumbnail = await this.indexed.loadBlobFromUserPath((this.FileInfo['path'] || this.navParams.get('path'))
+            + '_thumbnail.png', '', undefined, this.targetDB);
           ThumbnailURL = URL.createObjectURL(thumbnail);
         } catch (e) { }
         if (!this.NeedDownloadFile && this.CurrentViewId == GetViewId)
           await this.global.CreateGodotIFrame('content_viewer_canvas', {
             local_url: 'assets/data/godot/viewer.pck',
             title: 'ViewerEx',
-            path: this.FileInfo['path'] || this.navParams.get('path'),
+            path: AlternativePCKPath,
+            alt_path: this.FileInfo['path'] || this.navParams.get('path'),
             ext: this.FileInfo['file_ext'],
             force_logo: true,
             background: ThumbnailURL,
@@ -599,7 +607,7 @@ export class IonicViewerPage implements OnInit {
                 index: this.RelevanceIndex - 1,
               });
             }
-          }, 'create_thumbnail');
+          }, 'create_thumbnail', this.indexed.ionicDB);
         if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
         break;
       case 'disabled':
@@ -866,6 +874,9 @@ export class IonicViewerPage implements OnInit {
 
   async ionViewWillLeave() {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
+    this.indexed.GetFileListFromDB('tmp_files', list => {
+      list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB));
+    }, this.indexed.godotDB);
     switch (this.FileInfo.viewer) {
       case 'video':
         try {

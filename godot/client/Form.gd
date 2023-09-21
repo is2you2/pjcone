@@ -12,7 +12,6 @@ var quit_godot_func = JavaScript.create_callback(self, 'quit_godot')
 # 앱 시작과 동시에 동작하려는 pck 정보를 받아옴
 func _ready():
 	get_tree().connect("files_dropped", self, 'load_package_debug')
-	yield(get_tree().create_timer(.5), "timeout")
 	if OS.has_feature('JavaScript'):
 		window = JavaScript.get_interface('window')
 		window.quit_godot = quit_godot_func
