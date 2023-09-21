@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { AlertController, LoadingController, ModalController, NavController } from '@ionic/angular';
+import { AlertController, IonSelect, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import * as p5 from "p5";
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -479,17 +479,73 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     });
   }
 
-  /** 새 그림 만들기 */
-  new_attach() {
-    this.modalCtrl.create({
-      component: VoidDrawPage,
-    }).then(v => {
-      v.onWillDismiss().then(async v => {
-        if (v.data) this.voidDraw_fileAct_callback(v);
-      });
-      v.present();
-    });
+  @ViewChild('NewAttach') NewAttach: IonSelect;
+  /** 새 파일 타입 정하기 */
+  open_select_new() {
+    this.NewAttach.open();
   }
+
+  /** 새 파일 만들기 */
+  new_attach(ev: any) {
+    switch (ev.detail.value) {
+      case 'text':
+        let newDate = new Date();
+        let year = newDate.getUTCFullYear();
+        let month = ("0" + (newDate.getMonth() + 1)).slice(-2);
+        let date = ("0" + newDate.getDate()).slice(-2);
+        let hour = ("0" + newDate.getHours()).slice(-2);
+        let minute = ("0" + newDate.getMinutes()).slice(-2);
+        let second = ("0" + newDate.getSeconds()).slice(-2);
+        let new_textfile_name = `texteditor_${year}-${month}-${date}_${hour}-${minute}-${second}.txt`
+        this.modalCtrl.create({
+          component: IonicViewerPage,
+          componentProps: {
+            info: {
+              content: {
+                is_new: 'text',
+                type: 'text/plain',
+                viewer: 'text',
+                filename: new_textfile_name,
+              }
+            },
+            no_edit: true,
+          },
+        }).then(v => {
+          v.onWillDismiss().then(v => {
+            if (v.data) {
+              let this_file: FileInfo = {};
+              this_file.content_creator = {
+                timestamp: new Date().getTime(),
+                display_name: this.nakama.users.self['display_name'],
+                various: 'textedit',
+              };
+              this_file.content_related_creator = [];
+              this_file.content_related_creator.push(this_file.content_creator);
+              this_file.blob = v.data.blob;
+              this_file.path = v.data.path;
+              this_file.size = v.data.blob['size'];
+              this_file.filename = new_textfile_name;
+              this_file.viewer = 'text';
+              this.userInput.attach.push(this_file);
+            }
+          });
+          v.present();
+        });
+        break;
+      case 'image':
+        this.modalCtrl.create({
+          component: VoidDrawPage,
+        }).then(v => {
+          v.onWillDismiss().then(async v => {
+            if (v.data) this.voidDraw_fileAct_callback(v);
+          });
+          v.present();
+        });
+        break;
+    }
+    this.NewAttach.value = '';
+  }
+
   file_sel_id = '';
   /** 파일 첨부 */
   select_attach() {

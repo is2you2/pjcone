@@ -75,29 +75,35 @@ export class IonicViewerPage implements OnInit {
     this.isOfficial = this.navParams.get('isOfficial');
     this.target = this.navParams.get('target');
     this.HasNoEditButton = this.navParams.get('no_edit') || false;
-    this.Relevances = this.navParams.get('relevance');
-    if (this.Relevances) {
-      for (let i = 0, j = this.Relevances.length; i < j; i++)
-        if (this.Relevances[i]['message_id'] && this.MessageInfo['message_id']) {
-          if (this.Relevances[i]['message_id'] == this.MessageInfo['message_id']) {
-            this.RelevanceIndex = i + 1;
-            break;
-          }
+    switch (this.FileInfo['is_new']) {
+      case 'text':
+        break;
+      default:
+        this.Relevances = this.navParams.get('relevance');
+        if (this.Relevances) {
+          for (let i = 0, j = this.Relevances.length; i < j; i++)
+            if (this.Relevances[i]['message_id'] && this.MessageInfo['message_id']) {
+              if (this.Relevances[i]['message_id'] == this.MessageInfo['message_id']) {
+                this.RelevanceIndex = i + 1;
+                break;
+              }
+            } else {
+              if (this.Relevances[i].content['path'] == this.MessageInfo.content['path']) {
+                this.RelevanceIndex = i + 1;
+                break;
+              }
+            }
+          this.HaveRelevances = Boolean(this.Relevances.length > 1);
+        } else this.HaveRelevances = false;
+        if (this.FileInfo.url) {
+          this.FileURL = this.FileInfo.url;
         } else {
-          if (this.Relevances[i].content['path'] == this.MessageInfo.content['path']) {
-            this.RelevanceIndex = i + 1;
-            break;
-          }
+          this.blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type']);
+          this.FileURL = URL.createObjectURL(this.blob);
         }
-      this.HaveRelevances = Boolean(this.Relevances.length > 1);
-    } else this.HaveRelevances = false;
-    if (this.FileInfo.url) {
-      this.FileURL = this.FileInfo.url;
-    } else {
-      this.blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type']);
-      this.FileURL = URL.createObjectURL(this.blob);
+        this.CreateContentInfo();
+        break;
     }
-    this.CreateContentInfo();
   }
 
   async reinit_content_data(msg: any) {
@@ -261,6 +267,12 @@ export class IonicViewerPage implements OnInit {
         target['various_display'] = this.lang.text['GlobalAct']['FromTextEditor'];
         break;
     }
+  }
+
+  close_text_edit() {
+    if (this.FileInfo['is_new']) {
+      this.modalCtrl.dismiss();
+    } else this.reinit_content_data(this.MessageInfo);
   }
 
   async ionViewDidEnter() {
@@ -539,8 +551,19 @@ export class IonicViewerPage implements OnInit {
               canvasDiv.appendChild(textArea.elt);
               p['TextArea'] = textArea.elt;
             }, _e => {
-              canvasDiv.textContent = '열람할 수 없는 파일입니다.';
-              this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
+              if (this.FileInfo['is_new']) {
+                let textArea = p.createElement('textarea');
+                textArea.elt.disabled = true;
+                textArea.elt.className = 'infobox';
+                textArea.elt.setAttribute('style', 'height: 100%; display: block;');
+                textArea.elt.textContent = '';
+                canvasDiv.appendChild(textArea.elt);
+                p['TextArea'] = textArea.elt;
+                this.open_text_editor();
+              } else {
+                canvasDiv.textContent = this.lang.text['ContentViewer']['CannotOpenText'];
+                this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
+              }
             });
           }
         });

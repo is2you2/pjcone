@@ -28,7 +28,9 @@ limit,기한,Deadline
 description,상세 내용,Description
 description_placeholder,할 일 상세 내용,Todo details
 camera,촬영,Pic.
-new_attach,새 그림,New
+new_attach,새 파일,New
+new_text,새 텍스트,New text
+new_draw,새 그림,New painting
 add_attach,가져오기,Load
 load_failed,파일 가져오기에 실패하였습니다,Failed to load file
 delete_attach,삭제,Delete
@@ -199,6 +201,7 @@ FileDownloading,다운받는 중,Downloading
 DownloadAllFiles,모두 다운받기,Download all
 DownloadLoadedList,뷰어에 로드된 모든 파일 다운받기,Download all files loaded in the viewer
 RemoveFile,파일 삭제,Remove file
+CannotOpenText,열람할 수 없는 파일입니다,This file cannot be viewed
 ## MinimalChat,,
 concurrent_users,동시접속자,Concurrent users
 shareAddress,주소 공유,Share address

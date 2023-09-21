@@ -21,7 +21,7 @@ SPDX-License-Identifier: MIT -->
       <td>
         <ion-list-header id="FileHeader">
           <ion-label text-wrap>{{FileInfo.filename}}</ion-label>
-          <ion-button *ngIf="isTextEditMode" (click)="reinit_content_data(MessageInfo)">
+          <ion-button *ngIf="isTextEditMode" (click)="close_text_edit()">
             <ion-icon name="close-circle-outline"></ion-icon>
           </ion-button>
           <ion-button *ngIf="isTextEditMode" (click)="SaveText()">
