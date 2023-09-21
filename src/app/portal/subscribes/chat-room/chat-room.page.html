@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT -->
     <ion-icon *ngIf="info['HideAutoThumbnail']" class="top_icon" slot="end" name="eye-off-outline"
       (click)="toggle_thumbnail()"></ion-icon>
     <div class="header_online_circle"
-      [style]="'background-color: ' + statusBar.colors[info['status'] ? info['status'] : info.info['status']]">
+      [style]="'background-color: ' + statusBar.colors[(info['status'] ? info['status'] : info.info['status']) || 'offline']">
     </div>
   </ion-toolbar>
 </ion-header>
@@ -150,8 +150,9 @@ SPDX-License-Identifier: MIT -->
           <table id="input_table" style="width: 100%; background-color: var(--chatroom-input-background);">
             <tr>
               <td>
-                <ion-button fill="clear" [disabled]="info['status'] == 'offline'" (click)="open_ext_with_delay()"
-                  class="ion-text-center">
+                <ion-button fill="clear"
+                  [disabled]="((info['status'] ? info['status'] : info.info['status']) || 'offline') == 'offline'"
+                  (click)="open_ext_with_delay()" class="ion-text-center">
                   <ion-icon name="add"></ion-icon>
                 </ion-button>
               </td>
