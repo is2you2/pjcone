@@ -500,6 +500,7 @@ VideoIn,비디오 입력 장치,Video input
 AudioIn,오디오 입력 장치,Audio input
 AudioOut,오디오 출력 장치,Audio output
 saveSetup,설정 저장하기,Save setting
+IgnoreSave,서버 정보를 입력해주세요,Please enter server information
 InitErr,초기화 실패,Failed to initialize
 AlreadyCalling,다른 통화가 진행중입니다,Another call is in progress
 ManageServer,서버 관리,Manage servers

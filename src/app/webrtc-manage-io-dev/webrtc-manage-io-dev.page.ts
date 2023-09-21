@@ -6,6 +6,7 @@ import { GlobalActService } from '../global-act.service';
 import { SERVER_PATH_ROOT } from '../app.component';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from 'clipboardy';
+import { P5ToastService } from '../p5-toast.service';
 
 @Component({
   selector: 'app-webrtc-manage-io-dev',
@@ -21,6 +22,7 @@ export class WebrtcManageIoDevPage implements OnInit {
     private indexed: IndexedDBService,
     private global: GlobalActService,
     private mClipboard: Clipboard,
+    private p5toast: P5ToastService,
   ) { }
 
   InOut = [];
@@ -103,6 +105,15 @@ export class WebrtcManageIoDevPage implements OnInit {
 
   async SaveServer() {
     this.userInput.urls.filter(v => v);
+    for (let i = this.userInput.urls.length - 1; i >= 0; i--)
+      if (!this.userInput.urls[i].trim())
+        this.userInput.urls.splice(i, 1);
+    if (!this.userInput.urls.length) {
+      this.p5toast.show({
+        text: this.lang.text['WebRTCDevManager']['IgnoreSave'],
+      });
+      return;
+    }
     let address = `${SERVER_PATH_ROOT}pjcone_pwa/?rtcserver=[${this.userInput.urls}],${this.userInput.username},${this.userInput.credential}`;
     let QRCode = this.global.readasQRCodeFromString(address);
     this.QRCodes.push(QRCode);
