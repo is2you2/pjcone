@@ -184,9 +184,9 @@ export class NakamaService {
             let noti_info = JSON.parse(v);
             this.set_todo_notification(noti_info);
           }
-        });
+        }, this.indexed.godotDB);
       });
-    });
+    }, this.indexed.godotDB);
   }
 
   /** 할 일이 열린 상태에서 다른 할 일 열람시 행동 */
@@ -728,7 +728,7 @@ export class NakamaService {
     todo_info['remote']['type'] = `${_is_official}/${_target}`;
     this.set_todo_notification(todo_info);
     if (this.global.godot_window['add_todo']) this.global.godot_window['add_todo'](JSON.stringify(todo_info));
-    this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
+    this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`, undefined, this.indexed.godotDB);
   }
 
   /** 저장된 그룹 업데이트하여 반영 */
@@ -1819,14 +1819,14 @@ export class NakamaService {
                       todo_info.done = true;
                       this.modify_remote_info_as_local(todo_info, _is_official, _target);
                     }
-                  });
+                  }, this.indexed.godotDB);
                   break;
                 case 'delete': // 삭제
                   this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
                     if (e && v) {
                       let todo_info = JSON.parse(v);
                       this.indexed.GetFileListFromDB(`todo/${sep[1]}`, (v) => {
-                        v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+                        v.forEach(_path => this.indexed.removeFileFromUserPath(_path, undefined, this.indexed.godotDB));
                         if (todo_info.noti_id)
                           if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
                             clearTimeout(this.web_noti_id[todo_info.noti_id]);
@@ -1835,9 +1835,9 @@ export class NakamaService {
                         this.noti.ClearNoti(todo_info.noti_id);
                         let godot = this.global.godot.contentWindow || this.global.godot.contentDocument;
                         godot['remove_todo'](JSON.stringify(todo_info));
-                      });
+                      }, this.indexed.godotDB);
                     }
-                  });
+                  }, this.indexed.godotDB);
                   break;
                 case 'worker': // 매니저 입장에서, 작업자 완료
                   if (this.AddTodoManageUpdateAct)
@@ -1854,7 +1854,7 @@ export class NakamaService {
                         }
                       this.modify_remote_info_as_local(todo_info, _is_official, _target);
                     }
-                  });
+                  }, this.indexed.godotDB);
                   break;
                 default:
                   console.warn('등록되지 않은 할 일 행동: ', m);

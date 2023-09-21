@@ -6,7 +6,6 @@ import { IonTabs, iosTransitionAnimation, NavController } from '@ionic/angular';
 import { NakamaService } from '../nakama.service';
 import * as p5 from 'p5';
 import { GlobalActService } from '../global-act.service';
-import { StatusManageService } from '../status-manage.service';
 import { IndexedDBService } from '../indexed-db.service';
 
 @Component({
