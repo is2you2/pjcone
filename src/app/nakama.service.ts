@@ -2322,6 +2322,9 @@ export class NakamaService {
           try {
             c.content['transfer_index'] = this.OnTransfer[_is_official][_target][c.channel_id][c.message_id];
           } catch (e) { }
+          try {
+            this.OnTransferMessage[c.message_id] = c;
+          } catch (e) { }
         }
         break;
       case 3: // 열린 그룹에 들어온 사용자 알림
@@ -2819,6 +2822,11 @@ export class NakamaService {
    * OnTransfer[isOfficial][target][channel_id][message_id] = index;
    */
   OnTransfer = {};
+  /** 전송중인 파일에 해당하는 썸네일을 받을 개체
+   * OnTransferMessage[message_id] = index;  
+   * 채널 채팅 화면을 벗어날 때 삭제됨
+   */
+  OnTransferMessage = {};
   /**
    * 채널에서 백그라운드 파일 발송 요청
    * @param msg 메시지 정보
@@ -2909,7 +2917,6 @@ export class NakamaService {
         msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
         delete msg.content['transfer_index'];
         delete this.OnTransfer[_is_official][_target][_msg.channel_id][_msg.message_id]['index'];
-        delete this.OnTransfer[_is_official][_target][_msg.channel_id][_msg.message_id];
         this.p5toast.show({
           text: `${this.lang.text['ChatRoom']['SavingFile']}: ${_msg.content.filename}`,
         });
@@ -2929,8 +2936,16 @@ export class NakamaService {
         await this.indexed.saveInt8ArrayToUserPath(new Int8Array(SaveForm), path);
         let list = await this.indexed.GetFileListFromDB(`${path}_part`);
         list.forEach(path => this.indexed.removeFileFromUserPath(path));
-        this.global.remove_req_file_info(msg, path);
+        this.global.remove_req_file_info(_msg, path);
       }
+      _msg.content['path'] = path;
+      if (isSuccessful && !this.channels_orig[_is_official][_target][_msg.channel_id]['HideAutoThumbnail']) {
+        let blob = await this.indexed.loadBlobFromUserPath(path, msg.content['type'] || '')
+        let url = URL.createObjectURL(blob);
+        await this.global.modulate_thumbnail((this.OnTransferMessage[_msg.message_id] || msg).content, url);
+      }
+      delete this.OnTransfer[_is_official][_target][_msg.channel_id][_msg.message_id];
+      delete this.OnTransferMessage[_msg.message_id];
     }
     return isSuccessful;
   }

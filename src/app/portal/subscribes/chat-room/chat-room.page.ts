@@ -534,6 +534,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   };
 
   async init_chatroom() {
+    this.nakama.OnTransferMessage = {};
+    this.prev_cursor = undefined;
+    this.next_cursor = undefined;
     this.init_last_message_viewer();
     this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
     this.ChannelUserInputId = `chatroom_input_${this.info.id}_${new Date().getTime()}`;
@@ -1007,13 +1010,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           break;
         case 'download':
           msg.content['text'] = [this.lang.text['TodoDetail']['WIP']];
-          let isSuccessful = await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
-          msg.content['path'] = path;
-          if (isSuccessful && !this.info['HideAutoThumbnail']) {
-            let blob = await this.indexed.loadBlobFromUserPath(path, msg.content['type'] || '')
-            let url = URL.createObjectURL(blob);
-            await this.global.modulate_thumbnail(msg.content, url);
-          }
+          await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target, json['index']);
           if (this.NeedScrollDown())
             setTimeout(() => {
               this.scroll_down_logs();
@@ -1042,13 +1039,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       } else { // 다운받아야 함
         if (!this.isHistoryLoaded) { // 서버와 연결되어 있음
           msg.content['text'] = [this.lang.text['TodoDetail']['WIP']];
-          let isSuccessful = await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target);
-          if (isSuccessful && !this.info['HideAutoThumbnail']) {
-            let blob = await this.indexed.loadBlobFromUserPath(path, msg.content['type'] || '')
-            let url = URL.createObjectURL(blob);
-            msg.content['path'] = path;
-            await this.global.modulate_thumbnail(msg.content, url);
-          }
+          await this.nakama.ReadStorage_From_channel(msg, path, this.isOfficial, this.target);
           if (this.NeedScrollDown())
             setTimeout(() => {
               this.scroll_down_logs();
@@ -1327,5 +1318,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.nakama.ChatroomLinkAct = undefined;
     if (this.p5canvas)
       this.p5canvas.remove()
+    this.nakama.OnTransferMessage = {};
   }
 }
