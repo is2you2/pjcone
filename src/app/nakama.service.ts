@@ -2013,7 +2013,8 @@ export class NakamaService {
   saveMessageByDate(info: any, channel_info: any, _is_official: string, _target: string) {
     if (!info.msg || !info.msg.length) return;
     let SepByDate = JSON.parse(JSON.stringify(info));
-    this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/channels/${channel_info.id}/chats/${SepByDate['target']}`, (e, v) => {
+    let DateSep = SepByDate['target'].split('-');
+    this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/channels/${channel_info.id}/chats/${DateSep[0]}/${DateSep[1]}/${DateSep[2]}`, (e, v) => {
       let base: any[] = [];
       let added: any[] = [];
       if (e && v)
@@ -2036,7 +2037,7 @@ export class NakamaService {
           return 1;
         return 0;
       });
-      this.indexed.saveTextFileToUserPath(JSON.stringify(result), `servers/${_is_official}/${_target}/channels/${channel_info.id}/chats/${SepByDate['target']}`);
+      this.indexed.saveTextFileToUserPath(JSON.stringify(result), `servers/${_is_official}/${_target}/channels/${channel_info.id}/chats/${DateSep[0]}/${DateSep[1]}/${DateSep[2]}`);
     });
   }
 
@@ -2317,6 +2318,11 @@ export class NakamaService {
     let target = is_me ? this.users.self : this.load_other_user(c.sender_id, _is_official, _target);
     switch (c.code) {
       case 0: // 사용자가 작성한 일반적인 메시지
+        if (c.content['filename']) { // 파일이라면 전송 정보 연결 시도하기
+          try {
+            c.content['transfer_index'] = this.OnTransfer[_is_official][_target][c.channel_id][c.message_id];
+          } catch (e) { }
+        }
         break;
       case 3: // 열린 그룹에 들어온 사용자 알림
       case 4: // 채널에 새로 들어온 사람 알림
@@ -2901,6 +2907,8 @@ export class NakamaService {
         msg.content['thumbnail'] = msg.content['url'];
       } else { // 서버에 업로드된 파일
         msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
+        delete msg.content['transfer_index'];
+        delete this.OnTransfer[_is_official][_target][_msg.channel_id][_msg.message_id]['index'];
         delete this.OnTransfer[_is_official][_target][_msg.channel_id][_msg.message_id];
         this.p5toast.show({
           text: `${this.lang.text['ChatRoom']['SavingFile']}: ${_msg.content.filename}`,

@@ -147,6 +147,13 @@ export class IonicViewerPage implements OnInit {
       buttons: [{
         text: this.lang.text['ContentViewer']['DownloadThisFile'],
         handler: async () => {
+          for (let i = 0, j = this.Relevances.length; i < j; i++) { // 전체 다운로드시 개체 미리 생성하기
+            if (!this.nakama.OnTransfer[this.isOfficial]) this.nakama.OnTransfer[this.isOfficial] = {};
+            if (!this.nakama.OnTransfer[this.isOfficial][this.target]) this.nakama.OnTransfer[this.isOfficial][this.target] = {};
+            if (!this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id]) this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id] = {};
+            if (!this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id][this.Relevances[i].message_id])
+              this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id][this.Relevances[i].message_id] = {};
+          }
           for (let i = 0, j = this.Relevances.length; i < j; i++) {
             let path = `servers/${this.isOfficial}/${this.target}/channels/${this.Relevances[i].channel_id}/files/msg_${this.Relevances[i].message_id}.${this.Relevances[i].content['file_ext']}`;
             let FileExist = await this.indexed.checkIfFileExist(path, undefined, this.targetDB);
@@ -918,7 +925,7 @@ export class IonicViewerPage implements OnInit {
             }
           });
         } catch (e) {
-          console.log('작업중 오류보기: ', e);
+          console.log('비디오 썸네일 생성 취소: ', e);
         }
         break;
       case 'godot':
