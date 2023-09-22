@@ -19,7 +19,7 @@
   </ion-item-divider>
   <ion-item>
     <ion-input [label]="lang.text['WebLinkGen']['baseURL']" class="ion-text-end" [(ngModel)]="userInput.root"
-      placeholder="https://is2you2.github.io/pjcone_pwa/" (ionChange)="baseURLChanged($event)"></ion-input>
+      placeholder="https://is2you2.github.io/pjcone_pwa/" (ionInput)="baseURLChanged($event)"></ion-input>
   </ion-item>
   <ion-item>
     <ion-select [label]="lang.text['QuickQRShare']['GroupServer']" (ionChange)="SelectGroupServer($event)"
@@ -56,17 +56,17 @@
   <div *ngIf="userInput.use_tmp_user">
     <ion-item>
       <ion-input [label]="lang.text['Profile']['email_address']" class="ion-text-end"
-        (ionChange)="information_changed()" [(ngModel)]="userInput.tmp_user.email"
+        (ionInput)="information_changed()" [(ngModel)]="userInput.tmp_user.email"
         placeholder="test@example.com"></ion-input>
     </ion-item>
     <ion-item>
-      <ion-input [label]="lang.text['Profile']['password']" class="ion-text-end" (ionChange)="information_changed()"
+      <ion-input [label]="lang.text['Profile']['password']" class="ion-text-end" (ionInput)="information_changed()"
         [(ngModel)]="userInput.tmp_user.password"
         [placeholder]="userInput.tmp_user.pass_placeholder || lang.text['Profile']['at_least']"></ion-input>
     </ion-item>
     <ion-item>
       <ion-input [label]="lang.text['Profile']['user_display_name']" class="ion-text-end"
-        (ionChange)="information_changed()" [(ngModel)]="userInput.tmp_user.display_name"
+        (ionInput)="information_changed()" [(ngModel)]="userInput.tmp_user.display_name"
         [placeholder]="lang.text['Profile']['name_placeholder']"></ion-input>
     </ion-item>
   </div>
