@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { IonToggle, ModalController } from '@ionic/angular';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { isPlatform } from 'src/app/app.component';
@@ -97,9 +97,10 @@ export class AddGroupPage implements OnInit {
     }
   }
 
+  @ViewChild('AddGroupPublic') GroupIsPublic: IonToggle;
   /** 공개여부 토글 */
   isPublicToggle() {
-    this.userInput.open = !this.userInput.open;
+    this.userInput.open = this.GroupIsPublic.checked;
   }
 
   isSaveClicked = false;

@@ -140,12 +140,12 @@ export class LocalNotiService {
   /** settings에 해당하는 값을 변경한 후 저장함 */
   change_silent_settings(key: string) {
     this.settings.silent[key] = !this.settings.silent[key];
-    this.indexed.saveTextFileToUserPath(JSON.stringify(this.settings), 'notification_settings');
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.settings), 'notification_settings.json');
   }
 
   /** 설정값 복구 */
   load_settings() {
-    this.indexed.loadTextFromUserPath('notification_settings', (e, v) => {
+    this.indexed.loadTextFromUserPath('notification_settings.json', (e, v) => {
       if (e && v) this.settings = JSON.parse(v);
       // 아래, 구 버전 호환성 코드
       if (typeof this.settings.silent == 'boolean')

@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
-import { AlertController, ModalController, NavParams } from '@ionic/angular';
+import { AlertController, IonToggle, ModalController, NavParams } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -54,7 +54,7 @@ export class ServerDetailPage implements OnInit {
       delete filtered.useSSL;
     this.Alternative[this.dedicated_info.target] = [];
     this.QRCodeSRC = this.global.readasQRCodeFromString(
-      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${filtered.name || ''},${filtered.address || ''},${filtered.useSSL || ''},${filtered.port || 7350},${filtered.key || ''}`);
+      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${filtered.name || ''},${filtered.address || ''},${filtered.useSSL ? 'true' : ''},${filtered.port || 7350},${filtered.key || ''}`);
     // 이미 target값이 등록되었는지 검토
     this.isTargetAlreadyExist = Boolean(this.statusBar.groupServer['unofficial'][this.dedicated_info.target]);
   }
@@ -62,6 +62,8 @@ export class ServerDetailPage implements OnInit {
   /** 동일 키를 사용하는 변경가능한 서버 정보 */
   Alternative: { [id: string]: ServerInfo[] } = {};
   index = 0;
+
+  @ViewChild('ServerDetailuseSSL') ServerDetailuseSSL: IonToggle;
 
   async ionViewWillEnter() {
     this.Alternative[this.dedicated_info.target].push(JSON.parse(JSON.stringify(this.dedicated_info)));
@@ -80,6 +82,10 @@ export class ServerDetailPage implements OnInit {
       this.index--;
       this.change_server_info(1);
     } catch (e) { }
+  }
+
+  ionViewDidEnter() {
+    this.ServerDetailuseSSL.checked = this.dedicated_info.useSSL;
   }
 
   change_server_info(direction: number) {
@@ -124,7 +130,7 @@ export class ServerDetailPage implements OnInit {
       .catch(_e => clipboard.write(startup_address));
   }
 
-  apply_changed_info() {
+  async apply_changed_info() {
     // 빈 이름 거르기
     if (!this.dedicated_info.name) {
       this.p5toast.show({
@@ -137,7 +143,7 @@ export class ServerDetailPage implements OnInit {
     // 기능 추가전 임시처리
     this.dedicated_info.address = this.dedicated_info.address || '192.168.0.1';
     this.dedicated_info.port = this.dedicated_info.port || 7350;
-    this.dedicated_info.useSSL = this.dedicated_info.useSSL || false;
+    this.dedicated_info.useSSL = this.ServerDetailuseSSL.checked || false;
     this.dedicated_info.isOfficial = this.dedicated_info.isOfficial || 'unofficial';
     this.dedicated_info.key = this.dedicated_info.key || 'defaultkey';
 
@@ -148,28 +154,26 @@ export class ServerDetailPage implements OnInit {
     line += `,${this.dedicated_info.address}`;
     line += `,${this.dedicated_info.port}`;
     line += `,${this.dedicated_info.useSSL}`;
-    this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
-      let list: string[] = [];
-      if (e && v) list = v.split('\n');
-      if (this.isTargetAlreadyExist) // 정보 수정으로 동작
-        for (let i = 0, j = list.length; i < j; i++) {
-          let sep = list[i].split(',');
-          if (sep[3] == this.dedicated_info.target) {
-            list.splice(i, 1);
-            break;
-          }
+    let v = await this.indexed.loadTextFromUserPath('servers/list_detail.csv');
+    let list: string[] = [];
+    if (v) list = v.split('\n');
+    if (this.isTargetAlreadyExist) // 정보 수정으로 동작
+      for (let i = 0, j = list.length; i < j; i++) {
+        let sep = list[i].split(',');
+        if (sep[3] == this.dedicated_info.target) {
+          list.splice(i, 1);
+          break;
         }
-      list.push(line);
-      this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv', (_v) => {
-        this.nakama.init_server(this.dedicated_info);
-        this.nakama.servers[this.dedicated_info.isOfficial][this.dedicated_info.target].info = { ...this.dedicated_info };
-        this.nakama.link_group(this.dedicated_info.isOfficial, this.dedicated_info.target);
-        for (let i = this.Alternative[this.dedicated_info.target].length - 1; i >= 0; i--)
-          if (!this.Alternative[this.dedicated_info.target][i].name)
-            this.Alternative[this.dedicated_info.target].splice(i, 1);
-        this.indexed.saveTextFileToUserPath(JSON.stringify(this.Alternative), 'servers/alternatives.json');
-        this.modalCtrl.dismiss();
-      });
-    });
+      }
+    list.push(line);
+    await this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv');
+    this.nakama.init_server(this.dedicated_info);
+    this.nakama.servers[this.dedicated_info.isOfficial][this.dedicated_info.target].info = { ...this.dedicated_info };
+    this.nakama.link_group(this.dedicated_info.isOfficial, this.dedicated_info.target);
+    for (let i = this.Alternative[this.dedicated_info.target].length - 1; i >= 0; i--)
+      if (!this.Alternative[this.dedicated_info.target][i].name)
+        this.Alternative[this.dedicated_info.target].splice(i, 1);
+    await this.indexed.saveTextFileToUserPath(JSON.stringify(this.Alternative), 'servers/alternatives.json');
+    this.modalCtrl.dismiss();
   }
 }
