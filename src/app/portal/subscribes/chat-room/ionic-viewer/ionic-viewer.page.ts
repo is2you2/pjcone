@@ -61,6 +61,7 @@ export class IonicViewerPage implements OnInit {
   CurrentViewId: string;
   OpenInChannelChat = false;
   targetDB: IDBDatabase;
+  isChannelOnline = true;
 
   EventListenerAct = (ev: any) => {
     ev.detail.register(120, (_processNextHandler: any) => { });
@@ -75,6 +76,11 @@ export class IonicViewerPage implements OnInit {
     this.FileHeader = document.getElementById('FileHeader');
     this.isOfficial = this.navParams.get('isOfficial');
     this.target = this.navParams.get('target');
+    try {
+      this.isChannelOnline = this.nakama.channels_orig[this.isOfficial][this.target][this.MessageInfo['channel_id']].info['status'] == 'online';
+      this.isChannelOnline = this.isChannelOnline || this.nakama.channels_orig[this.isOfficial][this.target][this.MessageInfo['channel_id']]['status'] == 'online'
+        || this.nakama.channels_orig[this.isOfficial][this.target][this.MessageInfo['channel_id']]['status'] == 'pending';
+    } catch (e) { }
     this.targetDB = this.navParams.get('targetDB');
     this.HasNoEditButton = this.navParams.get('no_edit') || false;
     switch (this.FileInfo['is_new']) {

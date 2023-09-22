@@ -24,10 +24,10 @@ SPDX-License-Identifier: MIT -->
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
         <div id="chatroom_div" class="main" style="max-width: 100vw;">
-          <ion-item [disabled]="next_cursor === undefined || !pullable" button (click)="pull_msg_history()">
+          <ion-item [disabled]="(next_cursor === undefined && !ViewMsgIndex) || !pullable" button (click)="pull_msg_history()">
             <ion-label>{{lang.text['ChatRoom']['fetch_previous_chat']}}</ion-label>
           </ion-item>
-          <div *ngFor="let msg of messages" (click)="message_detail(msg)">
+          <div *ngFor="let msg of ViewableMessage" (click)="message_detail(msg)">
             <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
               style="text-align: center; font-size: 16px; padding-top: 8px;">
               <font color="#888"> {{msg['msgDate']}} </font>
@@ -97,7 +97,8 @@ SPDX-License-Identifier: MIT -->
               </div>
             </div>
           </div>
-          <ion-item *ngIf="prev_cursor" hidden [disabled]="!pullable" button (click)="pull_msg_history(false)">
+          <ion-item *ngIf="ShowRecentMsg" style="padding-top: 8px; z-index: 0;" button
+            (click)="pull_msg_history(false)">
             <ion-label>{{lang.text['ChatRoom']['fetch_next_chat']}}</ion-label>
           </ion-item>
         </div>
@@ -127,7 +128,7 @@ SPDX-License-Identifier: MIT -->
             (click)="scroll_down_logs()">
             <td style="text-align: center; padding: 4px 0px;">{{lang.text['ChatRoom']['GoToRecent']}}</td>
           </tr>
-          <tr class="thumnail_parts" *ngIf="last_message_viewer.user_id" (click)="scroll_down_logs()">
+          <tr class="thumnail_parts" *ngIf="last_message_viewer.user_id" (click)="init_chatroom()">
             <td class="bottom_thumbnail">
               <span [style]="'margin-right: 8px; color: #' + last_message_viewer.color">
                 <b>{{(last_message_viewer.is_me ? nakama.users.self['display_name'] :

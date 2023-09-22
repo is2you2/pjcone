@@ -375,12 +375,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.ChatLogs.onscroll = (_ev: any) => {
       if (this.ChatLogs.scrollHeight == this.ChatLogs.scrollTop + this.ChatLogs.clientHeight)
         // 스크롤을 제일 하단으로 내리면 사라짐
-        this.init_last_message_viewer();
+        if (!this.ShowGoToBottom)
+          if (!this.ShowRecentMsg)
+            this.init_last_message_viewer();
       this.ShowGoToBottom = this.ChatLogs.scrollHeight - 220 > this.ChatLogs.scrollTop + this.ChatLogs.clientHeight;
     }
     this.nakama.ChatroomLinkAct = async (c: any, _fileinfo: FileInfo) => {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
-      this.messages.length = 0;
       this.info = c;
       await this.init_chatroom();
       this.userInput.file = _fileinfo;
@@ -535,6 +536,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   async init_chatroom() {
     this.nakama.OnTransferMessage = {};
+    this.ViewableMessage.length = 0;
+    this.ViewMsgIndex = 0;
+    this.ShowGoToBottom = false;
+    this.ShowRecentMsg = false;
+    this.messages.length = 0;
     this.prev_cursor = undefined;
     this.next_cursor = undefined;
     this.init_last_message_viewer();
@@ -586,11 +592,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.nakama.save_channels_with_less_info();
         this.check_if_send_msg(c);
         this.messages.push(c);
-        this.modulate_chatmsg(this.messages.length - 1, this.messages.length);
+        if (this.ViewMsgIndex + this.ViewCount == this.messages.length - 1)
+          this.ViewMsgIndex++;
+        this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+        this.modulate_chatmsg(0, this.ViewableMessage.length);
+        this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
         setTimeout(() => {
           this.info['is_new'] = false;
           this.nakama.has_new_channel_msg = false;
-          if (this.NeedScrollDown()) {
+          if (this.NeedScrollDown() && !this.ShowRecentMsg) {
             this.init_last_message_viewer();
             this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
           } else {
@@ -630,7 +640,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 가장 최근 메시지 보기 */
   scroll_down_logs() {
-    this.init_last_message_viewer();
+    if (!this.ShowRecentMsg)
+      this.init_last_message_viewer();
     this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
   }
 
@@ -688,18 +699,43 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
 
   pullable = true;
+  ViewableMessage = [];
+  ViewMsgIndex = 0;
+  /** 새로고침되는 메시지 수 */
+  RefreshCount = 15;
+  /** 한번에 보여지는 최대 메시지 수 */
+  ViewCount = 60;
+  /** 더 최근 메시지 가져오기 버튼 보이기 여부 */
+  ShowRecentMsg = false;
   /** 서버로부터 메시지 더 받아오기
    * @param isHistory 옛날 정보 불러오기 유무, false면 최신정보 불러오기 진행
    */
   async pull_msg_history(isHistory = true) {
-    if (!this.pullable) return;
+    if (!this.pullable && isHistory) return;
     this.pullable = false;
     if (isHistory) {
       try {
         if (this.info['status'] === undefined || this.info['status'] == 'missing') throw 'Channel missing';
+        if (this.ViewMsgIndex != 0) { // 위에 더 볼 수 있는 메시지가 있음 (이미 받은 것으로)
+          let ShowMeAgainCount = Math.min(this.ViewMsgIndex, this.RefreshCount)
+          this.ViewMsgIndex -= ShowMeAgainCount;
+          this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+          for (let i = 0; i < ShowMeAgainCount; i++)
+            try {
+              if (this.info['HideAutoThumbnail']) throw '썸네일 보지 않기';
+              let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
+              if (this.info['HideAutoThumbnail']) throw '썸네일 보지 않기';
+              let FileURL = URL.createObjectURL(blob);
+              this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+            } catch (e) { }
+          this.modulate_chatmsg(0, this.ViewableMessage.length);
+          this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
+          this.pullable = true;
+          return;
+        }
         await this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
           this.nakama.servers[this.isOfficial][this.target].session,
-          this.info['id'], 15, false, this.next_cursor).then(v => {
+          this.info['id'], this.RefreshCount, false, this.next_cursor).then(v => {
             this.info['is_new'] = false;
             v.messages.forEach(msg => {
               msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
@@ -722,8 +758,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.nakama.ModulateTimeDate(msg);
               this.nakama.content_to_hyperlink(msg);
               this.messages.unshift(msg);
-              this.modulate_chatmsg(0, this.messages.length);
+              this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+              this.modulate_chatmsg(0, this.ViewableMessage.length);
             });
+            this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
             this.next_cursor = v.next_cursor;
             this.prev_cursor = v.prev_cursor;
             this.pullable = true;
@@ -751,7 +789,21 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.LoadLocalChatHistory();
       }
     } else {
-      console.log('지금 보고있는 기록보다 최근 기록 불러오기');
+      let subtract = this.messages.length - this.ViewMsgIndex - this.ViewCount;
+      this.ViewMsgIndex += Math.min(this.RefreshCount, subtract);
+      this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+      for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
+        try {
+          if (this.info['HideAutoThumbnail']) throw '썸네일 보지 않기';
+          let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
+          if (this.info['HideAutoThumbnail']) throw '썸네일 보지 않기';
+          let FileURL = URL.createObjectURL(blob);
+          this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+        } catch (e) { }
+        this.modulate_chatmsg(i, this.ViewableMessage.length);
+      }
+      this.ShowRecentMsg = !(subtract == 0);
+      this.pullable = true;
     }
   }
 
@@ -759,13 +811,33 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   isHistoryLoaded = false;
   LocalHistoryList = [];
   /** 내부 저장소 채팅 기록 열람 */
-  LoadLocalChatHistory() {
+  async LoadLocalChatHistory() {
+    if (this.ViewMsgIndex != 0) { // 위에 더 볼 수 있는 메시지가 있음 (이미 받은 것으로)
+      let ShowMeAgainCount = Math.min(this.ViewMsgIndex, this.RefreshCount)
+      this.ViewMsgIndex -= ShowMeAgainCount;
+      this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+      for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
+        try {
+          if (this.info['HideAutoThumbnail']) {
+            delete this.ViewableMessage[i].content['thumbnail'];
+            throw '썸네일 보지 않기';
+          }
+          let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
+          let FileURL = URL.createObjectURL(blob);
+          this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+        } catch (e) { }
+        this.modulate_chatmsg(i, this.ViewableMessage.length);
+      }
+      this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
+      this.pullable = this.ViewMsgIndex != 0 || Boolean(this.LocalHistoryList.length);
+      return;
+    }
     if (!this.isHistoryLoaded)
       this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/`, (list) => {
         this.LocalHistoryList = list;
         this.isHistoryLoaded = true;
         if (!this.LocalHistoryList.length) return;
-        this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop(), (e, v) => {
+        this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop(), async (e, v) => {
           if (e && v) {
             let json: any[] = JSON.parse(v.trim());
             for (let i = json.length - 1; i >= 0; i--) {
@@ -774,15 +846,29 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
               this.nakama.ModulateTimeDate(json[i]);
               this.messages.unshift(json[i]);
-              this.modulate_chatmsg(0, this.messages.length);
+              this.ViewMsgIndex = Math.max(0, this.messages.length - this.RefreshCount);
+              this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.RefreshCount);
+              this.modulate_chatmsg(0, this.ViewableMessage.length);
+            }
+            for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
+              try {
+                if (this.info['HideAutoThumbnail']) {
+                  delete this.ViewableMessage[i].content['thumbnail'];
+                  throw '썸네일 보지 않기';
+                }
+                let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
+                let FileURL = URL.createObjectURL(blob);
+                this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+              } catch (e) { }
+              this.modulate_chatmsg(i, this.ViewableMessage.length);
             }
           }
           this.next_cursor = null;
-          this.pullable = Boolean(this.LocalHistoryList.length);
+          this.pullable = true;
         });
       });
     else {
-      this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop(), (e, v) => {
+      this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop(), async (e, v) => {
         if (e && v) {
           let json: any[] = JSON.parse(v.trim());
           for (let i = json.length - 1; i >= 0; i--) {
@@ -791,8 +877,23 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
             this.nakama.ModulateTimeDate(json[i]);
             this.messages.unshift(json[i]);
-            this.modulate_chatmsg(0, this.messages.length);
           }
+          let ShowMeAgainCount = Math.min(json.length, this.ViewCount)
+          this.ViewMsgIndex = Math.max(0, json.length - this.RefreshCount);
+          this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+          for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
+            try {
+              if (this.info['HideAutoThumbnail']) {
+                delete this.ViewableMessage[i].content['thumbnail'];
+                throw '썸네일 보지 않기';
+              }
+              let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
+              let FileURL = URL.createObjectURL(blob);
+              this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+            } catch (e) { }
+            this.modulate_chatmsg(i, this.ViewableMessage.length);
+          }
+          this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
         }
         this.pullable = Boolean(this.LocalHistoryList.length);
       });
@@ -1066,33 +1167,37 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 메시지 추가시마다 메시지 상태를 업데이트 (기존 html 연산)  
    * 메시지 자료형들(사용자 이름 보이기, 시간 보이기 등)을 메시지에 연산하는 것으로, 원래는 html에서 *ngIf 등으로 동작했었다  
    * 연산 줄이기 용도
+   * @param i 현재 메시지 번호
+   * @param j 메시지 전체 길이
+   * @param msg 메시지 개체
    */
   modulate_chatmsg(i: number, j: number) {
     // 1회성 보여주기 양식 생성 (채팅방 전용 정보)
-    if (!this.messages[i]['showInfo'])
-      this.messages[i]['showInfo'] = {};
+    if (!this.ViewableMessage[i]['showInfo'])
+      this.ViewableMessage[i]['showInfo'] = {};
     // 날짜 표시
-    this.messages[i]['showInfo']['date'] = Boolean(this.messages[i]['msgDate']);
+    this.ViewableMessage[i]['showInfo']['date'] = Boolean(this.ViewableMessage[i]['msgDate']);
     // 발신인과 시간 표시
-    this.messages[i]['showInfo']['sender'] = !this.messages[i].content.noti && this.messages[i].user_display_name;
+    this.ViewableMessage[i]['showInfo']['sender'] = !this.ViewableMessage[i].content.noti && this.ViewableMessage[i].user_display_name;
     // 이전 메시지와 정보를 비교하여 이전 메시지와 지금 메시지의 상태를 결정 (실시간 메시지 받기류)
     if (i - 1 >= 0) {
-      this.messages[i]['showInfo']['date'] = Boolean(this.messages[i]['msgDate']) && (this.messages[i]['msgDate'] != this.messages[i - 1]['msgDate']);
-      this.messages[i]['showInfo']['sender'] = !this.messages[i].content.noti && this.messages[i].user_display_name && (this.messages[i - 1]['isLastRead'] || this.messages[i].sender_id != this.messages[i - 1].sender_id || this.messages[i - 1].content.noti || this.messages[i]['msgDate'] != this.messages[i - 1]['msgDate'] || this.messages[i]['msgTime'] != this.messages[i - 1]['msgTime']);
+      this.ViewableMessage[i]['showInfo']['date'] = Boolean(this.ViewableMessage[i]['msgDate']) && (this.ViewableMessage[i]['msgDate'] != this.ViewableMessage[i - 1]['msgDate']);
+      this.ViewableMessage[i]['showInfo']['sender'] = !this.ViewableMessage[i].content.noti && this.ViewableMessage[i].user_display_name && (this.ViewableMessage[i - 1]['isLastRead'] || this.ViewableMessage[i].sender_id != this.ViewableMessage[i - 1].sender_id || this.ViewableMessage[i - 1].content.noti || this.ViewableMessage[i]['msgDate'] != this.ViewableMessage[i - 1]['msgDate'] || this.ViewableMessage[i]['msgTime'] != this.ViewableMessage[i - 1]['msgTime']);
     }
     // 다음 메시지와 정보를 비교하여 다음 메시지의 상태를 결정 (기록 불러오기류)
     if (i + 1 < j) {
-      this.messages[i + 1]['showInfo']['date'] = Boolean(this.messages[i]['msgDate']) && (this.messages[i]['msgDate'] != this.messages[i + 1]['msgDate']);
-      this.messages[i + 1]['showInfo']['sender'] = !this.messages[i + 1].content.noti && this.messages[i + 1].user_display_name && (this.messages[i]['isLastRead'] || this.messages[i].sender_id != this.messages[i + 1].sender_id || this.messages[i].content.noti || this.messages[i]['msgDate'] != this.messages[i + 1]['msgDate'] || this.messages[i]['msgTime'] != this.messages[i + 1]['msgTime']);
+      this.ViewableMessage[i + 1]['showInfo']['date'] = Boolean(this.ViewableMessage[i]['msgDate']) && (this.ViewableMessage[i]['msgDate'] != this.ViewableMessage[i + 1]['msgDate']);
+      this.ViewableMessage[i + 1]['showInfo']['sender'] = !this.ViewableMessage[i + 1].content.noti && this.ViewableMessage[i + 1].user_display_name && (this.ViewableMessage[i]['isLastRead'] || this.ViewableMessage[i].sender_id != this.ViewableMessage[i + 1].sender_id || this.ViewableMessage[i].content.noti || this.ViewableMessage[i]['msgDate'] != this.ViewableMessage[i + 1]['msgDate'] || this.ViewableMessage[i]['msgTime'] != this.ViewableMessage[i + 1]['msgTime']);
     }
     // url 링크 개체 즉시 불러오기
-    if (this.messages[i]['content']['url'] && !this.info['HideAutoThumbnail'])
-      this.messages[i]['content']['thumbnail'] = this.messages[i]['content']['url'];
+    if (this.ViewableMessage[i]['content']['url'] && !this.info['HideAutoThumbnail'])
+      this.ViewableMessage[i]['content']['thumbnail'] = this.ViewableMessage[i]['content']['url'];
   }
 
   /** 파일이 포함된 메시지 구조화, 자동 썸네일 작업 */
   ModulateFileEmbedMessage(msg: any) {
     let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+    msg.content['path'] = path;
     try {
       msg.content['transfer_index'] = this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id][msg.message_id];
     } catch (e) { }
@@ -1136,19 +1241,21 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   async toggle_thumbnail() {
     this.info['HideAutoThumbnail'] = !this.info['HideAutoThumbnail'];
     if (this.info['HideAutoThumbnail']) {
-      for (let i = 0, j = this.messages.length; i < j; i++)
-        delete this.messages[i].content['thumbnail'];
+      for (let i = 0, j = this.ViewableMessage.length; i < j; i++)
+        delete this.ViewableMessage[i].content['thumbnail'];
     } else {
-      for (let i = 0, j = this.messages.length; i < j; i++) {
-        if (this.messages[i].content['url']) {
-          this.messages[i].content['thumbnail'] = this.messages[i].content['url'];
+      for (let i = 0, j = this.ViewableMessage.length; i < j; i++) {
+        if (this.ViewableMessage[i].content['url']) {
+          this.ViewableMessage[i].content['thumbnail'] = this.ViewableMessage[i].content['url'];
         } else {
-          let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.messages[i].message_id}.${this.messages[i].content.file_ext}`;
-          this.messages[i].content['path'] = path;
+          let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content.file_ext}`;
+          this.ViewableMessage[i].content['path'] = path;
           try {
-            let blob = await this.indexed.loadBlobFromUserPath(path, this.messages[i].content.file_ext);
+            if (this.info['HideAutoThumbnail']) throw '상태 변경됨';
+            let blob = await this.indexed.loadBlobFromUserPath(path, this.ViewableMessage[i].content.file_ext);
+            if (this.info['HideAutoThumbnail']) throw '상태 변경됨';
             let FileURL = URL.createObjectURL(blob);
-            this.global.modulate_thumbnail(this.messages[i].content, FileURL);
+            this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
           } catch (e) { }
         }
       }
