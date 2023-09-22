@@ -110,7 +110,8 @@ SPDX-License-Identifier: MIT -->
             <ion-label button color="medium" *ngIf="!userInput.custom_color" (click)="toggle_custom_color()"
               class="ion-text-end">{{lang.text['TodoDetail']['SetCustomColor']}}</ion-label>
             <div *ngIf="userInput.custom_color">
-              <button style="height: 27px; transform: translateY(-3px);" (click)="toggle_custom_color()">
+              <button style="height: 27px; transform: translateY(-3px); padding: 0px 8px;"
+                (click)="toggle_custom_color()">
                 {{lang.text['TodoDetail']['remove']}} </button>
               <input type="color" style="margin-right: 8px; height: 27px;" [(ngModel)]="userInput.custom_color">
             </div>
