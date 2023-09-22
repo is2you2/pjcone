@@ -4,6 +4,9 @@ const config: CapacitorConfig = {
   appId: 'org.pjcone.portal',
   appName: 'Project: Cone',
   webDir: 'www',
+  server: {
+    androidScheme: 'https'
+  },
   bundledWebRuntime: false,
   cordova: {
     accessOrigins: ['*', 'http://*', 'https://*'],
