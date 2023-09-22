@@ -53,8 +53,8 @@
     </ion-input>
   </ion-item>
   <ion-item button (click)="dedicated_info.useSSL = !dedicated_info.useSSL">
-    <ion-label>{{lang.text['GroupServer']['isSSL']}}</ion-label>
-    <ion-toggle [(ngModel)]="dedicated_info.useSSL" slot="end" style="pointer-events: none;"></ion-toggle>
+    <ion-toggle [(ngModel)]="dedicated_info.useSSL"
+      style="pointer-events: none;">{{lang.text['GroupServer']['isSSL']}}</ion-toggle>
   </ion-item>
   <ion-item button (click)="apply_changed_info()">
     <ion-label class="ion-text-center">{{lang.text['ServerDetail']['ApplyChangeServerInfo']}}</ion-label>

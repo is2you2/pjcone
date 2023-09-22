@@ -28,8 +28,8 @@
     </ion-select>
   </ion-item>
   <ion-item button (click)="userInput.open_profile = !userInput.open_profile; information_changed()">
-    <ion-label>{{lang.text['WebLinkGen']['OpenProfile']}}</ion-label>
-    <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.open_profile" slot="end"></ion-toggle>
+    <ion-toggle class="ignore_toggles"
+      [(ngModel)]="userInput.open_profile">{{lang.text['WebLinkGen']['OpenProfile']}}</ion-toggle>
   </ion-item>
   <ion-item>
     <ion-select [label]="lang.text['QuickQRShare']['Group']" (ionChange)="SelectGroupChannel($event)" multiple="true"
@@ -39,8 +39,8 @@
     </ion-select>
   </ion-item>
   <ion-item button (click)="userInput.open_subscribes = !userInput.open_subscribes; information_changed()">
-    <ion-label>{{lang.text['WebLinkGen']['OpenChannelTab']}}</ion-label>
-    <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.open_subscribes" slot="end"></ion-toggle>
+    <ion-toggle class="ignore_toggles"
+      [(ngModel)]="userInput.open_subscribes">{{lang.text['WebLinkGen']['OpenChannelTab']}}</ion-toggle>
   </ion-item>
   <ion-item>
     <ion-select [label]="lang.text['QuickQRShare']['RTCServer']" (ionChange)="SelectRTCServer($event)" multiple="true"
@@ -50,8 +50,8 @@
     </ion-select>
   </ion-item>
   <ion-item button (click)="toggle_tmp_user()">
-    <ion-label>{{lang.text['WebLinkGen']['UseTempUser']}}</ion-label>
-    <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.use_tmp_user" slot="end"></ion-toggle>
+    <ion-toggle class="ignore_toggles"
+      [(ngModel)]="userInput.use_tmp_user">{{lang.text['WebLinkGen']['UseTempUser']}}</ion-toggle>
   </ion-item>
   <div *ngIf="userInput.use_tmp_user">
     <ion-item>
@@ -75,8 +75,8 @@
   </ion-item-divider>
   <ion-item button (click)="userInput.open_channel = !userInput.open_channel; information_changed()"
     [disabled]="!userInput.servers.length || !userInput.groups.length || userInput.open_prv_channel != ''">
-    <ion-label>{{lang.text['WebLinkGen']['OpenGroupChannel']}}</ion-label>
-    <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.open_channel" slot="end"></ion-toggle>
+    <ion-toggle class="ignore_toggles"
+      [(ngModel)]="userInput.open_channel">{{lang.text['WebLinkGen']['OpenGroupChannel']}}</ion-toggle>
   </ion-item>
   <ion-item button [disabled]="!userInput.servers.length || userInput.open_channel" (click)="paste_user_id()">
     <ion-label>{{lang.text['WebLinkGen']['OpenPrivateChannel']}}</ion-label>

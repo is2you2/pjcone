@@ -43,8 +43,8 @@ SPDX-License-Identifier: MIT -->
       [placeholder]="lang.text['Profile']['name_placeholder']"></ion-input>
   </ion-item>
   <ion-item button (click)="toggle_online()">
-    <ion-label>{{lang.text['Profile']['login_toggle']}}</ion-label>
-    <ion-toggle slot="end" [(ngModel)]="nakama.users.self['online']" style="pointer-events: none;"></ion-toggle>
+    <ion-toggle [(ngModel)]="nakama.users.self['online']"
+      style="pointer-events: none;">{{lang.text['Profile']['login_toggle']}}</ion-toggle>
   </ion-item>
   <ion-item-divider>
     <ion-label style="width: 100%;">{{lang.text['Profile']['main_content']}}</ion-label>
@@ -119,8 +119,8 @@ SPDX-License-Identifier: MIT -->
           </ion-item>
           <ion-item button (click)="dedicated_info.useSSL =! dedicated_info.useSSL"
             [disabled]="add_custom_tog || isSSLConnect">
-            <ion-label>{{lang.text['GroupServer']['isSSL']}}</ion-label>
-            <ion-toggle [(ngModel)]="dedicated_info.useSSL" slot="end" style="pointer-events: none;"></ion-toggle>
+            <ion-toggle [(ngModel)]="dedicated_info.useSSL"
+              style="pointer-events: none;">{{lang.text['GroupServer']['isSSL']}}</ion-toggle>
           </ion-item>
           <ion-item button (click)="add_custom_dedicated()" [disabled]="add_custom_tog">
             <ion-label class="ion-text-center">{{lang.text['GroupServer']['submit']}}</ion-label>

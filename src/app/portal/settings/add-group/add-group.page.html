@@ -61,8 +61,8 @@ SPDX-License-Identifier: MIT -->
       [(ngModel)]="userInput.max_count" placeholder="2"></ion-input>
   </ion-item>
   <ion-item [disabled]="isSaveClicked" button (click)="isPublicToggle()">
-    <ion-label>{{lang.text['AddGroup']['IsOpen']}}</ion-label>
-    <ion-toggle slot="end" style="pointer-events: none;" [(ngModel)]="userInput.open"></ion-toggle>
+    <ion-toggle style="pointer-events: none;" [(ngModel)]="userInput.open">
+      {{lang.text['AddGroup']['IsOpen']}}</ion-toggle>
   </ion-item>
   <ion-item button (click)="save()" [disabled]="isSaveClicked">
     <ion-label class="ion-text-center">{{lang.text['AddGroup']['submit']}}</ion-label>
