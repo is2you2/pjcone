@@ -22,9 +22,8 @@
       placeholder="https://is2you2.github.io/pjcone_pwa/" (ionChange)="baseURLChanged($event)"></ion-input>
   </ion-item>
   <ion-item>
-    <ion-label>{{lang.text['QuickQRShare']['GroupServer']}}</ion-label>
-    <ion-select (ionChange)="SelectGroupServer($event)" multiple="true"
-      [placeholder]="lang.text['QuickQRShare']['EmptyData']">
+    <ion-select [label]="lang.text['QuickQRShare']['GroupServer']" (ionChange)="SelectGroupServer($event)"
+      multiple="true" [placeholder]="lang.text['QuickQRShare']['EmptyData']">
       <ion-select-option *ngFor="let gs of servers" [value]="gs">{{gs['name']}} </ion-select-option>
     </ion-select>
   </ion-item>
@@ -33,8 +32,7 @@
     <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.open_profile" slot="end"></ion-toggle>
   </ion-item>
   <ion-item>
-    <ion-label>{{lang.text['QuickQRShare']['Group']}}</ion-label>
-    <ion-select (ionChange)="SelectGroupChannel($event)" multiple="true"
+    <ion-select [label]="lang.text['QuickQRShare']['Group']" (ionChange)="SelectGroupChannel($event)" multiple="true"
       [placeholder]="lang.text['QuickQRShare']['EmptyData']">
       <ion-select-option *ngFor="let ginfo of groups" [value]="ginfo">{{ginfo['name'] + ' (' +
         ginfo['server']['name'] + ')'}}</ion-select-option>
@@ -45,8 +43,7 @@
     <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.open_subscribes" slot="end"></ion-toggle>
   </ion-item>
   <ion-item>
-    <ion-label>{{lang.text['QuickQRShare']['RTCServer']}}</ion-label>
-    <ion-select (ionChange)="SelectRTCServer($event)" multiple="true"
+    <ion-select [label]="lang.text['QuickQRShare']['RTCServer']" (ionChange)="SelectRTCServer($event)" multiple="true"
       [placeholder]="lang.text['QuickQRShare']['EmptyData']">
       <ion-select-option *ngFor="let server of rtcServer" [value]="server">
         {{ server.urls[0] }}</ion-select-option>

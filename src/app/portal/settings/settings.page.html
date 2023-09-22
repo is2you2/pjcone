@@ -104,9 +104,8 @@ SPDX-License-Identifier: MIT -->
   </ion-item>
   <ion-item button (click)="LangClicked()">
     <ion-icon slot="start" name="language"></ion-icon>
-    <ion-label>{{lang.text['Settings']['AppLanguage']}}</ion-label>
-    <ion-select #LangSel style="pointer-events: none;" [value]="lang.lang" [placeholder]="lang.lang"
-      (ionChange)="LanguageChanged($event)">
+    <ion-select [label]="lang.text['Settings']['AppLanguage']" #LangSel style="pointer-events: none;"
+      [value]="lang.lang" [placeholder]="lang.lang" (ionChange)="LanguageChanged($event)">
       <ion-select-option value="en">English</ion-select-option>
       <ion-select-option value="ko">한국어</ion-select-option>
     </ion-select>
