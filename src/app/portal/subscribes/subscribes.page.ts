@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
 import { ModalController } from '@ionic/angular';
 import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -23,7 +23,6 @@ export class SubscribesPage implements OnInit {
 
   constructor(
     private modalCtrl: ModalController,
-    private codescan: BarcodeScanner,
     private p5toast: P5ToastService,
     public nakama: NakamaService,
     public statusBar: StatusManageService,
@@ -44,31 +43,40 @@ export class SubscribesPage implements OnInit {
   }
 
   // 웹에 있는 QRCode는 무조건 json[]로 구성되어있어야함
-  scanQRCode() {
-    this.codescan.scan({
-      disableSuccessBeep: true,
-      disableAnimations: true,
-      resultDisplayDuration: 0,
-    }).then(async v => {
-      if (!v.cancelled) {
-        try { // 양식에 맞게 끝까지 동작한다면 우리 데이터가 맞다main
-          if (v.text.trim().indexOf(`${SERVER_PATH_ROOT}pjcone_pwa/?`) != 0)
-            throw '주소 시작이 다름';
-          await this.nakama.AddressToQRCodeAct(this.global.CatchGETs(v.text.trim()));
-        } catch (e) { // 양식에 맞춰 행동할 수 없다면 모르는 데이터다
-          console.log('scanQRCode_failed: ', e);
-          this.modalCtrl.create({
-            component: QRelsePage,
-            componentProps: { result: v },
-          }).then(v => v.present());
-        }
-      }
-    }).catch(_e => {
-      console.log(_e);
-      this.p5toast.show({
-        text: this.lang.text['Subscribes']['CameraPermissionDenied'],
-      });
-    });
+  async scanQRCode() {
+    let perm = await BarcodeScanner.checkPermission({ force: true });
+    console.log('권한 기록: ', perm);
+    await BarcodeScanner.hideBackground();
+
+    const result = await BarcodeScanner.startScan();
+
+    if (result.hasContent) {
+      console.log(result.content);
+    }
+    // this.codescan.scan({
+    //   disableSuccessBeep: true,
+    //   disableAnimations: true,
+    //   resultDisplayDuration: 0,
+    // }).then(async v => {
+    //   if (!v.cancelled) {
+    //     try { // 양식에 맞게 끝까지 동작한다면 우리 데이터가 맞다main
+    //       if (v.text.trim().indexOf(`${SERVER_PATH_ROOT}pjcone_pwa/?`) != 0)
+    //         throw '주소 시작이 다름';
+    //       await this.nakama.AddressToQRCodeAct(this.global.CatchGETs(v.text.trim()));
+    //     } catch (e) { // 양식에 맞춰 행동할 수 없다면 모르는 데이터다
+    //       console.log('scanQRCode_failed: ', e);
+    //       this.modalCtrl.create({
+    //         component: QRelsePage,
+    //         componentProps: { result: v },
+    //       }).then(v => v.present());
+    //     }
+    //   }
+    // }).catch(_e => {
+    //   console.log(_e);
+    //   this.p5toast.show({
+    //     text: this.lang.text['Subscribes']['CameraPermissionDenied'],
+    //   });
+    // });
   }
 
   lock_chatroom = false;
