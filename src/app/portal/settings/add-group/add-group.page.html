@@ -29,8 +29,7 @@ SPDX-License-Identifier: MIT -->
     <ion-label>{{lang.text['AddGroup']['GroupInfo']}}</ion-label>
   </ion-item-divider>
   <ion-item [disabled]="isSaveClicked" button>
-    <ion-label>{{lang.text['AddGroup']['DisplayName']}}</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="userInput.name"
+    <ion-input [label]="lang.text['AddGroup']['DisplayName']" class="ion-text-right" [(ngModel)]="userInput.name"
       [placeholder]="lang.text['AddGroup']['DisplayName_placeholder']"></ion-input>
   </ion-item>
   <ion-item button [disabled]="isSaveClicked" (click)="buttonClickLinkInputFile()">
@@ -54,13 +53,12 @@ SPDX-License-Identifier: MIT -->
   <textarea class="infobox" [disabled]="isSaveClicked" [(ngModel)]="userInput.description"
     [placeholder]="lang.text['AddGroup']['GroupDetail_placeholder']"></textarea>
   <ion-item [disabled]="isSaveClicked" button>
-    <ion-label>{{lang.text['AddGroup']['LanguageTag']}}</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="userInput.lang_tag" [placeholder]="lang.lang"></ion-input>
+    <ion-input [label]="lang.text['AddGroup']['LanguageTag']" class="ion-text-right" [(ngModel)]="userInput.lang_tag"
+      [placeholder]="lang.lang"></ion-input>
   </ion-item>
   <ion-item [disabled]="isSaveClicked">
-    <ion-label>{{lang.text['AddGroup']['MemberMaxLimit']}}</ion-label>
-    <ion-input type="number" class="ion-text-right" min="2" [(ngModel)]="userInput.max_count"
-      placeholder="2"></ion-input>
+    <ion-input [label]="lang.text['AddGroup']['MemberMaxLimit']" type="number" class="ion-text-right" min="2"
+      [(ngModel)]="userInput.max_count" placeholder="2"></ion-input>
   </ion-item>
   <ion-item [disabled]="isSaveClicked" button (click)="isPublicToggle()">
     <ion-label>{{lang.text['AddGroup']['IsOpen']}}</ion-label>

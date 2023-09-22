@@ -18,9 +18,8 @@
     <ion-label>{{lang.text['WebLinkGen']['CustomInfo']}}</ion-label>
   </ion-item-divider>
   <ion-item>
-    <ion-label>{{lang.text['WebLinkGen']['baseURL']}}</ion-label>
-    <ion-input class="ion-text-end" [(ngModel)]="userInput.root" placeholder="https://is2you2.github.io/pjcone_pwa/"
-      (ionChange)="baseURLChanged($event)"></ion-input>
+    <ion-input [label]="lang.text['WebLinkGen']['baseURL']" class="ion-text-end" [(ngModel)]="userInput.root"
+      placeholder="https://is2you2.github.io/pjcone_pwa/" (ionChange)="baseURLChanged($event)"></ion-input>
   </ion-item>
   <ion-item>
     <ion-label>{{lang.text['QuickQRShare']['GroupServer']}}</ion-label>
@@ -59,18 +58,18 @@
   </ion-item>
   <div *ngIf="userInput.use_tmp_user">
     <ion-item>
-      <ion-label>{{lang.text['Profile']['email_address']}}</ion-label>
-      <ion-input class="ion-text-end" (ionChange)="information_changed()" [(ngModel)]="userInput.tmp_user.email"
+      <ion-input [label]="lang.text['Profile']['email_address']" class="ion-text-end"
+        (ionChange)="information_changed()" [(ngModel)]="userInput.tmp_user.email"
         placeholder="test@example.com"></ion-input>
     </ion-item>
     <ion-item>
-      <ion-label>{{lang.text['Profile']['password']}}</ion-label>
-      <ion-input class="ion-text-end" (ionChange)="information_changed()" [(ngModel)]="userInput.tmp_user.password"
+      <ion-input [label]="lang.text['Profile']['password']" class="ion-text-end" (ionChange)="information_changed()"
+        [(ngModel)]="userInput.tmp_user.password"
         [placeholder]="userInput.tmp_user.pass_placeholder || lang.text['Profile']['at_least']"></ion-input>
     </ion-item>
     <ion-item>
-      <ion-label>{{lang.text['Profile']['user_display_name']}}</ion-label>
-      <ion-input class="ion-text-end" (ionChange)="information_changed()" [(ngModel)]="userInput.tmp_user.display_name"
+      <ion-input [label]="lang.text['Profile']['user_display_name']" class="ion-text-end"
+        (ionChange)="information_changed()" [(ngModel)]="userInput.tmp_user.display_name"
         [placeholder]="lang.text['Profile']['name_placeholder']"></ion-input>
     </ion-item>
   </div>

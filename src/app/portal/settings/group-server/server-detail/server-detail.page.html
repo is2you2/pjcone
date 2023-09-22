@@ -30,27 +30,26 @@
     </table>
   </ion-item-divider>
   <ion-item button>
-    <ion-label>{{lang.text['GroupServer']['DisplayName']}}</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.name"
-      [placeholder]="lang.text['GroupServer']['DisplayName_placeholder']"></ion-input>
+    <ion-input [label]="lang.text['GroupServer']['DisplayName']" class="ion-text-right"
+      [(ngModel)]="dedicated_info.name" [placeholder]="lang.text['GroupServer']['DisplayName_placeholder']"></ion-input>
   </ion-item>
   <ion-item button [disabled]="isTargetAlreadyExist">
-    <ion-label>{{lang.text['GroupServer']['DivisionName']}}</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.target"
+    <ion-input [label]="lang.text['GroupServer']['DivisionName']" class="ion-text-right"
+      [(ngModel)]="dedicated_info.target"
       [placeholder]="dedicated_info.name || lang.text['GroupServer']['DivisionName_placeholder']"></ion-input>
   </ion-item>
   <ion-item button>
-    <ion-label>{{lang.text['GroupServer']['Address']}}</ion-label>
-    <ion-input class="ion-text-right" [(ngModel)]="dedicated_info.address" placeholder="192.168.0.1"></ion-input>
+    <ion-input [label]="lang.text['GroupServer']['Address']" class="ion-text-right" [(ngModel)]="dedicated_info.address"
+      placeholder="192.168.0.1"></ion-input>
   </ion-item>
   <ion-item button>
-    <ion-label>{{lang.text['GroupServer']['Key']}}</ion-label>
-    <ion-input [(ngModel)]="dedicated_info.key" class="ion-text-right" placeholder="defaultkey">
+    <ion-input [label]="lang.text['GroupServer']['Key']" [(ngModel)]="dedicated_info.key" class="ion-text-right"
+      placeholder="defaultkey">
     </ion-input>
   </ion-item>
   <ion-item button>
-    <ion-label>{{lang.text['GroupServer']['Port']}}</ion-label>
-    <ion-input [(ngModel)]="dedicated_info.port" class="ion-text-right" type="number" placeholder="7350">
+    <ion-input [label]="lang.text['GroupServer']['Port']" [(ngModel)]="dedicated_info.port" class="ion-text-right"
+      type="number" placeholder="7350">
     </ion-input>
   </ion-item>
   <ion-item button (click)="dedicated_info.useSSL = !dedicated_info.useSSL">

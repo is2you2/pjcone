@@ -13,8 +13,8 @@
   </ion-item-divider>
   <ion-item button [disabled]="status != 'offline'">
     <div class="additional_form status_bar_single" [style]="'background-color: ' + statusBar.colors[status]"></div>
-    <ion-label class="form_margin">{{lang.text['WSClient']['address']}}</ion-label>
-    <ion-input class="ion-text-end" [placeholder]="placeholder_address" [(ngModel)]="address"></ion-input>
+    <ion-input [label]="lang.text['WSClient']['address']" class="form_margin ion-text-end"
+      [placeholder]="placeholder_address" [(ngModel)]="address"></ion-input>
   </ion-item>
   <ion-item button [disabled]="status == 'pending' || status == 'missing'" (click)="connect_to_server()">
     <ion-label class="ion-text-center">{{lang.text['WSClient']['button_' + status]}}</ion-label>

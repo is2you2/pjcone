@@ -48,8 +48,8 @@ SPDX-License-Identifier: MIT -->
   <ion-item *ngIf="can_use_http" button [disabled]="will_enter">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[(statusBar.settings['dedicated_groupchat']) || 'offline']"></div>
-    <ion-label class="form_margin">{{lang.text['Settings']['joinDediChat']}}</ion-label>
-    <ion-input class="ion-text-center" [placeholder]="lang.text['Settings']['joinDedi_placeholder'] + ': 127.0.0.1'"
+    <ion-input [label]="lang.text['Settings']['joinDediChat']" class="form_margin ion-text-center"
+      [placeholder]="lang.text['Settings']['joinDedi_placeholder'] + ': 127.0.0.1'"
       [(ngModel)]="chat_address"></ion-input>
     <ion-button (click)="start_minimalchat(chat_address ? 'ws://' + chat_address : 'ws://127.0.0.1')">
       {{lang.text['Settings']['joinDedi_button']}}

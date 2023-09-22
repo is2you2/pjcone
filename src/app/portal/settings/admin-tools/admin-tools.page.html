@@ -26,8 +26,8 @@
     <ion-label>{{lang.text['AdminTools']['GlobalNoti']}}</ion-label>
   </ion-item-divider>
   <ion-item>
-    <ion-label>{{lang.text['AdminTools']['ImageURL']}}</ion-label>
-    <ion-input class="ion-text-end" [(ngModel)]="notification.uri" [placeholder]="lang.text['AdminTools']['EnterURI']">
+    <ion-input [label]="lang.text['AdminTools']['ImageURL']" class="ion-text-end" [(ngModel)]="notification.uri"
+      [placeholder]="lang.text['AdminTools']['EnterURI']">
     </ion-input>
   </ion-item>
   <textarea class="infobox content_size" [(ngModel)]="notification.msg"
