@@ -24,7 +24,8 @@ SPDX-License-Identifier: MIT -->
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
         <div id="chatroom_div" class="main" style="max-width: 100vw;">
-          <ion-item [disabled]="(next_cursor === undefined && !ViewMsgIndex) || !pullable" button (click)="pull_msg_history()">
+          <ion-item [disabled]="(next_cursor === undefined && !ViewMsgIndex) || !pullable" button
+            (click)="pull_msg_history()">
             <ion-label>{{lang.text['ChatRoom']['fetch_previous_chat']}}</ion-label>
           </ion-item>
           <div *ngFor="let msg of ViewableMessage" (click)="message_detail(msg)">
@@ -177,9 +178,9 @@ SPDX-License-Identifier: MIT -->
       <td>
         <div class="expanded">
           <input hidden type="file" [id]="file_sel_id" accept="*" multiple (change)="inputFileSelected($event)">
-          <div *ngFor="let button of extended_buttons" class="ext_button" [hidden]="button.isHide"
-            [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'" (click)="button['act']()">
-            <div>
+          <div *ngFor="let button of extended_buttons" style="display: inline-block;">
+            <div class="ext_button" [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'"
+              (click)="button['act']()" [hidden]="button.isHide">
               <ion-icon *ngIf="button['icon']" slot="icon-only" [name]="button['icon'] || 'close-circle'"
                 style="width: 36px; height: 36px;">
               </ion-icon>

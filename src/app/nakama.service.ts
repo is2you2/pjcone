@@ -1470,7 +1470,6 @@ export class NakamaService {
         }
       } else throw "not a group creator";
     } catch (e) {
-      console.log(e);
       try {
         if (_remove_history)
           await this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
