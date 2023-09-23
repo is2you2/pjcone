@@ -349,6 +349,9 @@ export class NakamaService {
     }
   }
 
+  /** 세션을 전환하는 중...  
+   * 단일 세션 전환일 때에도 막힘
+   */
   TogglingSession = false;
   /** 모든 세션을 토글 */
   async toggle_all_session() {
@@ -584,6 +587,7 @@ export class NakamaService {
    * @param info.target 대상 key
    */
   async init_session(info: ServerInfo) {
+    this.TogglingSession = true;
     try {
       this.servers[info.isOfficial][info.target].session
         = await this.servers[info.isOfficial][info.target].client.authenticateEmail(this.users.self['email'], this.users.self['password'], false);
