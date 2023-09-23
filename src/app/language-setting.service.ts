@@ -30,6 +30,7 @@ export class LanguageSettingService {
     }, 0);
   }
 
+  isFirstTime = true;
   /** 설정된 언어로 다시 불러오기 */
   load_selected_lang() {
     new p5((p: p5) => {
@@ -49,7 +50,8 @@ export class LanguageSettingService {
                   this.text[tmpTitle] = {};
               } else this.text[tmpTitle][v.rows[i]['obj']['#']] = v.rows[i]['obj'][this.lang];
             }
-            this.Callback_nakama();
+            if (this.isFirstTime)
+              this.Callback_nakama();
             p.remove();
           }, e => {
             console.error('내부 문서 읽기 실패: ', e);

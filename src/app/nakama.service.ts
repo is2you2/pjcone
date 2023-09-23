@@ -1944,7 +1944,7 @@ export class NakamaService {
           break;
         case MatchOpCode.WEBRTC_HANGUP: {
           let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
-          if (!is_me) await this.WebRTCService.close_webrtc();
+          if (!is_me && this.WebRTCService) await this.WebRTCService.close_webrtc();
         }
           break;
         default:
@@ -2228,12 +2228,13 @@ export class NakamaService {
       } catch (e) {
         throw e;
       }
-      await this.WebRTCService.initialize('audio', undefined, {
-        isOfficial: _is_official,
-        target: _target,
-        user_id: c_info['info']['id'] || c_info['info']['user_id'],
-        channel_id: c_info['id'],
-      }, false);
+      if (this.WebRTCService)
+        await this.WebRTCService.initialize('audio', undefined, {
+          isOfficial: _is_official,
+          target: _target,
+          user_id: c_info['info']['id'] || c_info['info']['user_id'],
+          channel_id: c_info['id'],
+        }, false);
       await this.servers[_is_official][_target].socket.sendMatchState(
         msg.content.match, MatchOpCode.WEBRTC_INIT_REQ_SIGNAL, encodeURIComponent(''))
     } catch (e) {

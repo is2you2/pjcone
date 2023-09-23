@@ -60,6 +60,7 @@ export class AppComponent {
     lang.Callback_nakama = () => {
       nakama.initialize();
       nakama.check_if_online();
+      lang.isFirstTime = false;
     }
     this.init_admob();
     // 모바일 기기 특정 설정
