@@ -307,7 +307,6 @@ export class IonicViewerPage implements OnInit {
     switch (this.FileInfo['viewer']) {
       case 'image': // 이미지
         this.p5canvas = new p5((p: p5) => {
-          let iframe_sub: p5.Element;
           p.setup = async () => {
             canvasDiv.style.maxWidth = '100%';
             canvasDiv.style.overflow = 'hidden';
@@ -325,15 +324,6 @@ export class IonicViewerPage implements OnInit {
               imageOriginalSize = p.createVector(img.elt.naturalWidth, img.elt.naturalHeight);
               RePositioningImage();
               img.remove();
-            }
-            if (isPlatform == 'Android' || isPlatform == 'iOS') {
-              iframe_sub = p.createElement('iframe');
-              iframe_sub.elt.setAttribute("src", this.FileURL);
-              iframe_sub.elt.setAttribute("frameborder", "0");
-              iframe_sub.elt.setAttribute('class', 'full_screen');
-              iframe_sub.elt.setAttribute('style', 'position: relative; pointer-events: all');
-              iframe_sub.elt.hidden = true;
-              canvasDiv.appendChild(iframe_sub.elt);
             }
             p.noLoop();
           }
