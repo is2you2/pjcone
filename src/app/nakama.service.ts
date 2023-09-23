@@ -1965,13 +1965,9 @@ export class NakamaService {
     socket.onchannelmessage = (c) => {
       if (!this.channels_orig[_is_official][_target][c.channel_id]) { // 재참가 + 놓친 메시지인 경우 검토
         if (c.user_id_one) // 1:1 채팅
-          this.join_chat_with_modulation(c.sender_id, 2, _is_official, _target, () => {
-            this.update_from_channel_msg(c, _is_official, _target);
-          });
+          this.join_chat_with_modulation(c.sender_id, 2, _is_official, _target);
         else if (c.group_id)  // 그룹 채팅
-          this.join_chat_with_modulation(c.group_id, 3, _is_official, _target, (_c) => {
-            this.update_from_channel_msg(c, _is_official, _target);
-          });
+          this.join_chat_with_modulation(c.group_id, 3, _is_official, _target);
       } else { // 평상시에
         this.update_from_channel_msg(c, _is_official, _target);
         if (c.content['match'] && c.sender_id != this.servers[_is_official][_target].session.user_id)
@@ -2641,16 +2637,7 @@ export class NakamaService {
         // 요청 타입을 구분하여 자동반응처리
         switch (targetType) {
           case 2: // 1:1 채팅
-            this.join_chat_with_modulation(v['sender_id'], targetType, _is_official, _target, async (c) => {
-              try {
-                await this.servers[_is_official][_target].client.listChannelMessages(
-                  this.servers[_is_official][_target].session, c.id, 1, false).then(m => {
-                    if (m.messages.length) {
-                      this.update_from_channel_msg(m.messages[0], _is_official, _target);
-                    }
-                  });
-              } catch (e) { }
-            });
+            this.join_chat_with_modulation(v['sender_id'], targetType, _is_official, _target);
             break;
           default:
             console.warn('예상하지 못한 알림 행동처리: ', v, targetType);
@@ -2703,15 +2690,7 @@ export class NakamaService {
               });
             }
           });
-        this.join_chat_with_modulation(v.content['group_id'], 3, _is_official, _target, (c) => {
-          this.servers[_is_official][_target].client.listChannelMessages(
-            this.servers[_is_official][_target].session, c.id, 1, false)
-            .then(v => {
-              if (v.messages.length) {
-                this.update_from_channel_msg(v.messages[0], _is_official, _target);
-              }
-            });
-        });
+        this.join_chat_with_modulation(v.content['group_id'], 3, _is_official, _target);
         this.noti.PushLocal({
           id: v.code,
           title: `${this.groups[_is_official][_target][v.content['group_id']]['name']}: ${this.lang.text['Nakama']['LocalNotiTitle']}`,
