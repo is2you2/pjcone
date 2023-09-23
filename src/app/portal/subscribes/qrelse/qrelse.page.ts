@@ -28,7 +28,7 @@ export class QRelsePage implements OnInit {
 
   ngOnInit() {
     this.result = this.navParams.get('result');
-    this.result.text = this.result.text.split('\n');
+    this.result.text = this.result.content.split('\n');
     for (let i = 0, j = this.result.text.length; i < j; i++) {
       this.result.text[i] = this.result.text[i].split(' ');
       for (let k = 0, l = this.result.text[i].length; k < l; k++) {
