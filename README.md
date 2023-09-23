@@ -7,15 +7,17 @@ Project: Cone 커뮤니티를 위한 채팅 앱 클라이언트
 ## Android 빌드 작업보조 정보글
 - android 폴더 활용하기
   - 최초 빌드시 android 폴더를 삭제한 후 플랫폼 빌드를 실행
-  - apt install openjdk-11-jdk 로 Java 1.11.0 을 설치한 후 안드로이드 스튜디오에서 버전 변경 (Ctrl + Alt + Shift + S)
+  <!-- - apt install openjdk-11-jdk 로 Java 1.11.0 을 설치한 후 안드로이드 스튜디오에서 버전 변경 (Ctrl + Alt + Shift + S) -->
   - npx cap update
-  - jetifier 실행
+  - npx cap sync
+  <!-- - jetifier 실행
     - npx jetify
-    - npx cap sync android
+    - npx cap sync android -->
   - 변경된 사항 복구하기 진행
 - 프로젝트 재구성 후 빌드가 동작하지 않는다면 다음 중 하나를 실행
   - npm i -g npm@latest (*추천)
   - npm config set user 0
+  - Sync Project with Gradle Files (상단 버튼 또는 File 메뉴 아래)
 
 ## 고도 프레임 사용 제한사항
 - GodotViewer 구성 제한사항

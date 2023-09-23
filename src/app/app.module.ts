@@ -9,7 +9,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { LocalNotifications } from '@awesome-cordova-plugins/local-notifications/ngx';
-import { BarcodeScanner } from "@awesome-cordova-plugins/barcode-scanner/ngx";
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { Camera } from "@awesome-cordova-plugins/camera/ngx";
@@ -19,7 +18,6 @@ import { Clipboard } from "@awesome-cordova-plugins/clipboard/ngx";
 
 @NgModule({
   declarations: [AppComponent],
-  entryComponents: [],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, ServiceWorkerModule.register('ngsw-worker.js', {
     enabled: environment.production,
     // Register the ServiceWorker as soon as the application is stable
@@ -33,7 +31,6 @@ import { Clipboard } from "@awesome-cordova-plugins/clipboard/ngx";
     BackgroundMode,
     NavParams,
     LocalNotifications,
-    BarcodeScanner,
     FileOpener,
     Clipboard,
   ],

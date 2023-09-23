@@ -89,7 +89,8 @@ SPDX-License-Identifier: MIT -->
     </tr>
   </table>
 
-  <ion-modal trigger="ShowContentInfoIonic" [initialBreakpoint]=".5" [breakpoints]="[.5, 1]">
+  <ion-modal *ngIf="FileInfo['content_creator']" trigger="ShowContentInfoIonic" [initialBreakpoint]=".5"
+    [breakpoints]="[.5, 1]">
     <ng-template>
       <ion-content>
         <ion-item-divider>

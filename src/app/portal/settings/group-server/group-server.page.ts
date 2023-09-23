@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonModal, LoadingController, ModalController } from '@ionic/angular';
+import { IonModal, IonToggle, LoadingController, ModalController } from '@ionic/angular';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -484,9 +484,10 @@ export class GroupServerPage implements OnInit {
   }
   /** 채도 변화자 */
   lerpVal: number;
+  @ViewChild('ToggleOnline') ToggleOnline: IonToggle;
   async toggle_online() {
-    this.nakama.users.self['online'] = !this.nakama.users.self['online'];
-    if (this.nakama.users.self['online']) {
+    this.nakama.users.self['online'] = this.ToggleOnline.checked;
+    if (this.ToggleOnline.checked) {
       this.announce_update_profile = false;
       try {
         if (!this.nakama.users.self['email']) {
@@ -505,6 +506,7 @@ export class GroupServerPage implements OnInit {
         this.nakama.init_all_sessions();
       } catch (e) {
         this.nakama.users.self['online'] = false;
+        this.ToggleOnline.checked = false;
       }
     } else {
       await this.nakama.logout_all_server();

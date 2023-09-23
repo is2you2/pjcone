@@ -18,59 +18,55 @@
     <ion-label>{{lang.text['WebLinkGen']['CustomInfo']}}</ion-label>
   </ion-item-divider>
   <ion-item>
-    <ion-label>{{lang.text['WebLinkGen']['baseURL']}}</ion-label>
-    <ion-input class="ion-text-end" [(ngModel)]="userInput.root" placeholder="https://is2you2.github.io/pjcone_pwa/"
-      (ionChange)="baseURLChanged($event)"></ion-input>
+    <ion-input [label]="lang.text['WebLinkGen']['baseURL']" class="ion-text-end" [(ngModel)]="userInput.root"
+      placeholder="https://is2you2.github.io/pjcone_pwa/" (ionInput)="baseURLChanged($event)"></ion-input>
   </ion-item>
   <ion-item>
-    <ion-label>{{lang.text['QuickQRShare']['GroupServer']}}</ion-label>
-    <ion-select (ionChange)="SelectGroupServer($event)" multiple="true"
-      [placeholder]="lang.text['QuickQRShare']['EmptyData']">
+    <ion-select [label]="lang.text['QuickQRShare']['GroupServer']" (ionChange)="SelectGroupServer($event)"
+      multiple="true" [placeholder]="lang.text['QuickQRShare']['EmptyData']">
       <ion-select-option *ngFor="let gs of servers" [value]="gs">{{gs['name']}} </ion-select-option>
     </ion-select>
   </ion-item>
   <ion-item button (click)="userInput.open_profile = !userInput.open_profile; information_changed()">
-    <ion-label>{{lang.text['WebLinkGen']['OpenProfile']}}</ion-label>
-    <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.open_profile" slot="end"></ion-toggle>
+    <ion-toggle class="ignore_toggles"
+      [(ngModel)]="userInput.open_profile">{{lang.text['WebLinkGen']['OpenProfile']}}</ion-toggle>
   </ion-item>
   <ion-item>
-    <ion-label>{{lang.text['QuickQRShare']['Group']}}</ion-label>
-    <ion-select (ionChange)="SelectGroupChannel($event)" multiple="true"
+    <ion-select [label]="lang.text['QuickQRShare']['Group']" (ionChange)="SelectGroupChannel($event)" multiple="true"
       [placeholder]="lang.text['QuickQRShare']['EmptyData']">
       <ion-select-option *ngFor="let ginfo of groups" [value]="ginfo">{{ginfo['name'] + ' (' +
         ginfo['server']['name'] + ')'}}</ion-select-option>
     </ion-select>
   </ion-item>
   <ion-item button (click)="userInput.open_subscribes = !userInput.open_subscribes; information_changed()">
-    <ion-label>{{lang.text['WebLinkGen']['OpenChannelTab']}}</ion-label>
-    <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.open_subscribes" slot="end"></ion-toggle>
+    <ion-toggle class="ignore_toggles"
+      [(ngModel)]="userInput.open_subscribes">{{lang.text['WebLinkGen']['OpenChannelTab']}}</ion-toggle>
   </ion-item>
   <ion-item>
-    <ion-label>{{lang.text['QuickQRShare']['RTCServer']}}</ion-label>
-    <ion-select (ionChange)="SelectRTCServer($event)" multiple="true"
+    <ion-select [label]="lang.text['QuickQRShare']['RTCServer']" (ionChange)="SelectRTCServer($event)" multiple="true"
       [placeholder]="lang.text['QuickQRShare']['EmptyData']">
       <ion-select-option *ngFor="let server of rtcServer" [value]="server">
         {{ server.urls[0] }}</ion-select-option>
     </ion-select>
   </ion-item>
   <ion-item button (click)="toggle_tmp_user()">
-    <ion-label>{{lang.text['WebLinkGen']['UseTempUser']}}</ion-label>
-    <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.use_tmp_user" slot="end"></ion-toggle>
+    <ion-toggle class="ignore_toggles"
+      [(ngModel)]="userInput.use_tmp_user">{{lang.text['WebLinkGen']['UseTempUser']}}</ion-toggle>
   </ion-item>
   <div *ngIf="userInput.use_tmp_user">
     <ion-item>
-      <ion-label>{{lang.text['Profile']['email_address']}}</ion-label>
-      <ion-input class="ion-text-end" (ionChange)="information_changed()" [(ngModel)]="userInput.tmp_user.email"
+      <ion-input [label]="lang.text['Profile']['email_address']" class="ion-text-end"
+        (ionInput)="information_changed()" [(ngModel)]="userInput.tmp_user.email"
         placeholder="test@example.com"></ion-input>
     </ion-item>
     <ion-item>
-      <ion-label>{{lang.text['Profile']['password']}}</ion-label>
-      <ion-input class="ion-text-end" (ionChange)="information_changed()" [(ngModel)]="userInput.tmp_user.password"
+      <ion-input [label]="lang.text['Profile']['password']" class="ion-text-end" (ionInput)="information_changed()"
+        [(ngModel)]="userInput.tmp_user.password"
         [placeholder]="userInput.tmp_user.pass_placeholder || lang.text['Profile']['at_least']"></ion-input>
     </ion-item>
     <ion-item>
-      <ion-label>{{lang.text['Profile']['user_display_name']}}</ion-label>
-      <ion-input class="ion-text-end" (ionChange)="information_changed()" [(ngModel)]="userInput.tmp_user.display_name"
+      <ion-input [label]="lang.text['Profile']['user_display_name']" class="ion-text-end"
+        (ionInput)="information_changed()" [(ngModel)]="userInput.tmp_user.display_name"
         [placeholder]="lang.text['Profile']['name_placeholder']"></ion-input>
     </ion-item>
   </div>
@@ -79,8 +75,8 @@
   </ion-item-divider>
   <ion-item button (click)="userInput.open_channel = !userInput.open_channel; information_changed()"
     [disabled]="!userInput.servers.length || !userInput.groups.length || userInput.open_prv_channel != ''">
-    <ion-label>{{lang.text['WebLinkGen']['OpenGroupChannel']}}</ion-label>
-    <ion-toggle class="ignore_toggles" [(ngModel)]="userInput.open_channel" slot="end"></ion-toggle>
+    <ion-toggle class="ignore_toggles"
+      [(ngModel)]="userInput.open_channel">{{lang.text['WebLinkGen']['OpenGroupChannel']}}</ion-toggle>
   </ion-item>
   <ion-item button [disabled]="!userInput.servers.length || userInput.open_channel" (click)="paste_user_id()">
     <ion-label>{{lang.text['WebLinkGen']['OpenPrivateChannel']}}</ion-label>

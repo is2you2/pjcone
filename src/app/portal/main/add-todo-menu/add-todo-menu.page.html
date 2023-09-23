@@ -20,8 +20,8 @@ SPDX-License-Identifier: MIT -->
         <div id="p5timer" style="position: absolute; width: 100%; height: 8px; z-index: 2;"></div>
         <div id="main_div" class="main" style="max-width: 100vw;">
           <ion-item *ngIf="!isModify" (click)="StoreAtSelClicked()">
-            <ion-label>{{lang.text['TodoDetail']['StoreAt']}}</ion-label>
-            <ion-select #StoreAt style="pointer-events: none;" (ionChange)="StoreAtSelChanged($event)">
+            <ion-select [label]="lang.text['TodoDetail']['StoreAt']" #StoreAt style="pointer-events: none;"
+              (ionChange)="StoreAtSelChanged($event)">
               <ion-select-option value="local">{{lang.text['TodoDetail']['OnThisDevice']}}</ion-select-option>
               <ion-select-option *ngFor="let target of AvailableStorageList;" [value]="target">{{target.name}}
               </ion-select-option>
@@ -43,9 +43,8 @@ SPDX-License-Identifier: MIT -->
             </ion-grid>
           </div>
           <ion-item>
-            <ion-label>{{lang.text['TodoDetail']['DisplayName']}}</ion-label>
-            <ion-input [(ngModel)]="userInput.title" class="ion-text-right"
-              [placeholder]="lang.text['TodoDetail']['DisplayName_placeholder']"></ion-input>
+            <ion-input [label]="lang.text['TodoDetail']['DisplayName']" [(ngModel)]="userInput.title"
+              class="ion-text-right" [placeholder]="lang.text['TodoDetail']['DisplayName_placeholder']"></ion-input>
           </ion-item>
           <div *ngIf="userInput.storeAt != 'local' && isManager">
             <ion-accordion-group #ManageWorker>
@@ -75,9 +74,8 @@ SPDX-License-Identifier: MIT -->
             </ion-accordion-group>
           </div>
           <ion-item button (click)="ImporantSelClicked()">
-            <ion-label>{{lang.text['TodoDetail']['Importance']}}</ion-label>
-            <ion-select #ImporantSel style="pointer-events: none;" [value]="userInput.importance"
-              (ionChange)="ImporantSelChanged($event)">
+            <ion-select [label]="lang.text['TodoDetail']['Importance']" #ImporantSel style="pointer-events: none;"
+              [value]="userInput.importance" (ionChange)="ImporantSelChanged($event)">
               <ion-select-option value="2">{{lang.text['TodoDetail']['Importance_2']}}</ion-select-option>
               <ion-select-option value="1">{{lang.text['TodoDetail']['Importance_1']}}</ion-select-option>
               <ion-select-option value="0">{{lang.text['TodoDetail']['Importance_0']}}</ion-select-option>
@@ -121,14 +119,14 @@ SPDX-License-Identifier: MIT -->
             <ion-label class="ion-text-right uneditable_data">{{startDisplay ||
               lang.text['TodoDetail']['startImmediatly']}}</ion-label>
           </ion-item>
-          <ion-datetime #StartCalendar [hidden]="isStartCalendarHidden" style="display: inline;" [locale]="lang.lang"
-            (ionChange)="start_change($event)"></ion-datetime>
+          <ion-datetime #StartCalendar [style]="isStartCalendarHidden ? 'display: none;' : ''" style="display: inline;"
+            [locale]="lang.lang" (ionChange)="start_change($event)"></ion-datetime>
           <ion-item button (click)="toggle_calendar()">
             <ion-label>{{lang.text['TodoDetail']['limit']}}</ion-label>
             <ion-label class="ion-text-right uneditable_data">{{limitDisplay}}</ion-label>
           </ion-item>
-          <ion-datetime #Calendar [hidden]="isCalendarHidden" style="display: inline;" [locale]="lang.lang"
-            (ionChange)="limit_change($event)"></ion-datetime>
+          <ion-datetime #Calendar [style]="isCalendarHidden ? 'display: none;' : ''" style="display: inline;"
+            [locale]="lang.lang" (ionChange)="limit_change($event)"></ion-datetime>
           <textarea class="infobox" [(ngModel)]="userInput.description"
             [placeholder]="lang.text['TodoDetail']['description']"></textarea>
           <div *ngFor="let attach of userInput.attach; index as i">
@@ -151,9 +149,9 @@ SPDX-License-Identifier: MIT -->
             <ion-button class="ion-text-right" (click)="open_select_new()">
               {{lang.text['TodoDetail']['new_attach']}}
             </ion-button>
-            <ion-item hidden>
-              <ion-label>{{lang.text['TodoDetail']['new_attach']}}</ion-label>
-              <ion-select #NewAttach interface="action-sheet" (ionChange)="new_attach($event)">
+            <ion-item style="display: none;">
+              <ion-select [label]="lang.text['TodoDetail']['new_attach']" #NewAttach interface="action-sheet"
+                (ionChange)="new_attach($event)">
                 <ion-select-option *ngIf="can_cordova"
                   value="camera">{{lang.text['GlobalAct']['FromCamera']}}</ion-select-option>
                 <ion-select-option value="text">{{lang.text['TodoDetail']['new_text']}}</ion-select-option>
