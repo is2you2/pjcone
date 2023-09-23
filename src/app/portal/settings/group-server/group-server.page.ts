@@ -141,7 +141,7 @@ export class GroupServerPage implements OnInit {
       if (this.isSSLConnect) this.dedicated_info.useSSL = true;
       this.dedicated_info.isOfficial = undefined;
     });
-    this.RegisterServer.dismiss();
+    this.RegisterNewServer.dismiss();
     setTimeout(() => {
       this.add_custom_tog = false;
     }, 1000);
@@ -219,9 +219,6 @@ export class GroupServerPage implements OnInit {
     this.p5canvas.remove();
   }
 
-  //////// 아래, 전반적으로 프로필 기능 병합
-  //////// 겹치는 함수는 위에 병합
-  @ViewChild(IonModal) RegisterServer: IonModal;
   /** 부드러운 이미지 교체를 위한 이미지 임시 배정 */
   tmp_img: string;
   /** 사용자 주소 입력 */
@@ -558,6 +555,12 @@ export class GroupServerPage implements OnInit {
       });
       this.change_img_smoothly('');
     }
+  }
+
+  @ViewChild('RegisterNewServer') RegisterNewServer: IonModal;
+
+  OpenNewServerForm() {
+    this.RegisterNewServer.present();
   }
 
   go_back() {

@@ -101,7 +101,11 @@ export class WebrtcManageIoDevPage implements OnInit {
     this.UserInputUrlsLength.pop();
   }
 
-  @ViewChild(IonModal) RegisterServer: IonModal;
+  @ViewChild('RegisterNewWebRTCServer') RegisterServer: IonModal;
+
+  OpenNewWebRTCServerForm() {
+    this.RegisterServer.present();
+  }
 
   async SaveServer() {
     this.userInput.urls.filter(v => v);

@@ -651,7 +651,7 @@ export class IonicViewerPage implements OnInit {
     }
   }
 
-  @ViewChild(IonModal) ShowContentInfoIonic: IonModal;
+  @ViewChild('ShowContentInfoIonic') ShowContentInfoIonic: IonModal;
 
   open_bottom_modal() {
     this.ShowContentInfoIonic.onDidDismiss().then(_v => {
