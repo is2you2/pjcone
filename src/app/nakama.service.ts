@@ -328,12 +328,10 @@ export class NakamaService {
   async init_all_sessions() {
     let Targets = Object.keys(this.servers['official']);
     for (let i = 0, j = Targets.length; i < j; i++)
-      if (this.statusBar.groupServer['official'][Targets[i]] != 'offline')
-        await this.init_session(this.servers['official'][Targets[i]].info);
+      await this.init_session(this.servers['official'][Targets[i]].info);
     let unTargets = Object.keys(this.servers['unofficial']);
     for (let i = 0, j = unTargets.length; i < j; i++)
-      if (this.statusBar.groupServer['unofficial'][unTargets[i]] != 'offline')
-        await this.init_session(this.servers['unofficial'][unTargets[i]].info);
+      await this.init_session(this.servers['unofficial'][unTargets[i]].info);
   }
 
   /** 모든 서버 로그아웃처리 */
