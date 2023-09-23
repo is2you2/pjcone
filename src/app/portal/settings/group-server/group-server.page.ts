@@ -434,8 +434,10 @@ export class GroupServerPage implements OnInit {
         permission_read: 2,
         permission_write: 1,
       }]).then(async v => {
-        await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
-          encodeURIComponent('image'));
+        try {
+          await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
+            encodeURIComponent('image'));
+        } catch (e) { }
         await servers[i].client.updateAccount(servers[i].session, {
           avatar_url: v.acks[0].version,
         });
