@@ -11,8 +11,7 @@ SPDX-License-Identifier: MIT -->
       (click)="toggle_thumbnail()"></ion-icon>
     <ion-icon *ngIf="info['HideAutoThumbnail']" class="top_icon" slot="end" name="eye-off-outline"
       (click)="toggle_thumbnail()"></ion-icon>
-    <div class="header_online_circle"
-      [style]="'background-color: ' + statusBar.colors[(info['status'] ? info['status'] : info.info['status']) || 'offline']">
+    <div class="header_online_circle" [style]="'background-color: ' + statusBar.colors[info['status'] || 'offline']">
     </div>
   </ion-toolbar>
 </ion-header>

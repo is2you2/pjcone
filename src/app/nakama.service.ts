@@ -332,80 +332,96 @@ export class NakamaService {
     let unTargets = Object.keys(this.servers['unofficial']);
     for (let i = 0, j = unTargets.length; i < j; i++)
       await this.init_session(this.servers['unofficial'][unTargets[i]].info);
+    return Targets.length + unTargets.length;
   }
 
   /** 모든 서버 로그아웃처리 */
-  logout_all_server(): Promise<void> {
-    return new Promise((done) => {
-      let IsOfficials = Object.keys(this.statusBar.groupServer);
-      IsOfficials.forEach(_is_official => {
-        let Targets = Object.keys(this.statusBar.groupServer[_is_official]);
-        Targets.forEach(async _target => {
-          if (this.statusBar.groupServer[_is_official][_target] == 'online') {
-            if (this.statusBar.groupServer[_is_official][_target])
-              this.statusBar.groupServer[_is_official][_target] = 'pending';
-            this.catch_group_server_header('pending');
-            if (this.servers[_is_official][_target].session)
-              await this.servers[_is_official][_target].client.sessionLogout(
-                this.servers[_is_official][_target].session,
-                this.servers[_is_official][_target].session.token,
-                this.servers[_is_official][_target].session.refresh_token,
-              );
-            if (this.servers[_is_official][_target].socket)
-              this.servers[_is_official][_target].socket.disconnect(true);
-          }
-        });
-      });
-      done();
-    });
+  async logout_all_server() {
+    let IsOfficials = Object.keys(this.statusBar.groupServer);
+    for (let i = 0, j = IsOfficials.length; i < j; i++) {
+      let Targets = Object.keys(this.statusBar.groupServer[IsOfficials[i]]);
+      for (let k = 0, l = Targets.length; k < l; k++) {
+        if (this.statusBar.groupServer[IsOfficials[i]][Targets[k]] == 'online')
+          if (this.servers[IsOfficials[i]][Targets[k]].socket) {
+            this.servers[IsOfficials[i]][Targets[k]].socket.disconnect(true);
+          } else this.link_group(IsOfficials[i], Targets[k], false);
+      }
+    }
   }
 
+  TogglingSession = false;
   /** 모든 세션을 토글 */
   async toggle_all_session() {
+    if (this.TogglingSession) return;
+    this.TogglingSession = true;
     if (this.statusBar.settings.groupServer == 'online') {
+      await this.logout_all_server();
       this.p5toast.show({
         text: this.lang.text['Nakama']['SessionLogout'],
       });
-      await this.logout_all_server();
     } else {
       this.p5toast.show({
         text: this.lang.text['Nakama']['PendingLogin'],
       });
-      await this.init_all_sessions();
-      this.p5toast.show({
-        text: this.lang.text['Nakama']['LoggedIn'],
-      });
+      try {
+        let count_server = await this.init_all_sessions();
+        if (count_server) {
+          this.p5toast.show({
+            text: this.lang.text['Nakama']['LoggedIn'],
+            lateable: true,
+          });
+        } else {
+          this.modalCtrl.create({
+            component: GroupServerPage,
+          }).then(v => {
+            this.p5toast.show({
+              text: this.lang.text['Subscribes']['Disconnected'],
+            });
+            v.present()
+          });
+        }
+      } catch (e) { }
     }
+    this.TogglingSession = false;
   }
 
   /** 서버 연결하기 */
-  link_group(_is_official: string, _target: string, _force = false) {
-    if (_force || this.statusBar.groupServer[_is_official][_target] == 'missing' || this.statusBar.groupServer[_is_official][_target] == 'offline') {
+  async link_group(_is_official: string, _target: string, online =
+    this.statusBar.groupServer[_is_official][_target] == 'offline') {
+    if (online) {
       this.statusBar.groupServer[_is_official][_target] = 'pending';
       this.catch_group_server_header('pending');
       if (this.users.self['online'])
-        this.init_session(this.servers[_is_official][_target].info);
-    } else { // 활동중이면 로그아웃처리
-      if (!this.on_socket_disconnected['group_unlink_by_user'])
-        this.on_socket_disconnected['group_unlink_by_user'] = () => {
-          this.set_group_statusBar('offline', _is_official, _target);
-        }
+        await this.init_session(this.servers[_is_official][_target].info);
+    } else {
+      if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
+        let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
+        channel_ids.forEach(_cid => {
+          if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
+            delete this.channels_orig[_is_official][_target][_cid]['status'];
+        });
+        this.rearrange_channels();
+      }
+      if (this.groups[_is_official] && this.groups[_is_official][_target]) {
+        let groups_id = Object.keys(this.groups[_is_official][_target]);
+        groups_id.forEach(_gid => {
+          this.groups[_is_official][_target][_gid]['status'] = 'offline';
+        });
+      }
+      this.set_group_statusBar('offline', _is_official, _target);
       this.statusBar.groupServer[_is_official][_target] = 'offline';
       this.catch_group_server_header('offline');
       if (this.servers[_is_official][_target].session) {
-        this.servers[_is_official][_target].client.sessionLogout(
-          this.servers[_is_official][_target].session,
-          this.servers[_is_official][_target].session.token,
-          this.servers[_is_official][_target].session.refresh_token,
-        ).then(v => {
-          if (!v) console.warn('로그아웃 오류 검토 필요');
-          if (this.noti_origin[_is_official] && this.noti_origin[_is_official][_target])
-            delete this.noti_origin[_is_official][_target];
-          this.rearrange_notifications();
-        });
+        try {
+          await this.servers[_is_official][_target].client.sessionLogout(
+            this.servers[_is_official][_target].session,
+            this.servers[_is_official][_target].session.token,
+            this.servers[_is_official][_target].session.refresh_token);
+        } catch (e) { }
+        if (this.noti_origin[_is_official] && this.noti_origin[_is_official][_target])
+          delete this.noti_origin[_is_official][_target];
+        this.rearrange_notifications();
       }
-      if (this.servers[_is_official][_target].socket)
-        this.servers[_is_official][_target].socket.disconnect(true);
       if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
         let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
         channel_ids.forEach(_cid => {
@@ -637,10 +653,10 @@ export class NakamaService {
   self_match = {};
   /** 로그인 및 회원가입 직후 행동들 */
   async after_login(_is_official: any, _target: string, _useSSL: boolean) {
+    // 그룹 서버 연결 상태 업데이트
+    this.set_group_statusBar('pending', _is_official, _target);
     // 통신 소켓 생성
     this.servers[_is_official][_target].socket = this.servers[_is_official][_target].client.createSocket(_useSSL);
-    // 그룹 서버 연결 상태 업데이트
-    this.set_group_statusBar('online', _is_official, _target);
     // 커뮤니티 서버를 쓰는 관리자모드 검토
     this.servers[_is_official][_target].client.getAccount(
       this.servers[_is_official][_target].session).then(v => {
@@ -679,6 +695,7 @@ export class NakamaService {
     this.load_server_todo(_is_official, _target);
     // 통신 소켓 연결하기
     let socket = await this.connect_to(_is_official, _target);
+    this.set_group_statusBar('online', _is_official, _target);
     await this.get_group_list_from_server(_is_official, _target);
     this.redirect_channel(_is_official, _target);
     if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
@@ -715,15 +732,18 @@ export class NakamaService {
   }
 
   /** 서버에 저장시킨 해야할 일 목록 불러오기 */
-  load_server_todo(_is_official: string, _target: string, _cursor?: string) {
-    this.servers[_is_official][_target].client.listStorageObjects(
-      this.servers[_is_official][_target].session, 'server_todo',
-      this.servers[_is_official][_target].session.user_id, 1, _cursor
-    ).then(v => {
+  async load_server_todo(_is_official: string, _target: string, _cursor?: string) {
+    try {
+      let v = await this.servers[_is_official][_target].client.listStorageObjects(
+        this.servers[_is_official][_target].session, 'server_todo',
+        this.servers[_is_official][_target].session.user_id, 1, _cursor
+      );
       if (v.objects.length)
         this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
       if (v.cursor) this.load_server_todo(_is_official, _target, v.cursor);
-    });
+    } catch (e) {
+      console.log('서버 해야할 일 불러오기 오류: ', e);
+    }
   }
 
   /** 원격 정보를 로컬에 맞게 수정, 그 후 로컬에 다시 저장하기 */
@@ -1619,7 +1639,6 @@ export class NakamaService {
         }
       }
     } catch (e) {
-      console.log('count_channel_online_member: ', e);
       result_status = this.statusBar.groupServer[_is_official][_target] == 'offline' ? 'offline' : 'missing';
     }
     if (!this.channels_orig[_is_official][_target][p.channel_id || p.id])
@@ -1644,16 +1663,10 @@ export class NakamaService {
     // 로그인 상태일 경우 로그오프처리
     if (this.statusBar.groupServer[_is_official][_target] == 'online') {
       try {
-        if (this.servers[_is_official][_target].socket)
-          this.servers[_is_official][_target].socket.disconnect(true);
-      } catch (e) { }
-      try {
-        await this.servers[_is_official][_target].client.sessionLogout(
-          this.servers[_is_official][_target].session,
-          this.servers[_is_official][_target].session.token,
-          this.servers[_is_official][_target].session.refresh_token,
-        )
-      } catch (e) { }
+        this.servers[_is_official][_target].socket.disconnect(true);
+      } catch (e) {
+        this.link_group(_is_official, _target, false,)
+      }
     }
     // 알림정보 삭제
     try {
@@ -1966,21 +1979,7 @@ export class NakamaService {
       }
     }
     socket.ondisconnect = (_e) => {
-      if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
-        let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
-        channel_ids.forEach(_cid => {
-          if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
-            delete this.channels_orig[_is_official][_target][_cid]['status'];
-        });
-        this.rearrange_channels();
-      }
-      if (this.groups[_is_official] && this.groups[_is_official][_target]) {
-        let groups_id = Object.keys(this.groups[_is_official][_target]);
-        groups_id.forEach(_gid => {
-          this.groups[_is_official][_target][_gid]['status'] = 'offline';
-        });
-      }
-      this.set_group_statusBar('pending', _is_official, _target);
+      this.link_group(_is_official, _target, false);
       let keys = Object.keys(this.on_socket_disconnected);
       keys.forEach(key => this.on_socket_disconnected[key]());
     }
@@ -2098,6 +2097,7 @@ export class NakamaService {
       this.save_groups_with_less_info();
       _CallBack(c);
     }).catch(e => {
+      console.log('채널 오류: ', e);
       let err_info: string = '';
       switch (e.code) {
         case 3: // 사용자 정보 없음 (계정 삭제의 경우)
@@ -2301,12 +2301,16 @@ export class NakamaService {
 
   /** 발신인 표시를 위한 메시지 추가 가공 */
   check_sender_and_show_name(c: ChannelMessage, _is_official: string, _target: string) {
-    c['color'] = (c.sender_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
-    if (c.sender_id == this.servers[_is_official][_target].session.user_id) {
-      c['user_display_name'] = this.users.self['display_name'];
-      c['is_me'] = true;
-    } else c['user_display_name'] = this.load_other_user(c.sender_id, _is_official, _target)['display_name'];
-    c['user_display_name'] = c['user_display_name'] || this.lang.text['Profile']['noname_user'];
+    try {
+      c['color'] = (c.sender_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
+      if (c.sender_id == this.servers[_is_official][_target].session.user_id) {
+        c['user_display_name'] = this.users.self['display_name'];
+        c['is_me'] = true;
+      } else c['user_display_name'] = this.load_other_user(c.sender_id, _is_official, _target)['display_name'];
+      c['user_display_name'] = c['user_display_name'] || this.lang.text['Profile']['noname_user'];
+    } catch (e) {
+      console.log('발신자 체크 오류: ', e);
+    }
   }
 
   /** 채널 정보를 분석하여 메시지 변형 (행동은 하지 않음)
@@ -2815,9 +2819,11 @@ export class NakamaService {
       buttons: [{
         text: this.lang.text['Profile']['login_toggle'],
         handler: () => {
-          delete this.noti_origin[_is_official][_target][v.id];
+          try {
+            delete this.noti_origin[_is_official][_target][v.id];
+          } catch (e) { }
           this.rearrange_notifications();
-          this.link_group(_is_official, _target, true)
+          this.link_group(_is_official, _target, true);
         }
       }]
     }).then(v => v.present());

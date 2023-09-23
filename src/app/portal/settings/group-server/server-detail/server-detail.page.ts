@@ -169,7 +169,7 @@ export class ServerDetailPage implements OnInit {
     await this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv');
     this.nakama.init_server(this.dedicated_info);
     this.nakama.servers[this.dedicated_info.isOfficial][this.dedicated_info.target].info = { ...this.dedicated_info };
-    this.nakama.link_group(this.dedicated_info.isOfficial, this.dedicated_info.target);
+    this.nakama.link_group(this.dedicated_info.isOfficial, this.dedicated_info.target, false);
     for (let i = this.Alternative[this.dedicated_info.target].length - 1; i >= 0; i--)
       if (!this.Alternative[this.dedicated_info.target][i].name)
         this.Alternative[this.dedicated_info.target].splice(i, 1);
