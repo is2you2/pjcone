@@ -152,22 +152,26 @@ export class IonicViewerPage implements OnInit {
       message: this.lang.text['ContentViewer']['DownloadLoadedList'],
       buttons: [{
         text: this.lang.text['ContentViewer']['DownloadThisFile'],
-        handler: async () => {
-          for (let i = 0, j = this.Relevances.length; i < j; i++) { // 전체 다운로드시 개체 미리 생성하기
-            if (!this.nakama.OnTransfer[this.isOfficial]) this.nakama.OnTransfer[this.isOfficial] = {};
-            if (!this.nakama.OnTransfer[this.isOfficial][this.target]) this.nakama.OnTransfer[this.isOfficial][this.target] = {};
-            if (!this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id]) this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id] = {};
-            if (!this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id][this.Relevances[i].message_id])
-              this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id][this.Relevances[i].message_id] = {};
-          }
-          for (let i = 0, j = this.Relevances.length; i < j; i++) {
-            let path = `servers/${this.isOfficial}/${this.target}/channels/${this.Relevances[i].channel_id}/files/msg_${this.Relevances[i].message_id}.${this.Relevances[i].content['file_ext']}`;
-            let FileExist = await this.indexed.checkIfFileExist(path, undefined, this.targetDB);
-            if (!FileExist) await this.DownloadCurrentFile(i);
-          }
+        handler: () => {
+          this.DownloadInOrder();
         },
       }]
     }).then(v => v.present());
+  }
+
+  async DownloadInOrder() {
+    for (let i = 0, j = this.Relevances.length; i < j; i++) { // 전체 다운로드시 개체 미리 생성하기
+      if (!this.nakama.OnTransfer[this.isOfficial]) this.nakama.OnTransfer[this.isOfficial] = {};
+      if (!this.nakama.OnTransfer[this.isOfficial][this.target]) this.nakama.OnTransfer[this.isOfficial][this.target] = {};
+      if (!this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id]) this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id] = {};
+      if (!this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id][this.Relevances[i].message_id])
+        this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id][this.Relevances[i].message_id] = {};
+    }
+    for (let i = 0, j = this.Relevances.length; i < j; i++) {
+      let path = `servers/${this.isOfficial}/${this.target}/channels/${this.Relevances[i].channel_id}/files/msg_${this.Relevances[i].message_id}.${this.Relevances[i].content['file_ext']}`;
+      let FileExist = await this.indexed.checkIfFileExist(path, undefined, this.targetDB);
+      if (!FileExist) await this.DownloadCurrentFile(i);
+    }
   }
 
   ChangeToAnother(direction: number) {
@@ -797,45 +801,49 @@ export class IonicViewerPage implements OnInit {
         }],
         buttons: [{
           text: this.lang.text['ContentViewer']['saveFile'],
-          handler: async (input) => {
-            let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-            loading.present();
-            let filename = input['filename'] ? input['filename'].replace(/:|\?|\/|\\|<|>/g, '') : this.FileInfo['filename'];
-            let blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type'], undefined, this.targetDB);
-            if (this.forceWrite && !input['filename'])
-              this.file.writeExistingFile(this.file.externalDataDirectory, filename, blob)
-                .then(_v => {
-                  this.forceWrite = false;
-                  loading.dismiss();
-                  this.p5toast.show({
-                    text: `${this.lang.text['ContentViewer']['OverWriteFile']}: ${filename}`,
-                  });
-                });
-            else this.file.writeFile(this.file.externalDataDirectory, filename, blob)
-              .then(_v => {
-                loading.dismiss();
-                this.p5toast.show({
-                  text: this.lang.text['ContentViewer']['fileSaved'],
-                });
-              }).catch(e => {
-                loading.dismiss();
-                switch (e.code) {
-                  case 12:
-                    this.p5toast.show({
-                      text: this.lang.text['ContentViewer']['AlreadyExist'],
-                    });
-                    this.forceWrite = true;
-                    this.download_file();
-                    break;
-                  default:
-                    console.log('준비되지 않은 오류 반환: ', e);
-                    break;
-                }
-              });
+          handler: (input) => {
+            this.DownloadFileAct(input);
           }
         }]
       }).then(v => v.present());
     }
+  }
+
+  async DownloadFileAct(input: any) {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    loading.present();
+    let filename = input['filename'] ? input['filename'].replace(/:|\?|\/|\\|<|>/g, '') : this.FileInfo['filename'];
+    let blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type'], undefined, this.targetDB);
+    if (this.forceWrite && !input['filename'])
+      this.file.writeExistingFile(this.file.externalDataDirectory, filename, blob)
+        .then(_v => {
+          this.forceWrite = false;
+          loading.dismiss();
+          this.p5toast.show({
+            text: `${this.lang.text['ContentViewer']['OverWriteFile']}: ${filename}`,
+          });
+        });
+    else this.file.writeFile(this.file.externalDataDirectory, filename, blob)
+      .then(_v => {
+        loading.dismiss();
+        this.p5toast.show({
+          text: this.lang.text['ContentViewer']['fileSaved'],
+        });
+      }).catch(e => {
+        loading.dismiss();
+        switch (e.code) {
+          case 12:
+            this.p5toast.show({
+              text: this.lang.text['ContentViewer']['AlreadyExist'],
+            });
+            this.forceWrite = true;
+            this.download_file();
+            break;
+          default:
+            console.log('준비되지 않은 오류 반환: ', e);
+            break;
+        }
+      });
   }
 
   ShareContent() {
@@ -868,14 +876,18 @@ export class IonicViewerPage implements OnInit {
       message: this.FileInfo.path,
       buttons: [{
         text: this.lang.text['TodoDetail']['remove'],
-        handler: async () => {
-          URL.revokeObjectURL(this.FileURL);
-          await this.indexed.removeFileFromUserPath(this.FileInfo.path, undefined, this.targetDB);
-          this.RelevanceIndex -= 1;
-          this.ChangeToAnother(1);
+        handler: () => {
+          this.RemoveFileAct();
         }
       }]
     }).then(v => v.present());
+  }
+
+  async RemoveFileAct() {
+    URL.revokeObjectURL(this.FileURL);
+    await this.indexed.removeFileFromUserPath(this.FileInfo.path, undefined, this.targetDB);
+    this.RelevanceIndex -= 1;
+    this.ChangeToAnother(1);
   }
 
   async ionViewWillLeave() {

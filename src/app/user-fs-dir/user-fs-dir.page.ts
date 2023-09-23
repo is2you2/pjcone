@@ -190,31 +190,34 @@ export class UserFsDirPage implements OnInit {
       message: this.lang.text['UserFsDir']['ExportDirMsg'],
       buttons: [{
         text: this.lang.text['UserFsDir']['ExportConfirm'],
-        handler: async () => {
-          let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });
-          loading.present();
-          this.indexed.GetFileListFromDB(this.CurrentDir, list => {
-            list.forEach(async path => {
-              let FileInfo = await this.indexed.GetFileInfoFromDB(path);
-              let blob = await this.indexed.loadBlobFromUserPath(path, '');
-              let last_sep = path.lastIndexOf('/');
-              let only_path = path.substring(0, last_sep);
-              let filename = path.substring(last_sep + 1);
-              await this.CreateFolderRecursive(only_path);
-              try {
-                if (FileInfo.mode == 16893) throw '이거 폴더임';
-                await this.file.writeFile(this.file.externalDataDirectory + only_path + '/', filename, blob, {
-                  replace: true,
-                });
-              } catch (e) {
-                console.error(path, ': 파일 저장 실패: ', e);
-              }
-            });
-          });
-          loading.dismiss();
+        handler: () => {
+          this.ExportDirectoryRecursiveAct();
         }
       }]
     }).then(v => v.present());
+  }
+
+  async ExportDirectoryRecursiveAct() {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });
+    loading.present();
+    let list = await this.indexed.GetFileListFromDB(this.CurrentDir);
+    list.forEach(async path => {
+      let FileInfo = await this.indexed.GetFileInfoFromDB(path);
+      let blob = await this.indexed.loadBlobFromUserPath(path, '');
+      let last_sep = path.lastIndexOf('/');
+      let only_path = path.substring(0, last_sep);
+      let filename = path.substring(last_sep + 1);
+      await this.CreateFolderRecursive(only_path);
+      try {
+        if (FileInfo.mode == 16893) throw '이거 폴더임';
+        await this.file.writeFile(this.file.externalDataDirectory + only_path + '/', filename, blob, {
+          replace: true,
+        });
+      } catch (e) {
+        console.error(path, ': 파일 저장 실패: ', e);
+      }
+    });
+    loading.dismiss();
   }
 
   async CreateFolderRecursive(folder_path: string) {

@@ -232,25 +232,29 @@ export class AdminToolsPage implements OnInit {
       buttons: [{
         text: this.lang.text['GroupDetail']['BreakupGroup'],
         cssClass: 'danger',
-        handler: async () => {
-          try {
-            await this.nakama.servers[this.isOfficial][this.target].client.rpc(
-              this.nakama.servers[this.isOfficial][this.target].session,
-              'force_remove_group', { group_id: group.id });
-            this.p5toast.show({
-              text: `${this.lang.text['AdminTools']['ForceBreaked']}: ${group.name}`,
-            })
-            this.refresh_all_user();
-            this.refresh_all_groups();
-          } catch (e) {
-            console.log('force_breakup_group: ', e);
-            this.p5toast.show({
-              text: `${this.lang.text['AdminTools']['ForceBreakedFailed']}: ${e.statusText}`,
-            })
-          }
+        handler: () => {
+          this.ForceBreakupGroupAct(group);
         }
       }]
     }).then(v => v.present());
+  }
+
+  async ForceBreakupGroupAct(group: any) {
+    try {
+      await this.nakama.servers[this.isOfficial][this.target].client.rpc(
+        this.nakama.servers[this.isOfficial][this.target].session,
+        'force_remove_group', { group_id: group.id });
+      this.p5toast.show({
+        text: `${this.lang.text['AdminTools']['ForceBreaked']}: ${group.name}`,
+      })
+      this.refresh_all_user();
+      this.refresh_all_groups();
+    } catch (e) {
+      console.log('force_breakup_group: ', e);
+      this.p5toast.show({
+        text: `${this.lang.text['AdminTools']['ForceBreakedFailed']}: ${e.statusText}`,
+      })
+    }
   }
 
   change_user_list_page(forward: number) {
@@ -321,24 +325,28 @@ export class AdminToolsPage implements OnInit {
       buttons: [{
         text: this.lang.text['AdminTools']['ApplyLeave'],
         cssClass: 'danger',
-        handler: async () => {
-          try {
-            await this.nakama.servers[this.isOfficial][this.target].client.rpc(
-              this.nakama.servers[this.isOfficial][this.target].session,
-              'remove_account_fn', { user_id: user.user_id || user.id });
-            this.p5toast.show({
-              text: `${this.lang.text['AdminTools']['UserLeaved']}: ${user.display_name || this.lang.text['Profile']['noname_user']}`,
-            })
-            this.refresh_all_user();
-            this.refresh_all_groups();
-          } catch (e) {
-            console.log('remove_user: ', e);
-            this.p5toast.show({
-              text: `${this.lang.text['AdminTools']['UserLeavedFailed']}: ${e.statusText}`,
-            })
-          }
+        handler: () => {
+          this.RemoveUser(user);
         }
       }]
     }).then(v => v.present());
+  }
+
+  async RemoveUser(user: any) {
+    try {
+      await this.nakama.servers[this.isOfficial][this.target].client.rpc(
+        this.nakama.servers[this.isOfficial][this.target].session,
+        'remove_account_fn', { user_id: user.user_id || user.id });
+      this.p5toast.show({
+        text: `${this.lang.text['AdminTools']['UserLeaved']}: ${user.display_name || this.lang.text['Profile']['noname_user']}`,
+      })
+      this.refresh_all_user();
+      this.refresh_all_groups();
+    } catch (e) {
+      console.log('remove_user: ', e);
+      this.p5toast.show({
+        text: `${this.lang.text['AdminTools']['UserLeavedFailed']}: ${e.statusText}`,
+      })
+    }
   }
 }

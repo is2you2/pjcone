@@ -432,17 +432,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 message: `${this.lang.text['ChatRoom']['CountFile']}: ${Drops.length}`,
                 buttons: [{
                   text: this.lang.text['ChatRoom']['Send'],
-                  handler: async () => {
-                    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-                    loading.present();
-                    for (let i = 0, j = Drops.length; i < j; i++) {
-                      await this.selected_blobFile_callback_act(Drops[i].file);
-                      await this.send();
-                    }
-                    loading.dismiss();
-                    setTimeout(() => {
-                      this.scroll_down_logs();
-                    }, 300);
+                  handler: () => {
+                    this.DropSendAct(Drops);
                   }
                 }]
               }).then(v => v.present());
@@ -464,6 +455,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  async DropSendAct(Drops: any) {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    loading.present();
+    for (let i = 0, j = Drops.length; i < j; i++) {
+      await this.selected_blobFile_callback_act(Drops[i].file);
+      await this.send();
+    }
+    loading.dismiss();
+    setTimeout(() => {
+      this.scroll_down_logs();
+    }, 300);
   }
 
   async selected_blobFile_callback_act(blob: any, contentRelated: ContentCreatorInfo[] = [], various = 'loaded') {
