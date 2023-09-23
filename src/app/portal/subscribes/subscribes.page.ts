@@ -40,10 +40,10 @@ export class SubscribesPage implements OnInit {
   StartScan = false;
   // 웹에 있는 QRCode는 무조건 json[]로 구성되어있어야함
   async scanQRCode() {
-    let perm = await BarcodeScanner.checkPermission();
+    let perm = await BarcodeScanner.checkPermission({ force: true });
     const complete = '온전한 동작 후 종료';
     try {
-      if (perm.denied || this.StartScan) throw '시작 불가상태';
+      if (!perm.granted || this.StartScan) throw '시작 불가상태';
       this.StartScan = true;
       document.querySelector('body').classList.add('scanner-active');
       await BarcodeScanner.hideBackground();
@@ -62,15 +62,19 @@ export class SubscribesPage implements OnInit {
       }
       throw complete;
     } catch (e) {
-      this.StartScan = false;
       if (e != complete)
         this.p5toast.show({
           text: this.lang.text['Subscribes']['CameraPermissionDenied'],
         });
-      document.querySelector('body').classList.remove('scanner-active');
-      BarcodeScanner.showBackground();
-      BarcodeScanner.stopScan();
+      this.StopScan();
     }
+  }
+
+  StopScan() {
+    this.StartScan = false;
+    document.querySelector('body').classList.remove('scanner-active');
+    BarcodeScanner.showBackground();
+    BarcodeScanner.stopScan();
   }
 
   lock_chatroom = false;
@@ -114,9 +118,6 @@ export class SubscribesPage implements OnInit {
 
   ionViewWillLeave() {
     this.nakama.subscribe_lock = false;
-    this.StartScan = false;
-    document.querySelector('body').classList.remove('scanner-active');
-    BarcodeScanner.showBackground();
-    BarcodeScanner.stopScan();
+    this.StopScan();
   }
 }
