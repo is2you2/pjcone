@@ -87,10 +87,10 @@
                   <ion-label>{{lang.text['AdminTools']['ToggleAllPromote']}}</ion-label>
                 </ion-item>
                 <ion-item *ngFor="let gid of (PromotableGroup[all_users[i].id || all_users[i].user_id] || {}).keys">
-                  <ion-label>{{(PromotableGroup[all_users[i].id || all_users[i].user_id][gid].name) || '[' +
-                    lang.text['AdminTools']['RemovedGroup'] + ']'}}</ion-label>
-                  <ion-checkbox slot="end"
-                    [(ngModel)]="PromotableGroup[all_users[i].id || all_users[i].user_id][gid].promoted"></ion-checkbox>
+                  <ion-checkbox
+                    [(ngModel)]="PromotableGroup[all_users[i].id || all_users[i].user_id][gid].promoted">{{(PromotableGroup[all_users[i].id
+                    || all_users[i].user_id][gid].name) || '[' + lang.text['AdminTools']['RemovedGroup'] +
+                    ']'}}</ion-checkbox>
                 </ion-item>
                 <ion-item button (click)="promote_as_manager(all_users[i])">
                   <ion-label class="ion-text-center">{{lang.text['AdminTools']['Apply']}}</ion-label>
