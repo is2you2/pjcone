@@ -463,7 +463,7 @@ export class NakamaService {
     if (with_official)
       Target.forEach(_target => {
         if (online_only) {
-          if (this.statusBar.groupServer['official'][_target] == 'online')
+          if (this.statusBar.groupServer['official'][_target] == 'online' || this.statusBar.groupServer['official'][_target] == 'pending')
             result.push(this.servers['official'][_target].info);
         } else if (this.servers['official'][_target])
           result.push(this.servers['official'][_target].info);
@@ -471,7 +471,7 @@ export class NakamaService {
     let unTargets = Object.keys(this.servers['unofficial']);
     unTargets.forEach(_target => {
       if (online_only) {
-        if (this.statusBar.groupServer['unofficial'][_target] == 'online')
+        if (this.statusBar.groupServer['unofficial'][_target] == 'online'||this.statusBar.groupServer['unofficial'][_target] == 'pending')
           result.push(this.servers['unofficial'][_target].info);
       } else if (this.servers['unofficial'][_target])
         result.push(this.servers['unofficial'][_target].info);
