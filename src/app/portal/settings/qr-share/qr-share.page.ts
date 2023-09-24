@@ -108,10 +108,4 @@ export class QrSharePage implements OnInit {
   scanQRCode() {
     this.modalCtrl.dismiss(this.result_address);
   }
-
-  go_back() {
-    if (this.modalCtrl['injector']['source'] != 'QrSharePageModule')
-      this.modalCtrl.dismiss();
-    else this.navCtrl.back();
-  }
 }

@@ -6,7 +6,7 @@ import { ToolServerService } from 'src/app/tool-server.service';
 import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { LoadingController, ModalController, NavController } from '@ionic/angular';
+import { LoadingController, NavController } from '@ionic/angular';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { LocalNotiService } from 'src/app/local-noti.service';
 
@@ -24,7 +24,6 @@ export class EnginepptPage implements OnInit {
     private indexed: IndexedDBService,
     private p5toast: P5ToastService,
     private loadingCtrl: LoadingController,
-    private modalCtrl: ModalController,
     public statusBar: StatusManageService,
     private navCtrl: NavController,
     private noti: LocalNotiService,
@@ -130,9 +129,7 @@ export class EnginepptPage implements OnInit {
           });
         },
         dismiss: () => {
-          if (this.modalCtrl['injector']['source'] != 'EnginepptPageModule')
-            this.modalCtrl.dismiss();
-          else this.navCtrl.back();
+          this.navCtrl.back();
         }
       });
     }, 0);
@@ -358,11 +355,6 @@ export class EnginepptPage implements OnInit {
           this.global.godot_window['set_vertical_rot'](p.rotationX);
       }
     });
-  }
-
-  go_back() {
-    if (this.modalCtrl['injector']['source'] != 'EnginepptPageModule')
-      this.modalCtrl.dismiss();
   }
 
   ionViewWillLeave() {

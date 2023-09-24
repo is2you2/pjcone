@@ -565,8 +565,9 @@ export class GroupServerPage implements OnInit {
     this.RegisterNewServer.present();
   }
 
-  go_back() {
-    if (this.modalCtrl['injector']['source'] != 'GroupServerPageModule')
-      this.modalCtrl.dismiss();
+  async go_back() {
+    try {
+      await this.modalCtrl.dismiss();
+    } catch (e) { }
   }
 }

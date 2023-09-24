@@ -71,9 +71,7 @@ export class UserFsDirPage implements OnInit {
         } else this.MoveToUpDir();
       } else {
         this.initLoadingElement.dismiss();
-        if (this.modalCtrl['injector']['source'] != 'UserFsDirPageModule')
-          this.modalCtrl.dismiss();
-        else this.navCtrl.back();
+        this.navCtrl.back();
       }
     });
   }

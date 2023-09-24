@@ -2,21 +2,20 @@
 // SPDX-License-Identifier: MIT
 
 import { Injectable, NgZone } from '@angular/core';
-import { Channel, ChannelMessage, Client, Group, GroupUser, Match, Notification, Session, Socket, User, WriteStorageObject } from "@heroiclabs/nakama-js";
+import { Channel, ChannelMessage, Client, Group, GroupUser, Match, Notification, Session, Socket, User } from "@heroiclabs/nakama-js";
 import { isPlatform } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 import * as p5 from 'p5';
 import { LocalNotiService } from './local-noti.service';
-import { AlertController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
+import { AlertController, ModalController, NavController, iosTransitionAnimation, mdTransitionAnimation } from '@ionic/angular';
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 import { LanguageSettingService } from './language-setting.service';
 import { AdMob } from '@capacitor-community/admob';
 import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
-import { EnginepptPage } from './portal/settings/engineppt/engineppt.page';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { GroupServerPage } from './portal/settings/group-server/group-server.page';
 
@@ -3283,16 +3282,6 @@ export class NakamaService {
                 });
               }
             }
-          break;
-        case 'EnginePPTLink': // 엔진PPT를 컴퓨터와 연결하기
-          await this.modalCtrl.create({
-            component: EnginepptPage,
-            componentProps: {
-              pid: json[i]['pid'],
-            },
-          }).then(v => {
-            v.present();
-          });
           break;
         case 'open_prv_channel': // 1:1 대화 열기 (폰에서 넘어가기 보조용)
           for (let j = 0; j < 20; j++)
