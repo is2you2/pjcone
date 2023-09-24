@@ -588,34 +588,37 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       this.userInput.workers = [];
       this.nakama.servers[value.isOfficial][value.target].client.getAccount(
         this.nakama.servers[value.isOfficial][value.target].session)
-        .then(async v => {
+        .then(v => {
           let user_metadata = JSON.parse(v.user.metadata);
           this.WorkerGroups.length = 0;
           this.AvailableWorker = {};
           if (user_metadata['is_admin']) {
             // 관리자인 경우 모든 그룹 및 사용자 받기
-            let groups = (await this.nakama.servers[value.isOfficial][value.target].client.rpc(
+            this.nakama.servers[value.isOfficial][value.target].client.rpc(
               this.nakama.servers[value.isOfficial][value.target].session,
-              'query_all_groups', {})).payload as any[];
-            for (let i = 0, j = groups.length; i < j; i++) {
-              // 그룹 별 사용자 링크
-              if (!this.AvailableWorker[groups[i].id])
-                this.AvailableWorker[groups[i].id] = [];
-              for (let k = 0, l = groups[i].users.length; k < l; k++) {
-                let user = this.nakama.load_other_user(groups[i].users[k].user.user_id,
-                  value.isOfficial, value.target);
-                delete user.todo_checked; // 기존 정보 무시
-                if (!user.email)
-                  this.AvailableWorker[groups[i].id].push(user);
-              }
-              if (!this.AvailableWorker[groups[i].id].length)
-                delete this.AvailableWorker[groups[i].id];
-              else this.WorkerGroups.push({
-                id: groups[i].id,
-                name: groups[i].name,
+              'query_all_groups', {})
+              .then(v => {
+                let groups = v.payload as any;
+                for (let i = 0, j = groups.length; i < j; i++) {
+                  // 그룹 별 사용자 링크
+                  if (!this.AvailableWorker[groups[i].id])
+                    this.AvailableWorker[groups[i].id] = [];
+                  for (let k = 0, l = groups[i].users.length; k < l; k++) {
+                    let user = this.nakama.load_other_user(groups[i].users[k].user.user_id,
+                      value.isOfficial, value.target);
+                    delete user.todo_checked; // 기존 정보 무시
+                    if (!user.email)
+                      this.AvailableWorker[groups[i].id].push(user);
+                  }
+                  if (!this.AvailableWorker[groups[i].id].length)
+                    delete this.AvailableWorker[groups[i].id];
+                  else this.WorkerGroups.push({
+                    id: groups[i].id,
+                    name: groups[i].name,
+                  });
+                }
+                this.isManager = true;
               });
-            }
-            this.isManager = true;
           } else if (user_metadata['is_manager']) {
             // 매니저인 경우 매니저인 그룹만 사용자 받기
             for (let i = user_metadata['is_manager'].length - 1; i >= 0; i--) {
@@ -642,14 +645,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             } // 사용하지 않는 매니징 그룹을 자동 삭제
             this.isManager = user_metadata['is_manager'].length;
             if (!this.isManager) delete user_metadata['is_manager'];
-            try {
-              this.nakama.servers[value.isOfficial][value.target].client.rpc(
-                this.nakama.servers[value.isOfficial][value.target].session,
-                'update_user_metadata_fn', {
-                user_id: this.nakama.servers[value.isOfficial][value.target].session.user_id,
-                metadata: user_metadata,
-              });
-            } catch (e) { }
+            this.nakama.servers[value.isOfficial][value.target].client.rpc(
+              this.nakama.servers[value.isOfficial][value.target].session,
+              'update_user_metadata_fn', {
+              user_id: this.nakama.servers[value.isOfficial][value.target].session.user_id,
+              metadata: user_metadata,
+            }).catch(_e => { });
           }
         });
     }

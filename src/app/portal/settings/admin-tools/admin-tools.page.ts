@@ -58,7 +58,7 @@ export class AdminToolsPage implements OnInit {
 
   is_sending = false;
   /** 모든 접속자에게 알림 메시지 발송 */
-  async send_noti_to_server() {
+  send_noti_to_server() {
     if (!this.notification.msg && !this.notification.uri) {
       this.p5toast.show({
         text: this.lang.text['AdminTools']['NoNotiMsg'],
@@ -70,16 +70,17 @@ export class AdminToolsPage implements OnInit {
     this.notification.msg = encodeURIComponent(this.notification.msg);
     this.notification.uri = encodeURIComponent(this.notification.uri);
 
-    try {
-      await this.nakama.servers[this.isOfficial][this.target].client.rpc(
-        this.nakama.servers[this.isOfficial][this.target].session,
-        'send_noti_all_fn', this.notification);
-    } catch (e) {
-      console.log('send_noti_to_server: ', e);
-    }
-    this.notification.msg = '';
-    this.notification.uri = '';
-    this.is_sending = false;
+    this.nakama.servers[this.isOfficial][this.target].client.rpc(
+      this.nakama.servers[this.isOfficial][this.target].session,
+      'send_noti_all_fn', this.notification)
+      .then(_v => {
+        this.notification.msg = '';
+        this.notification.uri = '';
+        this.is_sending = false;
+      }).catch(e => {
+        console.log('send_noti_to_server: ', e);
+        this.is_sending = false;
+      });
   }
 
   all_users = [];
@@ -148,21 +149,20 @@ export class AdminToolsPage implements OnInit {
       if (promoted_group.length)
         _metadata['is_manager'] = promoted_group;
       else delete _metadata['is_manager'];
-      try {
-        this.nakama.servers[this.isOfficial][this.target].client.rpc(
-          this.nakama.servers[this.isOfficial][this.target].session,
-          'update_user_metadata_fn', {
-          user_id: userId,
-          metadata: _metadata,
-        });
+      this.nakama.servers[this.isOfficial][this.target].client.rpc(
+        this.nakama.servers[this.isOfficial][this.target].session,
+        'update_user_metadata_fn', {
+        user_id: userId,
+        metadata: _metadata,
+      }).then(_v => {
         this.p5toast.show({
           text: this.lang.text['AdminTools']['PromoteAsWell'],
         });
-      } catch (e) {
+      }).catch(_e => {
         this.p5toast.show({
           text: this.lang.text['AdminTools']['PromoteError'],
         });
-      }
+      });
     } else this.p5toast.show({
       text: this.lang.text['AdminTools']['AlreadyAdmin'],
     });
@@ -239,22 +239,22 @@ export class AdminToolsPage implements OnInit {
     }).then(v => v.present());
   }
 
-  async ForceBreakupGroupAct(group: any) {
-    try {
-      await this.nakama.servers[this.isOfficial][this.target].client.rpc(
-        this.nakama.servers[this.isOfficial][this.target].session,
-        'force_remove_group', { group_id: group.id });
-      this.p5toast.show({
-        text: `${this.lang.text['AdminTools']['ForceBreaked']}: ${group.name}`,
-      })
-      this.refresh_all_user();
-      this.refresh_all_groups();
-    } catch (e) {
-      console.log('force_breakup_group: ', e);
-      this.p5toast.show({
-        text: `${this.lang.text['AdminTools']['ForceBreakedFailed']}: ${e.statusText}`,
-      })
-    }
+  ForceBreakupGroupAct(group: any) {
+    this.nakama.servers[this.isOfficial][this.target].client.rpc(
+      this.nakama.servers[this.isOfficial][this.target].session,
+      'force_remove_group', { group_id: group.id })
+      .then(_v => {
+        this.p5toast.show({
+          text: `${this.lang.text['AdminTools']['ForceBreaked']}: ${group.name}`,
+        })
+        this.refresh_all_user();
+        this.refresh_all_groups();
+      }).catch(e => {
+        console.log('force_breakup_group: ', e);
+        this.p5toast.show({
+          text: `${this.lang.text['AdminTools']['ForceBreakedFailed']}: ${e.statusText}`,
+        });
+      });
   }
 
   change_user_list_page(forward: number) {

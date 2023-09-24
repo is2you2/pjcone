@@ -649,6 +649,7 @@ export class NakamaService {
           break;
       }
     }
+    this.TogglingSession = false;
   }
 
   /** 자기 자신과의 매칭 정보  
@@ -1477,7 +1478,7 @@ export class NakamaService {
         let v = await this.servers[_is_official][_target].client.deleteGroup(
           this.servers[_is_official][_target].session, info['id']);
         if (!v) console.warn('그룹 삭제 오류 검토 필요');
-        await this.remove_channel_files(_is_official, _target, info['channel_id'], is_creator);
+        this.remove_channel_files(_is_official, _target, info['channel_id'], is_creator);
         try {
           await this.servers[_is_official][_target].client.deleteStorageObjects(
             this.servers[_is_official][_target].session, {
@@ -1505,15 +1506,13 @@ export class NakamaService {
    * 채널 관리자라면 모든 파일 삭제  
    * 구성원이라면 자신의 파일만 삭제하기
    */
-  async remove_channel_files(_is_official: string, _target: string, channel_id: string, is_creator?: boolean) {
-    try {
-      await this.servers[_is_official][_target].client.rpc(
-        this.servers[_is_official][_target].session,
-        'remove_channel_file', {
-        collection: `file_${channel_id.replace(/[.]/g, '_')}`,
-        is_creator: is_creator,
-      });
-    } catch (error) { }
+  remove_channel_files(_is_official: string, _target: string, channel_id: string, is_creator?: boolean) {
+    this.servers[_is_official][_target].client.rpc(
+      this.servers[_is_official][_target].session,
+      'remove_channel_file', {
+      collection: `file_${channel_id.replace(/[.]/g, '_')}`,
+      is_creator: is_creator,
+    }).catch(_e => { });
   }
 
   /** 연결된 서버에서 자신이 참여한 그룹을 리모트에서 가져오기  
@@ -1653,11 +1652,10 @@ export class NakamaService {
 
   /** 사설 서버 삭제 */
   async remove_server(_is_official: string, _target: string) {
-    try { // 계정 삭제 시도
-      await this.servers[_is_official][_target].client.rpc(
-        this.servers[_is_official][_target].session,
-        'remove_account_fn', { user_id: this.servers[_is_official][_target].session.user_id });
-    } catch (e) { }
+    this.servers[_is_official][_target].client.rpc(
+      this.servers[_is_official][_target].session,
+      'remove_account_fn', { user_id: this.servers[_is_official][_target].session.user_id })
+      .catch(_e => { });
     try { // 서버 대안 정보 제거
       let data = await this.indexed.loadTextFromUserPath('servers/alternatives.json');
       let json = JSON.parse(data);
@@ -3027,7 +3025,7 @@ export class NakamaService {
         }],
       });
       let info_json: FileInfo = file_info.objects[0].value;
-      await this.servers[_is_official][_target].client.rpc(
+      this.servers[_is_official][_target].client.rpc(
         this.servers[_is_official][_target].session,
         'remove_channel_file', {
         collection: _collection,
