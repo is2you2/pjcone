@@ -247,8 +247,8 @@ export class IndexedDBService {
     });
   }
 
-  /** 모든 파일 리스트로부터 대상 폴더와 겹치는 파일 리스트 추출하기 */
-  GetFileInfoFromDB(path: string, _CallBack = (_list: any) => { }, targetDB = this.ionicDB): Promise<any> {
+  /** 경로 파일 정보 불러오기 */
+  GetFileInfoFromDB(path: string, _CallBack = (info: any) => { }, targetDB = this.ionicDB): Promise<any> {
     let data = targetDB.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
     return new Promise((done, error) => {
       data.onsuccess = (ev) => {
