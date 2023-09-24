@@ -861,7 +861,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (!this.userInput.id || !this.isModify) { // 할 일 구분자 생성 (내 기록은 날짜시간, 서버는 서버-시간 (isOfficial/target/DateTime),
       if (!this.userInput.remote) // local
         this.userInput.id = new Date(this.userInput.create_at).toISOString().replace(/[:|.|\/]/g, '_');
-      else this.userInput.id = `${this.userInput.remote.isOfficial}_${this.userInput.remote.target}_${new Date(this.userInput.create_at).toISOString().replace(/[:|.|\/]/g, '_')}`;
+      else {
+        let counter = await this.nakama.getRemoteTodoCounter(this.userInput.remote.isOfficial, this.userInput.remote.target);
+        this.userInput.id = `RemoteTodo_${counter + 1}`;
+      }
     }
     // 알림 예약 생성
     if (this.userInput.noti_id) {  // 알림 아이디가 있다면 삭제 후 재배정
@@ -1012,13 +1015,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (this.userInput.remote) { // 서버에 저장한다면
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
-      let request = {
-        collection: 'server_todo',
-        key: this.userInput.id,
-        permission_read: 2,
-        permission_write: 1,
-        value: this.userInput,
-      };
       try {
         this.userInput.attach.forEach(file => {
           URL.revokeObjectURL(file['thumbnail']);
@@ -1027,11 +1023,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           delete file['base64'];
         });
         if (this.userInput.workers) {
-          await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(
+          let task_number = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(
             this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session,
             'manage_todo_add_fn', this.userInput);
+          this.userInput.id = `RemoteTodo_${task_number.payload['value']}`;
           for (let i = 0, j = this.userInput.workers.length; i < j; i++) {
-            try {
+            try { // 바보같겠지만 서버에서는 매치에 참여할 수 없기 때문에 사용자가 진입해서 보내줘야 한다
               let match = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.readStorageObjects(
                 this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, {
                 object_ids: [{
@@ -1052,7 +1049,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             } catch (e) { }
           }
         } else await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
-          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [request]).then(async v => {
+          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [{
+            collection: 'server_todo',
+            key: this.userInput.id,
+            permission_read: 2,
+            permission_write: 1,
+            value: this.userInput,
+          }]).then(async v => {
             await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
               .socket.sendMatchState(this.nakama.self_match[this.userInput.remote.isOfficial][this.userInput.remote.target].match_id, MatchOpCode.ADD_TODO,
                 encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
@@ -1077,6 +1080,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           await this.nakama.sync_save_file(this.userInput.attach[i],
             this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', undefined, this.indexed.godotDB);
         }
+        if (!this.isModify)
+          this.nakama.addRemoteTodoCounter(this.userInput.remote.isOfficial, this.userInput.remote.target, Number(this.userInput['id'].split('_')[1]));
         loading.dismiss();
       } catch (e) {
         console.error('해야할 일이 서버에 전송되지 않음: ', e);
@@ -1217,6 +1222,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       loading.dismiss();
       this.navCtrl.back();
     }, this.indexed.godotDB);
+    this.nakama.removeRemoteTodoCounter(this.userInput.remote.isOfficial, this.userInput.remote.target, Number(this.userInput['id'].split('_')[1]));
   }
 
   async ionViewWillLeave() {

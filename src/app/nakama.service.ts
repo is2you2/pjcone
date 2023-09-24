@@ -9,7 +9,7 @@ import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 import * as p5 from 'p5';
 import { LocalNotiService } from './local-noti.service';
-import { AlertController, LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
+import { AlertController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 import { LanguageSettingService } from './language-setting.service';
 import { AdMob } from '@capacitor-community/admob';
@@ -86,7 +86,6 @@ export class NakamaService {
     private bgmode: BackgroundMode,
     private navCtrl: NavController,
     private ngZone: NgZone,
-    private loadingCtrl: LoadingController,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -736,19 +735,109 @@ export class NakamaService {
     });
   }
 
+  /** 원격 할 일 카운터  
+   * RemoteTodoCounter[isOfficial][target] = number[];
+   */
+  RemoteTodoCounter = {};
   /** 서버에 저장시킨 해야할 일 목록 불러오기 */
-  async load_server_todo(_is_official: string, _target: string, _cursor?: string) {
+  async load_server_todo(_is_official: string, _target: string) {
+    this.servers[_is_official][_target].client.readStorageObjects(
+      this.servers[_is_official][_target].session, {
+      object_ids: [{
+        collection: 'server_todo',
+        key: 'RemoteTodo_Counter',
+        user_id: this.servers[_is_official][_target].session.user_id,
+      }]
+    }).then(v => {
+      if (v.objects.length) {
+        let count = v.objects[0].value['data'];
+        if (!this.RemoteTodoCounter[_is_official])
+          this.RemoteTodoCounter[_is_official] = {};
+        this.RemoteTodoCounter[_is_official][_target] = v.objects[0].value['data'];
+        for (let i = 0, j = count.length; i < j; i++)
+          this.servers[_is_official][_target].client.readStorageObjects(
+            this.servers[_is_official][_target].session, {
+            object_ids: [{
+              collection: 'server_todo',
+              key: `RemoteTodo_${count[i]}`,
+              user_id: this.servers[_is_official][_target].session.user_id,
+            }]
+          }).then(v => {
+            if (v.objects.length)
+              this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
+            else this.removeRemoteTodoCounter(_is_official, _target, count[i]);
+          }).catch(e => {
+            console.log('서버 해야할 일 불러오기 오류: ', e);
+          });
+      }
+    }).catch(e => {
+      console.log('원격 할 일의 수 불러오기 실패: ', e);
+    });
+  }
+
+  /** 원격 할 일 카운터 불러오기 */
+  async getRemoteTodoCounter(_is_official: string, _target: string): Promise<number> {
     try {
-      let v = await this.servers[_is_official][_target].client.listStorageObjects(
-        this.servers[_is_official][_target].session, 'server_todo',
-        this.servers[_is_official][_target].session.user_id, 1, _cursor
-      );
-      if (v.objects.length)
-        this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
-      if (v.cursor) this.load_server_todo(_is_official, _target, v.cursor);
+      this.RemoteTodoCounter[_is_official][_target].sort();
+      return this.RemoteTodoCounter[_is_official][_target][this.RemoteTodoCounter[_is_official][_target].length - 1];
     } catch (e) {
-      console.log('서버 해야할 일 불러오기 오류: ', e);
+      let v = await this.servers[_is_official][_target].client.readStorageObjects(
+        this.servers[_is_official][_target].session, {
+        object_ids: [{
+          collection: 'server_todo',
+          key: 'RemoteTodo_Counter',
+          user_id: this.servers[_is_official][_target].session.user_id,
+        }]
+      });
+      let result = 0;
+      if (v.objects.length) {
+        result = v.objects[0].value['data'].length;
+      } else {
+        if (!this.RemoteTodoCounter[_is_official])
+          this.RemoteTodoCounter[_is_official] = {};
+        if (!this.RemoteTodoCounter[_is_official][_target])
+          this.RemoteTodoCounter[_is_official][_target] = [];
+      }
+      return result;
     }
+  }
+
+  /** 원격 할 일 카운터 증가 */
+  addRemoteTodoCounter(_is_official: string, _target: string, index: number) {
+    try {
+      this.RemoteTodoCounter[_is_official][_target].push(index);
+      this.RemoteTodoCounter[_is_official][_target].sort();
+    } catch (e) {
+      if (!this.RemoteTodoCounter[_is_official])
+        this.RemoteTodoCounter[_is_official] = {};
+      if (!this.RemoteTodoCounter[_is_official][_target])
+        this.RemoteTodoCounter[_is_official][_target] = [index];
+    }
+    this.updateRemoteCounter(_is_official, _target);
+  }
+
+  removeRemoteTodoCounter(_is_official: string, _target: string, index: number) {
+    try {
+      let find_index = this.RemoteTodoCounter[_is_official][_target].indexOf(index);
+      this.RemoteTodoCounter[_is_official][_target].splice(find_index, 1);
+    } catch (e) {
+      if (!this.RemoteTodoCounter[_is_official])
+        this.RemoteTodoCounter[_is_official] = {};
+      if (!this.RemoteTodoCounter[_is_official][_target])
+        this.RemoteTodoCounter[_is_official][_target] = [];
+    }
+    this.updateRemoteCounter(_is_official, _target);
+  }
+
+  updateRemoteCounter(_is_official: string, _target: string) {
+    this.servers[_is_official][_target].client.writeStorageObjects(
+      this.servers[_is_official][_target].session, [{
+        collection: 'server_todo',
+        key: `RemoteTodo_Counter`,
+        permission_read: 2,
+        permission_write: 1,
+        value: { data: this.RemoteTodoCounter[_is_official][_target] },
+      }]);
   }
 
   /** 원격 정보를 로컬에 맞게 수정, 그 후 로컬에 다시 저장하기 */
@@ -1079,9 +1168,9 @@ export class NakamaService {
         console.error('예상하지 못한 채널 종류: ', this.channels_orig[_is_official][_target][channel_info.id]);
         break;
     }
+    this.rearrange_channels();
     await this.servers[_is_official][_target].socket.sendMatchState(this.self_match[_is_official][_target].match_id, MatchOpCode.ADD_CHANNEL,
       encodeURIComponent(''));
-    this.rearrange_channels();
   }
 
   add_group_user_without_duplicate(user: GroupUser, gid: string, _is_official: string, _target: string) {
@@ -1826,9 +1915,14 @@ export class NakamaService {
                   key: sep[2],
                   user_id: this.servers[_is_official][_target].session.user_id,
                 }],
-              }).then(v => {
-                if (v.objects.length)
+              }).then(async v => {
+                if (v.objects.length) {
                   this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
+                  let json = v.objects[0].value as any;
+                  let CounterIndex = Number(json.id.split('_')[1]);
+                  let find_index = this.RemoteTodoCounter[_is_official][_target].indexOf(CounterIndex);
+                  if (find_index == -1) this.addRemoteTodoCounter(_is_official, _target, CounterIndex);
+                }
               });
               break;
             case 'done': // 완료
@@ -1837,6 +1931,7 @@ export class NakamaService {
                   let todo_info = JSON.parse(v);
                   todo_info.done = true;
                   this.modify_remote_info_as_local(todo_info, _is_official, _target);
+                  this.addRemoteTodoCounter(_is_official, _target, Number(todo_info['id'].split('_')[1]));
                 }
               }, this.indexed.godotDB);
               break;
@@ -1855,6 +1950,7 @@ export class NakamaService {
                     let godot = this.global.godot.contentWindow || this.global.godot.contentDocument;
                     godot['remove_todo'](JSON.stringify(todo_info));
                   }, this.indexed.godotDB);
+                  this.addRemoteTodoCounter(_is_official, _target, Number(todo_info['id'].split('_')[1]));
                 }
               }, this.indexed.godotDB);
               break;
@@ -1872,6 +1968,7 @@ export class NakamaService {
                       break;
                     }
                   this.modify_remote_info_as_local(todo_info, _is_official, _target);
+                  this.addRemoteTodoCounter(_is_official, _target, Number(todo_info['id'].split('_')[1]));
                 }
               }, this.indexed.godotDB);
               break;
@@ -2094,7 +2191,6 @@ export class NakamaService {
       this.save_groups_with_less_info();
       _CallBack(c);
     }).catch(e => {
-      console.log('채널 오류: ', e);
       let err_info: string = '';
       switch (e.code) {
         case 3: // 사용자 정보 없음 (계정 삭제의 경우)
