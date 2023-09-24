@@ -197,15 +197,10 @@ export class IonicViewerPage implements OnInit {
       startFrom = json['index'];
     } catch (e) { }
     let GetViewId = target.message_id;
-    let isSuccessful = await this.nakama.ReadStorage_From_channel(target, path, this.isOfficial, this.target, startFrom);
-    if (isSuccessful && !this.nakama.channels_orig[this.isOfficial][this.target][target.channel_id]['HideAutoThumbnail']) {
-      let blob = await this.indexed.loadBlobFromUserPath(path, target.content['type'] || '')
-      let url = URL.createObjectURL(blob);
-      target.content['path'] = path;
-      await this.global.modulate_thumbnail(target.content, url);
-    }
-    if (this.CurrentViewId == GetViewId) // 현재 보고 있을 때에만 열람 시도
-      this.reinit_content_data(target);
+    this.nakama.ReadStorage_From_channel(target, path, this.isOfficial, this.target, startFrom, () => {
+      if (this.CurrentViewId == GetViewId) // 현재 보고 있을 때에만 열람 시도
+        this.reinit_content_data(target);
+    });
   }
 
   // https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript

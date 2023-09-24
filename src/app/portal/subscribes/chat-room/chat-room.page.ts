@@ -708,7 +708,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 새로고침되는 메시지 수 */
   RefreshCount = 15;
   /** 한번에 보여지는 최대 메시지 수 */
-  ViewCount = 60;
+  ViewCount = 45;
   /** 더 최근 메시지 가져오기 버튼 보이기 여부 */
   ShowRecentMsg = false;
   /** 서버로부터 메시지 더 받아오기
@@ -794,6 +794,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     } else {
       let subtract = this.messages.length - this.ViewMsgIndex - this.ViewCount;
+      this.ShowRecentMsg = !(subtract == 0);
       this.ViewMsgIndex += Math.min(this.RefreshCount, subtract);
       this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
       for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
@@ -806,7 +807,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         } catch (e) { }
         this.modulate_chatmsg(i, this.ViewableMessage.length);
       }
-      this.ShowRecentMsg = !(subtract == 0);
       this.pullable = true;
     }
   }

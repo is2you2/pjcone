@@ -471,7 +471,7 @@ export class NakamaService {
     let unTargets = Object.keys(this.servers['unofficial']);
     unTargets.forEach(_target => {
       if (online_only) {
-        if (this.statusBar.groupServer['unofficial'][_target] == 'online'||this.statusBar.groupServer['unofficial'][_target] == 'pending')
+        if (this.statusBar.groupServer['unofficial'][_target] == 'online' || this.statusBar.groupServer['unofficial'][_target] == 'pending')
           result.push(this.servers['unofficial'][_target].info);
       } else if (this.servers['unofficial'][_target])
         result.push(this.servers['unofficial'][_target].info);
@@ -2949,7 +2949,7 @@ export class NakamaService {
    * 채널 메시지에 기반하여 파일 다운받기
    * @param msg 메시지 정보
    */
-  async ReadStorage_From_channel(msg: any, path: string, _is_official: string, _target: string, startFrom = 0) {
+  async ReadStorage_From_channel(msg: any, path: string, _is_official: string, _target: string, startFrom = 0, _Callback = () => { }) {
     let _msg = JSON.parse(JSON.stringify(msg));
     if (!this.OnTransfer[_is_official]) this.OnTransfer[_is_official] = {};
     if (!this.OnTransfer[_is_official][_target]) this.OnTransfer[_is_official][_target] = {};
@@ -3026,6 +3026,7 @@ export class NakamaService {
       }
       delete this.OnTransfer[_is_official][_target][_msg.channel_id][_msg.message_id];
       delete this.OnTransferMessage[_msg.message_id];
+      _Callback();
     }
     return isSuccessful;
   }
