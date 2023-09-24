@@ -1116,10 +1116,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
     if (this.userInput.remote) {
-      let request = {
-        collection: 'server_todo',
-        key: this.userInput.id,
-      };
       try {
         if (!this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target])
           throw 'Server deleted.';
@@ -1127,7 +1123,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         let target = this.userInput.remote.target;
         await this.nakama.servers[isOfficial][target].client.deleteStorageObjects(
           this.nakama.servers[isOfficial][target].session, {
-          object_ids: [request],
+          object_ids: [{
+            collection: 'server_todo',
+            key: this.userInput.id,
+          }],
         });
         for (let i = 0, j = this.userInput.attach.length; i < j; i++)
           await this.nakama.sync_remove_file(this.userInput.attach[i].path, isOfficial, target, 'todo_attach', undefined, this.indexed.godotDB);

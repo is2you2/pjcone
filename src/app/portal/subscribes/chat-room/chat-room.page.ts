@@ -670,11 +670,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.temporary_open_thumbnail[msg.message_id] = () => {
         this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
           msg.content['type'],
-          async v => {
+          v => {
             msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
             if (!this.info['HideAutoThumbnail']) {
               let url = URL.createObjectURL(v);
-              await this.global.modulate_thumbnail(msg.content, url);
+              this.global.modulate_thumbnail(msg.content, url);
             }
             if (this.NeedScrollDown())
               setTimeout(() => {
