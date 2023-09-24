@@ -53,7 +53,7 @@
   </ion-item-divider>
   <ion-accordion-group #UserSel>
     <div *ngFor="let i of current_user_size">
-      <ion-accordion [value]="all_users[i].id">
+      <ion-accordion [value]="all_users[i].id || all_users[i].user_id">
         <ion-item button slot="header">
           <div class="additional_form bg_img_form">
             <img *ngIf="all_users[i].img" class="profile_img" [src]="all_users[i].img">
