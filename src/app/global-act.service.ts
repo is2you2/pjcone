@@ -365,25 +365,20 @@ export class GlobalActService {
   }
 
   /** 파일의 부분 base64 정보 받기 */
-  async req_file_part_base64(file_info: any, index: number, path: string, targetDB?: IDBDatabase): Promise<string> {
-    return new Promise(async (done) => {
-      var binary = '';
-      var bytes = new Uint8Array(file_info.contents.slice(index * FILE_BINARY_LIMIT, (index + 1) * FILE_BINARY_LIMIT));
-      for (var i = 0, j = bytes.byteLength; i < j; i++)
-        binary += String.fromCharCode(bytes[i]);
-      let base64 = btoa(binary);
-      this.indexed.saveTextFileToUserPath(JSON.stringify({ type: 'upload', index: index }), `${path}.history`, undefined, targetDB);
-      done(base64);
-    });
+  req_file_part_base64(file_info: any, index: number, path: string, targetDB?: IDBDatabase): string {
+    var binary = '';
+    var bytes = new Uint8Array(file_info.contents.slice(index * FILE_BINARY_LIMIT, (index + 1) * FILE_BINARY_LIMIT));
+    for (var i = 0, j = bytes.byteLength; i < j; i++)
+      binary += String.fromCharCode(bytes[i]);
+    let base64 = btoa(binary);
+    this.indexed.saveTextFileToUserPath(JSON.stringify({ type: 'upload', index: index }), `${path}.history`, undefined, targetDB);
+    return base64;
   }
 
   /** 파일 파트 저장하기 */
-  async save_file_part(path: string, index: number, base64: string, targetDB?: IDBDatabase): Promise<void> {
-    return new Promise(async (done) => {
-      await this.indexed.saveBase64ToUserPath(',' + base64, `${path}_part/${index}.part`, undefined, targetDB);
-      await this.indexed.saveTextFileToUserPath(JSON.stringify({ type: 'download', index: index }), `${path}.history`, undefined, targetDB);
-      done();
-    });
+  save_file_part(path: string, index: number, base64: string, targetDB?: IDBDatabase) {
+    this.indexed.saveBase64ToUserPath(',' + base64, `${path}_part/${index}.part`, undefined, targetDB);
+    this.indexed.saveTextFileToUserPath(JSON.stringify({ type: 'download', index: index }), `${path}.history`, undefined, targetDB);
   }
 
   /** 사용된 함수들 삭제 */

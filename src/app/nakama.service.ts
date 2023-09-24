@@ -2838,7 +2838,7 @@ export class NakamaService {
       msg.content['transfer_index'] = this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id];
     for (let i = startFrom; i < partsize; i++)
       try {
-        let part = await this.global.req_file_part_base64(file_info, i, path);
+        let part = this.global.req_file_part_base64(file_info, i, path);
         await this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
             collection: `file_${_msg.channel_id.replace(/[.]/g, '_')}`,
@@ -2891,7 +2891,7 @@ export class NakamaService {
             user_id: _msg['sender_id'],
           }]
         });
-        await this.global.save_file_part(path, i, v.objects[0].value['data']);
+        this.global.save_file_part(path, i, v.objects[0].value['data']);
         this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['index'] = j - 1 - i;
         this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['OnTransfer'] = 'download';
       } catch (e) {
@@ -2960,7 +2960,7 @@ export class NakamaService {
         }]);
       // 여기서 전체 길이로 for문을 돌리고 매 회차마다 파트를 받아서 base64 변환 후 집어넣어야 함
       for (let i = 0; i < copied_info.partsize; i++) {
-        let part = await this.global.req_file_part_base64(file_info, i, copied_info.path, targetDB);
+        let part = this.global.req_file_part_base64(file_info, i, copied_info.path, targetDB);
         await this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
             collection: _collection,
@@ -3003,7 +3003,7 @@ export class NakamaService {
               user_id: _userid || this.servers[_is_official][_target].session.user_id,
             }],
           });
-          await this.global.save_file_part(info_json.path, i, part.objects[0].value['data'], targetDB);
+          this.global.save_file_part(info_json.path, i, part.objects[0].value['data'], targetDB);
         }
         return await this.indexed.loadBlobFromUserPath(info_json.path, info_json.type || '', undefined, targetDB);
       } catch (e) {
