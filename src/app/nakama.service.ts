@@ -2847,7 +2847,7 @@ export class NakamaService {
             permission_write: 1,
             value: { data: part },
           }])
-        this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['index'] = partsize - i;
+        this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['index'] = partsize - 1 - i;
         this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['OnTransfer'] = 'upload';
       } catch (e) {
         console.log('WriteStorage_From_channel: ', e);
@@ -2892,7 +2892,7 @@ export class NakamaService {
           }]
         });
         await this.global.save_file_part(path, i, v.objects[0].value['data']);
-        this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['index'] = j - i;
+        this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['index'] = j - 1 - i;
         this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['OnTransfer'] = 'download';
       } catch (e) {
         console.log('ReadStorage_From_channel: ', e);
