@@ -205,7 +205,10 @@ export class UserFsDirPage implements OnInit {
       let last_sep = path.lastIndexOf('/');
       let only_path = path.substring(0, last_sep);
       let filename = path.substring(last_sep + 1);
-      await this.CreateFolderRecursive(only_path);
+      if (!this.isCreateFolderRecursive) {
+        this.isCreateFolderRecursive = true;
+        await this.CreateFolderRecursive(only_path);
+      }
       try {
         if (FileInfo.mode == 16893) throw '이거 폴더임';
         await this.file.writeFile(this.file.externalDataDirectory + only_path + '/', filename, blob, {
@@ -215,14 +218,19 @@ export class UserFsDirPage implements OnInit {
         console.error(path, ': 파일 저장 실패: ', e);
       }
     });
+    this.isCreateFolderRecursive = false;
     loading.dismiss();
   }
 
+  isCreateFolderRecursive = false;
   async CreateFolderRecursive(folder_path: string) {
     let sep = folder_path.lastIndexOf('/') + 1;
     let forward_folder = folder_path.substring(0, sep);
     let folder_name = folder_path.substring(sep);
-    await this.file.createDir(this.file.externalDataDirectory + forward_folder, folder_name, true);
+    if (forward_folder) await this.CreateFolderRecursive(folder_path.substring(0, sep - 1));
+    try {
+      await this.file.createDir(this.file.externalDataDirectory + forward_folder, folder_name, true);
+    } catch (e) { }
   }
 
   ExternalFolder = [];
