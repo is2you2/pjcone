@@ -166,10 +166,13 @@ export class GroupServerPage implements OnInit {
   }
 
   async remove_server(_is_official: string, _target: string) {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    loading.present();
     this.isOverrideButtonPressed = true;
     await this.nakama.remove_server(_is_official, _target);
     // 그룹서버 리스트 정리
     this.servers = this.nakama.get_all_server_info(true);
+    loading.dismiss();
   }
 
   announce_update_profile = true;

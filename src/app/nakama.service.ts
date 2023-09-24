@@ -1576,12 +1576,14 @@ export class NakamaService {
    * 구성원이라면 자신의 파일만 삭제하기
    */
   remove_channel_files(_is_official: string, _target: string, channel_id: string, is_creator?: boolean) {
-    this.servers[_is_official][_target].client.rpc(
-      this.servers[_is_official][_target].session,
-      'remove_channel_file', {
-      collection: `file_${channel_id.replace(/[.]/g, '_')}`,
-      is_creator: is_creator,
-    }).catch(_e => { });
+    try {
+      this.servers[_is_official][_target].client.rpc(
+        this.servers[_is_official][_target].session,
+        'remove_channel_file', {
+        collection: `file_${channel_id.replace(/[.]/g, '_')}`,
+        is_creator: is_creator,
+      }).catch(_e => { });
+    } catch (e) { }
   }
 
   /** 연결된 서버에서 자신이 참여한 그룹을 리모트에서 가져오기  
@@ -1721,10 +1723,12 @@ export class NakamaService {
 
   /** 사설 서버 삭제 */
   async remove_server(_is_official: string, _target: string) {
-    this.servers[_is_official][_target].client.rpc(
-      this.servers[_is_official][_target].session,
-      'remove_account_fn', { user_id: this.servers[_is_official][_target].session.user_id })
-      .catch(_e => { });
+    try {
+      this.servers[_is_official][_target].client.rpc(
+        this.servers[_is_official][_target].session,
+        'remove_account_fn', { user_id: this.servers[_is_official][_target].session.user_id })
+        .catch(_e => { });
+    } catch (e) { }
     try { // 서버 대안 정보 제거
       let data = await this.indexed.loadTextFromUserPath('servers/alternatives.json');
       let json = JSON.parse(data);
@@ -3004,6 +3008,7 @@ export class NakamaService {
         await this.indexed.saveInt8ArrayToUserPath(new Int8Array(SaveForm), path);
         for (let i = 0, j = _msg.content['partsize']; i < j; i++)
           this.indexed.removeFileFromUserPath(`${path}_part/${i}.part`)
+        this.indexed.removeFileFromUserPath(`${path}_part`)
         this.global.remove_req_file_info(_msg, path);
       }
       _msg.content['path'] = path;
@@ -3101,12 +3106,14 @@ export class NakamaService {
         }],
       });
       let info_json: FileInfo = file_info.objects[0].value;
-      this.servers[_is_official][_target].client.rpc(
-        this.servers[_is_official][_target].session,
-        'remove_channel_file', {
-        collection: _collection,
-        key: info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + '_',
-      });
+      try {
+        this.servers[_is_official][_target].client.rpc(
+          this.servers[_is_official][_target].session,
+          'remove_channel_file', {
+          collection: _collection,
+          key: info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + '_',
+        });
+      } catch (e) { }
       await this.servers[_is_official][_target].client.deleteStorageObjects(
         this.servers[_is_official][_target].session, {
         object_ids: [{
