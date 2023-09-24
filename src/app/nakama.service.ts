@@ -694,8 +694,6 @@ export class NakamaService {
           }
         }
       });
-    // 서버에서 나와 연관있는 모든 사용자 정보 읽어오기
-    this.server_user_info_update(_is_official, _target);
     this.load_server_todo(_is_official, _target);
     // 통신 소켓 연결하기
     let socket = await this.connect_to(_is_official, _target);
@@ -924,22 +922,6 @@ export class NakamaService {
     } catch (e) { }
   }
 
-  /** 이 서버 내 나와 접촉한 모든 사용자 정보 업데이트 */
-  server_user_info_update(_is_official: string, _target: string) {
-    this.indexed.GetFileListFromDB(`${_is_official}/${_target}/users/`, list => {
-      let users = [];
-      list.forEach(path => {
-        let getUserId = path.split('/')[4];
-        if (!users.includes(getUserId))
-          users.push(getUserId);
-      });
-      users.forEach(userId => {
-        if (this.servers[_is_official][_target].session.user_id != userId)
-          this.load_other_user(userId, _is_official, _target);
-      });
-    });
-  }
-
   /** 서버별 사용자 정보 가져오기
    * users[isOfficial][target][uid] = UserInfo;
    */
@@ -1012,9 +994,9 @@ export class NakamaService {
                   }
                   this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
                 } else { // 없는 사용자 기록 삭제
-                  this.indexed.GetFileListFromDB(`${_is_official}/${_target}/users/${userId}`, list => {
-                    list.forEach(path => this.indexed.removeFileFromUserPath(path));
-                  });
+                  this.indexed.removeFileFromUserPath(`${_is_official}/${_target}/users/${userId}`);
+                  this.indexed.removeFileFromUserPath(`${_is_official}/${_target}/users/${userId}/profile.json`);
+                  this.indexed.removeFileFromUserPath(`${_is_official}/${_target}/users/${userId}/profile.img`);
                 }
               });
           } catch (e) { }
@@ -3021,8 +3003,8 @@ export class NakamaService {
           offset += GatheringInt8Array[i].contents.length;
         }
         await this.indexed.saveInt8ArrayToUserPath(new Int8Array(SaveForm), path);
-        let list = await this.indexed.GetFileListFromDB(`${path}_part`);
-        list.forEach(path => this.indexed.removeFileFromUserPath(path));
+        for (let i = 0, j = _msg.content['partsize']; i < j; i++)
+          this.indexed.removeFileFromUserPath(`${path}_part/${i}.part`)
         this.global.remove_req_file_info(_msg, path);
       }
       _msg.content['path'] = path;
