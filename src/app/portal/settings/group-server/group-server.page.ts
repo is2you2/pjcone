@@ -98,7 +98,9 @@ export class GroupServerPage implements OnInit {
       this.isOverrideButtonPressed = false;
       return;
     }
-    this.nakama.link_group(_is_official, _target);
+    if (this.statusBar.groupServer[_is_official][_target] == 'offline')
+      this.nakama.link_group(_is_official, _target);
+    else this.nakama.servers[_is_official][_target].socket.disconnect(true);
   }
 
   /** 사설서버 주소 사용자 input */

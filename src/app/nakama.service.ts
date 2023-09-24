@@ -336,7 +336,7 @@ export class NakamaService {
   }
 
   /** 모든 서버 로그아웃처리 */
-  async logout_all_server() {
+  logout_all_server() {
     let IsOfficials = Object.keys(this.statusBar.groupServer);
     for (let i = 0, j = IsOfficials.length; i < j; i++) {
       let Targets = Object.keys(this.statusBar.groupServer[IsOfficials[i]]);
@@ -358,7 +358,7 @@ export class NakamaService {
     if (this.TogglingSession) return;
     this.TogglingSession = true;
     if (this.statusBar.settings.groupServer == 'online') {
-      await this.logout_all_server();
+      this.logout_all_server();
       this.p5toast.show({
         text: this.lang.text['Nakama']['SessionLogout'],
       });
@@ -1667,7 +1667,7 @@ export class NakamaService {
       try {
         this.servers[_is_official][_target].socket.disconnect(true);
       } catch (e) {
-        this.link_group(_is_official, _target, false,)
+        this.link_group(_is_official, _target, false);
       }
     }
     // 알림정보 삭제
