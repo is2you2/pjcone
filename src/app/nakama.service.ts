@@ -1382,7 +1382,6 @@ export class NakamaService {
               break;
             }
         } catch (e) {
-          console.log('try_add_group_already_joined: ', e);
           switch (e.status) {
             case 400: // 그룹에 이미 있는데 그룹추가 시도함
               let v = await servers[i].client.listGroups(servers[i].session, decodeURIComponent(_info['name']))
@@ -1402,11 +1401,11 @@ export class NakamaService {
                   this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
                   break;
                 }
-              err(this.lang.text['Nakama']['GroupAlreadyJoined']);
+              break;
+            case 404: // 이 서버에는 없는 그룹
               break;
             default:
               console.error('그룹 추가 오류: ', e);
-              err(e)
               break;
           }
         }
