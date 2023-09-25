@@ -15,7 +15,7 @@ import { isPlatform } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { VoidDrawPage } from '../../subscribes/chat-room/void-draw/void-draw.page';
-import { Camera } from '@awesome-cordova-plugins/camera/ngx';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ActivatedRoute, Router } from '@angular/router';
 
 /** 서버에서 생성한 경우 */
@@ -55,7 +55,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     private statusBar: StatusManageService,
     private loadingCtrl: LoadingController,
     private global: GlobalActService,
-    private camera: Camera,
     private navCtrl: NavController,
   ) { }
 
@@ -441,20 +440,22 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     });
   }
 
-  from_camera() {
-    this.camera.getPicture({
-      destinationType: 0,
-      correctOrientation: true,
-    }).then(async v => {
+  async from_camera() {
+    try {
+      const image = await Camera.getPhoto({
+        quality: 90,
+        resultType: CameraResultType.Base64,
+        source: CameraSource.Camera,
+      });
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
       let this_file: FileInfo = {};
       let time = new Date();
-      this_file.filename = `Camera_${time.toLocaleString().replace(/[:|.|\/]/g, '_')}.jpeg`;
-      this_file.file_ext = 'jpeg';
-      this_file.base64 = 'data:image/jpeg;base64,' + v;
+      this_file.filename = `Camera_${time.toLocaleString().replace(/[:|.|\/]/g, '_')}.${image.format}`;
+      this_file.file_ext = image.format;
+      this_file.base64 = 'data:image/jpeg;base64,' + image.base64String;
       this_file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(this_file.base64);
-      this_file.type = 'image/jpeg';
+      this_file.type = `image/${image.format}`;
       this_file.typeheader = 'image';
       this_file.content_related_creator = [{
         timestamp: new Date().getTime(),
@@ -473,7 +474,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       this_file.size = this_file.blob.size;
       loading.dismiss();
       this.userInput.attach.push(this_file);
-    });
+    } catch (e) { }
   }
 
   @ViewChild('NewAttach') NewAttach: IonSelect;
@@ -483,10 +484,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   /** 새 파일 만들기 */
-  new_attach(ev: any) {
+  async new_attach(ev: any) {
     switch (ev.detail.value) {
       case 'camera':
-        this.from_camera();
+        await this.from_camera();
         break;
       case 'text':
         let newDate = new Date();

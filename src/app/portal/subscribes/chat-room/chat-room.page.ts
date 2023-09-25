@@ -17,7 +17,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { VoidDrawPage } from './void-draw/void-draw.page';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { GroupDetailPage } from '../../settings/group-detail/group-detail.page';
-import { Camera } from '@awesome-cordova-plugins/camera/ngx';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { QrSharePage } from '../../settings/qr-share/qr-share.page';
@@ -59,7 +59,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private sanitizer: DomSanitizer,
     private global: GlobalActService,
     private loadingCtrl: LoadingController,
-    private camera: Camera,
     private webrtc: WebrtcService,
     private p5toast: P5ToastService,
     private mClipboard: Clipboard,
@@ -157,20 +156,22 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   },
   { // 3
     icon: 'camera-outline',
-    act: () => {
-      this.camera.getPicture({
-        destinationType: 0,
-        correctOrientation: true,
-      }).then(async v => {
+    act: async () => {
+      try {
+        const image = await Camera.getPhoto({
+          quality: 90,
+          resultType: CameraResultType.Base64,
+          source: CameraSource.Camera,
+        });
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
         loading.present();
         if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
         this.userInput.file = {};
         let time = new Date();
-        this.userInput.file.filename = `Camera_${time.toLocaleString().replace(/:/g, '_')}.jpeg`;
-        this.userInput.file.file_ext = 'jpeg';
-        this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl('data:image/jpeg;base64,' + v);
-        this.userInput.file.type = 'image/jpeg';
+        this.userInput.file.filename = `Camera_${time.toLocaleString().replace(/:/g, '_')}.${image.format}`;
+        this.userInput.file.file_ext = image.format;
+        this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl('data:image/jpeg;base64,' + image.base64String);
+        this.userInput.file.type = `image/${image.format}`;
         this.userInput.file.typeheader = 'image';
         this.userInput.file.content_related_creator = [{
           user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
@@ -184,11 +185,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           display_name: this.nakama.users.self['display_name'],
           various: 'camera',
         };
-        await this.indexed.saveBase64ToUserPath('data:image/jpeg;base64,' + v, `tmp_files/chatroom/${this.userInput.file.filename}`, (raw) => {
+        await this.indexed.saveBase64ToUserPath('data:image/jpeg;base64,' + image.base64String, `tmp_files/chatroom/${this.userInput.file.filename}`, (raw) => {
           this.userInput.file.blob = new Blob([raw], { type: this.userInput.file['type'] })
         });
         loading.dismiss();
-      });
+      } catch (e) { }
     }
   },
   { // 4
@@ -563,7 +564,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       id: this.info.id,
     }
     this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
-    this.extended_buttons[3].isHide = isPlatform != 'Android' && isPlatform != 'iOS';
     switch (this.info['redirect']['type']) {
       case 2: // 1:1 대화라면
         if (this.info['status'] != 'missing') {

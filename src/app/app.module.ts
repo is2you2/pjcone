@@ -11,7 +11,6 @@ import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { LocalNotifications } from '@awesome-cordova-plugins/local-notifications/ngx';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
-import { Camera } from "@awesome-cordova-plugins/camera/ngx";
 import { File } from "@awesome-cordova-plugins/file/ngx";
 import { FileOpener } from "@awesome-cordova-plugins/file-opener/ngx";
 import { Clipboard } from "@awesome-cordova-plugins/clipboard/ngx";
@@ -27,7 +26,6 @@ import { Clipboard } from "@awesome-cordova-plugins/clipboard/ngx";
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     Device,
     File,
-    Camera,
     BackgroundMode,
     NavParams,
     LocalNotifications,
