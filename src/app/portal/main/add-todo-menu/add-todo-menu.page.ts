@@ -108,8 +108,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   startDisplay: string;
   /** 사용자에게 보여지는 기한 문자열, 저장시 삭제됨 */
   limitDisplay: string;
+  /** 스크롤 행동용 메인 div 개체 */
+  MainDiv: HTMLElement;
 
   ngOnInit() {
+    this.MainDiv = document.getElementById('main_div');
     this.nakama.removeBanner();
     // 미리 지정된 데이터 정보가 있는지 검토
     this.route.queryParams.subscribe(_p => {
@@ -217,6 +220,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       });
       saving_file.dismiss();
     }
+    this.auto_scroll_down();
   }
 
   /** 하단에 보여지는 버튼 */
@@ -488,6 +492,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     switch (ev.detail.value) {
       case 'camera':
         await this.from_camera();
+        this.auto_scroll_down(100);
         break;
       case 'text':
         let newDate = new Date();
@@ -530,6 +535,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               this_file.type = 'text/plain';
               this_file.viewer = 'text';
               this.userInput.attach.push(this_file);
+              this.auto_scroll_down();
             }
           });
           v.present();
@@ -773,6 +779,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     });
   }
 
+  auto_scroll_down(timeout = 0) {
+    setTimeout(() => {
+      this.MainDiv.scrollTo({ top: this.MainDiv.scrollHeight, behavior: 'smooth' });
+    }, timeout);
+  }
+
   voidDraw_fileAct_callback(v: any, related_creators?: any, index?: number, overwrite = false) {
     let this_file: FileInfo;
     try {
@@ -782,7 +794,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       } else throw 'not overwrite';
     } catch (e) {
       this_file = {};
-      this.userInput.attach.splice(index + 1, 0, this_file);
+      if (index === undefined)
+        this.userInput.attach.push(this_file);
+      else this.userInput.attach.splice(index + 1, 0, this_file);
     }
     this_file['filename'] = v.data['name'];
     this_file['file_ext'] = 'png';
@@ -816,6 +830,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path'], (_) => {
       v.data['loadingCtrl'].dismiss();
     }, this.indexed.godotDB);
+    this.auto_scroll_down();
   }
 
   /** 이 일을 완료했습니다 */
