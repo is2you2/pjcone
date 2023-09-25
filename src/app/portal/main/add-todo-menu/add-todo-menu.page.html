@@ -151,8 +151,7 @@ SPDX-License-Identifier: MIT -->
             <ion-item style="display: none;">
               <ion-select [label]="lang.text['TodoDetail']['new_attach']" #NewAttach interface="action-sheet"
                 (ionChange)="new_attach($event)">
-                <ion-select-option *ngIf="can_cordova"
-                  value="camera">{{lang.text['GlobalAct']['FromCamera']}}</ion-select-option>
+                <ion-select-option value="camera">{{lang.text['GlobalAct']['FromCamera']}}</ion-select-option>
                 <ion-select-option value="text">{{lang.text['TodoDetail']['new_text']}}</ion-select-option>
                 <ion-select-option value="image">{{lang.text['TodoDetail']['new_draw']}}</ion-select-option>
               </ion-select>

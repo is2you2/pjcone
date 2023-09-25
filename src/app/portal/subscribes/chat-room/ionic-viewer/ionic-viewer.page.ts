@@ -553,28 +553,20 @@ export class IonicViewerPage implements OnInit {
           p.setup = () => {
             p.noCanvas();
             p.noLoop();
-            p.loadStrings(this.FileURL, v => {
-              let textArea = p.createElement('textarea');
-              textArea.elt.disabled = true;
-              textArea.elt.className = 'infobox';
-              textArea.elt.setAttribute('style', 'height: 100%; display: block;');
+            let textArea = p.createElement('textarea');
+            textArea.elt.disabled = true;
+            textArea.elt.className = 'infobox';
+            textArea.elt.setAttribute('style', 'height: 100%; display: block;');
+            textArea.elt.textContent = '';
+            canvasDiv.appendChild(textArea.elt);
+            p['TextArea'] = textArea.elt;
+            if (this.FileInfo['is_new']) {
+              this.open_text_editor(textArea.elt);
+            } else p.loadStrings(this.FileURL, v => {
               textArea.elt.textContent = v.join('\n');
-              canvasDiv.appendChild(textArea.elt);
-              p['TextArea'] = textArea.elt;
             }, _e => {
-              if (this.FileInfo['is_new']) {
-                let textArea = p.createElement('textarea');
-                textArea.elt.disabled = true;
-                textArea.elt.className = 'infobox';
-                textArea.elt.setAttribute('style', 'height: 100%; display: block;');
-                textArea.elt.textContent = '';
-                canvasDiv.appendChild(textArea.elt);
-                p['TextArea'] = textArea.elt;
-                this.open_text_editor();
-              } else {
-                canvasDiv.textContent = this.lang.text['ContentViewer']['CannotOpenText'];
-                this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
-              }
+              canvasDiv.textContent = this.lang.text['ContentViewer']['CannotOpenText'];
+              this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
             });
           }
         });
@@ -651,11 +643,11 @@ export class IonicViewerPage implements OnInit {
   }
 
   isTextEditMode = false;
-  open_text_editor() {
-    this.p5canvas['TextArea'].disabled = false;
+  open_text_editor(_textarea = this.p5canvas['TextArea']) {
+    _textarea.disabled = false;
     setTimeout(() => {
       this.isTextEditMode = true;
-      this.p5canvas['TextArea'].focus();
+      _textarea.focus();
     }, 500);
   }
 
@@ -673,8 +665,9 @@ export class IonicViewerPage implements OnInit {
     } else { // 할 일에서는 직접 파일 수정 후 임시 교체
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
-      let tmp_path = `/tmp_files/texteditor/${this.FileInfo.filename}`;
-      await this.indexed.saveBlobToUserPath(blob, tmp_path, undefined, this.targetDB);
+      let tmp_path = `tmp_files/texteditor/${this.FileInfo.filename}`;
+      if (!this.FileInfo.path) this.FileInfo.path = tmp_path;
+      await this.indexed.saveBlobToUserPath(blob, tmp_path, undefined, this.indexed.godotDB);
       loading.dismiss();
       this.p5toast.show({
         text: this.lang.text['ContentViewer']['fileSaved'],
@@ -942,8 +935,10 @@ export class IonicViewerPage implements OnInit {
     }
     if (this.p5canvas) this.p5canvas.remove();
     URL.revokeObjectURL(this.FileURL);
-    let is_exist = await this.file.checkFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
-    if (is_exist) await this.file.removeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
+    try {
+      let is_exist = await this.file.checkFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
+      if (is_exist) await this.file.removeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
+    } catch (e) { }
   }
 
   copy_url() {

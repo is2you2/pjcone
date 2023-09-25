@@ -109,11 +109,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   startDisplay: string;
   /** 사용자에게 보여지는 기한 문자열, 저장시 삭제됨 */
   limitDisplay: string;
-  /** 플랫폼 구분 */
-  can_cordova: boolean;
 
   ngOnInit() {
-    this.can_cordova = isPlatform == 'Android' || isPlatform == 'iOS';
     this.nakama.removeBanner();
     // 미리 지정된 데이터 정보가 있는지 검토
     this.route.queryParams.subscribe(_p => {
@@ -529,6 +526,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               this_file.path = v.data.path;
               this_file.size = v.data.blob['size'];
               this_file.filename = new_textfile_name;
+              this_file.type = 'text/plain';
               this_file.viewer = 'text';
               this.userInput.attach.push(this_file);
             }
@@ -1177,37 +1175,38 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           } catch (e) { }
         }
       } catch (e) { }
-    }
-    if (this.userInput.workers) { // 매니저 기준 행동
-      try {
-        await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(
-          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session,
-          'manage_todo_delete_fn', {
-          id: this.userInput.id,
-          workers: this.userInput.workers,
-        });
-      } catch (e) { }
-      for (let i = 0, j = this.userInput.workers.length; i < j; i++) {
+      if (this.userInput.workers) { // 매니저 기준 행동
         try {
-          let match = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.readStorageObjects(
-            this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, {
-            object_ids: [{
-              collection: 'self_share',
-              key: 'private_match',
-              user_id: this.userInput.workers[i].id,
-            }],
+          await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(
+            this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session,
+            'manage_todo_delete_fn', {
+            id: this.userInput.id,
+            workers: this.userInput.workers,
           });
-          if (match.objects.length) { // 가용 매치일 경우에 메시지 발송하기
-            await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-              .socket.joinMatch(match.objects[0].value['match_id']);
-            await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-              .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.ADD_TODO,
-                encodeURIComponent(isDelete ? `delete,${this.userInput.id}` : `done,${this.userInput.id}`));
-            await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-              .socket.leaveMatch(match.objects[0].value['match_id']);
-          }
         } catch (e) { }
+        for (let i = 0, j = this.userInput.workers.length; i < j; i++) {
+          try {
+            let match = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.readStorageObjects(
+              this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, {
+              object_ids: [{
+                collection: 'self_share',
+                key: 'private_match',
+                user_id: this.userInput.workers[i].id,
+              }],
+            });
+            if (match.objects.length) { // 가용 매치일 경우에 메시지 발송하기
+              await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+                .socket.joinMatch(match.objects[0].value['match_id']);
+              await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+                .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.ADD_TODO,
+                  encodeURIComponent(isDelete ? `delete,${this.userInput.id}` : `done,${this.userInput.id}`));
+              await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+                .socket.leaveMatch(match.objects[0].value['match_id']);
+            }
+          } catch (e) { }
+        }
       }
+      this.nakama.removeRemoteTodoCounter(this.userInput.remote.isOfficial, this.userInput.remote.target, Number(this.userInput['id'].split('_')[1]));
     }
     this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, async (v) => {
       v.forEach(_path => this.indexed.removeFileFromUserPath(_path, undefined, this.indexed.godotDB));
@@ -1222,7 +1221,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       loading.dismiss();
       this.navCtrl.back();
     }, this.indexed.godotDB);
-    this.nakama.removeRemoteTodoCounter(this.userInput.remote.isOfficial, this.userInput.remote.target, Number(this.userInput['id'].split('_')[1]));
   }
 
   async ionViewWillLeave() {
