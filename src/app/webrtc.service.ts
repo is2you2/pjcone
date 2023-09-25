@@ -72,7 +72,7 @@ export class WebrtcService {
    */
   async initialize(type: 'video' | 'audio',
     media_const?: MediaStreamConstraints, nakama?: any, LeaveMatch?: boolean) {
-    if (isPlatform == 'Android' || isPlatform == 'iOS' || (window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0)) {
+    if (window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0) {
       // 모바일 지원 안됨, 보안 연결 필수, 웹 페이지로 현재 정보와 함께 던져주기
       let servers = this.nakama.get_all_online_server();
       let out_link = 'https://is2you2.github.io/pjcone_pwa/';
