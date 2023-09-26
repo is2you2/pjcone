@@ -980,6 +980,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       result['content_creator'] = this.userInput.file.content_creator;
       result['content_related_creator'] = this.userInput.file.content_related_creator;
       FileAttach = true;
+      for (let i = 0, j = result['content_related_creator'].length; i < j; i++) {
+        delete result['content_related_creator'][i]['is_me'];
+        delete result['content_related_creator'][i]['timeDisplay'];
+        delete result['content_related_creator'][i]['various_display'];
+      }
     } else { // 파일은 없지만 메시지가 충분히 깁니다
       if (result['msg'].length > 800) {
         this.LongTextMessageAsFile(result);
