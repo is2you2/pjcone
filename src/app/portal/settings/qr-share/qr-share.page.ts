@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { ModalController, NavController, NavParams } from '@ionic/angular';
+import { ModalController, NavParams } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -17,11 +17,10 @@ import { GlobalActService } from 'src/app/global-act.service';
 export class QrSharePage implements OnInit {
 
   constructor(
-    private navCtrl: NavController,
     public lang: LanguageSettingService,
     private global: GlobalActService,
     private nakama: NakamaService,
-    private modalCtrl: ModalController,
+    public modalCtrl: ModalController,
     private navParams: NavParams,
     private indexed: IndexedDBService,
   ) { }
