@@ -106,7 +106,7 @@ export class IonicViewerPage implements OnInit {
         if (this.FileInfo.url) {
           this.FileURL = this.FileInfo.url;
         } else {
-          this.blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type'], undefined, this.targetDB);
+          this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type'], undefined, this.targetDB);
           this.FileURL = URL.createObjectURL(this.blob);
         }
         this.CreateContentInfo();
@@ -777,30 +777,28 @@ export class IonicViewerPage implements OnInit {
   forceWrite = false;
   download_file() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
-      this.indexed.DownloadFileFromUserPath(this.navParams.get('path'), this.FileInfo['type'], this.FileInfo['filename'], this.targetDB);
-    else {
-      this.alertCtrl.create({
-        header: this.lang.text['ContentViewer']['Filename'],
-        inputs: [{
-          name: 'filename',
-          placeholder: this.FileInfo['filename'],
-          type: 'text',
-        }],
-        buttons: [{
-          text: this.lang.text['ContentViewer']['saveFile'],
-          handler: (input) => {
-            this.DownloadFileAct(input);
-          }
-        }]
-      }).then(v => v.present());
-    }
+      this.indexed.DownloadFileFromUserPath(this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'], this.targetDB);
+    else this.alertCtrl.create({
+      header: this.lang.text['ContentViewer']['Filename'],
+      inputs: [{
+        name: 'filename',
+        placeholder: this.FileInfo['filename'],
+        type: 'text',
+      }],
+      buttons: [{
+        text: this.lang.text['ContentViewer']['saveFile'],
+        handler: (input) => {
+          this.DownloadFileAct(input);
+        }
+      }]
+    }).then(v => v.present());
   }
 
   async DownloadFileAct(input: any) {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
     let filename = input['filename'] ? input['filename'].replace(/:|\?|\/|\\|<|>/g, '') : this.FileInfo['filename'];
-    let blob = await this.indexed.loadBlobFromUserPath(this.navParams.get('path'), this.FileInfo['type'], undefined, this.targetDB);
+    let blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path, this.FileInfo['type'], undefined, this.targetDB);
     if (this.forceWrite && !input['filename'])
       this.file.writeExistingFile(this.file.externalDataDirectory, filename, blob)
         .then(_v => {
