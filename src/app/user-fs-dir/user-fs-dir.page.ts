@@ -147,6 +147,7 @@ export class UserFsDirPage implements OnInit {
   }
 
   OpenFile(info: FileDir) {
+    if (!this.CheckIfAccessable(info.path)) return;
     switch (info.viewer) {
       case 'disabled':
         this.p5toast.show({
@@ -178,7 +179,20 @@ export class UserFsDirPage implements OnInit {
     }
   }
 
+  CheckIfAccessable(path: string) {
+    switch (path) { // 비밀번호가 포함된 파일 열람 거부
+      case 'servers/webrtc_server.json':
+      case 'servers/self/profile.json':
+        this.p5toast.show({
+          text: this.lang.text['UserFsDir']['PrivateAccessDenied'],
+        });
+        return false;
+    }
+    return true;
+  }
+
   DownloadFile(info: FileDir) {
+    if (!this.CheckIfAccessable(info.path)) return;
     this.indexed.DownloadFileFromUserPath(info.path, '', info.name);
   }
 
@@ -196,28 +210,33 @@ export class UserFsDirPage implements OnInit {
   }
 
   async ExportDirectoryRecursiveAct() {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['ExportDirTitle'] });
     loading.present();
     let list = await this.indexed.GetFileListFromDB(this.CurrentDir);
-    list.forEach(async path => {
-      let FileInfo = await this.indexed.GetFileInfoFromDB(path);
-      let blob = await this.indexed.loadBlobFromUserPath(path, '');
-      let last_sep = path.lastIndexOf('/');
-      let only_path = path.substring(0, last_sep);
-      let filename = path.substring(last_sep + 1);
+    for (let i = 0, j = list.length; i < j; i++) {
+      let FileInfo = await this.indexed.GetFileInfoFromDB(list[i]);
+      let blob = await this.indexed.loadBlobFromUserPath(list[i], '');
+      let last_sep = list[i].lastIndexOf('/');
+      let only_path = list[i].substring(0, last_sep);
+      let filename = list[i].substring(last_sep + 1);
       if (!this.isCreateFolderRecursive) {
         this.isCreateFolderRecursive = true;
         await this.CreateFolderRecursive(only_path);
       }
       try {
-        if (FileInfo.mode == 16893) throw '이거 폴더임';
-        await this.file.writeFile(this.file.externalDataDirectory + only_path + '/', filename, blob, {
-          replace: true,
-        });
+        if (FileInfo.mode == 16893) {
+          await this.file.createDir(this.file.externalDataDirectory + only_path, filename, true);
+          throw '이거 폴더임'
+        };
+        if (this.CheckIfAccessable(list[i])) {
+          await this.file.writeFile(this.file.externalDataDirectory + only_path + '/', filename, blob, {
+            replace: true,
+          });
+        } else throw '열람 불가 파일 제외';
       } catch (e) {
-        console.error(path, ': 파일 저장 실패: ', e);
+        console.error(list[i], ': 파일 저장 실패: ', e);
       }
-    });
+    }
     this.isCreateFolderRecursive = false;
     loading.dismiss();
   }
