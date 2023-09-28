@@ -5,6 +5,7 @@ import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
+import { P5ToastService } from 'src/app/p5-toast.service';
 
 @Component({
   selector: 'app-weblink-gen',
@@ -18,6 +19,7 @@ export class WeblinkGenPage implements OnInit {
     private mClipboard: Clipboard,
     private nakama: NakamaService,
     private indexed: IndexedDBService,
+    private p5toast: P5ToastService,
   ) { }
 
   userInput = {
@@ -65,6 +67,10 @@ export class WeblinkGenPage implements OnInit {
   SelectGroupChannel(ev: any) {
     this.userInput.groups = ev.detail.value;
     this.information_changed();
+    if (!this.userInput.use_tmp_user && this.userInput.groups.length)
+      this.p5toast.show({
+        text: this.lang.text['WebLinkGen']['CanMissedChnInfo'],
+      });
   }
 
   SelectRTCServer(ev: any) {
