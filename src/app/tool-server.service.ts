@@ -60,6 +60,8 @@ export class ToolServerService {
         this.list[_target].OnDisconnected = {};
       } else {
         console.warn('동일한 서버 구성이 이미 존재함: ', this.list);
+        if (!this.statusBar.tools[_target] || this.statusBar.tools[_target] == 'offline')
+          delete this.list[_target];
         return;
       }
       if (!this.list[_target]['server'])

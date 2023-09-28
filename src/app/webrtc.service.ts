@@ -440,6 +440,10 @@ export class WebrtcService {
         this.remoteMedia.srcObject = ev.stream;
       });
     }
+    this.PeerConnection.addEventListener('datachannel', (event: any) => {
+      this.dataChannel = event.channel;
+      this.createDataChannelListener();
+    });
     this.PeerConnection.addEventListener('negotiationneeded', async (_ev: any) => {
       // 스트림 설정 변경시 재협상 필요, sdp 재교환해야함
       // 교환한 사람쪽에서 이 트리거가 발동됨
@@ -460,6 +464,33 @@ export class WebrtcService {
         }
       }
     })
+  }
+
+  dataChannel: any;
+  createDataChannel(label: string) {
+    this.dataChannel = this.PeerConnection.createDataChannel(label);
+    this.createDataChannelListener();
+  }
+
+  createDataChannelListener() {
+    this.dataChannel.addEventListener('open', (_ev: any) => {
+      console.log('데이터 채널 열림');
+    });
+    this.dataChannel.addEventListener('close', (_ev: any) => {
+      console.log('데이터 채널 닫힘');
+    });
+    this.dataChannel.addEventListener('message', (event: any) => {
+      const message = event.data;
+      console.log('메시지 수신: ', message);
+    });
+  }
+
+  send(msg: string) {
+    try {
+      this.dataChannel.send(msg);
+    } catch (e) {
+      console.log('WebRTC 메시지 발송 실패: ', e);
+    }
   }
 
   /** 전화 요청 생성 */
@@ -486,9 +517,10 @@ export class WebrtcService {
   ReceiveIceCandidate(newIceCandidate: any) {
     if (this.ReplyIceCandidate) clearTimeout(this.ReplyIceCandidate);
     this.ReplyIceCandidate = setTimeout(async () => {
-      for (let i = 0, j = this.IceCandidates.length; i < j; i++)
-        await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
-          this.CurrentMatch.match_id, MatchOpCode.WEBRTC_ICE_CANDIDATES, encodeURIComponent(JSON.stringify(this.IceCandidates[i])));
+      if (this.TypeIn != 'data')
+        for (let i = 0, j = this.IceCandidates.length; i < j; i++)
+          await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+            this.CurrentMatch.match_id, MatchOpCode.WEBRTC_ICE_CANDIDATES, encodeURIComponent(JSON.stringify(this.IceCandidates[i])));
       this.IceCandidates.length = 0;
     }, 800);
     this.PeerConnection.addIceCandidate(newIceCandidate)
@@ -565,10 +597,12 @@ export class WebrtcService {
         this.setRemoteDescriptionSuccess(this.PeerConnection);
       }).catch((e: any) => this.setSessionDescriptionError(e));
     // 방 생성자가 ice candidate 를 공유함
-    if (this.TypeIn != 'data') for (let i = 0, j = this.IceCandidates.length; i < j; i++)
-      await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
-        this.CurrentMatch.match_id, MatchOpCode.WEBRTC_ICE_CANDIDATES, encodeURIComponent(JSON.stringify(this.IceCandidates[i])));
-    this.IceCandidates.length = 0;
+    if (this.TypeIn != 'data') {
+      for (let i = 0, j = this.IceCandidates.length; i < j; i++)
+        await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+          this.CurrentMatch.match_id, MatchOpCode.WEBRTC_ICE_CANDIDATES, encodeURIComponent(JSON.stringify(this.IceCandidates[i])));
+      this.IceCandidates.length = 0;
+    }
   }
 
   private setSessionDescriptionError(error: any) {
@@ -611,6 +645,7 @@ export class WebrtcService {
     this.localMedia = undefined;
     this.localStream = undefined;
     this.remoteMedia = undefined;
+    this.dataChannel = undefined;
     this.ReceivedOfferPart = '';
     this.ReceivedAnswerPart = '';
     this.JoinInited = false;

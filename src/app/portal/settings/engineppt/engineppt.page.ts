@@ -191,6 +191,14 @@ export class EnginepptPage implements OnInit {
             }, 500);
           } else this.webrtc.ReceivedOfferPart += json.data;
           break;
+        case 'WEBRTC_ICE_CANDIDATES':
+          this.webrtc.ReceiveIceCandidate(json.data);
+          setTimeout(() => {
+            for (let i = 0, j = this.webrtc.IceCandidates.length; i < j; i++)
+              this.toolServer.send_to('engineppt', JSON.stringify({ act: 'WEBRTC_ICE_CANDIDATES', data: this.webrtc.IceCandidates[i] }));
+            this.webrtc.IceCandidates.length = 0;
+          }, 800);
+          break;
         case 'react': // 정상 수신 반응, 다음 파트 보내기
           let part = this.SelectedFile.shift();
           if (part) { // 보내야할 내용이 더 있다면
@@ -276,6 +284,7 @@ export class EnginepptPage implements OnInit {
             this.TempWs = new WebSocket(`ws://${addresses[i]}:12021`);
             this.TempWs.onopen = async (_ev) => {
               await this.webrtc.initialize('data');
+              this.webrtc.createDataChannel('engineppt');
               this.webrtc.CreateOfffer();
               done(addresses[i]);
             }
@@ -293,7 +302,13 @@ export class EnginepptPage implements OnInit {
                   if (json.data == 'EOL') { // 수신 완료
                     this.webrtc.ReceiveRemoteAnswer(JSON.parse(this.webrtc.ReceivedAnswerPart));
                     this.webrtc.ReceivedAnswerPart = '';
+                    for (let i = 0, j = this.webrtc.IceCandidates.length; i < j; i++)
+                      this.TempWs.send(JSON.stringify({ act: 'WEBRTC_ICE_CANDIDATES', data: this.webrtc.IceCandidates[i] }));
+                    this.webrtc.IceCandidates.length = 0;
                   } else this.webrtc.ReceivedAnswerPart += json.data;
+                  break;
+                case 'WEBRTC_ICE_CANDIDATES':
+                  this.webrtc.ReceiveIceCandidate(json.data);
                   break;
                 case 'init': // 모바일에서 파일을 보내려 합니다
                   download_file.present();
