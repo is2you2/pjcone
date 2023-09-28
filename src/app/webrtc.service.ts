@@ -6,7 +6,6 @@ import { P5ToastService } from './p5-toast.service';
 import { LanguageSettingService } from './language-setting.service';
 import { MatchOpCode, NakamaService } from './nakama.service';
 import { Match } from '@heroiclabs/nakama-js';
-import { isPlatform } from './app.component';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IndexedDBService } from './indexed-db.service';
 
@@ -409,6 +408,10 @@ export class WebrtcService {
       servers.iceServers = JSON.parse(list);
     } catch (e) { }
     // Create peer connections and add behavior.
+    if (!servers || !servers.iceServers || !servers.iceServers.length)
+      this.p5toast.show({
+        text: this.lang.text['WebRTCDevManager']['NoRegServer'],
+      });
     this.PeerConnection = new RTCPeerConnection(servers);
 
     this.PeerConnection.addEventListener('icecandidate', (ev: any) => this.handleConnection(ev));
