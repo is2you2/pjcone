@@ -81,7 +81,7 @@ export class ToolServerService {
           if (this.list[_target]['OnConnected']) {
             let keys = Object.keys(this.list[_target].OnConnected);
             for (let i = 0, j = keys.length; i < j; i++)
-              this.list[_target].OnConnected[keys[i]]();
+              this.list[_target].OnConnected[keys[i]](conn);
           }
         },
         'onMessage': (_conn, msg) => {

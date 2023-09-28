@@ -2307,8 +2307,8 @@ export class NakamaService {
         await this.WebRTCService.initialize('audio', undefined, {
           isOfficial: _is_official,
           target: _target,
-          user_id: c_info['info']['id'] || c_info['info']['user_id'],
           channel_id: c_info['id'],
+          user_id: c_info['info']['id'] || c_info['info']['user_id'],
         }, false);
       await this.servers[_is_official][_target].socket.sendMatchState(
         msg.content.match, MatchOpCode.WEBRTC_INIT_REQ_SIGNAL, encodeURIComponent(''))

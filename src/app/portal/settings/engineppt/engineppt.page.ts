@@ -9,6 +9,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { LoadingController, NavController } from '@ionic/angular';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { LocalNotiService } from 'src/app/local-noti.service';
+import { WebrtcService } from 'src/app/webrtc.service';
 
 @Component({
   selector: 'app-engineppt',
@@ -27,6 +28,7 @@ export class EnginepptPage implements OnInit {
     public statusBar: StatusManageService,
     private navCtrl: NavController,
     private noti: LocalNotiService,
+    private webrtc: WebrtcService,
   ) { }
 
   EventListenerAct = (ev: any) => {
@@ -148,8 +150,9 @@ export class EnginepptPage implements OnInit {
   SelectedFile: string[] = [];
 
   StartRemoteContrServer() {
+    this.webrtc.initialize('data');
     this.toolServer.initialize('engineppt', 12021, () => {
-      this.toolServer.list['engineppt'].OnConnected['show_noti'] = () => {
+      this.toolServer.list['engineppt'].OnConnected['show_noti'] = (ev: any) => {
         this.noti.PushLocal({
           id: 13,
           title: this.lang.text['EngineWorksPPT']['ClientConnected'],
@@ -159,8 +162,11 @@ export class EnginepptPage implements OnInit {
           iconColor_ln: '478cbf',
           autoCancel_ln: true,
         }, 'engineppt');
+        setTimeout(() => {
+          this.toolServer.send_to('engineppt', JSON.stringify({ act: 'WEBRTC_INIT_REQ_SIGNAL' }));
+        }, 500);
       }
-      this.toolServer.list['engineppt'].OnDisconnected['remove_noti'] = () => {
+      this.toolServer.list['engineppt'].OnDisconnected['remove_noti'] = async () => {
         this.noti.ClearNoti(13);
       }
       this.toolServer.list['engineppt'].OnDisconnected['showDisconnected'] = () => {
@@ -170,8 +176,21 @@ export class EnginepptPage implements OnInit {
           });
       }
     }, (json: any) => {
-      console.log('수신받은 메시지는: ', json);
       switch (json.act) {
+        case 'WEBRTC_REPLY_INIT_SIGNAL':
+          if (json.data == 'EOL') { // 수신 완료
+            this.webrtc.createRemoteOfferFromAnswer(JSON.parse(this.webrtc.ReceivedOfferPart));
+            this.webrtc.ReceivedOfferPart = '';
+            this.webrtc.CreateAnswer();
+            setTimeout(() => {
+              let data_str = JSON.stringify(this.webrtc.LocalAnswer);
+              let part = data_str.match(/(.{1,250})/g);
+              for (let i = 0, j = part.length; i < j; i++)
+                this.toolServer.send_to('engineppt', JSON.stringify({ act: 'WEBRTC_RECEIVE_ANSWER', data: part[i] }));
+              this.toolServer.send_to('engineppt', JSON.stringify({ act: 'WEBRTC_RECEIVE_ANSWER', data: 'EOL' }));
+            }, 500);
+          } else this.webrtc.ReceivedOfferPart += json.data;
+          break;
         case 'react': // 정상 수신 반응, 다음 파트 보내기
           let part = this.SelectedFile.shift();
           if (part) { // 보내야할 내용이 더 있다면
@@ -251,16 +270,31 @@ export class EnginepptPage implements OnInit {
       let result: any;
       for (let i = 0, j = addresses.length; i < j; i++) {
         try {
-          let test = await new Promise(async (d, e) => {
+          let test = await new Promise(async (done, error) => {
             let base64 = ''; // 휴대폰으로부터 파일을 원격받기 할 경우
             let download_file = await this.loadingCtrl.create({ message: this.lang.text['EngineWorksPPT']['ReceivingFile'] });
             this.TempWs = new WebSocket(`ws://${addresses[i]}:12021`);
-            this.TempWs.onopen = (_ev) => {
-              d(addresses[i]);
+            this.TempWs.onopen = async (_ev) => {
+              await this.webrtc.initialize('data');
+              this.webrtc.CreateOfffer();
+              done(addresses[i]);
             }
             this.TempWs.onmessage = (ev) => {
               let json = JSON.parse(ev.data);
               switch (json['act']) {
+                case 'WEBRTC_INIT_REQ_SIGNAL':
+                  let data_str = JSON.stringify(this.webrtc.LocalOffer);
+                  let part = data_str.match(/(.{1,250})/g);
+                  for (let i = 0, j = part.length; i < j; i++)
+                    this.TempWs.send(JSON.stringify({ act: 'WEBRTC_REPLY_INIT_SIGNAL', data: part[i] }));
+                  this.TempWs.send(JSON.stringify({ act: 'WEBRTC_REPLY_INIT_SIGNAL', data: 'EOL' }));
+                  break;
+                case 'WEBRTC_RECEIVE_ANSWER':
+                  if (json.data == 'EOL') { // 수신 완료
+                    this.webrtc.ReceiveRemoteAnswer(JSON.parse(this.webrtc.ReceivedAnswerPart));
+                    this.webrtc.ReceivedAnswerPart = '';
+                  } else this.webrtc.ReceivedAnswerPart += json.data;
+                  break;
                 case 'init': // 모바일에서 파일을 보내려 합니다
                   download_file.present();
                   this.TempWs.send(JSON.stringify({ act: 'react' }));
@@ -280,14 +314,14 @@ export class EnginepptPage implements OnInit {
                   break;
               }
             }
-            this.TempWs.onclose = (_ev) => {
+            this.TempWs.onclose = async (_ev) => {
               this.LinkedAddress = '';
               download_file.dismiss();
               if (this.Status != 'OnPresentation')
                 this.p5toast.show({
                   text: this.lang.text['EngineWorksPPT']['Disconnected'],
                 });
-              e('onclose');
+              error('onclose');
             }
           });
           result = test;
@@ -367,6 +401,7 @@ export class EnginepptPage implements OnInit {
       this.p5canvas.remove();
     if (this.p5gyro)
       this.p5gyro.remove();
+    this.webrtc.close_webrtc();
     this.noti.ClearNoti(13);
   }
 

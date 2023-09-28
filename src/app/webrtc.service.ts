@@ -36,7 +36,7 @@ export class WebrtcService {
   /** 통화 시작 시간 */
   startTime: number;
 
-  TypeIn: any;
+  TypeIn: 'video' | 'audio' | 'data';
   /** WebRTC 자체 사용 여부  
    * p5 컨트롤러 개체를 다루기 위해 필요함
    */
@@ -58,6 +58,7 @@ export class WebrtcService {
   /** 현재 연결된 매치 */
   CurrentMatch: Match;
   LocalOffer: any;
+  LocalAnswer: any;
   ReceivedOfferPart = '';
   ReceivedAnswerPart = '';
   IceCandidates = [];
@@ -69,10 +70,10 @@ export class WebrtcService {
    * @param info ice 서버 등의 정보 입력
    * @param nakama 통화가 진행중인 채널 정보
    */
-  async initialize(type: 'video' | 'audio',
+  async initialize(type: 'video' | 'audio' | 'data',
     media_const?: MediaStreamConstraints, nakama?: any, LeaveMatch?: boolean) {
     if (window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0) {
-      // 모바일 지원 안됨, 보안 연결 필수, 웹 페이지로 현재 정보와 함께 던져주기
+      // 보안 연결 필수, 웹 페이지로 현재 정보와 함께 던져주기
       let servers = this.nakama.get_all_online_server();
       let out_link = 'https://is2you2.github.io/pjcone_pwa/';
       out_link += `?tmp_user=${this.nakama.users.self['email']},${this.nakama.users.self['password']},${this.nakama.users.self['display_name']}`;
@@ -137,74 +138,77 @@ export class WebrtcService {
       this.user_id = nakama.user_id;
       this.channel_id = nakama.channel_id;
     }
-    this.createP5_panel();
-    try { // 로컬 정보 생성 및 받기
-      this.localMedia = document.createElement(type);
-      this.localMedia.id = 'webrtc_video';
-      this.localMedia.style.width = '100%';
-      this.localMedia.style.height = 'fit-content';
-      this.localMedia.autoplay = true;
-      if (type == 'video')
-        this.localMedia.playsInline = true;
-      this.localMedia.muted = true;
-      document.body.appendChild(this.localMedia);
+    if (type != 'data') { // 화상/음성 통화일 때에만 개체 생성
+      this.createP5_panel();
+      try { // 로컬 정보 생성 및 받기
+        this.localMedia = document.createElement(type);
+        this.localMedia.id = 'webrtc_video';
+        this.localMedia.style.width = '100%';
+        this.localMedia.style.height = 'fit-content';
+        this.localMedia.autoplay = true;
+        if (type == 'video')
+          this.localMedia.playsInline = true;
+        this.localMedia.muted = true;
+        document.body.appendChild(this.localMedia);
 
-      // 원격 비디오 테스트 생성
-      this.remoteMedia = document.createElement(type);
-      this.remoteMedia.id = 'webrtc_video_remote';
-      this.remoteMedia.style.width = '100%';
-      this.remoteMedia.style.height = 'fit-content';
-      this.remoteMedia.autoplay = true;
-      if (type == 'video')
-        this.remoteMedia.playsInline = true;
-      document.body.appendChild(this.remoteMedia);
+        // 원격 비디오 테스트 생성
+        this.remoteMedia = document.createElement(type);
+        this.remoteMedia.id = 'webrtc_video_remote';
+        this.remoteMedia.style.width = '100%';
+        this.remoteMedia.style.height = 'fit-content';
+        this.remoteMedia.autoplay = true;
+        if (type == 'video')
+          this.remoteMedia.playsInline = true;
+        document.body.appendChild(this.remoteMedia);
 
-      let dev_list = await this.getDeviceList();
-      let audioId: string;
-      let videoId: string;
-      let saved_vid_index = Number(localStorage.getItem('VideoInputDev') ?? NaN);
-      let saved_aud_index = Number(localStorage.getItem('AudioInputDev') ?? NaN);
-      for (let i = 0, j = dev_list.length, vid_index = 0, aud_index = 0; i < j; i++)
-        if (!audioId || !videoId) {
-          if (!audioId && dev_list[i].kind == 'audioinput') {
-            if (Number.isNaN(saved_aud_index)) {
-              audioId = dev_list[i].deviceId;
-              localStorage.setItem('AudioInputDev', `${aud_index}`);
-            } else if (aud_index == saved_aud_index)
-              audioId = dev_list[i].deviceId;
-            aud_index++;
-          }
-          if (!videoId && dev_list[i].kind == 'videoinput') {
-            if (Number.isNaN(saved_vid_index)) {
-              videoId = dev_list[i].deviceId;
-              localStorage.setItem('AudioInputDev', `${vid_index}`);
-            } else if (vid_index == saved_vid_index)
-              videoId = dev_list[i].deviceId;
-            vid_index++;
-          }
-        } else break;
-      // 로컬 미디어 정보 관리
-      if (!media_const) {
-        media_const = {};
-        if (type == 'video') {
-          media_const['video'] = true;
-          if (videoId) media_const['video'] = { deviceId: videoId };
-        } else media_const['video'] = false;
-        media_const['audio'] = true;
-        if (audioId) media_const['audio'] = { deviceId: audioId };
+        let dev_list = await this.getDeviceList();
+        let audioId: string;
+        let videoId: string;
+        let saved_vid_index = Number(localStorage.getItem('VideoInputDev') ?? NaN);
+        let saved_aud_index = Number(localStorage.getItem('AudioInputDev') ?? NaN);
+        for (let i = 0, j = dev_list.length, vid_index = 0, aud_index = 0; i < j; i++)
+          if (!audioId || !videoId) {
+            if (!audioId && dev_list[i].kind == 'audioinput') {
+              if (Number.isNaN(saved_aud_index)) {
+                audioId = dev_list[i].deviceId;
+                localStorage.setItem('AudioInputDev', `${aud_index}`);
+              } else if (aud_index == saved_aud_index)
+                audioId = dev_list[i].deviceId;
+              aud_index++;
+            }
+            if (!videoId && dev_list[i].kind == 'videoinput') {
+              if (Number.isNaN(saved_vid_index)) {
+                videoId = dev_list[i].deviceId;
+                localStorage.setItem('AudioInputDev', `${vid_index}`);
+              } else if (vid_index == saved_vid_index)
+                videoId = dev_list[i].deviceId;
+              vid_index++;
+            }
+          } else break;
+        // 로컬 미디어 정보 관리
+        if (!media_const) {
+          media_const = {};
+          if (type == 'video') {
+            media_const['video'] = true;
+            if (videoId) media_const['video'] = { deviceId: videoId };
+          } else media_const['video'] = false;
+          media_const['audio'] = true;
+          if (audioId) media_const['audio'] = { deviceId: audioId };
+        }
+        this.localStream = await navigator.mediaDevices.getUserMedia(media_const);
+        this.localMedia.srcObject = this.localStream;
+        this.isCallable = true;
+      } catch (e) {
+        console.log('navigator.getUserMedia error: ', e);
+        await this.close_webrtc();
+        this.p5toast.show({
+          text: `${this.lang.text['WebRTCDevManager']['InitErr']}: ${e}`,
+        });
       }
-      this.localStream = await navigator.mediaDevices.getUserMedia(media_const);
-      this.localMedia.srcObject = this.localStream;
-      this.isCallable = true;
-    } catch (e) {
-      console.log('navigator.getUserMedia error: ', e);
-      await this.close_webrtc();
-      this.p5toast.show({
-        text: `${this.lang.text['WebRTCDevManager']['InitErr']}: ${e}`,
-      });
     }
-    this.createCall();
-    this.p5canvas['call_button'].elt.disabled = false;
+    await this.createCall();
+    if (this.p5canvas)
+      this.p5canvas['call_button'].elt.disabled = false;
   }
 
   createP5_panel() {
@@ -408,10 +412,12 @@ export class WebrtcService {
       servers.iceServers = JSON.parse(list);
     } catch (e) { }
     // Create peer connections and add behavior.
-    if (!servers || !servers.iceServers || !servers.iceServers.length)
+    if (this.TypeIn != 'data' && (!servers || !servers.iceServers || !servers.iceServers.length)) {
       this.p5toast.show({
         text: this.lang.text['WebRTCDevManager']['NoRegServer'],
       });
+      servers = undefined;
+    }
     this.PeerConnection = new RTCPeerConnection(servers);
 
     this.PeerConnection.addEventListener('icecandidate', (ev: any) => this.handleConnection(ev));
@@ -428,10 +434,12 @@ export class WebrtcService {
         }
       });
     // Add local stream to connection and create offer to connect.
-    this.PeerConnection.addStream(this.localStream);
-    this.PeerConnection.addEventListener('addstream', (ev: any) => {
-      this.remoteMedia.srcObject = ev.stream;
-    });
+    if (this.TypeIn != 'data') {
+      this.PeerConnection.addStream(this.localStream);
+      this.PeerConnection.addEventListener('addstream', (ev: any) => {
+        this.remoteMedia.srcObject = ev.stream;
+      });
+    }
     this.PeerConnection.addEventListener('negotiationneeded', async (_ev: any) => {
       // 스트림 설정 변경시 재협상 필요, sdp 재교환해야함
       // 교환한 사람쪽에서 이 트리거가 발동됨
@@ -441,13 +449,15 @@ export class WebrtcService {
         }).then((ev: any) => this.createdOffer(ev))
           .catch((e: any) => this.setSessionDescriptionError(e));
 
-        let data_str = JSON.stringify(this.LocalOffer);
-        let part = data_str.match(/(.{1,250})/g);
-        for (let i = 0, j = part.length; i < j; i++)
+        if (this.TypeIn != 'data') {
+          let data_str = JSON.stringify(this.LocalOffer);
+          let part = data_str.match(/(.{1,250})/g);
+          for (let i = 0, j = part.length; i < j; i++)
+            await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+              this.CurrentMatch.match_id, MatchOpCode.WEBRTC_NEGOCIATENEEDED, encodeURIComponent(part[i]));
           await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
-            this.CurrentMatch.match_id, MatchOpCode.WEBRTC_NEGOCIATENEEDED, encodeURIComponent(part[i]));
-        await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
-          this.CurrentMatch.match_id, MatchOpCode.WEBRTC_NEGOCIATENEEDED, encodeURIComponent('EOL'));
+            this.CurrentMatch.match_id, MatchOpCode.WEBRTC_NEGOCIATENEEDED, encodeURIComponent('EOL'));
+        }
       }
     })
   }
@@ -528,19 +538,22 @@ export class WebrtcService {
   private async createdAnswer(description: any) {
     if (this.p5canvas)
       this.p5canvas['call_button'].hide();
+    this.LocalAnswer = description;
 
     this.PeerConnection.setLocalDescription(description)
       .then(() => {
         this.setLocalDescriptionSuccess(this.PeerConnection);
       }).catch((e: any) => this.setSessionDescriptionError(e));
 
-    let data_str = JSON.stringify(description);
-    let part = data_str.match(/(.{1,250})/g);
-    for (let i = 0, j = part.length; i < j; i++)
+    if (this.TypeIn != 'data') {
+      let data_str = JSON.stringify(description);
+      let part = data_str.match(/(.{1,250})/g);
+      for (let i = 0, j = part.length; i < j; i++)
+        await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+          this.CurrentMatch.match_id, MatchOpCode.WEBRTC_RECEIVE_ANSWER, encodeURIComponent(part[i]));
       await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
-        this.CurrentMatch.match_id, MatchOpCode.WEBRTC_RECEIVE_ANSWER, encodeURIComponent(part[i]));
-    await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
-      this.CurrentMatch.match_id, MatchOpCode.WEBRTC_RECEIVE_ANSWER, encodeURIComponent('EOL'));
+        this.CurrentMatch.match_id, MatchOpCode.WEBRTC_RECEIVE_ANSWER, encodeURIComponent('EOL'));
+    }
 
     this.JoinInited = true;
   }
@@ -552,7 +565,7 @@ export class WebrtcService {
         this.setRemoteDescriptionSuccess(this.PeerConnection);
       }).catch((e: any) => this.setSessionDescriptionError(e));
     // 방 생성자가 ice candidate 를 공유함
-    for (let i = 0, j = this.IceCandidates.length; i < j; i++)
+    if (this.TypeIn != 'data') for (let i = 0, j = this.IceCandidates.length; i < j; i++)
       await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
         this.CurrentMatch.match_id, MatchOpCode.WEBRTC_ICE_CANDIDATES, encodeURIComponent(JSON.stringify(this.IceCandidates[i])));
     this.IceCandidates.length = 0;
@@ -600,7 +613,6 @@ export class WebrtcService {
     this.remoteMedia = undefined;
     this.ReceivedOfferPart = '';
     this.ReceivedAnswerPart = '';
-    this.TypeIn = undefined;
     this.JoinInited = false;
     delete this.nakama.socket_reactive['WEBRTC_INIT_REQ_SIGNAL'];
     delete this.nakama.socket_reactive['WEBRTC_REPLY_INIT_SIGNAL'];
