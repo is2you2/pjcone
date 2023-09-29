@@ -441,8 +441,8 @@ export class WebrtcService {
       });
     }
     this.PeerConnection.addEventListener('datachannel', (event: any) => {
-      this.dataChannel = event.channel;
-      this.createDataChannelListener();
+      this.dataChannel[event.channel.label] = event.channel;
+      this.createDataChannelListener(event.channel.label);
     });
     this.PeerConnection.addEventListener('negotiationneeded', async (_ev: any) => {
       // 스트림 설정 변경시 재협상 필요, sdp 재교환해야함
@@ -466,28 +466,30 @@ export class WebrtcService {
     })
   }
 
-  dataChannel: any;
-  createDataChannel(label: string) {
-    this.dataChannel = this.PeerConnection.createDataChannel(label);
-    this.createDataChannelListener();
+  dataChannel = {};
+  dataChannelOpenAct = {};
+  dataChannelOnMsgAct = {};
+  dataChannelOnCloseAct = {};
+  createDataChannel(label: string, option?: RTCDataChannelInit) {
+    this.dataChannel[label] = this.PeerConnection.createDataChannel(label, option);
+    this.createDataChannelListener(label);
   }
 
-  createDataChannelListener() {
-    this.dataChannel.addEventListener('open', (_ev: any) => {
-      console.log('데이터 채널 열림');
+  createDataChannelListener(label: string) {
+    this.dataChannel[label].addEventListener('open', (_ev: any) => {
+      if (this.dataChannelOpenAct[label]) this.dataChannelOpenAct[label]();
     });
-    this.dataChannel.addEventListener('close', (_ev: any) => {
-      console.log('데이터 채널 닫힘');
+    this.dataChannel[label].addEventListener('close', (_ev: any) => {
+      if (this.dataChannelOnCloseAct[label]) this.dataChannelOnCloseAct[label]();
     });
-    this.dataChannel.addEventListener('message', (event: any) => {
-      const message = event.data;
-      console.log('메시지 수신: ', message);
+    this.dataChannel[label].addEventListener('message', (event: any) => {
+      if (this.dataChannelOnMsgAct[label]) this.dataChannelOnMsgAct[label](event.data);
     });
   }
 
-  send(msg: string) {
+  send(label: string, msg: string) {
     try {
-      this.dataChannel.send(msg);
+      this.dataChannel[label].send(msg);
     } catch (e) {
       console.log('WebRTC 메시지 발송 실패: ', e);
     }
@@ -645,7 +647,10 @@ export class WebrtcService {
     this.localMedia = undefined;
     this.localStream = undefined;
     this.remoteMedia = undefined;
-    this.dataChannel = undefined;
+    this.dataChannelOpenAct = {};
+    this.dataChannelOnCloseAct = {};
+    this.dataChannelOnMsgAct = {};
+    this.dataChannel = {};
     this.ReceivedOfferPart = '';
     this.ReceivedAnswerPart = '';
     this.JoinInited = false;

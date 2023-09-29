@@ -8,6 +8,7 @@ import { NakamaService } from 'src/app/nakama.service';
 import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize } from '@capacitor-community/admob';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
+import { IndexedDBService } from 'src/app/indexed-db.service';
 
 @Component({
   selector: 'app-main',
@@ -21,6 +22,7 @@ export class MainPage implements OnInit {
     public lang: LanguageSettingService,
     public nakama: NakamaService,
     public statusBar: StatusManageService,
+    private indexed: IndexedDBService,
   ) { }
 
   ngOnInit() {
@@ -70,6 +72,9 @@ export class MainPage implements OnInit {
       // add_todo: 새 해야할 일 등록
       // remove_todo: 해야할 일 삭제
     }, 'add_todo');
+    this.indexed.GetFileListFromDB('acts_local', list => {
+      list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB));
+    }, this.indexed.godotDB);
   }
 
   ionViewDidEnter() {

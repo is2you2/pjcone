@@ -159,6 +159,7 @@ export class ToolServerService {
    */
   send_to(_target: string, msg: string) {
     if (!this.list[_target]['users']) return;
-    this.list[_target]['server'].send({ 'uuid': this.list[_target]['users'] }, msg);
+    if (this.list[_target] && this.list[_target]['server'])
+      this.list[_target]['server'].send({ 'uuid': this.list[_target]['users'] }, msg);
   }
 }

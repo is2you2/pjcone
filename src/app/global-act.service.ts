@@ -184,15 +184,15 @@ export class GlobalActService {
    */
   CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys, waiting_key: string = '', targetDB = this.indexed.godotDB): Promise<any> {
     let ready_to_show = false;
-    return new Promise((done: any) => {
-      let refresh_it_loading = () => {
+    return new Promise(async (done: any) => {
+      let refresh_it_loading = async () => {
         try {
           if (window['godot'] != 'godot')
             throw 'No godot';
           if (waiting_key && !this.godot_window[waiting_key])
             throw 'No act ready';
           ready_to_show = true;
-          this.indexed.GetGodotIndexedDB();
+          await this.indexed.GetGodotIndexedDB();
           done();
         } catch (e) {
           setTimeout(() => {
@@ -349,7 +349,7 @@ export class GlobalActService {
           p.resizeCanvas(frame.clientWidth, frame.clientHeight);
         }
       });
-      refresh_it_loading();
+      await refresh_it_loading();
     });
   }
 

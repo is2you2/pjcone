@@ -49,9 +49,6 @@ export class AppComponent {
       isPlatform = 'iOS';
     indexed.initialize(() => {
       // 앱 재시작시 자동으로 동기화할 수 있도록 매번 삭제
-      indexed.GetFileListFromDB('acts_local', list => {
-        list.forEach(path => indexed.removeFileFromUserPath(path));
-      }, indexed.godotDB);
       let init = global.CatchGETs(location.href) || {};
       nakama.AddressToQRCodeAct(init);
       noti.initialize();

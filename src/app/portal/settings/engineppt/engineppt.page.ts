@@ -109,7 +109,7 @@ export class EnginepptPage implements OnInit {
       });
       return;
     }
-    await this.indexed.saveBlobToUserPath(blob, 'engineppt/presentation_this.pck');
+    await this.indexed.saveBlobToUserPath(blob, 'engineppt/presentation_this.pck', undefined, this.indexed.godotDB);
     this.CreateEnginePPT();
   }
 
@@ -284,7 +284,11 @@ export class EnginepptPage implements OnInit {
             this.TempWs = new WebSocket(`ws://${addresses[i]}:12021`);
             this.TempWs.onopen = async (_ev) => {
               await this.webrtc.initialize('data');
-              this.webrtc.createDataChannel('engineppt');
+              this.webrtc.createDataChannel('engineppt', { ordered: true, maxRetransmits: 0 });
+              this.webrtc.dataChannelOnMsgAct['engineppt'] = (msg: string) => {
+                if (this.global.godot_window['override_cursor_position'])
+                  this.global.godot_window['override_cursor_position'](JSON.parse(msg));
+              }
               this.webrtc.CreateOfffer();
               done(addresses[i]);
             }
@@ -322,7 +326,7 @@ export class EnginepptPage implements OnInit {
                   this.indexed.saveBase64ToUserPath(base64, 'engineppt/presentation_this.pck', (_) => {
                     download_file.dismiss();
                     this.CreateEnginePPT();
-                  });
+                  }, this.indexed.godotDB);
                   break;
                 default:
                   console.log('예상하지 않은 서버 수신값: ', json);
@@ -375,9 +379,14 @@ export class EnginepptPage implements OnInit {
         pointer_pos: (etc: string = '') => {
           let etc_json = JSON.parse(etc);
           etc_stack = { ...etc_stack, ...etc_json };
-          if (send_ok) {
+          if (this.webrtc.dataChannel['engineppt']) {
+            this.webrtc.send('engineppt', JSON.stringify({ x: etc_json.x, y: etc_json.y }));
+            delete etc_stack['x'];
+            delete etc_stack['y'];
+          }
+          let keys = Object.keys(etc_stack);
+          if (send_ok && keys.length) {
             this.toolServer.send_to('engineppt', JSON.stringify({ ...etc_stack }));
-            let keys = Object.keys(etc_stack);
             keys.forEach(key => delete etc_stack[key]);
             send_ok = false;
             setTimeout(() => {
@@ -409,7 +418,10 @@ export class EnginepptPage implements OnInit {
   ionViewWillLeave() {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
     this.toolServer.stop('engineppt');
-    this.indexed.removeFileFromUserPath('engineppt/presentation_this.pck');
+    this.indexed.removeFileFromUserPath('engineppt/presentation_this.pck', undefined, this.indexed.godotDB);
+    this.indexed.GetFileListFromDB('tmp_files', list => {
+      list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB));
+    }, this.indexed.godotDB);
     if (this.TempWs)
       this.TempWs.close();
     if (this.p5canvas)

@@ -164,7 +164,9 @@ export class VoidDrawPage implements OnInit {
   WithoutSave = true;
   ionViewDidLeave() {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
-    this.indexed.removeFileFromUserPath('tmp_files/modify_image.png');
+    this.indexed.GetFileListFromDB('tmp_files', list => {
+      list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB));
+    }, this.indexed.godotDB);
     if (this.WithoutSave)
       this.mainLoading.remove();
   }

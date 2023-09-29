@@ -48,15 +48,19 @@ export class IndexedDBService {
   /** 이 동작은 반드시 고도엔진 웹 페이지가 우선 작업한 후에 동작해줘야한다. 우선권을 뺏어가면 안됨
    * localStorage: IndexedDB 키에서 고도가 미리 준비한 경우 'godot'를 값으로 지정한다
    */
-  GetGodotIndexedDB() {
+  async GetGodotIndexedDB() {
     if (this.godotDB) return;
-    let req = indexedDB.open('/userfs', 21);
-    req.onsuccess = (_ev) => {
-      this.godotDB = req.result;
-    }
-    req.onerror = (e) => {
-      console.error('IndexedDB initialized failed: ', e);
-    }
+    return new Promise((done, error) => {
+      let req = indexedDB.open('/userfs', 21);
+      req.onsuccess = (_ev) => {
+        this.godotDB = req.result;
+        done(undefined);
+      }
+      req.onerror = (e) => {
+        console.error('IndexedDB initialized failed: ', e);
+        error(e);
+      }
+    });
   }
 
   /** 고도엔진 시스템 오류 방지를 위해 폴더구조 생성 */
