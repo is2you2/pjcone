@@ -14,6 +14,7 @@ Project: Cone 커뮤니티를 위한 채팅 앱 클라이언트
   - Sync Project with Gradle Files (상단 버튼 또는 File 메뉴 아래)
 
 ## 고도 프레임 사용 제한사항
+* **정말 이상하지만 Mobile chrome 에서 wasm 로드 오류 mono 버전으로 출시하면 문제 해결됨**
 - GodotViewer 구성 제한사항
   - 사용자가 별도 클래스를 생성한 경우 .pck 파일에 포함되지 않음
   - Singleton이 설정된 경우 정상적으로 동작하지 않음 (싱글톤 없는 씬)
