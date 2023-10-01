@@ -3013,6 +3013,7 @@ export class NakamaService {
                   this.indexed.removeFileFromUserPath(`${path}_part/${i}.part`)
                 this.indexed.removeFileFromUserPath(`${path}_part`)
                 this.global.remove_req_file_info(_msg, path);
+                msg.content['text'] = [this.lang.text['ChatRoom']['FileSaved']];
                 done(undefined);
               }
             });
