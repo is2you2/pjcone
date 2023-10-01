@@ -892,7 +892,8 @@ export class IonicViewerPage implements OnInit {
             height = 192;
           }
           this.p5canvas.createCanvas(width, height);
-          this.p5canvas.image(this.p5canvas['VideoMedia'], 0, 0, width, height);
+          this.p5canvas.imageMode(this.p5canvas.CORNER);
+          this.p5canvas.image(this.p5canvas['VideoMedia'], 0, 0, width * this.image_info['width'] / size.width, height * this.image_info['height'] / size.height);
           this.p5canvas.fill(255, 128);
           this.p5canvas.rect(0, 0, width, height);
           this.p5canvas.textWrap(this.p5canvas.CHAR);
@@ -912,8 +913,9 @@ export class IonicViewerPage implements OnInit {
             width - margin_ratio * 2, height - margin_ratio * 2);
           this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
             try {
-              await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
-                `${this.FileInfo.path}_thumbnail.png`, undefined, this.targetDB);
+              let base64 = c[0]['imageData'].replace(/"|=|\\/g, '');
+              await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`, undefined, this.targetDB);
+              this.FileInfo.thumbnail = base64;
               this.global.modulate_thumbnail(this.FileInfo, '');
             } catch (e) {
               console.log('썸네일 저장 오류: ', e);
