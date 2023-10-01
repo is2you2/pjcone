@@ -38,7 +38,6 @@ export class WeblinkGenPage implements OnInit {
     group_dedi: undefined,
     open_prv_channel: '',
     open_channel: false,
-    rtcserver: [],
   }
 
   servers: ServerInfo[] = [];
@@ -71,11 +70,6 @@ export class WeblinkGenPage implements OnInit {
       this.p5toast.show({
         text: this.lang.text['WebLinkGen']['CanMissedChnInfo'],
       });
-  }
-
-  SelectRTCServer(ev: any) {
-    this.userInput.rtcserver = ev.detail.value;
-    this.information_changed();
   }
 
   baseURLChanged(ev: any) {
@@ -134,14 +128,6 @@ export class WeblinkGenPage implements OnInit {
       this.result_address += 'open_channel=';
       this.result_address += `${this.userInput.groups[0]['id']},${this.userInput.groups[0]['server']['isOfficial']},${this.userInput.groups[0]['server']['target']}`;
       count++;
-    }
-    if (this.userInput.rtcserver.length) {
-      for (let i = 0, j = this.userInput.rtcserver.length; i < j; i++) {
-        this.result_address += count ? '&' : '?';
-        this.result_address += 'rtcserver=';
-        this.result_address += `[${this.userInput.rtcserver[i].urls}],${this.userInput.rtcserver[i].username},${this.userInput.rtcserver[i].credential}`;
-        count++;
-      }
     }
   }
 
