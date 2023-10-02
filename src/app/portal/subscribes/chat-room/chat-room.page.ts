@@ -26,6 +26,7 @@ import { WebrtcService } from 'src/app/webrtc.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import clipboard from "clipboardy";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
+import { TextToSpeech } from '@capacitor-community/text-to-speech';
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -316,7 +317,21 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         console.log('webrtc 시작단계 오류: ', e);
       }
     }
+  }, { // 9
+    icon: 'volume-mute-outline',
+    act: async () => {
+      this.toggle_speakermode();
+    }
   }];
+
+  async toggle_speakermode(force?: boolean) {
+    this.useSpeaker = force ?? !this.useSpeaker;
+    this.extended_buttons[9].icon = this.useSpeaker
+      ? 'volume-high-outline' : 'volume-mute-outline';
+    if (!this.useSpeaker) try {
+      await TextToSpeech.stop();
+    } catch (e) { }
+  }
 
   /** 빠른 공유 정보 삭제 */
   cancel_qrshare() {
@@ -548,6 +563,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.messages.length = 0;
     this.prev_cursor = undefined;
     this.next_cursor = undefined;
+    this.toggle_speakermode(false);
     this.init_last_message_viewer();
     this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
     this.ChannelUserInputId = `chatroom_input_${this.info.id}_${new Date().getTime()}`;
@@ -601,6 +617,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
         this.modulate_chatmsg(0, this.ViewableMessage.length);
         this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
+        if (this.useSpeaker) this.SpeechReceivedMessage(c);
         setTimeout(() => {
           this.info['is_new'] = false;
           this.nakama.has_new_channel_msg = false;
@@ -809,6 +826,32 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
       this.pullable = true;
     }
+  }
+
+  useSpeaker = false;
+  /** 마지막에 받은 메시지 읽기 */
+  SpeechReceivedMessage(msg: any) {
+    let getMessage = JSON.parse(JSON.stringify(msg.content.msg));
+    let read_this = '';
+    for (let i = 0, j = getMessage.length; i < j; i++)
+      for (let k = 0, l = getMessage[i].length; k < l; k++)
+        read_this += getMessage[i][k]['text'] + ' ';
+    this.SpeechThese.push(read_this);
+    if (!this.isSpeeching) this.SpeechingTexts();
+  }
+
+  isSpeeching = false;
+  SpeechThese: string[] = [];
+  async SpeechingTexts() {
+    let read_this = this.SpeechThese.shift();
+    this.isSpeeching = true;
+    await TextToSpeech.speak({
+      text: read_this,
+      lang: this.lang.lang,
+    });
+    if (this.SpeechThese.length)
+      this.SpeechingTexts();
+    else this.isSpeeching = false;
   }
 
   /** 로컬 기록으로 불러와지는 경우 */

@@ -33,6 +33,7 @@
     "@awesome-cordova-plugins/web-socket-server": "^6.4.0",
     "@capacitor-community/admob": "^5.0.0",
     "@capacitor-community/barcode-scanner": "^4.0.1",
+    "@capacitor-community/text-to-speech": "^3.0.1",
     "@capacitor/android": "5.4.1",
     "@capacitor/app": "5.0.6",
     "@capacitor/camera": "^5.0.7",
