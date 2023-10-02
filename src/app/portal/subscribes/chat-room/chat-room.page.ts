@@ -27,6 +27,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import clipboard from "clipboardy";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
+import { SpeechRecognition } from "@capacitor-community/speech-recognition";
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -384,6 +385,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   ChatLogs: HTMLElement;
 
   ShowGoToBottom = false;
+  isMobile = false;
 
   ngOnInit() {
     this.nakama.removeBanner();
@@ -414,6 +416,18 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       setTimeout(() => {
         this.CreateDrop();
       }, 0);
+    this.isMobile = isPlatform == 'Android' || isPlatform == 'iOS';
+  }
+
+  async GetSpeechToText() {
+    let result = await SpeechRecognition.start({
+      language: this.lang.lang,
+      maxResults: 1,
+      prompt: this.lang.text['ChatRoom']['TalkMessage'],
+      partialResults: true,
+      popup: true,
+    });
+    this.userInput.text = result['matches'][0];
   }
 
   p5canvas: p5;
@@ -616,6 +630,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.ViewMsgIndex++;
         this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
         this.modulate_chatmsg(0, this.ViewableMessage.length);
+        this.modulate_chatmsg(this.ViewableMessage.length - 1, this.ViewableMessage.length);
         this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
         if (this.useSpeaker) this.SpeechReceivedMessage(c);
         setTimeout(() => {
