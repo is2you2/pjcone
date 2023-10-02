@@ -17,6 +17,7 @@ import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-a
 import { VoidDrawPage } from '../../subscribes/chat-room/void-draw/void-draw.page';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ActivatedRoute, Router } from '@angular/router';
+import { SpeechRecognition } from "@capacitor-community/speech-recognition";
 
 /** 서버에서 생성한 경우 */
 interface RemoteInfo {
@@ -110,9 +111,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   limitDisplay: string;
   /** 스크롤 행동용 메인 div 개체 */
   MainDiv: HTMLElement;
+  isMobile = false;
 
   ngOnInit() {
     this.MainDiv = document.getElementById('main_div');
+    this.isMobile = isPlatform == 'Android' || isPlatform == 'iOS';
     this.nakama.removeBanner();
     // 미리 지정된 데이터 정보가 있는지 검토
     this.route.queryParams.subscribe(_p => {
@@ -698,6 +701,30 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
   }
 
+  async SpeechToTitleText() {
+    let result = await SpeechRecognition.start({
+      language: this.lang.lang,
+      maxResults: 1,
+      prompt: this.lang.text['ChatRoom']['TalkMessage'],
+      partialResults: true,
+      popup: true,
+    });
+    this.userInput.title = result['matches'][0];
+  }
+
+  async SpeechToDetailText() {
+    let result = await SpeechRecognition.start({
+      language: this.lang.lang,
+      maxResults: 1,
+      prompt: this.lang.text['ChatRoom']['TalkMessage'],
+      partialResults: true,
+      popup: true,
+    });
+    if (!this.userInput.description) this.userInput.description = '';
+    else this.userInput.description += '\n';
+    this.userInput.description += result['matches'][0];
+  }
+
   toggle_custom_color() {
     if (this.userInput.custom_color)
       this.userInput.custom_color = undefined;
@@ -882,7 +909,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
     // 알림 예약 생성
     if (this.userInput.noti_id) {  // 알림 아이디가 있다면 삭제 후 재배정
-      if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+      if (!this.isMobile) {
         clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
         delete this.nakama.web_noti_id[this.userInput.noti_id];
       }
@@ -1227,7 +1254,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, async (v) => {
       v.forEach(_path => this.indexed.removeFileFromUserPath(_path, undefined, this.indexed.godotDB));
       if (this.userInput.noti_id)
-        if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+        if (!this.isMobile) {
           clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
           delete this.nakama.web_noti_id[this.userInput.noti_id];
         }

@@ -45,6 +45,7 @@ SPDX-License-Identifier: MIT -->
           <ion-item>
             <ion-input [label]="lang.text['TodoDetail']['DisplayName']" [(ngModel)]="userInput.title"
               class="ion-text-right" [placeholder]="lang.text['TodoDetail']['DisplayName_placeholder']"></ion-input>
+            <ion-icon *ngIf="isMobile" slot="end" name="mic-outline" (click)="SpeechToTitleText()"></ion-icon>
           </ion-item>
           <div *ngIf="userInput.storeAt != 'local' && isManager">
             <ion-accordion-group #ManageWorker>
@@ -126,6 +127,10 @@ SPDX-License-Identifier: MIT -->
           </ion-item>
           <ion-datetime #Calendar [style]="isCalendarHidden ? 'display: none;' : ''" style="display: inline;"
             [locale]="lang.lang" (ionChange)="limit_change($event)"></ion-datetime>
+          <ion-item-divider *ngIf="isMobile">
+            <ion-label>{{lang.text['TodoDetail']['description']}}</ion-label>
+            <ion-icon slot="end" name="mic-outline" (click)="SpeechToDetailText()"></ion-icon>
+          </ion-item-divider>
           <textarea class="infobox" [(ngModel)]="userInput.description"
             [placeholder]="lang.text['TodoDetail']['description']"></textarea>
           <div *ngFor="let attach of userInput.attach; index as i">
