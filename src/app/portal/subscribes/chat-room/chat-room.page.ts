@@ -817,7 +817,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 내부 저장소 채팅 기록 열람 */
   async LoadLocalChatHistory() {
     if (this.ViewMsgIndex != 0) { // 위에 더 볼 수 있는 메시지가 있음 (이미 받은 것으로)
-      let ShowMeAgainCount = Math.min(this.ViewMsgIndex, this.RefreshCount)
+      let ShowMeAgainCount = Math.min(this.ViewableMessage.length, Math.min(this.ViewMsgIndex, this.RefreshCount));
       this.ViewMsgIndex -= ShowMeAgainCount;
       this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
       for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
@@ -882,7 +882,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.nakama.ModulateTimeDate(json[i]);
             this.messages.unshift(json[i]);
           }
-          let ShowMeAgainCount = Math.min(json.length, this.ViewCount)
+          let ShowMeAgainCount = Math.min(Math.min(json.length, this.RefreshCount), this.ViewableMessage.length);
           this.ViewMsgIndex = Math.max(0, json.length - this.RefreshCount);
           this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
           for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
