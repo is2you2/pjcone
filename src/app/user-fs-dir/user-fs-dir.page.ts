@@ -127,6 +127,16 @@ export class UserFsDirPage implements OnInit {
   async ModulateIndexedFile(_list: string[], targetDB = this.indexed.ionicDB) {
     for (let i = 0, j = _list.length; i < j; i++) {
       if (this.StopIndexing) return;
+      let message = `${this.lang.text['UserFsDir']['LoadingExplorer']}: ${_list.length - i}`;
+      this.noti.noti.schedule({
+        id: 5,
+        title: message,
+        progressBar: { value: i, maxValue: _list.length },
+        sound: null,
+        smallIcon: 'res://icon_mono',
+        color: 'b0b0b0',
+      });
+      this.initLoadingElement.message = message;
       await this.indexed.GetFileInfoFromDB(_list[i], (info) => {
         let _info: FileDir = {
           path: _list[i],
@@ -154,16 +164,6 @@ export class UserFsDirPage implements OnInit {
             console.log('예상하지 못한 파일 모드: ', _info);
             break;
         }
-        let message = `${this.lang.text['UserFsDir']['LoadingExplorer']}: ${_list.length - 1 - i}`;
-        this.initLoadingElement.message = message;
-        this.noti.noti.schedule({
-          id: 5,
-          title: message,
-          progressBar: { value: i, maxValue: _list.length },
-          sound: null,
-          smallIcon: 'res://icon_mono',
-          color: 'b0b0b0',
-        });
       }, targetDB);
     }
   }
