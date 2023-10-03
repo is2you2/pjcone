@@ -224,6 +224,11 @@ export class IonicViewerPage implements OnInit {
       if (this.content_creator.user_id)
         this.content_creator.is_me =
           this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_creator.user_id;
+      try {
+        this.content_creator.publisher
+          = this.content_creator.is_me ? this.nakama.users.self['display_name']
+            : this.nakama.users[this.isOfficial][this.target][this.content_creator.user_id]['display_name'];
+      } catch (e) { }
       this.set_various_display(this.content_creator);
       for (let i = 0, j = this.content_related_creator.length; i < j; i++) {
         if (this.content_related_creator[i].user_id) {
@@ -940,8 +945,8 @@ export class IonicViewerPage implements OnInit {
     } catch (e) { }
   }
 
-  copy_url() {
-    this.mClipboard.copy(this.FileInfo['url'])
-      .catch(_e => clipboard.write(this.FileInfo['url']));
+  copy_url(data: string) {
+    this.mClipboard.copy(data)
+      .catch(_e => clipboard.write(data));
   }
 }
