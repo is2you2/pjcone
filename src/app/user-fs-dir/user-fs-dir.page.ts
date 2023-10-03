@@ -8,6 +8,7 @@ import { LanguageSettingService } from '../language-setting.service';
 import { P5ToastService } from '../p5-toast.service';
 import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { File } from '@awesome-cordova-plugins/file/ngx';
+import { Filesystem, Encoding } from '@capacitor/filesystem';
 
 /** userfs 의 파일과 폴더 형식 */
 interface FileDir {
@@ -23,6 +24,8 @@ interface FileDir {
   thumbnail?: any;
   /** 콘텐츠 뷰어 지원 여부 */
   viewer?: string;
+  /** 대상 db */
+  db?: any;
 }
 
 @Component({
@@ -63,6 +66,7 @@ export class UserFsDirPage implements OnInit {
 
   initLoadingElement: HTMLIonLoadingElement;
 
+  StopIndexing = false;
   EventListenerAct = (ev: any) => {
     ev.detail.register(110, (processNextHandler: any) => {
       if (this.is_ready) {
@@ -70,6 +74,7 @@ export class UserFsDirPage implements OnInit {
           processNextHandler();
         } else this.MoveToUpDir();
       } else {
+        this.StopIndexing = true;
         this.initLoadingElement.dismiss();
         this.navCtrl.back();
       }
@@ -90,49 +95,57 @@ export class UserFsDirPage implements OnInit {
     this.initLoadingElement.present();
     this.DirList.length = 0;
     this.FileList.length = 0;
-    await this.indexed.GetFileListFromDB('/', async (_list) => {
-      for (let i = 0, j = _list.length; i < j; i++) {
-        await this.indexed.GetFileInfoFromDB(_list[i], (info) => {
-          let _info: FileDir = {
-            path: _list[i],
-            mode: info['mode'],
-            timestamp: new Date(info['timestamp']).toLocaleString(),
-          };
-          _info.name = _info.path.substring(_info.path.lastIndexOf('/') + 1);
-          _info.dir = _list[i].substring(0, _list[i].lastIndexOf('/'));
-          switch (_info.mode) {
-            case 33206: // 파일인 경우
-              _info.file_ext = _info.name.split('.').pop();
-              this.global.set_viewer_category_from_ext(_info);
-              if (_info.viewer == 'image')
-                this.indexed.loadBlobFromUserPath(_info.path, '', blob => {
-                  let TmpURL = URL.createObjectURL(blob);
-                  _info.thumbnail = this.sanitizer.bypassSecurityTrustUrl(TmpURL);
-                });
-              this.FileList.push(_info);
-              break;
-            case 16893: // 폴더인 경우
-              this.DirList.push(_info);
-              break
-            default: // 예외처리
-              console.log('예상하지 못한 파일 모드: ', _info);
-              break;
-          }
-        });
-      }
-      this.FileList.sort((a, b) => {
-        if (a.path > b.path) return 1;
-        if (a.path < b.path) return -1;
-        return 0;
-      });
-      this.DirList.sort((a, b) => {
-        if (a.path > b.path) return 1;
-        if (a.path < b.path) return -1;
-        return 0;
-      });
-      this.initLoadingElement.dismiss();
-      this.is_ready = true;
+    let _godot_list = await this.indexed.GetFileListFromDB('/', undefined, this.indexed.godotDB);
+    await this.ModulateIndexedFile(_godot_list, this.indexed.godotDB);
+    let _ionic_list = await this.indexed.GetFileListFromDB('/')
+    await this.ModulateIndexedFile(_ionic_list);
+    this.FileList.sort((a, b) => {
+      if (a.path > b.path) return 1;
+      if (a.path < b.path) return -1;
+      return 0;
     });
+    this.DirList.sort((a, b) => {
+      if (a.path > b.path) return 1;
+      if (a.path < b.path) return -1;
+      return 0;
+    });
+    this.initLoadingElement.dismiss();
+    this.is_ready = true;
+  }
+
+  async ModulateIndexedFile(_list: string[], targetDB = this.indexed.ionicDB) {
+    for (let i = 0, j = _list.length; i < j; i++) {
+      if (this.StopIndexing) return;
+      await this.indexed.GetFileInfoFromDB(_list[i], (info) => {
+        let _info: FileDir = {
+          path: _list[i],
+          mode: info['mode'],
+          timestamp: new Date(info['timestamp']).toLocaleString(),
+          db: targetDB,
+        };
+        _info.name = _info.path.substring(_info.path.lastIndexOf('/') + 1);
+        _info.dir = _list[i].substring(0, _list[i].lastIndexOf('/'));
+        switch (_info.mode) {
+          case 33206: // 파일인 경우
+            _info.file_ext = _info.name.split('.').pop();
+            this.global.set_viewer_category_from_ext(_info);
+            if (_info.viewer == 'image')
+              this.indexed.loadBlobFromUserPath(_info.path, '', blob => {
+                let TmpURL = URL.createObjectURL(blob);
+                _info.thumbnail = this.sanitizer.bypassSecurityTrustUrl(TmpURL);
+              }, targetDB);
+            this.FileList.push(_info);
+            break;
+          case 16893: // 폴더인 경우
+            this.DirList.push(_info);
+            break
+          default: // 예외처리
+            console.log('예상하지 못한 파일 모드: ', _info);
+            break;
+        }
+        this.initLoadingElement.message = `${this.lang.text['UserFsDir']['LoadingExplorer']}: ${_list.length - 1 - i}`;
+      }, targetDB);
+    }
   }
 
   /** 폴더 윗 단계로 */
@@ -212,10 +225,11 @@ export class UserFsDirPage implements OnInit {
   async ExportDirectoryRecursiveAct() {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['ExportDirTitle'] });
     loading.present();
-    let list = await this.indexed.GetFileListFromDB(this.CurrentDir);
+    let targetDB = this.CurrentDir == 'todo' ? this.indexed.godotDB : this.indexed.ionicDB;
+    let list = await this.indexed.GetFileListFromDB(this.CurrentDir, undefined, targetDB);
     for (let i = 0, j = list.length; i < j; i++) {
-      let FileInfo = await this.indexed.GetFileInfoFromDB(list[i]);
-      let blob = await this.indexed.loadBlobFromUserPath(list[i], '');
+      let FileInfo = await this.indexed.GetFileInfoFromDB(list[i], undefined, targetDB);
+      let blob = await this.indexed.loadBlobFromUserPath(list[i], '', undefined, targetDB);
       let last_sep = list[i].lastIndexOf('/');
       let only_path = list[i].substring(0, last_sep);
       let filename = list[i].substring(last_sep + 1);
@@ -226,7 +240,8 @@ export class UserFsDirPage implements OnInit {
       try {
         if (FileInfo.mode == 16893) {
           await this.file.createDir(this.file.externalDataDirectory + only_path, filename, true);
-          throw '이거 폴더임'
+          loading.message = `${this.lang.text['UserFsDir']['ExportDirTitle']}: ${filename}`
+          throw '이거 폴더임';
         };
         if (this.CheckIfAccessable(list[i])) {
           await this.file.writeFile(this.file.externalDataDirectory + only_path + '/', filename, blob, {
@@ -265,33 +280,36 @@ export class UserFsDirPage implements OnInit {
   }
 
   async importFolderMiddleAct(entry: any) {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['Import'] });
     loading.present();
-    await this.importThisFolder(entry);
+    await this.importThisFolder(entry, loading);
     this.InAppBrowser = true;
     loading.dismiss();
   }
 
   /** 이 폴더와 파일 재귀 임포팅 */
-  async importThisFolder(entry: any) {
+  async importThisFolder(entry: any, loading: HTMLIonLoadingElement) {
     let path = entry.nativeURL.substring(0, entry.nativeURL.length - 1);
     let last_sep = path.lastIndexOf('/');
     let RecursiveEntry: any[] = await this.file.listDir(path.substring(0, last_sep) + '/', path.substring(last_sep + 1));
     for (let i = 0, j = RecursiveEntry.length; i < j; i++)
       if (RecursiveEntry[i].isDirectory)
-        await this.importThisFolder(RecursiveEntry[i]);
+        await this.importThisFolder(RecursiveEntry[i], loading);
       else {
         let target_path = RecursiveEntry[i].nativeURL.split('org.pjcone.portal/files/')[1];
-        let target_sep = RecursiveEntry[i].nativeURL.lastIndexOf('/') + 1;
-        let target_folder = RecursiveEntry[i].nativeURL.substring(0, target_sep);
-        console.log(target_path);
-        console.log(target_folder);
-        console.log(RecursiveEntry[i].name);
+        let targetDB = target_path.indexOf('todo/') == 0 ? this.indexed.godotDB : this.indexed.ionicDB;
         try {
-          let readFile = await this.file.readAsDataURL(target_folder, RecursiveEntry[i].name);
-          console.log('불러오기 성공: ', readFile);
+          const data = await Filesystem.readFile({
+            path: RecursiveEntry[i].nativeURL,
+          });
+          let base64 = (data.data as any).replace(/"|\\|=/g, '');
+          await this.indexed.saveBase64ToUserPath(',' + base64, target_path, undefined, targetDB);
+          loading.message = `${this.lang.text['UserFsDir']['Import']}: ${RecursiveEntry[i].name}`
         } catch (e) {
           console.log('불러오기 실패: ', e);
+          this.p5toast.show({
+            text: `${this.lang.text['UserFsDir']['ImportFailed']}: ${e}`,
+          });
         }
       }
   }
