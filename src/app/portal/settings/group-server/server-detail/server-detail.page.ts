@@ -175,6 +175,7 @@ export class ServerDetailPage implements OnInit {
     for (let i = this.Alternative[this.dedicated_info.target].length - 1; i >= 0; i--)
       if (!this.Alternative[this.dedicated_info.target][i].name)
         this.Alternative[this.dedicated_info.target].splice(i, 1);
+    this.Alternative[this.dedicated_info.target][this.index] = this.dedicated_info;
     await this.indexed.saveTextFileToUserPath(JSON.stringify(this.Alternative), 'servers/alternatives.json');
     this.modalCtrl.dismiss();
   }
