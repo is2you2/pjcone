@@ -892,7 +892,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   LocalHistoryList = [];
   /** 내부 저장소 채팅 기록 열람 */
   async LoadLocalChatHistory() {
-    if (this.ViewMsgIndex != 0) { // 위에 더 볼 수 있는 메시지가 있음 (이미 받은 것으로)
+    if (this.ViewMsgIndex > 0) { // 위에 더 볼 수 있는 메시지가 있음 (이미 받은 것으로)
       let ShowMeAgainCount = Math.min(this.ViewableMessage.length, Math.min(this.ViewMsgIndex, this.RefreshCount));
       this.ViewMsgIndex -= ShowMeAgainCount;
       this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
@@ -906,7 +906,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let FileURL = URL.createObjectURL(blob);
           this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
         } catch (e) { }
-        this.modulate_chatmsg(i, this.ViewableMessage.length);
+        this.modulate_chatmsg(i, ShowMeAgainCount);
       }
       this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
       this.pullable = this.ViewMsgIndex != 0 || Boolean(this.LocalHistoryList.length);
@@ -921,14 +921,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (e && v) {
             let json: any[] = JSON.parse(v.trim());
             for (let i = json.length - 1; i >= 0; i--) {
-              this.ModulateFileEmbedMessage(json[i]);
               this.nakama.translate_updates(json[i]);
               json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
               this.nakama.ModulateTimeDate(json[i]);
               this.messages.unshift(json[i]);
               this.ViewMsgIndex = Math.max(0, this.messages.length - this.RefreshCount);
               this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.RefreshCount);
-              this.modulate_chatmsg(0, this.ViewableMessage.length);
+              this.modulate_chatmsg(0, json.length);
             }
             for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
               try {
@@ -952,7 +951,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (e && v) {
           let json: any[] = JSON.parse(v.trim());
           for (let i = json.length - 1; i >= 0; i--) {
-            this.ModulateFileEmbedMessage(json[i]);
             this.nakama.translate_updates(json[i]);
             json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
             this.nakama.ModulateTimeDate(json[i]);
@@ -971,7 +969,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               let FileURL = URL.createObjectURL(blob);
               this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
             } catch (e) { }
-            this.modulate_chatmsg(i, this.ViewableMessage.length);
+            this.modulate_chatmsg(i, ShowMeAgainCount);
           }
           this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
         }
