@@ -181,7 +181,7 @@ export class IonicViewerPage implements OnInit {
       this.noti.noti.schedule({
         id: 6,
         title: `${this.lang.text['ContentViewer']['DownloadThisFile']}: ${j - i}`,
-        progressBar: { value: i + 1, maxValue: j },
+        progressBar: { value: i, maxValue: j },
         sound: null,
         smallIcon: 'res://diychat',
         color: 'b0b0b0',

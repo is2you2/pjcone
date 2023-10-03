@@ -351,12 +351,30 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           buttons: [{
             text: this.lang.text['ChatRoom']['Send'],
             handler: async () => {
-              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+              let loading = await this.loadingCtrl.create({ message: this.lang.text['ChatRoom']['MultipleSend'] });
               loading.present();
+              this.noti.noti.schedule({
+                id: 7,
+                title: this.lang.text['ChatRoom']['MultipleSend'],
+                progressBar: { indeterminate: true },
+                sound: null,
+                smallIcon: 'res://diychat',
+                color: 'b0b0b0',
+              });
               for (let i = 0, j = ev.target.files.length; i < j; i++) {
+                loading.message = `${this.lang.text['ChatRoom']['MultipleSend']}: ${j - i}`;
+                this.noti.noti.schedule({
+                  id: 7,
+                  title: this.lang.text['ChatRoom']['MultipleSend'],
+                  progressBar: { value: i, maxValue: j },
+                  sound: null,
+                  smallIcon: 'res://diychat',
+                  color: 'b0b0b0',
+                });
                 await this.selected_blobFile_callback_act(ev.target.files[i]);
                 await this.send();
               }
+              this.noti.ClearNoti(7);
               loading.dismiss();
               setTimeout(() => {
                 this.scroll_down_logs();
