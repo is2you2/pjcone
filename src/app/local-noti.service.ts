@@ -132,7 +132,7 @@ interface TotalNotiForm {
 export class LocalNotiService {
 
   constructor(
-    private noti: LocalNotifications,
+    public noti: LocalNotifications,
     private bgmode: BackgroundMode,
     private indexed: IndexedDBService,
   ) { }

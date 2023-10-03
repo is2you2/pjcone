@@ -15,6 +15,7 @@ import { ShareContentToOtherPage } from 'src/app/share-content-to-other/share-co
 import { NakamaService } from 'src/app/nakama.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from 'clipboardy';
+import { LocalNotiService } from 'src/app/local-noti.service';
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -36,6 +37,7 @@ export class IonicViewerPage implements OnInit {
     public global: GlobalActService,
     public nakama: NakamaService,
     private mClipboard: Clipboard,
+    private noti: LocalNotiService,
   ) { }
 
   blob: Blob;
@@ -160,6 +162,14 @@ export class IonicViewerPage implements OnInit {
   }
 
   async DownloadInOrder() {
+    this.noti.noti.schedule({
+      id: 6,
+      title: this.lang.text['ContentViewer']['DownloadThisFile'],
+      progressBar: { indeterminate: true },
+      sound: null,
+      smallIcon: 'res://diychat',
+      color: 'b0b0b0',
+    });
     for (let i = 0, j = this.Relevances.length; i < j; i++) { // 전체 다운로드시 개체 미리 생성하기
       if (!this.nakama.OnTransfer[this.isOfficial]) this.nakama.OnTransfer[this.isOfficial] = {};
       if (!this.nakama.OnTransfer[this.isOfficial][this.target]) this.nakama.OnTransfer[this.isOfficial][this.target] = {};
@@ -168,10 +178,19 @@ export class IonicViewerPage implements OnInit {
         this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id][this.Relevances[i].message_id] = {};
     }
     for (let i = 0, j = this.Relevances.length; i < j; i++) {
+      this.noti.noti.schedule({
+        id: 6,
+        title: `${this.lang.text['ContentViewer']['DownloadThisFile']}: ${j - i}`,
+        progressBar: { value: i + 1, maxValue: j },
+        sound: null,
+        smallIcon: 'res://diychat',
+        color: 'b0b0b0',
+      });
       let path = `servers/${this.isOfficial}/${this.target}/channels/${this.Relevances[i].channel_id}/files/msg_${this.Relevances[i].message_id}.${this.Relevances[i].content['file_ext']}`;
       let FileExist = await this.indexed.checkIfFileExist(path, undefined, this.targetDB);
       if (!FileExist) await this.DownloadCurrentFile(i);
     }
+    this.noti.ClearNoti(6);
   }
 
   ChangeToAnother(direction: number) {

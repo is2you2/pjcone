@@ -8,7 +8,8 @@ import { LanguageSettingService } from '../language-setting.service';
 import { P5ToastService } from '../p5-toast.service';
 import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { File } from '@awesome-cordova-plugins/file/ngx';
-import { Filesystem, Encoding } from '@capacitor/filesystem';
+import { Filesystem } from '@capacitor/filesystem';
+import { LocalNotiService } from '../local-noti.service';
 
 /** userfs 의 파일과 폴더 형식 */
 interface FileDir {
@@ -58,6 +59,7 @@ export class UserFsDirPage implements OnInit {
     private sanitizer: DomSanitizer,
     private file: File,
     private navCtrl: NavController,
+    private noti: LocalNotiService,
   ) { }
 
   is_ready = false;
@@ -96,6 +98,14 @@ export class UserFsDirPage implements OnInit {
     this.DirList.length = 0;
     this.FileList.length = 0;
     let _godot_list = await this.indexed.GetFileListFromDB('/', undefined, this.indexed.godotDB);
+    this.noti.noti.schedule({
+      id: 5,
+      title: this.lang.text['UserFsDir']['LoadingExplorer'],
+      progressBar: { indeterminate: true },
+      sound: null,
+      smallIcon: 'res://icon_mono',
+      color: 'b0b0b0',
+    });
     await this.ModulateIndexedFile(_godot_list, this.indexed.godotDB);
     let _ionic_list = await this.indexed.GetFileListFromDB('/')
     await this.ModulateIndexedFile(_ionic_list);
@@ -109,6 +119,7 @@ export class UserFsDirPage implements OnInit {
       if (a.path < b.path) return -1;
       return 0;
     });
+    this.noti.ClearNoti(5);
     this.initLoadingElement.dismiss();
     this.is_ready = true;
   }
@@ -143,7 +154,16 @@ export class UserFsDirPage implements OnInit {
             console.log('예상하지 못한 파일 모드: ', _info);
             break;
         }
-        this.initLoadingElement.message = `${this.lang.text['UserFsDir']['LoadingExplorer']}: ${_list.length - 1 - i}`;
+        let message = `${this.lang.text['UserFsDir']['LoadingExplorer']}: ${_list.length - 1 - i}`;
+        this.initLoadingElement.message = message;
+        this.noti.noti.schedule({
+          id: 5,
+          title: message,
+          progressBar: { value: i, maxValue: _list.length },
+          sound: null,
+          smallIcon: 'res://icon_mono',
+          color: 'b0b0b0',
+        });
       }, targetDB);
     }
   }
@@ -372,6 +392,7 @@ export class UserFsDirPage implements OnInit {
     this.FileList.forEach(file => {
       URL.revokeObjectURL(file.thumbnail);
     });
+    this.noti.ClearNoti(5);
   }
 
   ionViewWillLeave() {
