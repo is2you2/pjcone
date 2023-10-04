@@ -64,6 +64,10 @@ const routes: Routes = [
     path: 'weblink-gen',
     loadChildren: () => import('./weblink-gen/weblink-gen.module').then( m => m.WeblinkGenPageModule)
   },
+  {
+    path: 'tts-export',
+    loadChildren: () => import('./tts-export/tts-export.module').then( m => m.TtsExportPageModule)
+  },
 ];
 
 @NgModule({
