@@ -14,13 +14,17 @@ export class TtsExportPage implements OnInit {
   ) { }
 
   userInput = '';
+  userInput_placeholder = '';
 
   ngOnInit() { }
 
   async ReadThis() {
+    if (this.userInput)
+      this.userInput_placeholder = this.userInput;
+    this.userInput = '';
     try {
       await TextToSpeech.speak({
-        text: this.userInput,
+        text: this.userInput_placeholder,
         lang: this.lang.lang,
       });
     } catch (e) { }

@@ -11,7 +11,8 @@
   <ion-item-divider>
     <ion-label>{{lang.text['TTSExport']['TTSContent']}}</ion-label>
   </ion-item-divider>
-  <textarea class="infobox" [(ngModel)]="userInput" [placeholder]="lang.text['TTSExport']['TTSPlaceholder']"></textarea>
+  <textarea class="infobox" [(ngModel)]="userInput"
+    [placeholder]="userInput_placeholder || lang.text['TTSExport']['TTSPlaceholder']"></textarea>
   <ion-item button (click)="ReadThis()">
     <ion-label class="ion-text-center"> {{lang.text['TTSExport']['ReadThis']}}</ion-label>
   </ion-item>
