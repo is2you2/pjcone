@@ -418,9 +418,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           lerpVal = 1;
         else lerpVal = p.map(currentTime, this.startTimeP5Display, this.limitTimeP5Display, 0, 1, true);
         if (lerpVal <= this.AlertLerpStartFrom) {
-          color = p.color(this.userInput.custom_color || this.normal_color);
+          color = p.color((this.userInput.custom_color + 'bb') || this.normal_color);
         } else if (lerpVal > this.AlertLerpStartFrom)
-          color = this.userInput.custom_color ? p.color(this.userInput.custom_color)
+          color = this.userInput.custom_color ? p.color(this.userInput.custom_color + 'bb')
             : p.lerpColor(p.color(this.normal_color), p.color(this.alert_color), p.map(lerpVal, this.AlertLerpStartFrom, 1, 0, 1) * startAnimLerp);
       }
       p.draw = () => {
