@@ -28,7 +28,7 @@ SPDX-License-Identifier: MIT -->
     </ion-select>
   </ion-item>
   <ion-item>
-    <ion-select [label]="lang.text['QuickQRShare']['RTCServer']" (ionChange)="SelectRTCServer($event)" multiple="true"
+    <ion-select [label]="lang.text['WebRTCDevManager']['Title']" (ionChange)="SelectRTCServer($event)" multiple="true"
       [placeholder]="lang.text['QuickQRShare']['EmptyData']">
       <ion-select-option *ngFor="let server of rtcServer" [value]="server">
         {{ server.urls[0] }}</ion-select-option>
