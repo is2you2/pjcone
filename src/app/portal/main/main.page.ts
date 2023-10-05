@@ -9,6 +9,7 @@ import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginE
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
+import { WebrtcService } from 'src/app/webrtc.service';
 
 @Component({
   selector: 'app-main',
@@ -23,6 +24,7 @@ export class MainPage implements OnInit {
     public nakama: NakamaService,
     public statusBar: StatusManageService,
     private indexed: IndexedDBService,
+    private _webrtc: WebrtcService,
   ) { }
 
   ngOnInit() {

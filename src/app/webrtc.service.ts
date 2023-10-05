@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import * as p5 from 'p5';
+import 'p5/lib/addons/p5.sound';
 import { WebrtcManageIoDevPage } from './webrtc-manage-io-dev/webrtc-manage-io-dev.page';
 import { P5ToastService } from './p5-toast.service';
 import { LanguageSettingService } from './language-setting.service';
@@ -22,6 +23,7 @@ export class WebrtcService {
     private nakama: NakamaService,
     private mClipboard: Clipboard,
   ) {
+    console.log('생성됨');
     this.nakama.WebRTCService = this;
   }
 
@@ -213,8 +215,10 @@ export class WebrtcService {
 
   createP5_panel() {
     this.OnUse = true;
-    if (this.p5canvas)
+    if (this.p5canvas) {
+      clearTimeout(this.p5canvas['waiting_act']);
       this.p5canvas.remove();
+    }
     this.p5canvas = new p5((p: p5) => {
       /** 사용하는 div개체 */
       let div: p5.Element;
@@ -234,6 +238,39 @@ export class WebrtcService {
       /** 새 메시지 알림을 위한 외곽선 조정용 */
       let borderLerp = 1;
       p.setup = () => {
+        let osc: p5.Oscillator;
+        let waiting = () => {
+          if (this.JoinInited) {
+            osc.stop(.1);
+            clearTimeout(p['waiting_act']);
+          } else {
+            if (osc) osc.stop(.1);
+            osc = new p5.Oscillator(380, 'sine');
+            osc.start();
+            osc.amp(1, .15);
+            osc.amp(0, .75);
+            p['waiting_act'] = setTimeout(() => {
+              waiting();
+            }, 1200);
+          }
+        }
+        p['waiting_act'] = setTimeout(() => {
+          waiting();
+        }, 0);
+
+        p['hangup'] = () => {
+          if (!this.isConnected) return;
+          osc.stop(.1);
+          clearTimeout(p['waiting_act']);
+          osc = new p5.Oscillator(380, 'sine');
+          osc.start();
+          osc.freq(250, .35);
+          osc.amp(1, .15);
+          osc.amp(0, .25);
+          osc.amp(1, .35);
+          osc.amp(0, .45);
+        }
+
         p.noCanvas();
         div = p.createDiv();
         div.id('outterDiv');
@@ -373,13 +410,20 @@ export class WebrtcService {
         });
       }
 
+      let NotUsed = false;
       p.draw = () => {
         if (borderLerp > 0)
           borderLerp -= .03;
         update_border();
         if (!this.OnUse) { // 사용하지 않게 되면 퇴장 애니메이션
-          if (this.p5canvas)
-            this.p5canvas.remove();
+          if (this.p5canvas && !NotUsed) {
+            this.p5canvas['hangup']();
+            div.hide();
+            setTimeout(() => {
+              if (!this.OnUse) this.p5canvas.remove();
+            }, 1000);
+            NotUsed = true;
+          }
         }
       }
 
@@ -427,6 +471,10 @@ export class WebrtcService {
           case 'failed': // 실패
           case 'disconnected': // 연결 끊어짐
             await this.close_webrtc();
+            break;
+          case 'connected':
+            if (this.p5canvas)
+              clearTimeout(this.p5canvas['waiting_act']);
             break;
           default:
             console.log('연결 상태 변경됨: ', ev.target.connectionState);
@@ -618,6 +666,8 @@ export class WebrtcService {
 
   /** 통화 종료하기 */
   async HangUpCall(leaveMatch: boolean) {
+    if (this.p5canvas)
+      this.p5canvas['hangup']();
     this.isCallable = true;
     this.isConnected = false;
     if (this.PeerConnection)
