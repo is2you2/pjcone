@@ -28,10 +28,11 @@ var mutex:= Mutex.new()
 # 새 글 적기
 func write_content(data:String):
 	mutex.lock()
+	wrote.push_back(data)
+	data = data.replace('\n', '\\n')
 	file.seek_end()
 	file.store_line(data)
 	file.flush()
-	wrote.push_back(data)
 	mutex.unlock()
 
 # 게시물 편집하기
