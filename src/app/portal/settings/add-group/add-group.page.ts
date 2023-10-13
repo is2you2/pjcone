@@ -20,7 +20,7 @@ import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 export class AddGroupPage implements OnInit {
 
   constructor(
-    private modalCtrl: ModalController,
+    public modalCtrl: ModalController,
     private p5toast: P5ToastService,
     private nakama: NakamaService,
     private statusBar: StatusManageService,

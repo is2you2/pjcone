@@ -4,7 +4,7 @@ SPDX-License-Identifier: MIT -->
 <ion-header>
   <ion-toolbar>
     <ion-title>{{lang.text['AddGroup']['Title']}}</ion-title>
-    <ion-buttons slot="start">
+    <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
       <ion-back-button defaultHref=""></ion-back-button>
     </ion-buttons>
   </ion-toolbar>
@@ -17,12 +17,13 @@ SPDX-License-Identifier: MIT -->
       <ion-item slot="header">
         <ion-label>{{lang.text['AddGroup']['SelectServer']}}</ion-label>
         <ion-label class="ion-text-right">{{servers[index].name}}</ion-label>
+        <ion-icon class="ion-accordion-toggle-icon hide_accordion_icon"></ion-icon>
       </ion-item>
-      <ion-list slot="content">
+      <div slot="content">
         <ion-item *ngFor="let server of servers; index as i" button (click)="select_server(i)">
           <ion-label>{{server.name}}</ion-label>
         </ion-item>
-      </ion-list>
+      </div>
     </ion-accordion>
   </ion-accordion-group>
   <ion-item-divider>
