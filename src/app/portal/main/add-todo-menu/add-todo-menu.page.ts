@@ -351,20 +351,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.show_count_timer();
   }
 
-  isStartCalendarHidden = true;
-  /** 달력 켜기끄기 */
-  toggle_start_calendar() {
-    this.isStartCalendarHidden = !this.isStartCalendarHidden;
-    this.isCalendarHidden = true;
-  }
-
-  isCalendarHidden = true;
-  /** 달력 켜기끄기 */
-  toggle_calendar() {
-    this.isCalendarHidden = !this.isCalendarHidden;
-    this.isStartCalendarHidden = true;
-  }
-
   start_change(ev: any) {
     if (!this.isLimitChangable) return;
     this.userInput.startFrom = ev.detail.value;
