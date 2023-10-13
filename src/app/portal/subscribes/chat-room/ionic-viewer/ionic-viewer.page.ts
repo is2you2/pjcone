@@ -255,7 +255,6 @@ export class IonicViewerPage implements OnInit {
             this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_related_creator[i].user_id;
         }
         this.content_related_creator[i].timeDisplay = new Date(this.content_related_creator[i].timestamp).toLocaleString();
-        this.set_various_display(this.content_related_creator[i]);
       }
     } catch (e) { }
     try { // 중복 정보 통합
