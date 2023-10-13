@@ -24,13 +24,13 @@ SPDX-License-Identifier: MIT -->
     <ion-label>{{lang.text['CreatorInfo']['thanks_to']}}</ion-label>
   </ion-item-divider>
   <div class="infobox content_size thanks_bg">
-    <span *ngFor="let user of special_thanks_to; let i = index">
-      <span *ngIf="i != 0">{{', '}}</span>
-      <span *ngIf="!user.url">
-        {{user[lang.lang]}}
-      </span>
-      <a *ngIf="user.url" [href]="user.url" target="_system">{{user[lang.lang]}}</a>
-    </span>
+    <ion-chip *ngFor="let user of special_thanks_to; let i = index" (click)="go_to_helper_page(user.url)">
+      <!-- <ion-avatar>
+        <img src="https://ionicframework.com/docs/img/demos/avatar.svg" />
+      </ion-avatar> -->
+      <ion-icon name="person-circle-outline"></ion-icon>
+      <ion-label>{{user[lang.lang]}}</ion-label>
+    </ion-chip>
   </div>
   <div *ngIf="isMobileApp">
     <ion-item-divider>
