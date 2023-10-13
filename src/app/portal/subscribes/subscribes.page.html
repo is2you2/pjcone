@@ -17,13 +17,13 @@ SPDX-License-Identifier: MIT -->
       <ion-item slot="header">
         <ion-label>{{lang.text['Subscribes']['has_noties']}}</ion-label>
       </ion-item>
-      <ion-list slot="content">
+      <div slot="content">
         <div *ngFor="let i of [0,1,2];">
           <ion-item *ngIf="nakama.notifications_rearrange.length > i" button (click)="check_notifications(i)">
             <ion-label>{{nakama.notifications_rearrange[i]['request']}}</ion-label>
           </ion-item>
         </div>
-      </ion-list>
+      </div>
     </ion-accordion>
   </ion-accordion-group>
   <ion-item-divider>

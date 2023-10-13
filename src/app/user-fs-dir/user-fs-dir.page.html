@@ -50,8 +50,9 @@
             <ion-icon *ngIf="file.viewer == 'disabled'" slot="start" name="document"></ion-icon>
             <ion-label *ngIf="FileSel.value == file.path" text-wrap>{{file.name}}</ion-label>
             <ion-label *ngIf="FileSel.value != file.path">{{file.name}}</ion-label>
+            <ion-icon class="ion-accordion-toggle-icon hide_accordion_icon"></ion-icon>
           </ion-item>
-          <ion-list slot="content">
+          <div slot="content">
             <ion-item button>
               <ion-label>{{lang.text['UserFsDir']['Action']}}</ion-label>
               <ion-button *ngIf="file.viewer != 'disabled' && file.viewer != 'image'" class="ion-text-right"
@@ -72,7 +73,7 @@
               <ion-label>{{lang.text['UserFsDir']['CreateAt']}}</ion-label>
               <ion-label class="ion-text-end">{{file.timestamp}}</ion-label>
             </ion-item>
-          </ion-list>
+          </div>
         </ion-accordion>
       </div>
     </ion-accordion-group>
