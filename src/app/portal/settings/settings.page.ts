@@ -41,6 +41,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
   can_use_http = false;
+  is_nativefier = isNativefier;
 
   ngOnInit() {
     this.nakama.removeBanner();
@@ -254,6 +255,9 @@ export class SettingsPage implements OnInit, OnDestroy {
       link.click();
       document.body.removeChild(link);
       link.remove();
+      this.p5toast.show({
+        text: this.lang.text['ContentViewer']['fileSaved'],
+      });
     }
   }
 
