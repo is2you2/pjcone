@@ -4,7 +4,7 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { iosTransitionAnimation, LoadingController, ModalController, NavController } from '@ionic/angular';
-import { isPlatform, SERVER_PATH_ROOT } from 'src/app/app.component';
+import { isNativefier, isPlatform, SERVER_PATH_ROOT } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
@@ -56,7 +56,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.nakama.on_socket_disconnected['settings_admin_check'] = () => {
       this.check_if_admin();
     }
-    this.can_use_http = window.location.protocol == 'http:';
+    this.can_use_http = (window.location.protocol == 'http:') || isNativefier;
   }
 
   /** 관리자로 등록된 서버들 */

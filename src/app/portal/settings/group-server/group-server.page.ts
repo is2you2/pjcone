@@ -10,7 +10,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { ServerDetailPage } from './server-detail/server-detail.page';
 import clipboard from "clipboardy";
-import { isPlatform } from 'src/app/app.component';
+import { isNativefier, isPlatform } from 'src/app/app.component';
 import * as p5 from 'p5';
 import { FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
@@ -41,7 +41,7 @@ export class GroupServerPage implements OnInit {
 
   ngOnInit() {
     this.servers = this.nakama.get_all_server_info(true);
-    this.isSSLConnect = window.location.protocol == 'https:';
+    this.isSSLConnect = (window.location.protocol == 'https:') && !isNativefier;
     if (this.isSSLConnect) this.dedicated_info.useSSL = true;
 
     this.nakama.removeBanner();

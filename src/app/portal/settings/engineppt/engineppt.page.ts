@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { isPlatform } from 'src/app/app.component';
+import { isNativefier, isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { ToolServerService } from 'src/app/tool-server.service';
@@ -46,7 +46,7 @@ export class EnginepptPage implements OnInit {
   ngOnInit() {
     this.engine_ppt_file_sel = `engine_ppt_file_sel_${new Date().getTime()}`;
     this.engine_ppt_mobile_sel = `engine_ppt_mobile_sel_${new Date().getTime()}`;
-    this.isSSLConnect = window.location.protocol == 'https:';
+    this.isSSLConnect = (window.location.protocol == 'https:') && !isNativefier;
   }
 
   ionViewWillEnter() {

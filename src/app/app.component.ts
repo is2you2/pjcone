@@ -15,6 +15,8 @@ import { LanguageSettingService } from './language-setting.service';
 import { GlobalActService } from './global-act.service';
 /** 페이지가 돌고 있는 플렛폼 구분자 */
 export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'DesktopPWA';
+/** Nativefier로 실행중인지 검토하기 */
+export var isNativefier = false;
 /** 이미지 등 자료 링크용(웹 사이트 host) */
 export const SERVER_PATH_ROOT: string = 'https://is2you2.github.io/';
 import * as p5 from 'p5';
@@ -47,6 +49,7 @@ export class AppComponent {
       isPlatform = 'Android';
     else if (platform.is('iphone'))
       isPlatform = 'iOS';
+    isNativefier = platform.is('electron');
     indexed.initialize(() => {
       // 앱 재시작시 자동으로 동기화할 수 있도록 매번 삭제
       let init = global.CatchGETs(location.href) || {};

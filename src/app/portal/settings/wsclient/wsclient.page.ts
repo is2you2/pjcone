@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { isNativefier } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 
@@ -32,7 +33,7 @@ export class WsclientPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.logsDiv = document.getElementById('logs');
-    let is_ssl = window.location.protocol == 'https:';
+    let is_ssl = (window.location.protocol == 'https:') && !isNativefier;
     if (is_ssl) this.placeholder_address = 'wss://127.0.0.1:0000';
   }
 

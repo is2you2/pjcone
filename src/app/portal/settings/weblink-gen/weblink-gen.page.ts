@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from 'clipboardy';
-import { SERVER_PATH_ROOT } from 'src/app/app.component';
+import { SERVER_PATH_ROOT, isNativefier } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -47,7 +47,7 @@ export class WeblinkGenPage implements OnInit {
   isSSLConnect = false;
 
   ngOnInit() {
-    this.isSSLConnect = window.location.protocol == 'https:';
+    this.isSSLConnect = (window.location.protocol == 'https:') && !isNativefier;
     this.servers = this.nakama.get_all_server_info();
     this.groups = this.nakama.rearrange_group_list();
     this.indexed.loadTextFromUserPath('servers/webrtc_server.json', (e, v) => {
