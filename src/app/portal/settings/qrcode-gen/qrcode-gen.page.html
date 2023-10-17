@@ -16,5 +16,6 @@
   </ion-item-divider>
   <textarea class="infobox" [(ngModel)]="userInput" (keyup)="textarea_changed($event)"
     [placeholder]="lang.text['QRCodeGen']['InputHere']"></textarea>
-  <img *ngIf="QRCode" style="width: 100%; height: auto;" [src]="QRCode" alt="Loading">
+  <img *ngIf="QRCode" id="QRImage" (click)="flip_qrcode()" style="width: 100%; height: auto;" [src]="QRCode"
+    alt="Loading">
 </ion-content>

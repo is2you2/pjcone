@@ -21,6 +21,7 @@ export class QrcodeGenPage implements OnInit {
   /** 정보글 불러오기 */
   QRCode: any;
   userInput: string;
+  isQRFliped = false;
 
   async ngOnInit() {
     let paste: string;
@@ -31,6 +32,14 @@ export class QrcodeGenPage implements OnInit {
     }
     this.userInput = paste;
     this.textarea_changed();
+  }
+
+  flip_qrcode() {
+    let QRImage = document.getElementById('QRImage');
+    this.isQRFliped = !this.isQRFliped;
+    if (this.isQRFliped)
+      QRImage.style.scale = '-1 1';
+    else QRImage.style.scale = '1 1';
   }
 
   textarea_changed(_ev?: any) {
