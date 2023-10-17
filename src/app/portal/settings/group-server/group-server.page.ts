@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonModal, IonToggle, LoadingController, ModalController } from '@ionic/angular';
+import { IonAccordionGroup, IonModal, IonToggle, LoadingController, ModalController } from '@ionic/angular';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -487,7 +487,8 @@ export class GroupServerPage implements OnInit {
   /** 채도 변화자 */
   lerpVal: number;
   @ViewChild('ToggleOnline') ToggleOnline: IonToggle;
-  async toggle_online() {
+  @ViewChild('ServersList') ServersList: IonAccordionGroup;
+  toggle_online() {
     this.nakama.users.self['online'] = this.ToggleOnline.checked;
     if (this.ToggleOnline.checked) {
       this.announce_update_profile = false;
@@ -511,7 +512,7 @@ export class GroupServerPage implements OnInit {
         this.ToggleOnline.checked = false;
       }
     } else {
-      await this.nakama.logout_all_server();
+      this.nakama.logout_all_server();
       delete this.nakama.users.self['password'];
       delete this.nakama.users.self['display_name'];
       this.nakama.groups = {
@@ -526,6 +527,7 @@ export class GroupServerPage implements OnInit {
       this.nakama.rearrange_channels();
       this.change_img_smoothly('');
     }
+    this.ServersList.value = this.ToggleOnline.checked ? 'open' : undefined;
     this.p5canvas.loop();
   }
 
