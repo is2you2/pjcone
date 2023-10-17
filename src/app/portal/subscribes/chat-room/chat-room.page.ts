@@ -10,7 +10,7 @@ import * as p5 from "p5";
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
-import { isPlatform } from 'src/app/app.component';
+import { isNativefier, isPlatform } from 'src/app/app.component';
 import { IonicViewerPage } from './ionic-viewer/ionic-viewer.page';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -673,6 +673,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (this.info['redirect']['type'] == 3)
         this.extended_buttons[2].isHide = false;
     }
+    this.extended_buttons[9].isHide = isNativefier;
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
     setTimeout(() => {
