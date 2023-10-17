@@ -26,12 +26,14 @@ SPDX-License-Identifier: MIT -->
       </div>
     </ion-accordion>
   </ion-accordion-group>
-  <ion-item-divider>
-    <ion-label>{{lang.text['Subscribes']['almighty_link']}}</ion-label>
-  </ion-item-divider>
-  <ion-item button (click)="scanQRCode()">
-    <ion-label class="ion-text-center">{{lang.text['Subscribes']['almighty_button']}}</ion-label>
-  </ion-item>
+  <div *ngIf="!cant_dedicated">
+    <ion-item-divider>
+      <ion-label>{{lang.text['Subscribes']['almighty_link']}}</ion-label>
+    </ion-item-divider>
+    <ion-item button (click)="scanQRCode()">
+      <ion-label class="ion-text-center">{{lang.text['Subscribes']['almighty_button']}}</ion-label>
+    </ion-item>
+  </div>
   <ion-item-divider>
     <ion-label>{{lang.text['Subscribes']['Chat']}}</ion-label>
   </ion-item-divider>

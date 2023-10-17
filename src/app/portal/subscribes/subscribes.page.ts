@@ -32,9 +32,13 @@ export class SubscribesPage implements OnInit {
 
   ngOnInit() { }
 
+  cant_dedicated = false;
+
   ionViewDidEnter() {
     this.nakama.subscribe_lock = true;
     this.nakama.resumeBanner();
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
+      this.cant_dedicated = true;
   }
 
   StartScan = false;
