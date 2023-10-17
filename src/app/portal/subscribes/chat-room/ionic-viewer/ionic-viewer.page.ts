@@ -608,29 +608,31 @@ export class IonicViewerPage implements OnInit {
           ThumbnailURL = URL.createObjectURL(thumbnail);
         } catch (e) { }
         if (!this.NeedDownloadFile && this.CurrentViewId == GetViewId)
-          await this.global.CreateGodotIFrame('content_viewer_canvas', {
-            local_url: 'assets/data/godot/viewer.pck',
-            title: 'ViewerEx',
-            path: AlternativePCKPath,
-            alt_path: this.FileInfo['path'] || this.navParams.get('path'),
-            ext: this.FileInfo['file_ext'],
-            force_logo: true,
-            background: ThumbnailURL,
-            // modify_image
-            receive_image: async (base64: string, width: number, height: number) => {
-              let tmp_path = 'tmp_files/modify_image.png';
-              await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path, undefined, this.indexed.godotDB);
-              this.modalCtrl.dismiss({
-                type: 'image',
-                path: tmp_path,
-                width: width,
-                height: height,
-                msg: this.MessageInfo,
-                index: this.RelevanceIndex - 1,
-              });
-            }
-          }, 'create_thumbnail', this.indexed.ionicDB);
-        if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
+          setTimeout(async () => {
+            await this.global.CreateGodotIFrame('content_viewer_canvas', {
+              local_url: 'assets/data/godot/viewer.pck',
+              title: 'ViewerEx',
+              path: AlternativePCKPath,
+              alt_path: this.FileInfo['path'] || this.navParams.get('path'),
+              ext: this.FileInfo['file_ext'],
+              force_logo: true,
+              background: ThumbnailURL,
+              // modify_image
+              receive_image: async (base64: string, width: number, height: number) => {
+                let tmp_path = 'tmp_files/modify_image.png';
+                await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path, undefined, this.indexed.godotDB);
+                this.modalCtrl.dismiss({
+                  type: 'image',
+                  path: tmp_path,
+                  width: width,
+                  height: height,
+                  msg: this.MessageInfo,
+                  index: this.RelevanceIndex - 1,
+                });
+              }
+            }, 'create_thumbnail', this.indexed.ionicDB);
+            if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
+          }, 100);
         break;
       case 'disabled':
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
