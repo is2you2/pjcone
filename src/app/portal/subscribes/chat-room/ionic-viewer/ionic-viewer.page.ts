@@ -598,11 +598,10 @@ export class IonicViewerPage implements OnInit {
         let ThumbnailURL: string;
         let GetViewId = this.MessageInfo.message_id;
         let AlternativePCKPath: string;
-        if (!this.targetDB) { // ionicDB 라면 DB간 파일 교체
-          AlternativePCKPath = 'tmp_files/duplicate/viewer.pck';
-          let blob = await this.indexed.loadBlobFromUserPath(this.FileInfo['path'] || this.navParams.get('path'), '');
-          await this.indexed.saveBlobToUserPath(blob, AlternativePCKPath, undefined, this.indexed.godotDB);
-        }
+        AlternativePCKPath = 'tmp_files/duplicate/viewer.pck';
+        let blob = await this.indexed.loadBlobFromUserPath(
+          this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
+        await this.indexed.saveBlobToUserPath(blob, AlternativePCKPath, undefined, this.indexed.godotDB);
         try {
           let thumbnail = await this.indexed.loadBlobFromUserPath((this.FileInfo['path'] || this.navParams.get('path'))
             + '_thumbnail.png', '', undefined, this.targetDB);
@@ -961,6 +960,8 @@ export class IonicViewerPage implements OnInit {
       let is_exist = await this.file.checkFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
       if (is_exist) await this.file.removeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
     } catch (e) { }
+    let list = await this.indexed.GetFileListFromDB('tmp_files', undefined, this.indexed.godotDB);
+    list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB))
   }
 
   copy_url(data: string) {
