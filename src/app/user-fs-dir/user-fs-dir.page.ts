@@ -119,7 +119,9 @@ export class UserFsDirPage implements OnInit {
       if (a.path < b.path) return -1;
       return 0;
     });
-    this.noti.ClearNoti(5);
+    setTimeout(() => {
+      this.noti.ClearNoti(5);
+    }, 100);
     this.initLoadingElement.dismiss();
     this.is_ready = true;
   }
