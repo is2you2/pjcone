@@ -93,6 +93,10 @@ export class GroupServerPage implements OnInit {
     this.announce_update_profile = this.original_profile['display_name'] !== undefined;
   }
 
+  ionViewWillEnter() {
+    this.ServersList.value = this.ToggleOnline.checked ? 'open' : undefined;
+  }
+
   link_group(_is_official: string, _target: string) {
     if (this.isOverrideButtonPressed) {
       this.isOverrideButtonPressed = false;
