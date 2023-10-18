@@ -36,8 +36,7 @@ func load_pck():
 		$CenterContainer/Label.text = 'Cannot open file: %s' % 'user://%s' % window['path']
 	else: # 패키지를 가지고 있는 경우
 		$CenterContainer.queue_free()
-		var inst = load('res://ContentViewer.tscn')
-		add_child(inst.instance())
+		get_parent().load_next_scene('res://ContentViewer.tscn')
 
 
 func modify_image(args):

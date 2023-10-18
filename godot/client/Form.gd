@@ -45,8 +45,7 @@ func load_package_debug(files:PoolStringArray, scr):
 	else: # 정상적으로 불러와짐
 		$CenterContainer.queue_free()
 		print('Godot-debug: 패키지 타겟: ', target)
-		var inst = load('res://ContentViewer.tscn')
-		add_child(inst.instance())
+		load_next_scene('res://ContentViewer.tscn')
 	get_tree().disconnect("files_dropped", self, 'load_package_debug')
 
 # 동작하려는 pck 정보 불러오기
@@ -63,10 +62,32 @@ func load_package(act_name:String):
 			start_download_pck()
 	else: # 패키지를 가지고 있는 경우
 		$CenterContainer.queue_free()
-		var inst = load('res://%s.tscn' % (window.title if window.title else 'Main'))
-		add_child(inst.instance())
+		load_next_scene('res://%s.tscn' % (window.title if window.title else 'Main'))
 		if get_tree().is_connected("files_dropped", self, 'load_package_debug'):
 			get_tree().disconnect("files_dropped", self, 'load_package_debug')
+
+# 천천히 불러오기
+func load_next_scene(path:String):
+	var _loader:= ResourceLoader.load_interactive(path)
+	var current:int
+	var length:int = _loader.get_stage_count()
+	var _err:= _loader.poll()
+	while _err == OK:
+		_err = _loader.poll()
+		current = _loader.get_stage()
+		if OS.has_feature('JavaScript') and window.update_load:
+			window.update_load(current, length)
+		yield(get_tree(), "physics_frame")
+	# 로딩이 종료되고나면
+	if _err == ERR_FILE_EOF:
+		if OS.has_feature('JavaScript') and window.update_load:
+			window.update_load(length, length)
+		yield(get_tree().create_timer(.4), "timeout")
+		var _resource:= _loader.get_resource()
+		var _inst = _resource.instance()
+		add_child(_inst)
+	else:
+		printerr('예상치 못한 이유로 씬 로드 오류 발생: ', _err)
 
 # 파일 다운로드 시작
 func start_download_pck():

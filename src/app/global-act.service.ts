@@ -85,6 +85,10 @@ interface GodotFrameKeys {
    * 고도 프레임을 새로 생성할 때 자동으로 실행됨
    */
   quit_godot?: Function;
+  /** **사용금지**  
+   * 패키지 불러오기 상태를 반환함 (Client 기본값)
+   */
+  update_load?: Function;
   /** 고도엔진과 상호작용하기 위한 값들, 고도엔진에서 JavaScript.get_interface('window')[id]로 접근 */
   [id: string]: any;
 }
@@ -287,6 +291,12 @@ export class GlobalActService {
           p.imageMode(p.CENTER);
           p.rectMode(p.CENTER);
           p.noStroke();
+          p['CurrentLoaded'] = 0;
+          p['LoadLength'] = 1;
+          this.godot_window['update_load'] = (current: number, length: number) => {
+            p['CurrentLoaded'] = current;
+            p['LoadLength'] = length;
+          }
           p.loadImage(keys.force_logo ? 'assets/icon/favicon.png' : `assets/icon/${_frame_name}.png`, v => {
             icon = v;
           });
@@ -307,10 +317,12 @@ export class GlobalActService {
         let loadingRot = 0;
         let splash_bg_color = isDarkMode ? 80 : 200;
         let loading_box = isDarkMode ? 200 : 80;
+        let loading_bar = isDarkMode ? 40 : 100;
         p.draw = () => {
           p.clear(255, 255, 255, 255);
-          p.background(splash_bg_color, p.constrain(255 * FadeLerp, 0, 255));
-          p.tint(255, p.constrain(255 * FadeLerp, 0, 255));
+          let CurrentFade = p.constrain(255 * FadeLerp, 0, 255);
+          p.background(splash_bg_color,);
+          p.tint(255, CurrentFade);
           if (background) p.image(background, p.width / 2, p.height / 2, backgroundWidth, backgroundHeight);
           if (icon) p.image(icon, p.width / 2, p.height / 2);
           p.push();
@@ -338,6 +350,14 @@ export class GlobalActService {
           p.rotate(-loadingRot * 2);
           p.rect(0, 0, loading_size, loading_size, loading_corner);
           p.pop();
+          p.pop();
+          p.push();
+          p.translate(p.width / 2, p.height / 2 + 120);
+          p.stroke(loading_bar, CurrentFade);
+          p.strokeWeight(3);
+          p.line(-30, 0, 30, 0);
+          p.stroke(loading_box, CurrentFade);
+          p.line(-30, 0, p.lerp(-30, 30, p['CurrentLoaded'] / p['LoadLength']), 0);
           p.pop();
           if (ready_to_show) {
             FadeLerp -= .04;
