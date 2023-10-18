@@ -502,8 +502,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 viewer: 'text',
                 filename: new_textfile_name,
               },
-              targetDB: this.indexed.godotDB,
             },
+            targetDB: this.indexed.godotDB,
             no_edit: true,
           },
         }).then(v => {

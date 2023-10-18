@@ -679,7 +679,7 @@ export class IonicViewerPage implements OnInit {
     // 채널 채팅에서는 별도 파일첨부로 처리
     let blob = new Blob([this.p5canvas['TextArea'].value], { type: this.FileInfo.type });
     blob['name'] = this.FileInfo.filename;
-    if (this.OpenInChannelChat) {
+    if (this.OpenInChannelChat) { // 채널 채팅에서 열람
       this.modalCtrl.dismiss({
         type: 'text',
         blob: blob,
@@ -690,7 +690,7 @@ export class IonicViewerPage implements OnInit {
       loading.present();
       let tmp_path = `tmp_files/texteditor/${this.FileInfo.filename}`;
       if (!this.FileInfo.path) this.FileInfo.path = tmp_path;
-      await this.indexed.saveBlobToUserPath(blob, tmp_path, undefined, this.indexed.godotDB);
+      await this.indexed.saveBlobToUserPath(blob, tmp_path, undefined, this.targetDB);
       loading.dismiss();
       this.p5toast.show({
         text: this.lang.text['ContentViewer']['fileSaved'],
@@ -962,8 +962,6 @@ export class IonicViewerPage implements OnInit {
       let is_exist = await this.file.checkFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
       if (is_exist) await this.file.removeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
     } catch (e) { }
-    let list = await this.indexed.GetFileListFromDB('tmp_files', undefined, this.indexed.godotDB);
-    list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB))
   }
 
   copy_url(data: string) {
