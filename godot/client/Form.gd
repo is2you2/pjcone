@@ -67,7 +67,7 @@ func load_package(act_name:String):
 			get_tree().disconnect("files_dropped", self, 'load_package_debug')
 
 # 천천히 불러오기
-func load_next_scene(path:String):
+func load_next_scene(path:String, targetNode:Node = self):
 	var _loader:= ResourceLoader.load_interactive(path)
 	var current:int
 	var length:int = _loader.get_stage_count()
@@ -85,7 +85,7 @@ func load_next_scene(path:String):
 		yield(get_tree().create_timer(.4), "timeout")
 		var _resource:= _loader.get_resource()
 		var _inst = _resource.instance()
-		add_child(_inst)
+		targetNode.add_child(_inst)
 	else:
 		printerr('예상치 못한 이유로 씬 로드 오류 발생: ', _err)
 
