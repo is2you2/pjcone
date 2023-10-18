@@ -598,10 +598,12 @@ export class IonicViewerPage implements OnInit {
         let ThumbnailURL: string;
         let GetViewId = this.MessageInfo.message_id;
         let AlternativePCKPath: string;
-        AlternativePCKPath = 'tmp_files/duplicate/viewer.pck';
-        let blob = await this.indexed.loadBlobFromUserPath(
-          this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
-        await this.indexed.saveBlobToUserPath(blob, AlternativePCKPath, undefined, this.indexed.godotDB);
+        if (this.targetDB == this.indexed.ionicDB) {
+          AlternativePCKPath = 'tmp_files/duplicate/viewer.pck';
+          let blob = await this.indexed.loadBlobFromUserPath(
+            this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
+          await this.indexed.saveBlobToUserPath(blob, AlternativePCKPath, undefined, this.indexed.godotDB);
+        }
         try {
           let thumbnail = await this.indexed.loadBlobFromUserPath((this.FileInfo['path'] || this.navParams.get('path'))
             + '_thumbnail.png', '', undefined, this.targetDB);
@@ -612,7 +614,7 @@ export class IonicViewerPage implements OnInit {
             await this.global.CreateGodotIFrame('content_viewer_canvas', {
               local_url: 'assets/data/godot/viewer.pck',
               title: 'ViewerEx',
-              path: AlternativePCKPath,
+              path: AlternativePCKPath || this.FileInfo['path'] || this.navParams.get('path'),
               alt_path: this.FileInfo['path'] || this.navParams.get('path'),
               ext: this.FileInfo['file_ext'],
               force_logo: true,
@@ -630,7 +632,7 @@ export class IonicViewerPage implements OnInit {
                   index: this.RelevanceIndex - 1,
                 });
               }
-            }, 'create_thumbnail', this.indexed.ionicDB);
+            }, 'create_thumbnail', this.targetDB);
             if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
           }, 100);
         break;
@@ -713,7 +715,7 @@ export class IonicViewerPage implements OnInit {
         loading.present();
         try {
           let blob: Blob;
-          this.image_info['path'] = `tmp_files/external_image_edit/image_download.${this.FileInfo.file_ext}`;
+          this.image_info['path'] = `tmp_files/modify_image.png`;
           if (this.FileInfo['url'])
             blob = await fetch(this.FileInfo['url']).then(r => r.blob());
           else blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path || this.navParams.get('path'), (this.FileInfo.type || ''), undefined, this.targetDB);
@@ -747,8 +749,8 @@ export class IonicViewerPage implements OnInit {
         this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
           try {
             loading.dismiss();
-            this.image_info['path'] = 'tmp_files/text_edit/text_copy.png';
-            await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, '', undefined, this.indexed.godotDB),
+            this.image_info['path'] = 'tmp_files/modify_image.png';
+            await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
               this.image_info['path'], undefined, this.indexed.godotDB);
             this.modalCtrl.dismiss({
               type: 'image',
@@ -771,7 +773,7 @@ export class IonicViewerPage implements OnInit {
           this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
             try {
               loading.dismiss();
-              this.image_info['path'] = 'tmp_files/video_edit/frame.png';
+              this.image_info['path'] = 'tmp_files/modify_image.png';
               await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
                 this.image_info['path'], undefined, this.indexed.godotDB);
               this.modalCtrl.dismiss({
