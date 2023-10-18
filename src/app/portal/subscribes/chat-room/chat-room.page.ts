@@ -1364,6 +1364,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           path: _path,
           isOfficial: this.isOfficial,
           target: this.target,
+          targetDB: this.indexed.ionicDB,
           relevance: attaches,
         },
       }).then(v => {

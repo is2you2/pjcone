@@ -956,6 +956,8 @@ export class IonicViewerPage implements OnInit {
         try {
           this.global.godot_window['filename'] = this.FileInfo.filename;
           this.global.godot_window['create_thumbnail'](this.FileInfo);
+          let list = await this.indexed.GetFileListFromDB('tmp_files/duplicate', undefined, this.indexed.godotDB);
+          list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB))
         } catch (e) { }
         break;
     }

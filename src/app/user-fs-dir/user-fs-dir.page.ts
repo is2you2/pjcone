@@ -203,6 +203,7 @@ export class UserFsDirPage implements OnInit {
                 path: info.path,
               }
             },
+            targetDB: this.indexed.ionicDB,
             no_edit: true,
             path: info.path,
           },
