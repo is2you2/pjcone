@@ -317,7 +317,7 @@ export class GlobalActService {
         let loadingRot = 0;
         let splash_bg_color = isDarkMode ? 80 : 200;
         let loading_box = isDarkMode ? 200 : 80;
-        let loading_bar = isDarkMode ? 40 : 100;
+        let loading_bar = isDarkMode ? 40 : 160;
         p.draw = () => {
           p.clear(255, 255, 255, 255);
           let CurrentFade = p.constrain(255 * FadeLerp, 0, 255);
