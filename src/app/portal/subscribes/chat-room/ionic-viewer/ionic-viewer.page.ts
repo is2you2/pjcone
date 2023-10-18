@@ -598,7 +598,7 @@ export class IonicViewerPage implements OnInit {
         let ThumbnailURL: string;
         let GetViewId = this.MessageInfo.message_id;
         let AlternativePCKPath: string;
-        if (this.targetDB == this.indexed.ionicDB) {
+        if (this.targetDB != this.indexed.godotDB) {
           AlternativePCKPath = 'tmp_files/duplicate/viewer.pck';
           let blob = await this.indexed.loadBlobFromUserPath(
             this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
