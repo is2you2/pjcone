@@ -768,8 +768,9 @@ export class IonicViewerPage implements OnInit {
           let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
           loading.present();
           this.p5canvas['VideoMedia'].pause();
+          this.p5canvas['VideoMedia']['size'](this.image_info['width'], this.image_info['height']);
           this.p5canvas.createCanvas(this.image_info['width'], this.image_info['height']);
-          this.p5canvas.image(this.p5canvas['VideoMedia'], 0, 0, this.image_info['width'], this.image_info['height']);
+          this.p5canvas.image(this.p5canvas['VideoMedia'], 0, 0, this.p5canvas.width, this.p5canvas.height);
           this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
             try {
               loading.dismiss();
