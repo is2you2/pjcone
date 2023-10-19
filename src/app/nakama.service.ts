@@ -2992,12 +2992,20 @@ export class NakamaService {
         this.p5toast.show({
           text: `${this.lang.text['ChatRoom']['SavingFile']}: ${_msg.content.filename}`,
         });
+        this.noti.noti.schedule({
+          id: 8,
+          title: `${this.lang.text['ContentViewer']['SavingFile']}: ${msg.content.filename}`,
+          progressBar: { indeterminate: true },
+          sound: null,
+          smallIcon: 'res://diychat',
+          color: 'b0b0b0',
+        });
         let GatheringInt8Array = [];
         let ByteSize = 0;
         let count_loaded = 0;
         await new Promise((done) => {
           for (let i = 0, j = _msg.content['partsize']; i < j; i++)
-            this.indexed.GetFileInfoFromDB(`${path}_part/${i}.part`, part => {
+            this.indexed.GetFileInfoFromDB(`${path}_part/${i}.part`, async part => {
               ByteSize += part.contents.length;
               GatheringInt8Array[i] = part;
               count_loaded++;
@@ -3008,21 +3016,25 @@ export class NakamaService {
                   SaveForm.set(GatheringInt8Array[i].contents, offset);
                   offset += GatheringInt8Array[i].contents.length;
                 }
-                this.indexed.saveInt8ArrayToUserPath(new Int8Array(SaveForm), path);
+                await this.indexed.saveInt8ArrayToUserPath(new Int8Array(SaveForm), path);
                 for (let i = 0, j = _msg.content['partsize']; i < j; i++)
                   this.indexed.removeFileFromUserPath(`${path}_part/${i}.part`)
-                this.indexed.removeFileFromUserPath(`${path}_part`)
+                await this.indexed.removeFileFromUserPath(`${path}_part`)
                 this.global.remove_req_file_info(_msg, path);
                 msg.content['text'] = [this.lang.text['ChatRoom']['FileSaved']];
                 done(undefined);
               }
             });
         });
+        this.noti.ClearNoti(8);
       }
       _msg.content['path'] = path;
       if (!this.channels_orig[_is_official][_target][_msg.channel_id]['HideAutoThumbnail']) {
-        let blob = await this.indexed.loadBlobFromUserPath(path, msg.content['type'] || '')
-        let url = URL.createObjectURL(blob);
+        let url: string;
+        if (_msg.content.viewer != 'godot') {
+          let blob = await this.indexed.loadBlobFromUserPath(path, msg.content['type'] || '')
+          url = URL.createObjectURL(blob);
+        }
         await this.global.modulate_thumbnail((this.OnTransferMessage[_msg.message_id] || msg).content, url);
       }
       delete this.OnTransfer[_is_official][_target][_msg.channel_id][_msg.message_id];

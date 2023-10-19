@@ -425,12 +425,18 @@ export class GlobalActService {
       }, 100);
       return;
     }
+    try { // 대안 썸네일이 있다면 보여주고 끝내기
+      let blob = await this.indexed.loadBlobFromUserPath(`${msg_content['path']}_thumbnail.png`, 'image/png', undefined, targetDB);
+      let FileURL = URL.createObjectURL(blob);
+      msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
+      setTimeout(() => {
+        URL.revokeObjectURL(FileURL);
+      }, 0);
+      return;
+    } catch (e) { }
     switch (msg_content['viewer']) {
       case 'image':
         msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(ObjectURL);
-        setTimeout(() => {
-          URL.revokeObjectURL(ObjectURL);
-        }, 100);
         break;
       case 'text':
         new p5((p: p5) => {
@@ -449,18 +455,11 @@ export class GlobalActService {
           }
         });
         break;
-      default: // 대안 썸네일이 있는지 확인하기
-        try {
-          let blob = await this.indexed.loadBlobFromUserPath(`${msg_content['path']}_thumbnail.png`, 'image/png', undefined, targetDB);
-          let FileURL = URL.createObjectURL(blob);
-          msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
-          setTimeout(() => {
-            URL.revokeObjectURL(FileURL);
-          }, 0);
-        } catch (e) { }
-        if (ObjectURL) URL.revokeObjectURL(ObjectURL);
-        break;
     }
+    if (ObjectURL) setTimeout(() => {
+      URL.revokeObjectURL(ObjectURL);
+    }, 100);
+
   }
 
   /** 콘텐츠 카테고리 분류  
