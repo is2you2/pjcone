@@ -370,7 +370,17 @@ export class UserFsDirPage implements OnInit {
               if (this.FileList[i].path.indexOf(this.CurrentDir) == 0)
                 this.FileList.splice(i, 1);
             this.MoveToUpDir();
-          })
+          });
+          this.indexed.GetFileListFromDB(this.CurrentDir, (list) => {
+            list.forEach(async path => await this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB))
+            for (let i = this.DirList.length - 1; i >= 0; i--)
+              if (this.DirList[i].path.indexOf(this.CurrentDir) == 0)
+                this.DirList.splice(i, 1);
+            for (let i = this.FileList.length - 1; i >= 0; i--)
+              if (this.FileList[i].path.indexOf(this.CurrentDir) == 0)
+                this.FileList.splice(i, 1);
+            this.MoveToUpDir();
+          }, this.indexed.godotDB);
         }
       }],
     }).then(v => v.present());
