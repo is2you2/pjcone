@@ -76,9 +76,8 @@ export class UserFsDirPage implements OnInit {
           processNextHandler();
         } else this.MoveToUpDir();
       } else {
-        this.StopIndexing = true;
         this.initLoadingElement.dismiss();
-        this.navCtrl.back();
+        this.is_ready = true;
       }
     });
   }
@@ -402,6 +401,7 @@ export class UserFsDirPage implements OnInit {
   }
 
   ionViewDidLeave() {
+    this.StopIndexing = true;
     this.FileList.forEach(file => {
       URL.revokeObjectURL(file.thumbnail);
     });

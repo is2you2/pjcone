@@ -122,7 +122,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       const navParams = this.router.getCurrentNavigation().extras.state;
       if (navParams) this.received_data = navParams.data;
       if (this.received_data) this.userInput = { ...this.userInput, ...JSON.parse(this.received_data) };
-    })
+    });
     this.nakama.AddTodoLinkAct = async (info: string) => {
       this.nakama.removeBanner();
       this.p5timer.remove();
