@@ -105,12 +105,6 @@ export class IonicViewerPage implements OnInit {
             }
           this.HaveRelevances = Boolean(this.Relevances.length > 1);
         } else this.HaveRelevances = false;
-        if (this.FileInfo.url) {
-          this.FileURL = this.FileInfo.url;
-        } else {
-          this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type'], undefined, this.targetDB);
-          this.FileURL = URL.createObjectURL(this.blob);
-        }
         this.CreateContentInfo();
         break;
     }
@@ -134,7 +128,6 @@ export class IonicViewerPage implements OnInit {
       this.NeedDownloadFile = await this.indexed.checkIfFileExist(`${path}.history`, undefined, this.targetDB);
       try {
         this.blob = await this.indexed.loadBlobFromUserPath(path, this.FileInfo['type'], undefined, this.targetDB);
-        this.FileURL = URL.createObjectURL(this.blob);
         this.CreateContentInfo();
         this.ionViewDidEnter();
       } catch (e) {
@@ -319,6 +312,13 @@ export class IonicViewerPage implements OnInit {
   }
 
   async ionViewDidEnter() {
+    if (this.FileInfo.url) {
+      this.FileURL = this.FileInfo.url;
+    } else {
+      if (!this.blob)
+        this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type'], undefined, this.targetDB);
+      this.FileURL = URL.createObjectURL(this.blob);
+    }
     this.forceWrite = false;
     let canvasDiv = document.getElementById('content_viewer_canvas');
     if (canvasDiv) canvasDiv.style.backgroundImage = '';
