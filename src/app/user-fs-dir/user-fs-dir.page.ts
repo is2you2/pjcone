@@ -325,7 +325,7 @@ export class UserFsDirPage implements OnInit {
             path: RecursiveEntry[i].nativeURL,
           });
           let base64 = (data.data as any).replace(/"|\\|=/g, '');
-          await this.indexed.saveBase64ToUserPath(',' + base64, target_path, undefined, targetDB);
+          await this.indexed.saveBase64ToUserPath(',' + base64, decodeURIComponent(target_path), undefined, targetDB);
           loading.message = `${this.lang.text['UserFsDir']['Import']}: ${RecursiveEntry[i].name}`
         } catch (e) {
           console.log('불러오기 실패: ', e);
