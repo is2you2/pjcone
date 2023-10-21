@@ -3002,29 +3002,33 @@ export class NakamaService {
         });
         let GatheringInt8Array = [];
         let ByteSize = 0;
-        let count_loaded = 0;
-        await new Promise((done) => {
+        await new Promise(async (done) => {
           for (let i = 0, j = _msg.content['partsize']; i < j; i++)
-            this.indexed.GetFileInfoFromDB(`${path}_part/${i}.part`, async part => {
+            try {
+              let part = await this.indexed.GetFileInfoFromDB(`${path}_part/${i}.part`);
               ByteSize += part.contents.length;
               GatheringInt8Array[i] = part;
-              count_loaded++;
-              if (count_loaded == j) {
-                let SaveForm: Int8Array = new Int8Array(ByteSize);
-                let offset = 0;
-                for (let i = 0, j = GatheringInt8Array.length; i < j; i++) {
-                  SaveForm.set(GatheringInt8Array[i].contents, offset);
-                  offset += GatheringInt8Array[i].contents.length;
-                }
-                await this.indexed.saveInt8ArrayToUserPath(new Int8Array(SaveForm), path);
-                for (let i = 0, j = _msg.content['partsize']; i < j; i++)
-                  this.indexed.removeFileFromUserPath(`${path}_part/${i}.part`)
-                await this.indexed.removeFileFromUserPath(`${path}_part`)
-                this.global.remove_req_file_info(_msg, path);
-                msg.content['text'] = [this.lang.text['ChatRoom']['FileSaved']];
-                done(undefined);
-              }
-            });
+            } catch (e) {
+              console.log('파일 병합하기 오류: ', e);
+              break;
+            }
+          try {
+            let SaveForm: Int8Array = new Int8Array(ByteSize);
+            let offset = 0;
+            for (let i = 0, j = GatheringInt8Array.length; i < j; i++) {
+              SaveForm.set(GatheringInt8Array[i].contents, offset);
+              offset += GatheringInt8Array[i].contents.length;
+            }
+            await this.indexed.saveInt8ArrayToUserPath(new Int8Array(SaveForm), path);
+            for (let i = 0, j = _msg.content['partsize']; i < j; i++)
+              this.indexed.removeFileFromUserPath(`${path}_part/${i}.part`)
+            await this.indexed.removeFileFromUserPath(`${path}_part`)
+            this.global.remove_req_file_info(_msg, path);
+            msg.content['text'] = [this.lang.text['ChatRoom']['FileSaved']];
+          } catch (e) {
+            console.log('파일 최종 저장하기 오류: ', e);
+          }
+          done(undefined);
         });
         this.noti.ClearNoti(8);
       }
