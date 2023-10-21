@@ -111,7 +111,7 @@ export class IonicViewerPage implements OnInit {
   }
 
   async reinit_content_data(msg: any) {
-    this.NeedDownloadFile = false;
+    this.NeedDownloadFile = true;
     this.isTextEditMode = false;
     this.MessageInfo = msg;
     this.CurrentViewId = this.MessageInfo.message_id;
