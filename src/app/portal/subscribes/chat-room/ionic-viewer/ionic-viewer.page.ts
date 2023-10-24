@@ -136,6 +136,11 @@ export class IonicViewerPage implements OnInit {
         this.isDownloading = false;
         this.NeedDownloadFile = true;
         this.CreateContentInfo();
+        if (this.p5canvas) this.p5canvas.remove();
+        this.p5canvas = new p5((p: p5) => {
+          p.setup = () => { p.noCanvas() }
+        });
+        this.ChangeContentWithKeyInput();
       }
     }
   }
@@ -187,10 +192,10 @@ export class IonicViewerPage implements OnInit {
   }
 
   ChangeToAnother(direction: number) {
-    if (this.p5canvas) this.p5canvas.remove();
     let tmp_calced = this.RelevanceIndex + direction;
     if (tmp_calced <= 0 || tmp_calced > this.Relevances.length)
       return;
+    if (this.p5canvas) this.p5canvas.remove();
     this.RelevanceIndex = tmp_calced;
     this.FileInfo = { file_ext: '' };
     setTimeout(() => {
@@ -637,6 +642,9 @@ export class IonicViewerPage implements OnInit {
           }, 100);
         break;
       case 'disabled':
+        this.p5canvas = new p5((p: p5) => {
+          p.setup = () => { p.noCanvas() }
+        });
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
         loading.present();
         try {
@@ -654,6 +662,20 @@ export class IonicViewerPage implements OnInit {
         }
         loading.dismiss();
         break;
+    }
+    this.ChangeContentWithKeyInput();
+  }
+
+  /** PC에서 키를 눌러 컨텐츠 전환 */
+  ChangeContentWithKeyInput() {
+    console.log('ChangeContentWithKeyInput: ', this.p5canvas);
+    if (this.p5canvas) {
+      this.p5canvas.keyPressed = (ev) => {
+        if (ev['keyCode'] == 65 || ev['keyCode'] == 37) // 왼쪽 이동
+          this.ChangeToAnother(-1);
+        if (ev['keyCode'] == 68 || ev['keyCode'] == 39) // 오른쪽 이동
+          this.ChangeToAnother(1);
+      }
     }
   }
 
