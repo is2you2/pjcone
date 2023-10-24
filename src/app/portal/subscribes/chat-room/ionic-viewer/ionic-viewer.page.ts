@@ -368,6 +368,7 @@ export class IonicViewerPage implements OnInit {
                 canvasDiv.clientHeight / 2 - imageOriginalSize.y * imageRatio / 2;
               canvasDiv.style.backgroundPositionY = `${centerHeight}px`;
             }
+            isInitStatus = true;
           }
           p.windowResized = () => {
             setTimeout(() => {
@@ -424,6 +425,8 @@ export class IonicViewerPage implements OnInit {
           /** 두 점 사이의 거리 */
           let dist_two: number;
           let Repositioning = false;
+          /** init 직후 스케일 조정이 없는 상태인 경우 */
+          let isInitStatus = true;
           p.touchStarted = (ev: any) => {
             if (!this.useP5Navigator) return;
             for (let i = 0, j = ev.changedTouches.length; i < j; i++)
@@ -466,9 +469,11 @@ export class IonicViewerPage implements OnInit {
                 case 1: // 이동
                   endPos = touches[ev.changedTouches[0].identifier].copy();
                   endPos.sub(startPos);
-                  TransformImage();
+                  if (!isInitStatus)
+                    TransformImage();
                   break;
                 case 2: // 이동, 스케일
+                  isInitStatus = false;
                   let firstCopy = touches[0].copy();
                   let dist = firstCopy.dist(touches[1]);
                   endPos = firstCopy.add(touches[1]).div(2).copy();
@@ -480,6 +485,7 @@ export class IonicViewerPage implements OnInit {
               }
             }
           }
+          const SWIPE_SIZE = 110;
           p.touchEnded = (ev: any) => {
             if (!this.useP5Navigator) return;
             if ('changedTouches' in ev) {
@@ -495,6 +501,12 @@ export class IonicViewerPage implements OnInit {
                   startPos = touches[Object.keys(touches)[0]].copy();
                   break;
                 case 0: // 손을 전부 뗌
+                  if (isInitStatus && !Repositioning) {
+                    if (endPos.x > SWIPE_SIZE)
+                      this.ChangeToAnother(-1);
+                    else if (endPos.x < -SWIPE_SIZE)
+                      this.ChangeToAnother(1);
+                  }
                   Repositioning = false;
                   break;
               }
@@ -668,7 +680,6 @@ export class IonicViewerPage implements OnInit {
 
   /** PC에서 키를 눌러 컨텐츠 전환 */
   ChangeContentWithKeyInput() {
-    console.log('ChangeContentWithKeyInput: ', this.p5canvas);
     if (this.p5canvas) {
       this.p5canvas.keyPressed = (ev) => {
         if (ev['keyCode'] == 65 || ev['keyCode'] == 37) // 왼쪽 이동
