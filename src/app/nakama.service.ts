@@ -2447,31 +2447,6 @@ export class NakamaService {
   update_group_info(c: ChannelMessage, _is_official: string, _target: string) {
     this.translate_updates(c);
     switch (c.content['gupdate']) {
-      case 'image': // 그룹 이미지가 변경됨
-        this.servers[_is_official][_target].client.readStorageObjects(
-          this.servers[_is_official][_target].session, {
-          object_ids: [{
-            collection: 'group_public',
-            key: `group_${c.group_id}`,
-            user_id: c.sender_id,
-          }]
-        }).then(v => {
-          if (v.objects.length) {
-            this.groups[_is_official][_target][c.group_id]['img'] = v.objects[0].value['img'].replace(/"|=|\\/g, '');
-            this.indexed.saveTextFileToUserPath(v.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${c.group_id}.img`);
-          } else {
-            delete this.groups[_is_official][_target][c.group_id]['img'];
-            this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${c.group_id}.img`);
-          }
-        });
-        break;
-      case 'info': // 그룹 정보가 변경됨
-        this.servers[_is_official][_target].client.listGroups(
-          this.servers[_is_official][_target].session, c.content['name']).then(v => {
-            let keys = Object.keys(v.groups[0]);
-            keys.forEach(key => this.groups[_is_official][_target][v.groups[0].id][key] = v.groups[0][key]);
-          });
-        break;
       case 'remove': // 그룹이 삭제됨
       case 'force_remove': // 그룹이 강제 삭제됨
         this.groups[_is_official][_target][c.group_id]['status'] = 'missing';
@@ -2506,12 +2481,6 @@ export class NakamaService {
       }
     if (msg.content['gupdate'])
       switch (msg.content['gupdate']) {
-        case 'info': // 그룹 정보가 변경됨
-          msg.content['noti'] = this.lang.text['GroupDetail']['GroupInfoUpdated'];
-          break;
-        case 'image': // 그룹 이미지가 변경됨
-          msg.content['noti'] = this.lang.text['GroupDetail']['GroupImageUpdated'];
-          break;
         case 'remove': // 그룹이 삭제됨
           msg.content['noti'] = this.lang.text['GroupDetail']['GroupRemoved'];
           break;

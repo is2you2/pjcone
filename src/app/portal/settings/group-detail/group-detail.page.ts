@@ -76,6 +76,23 @@ export class GroupDetailPage implements OnInit, OnDestroy {
           this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], this.isOfficial, this.target);
         } else this.info['users'].splice(i, 1);
     }
+    // 그룹 이미지 업데이트
+    this.nakama.servers[this.isOfficial][this.target].client.readStorageObjects(
+      this.nakama.servers[this.isOfficial][this.target].session, {
+      object_ids: [{
+        collection: 'group_public',
+        key: `group_${this.info.id}`,
+        user_id: this.info.creator_id,
+      }]
+    }).then(v => {
+      if (v.objects.length) {
+        this.nakama.groups[this.isOfficial][this.target][this.info.id]['img'] = v.objects[0].value['img'].replace(/"|=|\\/g, '');
+        this.indexed.saveTextFileToUserPath(v.objects[0].value['img'], `servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
+      } else {
+        delete this.nakama.groups[this.isOfficial][this.target][this.info.id]['img'];
+        this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
+      }
+    });
   }
 
   /** 그룹 사용자 리스트 업데이트 */
@@ -143,10 +160,6 @@ export class GroupDetailPage implements OnInit, OnDestroy {
       }]
     ).then(_info => {
       this.indexed.saveTextFileToUserPath(JSON.stringify(uri), `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
-      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
-        this.info['channel_id'], {
-        gupdate: 'image',
-      });
     });
   }
 
@@ -234,12 +247,6 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         lang_tag: this.info['lang_tag'],
         description: this.info['description'],
         open: this.info['open'],
-      }).then(_v => {
-        this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
-          this.info['channel_id'], {
-          gupdate: 'info',
-          name: this.info['name'],
-        });
       });
     this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']] = this.info;
     this.nakama.save_groups_with_less_info();
