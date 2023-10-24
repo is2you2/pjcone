@@ -2469,9 +2469,6 @@ export class NakamaService {
         case 'modify_data': // 프로필 또는 이미지가 변경됨
           msg.content['noti'] = `${this.lang.text['Profile']['user_profile_changed']}${msg.content['noti_form']}`;
           break;
-        case 'modify_img': // 프로필 또는 이미지가 변경됨
-          msg.content['noti'] = `${this.lang.text['Profile']['user_img_changed']}${msg.content['noti_form']}`;
-          break;
         case 'modify_content':
           msg.content['noti'] = `${this.lang.text['Profile']['user_content_changed']}${msg.content['noti_form']}`;
           break;
@@ -2503,36 +2500,6 @@ export class NakamaService {
           } else {
             delete this.users[_is_official][_target][c.sender_id];
             this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${c.sender_id}/profile.json`)
-          }
-        });
-        break;
-      case 'modify_img': // 프로필 또는 이미지가 변경됨
-        await this.servers[_is_official][_target].client.readStorageObjects(
-          this.servers[_is_official][_target].session, {
-          object_ids: [{
-            collection: 'user_public',
-            key: 'profile_image',
-            user_id: c.sender_id,
-          }]
-        }).then(v => {
-          if (v.objects.length) {
-            if (this.socket_reactive['others-profile']) {
-              this.socket_reactive['others-profile'](v.objects[0].value['img']);
-            } else {
-              this.load_other_user(c.sender_id, _is_official, _target)['img'] = v.objects[0].value['img'];
-              this.load_other_user(c.sender_id, _is_official, _target)['avatar_url'] = v.objects[0].version;
-              this.save_other_user(this.load_other_user(c.sender_id, _is_official, _target), _is_official, _target);
-            }
-          } else {
-            if (this.socket_reactive['others-profile'])
-              this.socket_reactive['others-profile']('');
-            delete this.load_other_user(c.sender_id, _is_official, _target)['img'];
-            this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${c.sender_id}/profile.img`)
-          }
-        }).catch(_e => {
-          if (this.users[_is_official][_target][c.sender_id]['img']) {
-            delete this.users[_is_official][_target][c.sender_id]['img'];
-            this.save_other_user(this.users[_is_official][_target][c.sender_id], _is_official, _target);
           }
         });
         break;

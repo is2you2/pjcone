@@ -451,14 +451,6 @@ export class GroupServerPage implements OnInit {
         await servers[i].client.updateAccount(servers[i].session, {
           avatar_url: v.acks[0].version,
         });
-        let all_channels = this.nakama.rearrange_channels();
-        all_channels.forEach(async channel => {
-          if (this.announce_update_profile)
-            await servers[i].socket.writeChatMessage(channel.id, {
-              user_update: 'modify_img',
-              noti_form: `: ${this.original_profile['display_name']}`,
-            });
-        });
       }).catch(e => {
         console.error('inputImageSelected_err: ', e);
       });
