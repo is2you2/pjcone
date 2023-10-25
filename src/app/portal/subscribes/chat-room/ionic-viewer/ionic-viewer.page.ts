@@ -485,7 +485,7 @@ export class IonicViewerPage implements OnInit {
               }
             }
           }
-          const SWIPE_SIZE = 110;
+          const SWIPE_SIZE = 50;
           p.touchEnded = (ev: any) => {
             if (!this.useP5Navigator) return;
             if ('changedTouches' in ev) {
