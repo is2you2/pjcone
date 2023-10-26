@@ -2955,7 +2955,7 @@ export class NakamaService {
               SaveForm.set(GatheringInt8Array[i].contents, offset);
               offset += GatheringInt8Array[i].contents.length;
             }
-            await this.indexed.saveInt8ArrayToUserPath(new Int8Array(SaveForm), path);
+            await this.indexed.saveInt8ArrayToUserPath(SaveForm, path);
             for (let i = 0, j = _msg.content['partsize']; i < j; i++)
               this.indexed.removeFileFromUserPath(`${path}_part/${i}.part`)
             await this.indexed.removeFileFromUserPath(`${path}_part`)

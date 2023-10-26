@@ -673,7 +673,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (this.info['redirect']['type'] == 3)
         this.extended_buttons[2].isHide = false;
     }
-    this.extended_buttons[9].isHide = isNativefier;
+    this.extended_buttons[9].isHide = isNativefier || this.info['status'] == 'missing';
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
     setTimeout(() => {
