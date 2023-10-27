@@ -105,8 +105,8 @@ export class NakamaService {
     // 기등록 알림 id 검토
     this.noti.GetNotificationIds((list) => {
       this.registered_id = list;
-      this.set_all_todo_notification();
     });
+    this.set_all_todo_notification();
     this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
       if (e && v) this.users.self = JSON.parse(v);
     });
@@ -174,7 +174,8 @@ export class NakamaService {
     });
   }
   /** 시작시 해야할 일 알림을 설정 */
-  set_all_todo_notification() {
+  async set_all_todo_notification() {
+    await this.getGodotDBRecursive();
     this.indexed.GetFileListFromDB('info.todo', _list => {
       _list.forEach(info => {
         this.indexed.loadTextFromUserPath(info, (e, v) => {
@@ -185,6 +186,14 @@ export class NakamaService {
         }, this.indexed.godotDB);
       });
     }, this.indexed.godotDB);
+  }
+
+  async getGodotDBRecursive() {
+    try {
+      return await this.indexed.GetGodotIndexedDB();
+    } catch (e) {
+      return await this.getGodotDBRecursive();
+    }
   }
 
   /** 할 일이 열린 상태에서 다른 할 일 열람시 행동 */

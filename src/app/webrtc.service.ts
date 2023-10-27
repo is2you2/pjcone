@@ -23,7 +23,6 @@ export class WebrtcService {
     private nakama: NakamaService,
     private mClipboard: Clipboard,
   ) {
-    console.log('생성됨');
     this.nakama.WebRTCService = this;
   }
 
