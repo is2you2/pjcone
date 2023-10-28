@@ -27,11 +27,9 @@ SPDX-License-Identifier: MIT -->
     <div class="additional_form bg_img_form">
       <img class="profile_img" [style]="profile_filter" [src]="nakama.users.self['img']">
     </div>
-    <ion-icon class="icon_margin" name="person-circle-outline"></ion-icon>
     <ion-label>{{lang.text['Settings']['groupServer']}}</ion-label>
   </ion-item>
   <ion-item button (click)="go_to_page('noti-alert')">
-    <ion-icon class="icon_margin" name="notifications-outline"></ion-icon>
     <ion-label>{{lang.text['Settings']['NotificationSetting']}}</ion-label>
   </ion-item>
   <!-- <div *ngIf="!cant_dedicated && !isBatteryOptimizationsShowed">
@@ -58,15 +56,12 @@ SPDX-License-Identifier: MIT -->
     </ion-button>
   </ion-item>
   <ion-item button (click)="go_to_page('weblink-gen')">
-    <ion-icon class="icon_margin" name="logo-html5"></ion-icon>
     <ion-label>{{lang.text['Settings']['WebLinkGen']}}</ion-label>
   </ion-item>
   <ion-item button (click)="go_to_qr_share()">
-    <ion-icon class="icon_margin" name="qr-code-outline"></ion-icon>
     <ion-label>{{lang.text['Settings']['quickQRshare']}}</ion-label>
   </ion-item>
   <ion-item button (click)="go_to_webrtc_manager()">
-    <img class="img_icon_size" src="assets/icon/diychat.png" alt="">
     <ion-label>{{lang.text['WebRTCDevManager']['Title']}}</ion-label>
   </ion-item>
   <ion-item button *ngIf="as_admin.length" (click)="go_to_page('admin-tools')">
@@ -75,31 +70,25 @@ SPDX-License-Identifier: MIT -->
   <ion-accordion-group>
     <ion-accordion value="Devkit">
       <ion-item slot="header">
-        <ion-icon class="icon_margin" name="construct-outline"></ion-icon>
         <ion-label>{{lang.text['Settings']['DevKit']}}</ion-label>
       </ion-item>
       <div slot="content">
         <ion-item button (click)="open_inapp_explorer()">
-          <ion-icon class="icon_margin" name="folder-outline"></ion-icon>
           <ion-label>{{lang.text['Settings']['InAppExplorer']}}</ion-label>
         </ion-item>
         <ion-item button (click)="go_to_page('qrcode-gen')">
-          <ion-icon class="icon_margin" name="qr-code-outline"></ion-icon>
           <ion-label>{{lang.text['Settings']['QRCodeGen']}}</ion-label>
         </ion-item>
         <ion-item *ngIf="!is_nativefier" button (click)="go_to_page('tts-export')">
-          <ion-icon class="icon_margin" name="volume-high-outline"></ion-icon>
           <ion-label>{{lang.text['Settings']['TTSExport']}}</ion-label>
         </ion-item>
         <ion-item button (click)="go_to_page('wsclient')">
           <ion-label>{{lang.text['Settings']['WSClient']}}</ion-label>
         </ion-item>
         <ion-item button (click)="go_to_page('engineppt')">
-          <img class="img_icon_size" src="assets/icon/engineppt.png" alt="">
           <ion-label>{{lang.text['Settings']['EnginePPT']}}</ion-label>
         </ion-item>
         <ion-item button (click)="download_serverfile()">
-          <img class="img_icon_size" src="assets/icon/diychat.png" alt="">
           <ion-label>{{lang.text['Settings']['ServerFiles']}}</ion-label>
         </ion-item>
       </div>
@@ -126,7 +115,6 @@ SPDX-License-Identifier: MIT -->
     <ion-label>{{lang.text['Settings']['LicenseNotice']}}</ion-label>
   </ion-item>
   <ion-item *ngIf="cant_dedicated" button (click)="open_playstore()">
-    <ion-icon class="icon_margin" name="logo-google-playstore"></ion-icon>
     <ion-label>{{lang.text['Settings']['OpenPlayStore']}}</ion-label>
   </ion-item>
 </ion-content>
