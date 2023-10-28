@@ -190,8 +190,15 @@ export class NakamaService {
 
   async getGodotDBRecursive() {
     try {
-      return await this.indexed.GetGodotIndexedDB();
+      if (this.indexed.godotDB === undefined)
+        throw 'Retry catch godotDB';
+      return;
     } catch (e) {
+      await new Promise((done) => {
+        setTimeout(() => {
+          done(undefined);
+        }, 100);
+      });
       return await this.getGodotDBRecursive();
     }
   }
