@@ -206,6 +206,7 @@ export class UserFsDirPage implements OnInit {
             no_edit: true,
             path: info.path,
           },
+          cssClass: 'fullscreen',
         }).then(v => {
           v.onDidDismiss().then(_v => document.addEventListener('ionBackButton', this.EventListenerAct));
           v.present()

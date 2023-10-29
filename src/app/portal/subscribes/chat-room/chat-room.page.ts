@@ -1373,6 +1373,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           targetDB: this.indexed.ionicDB,
           relevance: attaches,
         },
+        cssClass: 'fullscreen',
       }).then(v => {
         v.onDidDismiss().then((v) => {
           if (v.data) { // 파일 편집하기를 누른 경우

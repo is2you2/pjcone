@@ -732,6 +732,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         relevance: createRelevances,
         targetDB: this.indexed.godotDB,
       },
+      cssClass: 'fullscreen',
     }).then(v => {
       v.onDidDismiss().then((v) => {
         if (v.data) { // 파일 편집하기를 누른 경우

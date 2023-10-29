@@ -162,3 +162,9 @@ body.scanner-active {
 .alert-checkbox-label.sc-ion-alert-md {
     overflow-x: auto;
 }
+
+ion-modal.fullscreen {
+    --width: 100%;
+    --height: 100%;
+    --border-radius: 0;
+}
