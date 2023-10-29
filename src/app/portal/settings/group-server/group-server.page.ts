@@ -155,20 +155,6 @@ export class GroupServerPage implements OnInit {
 
   /** 버튼이 눌렸는지를 검토하여 행동을 분리 */
   isOverrideButtonPressed = false;
-  /** 그룹 서버 정보 상세보기 */
-  view_detail(info: any) {
-    this.isOverrideButtonPressed = true;
-    this.modalCtrl.create({
-      component: ServerDetailPage,
-      componentProps: {
-        data: info,
-      },
-    }).then(v => {
-      v.onWillDismiss().then(_v => this.servers = this.nakama.get_all_server_info(true));
-      v.present();
-    });
-  }
-
   async remove_server(_is_official: string, _target: string) {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
@@ -514,7 +500,6 @@ export class GroupServerPage implements OnInit {
     } else {
       this.nakama.logout_all_server();
       delete this.nakama.users.self['password'];
-      delete this.nakama.users.self['display_name'];
       this.nakama.groups = {
         'official': {},
         'unofficial': {},
@@ -525,7 +510,6 @@ export class GroupServerPage implements OnInit {
       };
       this.nakama.save_groups_with_less_info();
       this.nakama.rearrange_channels();
-      this.change_img_smoothly('');
     }
     this.ServersList.value = this.ToggleOnline.checked ? 'open' : undefined;
     this.p5canvas.loop();

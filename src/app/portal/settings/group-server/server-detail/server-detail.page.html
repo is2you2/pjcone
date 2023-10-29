@@ -15,19 +15,6 @@
     (click)="copy_startup_address()">
   <ion-item-divider>
     <ion-label>서버 설정</ion-label>
-    <table slot="end" style="margin-right: 8px;">
-      <tr>
-        <td (click)="change_server_info(-1)">
-          <ion-icon slot="start" class="icon_style" name="arrow-back-circle-outline"></ion-icon>
-        </td>
-        <td>{{index + 1}}</td>
-        <td>/</td>
-        <td>{{Alternative[dedicated_info.target].length}}</td>
-        <td (click)="change_server_info(1)">
-          <ion-icon slot="start" class="icon_style" name="arrow-forward-circle-outline"></ion-icon>
-        </td>
-      </tr>
-    </table>
   </ion-item-divider>
   <ion-item button>
     <ion-input [label]="lang.text['GroupServer']['DisplayName']" class="ion-text-right"

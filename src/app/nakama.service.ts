@@ -1745,12 +1745,6 @@ export class NakamaService {
         'remove_account_fn', { user_id: this.servers[_is_official][_target].session.user_id })
         .catch(_e => { });
     } catch (e) { }
-    try { // 서버 대안 정보 제거
-      let data = await this.indexed.loadTextFromUserPath('servers/alternatives.json');
-      let json = JSON.parse(data);
-      delete json[_target];
-      await this.indexed.saveTextFileToUserPath(JSON.stringify(json), 'servers/alternatives.json');
-    } catch (e) { }
     // 로그인 상태일 경우 로그오프처리
     if (this.statusBar.groupServer[_is_official][_target] == 'online') {
       try {

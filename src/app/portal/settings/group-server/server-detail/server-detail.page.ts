@@ -52,74 +52,18 @@ export class ServerDetailPage implements OnInit {
       delete filtered.port;
     if (!this.dedicated_info.useSSL)
       delete filtered.useSSL;
-    this.Alternative[this.dedicated_info.target] = [];
     this.QRCodeSRC = this.global.readasQRCodeFromString(
       `${SERVER_PATH_ROOT}pjcone_pwa/?server=${filtered.name || ''},${filtered.address || ''},${filtered.useSSL ? 'true' : ''},${filtered.port || 7350},${filtered.key || ''}`);
     // 이미 target값이 등록되었는지 검토
     this.isTargetAlreadyExist = Boolean(this.statusBar.groupServer['unofficial'][this.dedicated_info.target]);
   }
 
-  /** 동일 키를 사용하는 변경가능한 서버 정보 */
-  Alternative: { [id: string]: ServerInfo[] } = {};
   index = 0;
 
   @ViewChild('ServerDetailuseSSL') ServerDetailuseSSL: IonToggle;
 
-  async ionViewWillEnter() {
-    this.Alternative[this.dedicated_info.target].push(JSON.parse(JSON.stringify(this.dedicated_info)));
-    let data = await this.indexed.loadTextFromUserPath('servers/alternatives.json');
-    try {
-      let json: { [id: string]: ServerInfo[] } = JSON.parse(data)
-      if (json[this.dedicated_info.target].length)
-        this.Alternative[this.dedicated_info.target].length = 0;
-      for (let i = 0, j = json[this.dedicated_info.target].length; i < j; i++) {
-        this.Alternative[this.dedicated_info.target].push(json[this.dedicated_info.target][i]);
-        if (this.dedicated_info.name == json[this.dedicated_info.target][i].name
-          && this.dedicated_info.address == json[this.dedicated_info.target][i].address
-          && this.dedicated_info.port == json[this.dedicated_info.target][i].port)
-          this.index = i;
-      }
-      this.index--;
-      this.change_server_info(1);
-    } catch (e) { }
-  }
-
   ionViewDidEnter() {
     this.ServerDetailuseSSL.checked = this.dedicated_info.useSSL;
-  }
-
-  change_server_info(direction: number) {
-    switch (direction) {
-      case -1:
-        let prev_target = this.index - 1;
-        if (prev_target >= 0) {
-          this.index--;
-          this.dedicated_info = this.Alternative[this.dedicated_info.target][this.index];
-        }
-        break;
-      case 1:
-        let next_target = this.index + 1;
-        if (next_target < this.Alternative[this.dedicated_info.target].length) {
-          this.index++;
-          this.dedicated_info = this.Alternative[this.dedicated_info.target][this.index];
-        } else {
-          this.alertCtrl.create({
-            header: this.lang.text['ServerDetail']['ServerPresets'],
-            message: this.lang.text['ServerDetail']['CreateInfo'],
-            buttons: [{
-              text: this.lang.text['ServerDetail']['Add'],
-              handler: () => {
-                this.Alternative[this.dedicated_info.target].push({
-                  isOfficial: this.dedicated_info.isOfficial,
-                  target: this.dedicated_info.target,
-                });
-                this.change_server_info(1);
-              }
-            }],
-          }).then(v => v.present());
-        }
-        break;
-    }
   }
 
   /** 시작 진입 주소 생성 */
@@ -172,11 +116,6 @@ export class ServerDetailPage implements OnInit {
     try {
       this.nakama.servers[this.dedicated_info.isOfficial][this.dedicated_info.target].socket.disconnect(true);
     } catch (e) { }
-    for (let i = this.Alternative[this.dedicated_info.target].length - 1; i >= 0; i--)
-      if (!this.Alternative[this.dedicated_info.target][i].name)
-        this.Alternative[this.dedicated_info.target].splice(i, 1);
-    this.Alternative[this.dedicated_info.target][this.index] = this.dedicated_info;
-    await this.indexed.saveTextFileToUserPath(JSON.stringify(this.Alternative), 'servers/alternatives.json');
     this.modalCtrl.dismiss();
   }
 }

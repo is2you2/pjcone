@@ -23,6 +23,11 @@ SPDX-License-Identifier: MIT -->
   <ion-item (click)="imageURLPasted()" [disabled]="imageURL_disabled">
     <ion-label color="medium">{{lang.text['Profile']['pasteURI']}}</ion-label>
   </ion-item>
+  <ion-item>
+    <ion-input [label]="lang.text['Profile']['user_display_name']" class="ion-text-right"
+      [(ngModel)]="nakama.users.self['display_name']"
+      [placeholder]="lang.text['Profile']['name_placeholder']"></ion-input>
+  </ion-item>
   <div *ngIf="!nakama.users.self['online']">
     <ion-item-divider>
       <ion-label>{{lang.text['Profile']['login_info']}}</ion-label>
@@ -37,11 +42,6 @@ SPDX-License-Identifier: MIT -->
         [(ngModel)]="nakama.users.self['password']" [placeholder]="lang.text['Profile']['at_least']"></ion-input>
     </ion-item>
   </div>
-  <ion-item *ngIf="nakama.users.self['online']">
-    <ion-input [label]="lang.text['Profile']['user_display_name']" class="ion-text-right"
-      [(ngModel)]="nakama.users.self['display_name']"
-      [placeholder]="lang.text['Profile']['name_placeholder']"></ion-input>
-  </ion-item>
   <ion-item button>
     <ion-toggle #ToggleOnline [(ngModel)]="nakama.users.self['online']" (ionChange)="toggle_online()"
       style="pointer-events: none;">{{lang.text['Profile']['login_toggle']}}</ion-toggle>
@@ -58,11 +58,8 @@ SPDX-License-Identifier: MIT -->
           </div>
           <ion-label class="form_margin">
             <h2>{{server.name}}</h2>
-            <p>{{server.target}} ({{server.address}})</p>
+            <p>{{server.address}}</p>
           </ion-label>
-          <ion-button (click)="view_detail(server)">
-            {{lang.text['GroupServer']['ServerDetail']}}
-          </ion-button>
           <ion-button (click)="remove_server(server.isOfficial, server.target)">
             {{statusBar.groupServer[server.isOfficial][server.target] == 'online' ?
             lang.text['GroupServer']['RemoveAccount']
@@ -75,19 +72,6 @@ SPDX-License-Identifier: MIT -->
       </div>
     </ion-accordion>
   </ion-accordion-group>
-  <!-- <ion-item-divider>
-    <ion-label style="width: 100%;">{{lang.text['Profile']['main_content']}}</ion-label>
-    <ion-button class="ion-text-end" style="padding-right: 4px;" (click)="change_content()">
-      {{lang.text['Profile']['upload']}}
-    </ion-button>
-    <ion-button class="ion-text-end" style="padding-right: 8px;" (click)="remove_content()">
-      {{lang.text['Profile']['remove_content']}}
-    </ion-button>
-    <input hidden type="file" [id]="content_sel_id" accept="*" (change)="inputFileSelected($event)">
-  </ion-item-divider>
-  <div [hidden]="global.last_frame_name != 'my_content'" class="content_size">
-    <div id="my_content" class="full_screen" style="display: flex;"></div>
-  </div> -->
 
   <ion-modal #RegisterNewServer [initialBreakpoint]=".5" [breakpoints]="[.5, .6, .7, .8, .9, 1]">
     <ng-template>
