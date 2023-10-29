@@ -55,17 +55,17 @@ export class QrSharePage implements OnInit {
   }
 
   SelectGroupServer(ev: any) {
-    this.userInput.servers = ev.detail.value;
+    this.userInput.servers = ev.detail.value || [];
     this.information_changed();
   }
 
   SelectGroupChannel(ev: any) {
-    this.userInput.groups = ev.detail.value;
+    this.userInput.groups = ev.detail.value || [];
     this.information_changed();
   }
 
   SelectRTCServer(ev: any) {
-    this.userInput.rtcserver = ev.detail.value;
+    this.userInput.rtcserver = ev.detail.value || [];
     this.information_changed();
   }
 

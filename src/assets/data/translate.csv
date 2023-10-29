@@ -77,7 +77,7 @@ WSClient,웹소켓 클라이언트,Websocket client
 WebLinkGen,웹 링크 생성기,Weblink generator
 ServerFiles,Nakama 서버 파일,Nakama server files
 InAppExplorer,인앱 탐색기,InApp Explorer
-EnginePPT,엔진 PPT,Engine PPT
+EnginePPT,내부망 WebRTC,Internal network WebRTC
 joinDedi_placeholder,기본,Default
 joinDedi_button,참여,Join
 admin_tools,관리자 도구,Admin tools
