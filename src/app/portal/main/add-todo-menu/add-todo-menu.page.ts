@@ -349,6 +349,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   ionViewDidEnter() {
     this.show_count_timer();
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
   }
 
   start_change(ev: any) {
@@ -884,7 +887,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     // 들어올 때와 같은지 검토
     let exactly_same = JSON.stringify(this.userInput) == this.received_data;
     if (exactly_same) {
-      this.navCtrl.back();
+      this.navCtrl.pop();
       return;
     } // ^ 같으면 저장 동작을 하지 않음
     if (!this.userInput.create_at) // 생성 날짜 기록
@@ -1127,7 +1130,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (this.global.godot_window['add_todo'])
       this.global.godot_window['add_todo'](JSON.stringify(this.userInput));
     await this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`, undefined, this.indexed.godotDB);
-    this.navCtrl.back();
+    this.navCtrl.pop();
   }
 
   /** 이 해야할 일 삭제 */
@@ -1252,11 +1255,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       if (isDelete && this.global.godot_window['remove_todo'])
         this.global.godot_window['remove_todo'](JSON.stringify(this.userInput));
       loading.dismiss();
-      this.navCtrl.back();
+      this.navCtrl.pop();
     }, this.indexed.godotDB);
   }
 
   async ionViewWillLeave() {
+    delete this.global.p5key['KeyShortCut']['Escape'];
     this.indexed.GetFileListFromDB('tmp_files', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB));
     }, this.indexed.godotDB);

@@ -53,6 +53,7 @@ export class AppComponent {
     indexed.initialize(() => {
       // 앱 재시작시 자동으로 동기화할 수 있도록 매번 삭제
       let init = global.CatchGETs(location.href) || {};
+      global.initialize();
       nakama.AddressToQRCodeAct(init);
       noti.initialize();
       noti.load_settings();

@@ -131,7 +131,7 @@ export class EnginepptPage implements OnInit {
           });
         },
         dismiss: () => {
-          this.navCtrl.back();
+          this.navCtrl.pop();
         }
       });
     }, 0);

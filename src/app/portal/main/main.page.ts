@@ -81,5 +81,12 @@ export class MainPage implements OnInit {
 
   ionViewDidEnter() {
     this.nakama.resumeBanner();
+    this.global.p5key['KeyShortCut']['AddAct'] = () => {
+      this.nakama.open_add_todo_page('');
+    }
+  }
+
+  ionViewWillLeave() {
+    delete this.global.p5key['KeyShortCut']['AddAct'];
   }
 }

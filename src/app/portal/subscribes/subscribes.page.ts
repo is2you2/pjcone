@@ -34,6 +34,20 @@ export class SubscribesPage implements OnInit {
 
   cant_dedicated = false;
 
+  ionViewWillEnter() {
+    if (this.global.p5key && this.global.p5key['KeyShortCut'])
+      this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+        if (this.nakama.channels.length > index)
+          this.go_to_chatroom(this.nakama.channels[index]);
+        else this.add_new_group();
+      };
+    if (this.global.p5key && this.global.p5key['KeyShortCut']
+      && !this.global.p5key['KeyShortCut']['AddAct'])
+      this.global.p5key['KeyShortCut']['AddAct'] = () => {
+        this.add_new_group();
+      };
+  }
+
   ionViewDidEnter() {
     this.nakama.subscribe_lock = true;
     this.nakama.resumeBanner();
@@ -117,13 +131,27 @@ export class SubscribesPage implements OnInit {
     if (all_online_server.length)
       this.modalCtrl.create({
         component: AddGroupPage,
-      }).then(v => v.present());
+      }).then(v => {
+        let cache_func = this.global.p5key['KeyShortCut'];
+        this.global.p5key['KeyShortCut'] = {};
+        v.onDidDismiss().then(() => {
+          this.global.p5key['KeyShortCut'] = cache_func;
+          this.ionViewWillEnter();
+        });
+        v.present();
+      });
     else {
       this.modalCtrl.create({
         component: GroupServerPage,
       }).then(v => {
         this.p5toast.show({
           text: this.lang.text['Subscribes']['Disconnected'],
+        });
+        let cache_func = this.global.p5key['KeyShortCut'];
+        this.global.p5key['KeyShortCut'] = {};
+        v.onDidDismiss().then(() => {
+          this.global.p5key['KeyShortCut'] = cache_func;
+          this.ionViewWillEnter();
         });
         v.present()
       });
@@ -132,6 +160,8 @@ export class SubscribesPage implements OnInit {
 
   ionViewWillLeave() {
     this.nakama.subscribe_lock = false;
+    delete this.global.p5key['KeyShortCut']['Digit'];
+    delete this.global.p5key['KeyShortCut']['AddAct'];
     this.StopScan();
   }
 }

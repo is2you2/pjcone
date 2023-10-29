@@ -108,6 +108,52 @@ export class GlobalActService {
     isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
 
+  p5key: p5;
+  initialize() {
+    this.p5key = new p5((p: p5) => {
+      p.setup = () => {
+        p.noCanvas();
+        p.noLoop();
+        p['KeyShortCut'] = {};
+      }
+      p.keyPressed = (ev) => {
+        switch (ev['code']) {
+          // 메뉴 나열순
+          case 'Digit1': // 보여지는 리스트 메뉴 최상단부터 아래로
+          case 'Digit2':
+          case 'Digit3':
+          case 'Digit4':
+          case 'Digit5':
+          case 'Digit6':
+          case 'Digit7':
+          case 'Digit8':
+          case 'Digit9':
+          case 'Digit0':
+            if (p['KeyShortCut']['Digit']) {
+              let exact_index = (Number(ev['code'].slice(-1)) - 1 + 10) % 10;
+              p['KeyShortCut']['Digit'](exact_index);
+            }
+            break;
+          // 메인 하단 탭
+          case 'KeyQ': // 채널
+          case 'KeyW': // 할 일
+          case 'KeyE': // 설정
+            if (p['KeyShortCut']['BottomTab'])
+              p['KeyShortCut']['BottomTab'](ev['code'].slice(-1));
+            break;
+          case 'KeyA': // 추가류 (Add)
+            if (p['KeyShortCut']['AddAct'])
+              p['KeyShortCut']['AddAct']();
+            break;
+          case 'Escape': // 페이지 돌아가기 (navCtrl.pop()) / modal은 기본적으로 동작함
+            if (p['KeyShortCut']['Escape'])
+              p['KeyShortCut']['Escape']();
+            break;
+        }
+      }
+    });
+  }
+
   /** 브라우저에서 딥 링크마냥 행동하기
    * @returns GET 으로 작성된 key-value 쌍
   */

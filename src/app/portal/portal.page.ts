@@ -31,8 +31,33 @@ export class PortalPage implements OnInit {
     }
   }
 
-  ionViewWillEnter() {
+  ionViewDidEnter() {
     this.create_p5sensor();
+    if (this.CacheKeyShortCut)
+      this.global.p5key['KeyShortCut'] = this.CacheKeyShortCut;
+    this.try_add_shortcut();
+  }
+
+  try_add_shortcut() {
+    if (this.global.p5key && this.global.p5key['KeyShortCut'])
+      this.global.p5key['KeyShortCut']['BottomTab'] = (char: string) => {
+        switch (char) {
+          case 'Q':
+            this.ionTabs.select('subscribes');
+            this.subscribe_button();
+            break;
+          case 'W':
+            this.ionTabs.select('main');
+            this.bottom_tab_selected();
+            break;
+          case 'E':
+            this.setting_button();
+            break;
+        }
+      }
+    else setTimeout(() => {
+      this.try_add_shortcut();
+    }, 100);
   }
 
   p5sensor: p5;
@@ -80,6 +105,12 @@ export class PortalPage implements OnInit {
     this.SubscribesIcon = 'chatbubbles-outline';
     this.TodoIcon = 'checkbox';
     this.create_p5sensor();
+  }
+
+  CacheKeyShortCut: any;
+  ionViewWillLeave() {
+    this.CacheKeyShortCut = this.global.p5key['KeyShortCut'];
+    this.global.p5key['KeyShortCut'] = {};
   }
 
   ionViewDidLeave() {

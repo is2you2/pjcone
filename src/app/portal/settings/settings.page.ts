@@ -176,11 +176,44 @@ export class SettingsPage implements OnInit, OnDestroy {
   /** 프로필 썸네일 */
   profile_filter: string;
   ionViewWillEnter() {
-    // [style] = "'background-color: ' + statusBar.colors[(statusBar.settings['groupServer']) || 'offline']" > </div>
     if (this.statusBar.settings['groupServer'] == 'online')
       this.profile_filter = "filter: grayscale(0) contrast(1);";
     else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
     this.check_if_admin();
+  }
+  ionViewDidEnter() {
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.nav.pop();
+    }
+    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+      let LinkButton = [];
+      LinkButton.push(() => this.go_to_page('group-server'));
+      LinkButton.push(() => this.go_to_page('noti-alert'));
+      LinkButton.push(() => this.go_to_webrtc_manager());
+      LinkButton.push(() => this.go_to_qr_share());
+      LinkButton.push(() => this.open_inapp_explorer());
+      LinkButton.push(() => this.go_to_page('qrcode-gen'));
+      if (!this.is_nativefier) LinkButton.push(() => this.go_to_page('tts-export'));
+      LinkButton.push(() => this.go_to_page('wsclient'));
+      LinkButton.push(() => this.go_to_page('engineppt'));
+      LinkButton.push(() => this.download_serverfile());
+      if (this.as_admin.length) {
+        LinkButton.push(() => this.go_to_page('weblink-gen'));
+        if (!this.cant_dedicated && this.can_use_http)
+          LinkButton.push(() => this.start_minimalserver());
+        LinkButton.push(() => this.go_to_page('admin-tools'));
+      }
+      LinkButton.push(() => this.go_to_page('creator'));
+      if (this.lang.lang != 'ko')
+        LinkButton.push(() => this.go_to_page('translator'));
+      LinkButton.push(() => this.LangClicked());
+      LinkButton.push(() => this.go_to_page('licenses'));
+      if (this.cant_dedicated)
+        LinkButton.push(() => this.open_playstore());
+      // 설정 메뉴 정렬처리
+      if (LinkButton[index])
+        LinkButton[index]();
+    }
   }
   /** 채팅방 이중진입 방지용 */
   will_enter = false;
@@ -294,6 +327,11 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   open_playstore() {
     window.open('https://play.google.com/store/apps/details?id=org.pjcone.portal', '_system');
+  }
+
+  ionViewWillLeave() {
+    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5key['KeyShortCut']['Digit'];
   }
 
   ngOnDestroy(): void {

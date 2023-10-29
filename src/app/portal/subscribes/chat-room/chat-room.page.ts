@@ -100,7 +100,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`, (list) => {
         list.forEach(path => this.indexed.removeFileFromUserPath(path));
         loading.dismiss();
-        this.navCtrl.back();
+        this.navCtrl.pop();
       });
     }
   },
@@ -241,6 +241,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.toggle_speakermode();
     }
   }];
+
+  ionViewDidEnter() {
+    if (!this.global.p5key['KeyShortCut']['Escape'])
+      this.global.p5key['KeyShortCut']['Escape'] = () => {
+        this.navCtrl.pop();
+      }
+  }
 
   @ViewChild('NewChatRoomAttach') NewAttach: IonSelect;
   /** 첨부 파일 타입 정하기 */
@@ -1363,6 +1370,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         attaches.push(this.messages[i]);
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;
+      delete this.global.p5key['KeyShortCut']['Escape'];
       this.modalCtrl.create({
         component: IonicViewerPage,
         componentProps: {
@@ -1376,6 +1384,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         cssClass: 'fullscreen',
       }).then(v => {
         v.onDidDismiss().then((v) => {
+          this.ionViewDidEnter();
           if (v.data) { // 파일 편집하기를 누른 경우
             switch (v.data.type) {
               case 'image':
@@ -1509,6 +1518,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
     this.noti.Current = undefined;
+    delete this.global.p5key['KeyShortCut']['Escape'];
   }
 
   ngOnDestroy(): void {
