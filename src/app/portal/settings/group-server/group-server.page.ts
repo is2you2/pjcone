@@ -131,9 +131,11 @@ export class GroupServerPage implements OnInit {
     }
     this.add_custom_tog = true;
 
-    this.dedicated_info.port = this.dedicated_info.port || 7350;
+    let AddrPort = (this.dedicated_info.address || '192.168.0.1').split(':');
+    this.dedicated_info.address = AddrPort[0];
+    this.dedicated_info.port = Number(AddrPort[1]) || 7350;
     if (this.isSSLConnect) this.dedicated_info.useSSL = true;
-    this.dedicated_info.useSSL = this.dedicated_info.useSSL || false;
+    this.dedicated_info.useSSL = this.dedicated_info.useSSL || Boolean(this.dedicated_info.address.replace(/0-9|\./g, ''));
     this.dedicated_info.key = this.dedicated_info.key || 'defaultkey';
 
     this.nakama.add_group_server(this.dedicated_info, () => {
