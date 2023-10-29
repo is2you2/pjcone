@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ChannelMessage } from '@heroiclabs/nakama-js';
-import { AlertController, LoadingController, ModalController, NavController } from '@ionic/angular';
+import { AlertController, IonSelect, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 import * as p5 from "p5";
@@ -195,95 +195,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   },
   { // 4
-    icon: 'document-outline',
+    icon: 'document-attach-outline',
     act: () => {
-      if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-      document.getElementById(this.file_sel_id).click();
+      this.NewAttach.open();
     }
   }, { // 5
-    icon: 'document-attach-outline',
-    act: async () => {
-      try {
-        let pasted_url: string;
-        try {
-          pasted_url = await this.mClipboard.paste()
-        } catch (e) {
-          try {
-            pasted_url = await clipboard.read()
-          } catch (e) {
-            throw e;
-          }
-        }
-        let this_file: FileInfo = {};
-        this_file.url = pasted_url;
-        this_file['content_related_creator'] = [{
-          user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-          timestamp: new Date().getTime(),
-          display_name: this.nakama.users.self['display_name'],
-          various: 'link',
-        }];
-        this_file['content_creator'] = {
-          user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-          timestamp: new Date().getTime(),
-          display_name: this.nakama.users.self['display_name'],
-          various: 'link',
-        };
-        this_file.file_ext = this_file.url.split('.').pop().split('?').shift();
-        this_file.filename = `${this.lang.text['ChatRoom']['ExternalLinkFile']}.${this_file.file_ext}`;
-        this.global.set_viewer_category_from_ext(this_file);
-        this_file.type = '';
-        this_file.typeheader = this_file.viewer;
-        if (!this.info['HideAutoThumbnail'])
-          this.global.modulate_thumbnail(this_file, this_file.url);
-        if (this.NeedScrollDown())
-          setTimeout(() => {
-            this.scroll_down_logs();
-          }, 100);
-        this.userInput.file = this_file;
-        this.inputPlaceholder = `(${this.lang.text['ChatRoom']['FileLink']}: ${this.userInput.file.filename})`;
-      } catch (e) {
-        this.p5toast.show({
-          text: `${this.lang.text['ChatRoom']['FailedToPasteData']}: ${e}`,
-        });
-      }
-    }
-  },
-  { // 6
-    icon_img: 'voidDraw.png',
-    act: async () => {
-      if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-      let props = {}
-      let content_related_creator: ContentCreatorInfo[];
-      if (this.userInput.file && this.userInput.file.typeheader == 'image') { // 선택한 파일을 편집하는 경우
-        try {
-          if (this.userInput.file.url)
-            this.userInput.file.blob = await fetch(this.userInput.file.url).then(r => r.blob());
-          let tmp_work_path = `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`;
-          await this.indexed.saveBlobToUserPath(this.userInput.file.blob, tmp_work_path, undefined, this.indexed.godotDB)
-          let thumbnail_image = document.getElementById('ChatroomSelectedImage');
-          props['path'] = tmp_work_path;
-          props['width'] = thumbnail_image['naturalWidth'];
-          props['height'] = thumbnail_image['naturalHeight'];
-          content_related_creator = this.userInput.file.content_related_creator;
-        } catch (e) {
-          this.p5toast.show({
-            text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
-          });
-          return;
-        }
-      }
-      this.modalCtrl.create({
-        component: VoidDrawPage,
-        componentProps: props,
-      }).then(v => {
-        v.onWillDismiss().then(async v => {
-          if (v.data) await this.voidDraw_fileAct_callback(v, content_related_creator);
-        });
-        v.present();
-      });
-    },
-  }, { // 7
-    icon: 'qr-code-outline',
+    icon: 'server-outline',
     act: () => {
       this.modalCtrl.create({
         component: QrSharePage,
@@ -299,7 +216,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         v.present();
       });
     }
-  }, { // 8
+  }, { // 6
     icon: 'call-outline',
     act: async () => {
       try {
@@ -318,16 +235,105 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         console.log('webrtc 시작단계 오류: ', e);
       }
     }
-  }, { // 9
+  }, { // 7
     icon: 'volume-mute-outline',
     act: async () => {
       this.toggle_speakermode();
     }
   }];
 
+  @ViewChild('NewChatRoomAttach') NewAttach: IonSelect;
+  /** 첨부 파일 타입 정하기 */
+  async new_attach(ev: any) {
+    switch (ev.detail.value) {
+      case 'load':
+        if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+        document.getElementById(this.file_sel_id).click();
+        break;
+      case 'image':
+        if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+        let props = {}
+        let content_related_creator: ContentCreatorInfo[];
+        if (this.userInput.file && this.userInput.file.typeheader == 'image') { // 선택한 파일을 편집하는 경우
+          try {
+            if (this.userInput.file.url)
+              this.userInput.file.blob = await fetch(this.userInput.file.url).then(r => r.blob());
+            let tmp_work_path = `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`;
+            await this.indexed.saveBlobToUserPath(this.userInput.file.blob, tmp_work_path, undefined, this.indexed.godotDB)
+            let thumbnail_image = document.getElementById('ChatroomSelectedImage');
+            props['path'] = tmp_work_path;
+            props['width'] = thumbnail_image['naturalWidth'];
+            props['height'] = thumbnail_image['naturalHeight'];
+            content_related_creator = this.userInput.file.content_related_creator;
+          } catch (e) {
+            this.p5toast.show({
+              text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
+            });
+            return;
+          }
+        }
+        this.modalCtrl.create({
+          component: VoidDrawPage,
+          componentProps: props,
+        }).then(v => {
+          v.onWillDismiss().then(async v => {
+            if (v.data) await this.voidDraw_fileAct_callback(v, content_related_creator);
+          });
+          v.present();
+        });
+        break;
+      case 'link':
+        try {
+          let pasted_url: string;
+          try {
+            pasted_url = await this.mClipboard.paste()
+          } catch (e) {
+            try {
+              pasted_url = await clipboard.read()
+            } catch (e) {
+              throw e;
+            }
+          }
+          let this_file: FileInfo = {};
+          this_file.url = pasted_url;
+          this_file['content_related_creator'] = [{
+            user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            timestamp: new Date().getTime(),
+            display_name: this.nakama.users.self['display_name'],
+            various: 'link',
+          }];
+          this_file['content_creator'] = {
+            user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            timestamp: new Date().getTime(),
+            display_name: this.nakama.users.self['display_name'],
+            various: 'link',
+          };
+          this_file.file_ext = this_file.url.split('.').pop().split('?').shift();
+          this_file.filename = `${this.lang.text['ChatRoom']['ExternalLinkFile']}.${this_file.file_ext}`;
+          this.global.set_viewer_category_from_ext(this_file);
+          this_file.type = '';
+          this_file.typeheader = this_file.viewer;
+          if (!this.info['HideAutoThumbnail'])
+            this.global.modulate_thumbnail(this_file, this_file.url);
+          if (this.NeedScrollDown())
+            setTimeout(() => {
+              this.scroll_down_logs();
+            }, 100);
+          this.userInput.file = this_file;
+          this.inputPlaceholder = `(${this.lang.text['ChatRoom']['FileLink']}: ${this.userInput.file.filename})`;
+        } catch (e) {
+          this.p5toast.show({
+            text: `${this.lang.text['ChatRoom']['FailedToPasteData']}: ${e}`,
+          });
+        }
+        break;
+    }
+    this.NewAttach.value = '';
+  }
+
   async toggle_speakermode(force?: boolean) {
     this.useSpeaker = force ?? !this.useSpeaker;
-    this.extended_buttons[9].icon = this.useSpeaker
+    this.extended_buttons[7].icon = this.useSpeaker
       ? 'volume-high-outline' : 'volume-mute-outline';
     if (!this.useSpeaker) try {
       await TextToSpeech.stop();
@@ -621,7 +627,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
           delete this.extended_buttons[1].isHide;
           this.extended_buttons[2].isHide = true;
-          this.extended_buttons[8].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
+          this.extended_buttons[6].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
         }
         break;
       case 3: // 그룹 대화라면
@@ -629,7 +635,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
         this.extended_buttons[1].isHide = true;
         delete this.extended_buttons[2].isHide;
-        this.extended_buttons[8].isHide = true;
+        this.extended_buttons[6].isHide = true;
         break;
       default:
         break;
@@ -673,7 +679,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (this.info['redirect']['type'] == 3)
         this.extended_buttons[2].isHide = false;
     }
-    this.extended_buttons[9].isHide = isNativefier || this.info['status'] == 'missing';
+    this.extended_buttons[7].isHide = isNativefier || this.info['status'] == 'missing';
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
     setTimeout(() => {

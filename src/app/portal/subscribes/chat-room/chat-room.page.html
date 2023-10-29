@@ -193,6 +193,13 @@ SPDX-License-Identifier: MIT -->
             </div>
           </div>
         </div>
+        <ion-item style="display: none;">
+          <ion-select #NewChatRoomAttach interface="action-sheet" (ionChange)="new_attach($event)">
+            <ion-select-option value="image">{{lang.text['TodoDetail']['new_draw']}}</ion-select-option>
+            <ion-select-option value="load">{{lang.text['TodoDetail']['add_attach']}}</ion-select-option>
+            <ion-select-option value="link">{{lang.text['TodoDetail']['outlink']}}</ion-select-option>
+          </ion-select>
+        </ion-item>
       </td>
     </tr>
   </table>
