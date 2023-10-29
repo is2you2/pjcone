@@ -78,8 +78,6 @@ export class MinimalChatPage implements OnInit {
       `${SERVER_PATH_ROOT}pjcone_pwa/?group_dedi=ws://${extract}`);
   }
 
-  /** 마지막 메시지 썸네일 보여주기 토글 */
-  showLastMessage = false;
   /** 그룹채팅인지 랜덤채팅인지 분류 */
   target: 'dedicated_groupchat' | 'community_ranchat' = 'community_ranchat';
   ngOnInit() {
@@ -412,7 +410,6 @@ export class MinimalChatPage implements OnInit {
   scroll_down() {
     let scrollHeight = this.minimal_chat_log.scrollHeight;
     this.minimal_chat_log.scrollTo({ top: scrollHeight, behavior: 'smooth' });
-    this.showLastMessage = false;
   }
 
   /** 랜덤채팅에 참여하기, 대화 끊고 다시 연결 */
@@ -470,8 +467,6 @@ export class MinimalChatPage implements OnInit {
       let scrollHeight = this.minimal_chat_log.scrollHeight;
       if (scrollHeight < this.minimal_chat_log.scrollTop + this.minimal_chat_log.clientHeight + 120) {
         this.minimal_chat_log.scrollTo({ top: scrollHeight, behavior: 'smooth' });
-      } else {
-        this.showLastMessage = true;
       }
     }, force || 0);
   }
@@ -513,6 +508,8 @@ export class MinimalChatPage implements OnInit {
     this.noti.RemoveListener(`exit${this.target}`);
     this.noti.ClearNoti(this.lnId);
     this.client.disconnect(this.target);
+    if (this.params.get('address') == 'ws://127.0.0.1')
+      this.local_server.stop();
     this.modalCtrl.dismiss();
   }
 
