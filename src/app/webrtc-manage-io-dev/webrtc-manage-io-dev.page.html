@@ -53,13 +53,13 @@
       <ion-item button slot="header">
         <ion-label>{{info.urls[0]}}</ion-label>
       </ion-item>
-      <ion-list slot="content">
+      <div slot="content">
         <img *ngIf="QRCodes[i]" [src]="QRCodes[i]" style="width: 100%; height: auto;" alt="Loading"
           (click)="copy_info(i)">
         <ion-item button (click)="RemoveServer(i)">
           <ion-label color="danger" class="ion-text-center">{{lang.text['WebRTCDevManager']['Remove']}}</ion-label>
         </ion-item>
-      </ion-list>
+      </div>
     </ion-accordion>
   </ion-accordion-group>
   <ion-item button (click)="OpenNewWebRTCServerForm()">
