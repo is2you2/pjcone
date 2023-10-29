@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { iosTransitionAnimation, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { isNativefier, isPlatform, SERVER_PATH_ROOT } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -16,6 +15,7 @@ import { File } from '@awesome-cordova-plugins/file/ngx';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { WebrtcManageIoDevPage } from 'src/app/webrtc-manage-io-dev/webrtc-manage-io-dev.page';
 import { QrSharePage } from './qr-share/qr-share.page';
+import { LocalGroupServerService } from 'src/app/local-group-server.service';
 
 @Component({
   selector: 'app-settings',
@@ -30,13 +30,13 @@ export class SettingsPage implements OnInit, OnDestroy {
     public statusBar: StatusManageService,
     public nakama: NakamaService,
     private indexed: IndexedDBService,
-    private bgmode: BackgroundMode,
     public lang: LanguageSettingService,
     public noti: LocalNotiService,
     private global: GlobalActService,
     private file: File,
     private p5toast: P5ToastService,
     private loadingCtrl: LoadingController,
+    public server: LocalGroupServerService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
@@ -50,7 +50,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
       if (e && v) this.nakama.users.self['img'] = v.replace(/"|=|\\/g, '');
     });
-    this.isBatteryOptimizationsShowed = Boolean(localStorage.getItem('ShowDisableBatteryOptimizations'));
     this.AD_Div = document.getElementById('advertise');
     this.checkAdsInfo();
     this.check_if_admin();
@@ -68,6 +67,30 @@ export class SettingsPage implements OnInit, OnDestroy {
     for (let i = this.as_admin.length - 1; i >= 0; i--)
       if (!this.as_admin[i].is_admin)
         this.as_admin.splice(i, 1);
+  }
+
+  /** 최소한의 기능을 가진 채팅 서버 만들기 */
+  start_minimalserver() {
+    if (this.statusBar.dedicated.official['groupchat'] == 'offline') {
+      this.statusBar.settings['dedicatedServer'] = 'pending';
+      this.statusBar.dedicated.official['groupchat'] = 'pending';
+      this.server.funcs.onStart = () => {
+        this.statusBar.settings['dedicatedServer'] = 'online';
+        this.statusBar.dedicated.official['groupchat'] = 'online';
+        this.start_minimalchat('ws://127.0.0.1');
+      }
+      this.server.funcs.onFailed = () => {
+        this.statusBar.settings['dedicatedServer'] = 'missing';
+        this.statusBar.dedicated.official['groupchat'] = 'missing';
+        setTimeout(() => {
+          this.statusBar.settings['dedicatedServer'] = 'offline';
+          this.statusBar.dedicated.official['groupchat'] = 'offline';
+        }, 1500);
+      }
+      this.server.initialize();
+    } else {
+      this.start_minimalchat('ws://127.0.0.1');
+    }
   }
 
   /** 광고 정보 불러오기 */
@@ -149,13 +172,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     window.open(_link, '_system')
   }
 
-  isBatteryOptimizationsShowed = false;
-  setDisableBatteryOptimizations() {
-    this.bgmode.disableBatteryOptimizations();
-    this.isBatteryOptimizationsShowed = true;
-    localStorage.setItem('ShowDisableBatteryOptimizations', 'true');
-  }
-
   self = {};
   /** 프로필 썸네일 */
   profile_filter: string;
@@ -190,8 +206,8 @@ export class SettingsPage implements OnInit, OnDestroy {
           address: _address,
           name: this.nakama.users.self['display_name'],
         },
-      }).then(v => {
-        v.present();
+      }).then(async v => {
+        await v.present();
         this.lock_modal_open = false;
       });
     }

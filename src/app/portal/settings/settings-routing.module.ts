@@ -13,10 +13,6 @@ const routes: Routes = [
     loadChildren: () => import('./licenses/licenses.module').then( m => m.LicensesPageModule)
   },
   {
-    path: 'dedicated-settings',
-    loadChildren: () => import('./dedicated-settings/dedicated-settings.module').then( m => m.DedicatedSettingsPageModule)
-  },
-  {
     path: 'group-server',
     loadChildren: () => import('./group-server/group-server.module').then( m => m.GroupServerPageModule)
   },
