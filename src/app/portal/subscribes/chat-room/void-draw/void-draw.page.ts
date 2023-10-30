@@ -33,6 +33,13 @@ export class VoidDrawPage implements OnInit {
   }
 
   async ionViewDidEnter() {
+    this.global.p5key['KeyShortCut']['HistoryAct'] = (ShiftPressed: boolean) => {
+      if (ShiftPressed) { // Redo
+        this.act_history(1);
+      } else { // Undo
+        this.act_history(-1);
+      }
+    }
     document.addEventListener('ionBackButton', this.EventListenerAct);
     this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
     await this.global.CreateGodotIFrame('voidDraw', {
@@ -159,6 +166,10 @@ export class VoidDrawPage implements OnInit {
         this.global.godot_window['save_image']();
       }, 100);
     }
+  }
+
+  ionViewWillLeave() {
+    delete this.global.p5key['KeyShortCut']['HistoryAct'];
   }
 
   WithoutSave = true;
