@@ -79,10 +79,28 @@ export class MainPage implements OnInit {
       let TodoKeys: string[] = [];
       let CamPosition = p.createVector(0, 0);
       let CamScale = 1;
-      let BackgroundColor = isDarkMode ? '#444' : '#888';
+      /** 확대 중심 */
+      let ScaleCenter = p.createVector(0, 0);;
       let EllipseSize = 96;
       let TextSize = 20;
+      let nakama = this.nakama;
+      let indexed = this.indexed;
+      /** 썸네일 이미지 마스크 */
+      let ImageMask: p5.Image;
       p.setup = async () => {
+        { // 마스크 이미지 생성
+          ImageMask = p.createImage(128, 128);
+          ImageMask.loadPixels();
+          let ImageCenter = p.createVector(ImageMask.width / 2, ImageMask.height / 2);
+          for (let y = 0, yl = ImageMask.height; y < yl; y++)
+            for (let x = 0, xl = ImageMask.width; x < xl; x++) {
+              let pixelPosition = p.createVector(x, y);
+              let dist = ImageCenter.dist(pixelPosition);
+              if (dist < EllipseSize / 2 - 1)
+                ImageMask.set(x, y, p.color(255, 80));
+            }
+          ImageMask.updatePixels();
+        }
         let canvas = p.createCanvas(todo_div.clientWidth, todo_div.clientHeight);
         canvas.parent(todo_div);
         p.smooth();
@@ -94,6 +112,7 @@ export class MainPage implements OnInit {
         p.textSize(TextSize);
         p.textLeading(TextSize * 1.6);
         p.textWrap(p.CHAR);
+        p.imageMode(p.CENTER);
         ViewInit();
         // 할 일 추가시 행동
         p['add_todo'] = (data: string) => {
@@ -104,7 +123,7 @@ export class MainPage implements OnInit {
         // 해야할 일 리스트 업데이트
         p['ListUpdate'] = async () => {
           Todos = {};
-          TodoKeys = [];
+          TodoKeys.length = 0;
           let list = await this.indexed.GetFileListFromDB('todo/', undefined, this.indexed.godotDB);
           for (let i = 0, j = list.length; i < j; i++)
             if (list[i].indexOf('/info.todo') >= 0) {
@@ -116,16 +135,18 @@ export class MainPage implements OnInit {
       }
       /** 카메라 초기화 (3손가락 행동) */
       let ViewInit = () => {
-        CamPosition.x = p.width / 2;
-        CamPosition.y = p.height / 2;
+        ScaleCenter.x = p.width / 2;
+        ScaleCenter.y = p.height / 2;
+        CamPosition.x = 0;
+        CamPosition.y = 0;
         CamScale = 1;
       }
       p.draw = () => {
         p.clear(255, 255, 255, 255);
-        p.background(BackgroundColor);
         p.push();
-        p.translate(CamPosition);
+        p.translate(ScaleCenter);
         p.scale(CamScale);
+        p.translate(CamPosition);
         for (let i = 0, j = TodoKeys.length; i < j; i++)
           Todos[TodoKeys[i]].display();
         p.pop();
@@ -136,6 +157,8 @@ export class MainPage implements OnInit {
           let tmpHeightRatio = CamPosition.y / p.height;
           p.resizeCanvas(todo_div.clientWidth, todo_div.clientHeight);
           // 상대적 중심 위치를 계산하여 카메라 설정을 조정
+          ScaleCenter.x = p.width / 2;
+          ScaleCenter.y = p.height / 2;
           CamPosition.x = tmpWidthRatio * p.width;
           CamPosition.y = tmpHeightRatio * p.height;
         }, 50);
@@ -161,7 +184,17 @@ export class MainPage implements OnInit {
                 break;
             }
           }
+          indexed.loadBlobFromUserPath(`todo/${this.json.id}/thumbnail.png`, '')
+            .then(blob => {
+              let FileURL = URL.createObjectURL(blob);
+              p.loadImage(FileURL, v => {
+                this.ThumbnailImage = v;
+                this.ThumbnailImage.mask(ImageMask);
+                URL.revokeObjectURL(FileURL);
+              });
+            }).catch(_e => { });
         }
+        ThumbnailImage: p5.Image;
         /** 할 일 정보 원본을 내장하고 있음 */
         json: any;
         /** 사용자 지정 색이 없을 경우 보여지는 색 */
@@ -177,6 +210,9 @@ export class MainPage implements OnInit {
           // 가장 배경에 있는 원
           p.push();
           this.CalcPosition();
+          this.OnCollider();
+          // 최종적으로 위치를 업데이트 함
+          this.position = this.position.add(this.Velocity);
           p.translate(this.position);
           // 진행도 Lerp 생성
           let LerpProgress = p.map(
@@ -187,6 +223,9 @@ export class MainPage implements OnInit {
           p.fill((this.json.custom_color || this.defaultColor.toString('#rrggbb'))
             + p.hex(p.floor(p.lerp(34, 180, LerpProgress)), 2));
           p.ellipse(0, 0, EllipseSize, EllipseSize);
+          // 썸네일 이미지 표기
+          if (this.ThumbnailImage)
+            p.image(this.ThumbnailImage, 0, 0);
           // 진행도 표기
           p.push();
           p.noFill();
@@ -217,29 +256,65 @@ export class MainPage implements OnInit {
           let AccHeadingRev = this.position.heading() - p.PI;
           this.Accel = this.Accel.setHeading(AccHeadingRev);
           this.Velocity = this.Velocity.add(this.Accel).mult(CenterForceful);
-          this.position = this.position.add(this.Velocity);
         }
-        /** 다른 할 일과 충돌함 */
+        /** 다른 할 일과 충돌하여 속도가 변경됨 */
         OnCollider() {
-
+          for (let i = 0, j = TodoKeys.length; i < j; i++) {
+            if (Todos[TodoKeys[i]] != this) { // 이 개체가 아닐 때
+              let Other = Todos[TodoKeys[i]];
+              let dist = this.position.dist(Other.position);
+              if (dist < EllipseSize) { // 충분히 근접했다면 충돌로 인지
+              }
+            }
+          }
         }
-        /** 할 일 완료 애니메이션 동작 */
         DoneAnim() {
-          this.Remove();
+          this.RemoveTodo();
         }
-        /** 할 일 상세 보기 */
+        isClickable = true;
         Clicked() {
-
+          if (this.isClickable)
+            nakama.open_add_todo_page(JSON.stringify(this.json));
         }
-        /** 해야할 일의 위치 조정 */
         MoveTodo() {
 
         }
-        /** 이 할 일이 완전히 삭제됨 */
-        Remove() {
+        RemoveTodo() {
 
         }
       }
+      p.mousePressed = (ev: any) => {
+        switch (ev['button']) {
+          case 0: // 왼쪽
+            break;
+          case 1: // 가운데
+            ViewInit();
+            break;
+          case 2: // 오른쪽
+            break;
+        }
+      }
+      // p.mouseDragged = (ev: any) => {
+      //   console.log('mouseDragged: ', ev);
+      // }
+      // p.mouseReleased = (ev: any) => {
+      //   console.log('mouseReleased: ', ev);
+      // }
+      p.mouseWheel = (ev: any) => {
+        let delta = ev['deltaY'];
+        if (delta < 0)
+          CamScale *= 1.1;
+        else CamScale *= .9;
+      }
+      // p.touchStarted = (ev: any) => {
+      //   console.log('touchStarted: ', ev);
+      // }
+      // p.touchMoved = (ev: any) => {
+      //   console.log('touchMoved: ', ev);
+      // }
+      // p.touchEnded = (ev: any) => {
+      //   console.log('touchEnded: ', ev);
+      // }
     });
   }
 
