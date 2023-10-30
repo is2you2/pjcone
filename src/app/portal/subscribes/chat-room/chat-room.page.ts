@@ -201,8 +201,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   },
   { // 4
     icon: 'document-attach-outline',
-    act: () => {
-      this.NewAttach.open();
+    act: async () => {
+      if (!this.userInputTextArea)
+        this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+      setTimeout(() => {
+        this.userInputTextArea.focus();
+      }, 0);
+      await this.NewAttach.open();
+      this.userInputTextArea.focus();
     }
   }, { // 5
     icon: 'server-outline',
