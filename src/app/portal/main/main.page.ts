@@ -89,6 +89,7 @@ export class MainPage implements OnInit {
         p.noStroke();
         p.pixelDensity(1);
         p.ellipseMode(p.CENTER);
+        p.rectMode(p.CENTER);
         p.textAlign(p.CENTER, p.CENTER);
         p.textSize(TextSize);
         p.textWrap(p.CHAR);
@@ -142,14 +143,18 @@ export class MainPage implements OnInit {
       class TodoElement {
         constructor(data: any) {
           this.json = data;
-          this.position = p.createVector(0, 0);
+          let OutPosition = p.max(p.width, p.height);
+          let StartPosGen = p.createVector(OutPosition / (p.min(1, CamScale)), 0).setHeading(p.random(0, p.PI));
+          this.position = StartPosGen;
         }
         /** 할 일 정보 원본을 내장하고 있음 */
         json: any;
         /** 개체 위치 중심점 */
         position: p5.Vector;
-        /** 가속도 - 매 프레임마다 위치에 영향을 줌 */
-        Acc = p.createVector(0, 0);
+        /** 속도 - 매 프레임마다 위치에 영향을 줌 */
+        Velocity = p.createVector(0, 0);
+        /** 가속도 - 매 프레임마다 속도에 영향을 줌 */
+        Accel = p.createVector(0, 0);
         /** 실시간 보여주기 */
         display() {
           p.push();
@@ -157,18 +162,26 @@ export class MainPage implements OnInit {
           p.translate(this.position);
           p.ellipse(0, 0, EllipseSize, EllipseSize);
           p.fill(0);
-          p.text(this.json.title, -EllipseSize / 2, -EllipseSize / 2, EllipseSize, EllipseSize);
+          let TextBox = EllipseSize * .9;
+          p.text(this.json.title, 0, 0, TextBox, TextBox);
           p.pop();
         }
-        /** 가속도에 의한 위치 변화 계산 */
+        /** 시작시 적용되는 색상 */
+        ColorStart: p5.Color;
+        /** 기한시 적용되는 색상 */
+        ColorEnd: p5.Color;
+        VECTOR_ZERO = p.createVector(0, 0);
+        /** 가속도에 의한 위치 변화 계산, 중심으로 중력처럼 영향받음 */
         private CalcPosition() {
-          this.Acc.x = -this.position.x / 2;
-          this.Acc.y = -this.position.y / 2;
-          this.position = this.position.add(this.Acc);
-        }
-        /** 월드 중심으로 중력을 받음 */
-        gravityCenter() {
-
+          let dist = this.position.dist(this.VECTOR_ZERO);
+          let distLimit = p.map(dist, 0, EllipseSize / 4, 0, 1, true);
+          let CenterForceful = p.map(distLimit, EllipseSize / 4, 0, 1, .95, true);
+          this.Accel.x = distLimit;
+          this.Accel.y = 0;
+          let AccHeadingRev = this.position.heading() - p.PI;
+          this.Accel = this.Accel.setHeading(AccHeadingRev);
+          this.Velocity = this.Velocity.add(this.Accel).mult(CenterForceful);
+          this.position = this.position.add(this.Velocity);
         }
         /** 다른 할 일과 충돌함 */
         OnCollider() {

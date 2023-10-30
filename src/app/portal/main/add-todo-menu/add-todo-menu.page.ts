@@ -287,9 +287,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           else throw '번외 썸네일 필요';
           if (!blob) continue;
           let url = URL.createObjectURL(blob);
-          this.global.modulate_thumbnail(this.userInput.attach[i], url, this.indexed.godotDB);
+          this.global.modulate_thumbnail(this.userInput.attach[i], url);
         } catch (e) {
-          this.global.modulate_thumbnail(this.userInput.attach[i], '', this.indexed.godotDB);
+          this.global.modulate_thumbnail(this.userInput.attach[i], '');
         }
         this.userInput.attach[i]['exist'] = true;
       }
@@ -506,7 +506,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 filename: new_textfile_name,
               },
             },
-            targetDB: this.indexed.godotDB,
+            targetDB: this.indexed.ionicDB,
             no_edit: true,
           },
         }).then(v => {
@@ -733,7 +733,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         info: { content: this.userInput.attach[index] },
         path: this.userInput.attach[index]['path'],
         relevance: createRelevances,
-        targetDB: this.indexed.godotDB,
+        targetDB: this.indexed.ionicDB,
       },
       cssClass: 'fullscreen',
     }).then(v => {
@@ -846,10 +846,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.indexed.saveBase64ToUserPath(v.data['img'], 'tmp_files/todo/attach.jpeg', (raw) => {
       this_file.blob = new Blob([raw], { type: this_file['type'] });
       this_file.size = this_file.blob.size;
-    }, this.indexed.godotDB);
+    });
     this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path'], (_) => {
       v.data['loadingCtrl'].dismiss();
-    }, this.indexed.godotDB);
+    });
     this.auto_scroll_down();
   }
 
@@ -1002,7 +1002,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                   this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
                     `todo/${this.userInput.id}/thumbnail.png`, (_) => {
                       done();
-                    }, this.indexed.godotDB);
+                    });
                   URL.revokeObjectURL(header_image);
                   p.remove();
                 });
@@ -1256,14 +1256,14 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.global.godot_window['remove_todo'](JSON.stringify(this.userInput));
       loading.dismiss();
       this.navCtrl.pop();
-    }, this.indexed.godotDB);
+    });
   }
 
   async ionViewWillLeave() {
     delete this.global.p5key['KeyShortCut']['Escape'];
     this.indexed.GetFileListFromDB('tmp_files', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path));
-    }, this.indexed.godotDB);
+    });
     this.noti.Current = '';
     if (this.p5timer)
       this.p5timer.remove();
