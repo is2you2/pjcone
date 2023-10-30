@@ -81,7 +81,7 @@ export class MainPage implements OnInit {
       let CamScale = 1;
       let BackgroundColor = isDarkMode ? '#444' : '#888';
       let EllipseSize = 96;
-      let TextSize = 24;
+      let TextSize = 20;
       p.setup = async () => {
         let canvas = p.createCanvas(todo_div.clientWidth, todo_div.clientHeight);
         canvas.parent(todo_div);
@@ -92,6 +92,7 @@ export class MainPage implements OnInit {
         p.rectMode(p.CENTER);
         p.textAlign(p.CENTER, p.CENTER);
         p.textSize(TextSize);
+        p.textLeading(TextSize * 1.6);
         p.textWrap(p.CHAR);
         ViewInit();
         // 할 일 추가시 행동
@@ -139,6 +140,7 @@ export class MainPage implements OnInit {
           CamPosition.y = tmpHeightRatio * p.height;
         }, 50);
       }
+      let ProgressWeight = 8;
       /** 해야할 일 객체 */
       class TodoElement {
         constructor(data: any) {
@@ -146,9 +148,24 @@ export class MainPage implements OnInit {
           let OutPosition = p.max(p.width, p.height);
           let StartPosGen = p.createVector(OutPosition / (p.min(1, CamScale)), 0).setHeading(p.random(0, p.PI));
           this.position = StartPosGen;
+          if (!this.json.custom_color) {
+            switch (this.json.importance) {
+              case '0': // 중요도 낮음
+                this.defaultColor = p.color('#58a192');
+                break;
+              case '1': // 중요도 보통
+                this.defaultColor = p.color('#ddbb41');
+                break;
+              case '2': // 중요도 높음
+                this.defaultColor = p.color('#ff754e');
+                break;
+            }
+          }
         }
         /** 할 일 정보 원본을 내장하고 있음 */
         json: any;
+        /** 사용자 지정 색이 없을 경우 보여지는 색 */
+        defaultColor: p5.Color;
         /** 개체 위치 중심점 */
         position: p5.Vector;
         /** 속도 - 매 프레임마다 위치에 영향을 줌 */
@@ -157,12 +174,31 @@ export class MainPage implements OnInit {
         Accel = p.createVector(0, 0);
         /** 실시간 보여주기 */
         display() {
+          // 가장 배경에 있는 원
           p.push();
           this.CalcPosition();
           p.translate(this.position);
+          // 진행도 Lerp 생성
+          let LerpProgress = p.map(
+            Date.now(),
+            this.json.create_at,
+            this.json.limit,
+            0, 1, true);
+          p.fill((this.json.custom_color || this.defaultColor.toString('#rrggbb'))
+            + p.hex(p.floor(p.lerp(34, 180, LerpProgress)), 2));
           p.ellipse(0, 0, EllipseSize, EllipseSize);
-          p.fill(0);
+          // 진행도 표기
+          p.push();
+          p.noFill();
+          p.stroke((this.json.custom_color || this.defaultColor));
+          p.strokeWeight(ProgressWeight);
+          p.rotate(-p.PI / 2);
+          let ProgressCircleSize = EllipseSize - ProgressWeight;
+          p.arc(0, 0, ProgressCircleSize, ProgressCircleSize, 0, LerpProgress * p.TWO_PI);
+          p.pop();
+          // 타이틀 일부 표기
           let TextBox = EllipseSize * .9;
+          p.fill(255);
           p.text(this.json.title, 0, 0, TextBox, TextBox);
           p.pop();
         }
