@@ -1267,7 +1267,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.noti.Current = '';
     if (this.p5timer)
       this.p5timer.remove();
-    this.global.p5todo.loop();
+    this.global.p5todo['PlayCanvas']();
   }
 
   ngOnDestroy(): void {

@@ -353,6 +353,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     delete this.nakama.users.self['img'];
     delete this.nakama.on_socket_disconnected['settings_admin_check'];
     clearTimeout(this.refreshAds);
-    this.global.p5todo.loop();
+    this.global.p5todo['PlayCanvas']();
   }
 }

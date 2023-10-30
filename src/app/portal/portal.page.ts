@@ -35,7 +35,7 @@ export class PortalPage implements OnInit {
     if (this.CacheKeyShortCut)
       this.global.p5key['KeyShortCut'] = this.CacheKeyShortCut;
     this.try_add_shortcut();
-    this.global.p5todo.loop();
+    this.global.p5todo['PlayCanvas']();
   }
 
   try_add_shortcut() {
@@ -87,6 +87,6 @@ export class PortalPage implements OnInit {
   ionViewWillLeave() {
     this.CacheKeyShortCut = this.global.p5key['KeyShortCut'];
     this.global.p5key['KeyShortCut'] = {};
-    this.global.p5todo.noLoop();
+    this.global.p5todo['StopCanvas']();
   }
 }

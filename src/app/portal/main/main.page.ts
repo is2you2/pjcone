@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { GlobalActService, isDarkMode } from 'src/app/global-act.service';
+import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize } from '@capacitor-community/admob';
@@ -61,11 +61,9 @@ export class MainPage implements OnInit {
   }
 
   async ionViewWillEnter() {
-    if (!this.global.p5todo) {
+    if (!this.global.p5todo)
       this.CreateTodoManager();
-    } else {
-      this.global.p5todo.loop();
-    }
+    else this.global.p5todo['PlayCanvas']();
     this.indexed.GetFileListFromDB('acts_local', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB));
     }, this.indexed.godotDB);
@@ -87,6 +85,8 @@ export class MainPage implements OnInit {
       let indexed = this.indexed;
       /** 썸네일 이미지 마스크 */
       let ImageMask: p5.Image;
+      /** 비활성시 인풋값 무시 */
+      let BlockInput = false;
       p.setup = async () => {
         { // 마스크 이미지 생성
           ImageMask = p.createImage(128, 128);
@@ -114,6 +114,16 @@ export class MainPage implements OnInit {
         p.textWrap(p.CHAR);
         p.imageMode(p.CENTER);
         ViewInit();
+        // 캔버스 멈추기
+        p['StopCanvas'] = () => {
+          BlockInput = true;
+          p.noLoop();
+        }
+        // 캔버스 계속 사용
+        p['PlayCanvas'] = () => {
+          BlockInput = false;
+          p.loop();
+        }
         // 할 일 추가시 행동
         p['add_todo'] = (data: string) => {
           let json = JSON.parse(data);
@@ -164,6 +174,8 @@ export class MainPage implements OnInit {
         }, 50);
       }
       let ProgressWeight = 8;
+      /** 할 일 개체가 클릭 가능한 */
+      let isClickable = true;
       /** 해야할 일 객체 */
       class TodoElement {
         constructor(data: any) {
@@ -282,9 +294,8 @@ export class MainPage implements OnInit {
         DoneAnim() {
           this.RemoveTodo();
         }
-        isClickable = true;
         Clicked() {
-          if (this.isClickable)
+          if (isClickable)
             nakama.open_add_todo_page(JSON.stringify(this.json));
         }
         MoveTodo() {
@@ -301,46 +312,75 @@ export class MainPage implements OnInit {
       /** 시작점 캐시 */
       let TempStartCamPosition: p5.Vector;
       p.mousePressed = (ev: any) => {
-        switch (ev['buttons']) {
+        if (BlockInput) return;
+        isClickable = true;
+        switch (ev['which']) {
           case 1: // 왼쪽
             TempStartCamPosition = CamPosition.copy();
             MovementStartPosition = p.createVector(p.mouseX, p.mouseY);
             touches[0] = p.createVector(p.mouseX, p.mouseY);
             break;
-          case 4: // 가운데
+          case 2: // 가운데
             ViewInit();
             break;
         }
       }
       p.mouseDragged = (ev: any) => {
-        switch (ev['buttons']) {
+        if (BlockInput) return;
+        switch (ev['which']) {
           case 1: // 왼쪽
             touches[0] = p.createVector(p.mouseX, p.mouseY);
             CamPosition = TempStartCamPosition.copy().add(touches[0].sub(MovementStartPosition).div(CamScale));
+            let dist = TempStartCamPosition.dist(CamPosition);
+            if (dist > 15) isClickable = false;
             break;
         }
       }
       p.mouseReleased = (ev: any) => {
-        switch (ev['buttons']) {
+        if (BlockInput) return;
+        switch (ev['which']) {
           case 1: // 왼쪽
             touches.length = 0;
             MovementStartPosition = undefined;
+            let dist = TempStartCamPosition.dist(CamPosition);
+            if (dist < 15) { // 클릭 행동으로 간주
+              let WorldPoint = MappingPosition();
+              for (let i = 0, j = TodoKeys.length; i < j; i++) {
+                let dist = Todos[TodoKeys[i]].position.dist(WorldPoint);
+                if (dist < EllipseSize / 2) {
+                  Todos[TodoKeys[i]].Clicked();
+                  break;
+                }
+              }
+            }
             break;
         }
       }
+      /** 화면 상의 마우스 위치를 할 일 공간 내 위치로 변경 */
+      let MappingPosition = () => {
+        let mousePosition = p.createVector(p.mouseX, p.mouseY);
+        mousePosition.sub(ScaleCenter);
+        mousePosition.div(CamScale);
+        mousePosition.sub(CamPosition);
+        return mousePosition;
+      }
       p.mouseWheel = (ev: any) => {
+        if (BlockInput) return;
         let delta = ev['deltaY'];
         if (delta < 0)
           CamScale *= 1.1;
         else CamScale *= .9;
       }
       // p.touchStarted = (ev: any) => {
+      // if (BlockInput) return;
       //   console.log('touchStarted: ', ev);
       // }
       // p.touchMoved = (ev: any) => {
+      // if (BlockInput) return;
       //   console.log('touchMoved: ', ev);
       // }
       // p.touchEnded = (ev: any) => {
+      // if (BlockInput) return;
       //   console.log('touchEnded: ', ev);
       // }
     });
@@ -362,7 +402,7 @@ export class MainPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    this.global.p5todo.noLoop();
+    this.global.p5todo['StopCanvas']();
     delete this.global.p5key['KeyShortCut']['AddAct'];
   }
 }
