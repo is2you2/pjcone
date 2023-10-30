@@ -247,7 +247,7 @@ export class MainPage implements OnInit {
           // 진행도 Lerp 생성
           let LerpProgress = p.map(
             Date.now(),
-            this.json.create_at,
+            this.json.startFrom || this.json.written,
             this.json.limit,
             0, 1, true);
           p.fill((this.json.custom_color || this.defaultColor.toString('#rrggbb'))
