@@ -259,7 +259,7 @@ export class MainPage implements OnInit {
           this.Accel.y = 0;
           let AccHeadingRev = this.position.heading() - p.PI;
           this.Accel = this.Accel.setHeading(AccHeadingRev);
-          this.Velocity = this.Velocity.add(this.Accel).mult(CenterForceful);
+          this.Velocity.add(this.Accel).mult(CenterForceful);
         }
         /** 다른 할 일과 충돌하여 속도가 변경됨 */
         private OnCollider() {
@@ -277,7 +277,7 @@ export class MainPage implements OnInit {
         /** 다른 개체와 충돌하여 튕겨지는 로직 */
         ReflectBounce(Other: TodoElement, dist: number) {
           let calc = p5.Vector.sub(this.position, Other.position);
-          this.Velocity = this.Velocity.add(calc.mult(1 - dist / EllipseSize)).mult(.85);
+          this.Velocity.add(calc.mult(1 - dist / EllipseSize)).mult(.85);
         }
         DoneAnim() {
           this.RemoveTodo();
@@ -294,23 +294,40 @@ export class MainPage implements OnInit {
 
         }
       }
+      /** 모든 터치 또는 마우스 포인터의 현재 지점 */
+      let touches: p5.Vector[] = [];
+      /** 이동 연산용 시작점 */
+      let MovementStartPosition: p5.Vector;
+      /** 시작점 캐시 */
+      let TempStartCamPosition: p5.Vector;
       p.mousePressed = (ev: any) => {
-        switch (ev['button']) {
-          case 0: // 왼쪽
+        switch (ev['buttons']) {
+          case 1: // 왼쪽
+            TempStartCamPosition = CamPosition.copy();
+            MovementStartPosition = p.createVector(p.mouseX, p.mouseY);
+            touches[0] = p.createVector(p.mouseX, p.mouseY);
             break;
-          case 1: // 가운데
+          case 4: // 가운데
             ViewInit();
-            break;
-          case 2: // 오른쪽
             break;
         }
       }
-      // p.mouseDragged = (ev: any) => {
-      //   console.log('mouseDragged: ', ev);
-      // }
-      // p.mouseReleased = (ev: any) => {
-      //   console.log('mouseReleased: ', ev);
-      // }
+      p.mouseDragged = (ev: any) => {
+        switch (ev['buttons']) {
+          case 1: // 왼쪽
+            touches[0] = p.createVector(p.mouseX, p.mouseY);
+            CamPosition = TempStartCamPosition.copy().add(touches[0].sub(MovementStartPosition).div(CamScale));
+            break;
+        }
+      }
+      p.mouseReleased = (ev: any) => {
+        switch (ev['buttons']) {
+          case 1: // 왼쪽
+            touches.length = 0;
+            MovementStartPosition = undefined;
+            break;
+        }
+      }
       p.mouseWheel = (ev: any) => {
         let delta = ev['deltaY'];
         if (delta < 0)
