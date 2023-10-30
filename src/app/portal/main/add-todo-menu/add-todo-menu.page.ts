@@ -1252,8 +1252,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           delete this.nakama.web_noti_id[this.userInput.noti_id];
         }
       this.noti.ClearNoti(this.userInput.noti_id);
-      if (isDelete && this.global.godot_window['remove_todo'])
-        this.global.godot_window['remove_todo'](JSON.stringify(this.userInput));
+      if (isDelete)
+        this.global.p5todo['remove_todo'](JSON.stringify(this.userInput));
       loading.dismiss();
       this.navCtrl.pop();
     });

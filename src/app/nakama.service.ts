@@ -1942,8 +1942,7 @@ export class NakamaService {
                         delete this.web_noti_id[todo_info.noti_id];
                       }
                     this.noti.ClearNoti(todo_info.noti_id);
-                    let godot = this.global.godot.contentWindow || this.global.godot.contentDocument;
-                    godot['remove_todo'](JSON.stringify(todo_info));
+                    this.global.p5todo['remove_todo'](JSON.stringify(todo_info));
                   }, this.indexed.godotDB);
                   this.addRemoteTodoCounter(_is_official, _target, Number(todo_info['id'].split('_')[1]));
                 }

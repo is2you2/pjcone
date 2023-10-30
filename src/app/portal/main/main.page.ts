@@ -127,8 +127,22 @@ export class MainPage implements OnInit {
         // 할 일 추가시 행동
         p['add_todo'] = (data: string) => {
           let json = JSON.parse(data);
-          Todos[json.id] = new TodoElement(json);
+          if (json.done) { // 완료 행동
+            for (let i = 0, j = TodoKeys.length; i < j; i++)
+              if (Todos[TodoKeys[i]].json.id == json.id) {
+                Todos[TodoKeys[i]].DoneAnim();
+                break;
+              }
+          } else Todos[json.id] = new TodoElement(json);
           TodoKeys = Object.keys(Todos);
+        }
+        p['remove_todo'] = (data: string) => {
+          let json = JSON.parse(data);
+          for (let i = 0, j = TodoKeys.length; i < j; i++)
+            if (Todos[TodoKeys[i]].json.id == json.id) {
+              Todos[TodoKeys[i]].RemoveTodo();
+              break;
+            }
         }
         // 해야할 일 리스트 업데이트
         p['ListUpdate'] = async () => {
@@ -292,6 +306,7 @@ export class MainPage implements OnInit {
           this.Velocity.add(calc.mult(1 - dist / EllipseSize)).mult(.85);
         }
         DoneAnim() {
+          console.log('완료 애니메이션 없음');
           this.RemoveTodo();
         }
         Clicked() {
@@ -302,7 +317,12 @@ export class MainPage implements OnInit {
 
         }
         RemoveTodo() {
-
+          for (let i = 0, j = TodoKeys.length; i < j; i++)
+            if (TodoKeys[i] == this.json.id) {
+              TodoKeys.splice(i, 1);
+              break;
+            }
+          delete Todos[this.json.id];
         }
       }
       /** 모든 터치 또는 마우스 포인터의 현재 지점 */
