@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
+import { NavController } from '@ionic/angular';
 import * as p5 from "p5";
 import { isPlatform } from 'src/app/app.component';
+import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 
 @Component({
@@ -15,6 +17,8 @@ export class CreatorPage implements OnInit {
 
   constructor(
     public lang: LanguageSettingService,
+    private global: GlobalActService,
+    private navCtrl: NavController,
   ) { }
 
   info = {
@@ -54,6 +58,12 @@ export class CreatorPage implements OnInit {
     });
   }
 
+  ionViewDidEnter() {
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
+  }
+
   /** 도움주신분들 제공링크 따라가기 */
   go_to_helper_page(url: string) {
     window.open(url, '_system');
@@ -67,5 +77,9 @@ export class CreatorPage implements OnInit {
   /** 개발자에게 커피를 사주세요 */
   inAppPurchaseClicked() {
     console.log('커피 버튼');
+  }
+
+  ionViewWillLeave() {
+    delete this.global.p5key['KeyShortCut']['Escape'];
   }
 }

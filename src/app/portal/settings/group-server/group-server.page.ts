@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonAccordionGroup, IonModal, IonToggle, LoadingController, ModalController } from '@ionic/angular';
+import { IonAccordionGroup, IonModal, IonToggle, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -32,6 +32,7 @@ export class GroupServerPage implements OnInit {
     public global: GlobalActService,
     private loadingCtrl: LoadingController,
     private mClipboard: Clipboard,
+    private navCtrl: NavController,
   ) { }
 
   info: string;
@@ -174,6 +175,7 @@ export class GroupServerPage implements OnInit {
   announce_update_profile = true;
 
   async ionViewWillLeave() {
+    delete this.global.p5key['KeyShortCut']['Escape'];
     if (this.nakama.on_socket_disconnected['group_unlink_by_user'])
       delete this.nakama.on_socket_disconnected['group_unlink_by_user'];
     delete this.nakama.socket_reactive['profile'];
@@ -462,6 +464,9 @@ export class GroupServerPage implements OnInit {
   can_auto_modified = false;
   ionViewDidEnter() {
     this.can_auto_modified = true;
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
   }
   /** 이메일 변경시 오프라인 처리 */
   email_modified() {

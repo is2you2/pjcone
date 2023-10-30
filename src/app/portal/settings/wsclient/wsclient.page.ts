@@ -1,5 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { NavController } from '@ionic/angular';
 import { isNativefier } from 'src/app/app.component';
+import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 
@@ -29,12 +31,20 @@ export class WsclientPage implements OnInit, OnDestroy {
   constructor(
     public lang: LanguageSettingService,
     public statusBar: StatusManageService,
+    private global: GlobalActService,
+    private navCtrl: NavController,
   ) { }
 
   ngOnInit() {
     this.logsDiv = document.getElementById('logs');
     let is_ssl = (window.location.protocol == 'https:') && !isNativefier;
     if (is_ssl) this.placeholder_address = 'wss://127.0.0.1:0000';
+  }
+
+  ionViewDidEnter() {
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
   }
 
   scroll_down() {
@@ -119,6 +129,10 @@ export class WsclientPage implements OnInit, OnDestroy {
       }:${('0' + time.getMinutes()).slice(-2)
       }:${('0' + time.getSeconds()).slice(-2)
       }]`;
+  }
+
+  ionViewWillLeave() {
+    delete this.global.p5key['KeyShortCut']['Escape'];
   }
 
   ngOnDestroy(): void {

@@ -3,6 +3,7 @@ import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import clipboard from 'clipboardy';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
+import { NavController } from '@ionic/angular';
 
 
 @Component({
@@ -16,6 +17,7 @@ export class QrcodeGenPage implements OnInit {
     public lang: LanguageSettingService,
     private global: GlobalActService,
     private mClipboard: Clipboard,
+    private navCtrl: NavController,
   ) { }
 
   /** 정보글 불러오기 */
@@ -34,6 +36,12 @@ export class QrcodeGenPage implements OnInit {
     this.textarea_changed();
   }
 
+  ionViewDidEnter() {
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
+  }
+
   flip_qrcode() {
     let QRImage = document.getElementById('QRImage');
     this.isQRFliped = !this.isQRFliped;
@@ -46,6 +54,10 @@ export class QrcodeGenPage implements OnInit {
     if (this.userInput)
       this.QRCode = this.global.readasQRCodeFromString(this.userInput);
     else this.QRCode = undefined;
+  }
+
+  ionViewWillLeave() {
+    delete this.global.p5key['KeyShortCut']['Escape'];
   }
 
 }

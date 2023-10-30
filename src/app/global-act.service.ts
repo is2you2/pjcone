@@ -145,6 +145,10 @@ export class GlobalActService {
             if (p['KeyShortCut']['AddAct'])
               p['KeyShortCut']['AddAct']();
             break;
+          case 'KeyD': // 삭제류 (Delete)
+            if (p['KeyShortCut']['DeleteAct'])
+              p['KeyShortCut']['DeleteAct']();
+            break;
           case 'Escape': // 페이지 돌아가기 (navCtrl.pop()) / modal은 기본적으로 동작함
             if (p['KeyShortCut']['Escape'])
               p['KeyShortCut']['Escape']();

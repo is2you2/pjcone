@@ -68,6 +68,12 @@ export class UserFsDirPage implements OnInit {
 
   initLoadingElement: HTMLIonLoadingElement;
 
+  ionViewDidEnter() {
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
+  }
+
   StopIndexing = false;
   EventListenerAct = (ev: any) => {
     ev.detail.register(110, (processNextHandler: any) => {
@@ -411,5 +417,7 @@ export class UserFsDirPage implements OnInit {
 
   ionViewWillLeave() {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
+    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5key['KeyShortCut']['Digit'];
   }
 }

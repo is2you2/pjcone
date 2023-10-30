@@ -53,6 +53,12 @@ export class EnginepptPage implements OnInit {
     this.prerequisite_check();
   }
 
+  ionViewDidEnter() {
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
+  }
+
   /** 선행과제 진행, 플랫폼에 따른 시작 UI */
   prerequisite_check() {
     this.load_info_text();
@@ -418,6 +424,7 @@ export class EnginepptPage implements OnInit {
   ionViewWillLeave() {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
     this.toolServer.stop('engineppt');
+    delete this.global.p5key['KeyShortCut']['Escape'];
     this.indexed.removeFileFromUserPath('engineppt/presentation_this.pck', undefined, this.indexed.godotDB);
     this.indexed.GetFileListFromDB('tmp_files', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB));

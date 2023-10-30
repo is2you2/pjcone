@@ -185,31 +185,32 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.global.p5key['KeyShortCut']['Escape'] = () => {
       this.nav.pop();
     }
+    let LinkButton = [];
+    LinkButton.push(() => this.go_to_page('group-server'));
+    LinkButton.push(() => this.go_to_page('noti-alert'));
+    LinkButton.push(() => this.go_to_webrtc_manager());
+    LinkButton.push(() => this.go_to_qr_share());
+    LinkButton.push(() => this.open_inapp_explorer());
+    LinkButton.push(() => this.go_to_page('qrcode-gen'));
+    if (!this.is_nativefier) LinkButton.push(() => this.go_to_page('tts-export'));
+    LinkButton.push(() => this.go_to_page('wsclient'));
+    LinkButton.push(() => this.go_to_page('engineppt'));
+    LinkButton.push(() => this.download_serverfile());
+    if (this.as_admin.length) {
+      LinkButton.push(() => this.go_to_page('weblink-gen'));
+      if (!this.cant_dedicated && this.can_use_http)
+        LinkButton.push(() => this.start_minimalserver());
+      LinkButton.push(() => this.go_to_page('admin-tools'));
+    }
+    LinkButton.push(() => this.go_to_page('creator'));
+    if (this.lang.lang != 'ko')
+      LinkButton.push(() => this.go_to_page('translator'));
+    LinkButton.push(() => this.LangClicked());
+    LinkButton.push(() => this.go_to_page('licenses'));
+    if (this.cant_dedicated)
+      LinkButton.push(() => this.open_playstore());
+    // 환경에 맞춰 단축키 구성
     this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-      let LinkButton = [];
-      LinkButton.push(() => this.go_to_page('group-server'));
-      LinkButton.push(() => this.go_to_page('noti-alert'));
-      LinkButton.push(() => this.go_to_webrtc_manager());
-      LinkButton.push(() => this.go_to_qr_share());
-      LinkButton.push(() => this.open_inapp_explorer());
-      LinkButton.push(() => this.go_to_page('qrcode-gen'));
-      if (!this.is_nativefier) LinkButton.push(() => this.go_to_page('tts-export'));
-      LinkButton.push(() => this.go_to_page('wsclient'));
-      LinkButton.push(() => this.go_to_page('engineppt'));
-      LinkButton.push(() => this.download_serverfile());
-      if (this.as_admin.length) {
-        LinkButton.push(() => this.go_to_page('weblink-gen'));
-        if (!this.cant_dedicated && this.can_use_http)
-          LinkButton.push(() => this.start_minimalserver());
-        LinkButton.push(() => this.go_to_page('admin-tools'));
-      }
-      LinkButton.push(() => this.go_to_page('creator'));
-      if (this.lang.lang != 'ko')
-        LinkButton.push(() => this.go_to_page('translator'));
-      LinkButton.push(() => this.LangClicked());
-      LinkButton.push(() => this.go_to_page('licenses'));
-      if (this.cant_dedicated)
-        LinkButton.push(() => this.open_playstore());
       // 설정 메뉴 정렬처리
       if (LinkButton[index])
         LinkButton[index]();
@@ -316,13 +317,27 @@ export class SettingsPage implements OnInit, OnDestroy {
       componentProps: {
         NoReturn: true,
       }
-    }).then(v => v.present());
+    }).then(v => {
+      delete this.global.p5key['KeyShortCut']['Escape'];
+      delete this.global.p5key['KeyShortCut']['Digit'];
+      v.onDidDismiss().then(() => {
+        this.ionViewDidEnter();
+      });
+      v.present()
+    });
   }
 
   go_to_webrtc_manager() {
     this.modalCtrl.create({
       component: WebrtcManageIoDevPage,
-    }).then(v => v.present());
+    }).then(v => {
+      delete this.global.p5key['KeyShortCut']['Escape'];
+      delete this.global.p5key['KeyShortCut']['Digit'];
+      v.onDidDismiss().then(() => {
+        this.ionViewDidEnter();
+      });
+      v.present()
+    });
   }
 
   open_playstore() {

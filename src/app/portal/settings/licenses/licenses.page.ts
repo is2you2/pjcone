@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
+import { NavController } from '@ionic/angular';
 import * as p5 from "p5";
+import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 
 
@@ -15,10 +17,18 @@ export class LicensesPage implements OnInit {
 
   constructor(
     public lang: LanguageSettingService,
+    private global: GlobalActService,
+    private navCtrl: NavController,
   ) { }
 
   ngOnInit() {
     this.loadTexts();
+  }
+
+  ionViewDidEnter() {
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
   }
 
   /** 라이선스 문서 일람 */
@@ -54,6 +64,7 @@ export class LicensesPage implements OnInit {
   }
 
   ionViewWillLeave() {
+    delete this.global.p5key['KeyShortCut']['Escape'];
     this.p5canvas.remove();
   }
 
