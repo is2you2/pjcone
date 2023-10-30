@@ -205,7 +205,7 @@ export class NakamaService {
 
   /** 할 일이 열린 상태에서 다른 할 일 열람시 행동 */
   AddTodoLinkAct: Function;
-  open_add_todo_page(info: string) {
+  open_add_todo_page(info: string = '') {
     if (this.AddTodoLinkAct)
       this.AddTodoLinkAct(info);
     else this.ngZone.run(() => {

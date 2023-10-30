@@ -35,7 +35,7 @@ export class PortalPage implements OnInit {
     if (this.CacheKeyShortCut)
       this.global.p5key['KeyShortCut'] = this.CacheKeyShortCut;
     this.try_add_shortcut();
-    if (this.global.p5todo)
+    if (this.global.p5todo && this.global.p5todo['PlayCanvas'])
       this.global.p5todo['PlayCanvas']();
   }
 

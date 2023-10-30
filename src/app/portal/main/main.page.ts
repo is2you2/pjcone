@@ -420,7 +420,7 @@ export class MainPage implements OnInit {
   try_add_shortcut() {
     if (this.global.p5key && this.global.p5key['KeyShortCut'])
       this.global.p5key['KeyShortCut']['AddAct'] = () => {
-        this.nakama.open_add_todo_page('');
+        this.nakama.open_add_todo_page();
       }
     else setTimeout(() => {
       this.try_add_shortcut();
