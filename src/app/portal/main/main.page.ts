@@ -75,6 +75,8 @@ export class MainPage implements OnInit {
     this.global.p5todo = new p5((p: p5) => {
       let Todos: { [id: string]: TodoElement } = {};
       let TodoKeys: string[] = [];
+      let GrabbedElement: TodoElement;
+      let VECTOR_ZERO = p.createVector(0, 0);
       let CamPosition = p.createVector(0, 0);
       let CamScale = 1;
       /** 확대 중심 */
@@ -275,10 +277,9 @@ export class MainPage implements OnInit {
         ColorStart: p5.Color;
         /** 기한시 적용되는 색상 */
         ColorEnd: p5.Color;
-        VECTOR_ZERO = p.createVector(0, 0);
         /** 가속도에 의한 위치 변화 계산, 중심으로 중력처럼 영향받음 */
         private CalcPosition() {
-          let dist = this.position.dist(this.VECTOR_ZERO);
+          let dist = this.position.dist(VECTOR_ZERO);
           let distLimit = p.map(dist, 0, EllipseSize / 8, 0, 1, true);
           let CenterForceful = p.map(distLimit, EllipseSize / 4, 0, 1, .95, true);
           this.Accel.x = distLimit;
@@ -339,6 +340,15 @@ export class MainPage implements OnInit {
             TempStartCamPosition = CamPosition.copy();
             MovementStartPosition = p.createVector(p.mouseX, p.mouseY);
             touches[0] = p.createVector(p.mouseX, p.mouseY);
+            for (let i = 0, j = TodoKeys.length; i < j; i++) {
+              let dist = Todos[TodoKeys[i]].position.dist(MappingPosition());
+              if (dist < EllipseSize / 2) {
+                Todos[TodoKeys[i]].isGrabbed = true;
+                GrabbedElement = Todos[TodoKeys[i]];
+                MovementStartPosition = MappingPosition();
+                break;
+              }
+            }
             break;
           case 2: // 가운데
             ViewInit();
@@ -350,8 +360,14 @@ export class MainPage implements OnInit {
         switch (ev['which']) {
           case 1: // 왼쪽
             touches[0] = p.createVector(p.mouseX, p.mouseY);
-            CamPosition = TempStartCamPosition.copy().add(touches[0].sub(MovementStartPosition).div(CamScale));
-            let dist = TempStartCamPosition.dist(CamPosition);
+            let dist = 0;
+            if (!GrabbedElement) {
+              CamPosition = TempStartCamPosition.copy().add(touches[0].sub(MovementStartPosition).div(CamScale));
+              dist = TempStartCamPosition.dist(CamPosition);
+            } else {
+              GrabbedElement.position = MappingPosition();
+              dist = MovementStartPosition.dist(MappingPosition());
+            }
             if (dist > 15) isClickable = false;
             break;
         }
@@ -361,12 +377,19 @@ export class MainPage implements OnInit {
         switch (ev['which']) {
           case 1: // 왼쪽
             touches.length = 0;
+            let GrabbedDist = EllipseSize;
+            if (GrabbedElement) {
+              GrabbedElement.isGrabbed = false;
+              GrabbedElement.Velocity = VECTOR_ZERO.copy();
+              GrabbedElement.Accel = VECTOR_ZERO.copy();
+              GrabbedDist = GrabbedElement.position.dist(MovementStartPosition);
+              GrabbedElement = undefined;
+            }
             MovementStartPosition = undefined;
             let dist = TempStartCamPosition.dist(CamPosition);
-            if (dist < 15) { // 클릭 행동으로 간주
-              let WorldPoint = MappingPosition();
+            if (dist < 15 && GrabbedDist < EllipseSize) { // 클릭 행동으로 간주
               for (let i = 0, j = TodoKeys.length; i < j; i++) {
-                let dist = Todos[TodoKeys[i]].position.dist(WorldPoint);
+                let dist = Todos[TodoKeys[i]].position.dist(MappingPosition());
                 if (dist < EllipseSize / 2) {
                   Todos[TodoKeys[i]].Clicked();
                   break;
