@@ -386,10 +386,16 @@ export class MainPage implements OnInit {
       }
       p.mouseWheel = (ev: any) => {
         if (BlockInput) return;
+        PrepareZoomAct(MappingPosition());
         let delta = ev['deltaY'];
         if (delta < 0)
           CamScale *= 1.1;
         else CamScale *= .9;
+      }
+      /** 확대 중심점을 조정 */
+      let PrepareZoomAct = (center: p5.Vector) => {
+        ScaleCenter = p.createVector(p.mouseX, p.mouseY);
+        CamPosition = center.mult(-1);
       }
       // p.touchStarted = (ev: any) => {
       // if (BlockInput) return;
