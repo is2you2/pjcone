@@ -682,10 +682,20 @@ export class IonicViewerPage implements OnInit {
   ChangeContentWithKeyInput() {
     if (this.p5canvas) {
       this.p5canvas.keyPressed = (ev) => {
-        if (ev['keyCode'] == 65 || ev['keyCode'] == 37) // 왼쪽 이동
-          this.ChangeToAnother(-1);
-        if (ev['keyCode'] == 68 || ev['keyCode'] == 39) // 오른쪽 이동
-          this.ChangeToAnother(1);
+        switch (ev['code']) {
+          case 'KeyA': // 왼쪽 이동
+          case 'ArrowLeft':
+            this.ChangeToAnother(-1);
+            break;
+          case 'KeyD': // 오른쪽 이동
+          case 'ArrowRight':
+            this.ChangeToAnother(1);
+            break;
+          case 'KeyS': // 다운받기
+            if (this.NeedDownloadFile)
+              this.DownloadCurrentFile();
+            break;
+        }
       }
     }
   }

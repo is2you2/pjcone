@@ -123,6 +123,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       } else {
         this.extended_buttons[1].isHide = true;
       }
+      this.ionViewDidEnter();
     }
   },
   { // 2
@@ -149,6 +150,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 this.extended_buttons[2].isHide = false;
               }
             });
+            v.onDidDismiss().then(() => {
+              this.ionViewDidEnter();
+            });
+            this.removeShortCutKey();
             v.present();
             this.lock_modal_open = false;
           });
@@ -212,7 +217,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           } else {
             this.cancel_qrshare();
           }
+          this.ionViewDidEnter();
         });
+        this.removeShortCutKey();
         v.present();
       });
     }
@@ -243,10 +250,33 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }];
 
   ionViewDidEnter() {
-    if (!this.global.p5key['KeyShortCut']['Escape'])
-      this.global.p5key['KeyShortCut']['Escape'] = () => {
-        this.navCtrl.pop();
-      }
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
+    this.global.p5key['KeyShortCut']['BottomTab'] = (key: string) => {
+      if (document.activeElement != document.getElementById(this.ChannelUserInputId))
+        switch (key) {
+          case 'E':
+            this.open_ext_with_delay();
+            break;
+        }
+    }
+    let ExtTarget = [];
+    for (let i = 0, j = this.extended_buttons.length; i < j; i++) {
+      if (!this.extended_buttons[i].isHide)
+        ExtTarget.push(this.extended_buttons[i]);
+    }
+    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+      if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && ExtTarget.length > index)
+        ExtTarget[index]['act']();
+    }
+    this.global.p5key['KeyShortCut']['EnterAct'] = () => {
+      if (document.activeElement != document.getElementById(this.ChannelUserInputId))
+        setTimeout(() => {
+          if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+          this.userInputTextArea.focus();
+        }, 0);
+    }
   }
 
   @ViewChild('NewChatRoomAttach') NewAttach: IonSelect;
@@ -1370,7 +1400,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         attaches.push(this.messages[i]);
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;
-      delete this.global.p5key['KeyShortCut']['Escape'];
+      this.removeShortCutKey();
       this.modalCtrl.create({
         component: IonicViewerPage,
         componentProps: {
@@ -1518,7 +1548,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
     this.noti.Current = undefined;
+    this.removeShortCutKey();
+  }
+
+  removeShortCutKey() {
     delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5key['KeyShortCut']['BottomTab'];
+    delete this.global.p5key['KeyShortCut']['Digit'];
+    delete this.global.p5key['KeyShortCut']['EnterAct'];
   }
 
   ngOnDestroy(): void {

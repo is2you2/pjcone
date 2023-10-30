@@ -70,7 +70,14 @@ export class UserFsDirPage implements OnInit {
 
   ionViewDidEnter() {
     this.global.p5key['KeyShortCut']['Escape'] = () => {
-      this.navCtrl.pop();
+      if (this.is_ready) {
+        if (this.CurrentDir == '') {
+          this.navCtrl.pop();
+        } else this.MoveToUpDir();
+      } else {
+        this.initLoadingElement.dismiss();
+        this.is_ready = true;
+      }
     }
   }
 
