@@ -205,14 +205,18 @@ export class MainPage implements OnInit {
         Velocity = p.createVector(0, 0);
         /** 가속도 - 매 프레임마다 속도에 영향을 줌 */
         Accel = p.createVector(0, 0);
+        /** 사용자가 끌기 중인지 여부 */
+        isGrabbed = false;
         /** 실시간 보여주기 */
         display() {
           // 가장 배경에 있는 원
           p.push();
-          this.CalcPosition();
-          this.OnCollider();
-          // 최종적으로 위치를 업데이트 함
-          this.position = this.position.add(this.Velocity);
+          if (!this.isGrabbed) {
+            this.CalcPosition();
+            this.OnCollider();
+            // 최종적으로 위치를 업데이트 함
+            this.position = this.position.add(this.Velocity);
+          }
           p.translate(this.position);
           // 진행도 Lerp 생성
           let LerpProgress = p.map(
@@ -249,7 +253,7 @@ export class MainPage implements OnInit {
         /** 가속도에 의한 위치 변화 계산, 중심으로 중력처럼 영향받음 */
         private CalcPosition() {
           let dist = this.position.dist(this.VECTOR_ZERO);
-          let distLimit = p.map(dist, 0, EllipseSize / 4, 0, 1, true);
+          let distLimit = p.map(dist, 0, EllipseSize / 8, 0, 1, true);
           let CenterForceful = p.map(distLimit, EllipseSize / 4, 0, 1, .95, true);
           this.Accel.x = distLimit;
           this.Accel.y = 0;
@@ -258,15 +262,22 @@ export class MainPage implements OnInit {
           this.Velocity = this.Velocity.add(this.Accel).mult(CenterForceful);
         }
         /** 다른 할 일과 충돌하여 속도가 변경됨 */
-        OnCollider() {
+        private OnCollider() {
           for (let i = 0, j = TodoKeys.length; i < j; i++) {
             if (Todos[TodoKeys[i]] != this) { // 이 개체가 아닐 때
               let Other = Todos[TodoKeys[i]];
               let dist = this.position.dist(Other.position);
               if (dist < EllipseSize) { // 충분히 근접했다면 충돌로 인지
+                this.ReflectBounce(Other, dist);
+                Other.ReflectBounce(this, dist);
               }
             }
           }
+        }
+        /** 다른 개체와 충돌하여 튕겨지는 로직 */
+        ReflectBounce(Other: TodoElement, dist: number) {
+          let calc = p5.Vector.sub(this.position, Other.position);
+          this.Velocity = this.Velocity.add(calc.mult(1 - dist / EllipseSize)).mult(.85);
         }
         DoneAnim() {
           this.RemoveTodo();
