@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { GlobalActService } from 'src/app/global-act.service';
+import { GlobalActService, isDarkMode } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize } from '@capacitor-community/admob';
@@ -10,6 +10,7 @@ import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { WebrtcService } from 'src/app/webrtc.service';
+import * as p5 from 'p5';
 
 @Component({
   selector: 'app-main',
@@ -60,33 +61,156 @@ export class MainPage implements OnInit {
   }
 
   async ionViewWillEnter() {
-    await this.global.CreateGodotIFrame('todo', {
-      local_url: 'assets/data/godot/todo.pck',
-      title: 'Todo',
-      /**
-       * 해야할 일 추가/수정/열람 메뉴 띄우기
-       * @param _data 해당 해야할 일 정보
-       */
-      add_todo_menu: (_data: string) => {
-        this.nakama.open_add_todo_page(_data);
-      }
-      // 아래 주석 처리된 key들은 고도쪽에서 추가됨
-      // add_todo: 새 해야할 일 등록
-      // remove_todo: 해야할 일 삭제
-    }, 'add_todo');
+    if (!this.global.p5todo) {
+      this.CreateTodoManager();
+    } else {
+      this.global.p5todo.loop();
+    }
     this.indexed.GetFileListFromDB('acts_local', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB));
     }, this.indexed.godotDB);
   }
 
+  CreateTodoManager() {
+    // 해야할 일 관리자 생성 행동
+    let todo_div = document.getElementById('todo');
+    this.global.p5todo = new p5((p: p5) => {
+      let Todos: { [id: string]: TodoElement } = {};
+      let TodoKeys: string[] = [];
+      let CamPosition = p.createVector(0, 0);
+      let CamScale = 1;
+      let BackgroundColor = isDarkMode ? '#444' : '#888';
+      let EllipseSize = 96;
+      let TextSize = 24;
+      p.setup = async () => {
+        let canvas = p.createCanvas(todo_div.clientWidth, todo_div.clientHeight);
+        canvas.parent(todo_div);
+        p.smooth();
+        p.noStroke();
+        p.pixelDensity(1);
+        p.ellipseMode(p.CENTER);
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textSize(TextSize);
+        p.textWrap(p.CHAR);
+        ViewInit();
+        // 할 일 추가시 행동
+        p['add_todo'] = (data: string) => {
+          let json = JSON.parse(data);
+          Todos[json.id] = new TodoElement(json);
+          TodoKeys = Object.keys(Todos);
+        }
+        // 해야할 일 리스트 업데이트
+        p['ListUpdate'] = async () => {
+          Todos = {};
+          TodoKeys = [];
+          let list = await this.indexed.GetFileListFromDB('todo/', undefined, this.indexed.godotDB);
+          for (let i = 0, j = list.length; i < j; i++)
+            if (list[i].indexOf('/info.todo') >= 0) {
+              let data = await this.indexed.loadTextFromUserPath(list[i], undefined, this.indexed.godotDB);
+              p['add_todo'](data);
+            }
+        }
+        await p['ListUpdate']();
+      }
+      /** 카메라 초기화 (3손가락 행동) */
+      let ViewInit = () => {
+        CamPosition.x = p.width / 2;
+        CamPosition.y = p.height / 2;
+        CamScale = 1;
+      }
+      p.draw = () => {
+        p.clear(255, 255, 255, 255);
+        p.background(BackgroundColor);
+        p.push();
+        p.translate(CamPosition);
+        p.scale(CamScale);
+        for (let i = 0, j = TodoKeys.length; i < j; i++)
+          Todos[TodoKeys[i]].display();
+        p.pop();
+      }
+      p.windowResized = () => {
+        setTimeout(() => {
+          let tmpWidthRatio = CamPosition.x / p.width;
+          let tmpHeightRatio = CamPosition.y / p.height;
+          p.resizeCanvas(todo_div.clientWidth, todo_div.clientHeight);
+          // 상대적 중심 위치를 계산하여 카메라 설정을 조정
+          CamPosition.x = tmpWidthRatio * p.width;
+          CamPosition.y = tmpHeightRatio * p.height;
+        }, 50);
+      }
+      /** 해야할 일 객체 */
+      class TodoElement {
+        constructor(data: any) {
+          this.json = data;
+          this.position = p.createVector(0, 0);
+        }
+        /** 할 일 정보 원본을 내장하고 있음 */
+        json: any;
+        /** 개체 위치 중심점 */
+        position: p5.Vector;
+        /** 가속도 - 매 프레임마다 위치에 영향을 줌 */
+        Acc = p.createVector(0, 0);
+        /** 실시간 보여주기 */
+        display() {
+          p.push();
+          this.CalcPosition();
+          p.translate(this.position);
+          p.ellipse(0, 0, EllipseSize, EllipseSize);
+          p.fill(0);
+          p.text(this.json.title, -EllipseSize / 2, -EllipseSize / 2, EllipseSize, EllipseSize);
+          p.pop();
+        }
+        /** 가속도에 의한 위치 변화 계산 */
+        private CalcPosition() {
+          this.Acc.x = -this.position.x / 2;
+          this.Acc.y = -this.position.y / 2;
+          this.position = this.position.add(this.Acc);
+        }
+        /** 월드 중심으로 중력을 받음 */
+        gravityCenter() {
+
+        }
+        /** 다른 할 일과 충돌함 */
+        OnCollider() {
+
+        }
+        /** 할 일 완료 애니메이션 동작 */
+        DoneAnim() {
+          this.Remove();
+        }
+        /** 할 일 상세 보기 */
+        Clicked() {
+
+        }
+        /** 해야할 일의 위치 조정 */
+        MoveTodo() {
+
+        }
+        /** 이 할 일이 완전히 삭제됨 */
+        Remove() {
+
+        }
+      }
+    });
+  }
+
   ionViewDidEnter() {
     this.nakama.resumeBanner();
-    this.global.p5key['KeyShortCut']['AddAct'] = () => {
-      this.nakama.open_add_todo_page('');
-    }
+    this.try_add_shortcut();
+  }
+
+  try_add_shortcut() {
+    if (this.global.p5key && this.global.p5key['KeyShortCut'])
+      this.global.p5key['KeyShortCut']['AddAct'] = () => {
+        this.nakama.open_add_todo_page('');
+      }
+    else setTimeout(() => {
+      this.try_add_shortcut();
+    }, 100);
   }
 
   ionViewWillLeave() {
+    this.global.p5todo.noLoop();
     delete this.global.p5key['KeyShortCut']['AddAct'];
   }
 }

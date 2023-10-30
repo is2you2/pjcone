@@ -353,12 +353,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     delete this.nakama.users.self['img'];
     delete this.nakama.on_socket_disconnected['settings_admin_check'];
     clearTimeout(this.refreshAds);
-    this.global.CreateGodotIFrame('todo', {
-      local_url: 'assets/data/godot/todo.pck',
-      title: 'Todo',
-      add_todo_menu: (_data: string) => {
-        this.nakama.open_add_todo_page(_data);
-      }
-    });
+    this.global.p5todo.loop();
   }
 }

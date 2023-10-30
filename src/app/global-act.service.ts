@@ -108,6 +108,9 @@ export class GlobalActService {
     isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
 
+  /** 해야할 일 캔버스 */
+  p5todo: p5;
+
   p5key: p5;
   initialize() {
     this.p5key = new p5((p: p5) => {

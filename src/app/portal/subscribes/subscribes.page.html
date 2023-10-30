@@ -4,10 +4,10 @@ SPDX-License-Identifier: MIT -->
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-title>{{lang.text['Subscribes']['Title']}}</ion-title>
-    <div *ngIf="!cant_dedicated" style="position: absolute; right: 100px; top: 16px" (click)="scanQRCode()">
+    <div *ngIf="!cant_dedicated" style="position: absolute; right: 116px; top: 16px" (click)="scanQRCode()">
       <ion-icon style="width: 24px; height: 24px;" name="scan-circle-outline"></ion-icon>
     </div>
-    <div (click)="add_new_group()" style="position: absolute; right: 60px; top: 16px;">
+    <div (click)="add_new_group()" style="position: absolute; right: 68px; top: 16px;">
       <ion-icon button style="width: 24px; height: 24px; " name="add-circle-outline"></ion-icon>
     </div>
     <div class="header_online_circle" [style]="'background-color: ' + statusBar.colors[statusBar.settings.groupServer]"

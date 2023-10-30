@@ -109,7 +109,6 @@ export class UserFsDirPage implements OnInit {
     this.initLoadingElement.present();
     this.DirList.length = 0;
     this.FileList.length = 0;
-    let _godot_list = await this.indexed.GetFileListFromDB('/', undefined, this.indexed.godotDB);
     this.noti.noti.schedule({
       id: 5,
       title: this.lang.text['UserFsDir']['LoadingExplorer'],
@@ -118,7 +117,6 @@ export class UserFsDirPage implements OnInit {
       smallIcon: 'res://icon_mono',
       color: 'b0b0b0',
     });
-    await this.ModulateIndexedFile(_godot_list, this.indexed.godotDB);
     let _ionic_list = await this.indexed.GetFileListFromDB('/')
     await this.ModulateIndexedFile(_ionic_list);
     this.FileList.sort((a, b) => {
@@ -221,7 +219,12 @@ export class UserFsDirPage implements OnInit {
           },
           cssClass: 'fullscreen',
         }).then(v => {
-          v.onDidDismiss().then(_v => document.addEventListener('ionBackButton', this.EventListenerAct));
+          delete this.global.p5key['KeyShortCut']['Escape'];
+          delete this.global.p5key['KeyShortCut']['Digit'];
+          v.onDidDismiss().then(_v => {
+            document.addEventListener('ionBackButton', this.EventListenerAct)
+            this.ionViewDidEnter();
+          });
           v.present()
         });
         break;
@@ -333,13 +336,12 @@ export class UserFsDirPage implements OnInit {
         await this.importThisFolder(RecursiveEntry[i], loading);
       else {
         let target_path = RecursiveEntry[i].nativeURL.split('org.pjcone.portal/files/')[1];
-        let targetDB = target_path.indexOf('todo/') == 0 ? this.indexed.godotDB : this.indexed.ionicDB;
         try {
           const data = await Filesystem.readFile({
             path: RecursiveEntry[i].nativeURL,
           });
           let base64 = (data.data as any).replace(/"|\\|=/g, '');
-          await this.indexed.saveBase64ToUserPath(',' + base64, decodeURIComponent(target_path), undefined, targetDB);
+          await this.indexed.saveBase64ToUserPath(',' + base64, decodeURIComponent(target_path));
           loading.message = `${this.lang.text['UserFsDir']['Import']}: ${RecursiveEntry[i].name}`
         } catch (e) {
           console.log('불러오기 실패: ', e);

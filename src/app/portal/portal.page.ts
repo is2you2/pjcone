@@ -32,10 +32,10 @@ export class PortalPage implements OnInit {
   }
 
   ionViewDidEnter() {
-    this.create_p5sensor();
     if (this.CacheKeyShortCut)
       this.global.p5key['KeyShortCut'] = this.CacheKeyShortCut;
     this.try_add_shortcut();
+    this.global.p5todo.loop();
   }
 
   try_add_shortcut() {
@@ -60,34 +60,11 @@ export class PortalPage implements OnInit {
     }, 100);
   }
 
-  p5sensor: p5;
-  create_p5sensor() {
-    if (!this.p5sensor && this.TodoIcon == 'checkbox') {
-      this.p5sensor = new p5((p: p5) => {
-        p.setup = () => {
-          p.noCanvas();
-        }
-        p.draw = () => {
-          if (this.global.godot_window['acc_input'])
-            this.global.godot_window['acc_input'](p.accelerationX, p.accelerationY);
-        }
-      });
-    }
-  }
-
-  remove_p5sensor() {
-    if (this.p5sensor) {
-      this.p5sensor.remove();
-      this.p5sensor = null;
-    }
-  }
-
   /** 하단 탭을 눌러 알림 확인함 처리 */
   subscribe_button() {
     this.nakama.has_new_channel_msg = false;
     this.SubscribesIcon = 'chatbubbles';
     this.TodoIcon = 'checkbox-outline';
-    this.remove_p5sensor();
   }
 
   /** 하단 탭을 눌러 설정페이지로 이동 */
@@ -104,16 +81,12 @@ export class PortalPage implements OnInit {
   bottom_tab_selected() {
     this.SubscribesIcon = 'chatbubbles-outline';
     this.TodoIcon = 'checkbox';
-    this.create_p5sensor();
   }
 
   CacheKeyShortCut: any;
   ionViewWillLeave() {
     this.CacheKeyShortCut = this.global.p5key['KeyShortCut'];
     this.global.p5key['KeyShortCut'] = {};
-  }
-
-  ionViewDidLeave() {
-    this.remove_p5sensor();
+    this.global.p5todo.noLoop();
   }
 }
