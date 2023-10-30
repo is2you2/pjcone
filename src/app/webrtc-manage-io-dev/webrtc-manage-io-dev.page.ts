@@ -76,6 +76,12 @@ export class WebrtcManageIoDevPage implements OnInit {
     } catch (e) { }
   }
 
+  ionViewDidEnter() {
+    this.global.p5key['KeyShortCut']['AddAct'] = () => {
+      this.OpenNewWebRTCServerForm();
+    }
+  }
+
   saveSetup() {
     let result = {};
     if (this.VideoInput && this.VideoInput.value !== undefined) {
@@ -142,5 +148,9 @@ export class WebrtcManageIoDevPage implements OnInit {
   async RemoveServer(index: number) {
     this.ServerInfos.splice(index, 1);
     await this.indexed.saveTextFileToUserPath(JSON.stringify(this.ServerInfos), 'servers/webrtc_server.json');
+  }
+
+  ionViewWillLeave() {
+    delete this.global.p5key['KeyShortCut']['AddAct'];
   }
 }
