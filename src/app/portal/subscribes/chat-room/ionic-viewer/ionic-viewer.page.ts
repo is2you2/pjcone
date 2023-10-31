@@ -319,7 +319,7 @@ export class IonicViewerPage implements OnInit {
   async ionViewDidEnter() {
     if (this.FileInfo.url) {
       this.FileURL = this.FileInfo.url;
-    } else {
+    } else if (!this.FileInfo['is_new']) {
       if (!this.blob)
         this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type'], undefined, this.targetDB);
       this.FileURL = URL.createObjectURL(this.blob);
