@@ -125,6 +125,7 @@ export class MainPage implements OnInit {
         // 캔버스 계속 사용
         p['PlayCanvas'] = () => {
           BlockInput = false;
+          p.windowResized();
           p.loop();
         }
         // 할 일 추가시 행동
@@ -182,6 +183,7 @@ export class MainPage implements OnInit {
         p.pop();
       }
       p.windowResized = () => {
+        if (BlockInput) return;
         setTimeout(() => {
           let tmpWidthRatio = CamPosition.x / p.width;
           let tmpHeightRatio = CamPosition.y / p.height;
