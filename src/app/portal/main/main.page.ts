@@ -69,6 +69,7 @@ export class MainPage implements OnInit {
     }, this.indexed.godotDB);
   }
 
+  isEmptyTodo = false;
   CreateTodoManager() {
     // 해야할 일 관리자 생성 행동
     let todo_div = document.getElementById('todo');
@@ -137,6 +138,7 @@ export class MainPage implements OnInit {
               }
           } else Todos[json.id] = new TodoElement(json);
           TodoKeys = Object.keys(Todos);
+          this.isEmptyTodo = !Boolean(Object.keys(TodoKeys).length);
         }
         p['remove_todo'] = (data: string) => {
           let json = JSON.parse(data);
@@ -145,6 +147,7 @@ export class MainPage implements OnInit {
               Todos[TodoKeys[i]].RemoveTodo();
               break;
             }
+          this.isEmptyTodo = !Boolean(Object.keys(TodoKeys).length);
         }
         // 해야할 일 리스트 업데이트
         p['ListUpdate'] = async () => {
@@ -156,6 +159,7 @@ export class MainPage implements OnInit {
               let data = await this.indexed.loadTextFromUserPath(list[i], undefined, this.indexed.godotDB);
               p['add_todo'](data);
             }
+          this.isEmptyTodo = !Boolean(Object.keys(TodoKeys).length);
         }
         await p['ListUpdate']();
       }
@@ -252,6 +256,7 @@ export class MainPage implements OnInit {
             this.json.startFrom || this.json.written,
             this.json.limit,
             0, 1, true);
+          if (LerpProgress == 0) LerpProgress = 1;
           p.fill((this.json.custom_color || this.defaultColor.toString('#rrggbb'))
             + p.hex(p.floor(p.lerp(34, 180, LerpProgress)), 2));
           p.ellipse(0, 0, EllipseSize, EllipseSize);
@@ -327,7 +332,7 @@ export class MainPage implements OnInit {
         }
       }
       /** 모든 터치 또는 마우스 포인터의 현재 지점 */
-      let touches: p5.Vector[] = [];
+      let MouseAct: p5.Vector;
       /** 이동 연산용 시작점 */
       let MovementStartPosition: p5.Vector;
       /** 시작점 캐시 */
@@ -337,9 +342,9 @@ export class MainPage implements OnInit {
         isClickable = true;
         switch (ev['which']) {
           case 1: // 왼쪽
-            TempStartCamPosition = CamPosition.copy();
             MovementStartPosition = p.createVector(p.mouseX, p.mouseY);
-            touches[0] = p.createVector(p.mouseX, p.mouseY);
+            TempStartCamPosition = CamPosition.copy();
+            MouseAct = p.createVector(p.mouseX, p.mouseY);
             for (let i = 0, j = TodoKeys.length; i < j; i++) {
               let dist = Todos[TodoKeys[i]].position.dist(MappingPosition());
               if (dist < EllipseSize / 2) {
@@ -359,10 +364,10 @@ export class MainPage implements OnInit {
         if (BlockInput) return;
         switch (ev['which']) {
           case 1: // 왼쪽
-            touches[0] = p.createVector(p.mouseX, p.mouseY);
+            MouseAct = p.createVector(p.mouseX, p.mouseY);
             let dist = 0;
             if (!GrabbedElement) {
-              CamPosition = TempStartCamPosition.copy().add(touches[0].sub(MovementStartPosition).div(CamScale));
+              CamPosition = TempStartCamPosition.copy().add(MouseAct.sub(MovementStartPosition).div(CamScale));
               dist = TempStartCamPosition.dist(CamPosition);
             } else {
               GrabbedElement.position = MappingPosition();
@@ -376,32 +381,14 @@ export class MainPage implements OnInit {
         if (BlockInput) return;
         switch (ev['which']) {
           case 1: // 왼쪽
-            touches.length = 0;
-            let GrabbedDist = EllipseSize;
-            if (GrabbedElement) {
-              GrabbedElement.isGrabbed = false;
-              GrabbedElement.Velocity = VECTOR_ZERO.copy();
-              GrabbedElement.Accel = VECTOR_ZERO.copy();
-              GrabbedDist = GrabbedElement.position.dist(MovementStartPosition);
-              GrabbedElement = undefined;
-            }
-            MovementStartPosition = undefined;
-            let dist = TempStartCamPosition.dist(CamPosition);
-            if (dist < 15 && GrabbedDist < EllipseSize) { // 클릭 행동으로 간주
-              for (let i = 0, j = TodoKeys.length; i < j; i++) {
-                let dist = Todos[TodoKeys[i]].position.dist(MappingPosition());
-                if (dist < EllipseSize / 2) {
-                  Todos[TodoKeys[i]].Clicked();
-                  break;
-                }
-              }
-            }
+            MouseAct = undefined;
+            ReleaseAllAct();
             break;
         }
       }
       /** 화면 상의 마우스 위치를 할 일 공간 내 위치로 변경 */
-      let MappingPosition = () => {
-        let mousePosition = p.createVector(p.mouseX, p.mouseY);
+      let MappingPosition = (_x?: number, _y?: number) => {
+        let mousePosition = p.createVector(_x || p.mouseX, _y || p.mouseY);
         mousePosition.sub(ScaleCenter);
         mousePosition.div(CamScale);
         mousePosition.sub(CamPosition);
@@ -420,18 +407,101 @@ export class MainPage implements OnInit {
         ScaleCenter = p.createVector(p.mouseX, p.mouseY);
         CamPosition = center.mult(-1);
       }
-      // p.touchStarted = (ev: any) => {
-      // if (BlockInput) return;
-      //   console.log('touchStarted: ', ev);
-      // }
-      // p.touchMoved = (ev: any) => {
-      // if (BlockInput) return;
-      //   console.log('touchMoved: ', ev);
-      // }
-      // p.touchEnded = (ev: any) => {
-      // if (BlockInput) return;
-      //   console.log('touchEnded: ', ev);
-      // }
+      let touches = [];
+      let isTouching = false;
+      const HEADER_HEIGHT = 56;
+      p.touchStarted = (ev: any) => {
+        if (BlockInput) return;
+        touches = ev['touches'];
+        isTouching = true;
+        switch (touches.length) {
+          case 1: // 패닝
+            MovementStartPosition = p.createVector(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT);
+            TempStartCamPosition = CamPosition.copy();
+            for (let i = 0, j = TodoKeys.length; i < j; i++) {
+              let dist = Todos[TodoKeys[i]].position.dist(MappingPosition(MovementStartPosition.x, MovementStartPosition.y));
+              if (dist < EllipseSize / 2) {
+                Todos[TodoKeys[i]].isGrabbed = true;
+                GrabbedElement = Todos[TodoKeys[i]];
+                break;
+              }
+            }
+            break;
+          case 2: // 스케일
+            break;
+          default: // 3개 또는 그 이상은 행동 초기화
+            isTouching = false;
+            ViewInit();
+            break;
+        }
+      }
+      p.touchMoved = (ev: any) => {
+        if (BlockInput) return;
+        switch (touches.length) {
+          case 1: // 패닝
+            let CurrentTouchIndex = touches[0].identifier;
+            let CurrentTouch = ev['touches'][CurrentTouchIndex];
+            let CurrentPosition = p.createVector(CurrentTouch.clientX, CurrentTouch.clientY - HEADER_HEIGHT);
+            let dist = 0;
+            if (!GrabbedElement) {
+              CamPosition = TempStartCamPosition.copy().add(CurrentPosition.sub(MovementStartPosition).div(CamScale));
+              dist = TempStartCamPosition.dist(CamPosition);
+            } else {
+              GrabbedElement.position = MappingPosition();
+              dist = MovementStartPosition.dist(MappingPosition(CurrentPosition.x, CurrentPosition.y));
+            }
+            if (dist > 15) isClickable = false;
+            break;
+          case 2: // 스케일
+            break;
+        }
+      }
+      p.touchEnded = (ev: any) => {
+        if (BlockInput) return;
+        touches = ev['touches'];
+        switch (touches.length) {
+          case 0: // 행동 종료
+            ReleaseAllAct();
+            isTouching = false;
+            break;
+          case 1: // 패닝
+            if (!isTouching) return;
+            TempStartCamPosition = CamPosition.copy();
+            MovementStartPosition = p.createVector(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT);
+            for (let i = 0, j = TodoKeys.length; i < j; i++) {
+              let dist = Todos[TodoKeys[i]].position.dist(MappingPosition(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT));
+              if (dist < EllipseSize / 2) {
+                Todos[TodoKeys[i]].isGrabbed = true;
+                GrabbedElement = Todos[TodoKeys[i]];
+                MovementStartPosition = MappingPosition(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT);
+                break;
+              }
+            }
+            break;
+        }
+      }
+      /** 모든 입력을 제거했을 때 공통 행동 */
+      let ReleaseAllAct = () => {
+        let GrabbedDist = EllipseSize;
+        if (GrabbedElement) {
+          GrabbedElement.isGrabbed = false;
+          GrabbedElement.Velocity = VECTOR_ZERO.copy();
+          GrabbedElement.Accel = VECTOR_ZERO.copy();
+          GrabbedDist = GrabbedElement.position.dist(MovementStartPosition);
+          GrabbedElement = undefined;
+        }
+        MovementStartPosition = undefined;
+        let dist = TempStartCamPosition.dist(CamPosition);
+        if (dist < 15 && GrabbedDist < EllipseSize) { // 클릭 행동으로 간주
+          for (let i = 0, j = TodoKeys.length; i < j; i++) {
+            let dist = Todos[TodoKeys[i]].position.dist(MappingPosition());
+            if (dist < EllipseSize / 2) {
+              Todos[TodoKeys[i]].Clicked();
+              break;
+            }
+          }
+        }
+      }
     });
   }
 

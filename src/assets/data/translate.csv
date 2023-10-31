@@ -1,6 +1,7 @@
 ﻿#,ko,en
 ## Main,,
 Title,해야할 일,Todo
+NoTodo,등록된 할 일이 없습니다,There are no registered tasks
 ## TodoDetail,,
 Title,할 일 상세,Todo detail
 Server,서버,Server

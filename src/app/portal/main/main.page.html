@@ -14,5 +14,13 @@ SPDX-License-Identifier: MIT -->
 </ion-header>
 
 <ion-content>
+  <div *ngIf="isEmptyTodo">
+    <div class="disconnect_info" (click)="nakama.open_add_todo_page()">
+      <ion-icon style="width: 60px; height: 60px;" color="medium" name="create-outline"></ion-icon>
+      <div>
+        <ion-label color="medium">{{lang.text['Main']['NoTodo']}}</ion-label>
+      </div>
+    </div>
+  </div>
   <div class="full_screen" style="display: flex;" id="todo"></div>
 </ion-content>

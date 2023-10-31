@@ -997,6 +997,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 let canvas = p.createCanvas(128, 128);
                 canvas.hide();
                 p.smooth();
+                p.pixelDensity(1);
                 p.image(v, -(v.width - 128) / 2, -(v.height - 128) / 2);
                 p.saveFrames('', 'png', 1, 1, c => {
                   this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
