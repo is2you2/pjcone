@@ -9,7 +9,7 @@ import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 import * as p5 from 'p5';
 import { LocalNotiService } from './local-noti.service';
-import { AlertController, ModalController, NavController, iosTransitionAnimation, mdTransitionAnimation } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 import { LanguageSettingService } from './language-setting.service';
 import { AdMob } from '@capacitor-community/admob';
@@ -85,6 +85,7 @@ export class NakamaService {
     private bgmode: BackgroundMode,
     private navCtrl: NavController,
     private ngZone: NgZone,
+    private loadingCtrl: LoadingController,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -1739,6 +1740,9 @@ export class NakamaService {
 
   /** 사설 서버 삭제 */
   async remove_server(_is_official: string, _target: string) {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    loading.present();
+    loading.message = this.lang.text['Nakama']['RemovingAccount'];
     try {
       this.servers[_is_official][_target].client.rpc(
         this.servers[_is_official][_target].session,
@@ -1746,6 +1750,7 @@ export class NakamaService {
         .catch(_e => { });
     } catch (e) { }
     // 로그인 상태일 경우 로그오프처리
+    loading.message = this.lang.text['Nakama']['LogoutAccount'];
     if (this.statusBar.groupServer[_is_official][_target] == 'online') {
       try {
         this.servers[_is_official][_target].socket.disconnect(true);
@@ -1754,11 +1759,13 @@ export class NakamaService {
       }
     }
     // 알림정보 삭제
+    loading.message = this.lang.text['Nakama']['RemovingNotification'];
     try {
       delete this.noti_origin[_is_official][_target];
     } catch (e) { }
     this.rearrange_notifications();
     // 예하 채널들 손상처리
+    loading.message = this.lang.text['Nakama']['MissingChannels'];
     try {
       let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
       if (!this.channels_orig['deleted']) this.channels_orig['deleted'] = {};
@@ -1775,10 +1782,13 @@ export class NakamaService {
     let list = await this.indexed.GetFileListFromDB(`servers/unofficial/${_target}`);
     for (let i = 0, j = list.length; i < j; i++) {
       let file = await this.indexed.GetFileInfoFromDB(list[i]);
-      await this.indexed.saveFileToUserPath(file, list[i].replace('/official/', '/deleted/').replace('/unofficial/', '/deleted/'));
+      let targetPath = list[i].replace('/official/', '/deleted/').replace('/unofficial/', '/deleted/');
+      await this.indexed.saveFileToUserPath(file, targetPath);
       await this.indexed.removeFileFromUserPath(list[i]);
+      loading.message = `${this.lang.text['Nakama']['MissingChannelFiles']}: ${targetPath}`;
     }
     // 예하 그룹들 손상처리
+    loading.message = this.lang.text['Nakama']['MissingGroups'];
     try {
       if (!this.groups['deleted']) this.groups['deleted'] = {};
       if (!this.groups['deleted'][_target]) this.groups['deleted'][_target] = {};
@@ -1793,6 +1803,7 @@ export class NakamaService {
       delete this.groups[_is_official][_target];
     } catch (e) { }
     // 그룹서버 정리
+    loading.message = this.lang.text['Nakama']['DeletingServerInfo'];
     this.set_group_statusBar('offline', _is_official, _target);
     delete this.statusBar.groupServer[_is_official][_target];
     delete this.servers[_is_official][_target];
@@ -1812,6 +1823,7 @@ export class NakamaService {
         this.indexed.saveTextFileToUserPath(lines.join('\n'), 'servers/list_detail.csv');
       }
     });
+    loading.dismiss();
   }
 
   check_if_online() {

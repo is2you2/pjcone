@@ -8,7 +8,6 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
-import { ServerDetailPage } from './server-detail/server-detail.page';
 import clipboard from "clipboardy";
 import { isNativefier, isPlatform } from 'src/app/app.component';
 import * as p5 from 'p5';
@@ -159,17 +158,14 @@ export class GroupServerPage implements OnInit {
   /** 버튼이 눌렸는지를 검토하여 행동을 분리 */
   isOverrideButtonPressed = false;
   async remove_server(_is_official: string, _target: string) {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-    loading.present();
     this.isOverrideButtonPressed = true;
+    // 그룹서버 리스트 정리
     try {
       await this.nakama.remove_server(_is_official, _target);
     } catch (e) {
       console.log('서버 삭제 오류: ', e);
     }
-    // 그룹서버 리스트 정리
     this.servers = this.nakama.get_all_server_info(true);
-    loading.dismiss();
   }
 
   announce_update_profile = true;

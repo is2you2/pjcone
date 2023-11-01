@@ -111,6 +111,7 @@ export class GlobalActService {
   /** 해야할 일 캔버스 */
   p5todo: p5;
 
+  /** 페이지별 단축키 관리자 */
   p5key: p5;
   initialize() {
     this.p5key = new p5((p: p5) => {
