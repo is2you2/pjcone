@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { GlobalActService } from 'src/app/global-act.service';
+import { GlobalActService, isDarkMode } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize } from '@capacitor-community/admob';
@@ -278,7 +278,7 @@ export class MainPage implements OnInit {
         Accel = p.createVector(0, 0);
         /** 사용자가 끌기 중인지 여부 */
         isGrabbed = false;
-        TextColor = p.color(255);
+        TextColor = p.color(isDarkMode ? 255 : 0);
         ProgressWeight = 8;
         /** 실시간 보여주기 */
         display() {
@@ -376,7 +376,7 @@ export class MainPage implements OnInit {
             this.ProgressWeight = ProgressLineWeightOrigin * LifeTime;
             if (LifeTime < .5)
               DoneParticles.push(new DoneBoomParticleAnim(this.position, this.json.custom_color || this.defaultColor));
-            this.TextColor = p.color(255, 255 * LifeTime);
+            this.TextColor = p.color(isDarkMode ? 255 : 0, 255 * LifeTime);
             if (this.isAddButton) {
               this.json.longSide *= LifeTime;
               this.json.shortSide *= LifeTime;
