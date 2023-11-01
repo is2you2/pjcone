@@ -127,7 +127,15 @@ export class MainPage implements OnInit {
         }
         p['count_todo'] = () => {
           TodoKeys = Object.keys(Todos);
-          this.isEmptyTodo = !Boolean(Object.keys(TodoKeys).length);
+          this.isEmptyTodo = !Boolean(TodoKeys.length);
+          if (!this.isEmptyTodo) {
+            if (!Todos['AddButton']) {
+              Todos['AddButton'] = new TodoElement('', true);
+              TodoKeys = Object.keys(Todos);
+            } else if (TodoKeys.length == 1) {
+              Todos['AddButton'].DoneAnim();
+            }
+          }
         }
         p['remove_todo'] = (data: string) => {
           let json = JSON.parse(data);
@@ -192,10 +200,18 @@ export class MainPage implements OnInit {
       let isClickable = true;
       /** 해야할 일 객체 */
       class TodoElement {
-        constructor(data: any) {
+        constructor(data: any, isAddButton = false) {
           this.json = data;
           let OutPosition = p.max(p.width, p.height);
           let StartPosGen = p.createVector(OutPosition / (p.min(1, CamScale)), 0).setHeading(p.random(0, p.PI));
+          if (isAddButton) {
+            this.isAddButton = isAddButton;
+            // 추가 버튼 이미지 생성
+            this.position = VECTOR_ZERO.copy();
+            this.defaultColor = p.color('#bbb');
+            this.json = { id: 'AddButton', written: 0, limit: 1, longSide: 53, shortSide: 11 }
+            return;
+          }
           this.position = StartPosGen;
           if (!this.json.custom_color) {
             switch (this.json.importance) {
@@ -247,6 +263,7 @@ export class MainPage implements OnInit {
               });
             }).catch(_e => { });
         }
+        isAddButton = false;
         EllipseSize = 96;
         ThumbnailImage: p5.Image;
         /** 할 일 정보 원본을 내장하고 있음 */
@@ -290,8 +307,17 @@ export class MainPage implements OnInit {
           // 진행도 표기
           p.push();
           p.noFill();
-          p.stroke((this.json.custom_color || this.defaultColor));
-          p.strokeWeight(this.ProgressWeight);
+          if (this.isAddButton) { // 추가 버튼은 진행도가 없고 + 가 보여짐
+            p.push();
+            p.noStroke();
+            p.fill(255);
+            p.rect(0, 0, this.json.shortSide, this.json.longSide);
+            p.rect(0, 0, this.json.longSide, this.json.shortSide);
+            p.pop();
+          } else {
+            p.stroke((this.json.custom_color || this.defaultColor));
+            p.strokeWeight(this.ProgressWeight);
+          }
           p.rotate(-p.PI / 2);
           let ProgressCircleSize = this.EllipseSize - this.ProgressWeight;
           p.arc(0, 0, ProgressCircleSize, ProgressCircleSize, 0, LerpProgress * p.TWO_PI);
@@ -351,6 +377,10 @@ export class MainPage implements OnInit {
             if (LifeTime < .5)
               DoneParticles.push(new DoneBoomParticleAnim(this.position, this.json.custom_color || this.defaultColor));
             this.TextColor = p.color(255, 255 * LifeTime);
+            if (this.isAddButton) {
+              this.json.longSide *= LifeTime;
+              this.json.shortSide *= LifeTime;
+            }
           }
           this.RemoveTodo();
           p['count_todo']();
@@ -358,8 +388,11 @@ export class MainPage implements OnInit {
             DoneParticles.push(new DoneBoomParticleAnim(this.position, this.json.custom_color || this.defaultColor));
         }
         Clicked() {
-          if (isClickable)
-            nakama.open_add_todo_page(JSON.stringify(this.json));
+          if (isClickable) {
+            if (this.isAddButton)
+              nakama.open_add_todo_page();
+            else nakama.open_add_todo_page(JSON.stringify(this.json));
+          }
         }
         RemoveTodo() {
           for (let i = 0, j = TodoKeys.length; i < j; i++)

@@ -4,9 +4,6 @@ SPDX-License-Identifier: MIT -->
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-title>{{lang.text['Main']['Title']}}</ion-title>
-    <div (click)="nakama.open_add_todo_page()" style="position: absolute; right: 68px; top: 16px;">
-      <ion-icon button style="width: 24px; height: 24px; " name="add-circle-outline"></ion-icon>
-    </div>
     <div class="header_online_circle" [style]="'background-color: ' + statusBar.colors[statusBar.settings.groupServer]"
       (click)="nakama.toggle_all_session()">
     </div>
