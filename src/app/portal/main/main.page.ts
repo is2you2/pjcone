@@ -119,9 +119,12 @@ export class MainPage implements OnInit {
             for (let i = 0, j = TodoKeys.length; i < j; i++)
               if (Todos[TodoKeys[i]].json.id == json.id) {
                 Todos[TodoKeys[i]].DoneAnim();
-                break;
+                return
               }
           } else Todos[json.id] = new TodoElement(json);
+          p['count_todo']();
+        }
+        p['count_todo'] = () => {
           TodoKeys = Object.keys(Todos);
           this.isEmptyTodo = !Boolean(Object.keys(TodoKeys).length);
         }
@@ -253,6 +256,7 @@ export class MainPage implements OnInit {
         Accel = p.createVector(0, 0);
         /** 사용자가 끌기 중인지 여부 */
         isGrabbed = false;
+        TextColor = p.color(255);
         /** 실시간 보여주기 */
         display() {
           // 가장 배경에 있는 원
@@ -288,7 +292,7 @@ export class MainPage implements OnInit {
           p.pop();
           // 타이틀 일부 표기
           let TextBox = this.EllipseSize * .9;
-          p.fill(255);
+          p.fill(this.TextColor);
           p.text(this.json.title, 0, 0, TextBox, TextBox);
           p.pop();
         }
@@ -325,9 +329,21 @@ export class MainPage implements OnInit {
           let calc = p5.Vector.sub(this.position, Other.position);
           this.Velocity.add(calc.mult(1 - dist)).mult(.85);
         }
-        DoneAnim() {
-          console.log('완료 애니메이션 없음');
+        async DoneAnim() {
+          let LifeTime = 1;
+          const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+          let sizeOrigin = this.EllipseSize;
+          let ProgressLineWeightOrigin = ProgressWeight;
+          await delay(800);
+          while (LifeTime > 0) {
+            await delay(14);
+            LifeTime -= .04;
+            this.EllipseSize = sizeOrigin * LifeTime;
+            ProgressWeight = ProgressLineWeightOrigin * LifeTime;
+            this.TextColor = p.color(255, 255 * LifeTime);
+          }
           this.RemoveTodo();
+          p['count_todo']();
         }
         Clicked() {
           if (isClickable)
