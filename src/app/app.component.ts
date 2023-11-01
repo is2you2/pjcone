@@ -176,7 +176,6 @@ export class AppComponent {
    */
   async waiting_open_page(ev: any, page: any, props: any) {
     try {
-      if (window['godot'] != 'godot') throw '고도엔진 준비되지 않음';
       let modal = await this.modalCtrl.create({
         component: page,
         componentProps: props,
@@ -200,7 +199,7 @@ export class AppComponent {
           modal.present();
           break;
         case 'AddTodoMenuPage':
-          if (!this.lang.text['TodoDetail']['WIP']) throw 'AddTodoMenuPage 번역 준비중';
+          if (!this.lang.text['TodoDetail']['EditText']) throw 'AddTodoMenuPage 번역 준비중';
           this.nakama.open_add_todo_page(props['data']);
           break;
         default:
@@ -212,7 +211,7 @@ export class AppComponent {
       console.log('retry open notification clicked because... : ', e);
       setTimeout(() => {
         this.waiting_open_page(ev, page, props);
-      }, 1000);
+      }, 200);
     }
   }
 

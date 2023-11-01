@@ -125,7 +125,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     });
     this.nakama.AddTodoLinkAct = async (info: string) => {
       this.nakama.removeBanner();
-      this.p5timer.remove();
+      if (this.p5timer) this.p5timer.remove();
       this.received_data = info;
       this.userInput = JSON.parse(this.received_data);
       await this.ionViewWillEnter();

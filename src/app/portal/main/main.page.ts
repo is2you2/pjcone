@@ -340,7 +340,7 @@ export class MainPage implements OnInit {
           const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
           let sizeOrigin = this.EllipseSize;
           let ProgressLineWeightOrigin = this.ProgressWeight;
-          await delay(800);
+          await delay(500);
           this.Velocity = VECTOR_ZERO.copy();
           this.Accel = VECTOR_ZERO.copy();
           while (LifeTime > 0) {
