@@ -74,6 +74,7 @@ export class MainPage implements OnInit {
     this.global.p5todo = new p5((p: p5) => {
       let Todos: { [id: string]: TodoElement } = {};
       let TodoKeys: string[] = [];
+      let DoneParticles: DoneBoomParticleAnim[] = [];
       let GrabbedElement: TodoElement;
       let VECTOR_ZERO = p.createVector(0, 0);
       let CamPosition = p.createVector(0, 0);
@@ -167,6 +168,11 @@ export class MainPage implements OnInit {
         p.translate(CamPosition);
         for (let i = 0, j = TodoKeys.length; i < j; i++)
           Todos[TodoKeys[i]].display();
+        for (let i = DoneParticles.length - 1; i >= 0; i--) {
+          DoneParticles[i].display();
+          if (DoneParticles[i].lifeTime < 0)
+            DoneParticles.splice(i, 1);
+        }
         p.pop();
       }
       p.windowResized = () => {
@@ -182,7 +188,6 @@ export class MainPage implements OnInit {
           CamPosition.y = tmpHeightRatio * p.height;
         }, 50);
       }
-      let ProgressWeight = 8;
       /** 할 일 개체가 클릭 가능한 */
       let isClickable = true;
       /** 해야할 일 객체 */
@@ -219,7 +224,7 @@ export class MainPage implements OnInit {
           }
           { // 마스크 이미지 생성
             if (!ImageMask[importance]) {
-              ImageMask[importance] = p.createImage(128, 128);
+              ImageMask[importance] = p.createImage(this.EllipseSize, this.EllipseSize);
               ImageMask[importance].loadPixels();
               let ImageCenter = p.createVector(ImageMask[importance].width / 2, ImageMask[importance].height / 2);
               for (let y = 0, yl = ImageMask[importance].height; y < yl; y++)
@@ -257,6 +262,7 @@ export class MainPage implements OnInit {
         /** 사용자가 끌기 중인지 여부 */
         isGrabbed = false;
         TextColor = p.color(255);
+        ProgressWeight = 8;
         /** 실시간 보여주기 */
         display() {
           // 가장 배경에 있는 원
@@ -280,14 +286,14 @@ export class MainPage implements OnInit {
           p.ellipse(0, 0, this.EllipseSize, this.EllipseSize);
           // 썸네일 이미지 표기
           if (this.ThumbnailImage)
-            p.image(this.ThumbnailImage, 0, 0);
+            p.image(this.ThumbnailImage, 0, 0, this.EllipseSize, this.EllipseSize);
           // 진행도 표기
           p.push();
           p.noFill();
           p.stroke((this.json.custom_color || this.defaultColor));
-          p.strokeWeight(ProgressWeight);
+          p.strokeWeight(this.ProgressWeight);
           p.rotate(-p.PI / 2);
-          let ProgressCircleSize = this.EllipseSize - ProgressWeight;
+          let ProgressCircleSize = this.EllipseSize - this.ProgressWeight;
           p.arc(0, 0, ProgressCircleSize, ProgressCircleSize, 0, LerpProgress * p.TWO_PI);
           p.pop();
           // 타이틀 일부 표기
@@ -333,24 +339,27 @@ export class MainPage implements OnInit {
           let LifeTime = 1;
           const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
           let sizeOrigin = this.EllipseSize;
-          let ProgressLineWeightOrigin = ProgressWeight;
+          let ProgressLineWeightOrigin = this.ProgressWeight;
           await delay(800);
+          this.Velocity = VECTOR_ZERO.copy();
+          this.Accel = VECTOR_ZERO.copy();
           while (LifeTime > 0) {
             await delay(14);
             LifeTime -= .04;
             this.EllipseSize = sizeOrigin * LifeTime;
-            ProgressWeight = ProgressLineWeightOrigin * LifeTime;
+            this.ProgressWeight = ProgressLineWeightOrigin * LifeTime;
+            if (LifeTime < .5)
+              DoneParticles.push(new DoneBoomParticleAnim(this.position, this.json.custom_color || this.defaultColor));
             this.TextColor = p.color(255, 255 * LifeTime);
           }
           this.RemoveTodo();
           p['count_todo']();
+          for (let i = 0; i < 20; i++)
+            DoneParticles.push(new DoneBoomParticleAnim(this.position, this.json.custom_color || this.defaultColor));
         }
         Clicked() {
           if (isClickable)
             nakama.open_add_todo_page(JSON.stringify(this.json));
-        }
-        MoveTodo() {
-
         }
         RemoveTodo() {
           for (let i = 0, j = TodoKeys.length; i < j; i++)
@@ -359,6 +368,61 @@ export class MainPage implements OnInit {
               break;
             }
           delete Todos[this.json.id];
+        }
+      }
+      /** 할 일 완료 애니메이션 마무리 알갱이 행동 */
+      class DoneBoomParticleAnim {
+        constructor(pos: p5.Vector, targetColor: p5.Color) {
+          this.pos = pos.copy();
+          p.randomSeed(p.random(-255, 255));
+          this.lifeTime = p.random(180, 255);
+          this.vel = p.createVector(
+            p.random(-75, 75),
+            p.random(-40, -80),
+          );
+          this.acc = p.createVector(
+            0,
+            p.random(-1, -3),
+          );
+          p.push();
+          p.colorMode(p.HSB);
+          let hue = p.hue(targetColor);
+          let sat = p.saturation(targetColor);
+          let val = p.brightness(targetColor);
+          this.color = p.color(
+            p.random(hue - 20, hue + 20),
+            p.random(sat - 20, sat + 20),
+            p.random(val - 20, val + 20),
+            this.lifeTime / 255
+          );
+          p.pop();
+          this.RectSize = p.random(3, 4);
+          this.rotate = p.random(-p.PI, p.PI);
+        }
+        pos: p5.Vector;
+        /** 속도 */
+        vel: p5.Vector;
+        /** 가속도 */
+        acc: p5.Vector;
+        color: p5.Color;
+        lifeTime: number;
+        RectSize = 4;
+        rotate = 0;
+        display() {
+          this.color.setAlpha(this.lifeTime / 255);
+          p.fill(this.color);
+          this.CalcPhysics();
+          p.push();
+          p.translate(this.pos);
+          p.rotate(this.rotate);
+          p.rect(0, 0, this.RectSize, this.RectSize);
+          p.pop();
+          this.lifeTime--;
+        }
+        CalcPhysics() {
+          this.acc.y += .07;
+          this.vel.add(this.acc);
+          this.pos.add(this.vel.copy().div(100));
         }
       }
       /** 모든 터치 또는 마우스 포인터의 현재 지점 */
