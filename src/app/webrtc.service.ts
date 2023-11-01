@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import * as p5 from 'p5';
+import 'p5/lib/addons/p5.sound';
 import { WebrtcManageIoDevPage } from './webrtc-manage-io-dev/webrtc-manage-io-dev.page';
 import { P5ToastService } from './p5-toast.service';
 import { LanguageSettingService } from './language-setting.service';
@@ -236,6 +237,39 @@ export class WebrtcService {
       /** 새 메시지 알림을 위한 외곽선 조정용 */
       let borderLerp = 1;
       p.setup = () => {
+        let osc: p5.Oscillator;
+        let waiting = () => {
+          if (this.JoinInited) {
+            osc.stop(.1);
+            clearTimeout(p['waiting_act']);
+          } else {
+            if (osc) osc.stop(.1);
+            osc = new p5.Oscillator(380, 'sine');
+            osc.start();
+            osc.amp(1, .15);
+            osc.amp(0, .75);
+            p['waiting_act'] = setTimeout(() => {
+              waiting();
+            }, 1200);
+          }
+        }
+        p['waiting_act'] = setTimeout(() => {
+          waiting();
+        }, 0);
+
+        p['hangup'] = () => {
+          if (!this.isConnected) return;
+          osc.stop(.1);
+          clearTimeout(p['waiting_act']);
+          osc = new p5.Oscillator(380, 'sine');
+          osc.start();
+          osc.freq(250, .35);
+          osc.amp(1, .15);
+          osc.amp(0, .25);
+          osc.amp(1, .35);
+          osc.amp(0, .45);
+        }
+
         p.noCanvas();
         div = p.createDiv();
         div.id('outterDiv');
