@@ -3,6 +3,7 @@
 
 import { Component, OnInit } from '@angular/core';
 import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import * as p5 from 'p5';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -42,44 +43,62 @@ export class VoidDrawPage implements OnInit {
     }
     document.addEventListener('ionBackButton', this.EventListenerAct);
     this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
-    await this.global.CreateGodotIFrame('voidDraw', {
-      local_url: 'assets/data/godot/voidDraw.pck',
-      title: 'voidDraw',
-      image: Boolean(this.navParams.data['path']),
-      // new_canvas: 이미지 새로 만들기
-      // change_color: 선 색상 변경하기
-      // save_image: 이미지 저장하기
-      // undo_draw: 그리기 되돌리기
-      // redo_draw: 그리기 다시하기
-      receive_image: (base64: string, is_modify = false) => {
-        let image = 'data:image/png;base64,' + base64.replace(/"|=|\\/g, '');
-        let newDate = new Date();
-        let year = newDate.getUTCFullYear();
-        let month = ("0" + (newDate.getMonth() + 1)).slice(-2);
-        let date = ("0" + newDate.getDate()).slice(-2);
-        let hour = ("0" + newDate.getHours()).slice(-2);
-        let minute = ("0" + newDate.getMinutes()).slice(-2);
-        let second = ("0" + newDate.getSeconds()).slice(-2);
-        this.modalCtrl.dismiss({
-          name: `voidDraw_${year}-${month}-${date}_${hour}-${minute}-${second}.png`,
-          img: image,
-          loadingCtrl: this.mainLoading,
-          is_modify: is_modify,
-        });
-      }
-    }, 'new_canvas');
-    this.initialized = true;
+    this.create_p5voidDraw();
     if (this.navParams.data['path'])
-      this.global.godot_window['new_canvas'](JSON.stringify({
+      this.p5voidDraw['new_canvas']({
         width: this.navParams.data.width,
         height: this.navParams.data.height,
-        path: '/userfs/' + this.navParams.data.path,
-      }));
+        path: this.navParams.data.path,
+      });
+    else this.p5voidDraw['new_canvas']();
+  }
+
+  p5voidDraw: p5;
+  create_p5voidDraw() {
+    let targetDiv = document.getElementById('voidDraw');
+    this.p5voidDraw = new p5((p: p5) => {
+      /** 배경 이미지 */
+      let BaseImage: p5.Image;
+      p.setup = () => {
+        let canvas = p.createCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
+        canvas.parent(targetDiv);
+        p['new_canvas'] = async (data: any) => {
+          let initData = { width: 432, height: 432, ...data };
+          if (initData['path']) {
+            let blob = await this.indexed.loadBlobFromUserPath(initData['path'], '');
+            let FileURL = URL.createObjectURL(blob);
+            p.loadImage(FileURL, v => {
+              BaseImage = v;
+              URL.revokeObjectURL(FileURL);
+            }, e => {
+              console.error('그림판 배경 이미지 불러오기 오류: ', e);
+              URL.revokeObjectURL(FileURL);
+            });
+          }
+        }
+        p['set_line_weight'] = () => {
+
+        }
+        p['change_color'] = () => {
+
+        }
+        p['save_image'] = () => {
+          this.mainLoading.dismiss();
+        }
+        p['history_act'] = (direction: number) => {
+          console.log(direction);
+        }
+        p['open_crop_tool'] = () => {
+
+        }
+        this.initialized = true;
+      }
+    });
   }
 
   change_color() {
     if (this.initialized)
-      this.global.godot_window.change_color()
+      this.p5voidDraw['change_color']();
   }
 
   new_image() {
@@ -100,8 +119,10 @@ export class VoidDrawPage implements OnInit {
         text: this.lang.text['voidDraw']['CreateNew'],
         handler: (v) => {
           if (!v.width) v.width = DEFAULT_SIZE;
+          else v.width = Number(v.width);
           if (!v.height) v.height = DEFAULT_SIZE;
-          this.global.godot_window['new_canvas'](JSON.stringify(v));
+          else v.height = Number(v.height);
+          this.p5voidDraw['new_canvas'](v);
         }
       }],
     }).then(v => v.present());
@@ -109,63 +130,28 @@ export class VoidDrawPage implements OnInit {
 
   change_line_weight() {
     if (!this.initialized) return;
-    this.alertCtrl.create({
-      header: this.lang.text['voidDraw']['changeWeight'],
-      inputs: [{
-        name: 'weight',
-        type: 'number',
-        placeholder: `${this.lang.text['voidDraw']['weight']} (${this.lang.text['voidDraw']['default_size']}: 1)`,
-      }],
-      buttons: [{
-        text: this.lang.text['voidDraw']['apply'],
-        handler: (v) => {
-          this.global.godot_window['set_line_weight'](v.weight || 1);
-        }
-      }],
-    }).then(v => v.present());
+    this.p5voidDraw['set_line_weight']();
   }
 
-  /** Undo, Redo 등 행동을 위한 함수 */
+  /** Undo, Redo 등 행동을 위한 함수  
+   * 생성 지연에 따른 오류 방지용
+   */
   act_history(direction: number) {
-    switch (direction) {
-      case -1: // Undo
-        this.global.godot_window['undo_draw']();
-        break;
-      case 1: // Redo
-        this.global.godot_window['redo_draw']();
-        break;
-      default:
-        console.error('있을 수 없는 동작 요청: ', direction);
-        break;
-    }
+    this.p5voidDraw['history_act'](direction);
   }
-
-  is_cropping = false;
 
   open_crop_tool() {
     if (!this.initialized) return;
-    this.global.godot_window['open_crop_tool']();
-    this.is_cropping = true;
-  }
-
-  apply_crop() {
-    if (!this.initialized) return;
-    this.global.godot_window['resize_canvas']();
-    this.is_cropping = false;
+    this.p5voidDraw['open_crop_tool']();
   }
 
   /** 사용하기를 누른 경우 */
   dismiss_draw() {
-    if (this.is_cropping) {
-      this.global.godot_window['resize_canvas']();
-      this.is_cropping = false;
-    } else {
-      this.mainLoading.present();
-      this.WithoutSave = false;
-      setTimeout(() => {
-        this.global.godot_window['save_image']();
-      }, 100);
-    }
+    this.mainLoading.present();
+    this.WithoutSave = false;
+    setTimeout(() => {
+      this.p5voidDraw['save_image']();
+    }, 100);
   }
 
   ionViewWillLeave() {
@@ -175,7 +161,7 @@ export class VoidDrawPage implements OnInit {
   WithoutSave = true;
   ionViewDidLeave() {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
-    this.indexed.removeFileFromUserPath('tmp_files/modify_image.png', undefined, this.indexed.godotDB);
+    this.indexed.removeFileFromUserPath('tmp_files/modify_image.png');
     if (this.WithoutSave)
       this.mainLoading.remove();
   }

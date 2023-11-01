@@ -639,7 +639,7 @@ export class IonicViewerPage implements OnInit {
               // modify_image
               receive_image: async (base64: string, width: number, height: number) => {
                 let tmp_path = 'tmp_files/modify_image.png';
-                await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path, undefined, this.indexed.godotDB);
+                await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path);
                 this.modalCtrl.dismiss({
                   type: 'image',
                   path: tmp_path,
@@ -758,11 +758,12 @@ export class IonicViewerPage implements OnInit {
         loading.present();
         try {
           let blob: Blob;
-          this.image_info['path'] = `tmp_files/modify_image.png`;
-          if (this.FileInfo['url'])
+          this.image_info['path'] = this.FileInfo.path || this.navParams.get('path');
+          if (this.FileInfo['url']) {
+            this.image_info['path'] = 'tmp_files/modify_image.png';
             blob = await fetch(this.FileInfo['url']).then(r => r.blob());
-          else blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path || this.navParams.get('path'), (this.FileInfo.type || ''), undefined, this.targetDB);
-          await this.indexed.saveBlobToUserPath(blob, this.image_info['path'], undefined, this.indexed.godotDB);
+            await this.indexed.saveBlobToUserPath(blob, this.image_info['path']);
+          }
           this.modalCtrl.dismiss({
             type: 'image',
             ...this.image_info,
@@ -793,8 +794,7 @@ export class IonicViewerPage implements OnInit {
           try {
             loading.dismiss();
             this.image_info['path'] = 'tmp_files/modify_image.png';
-            await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
-              this.image_info['path'], undefined, this.indexed.godotDB);
+            await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''), this.image_info['path']);
             this.modalCtrl.dismiss({
               type: 'image',
               ...this.image_info,
@@ -818,8 +818,7 @@ export class IonicViewerPage implements OnInit {
             try {
               loading.dismiss();
               this.image_info['path'] = 'tmp_files/modify_image.png';
-              await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
-                this.image_info['path'], undefined, this.indexed.godotDB);
+              await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''), this.image_info['path']);
               this.modalCtrl.dismiss({
                 type: 'image',
                 ...this.image_info,

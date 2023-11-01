@@ -22,12 +22,8 @@ SPDX-License-Identifier: MIT -->
               </div>
             </td>
             <td>
-              <div *ngIf="!is_cropping" class="button_panel button_font" (click)="open_crop_tool()">
+              <div class="button_panel button_font" (click)="open_crop_tool()">
                 <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button" name="crop"></ion-icon>
-              </div>
-              <div *ngIf="is_cropping" class="button_panel button_font" (click)="apply_crop()">
-                <ion-icon [color]="!initialized ? 'medium' : 'dark'" class="icon_button"
-                  name="checkmark-circle-outline"></ion-icon>
               </div>
             </td>
             <td>
@@ -40,7 +36,7 @@ SPDX-License-Identifier: MIT -->
       </tr>
       <tr>
         <td colspan="6">
-          <div id="voidDraw" class="full_screen" style="display: flex; background-color: grey; overflow: hidden;">
+          <div id="voidDraw" class="full_screen" style="display: flex;">
           </div>
         </td>
       </tr>
