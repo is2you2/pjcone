@@ -176,7 +176,6 @@ export class NakamaService {
   }
   /** 시작시 해야할 일 알림을 설정 */
   async set_all_todo_notification() {
-    await this.getGodotDBRecursive();
     this.indexed.GetFileListFromDB('info.todo', _list => {
       _list.forEach(info => {
         this.indexed.loadTextFromUserPath(info, (e, v) => {
@@ -184,9 +183,9 @@ export class NakamaService {
             let noti_info = JSON.parse(v);
             this.set_todo_notification(noti_info);
           }
-        }, this.indexed.godotDB);
+        });
       });
-    }, this.indexed.godotDB);
+    });
   }
 
   async getGodotDBRecursive() {
@@ -224,16 +223,19 @@ export class NakamaService {
     // 시작 시간이 있으면 시작할 때 알림, 시작시간이 없으면 끝날 때 알림
     let targetTime = noti_info.startFrom || noti_info.limit;
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') { // 웹은 예약 발송이 없으므로 지금부터 수를 세야함
-      let schedule = setTimeout(() => {
-        this.noti.PushLocal({
-          id: noti_info.noti_id,
-          title: noti_info.title,
-          body: noti_info.description,
-        }, undefined, (_ev: any) => {
-          this.open_add_todo_page(JSON.stringify(noti_info));
-        });
-      }, new Date(targetTime).getTime() - new Date().getTime());
-      this.web_noti_id[noti_info.noti_id] = schedule;
+      let ScheduleAt = new Date(targetTime).getTime() - new Date().getTime();
+      if (ScheduleAt > 0) {
+        let schedule = setTimeout(() => {
+          this.noti.PushLocal({
+            id: noti_info.noti_id,
+            title: noti_info.title,
+            body: noti_info.description,
+          }, undefined, (_ev: any) => {
+            this.open_add_todo_page(JSON.stringify(noti_info));
+          });
+        }, ScheduleAt);
+        this.web_noti_id[noti_info.noti_id] = schedule;
+      }
     } else { // 모바일은 예약 발송을 설정
       let schedule_at = new Date(targetTime).getTime();
       let not_registered = true;
