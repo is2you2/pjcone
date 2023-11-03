@@ -194,7 +194,7 @@ export class MainPage implements OnInit {
           if (DoneParticles[i].lifeTime < 0)
             DoneParticles.splice(i, 1);
         }
-        for (let i = 0, j = DoneTodo.length; i < j; i++)
+        for (let i = DoneTodo.length - 1; i >= 0; i--)
           DoneTodo[i].DoneAnim();
         p.pop();
       }
@@ -312,7 +312,7 @@ export class MainPage implements OnInit {
             this.json.startFrom || this.json.written,
             this.json.limit,
             0, 1, true);
-          if (this.isAddButton) LerpProgress = 1;
+          if (this.isAddButton || (this.json.written > this.json.limit)) LerpProgress = 1;
           p.fill((this.json.custom_color || this.defaultColor.toString('#rrggbb'))
             + p.hex(p.floor(p.lerp(34, 180, LerpProgress)), 2));
           p.ellipse(0, 0, this.EllipseSize, this.EllipseSize);
