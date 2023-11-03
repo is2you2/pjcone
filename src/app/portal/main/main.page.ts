@@ -67,6 +67,14 @@ export class MainPage implements OnInit {
     }, this.indexed.godotDB);
   }
 
+  isPlayingCanvas = true;
+  /** 캔버스 연산 멈추기 (인풋은 영향받지 않음) */
+  toggleCanvasPlaying() {
+    this.isPlayingCanvas = !this.isPlayingCanvas;
+    if (this.isPlayingCanvas)
+      this.global.p5todo.loop();
+    else this.global.p5todo.noLoop();
+  }
   isEmptyTodo = false;
   CreateTodoManager() {
     // 해야할 일 관리자 생성 행동
@@ -74,6 +82,7 @@ export class MainPage implements OnInit {
     this.global.p5todo = new p5((p: p5) => {
       let Todos: { [id: string]: TodoElement } = {};
       let TodoKeys: string[] = [];
+      let DoneTodo: TodoElement[] = [];
       let DoneParticles: DoneBoomParticleAnim[] = [];
       let GrabbedElement: TodoElement;
       let VECTOR_ZERO = p.createVector(0, 0);
@@ -104,11 +113,13 @@ export class MainPage implements OnInit {
         ViewInit();
         // 캔버스 멈추기
         p['StopCanvas'] = () => {
+          this.isPlayingCanvas = false;
           BlockInput = true;
           p.noLoop();
         }
         // 캔버스 계속 사용
         p['PlayCanvas'] = () => {
+          this.isPlayingCanvas = true;
           BlockInput = false;
           p.windowResized();
           p.loop();
@@ -119,7 +130,7 @@ export class MainPage implements OnInit {
           if (json.done) { // 완료 행동
             for (let i = 0, j = TodoKeys.length; i < j; i++)
               if (Todos[TodoKeys[i]].json.id == json.id) {
-                Todos[TodoKeys[i]].DoneAnim();
+                Todos[TodoKeys[i]].makeDone();
                 return
               }
           } else Todos[json.id] = new TodoElement(json);
@@ -133,7 +144,7 @@ export class MainPage implements OnInit {
               Todos['AddButton'] = new TodoElement('', true);
               TodoKeys = Object.keys(Todos);
             } else if (TodoKeys.length == 1) {
-              Todos['AddButton'].DoneAnim();
+              Todos['AddButton'].makeDone();
             }
           }
         }
@@ -181,6 +192,8 @@ export class MainPage implements OnInit {
           if (DoneParticles[i].lifeTime < 0)
             DoneParticles.splice(i, 1);
         }
+        for (let i = 0, j = DoneTodo.length; i < j; i++)
+          DoneTodo[i].DoneAnim();
         p.pop();
       }
       p.windowResized = () => {
@@ -361,31 +374,38 @@ export class MainPage implements OnInit {
           let calc = p5.Vector.sub(this.position, Other.position);
           this.Velocity.add(calc.mult(1 - dist)).mult(.85);
         }
-        async DoneAnim() {
-          let LifeTime = 1;
+        LifeTime = 1;
+        OriginalEllipseSize: number;
+        OriginalProgWeight: number;
+        async makeDone() {
+          this.LifeTime = 1;
           const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-          let sizeOrigin = this.EllipseSize;
-          let ProgressLineWeightOrigin = this.ProgressWeight;
           await delay(500);
           this.Velocity = VECTOR_ZERO.copy();
           this.Accel = VECTOR_ZERO.copy();
-          while (LifeTime > 0) {
-            await delay(14);
-            LifeTime -= .04;
-            this.EllipseSize = sizeOrigin * LifeTime;
-            this.ProgressWeight = ProgressLineWeightOrigin * LifeTime;
-            if (LifeTime < .5)
-              DoneParticles.push(new DoneBoomParticleAnim(this.position, this.json.custom_color || this.defaultColor));
-            this.TextColor = p.color(isDarkMode ? 255 : 0, 255 * LifeTime);
-            if (this.isAddButton) {
-              this.json.longSide *= LifeTime;
-              this.json.shortSide *= LifeTime;
-            }
-          }
-          this.RemoveTodo();
-          p['count_todo']();
-          for (let i = 0; i < 20; i++)
+          this.OriginalEllipseSize = this.EllipseSize;
+          this.OriginalProgWeight = this.ProgressWeight;
+          DoneTodo.push(this);
+        }
+
+        async DoneAnim() {
+          this.LifeTime -= .04;
+          this.EllipseSize = this.OriginalEllipseSize * this.LifeTime;
+          this.ProgressWeight = this.OriginalProgWeight * this.LifeTime;
+          if (this.LifeTime < .5)
             DoneParticles.push(new DoneBoomParticleAnim(this.position, this.json.custom_color || this.defaultColor));
+          this.TextColor = p.color(isDarkMode ? 255 : 0, 255 * this.LifeTime);
+          if (this.isAddButton) {
+            this.json.longSide *= this.LifeTime;
+            this.json.shortSide *= this.LifeTime;
+          }
+          // 완전 삭제 후 파티클 생성
+          if (this.LifeTime < 0) {
+            this.RemoveTodo();
+            p['count_todo']();
+            for (let i = 0; i < 20; i++)
+              DoneParticles.push(new DoneBoomParticleAnim(this.position, this.json.custom_color || this.defaultColor));
+          }
         }
         Clicked() {
           if (isClickable) {
@@ -400,6 +420,12 @@ export class MainPage implements OnInit {
               TodoKeys.splice(i, 1);
               break;
             }
+          for (let i = 0, j = DoneTodo.length; i < j; i++) {
+            if (DoneTodo[i] = this) {
+              DoneTodo.splice(i, 1);
+              break;
+            }
+          }
           delete Todos[this.json.id];
         }
       }
@@ -493,6 +519,7 @@ export class MainPage implements OnInit {
       }
       p.mouseDragged = (ev: any) => {
         if (BlockInput) return;
+        if (!this.isPlayingCanvas) p.redraw();
         switch (ev['which']) {
           case 1: // 왼쪽
             MouseAct = p.createVector(p.mouseX, p.mouseY);
@@ -572,6 +599,7 @@ export class MainPage implements OnInit {
       }
       p.touchMoved = (ev: any) => {
         if (BlockInput) return;
+        if (!this.isPlayingCanvas) p.redraw();
         touches = ev['touches'];
         switch (touches.length) {
           case 1: { // 패닝
