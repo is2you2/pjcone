@@ -113,16 +113,16 @@ export class MainPage implements OnInit {
         ViewInit();
         // 캔버스 멈추기
         p['StopCanvas'] = () => {
-          this.isPlayingCanvas = false;
           BlockInput = true;
-          p.noLoop();
+          if (!this.isPlayingCanvas)
+            p.noLoop();
         }
         // 캔버스 계속 사용
         p['PlayCanvas'] = () => {
-          this.isPlayingCanvas = true;
           BlockInput = false;
           p.windowResized();
-          p.loop();
+          if (this.isPlayingCanvas)
+            p.loop();
         }
         // 할 일 추가시 행동
         p['add_todo'] = (data: string) => {
@@ -310,7 +310,7 @@ export class MainPage implements OnInit {
             this.json.startFrom || this.json.written,
             this.json.limit,
             0, 1, true);
-          if (LerpProgress == 0) LerpProgress = 1;
+          if (this.isAddButton) LerpProgress = 1;
           p.fill((this.json.custom_color || this.defaultColor.toString('#rrggbb'))
             + p.hex(p.floor(p.lerp(34, 180, LerpProgress)), 2));
           p.ellipse(0, 0, this.EllipseSize, this.EllipseSize);
