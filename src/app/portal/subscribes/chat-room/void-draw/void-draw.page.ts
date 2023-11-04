@@ -59,12 +59,14 @@ export class VoidDrawPage implements OnInit {
     this.p5voidDraw = new p5((p: p5) => {
       /** 배경 이미지 */
       let BaseImage: p5.Image;
+      let canvas: p5.Renderer;
       p.setup = () => {
-        let canvas = p.createCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
-        canvas.parent(targetDiv);
-        p['new_canvas'] = async (data: any) => {
-          let initData = { width: 432, height: 432, ...data };
-          if (initData['path']) {
+        let initData = { width: 432, height: 432 };
+        p.pixelDensity(1);
+        p.smooth();
+        p['new_canvas'] = async (data: any) => { // 첨부파일이 있으면 덮어씌우기
+          initData = { ...initData, ...data };
+          if (initData['path']) { // 배경 이미지 파일이 포함됨
             let blob = await this.indexed.loadBlobFromUserPath(initData['path'], '');
             let FileURL = URL.createObjectURL(blob);
             p.loadImage(FileURL, v => {
@@ -75,6 +77,22 @@ export class VoidDrawPage implements OnInit {
               URL.revokeObjectURL(FileURL);
             });
           }
+          if (canvas) p.remove();
+
+          let targetWidth = 432;
+          let targetHeight = 432;
+          if (initData.width > initData.height) { // 가로 이미지
+            targetWidth = initData.width / initData.height * targetDiv.clientHeight;
+            targetHeight = targetDiv.clientHeight;
+          } else { // 세로 이미지
+            targetWidth = targetDiv.clientWidth;
+            targetHeight = initData.height / initData.width * targetDiv.clientWidth;
+          }
+          canvas = p.createCanvas(targetWidth, targetHeight);
+          canvas.parent(targetDiv);
+          // 화면 비율에 맞게 작업 해상도 낮추기
+          p['SetCanvasViewportInit']();
+          p.background(255, 0, 0);
         }
         p['set_line_weight'] = () => {
 
@@ -91,7 +109,16 @@ export class VoidDrawPage implements OnInit {
         p['open_crop_tool'] = () => {
 
         }
+        p['SetCanvasViewportInit'] = () => {
+          canvas.style('position', 'relative');
+          canvas.style('top', '50%');
+          canvas.style('left', '50%');
+          canvas.style('transform', 'translateX(-50%) translateY(-50%)');
+        }
         this.initialized = true;
+      }
+      p.windowResized = () => {
+        p['SetCanvasViewportInit']();
       }
     });
   }

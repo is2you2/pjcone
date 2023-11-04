@@ -349,12 +349,20 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   ionViewDidEnter() {
     this.show_count_timer();
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
-      this.navCtrl.pop();
-    }
-    this.global.p5key['KeyShortCut']['AddAct'] = () => {
-      this.open_select_new();
-    }
+    this.AddShortCut();
+  }
+
+  AddShortCut() {
+    if (!this.NewAttach.value)
+      setTimeout(() => {
+        this.global.p5key['KeyShortCut']['Escape'] = () => {
+          this.navCtrl.pop();
+        }
+        this.global.p5key['KeyShortCut']['AddAct'] = () => {
+          this.open_select_new();
+        }
+      }, 0);
+    this.NewAttach.value = '';
   }
 
   start_change(ev: any) {
@@ -479,6 +487,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   @ViewChild('NewAttach') NewAttach: IonSelect;
   /** 새 파일 타입 정하기 */
   open_select_new() {
+    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5key['KeyShortCut']['AddAct'];
     this.NewAttach.open();
   }
 
@@ -487,6 +497,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     switch (ev.detail.value) {
       case 'camera':
         await this.from_camera();
+        this.AddShortCut();
         this.auto_scroll_down(100);
         break;
       case 'text':
@@ -514,6 +525,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           },
         }).then(v => {
           v.onWillDismiss().then(v => {
+            this.AddShortCut();
             if (v.data) {
               let this_file: FileInfo = {};
               this_file.content_creator = {
@@ -541,6 +553,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           component: VoidDrawPage,
         }).then(v => {
           v.onWillDismiss().then(async v => {
+            this.AddShortCut();
             if (v.data) this.voidDraw_fileAct_callback(v);
           });
           v.present();
@@ -548,9 +561,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         break;
       case 'load': // 불러오기 행동 병합
         this.select_attach();
+        this.AddShortCut();
         break;
     }
-    this.NewAttach.value = '';
   }
 
   file_sel_id = '';
