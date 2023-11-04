@@ -43,7 +43,7 @@ SPDX-License-Identifier: MIT -->
             </ion-grid>
           </div>
           <ion-item>
-            <ion-input [label]="lang.text['TodoDetail']['DisplayName']" [(ngModel)]="userInput.title"
+            <ion-input id="titleInput" [label]="lang.text['TodoDetail']['DisplayName']" [(ngModel)]="userInput.title"
               class="ion-text-right" [placeholder]="lang.text['TodoDetail']['DisplayName_placeholder']"></ion-input>
             <ion-icon *ngIf="isMobile" slot="end" name="mic-outline" (click)="SpeechToTitleText()"></ion-icon>
           </ion-item>
@@ -143,7 +143,7 @@ SPDX-License-Identifier: MIT -->
             <ion-label>{{lang.text['TodoDetail']['description']}}</ion-label>
             <ion-icon slot="end" name="mic-outline" (click)="SpeechToDetailText()"></ion-icon>
           </ion-item-divider>
-          <textarea class="infobox" [(ngModel)]="userInput.description"
+          <textarea id="descInput" class="infobox" [(ngModel)]="userInput.description"
             [placeholder]="lang.text['TodoDetail']['description']"></textarea>
           <div *ngFor="let attach of userInput.attach; index as i">
             <ion-item>

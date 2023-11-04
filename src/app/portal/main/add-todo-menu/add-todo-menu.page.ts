@@ -360,6 +360,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           this.navCtrl.pop();
         }
         this.global.p5key['KeyShortCut']['AddAct'] = () => {
+          if (this.checkIfInputFocus()) return;
           this.open_select_new();
         }
       }, 0);
@@ -495,11 +496,30 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     ];
     if (!this.isMobile) NumberShortCutAct.splice(2, 1);
     this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+      if (this.checkIfInputFocus()) return;
       delete this.global.p5key['KeyShortCut']['Digit'];
       if (NumberShortCutAct.length > index)
         this.new_attach({ detail: { value: NumberShortCutAct[index] } });
     }
     this.NewAttach.open();
+  }
+
+  input_ele_ids = [];
+  checkIfInputFocus(): boolean {
+    if (!this.input_ele_ids.length) {
+      let titleIonInput = document.getElementById('titleInput');
+      this.input_ele_ids.push(titleIonInput.children[0].children[1].children[0]);
+      this.input_ele_ids.push(document.getElementById('descInput'));
+    }
+    let result = false;
+    for (let i = 0, j = this.input_ele_ids.length; i < j; i++) {
+      let active_ele = document.activeElement;
+      if (active_ele == this.input_ele_ids[i]) {
+        result = true;
+        break;
+      }
+    }
+    return result;
   }
 
   /** 새 파일 만들기 */
