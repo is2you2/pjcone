@@ -109,6 +109,7 @@ export class VoidDrawPage implements OnInit {
 
         }
         p['SetCanvasViewportInit'] = () => {
+          canvas.hide();
           p.resizeCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
           RelativePosition.x = p.width / 2;
           RelativePosition.y = p.height / 2;
@@ -116,6 +117,7 @@ export class VoidDrawPage implements OnInit {
           let canvasRatio = ActualCanvas.width / ActualCanvas.height;
           console.log(windowRatio, '/', canvasRatio, ' = ', windowRatio / canvasRatio);
           RelativeScale = 1;
+          canvas.show();
           p.redraw();
         }
         ActualCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
