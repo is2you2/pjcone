@@ -115,8 +115,9 @@ export class VoidDrawPage implements OnInit {
           RelativePosition.y = p.height / 2;
           let windowRatio = targetDiv.clientWidth / targetDiv.clientHeight;
           let canvasRatio = ActualCanvas.width / ActualCanvas.height;
-          console.log(windowRatio, '/', canvasRatio, ' = ', windowRatio / canvasRatio);
-          RelativeScale = 1;
+          if (windowRatio < canvasRatio)
+            RelativeScale = targetDiv.clientWidth / ActualCanvas.width;
+          else RelativeScale = targetDiv.clientHeight / ActualCanvas.height;
           canvas.show();
           p.redraw();
         }
