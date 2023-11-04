@@ -387,6 +387,7 @@ export class MainPage implements OnInit {
           this.Accel = VECTOR_ZERO.copy();
           this.OriginalEllipseSize = this.EllipseSize;
           this.OriginalProgWeight = this.ProgressWeight;
+          this.json['done'] = true;
           DoneTodo.push(this);
         }
 
@@ -410,7 +411,7 @@ export class MainPage implements OnInit {
           }
         }
         Clicked() {
-          if (isClickable && !BlockInput) {
+          if (isClickable && !BlockInput && !this.json['done']) {
             if (this.isAddButton)
               nakama.open_add_todo_page();
             else nakama.open_add_todo_page(JSON.stringify(this.json));
