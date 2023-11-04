@@ -355,6 +355,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   AddShortCut() {
     if (!this.NewAttach.value)
       setTimeout(() => {
+        delete this.global.p5key['KeyShortCut']['Digit'];
         this.global.p5key['KeyShortCut']['Escape'] = () => {
           this.navCtrl.pop();
         }
@@ -489,6 +490,15 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   open_select_new() {
     delete this.global.p5key['KeyShortCut']['Escape'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
+    let NumberShortCutAct = [
+      'text', 'image', 'camera', 'load'
+    ];
+    if (!this.isMobile) NumberShortCutAct.splice(2, 1);
+    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+      delete this.global.p5key['KeyShortCut']['Digit'];
+      if (NumberShortCutAct.length > index)
+        this.new_attach({ detail: { value: NumberShortCutAct[index] } });
+    }
     this.NewAttach.open();
   }
 
@@ -1279,6 +1289,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   async ionViewWillLeave() {
     delete this.global.p5key['KeyShortCut']['Escape'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
+    delete this.global.p5key['KeyShortCut']['Digit'];
     this.indexed.GetFileListFromDB('tmp_files', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path));
     });
