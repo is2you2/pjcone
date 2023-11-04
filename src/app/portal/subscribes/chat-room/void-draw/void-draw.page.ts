@@ -76,8 +76,8 @@ export class VoidDrawPage implements OnInit {
     this.p5voidDraw = new p5((p: p5) => {
       /** 스케일 조정 편의를 위해 모든게 여기서 작업됨 */
       let ActualCanvas: p5.Graphics;
-      /** 편집하려는 이미지 */
-      let BaseImage: p5.Image;
+      /** 배경이미지 전용 캔버스 */
+      let ImageCanvas: p5.Graphics;
       let canvas: p5.Renderer;
       p.setup = async () => {
         p.pixelDensity(1);
@@ -85,7 +85,7 @@ export class VoidDrawPage implements OnInit {
         p.noLoop();
         p.imageMode(p.CENTER);
         // 정보 초기화
-        BaseImage = undefined;
+        ImageCanvas = undefined;
         if (ActualCanvas) ActualCanvas.remove();
         ActualCanvas = undefined;
         if (canvas) p.remove();
@@ -124,14 +124,18 @@ export class VoidDrawPage implements OnInit {
         ActualCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
         ActualCanvas.smooth();
         ActualCanvas.noLoop();
+        ActualCanvas.noFill();
         // 사용자 그리기 판넬 생성
         if (initData['path']) { // 배경 이미지 파일이 포함됨
           let blob = await this.indexed.loadBlobFromUserPath(initData['path'], '');
           let FileURL = URL.createObjectURL(blob);
           p.loadImage(FileURL, v => {
             ActualCanvas.resizeCanvas(v.width, v.height);
-            ActualCanvas.imageMode(p.CENTER);
-            BaseImage = v;
+            ImageCanvas = p.createGraphics(v.width, v.height, p.WEBGL);
+            ImageCanvas.noLoop();
+            ImageCanvas.background(255);
+            ImageCanvas.imageMode(p.CENTER);
+            ImageCanvas.image(v, 0, 0);
             URL.revokeObjectURL(FileURL);
             p['SetCanvasViewportInit']();
             p.redraw();
@@ -140,6 +144,9 @@ export class VoidDrawPage implements OnInit {
             URL.revokeObjectURL(FileURL);
           });
         } else {
+          ImageCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
+          ImageCanvas.noLoop();
+          ImageCanvas.background(255);
           p['SetCanvasViewportInit']();
           p.redraw();
         }
@@ -155,28 +162,101 @@ export class VoidDrawPage implements OnInit {
         p.push();
         p.translate(RelativePosition);
         p.scale(RelativeScale);
-        ActualCanvas.background(255);
+        if (ImageCanvas) {
+          ImageCanvas.push();
+          ImageCanvas.translate(CropPosition);
+          p.image(ImageCanvas, 0, 0);
+          ImageCanvas.pop();
+        }
         ActualCanvas.push();
         ActualCanvas.translate(CropPosition);
-        if (BaseImage) ActualCanvas.image(BaseImage, 0, 0);
-        ActualCanvas.pop();
-        ActualCanvas.redraw();
         p.image(ActualCanvas, 0, 0);
+        ActualCanvas.pop();
         p.pop();
+      }
+      let BrushColor = p.color(0);
+      let BrushWeight = 5;
+      /** 그려진 자유선 정보 저장  
+       * DrawingStack[i] = [{ pos: [{x, y}, ..], color: p5.Color, weight: number }, ..]
+       */
+      let DrawingStack = [];
+      /** 선을 어디까지 그리는지, 히스토리 행동용 */
+      let HistoryPointer = 0;
+      /** 전체 그리기, 동작 취소 등 전체 업데이트가 필요할 때 사용 */
+      let updateActualCanvas = () => {
+        ActualCanvas.clear(255, 255, 255, 255);
+        // 모든 그리기 행동 시도
+        for (let i = DrawingStack.length - 1; i >= 0; i--)
+          for (let j = 0, k = HistoryPointer - 3; j < k; j++)
+            updateCurrentDrawingCurve(DrawingStack[i], j);
+        ActualCanvas.redraw();
+      }
+      const LINE_POINTS_COUNT = 2;
+      /** 마지막 행동에 해당하는 선 그리기 **지금은 직선 그리기임** */
+      let updateCurrentDrawingCurve = (targetDraw = CurrentDraw, index = 0) => {
+        let TargetLine: any = targetDraw['pos'].slice(-LINE_POINTS_COUNT);
+        ActualCanvas.push();
+        ActualCanvas.stroke(targetDraw['color']);
+        ActualCanvas.strokeWeight(targetDraw['weight']);
+        ActualCanvas.line(
+          TargetLine[index + 0].x, TargetLine[index + 0].y,
+          TargetLine[index + 1].x, TargetLine[index + 1].y
+        );
+        // ActualCanvas.curve(
+        //   TargetLine[index + 0].x, TargetLine[index + 0].y,
+        //   TargetLine[index + 1].x, TargetLine[index + 1].y,
+        //   TargetLine[index + 2].x, TargetLine[index + 2].y,
+        //   TargetLine[index + 3].x, TargetLine[index + 3].y);
+        ActualCanvas.pop();
+        p.redraw();
       }
       p.windowResized = () => {
         setTimeout(() => {
           p['SetCanvasViewportInit']();
         }, 0);
       }
+      let CurrentDraw = {};
       p.mousePressed = (ev: any) => {
         switch (ev['which']) {
           case 1: // 왼쪽
+            DrawStartAct();
             break;
           case 2: // 가운데
             p['SetCanvasViewportInit']();
             break;
         }
+      }
+      /** 그리기 시작 행동 (PC/터치스크린 공용) */
+      let DrawStartAct = (_x?: number, _y?: number) => {
+        let pos = MousePosToActualCanvasPosition(_x, _y);
+        let _pos = { x: pos.x, y: pos.y };
+        CurrentDraw = {
+          pos: [],
+          color: BrushColor,
+          weight: BrushWeight,
+        };
+        for (let i = 0; i < LINE_POINTS_COUNT; i++)
+          CurrentDraw['pos'].push(_pos);
+        DrawingStack.push(CurrentDraw);
+        HistoryPointer = DrawingStack.length;
+        updateCurrentDrawingCurve();
+      }
+      p.mouseDragged = (ev: any) => {
+        switch (ev['which']) {
+          case 1: // 왼쪽
+            let pos = MousePosToActualCanvasPosition();
+            let _pos = { x: pos.x, y: pos.y };
+            CurrentDraw['pos'].push(_pos);
+            updateCurrentDrawingCurve();
+            break;
+        }
+      }
+      let MousePosToActualCanvasPosition = (x?: number, y?: number) => {
+        let pos = p.createVector(x || p.mouseX, y || p.mouseY);
+        pos.sub(RelativePosition);
+        pos.div(RelativeScale);
+        pos.sub(CropPosition);
+        return pos;
       }
     });
   }
