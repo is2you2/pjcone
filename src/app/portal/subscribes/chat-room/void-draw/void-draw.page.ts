@@ -34,12 +34,24 @@ export class VoidDrawPage implements OnInit {
   }
 
   async ionViewDidEnter() {
-    this.global.p5key['KeyShortCut']['HistoryAct'] = (ShiftPressed: boolean) => {
-      if (ShiftPressed) { // Redo
-        this.act_history(1);
-      } else { // Undo
-        this.act_history(-1);
+    this.global.p5key['KeyShortCut']['HistoryAct'] = (key: string) => {
+      switch (key) {
+        case 'Z':
+          this.act_history(-1);
+          break;
+        case 'X':
+          this.act_history(1);
+          break;
+        case 'C':
+          this.p5voidDraw['change_color']();
+          break;
+        case 'V':
+          this.p5voidDraw['set_line_weight']();
+          break;
       }
+    }
+    this.global.p5key['KeyShortCut']['AddAct'] = () => {
+      this.new_image();
     }
     document.addEventListener('ionBackButton', this.EventListenerAct);
     this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
@@ -78,27 +90,17 @@ export class VoidDrawPage implements OnInit {
             });
           }
           if (canvas) p.remove();
-
-          let targetWidth = 432;
-          let targetHeight = 432;
-          if (initData.width > initData.height) { // 가로 이미지
-            targetWidth = initData.width / initData.height * targetDiv.clientHeight;
-            targetHeight = targetDiv.clientHeight;
-          } else { // 세로 이미지
-            targetWidth = targetDiv.clientWidth;
-            targetHeight = initData.height / initData.width * targetDiv.clientWidth;
-          }
-          canvas = p.createCanvas(targetWidth, targetHeight);
+          let targetSide = getRatioOfImageWindow(initData);
+          canvas = p.createCanvas(targetSide.x, targetSide.y);
           canvas.parent(targetDiv);
           // 화면 비율에 맞게 작업 해상도 낮추기
           p['SetCanvasViewportInit']();
-          p.background(255, 0, 0);
         }
         p['set_line_weight'] = () => {
-
+          console.log('set_line_weight');
         }
         p['change_color'] = () => {
-
+          console.log('change_color');
         }
         p['save_image'] = () => {
           this.mainLoading.dismiss();
@@ -110,15 +112,47 @@ export class VoidDrawPage implements OnInit {
 
         }
         p['SetCanvasViewportInit'] = () => {
-          canvas.style('position', 'relative');
+          let targetSide = getRatioOfImageWindow(initData);
+          p.resizeCanvas(targetSide.x, targetSide.y);
+          canvas.style('position', 'absolute');
           canvas.style('top', '50%');
           canvas.style('left', '50%');
           canvas.style('transform', 'translateX(-50%) translateY(-50%)');
+          p.redraw();
         }
         this.initialized = true;
       }
+      p.draw = () => {
+        if (!BaseImage) p.background(255);
+        else p.image(BaseImage, 0, 0, p.width, p.height);
+      }
+      let getRatioOfImageWindow = (initData: any): p5.Vector => {
+        let targetWidth = initData.width;
+        let targetHeight = initData.height;
+        let imageRatio = initData.width / initData.height;
+        let windowRatio = targetDiv.clientWidth / targetDiv.clientHeight;
+        if (imageRatio > windowRatio) { // 화면 가로에 이미지 맞추기
+          targetHeight = targetHeight / targetWidth * targetDiv.clientWidth;
+          targetWidth = targetDiv.clientWidth;
+        } else { // 화면 세로에 이미지 맞추기
+          targetWidth = targetWidth / targetHeight * targetDiv.clientHeight;
+          targetHeight = targetDiv.clientHeight;
+        }
+        return p.createVector(targetWidth, targetHeight);
+      }
       p.windowResized = () => {
-        p['SetCanvasViewportInit']();
+        setTimeout(() => {
+          p['SetCanvasViewportInit']();
+        }, 0);
+      }
+      p.mousePressed = (ev: any) => {
+        switch (ev['which']) {
+          case 1: // 왼쪽
+            break;
+          case 2: // 가운데
+            p['SetCanvasViewportInit']();
+            break;
+        }
       }
     });
   }
@@ -183,6 +217,7 @@ export class VoidDrawPage implements OnInit {
 
   ionViewWillLeave() {
     delete this.global.p5key['KeyShortCut']['HistoryAct'];
+    delete this.global.p5key['KeyShortCut']['AddAct'];
   }
 
   WithoutSave = true;
