@@ -352,6 +352,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.global.p5key['KeyShortCut']['Escape'] = () => {
       this.navCtrl.pop();
     }
+    this.global.p5key['KeyShortCut']['AddAct'] = () => {
+      this.open_select_new();
+    }
   }
 
   start_change(ev: any) {
@@ -1262,6 +1265,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   async ionViewWillLeave() {
     delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5key['KeyShortCut']['AddAct'];
     this.indexed.GetFileListFromDB('tmp_files', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path));
     });
