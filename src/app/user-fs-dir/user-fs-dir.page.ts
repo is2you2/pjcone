@@ -117,6 +117,10 @@ export class UserFsDirPage implements OnInit {
       smallIcon: 'res://icon_mono',
       color: 'b0b0b0',
     });
+    if (this.indexed.godotDB) {
+      let _godot_list = await this.indexed.GetFileListFromDB('/', undefined, this.indexed.godotDB)
+      await this.ModulateIndexedFile(_godot_list, this.indexed.godotDB);
+    }
     let _ionic_list = await this.indexed.GetFileListFromDB('/')
     await this.ModulateIndexedFile(_ionic_list);
     this.FileList.sort((a, b) => {
