@@ -349,9 +349,22 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   ionViewDidEnter() {
     this.show_count_timer();
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
-      this.navCtrl.pop();
-    }
+    this.AddShortCut();
+  }
+
+  AddShortCut() {
+    if (!this.NewAttach.value)
+      setTimeout(() => {
+        delete this.global.p5key['KeyShortCut']['Digit'];
+        this.global.p5key['KeyShortCut']['Escape'] = () => {
+          this.navCtrl.pop();
+        }
+        this.global.p5key['KeyShortCut']['AddAct'] = () => {
+          if (this.checkIfInputFocus()) return;
+          this.open_select_new();
+        }
+      }, 0);
+    this.NewAttach.value = '';
   }
 
   start_change(ev: any) {
@@ -476,7 +489,37 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   @ViewChild('NewAttach') NewAttach: IonSelect;
   /** 새 파일 타입 정하기 */
   open_select_new() {
+    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5key['KeyShortCut']['AddAct'];
+    let NumberShortCutAct = [
+      'text', 'image', 'camera', 'load'
+    ];
+    if (!this.isMobile) NumberShortCutAct.splice(2, 1);
+    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+      if (this.checkIfInputFocus()) return;
+      delete this.global.p5key['KeyShortCut']['Digit'];
+      if (NumberShortCutAct.length > index)
+        this.new_attach({ detail: { value: NumberShortCutAct[index] } });
+    }
     this.NewAttach.open();
+  }
+
+  input_ele_ids = [];
+  checkIfInputFocus(): boolean {
+    if (!this.input_ele_ids.length) {
+      let titleIonInput = document.getElementById('titleInput');
+      this.input_ele_ids.push(titleIonInput.children[0].children[1].children[0]);
+      this.input_ele_ids.push(document.getElementById('descInput'));
+    }
+    let result = false;
+    for (let i = 0, j = this.input_ele_ids.length; i < j; i++) {
+      let active_ele = document.activeElement;
+      if (active_ele == this.input_ele_ids[i]) {
+        result = true;
+        break;
+      }
+    }
+    return result;
   }
 
   /** 새 파일 만들기 */
@@ -484,6 +527,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     switch (ev.detail.value) {
       case 'camera':
         await this.from_camera();
+        this.AddShortCut();
         this.auto_scroll_down(100);
         break;
       case 'text':
@@ -511,6 +555,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           },
         }).then(v => {
           v.onWillDismiss().then(v => {
+            this.AddShortCut();
             if (v.data) {
               let this_file: FileInfo = {};
               this_file.content_creator = {
@@ -538,6 +583,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           component: VoidDrawPage,
         }).then(v => {
           v.onWillDismiss().then(async v => {
+            this.AddShortCut();
             if (v.data) this.voidDraw_fileAct_callback(v);
           });
           v.present();
@@ -545,9 +591,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         break;
       case 'load': // 불러오기 행동 병합
         this.select_attach();
+        this.AddShortCut();
         break;
     }
-    this.NewAttach.value = '';
   }
 
   file_sel_id = '';
@@ -1262,6 +1308,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   async ionViewWillLeave() {
     delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5key['KeyShortCut']['AddAct'];
+    delete this.global.p5key['KeyShortCut']['Digit'];
     this.indexed.GetFileListFromDB('tmp_files', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path));
     });

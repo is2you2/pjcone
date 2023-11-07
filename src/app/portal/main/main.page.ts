@@ -628,8 +628,7 @@ export class MainPage implements OnInit {
         switch (touches.length) {
           case 1: { // 패닝
             if (!isTouching) return;
-            let CurrentTouchIndex = touches[0].identifier;
-            let CurrentTouch = ev['touches'][CurrentTouchIndex];
+            let CurrentTouch = ev['changedTouches'][0];
             let CurrentPosition = p.createVector(CurrentTouch.clientX, CurrentTouch.clientY - HEADER_HEIGHT);
             let dist = 0;
             if (!GrabbedElement) {

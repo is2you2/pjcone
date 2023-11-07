@@ -3,6 +3,7 @@
 
 import { Component, OnInit } from '@angular/core';
 import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import * as p5 from 'p5';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -33,53 +34,468 @@ export class VoidDrawPage implements OnInit {
   }
 
   async ionViewDidEnter() {
-    this.global.p5key['KeyShortCut']['HistoryAct'] = (ShiftPressed: boolean) => {
-      if (ShiftPressed) { // Redo
-        this.act_history(1);
-      } else { // Undo
-        this.act_history(-1);
+    this.global.p5key['KeyShortCut']['HistoryAct'] = (key: string) => {
+      switch (key) {
+        case 'Z':
+          this.act_history(-1);
+          break;
+        case 'X':
+          this.act_history(1);
+          break;
+        case 'C':
+          this.p5voidDraw['change_color']();
+          break;
+        case 'V':
+          this.p5voidDraw['set_line_weight']();
+          break;
       }
+    }
+    this.global.p5key['KeyShortCut']['AddAct'] = () => {
+      this.new_image();
     }
     document.addEventListener('ionBackButton', this.EventListenerAct);
     this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
-    await this.global.CreateGodotIFrame('voidDraw', {
-      local_url: 'assets/data/godot/voidDraw.pck',
-      title: 'voidDraw',
-      image: Boolean(this.navParams.data['path']),
-      // new_canvas: 이미지 새로 만들기
-      // change_color: 선 색상 변경하기
-      // save_image: 이미지 저장하기
-      // undo_draw: 그리기 되돌리기
-      // redo_draw: 그리기 다시하기
-      receive_image: (base64: string, is_modify = false) => {
-        let image = 'data:image/png;base64,' + base64.replace(/"|=|\\/g, '');
-        let newDate = new Date();
-        let year = newDate.getUTCFullYear();
-        let month = ("0" + (newDate.getMonth() + 1)).slice(-2);
-        let date = ("0" + newDate.getDate()).slice(-2);
-        let hour = ("0" + newDate.getHours()).slice(-2);
-        let minute = ("0" + newDate.getMinutes()).slice(-2);
-        let second = ("0" + newDate.getSeconds()).slice(-2);
-        this.modalCtrl.dismiss({
-          name: `voidDraw_${year}-${month}-${date}_${hour}-${minute}-${second}.png`,
-          img: image,
-          loadingCtrl: this.mainLoading,
-          is_modify: is_modify,
-        });
+    this.create_new_canvas({
+      width: this.navParams.data.width,
+      height: this.navParams.data.height,
+      path: this.navParams.data.path,
+    });
+  }
+
+  /** 새 캔버스 생성 행동 분리 */
+  create_new_canvas(inputInfo?: any) {
+    inputInfo['width'] = inputInfo['width'] || 432;
+    inputInfo['height'] = inputInfo['height'] || 432;
+    if (this.p5voidDraw) this.p5voidDraw.remove();
+    this.create_p5voidDraw(inputInfo);
+  }
+
+  p5voidDraw: p5;
+  create_p5voidDraw(initData: any) {
+    let targetDiv = document.getElementById('voidDraw');
+    this.p5voidDraw = new p5((p: p5) => {
+      /** 스케일 조정 편의를 위해 모든게 여기서 작업됨 */
+      let ActualCanvas: p5.Graphics;
+      /** 배경이미지 전용 캔버스 */
+      let ImageCanvas: p5.Graphics;
+      let canvas: p5.Renderer;
+      let TopMenu: p5.Element;
+      let BottomMenu: p5.Element;
+      /** 되돌리기류 행동이 상황에 따라 동작하지 않음을 UI로 표시해야함 */
+      let UndoButton: any;
+      let RedoButton: any;
+      /** 임시방편 색상 선택기 */
+      let p5ColorPicker = p.createColorPicker('#000');
+      /** 임시방편 선두께 설정 */
+      let isWeightSetToggle = false;
+      let SetBrushSize = p.min(initData['width'], initData['heigth']);
+      let WeightSlider = p.createSlider(1, SetBrushSize / 10, SetBrushSize / 100);
+      p.setup = async () => {
+        WeightSlider.parent(targetDiv);
+        WeightSlider.hide();
+        p.pixelDensity(1);
+        p.smooth();
+        p.noLoop();
+        p.imageMode(p.CENTER);
+        // 정보 초기화
+        ImageCanvas = undefined;
+        if (ActualCanvas) ActualCanvas.remove();
+        ActualCanvas = undefined;
+        if (canvas) p.remove();
+        canvas = p.createCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
+        canvas.elt.addEventListener("contextmenu", (e: any) => e.preventDefault());
+        CamPosition.x = p.width / 2;
+        CamPosition.y = p.height / 2;
+        canvas.parent(targetDiv);
+        p['set_line_weight'] = () => {
+          isWeightSetToggle = !isWeightSetToggle;
+          if (isWeightSetToggle) {
+            WeightSlider.show();
+          } else {
+            WeightSlider.hide();
+          }
+        }
+        p['change_color'] = () => {
+          console.log('change_color');
+        }
+        p['save_image'] = () => {
+          new p5((sp: p5) => {
+            sp.setup = () => {
+              sp.createCanvas(ActualCanvas.width, ActualCanvas.height);
+              if (ImageCanvas)
+                sp.image(ImageCanvas, 0, 0);
+              if (ActualCanvas)
+                sp.image(ActualCanvas, 0, 0);
+              sp.saveFrames('', 'png', 1, 1, c => {
+                let img = c[0]['imageData'].replace(/"|=|\\/g, '');
+                this.modalCtrl.dismiss({
+                  name: `voidDraw_${sp.year()}-${sp.nf(sp.month(), 2)}-${sp.nf(sp.day(), 2)}_${sp.nf(sp.hour(), 2)}-${sp.nf(sp.minute(), 2)}-${sp.nf(sp.second(), 2)}.png`,
+                  img: img,
+                  loadingCtrl: this.mainLoading,
+                });
+                sp.remove();
+              });
+            }
+          });
+        }
+        p['history_act'] = (direction: number) => {
+          HistoryPointer = p.min(p.max(0, HistoryPointer + direction), DrawingStack.length);
+          switch (direction) {
+            case 1: // Redo
+              UndoButton.style.fill = 'var(--ion-color-dark)';
+              if (HistoryPointer == DrawingStack.length)
+                RedoButton.style.fill = 'var(--ion-color-medium)';
+              for (let i = 0, j = DrawingStack[HistoryPointer - 1].pos.length - LINE_POINTS_COUNT + 1; i < j; i++)
+                updateCurrentDrawingCurve(DrawingStack[HistoryPointer - 1], i);
+              break;
+            case -1: // Undo
+              RedoButton.style.fill = 'var(--ion-color-dark)';
+              if (HistoryPointer < 1) {
+                UndoButton.style.fill = 'var(--ion-color-medium)';
+                ActualCanvas.clear(255, 255, 255, 255);
+                p.redraw();
+              } else updateActualCanvas();
+              break;
+          }
+        }
+        p['open_crop_tool'] = () => {
+
+        }
+        /** 상하단 메뉴 생성 */
+        TopMenu = p.createElement('table');
+        TopMenu.style('position: absolute; top: 0px;');
+        TopMenu.style(`width: 100%; height: ${BUTTON_HEIGHT}px;`);
+        TopMenu.style('background-color: var(--voidDraw-menu-background);')
+        TopMenu.parent(targetDiv);
+        let top_row = TopMenu.elt.insertRow(0); // 상단 메뉴
+        let AddCell = top_row.insertCell(0); // 추가
+        AddCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="add"></ion-icon>`;
+        AddCell.style.textAlign = 'center';
+        AddCell.style.cursor = 'pointer';
+        AddCell.onclick = () => { this.new_image() }
+        let CropCell = top_row.insertCell(1); // Crop
+        CropCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="crop"></ion-icon>`;
+        CropCell.style.textAlign = 'center';
+        CropCell.style.cursor = 'pointer';
+        CropCell.onclick = () => { this.open_crop_tool() }
+        let ApplyCell = top_row.insertCell(2);
+        ApplyCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="checkmark"></ion-icon>`;
+        ApplyCell.style.textAlign = 'center';
+        ApplyCell.style.cursor = 'pointer';
+        ApplyCell.onclick = () => { this.dismiss_draw() }
+
+        BottomMenu = p.createElement('table');
+        BottomMenu.style('position: absolute; bottom: 0px;');
+        BottomMenu.style(`width: 100%; height: ${BUTTON_HEIGHT}px;`);
+        BottomMenu.style('background-color: var(--voidDraw-menu-background);')
+        BottomMenu.parent(targetDiv);
+        let bottom_row = BottomMenu.elt.insertRow(0); // 하단 메뉴
+        let UndoCell = bottom_row.insertCell(0); // Undo
+        UndoCell.innerHTML = `<ion-icon id="undoIcon" style="width: 27px; height: 27px" name="arrow-undo"></ion-icon>`;
+        UndoButton = document.getElementById('undoIcon');
+        UndoButton.style.fill = 'var(--ion-color-medium)';
+        UndoCell.style.textAlign = 'center';
+        UndoCell.style.cursor = 'pointer';
+        UndoCell.onclick = () => { this.act_history(-1) }
+        let RedoCell = bottom_row.insertCell(1); // Redo
+        RedoCell.innerHTML = `<ion-icon id="redoIcon" style="width: 27px; height: 27px" name="arrow-redo"></ion-icon>`;
+        RedoButton = document.getElementById('redoIcon');
+        RedoButton.style.fill = 'var(--ion-color-medium)';
+        RedoCell.style.textAlign = 'center';
+        RedoCell.style.cursor = 'pointer';
+        RedoCell.onclick = () => { this.act_history(1) }
+        let ColorCell = bottom_row.insertCell(2); // 선 색상 변경
+        // ColorCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="color-palette"></ion-icon>`;
+        p5ColorPicker.parent(ColorCell);
+        ColorCell.style.textAlign = 'center';
+        ColorCell.style.cursor = 'pointer';
+        // ColorCell.onclick = () => { this.change_color() }
+        let WeightCell = bottom_row.insertCell(3); // 선 두께 변경
+        WeightCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="pencil"></ion-icon>`;
+        WeightCell.style.textAlign = 'center';
+        WeightCell.style.cursor = 'pointer';
+        WeightCell.onclick = () => { this.change_line_weight() }
+        p['SetCanvasViewportInit'] = () => {
+          canvas.hide();
+          p.resizeCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
+          ScaleCenter.x = p.width / 2;
+          ScaleCenter.y = p.height / 2;
+          CamPosition.x = 0;
+          CamPosition.y = 0;
+          let HeightExceptMenu = targetDiv.clientHeight - 112;
+          let windowRatio = targetDiv.clientWidth / HeightExceptMenu;
+          let canvasRatio = ActualCanvas.width / ActualCanvas.height;
+          if (windowRatio < canvasRatio)
+            CamScale = targetDiv.clientWidth / ActualCanvas.width;
+          else CamScale = HeightExceptMenu / ActualCanvas.height;
+          canvas.show();
+          WeightSlider.position(p.width - WeightSlider.width, p.height - WeightSlider.height - BUTTON_HEIGHT);
+          p.redraw();
+        }
+        ActualCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
+        ActualCanvas.smooth();
+        ActualCanvas.noLoop();
+        ActualCanvas.noFill();
+        // 사용자 그리기 판넬 생성
+        if (initData['path']) { // 배경 이미지 파일이 포함됨
+          let blob = await this.indexed.loadBlobFromUserPath(initData['path'], '');
+          let FileURL = URL.createObjectURL(blob);
+          p.loadImage(FileURL, v => {
+            ActualCanvas.resizeCanvas(v.width, v.height);
+            ImageCanvas = p.createGraphics(v.width, v.height, p.WEBGL);
+            ImageCanvas.noLoop();
+            ImageCanvas.background(255);
+            ImageCanvas.imageMode(p.CENTER);
+            ImageCanvas.image(v, 0, 0);
+            URL.revokeObjectURL(FileURL);
+            p['SetCanvasViewportInit']();
+            p.redraw();
+          }, e => {
+            console.error('그림판 배경 이미지 불러오기 오류: ', e);
+            URL.revokeObjectURL(FileURL);
+          });
+        } else {
+          ImageCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
+          ImageCanvas.noLoop();
+          ImageCanvas.background(255);
+          p['SetCanvasViewportInit']();
+          p.redraw();
+        }
+        this.initialized = true;
       }
-    }, 'new_canvas');
-    this.initialized = true;
-    if (this.navParams.data['path'])
-      this.global.godot_window['new_canvas'](JSON.stringify({
-        width: this.navParams.data.width,
-        height: this.navParams.data.height,
-        path: '/userfs/' + this.navParams.data.path,
-      }));
+      /** Viewport 행동을 위한 변수들 */
+      let CamPosition = p.createVector();
+      let CamScale = 1;
+      /** 확대 중심 */
+      let ScaleCenter = p.createVector(0, 0);
+      /** 이미지 Crop 시 상대적 위치 기록 */
+      let CropPosition = p.createVector();
+      p.draw = () => {
+        p.clear(255, 255, 255, 255);
+        p.push();
+        p.translate(ScaleCenter);
+        p.scale(CamScale);
+        p.translate(CamPosition);
+        if (ImageCanvas) {
+          ImageCanvas.push();
+          ImageCanvas.translate(CropPosition);
+          p.image(ImageCanvas, 0, 0);
+          ImageCanvas.pop();
+        }
+        if (ActualCanvas) {
+          ActualCanvas.push();
+          ActualCanvas.translate(CropPosition);
+          p.image(ActualCanvas, 0, 0);
+          ActualCanvas.pop();
+        }
+        p.pop();
+      }
+      /** 그려진 자유선 정보 저장  
+       * DrawingStack[i] = [{ pos: [{x, y}, ..], color: p5.Color, weight: number }, ..]
+       */
+      let DrawingStack = [];
+      /** 선을 어디까지 그리는지, 히스토리 행동용 */
+      let HistoryPointer = 0;
+      /** 전체 그리기, 동작 취소 등 전체 업데이트가 필요할 때 사용 */
+      let updateActualCanvas = () => {
+        ActualCanvas.clear(255, 255, 255, 255);
+        // 모든 그리기 행동 시도
+        for (let i = HistoryPointer - 1; i >= 0; i--)
+          for (let j = 0, k = DrawingStack[i].pos.length - LINE_POINTS_COUNT + 1; j < k; j++)
+            updateCurrentDrawingCurve(DrawingStack[i], j);
+        ActualCanvas.redraw();
+      }
+      /** 그리기에 필요한 선의 수 */
+      const LINE_POINTS_COUNT = 2;
+      /** 마지막 행동에 해당하는 선 그리기 **지금은 직선 그리기임** */
+      let updateCurrentDrawingCurve = (targetDraw = CurrentDraw, index = targetDraw['pos'].length - LINE_POINTS_COUNT) => {
+        let TargetLine: any = targetDraw['pos'].slice(index, index + LINE_POINTS_COUNT);
+        ActualCanvas.push();
+        ActualCanvas.stroke(targetDraw['color']);
+        ActualCanvas.strokeWeight(targetDraw['weight']);
+        ActualCanvas.line(
+          TargetLine[0].x, TargetLine[0].y,
+          TargetLine[1].x, TargetLine[1].y
+        );
+        // ActualCanvas.curve(
+        //   TargetLine[0].x, TargetLine[0].y,
+        //   TargetLine[1].x, TargetLine[1].y,
+        //   TargetLine[2].x, TargetLine[2].y,
+        //   TargetLine[3].x, TargetLine[3].y);
+        ActualCanvas.pop();
+        p.redraw();
+      }
+      p.windowResized = () => {
+        setTimeout(() => {
+          p['SetCanvasViewportInit']();
+        }, 0);
+      }
+      let CurrentDraw = {};
+      const BUTTON_HEIGHT = 56;
+      /** 모든 터치 또는 마우스 포인터의 현재 지점 */
+      let MouseAct: p5.Vector;
+      /** 이동 연산용 시작점 */
+      let MovementStartPosition: p5.Vector;
+      /** 두 손가락 사이 거리 */
+      let TouchBetween = 0;
+      /** 스케일 시작점 */
+      let ScaleStartRatio: number;
+      /** 시작점 캐시 */
+      let TempStartCamPosition: p5.Vector;
+      p.mousePressed = (ev: any) => {
+        if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) return;
+        if (DrawingStack.length > HistoryPointer)
+          DrawingStack.length = HistoryPointer;
+        switch (ev['which']) {
+          case 1: // 왼쪽
+            DrawStartAct();
+            break;
+          case 3: // 오른쪽
+            MovementStartPosition = p.createVector(p.mouseX, p.mouseY);
+            TempStartCamPosition = CamPosition.copy();
+            MouseAct = p.createVector(p.mouseX, p.mouseY);
+            break;
+          case 2: // 가운데
+            p['SetCanvasViewportInit']();
+            break;
+        }
+      }
+      /** 그리기 시작 행동 (PC/터치스크린 공용) */
+      let DrawStartAct = (_x?: number, _y?: number) => {
+        UndoButton.style.fill = 'var(--ion-color-dark)';
+        RedoButton.style.fill = 'var(--ion-color-medium)';
+        let pos = MappingPosition(_x, _y);
+        let _pos = { x: pos.x, y: pos.y };
+        CurrentDraw = {
+          pos: [],
+          color: p5ColorPicker['color'](),
+          weight: Number(WeightSlider.value()),
+        };
+        for (let i = 0; i < LINE_POINTS_COUNT; i++)
+          CurrentDraw['pos'].push(_pos);
+        DrawingStack.push(CurrentDraw);
+        HistoryPointer = DrawingStack.length;
+        updateCurrentDrawingCurve();
+      }
+      p.mouseDragged = (ev: any) => {
+        if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) return;
+        switch (ev['which']) {
+          case 1: // 왼쪽
+            let pos = MappingPosition();
+            let _pos = { x: pos.x, y: pos.y };
+            CurrentDraw['pos'].push(_pos);
+            updateCurrentDrawingCurve();
+            break;
+          case 3: // 오른쪽
+            MouseAct = p.createVector(p.mouseX, p.mouseY);
+            CamPosition = TempStartCamPosition.copy().add(MouseAct.sub(MovementStartPosition).div(CamScale));
+            p.redraw();
+            break;
+        }
+      }
+      p.mouseWheel = (ev: any) => {
+        if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) return;
+        PrepareZoomAct(MappingPosition());
+        let delta = ev['deltaY'];
+        if (delta < 0)
+          CamScale *= 1.1;
+        else CamScale *= .9;
+        p.redraw();
+      }
+      /** 확대 중심점을 조정 */
+      let PrepareZoomAct = (center: p5.Vector) => {
+        ScaleCenter = p.createVector(p.mouseX, p.mouseY);
+        CamPosition = center.mult(-1);
+      }
+      /** 화면 상의 마우스 위치를 할 일 공간 내 위치로 변경 */
+      let MappingPosition = (_x?: number, _y?: number) => {
+        let mousePosition = p.createVector(_x || p.mouseX, _y || p.mouseY);
+        mousePosition.sub(ScaleCenter);
+        mousePosition.div(CamScale);
+        mousePosition.sub(CamPosition);
+        return mousePosition;
+      }
+      let touches = [];
+      /** 터치 중인지 여부, 3손가락 터치시 행동 제약을 걸기 위해서 존재 */
+      let isTouching = false;
+      const HEADER_HEIGHT = 56;
+      p.touchStarted = (ev: any) => {
+        touches = ev['touches'];
+        if (ev['changedTouches'][0].clientY < BUTTON_HEIGHT
+          || ev['changedTouches'][0].clientY > p.height - BUTTON_HEIGHT) return;
+        isTouching = true;
+        switch (touches.length) {
+          case 1: // 그리기
+            DrawStartAct(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
+            break;
+          case 2: // 패닝, 스케일
+            let One = p.createVector(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT);
+            let Two = p.createVector(touches[1].clientX, touches[1].clientY - HEADER_HEIGHT);
+            TouchBetween = One.dist(Two);
+            MovementStartPosition = One.copy().add(Two).div(2);
+            TempStartCamPosition = CamPosition.copy();
+            ScaleStartRatio = CamScale;
+            DrawingStack.pop();
+            break;
+          default: // 3개 또는 그 이상은 행동 초기화
+            isTouching = false;
+            p['SetCanvasViewportInit']();
+            break;
+        }
+      }
+      p.touchMoved = (ev: any) => {
+        touches = ev['touches'];
+        if (!isTouching || ev['changedTouches'][0].clientY < BUTTON_HEIGHT
+          || ev['changedTouches'][0].clientY > p.height - BUTTON_HEIGHT) return;
+        switch (touches.length) {
+          case 1: { // 그리기
+            let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
+            let _pos = { x: pos.x, y: pos.y };
+            CurrentDraw['pos'].push(_pos);
+            updateCurrentDrawingCurve();
+          }
+            break;
+          case 2: { // 스케일과 패닝
+            let One = p.createVector(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT);
+            let Two = p.createVector(touches[1].clientX, touches[1].clientY - HEADER_HEIGHT);
+            let CenterPos = One.copy().add(Two).div(2);
+            let dist = One.dist(Two);
+            CamScale = dist / TouchBetween * ScaleStartRatio;
+            CamPosition = TempStartCamPosition.copy().add(CenterPos.sub(MovementStartPosition).div(CamScale));
+            p.redraw();
+          }
+            break;
+        }
+      }
+      p.touchEnded = (ev: any) => {
+        if (!ev['changedTouches']) return;
+        touches = ev['touches'];
+        isTouching = false;
+        switch (touches.length) {
+          case 0: // 행동 종료
+            ReleaseAllAct();
+            break;
+          case 1: // 패닝
+            if (!isTouching) return;
+            PanningInit();
+            TouchBetween = 0;
+            break;
+        }
+      }
+      let PanningInit = () => {
+        MovementStartPosition = p.createVector(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT);
+        TempStartCamPosition = CamPosition.copy();
+      }
+      /** 모든 입력을 제거했을 때 공통 행동 */
+      let ReleaseAllAct = () => {
+        MovementStartPosition = undefined;
+      }
+    });
   }
 
   change_color() {
     if (this.initialized)
-      this.global.godot_window.change_color()
+      this.p5voidDraw['change_color']();
   }
 
   new_image() {
@@ -100,8 +516,10 @@ export class VoidDrawPage implements OnInit {
         text: this.lang.text['voidDraw']['CreateNew'],
         handler: (v) => {
           if (!v.width) v.width = DEFAULT_SIZE;
+          else v.width = Number(v.width);
           if (!v.height) v.height = DEFAULT_SIZE;
-          this.global.godot_window['new_canvas'](JSON.stringify(v));
+          else v.height = Number(v.height);
+          this.create_new_canvas(v);
         }
       }],
     }).then(v => v.present());
@@ -109,73 +527,40 @@ export class VoidDrawPage implements OnInit {
 
   change_line_weight() {
     if (!this.initialized) return;
-    this.alertCtrl.create({
-      header: this.lang.text['voidDraw']['changeWeight'],
-      inputs: [{
-        name: 'weight',
-        type: 'number',
-        placeholder: `${this.lang.text['voidDraw']['weight']} (${this.lang.text['voidDraw']['default_size']}: 1)`,
-      }],
-      buttons: [{
-        text: this.lang.text['voidDraw']['apply'],
-        handler: (v) => {
-          this.global.godot_window['set_line_weight'](v.weight || 1);
-        }
-      }],
-    }).then(v => v.present());
+    this.p5voidDraw['set_line_weight']();
   }
 
-  /** Undo, Redo 등 행동을 위한 함수 */
+  /** Undo, Redo 등 행동을 위한 함수  
+   * 생성 지연에 따른 오류 방지용
+   */
   act_history(direction: number) {
-    switch (direction) {
-      case -1: // Undo
-        this.global.godot_window['undo_draw']();
-        break;
-      case 1: // Redo
-        this.global.godot_window['redo_draw']();
-        break;
-      default:
-        console.error('있을 수 없는 동작 요청: ', direction);
-        break;
-    }
+    this.p5voidDraw['history_act'](direction);
   }
-
-  is_cropping = false;
 
   open_crop_tool() {
     if (!this.initialized) return;
-    this.global.godot_window['open_crop_tool']();
-    this.is_cropping = true;
-  }
-
-  apply_crop() {
-    if (!this.initialized) return;
-    this.global.godot_window['resize_canvas']();
-    this.is_cropping = false;
+    this.p5voidDraw['open_crop_tool']();
   }
 
   /** 사용하기를 누른 경우 */
   dismiss_draw() {
-    if (this.is_cropping) {
-      this.global.godot_window['resize_canvas']();
-      this.is_cropping = false;
-    } else {
-      this.mainLoading.present();
-      this.WithoutSave = false;
-      setTimeout(() => {
-        this.global.godot_window['save_image']();
-      }, 100);
-    }
+    this.mainLoading.present();
+    this.WithoutSave = false;
+    setTimeout(() => {
+      this.p5voidDraw['save_image']();
+    }, 100);
   }
 
   ionViewWillLeave() {
     delete this.global.p5key['KeyShortCut']['HistoryAct'];
+    delete this.global.p5key['KeyShortCut']['AddAct'];
+    if (this.p5voidDraw) this.p5voidDraw.remove();
   }
 
   WithoutSave = true;
   ionViewDidLeave() {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
-    this.indexed.removeFileFromUserPath('tmp_files/modify_image.png', undefined, this.indexed.godotDB);
+    this.indexed.removeFileFromUserPath('tmp_files/modify_image.png');
     if (this.WithoutSave)
       this.mainLoading.remove();
   }

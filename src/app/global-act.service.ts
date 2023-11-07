@@ -161,10 +161,12 @@ export class GlobalActService {
             if (p['KeyShortCut']['Escape'])
               p['KeyShortCut']['Escape']();
             break;
-          case 'KeyZ': // 되돌리기 행동 (Undo, Redo)
-            if (!ev['ctrlKey']) return;
+          case 'KeyZ': // 되돌리기 등 그림판 하단 탭 행동
+          case 'KeyX':
+          case 'KeyC':
+          case 'KeyV':
             if (p['KeyShortCut']['HistoryAct'])
-              p['KeyShortCut']['HistoryAct'](ev['shiftKey']);
+              p['KeyShortCut']['HistoryAct'](ev['code'].slice(-1));
             break;
         }
       }
