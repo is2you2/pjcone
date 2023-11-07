@@ -69,11 +69,11 @@ export class MainPage implements OnInit {
     }, this.indexed.godotDB);
   }
 
-  isPlayingCanvas = true;
+  isPlayingCanvas = { loop: false };
   /** 캔버스 연산 멈추기 (인풋은 영향받지 않음) */
   toggleCanvasPlaying() {
-    this.isPlayingCanvas = !this.isPlayingCanvas;
-    if (this.isPlayingCanvas)
+    this.isPlayingCanvas.loop = !this.isPlayingCanvas.loop;
+    if (this.isPlayingCanvas.loop)
       this.global.p5todo.loop();
     else this.global.p5todo.noLoop();
   }
@@ -87,6 +87,8 @@ export class MainPage implements OnInit {
       let DoneTodo: TodoElement[] = [];
       let DoneParticles: DoneBoomParticleAnim[] = [];
       let GrabbedElement: TodoElement;
+      /** 연산 간소화시 마지막으로 추가된 할 일 추적 */
+      let AddedElement: TodoElement;
       let VECTOR_ZERO = p.createVector(0, 0);
       let CamPosition = p.createVector(0, 0);
       let CamScale = 1;
@@ -113,17 +115,18 @@ export class MainPage implements OnInit {
         p.textWrap(p.CHAR);
         p.imageMode(p.CENTER);
         ViewInit();
+        p['isPlayingCanvas'] = this.isPlayingCanvas;
         // 캔버스 멈추기
         p['StopCanvas'] = () => {
           BlockInput = true;
-          if (!this.isPlayingCanvas)
+          if (!this.isPlayingCanvas.loop)
             p.noLoop();
         }
         // 캔버스 계속 사용
         p['PlayCanvas'] = () => {
           BlockInput = false;
           p.windowResized();
-          if (this.isPlayingCanvas)
+          if (this.isPlayingCanvas.loop)
             p.loop();
         }
         // 할 일 추가시 행동
@@ -136,6 +139,10 @@ export class MainPage implements OnInit {
                 return
               }
           } else Todos[json.id] = new TodoElement(json);
+          if (!p['isPlayingCanvas'].loop) {
+            AddedElement = Todos[json.id];
+            p.loop();
+          }
           p['count_todo']();
         }
         p['count_todo'] = () => {
@@ -180,6 +187,7 @@ export class MainPage implements OnInit {
         CamPosition.x = 0;
         CamPosition.y = 0;
         CamScale = 1;
+        if (!this.isPlayingCanvas.loop) p.redraw();
       }
       p.draw = () => {
         p.clear(255, 255, 255, 255);
@@ -366,6 +374,11 @@ export class MainPage implements OnInit {
               let dist = this.position.dist(Other.position);
               let limitDist = this.EllipseSize / 2 + Other.EllipseSize / 2;
               if (dist < limitDist) { // 충분히 근접했다면 충돌로 인지
+                if (!p['isPlayingCanvas'].loop)
+                  if (AddedElement == this) {
+                    AddedElement = undefined;
+                    p.noLoop();
+                  }
                 this.ReflectBounce(Other, dist / limitDist);
                 Other.ReflectBounce(this, dist / limitDist);
               }
@@ -379,6 +392,7 @@ export class MainPage implements OnInit {
         LifeTime = 1;
         OriginalEllipseSize: number;
         OriginalProgWeight: number;
+        /** 완료된 할 일로 처리 */
         async makeDone() {
           this.LifeTime = 1;
           const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
@@ -389,9 +403,13 @@ export class MainPage implements OnInit {
           this.OriginalProgWeight = this.ProgressWeight;
           this.json['done'] = true;
           DoneTodo.push(this);
+          if (!p['isPlayingCanvas'].loop)
+            p.loop();
         }
 
         async DoneAnim() {
+          if (!p['isPlayingCanvas'].loop)
+            p.loop();
           this.LifeTime -= .04;
           this.EllipseSize = this.OriginalEllipseSize * this.LifeTime;
           this.ProgressWeight = this.OriginalProgWeight * this.LifeTime;
@@ -404,6 +422,8 @@ export class MainPage implements OnInit {
           }
           // 완전 삭제 후 파티클 생성
           if (this.LifeTime < 0) {
+            if (!p['isPlayingCanvas'].loop)
+              p.noLoop();
             this.RemoveTodo();
             p['count_todo']();
             for (let i = 0; i < 20; i++)
@@ -522,7 +542,7 @@ export class MainPage implements OnInit {
       }
       p.mouseDragged = (ev: any) => {
         if (BlockInput) return;
-        if (!this.isPlayingCanvas) p.redraw();
+        if (!this.isPlayingCanvas.loop) p.redraw();
         switch (ev['which']) {
           case 1: // 왼쪽
             MouseAct = p.createVector(p.mouseX, p.mouseY);
@@ -557,6 +577,7 @@ export class MainPage implements OnInit {
       }
       p.mouseWheel = (ev: any) => {
         if (BlockInput) return;
+        if (!this.isPlayingCanvas.loop) p.redraw();
         PrepareZoomAct(MappingPosition());
         let delta = ev['deltaY'];
         if (delta < 0)
@@ -602,7 +623,7 @@ export class MainPage implements OnInit {
       }
       p.touchMoved = (ev: any) => {
         if (BlockInput) return;
-        if (!this.isPlayingCanvas) p.redraw();
+        if (!this.isPlayingCanvas.loop) p.redraw();
         touches = ev['touches'];
         switch (touches.length) {
           case 1: { // 패닝

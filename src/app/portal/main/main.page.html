@@ -5,8 +5,8 @@ SPDX-License-Identifier: MIT -->
   <ion-toolbar>
     <ion-title>{{lang.text['Main']['Title']}}</ion-title>
     <div (click)="toggleCanvasPlaying()" style="position: absolute; right: 68px; top: 16px;">
-      <ion-icon *ngIf="!isPlayingCanvas" button style="width: 24px; height: 24px; " name="play-circle"></ion-icon>
-      <ion-icon *ngIf="isPlayingCanvas" button style="width: 24px; height: 24px; " name="pause-circle"></ion-icon>
+      <ion-icon *ngIf="!isPlayingCanvas.loop" button style="width: 24px; height: 24px; " name="play-circle"></ion-icon>
+      <ion-icon *ngIf="isPlayingCanvas.loop" button style="width: 24px; height: 24px; " name="pause-circle"></ion-icon>
     </div>
     <div class="header_online_circle" [style]="'background-color: ' + statusBar.colors[statusBar.settings.groupServer]"
       (click)="nakama.toggle_all_session()">
