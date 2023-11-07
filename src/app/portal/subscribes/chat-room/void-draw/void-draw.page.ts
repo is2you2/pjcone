@@ -4,6 +4,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import * as p5 from 'p5';
+import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -96,10 +97,11 @@ export class VoidDrawPage implements OnInit {
       let isWeightSetToggle = false;
       let SetBrushSize = p.min(initData['width'], initData['heigth']);
       let WeightSlider = p.createSlider(1, SetBrushSize / 10, SetBrushSize / 100);
+      const PIXEL_DENSITY = (isPlatform == 'Android' || isPlatform == 'iOS') ? .6 : 1;
       p.setup = async () => {
         WeightSlider.parent(targetDiv);
         WeightSlider.hide();
-        p.pixelDensity(1);
+        p.pixelDensity(PIXEL_DENSITY);
         p.smooth();
         p.noLoop();
         p.imageMode(p.CENTER);
@@ -243,7 +245,6 @@ export class VoidDrawPage implements OnInit {
         ActualCanvas.smooth();
         ActualCanvas.noLoop();
         ActualCanvas.noFill();
-        ActualCanvas.pixelDensity(1);
         // 사용자 그리기 판넬 생성
         if (initData['path']) { // 배경 이미지 파일이 포함됨
           let blob = await this.indexed.loadBlobFromUserPath(initData['path'], '');
@@ -255,7 +256,6 @@ export class VoidDrawPage implements OnInit {
             ImageCanvas.background(255);
             ImageCanvas.imageMode(p.CENTER);
             ImageCanvas.image(v, 0, 0);
-            ImageCanvas.pixelDensity(1);
             URL.revokeObjectURL(FileURL);
             p['SetCanvasViewportInit']();
             p.redraw();
@@ -353,8 +353,6 @@ export class VoidDrawPage implements OnInit {
       let TempStartCamPosition: p5.Vector;
       p.mousePressed = (ev: any) => {
         if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) return;
-        if (DrawingStack.length > HistoryPointer)
-          DrawingStack.length = HistoryPointer;
         switch (ev['which']) {
           case 1: // 왼쪽
             DrawStartAct();
@@ -371,6 +369,8 @@ export class VoidDrawPage implements OnInit {
       }
       /** 그리기 시작 행동 (PC/터치스크린 공용) */
       let DrawStartAct = (_x?: number, _y?: number) => {
+        if (DrawingStack.length > HistoryPointer)
+          DrawingStack.length = HistoryPointer;
         UndoButton.style.fill = 'var(--ion-color-dark)';
         RedoButton.style.fill = 'var(--ion-color-medium)';
         let pos = MappingPosition(_x, _y);
