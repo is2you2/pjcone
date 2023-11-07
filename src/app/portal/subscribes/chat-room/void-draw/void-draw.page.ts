@@ -158,7 +158,7 @@ export class VoidDrawPage implements OnInit {
               RedoButton.style.fill = 'var(--ion-color-dark)';
               if (HistoryPointer < 1) {
                 UndoButton.style.fill = 'var(--ion-color-medium)';
-                ActualCanvas.clear(255, 255, 255, 255);
+                ActualCanvas.background(255, 0);
                 p.redraw();
               } else updateActualCanvas();
               break;
@@ -307,12 +307,11 @@ export class VoidDrawPage implements OnInit {
       let HistoryPointer = 0;
       /** 전체 그리기, 동작 취소 등 전체 업데이트가 필요할 때 사용 */
       let updateActualCanvas = () => {
-        ActualCanvas.clear(255, 255, 255, 255);
+        ActualCanvas.background(255, 0);
         // 모든 그리기 행동 시도
         for (let i = HistoryPointer - 1; i >= 0; i--)
           for (let j = 0, k = DrawingStack[i].pos.length - LINE_POINTS_COUNT + 1; j < k; j++)
             updateCurrentDrawingCurve(DrawingStack[i], j);
-        ActualCanvas.redraw();
       }
       /** 그리기에 필요한 선의 수 */
       const LINE_POINTS_COUNT = 2;
@@ -332,6 +331,7 @@ export class VoidDrawPage implements OnInit {
         //   TargetLine[2].x, TargetLine[2].y,
         //   TargetLine[3].x, TargetLine[3].y);
         ActualCanvas.pop();
+        ActualCanvas.redraw();
         p.redraw();
       }
       p.windowResized = () => {
