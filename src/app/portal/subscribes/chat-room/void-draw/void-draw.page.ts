@@ -86,7 +86,13 @@ export class VoidDrawPage implements OnInit {
       let RedoButton: any;
       /** 임시방편 색상 선택기 */
       let p5ColorPicker = p.createColorPicker('#000');
+      /** 임시방편 선두께 설정 */
+      let isWeightSetToggle = false;
+      let SetBrushSize = p.min(initData['width'], initData['heigth']);
+      let WeightSlider = p.createSlider(1, SetBrushSize / 10, SetBrushSize / 100);
       p.setup = async () => {
+        WeightSlider.parent(targetDiv);
+        WeightSlider.hide();
         p.pixelDensity(1);
         p.smooth();
         p.noLoop();
@@ -101,7 +107,12 @@ export class VoidDrawPage implements OnInit {
         RelativePosition.y = p.height / 2;
         canvas.parent(targetDiv);
         p['set_line_weight'] = () => {
-          console.log('set_line_weight');
+          isWeightSetToggle = !isWeightSetToggle;
+          if (isWeightSetToggle) {
+            WeightSlider.show();
+          } else {
+            WeightSlider.hide();
+          }
         }
         p['change_color'] = () => {
           console.log('change_color');
@@ -135,7 +146,7 @@ export class VoidDrawPage implements OnInit {
         /** 상하단 메뉴 생성 */
         TopMenu = p.createElement('table');
         TopMenu.style('position: absolute; top: 0px;');
-        TopMenu.style('width: 100%; height: 56px;');
+        TopMenu.style(`width: 100%; height: ${BUTTON_HEIGHT}px;`);
         TopMenu.style('background-color: var(--voidDraw-menu-background);')
         TopMenu.parent(targetDiv);
         let top_row = TopMenu.elt.insertRow(0); // 상단 메뉴
@@ -157,7 +168,7 @@ export class VoidDrawPage implements OnInit {
 
         BottomMenu = p.createElement('table');
         BottomMenu.style('position: absolute; bottom: 0px;');
-        BottomMenu.style('width: 100%; height: 56px;');
+        BottomMenu.style(`width: 100%; height: ${BUTTON_HEIGHT}px;`);
         BottomMenu.style('background-color: var(--voidDraw-menu-background);')
         BottomMenu.parent(targetDiv);
         let bottom_row = BottomMenu.elt.insertRow(0); // 하단 메뉴
@@ -180,7 +191,7 @@ export class VoidDrawPage implements OnInit {
         p5ColorPicker.parent(ColorCell);
         ColorCell.style.textAlign = 'center';
         ColorCell.style.cursor = 'pointer';
-        ColorCell.onclick = () => { this.change_color() }
+        // ColorCell.onclick = () => { this.change_color() }
         let WeightCell = bottom_row.insertCell(3); // 선 두께 변경
         WeightCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="pencil"></ion-icon>`;
         WeightCell.style.textAlign = 'center';
@@ -198,6 +209,9 @@ export class VoidDrawPage implements OnInit {
             RelativeScale = targetDiv.clientWidth / ActualCanvas.width;
           else RelativeScale = HeightExceptMenu / ActualCanvas.height;
           canvas.show();
+          console.log(p.width, '/', WeightSlider.width);
+          console.log(p.height, '/', WeightSlider.height);
+          WeightSlider.position(p.width - WeightSlider.width, p.height - WeightSlider.height - BUTTON_HEIGHT);
           p.redraw();
         }
         ActualCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
@@ -255,7 +269,6 @@ export class VoidDrawPage implements OnInit {
         }
         p.pop();
       }
-      let BrushWeight = 5;
       /** 그려진 자유선 정보 저장  
        * DrawingStack[i] = [{ pos: [{x, y}, ..], color: p5.Color, weight: number }, ..]
        */
@@ -319,7 +332,7 @@ export class VoidDrawPage implements OnInit {
         CurrentDraw = {
           pos: [],
           color: p5ColorPicker['color'](),
-          weight: BrushWeight,
+          weight: Number(WeightSlider.value()),
         };
         for (let i = 0; i < LINE_POINTS_COUNT; i++)
           CurrentDraw['pos'].push(_pos);
