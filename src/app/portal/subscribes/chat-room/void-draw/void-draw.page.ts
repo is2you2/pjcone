@@ -243,6 +243,7 @@ export class VoidDrawPage implements OnInit {
         ActualCanvas.smooth();
         ActualCanvas.noLoop();
         ActualCanvas.noFill();
+        ActualCanvas.pixelDensity(1);
         // 사용자 그리기 판넬 생성
         if (initData['path']) { // 배경 이미지 파일이 포함됨
           let blob = await this.indexed.loadBlobFromUserPath(initData['path'], '');
@@ -254,6 +255,7 @@ export class VoidDrawPage implements OnInit {
             ImageCanvas.background(255);
             ImageCanvas.imageMode(p.CENTER);
             ImageCanvas.image(v, 0, 0);
+            ImageCanvas.pixelDensity(1);
             URL.revokeObjectURL(FileURL);
             p['SetCanvasViewportInit']();
             p.redraw();
@@ -473,6 +475,7 @@ export class VoidDrawPage implements OnInit {
           }
             break;
         }
+        return false;
       }
       p.touchEnded = (ev: any) => {
         if (!ev['changedTouches']) return;

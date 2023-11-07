@@ -652,6 +652,7 @@ export class MainPage implements OnInit {
           }
             break;
         }
+        return false;
       }
       p.touchEnded = (ev: any) => {
         if (BlockInput) return;
