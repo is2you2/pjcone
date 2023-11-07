@@ -896,7 +896,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path'], (_) => {
       v.data['loadingCtrl'].dismiss();
     });
-    this.auto_scroll_down();
+    this.auto_scroll_down(100);
   }
 
   /** 이 일을 완료했습니다 */

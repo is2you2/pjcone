@@ -53,6 +53,12 @@ export class VoidDrawPage implements OnInit {
     this.global.p5key['KeyShortCut']['AddAct'] = () => {
       this.new_image();
     }
+    this.global.p5key['KeyShortCut']['DeleteAct'] = () => {
+      this.dismiss_draw();
+    }
+    this.global.p5key['KeyShortCut']['SKeyAct'] = () => {
+      this.open_crop_tool();
+    }
     document.addEventListener('ionBackButton', this.EventListenerAct);
     this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
     this.create_new_canvas({
@@ -174,7 +180,8 @@ export class VoidDrawPage implements OnInit {
         AddCell.style.cursor = 'pointer';
         AddCell.onclick = () => { this.new_image() }
         let CropCell = top_row.insertCell(1); // Crop
-        CropCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="crop"></ion-icon>`;
+        CropCell.innerHTML = `<ion-icon id="CropToolNotReady" style="width: 27px; height: 27px" name="crop"></ion-icon>`;
+        document.getElementById('CropToolNotReady').style.fill = 'var(--ion-color-medium)';
         CropCell.style.textAlign = 'center';
         CropCell.style.cursor = 'pointer';
         CropCell.onclick = () => { this.open_crop_tool() }
@@ -546,14 +553,14 @@ export class VoidDrawPage implements OnInit {
   dismiss_draw() {
     this.mainLoading.present();
     this.WithoutSave = false;
-    setTimeout(() => {
-      this.p5voidDraw['save_image']();
-    }, 100);
+    this.p5voidDraw['save_image']();
   }
 
   ionViewWillLeave() {
     delete this.global.p5key['KeyShortCut']['HistoryAct'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
+    delete this.global.p5key['KeyShortCut']['DeleteAct'];
+    delete this.global.p5key['KeyShortCut']['SKeyAct'];
     if (this.p5voidDraw) this.p5voidDraw.remove();
   }
 
