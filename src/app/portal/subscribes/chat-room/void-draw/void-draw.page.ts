@@ -103,8 +103,9 @@ export class VoidDrawPage implements OnInit {
         ActualCanvas = undefined;
         if (canvas) p.remove();
         canvas = p.createCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
-        RelativePosition.x = p.width / 2;
-        RelativePosition.y = p.height / 2;
+        canvas.elt.addEventListener("contextmenu", (e: any) => e.preventDefault());
+        CamPosition.x = p.width / 2;
+        CamPosition.y = p.height / 2;
         canvas.parent(targetDiv);
         p['set_line_weight'] = () => {
           isWeightSetToggle = !isWeightSetToggle;
@@ -200,17 +201,17 @@ export class VoidDrawPage implements OnInit {
         p['SetCanvasViewportInit'] = () => {
           canvas.hide();
           p.resizeCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
-          RelativePosition.x = p.width / 2;
-          RelativePosition.y = p.height / 2;
+          ScaleCenter.x = p.width / 2;
+          ScaleCenter.y = p.height / 2;
+          CamPosition.x = 0;
+          CamPosition.y = 0;
           let HeightExceptMenu = targetDiv.clientHeight - 112;
           let windowRatio = targetDiv.clientWidth / HeightExceptMenu;
           let canvasRatio = ActualCanvas.width / ActualCanvas.height;
           if (windowRatio < canvasRatio)
-            RelativeScale = targetDiv.clientWidth / ActualCanvas.width;
-          else RelativeScale = HeightExceptMenu / ActualCanvas.height;
+            CamScale = targetDiv.clientWidth / ActualCanvas.width;
+          else CamScale = HeightExceptMenu / ActualCanvas.height;
           canvas.show();
-          console.log(p.width, '/', WeightSlider.width);
-          console.log(p.height, '/', WeightSlider.height);
           WeightSlider.position(p.width - WeightSlider.width, p.height - WeightSlider.height - BUTTON_HEIGHT);
           p.redraw();
         }
@@ -246,15 +247,18 @@ export class VoidDrawPage implements OnInit {
         this.initialized = true;
       }
       /** Viewport 행동을 위한 변수들 */
-      let RelativePosition = p.createVector();
-      let RelativeScale = 1;
+      let CamPosition = p.createVector();
+      let CamScale = 1;
+      /** 확대 중심 */
+      let ScaleCenter = p.createVector(0, 0);
       /** 이미지 Crop 시 상대적 위치 기록 */
       let CropPosition = p.createVector();
       p.draw = () => {
         p.clear(255, 255, 255, 255);
         p.push();
-        p.translate(RelativePosition);
-        p.scale(RelativeScale);
+        p.translate(ScaleCenter);
+        p.scale(CamScale);
+        p.translate(CamPosition);
         if (ImageCanvas) {
           ImageCanvas.push();
           ImageCanvas.translate(CropPosition);
@@ -311,6 +315,16 @@ export class VoidDrawPage implements OnInit {
       }
       let CurrentDraw = {};
       const BUTTON_HEIGHT = 56;
+      /** 모든 터치 또는 마우스 포인터의 현재 지점 */
+      let MouseAct: p5.Vector;
+      /** 이동 연산용 시작점 */
+      let MovementStartPosition: p5.Vector;
+      /** 두 손가락 사이 거리 */
+      let TouchBetween = 0;
+      /** 스케일 시작점 */
+      let ScaleStartRatio: number;
+      /** 시작점 캐시 */
+      let TempStartCamPosition: p5.Vector;
       p.mousePressed = (ev: any) => {
         if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) return;
         if (DrawingStack.length > HistoryPointer)
@@ -320,6 +334,11 @@ export class VoidDrawPage implements OnInit {
             DrawStartAct();
             UndoButton.style.fill = 'var(--ion-color-dark)';
             break;
+          case 3: // 오른쪽
+            MovementStartPosition = p.createVector(p.mouseX, p.mouseY);
+            TempStartCamPosition = CamPosition.copy();
+            MouseAct = p.createVector(p.mouseX, p.mouseY);
+            break;
           case 2: // 가운데
             p['SetCanvasViewportInit']();
             break;
@@ -327,7 +346,7 @@ export class VoidDrawPage implements OnInit {
       }
       /** 그리기 시작 행동 (PC/터치스크린 공용) */
       let DrawStartAct = (_x?: number, _y?: number) => {
-        let pos = MousePosToActualCanvasPosition(_x, _y);
+        let pos = MappingPosition(_x, _y);
         let _pos = { x: pos.x, y: pos.y };
         CurrentDraw = {
           pos: [],
@@ -344,19 +363,39 @@ export class VoidDrawPage implements OnInit {
         if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) return;
         switch (ev['which']) {
           case 1: // 왼쪽
-            let pos = MousePosToActualCanvasPosition();
+            let pos = MappingPosition();
             let _pos = { x: pos.x, y: pos.y };
             CurrentDraw['pos'].push(_pos);
             updateCurrentDrawingCurve();
             break;
+          case 3: // 오른쪽
+            MouseAct = p.createVector(p.mouseX, p.mouseY);
+            CamPosition = TempStartCamPosition.copy().add(MouseAct.sub(MovementStartPosition).div(CamScale));
+            p.redraw();
+            break;
         }
       }
-      let MousePosToActualCanvasPosition = (x?: number, y?: number) => {
-        let pos = p.createVector(x || p.mouseX, y || p.mouseY);
-        pos.sub(RelativePosition);
-        pos.div(RelativeScale);
-        pos.sub(CropPosition);
-        return pos;
+      p.mouseWheel = (ev: any) => {
+        if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) return;
+        PrepareZoomAct(MappingPosition());
+        let delta = ev['deltaY'];
+        if (delta < 0)
+          CamScale *= 1.1;
+        else CamScale *= .9;
+        p.redraw();
+      }
+      /** 확대 중심점을 조정 */
+      let PrepareZoomAct = (center: p5.Vector) => {
+        ScaleCenter = p.createVector(p.mouseX, p.mouseY);
+        CamPosition = center.mult(-1);
+      }
+      /** 화면 상의 마우스 위치를 할 일 공간 내 위치로 변경 */
+      let MappingPosition = (_x?: number, _y?: number) => {
+        let mousePosition = p.createVector(_x || p.mouseX, _y || p.mouseY);
+        mousePosition.sub(ScaleCenter);
+        mousePosition.div(CamScale);
+        mousePosition.sub(CamPosition);
+        return mousePosition;
       }
     });
   }
