@@ -69,7 +69,7 @@ export class MainPage implements OnInit {
     }, this.indexed.godotDB);
   }
 
-  isPlayingCanvas = { loop: false };
+  isPlayingCanvas = { loop: true };
   /** 캔버스 연산 멈추기 (인풋은 영향받지 않음) */
   toggleCanvasPlaying() {
     this.isPlayingCanvas.loop = !this.isPlayingCanvas.loop;
@@ -79,6 +79,9 @@ export class MainPage implements OnInit {
   }
   isEmptyTodo = false;
   CreateTodoManager() {
+    setTimeout(() => {
+      this.toggleCanvasPlaying();
+    }, 3000);
     // 해야할 일 관리자 생성 행동
     let todo_div = document.getElementById('todo');
     this.global.p5todo = new p5((p: p5) => {
@@ -104,6 +107,7 @@ export class MainPage implements OnInit {
       p.setup = async () => {
         let canvas = p.createCanvas(todo_div.clientWidth, todo_div.clientHeight);
         canvas.parent(todo_div);
+        CamScale = Number(localStorage.getItem('p5todoScale'));
         p.smooth();
         p.noStroke();
         p.pixelDensity(1);
@@ -187,6 +191,7 @@ export class MainPage implements OnInit {
         CamPosition.x = 0;
         CamPosition.y = 0;
         CamScale = 1;
+        localStorage.setItem('p5todoScale', `${CamScale}`);
         if (!this.isPlayingCanvas.loop) p.redraw();
       }
       p.draw = () => {
@@ -583,6 +588,7 @@ export class MainPage implements OnInit {
         if (delta < 0)
           CamScale *= 1.1;
         else CamScale *= .9;
+        localStorage.setItem('p5todoScale', `${CamScale}`);
       }
       /** 확대 중심점을 조정 */
       let PrepareZoomAct = (center: p5.Vector) => {
@@ -648,6 +654,7 @@ export class MainPage implements OnInit {
             let CenterPos = One.copy().add(Two).div(2);
             let dist = One.dist(Two);
             CamScale = dist / TouchBetween * ScaleStartRatio;
+            localStorage.setItem('p5todoScale', `${CamScale}`);
             CamPosition = TempStartCamPosition.copy().add(CenterPos.sub(MovementStartPosition).div(CamScale));
           }
             break;
