@@ -79,6 +79,11 @@ export class VoidDrawPage implements OnInit {
       /** 배경이미지 전용 캔버스 */
       let ImageCanvas: p5.Graphics;
       let canvas: p5.Renderer;
+      let TopMenu: p5.Element;
+      let BottomMenu: p5.Element;
+      /** 되돌리기류 행동이 상황에 따라 동작하지 않음을 UI로 표시해야함 */
+      let UndoButton: any;
+      let RedoButton: any;
       p.setup = async () => {
         p.pixelDensity(1);
         p.smooth();
@@ -103,21 +108,92 @@ export class VoidDrawPage implements OnInit {
           this.mainLoading.dismiss();
         }
         p['history_act'] = (direction: number) => {
-          console.log(direction);
+          HistoryPointer = p.min(p.max(0, HistoryPointer + direction), DrawingStack.length);
+          switch (direction) {
+            case 1: // Redo
+              UndoButton.style.fill = 'var(--ion-color-dark)';
+              if (HistoryPointer == DrawingStack.length)
+                RedoButton.style.fill = 'var(--ion-color-medium)';
+              for (let i = 0, j = DrawingStack[HistoryPointer - 1].pos.length - LINE_POINTS_COUNT + 1; i < j; i++)
+                updateCurrentDrawingCurve(DrawingStack[HistoryPointer - 1], i);
+              break;
+            case -1: // Undo
+              RedoButton.style.fill = 'var(--ion-color-dark)';
+              if (HistoryPointer < 1) {
+                UndoButton.style.fill = 'var(--ion-color-medium)';
+                ActualCanvas.clear(255, 255, 255, 255);
+                p.redraw();
+              } else updateActualCanvas();
+              break;
+          }
         }
         p['open_crop_tool'] = () => {
 
         }
+        /** 상하단 메뉴 생성 */
+        TopMenu = p.createElement('table');
+        TopMenu.style('position: absolute; top: 0px;');
+        TopMenu.style('width: 100%; height: 56px;');
+        TopMenu.style('background-color: var(--voidDraw-menu-background);')
+        TopMenu.parent(targetDiv);
+        let top_row = TopMenu.elt.insertRow(0); // 상단 메뉴
+        let AddCell = top_row.insertCell(0); // 추가
+        AddCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="add"></ion-icon>`;
+        AddCell.style.textAlign = 'center';
+        AddCell.style.cursor = 'pointer';
+        AddCell.onclick = () => { this.new_image() }
+        let CropCell = top_row.insertCell(1); // Crop
+        CropCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="crop"></ion-icon>`;
+        CropCell.style.textAlign = 'center';
+        CropCell.style.cursor = 'pointer';
+        CropCell.onclick = () => { this.open_crop_tool() }
+        let ApplyCell = top_row.insertCell(2);
+        ApplyCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="checkmark"></ion-icon>`;
+        ApplyCell.style.textAlign = 'center';
+        ApplyCell.style.cursor = 'pointer';
+        ApplyCell.onclick = () => { this.dismiss_draw() }
+
+        BottomMenu = p.createElement('table');
+        BottomMenu.style('position: absolute; bottom: 0px;');
+        BottomMenu.style('width: 100%; height: 56px;');
+        BottomMenu.style('background-color: var(--voidDraw-menu-background);')
+        BottomMenu.parent(targetDiv);
+        let bottom_row = BottomMenu.elt.insertRow(0); // 하단 메뉴
+        let UndoCell = bottom_row.insertCell(0); // Undo
+        UndoCell.innerHTML = `<ion-icon id="undoIcon" style="width: 27px; height: 27px" name="arrow-undo"></ion-icon>`;
+        UndoButton = document.getElementById('undoIcon');
+        UndoButton.style.fill = 'var(--ion-color-medium)';
+        UndoCell.style.textAlign = 'center';
+        UndoCell.style.cursor = 'pointer';
+        UndoCell.onclick = () => { this.act_history(-1) }
+        let RedoCell = bottom_row.insertCell(1); // Redo
+        RedoCell.innerHTML = `<ion-icon id="redoIcon" style="width: 27px; height: 27px" name="arrow-redo"></ion-icon>`;
+        RedoButton = document.getElementById('redoIcon');
+        RedoButton.style.fill = 'var(--ion-color-medium)';
+        RedoCell.style.textAlign = 'center';
+        RedoCell.style.cursor = 'pointer';
+        RedoCell.onclick = () => { this.act_history(1) }
+        let ColorCell = bottom_row.insertCell(2); // 선 색상 변경
+        ColorCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="color-palette"></ion-icon>`;
+        ColorCell.style.textAlign = 'center';
+        ColorCell.style.cursor = 'pointer';
+        ColorCell.onclick = () => { this.change_color() }
+        let WeightCell = bottom_row.insertCell(3); // 선 두께 변경
+        WeightCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="pencil"></ion-icon>`;
+        WeightCell.style.textAlign = 'center';
+        WeightCell.style.cursor = 'pointer';
+        WeightCell.onclick = () => { this.change_line_weight() }
         p['SetCanvasViewportInit'] = () => {
           canvas.hide();
           p.resizeCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
           RelativePosition.x = p.width / 2;
           RelativePosition.y = p.height / 2;
-          let windowRatio = targetDiv.clientWidth / targetDiv.clientHeight;
+          let HeightExceptMenu = targetDiv.clientHeight - 112;
+          let windowRatio = targetDiv.clientWidth / HeightExceptMenu;
           let canvasRatio = ActualCanvas.width / ActualCanvas.height;
           if (windowRatio < canvasRatio)
             RelativeScale = targetDiv.clientWidth / ActualCanvas.width;
-          else RelativeScale = targetDiv.clientHeight / ActualCanvas.height;
+          else RelativeScale = HeightExceptMenu / ActualCanvas.height;
           canvas.show();
           p.redraw();
         }
@@ -168,10 +244,12 @@ export class VoidDrawPage implements OnInit {
           p.image(ImageCanvas, 0, 0);
           ImageCanvas.pop();
         }
-        ActualCanvas.push();
-        ActualCanvas.translate(CropPosition);
-        p.image(ActualCanvas, 0, 0);
-        ActualCanvas.pop();
+        if (ActualCanvas) {
+          ActualCanvas.push();
+          ActualCanvas.translate(CropPosition);
+          p.image(ActualCanvas, 0, 0);
+          ActualCanvas.pop();
+        }
         p.pop();
       }
       let BrushColor = p.color(0);
@@ -186,27 +264,28 @@ export class VoidDrawPage implements OnInit {
       let updateActualCanvas = () => {
         ActualCanvas.clear(255, 255, 255, 255);
         // 모든 그리기 행동 시도
-        for (let i = DrawingStack.length - 1; i >= 0; i--)
-          for (let j = 0, k = HistoryPointer - 3; j < k; j++)
+        for (let i = HistoryPointer - 1; i >= 0; i--)
+          for (let j = 0, k = DrawingStack[i].pos.length - LINE_POINTS_COUNT + 1; j < k; j++)
             updateCurrentDrawingCurve(DrawingStack[i], j);
         ActualCanvas.redraw();
       }
+      /** 그리기에 필요한 선의 수 */
       const LINE_POINTS_COUNT = 2;
       /** 마지막 행동에 해당하는 선 그리기 **지금은 직선 그리기임** */
-      let updateCurrentDrawingCurve = (targetDraw = CurrentDraw, index = 0) => {
-        let TargetLine: any = targetDraw['pos'].slice(-LINE_POINTS_COUNT);
+      let updateCurrentDrawingCurve = (targetDraw = CurrentDraw, index = targetDraw['pos'].length - LINE_POINTS_COUNT) => {
+        let TargetLine: any = targetDraw['pos'].slice(index, index + LINE_POINTS_COUNT);
         ActualCanvas.push();
         ActualCanvas.stroke(targetDraw['color']);
         ActualCanvas.strokeWeight(targetDraw['weight']);
         ActualCanvas.line(
-          TargetLine[index + 0].x, TargetLine[index + 0].y,
-          TargetLine[index + 1].x, TargetLine[index + 1].y
+          TargetLine[0].x, TargetLine[0].y,
+          TargetLine[1].x, TargetLine[1].y
         );
         // ActualCanvas.curve(
-        //   TargetLine[index + 0].x, TargetLine[index + 0].y,
-        //   TargetLine[index + 1].x, TargetLine[index + 1].y,
-        //   TargetLine[index + 2].x, TargetLine[index + 2].y,
-        //   TargetLine[index + 3].x, TargetLine[index + 3].y);
+        //   TargetLine[0].x, TargetLine[0].y,
+        //   TargetLine[1].x, TargetLine[1].y,
+        //   TargetLine[2].x, TargetLine[2].y,
+        //   TargetLine[3].x, TargetLine[3].y);
         ActualCanvas.pop();
         p.redraw();
       }
@@ -216,10 +295,15 @@ export class VoidDrawPage implements OnInit {
         }, 0);
       }
       let CurrentDraw = {};
+      const BUTTON_HEIGHT = 56;
       p.mousePressed = (ev: any) => {
+        if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) return;
+        if (DrawingStack.length > HistoryPointer)
+          DrawingStack.length = HistoryPointer;
         switch (ev['which']) {
           case 1: // 왼쪽
             DrawStartAct();
+            UndoButton.style.fill = 'var(--ion-color-dark)';
             break;
           case 2: // 가운데
             p['SetCanvasViewportInit']();
@@ -242,6 +326,7 @@ export class VoidDrawPage implements OnInit {
         updateCurrentDrawingCurve();
       }
       p.mouseDragged = (ev: any) => {
+        if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) return;
         switch (ev['which']) {
           case 1: // 왼쪽
             let pos = MousePosToActualCanvasPosition();
