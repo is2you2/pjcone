@@ -332,7 +332,6 @@ export class VoidDrawPage implements OnInit {
         switch (ev['which']) {
           case 1: // 왼쪽
             DrawStartAct();
-            UndoButton.style.fill = 'var(--ion-color-dark)';
             break;
           case 3: // 오른쪽
             MovementStartPosition = p.createVector(p.mouseX, p.mouseY);
@@ -346,6 +345,8 @@ export class VoidDrawPage implements OnInit {
       }
       /** 그리기 시작 행동 (PC/터치스크린 공용) */
       let DrawStartAct = (_x?: number, _y?: number) => {
+        UndoButton.style.fill = 'var(--ion-color-dark)';
+        RedoButton.style.fill = 'var(--ion-color-medium)';
         let pos = MappingPosition(_x, _y);
         let _pos = { x: pos.x, y: pos.y };
         CurrentDraw = {
@@ -396,6 +397,81 @@ export class VoidDrawPage implements OnInit {
         mousePosition.div(CamScale);
         mousePosition.sub(CamPosition);
         return mousePosition;
+      }
+      let touches = [];
+      /** 터치 중인지 여부, 3손가락 터치시 행동 제약을 걸기 위해서 존재 */
+      let isTouching = false;
+      const HEADER_HEIGHT = 56;
+      p.touchStarted = (ev: any) => {
+        touches = ev['touches'];
+        if (ev['changedTouches'][0].clientY < BUTTON_HEIGHT
+          || ev['changedTouches'][0].clientY > p.height - BUTTON_HEIGHT) return;
+        isTouching = true;
+        switch (touches.length) {
+          case 1: // 그리기
+            DrawStartAct(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
+            break;
+          case 2: // 패닝, 스케일
+            let One = p.createVector(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT);
+            let Two = p.createVector(touches[1].clientX, touches[1].clientY - HEADER_HEIGHT);
+            TouchBetween = One.dist(Two);
+            MovementStartPosition = One.copy().add(Two).div(2);
+            TempStartCamPosition = CamPosition.copy();
+            ScaleStartRatio = CamScale;
+            DrawingStack.pop();
+            break;
+          default: // 3개 또는 그 이상은 행동 초기화
+            isTouching = false;
+            p['SetCanvasViewportInit']();
+            break;
+        }
+      }
+      p.touchMoved = (ev: any) => {
+        touches = ev['touches'];
+        if (!isTouching || ev['changedTouches'][0].clientY < BUTTON_HEIGHT
+          || ev['changedTouches'][0].clientY > p.height - BUTTON_HEIGHT) return;
+        switch (touches.length) {
+          case 1: { // 그리기
+            let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
+            let _pos = { x: pos.x, y: pos.y };
+            CurrentDraw['pos'].push(_pos);
+            updateCurrentDrawingCurve();
+          }
+            break;
+          case 2: { // 스케일과 패닝
+            let One = p.createVector(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT);
+            let Two = p.createVector(touches[1].clientX, touches[1].clientY - HEADER_HEIGHT);
+            let CenterPos = One.copy().add(Two).div(2);
+            let dist = One.dist(Two);
+            CamScale = dist / TouchBetween * ScaleStartRatio;
+            CamPosition = TempStartCamPosition.copy().add(CenterPos.sub(MovementStartPosition).div(CamScale));
+            p.redraw();
+          }
+            break;
+        }
+      }
+      p.touchEnded = (ev: any) => {
+        if (!ev['changedTouches']) return;
+        touches = ev['touches'];
+        isTouching = false;
+        switch (touches.length) {
+          case 0: // 행동 종료
+            ReleaseAllAct();
+            break;
+          case 1: // 패닝
+            if (!isTouching) return;
+            PanningInit();
+            TouchBetween = 0;
+            break;
+        }
+      }
+      let PanningInit = () => {
+        MovementStartPosition = p.createVector(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT);
+        TempStartCamPosition = CamPosition.copy();
+      }
+      /** 모든 입력을 제거했을 때 공통 행동 */
+      let ReleaseAllAct = () => {
+        MovementStartPosition = undefined;
       }
     });
   }
