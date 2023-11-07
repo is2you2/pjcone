@@ -84,6 +84,8 @@ export class VoidDrawPage implements OnInit {
       /** 되돌리기류 행동이 상황에 따라 동작하지 않음을 UI로 표시해야함 */
       let UndoButton: any;
       let RedoButton: any;
+      /** 임시방편 색상 선택기 */
+      let p5ColorPicker = p.createColorPicker('#000');
       p.setup = async () => {
         p.pixelDensity(1);
         p.smooth();
@@ -174,7 +176,8 @@ export class VoidDrawPage implements OnInit {
         RedoCell.style.cursor = 'pointer';
         RedoCell.onclick = () => { this.act_history(1) }
         let ColorCell = bottom_row.insertCell(2); // 선 색상 변경
-        ColorCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="color-palette"></ion-icon>`;
+        // ColorCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="color-palette"></ion-icon>`;
+        p5ColorPicker.parent(ColorCell);
         ColorCell.style.textAlign = 'center';
         ColorCell.style.cursor = 'pointer';
         ColorCell.onclick = () => { this.change_color() }
@@ -252,7 +255,6 @@ export class VoidDrawPage implements OnInit {
         }
         p.pop();
       }
-      let BrushColor = p.color(0);
       let BrushWeight = 5;
       /** 그려진 자유선 정보 저장  
        * DrawingStack[i] = [{ pos: [{x, y}, ..], color: p5.Color, weight: number }, ..]
@@ -316,7 +318,7 @@ export class VoidDrawPage implements OnInit {
         let _pos = { x: pos.x, y: pos.y };
         CurrentDraw = {
           pos: [],
-          color: BrushColor,
+          color: p5ColorPicker['color'](),
           weight: BrushWeight,
         };
         for (let i = 0; i < LINE_POINTS_COUNT; i++)
