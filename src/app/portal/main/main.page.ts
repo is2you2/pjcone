@@ -81,7 +81,7 @@ export class MainPage implements OnInit {
   CreateTodoManager() {
     setTimeout(() => {
       this.toggleCanvasPlaying();
-    }, 3000);
+    }, 8000);
     // 해야할 일 관리자 생성 행동
     let todo_div = document.getElementById('todo');
     this.global.p5todo = new p5((p: p5) => {
@@ -107,7 +107,6 @@ export class MainPage implements OnInit {
       p.setup = async () => {
         let canvas = p.createCanvas(todo_div.clientWidth, todo_div.clientHeight);
         canvas.parent(todo_div);
-        CamScale = Number(localStorage.getItem('p5todoScale'));
         p.smooth();
         p.noStroke();
         p.pixelDensity(1);
@@ -118,7 +117,10 @@ export class MainPage implements OnInit {
         p.textLeading(TextSize * 1.6);
         p.textWrap(p.CHAR);
         p.imageMode(p.CENTER);
+        let InitScale = Number(localStorage.getItem('p5todoScale'));
         ViewInit();
+        CamScale = InitScale;
+        localStorage.setItem('p5todoScale', `${CamScale}`);
         p['isPlayingCanvas'] = this.isPlayingCanvas;
         // 캔버스 멈추기
         p['StopCanvas'] = () => {
