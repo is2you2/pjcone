@@ -83,7 +83,10 @@ export class VoidDrawPage implements OnInit {
     this.p5voidDraw = new p5((p: p5) => {
       /** 스케일 조정 편의를 위해 모든게 여기서 작업됨 */
       let ActualCanvas: p5.Graphics;
-      /** 배경이미지 전용 캔버스 */
+      let showLastDrawCanvas = false;
+      /** 마지막 그리기 레이어 (일시적 생성 및 삭제) */
+      let LastDrawCanvas: p5.Graphics;
+      /** 배경이미지 캔버스, 복구 불가능한 이전 기록이 이곳에 같이 누적됨 */
       let ImageCanvas: p5.Graphics;
       let canvas: p5.Renderer;
       let TopMenu: p5.Element;
@@ -107,14 +110,11 @@ export class VoidDrawPage implements OnInit {
         p.imageMode(p.CENTER);
         // 정보 초기화
         ImageCanvas = undefined;
-        if (ActualCanvas) ActualCanvas.remove();
-        ActualCanvas = undefined;
-        if (canvas) p.remove();
         canvas = p.createCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
         canvas.elt.addEventListener("contextmenu", (e: any) => e.preventDefault());
+        canvas.parent(targetDiv);
         CamPosition.x = p.width / 2;
         CamPosition.y = p.height / 2;
-        canvas.parent(targetDiv);
         p['set_line_weight'] = () => {
           isWeightSetToggle = !isWeightSetToggle;
           if (isWeightSetToggle) {
@@ -154,7 +154,7 @@ export class VoidDrawPage implements OnInit {
               if (HistoryPointer == DrawingStack.length)
                 RedoButton.style.fill = 'var(--ion-color-medium)';
               for (let i = 0, j = DrawingStack[HistoryPointer - 1].pos.length - LINE_POINTS_COUNT + 1; i < j; i++)
-                updateCurrentDrawingCurve(DrawingStack[HistoryPointer - 1], i);
+                updateCurrentDrawingCurve(ActualCanvas, DrawingStack[HistoryPointer - 1], i);
               break;
             case -1: // Undo
               RedoButton.style.fill = 'var(--ion-color-dark)';
@@ -245,6 +245,9 @@ export class VoidDrawPage implements OnInit {
         ActualCanvas.smooth();
         ActualCanvas.noLoop();
         ActualCanvas.noFill();
+        LastDrawCanvas = p.createGraphics(ActualCanvas.width, ActualCanvas.height, p.WEBGL);
+        LastDrawCanvas.smooth();
+        LastDrawCanvas.noLoop();
         // 사용자 그리기 판넬 생성
         if (initData['path']) { // 배경 이미지 파일이 포함됨
           let blob = await this.indexed.loadBlobFromUserPath(initData['path'], '');
@@ -297,6 +300,12 @@ export class VoidDrawPage implements OnInit {
           p.image(ActualCanvas, 0, 0);
           ActualCanvas.pop();
         }
+        if (showLastDrawCanvas) {
+          LastDrawCanvas.push();
+          LastDrawCanvas.translate(CropPosition);
+          p.image(LastDrawCanvas, 0, 0);
+          LastDrawCanvas.pop();
+        }
         p.pop();
       }
       /** 그려진 자유선 정보 저장  
@@ -305,33 +314,35 @@ export class VoidDrawPage implements OnInit {
       let DrawingStack = [];
       /** 선을 어디까지 그리는지, 히스토리 행동용 */
       let HistoryPointer = 0;
+      /** 모바일 최적화를 위해 기록 길이 제한 */
+      const CACHE_HISTORY_LENGTH = 8;
       /** 전체 그리기, 동작 취소 등 전체 업데이트가 필요할 때 사용 */
       let updateActualCanvas = () => {
         ActualCanvas.background(255, 0);
         // 모든 그리기 행동 시도
         for (let i = HistoryPointer - 1; i >= 0; i--)
           for (let j = 0, k = DrawingStack[i].pos.length - LINE_POINTS_COUNT + 1; j < k; j++)
-            updateCurrentDrawingCurve(DrawingStack[i], j);
+            updateCurrentDrawingCurve(ActualCanvas, DrawingStack[i], j);
       }
       /** 그리기에 필요한 선의 수 */
       const LINE_POINTS_COUNT = 2;
       /** 마지막 행동에 해당하는 선 그리기 **지금은 직선 그리기임** */
-      let updateCurrentDrawingCurve = (targetDraw = CurrentDraw, index = targetDraw['pos'].length - LINE_POINTS_COUNT) => {
+      let updateCurrentDrawingCurve = (TargetCanvas = LastDrawCanvas, targetDraw = CurrentDraw, index = targetDraw['pos'].length - LINE_POINTS_COUNT) => {
         let TargetLine: any = targetDraw['pos'].slice(index, index + LINE_POINTS_COUNT);
-        ActualCanvas.push();
-        ActualCanvas.stroke(targetDraw['color']);
-        ActualCanvas.strokeWeight(targetDraw['weight']);
-        ActualCanvas.line(
+        TargetCanvas.push();
+        TargetCanvas.stroke(targetDraw['color']);
+        TargetCanvas.strokeWeight(targetDraw['weight']);
+        TargetCanvas.line(
           TargetLine[0].x, TargetLine[0].y,
           TargetLine[1].x, TargetLine[1].y
         );
-        // ActualCanvas.curve(
+        // TargetCanvas.curve(
         //   TargetLine[0].x, TargetLine[0].y,
         //   TargetLine[1].x, TargetLine[1].y,
         //   TargetLine[2].x, TargetLine[2].y,
         //   TargetLine[3].x, TargetLine[3].y);
-        ActualCanvas.pop();
-        ActualCanvas.redraw();
+        TargetCanvas.pop();
+        TargetCanvas.redraw();
         p.redraw();
       }
       p.windowResized = () => {
@@ -351,8 +362,12 @@ export class VoidDrawPage implements OnInit {
       let ScaleStartRatio: number;
       /** 시작점 캐시 */
       let TempStartCamPosition: p5.Vector;
+      let isClickOnMenu = false;
       p.mousePressed = (ev: any) => {
-        if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) return;
+        if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) {
+          isClickOnMenu = true;
+          return;
+        }
         switch (ev['which']) {
           case 1: // 왼쪽
             DrawStartAct();
@@ -369,8 +384,8 @@ export class VoidDrawPage implements OnInit {
       }
       /** 그리기 시작 행동 (PC/터치스크린 공용) */
       let DrawStartAct = (_x?: number, _y?: number) => {
-        if (DrawingStack.length > HistoryPointer)
-          DrawingStack.length = HistoryPointer;
+        LastDrawCanvas.background(255, 0);
+        showLastDrawCanvas = true;
         UndoButton.style.fill = 'var(--ion-color-dark)';
         RedoButton.style.fill = 'var(--ion-color-medium)';
         let pos = MappingPosition(_x, _y);
@@ -382,12 +397,13 @@ export class VoidDrawPage implements OnInit {
         };
         for (let i = 0; i < LINE_POINTS_COUNT; i++)
           CurrentDraw['pos'].push(_pos);
-        DrawingStack.push(CurrentDraw);
-        HistoryPointer = DrawingStack.length;
         updateCurrentDrawingCurve();
       }
       p.mouseDragged = (ev: any) => {
-        if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) return;
+        if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) {
+          isClickOnMenu = true;
+          return;
+        }
         switch (ev['which']) {
           case 1: // 왼쪽
             let pos = MappingPosition();
@@ -411,6 +427,11 @@ export class VoidDrawPage implements OnInit {
         else CamScale *= .9;
         p.redraw();
       }
+      p.mouseReleased = () => {
+        if (!isClickOnMenu)
+          ReleaseAllAct();
+        isClickOnMenu = false;
+      }
       /** 확대 중심점을 조정 */
       let PrepareZoomAct = (center: p5.Vector) => {
         ScaleCenter = p.createVector(p.mouseX, p.mouseY);
@@ -431,7 +452,10 @@ export class VoidDrawPage implements OnInit {
       p.touchStarted = (ev: any) => {
         touches = ev['touches'];
         if (ev['changedTouches'][0].clientY < BUTTON_HEIGHT
-          || ev['changedTouches'][0].clientY > p.height - BUTTON_HEIGHT) return;
+          || ev['changedTouches'][0].clientY > p.height - BUTTON_HEIGHT) {
+          isClickOnMenu = true;
+          return;
+        }
         isTouching = true;
         switch (touches.length) {
           case 1: // 그리기
@@ -455,7 +479,10 @@ export class VoidDrawPage implements OnInit {
       p.touchMoved = (ev: any) => {
         touches = ev['touches'];
         if (!isTouching || ev['changedTouches'][0].clientY < BUTTON_HEIGHT
-          || ev['changedTouches'][0].clientY > p.height - BUTTON_HEIGHT) return;
+          || ev['changedTouches'][0].clientY > p.height - BUTTON_HEIGHT) {
+          isClickOnMenu = true;
+          return;
+        }
         switch (touches.length) {
           case 1: { // 그리기
             let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
@@ -471,6 +498,8 @@ export class VoidDrawPage implements OnInit {
             let dist = One.dist(Two);
             CamScale = dist / TouchBetween * ScaleStartRatio;
             CamPosition = TempStartCamPosition.copy().add(CenterPos.sub(MovementStartPosition).div(CamScale));
+            LastDrawCanvas.background(255, 0);
+            LastDrawCanvas.redraw();
             p.redraw();
           }
             break;
@@ -482,13 +511,15 @@ export class VoidDrawPage implements OnInit {
         touches = ev['touches'];
         isTouching = false;
         switch (touches.length) {
-          case 0: // 행동 종료
-            ReleaseAllAct();
+          case 0: // 모든 행동 종료
+            if (CurrentDraw && !isClickOnMenu)
+              ReleaseAllAct();
             break;
-          case 1: // 패닝
+          case 1: // 패닝 종료
             if (!isTouching) return;
             PanningInit();
             TouchBetween = 0;
+            CurrentDraw = undefined;
             break;
         }
       }
@@ -498,7 +529,20 @@ export class VoidDrawPage implements OnInit {
       }
       /** 모든 입력을 제거했을 때 공통 행동 */
       let ReleaseAllAct = () => {
+        DrawingStack.length = HistoryPointer;
+        showLastDrawCanvas = false;
+        DrawingStack.push(CurrentDraw);
+        ActualCanvas.image(LastDrawCanvas, -ActualCanvas.width / 2, -ActualCanvas.height / 2);
+        ActualCanvas.redraw();
+        if (DrawingStack.length > CACHE_HISTORY_LENGTH) {
+          let CachedDraw = DrawingStack.shift();
+          for (let i = 0, j = CachedDraw.pos.length - LINE_POINTS_COUNT + 1; i < j; i++)
+            updateCurrentDrawingCurve(ImageCanvas, CachedDraw, i);
+          ImageCanvas.redraw();
+        }
+        HistoryPointer = DrawingStack.length;
         MovementStartPosition = undefined;
+        p.redraw();
       }
     });
   }
