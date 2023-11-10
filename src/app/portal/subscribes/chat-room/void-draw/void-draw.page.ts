@@ -28,7 +28,6 @@ export class VoidDrawPage implements OnInit {
 
   ngOnInit() { }
   mainLoading: HTMLIonLoadingElement;
-  initialized = false;
 
   EventListenerAct = (ev: any) => {
     ev.detail.register(130, (_processNextHandler: any) => { });
@@ -97,12 +96,11 @@ export class VoidDrawPage implements OnInit {
       let isWeightSetToggle = false;
       let SetBrushSize = p.min(initData['width'], initData['heigth']);
       let WeightSlider = p.createSlider(1, SetBrushSize / 10, SetBrushSize / 100);
-      const PIXEL_DENSITY = (isPlatform == 'Android' || isPlatform == 'iOS') ? .6 : 1;
+      const PIXEL_DENSITY = 1;
       p.setup = async () => {
         WeightSlider.parent(targetDiv);
         WeightSlider.hide();
         p.pixelDensity(PIXEL_DENSITY);
-        p.smooth();
         p.noLoop();
         p.noFill();
         p.imageMode(p.CENTER);
@@ -237,21 +235,21 @@ export class VoidDrawPage implements OnInit {
           p.redraw();
         }
         ActualCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
-        ActualCanvas.smooth();
         ActualCanvas.noLoop();
         ActualCanvas.noFill();
+        ImageCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
+        ImageCanvas.noLoop();
+        ImageCanvas.noFill();
+        ImageCanvas.background(255);
+        ImageCanvas.imageMode(p.CENTER);
         // 사용자 그리기 판넬 생성
         if (initData['path']) { // 배경 이미지 파일이 포함됨
           let blob = await this.indexed.loadBlobFromUserPath(initData['path'], '');
           let FileURL = URL.createObjectURL(blob);
           p.loadImage(FileURL, v => {
             ActualCanvas.resizeCanvas(v.width, v.height);
-            ImageCanvas = p.createGraphics(v.width, v.height, p.WEBGL);
-            ImageCanvas.noLoop();
-            ImageCanvas.noFill();
-            ImageCanvas.background(255);
-            ImageCanvas.imageMode(p.CENTER);
             ImageCanvas.image(v, 0, 0);
+            ImageCanvas.redraw();
             URL.revokeObjectURL(FileURL);
             p['SetCanvasViewportInit']();
             p.redraw();
@@ -260,13 +258,9 @@ export class VoidDrawPage implements OnInit {
             URL.revokeObjectURL(FileURL);
           });
         } else {
-          ImageCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
-          ImageCanvas.noLoop();
-          ImageCanvas.background(255);
           p['SetCanvasViewportInit']();
           p.redraw();
         }
-        this.initialized = true;
       }
       /** Viewport 행동을 위한 변수들 */
       let CamPosition = p.createVector();
@@ -533,11 +527,9 @@ export class VoidDrawPage implements OnInit {
         DrawingStack.length = HistoryPointer;
         DrawingStack.push(CurrentDraw);
         updateDrawingCurve(ActualCanvas, CurrentDraw);
-        ActualCanvas.redraw();
         if (DrawingStack.length > CACHE_HISTORY_LENGTH) {
           let CachedDraw = DrawingStack.shift();
           updateDrawingCurve(ImageCanvas, CachedDraw);
-          ImageCanvas.redraw();
         }
         HistoryPointer = DrawingStack.length;
         MovementStartPosition = undefined;
@@ -549,12 +541,10 @@ export class VoidDrawPage implements OnInit {
   }
 
   change_color() {
-    if (this.initialized)
-      this.p5voidDraw['change_color']();
+    this.p5voidDraw['change_color']();
   }
 
   new_image() {
-    if (!this.initialized) return;
     const DEFAULT_SIZE = 432;
     this.alertCtrl.create({
       header: this.lang.text['voidDraw']['newDraw'],
@@ -581,7 +571,6 @@ export class VoidDrawPage implements OnInit {
   }
 
   change_line_weight() {
-    if (!this.initialized) return;
     this.p5voidDraw['set_line_weight']();
   }
 
@@ -593,7 +582,6 @@ export class VoidDrawPage implements OnInit {
   }
 
   open_crop_tool() {
-    if (!this.initialized) return;
     this.p5voidDraw['open_crop_tool']();
   }
 
