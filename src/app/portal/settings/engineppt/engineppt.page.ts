@@ -426,9 +426,6 @@ export class EnginepptPage implements OnInit {
     this.toolServer.stop('engineppt');
     delete this.global.p5key['KeyShortCut']['Escape'];
     this.indexed.removeFileFromUserPath('engineppt/presentation_this.pck', undefined, this.indexed.godotDB);
-    this.indexed.GetFileListFromDB('tmp_files', list => {
-      list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB));
-    }, this.indexed.godotDB);
     if (this.TempWs)
       this.TempWs.close();
     if (this.p5canvas)

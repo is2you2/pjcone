@@ -192,9 +192,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           display_name: this.nakama.users.self['display_name'],
           various: 'camera',
         };
-        await this.indexed.saveBase64ToUserPath('data:image/jpeg;base64,' + image.base64String, `tmp_files/chatroom/${this.userInput.file.filename}`, (raw) => {
-          this.userInput.file.blob = new Blob([raw], { type: this.userInput.file['type'] })
-        });
+        await this.indexed.saveBase64ToUserPath('data:image/jpeg;base64,' + image.base64String,
+          `tmp_files/chatroom/${this.userInput.file.filename}`, (raw) => {
+            this.userInput.file.blob = new Blob([raw], { type: this.userInput.file['type'] })
+          });
         loading.dismiss();
       } catch (e) { }
     }
@@ -1565,9 +1566,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.indexed.GetFileListFromDB('tmp_files', list => {
-      list.forEach(path => this.indexed.removeFileFromUserPath(path));
-    });
     delete this.nakama.opened_page_info['channel'];
     this.nakama.ChatroomLinkAct = undefined;
     if (this.p5canvas)

@@ -1310,9 +1310,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     delete this.global.p5key['KeyShortCut']['Escape'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
     delete this.global.p5key['KeyShortCut']['Digit'];
-    this.indexed.GetFileListFromDB('tmp_files', list => {
-      list.forEach(path => this.indexed.removeFileFromUserPath(path));
-    });
     this.noti.Current = '';
     if (this.p5timer)
       this.p5timer.remove();

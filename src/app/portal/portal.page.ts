@@ -29,6 +29,9 @@ export class PortalPage implements OnInit {
       this.ionTabs.select('subscribes');
       this.subscribe_button();
     }
+    this.indexed.GetFileListFromDB('tmp_files', list => {
+      list.forEach(path => this.indexed.removeFileFromUserPath(path));
+    });
   }
 
   ionViewDidEnter() {
