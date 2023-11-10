@@ -37,10 +37,10 @@ export class VoidDrawPage implements OnInit {
     this.global.p5key['KeyShortCut']['HistoryAct'] = (key: string) => {
       switch (key) {
         case 'Z':
-          this.act_history(-1);
+          this.p5voidDraw['history_act'](-1);
           break;
         case 'X':
-          this.act_history(1);
+          this.p5voidDraw['history_act'](1);
           break;
         case 'C':
           this.p5voidDraw['change_color']();
@@ -124,6 +124,7 @@ export class VoidDrawPage implements OnInit {
           new p5((sp: p5) => {
             sp.setup = () => {
               sp.createCanvas(ActualCanvas.width, ActualCanvas.height);
+              sp.pixelDensity(PIXEL_DENSITY);
               if (ImageCanvas)
                 sp.image(ImageCanvas, 0, 0);
               if (ActualCanvas)
@@ -198,14 +199,14 @@ export class VoidDrawPage implements OnInit {
         UndoButton.style.fill = 'var(--ion-color-medium)';
         UndoCell.style.textAlign = 'center';
         UndoCell.style.cursor = 'pointer';
-        UndoCell.onclick = () => { this.act_history(-1) }
+        UndoCell.onclick = () => { this.p5voidDraw['history_act'](-1); }
         let RedoCell = bottom_row.insertCell(1); // Redo
         RedoCell.innerHTML = `<ion-icon id="redoIcon" style="width: 27px; height: 27px" name="arrow-redo"></ion-icon>`;
         RedoButton = document.getElementById('redoIcon');
         RedoButton.style.fill = 'var(--ion-color-medium)';
         RedoCell.style.textAlign = 'center';
         RedoCell.style.cursor = 'pointer';
-        RedoCell.onclick = () => { this.act_history(1) }
+        RedoCell.onclick = () => { this.p5voidDraw['history_act'](1); }
         let ColorCell = bottom_row.insertCell(2); // 선 색상 변경
         // ColorCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="color-palette"></ion-icon>`;
         p5ColorPicker.parent(ColorCell);
@@ -235,9 +236,11 @@ export class VoidDrawPage implements OnInit {
           p.redraw();
         }
         ActualCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
+        ActualCanvas.pixelDensity(PIXEL_DENSITY);
         ActualCanvas.noLoop();
         ActualCanvas.noFill();
         ImageCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
+        ImageCanvas.pixelDensity(PIXEL_DENSITY);
         ImageCanvas.noLoop();
         ImageCanvas.noFill();
         ImageCanvas.background(255);
@@ -247,7 +250,6 @@ export class VoidDrawPage implements OnInit {
           let blob = await this.indexed.loadBlobFromUserPath(initData['path'], '');
           let FileURL = URL.createObjectURL(blob);
           p.loadImage(FileURL, v => {
-            ActualCanvas.resizeCanvas(v.width, v.height);
             ImageCanvas.image(v, 0, 0);
             ImageCanvas.redraw();
             URL.revokeObjectURL(FileURL);
@@ -255,9 +257,11 @@ export class VoidDrawPage implements OnInit {
             p.redraw();
           }, e => {
             console.error('그림판 배경 이미지 불러오기 오류: ', e);
+            ImageCanvas.redraw();
             URL.revokeObjectURL(FileURL);
           });
         } else {
+          ImageCanvas.redraw();
           p['SetCanvasViewportInit']();
           p.redraw();
         }
@@ -317,9 +321,8 @@ export class VoidDrawPage implements OnInit {
           updateDrawingCurve(ActualCanvas, DrawingStack[i]);
       }
       /** 마지막 행동에 해당하는 선 전체 그리기 */
-      let updateDrawingCurve = (TargetCanvas = ActualCanvas, targetDraw = CurrentDraw) => {
+      let updateDrawingCurve = (TargetCanvas: p5.Graphics, targetDraw = CurrentDraw) => {
         TargetCanvas.push();
-        TargetCanvas.noFill();
         TargetCanvas.stroke(targetDraw['color']);
         TargetCanvas.strokeWeight(targetDraw['weight']);
         TargetCanvas.beginShape();
@@ -501,12 +504,13 @@ export class VoidDrawPage implements OnInit {
         switch (touches.length) {
           case 0: // 모든 행동 종료
             if (!isClickOnMenu) {
-              let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
-              let _pos = { x: pos.x, y: pos.y };
-              CurrentDraw['pos'].push(_pos);
-              CurrentDraw['pos'].push(_pos);
-              if (CurrentDraw)
+              if (CurrentDraw) {
+                let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
+                let _pos = { x: pos.x, y: pos.y };
+                CurrentDraw['pos'].push(_pos);
+                CurrentDraw['pos'].push(_pos);
                 ReleaseAllAct();
+              }
             }
             break;
           case 1: // 패닝 종료
@@ -572,13 +576,6 @@ export class VoidDrawPage implements OnInit {
 
   change_line_weight() {
     this.p5voidDraw['set_line_weight']();
-  }
-
-  /** Undo, Redo 등 행동을 위한 함수  
-   * 생성 지연에 따른 오류 방지용
-   */
-  act_history(direction: number) {
-    this.p5voidDraw['history_act'](direction);
   }
 
   open_crop_tool() {
