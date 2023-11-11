@@ -33,6 +33,7 @@ export class VoidDrawPage implements OnInit {
     ev.detail.register(130, (_processNextHandler: any) => { });
   }
 
+  isMobile = false;
   async ionViewDidEnter() {
     this.global.p5key['KeyShortCut']['HistoryAct'] = (key: string) => {
       switch (key) {
@@ -43,7 +44,9 @@ export class VoidDrawPage implements OnInit {
           this.p5voidDraw['history_act'](1);
           break;
         case 'C':
-          this.p5voidDraw['change_color']();
+          if (this.isCropMode) {
+            this.p5voidDraw['apply_crop']();
+          } else this.p5voidDraw['change_color']();
           break;
         case 'V':
           this.p5voidDraw['set_line_weight']();
@@ -54,7 +57,9 @@ export class VoidDrawPage implements OnInit {
       this.new_image();
     }
     this.global.p5key['KeyShortCut']['DeleteAct'] = () => {
-      this.dismiss_draw();
+      if (this.isCropMode) {
+        this.p5voidDraw['apply_crop']();
+      } else this.dismiss_draw();
     }
     this.global.p5key['KeyShortCut']['SKeyAct'] = () => {
       this.open_crop_tool();
@@ -66,6 +71,7 @@ export class VoidDrawPage implements OnInit {
       height: this.navParams.data.height,
       path: this.navParams.data.path,
     });
+    this.isMobile = isPlatform != 'DesktopPWA';
   }
 
   /** 새 캔버스 생성 행동 분리 */
@@ -77,13 +83,17 @@ export class VoidDrawPage implements OnInit {
   }
 
   p5voidDraw: p5;
+  isCropMode = false;
   create_p5voidDraw(initData: any) {
     let targetDiv = document.getElementById('voidDraw');
+    this.isCropMode = false;
     this.p5voidDraw = new p5((p: p5) => {
       /** 스케일 조정 편의를 위해 모든게 여기서 작업됨 */
       let ActualCanvas: p5.Graphics;
       /** 배경이미지 캔버스, 복구 불가능한 이전 기록이 이곳에 같이 누적됨 */
       let ImageCanvas: p5.Graphics;
+      /** 배경 이미지에 사용된 이미지 */
+      let BaseImage: p5.Image;
       let canvas: p5.Renderer;
       let TopMenu: p5.Element;
       let BottomMenu: p5.Element;
@@ -118,7 +128,7 @@ export class VoidDrawPage implements OnInit {
           }
         }
         p['change_color'] = () => {
-          console.log('change_color');
+          p5ColorPicker.elt.click();
         }
         p['save_image'] = () => {
           new p5((sp: p5) => {
@@ -161,7 +171,36 @@ export class VoidDrawPage implements OnInit {
           }
         }
         p['open_crop_tool'] = () => {
-
+          if (this.isCropMode) { // 취소 행동으로 간주
+            this.isCropMode = false;
+            p.redraw();
+          } else {
+            this.isCropMode = true;
+            CropSize.x = ActualCanvas.width;
+            CropSize.y = ActualCanvas.height;
+            CropModePosition.x = 0;
+            CropModePosition.y = 0;
+            p.redraw();
+          }
+        }
+        p['apply_crop'] = () => {
+          if (this.isMobile)
+            CropModePosition.div(CamScale);
+          let BeforeResize = p.createVector(ActualCanvas.width, ActualCanvas.height);
+          ActualCanvas.resizeCanvas(CropSize.x, CropSize.y);
+          CropPosition.sub(CropModePosition);
+          CropPosition.add(BeforeResize.sub(CropSize).div(2));
+          updateActualCanvas();
+          ImageCanvas.resizeCanvas(CropSize.x, CropSize.y);
+          ImageCanvas.push();
+          ImageCanvas.background(255);
+          ImageCanvas.translate(CropPosition);
+          if (BaseImage)
+            ImageCanvas.image(BaseImage, 0, 0);
+          ImageCanvas.pop();
+          ImageCanvas.redraw();
+          this.isCropMode = false;
+          p['SetCanvasViewportInit']();
         }
         /** 상하단 메뉴 생성 */
         TopMenu = p.createElement('table');
@@ -177,7 +216,6 @@ export class VoidDrawPage implements OnInit {
         AddCell.onclick = () => { this.new_image() }
         let CropCell = top_row.insertCell(1); // Crop
         CropCell.innerHTML = `<ion-icon id="CropToolNotReady" style="width: 27px; height: 27px" name="crop"></ion-icon>`;
-        document.getElementById('CropToolNotReady').style.fill = 'var(--ion-color-medium)';
         CropCell.style.textAlign = 'center';
         CropCell.style.cursor = 'pointer';
         CropCell.onclick = () => { this.open_crop_tool() }
@@ -212,7 +250,7 @@ export class VoidDrawPage implements OnInit {
         p5ColorPicker.parent(ColorCell);
         ColorCell.style.textAlign = 'center';
         ColorCell.style.cursor = 'pointer';
-        // ColorCell.onclick = () => { this.change_color() }
+        ColorCell.onclick = () => { p5ColorPicker.elt.click() }
         let WeightCell = bottom_row.insertCell(3); // 선 두께 변경
         WeightCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="pencil"></ion-icon>`;
         WeightCell.style.textAlign = 'center';
@@ -250,7 +288,8 @@ export class VoidDrawPage implements OnInit {
           let blob = await this.indexed.loadBlobFromUserPath(initData['path'], '');
           let FileURL = URL.createObjectURL(blob);
           p.loadImage(FileURL, v => {
-            ImageCanvas.image(v, 0, 0);
+            BaseImage = v;
+            ImageCanvas.image(BaseImage, 0, 0);
             ImageCanvas.redraw();
             URL.revokeObjectURL(FileURL);
             p['SetCanvasViewportInit']();
@@ -273,35 +312,58 @@ export class VoidDrawPage implements OnInit {
       let ScaleCenter = p.createVector(0, 0);
       /** 이미지 Crop 시 상대적 위치 기록 */
       let CropPosition = p.createVector();
+      /** Crop 정보 편집시 사용됨 */
+      let CropModePosition = p.createVector();
+      let CropSize = p.createVector();
       p.draw = () => {
         p.clear(255, 255, 255, 255);
         p.push();
         p.translate(ScaleCenter);
         p.scale(CamScale);
         p.translate(CamPosition);
-        if (ImageCanvas) {
-          ImageCanvas.push();
-          ImageCanvas.translate(CropPosition);
+        if (ImageCanvas)
           p.image(ImageCanvas, 0, 0);
-          ImageCanvas.pop();
-        }
-        if (ActualCanvas) {
-          ActualCanvas.push();
-          ActualCanvas.translate(CropPosition);
+        if (ActualCanvas)
           p.image(ActualCanvas, 0, 0);
-          ActualCanvas.pop();
-        }
-        if (CurrentDraw
-          && CurrentDraw['pos']
-          && CurrentDraw['pos'].length) {
+        if (this.isCropMode) {
           p.push();
-          p.stroke(CurrentDraw['color']);
-          p.strokeWeight(CurrentDraw['weight']);
-          p.beginShape();
-          for (let i = 0, j = CurrentDraw['pos'].length; i < j; i++)
-            p.curveVertex(CurrentDraw['pos'][i].x, CurrentDraw['pos'][i].y);
+          p.translate(-ActualCanvas.width / 2, -ActualCanvas.height / 2);
+          p.translate(CropModePosition);
+          p.noStroke();
+          p.fill(0, 100);
+          p.rect(0, 0, CropSize.x, CropSize.y);
+          p.stroke(255, 0, 0);
+          p.strokeWeight(8);
+          p.beginShape(p.LINES);
+          p.vertex(0, 0);
+          p.vertex(CropSize.x, 0);
+          p.vertex(CropSize.x, 0);
+          p.vertex(CropSize.x, CropSize.y * .8);
+          p.vertex(0, 0);
+          p.vertex(0, CropSize.y);
+          p.vertex(0, CropSize.y);
+          p.vertex(CropSize.x * .8, CropSize.y);
+          p.stroke(255, 255, 0);
+          p.vertex(CropSize.x * .8, CropSize.y);
+          p.vertex(CropSize.x, CropSize.y);
+          p.vertex(CropSize.x, CropSize.y * .8);
+          p.vertex(CropSize.x, CropSize.y);
           p.endShape();
           p.pop();
+        } else { // Crop 이 아니라면 그리기 모드
+          if (CurrentDraw
+            && CurrentDraw['pos']
+            && CurrentDraw['pos'].length) {
+            p.push();
+            p.translate(CropPosition);
+            p.stroke(CurrentDraw['color']);
+            p.strokeWeight(CurrentDraw['weight']);
+            p.beginShape();
+            for (let i = 0, j = CurrentDraw['pos'].length; i < j; i++)
+              p.curveVertex(CurrentDraw['pos'][i].x, CurrentDraw['pos'][i].y);
+            p.endShape();
+            p.pop();
+          }
         }
         p.pop();
       }
@@ -311,18 +373,17 @@ export class VoidDrawPage implements OnInit {
       let DrawingStack = [];
       /** 선을 어디까지 그리는지, 히스토리 행동용 */
       let HistoryPointer = 0;
-      /** 모바일 최적화를 위해 기록 길이 제한 */
-      const CACHE_HISTORY_LENGTH = 16;
       /** 전체 그리기, 동작 취소 등 전체 업데이트가 필요할 때 사용 */
       let updateActualCanvas = () => {
         ActualCanvas.background(255, 0);
         // 모든 그리기 행동 시도
-        for (let i = HistoryPointer - 1; i >= 0; i--)
+        for (let i = 0; i < HistoryPointer; i++)
           updateDrawingCurve(ActualCanvas, DrawingStack[i]);
       }
       /** 마지막 행동에 해당하는 선 전체 그리기 */
       let updateDrawingCurve = (TargetCanvas: p5.Graphics, targetDraw = CurrentDraw) => {
         TargetCanvas.push();
+        TargetCanvas.translate(CropPosition);
         TargetCanvas.stroke(targetDraw['color']);
         TargetCanvas.strokeWeight(targetDraw['weight']);
         TargetCanvas.beginShape();
@@ -344,12 +405,19 @@ export class VoidDrawPage implements OnInit {
       let MouseAct: p5.Vector;
       /** 이동 연산용 시작점 */
       let MovementStartPosition: p5.Vector;
+      /** 이미지 자르기 이동 시작점 (포인터의 위치 기록) */
+      let CropStartPosition: p5.Vector;
+      /** 스케일 행동 검토용 시작점 / 분리된 정보 */
+      let CropStartScalePos: p5.Vector;
       /** 두 손가락 사이 거리 */
       let TouchBetween = 0;
       /** 스케일 시작점 */
       let ScaleStartRatio: number;
       /** 시작점 캐시 */
       let TempStartCamPosition: p5.Vector;
+      /** Crop 크기 조정 여부 */
+      let isCropSizing = false;
+      let CropStartSize: p5.Vector;
       let isClickOnMenu = false;
       p.mousePressed = (ev: any) => {
         if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) {
@@ -358,7 +426,9 @@ export class VoidDrawPage implements OnInit {
         }
         switch (ev['which']) {
           case 1: // 왼쪽
-            DrawStartAct();
+            if (this.isCropMode) {
+              CropModeStartAct();
+            } else DrawStartAct();
             break;
           case 3: // 오른쪽
             MovementStartPosition = p.createVector(p.mouseX, p.mouseY);
@@ -370,11 +440,23 @@ export class VoidDrawPage implements OnInit {
             break;
         }
       }
+      let CropModeStartAct = (_x?: number, _y?: number) => {
+        let ClickedPos = MappingPosition(_x, _y);
+        let CornerPos = CropModePosition.copy().add(CropSize).sub(p.createVector(ActualCanvas.width / 2, ActualCanvas.height / 2));
+        let dist = ClickedPos.dist(CornerPos);
+        let targetDist = p.max(ActualCanvas.width, ActualCanvas.height) * .2;
+        isCropSizing = dist < targetDist;
+        if (isCropSizing) {
+          CropStartScalePos = p.createVector(p.mouseX, p.mouseY);
+          CropStartSize = CropSize.copy();
+        } else CropStartPosition = p.createVector(p.mouseX, p.mouseY).sub(CropModePosition.mult(CamScale));
+      }
       /** 그리기 시작 행동 (PC/터치스크린 공용) */
       let DrawStartAct = (_x?: number, _y?: number) => {
         UndoButton.style.fill = 'var(--ion-color-dark)';
         RedoButton.style.fill = 'var(--ion-color-medium)';
         let pos = MappingPosition(_x, _y);
+        pos.sub(CropPosition);
         let _pos = { x: pos.x, y: pos.y };
         CurrentDraw = {
           pos: [],
@@ -388,11 +470,20 @@ export class VoidDrawPage implements OnInit {
       p.mouseDragged = (ev: any) => {
         switch (ev['which']) {
           case 1: // 왼쪽
-            let pos = MappingPosition();
-            let _pos = { x: pos.x, y: pos.y };
-            if (CurrentDraw)
-              CurrentDraw['pos'].push(_pos);
-            p.redraw();
+            if (this.isCropMode && !isClickOnMenu) {
+              let CurrentPosition = p.createVector(p.mouseX, p.mouseY);
+              if (isCropSizing) {
+                CropSize = CropStartSize.copy().add(CropStartScalePos.copy().sub(CurrentPosition).div(-CamScale));
+              } else CropModePosition = CropStartPosition.copy().sub(CurrentPosition).div(-CamScale);
+              p.redraw();
+            } else {
+              let pos = MappingPosition();
+              pos.sub(CropPosition);
+              let _pos = { x: pos.x, y: pos.y };
+              if (CurrentDraw && CurrentDraw['pos'])
+                CurrentDraw['pos'].push(_pos);
+              p.redraw();
+            }
             break;
           case 3: // 오른쪽
             MouseAct = p.createVector(p.mouseX, p.mouseY);
@@ -416,8 +507,10 @@ export class VoidDrawPage implements OnInit {
       p.mouseReleased = (ev: any) => {
         switch (ev['which']) {
           case 1: // 왼쪽
-            if (!isClickOnMenu) {
+            if (this.isCropMode) {
+            } else if (!isClickOnMenu) {
               let pos = MappingPosition();
+              pos.sub(CropPosition);
               let _pos = { x: pos.x, y: pos.y };
               if (CurrentDraw) {
                 CurrentDraw['pos'].push(_pos);
@@ -456,7 +549,9 @@ export class VoidDrawPage implements OnInit {
         isTouching = true;
         switch (touches.length) {
           case 1: // 그리기
-            DrawStartAct(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
+            if (this.isCropMode) {
+              CropModeStartAct(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
+            } else DrawStartAct(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
             break;
           case 2: // 패닝, 스케일
             let One = p.createVector(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT);
@@ -474,14 +569,24 @@ export class VoidDrawPage implements OnInit {
         }
       }
       p.touchMoved = (ev: any) => {
+        if (!isTouching) return;
         touches = ev['touches'];
         switch (touches.length) {
           case 1: { // 그리기
-            let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
-            let _pos = { x: pos.x, y: pos.y };
-            if (CurrentDraw)
-              CurrentDraw['pos'].push(_pos);
-            p.redraw();
+            if (this.isCropMode && !isClickOnMenu) {
+              let CurrentPosition = p.createVector(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
+              if (isCropSizing) {
+                CropSize = CropStartSize.copy().add(CropStartScalePos.copy().sub(CurrentPosition).div(-CamScale));
+              } else CropModePosition = CropStartPosition.copy().sub(CurrentPosition).div(-CamScale);
+              p.redraw();
+            } else {
+              let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
+              pos.sub(CropPosition);
+              let _pos = { x: pos.x, y: pos.y };
+              if (CurrentDraw && CurrentDraw['pos'])
+                CurrentDraw['pos'].push(_pos);
+              p.redraw();
+            }
           }
             break;
           case 2: { // 스케일과 패닝
@@ -503,9 +608,11 @@ export class VoidDrawPage implements OnInit {
         isTouching = false;
         switch (touches.length) {
           case 0: // 모든 행동 종료
-            if (!isClickOnMenu) {
+            if (this.isCropMode) {
+            } else if (!isClickOnMenu) {
               if (CurrentDraw) {
                 let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
+                pos.sub(CropPosition);
                 let _pos = { x: pos.x, y: pos.y };
                 CurrentDraw['pos'].push(_pos);
                 CurrentDraw['pos'].push(_pos);
@@ -529,11 +636,9 @@ export class VoidDrawPage implements OnInit {
       /** 모든 입력을 제거했을 때 공통 행동 */
       let ReleaseAllAct = () => {
         DrawingStack.length = HistoryPointer;
-        DrawingStack.push(CurrentDraw);
-        updateDrawingCurve(ActualCanvas, CurrentDraw);
-        if (DrawingStack.length > CACHE_HISTORY_LENGTH) {
-          let CachedDraw = DrawingStack.shift();
-          updateDrawingCurve(ImageCanvas, CachedDraw);
+        if (CurrentDraw) {
+          DrawingStack.push(CurrentDraw);
+          updateDrawingCurve(ActualCanvas, CurrentDraw);
         }
         HistoryPointer = DrawingStack.length;
         MovementStartPosition = undefined;
@@ -542,10 +647,6 @@ export class VoidDrawPage implements OnInit {
         p.redraw();
       }
     });
-  }
-
-  change_color() {
-    this.p5voidDraw['change_color']();
   }
 
   new_image() {
@@ -584,9 +685,13 @@ export class VoidDrawPage implements OnInit {
 
   /** 사용하기를 누른 경우 */
   dismiss_draw() {
-    this.mainLoading.present();
-    this.WithoutSave = false;
-    this.p5voidDraw['save_image']();
+    if (this.isCropMode)
+      this.p5voidDraw['apply_crop']();
+    else {
+      this.mainLoading.present();
+      this.WithoutSave = false;
+      this.p5voidDraw['save_image']();
+    }
   }
 
   ionViewWillLeave() {
