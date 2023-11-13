@@ -122,10 +122,11 @@ export class ToolServerService {
   /** 사설 서버 종료 */
   stop(_target: string) {
     if (isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA') {
-      this.list[_target]['server'].stop((_addr, port) => {
-        this.onServerClose(_target);
-        delete this.list[_target];
-      });
+      if (this.list[_target])
+        this.list[_target]['server'].stop((_addr, port) => {
+          this.onServerClose(_target);
+          delete this.list[_target];
+        });
     }
   }
 

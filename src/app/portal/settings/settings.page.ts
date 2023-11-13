@@ -194,7 +194,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     LinkButton.push(() => this.go_to_page('qrcode-gen'));
     if (!this.is_nativefier) LinkButton.push(() => this.go_to_page('tts-export'));
     LinkButton.push(() => this.go_to_page('wsclient'));
-    LinkButton.push(() => this.go_to_page('engineppt'));
+    // LinkButton.push(() => this.go_to_page('engineppt'));
     LinkButton.push(() => this.download_serverfile());
     if (this.as_admin.length) {
       LinkButton.push(() => this.go_to_page('weblink-gen'));
