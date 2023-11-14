@@ -1,13 +1,14 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit } from '@angular/core';
-import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { AlertController, IonModal, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import * as p5 from 'p5';
-import { isPlatform } from 'src/app/app.component';
+import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
+import { ToolServerService } from 'src/app/tool-server.service';
 
 @Component({
   selector: 'app-void-draw',
@@ -24,6 +25,7 @@ export class VoidDrawPage implements OnInit {
     public global: GlobalActService,
     private navParams: NavParams,
     private indexed: IndexedDBService,
+    private toolServer: ToolServerService,
   ) { }
 
   ngOnInit() { }
@@ -56,13 +58,16 @@ export class VoidDrawPage implements OnInit {
     this.global.p5key['KeyShortCut']['AddAct'] = () => {
       this.new_image();
     }
+    this.global.p5key['KeyShortCut']['SKeyAct'] = () => {
+      this.StartSharedDraw();
+    }
     this.global.p5key['KeyShortCut']['DeleteAct'] = () => {
+      this.open_crop_tool();
+    }
+    this.global.p5key['KeyShortCut']['FKeyAct'] = () => {
       if (this.isCropMode) {
         this.p5voidDraw['apply_crop']();
       } else this.dismiss_draw();
-    }
-    this.global.p5key['KeyShortCut']['SKeyAct'] = () => {
-      this.open_crop_tool();
     }
     document.addEventListener('ionBackButton', this.EventListenerAct);
     this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
@@ -83,6 +88,26 @@ export class VoidDrawPage implements OnInit {
   }
 
   p5voidDraw: p5;
+  @ViewChild('VoidDrawServer') VoidDrawServer: IonModal;
+  QRCode: any;
+  InputServerAddress: string;
+  InputJoinAddress() {
+    let address = `${SERVER_PATH_ROOT}pjcone_pwa/?voidDraw=${this.InputServerAddress}`;
+    console.log(address);
+  }
+  StartSharedDraw() {
+    this.toolServer.initialize('voidDraw', 12022, () => {
+      // OnStart
+      this.QRCode = this.global.readasQRCodeFromString(
+        `${SERVER_PATH_ROOT}pjcone_pwa/?voidDraw=${this.toolServer.addresses}`
+      );
+    }, (json: any) => {
+      // OnMessage
+      console.log('수신 기록: ', json);
+    });
+    this.RemoveShortCut();
+    this.VoidDrawServer.present();
+  }
   isCropMode = false;
   create_p5voidDraw(initData: any) {
     let targetDiv = document.getElementById('voidDraw');
@@ -214,12 +239,19 @@ export class VoidDrawPage implements OnInit {
         AddCell.style.textAlign = 'center';
         AddCell.style.cursor = 'pointer';
         AddCell.onclick = () => { this.new_image() }
-        let CropCell = top_row.insertCell(1); // Crop
+        let QRCell = top_row.insertCell(1); // 공유 그림판 온
+        QRCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
+        QRCell.style.textAlign = 'center';
+        QRCell.style.cursor = 'pointer';
+        QRCell.onclick = () => {
+          this.StartSharedDraw();
+        }
+        let CropCell = top_row.insertCell(2); // Crop
         CropCell.innerHTML = `<ion-icon id="CropToolNotReady" style="width: 27px; height: 27px" name="crop"></ion-icon>`;
         CropCell.style.textAlign = 'center';
         CropCell.style.cursor = 'pointer';
         CropCell.onclick = () => { this.open_crop_tool() }
-        let ApplyCell = top_row.insertCell(2);
+        let ApplyCell = top_row.insertCell(3);
         ApplyCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="checkmark"></ion-icon>`;
         ApplyCell.style.textAlign = 'center';
         ApplyCell.style.cursor = 'pointer';
@@ -694,11 +726,17 @@ export class VoidDrawPage implements OnInit {
     }
   }
 
-  ionViewWillLeave() {
+  RemoveShortCut() {
     delete this.global.p5key['KeyShortCut']['HistoryAct'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
     delete this.global.p5key['KeyShortCut']['DeleteAct'];
     delete this.global.p5key['KeyShortCut']['SKeyAct'];
+    delete this.global.p5key['KeyShortCut']['FKeyAct'];
+  }
+
+  ionViewWillLeave() {
+    this.toolServer.stop('voidDraw');
+    this.RemoveShortCut();
     if (this.p5voidDraw) this.p5voidDraw.remove();
   }
 

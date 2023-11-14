@@ -68,8 +68,8 @@ export class WebrtcService {
    * 마이크 권한을 확보하고 연결하기
    * @param type 영상통화 / 음성통화
    * @param media_const 미디어 입출 정보 지정, 빈 값을 넣어 기본 값으로 행동하기
-   * @param info ice 서버 등의 정보 입력
    * @param nakama 통화가 진행중인 채널 정보
+   * @param LeaveMatch nakama에서 연결된 매치가 있다면 연결끊기 처리
    */
   async initialize(type: 'video' | 'audio' | 'data',
     media_const?: MediaStreamConstraints, nakama?: any, LeaveMatch?: boolean) {

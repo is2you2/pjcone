@@ -18,6 +18,7 @@ import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { GroupServerPage } from './portal/settings/group-server/group-server.page';
+import { VoidDrawPage } from './portal/subscribes/chat-room/void-draw/void-draw.page';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -3312,6 +3313,14 @@ export class NakamaService {
           } catch (e) { }
           ServerInfos.push(json[i].value);
           await this.indexed.saveTextFileToUserPath(JSON.stringify(ServerInfos), 'servers/webrtc_server.json');
+          break;
+        case 'voidDraw':
+          this.modalCtrl.create({
+            component: VoidDrawPage,
+            componentProps: {
+              addresses: json[i]['addresses'],
+            },
+          });
           break;
         default: // 동작 미정 알림(debug)
           throw "지정된 틀 아님";

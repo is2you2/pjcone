@@ -13,4 +13,19 @@ SPDX-License-Identifier: MIT -->
 <ion-content>
   <div id="voidDraw" class="full_screen" style="display: flex; overflow: hidden;">
   </div>
+
+  <ion-modal #VoidDrawServer [initialBreakpoint]=".5" [breakpoints]="[.5, .65, .8]">
+    <ng-template>
+      <ion-content>
+        <img *ngIf="QRCode" style="width: 100%; height: auto;" [src]="QRCode" alt="QRCode">
+        <ion-item>
+          <ion-input [label]="lang.text['voidDraw']['InputAddress']" class="ion-text-right" placeholder="IPv4: 0.0.0.0"
+            [(ngModel)]="InputServerAddress"></ion-input>
+        </ion-item>
+        <ion-item button (click)="InputJoinAddress()">
+          <ion-label class="ion-text-center">{{lang.text['voidDraw']['ConnectToAddress']}}</ion-label>
+        </ion-item>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

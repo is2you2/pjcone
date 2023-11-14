@@ -157,6 +157,10 @@ export class GlobalActService {
             if (p['KeyShortCut']['DeleteAct'])
               p['KeyShortCut']['DeleteAct']();
             break;
+          case 'KeyF': // 키간 사이 행동 (S Key)
+            if (p['KeyShortCut']['FKeyAct'])
+              p['KeyShortCut']['FKeyAct']();
+            break;
           case 'Enter': // 발송 등
             if (p['KeyShortCut']['EnterAct'])
               p['KeyShortCut']['EnterAct']();

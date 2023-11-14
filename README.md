@@ -49,6 +49,7 @@ Project: Cone 커뮤니티를 위한 채팅 앱 클라이언트
 ### 모바일 사설 서버 포트
 - 12011: 모바일 사설 서버
 - 12021: engineppt
+- 12022: voidDraw 공유 그림판
 
 ## License
 MIT

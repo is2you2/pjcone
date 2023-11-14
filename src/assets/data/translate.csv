@@ -382,6 +382,8 @@ weight,선 두께,Stroke weight
 changeWeight,두께 변경,Change weight
 apply,적용,Apply
 default_size,기본,default
+InputAddress,주소 입력,Input Address
+ConnectToAddress,연결하기,Connect
 ## UserFsDir,,
 LoadingExplorer,준비중,Explorer
 CannotOpenFile,이 파일은 열 수 없습니다,This file cannot be opened
