@@ -160,11 +160,8 @@ SPDX-License-Identifier: MIT -->
               </ion-item>
             </div>
           </div>
-          <ion-item>
+          <ion-item button (click)="open_select_new()">
             <ion-label>{{lang.text['TodoDetail']['attachments']}}</ion-label>
-            <ion-button class="ion-text-right" (click)="open_select_new()">
-              {{lang.text['TodoDetail']['new_attach']}}
-            </ion-button>
             <ion-item style="display: none;">
               <ion-select [label]="lang.text['TodoDetail']['new_attach']" #NewAttach interface="action-sheet"
                 (ionChange)="new_attach($event)" (ionDismiss)="AddShortCut()">
