@@ -947,6 +947,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       let ShowMeAgainCount = Math.min(this.ViewableMessage.length, Math.min(this.ViewMsgIndex, this.RefreshCount));
       this.ViewMsgIndex -= ShowMeAgainCount;
       this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+      for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
+        delete this.ViewableMessage[i].content.thumbnail;
       for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
         try {
           if (this.info['HideAutoThumbnail']) {
@@ -978,6 +980,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.messages.unshift(json[i]);
               this.ViewMsgIndex = Math.max(0, this.messages.length - this.RefreshCount);
               this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.RefreshCount);
+              for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
+                delete this.ViewableMessage[i].content.thumbnail;
               this.modulate_chatmsg(0, json.length);
             }
             for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
@@ -1010,6 +1014,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let ShowMeAgainCount = Math.min(Math.min(json.length, this.RefreshCount), this.ViewableMessage.length);
           this.ViewMsgIndex = Math.max(0, json.length - this.RefreshCount);
           this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+          for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
+            delete this.ViewableMessage[i].content.thumbnail;
           for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
             try {
               if (this.info['HideAutoThumbnail']) {
