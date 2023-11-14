@@ -182,6 +182,7 @@ export class VoidDrawPage implements OnInit {
     });
   }
   StartSharedDraw() {
+    if (this.navParams.data.path) return;
     if (this.isMobile)
       this.toolServer.initialize('voidDraw', 12022, async () => {
         // OnStart
@@ -375,7 +376,9 @@ export class VoidDrawPage implements OnInit {
         AddCell.style.cursor = 'pointer';
         AddCell.onclick = () => { this.new_image() }
         let QRCell = top_row.insertCell(1); // 공유 그림판 온
-        QRCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
+        if (initData['path']) {
+          QRCell.innerHTML = `<ion-icon color="medium" style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
+        } else QRCell.innerHTML = `<ion-icon color="dark" style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
         QRCell.style.textAlign = 'center';
         QRCell.style.cursor = 'pointer';
         QRCell.onclick = () => {
@@ -567,6 +570,10 @@ export class VoidDrawPage implements OnInit {
           p['SetCanvasViewportInit']();
         }, 0);
       }
+      /** 공유받은 현재 그리기 정보  
+       * SharedCurrentDraw[uuid] = { pos: [], display_name, color, weight }
+       */
+      let SharedCurrentDraw = {};
       let CurrentDraw = {};
       const BUTTON_HEIGHT = 56;
       /** 모든 터치 또는 마우스 포인터의 현재 지점 */

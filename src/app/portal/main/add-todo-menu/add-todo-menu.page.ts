@@ -583,8 +583,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           component: VoidDrawPage,
         }).then(v => {
           v.onWillDismiss().then(async v => {
-            this.AddShortCut();
             if (v.data) this.voidDraw_fileAct_callback(v);
+          });
+          v.onDidDismiss().then(() => {
+            this.AddShortCut();
           });
           v.present();
         });
