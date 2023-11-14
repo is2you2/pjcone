@@ -784,6 +784,7 @@ export class IonicViewerPage implements OnInit {
         loading.present();
         this.image_info['width'] = this.p5canvas['TextArea'].clientWidth;
         this.image_info['height'] = this.p5canvas['TextArea'].scrollHeight;
+        this.p5canvas.pixelDensity(1);
         this.p5canvas.createCanvas(this.image_info['width'], this.image_info['height']);
         this.p5canvas.textSize(16);
         this.p5canvas.textWrap(this.p5canvas.WORD);
@@ -810,6 +811,7 @@ export class IonicViewerPage implements OnInit {
         try {
           let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
           loading.present();
+          this.p5canvas.pixelDensity(1);
           this.p5canvas['VideoMedia'].pause();
           this.p5canvas['VideoMedia']['size'](this.image_info['width'], this.image_info['height']);
           this.p5canvas.createCanvas(this.image_info['width'], this.image_info['height']);
