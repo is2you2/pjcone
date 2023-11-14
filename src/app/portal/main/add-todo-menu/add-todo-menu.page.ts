@@ -784,6 +784,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       cssClass: 'fullscreen',
     }).then(v => {
       v.onDidDismiss().then((v) => {
+        this.AddShortCut();
         if (v.data) { // 파일 편집하기를 누른 경우
           switch (v.data.type) {
             case 'image':
