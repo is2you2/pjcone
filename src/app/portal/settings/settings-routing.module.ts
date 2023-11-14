@@ -41,10 +41,6 @@ const routes: Routes = [
     loadChildren: () => import('./noti-alert/noti-alert.module').then( m => m.NotiAlertPageModule)
   },
   {
-    path: 'engineppt',
-    loadChildren: () => import('./engineppt/engineppt.module').then( m => m.EnginepptPageModule)
-  },
-  {
     path: 'admin-tools',
     loadChildren: () => import('./admin-tools/admin-tools.module').then( m => m.AdminToolsPageModule)
   },

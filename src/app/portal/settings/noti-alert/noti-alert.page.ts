@@ -29,7 +29,6 @@ export class NotiAlertPage implements OnInit {
       'diychat',
       'todo',
       'simplechat',
-      'engineppt',
     ];
     this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
       this.toggle_silent_set(target[index]);
