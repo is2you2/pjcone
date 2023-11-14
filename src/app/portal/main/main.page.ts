@@ -61,9 +61,6 @@ export class MainPage implements OnInit {
   }
 
   async ionViewWillEnter() {
-    if (!this.global.p5todo)
-      this.CreateTodoManager();
-    else this.global.p5todo['PlayCanvas']();
     this.indexed.GetFileListFromDB('acts_local', list => {
       list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB));
     }, this.indexed.godotDB);
@@ -716,6 +713,9 @@ export class MainPage implements OnInit {
   }
 
   ionViewDidEnter() {
+    if (!this.global.p5todo)
+      this.CreateTodoManager();
+    else this.global.p5todo['PlayCanvas']();
     this.nakama.resumeBanner();
     this.try_add_shortcut();
   }
