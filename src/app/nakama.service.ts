@@ -3194,6 +3194,16 @@ export class NakamaService {
         });
       }
     }
+    if (init['voidDraw']) {
+      for (let i = 0, j = init['voidDraw'].length; i < j; i++) {
+        let sep_array = init['voidDraw'][i].split(']');
+        let array = sep_array[0].split('[')[1];
+        json.push({
+          type: 'voidDraw',
+          addresses: array.split(','),
+        });
+      }
+    }
     if (NeedReturn) return json;
     else await this.act_from_QRInfo(json);
   }
@@ -3315,12 +3325,24 @@ export class NakamaService {
           await this.indexed.saveTextFileToUserPath(JSON.stringify(ServerInfos), 'servers/webrtc_server.json');
           break;
         case 'voidDraw':
-          this.modalCtrl.create({
-            component: VoidDrawPage,
-            componentProps: {
-              addresses: json[i]['addresses'],
-            },
-          });
+          for (let j = 0; j < 20; j++)
+            try {
+              if (!this.lang.text['ChatRoom']['voidDraw'] || !this.lang.text['voidDraw']['ConnectToAddress'])
+                throw 'Lang not ready';
+              this.modalCtrl.create({
+                component: VoidDrawPage,
+                componentProps: {
+                  addresses: json[i]['addresses'],
+                },
+              }).then(v => v.present());
+              break;
+            } catch (e) {
+              await new Promise((done) => {
+                setTimeout(() => {
+                  done(undefined);
+                }, 100);
+              });
+            }
           break;
         default: // 동작 미정 알림(debug)
           throw "지정된 틀 아님";
