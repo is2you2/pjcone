@@ -383,6 +383,8 @@ changeWeight,두께 변경,Change weight
 apply,적용,Apply
 default_size,기본,default
 InputAddress,주소 입력,Input Address
+ConnectedToServer,서버에 연결됨,Connected
+DisconnectedFromServer,연결 끊김,Disconnected
 ConnectToAddress,연결하기,Connect
 ServerStarted,공유 그림판 서버 켜짐,Shared paint server turned on
 ## UserFsDir,,

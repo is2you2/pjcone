@@ -11,22 +11,10 @@ interface ListToolServer {
   /** cordova.wsserver */
   server?: any;
   /** 연결된 사용자 */
-  users?: any;
-  /** 사용자 연결 시 행동 */
-  OnConnected?: { [id: string]: Function };
-  /** 사용자 연결이 끊길 때 행동 */
-  OnDisconnected?: { [id: string]: Function };
+  users?: string[];
 }
 
-/** 만능참여로 서버 참여시 스캔 정보 양식 */
-export interface UnivToolForm {
-  /** 대상의 이름, statusManager.tools 에 등록되어있어야 함 */
-  name: string;
-  /** 참여 가능자 ip주소 -> ListToolServer.target 에게 인계됨 */
-  client: string;
-}
-
-/** 도구모음 서버, 1인 사용이 공통되므로 생성시 동작방식을 주입하여 사용 */
+/** 도구모음 서버, 릴레이 서버 형식으로 동작 */
 @Injectable({
   providedIn: 'root'
 })
@@ -49,17 +37,18 @@ export class ToolServerService {
    * @param _target 일괄처리용 구분자 (툴의 이름)
    * @param _PORT 사용을 위한 포트 입력
    * @param onStart 서버 시작시 행동
-   * @param onMessage 메시지를 받았을 때 행동 onMessage(json)
+   * @param onConnect 서버에 사용자 연결시 행동
+   * @param onMessage 메시지를 받았을 때 행동
+   * @param onDisconnect 서버에 사용자 연결 끊김 행동
    */
-  initialize(_target: string, _PORT: number, onStart: Function, onMessage: Function) {
+  initialize(_target: string, _PORT: number, onStart: Function, onConnect: Function, onMessage: Function, onDisconnect: Function) {
     if (isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA') {
       if (this.list[_target] == null) {
         this.statusBar.tools[_target] = 'pending';
         this.list[_target] = {};
-        this.list[_target].OnConnected = {};
-        this.list[_target].OnDisconnected = {};
+        this.list[_target]['users'] = [];
       } else {
-        console.warn('동일한 서버 구성이 이미 존재함: ', this.list);
+        console.warn('동일한 키의 서버가 이미 존재함: ', this.list);
         if (!this.statusBar.tools[_target] || this.statusBar.tools[_target] == 'offline')
           delete this.list[_target];
         return;
@@ -73,35 +62,26 @@ export class ToolServerService {
           this.stop(_target);
         },
         'onOpen': (conn) => {
-          if (!this.list[_target]['users']) {
-            this.list[_target]['users'] = conn.uuid;
-            this.statusBar.tools[_target] = 'certified';
-          } else {
-            console.log('1:1 매칭이 완료됨');
-            this.list[_target]['server'].close({ 'uuid': conn.uuid }, 4001, '허용되지 않은 사용자');
-          }
-          if (this.list[_target]['OnConnected']) {
-            let keys = Object.keys(this.list[_target].OnConnected);
-            for (let i = 0, j = keys.length; i < j; i++)
-              this.list[_target].OnConnected[keys[i]](conn);
-          }
+          this.list[_target]['users'].push(conn.uuid);
+          this.statusBar.tools[_target] = 'certified';
+          onConnect(conn);
         },
-        'onMessage': (_conn, msg) => {
+        'onMessage': (conn, msg) => {
           try {
             let json = JSON.parse(msg);
-            onMessage(json);
+            onMessage(conn, json);
           } catch (e) {
             console.error(`Tool-server_json 변환 오류_${msg}: ${e}`);
           }
         },
-        'onClose': (_conn, _code, _reason, _wasClean) => {
+        'onClose': (conn, _code, _reason, _wasClean) => {
           this.statusBar.tools[_target] = 'online';
-          delete this.list[_target]['users'];
-          if (this.list[_target]['OnDisconnected']) {
-            let keys = Object.keys(this.list[_target].OnDisconnected);
-            for (let i = 0, j = keys.length; i < j; i++)
-              this.list[_target].OnDisconnected[keys[i]]();
-          }
+          for (let i = this.list[_target]['users'].length - 1; i >= 0; i--)
+            if (this.list[_target]['users'][i] == conn.uuid) {
+              this.list[_target]['users'].splice(i, 1);
+              break;
+            }
+          onDisconnect(conn);
         },
         // Other options
         'origins': [], // validates the 'Origin' HTTP Header.
@@ -153,14 +133,22 @@ export class ToolServerService {
     }
   }
 
+  /** 단일 대상 발송 */
+  send_to(_target: string, uuid: string, msg: string) {
+    if (!this.list[_target]['users'].length) return;
+    if (this.list[_target] && this.list[_target]['server'])
+      this.list[_target]['server'].send({ 'uuid': uuid }, msg);
+  }
+
   /**
    * 클라이언트에게 메시지 발송
-   * @param _target 발송받는 그룹 특정
+   * @param _target 발송받는 기능 서버 이름
    * @param msg 메시지
    */
-  send_to(_target: string, msg: string) {
-    if (!this.list[_target]['users']) return;
+  send_to_all(_target: string, msg: string) {
+    if (!this.list[_target]['users'].length) return;
     if (this.list[_target] && this.list[_target]['server'])
-      this.list[_target]['server'].send({ 'uuid': this.list[_target]['users'] }, msg);
+      for (let i = 0, j = this.list[_target]['users'].length; i < j; i++)
+        this.list[_target]['server'].send({ 'uuid': this.list[_target]['users'][i] }, msg);
   }
 }

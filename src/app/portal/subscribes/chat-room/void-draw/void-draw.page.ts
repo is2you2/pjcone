@@ -8,6 +8,7 @@ import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
+import { P5ToastService } from 'src/app/p5-toast.service';
 import { ToolServerService } from 'src/app/tool-server.service';
 
 @Component({
@@ -26,6 +27,7 @@ export class VoidDrawPage implements OnInit {
     private navParams: NavParams,
     private indexed: IndexedDBService,
     private toolServer: ToolServerService,
+    private p5toast: P5ToastService,
   ) { }
 
   ngOnInit() { }
@@ -44,11 +46,13 @@ export class VoidDrawPage implements OnInit {
       width: this.navParams.data.width,
       height: this.navParams.data.height,
       path: this.navParams.data.path,
+      addresses: this.navParams.data.addresses,
     });
     this.isMobile = isPlatform != 'DesktopPWA';
   }
 
   AddShortCut() {
+    delete this.global.p5key['KeyShortCut']['Digit'];
     this.global.p5key['KeyShortCut']['HistoryAct'] = (key: string) => {
       switch (key) {
         case 'Z':
@@ -84,11 +88,36 @@ export class VoidDrawPage implements OnInit {
   }
 
   /** 새 캔버스 생성 행동 분리 */
-  create_new_canvas(inputInfo?: any) {
-    inputInfo['width'] = inputInfo['width'] || 432;
-    inputInfo['height'] = inputInfo['height'] || 432;
-    if (this.p5voidDraw) this.p5voidDraw.remove();
-    this.create_p5voidDraw(inputInfo);
+  async create_new_canvas(inputInfo?: any) {
+    if (inputInfo['addresses']) {
+      for (let i = 0, j = inputInfo['addresses'].length; i < j; i++)
+        if (!this.UserWS)
+          try {
+            this.UserWS = await this.createUserWS(inputInfo['addresses'][i]);
+          } catch (e) { }
+      if (this.UserWS) {
+        this.p5toast.show({
+          text: this.lang.text['voidDraw']['ConnectedToServer'],
+        });
+        if (this.p5voidDraw) this.p5voidDraw.remove();
+      } else { // 연결에 실패함
+        this.p5toast.show({
+          text: this.lang.text['voidDraw']['DisconnectedFromServer'],
+        });
+        if (!this.p5voidDraw)
+          this.create_p5voidDraw({
+            width: 432,
+            height: 432,
+          });
+      }
+    } else {
+      inputInfo['width'] = inputInfo['width'] || 432;
+      inputInfo['height'] = inputInfo['height'] || 432;
+      if (this.UserWS) this.UserWS.close();
+      this.isCropable = true;
+      if (this.p5voidDraw) this.p5voidDraw.remove();
+      this.create_p5voidDraw(inputInfo);
+    }
   }
 
   p5voidDraw: p5;
@@ -96,19 +125,117 @@ export class VoidDrawPage implements OnInit {
   QRCode: any;
   InputServerAddress: string;
   InputJoinAddress() {
-    let address = `${SERVER_PATH_ROOT}pjcone_pwa/?voidDraw=${this.InputServerAddress}`;
-    console.log(address);
+    this.create_new_canvas({
+      addresses: [this.InputServerAddress],
+    });
+    this.VoidDrawServer.dismiss();
+  }
+  /** 공유 그림판 발송자 */
+  UserWS: WebSocket;
+  /** 웹 소켓 생성하기 */
+  createUserWS(address: string, isSelf = false): Promise<WebSocket> {
+    return new Promise((done, err) => {
+      let ws = new WebSocket(`ws://${address}:12022/`);
+      let BGImgBase64 = '';
+      ws.onopen = () => {
+        BGImgBase64 = '';
+        if (!isSelf) {
+          this.isCropable = false;
+          ws.send(JSON.stringify({ type: 'REQ_INIT' }));
+        }
+        done(ws);
+      }
+      ws.onmessage = (ev: any) => {
+        let json = JSON.parse(ev.data);
+        switch (json['type']) {
+          case 'CANVAS_SIZE': // 캔버스 생성 우선
+            this.create_p5voidDraw({
+              width: json['width'],
+              height: json['height'],
+            });
+            break;
+          case 'IMAGE_PART': // 이미지 공유받음
+            BGImgBase64 += json['part'];
+            break;
+          case 'IMAGE_EOL': // 이미지 전부 발송됨 알림
+            BGImgBase64 = BGImgBase64.replace(/"|=|\\/g, '');
+            this.p5voidDraw.loadImage(BGImgBase64, v => {
+              this.p5voidDraw['BaseImage'] = v;
+              this.p5voidDraw['ImageCanvas'].image(this.p5voidDraw['BaseImage'], 0, 0);
+              this.p5voidDraw['ImageCanvas'].redraw();
+              this.p5voidDraw['SetCanvasViewportInit']();
+            }, e => {
+              console.error('그림판 배경 이미지 불러오기 오류: ', e);
+              this.p5voidDraw['ImageCanvas'].redraw();
+              BGImgBase64 = '';
+            });
+            break;
+          default:
+            break;
+        }
+      }
+      ws.onclose = () => {
+        this.isCropable = true;
+        this.UserWS = undefined;
+        err();
+      }
+    });
   }
   StartSharedDraw() {
-    this.toolServer.initialize('voidDraw', 12022, () => {
-      // OnStart
-      this.QRCode = this.global.readasQRCodeFromString(
-        `${SERVER_PATH_ROOT}pjcone_pwa/?voidDraw=${this.toolServer.addresses}`
-      );
-    }, (json: any) => {
-      // OnMessage
-      console.log('수신 기록: ', json);
-    });
+    if (this.isMobile)
+      this.toolServer.initialize('voidDraw', 12022, async () => {
+        // OnStart
+        this.QRCode = this.global.readasQRCodeFromString(
+          `${SERVER_PATH_ROOT}pjcone_pwa/?voidDraw=${this.toolServer.addresses}`
+        );
+        this.p5toast.show({
+          text: this.lang.text['voidDraw']['ServerStarted'],
+        });
+        this.UserWS = await this.createUserWS('127.0.0.1', true);
+      }, (conn) => {
+        // onConnect
+      }, (conn: any, json: any) => {
+        // OnMessage
+        switch (json['type']) {
+          case 'REQ_INIT': // 첫 동작 요청
+            // 캔버스 크기 정보 공유
+            let data = {
+              type: 'CANVAS_SIZE',
+              width: this.p5voidDraw['ActualCanvas'].width,
+              height: this.p5voidDraw['ActualCanvas'].height,
+            }
+            this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify(data));
+            // 캔버스 배경이미지 공유
+            new p5((sp: p5) => {
+              sp.setup = () => {
+                sp.noCanvas();
+                let canvas = sp.createCanvas(this.p5voidDraw['ActualCanvas'].width, this.p5voidDraw['ActualCanvas'].height);
+                let targetDiv = document.getElementById('voidDraw');
+                canvas.parent(targetDiv);
+                if (this.p5voidDraw['BaseImage']) {
+                  this.p5voidDraw['BaseImage'].loadPixels();
+                  let base64 = this.p5voidDraw['BaseImage'].canvas.toDataURL();
+                  let part = base64.match(/(.{1,250})/g);
+                  for (let i = 0, j = part.length; i < j; i++)
+                    this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify({
+                      type: 'IMAGE_PART',
+                      part: part[i],
+                    }));
+                  this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify({ type: 'IMAGE_EOL' }));
+                  sp.remove();
+                }
+              }
+            });
+            break;
+          case 'CURRENT_DRAW': // 실시간 그리기 정보 공유
+            break;
+          case 'CURRENT_DRAW_END': // 마지막 그리기 전체 공유
+            break;
+        }
+      }, (conn) => {
+        // onDisconnect
+        console.log('누가 나감: ', conn);
+      });
     this.RemoveShortCut();
     this.VoidDrawServer.present();
   }
@@ -121,8 +248,6 @@ export class VoidDrawPage implements OnInit {
       let ActualCanvas: p5.Graphics;
       /** 배경이미지 캔버스, 복구 불가능한 이전 기록이 이곳에 같이 누적됨 */
       let ImageCanvas: p5.Graphics;
-      /** 배경 이미지에 사용된 이미지 */
-      let BaseImage: p5.Image;
       let canvas: p5.Renderer;
       let TopMenu: p5.Element;
       let BottomMenu: p5.Element;
@@ -230,8 +355,8 @@ export class VoidDrawPage implements OnInit {
           ImageCanvas.push();
           ImageCanvas.background(255);
           ImageCanvas.translate(CropPosition);
-          if (BaseImage)
-            ImageCanvas.image(BaseImage, 0, 0);
+          if (p['BaseImage'])
+            ImageCanvas.image(p['BaseImage'], 0, 0);
           ImageCanvas.pop();
           ImageCanvas.redraw();
           this.isCropMode = false;
@@ -257,7 +382,9 @@ export class VoidDrawPage implements OnInit {
           this.StartSharedDraw();
         }
         let CropCell = top_row.insertCell(2); // Crop
-        CropCell.innerHTML = `<ion-icon id="CropToolNotReady" style="width: 27px; height: 27px" name="crop"></ion-icon>`;
+        CropCell.innerHTML = `<ion-icon id="CropToolIcon" style="width: 27px; height: 27px" name="crop"></ion-icon>`;
+        if (!this.isCropable)
+          document.getElementById('CropToolIcon').style.fill = 'var(--ion-color-medium)';
         CropCell.style.textAlign = 'center';
         CropCell.style.cursor = 'pointer';
         CropCell.onclick = () => { this.open_crop_tool() }
@@ -318,23 +445,24 @@ export class VoidDrawPage implements OnInit {
         ActualCanvas.pixelDensity(PIXEL_DENSITY);
         ActualCanvas.noLoop();
         ActualCanvas.noFill();
+        p['ActualCanvas'] = ActualCanvas;
         ImageCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
         ImageCanvas.pixelDensity(PIXEL_DENSITY);
         ImageCanvas.noLoop();
         ImageCanvas.noFill();
         ImageCanvas.background(255);
         ImageCanvas.imageMode(p.CENTER);
+        p['ImageCanvas'] = ImageCanvas;
         // 사용자 그리기 판넬 생성
         if (initData['path']) { // 배경 이미지 파일이 포함됨
           let blob = await this.indexed.loadBlobFromUserPath(initData['path'], '');
           let FileURL = URL.createObjectURL(blob);
           p.loadImage(FileURL, v => {
-            BaseImage = v;
-            ImageCanvas.image(BaseImage, 0, 0);
+            p['BaseImage'] = v;
+            ImageCanvas.image(p['BaseImage'], 0, 0);
             ImageCanvas.redraw();
             URL.revokeObjectURL(FileURL);
             p['SetCanvasViewportInit']();
-            p.redraw();
           }, e => {
             console.error('그림판 배경 이미지 불러오기 오류: ', e);
             ImageCanvas.redraw();
@@ -343,7 +471,6 @@ export class VoidDrawPage implements OnInit {
         } else {
           ImageCanvas.redraw();
           p['SetCanvasViewportInit']();
-          p.redraw();
         }
       }
       /** Viewport 행동을 위한 변수들 */
@@ -720,8 +847,11 @@ export class VoidDrawPage implements OnInit {
     this.p5voidDraw['set_line_weight']();
   }
 
+  /** 원격 참여자 Crop 행동 제한 */
+  isCropable = true;
   open_crop_tool() {
-    this.p5voidDraw['open_crop_tool']();
+    if (this.isCropable)
+      this.p5voidDraw['open_crop_tool']();
   }
 
   /** 사용하기를 누른 경우 */
