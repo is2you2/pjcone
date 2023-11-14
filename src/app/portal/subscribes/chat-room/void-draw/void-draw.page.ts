@@ -37,6 +37,18 @@ export class VoidDrawPage implements OnInit {
 
   isMobile = false;
   async ionViewDidEnter() {
+    this.AddShortCut();
+    document.addEventListener('ionBackButton', this.EventListenerAct);
+    this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
+    this.create_new_canvas({
+      width: this.navParams.data.width,
+      height: this.navParams.data.height,
+      path: this.navParams.data.path,
+    });
+    this.isMobile = isPlatform != 'DesktopPWA';
+  }
+
+  AddShortCut() {
     this.global.p5key['KeyShortCut']['HistoryAct'] = (key: string) => {
       switch (key) {
         case 'Z':
@@ -69,14 +81,6 @@ export class VoidDrawPage implements OnInit {
         this.p5voidDraw['apply_crop']();
       } else this.dismiss_draw();
     }
-    document.addEventListener('ionBackButton', this.EventListenerAct);
-    this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
-    this.create_new_canvas({
-      width: this.navParams.data.width,
-      height: this.navParams.data.height,
-      path: this.navParams.data.path,
-    });
-    this.isMobile = isPlatform != 'DesktopPWA';
   }
 
   /** 새 캔버스 생성 행동 분리 */
@@ -127,14 +131,10 @@ export class VoidDrawPage implements OnInit {
       let RedoButton: any;
       /** 임시방편 색상 선택기 */
       let p5ColorPicker = p.createColorPicker('#000');
-      /** 임시방편 선두께 설정 */
-      let isWeightSetToggle = false;
       let SetBrushSize = p.min(initData['width'], initData['heigth']);
-      let WeightSlider = p.createSlider(1, SetBrushSize / 10, SetBrushSize / 100);
+      let strokeWeight = SetBrushSize / 100;
       const PIXEL_DENSITY = 1;
       p.setup = async () => {
-        WeightSlider.parent(targetDiv);
-        WeightSlider.hide();
         p.pixelDensity(PIXEL_DENSITY);
         p.noLoop();
         p.noFill();
@@ -145,12 +145,22 @@ export class VoidDrawPage implements OnInit {
         CamPosition.x = p.width / 2;
         CamPosition.y = p.height / 2;
         p['set_line_weight'] = () => {
-          isWeightSetToggle = !isWeightSetToggle;
-          if (isWeightSetToggle) {
-            WeightSlider.show();
-          } else {
-            WeightSlider.hide();
-          }
+          this.alertCtrl.create({
+            header: this.lang.text['voidDraw']['changeWeight'],
+            inputs: [{
+              label: this.lang.text['voidDraw']['weight'],
+              name: 'weight',
+              placeholder: `${strokeWeight}`,
+              type: 'number',
+            }],
+            buttons: [{
+              text: this.lang.text['voidDraw']['apply'],
+              handler: (ev: any) => {
+                if (ev['weight'])
+                  strokeWeight = Number(ev['weight']);
+              }
+            }]
+          }).then(v => v.present());
         }
         p['change_color'] = () => {
           p5ColorPicker.elt.click();
@@ -302,7 +312,6 @@ export class VoidDrawPage implements OnInit {
             CamScale = targetDiv.clientWidth / ActualCanvas.width;
           else CamScale = HeightExceptMenu / ActualCanvas.height;
           canvas.show();
-          WeightSlider.position(p.width - WeightSlider.width, p.height - WeightSlider.height - BUTTON_HEIGHT);
           p.redraw();
         }
         ActualCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
@@ -493,7 +502,7 @@ export class VoidDrawPage implements OnInit {
         CurrentDraw = {
           pos: [],
           color: p5ColorPicker['color'](),
-          weight: Number(WeightSlider.value()),
+          weight: strokeWeight,
         };
         CurrentDraw['pos'].push(_pos);
         CurrentDraw['pos'].push(_pos);

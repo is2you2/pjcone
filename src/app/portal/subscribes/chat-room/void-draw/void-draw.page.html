@@ -14,7 +14,7 @@ SPDX-License-Identifier: MIT -->
   <div id="voidDraw" class="full_screen" style="display: flex; overflow: hidden;">
   </div>
 
-  <ion-modal #VoidDrawServer [initialBreakpoint]=".5" [breakpoints]="[.5, .65, .8]">
+  <ion-modal #VoidDrawServer (didDismiss)="AddShortCut()" [initialBreakpoint]=".5" [breakpoints]="[.5, .65, .8]">
     <ng-template>
       <ion-content>
         <img *ngIf="QRCode" style="width: 100%; height: auto;" [src]="QRCode" alt="QRCode">
