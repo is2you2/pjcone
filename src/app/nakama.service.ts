@@ -2951,14 +2951,15 @@ export class NakamaService {
         this.p5toast.show({
           text: `${this.lang.text['ChatRoom']['SavingFile']}: ${_msg.content.filename}`,
         });
-        this.noti.noti.schedule({
-          id: 8,
-          title: `${this.lang.text['ContentViewer']['SavingFile']}: ${msg.content.filename}`,
-          progressBar: { indeterminate: true },
-          sound: null,
-          smallIcon: 'res://diychat',
-          color: 'b0b0b0',
-        });
+        if (isPlatform == 'Android' || isPlatform == 'iOS')
+          this.noti.noti.schedule({
+            id: 8,
+            title: `${this.lang.text['ContentViewer']['SavingFile']}: ${msg.content.filename}`,
+            progressBar: { indeterminate: true },
+            sound: null,
+            smallIcon: 'res://diychat',
+            color: 'b0b0b0',
+          });
         let GatheringInt8Array = [];
         let ByteSize = 0;
         await new Promise(async (done) => {
