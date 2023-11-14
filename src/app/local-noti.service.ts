@@ -191,7 +191,7 @@ export class LocalNotiService {
       }, e => {
         console.error('지원하지 않는 브라우저:', e);
       });
-    } // 모바일은 별도 초기화 과정 없음
+    } else this.noti.requestPermission();
   }
   /**
    * 로컬 푸쉬 알림을 동작시킵니다
