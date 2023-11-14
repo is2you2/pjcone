@@ -233,7 +233,7 @@ export class MainPage implements OnInit {
         constructor(data: any, isAddButton = false) {
           this.json = data;
           let OutPosition = p.max(p.width, p.height);
-          let StartPosGen = p.createVector(OutPosition / (p.min(1, CamScale)), 0).setHeading(p.random(0, p.PI));
+          let StartPosGen = p.createVector(OutPosition / (p.min(1, CamScale)), 0).setHeading(p.random(-p.PI, p.PI));
           if (isAddButton) {
             this.isAddButton = isAddButton;
             // 추가 버튼 이미지 생성
