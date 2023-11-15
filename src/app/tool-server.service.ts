@@ -63,7 +63,6 @@ export class ToolServerService {
         },
         'onOpen': (conn) => {
           this.list[_target]['users'].push(conn.uuid);
-          this.statusBar.tools[_target] = 'certified';
           onConnect(conn);
         },
         'onMessage': (conn, msg) => {
@@ -75,7 +74,6 @@ export class ToolServerService {
           }
         },
         'onClose': (conn, _code, _reason, _wasClean) => {
-          this.statusBar.tools[_target] = 'online';
           for (let i = this.list[_target]['users'].length - 1; i >= 0; i--)
             if (this.list[_target]['users'][i] == conn.uuid) {
               this.list[_target]['users'].splice(i, 1);
@@ -138,17 +136,5 @@ export class ToolServerService {
     if (!this.list[_target]['users'].length) return;
     if (this.list[_target] && this.list[_target]['server'])
       this.list[_target]['server'].send({ 'uuid': uuid }, msg);
-  }
-
-  /**
-   * 클라이언트에게 메시지 발송
-   * @param _target 발송받는 기능 서버 이름
-   * @param msg 메시지
-   */
-  send_to_all(_target: string, msg: string) {
-    if (!this.list[_target]['users'].length) return;
-    if (this.list[_target] && this.list[_target]['server'])
-      for (let i = 0, j = this.list[_target]['users'].length; i < j; i++)
-        this.list[_target]['server'].send({ 'uuid': this.list[_target]['users'][i] }, msg);
   }
 }

@@ -132,11 +132,14 @@ export class VoidDrawPage implements OnInit {
   }
   /** 공유 그림판 발송자 */
   UserWS: WebSocket;
+  uuidSelf: string;
   /** 웹 소켓 생성하기 */
   createUserWS(address: string, isSelf = false): Promise<WebSocket> {
     return new Promise((done, err) => {
       let ws = new WebSocket(`ws://${address}:12022/`);
       let BGImgBase64 = '';
+      let DrawHistory = '';
+      this.uuidSelf = '';
       ws.onopen = () => {
         BGImgBase64 = '';
         if (!isSelf) {
@@ -154,6 +157,34 @@ export class VoidDrawPage implements OnInit {
               height: json['height'],
             });
             break;
+          case 'CurrentDrawing': // 선 그리기 중
+            this.SharedCurrentDraw[json['uuid']]['pos'].push(json['pos']);
+            this.p5voidDraw.redraw();
+            break;
+          case 'CurrentDrawStart': // 선 그리기 시작
+            this.SharedCurrentDraw[json['uuid']] = {
+              pos: json['pos'],
+              color: json['color'],
+              weight: json['weight'],
+              uuid: this.uuidSelf,
+            }
+            this.p5voidDraw.redraw();
+            break;
+          case 'CurrentDrawEnd': // 선 그리기 종료
+            this.SharedCurrentDraw[json['uuid']]['pos'].push(json['pos']);
+            this.SharedCurrentDraw[json['uuid']]['pos'].push(json['pos']);
+            this.p5voidDraw.redraw();
+            break;
+          case 'DRAW_PART': // 선 정보 누적
+            DrawHistory += json['part'];
+            break;
+          case 'DRAW_EOL': // 선 정보 전부 받음
+            {
+              let json = JSON.parse(DrawHistory);
+              this.SharedDraw = json;
+              this.p5voidDraw.redraw();
+            }
+            break;
           case 'IMAGE_PART': // 이미지 공유받음
             BGImgBase64 += json['part'];
             break;
@@ -170,6 +201,9 @@ export class VoidDrawPage implements OnInit {
               BGImgBase64 = '';
             });
             break;
+          case 'UUID_SELF':
+            this.uuidSelf = json['uuid'];
+            break;
           default:
             break;
         }
@@ -181,6 +215,11 @@ export class VoidDrawPage implements OnInit {
       }
     });
   }
+  SharedDraw = {};
+  /** 공유받은 현재 그리기 정보  
+   * SharedCurrentDraw[uuid] = { pos: [], display_name, color, weight }
+   */
+  SharedCurrentDraw = {};
   StartSharedDraw() {
     if (this.navParams.data.path) return;
     if (this.isMobile)
@@ -195,6 +234,10 @@ export class VoidDrawPage implements OnInit {
         this.UserWS = await this.createUserWS('127.0.0.1', true);
       }, (conn) => {
         // onConnect
+        this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify({
+          type: 'UUID_SELF',
+          uuid: conn.uuid,
+        }));
       }, (conn: any, json: any) => {
         // OnMessage
         switch (json['type']) {
@@ -206,6 +249,19 @@ export class VoidDrawPage implements OnInit {
               height: this.p5voidDraw['ActualCanvas'].height,
             }
             this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify(data));
+            // 캔버스 그리기 기록 공유
+            {
+              let copied = { ...this.SharedDraw };
+              copied[this.uuidSelf] = this.p5voidDraw['DrawingStack'];
+              let json_str = JSON.stringify(copied);
+              let part = json_str.match(/(.{1,250})/g);
+              for (let i = 0, j = part.length; i < j; i++)
+                this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify({
+                  type: 'DRAW_PART',
+                  part: part[i],
+                }));
+              this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify({ type: 'DRAW_EOL' }));
+            }
             // 캔버스 배경이미지 공유
             new p5((sp: p5) => {
               sp.setup = () => {
@@ -228,14 +284,15 @@ export class VoidDrawPage implements OnInit {
               }
             });
             break;
-          case 'CURRENT_DRAW': // 실시간 그리기 정보 공유
-            break;
-          case 'CURRENT_DRAW_END': // 마지막 그리기 전체 공유
+          default: // 나머지 정보들은 자신을 제외한 사람들에게 릴레이처리
+            for (let i = 0, j = this.toolServer.list['voidDraw']['users'].length; i < j; i++)
+              if (this.toolServer.list['voidDraw']['users'][i] != conn.uuid)
+                this.toolServer.send_to('voidDraw', this.toolServer.list['voidDraw']['users'][i],
+                  JSON.stringify(json));
             break;
         }
-      }, (conn) => {
+      }, (_conn) => {
         // onDisconnect
-        console.log('누가 나감: ', conn);
       });
     this.RemoveShortCut();
     this.VoidDrawServer.present();
@@ -313,13 +370,13 @@ export class VoidDrawPage implements OnInit {
           });
         }
         p['history_act'] = (direction: number) => {
-          HistoryPointer = p.min(p.max(0, HistoryPointer + direction), DrawingStack.length);
+          HistoryPointer = p.min(p.max(0, HistoryPointer + direction), p['DrawingStack'].length);
           switch (direction) {
             case 1: // Redo
               UndoButton.style.fill = 'var(--ion-color-dark)';
-              if (HistoryPointer == DrawingStack.length)
+              if (HistoryPointer == p['DrawingStack'].length)
                 RedoButton.style.fill = 'var(--ion-color-medium)';
-              updateDrawingCurve(ActualCanvas, DrawingStack[HistoryPointer - 1]);
+              updateDrawingCurve(ActualCanvas, p['DrawingStack'][HistoryPointer - 1]);
               break;
             case -1: // Undo
               RedoButton.style.fill = 'var(--ion-color-dark)';
@@ -536,12 +593,23 @@ export class VoidDrawPage implements OnInit {
             p.pop();
           }
         }
+        if (this.UserWS) { // 공유 그림판 상태라면
+          let keys = Object.keys(this.SharedCurrentDraw);
+          p.push();
+          p.translate(CropPosition);
+          for (let i = 0, j = keys.length; i < j; i++) {
+            p.stroke(this.SharedCurrentDraw[keys[i]]['color']);
+            p.strokeWeight(this.SharedCurrentDraw[keys[i]]['weight']);
+            p.beginShape();
+            for (let k = 0, l = this.SharedCurrentDraw[keys[i]]['pos'].length; k < l; k++)
+              p.curveVertex(this.SharedCurrentDraw[keys[i]]['pos'][k].x, this.SharedCurrentDraw[keys[i]]['pos'][k].y);
+            p.endShape();
+          }
+          p.pop();
+        }
         p.pop();
       }
-      /** 그려진 자유선 정보 저장  
-       * DrawingStack[i] = [{ pos: [{x, y}, ..], color: p5.Color, weight: number }, ..]
-       */
-      let DrawingStack = [];
+      p['DrawingStack'] = [];
       /** 선을 어디까지 그리는지, 히스토리 행동용 */
       let HistoryPointer = 0;
       /** 전체 그리기, 동작 취소 등 전체 업데이트가 필요할 때 사용 */
@@ -549,7 +617,7 @@ export class VoidDrawPage implements OnInit {
         ActualCanvas.background(255, 0);
         // 모든 그리기 행동 시도
         for (let i = 0; i < HistoryPointer; i++)
-          updateDrawingCurve(ActualCanvas, DrawingStack[i]);
+          updateDrawingCurve(ActualCanvas, p['DrawingStack'][i]);
       }
       /** 마지막 행동에 해당하는 선 전체 그리기 */
       let updateDrawingCurve = (TargetCanvas: p5.Graphics, targetDraw = CurrentDraw) => {
@@ -570,10 +638,6 @@ export class VoidDrawPage implements OnInit {
           p['SetCanvasViewportInit']();
         }, 0);
       }
-      /** 공유받은 현재 그리기 정보  
-       * SharedCurrentDraw[uuid] = { pos: [], display_name, color, weight }
-       */
-      let SharedCurrentDraw = {};
       let CurrentDraw = {};
       const BUTTON_HEIGHT = 56;
       /** 모든 터치 또는 마우스 포인터의 현재 지점 */
@@ -633,6 +697,19 @@ export class VoidDrawPage implements OnInit {
         let pos = MappingPosition(_x, _y);
         pos.sub(CropPosition);
         let _pos = { x: pos.x, y: pos.y };
+        if (this.UserWS) {
+          let color = p5ColorPicker['color']().levels;
+          let json = {
+            type: 'CurrentDrawStart',
+            pos: [],
+            color: `#${p.hex(color[0], 2)}${p.hex(color[1], 2)}${p.hex(color[2], 2)}`,
+            weight: strokeWeight,
+            uuid: this.uuidSelf,
+          }
+          json['pos'].push(_pos);
+          json['pos'].push(_pos);
+          this.UserWS.send(JSON.stringify(json));
+        }
         CurrentDraw = {
           pos: [],
           color: p5ColorPicker['color'](),
@@ -655,6 +732,14 @@ export class VoidDrawPage implements OnInit {
               let pos = MappingPosition();
               pos.sub(CropPosition);
               let _pos = { x: pos.x, y: pos.y };
+              if (this.UserWS) {
+                let json = {
+                  type: 'CurrentDrawing',
+                  pos: _pos,
+                  uuid: this.uuidSelf,
+                }
+                ShareDrawing(json);
+              }
               if (CurrentDraw && CurrentDraw['pos'])
                 CurrentDraw['pos'].push(_pos);
               p.redraw();
@@ -687,6 +772,14 @@ export class VoidDrawPage implements OnInit {
               let pos = MappingPosition();
               pos.sub(CropPosition);
               let _pos = { x: pos.x, y: pos.y };
+              if (this.UserWS) {
+                let json = {
+                  type: 'CurrentDrawEnd',
+                  pos: _pos,
+                  uuid: this.uuidSelf,
+                }
+                this.UserWS.send(JSON.stringify(json));
+              }
               if (CurrentDraw) {
                 CurrentDraw['pos'].push(_pos);
                 CurrentDraw['pos'].push(_pos);
@@ -709,6 +802,17 @@ export class VoidDrawPage implements OnInit {
         mousePosition.div(CamScale);
         mousePosition.sub(CamPosition);
         return mousePosition;
+      }
+      let AllowSend = true;
+      /** 지연 동기화처리 */
+      let ShareDrawing = (json: any) => {
+        if (AllowSend) {
+          this.UserWS.send(JSON.stringify(json));
+          AllowSend = false;
+          setTimeout(() => {
+            AllowSend = true;
+          }, 100);
+        }
       }
       let touches = [];
       /** 터치 중인지 여부, 3손가락 터치시 행동 제약을 걸기 위해서 존재 */
@@ -758,6 +862,14 @@ export class VoidDrawPage implements OnInit {
               let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
               pos.sub(CropPosition);
               let _pos = { x: pos.x, y: pos.y };
+              if (this.UserWS) {
+                let json = {
+                  type: 'CurrentDrawing',
+                  pos: _pos,
+                  uuid: this.uuidSelf,
+                }
+                ShareDrawing(json);
+              }
               if (CurrentDraw && CurrentDraw['pos'])
                 CurrentDraw['pos'].push(_pos);
               p.redraw();
@@ -789,6 +901,14 @@ export class VoidDrawPage implements OnInit {
                 let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
                 pos.sub(CropPosition);
                 let _pos = { x: pos.x, y: pos.y };
+                if (this.UserWS) {
+                  let json = {
+                    type: 'CurrentDrawEnd',
+                    pos: _pos,
+                    uuid: this.uuidSelf,
+                  }
+                  this.UserWS.send(JSON.stringify(json));
+                }
                 CurrentDraw['pos'].push(_pos);
                 CurrentDraw['pos'].push(_pos);
                 ReleaseAllAct();
@@ -810,12 +930,12 @@ export class VoidDrawPage implements OnInit {
       }
       /** 모든 입력을 제거했을 때 공통 행동 */
       let ReleaseAllAct = () => {
-        DrawingStack.length = HistoryPointer;
+        p['DrawingStack'].length = HistoryPointer;
         if (CurrentDraw) {
-          DrawingStack.push(CurrentDraw);
+          p['DrawingStack'].push(CurrentDraw);
           updateDrawingCurve(ActualCanvas, CurrentDraw);
         }
-        HistoryPointer = DrawingStack.length;
+        HistoryPointer = p['DrawingStack'].length;
         MovementStartPosition = undefined;
         isClickOnMenu = false;
         CurrentDraw = undefined;
