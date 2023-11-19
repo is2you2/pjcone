@@ -282,7 +282,7 @@ export class VoidDrawPage implements OnInit {
             // 캔버스 배경이미지 공유
             if (this.p5voidDraw['BaseImage']) {
               this.p5voidDraw['BaseImage'].loadPixels();
-              let base64 = this.p5voidDraw['BaseImage'].canvas.toDataURL();
+              let base64 = this.p5voidDraw['BaseImage'].canvas.toDataURL("image/jpg", .5);
               let part = base64.match(/(.{1,250})/g);
               for (let i = 0, j = part.length; i < j; i++) {
                 this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify({
