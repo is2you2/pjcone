@@ -114,7 +114,7 @@ export class MainPage implements OnInit {
         p.textLeading(TextSize * 1.6);
         p.textWrap(p.CHAR);
         p.imageMode(p.CENTER);
-        let InitScale = Number(localStorage.getItem('p5todoScale'));
+        let InitScale = Number(localStorage.getItem('p5todoScale') || 1);
         ViewInit();
         CamScale = InitScale;
         localStorage.setItem('p5todoScale', `${CamScale}`);
