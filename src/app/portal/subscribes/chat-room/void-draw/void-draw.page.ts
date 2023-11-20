@@ -75,15 +75,15 @@ export class VoidDrawPage implements OnInit {
       this.new_image();
     }
     this.global.p5key['KeyShortCut']['SKeyAct'] = () => {
-      this.StartSharedDraw();
-    }
-    this.global.p5key['KeyShortCut']['DeleteAct'] = () => {
+      // this.StartSharedDraw();
       this.open_crop_tool();
     }
-    this.global.p5key['KeyShortCut']['FKeyAct'] = () => {
+    this.global.p5key['KeyShortCut']['DeleteAct'] = () => {
       if (this.isCropMode) {
         this.p5voidDraw['apply_crop']();
       } else this.dismiss_draw();
+    }
+    this.global.p5key['KeyShortCut']['FKeyAct'] = () => {
     }
   }
 
@@ -179,7 +179,6 @@ export class VoidDrawPage implements OnInit {
             tmp_draw_part[json['uuid']] += json['part'];
             break;
           case 'CurrentDrawEndPartEOL':
-            console.log(tmp_draw_part);
             let RemoteDraw = JSON.parse(tmp_draw_part[json['uuid']]);
             if (this.SharedDraw[json['uuid']] === undefined)
               this.SharedDraw[json['uuid']] = [];
@@ -269,27 +268,27 @@ export class VoidDrawPage implements OnInit {
               let copied = { ...this.SharedDraw };
               copied[this.uuidSelf] = this.p5voidDraw['DrawingStack'];
               let json_str = JSON.stringify(copied);
-              let part = json_str.match(/(.{1,250})/g);
+              let part = json_str.match(/(.{1,80})/g);
               for (let i = 0, j = part.length; i < j; i++) {
                 this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify({
                   type: 'DRAW_PART',
                   part: part[i],
                 }));
-                await this.waiting(40);
+                await this.waiting(0);
               }
               this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify({ type: 'DRAW_EOL' }));
             }
             // 캔버스 배경이미지 공유
             if (this.p5voidDraw['BaseImage']) {
               this.p5voidDraw['BaseImage'].loadPixels();
-              let base64 = this.p5voidDraw['BaseImage'].canvas.toDataURL("image/jpg", .5);
-              let part = base64.match(/(.{1,250})/g);
+              let base64 = this.p5voidDraw['BaseImage'].canvas.toDataURL("image/jpeg", .1);
+              let part = base64.match(/(.{1,80})/g);
               for (let i = 0, j = part.length; i < j; i++) {
                 this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify({
                   type: 'IMAGE_PART',
                   part: part[i],
                 }));
-                await this.waiting(40);
+                await this.waiting(0);
               }
               this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify({ type: 'IMAGE_EOL' }));
             }
@@ -447,21 +446,21 @@ export class VoidDrawPage implements OnInit {
         AddCell.style.textAlign = 'center';
         AddCell.style.cursor = 'pointer';
         AddCell.onclick = () => { this.new_image() }
-        let QRCell = top_row.insertCell(1); // 공유 그림판 온
-        QRCell.innerHTML = `<ion-icon color="dark" style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
-        QRCell.style.textAlign = 'center';
-        QRCell.style.cursor = 'pointer';
-        QRCell.onclick = () => {
-          this.StartSharedDraw();
-        }
-        let CropCell = top_row.insertCell(2); // Crop
+        // let QRCell = top_row.insertCell(1); // 공유 그림판 온
+        // QRCell.innerHTML = `<ion-icon color="dark" style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
+        // QRCell.style.textAlign = 'center';
+        // QRCell.style.cursor = 'pointer';
+        // QRCell.onclick = () => {
+        //   this.StartSharedDraw();
+        // }
+        let CropCell = top_row.insertCell(1); // Crop
         CropCell.innerHTML = `<ion-icon id="CropToolIcon" style="width: 27px; height: 27px" name="crop"></ion-icon>`;
         if (!this.isCropable)
           document.getElementById('CropToolIcon').style.fill = 'var(--ion-color-medium)';
         CropCell.style.textAlign = 'center';
         CropCell.style.cursor = 'pointer';
         CropCell.onclick = () => { this.open_crop_tool() }
-        let ApplyCell = top_row.insertCell(3);
+        let ApplyCell = top_row.insertCell(2);
         ApplyCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="checkmark"></ion-icon>`;
         ApplyCell.style.textAlign = 'center';
         ApplyCell.style.cursor = 'pointer';
@@ -908,7 +907,7 @@ export class VoidDrawPage implements OnInit {
       /** 그리기 종료시 해당 선 전체 정보 공유 */
       let SharedDrawingEnd = async () => {
         let copied = JSON.stringify(CurrentDraw);
-        let part = copied.match(/(.{1,200})/g);
+        let part = copied.match(/(.{1,80})/g);
         for (let i = 0, j = part.length; i < j; i++) {
           let json = {
             type: 'CurrentDrawEndPart',
@@ -916,7 +915,7 @@ export class VoidDrawPage implements OnInit {
             part: part[i],
           }
           this.UserWS.send(JSON.stringify(json));
-          await this.waiting(40);
+          await this.waiting(0);
         }
         let json = {
           type: 'CurrentDrawEndPartEOL',
