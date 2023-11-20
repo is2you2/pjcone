@@ -90,6 +90,7 @@ export class MainPage implements OnInit {
       /** 연산 간소화시 마지막으로 추가된 할 일 추적 */
       let AddedElement: TodoElement;
       let VECTOR_ZERO = p.createVector(0, 0);
+      let GravityCenter = p.createVector(0, 0);
       let CamPosition = p.createVector(0, 0);
       let CamScale = 1;
       /** 확대 중심 */
@@ -209,6 +210,11 @@ export class MainPage implements OnInit {
         for (let i = DoneTodo.length - 1; i >= 0; i--)
           DoneTodo[i].DoneAnim();
         p.pop();
+        // 실행중이라면 기기 가속도값을 반영
+        if (this.isPlayingCanvas.loop) {
+          GravityCenter.x = -p.accelerationX * 40;
+          GravityCenter.y = p.accelerationY * 40;
+        }
       }
       p.windowResized = () => {
         if (BlockInput) return;
@@ -366,7 +372,7 @@ export class MainPage implements OnInit {
           let CenterForceful = p.map(distLimit, this.EllipseSize / 4, 0, 1, .95, true);
           this.Accel.x = distLimit;
           this.Accel.y = 0;
-          let AccHeadingRev = this.position.heading() - p.PI;
+          let AccHeadingRev = (this.position.copy().sub(GravityCenter)).heading() - p.PI;
           this.Accel = this.Accel.setHeading(AccHeadingRev);
           this.Velocity.add(this.Accel).mult(CenterForceful);
         }
