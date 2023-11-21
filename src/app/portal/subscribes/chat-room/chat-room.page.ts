@@ -207,6 +207,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
       await this.NewAttach.open();
       this.removeShortCutKey();
+      this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+        let TempFunc = ['image', 'load', 'link'];
+        if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && TempFunc.length > index)
+          this.new_attach({ detail: { value: TempFunc[index] } });
+      }
     }
   }, { // 5
     icon: 'server-outline',
