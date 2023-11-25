@@ -268,11 +268,10 @@ export class UserFsDirPage implements OnInit {
   async ExportDirectoryRecursiveAct() {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['ExportDirTitle'] });
     loading.present();
-    let targetDB = this.CurrentDir == 'todo' ? this.indexed.godotDB : this.indexed.ionicDB;
-    let list = await this.indexed.GetFileListFromDB(this.CurrentDir, undefined, targetDB);
+    let list = await this.indexed.GetFileListFromDB(this.CurrentDir);
     for (let i = 0, j = list.length; i < j; i++) {
-      let FileInfo = await this.indexed.GetFileInfoFromDB(list[i], undefined, targetDB);
-      let blob = await this.indexed.loadBlobFromUserPath(list[i], '', undefined, targetDB);
+      let FileInfo = await this.indexed.GetFileInfoFromDB(list[i]);
+      let blob = await this.indexed.loadBlobFromUserPath(list[i], '');
       let last_sep = list[i].lastIndexOf('/');
       let only_path = list[i].substring(0, last_sep);
       let filename = list[i].substring(last_sep + 1);
@@ -379,8 +378,8 @@ export class UserFsDirPage implements OnInit {
       message: this.lang.text['UserFsDir']['RemoveThisFolder'],
       buttons: [{
         text: this.lang.text['UserFsDir']['RemoveApply'],
-        handler: () => {
-          this.indexed.GetFileListFromDB(this.CurrentDir, (list) => {
+        handler: async () => {
+          await this.indexed.GetFileListFromDB(this.CurrentDir, (list) => {
             list.forEach(async path => await this.indexed.removeFileFromUserPath(path))
             for (let i = this.DirList.length - 1; i >= 0; i--)
               if (this.DirList[i].path.indexOf(this.CurrentDir) == 0)
@@ -388,9 +387,8 @@ export class UserFsDirPage implements OnInit {
             for (let i = this.FileList.length - 1; i >= 0; i--)
               if (this.FileList[i].path.indexOf(this.CurrentDir) == 0)
                 this.FileList.splice(i, 1);
-            this.MoveToUpDir();
           });
-          this.indexed.GetFileListFromDB(this.CurrentDir, (list) => {
+          await this.indexed.GetFileListFromDB(this.CurrentDir, (list) => {
             list.forEach(async path => await this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB))
             for (let i = this.DirList.length - 1; i >= 0; i--)
               if (this.DirList[i].path.indexOf(this.CurrentDir) == 0)
@@ -398,8 +396,8 @@ export class UserFsDirPage implements OnInit {
             for (let i = this.FileList.length - 1; i >= 0; i--)
               if (this.FileList[i].path.indexOf(this.CurrentDir) == 0)
                 this.FileList.splice(i, 1);
-            this.MoveToUpDir();
           }, this.indexed.godotDB);
+          this.MoveToUpDir();
         }
       }],
     }).then(v => v.present());
