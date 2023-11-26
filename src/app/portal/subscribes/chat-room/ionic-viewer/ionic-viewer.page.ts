@@ -616,13 +616,6 @@ export class IonicViewerPage implements OnInit {
         document.addEventListener('ionBackButton', this.EventListenerAct);
         let ThumbnailURL: string;
         let GetViewId = this.MessageInfo.message_id;
-        let AlternativePCKPath: string;
-        if (this.targetDB != this.indexed.godotDB) {
-          AlternativePCKPath = 'tmp_files/duplicate/viewer.pck';
-          let blob = await this.indexed.loadBlobFromUserPath(
-            this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
-          await this.indexed.saveBlobToUserPath(blob, AlternativePCKPath, undefined, this.indexed.godotDB);
-        }
         try {
           let thumbnail = await this.indexed.loadBlobFromUserPath((this.FileInfo['path'] || this.navParams.get('path'))
             + '_thumbnail.png', '', undefined, this.targetDB);
@@ -630,13 +623,18 @@ export class IonicViewerPage implements OnInit {
         } catch (e) { }
         if (!this.NeedDownloadFile && this.CurrentViewId == GetViewId)
           setTimeout(async () => {
+            let createDuplicate = false;
+            if (this.indexed.godotDB) {
+              let blob = await this.indexed.loadBlobFromUserPath(
+                this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
+              await this.indexed.GetGodotIndexedDB();
+              await this.indexed.saveBlobToUserPath(blob, 'tmp_files/duplicate/viewer.pck', undefined, this.indexed.godotDB);
+              createDuplicate = true;
+            }
             await this.global.CreateGodotIFrame('content_viewer_canvas', {
-              local_url: 'assets/data/godot/viewer.pck',
-              title: 'ViewerEx',
-              path: AlternativePCKPath || this.FileInfo['path'] || this.navParams.get('path'),
+              path: 'tmp_files/duplicate/viewer.pck',
               alt_path: this.FileInfo['path'] || this.navParams.get('path'),
               ext: this.FileInfo['file_ext'],
-              force_logo: true,
               background: ThumbnailURL,
               // modify_image
               receive_image: async (base64: string, width: number, height: number) => {
@@ -651,8 +649,15 @@ export class IonicViewerPage implements OnInit {
                   index: this.RelevanceIndex - 1,
                 });
               }
-            }, 'create_thumbnail', this.targetDB);
+            }, 'start_load_pck');
+            if (!createDuplicate) {
+              let blob = await this.indexed.loadBlobFromUserPath(
+                this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
+              await this.indexed.GetGodotIndexedDB();
+              await this.indexed.saveBlobToUserPath(blob, 'tmp_files/duplicate/viewer.pck', undefined, this.indexed.godotDB);
+            }
             if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
+            this.global.godot_window['start_load_pck']();
           }, 100);
         break;
       case 'disabled':
@@ -1002,7 +1007,7 @@ export class IonicViewerPage implements OnInit {
         try {
           this.global.godot_window['filename'] = this.FileInfo.filename;
           this.global.godot_window['create_thumbnail'](this.FileInfo);
-          let list = await this.indexed.GetFileListFromDB('tmp_files/duplicate', undefined, this.indexed.godotDB);
+          let list = await this.indexed.GetFileListFromDB('tmp_files', undefined, this.indexed.godotDB);
           list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB))
         } catch (e) { }
         break;

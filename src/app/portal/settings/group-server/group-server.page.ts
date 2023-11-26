@@ -232,11 +232,8 @@ export class GroupServerPage implements OnInit {
       let is_exist = await this.indexed.checkIfFileExist('servers/self/content.pck');
       if (is_exist) {
         await this.global.CreateGodotIFrame('my_content', {
-          title: 'ViewerEx',
           ext: 'pck',
-          local_url: 'assets/data/godot/viewer.pck',
           path: 'servers/self/content.pck',
-          force_logo: true,
         });
       } else throw '로컬에 준비된 파일 없음';
     } catch (e) {
@@ -261,14 +258,10 @@ export class GroupServerPage implements OnInit {
       }
     }
     if (is_saved) {
-      this.global.last_frame_name = 'content_update';
       this.global.godot.remove();
       await this.global.CreateGodotIFrame('my_content', {
-        title: 'ViewerEx',
         ext: 'pck',
-        local_url: 'assets/data/godot/viewer.pck',
         path: 'servers/self/content.pck',
-        force_logo: true,
       });
     }
   }
@@ -278,7 +271,6 @@ export class GroupServerPage implements OnInit {
   }
   async inputFileSelected(ev: any) {
     if (ev.target.files.length) {
-      this.global.last_frame_name = 'content_update';
       this.global.godot.remove();
       let this_file: FileInfo = {};
       this_file.filename = ev.target.files[0].name;
@@ -320,11 +312,8 @@ export class GroupServerPage implements OnInit {
       else await this.indexed.saveBlobToUserPath(ev.target.files[0], this_file.path);
       loading.dismiss();
       await this.global.CreateGodotIFrame('my_content', {
-        title: 'ViewerEx',
         ext: 'pck',
-        local_url: 'assets/data/godot/viewer.pck',
         path: 'servers/self/content.pck',
-        force_logo: true,
       });
     }
   }
@@ -384,7 +373,6 @@ export class GroupServerPage implements OnInit {
       await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
         encodeURIComponent('content'));
     }
-    this.global.last_frame_name = 'content_removed';
     this.global.godot.remove();
     if (server_len) loading.dismiss();
   }

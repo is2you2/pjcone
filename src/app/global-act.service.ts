@@ -62,25 +62,18 @@ export interface FileInfo {
 
 /** 고도엔진과 공유되는 키값 */
 interface GodotFrameKeys {
-  /** 외부 패키지 주소 */
-  url?: string;
-  /** 내부 패키지 주소, url 에 주소를 생성하여 부여 */
-  local_url?: string;
-  /** 프로젝트 콘 로고 강제 */
-  force_logo?: boolean;
-  /** 불러와야하는 pck 경로 강제 */
-  pck_path?: string;
-  /** 패키지 이름 입력(영문), 고도 프로젝트에서는 메인 씬 이름이어야함 */
-  title: string;
+  /** 불러오게될 pck의 경로, 받아서 ionic -> godot 복제를 시도한다 */
+  path: string;
+  /** 썸네일 생성을 위한 기존 경로 */
+  alt_path?: string;
+  /** 확장자 검토, 향후 pck 외 3d 파일 열람용 */
+  ext?: string;
   /** 배경 이미지, p5 에서 불러올 수 있는 주소로 제공 */
   background?: string;
   /** **ViewerEX 전용**  
    * 썸네일 미지원 패키지로부터 썸네일을 생성시 실행됨, ViewerEX 전용
    */
   create_thumbnail_p5?: Function;
-  /** **사용금지**  
-   * 패키지 불러오기 행동 실패시 실행됨 */
-  failed?: Function;
   /** **사용금지**  
    * 고도 프레임을 새로 생성할 때 자동으로 실행됨
    */
@@ -250,8 +243,6 @@ export class GlobalActService {
   /** 실행중인 iframe-godot 개체를 기억하여 2개 이상 생성될 경우 이전에 진행중인 객체를 삭제, 마지막 실행기만 기억하기 */
   godot: HTMLIFrameElement;
   godot_window: any;
-  /** 마지막에 기록된 프레임 id */
-  last_frame_name: string;
   /** 고도엔진이 시작하자마자 로딩할 내용과 고도 결과물을 담을 iframe id를 전달  
    * 이 함수는 고도엔진이 실행되는 페이지의 ionViewWillEnter()에서 진행되어야 합니다
    * @param _act_name 로딩할 pck 파일의 이름
@@ -259,7 +250,7 @@ export class GlobalActService {
    * @param keys 고도엔진 iframe.window에 작성될 값들
    * @returns iframe 개체 돌려주기
    */
-  CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys, waiting_key: string = '', targetDB = this.indexed.godotDB): Promise<any> {
+  CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys, waiting_key: string = ''): Promise<any> {
     let ready_to_show = false;
     return new Promise(async (done: any) => {
       let refresh_it_loading = async () => {
@@ -277,16 +268,11 @@ export class GlobalActService {
           }, 1000);
         }
       }
-      if (this.last_frame_name == _frame_name && this.godot.isConnected) {
-        done();
-        return;
-      };
       if (this.godot_window && this.godot_window['quit_godot'])
         this.godot_window.quit_godot();
       if (this.godot_splash) this.godot_splash.remove();
       if (this.godot) this.godot.remove();
       window['godot'] = '';
-      this.last_frame_name = _frame_name;
       let _godot = document.createElement('iframe');
       _godot.id = 'godot';
       _godot.setAttribute("src", "assets/html/index.html");
@@ -295,13 +281,11 @@ export class GlobalActService {
       _godot.setAttribute('allow', 'fullscreen; encrypted-media');
       _godot.setAttribute('scrolling', 'no');
       _godot.setAttribute('withCredentials', 'true');
-      if (keys.local_url) keys['url'] = `${window.location.protocol}//${window.location.host}${window['sub_path']}${keys['local_url']}`;
       if (_frame_name == 'content_viewer_canvas')
         keys['create_thumbnail_p5'] = async (base64: string, info: FileInfo = undefined) => {
           new p5((p: p5) => {
             p.setup = () => {
               p.noCanvas();
-              let window_path: string = this.godot_window['path'];
               p.loadImage('data:image/png;base64,' + base64, v => {
                 p.createCanvas(v.width, v.height);
                 p.image(v, 0, 0)
@@ -323,8 +307,8 @@ export class GlobalActService {
                 p.saveFrames('', 'png', 1, 1, async c => {
                   try {
                     await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
-                      `${(this.godot_window['alt_path'] || window_path)}_thumbnail.png`, undefined, targetDB);
-                    this.modulate_thumbnail(info, '', targetDB);
+                      `${(keys['alt_path'] || keys['path'])}_thumbnail.png`);
+                    this.modulate_thumbnail(info, '');
                   } catch (e) {
                     console.log('p.saveFrames: ', e);
                   }
@@ -337,12 +321,6 @@ export class GlobalActService {
             }
           });
         }
-      keys['failed'] = () => {
-        this.p5toast.show({
-          text: `${this.lang.text['GlobalAct']['FailedToDownloadGodot']}: ${keys.title}`,
-          lateable: true,
-        });
-      }
       let frame = document.getElementById(_frame_name);
       frame.appendChild(_godot);
       this.godot_window = _godot.contentWindow || _godot.contentDocument;
@@ -370,7 +348,7 @@ export class GlobalActService {
             p['CurrentLoaded'] = current;
             p['LoadLength'] = length;
           }
-          p.loadImage(keys.force_logo ? 'assets/icon/favicon.png' : `assets/icon/${_frame_name}.png`, v => {
+          p.loadImage('assets/icon/favicon.png', v => {
             icon = v;
           });
           p.pixelDensity(1);
@@ -481,7 +459,7 @@ export class GlobalActService {
   }
 
   /** 메시지에 썸네일 콘텐츠를 생성 */
-  async modulate_thumbnail(msg_content: FileInfo, ObjectURL: string, targetDB?: IDBDatabase) {
+  async modulate_thumbnail(msg_content: FileInfo, ObjectURL: string) {
     if (msg_content['url']) {
       switch (msg_content['viewer']) {
         case 'text':
@@ -499,7 +477,7 @@ export class GlobalActService {
       return;
     }
     try { // 대안 썸네일이 있다면 보여주고 끝내기
-      let blob = await this.indexed.loadBlobFromUserPath(`${msg_content['path']}_thumbnail.png`, 'image/png', undefined, targetDB);
+      let blob = await this.indexed.loadBlobFromUserPath(`${msg_content['path']}_thumbnail.png`, 'image/png');
       let FileURL = URL.createObjectURL(blob);
       msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
       setTimeout(() => {

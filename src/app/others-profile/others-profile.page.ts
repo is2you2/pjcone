@@ -68,11 +68,8 @@ export class OthersProfilePage implements OnInit {
       let is_exist = await this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`);
       if (is_exist)
         await this.global.CreateGodotIFrame(this.user_content_id, {
-          title: 'ViewerEx',
           ext: 'pck',
-          local_url: 'assets/data/godot/viewer.pck',
           path: `servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`,
-          force_logo: true,
         });
     }, 150);
     this.catch_user_noties();
@@ -109,7 +106,6 @@ export class OthersProfilePage implements OnInit {
   user_content_id = '';
 
   async update_content_from_server() {
-    this.global.last_frame_name = 'update_other_content';
     this.global.godot.remove();
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
@@ -139,11 +135,8 @@ export class OthersProfilePage implements OnInit {
       }
       await this.indexed.saveBase64ToUserPath(base64.replace(/"|=|\\/g, ''), `servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`);
       await this.global.CreateGodotIFrame(this.user_content_id, {
-        title: 'ViewerEx',
         ext: 'pck',
-        local_url: 'assets/data/godot/viewer.pck',
         path: `servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`,
-        force_logo: true,
       });
     } catch (e) {
       await this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`);

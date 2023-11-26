@@ -60,12 +60,6 @@ export class MainPage implements OnInit {
     }
   }
 
-  async ionViewWillEnter() {
-    this.indexed.GetFileListFromDB('acts_local', list => {
-      list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB));
-    }, this.indexed.godotDB);
-  }
-
   isPlayingCanvas = { loop: true };
   /** 캔버스 연산 멈추기 (인풋은 영향받지 않음) */
   toggleCanvasPlaying() {

@@ -1065,7 +1065,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             }
           });
         });
-        this.global.last_frame_name = '';
       }
       loading.dismiss();
     }
@@ -1074,7 +1073,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         await this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/thumbnail.png`);
         for (let i = 0, j = received_json.attach.length; i < j; i++)
           await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
-        this.global.last_frame_name = '';
       }
     }
     this.userInput.attach.forEach(attach => {

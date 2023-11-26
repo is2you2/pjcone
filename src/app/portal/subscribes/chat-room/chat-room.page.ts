@@ -1421,6 +1421,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         componentProps: {
           info: msg,
           path: _path,
+          alt_path: _path,
           isOfficial: this.isOfficial,
           target: this.target,
           targetDB: this.indexed.ionicDB,

@@ -5,9 +5,11 @@ extends Node
 
 # iframe 창
 var window
-var save_path:= 'user://acts/'
 
 var quit_godot_func = JavaScript.create_callback(self, 'quit_godot')
+var modify_image_func = JavaScript.create_callback(self, 'modify_image')
+var create_thumbnail_func = JavaScript.create_callback(self, 'create_thumbnail')
+var start_load_pck_func = JavaScript.create_callback(self, 'start_load_pck')
 
 # 앱 시작과 동시에 동작하려는 pck 정보를 받아옴
 func _ready():
@@ -17,20 +19,28 @@ func _ready():
 		window.quit_godot = quit_godot_func
 		# ionic에게 IndexedDB가 생성되었음을 알림
 		window.parent['godot'] = 'godot';
-		if window.local_url:
-			save_path = 'user://acts_local/'
 		var dir:= Directory.new()
-		if not dir.dir_exists(save_path):
-			dir.make_dir(save_path)
-		# 행동 방침 가져오기
-		var act:String = window.title
-		$CenterContainer/ColorRect/Label.text = '%s\n\nClick to download from:\n%s' % [window.title, window.url]
-		if not act: # 아무런 요청도 없이 프레임만 불러온 경우
-			printerr('Godot: 행동 정보가 비어있음')
-		else: load_package(act)
-	else: # 엔진에서 테스트중일 때
-		var test_act:= 'godot-debug'
-		load_package(test_act)
+		window.modify_image = modify_image_func
+		window.create_thumbnail = create_thumbnail_func
+		window.start_load_pck = start_load_pck_func
+
+
+func start_load_pck(args):
+	match(window['ext']):
+		'pck':
+			load_pck()
+		'obj':
+			continue
+		'stl':
+			continue
+		'glb':
+			continue
+		'gltf':
+			# 파일읽기 준비중 알림
+			$CenterContainer/Label.text = 'Preparing open file ext:\n%s' % window['ext']
+		_: # 예외처리
+			$CenterContainer/Label.text = 'Cannot open file:\n%s' % ('user://%s' % window['path'])
+
 
 # pck 투척시 테스트를 위해 바로 받아보기
 func load_package_debug(files:PoolStringArray, scr):
@@ -48,23 +58,26 @@ func load_package_debug(files:PoolStringArray, scr):
 		load_next_scene('res://ContentViewer.tscn')
 	get_tree().disconnect("files_dropped", self, 'load_package_debug')
 
-# 동작하려는 pck 정보 불러오기
-func load_package(act_name:String):
-	var target:= '%s%s.pck' % [save_path, act_name]
-	if OS.has_feature('JavaScript') and window.pck_path:
-		target = window.pck_path
-	var is_loaded:= ProjectSettings.load_resource_pack(target, false)
-	if not is_loaded: # 없으면 다운받기
-		printerr('Godot: 패키지를 불러오지 못함: ', act_name)
-		if not $CenterContainer/ColorRect.is_connected("gui_input", self, '_on_Label_gui_input'):
-			$CenterContainer/ColorRect.connect("gui_input", self, '_on_Label_gui_input')
-		if window.local_url: # 공식 내장 패키지인 경우 즉시 불러오기
-			start_download_pck()
-	else: # 패키지를 가지고 있는 경우
-		$CenterContainer.queue_free()
-		load_next_scene('res://%s.tscn' % (window.title if window.title else 'Main'))
-		if get_tree().is_connected("files_dropped", self, 'load_package_debug'):
-			get_tree().disconnect("files_dropped", self, 'load_package_debug')
+
+func load_pck(try_left:= 5):
+	var dir:=Directory.new()
+	if dir.file_exists('user://%s' % window['path']):
+		var is_loaded:= ProjectSettings.load_resource_pack('user://%s' % window['path'])
+		if not is_loaded: # 없으면 다운받기
+			printerr('Godot: 패키지를 불러오지 못함: ', 'user://%s' % window['path'])
+			$CenterContainer/ColorRect/Label.text = 'Cannot open file: %s' % 'user://%s' % window['path']
+		else: # 패키지를 가지고 있는 경우
+			$CenterContainer.queue_free()
+			load_next_scene('res://ContentViewer.tscn')
+			if get_tree().is_connected("files_dropped", self, 'load_package_debug'):
+				get_tree().disconnect("files_dropped", self, 'load_package_debug')
+	else:
+		if try_left > 0:
+			yield(get_tree(), "idle_frame")
+			load_pck(try_left - 1)
+		else:
+			printerr('Godot: 패키지를 불러오지 못함: ', 'user://%s' % window['path'])
+			$CenterContainer/ColorRect/Label.text = 'Cannot open file: %s' % 'user://%s' % window['path']
 
 # 천천히 불러오기
 func load_next_scene(path:String, targetNode:Node = self):
@@ -89,44 +102,30 @@ func load_next_scene(path:String, targetNode:Node = self):
 	else:
 		printerr('예상치 못한 이유로 씬 로드 오류 발생: ', _err)
 
-# 파일 다운로드 시작
-func start_download_pck():
-	if not OS.has_feature('JavaScript'):
-		print_debug('웹 기능이 포함되어야 함')
-		return
-	$CenterContainer/ColorRect/Label.text = 'Loading...\n"%s" Tool' % window.title
-	var req:= HTTPRequest.new()
-	req.name = 'HTTPRequest'
-	req.download_file = '%s%s.pck' % [save_path, window.title]
-	req.connect("request_completed", self, '_on_HTTPRequest_request_completed')
-	$CenterContainer.add_child(req)
-	var err:= req.request(window.url)
-	if err != OK:
-		if OS.has_feature('JavaScript'):
-			window.failed()
-			$CenterContainer/ColorRect/Label.text = '%s\n\nClick to download from:\n%s' % [window.title, window.url]
-		else:
-			printerr('기능 다운로드 실패: ', err)
 
-func _on_HTTPRequest_request_completed(result, response_code, headers, body):
-	if response_code == 200:
-		if OS.has_feature('JavaScript'):
-			load_package(window.title)
-		else: # 엔진 내 테스트중
-			load_package('godot-debug')
-	else: # 목표 파일 다운로드 실패
-		$CenterContainer/ColorRect/Label.text = '%s\n\nClick to download from:\n%s' % [window.title, window.url]
-		if OS.has_feature('JavaScript'):
-			window.failed()
-		else:
-			printerr('기능 다운로드 실패')
+func modify_image(args):
+	var viewport:Viewport = get_viewport()
+	var img:= viewport.get_texture().get_data()
+	img.flip_y()
+	var buf:= img.save_png_to_buffer()
+	window.receive_image(Marshalls.raw_to_base64(buf), img.get_width(), img.get_height())
 
 
-func _on_Label_gui_input(event):
-	if event is InputEventMouseButton:
-		if event.pressed:
-			start_download_pck()
+func create_thumbnail(args):
+	var dir:= Directory.new()
+	var thumbnail_exist:= dir.file_exists('%s_thumbnail.png' % [window.path])
+	if not thumbnail_exist:
+		var viewport:Viewport = get_viewport()
+		var img:= viewport.get_texture().get_data()
+		img.flip_y()
+		var width:= img.get_width()
+		var height:= img.get_height()
+		if width < height:
+			img.resize(float(width) / float(height) * 192, 192)
+		else: img.resize(192, float(height) / float(width) * 192)
+		var buf:= img.save_png_to_buffer()
+		window.create_thumbnail_p5(Marshalls.raw_to_base64(buf), args[0])
 
 
-func quit_godot():
+func quit_godot(args):
 	get_tree().quit()
