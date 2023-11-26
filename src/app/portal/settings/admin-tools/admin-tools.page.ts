@@ -6,6 +6,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import clipboard from "clipboardy";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
+import { IndexedDBService } from 'src/app/indexed-db.service';
 
 
 @Component({
@@ -22,6 +23,7 @@ export class AdminToolsPage implements OnInit {
     private alertCtrl: AlertController,
     public statusBar: StatusManageService,
     private mClipboard: Clipboard,
+    private indexed: IndexedDBService,
   ) { }
 
   /** 서버 정보, 온라인 상태의 서버만 불러온다 */
@@ -184,7 +186,7 @@ export class AdminToolsPage implements OnInit {
       this.nakama.servers[this.isOfficial][this.target].session,
       'query_all_groups', {}).then(v => {
         this.all_groups = v.payload as any;
-        for (let i = 0, j = this.all_groups.length; i < j; i++)
+        for (let i = 0, j = this.all_groups.length; i < j; i++) {
           for (let k = 0, l = this.all_groups[i]['users'].length; k < l; k++) {
             let userId = this.all_groups[i]['users'][k].user.id || this.all_groups[i]['users'][k].user.user_id;
             let group_id = this.all_groups[i].id || this.all_groups[i].group_id;
@@ -200,6 +202,10 @@ export class AdminToolsPage implements OnInit {
               this.all_groups[i]['users'][k].user = this.nakama.users.self;
             } else this.all_groups[i]['users'][k].user = this.nakama.load_other_user(this.all_groups[i]['users'][k].user.user_id, this.isOfficial, this.target);
           }
+          this.indexed.loadTextFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.all_groups[i].id}.img`, (e, v) => {
+            if (e && v) this.all_groups[i].img = v;
+          });
+        }
         let user_ids = Object.keys(this.PromotableGroup);
         user_ids.forEach(user_id => {
           let keys = Object.keys(this.PromotableGroup[user_id]);
