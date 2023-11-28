@@ -1411,7 +1411,6 @@ export class NakamaService {
   /** 채널별로 정보를 분리 저장한 후 초기 로드시 병합시키는 구성 필요함 */
   save_channels_with_less_info() {
     let channels_copy = JSON.parse(JSON.stringify(this.channels_orig));
-    delete channels_copy['official'];
     let isOfficial = Object.keys(channels_copy);
     isOfficial.forEach(_is_official => {
       let Targets = Object.keys(channels_copy[_is_official]);
@@ -1579,7 +1578,6 @@ export class NakamaService {
   /** 간소화된 그룹 정보 저장하기 */
   save_groups_with_less_info(_CallBack = () => { }) {
     let copied_group = JSON.parse(JSON.stringify(this.groups));
-    delete copied_group['official'];
     let isOfficial = Object.keys(copied_group);
     isOfficial.forEach(_is_official => {
       let Target = Object.keys(copied_group[_is_official])
