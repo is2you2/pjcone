@@ -22,7 +22,7 @@ import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
   templateUrl: './group-detail.page.html',
   styleUrls: ['./group-detail.page.scss'],
 })
-export class GroupDetailPage implements OnInit, OnDestroy {
+export class GroupDetailPage implements OnInit {
 
   constructor(
     private navParams: NavParams,
@@ -358,9 +358,5 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     this.need_edit = this.info['description'] != this.info_orig['description'];
     if (this.need_edit)
       this.edit_group();
-  }
-
-  ngOnDestroy(): void {
-    delete this.nakama.users.self['img'];
   }
 }
