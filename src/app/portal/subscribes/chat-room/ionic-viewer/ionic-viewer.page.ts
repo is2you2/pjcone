@@ -655,6 +655,25 @@ export class IonicViewerPage implements OnInit {
                 this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
               await this.indexed.GetGodotIndexedDB();
               await this.indexed.saveBlobToUserPath(blob, 'tmp_files/duplicate/viewer.pck', undefined, this.indexed.godotDB);
+              await this.global.CreateGodotIFrame('content_viewer_canvas', {
+                path: 'tmp_files/duplicate/viewer.pck',
+                alt_path: this.FileInfo['path'] || this.navParams.get('path'),
+                ext: this.FileInfo['file_ext'],
+                background: ThumbnailURL,
+                // modify_image
+                receive_image: async (base64: string, width: number, height: number) => {
+                  let tmp_path = 'tmp_files/modify_image.png';
+                  await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path);
+                  this.modalCtrl.dismiss({
+                    type: 'image',
+                    path: tmp_path,
+                    width: width,
+                    height: height,
+                    msg: this.MessageInfo,
+                    index: this.RelevanceIndex - 1,
+                  });
+                }
+              }, 'start_load_pck');
             }
             if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
             this.global.godot_window['start_load_pck']();
