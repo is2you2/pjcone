@@ -332,6 +332,8 @@ OfflineMode_text,연결된 서버가 없습니다,No server connected
 ## IndexedDB,,
 FailedToDownloadFile,다운받기 오류,Failed to download file
 ## Nakama,,
+DevTestServer,테스트 서버,Test server
+AccessTestServer,테스트 서버에 접근합니다,Access the test server
 AlreadyHaveTargetName,이미 같은 이름의 서버가 있습니다,There already exists a server with the same name
 NeedLoginInfo,로그인 정보를 확인해주세요,Please check your login information
 NeedLinkUser,사용자를 연결해주세요,Please link user device info

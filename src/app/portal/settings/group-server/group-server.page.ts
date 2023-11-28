@@ -40,7 +40,7 @@ export class GroupServerPage implements OnInit {
   isSSLConnect = false;
 
   ngOnInit() {
-    this.servers = this.nakama.get_all_server_info(true);
+    this.servers = this.nakama.get_all_server_info();
     this.isSSLConnect = (window.location.protocol == 'https:') && !isNativefier;
     if (this.isSSLConnect) this.dedicated_info.useSSL = true;
 
@@ -138,12 +138,13 @@ export class GroupServerPage implements OnInit {
     this.dedicated_info.key = this.dedicated_info.key || 'defaultkey';
 
     this.nakama.add_group_server(this.dedicated_info, () => {
-      this.servers = this.nakama.get_all_server_info(true);
+      this.servers = this.nakama.get_all_server_info();
       this.link_group(this.dedicated_info.isOfficial, this.dedicated_info.target);
       this.dedicated_info.name = undefined;
       this.dedicated_info.address = undefined;
       this.dedicated_info.target = undefined;
       this.dedicated_info.port = undefined;
+      this.dedicated_info.key = undefined;
       this.dedicated_info.useSSL = undefined;
       if (this.isSSLConnect) this.dedicated_info.useSSL = true;
       this.dedicated_info.isOfficial = undefined;
@@ -164,7 +165,7 @@ export class GroupServerPage implements OnInit {
     } catch (e) {
       console.log('서버 삭제 오류: ', e);
     }
-    this.servers = this.nakama.get_all_server_info(true);
+    this.servers = this.nakama.get_all_server_info();
   }
 
   announce_update_profile = true;

@@ -94,6 +94,10 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     });
   }
 
+  ionViewWillEnter() {
+    this.nakama.removeBanner();
+  }
+
   /** 그룹 사용자 리스트 업데이트 */
   update_from_notification(v: Notification) {
     switch (v.code) {

@@ -3,7 +3,7 @@
 
 import { Injectable, NgZone } from '@angular/core';
 import { Channel, ChannelMessage, Client, Group, GroupUser, Match, Notification, Session, Socket, User } from "@heroiclabs/nakama-js";
-import { isPlatform } from './app.component';
+import { SERVER_PATH_ROOT, isPlatform } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
@@ -12,7 +12,7 @@ import { LocalNotiService } from './local-noti.service';
 import { AlertController, LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 import { LanguageSettingService } from './language-setting.service';
-import { AdMob } from '@capacitor-community/admob';
+import { AdLoadInfo, AdMob, AdMobRewardItem, RewardAdOptions, RewardAdPluginEvents } from '@capacitor-community/admob';
 import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
@@ -281,11 +281,7 @@ export class NakamaService {
     }
   }
 
-  /** 공식 테스트 서버를 대상으로 Nakama 클라이언트 구성을 진행합니다.
-   * @param _is_official 공식 서버 여부
-   * @param _target 대상 key
-   * @param _key 서버 key
-   */
+  /** 공식 테스트 서버를 대상으로 Nakama 클라이언트 구성을 진행합니다. */
   init_server(_info: ServerInfo) {
     if (!this.servers[_info.isOfficial][_info.target]) this.servers[_info.isOfficial][_info.target] = {};
     this.servers[_info.isOfficial][_info.target].client = new Client(
@@ -377,12 +373,36 @@ export class NakamaService {
   isRewardAdsUsed = false;
   /** 모든 세션을 토글 */
   async toggle_all_session() {
-    if (!this.isRewardAdsUsed) {
-      // 광고 발생
-      console.log('광고 발생시키기');
-    }
     if (this.TogglingSession) return;
     this.TogglingSession = true;
+    if (!this.isRewardAdsUsed) {
+      this.p5toast.show({
+        text: this.lang.text['Nakama']['AccessTestServer'],
+      });
+      const options: RewardAdOptions = {
+        adId: 'ca-app-pub-6577630868247944/4325703911',
+      };
+      /** 광고 정보 불러오기 */
+      try { // 파일이 있으면 보여주고, 없다면 보여주지 않음
+        let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/admob.txt`);
+        if (!res.ok) throw "준비된 광고가 없습니다";
+        await AdMob.prepareRewardVideoAd(options);
+        await AdMob.showRewardVideoAd()
+        this.bgmode.disable();
+        AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
+          this.bgmode.enable();
+        });
+        AdMob.addListener(RewardAdPluginEvents.Rewarded, async (reward: AdMobRewardItem) => {
+          if (reward.amount != 0)
+            await this.AccessToOfficialTestServer();
+        });
+        return;
+      } catch (e) { // 파일이 없는 경우 동작
+        console.log(e);
+        await this.AccessToOfficialTestServer();
+        return;
+      }
+    }
     if (this.statusBar.settings.groupServer == 'online') {
       this.logout_all_server();
       this.p5toast.show({
@@ -409,6 +429,23 @@ export class NakamaService {
       } catch (e) { }
     }
     this.TogglingSession = false;
+  }
+
+  /** 공식 테스트 서버 접근 권한 생성 */
+  async AccessToOfficialTestServer() {
+    let res = await fetch(`${SERVER_PATH_ROOT}assets/data/WSAddress.txt`);
+    let address = (await res.text()).split('\n')[0];
+    await this.add_group_server({
+      isOfficial: 'official',
+      address: address,
+      name: this.lang.text['Nakama']['DevTestServer'],
+      useSSL: true,
+    });
+    this.isRewardAdsUsed = true;
+    // official 로그인 처리
+    let Targets = Object.keys(this.servers['official']);
+    for (let i = 0, j = Targets.length; i < j; i++)
+      await this.init_session(this.servers['official'][Targets[i]].info);
   }
 
   /** 서버 연결하기 */
@@ -522,8 +559,12 @@ export class NakamaService {
     info.isOfficial = info.isOfficial || 'unofficial';
     info.key = info.key || 'defaultkey';
 
+    if (!this.groups[info.isOfficial])
+      this.groups[info.isOfficial] = {};
     if (!this.groups[info.isOfficial][info.target])
       this.groups[info.isOfficial][info.target] = {};
+    if (!this.channels_orig[info.isOfficial])
+      this.channels_orig[info.isOfficial] = {};
     if (!this.channels_orig[info.isOfficial][info.target])
       this.channels_orig[info.isOfficial][info.target] = {};
 
@@ -535,19 +576,26 @@ export class NakamaService {
     line += `,${info.port}`;
     line += `,${info.useSSL}`;
     return new Promise((done) => {
-      this.indexed.loadTextFromUserPath('servers/list_detail.csv', async (e, v) => {
-        let list: string[] = [];
-        if (e && v) list = v.split('\n');
-        list.push(line);
-        this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv', (_v) => {
-          this.init_server(info);
-          this.servers[info.isOfficial][info.target].info = { ...info };
-          _CallBack();
+      if (info.isOfficial != 'official')
+        this.indexed.loadTextFromUserPath('servers/list_detail.csv', async (e, v) => {
+          let list: string[] = [];
+          if (e && v) list = v.split('\n');
+          list.push(line);
+          this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv', (_v) => {
+            this.init_server(info);
+            this.servers[info.isOfficial][info.target].info = { ...info };
+            _CallBack();
+          });
+          this.statusBar.groupServer[info.isOfficial][info.target] = 'offline';
+          await this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
+          done();
         });
+      else {
+        this.init_server(info);
+        this.servers[info.isOfficial][info.target].info = { ...info };
         this.statusBar.groupServer[info.isOfficial][info.target] = 'offline';
-        await this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
         done();
-      });
+      }
     });
   }
 
@@ -1363,6 +1411,7 @@ export class NakamaService {
   /** 채널별로 정보를 분리 저장한 후 초기 로드시 병합시키는 구성 필요함 */
   save_channels_with_less_info() {
     let channels_copy = JSON.parse(JSON.stringify(this.channels_orig));
+    delete channels_copy['official'];
     let isOfficial = Object.keys(channels_copy);
     isOfficial.forEach(_is_official => {
       let Targets = Object.keys(channels_copy[_is_official]);
@@ -1530,6 +1579,7 @@ export class NakamaService {
   /** 간소화된 그룹 정보 저장하기 */
   save_groups_with_less_info(_CallBack = () => { }) {
     let copied_group = JSON.parse(JSON.stringify(this.groups));
+    delete copied_group['official'];
     let isOfficial = Object.keys(copied_group);
     isOfficial.forEach(_is_official => {
       let Target = Object.keys(copied_group[_is_official])
@@ -1793,7 +1843,16 @@ export class NakamaService {
       let targetPath = list[i].replace('/official/', '/deleted/').replace('/unofficial/', '/deleted/');
       await this.indexed.saveFileToUserPath(file, targetPath);
       await this.indexed.removeFileFromUserPath(list[i]);
-      loading.message = `${this.lang.text['Nakama']['MissingChannelFiles']}: ${targetPath}`;
+      loading.message = `${this.lang.text['Nakama']['MissingChannelFiles']}: ${list[i]}`;
+      if (isPlatform == 'Android' || isPlatform == 'iOS')
+        this.noti.noti.schedule({
+          id: 9,
+          title: `${this.lang.text['Nakama']['MissingChannelFiles']}: ${j - i}`,
+          progressBar: { value: i, maxValue: j },
+          sound: null,
+          smallIcon: 'res://icon_mono',
+          color: 'b0b0b0',
+        });
     }
     // 예하 그룹들 손상처리
     loading.message = this.lang.text['Nakama']['MissingGroups'];
@@ -1831,6 +1890,9 @@ export class NakamaService {
         this.indexed.saveTextFileToUserPath(lines.join('\n'), 'servers/list_detail.csv');
       }
     });
+    setTimeout(() => {
+      this.noti.ClearNoti(9);
+    }, 100);
     loading.dismiss();
   }
 

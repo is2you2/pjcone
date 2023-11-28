@@ -109,14 +109,15 @@ export class UserFsDirPage implements OnInit {
     this.initLoadingElement.present();
     this.DirList.length = 0;
     this.FileList.length = 0;
-    this.noti.noti.schedule({
-      id: 5,
-      title: this.lang.text['UserFsDir']['LoadingExplorer'],
-      progressBar: { indeterminate: true },
-      sound: null,
-      smallIcon: 'res://icon_mono',
-      color: 'b0b0b0',
-    });
+    if (isPlatform == 'Android' || isPlatform == 'iOS')
+      this.noti.noti.schedule({
+        id: 5,
+        title: this.lang.text['UserFsDir']['LoadingExplorer'],
+        progressBar: { indeterminate: true },
+        sound: null,
+        smallIcon: 'res://icon_mono',
+        color: 'b0b0b0',
+      });
     if (this.indexed.godotDB) {
       let _godot_list = await this.indexed.GetFileListFromDB('/', undefined, this.indexed.godotDB)
       await this.ModulateIndexedFile(_godot_list, this.indexed.godotDB);
@@ -144,14 +145,15 @@ export class UserFsDirPage implements OnInit {
     for (let i = 0, j = _list.length; i < j; i++) {
       if (this.StopIndexing) return;
       let message = `${this.lang.text['UserFsDir']['LoadingExplorer']}: ${_list.length - i}`;
-      this.noti.noti.schedule({
-        id: 5,
-        title: message,
-        progressBar: { value: i, maxValue: _list.length },
-        sound: null,
-        smallIcon: 'res://icon_mono',
-        color: 'b0b0b0',
-      });
+      if (isPlatform == 'Android' || isPlatform == 'iOS')
+        this.noti.noti.schedule({
+          id: 5,
+          title: message,
+          progressBar: { value: i, maxValue: _list.length },
+          sound: null,
+          smallIcon: 'res://icon_mono',
+          color: 'b0b0b0',
+        });
       this.initLoadingElement.message = message;
       await this.indexed.GetFileInfoFromDB(_list[i], (info) => {
         let _info: FileDir = {
@@ -379,6 +381,17 @@ export class UserFsDirPage implements OnInit {
       buttons: [{
         text: this.lang.text['UserFsDir']['RemoveApply'],
         handler: async () => {
+          let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['DeleteFile'] });
+          loading.present();
+          if (isPlatform == 'Android' || isPlatform == 'iOS')
+            this.noti.noti.schedule({
+              id: 4,
+              title: this.lang.text['UserFsDir']['DeleteFile'],
+              progressBar: { indeterminate: true },
+              sound: null,
+              smallIcon: 'res://icon_mono',
+              color: 'b0b0b0',
+            });
           await this.indexed.GetFileListFromDB(this.CurrentDir, (list) => {
             list.forEach(async path => await this.indexed.removeFileFromUserPath(path))
             for (let i = this.DirList.length - 1; i >= 0; i--)
@@ -398,6 +411,10 @@ export class UserFsDirPage implements OnInit {
                 this.FileList.splice(i, 1);
           }, this.indexed.godotDB);
           this.MoveToUpDir();
+          loading.dismiss();
+          setTimeout(() => {
+            this.noti.ClearNoti(4);
+          }, 100);
         }
       }],
     }).then(v => v.present());
@@ -423,6 +440,7 @@ export class UserFsDirPage implements OnInit {
     this.FileList.forEach(file => {
       URL.revokeObjectURL(file.thumbnail);
     });
+    this.noti.ClearNoti(4);
     this.noti.ClearNoti(5);
   }
 
