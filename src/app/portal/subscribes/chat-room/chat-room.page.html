@@ -97,10 +97,6 @@ SPDX-License-Identifier: MIT -->
               </div>
             </div>
           </div>
-          <ion-item *ngIf="ShowRecentMsg" style="padding-top: 8px; z-index: 0;" button
-            (click)="pull_msg_history(false)">
-            <ion-label>{{lang.text['ChatRoom']['fetch_next_chat']}}</ion-label>
-          </ion-item>
         </div>
         <table class="thumnails">
           <tr class="thumnail_parts" *ngIf="userInput.quickShare" (click)="cancel_qrshare()">
@@ -124,8 +120,7 @@ SPDX-License-Identifier: MIT -->
               </div>
             </td>
           </tr>
-          <tr class="thumnail_parts" *ngIf="ShowGoToBottom && !last_message_viewer.user_id"
-            (click)="scroll_down_logs()">
+          <tr class="thumnail_parts" *ngIf="ShowGoToBottom && !last_message_viewer.user_id" (click)="init_chatroom()">
             <td style="text-align: center; padding: 4px 0px;">{{lang.text['ChatRoom']['GoToRecent']}}</td>
           </tr>
           <tr class="thumnail_parts" *ngIf="last_message_viewer.user_id" (click)="init_chatroom()">

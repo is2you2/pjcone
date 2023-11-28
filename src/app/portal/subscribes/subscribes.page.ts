@@ -43,7 +43,7 @@ export class SubscribesPage implements OnInit {
   ionViewWillEnter() {
     if (this.global.p5key && this.global.p5key['KeyShortCut'])
       this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-        if (this.nakama.channels.length > index) {
+        if (this.nakama.channels.length >= index) {
           switch (index) {
             case 0:
               this.go_to_page('group-server');

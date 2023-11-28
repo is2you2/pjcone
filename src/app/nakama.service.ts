@@ -439,6 +439,7 @@ export class NakamaService {
       isOfficial: 'official',
       address: address,
       name: this.lang.text['Nakama']['DevTestServer'],
+      target: 'DevTestServer',
       useSSL: true,
     });
     this.isRewardAdsUsed = true;
