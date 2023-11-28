@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
+import { NavController } from '@ionic/angular';
 import clipboard from 'clipboardy';
 import { SERVER_PATH_ROOT, isNativefier } from 'src/app/app.component';
+import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -20,6 +22,8 @@ export class WeblinkGenPage implements OnInit {
     private nakama: NakamaService,
     private indexed: IndexedDBService,
     private p5toast: P5ToastService,
+    private global: GlobalActService,
+    private navCtrl: NavController,
   ) { }
 
   userInput = {
@@ -56,6 +60,12 @@ export class WeblinkGenPage implements OnInit {
     for (let i = this.groups.length - 1; i >= 0; i--)
       if (this.groups[i]['status'] == 'missing')
         this.groups.splice(i, 1);
+  }
+
+  ionViewDidEnter() {
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
   }
 
   SelectGroupServer(ev: any) {
@@ -155,5 +165,9 @@ export class WeblinkGenPage implements OnInit {
       .then(v => this.userInput.open_prv_channel = v)
       .catch(async _e => this.userInput.open_prv_channel = await clipboard.read());
     this.information_changed();
+  }
+
+  ionViewWillLeave() {
+    delete this.global.p5key['KeyShortCut']['Escape'];
   }
 }

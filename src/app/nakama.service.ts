@@ -17,7 +17,6 @@ import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.serv
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
-import { GroupServerPage } from './portal/settings/group-server/group-server.page';
 import { VoidDrawPage } from './portal/subscribes/chat-room/void-draw/void-draw.page';
 
 /** 서버 상세 정보 */
@@ -87,6 +86,7 @@ export class NakamaService {
     private navCtrl: NavController,
     private ngZone: NgZone,
     private loadingCtrl: LoadingController,
+    private nav: NavController,
   ) { }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
@@ -370,8 +370,17 @@ export class NakamaService {
    * 단일 세션 전환일 때에도 막힘
    */
   TogglingSession = false;
+  /** 리워드 광고 발동 여부  
+   * 리워드 광고를 통해 리워드를 받았다면 광고를 틀지 않습니다.  
+   * 리워드 광고로 리워드를 받았다면 개발 테스트 서버에 연결시킵니다.
+   */
+  isRewardAdsUsed = false;
   /** 모든 세션을 토글 */
   async toggle_all_session() {
+    if (!this.isRewardAdsUsed) {
+      // 광고 발생
+      console.log('광고 발생시키기');
+    }
     if (this.TogglingSession) return;
     this.TogglingSession = true;
     if (this.statusBar.settings.groupServer == 'online') {
@@ -391,14 +400,11 @@ export class NakamaService {
             lateable: true,
           });
         } else {
-          this.modalCtrl.create({
-            component: GroupServerPage,
-          }).then(v => {
-            this.p5toast.show({
-              text: this.lang.text['Subscribes']['Disconnected'],
-            });
-            v.present()
+          this.p5toast.show({
+            text: this.lang.text['Subscribes']['Disconnected'],
           });
+          this.nav.navigateForward('settings/group-server');
+          this.removeBanner();
         }
       } catch (e) { }
     }
@@ -3218,9 +3224,8 @@ export class NakamaService {
     for (let i = 0, j = json.length; i < j; i++)
       switch (json[i].type) {
         case 'open_profile': // 프로필 페이지 열기 유도
-          this.modalCtrl.create({
-            component: GroupServerPage,
-          }).then(v => v.present());
+          this.nav.navigateForward('settings/group-server');
+          this.removeBanner();
           break;
         case 'open_subscribes':
           this.act_callback_link['portal_tab_subscribes']();

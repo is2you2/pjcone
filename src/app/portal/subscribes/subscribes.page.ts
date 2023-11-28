@@ -3,14 +3,13 @@
 
 import { Component, OnInit } from '@angular/core';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
-import { ModalController, NavController, iosTransitionAnimation } from '@ionic/angular';
+import { ModalController, NavController } from '@ionic/angular';
 import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { AddGroupPage } from '../settings/add-group/add-group.page';
-import { GroupServerPage } from '../settings/group-server/group-server.page';
 import { QRelsePage } from './qrelse/qrelse.page';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -63,9 +62,7 @@ export class SubscribesPage implements OnInit {
   }
 
   go_to_page(_page: string) {
-    this.nav.navigateForward(`settings/${_page}`, {
-      animation: iosTransitionAnimation,
-    });
+    this.nav.navigateForward(`settings/${_page}`);
     this.nakama.removeBanner();
   }
 
@@ -155,20 +152,10 @@ export class SubscribesPage implements OnInit {
         v.present();
       });
     else {
-      this.modalCtrl.create({
-        component: GroupServerPage,
-      }).then(v => {
-        this.p5toast.show({
-          text: this.lang.text['Subscribes']['Disconnected'],
-        });
-        let cache_func = this.global.p5key['KeyShortCut'];
-        this.global.p5key['KeyShortCut'] = {};
-        v.onDidDismiss().then(() => {
-          this.global.p5key['KeyShortCut'] = cache_func;
-          this.ionViewWillEnter();
-        });
-        v.present()
+      this.p5toast.show({
+        text: this.lang.text['Subscribes']['Disconnected'],
       });
+      this.go_to_page('group-server');
     }
   }
 

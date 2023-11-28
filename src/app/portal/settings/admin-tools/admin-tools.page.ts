@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { AlertController, IonAccordionGroup } from '@ionic/angular';
+import { AlertController, IonAccordionGroup, NavController } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -7,6 +7,7 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import clipboard from "clipboardy";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IndexedDBService } from 'src/app/indexed-db.service';
+import { GlobalActService } from 'src/app/global-act.service';
 
 
 @Component({
@@ -24,6 +25,8 @@ export class AdminToolsPage implements OnInit {
     public statusBar: StatusManageService,
     private mClipboard: Clipboard,
     private indexed: IndexedDBService,
+    private global: GlobalActService,
+    private navCtrl: NavController,
   ) { }
 
   /** 서버 정보, 온라인 상태의 서버만 불러온다 */
@@ -56,6 +59,12 @@ export class AdminToolsPage implements OnInit {
         this.servers.splice(i, 1);
     }
     this.select_server(0);
+  }
+
+  ionViewDidEnter() {
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
   }
 
   is_sending = false;
@@ -354,5 +363,9 @@ export class AdminToolsPage implements OnInit {
         text: `${this.lang.text['AdminTools']['UserLeavedFailed']}: ${e.statusText}`,
       })
     }
+  }
+
+  ionViewWillLeave() {
+    delete this.global.p5key['KeyShortCut']['Escape'];
   }
 }
