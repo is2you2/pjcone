@@ -43,8 +43,16 @@ export class SubscribesPage implements OnInit {
   ionViewWillEnter() {
     if (this.global.p5key && this.global.p5key['KeyShortCut'])
       this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-        if (this.nakama.channels.length > index)
-          this.go_to_chatroom(this.nakama.channels[index]);
+        if (this.nakama.channels.length > index) {
+          switch (index) {
+            case 0:
+              this.go_to_page('group-server');
+              break;
+            default:
+              this.go_to_chatroom(this.nakama.channels[index - 1]);
+              break;
+          }
+        }
         else this.add_new_group();
       };
     if (this.global.p5key && this.global.p5key['KeyShortCut']

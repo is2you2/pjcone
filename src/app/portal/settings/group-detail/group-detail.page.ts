@@ -76,22 +76,26 @@ export class GroupDetailPage implements OnInit {
         } else this.info['users'].splice(i, 1);
     }
     // 그룹 이미지 업데이트
-    this.nakama.servers[this.isOfficial][this.target].client.readStorageObjects(
-      this.nakama.servers[this.isOfficial][this.target].session, {
-      object_ids: [{
-        collection: 'group_public',
-        key: `group_${this.info.id}`,
-        user_id: this.info.creator_id,
-      }]
-    }).then(v => {
-      if (v.objects.length) {
-        this.nakama.groups[this.isOfficial][this.target][this.info.id]['img'] = v.objects[0].value['img'].replace(/"|=|\\/g, '');
-        this.indexed.saveTextFileToUserPath(v.objects[0].value['img'], `servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
-      } else {
-        delete this.nakama.groups[this.isOfficial][this.target][this.info.id]['img'];
-        this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
-      }
-    });
+    try {
+      this.nakama.servers[this.isOfficial][this.target].client.readStorageObjects(
+        this.nakama.servers[this.isOfficial][this.target].session, {
+        object_ids: [{
+          collection: 'group_public',
+          key: `group_${this.info.id}`,
+          user_id: this.info.creator_id,
+        }]
+      }).then(v => {
+        if (v.objects.length) {
+          this.nakama.groups[this.isOfficial][this.target][this.info.id]['img'] = v.objects[0].value['img'].replace(/"|=|\\/g, '');
+          this.indexed.saveTextFileToUserPath(v.objects[0].value['img'], `servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
+        } else {
+          delete this.nakama.groups[this.isOfficial][this.target][this.info.id]['img'];
+          this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
+        }
+      });
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   ionViewWillEnter() {
