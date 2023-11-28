@@ -3,7 +3,7 @@
 
 import { Component, OnInit } from '@angular/core';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
-import { ModalController } from '@ionic/angular';
+import { ModalController, NavController, iosTransitionAnimation } from '@ionic/angular';
 import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
@@ -13,6 +13,7 @@ import { AddGroupPage } from '../settings/add-group/add-group.page';
 import { GroupServerPage } from '../settings/group-server/group-server.page';
 import { QRelsePage } from './qrelse/qrelse.page';
 import { GlobalActService } from 'src/app/global-act.service';
+import { IndexedDBService } from 'src/app/indexed-db.service';
 
 @Component({
   selector: 'app-subscribes',
@@ -28,9 +29,15 @@ export class SubscribesPage implements OnInit {
     public statusBar: StatusManageService,
     public lang: LanguageSettingService,
     private global: GlobalActService,
+    private nav: NavController,
+    private indexed: IndexedDBService,
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
+      if (e && v) this.nakama.users.self['img'] = v.replace(/"|=|\\/g, '');
+    });
+  }
 
   cant_dedicated = false;
 
@@ -53,6 +60,13 @@ export class SubscribesPage implements OnInit {
     this.nakama.resumeBanner();
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
+  }
+
+  go_to_page(_page: string) {
+    this.nav.navigateForward(`settings/${_page}`, {
+      animation: iosTransitionAnimation,
+    });
+    this.nakama.removeBanner();
   }
 
   EventListenerAct = (ev: any) => {

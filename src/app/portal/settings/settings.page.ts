@@ -46,9 +46,6 @@ export class SettingsPage implements OnInit, OnDestroy {
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
-    this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
-      if (e && v) this.nakama.users.self['img'] = v.replace(/"|=|\\/g, '');
-    });
     this.AD_Div = document.getElementById('advertise');
     this.checkAdsInfo();
     this.check_if_admin();
@@ -185,7 +182,6 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.nav.pop();
     }
     let LinkButton = [];
-    LinkButton.push(() => this.go_to_page('group-server'));
     LinkButton.push(() => this.go_to_page('noti-alert'));
     LinkButton.push(() => this.go_to_webrtc_manager());
     LinkButton.push(() => this.go_to_qr_share());
@@ -349,7 +345,6 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    delete this.nakama.users.self['img'];
     delete this.nakama.on_socket_disconnected['settings_admin_check'];
     clearTimeout(this.refreshAds);
   }

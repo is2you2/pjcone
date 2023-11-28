@@ -48,6 +48,8 @@ ToggleWorkers,모든 사용자 선택,Select all users
 EditText,편집됨,Edited
 ## Subscribes,,
 Title,채널,Channels
+myProfile,내 프로필,My profile
+JoinedChannels,참여 채널,Joined channels
 has_noties,검토해야할 알림이 있습니다.,There are notifications to review.
 NoChat,채널 생성하기,Create a channel
 noChatList,참여중인 대화가 없습니다.,There are no active conversations.
@@ -63,7 +65,6 @@ env_info,사용 환경,Preferences
 myInfo,내 정보,My info
 groupServer,사용자 관리,Manage user info
 useDeviceAsServer,이 기기를 기능 서버로,Use this device as a functional server
-ServerNTools,서버와 도구,Servers and tools
 joinRanchat,랜덤채팅 참여,Join random chat
 joinDediChat,사설 그룹채팅 참여,Join dedicated group chat
 quickQRshare,정보 공유,Sharing information

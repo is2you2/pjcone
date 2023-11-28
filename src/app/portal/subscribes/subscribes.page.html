@@ -32,7 +32,21 @@ SPDX-License-Identifier: MIT -->
       </div>
     </ion-accordion>
   </ion-accordion-group>
+  <ion-item-divider>
+    <ion-label>{{lang.text['Subscribes']['myProfile']}}</ion-label>
+  </ion-item-divider>
+  <ion-item button (click)="go_to_page('group-server')">
+    <div class="additional_form bg_img_form">
+      <img class="profile_img"
+        [style]="nakama.users.self['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'"
+        [src]="nakama.users.self['img']">
+    </div>
+    <ion-label>{{nakama.users.self['display_name'] || lang.text['Profile']['noname_user']}}</ion-label>
+  </ion-item>
   <div *ngIf="nakama.channels.length">
+    <ion-item-divider>
+      <ion-label>{{lang.text['Subscribes']['JoinedChannels']}}</ion-label>
+    </ion-item-divider>
     <ion-item *ngFor="let channel of nakama.channels" button (click)="go_to_chatroom(channel)">
       <div class="additional_form status_bar_double"
         [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']">
