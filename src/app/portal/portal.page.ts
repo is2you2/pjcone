@@ -35,6 +35,7 @@ export class PortalPage implements OnInit {
     if (this.CacheKeyShortCut)
       this.global.p5key['KeyShortCut'] = this.CacheKeyShortCut;
     this.try_add_shortcut();
+    this.nakama.resumeBanner();
     if (this.global.p5todo && this.global.p5todo['PlayCanvas'] && this.TodoIcon == 'checkbox')
       this.global.p5todo['PlayCanvas']();
   }

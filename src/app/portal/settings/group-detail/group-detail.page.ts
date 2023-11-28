@@ -48,7 +48,6 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   target: string
 
   async ngOnInit() {
-    this.nakama.removeBanner();
     this.info = this.navParams.get('info');
     this.file_sel_id = `group_detail_${this.info.id}_${new Date().getTime()}}`;
     this.info_orig = JSON.parse(JSON.stringify(this.navParams.get('info')));

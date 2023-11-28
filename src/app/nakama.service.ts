@@ -325,7 +325,6 @@ export class NakamaService {
   ChatroomLinkAct: Function;
   /** subscribe과 localPush의 채팅방 입장 행동을 통일함 */
   go_to_chatroom_without_admob_act(_info: any, _file?: FileInfo) {
-    this.removeBanner();
     this.has_new_channel_msg = false;
     this.rearrange_channels();
     this.save_channels_with_less_info();
@@ -3215,6 +3214,7 @@ export class NakamaService {
   act_callback_link = {};
 
   async act_from_QRInfo(json: any) {
+    this.removeBanner();
     for (let i = 0, j = json.length; i < j; i++)
       switch (json[i].type) {
         case 'open_profile': // 프로필 페이지 열기 유도
@@ -3345,6 +3345,7 @@ export class NakamaService {
             }
           break;
         default: // 동작 미정 알림(debug)
+          this.resumeBanner();
           throw "지정된 틀 아님";
       }
   }

@@ -259,6 +259,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }];
 
   ionViewDidEnter() {
+    this.nakama.resumeBanner();
     this.global.p5key['KeyShortCut']['Escape'] = () => {
       this.navCtrl.pop();
     }
@@ -458,7 +459,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   isMobile = false;
 
   ngOnInit() {
-    this.nakama.removeBanner();
     this.ChatLogs = document.getElementById('chatroom_div');
     this.ChatLogs.onscroll = (_ev: any) => {
       if (this.ChatLogs.scrollHeight == this.ChatLogs.scrollTop + this.ChatLogs.clientHeight)
@@ -1472,6 +1472,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         });
         this.noti.Current = 'IonicViewerPage';
         v.present();
+        this.nakama.removeBanner();
         this.lock_modal_open = false;
       });
     }

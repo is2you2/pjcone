@@ -44,7 +44,6 @@ export class GroupServerPage implements OnInit {
     this.isSSLConnect = (window.location.protocol == 'https:') && !isNativefier;
     if (this.isSSLConnect) this.dedicated_info.useSSL = true;
 
-    this.nakama.removeBanner();
     this.file_sel_id = `self_profile_${new Date().getTime()}`;
     this.content_sel_id = `self_content_${new Date().getTime()}`;
     this.original_profile = JSON.parse(JSON.stringify(this.nakama.users.self));

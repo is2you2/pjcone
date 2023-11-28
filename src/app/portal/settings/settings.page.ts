@@ -44,7 +44,6 @@ export class SettingsPage implements OnInit, OnDestroy {
   is_nativefier = isNativefier;
 
   ngOnInit() {
-    this.nakama.removeBanner();
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
     this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {

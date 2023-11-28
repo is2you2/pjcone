@@ -38,6 +38,5 @@ export class QRelsePage implements OnInit {
         this.result.text[i][k] = tmp;
       }
     }
-    this.nakama.removeBanner();
   }
 }
