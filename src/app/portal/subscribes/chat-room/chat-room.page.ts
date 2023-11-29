@@ -461,7 +461,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.ChatLogs = document.getElementById('chatroom_div');
     this.ChatLogs.onscroll = (_ev: any) => {
-      if (this.ChatLogs.scrollHeight == this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) {
+      if (Math.abs(this.ChatLogs.scrollHeight - (this.ChatLogs.scrollTop + this.ChatLogs.clientHeight)) < 1) {
         // 스크롤을 제일 하단으로 내리면 사라짐
         if (!this.ShowGoToBottom)
           if (!this.ShowRecentMsg)
