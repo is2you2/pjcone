@@ -29,6 +29,8 @@ func start_load_pck(args):
 	match(window['ext']):
 		'pck':
 			load_pck()
+		'blend':
+			continue
 		'obj':
 			continue
 		'stl':
