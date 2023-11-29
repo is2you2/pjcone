@@ -1,15 +1,13 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { AlertController, IonModal, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { Component, OnInit } from '@angular/core';
+import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import * as p5 from 'p5';
-import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
+import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
-import { P5ToastService } from 'src/app/p5-toast.service';
-import { ToolServerService } from 'src/app/tool-server.service';
 
 @Component({
   selector: 'app-void-draw',
@@ -26,8 +24,6 @@ export class VoidDrawPage implements OnInit {
     public global: GlobalActService,
     private navParams: NavParams,
     private indexed: IndexedDBService,
-    public toolServer: ToolServerService,
-    private p5toast: P5ToastService,
   ) { }
 
   ngOnInit() { }
@@ -46,7 +42,6 @@ export class VoidDrawPage implements OnInit {
       width: this.navParams.data.width,
       height: this.navParams.data.height,
       path: this.navParams.data.path,
-      addresses: this.navParams.data.addresses,
     });
     this.isMobile = isPlatform != 'DesktopPWA';
   }
@@ -75,7 +70,6 @@ export class VoidDrawPage implements OnInit {
       this.new_image();
     }
     this.global.p5key['KeyShortCut']['SKeyAct'] = () => {
-      // this.StartSharedDraw();
       this.open_crop_tool();
     }
     this.global.p5key['KeyShortCut']['DeleteAct'] = () => {
@@ -89,228 +83,20 @@ export class VoidDrawPage implements OnInit {
 
   /** 새 캔버스 생성 행동 분리 */
   async create_new_canvas(inputInfo?: any) {
-    if (inputInfo['addresses']) {
-      for (let i = 0, j = inputInfo['addresses'].length; i < j; i++)
-        if (!this.UserWS)
-          try {
-            this.UserWS = await this.createUserWS(inputInfo['addresses'][i]);
-          } catch (e) { }
-      if (this.UserWS) {
-        this.p5toast.show({
-          text: this.lang.text['voidDraw']['ConnectedToServer'],
-        });
-        if (this.p5voidDraw) this.p5voidDraw.remove();
-      } else { // 연결에 실패함
-        this.p5toast.show({
-          text: this.lang.text['voidDraw']['DisconnectedFromServer'],
-        });
-        if (!this.p5voidDraw)
-          this.create_p5voidDraw({
-            width: 432,
-            height: 432,
-          });
-      }
-    } else {
-      inputInfo['width'] = inputInfo['width'] || 432;
-      inputInfo['height'] = inputInfo['height'] || 432;
-      if (this.UserWS) this.UserWS.close();
-      this.isCropable = true;
-      if (this.p5voidDraw) this.p5voidDraw.remove();
-      this.create_p5voidDraw(inputInfo);
-    }
+    inputInfo['width'] = inputInfo['width'] || 432;
+    inputInfo['height'] = inputInfo['height'] || 432;
+    this.isCropable = true;
+    if (this.p5voidDraw) this.p5voidDraw.remove();
+    this.create_p5voidDraw(inputInfo);
   }
 
   p5voidDraw: p5;
-  @ViewChild('VoidDrawServer') VoidDrawServer: IonModal;
   QRCode: any;
-  InputServerAddress: string;
-  InputJoinAddress() {
-    this.create_new_canvas({
-      addresses: [this.InputServerAddress],
-    });
-    this.VoidDrawServer.dismiss();
-  }
-  /** 공유 그림판 발송자 */
-  UserWS: WebSocket;
-  uuidSelf: string;
-  /** 웹 소켓 생성하기 */
-  createUserWS(address: string, isSelf = false): Promise<WebSocket> {
-    return new Promise((done, err) => {
-      let ws = new WebSocket(`ws://${address}:12022/`);
-      /** 배경 이미지 정보 누적 */
-      let BGImgBase64 = '';
-      /** 전체 그리기 정보 누적 */
-      let DrawHistory = '';
-      this.uuidSelf = '';
-      ws.onopen = () => {
-        BGImgBase64 = '';
-        if (!isSelf) {
-          this.isCropable = false;
-          ws.send(JSON.stringify({ type: 'REQ_INIT' }));
-        }
-        done(ws);
-      }
-      let tmp_draw_part = {};
-      ws.onmessage = (ev: any) => {
-        let json = JSON.parse(ev.data);
-        switch (json['type']) {
-          case 'CANVAS_SIZE': // 캔버스 생성 우선
-            this.create_p5voidDraw({
-              width: json['width'],
-              height: json['height'],
-            });
-            break;
-          case 'CurrentDrawing': // 선 그리기 중
-            this.SharedCurrentDraw[json['uuid']]['pos'].push(json['pos']);
-            this.p5voidDraw.redraw();
-            break;
-          case 'CurrentDrawStart': // 선 그리기 시작
-            this.SharedCurrentDraw[json['uuid']] = {
-              pos: json['pos'],
-              color: json['color'],
-              weight: json['weight'],
-              uuid: this.uuidSelf,
-            }
-            this.p5voidDraw.redraw();
-            break;
-          case 'CurrentDrawEndPart': // 선 그리기 종료
-            if (tmp_draw_part[json['uuid']] === undefined)
-              tmp_draw_part[json['uuid']] = '';
-            tmp_draw_part[json['uuid']] += json['part'];
-            break;
-          case 'CurrentDrawEndPartEOL':
-            let RemoteDraw = JSON.parse(tmp_draw_part[json['uuid']]);
-            if (this.SharedDraw[json['uuid']] === undefined)
-              this.SharedDraw[json['uuid']] = [];
-            this.SharedDraw[json['uuid']].push(RemoteDraw);
-            this.p5voidDraw.redraw();
-            this.p5voidDraw['UpdateRemoteDrawLine'](json['uuid'], RemoteDraw);
-            delete tmp_draw_part[json['uuid']];
-            break;
-          case 'DRAW_PART': // 전체 선 정보 누적
-            DrawHistory += json['part'];
-            break;
-          case 'DRAW_EOL': // 전체 선 정보 전부 받음
-            {
-              let json = JSON.parse(DrawHistory);
-              this.SharedDraw = json;
-              let keys = Object.keys(this.SharedDraw);
-              for (let i = 0, j = keys.length; i < j; i++)
-                this.p5voidDraw['UpdateRemoteDraw'](keys[i]);
-              this.p5voidDraw.redraw();
-            }
-            break;
-          case 'IMAGE_PART': // 이미지 공유받음
-            BGImgBase64 += json['part'];
-            break;
-          case 'IMAGE_EOL': // 이미지 전부 발송됨 알림
-            BGImgBase64 = BGImgBase64.replace(/"|=|\\/g, '');
-            this.p5voidDraw.loadImage(BGImgBase64, v => {
-              this.p5voidDraw['BaseImage'] = v;
-              this.p5voidDraw['ImageCanvas'].image(this.p5voidDraw['BaseImage'], 0, 0);
-              this.p5voidDraw['ImageCanvas'].redraw();
-              this.p5voidDraw['SetCanvasViewportInit']();
-            }, e => {
-              console.error('그림판 배경 이미지 불러오기 오류: ', e);
-              this.p5voidDraw['ImageCanvas'].redraw();
-              BGImgBase64 = '';
-            });
-            break;
-          case 'UUID_SELF':
-            this.uuidSelf = json['uuid'];
-            break;
-          default:
-            break;
-        }
-      }
-      ws.onclose = () => {
-        this.isCropable = true;
-        this.UserWS = undefined;
-        err();
-      }
-    });
-  }
-  SharedDraw = {};
-  /** 공유받은 현재 그리기 정보  
-   * SharedCurrentDraw[uuid] = { pos: [], display_name, color, weight }
-   */
-  SharedCurrentDraw = {};
-  StartSharedDraw() {
-    if (this.isMobile)
-      this.toolServer.initialize('voidDraw', 12022, async () => {
-        // OnStart
-        this.QRCode = this.global.readasQRCodeFromString(
-          `${SERVER_PATH_ROOT}pjcone_pwa/?voidDraw=${this.toolServer.addresses}`
-        );
-        this.p5toast.show({
-          text: this.lang.text['voidDraw']['ServerStarted'],
-        });
-        this.UserWS = await this.createUserWS('127.0.0.1', true);
-      }, (conn) => {
-        // onConnect
-        this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify({
-          type: 'UUID_SELF',
-          uuid: conn.uuid,
-        }));
-      }, async (conn: any, json: any) => {
-        // OnMessage
-        switch (json['type']) {
-          case 'REQ_INIT': // 첫 동작 요청
-            // 캔버스 크기 정보 공유
-            let data = {
-              type: 'CANVAS_SIZE',
-              width: this.p5voidDraw['ActualCanvas'].width,
-              height: this.p5voidDraw['ActualCanvas'].height,
-            }
-            this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify(data));
-            // 캔버스 그리기 기록 공유
-            {
-              let copied = { ...this.SharedDraw };
-              copied[this.uuidSelf] = this.p5voidDraw['DrawingStack'];
-              let json_str = JSON.stringify(copied);
-              let part = json_str.match(/(.{1,80})/g);
-              for (let i = 0, j = part.length; i < j; i++) {
-                this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify({
-                  type: 'DRAW_PART',
-                  part: part[i],
-                }));
-                await this.waiting(0);
-              }
-              this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify({ type: 'DRAW_EOL' }));
-            }
-            // 캔버스 배경이미지 공유
-            if (this.p5voidDraw['BaseImage']) {
-              this.p5voidDraw['BaseImage'].loadPixels();
-              let base64 = this.p5voidDraw['BaseImage'].canvas.toDataURL("image/jpeg", .1);
-              let part = base64.match(/(.{1,80})/g);
-              for (let i = 0, j = part.length; i < j; i++) {
-                this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify({
-                  type: 'IMAGE_PART',
-                  part: part[i],
-                }));
-                await this.waiting(0);
-              }
-              this.toolServer.send_to('voidDraw', conn.uuid, JSON.stringify({ type: 'IMAGE_EOL' }));
-            }
-            break;
-          default: // 나머지 정보들은 자신을 제외한 사람들에게 릴레이처리
-            for (let i = 0, j = this.toolServer.list['voidDraw']['users'].length; i < j; i++)
-              if (this.toolServer.list['voidDraw']['users'][i] != conn.uuid)
-                this.toolServer.send_to('voidDraw', this.toolServer.list['voidDraw']['users'][i],
-                  JSON.stringify(json));
-            break;
-        }
-      }, (_conn) => {
-        // onDisconnect
-      });
-    this.RemoveShortCut();
-    this.VoidDrawServer.present();
-  }
   waiting(millis: number) {
     return new Promise((done) => setTimeout(() => {
       done(undefined);
     }, millis))
-  }
+  } 
   isCropMode = false;
   create_p5voidDraw(initData: any) {
     let targetDiv = document.getElementById('voidDraw');
@@ -446,13 +232,6 @@ export class VoidDrawPage implements OnInit {
         AddCell.style.textAlign = 'center';
         AddCell.style.cursor = 'pointer';
         AddCell.onclick = () => { this.new_image() }
-        // let QRCell = top_row.insertCell(1); // 공유 그림판 온
-        // QRCell.innerHTML = `<ion-icon color="dark" style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
-        // QRCell.style.textAlign = 'center';
-        // QRCell.style.cursor = 'pointer';
-        // QRCell.onclick = () => {
-        //   this.StartSharedDraw();
-        // }
         let CropCell = top_row.insertCell(1); // Crop
         CropCell.innerHTML = `<ion-icon id="CropToolIcon" style="width: 27px; height: 27px" name="crop"></ion-icon>`;
         if (!this.isCropable)
@@ -512,16 +291,6 @@ export class VoidDrawPage implements OnInit {
           else CamScale = HeightExceptMenu / ActualCanvas.height;
           canvas.show();
           p.redraw();
-        }
-        // 해당 사용자의 모든 선 다시 그리기
-        p['UpdateRemoteDraw'] = (uuid: string, pointer: number) => {
-          console.log(this.SharedDraw);
-          console.log('UpdateRemoteDraw: ', uuid, '/', pointer);
-        }
-        // 해당 사용자의 특정 선 정보를 그리기
-        p['UpdateRemoteDrawLine'] = (uuid: string, DrawInfo: any) => {
-          console.log('UpdateRemoteDrawLine: ', uuid, '/', DrawInfo);
-          this.SharedDraw[uuid].push(DrawInfo);
         }
         ActualCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
         ActualCanvas.pixelDensity(PIXEL_DENSITY);
@@ -615,20 +384,6 @@ export class VoidDrawPage implements OnInit {
             p.pop();
           }
         }
-        if (this.UserWS) { // 공유 그림판 상태라면
-          let keys = Object.keys(this.SharedCurrentDraw);
-          p.push();
-          p.translate(CropPosition);
-          for (let i = 0, j = keys.length; i < j; i++) {
-            p.stroke(this.SharedCurrentDraw[keys[i]]['color']);
-            p.strokeWeight(this.SharedCurrentDraw[keys[i]]['weight']);
-            p.beginShape();
-            for (let k = 0, l = this.SharedCurrentDraw[keys[i]]['pos'].length; k < l; k++)
-              p.curveVertex(this.SharedCurrentDraw[keys[i]]['pos'][k].x, this.SharedCurrentDraw[keys[i]]['pos'][k].y);
-            p.endShape();
-          }
-          p.pop();
-        }
         p.pop();
       }
       p['DrawingStack'] = [];
@@ -721,18 +476,6 @@ export class VoidDrawPage implements OnInit {
         let _pos = { x: pos.x, y: pos.y };
         let color = p5ColorPicker['color']().levels;
         let color_hex = `#${p.hex(color[0], 2)}${p.hex(color[1], 2)}${p.hex(color[2], 2)}`;
-        if (this.UserWS) {
-          let json = {
-            type: 'CurrentDrawStart',
-            pos: [],
-            color: color_hex,
-            weight: strokeWeight,
-            uuid: this.uuidSelf,
-          }
-          json['pos'].push(_pos);
-          json['pos'].push(_pos);
-          this.UserWS.send(JSON.stringify(json));
-        }
         CurrentDraw = {
           pos: [],
           color: color_hex,
@@ -755,14 +498,6 @@ export class VoidDrawPage implements OnInit {
               let pos = MappingPosition();
               pos.sub(CropPosition);
               let _pos = { x: pos.x, y: pos.y };
-              if (this.UserWS) {
-                let json = {
-                  type: 'CurrentDrawing',
-                  pos: _pos,
-                  uuid: this.uuidSelf,
-                }
-                ShareDrawing(json);
-              }
               if (CurrentDraw && CurrentDraw['pos'])
                 CurrentDraw['pos'].push(_pos);
               p.redraw();
@@ -818,17 +553,6 @@ export class VoidDrawPage implements OnInit {
         mousePosition.sub(CamPosition);
         return mousePosition;
       }
-      let AllowSend = true;
-      /** 지연 동기화처리 */
-      let ShareDrawing = (json: any) => {
-        if (AllowSend) {
-          this.UserWS.send(JSON.stringify(json));
-          AllowSend = false;
-          setTimeout(() => {
-            AllowSend = true;
-          }, 100);
-        }
-      }
       let touches = [];
       /** 터치 중인지 여부, 3손가락 터치시 행동 제약을 걸기 위해서 존재 */
       let isTouching = false;
@@ -877,14 +601,6 @@ export class VoidDrawPage implements OnInit {
               let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
               pos.sub(CropPosition);
               let _pos = { x: pos.x, y: pos.y };
-              if (this.UserWS) {
-                let json = {
-                  type: 'CurrentDrawing',
-                  pos: _pos,
-                  uuid: this.uuidSelf,
-                }
-                ShareDrawing(json);
-              }
               if (CurrentDraw && CurrentDraw['pos'])
                 CurrentDraw['pos'].push(_pos);
               p.redraw();
@@ -903,25 +619,6 @@ export class VoidDrawPage implements OnInit {
             break;
         }
         return false;
-      }
-      /** 그리기 종료시 해당 선 전체 정보 공유 */
-      let SharedDrawingEnd = async () => {
-        let copied = JSON.stringify(CurrentDraw);
-        let part = copied.match(/(.{1,80})/g);
-        for (let i = 0, j = part.length; i < j; i++) {
-          let json = {
-            type: 'CurrentDrawEndPart',
-            uuid: this.uuidSelf,
-            part: part[i],
-          }
-          this.UserWS.send(JSON.stringify(json));
-          await this.waiting(0);
-        }
-        let json = {
-          type: 'CurrentDrawEndPartEOL',
-          uuid: this.uuidSelf,
-        }
-        this.UserWS.send(JSON.stringify(json));
       }
       p.touchEnded = (ev: any) => {
         if (!ev['changedTouches']) return;
@@ -964,8 +661,6 @@ export class VoidDrawPage implements OnInit {
         HistoryPointer = p['DrawingStack'].length;
         MovementStartPosition = undefined;
         isClickOnMenu = false;
-        if (this.UserWS)
-          SharedDrawingEnd();
         CurrentDraw = undefined;
         p.redraw();
       }
@@ -1029,7 +724,6 @@ export class VoidDrawPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    this.toolServer.stop('voidDraw');
     this.RemoveShortCut();
     if (this.p5voidDraw) this.p5voidDraw.remove();
   }
