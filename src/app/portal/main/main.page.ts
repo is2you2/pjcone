@@ -307,6 +307,8 @@ export class MainPage implements OnInit {
         isGrabbed = false;
         TextColor = p.color(isDarkMode ? 255 : 0);
         ProgressWeight = 8;
+        /** 진행도 */
+        LerpProgress = 0;
         /** 실시간 보여주기 */
         display() {
           // 가장 배경에 있는 원
@@ -318,15 +320,14 @@ export class MainPage implements OnInit {
             this.position = this.position.add(this.Velocity);
           }
           p.translate(this.position);
-          // 진행도 Lerp 생성
-          let LerpProgress = p.map(
+          this.LerpProgress = p.map(
             Date.now(),
             this.json.startFrom || this.json.written,
             this.json.limit,
             0, 1, true);
-          if (this.isAddButton || (this.json.written > this.json.limit)) LerpProgress = 1;
+          if (this.isAddButton || (this.json.written > this.json.limit)) this.LerpProgress = 1;
           p.fill((this.json.custom_color || this.defaultColor.toString('#rrggbb'))
-            + p.hex(p.floor(p.lerp(34, 180, LerpProgress)), 2));
+            + p.hex(p.floor(p.lerp(34, 180, this.LerpProgress)), 2));
           p.ellipse(0, 0, this.EllipseSize, this.EllipseSize);
           // 썸네일 이미지 표기
           if (this.ThumbnailImage)
@@ -347,10 +348,11 @@ export class MainPage implements OnInit {
           }
           p.rotate(-p.PI / 2);
           let ProgressCircleSize = this.EllipseSize - this.ProgressWeight;
-          p.arc(0, 0, ProgressCircleSize, ProgressCircleSize, 0, LerpProgress * p.TWO_PI);
+          p.arc(0, 0, ProgressCircleSize, ProgressCircleSize, 0, this.LerpProgress * p.TWO_PI);
           p.pop();
           // 타이틀 일부 표기
           let TextBox = this.EllipseSize * .9;
+          this.TextColor = p.color(isDarkMode ? 255 : 0, (this.LerpProgress == 0 ? 128 : 255));
           p.fill(this.TextColor);
           p.text(this.json.title, 0, 0, TextBox, TextBox);
           p.pop();
@@ -419,7 +421,7 @@ export class MainPage implements OnInit {
           this.ProgressWeight = this.OriginalProgWeight * this.LifeTime;
           if (this.LifeTime < .5)
             DoneParticles.push(new DoneBoomParticleAnim(this.position, this.json.custom_color || this.defaultColor));
-          this.TextColor = p.color(isDarkMode ? 255 : 0, 255 * this.LifeTime);
+          this.TextColor = p.color(isDarkMode ? 255 : 0, (this.LerpProgress == 0 ? 128 : 255) * this.LifeTime);
           if (this.isAddButton) {
             this.json.longSide *= this.LifeTime;
             this.json.shortSide *= this.LifeTime;
