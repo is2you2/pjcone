@@ -1065,6 +1065,8 @@ export class NakamaService {
                     _CallBack(this.users[_is_official][_target][userId]);
                     already_use_callback = true;
                   }
+                  if (!this.users[_is_official][_target][userId]['img'])
+                    this.users[_is_official][_target][userId]['img'] = null;
                   this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
                 } else { // 없는 사용자 기록 삭제
                   this.indexed.removeFileFromUserPath(`${_is_official}/${_target}/users/${userId}`);
@@ -1131,7 +1133,8 @@ export class NakamaService {
     this.indexed.saveTextFileToUserPath(JSON.stringify(copied), `servers/${_is_official}/${_target}/users/${copied['id']}/profile.json`);
     if (userInfo['img'])
       this.indexed.saveTextFileToUserPath(userInfo['img'], `servers/${_is_official}/${_target}/users/${userInfo['id']}/profile.img`);
-    else this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${userInfo['id']}/profile.img`);
+    else if (userInfo['img'] === undefined)
+      this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${userInfo['id']}/profile.img`);
   }
 
   /** 서버로부터 알림 업데이트하기 (알림 리스트 재정렬 포함됨) */
@@ -1306,21 +1309,27 @@ export class NakamaService {
             this.channels_orig[_is_official][_target][_cid]['redirect']['type'],
             this.channels_orig[_is_official][_target][_cid]['redirect']['persistence'],
             false
-          ).then(async _c => {
+          ).then(_c => {
             if (!this.channels_orig[_is_official][_target][_cid]['cnoti_id'])
               this.channels_orig[_is_official][_target][_cid]['cnoti_id'] = this.get_noti_id();
             switch (this.channels_orig[_is_official][_target][_cid]['redirect']['type']) {
               case 2: // 1:1 채팅
                 try {
-                  this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target)['img']
-                    = (await this.servers[_is_official][_target].client.readStorageObjects(
-                      this.servers[_is_official][_target].session, {
-                      object_ids: [{
-                        collection: 'user_public',
-                        key: 'profile_image',
-                        user_id: this.channels_orig[_is_official][_target][_cid]['redirect']['id'],
-                      }]
-                    })).objects[0].value['img'];
+                  this.servers[_is_official][_target].client.readStorageObjects(
+                    this.servers[_is_official][_target].session, {
+                    object_ids: [{
+                      collection: 'user_public',
+                      key: 'profile_image',
+                      user_id: this.channels_orig[_is_official][_target][_cid]['redirect']['id'],
+                    }]
+                  }).then(v => {
+                    let targetUser =
+                      this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
+                    if (v.objects.length) {
+                      targetUser['img'] = v.objects[0].value['img'];
+                    } else targetUser['img'] = undefined;
+                    this.save_other_user(targetUser, _is_official, _target);
+                  });
                 } catch (e) { }
               case 3: // 그룹 채팅
                 this.servers[_is_official][_target].client.listChannelMessages(
@@ -1697,7 +1706,10 @@ export class NakamaService {
             _guser.group_users.forEach(_user => {
               if (_user.user.id == this.servers[_is_official][_target].session.user_id)
                 _user.user['is_me'] = true;
-              else this.save_other_user(_user.user, _is_official, _target);
+              else {
+                _user.user['img'] = null;
+                this.save_other_user(_user.user, _is_official, _target);
+              }
               _user.user = this.load_other_user(_user.user.id, _is_official, _target);
               this.add_group_user_without_duplicate(_user, user_group.group.id, _is_official, _target);
             });
