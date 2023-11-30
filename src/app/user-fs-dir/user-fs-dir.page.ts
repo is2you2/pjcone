@@ -392,8 +392,20 @@ export class UserFsDirPage implements OnInit {
               smallIcon: 'res://icon_mono',
               color: 'b0b0b0',
             });
-          await this.indexed.GetFileListFromDB(this.CurrentDir, (list) => {
-            list.forEach(async path => await this.indexed.removeFileFromUserPath(path))
+          await this.indexed.GetFileListFromDB(this.CurrentDir, async (list) => {
+            for (let i = 0, j = list.length; i < j; i++) {
+              if (isPlatform == 'Android' || isPlatform == 'iOS')
+                this.noti.noti.schedule({
+                  id: 5,
+                  title: `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`,
+                  progressBar: { value: i, maxValue: j },
+                  sound: null,
+                  smallIcon: 'res://icon_mono',
+                  color: 'b0b0b0',
+                });
+              loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`;
+              await this.indexed.removeFileFromUserPath(list[i]);
+            }
             for (let i = this.DirList.length - 1; i >= 0; i--)
               if (this.DirList[i].path.indexOf(this.CurrentDir) == 0)
                 this.DirList.splice(i, 1);
@@ -401,8 +413,20 @@ export class UserFsDirPage implements OnInit {
               if (this.FileList[i].path.indexOf(this.CurrentDir) == 0)
                 this.FileList.splice(i, 1);
           });
-          await this.indexed.GetFileListFromDB(this.CurrentDir, (list) => {
-            list.forEach(async path => await this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB))
+          await this.indexed.GetFileListFromDB(this.CurrentDir, async (list) => {
+            for (let i = 0, j = list.length; i < j; i++) {
+              if (isPlatform == 'Android' || isPlatform == 'iOS')
+                this.noti.noti.schedule({
+                  id: 5,
+                  title: `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`,
+                  progressBar: { value: i, maxValue: j },
+                  sound: null,
+                  smallIcon: 'res://icon_mono',
+                  color: 'b0b0b0',
+                });
+              loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`;
+              await this.indexed.removeFileFromUserPath(list[i]);
+            }
             for (let i = this.DirList.length - 1; i >= 0; i--)
               if (this.DirList[i].path.indexOf(this.CurrentDir) == 0)
                 this.DirList.splice(i, 1);
