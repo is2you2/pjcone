@@ -647,6 +647,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.ViewMsgIndex = 0;
     this.ShowGoToBottom = false;
     this.ShowRecentMsg = false;
+    this.isHistoryLoaded = false;
     this.messages.length = 0;
     this.prev_cursor = undefined;
     this.next_cursor = undefined;
@@ -952,8 +953,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       let ShowMeAgainCount = Math.min(this.ViewableMessage.length, Math.min(this.ViewMsgIndex, this.RefreshCount));
       this.ViewMsgIndex -= ShowMeAgainCount;
       this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
-      for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
-        delete this.ViewableMessage[i].content.thumbnail;
       for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
         try {
           if (this.info['HideAutoThumbnail']) {
@@ -983,12 +982,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
               this.nakama.ModulateTimeDate(json[i]);
               this.messages.unshift(json[i]);
-              this.ViewMsgIndex = Math.max(0, this.messages.length - this.RefreshCount);
-              this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.RefreshCount);
-              for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
-                delete this.ViewableMessage[i].content.thumbnail;
-              this.modulate_chatmsg(0, json.length);
             }
+            this.ViewMsgIndex = Math.max(0, this.messages.length - this.RefreshCount);
+            this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.RefreshCount);
+            this.modulate_chatmsg(0, json.length);
             for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
               try {
                 if (this.info['HideAutoThumbnail']) {
@@ -1019,8 +1016,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let ShowMeAgainCount = Math.min(Math.min(json.length, this.RefreshCount), this.ViewableMessage.length);
           this.ViewMsgIndex = Math.max(0, json.length - this.RefreshCount);
           this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
-          for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
-            delete this.ViewableMessage[i].content.thumbnail;
           for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
             try {
               if (this.info['HideAutoThumbnail']) {
@@ -1034,7 +1029,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.modulate_chatmsg(i, ShowMeAgainCount);
           }
           this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
-        }
+        } else if (e) this.LoadLocalChatHistory();
         this.pullable = Boolean(this.LocalHistoryList.length);
       });
     }
