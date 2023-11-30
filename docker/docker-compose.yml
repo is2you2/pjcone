@@ -4,12 +4,14 @@ services:
     container_name: code-server
     volumes:
       - ./pjcone:/root/pjcone
+      - ./myblog:/root/myblog
     environment:
       USER: root
       DISPLAY: :1
       PATH: $PATH:/root/Android/Sdk/platform-tools:/usr/local/sbin:/usr/sbin:/sbin
       GODOT_SILENCE_ROOT_WARNING: 1
     ports:
+      - "4000:4000"
       - "5901:5901"
       - "8081:8081"
       - "8100:8100"
