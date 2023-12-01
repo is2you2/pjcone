@@ -11,7 +11,7 @@ import { IndexedDBService } from './indexed-db.service';
 
 export var isDarkMode = false;
 /** 파일 입출 크기 제한 */
-export const FILE_BINARY_LIMIT = 120000;
+export const FILE_BINARY_LIMIT = 80000;
 
 /** 컨텐츠 제작자 기록 틀 */
 export interface ContentCreatorInfo {
@@ -426,7 +426,7 @@ export class GlobalActService {
 
   /** 파일 경로를 큐에 추가하고 계속하여 정보를 받습니다  
    * 여기서 추가한 것은 반드시 큐를 제거해야함
-   * @returns 파일 전체 길이 (number) / 120000 기준
+   * @returns 파일 전체 길이 (number) / FILE_BINARY_LIMIT 기준
    */
   async req_file_info(path: string, targetDB?: IDBDatabase): Promise<any> {
     return new Promise(async (done) => {

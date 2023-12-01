@@ -15,7 +15,7 @@ import { IonicViewerPage } from './ionic-viewer/ionic-viewer.page';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { VoidDrawPage } from './void-draw/void-draw.page';
-import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
+import { ContentCreatorInfo, FILE_BINARY_LIMIT, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { GroupDetailPage } from '../../settings/group-detail/group-detail.page';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -1099,7 +1099,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       result['type'] = this.userInput.file.type;
       try {
         result['filesize'] = this.userInput.file.size || this.userInput.file.blob.size;
-        result['partsize'] = Math.ceil(result['filesize'] / 120000);
+        result['partsize'] = Math.ceil(result['filesize'] / FILE_BINARY_LIMIT);
       } catch (e) {
         result['url'] = this.userInput.file.url;
         isURL = true;
