@@ -670,6 +670,7 @@ export class NakamaService {
           this.p5toast.show({
             text: this.lang.text['Nakama']['NeedLoginInfo'],
           });
+          this.nav.navigateForward('settings/group-server');
           this.users.self['online'] = false;
           delete this.users.self['password'];
           this.set_group_statusBar('offline', info.isOfficial, info.target);
