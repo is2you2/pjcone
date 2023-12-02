@@ -428,8 +428,9 @@ export class MainPage implements OnInit {
           }
           // 완전 삭제 후 파티클 생성
           if (this.LifeTime < 0) {
-            if (!p['isPlayingCanvas'].loop)
-              p.noLoop();
+            if (!p['isPlayingCanvas'].loop) {
+              setTimeout(() => p.noLoop(), 1000);
+            }
             this.RemoveTodo();
             p['count_todo']();
             for (let i = 0; i < 20; i++)
