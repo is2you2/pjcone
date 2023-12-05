@@ -105,32 +105,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   },
   { // 1
-    icon: 'log-out-outline',
-    act: async () => {
-      if (this.info['redirect']['type'] != 3) {
-        try {
-          await this.nakama.remove_group_list(
-            this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target, false);
-          await this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
-          this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
-          this.extended_buttons.forEach(button => {
-            button.isHide = true;
-          });
-          this.extended_buttons[0].isHide = false;
-        } catch (e) {
-          console.error('채널에서 나오기 실패: ', e);
-        }
-      } else {
-        this.extended_buttons[1].isHide = true;
-      }
-      this.ionViewDidEnter();
-    }
-  },
-  { // 2
     icon: 'settings-outline',
     act: () => {
       if (this.info['redirect']['type'] != 3) {
-        this.extended_buttons[2].isHide = true;
+        this.extended_buttons[1].isHide = true;
       } else {
         if (!this.lock_modal_open) {
           this.lock_modal_open = true;
@@ -147,7 +125,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   button.isHide = true;
                 });
                 this.extended_buttons[0].isHide = false;
-                this.extended_buttons[2].isHide = false;
+                this.extended_buttons[1].isHide = false;
               }
             });
             v.onDidDismiss().then(() => {
@@ -161,7 +139,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     }
   },
-  { // 3
+  { // 2
     icon: 'camera-outline',
     act: async () => {
       try {
@@ -200,7 +178,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       } catch (e) { }
     }
   },
-  { // 4
+  { // 3
     icon: 'document-attach-outline',
     act: async () => {
       if (!this.userInputTextArea)
@@ -213,7 +191,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.new_attach({ detail: { value: TempFunc[index] } });
       }
     }
-  }, { // 5
+  }, { // 4
     icon: 'server-outline',
     act: () => {
       this.modalCtrl.create({
@@ -232,7 +210,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         v.present();
       });
     }
-  }, { // 6
+  }, { // 5
     icon: 'call-outline',
     act: async () => {
       try {
@@ -251,12 +229,33 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         console.log('webrtc 시작단계 오류: ', e);
       }
     }
-  }, { // 7
+  }, { // 6
     icon: 'volume-mute-outline',
     act: async () => {
       this.toggle_speakermode();
     }
-  }];
+  }, { // 7
+    icon: 'log-out-outline',
+    act: async () => {
+      if (this.info['redirect']['type'] != 3) {
+        try {
+          await this.nakama.remove_group_list(
+            this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target, false);
+          await this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
+          this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
+          this.extended_buttons.forEach(button => {
+            button.isHide = true;
+          });
+          this.extended_buttons[0].isHide = false;
+        } catch (e) {
+          console.error('채널에서 나오기 실패: ', e);
+        }
+      } else {
+        this.extended_buttons[7].isHide = true;
+      }
+      this.ionViewDidEnter();
+    }
+  },];
 
   ionViewDidEnter() {
     this.nakama.resumeBanner();
@@ -380,7 +379,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   async toggle_speakermode(force?: boolean) {
     this.useSpeaker = force ?? !this.useSpeaker;
-    this.extended_buttons[7].icon = this.useSpeaker
+    this.extended_buttons[6].icon = this.useSpeaker
       ? 'volume-high-outline' : 'volume-mute-outline';
     if (!this.useSpeaker) try {
       await TextToSpeech.stop();
@@ -675,17 +674,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
           else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
             this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
-          delete this.extended_buttons[1].isHide;
-          this.extended_buttons[2].isHide = true;
-          this.extended_buttons[6].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
+          delete this.extended_buttons[7].isHide;
+          this.extended_buttons[1].isHide = true;
+          this.extended_buttons[5].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
         }
         break;
       case 3: // 그룹 대화라면
         if (this.info['status'] != 'missing')
           await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
-        this.extended_buttons[1].isHide = true;
-        delete this.extended_buttons[2].isHide;
-        this.extended_buttons[6].isHide = true;
+        this.extended_buttons[7].isHide = true;
+        delete this.extended_buttons[1].isHide;
+        this.extended_buttons[5].isHide = true;
         break;
       default:
         break;
@@ -727,9 +726,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       });
       this.extended_buttons[0].isHide = false;
       if (this.info['redirect']['type'] == 3)
-        this.extended_buttons[2].isHide = false;
+        this.extended_buttons[1].isHide = false;
     }
-    this.extended_buttons[7].isHide = isNativefier || this.info['status'] == 'missing';
+    this.extended_buttons[6].isHide = isNativefier || this.info['status'] == 'missing';
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
     setTimeout(() => {
