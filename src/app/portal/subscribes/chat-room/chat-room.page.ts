@@ -836,7 +836,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
               if (this.info['HideAutoThumbnail']) throw '썸네일 보지 않기';
               let FileURL = URL.createObjectURL(blob);
-              this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+              await this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
             } catch (e) { }
           this.modulate_chatmsg(0, this.ViewableMessage.length);
           this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
@@ -909,7 +909,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
           if (this.info['HideAutoThumbnail']) throw '썸네일 보지 않기';
           let FileURL = URL.createObjectURL(blob);
-          this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+          await this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
         } catch (e) { }
         this.modulate_chatmsg(i, this.ViewableMessage.length);
       }
@@ -960,7 +960,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
           let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
           let FileURL = URL.createObjectURL(blob);
-          this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+          await this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
         } catch (e) { }
         this.modulate_chatmsg(i, ShowMeAgainCount);
       }
@@ -993,7 +993,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 }
                 let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
                 let FileURL = URL.createObjectURL(blob);
-                this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+                await this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
               } catch (e) { }
               this.modulate_chatmsg(i, this.ViewableMessage.length);
             }
@@ -1023,7 +1023,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               }
               let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
               let FileURL = URL.createObjectURL(blob);
-              this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+              await this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
             } catch (e) { }
             this.modulate_chatmsg(i, ShowMeAgainCount);
           }
@@ -1363,11 +1363,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
         this.indexed.loadBlobFromUserPath(path,
           msg.content['type'],
-          v => {
+          async v => {
             msg.content['path'] = path;
             if (!this.info['HideAutoThumbnail']) {
-              let url = URL.createObjectURL(v);
-              this.global.modulate_thumbnail(msg.content, url);
+              if (this.ViewableMessage.includes(msg)) {
+                let url = URL.createObjectURL(v);
+                await this.global.modulate_thumbnail(msg.content, url);
+              }
             }
             if (this.NeedScrollDown())
               setTimeout(() => {
