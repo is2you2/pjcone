@@ -9,7 +9,6 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { ShareContentToOtherPage } from 'src/app/share-content-to-other/share-content-to-other.page';
 import { NakamaService } from 'src/app/nakama.service';
@@ -33,7 +32,6 @@ export class IonicViewerPage implements OnInit {
     private p5toast: P5ToastService,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
-    private fileOpener: FileOpener,
     public global: GlobalActService,
     public nakama: NakamaService,
     private mClipboard: Clipboard,
@@ -685,20 +683,8 @@ export class IonicViewerPage implements OnInit {
         });
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
         loading.present();
-        try {
-          try { // 강제로 임시파일 생성
-            await this.file.writeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`, this.blob);
-          } catch (e) {
-            await this.file.writeExistingFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`, this.blob);
-          }
-          this.fileOpener.open(this.file.externalDataDirectory + `viewer_tmp.${this.FileInfo.file_ext}`, this.FileInfo['type'] || `application/${this.FileInfo['file_ext']}`);
-        } catch (e) {
-          console.log('open file failed: ', e);
-          this.p5toast.show({
-            text: `${this.lang.text['ChatRoom']['cannot_open_file']}: ${e.message}`,
-          });
-        }
         loading.dismiss();
+        this.download_file();
         break;
     }
     this.ChangeContentWithKeyInput();

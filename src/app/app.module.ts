@@ -12,7 +12,6 @@ import { LocalNotifications } from '@awesome-cordova-plugins/local-notifications
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { File } from "@awesome-cordova-plugins/file/ngx";
-import { FileOpener } from "@awesome-cordova-plugins/file-opener/ngx";
 import { Clipboard } from "@awesome-cordova-plugins/clipboard/ngx";
 
 @NgModule({
@@ -29,7 +28,6 @@ import { Clipboard } from "@awesome-cordova-plugins/clipboard/ngx";
     BackgroundMode,
     NavParams,
     LocalNotifications,
-    FileOpener,
     Clipboard,
   ],
   bootstrap: [AppComponent],
