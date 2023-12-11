@@ -623,16 +623,21 @@ export class IonicViewerPage implements OnInit {
           setTimeout(async () => {
             let createDuplicate = false;
             if (this.indexed.godotDB) {
-              let blob = await this.indexed.loadBlobFromUserPath(
-                this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
-              await this.indexed.GetGodotIndexedDB();
-              await this.indexed.saveBlobToUserPath(blob, 'tmp_files/duplicate/viewer.pck', undefined, this.indexed.godotDB);
-              createDuplicate = true;
+              try {
+                let blob = await this.indexed.loadBlobFromUserPath(
+                  this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
+                await this.indexed.GetGodotIndexedDB();
+                await this.indexed.saveBlobToUserPath(blob, 'tmp_files/duplicate/viewer.pck', undefined, this.indexed.godotDB);
+                createDuplicate = true;
+              } catch (e) {
+                console.log('내부 파일 없음: ', e);
+              }
             }
             await this.global.CreateGodotIFrame('content_viewer_canvas', {
               path: 'tmp_files/duplicate/viewer.pck',
               alt_path: this.FileInfo['path'] || this.navParams.get('path'),
               ext: this.FileInfo['file_ext'],
+              url: this.FileInfo.url,
               background: ThumbnailURL,
               // modify_image
               receive_image: async (base64: string, width: number, height: number) => {
@@ -649,14 +654,19 @@ export class IonicViewerPage implements OnInit {
               }
             }, 'start_load_pck');
             if (!createDuplicate) {
-              let blob = await this.indexed.loadBlobFromUserPath(
-                this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
-              await this.indexed.GetGodotIndexedDB();
-              await this.indexed.saveBlobToUserPath(blob, 'tmp_files/duplicate/viewer.pck', undefined, this.indexed.godotDB);
+              try {
+                let blob = await this.indexed.loadBlobFromUserPath(
+                  this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
+                await this.indexed.GetGodotIndexedDB();
+                await this.indexed.saveBlobToUserPath(blob, 'tmp_files/duplicate/viewer.pck', undefined, this.indexed.godotDB);
+              } catch (e) {
+                console.log('내부 파일 없음_dp: ', e);
+              }
               await this.global.CreateGodotIFrame('content_viewer_canvas', {
                 path: 'tmp_files/duplicate/viewer.pck',
                 alt_path: this.FileInfo['path'] || this.navParams.get('path'),
                 ext: this.FileInfo['file_ext'],
+                url: this.FileInfo.url,
                 background: ThumbnailURL,
                 // modify_image
                 receive_image: async (base64: string, width: number, height: number) => {
@@ -674,7 +684,9 @@ export class IonicViewerPage implements OnInit {
               }, 'start_load_pck');
             }
             if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
-            this.global.godot_window['start_load_pck']();
+            if (this.FileInfo.url)
+              this.global.godot_window['download_url']();
+            else this.global.godot_window['start_load_pck']();
           }, 100);
         break;
       case 'disabled':
