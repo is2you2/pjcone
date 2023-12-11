@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { AlertController, IonAccordionGroup, NavController } from '@ionic/angular';
+import { AlertController, IonAccordionGroup, LoadingController, NavController } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -27,6 +27,7 @@ export class AdminToolsPage implements OnInit {
     private indexed: IndexedDBService,
     private global: GlobalActService,
     private navCtrl: NavController,
+    private loadingCtrl: LoadingController,
   ) { }
 
   /** 서버 정보, 온라인 상태의 서버만 불러온다 */
@@ -340,8 +341,11 @@ export class AdminToolsPage implements OnInit {
       buttons: [{
         text: this.lang.text['AdminTools']['ApplyLeave'],
         cssClass: 'danger',
-        handler: () => {
-          this.RemoveUser(user);
+        handler: async () => {
+          let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+          loading.present();
+          await this.RemoveUser(user);
+          loading.dismiss();
         }
       }]
     }).then(v => v.present());
