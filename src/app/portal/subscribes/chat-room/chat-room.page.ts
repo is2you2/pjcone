@@ -80,182 +80,182 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 내가 발송한 메시지가 수신되면 썸네일 구성하기 */
   temporary_open_thumbnail = {};
   /** 확장 버튼 행동들 */
-  extended_buttons: ExtendButtonForm[] = [{ // 0
-    isHide: true,
-    icon: 'close-circle-outline',
-    act: async () => {
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      loading.present();
-      delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
-      if (this.info['redirect']['type'] == 3)
-        await this.nakama.remove_group_list(
-          this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target);
-      try {
-        delete this.nakama.groups[this.isOfficial][this.target][this.info['group_id']];
-      } catch (e) {
-        console.log('DeleteGroupFailed: ', e);
-      }
-      this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
-      this.nakama.save_groups_with_less_info();
-      this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`, (list) => {
-        list.forEach(path => this.indexed.removeFileFromUserPath(path));
-        loading.dismiss();
-        this.navCtrl.pop();
-      });
-    }
-  },
-  { // 1
-    icon: 'settings-outline',
-    act: () => {
-      if (this.info['redirect']['type'] != 3) {
-        this.extended_buttons[1].isHide = true;
-      } else {
-        if (!this.lock_modal_open) {
-          this.lock_modal_open = true;
-          this.modalCtrl.create({
-            component: GroupDetailPage,
-            componentProps: {
-              info: this.nakama.groups[this.isOfficial][this.target][this.info['group_id']],
-              server: { isOfficial: this.isOfficial, target: this.target },
-            },
-          }).then(v => {
-            v.onWillDismiss().then(data => {
-              if (data.data) { // 탈퇴시
-                this.extended_buttons.forEach(button => {
-                  button.isHide = true;
-                });
-                this.extended_buttons[0].isHide = false;
-                this.extended_buttons[1].isHide = false;
-              }
+  extended_buttons: ExtendButtonForm[] = [
+    { // 0
+      icon: 'settings-outline',
+      act: () => {
+        if (this.info['redirect']['type'] != 3) {
+          this.extended_buttons[0].isHide = true;
+        } else {
+          if (!this.lock_modal_open) {
+            this.lock_modal_open = true;
+            this.modalCtrl.create({
+              component: GroupDetailPage,
+              componentProps: {
+                info: this.nakama.groups[this.isOfficial][this.target][this.info['group_id']],
+                server: { isOfficial: this.isOfficial, target: this.target },
+              },
+            }).then(v => {
+              v.onWillDismiss().then(data => {
+                if (data.data) { // 탈퇴시
+                  this.extended_buttons.forEach(button => {
+                    button.isHide = true;
+                  });
+                  this.extended_buttons[7].isHide = false;
+                  this.extended_buttons[0].isHide = false;
+                }
+              });
+              v.onDidDismiss().then(() => {
+                this.ionViewDidEnter();
+              });
+              this.removeShortCutKey();
+              v.present();
+              this.lock_modal_open = false;
             });
-            v.onDidDismiss().then(() => {
-              this.ionViewDidEnter();
-            });
-            this.removeShortCutKey();
-            v.present();
-            this.lock_modal_open = false;
-          });
+          }
         }
       }
-    }
-  },
-  { // 2
-    icon: 'camera-outline',
-    act: async () => {
-      try {
-        const image = await Camera.getPhoto({
-          quality: 90,
-          resultType: CameraResultType.Base64,
-          source: CameraSource.Camera,
+    },
+    { // 1
+      icon: 'camera-outline',
+      act: async () => {
+        try {
+          const image = await Camera.getPhoto({
+            quality: 90,
+            resultType: CameraResultType.Base64,
+            source: CameraSource.Camera,
+          });
+          let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+          loading.present();
+          if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+          this.userInput.file = {};
+          let time = new Date();
+          this.userInput.file.filename = `Camera_${time.toLocaleString().replace(/:/g, '_')}.${image.format}`;
+          this.userInput.file.file_ext = image.format;
+          this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl('data:image/jpeg;base64,' + image.base64String);
+          this.userInput.file.type = `image/${image.format}`;
+          this.userInput.file.typeheader = 'image';
+          this.userInput.file.content_related_creator = [{
+            user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            timestamp: new Date().getTime(),
+            display_name: this.nakama.users.self['display_name'],
+            various: 'camera',
+          }];
+          this.userInput.file.content_creator = {
+            user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            timestamp: new Date().getTime(),
+            display_name: this.nakama.users.self['display_name'],
+            various: 'camera',
+          };
+          await this.indexed.saveBase64ToUserPath('data:image/jpeg;base64,' + image.base64String,
+            `tmp_files/chatroom/${this.userInput.file.filename}`, (raw) => {
+              this.userInput.file.blob = new Blob([raw], { type: this.userInput.file['type'] })
+            });
+          loading.dismiss();
+        } catch (e) { }
+      }
+    },
+    { // 2
+      icon: 'document-attach-outline',
+      act: async () => {
+        if (!this.userInputTextArea)
+          this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+        await this.NewAttach.open();
+        this.removeShortCutKey();
+        this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+          let TempFunc = ['image', 'load', 'link'];
+          if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && TempFunc.length > index)
+            this.new_attach({ detail: { value: TempFunc[index] } });
+        }
+      }
+    }, { // 3
+      icon: 'server-outline',
+      act: () => {
+        this.modalCtrl.create({
+          component: QrSharePage,
+        }).then(v => {
+          v.onDidDismiss().then(v => {
+            if (v.data) {
+              this.userInput.quickShare = v.data;
+              this.inputPlaceholder = this.lang.text['ChatRoom']['QuickShare_placeholder'];
+            } else {
+              this.cancel_qrshare();
+            }
+            this.ionViewDidEnter();
+          });
+          this.removeShortCutKey();
+          v.present();
         });
+      }
+    }, { // 4
+      icon: 'call-outline',
+      act: async () => {
+        try {
+          await this.webrtc.initialize('audio', undefined, {
+            isOfficial: this.isOfficial,
+            target: this.target,
+            channel_id: this.info['id'],
+            user_id: this.info['info']['id'] || this.info['info']['user_id'],
+          });
+          this.webrtc.CurrentMatch = await this.nakama.servers[this.isOfficial][this.target].socket.createMatch();
+          await this.nakama.servers[this.isOfficial][this.target].socket
+            .writeChatMessage(this.info['id'], { match: this.webrtc.CurrentMatch.match_id });
+          this.scroll_down_logs();
+          this.webrtc.CreateOfffer();
+        } catch (e) {
+          console.log('webrtc 시작단계 오류: ', e);
+        }
+      }
+    }, { // 5
+      icon: 'volume-mute-outline',
+      act: async () => {
+        this.toggle_speakermode();
+      }
+    }, { // 6
+      icon: 'log-out-outline',
+      act: async () => {
+        if (this.info['redirect']['type'] != 3) {
+          try {
+            await this.nakama.remove_group_list(
+              this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target, false);
+            await this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
+            this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
+            this.extended_buttons.forEach(button => {
+              button.isHide = true;
+            });
+            this.extended_buttons[7].isHide = false;
+          } catch (e) {
+            console.error('채널에서 나오기 실패: ', e);
+          }
+        } else {
+          this.extended_buttons[6].isHide = true;
+        }
+        this.ionViewDidEnter();
+      }
+    }, { // 7
+      isHide: true,
+      icon: 'close-circle-outline',
+      act: async () => {
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
         loading.present();
-        if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-        this.userInput.file = {};
-        let time = new Date();
-        this.userInput.file.filename = `Camera_${time.toLocaleString().replace(/:/g, '_')}.${image.format}`;
-        this.userInput.file.file_ext = image.format;
-        this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl('data:image/jpeg;base64,' + image.base64String);
-        this.userInput.file.type = `image/${image.format}`;
-        this.userInput.file.typeheader = 'image';
-        this.userInput.file.content_related_creator = [{
-          user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-          timestamp: new Date().getTime(),
-          display_name: this.nakama.users.self['display_name'],
-          various: 'camera',
-        }];
-        this.userInput.file.content_creator = {
-          user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-          timestamp: new Date().getTime(),
-          display_name: this.nakama.users.self['display_name'],
-          various: 'camera',
-        };
-        await this.indexed.saveBase64ToUserPath('data:image/jpeg;base64,' + image.base64String,
-          `tmp_files/chatroom/${this.userInput.file.filename}`, (raw) => {
-            this.userInput.file.blob = new Blob([raw], { type: this.userInput.file['type'] })
-          });
-        loading.dismiss();
-      } catch (e) { }
-    }
-  },
-  { // 3
-    icon: 'document-attach-outline',
-    act: async () => {
-      if (!this.userInputTextArea)
-        this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-      await this.NewAttach.open();
-      this.removeShortCutKey();
-      this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-        let TempFunc = ['image', 'load', 'link'];
-        if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && TempFunc.length > index)
-          this.new_attach({ detail: { value: TempFunc[index] } });
-      }
-    }
-  }, { // 4
-    icon: 'server-outline',
-    act: () => {
-      this.modalCtrl.create({
-        component: QrSharePage,
-      }).then(v => {
-        v.onDidDismiss().then(v => {
-          if (v.data) {
-            this.userInput.quickShare = v.data;
-            this.inputPlaceholder = this.lang.text['ChatRoom']['QuickShare_placeholder'];
-          } else {
-            this.cancel_qrshare();
-          }
-          this.ionViewDidEnter();
-        });
-        this.removeShortCutKey();
-        v.present();
-      });
-    }
-  }, { // 5
-    icon: 'call-outline',
-    act: async () => {
-      try {
-        await this.webrtc.initialize('audio', undefined, {
-          isOfficial: this.isOfficial,
-          target: this.target,
-          channel_id: this.info['id'],
-          user_id: this.info['info']['id'] || this.info['info']['user_id'],
-        });
-        this.webrtc.CurrentMatch = await this.nakama.servers[this.isOfficial][this.target].socket.createMatch();
-        await this.nakama.servers[this.isOfficial][this.target].socket
-          .writeChatMessage(this.info['id'], { match: this.webrtc.CurrentMatch.match_id });
-        this.scroll_down_logs();
-        this.webrtc.CreateOfffer();
-      } catch (e) {
-        console.log('webrtc 시작단계 오류: ', e);
-      }
-    }
-  }, { // 6
-    icon: 'volume-mute-outline',
-    act: async () => {
-      this.toggle_speakermode();
-    }
-  }, { // 7
-    icon: 'log-out-outline',
-    act: async () => {
-      if (this.info['redirect']['type'] != 3) {
-        try {
+        delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
+        if (this.info['redirect']['type'] == 3)
           await this.nakama.remove_group_list(
-            this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target, false);
-          await this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
-          this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
-          this.extended_buttons.forEach(button => {
-            button.isHide = true;
-          });
-          this.extended_buttons[0].isHide = false;
+            this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target);
+        try {
+          delete this.nakama.groups[this.isOfficial][this.target][this.info['group_id']];
         } catch (e) {
-          console.error('채널에서 나오기 실패: ', e);
+          console.log('DeleteGroupFailed: ', e);
         }
-      } else {
-        this.extended_buttons[7].isHide = true;
+        this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
+        this.nakama.save_groups_with_less_info();
+        this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`, (list) => {
+          list.forEach(path => this.indexed.removeFileFromUserPath(path));
+          loading.dismiss();
+          this.navCtrl.pop();
+        });
       }
-      this.ionViewDidEnter();
-    }
-  },];
+    },];
 
   ionViewDidEnter() {
     this.nakama.resumeBanner();
@@ -379,7 +379,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   async toggle_speakermode(force?: boolean) {
     this.useSpeaker = force ?? !this.useSpeaker;
-    this.extended_buttons[6].icon = this.useSpeaker
+    this.extended_buttons[5].icon = this.useSpeaker
       ? 'volume-high-outline' : 'volume-mute-outline';
     if (!this.useSpeaker) try {
       await TextToSpeech.stop();
@@ -674,17 +674,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
           else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
             this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
-          delete this.extended_buttons[7].isHide;
-          this.extended_buttons[1].isHide = true;
-          this.extended_buttons[5].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
+          delete this.extended_buttons[6].isHide;
+          this.extended_buttons[0].isHide = true;
+          this.extended_buttons[4].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
         }
         break;
       case 3: // 그룹 대화라면
         if (this.info['status'] != 'missing')
           await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
-        this.extended_buttons[7].isHide = true;
-        delete this.extended_buttons[1].isHide;
-        this.extended_buttons[5].isHide = true;
+        this.extended_buttons[6].isHide = true;
+        delete this.extended_buttons[0].isHide;
+        this.extended_buttons[4].isHide = true;
         break;
       default:
         break;
@@ -724,11 +724,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.extended_buttons.forEach(button => {
         button.isHide = true;
       });
-      this.extended_buttons[0].isHide = false;
+      this.extended_buttons[7].isHide = false;
       if (this.info['redirect']['type'] == 3)
-        this.extended_buttons[1].isHide = false;
+        this.extended_buttons[0].isHide = false;
     }
-    this.extended_buttons[6].isHide = isNativefier || this.info['status'] == 'missing';
+    this.extended_buttons[5].isHide = isNativefier || this.info['status'] == 'missing';
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
     setTimeout(() => {
