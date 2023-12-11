@@ -239,7 +239,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
         loading.present();
         delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
-        if (this.info['redirect']['type'] == 3)
+        if (this.info['redirect']['type'] == 3) // 그룹방
           await this.nakama.remove_group_list(
             this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target);
         try {
@@ -249,11 +249,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
         this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
         this.nakama.save_groups_with_less_info();
-        this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`, (list) => {
-          list.forEach(path => this.indexed.removeFileFromUserPath(path));
-          loading.dismiss();
-          this.navCtrl.pop();
-        });
+        let list = await this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`);
+        for (let i = 0, j = list.length; i < j; i++) {
+          loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
+          await this.indexed.removeFileFromUserPath(list[i]);
+        }
+        loading.dismiss();
+        this.navCtrl.pop();
       }
     },];
 
