@@ -118,6 +118,7 @@ export class IonicViewerPage implements OnInit {
     if (this.FileInfo.url) {
       this.FileURL = this.FileInfo.url;
       this.CreateContentInfo();
+      this.NeedDownloadFile = false;
       this.ionViewDidEnter();
     } else {
       let path = this.FileInfo['path'] ||
@@ -186,7 +187,11 @@ export class IonicViewerPage implements OnInit {
         });
       let path = `servers/${this.isOfficial}/${this.target}/channels/${this.Relevances[i].channel_id}/files/msg_${this.Relevances[i].message_id}.${this.Relevances[i].content['file_ext']}`;
       let FileExist = await this.indexed.checkIfFileExist(path, undefined, this.targetDB);
-      if (!FileExist) await this.DownloadCurrentFile(i);
+      if (!FileExist) try {
+        await this.DownloadCurrentFile(i);
+      } catch (e) {
+        console.log(e);
+      }
     }
     this.noti.ClearNoti(6);
   }
