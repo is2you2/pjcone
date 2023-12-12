@@ -467,8 +467,12 @@ export class GlobalActService {
           msg_content['text'] = text.split('\n');
           msg_content['thumbnail'] = text.split('\n');
           break;
-        default:
+        case 'image':
           msg_content['thumbnail'] = msg_content['url'];
+          break;
+        default:
+          console.log('썸네일이 없음: ', msg_content);
+          delete msg_content['thumbnail'];
           break;
       }
       setTimeout(() => {

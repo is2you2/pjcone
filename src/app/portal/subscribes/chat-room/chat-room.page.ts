@@ -1326,8 +1326,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.ViewableMessage[i]['showInfo']['sender'] = !this.ViewableMessage[i].content.noti && this.ViewableMessage[i].user_display_name && (this.ViewableMessage[i - 1]['isLastRead'] || this.ViewableMessage[i].sender_id != this.ViewableMessage[i - 1].sender_id || this.ViewableMessage[i - 1].content.noti || this.ViewableMessage[i]['msgDate'] != this.ViewableMessage[i - 1]['msgDate'] || this.ViewableMessage[i]['msgTime'] != this.ViewableMessage[i - 1]['msgTime']);
     }
     // url 링크 개체 즉시 불러오기
-    if (this.ViewableMessage[i]['content']['url'] && !this.info['HideAutoThumbnail'])
-      this.ViewableMessage[i]['content']['thumbnail'] = this.ViewableMessage[i]['content']['url'];
+    if (this.ViewableMessage[i]['content']['url'] && !this.info['HideAutoThumbnail']) {
+      if (this.ViewableMessage[i]['content'].viewer == 'image')
+        this.ViewableMessage[i]['content']['thumbnail'] = this.ViewableMessage[i]['content']['url'];
+      else delete this.ViewableMessage[i]['content']['thumbnail'];
+    }
     // 다음 메시지와 정보를 비교하여 다음 메시지의 상태를 결정 (기록 불러오기류)
     try {
       if (i + 1 < j) {
@@ -1389,7 +1392,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     } else {
       for (let i = 0, j = this.ViewableMessage.length; i < j; i++) {
         if (this.ViewableMessage[i].content['url']) {
-          this.ViewableMessage[i].content['thumbnail'] = this.ViewableMessage[i].content['url'];
+          if (this.ViewableMessage[i]['content'].viewer == 'image')
+            this.ViewableMessage[i].content['thumbnail'] = this.ViewableMessage[i].content['url'];
+          else delete this.ViewableMessage[i].content['thumbnail'];
         } else {
           let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content.file_ext}`;
           this.ViewableMessage[i].content['path'] = path;
