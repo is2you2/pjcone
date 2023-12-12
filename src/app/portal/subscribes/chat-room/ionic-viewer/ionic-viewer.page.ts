@@ -244,8 +244,10 @@ export class IonicViewerPage implements OnInit {
       this.content_creator.timeDisplay = new Date(this.content_creator.timestamp).toLocaleString();
       this.content_related_creator = this.FileInfo['content_related_creator'];
       if (this.content_creator.user_id)
-        this.content_creator.is_me =
-          this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_creator.user_id;
+        try {
+          this.content_creator.is_me =
+            this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_creator.user_id;
+        } catch (e) { }
       try {
         this.content_creator.publisher
           = this.content_creator.is_me ? this.nakama.users.self['display_name']
@@ -254,8 +256,10 @@ export class IonicViewerPage implements OnInit {
       this.set_various_display(this.content_creator);
       for (let i = 0, j = this.content_related_creator.length; i < j; i++) {
         if (this.content_related_creator[i].user_id) {
-          this.content_related_creator[i].is_me =
-            this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_related_creator[i].user_id;
+          try {
+            this.content_related_creator[i].is_me =
+              this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_related_creator[i].user_id;
+          } catch (e) { }
         }
         this.content_related_creator[i].timeDisplay = new Date(this.content_related_creator[i].timestamp).toLocaleString();
       }
@@ -273,7 +277,7 @@ export class IonicViewerPage implements OnInit {
       try { // 오프라인 재검토
         this.content_related_creator[0].publisher = this.content_related_creator[1].display_name;
         if (this.content_related_creator[0].timestamp == this.content_related_creator[1].timestamp) { // 외부에서 가져온 파일
-          this.content_related_creator[0].publisher = this.content_related_creator[1].display_name
+          this.content_related_creator[0].publisher = this.content_related_creator[1].display_name;
           this.content_related_creator.splice(1, 1);
         }
       } catch (e) { }
@@ -282,7 +286,7 @@ export class IonicViewerPage implements OnInit {
           this.content_related_creator[0].publisher = this.content_related_creator[0].display_name;
       } catch (e) { }
     }
-    try {
+    try { // 시간순 정렬
       this.content_related_creator.sort((a, b) => {
         if (a.timestamp > b.timestamp) return -1;
         else if (a.timestamp < b.timestamp) return 1;
