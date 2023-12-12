@@ -2265,6 +2265,9 @@ export class NakamaService {
           console.error('예상하지 못한 채널 정보: ', type);
           break;
       }
+      try {
+        this.channels_orig[_is_official][_target][c.id]['status'] = 'offline';
+      } catch (e) { }
       await this.add_channels(c, _is_official, _target);
       if (!this.opened_page_info['channel']
         || this.opened_page_info['channel']['isOfficial'] != _is_official
