@@ -26,5 +26,6 @@ logger:
     file: "/nakama/data/logfile.log"
 
 console:
+    idle_timeout_ms: 300000
     username: "pjcone"
     password: "nfyfamf3hduf?"
