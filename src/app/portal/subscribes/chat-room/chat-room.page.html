@@ -49,7 +49,8 @@ SPDX-License-Identifier: MIT -->
               {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
             </div>
             <div *ngIf="msg.content['filename']" class="file_message_form" (click)="file_detail(msg)">
-              <div *ngIf="!msg.content['thumbnail']" class="file_button">
+              <div *ngIf="!msg.content['thumbnail']" class="file_button"
+                [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
                 <p class="file_info"> {{msg.content['filename']}} </p>
                 <div *ngIf="msg.content['text']" class="text_seperator"></div>
                 <span *ngFor="let line of msg.content['text']" class="file_info file_text_thumbnail"> {{line}} </span>
@@ -80,7 +81,8 @@ SPDX-License-Identifier: MIT -->
               {{lang.text['ChatRoom']['QuickShare']}}
             </div>
             <div *ngIf="msg.content['filename']" class="file_message_form" (click)="file_detail(msg)">
-              <div *ngIf="!msg.content['thumbnail']" class="file_button">
+              <div *ngIf="!msg.content['thumbnail']" class="file_button"
+                [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
                 <p class="file_info"> {{msg.content['filename']}} </p>
                 <div *ngIf="msg.content['text']" class="text_seperator"></div>
                 <span *ngFor="let line of msg.content['text']" class="file_info file_text_thumbnail"> {{line}} </span>
