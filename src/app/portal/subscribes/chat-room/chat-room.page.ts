@@ -361,8 +361,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.global.set_viewer_category_from_ext(this_file);
           this_file.type = '';
           this_file.typeheader = this_file.viewer;
-          if (!this.info['HideAutoThumbnail'])
-            this.global.modulate_thumbnail(this_file, this_file.url);
+          this.global.modulate_thumbnail(this_file, this_file.url);
           if (this.NeedScrollDown())
             setTimeout(() => {
               this.scroll_down_logs();
@@ -649,9 +648,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.ShowGoToBottom = false;
     this.ShowRecentMsg = false;
     this.isHistoryLoaded = false;
+    this.LocalHistoryList.length = 0;
     this.messages.length = 0;
-    this.prev_cursor = undefined;
-    this.next_cursor = undefined;
+    this.prev_cursor = '';
+    this.next_cursor = '';
+    this.pullable = true;
     this.toggle_speakermode(false);
     this.init_last_message_viewer();
     this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
@@ -780,10 +781,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           msg.content['type'],
           v => {
             msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
-            if (!this.info['HideAutoThumbnail']) {
-              let url = URL.createObjectURL(v);
-              this.global.modulate_thumbnail(msg.content, url);
-            }
+            let url = URL.createObjectURL(v);
+            this.global.modulate_thumbnail(msg.content, url);
             if (this.NeedScrollDown())
               setTimeout(() => {
                 this.scroll_down_logs();
@@ -834,9 +833,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
           for (let i = 0; i < ShowMeAgainCount; i++)
             try {
-              if (this.info['HideAutoThumbnail']) throw '썸네일 보지 않기';
               let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
-              if (this.info['HideAutoThumbnail']) throw '썸네일 보지 않기';
               let FileURL = URL.createObjectURL(blob);
               this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
             } catch (e) { }
@@ -907,9 +904,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
       for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
         try {
-          if (this.info['HideAutoThumbnail']) throw '썸네일 보지 않기';
           let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
-          if (this.info['HideAutoThumbnail']) throw '썸네일 보지 않기';
           let FileURL = URL.createObjectURL(blob);
           this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
         } catch (e) { }
@@ -956,10 +951,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
       for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
         try {
-          if (this.info['HideAutoThumbnail']) {
-            delete this.ViewableMessage[i].content['thumbnail'];
-            throw '썸네일 보지 않기';
-          }
           let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
           let FileURL = URL.createObjectURL(blob);
           this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
@@ -970,7 +961,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.pullable = this.ViewMsgIndex != 0 || Boolean(this.LocalHistoryList.length);
       return;
     }
-    if (!this.isHistoryLoaded)
+    if (!this.isHistoryLoaded) // 기록 리스트 잡아두기
       this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/chats/`, (list) => {
         this.LocalHistoryList = list;
         this.isHistoryLoaded = true;
@@ -989,10 +980,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.modulate_chatmsg(0, json.length);
             for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
               try {
-                if (this.info['HideAutoThumbnail']) {
-                  delete this.ViewableMessage[i].content['thumbnail'];
-                  throw '썸네일 보지 않기';
-                }
                 let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
                 let FileURL = URL.createObjectURL(blob);
                 this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
@@ -1004,7 +991,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.pullable = true;
         });
       });
-    else {
+    else { // 다음 파일에서 읽기
       this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop(), async (e, v) => {
         if (e && v) {
           let json: any[] = JSON.parse(v.trim());
@@ -1014,15 +1001,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.nakama.ModulateTimeDate(json[i]);
             this.messages.unshift(json[i]);
           }
-          let ShowMeAgainCount = Math.min(Math.min(json.length, this.RefreshCount), this.ViewableMessage.length);
           this.ViewMsgIndex = Math.max(0, json.length - this.RefreshCount);
           this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+          let ShowMeAgainCount = Math.min(Math.min(json.length, this.RefreshCount), this.ViewableMessage.length);
           for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
             try {
-              if (this.info['HideAutoThumbnail']) {
-                delete this.ViewableMessage[i].content['thumbnail'];
-                throw '썸네일 보지 않기';
-              }
               let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
               let FileURL = URL.createObjectURL(blob);
               this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
@@ -1226,8 +1209,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 메시지 내 파일 정보, 파일 다운받기 */
   async file_detail(msg: any) {
     if (msg.content['url']) {
-      if (!this.info['HideAutoThumbnail'])
-        msg.content['thumbnail'] = msg.content['url'];
+      msg.content['thumbnail'] = msg.content['url'];
       this.open_viewer(msg, msg.content['url']);
       return;
     }
@@ -1268,10 +1250,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           msg.content['type'],
           v => {
             msg.content['path'] = path;
-            if (!this.info['HideAutoThumbnail']) {
-              let url = URL.createObjectURL(v);
-              this.global.modulate_thumbnail(msg.content, url);
-            }
+            let url = URL.createObjectURL(v);
+            this.global.modulate_thumbnail(msg.content, url);
             if (this.NeedScrollDown())
               setTimeout(() => {
                 this.scroll_down_logs();
@@ -1326,7 +1306,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.ViewableMessage[i]['showInfo']['sender'] = !this.ViewableMessage[i].content.noti && this.ViewableMessage[i].user_display_name && (this.ViewableMessage[i - 1]['isLastRead'] || this.ViewableMessage[i].sender_id != this.ViewableMessage[i - 1].sender_id || this.ViewableMessage[i - 1].content.noti || this.ViewableMessage[i]['msgDate'] != this.ViewableMessage[i - 1]['msgDate'] || this.ViewableMessage[i]['msgTime'] != this.ViewableMessage[i - 1]['msgTime']);
     }
     // url 링크 개체 즉시 불러오기
-    if (this.ViewableMessage[i]['content']['url'] && !this.info['HideAutoThumbnail']) {
+    if (this.ViewableMessage[i]['content']['url']) {
       if (this.ViewableMessage[i]['content'].viewer == 'image')
         this.ViewableMessage[i]['content']['thumbnail'] = this.ViewableMessage[i]['content']['url'];
       else delete this.ViewableMessage[i]['content']['thumbnail'];
@@ -1370,10 +1350,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           msg.content['type'],
           v => {
             msg.content['path'] = path;
-            if (!this.info['HideAutoThumbnail']) {
-              let url = URL.createObjectURL(v);
-              this.global.modulate_thumbnail(msg.content, url);
-            }
+            let url = URL.createObjectURL(v);
+            this.global.modulate_thumbnail(msg.content, url);
             if (this.NeedScrollDown())
               setTimeout(() => {
                 this.scroll_down_logs();
@@ -1386,28 +1364,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 썸네일 이미지 표시 토글 */
   async toggle_thumbnail() {
     this.info['HideAutoThumbnail'] = !this.info['HideAutoThumbnail'];
-    if (this.info['HideAutoThumbnail']) {
-      for (let i = 0, j = this.ViewableMessage.length; i < j; i++)
-        delete this.ViewableMessage[i].content['thumbnail'];
-    } else {
-      for (let i = 0, j = this.ViewableMessage.length; i < j; i++) {
-        if (this.ViewableMessage[i].content['url']) {
-          if (this.ViewableMessage[i]['content'].viewer == 'image')
-            this.ViewableMessage[i].content['thumbnail'] = this.ViewableMessage[i].content['url'];
-          else delete this.ViewableMessage[i].content['thumbnail'];
-        } else {
-          let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content.file_ext}`;
-          this.ViewableMessage[i].content['path'] = path;
-          try {
-            if (this.info['HideAutoThumbnail']) throw '상태 변경됨';
-            let blob = await this.indexed.loadBlobFromUserPath(path, this.ViewableMessage[i].content.file_ext);
-            if (this.info['HideAutoThumbnail']) throw '상태 변경됨';
-            let FileURL = URL.createObjectURL(blob);
-            this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-          } catch (e) { }
-        }
-      }
-    }
     this.nakama.save_channels_with_less_info();
   }
 

@@ -55,7 +55,8 @@ SPDX-License-Identifier: MIT -->
                 <span *ngFor="let line of msg.content['text']" class="file_info file_text_thumbnail"> {{line}} </span>
               </div>
               <div *ngIf="msg.content['thumbnail']" class="file_name_form">
-                <img class="file_thumbnail" [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
+                <img class="file_thumbnail" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
+                  [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
               </div>
               <div *ngIf="msg.content['transfer_index']" class="transfer_count">
                 {{msg.content['transfer_index']['index']}}</div>
@@ -85,7 +86,8 @@ SPDX-License-Identifier: MIT -->
                 <span *ngFor="let line of msg.content['text']" class="file_info file_text_thumbnail"> {{line}} </span>
               </div>
               <div *ngIf="msg.content['thumbnail']" class="file_name_form">
-                <img class="file_thumbnail" [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
+                <img class="file_thumbnail" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
+                  [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
               </div>
             </div>
             <div *ngIf="msg.content['msg']" class="message_content_form">
