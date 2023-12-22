@@ -568,7 +568,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               this_file.blob = v.data.blob;
               this_file.path = v.data.path;
               this_file.size = v.data.blob['size'];
-              this_file.filename = new_textfile_name;
+              this_file.filename = v.data.blob.name || new_textfile_name;
               this_file.type = 'text/plain';
               this_file.viewer = 'text';
               this.userInput.attach.push(this_file);
@@ -837,7 +837,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               this.userInput.attach[index].blob = v.data.blob;
               this.userInput.attach[index].path = v.data.path;
               this.userInput.attach[index].size = v.data.blob['size'];
-              this.userInput.attach[index].filename = `[${this.lang.text['TodoDetail']['EditText']}] ${this.userInput.attach[index].filename}`;
+              this.userInput.attach[index].filename = v.data.blob.name || this.userInput.attach[index].filename;
               delete this.userInput.attach[index]['exist'];
               break;
           }

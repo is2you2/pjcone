@@ -202,7 +202,7 @@ export class AppComponent {
           modal.present();
           break;
         case 'AddTodoMenuPage':
-          if (!this.lang.text['TodoDetail']['EditText']) throw 'AddTodoMenuPage 번역 준비중';
+          if (!this.lang.text['TodoDetail']['ToggleWorkers']) throw 'AddTodoMenuPage 번역 준비중';
           this.nakama.open_add_todo_page(props['data']);
           break;
         default:

@@ -109,6 +109,7 @@ export class IonicViewerPage implements OnInit {
   }
 
   async reinit_content_data(msg: any) {
+    this.NewTextFileName = '';
     this.NeedDownloadFile = true;
     this.isTextEditMode = false;
     this.MessageInfo = msg;
@@ -752,11 +753,12 @@ export class IonicViewerPage implements OnInit {
     }, 500);
   }
 
+  NewTextFileName = '';
   /** 저장 후 에디터 모드 종료 */
   async SaveText() {
     // 채널 채팅에서는 별도 파일첨부로 처리
     let blob = new Blob([this.p5canvas['TextArea'].value], { type: this.FileInfo.type });
-    blob['name'] = this.FileInfo.filename;
+    blob['name'] = this.NewTextFileName || this.FileInfo.filename;
     if (this.OpenInChannelChat) { // 채널 채팅에서 열람
       this.modalCtrl.dismiss({
         type: 'text',
