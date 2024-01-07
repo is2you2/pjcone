@@ -267,7 +267,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       this.userInput = { ...this.userInput, ...received_json };
       this.isModify = true;
     } else { // 새로 만드는 경우
-      let tomorrow = new Date(new Date().getTime() + 86400000);
+      let tomorrow = new Date(new Date().getTime() + 43200000);
       this.userInput.limit = tomorrow.getTime();
     }
     this.file_sel_id = `todo_${this.userInput.id || 'new_todo_id'}_${new Date().getTime()}`;
