@@ -367,6 +367,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.NewAttach.value = '';
   }
 
+  removeShortCut() {
+    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5key['KeyShortCut']['AddAct'];
+    delete this.global.p5key['KeyShortCut']['Digit'];
+  }
+
   start_change(ev: any) {
     if (!this.isLimitChangable) return;
     this.userInput.startFrom = ev.detail.value;
@@ -554,6 +560,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             no_edit: true,
           },
         }).then(v => {
+          this.removeShortCut();
           v.onWillDismiss().then(v => {
             this.AddShortCut();
             if (v.data) {
@@ -582,6 +589,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.modalCtrl.create({
           component: VoidDrawPage,
         }).then(v => {
+          this.removeShortCut();
           v.onWillDismiss().then(async v => {
             if (v.data) this.voidDraw_fileAct_callback(v);
           });
@@ -785,6 +793,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       },
       cssClass: 'fullscreen',
     }).then(v => {
+      this.removeShortCut();
       v.onDidDismiss().then((v) => {
         this.AddShortCut();
         if (v.data) { // 파일 편집하기를 누른 경우
@@ -812,6 +821,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                   height: v.data.height,
                 },
               }).then(w => {
+                this.removeShortCut();
                 w.onWillDismiss().then(w => {
                   if (w.data) {
                     switch (v.data.msg.content.viewer) {
@@ -824,21 +834,24 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                     }
                   }
                 });
+                w.onDidDismiss().then(_w => {
+                  this.AddShortCut();
+                });
                 w.present();
               });
               return;
             case 'text':
-              this.userInput.attach[index].content_related_creator.push(this.userInput.attach[index].content_creator);
-              this.userInput.attach[index].content_creator = {
+              this.userInput.attach[v.data.index].content_related_creator.push(this.userInput.attach[v.data.index].content_creator);
+              this.userInput.attach[v.data.index].content_creator = {
                 timestamp: new Date().getTime(),
                 display_name: this.nakama.users.self['display_name'],
                 various: 'textedit',
               };
-              this.userInput.attach[index].blob = v.data.blob;
-              this.userInput.attach[index].path = v.data.path;
-              this.userInput.attach[index].size = v.data.blob['size'];
-              this.userInput.attach[index].filename = v.data.blob.name || this.userInput.attach[index].filename;
-              delete this.userInput.attach[index]['exist'];
+              this.userInput.attach[v.data.index].blob = v.data.blob;
+              this.userInput.attach[v.data.index].path = v.data.path;
+              this.userInput.attach[v.data.index].size = v.data.blob['size'];
+              this.userInput.attach[v.data.index].filename = v.data.blob.name || this.userInput.attach[v.data.index].filename;
+              delete this.userInput.attach[v.data.index]['exist'];
               break;
           }
         }

@@ -769,6 +769,7 @@ export class IonicViewerPage implements OnInit {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
       let tmp_path = `tmp_files/texteditor/${this.FileInfo.filename}`;
+      console.log(this.FileInfo);
       if (!this.FileInfo.path) this.FileInfo.path = tmp_path;
       await this.indexed.saveBlobToUserPath(blob, tmp_path, undefined, this.targetDB);
       loading.dismiss();
@@ -779,6 +780,7 @@ export class IonicViewerPage implements OnInit {
         type: 'text',
         blob: blob,
         path: tmp_path,
+        index: this.RelevanceIndex - 1,
       });
     }
   }
