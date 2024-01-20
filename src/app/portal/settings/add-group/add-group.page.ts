@@ -127,20 +127,23 @@ export class AddGroupPage implements OnInit {
       description: this.userInput.description,
       max_count: this.userInput.max_count,
       open: this.userInput.open,
-    }).then(v => {
+    }).then(async v => {
       this.userInput.id = v.id;
       this.userInput.creator_id = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session.user_id;
       this.nakama.save_group_info(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target);
-      this.nakama.join_chat_with_modulation(v.id, 3, this.servers[this.index].isOfficial, this.servers[this.index].target, (_c) => {
+      try {
+        await this.nakama.join_chat_with_modulation(v.id, 3, this.servers[this.index].isOfficial, this.servers[this.index].target);
         this.isSavedWell = true;
         localStorage.removeItem('add-group');
         this.p5toast.show({
           text: this.lang.text['AddGroup']['group_created'],
         });
-        setTimeout(() => {
-          this.modalCtrl.dismiss();
-        }, 500);
-      });
+      } catch (e) {
+        console.error(e);
+      }
+      setTimeout(() => {
+        this.modalCtrl.dismiss();
+      }, 500);
     }).catch(e => {
       console.error('그룹 생성 실패: ', e);
       switch (e.status) {

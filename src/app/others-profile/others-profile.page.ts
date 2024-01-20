@@ -233,16 +233,18 @@ export class OthersProfilePage implements OnInit {
 
   lock_create_chat = false;
   /** 1:1 대화 생성하기 */
-  create_chat() {
+  async create_chat() {
     if (!this.lock_create_chat) {
       this.lock_create_chat = true;
-      this.nakama.join_chat_with_modulation(this.info['user']['id'], 2, this.isOfficial, this.target, (c) => {
-        if (c) {
-          this.nakama.go_to_chatroom_without_admob_act(c);
-          this.lock_create_chat = false;
-          this.modalCtrl.dismiss({ dismiss: true });
-        } else this.lock_create_chat = false;
-      }, true);
+      try {
+        let c = await this.nakama.join_chat_with_modulation(this.info['user']['id'], 2, this.isOfficial, this.target, true);
+        this.nakama.go_to_chatroom_without_admob_act(c);
+        this.lock_create_chat = false;
+        this.modalCtrl.dismiss({ dismiss: true });
+      } catch (e) {
+        this.lock_create_chat = false;
+        console.error(e);
+      }
     }
   }
 

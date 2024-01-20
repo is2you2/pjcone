@@ -1517,20 +1517,19 @@ export class NakamaService {
               await servers[i].socket.sendMatchState(this.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.ADD_CHANNEL,
                 encodeURIComponent(''));
               if (pending_group.open) { // 열린 그룹이라면 즉시 채널에 참가
-                this.join_chat_with_modulation(pending_group.id, 3, servers[i].info.isOfficial, servers[i].info.target, (c) => {
-                  if (!this.opened_page_info['channel']
-                    || this.opened_page_info['channel']['isOfficial'] != servers[i].info.isOfficial
-                    || this.opened_page_info['channel']['target'] != servers[i].info.target
-                    || this.opened_page_info['channel']['id'] != c.id
-                  ) this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listChannelMessages(
-                    this.servers[servers[i].info.isOfficial][servers[i].info.target].session, c.id, 1, false)
-                    .then(v => {
-                      if (v.messages.length)
-                        this.update_from_channel_msg(v.messages[0], servers[i].info.isOfficial, servers[i].info.target);
-                      this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
-                      this.save_groups_with_less_info();
-                    });
-                });
+                let c = await this.join_chat_with_modulation(pending_group.id, 3, servers[i].info.isOfficial, servers[i].info.target);
+                if (!this.opened_page_info['channel']
+                  || this.opened_page_info['channel']['isOfficial'] != servers[i].info.isOfficial
+                  || this.opened_page_info['channel']['target'] != servers[i].info.target
+                  || this.opened_page_info['channel']['id'] != c.id
+                ) this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listChannelMessages(
+                  this.servers[servers[i].info.isOfficial][servers[i].info.target].session, c.id, 1, false)
+                  .then(v => {
+                    if (v.messages.length)
+                      this.update_from_channel_msg(v.messages[0], servers[i].info.isOfficial, servers[i].info.target);
+                    this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
+                    this.save_groups_with_less_info();
+                  });
               }
               done();
               break;
@@ -1715,9 +1714,8 @@ export class NakamaService {
               this.add_group_user_without_duplicate(_user, user_group.group.id, _is_official, _target);
             });
           });
-          this.join_chat_with_modulation(user_group.group.id, 3, _is_official, _target, (_c) => {
-            this.save_groups_with_less_info();
-          });
+          await this.join_chat_with_modulation(user_group.group.id, 3, _is_official, _target);
+          this.save_groups_with_less_info();
         });
       });
   }
@@ -1781,14 +1779,17 @@ export class NakamaService {
         }
       } else if (p['user_id_one']) { // 1:1 채팅인 경우
         // 보통 내가 접근하면서 사용자 온라인 여부 검토를 할 때 채널이 없는 경우 오류가 남, 검토 후 채널 생성 처리
-        if (!this.channels_orig[_is_official][_target][p.channel_id || p.id])
-          this.join_chat_with_modulation(
-            p['user_id_one'] != this.servers[_is_official][_target].session.user_id ? p['user_id_one'] : p['user_id_two'],
-            2, _is_official, _target, (c) => {
-              let targetId = this.channels_orig[_is_official][_target][c.id]['redirect']['id'];
-              result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
-            });
-        else {
+        if (!this.channels_orig[_is_official][_target][p.channel_id || p.id]) {
+          try {
+            let c = await this.join_chat_with_modulation(
+              p['user_id_one'] != this.servers[_is_official][_target].session.user_id ? p['user_id_one'] : p['user_id_two'],
+              2, _is_official, _target);
+            let targetId = this.channels_orig[_is_official][_target][c.id]['redirect']['id'];
+            result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
+          } catch (e) {
+            console.error(e);
+          }
+        } else {
           let targetId = this.channels_orig[_is_official][_target][p.channel_id || p.id]['redirect']['id'];
           let user = await this.servers[_is_official][_target].client.getUsers(
             this.servers[_is_official][_target].session, [targetId]);
@@ -2238,9 +2239,10 @@ export class NakamaService {
    */
   opened_page_info = {};
   /** 채널 정보를 변형한 후 추가하기 */
-  async join_chat_with_modulation(targetId: string, type: number, _is_official: string, _target: string, _CallBack = (_c: Channel) => { }, isNewChannel = false) {
+  async join_chat_with_modulation(targetId: string, type: number, _is_official: string, _target: string, isNewChannel = false) {
     if (!this.channels_orig[_is_official][_target]) this.channels_orig[_is_official][_target] = {};
-    await this.servers[_is_official][_target].socket.joinChat(targetId, type, true, false).then(async c => {
+    let c = await this.servers[_is_official][_target].socket.joinChat(targetId, type, true, false)
+    try {
       c['redirect'] = {
         id: targetId,
         type: type,
@@ -2280,8 +2282,8 @@ export class NakamaService {
         });
       this.count_channel_online_member(c, _is_official, _target);
       this.save_groups_with_less_info();
-      _CallBack(c);
-    }).catch(e => {
+      return c;
+    } catch (e) {
       let err_info: string = '';
       switch (e.code) {
         case 3: // 사용자 정보 없음 (계정 삭제의 경우)
@@ -2294,9 +2296,8 @@ export class NakamaService {
       this.p5toast.show({
         text: `${this.lang.text['Nakama']['AddChannelFailed']}: ${err_info}`,
       });
-      _CallBack(undefined);
       throw `${this.lang.text['Nakama']['AddChannelFailed']}: ${err_info}`;
-    });
+    }
   }
 
   /** 연결 페이지를 보고있는지 여부 */
@@ -3370,9 +3371,8 @@ export class NakamaService {
         case 'open_prv_channel': // 1:1 대화 열기 (폰에서 넘어가기 보조용)
           for (let j = 0; j < 20; j++)
             try {
-              await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], (c) => {
-                if (c) this.go_to_chatroom_without_admob_act(c);
-              }, true);
+              let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], true);
+              this.go_to_chatroom_without_admob_act(c);
               break;
             } catch (e) {
               await new Promise((done) => {
@@ -3385,9 +3385,8 @@ export class NakamaService {
         case 'open_channel': // 그룹 대화 열기 (폰에서 넘어가기 보조용)
           for (let j = 0; j < 20; j++)
             try {
-              await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], (c) => {
-                if (c) this.go_to_chatroom_without_admob_act(c);
-              }, true);
+              let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], true);
+              this.go_to_chatroom_without_admob_act(c);
               break;
             } catch (e) {
               await new Promise((done) => {
