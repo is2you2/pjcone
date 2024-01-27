@@ -70,7 +70,10 @@ func _connected(id:int, _proto:='EMPTY_PROTO'):
 		counter.maximum = counter.current
 	Root.logging(HEADER, str('Conntected: %s' % counter))
 	var _count:= str('Current:%d' % counter.current).to_utf8()
-	send_to(id, str(id).to_utf8())
+	var pid = {
+		'pid': id,
+	}
+	send_to(id, JSON.print(pid).to_utf8())
 	for user in pid_list:
 		send_to(user, _count)
 	mutex.unlock()
@@ -115,7 +118,9 @@ func _received(id:int, _try_left:= 5):
 			match(json):
 				{'name', 'type', ..}: # 그룹채팅용 폼 무시
 					pass
-				_:
+				{'webrtc', ..}: # webrtc 정보 교환시
+					send_to(matched[id], raw_data)
+				_: # 매칭 이후 상호간 대화 전달
 					send_to(id, raw_data)
 					send_to(matched[id], raw_data)
 		else:
@@ -172,6 +177,10 @@ func matching_system():
 			matched[_parter2] = _parter1
 			send_to(_parter1, 'GOT_MATCHED'.to_utf8())
 			send_to(_parter2, 'GOT_MATCHED'.to_utf8())
+			var req_webrtc = {
+				'webrtc': 'WEBRTC_INIT_REQ_SIGNAL',
+			}
+			send_to(_parter1, JSON.print(req_webrtc).to_utf8())
 			counter.matched += 1
 	yield(get_tree().create_timer(.5), "timeout")
 	matching_system()
