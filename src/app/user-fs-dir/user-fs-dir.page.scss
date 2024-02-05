@@ -3,10 +3,17 @@
     overflow: unset;
 }
 
-.image_front_form{
+.image_front_form {
     text-align: center;
 }
 
 .image_front_view {
     max-height: 233px;
+}
+
+.top_icon {
+    width: 28px;
+    height: 28px;
+    padding-right: 28px;
+    cursor: pointer;
 }

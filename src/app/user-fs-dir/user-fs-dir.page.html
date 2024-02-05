@@ -4,6 +4,10 @@
     <ion-buttons slot="start" (click)="dismiss_page()">
       <ion-back-button defaultHref=""></ion-back-button>
     </ion-buttons>
+    <ion-icon *ngIf="!HideThumbnail" class="top_icon" slot="end" name="eye-outline"
+      (click)="toggle_thumbnail()"></ion-icon>
+    <ion-icon *ngIf="HideThumbnail" class="top_icon" slot="end" name="eye-off-outline"
+      (click)="toggle_thumbnail()"></ion-icon>
   </ion-toolbar>
 </ion-header>
 
@@ -71,7 +75,8 @@
               </ion-button>
             </ion-item>
             <div *ngIf="file.viewer == 'image'" class="image_front_form" (click)="OpenFile(file)">
-              <img class="image_front_view" [src]="file.thumbnail" [alt]="file.name">
+              <img class="image_front_view" [style]="HideThumbnail ? 'filter: blur(6px);' : ''" [src]="file.thumbnail"
+                [alt]="file.name">
             </div>
             <ion-item button>
               <ion-label>{{lang.text['UserFsDir']['CreateAt']}}</ion-label>

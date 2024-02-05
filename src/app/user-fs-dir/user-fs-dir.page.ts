@@ -66,6 +66,13 @@ export class UserFsDirPage implements OnInit {
   is_ready = false;
   /** 할 일 등에서 파일 선택을 위해 생성되었는지 */
   is_file_selector: boolean = false;
+  /** 인앱 브라우저 내 썸네일 토글 */
+  HideThumbnail = false;
+
+  toggle_thumbnail() {
+    this.HideThumbnail = !this.HideThumbnail;
+    localStorage.setItem('user-fs-thumbnail', `${this.HideThumbnail ? '1' : '0'}`);
+  }
 
   ngOnInit() { }
 
@@ -99,6 +106,7 @@ export class UserFsDirPage implements OnInit {
   }
 
   ionViewWillEnter() {
+    this.HideThumbnail = localStorage.getItem('user-fs-thumbnail') == '1';
     this.CurrentDir = '';
     this.is_file_selector = Boolean(this.navParams.data.modal);
     this.LoadAllIndexedFiles();
