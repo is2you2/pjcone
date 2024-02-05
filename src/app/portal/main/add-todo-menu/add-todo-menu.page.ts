@@ -18,6 +18,7 @@ import { VoidDrawPage } from '../../subscribes/chat-room/void-draw/void-draw.pag
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SpeechRecognition } from "@capacitor-community/speech-recognition";
+import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 
 /** 서버에서 생성한 경우 */
 interface RemoteInfo {
@@ -498,7 +499,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     delete this.global.p5key['KeyShortCut']['Escape'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
     let NumberShortCutAct = [
-      'text', 'image', 'camera', 'load'
+      'text', 'image', 'camera', 'inapp', 'load'
     ];
     if (!this.isMobile) NumberShortCutAct.splice(2, 1);
     this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
@@ -592,6 +593,22 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           this.removeShortCut();
           v.onWillDismiss().then(async v => {
             if (v.data) this.voidDraw_fileAct_callback(v);
+          });
+          v.onDidDismiss().then(() => {
+            this.AddShortCut();
+          });
+          v.present();
+        });
+        break;
+      case 'inapp': // 인앱 탐색기에서 가져오기
+        this.modalCtrl.create({
+          component: UserFsDirPage,
+          componentProps: {
+            only_files: true,
+          },
+        }).then(v => {
+          v.onWillDismiss().then(async v => {
+            if (v.data) this.selected_blobFile_callback_act(v.data);
           });
           v.onDidDismiss().then(() => {
             this.AddShortCut();

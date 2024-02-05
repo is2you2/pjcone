@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { AlertController, IonAccordionGroup, LoadingController, ModalController, NavController } from '@ionic/angular';
+import { AlertController, IonAccordionGroup, LoadingController, ModalController, NavController, NavParams } from '@ionic/angular';
 import { isPlatform } from '../app.component';
 import { GlobalActService } from '../global-act.service';
 import { IndexedDBService } from '../indexed-db.service';
@@ -60,9 +60,12 @@ export class UserFsDirPage implements OnInit {
     private file: File,
     private navCtrl: NavController,
     private noti: LocalNotiService,
+    private navParams: NavParams,
   ) { }
 
   is_ready = false;
+  /** 할 일 등에서 파일 선택을 위해 생성되었는지 */
+  is_file_selector: boolean = false;
 
   ngOnInit() { }
 
@@ -97,10 +100,23 @@ export class UserFsDirPage implements OnInit {
 
   ionViewWillEnter() {
     this.CurrentDir = '';
+    this.is_file_selector = Boolean(this.navParams.data.modal);
     this.LoadAllIndexedFiles();
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
     document.addEventListener('ionBackButton', this.EventListenerAct);
+  }
+
+  async dismiss_page(file?: FileDir) {
+    if (this.is_file_selector) {
+      let return_data = undefined;
+      if (file) {
+        return_data = await this.indexed.loadBlobFromUserPath(file.path, '');
+        return_data['name'] = file.name;
+        return_data['file_ext'] = file.file_ext;
+      }
+      this.modalCtrl.dismiss(return_data);
+    }
   }
 
   /** 폴더를 선택했을 때 */
@@ -118,12 +134,17 @@ export class UserFsDirPage implements OnInit {
         smallIcon: 'res://icon_mono',
         color: 'b0b0b0',
       });
-    if (this.indexed.godotDB) {
-      let _godot_list = await this.indexed.GetFileListFromDB('/', undefined, this.indexed.godotDB)
-      await this.ModulateIndexedFile(_godot_list, this.indexed.godotDB);
+    if (this.is_file_selector) {
+      let _ionic_list = await this.indexed.GetFileListFromDB('/files/')
+      await this.ModulateIndexedFile(_ionic_list);
+    } else {
+      if (this.indexed.godotDB) {
+        let _godot_list = await this.indexed.GetFileListFromDB('/', undefined, this.indexed.godotDB)
+        await this.ModulateIndexedFile(_godot_list, this.indexed.godotDB);
+      }
+      let _ionic_list = await this.indexed.GetFileListFromDB('/')
+      await this.ModulateIndexedFile(_ionic_list);
     }
-    let _ionic_list = await this.indexed.GetFileListFromDB('/')
-    await this.ModulateIndexedFile(_ionic_list);
     this.FileList.sort((a, b) => {
       if (a.path > b.path) return 1;
       if (a.path < b.path) return -1;

@@ -1,8 +1,8 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-title>{{lang.text['Settings']['InAppExplorer']}}</ion-title>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="portal/settings"></ion-back-button>
+    <ion-buttons slot="start" (click)="dismiss_page()">
+      <ion-back-button defaultHref=""></ion-back-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -25,7 +25,7 @@
         <ion-label>..</ion-label>
       </ion-item>
     </div>
-    <div *ngIf="CurrentDir == ''">
+    <div *ngIf="CurrentDir == '' && !is_file_selector">
       <ion-item button (click)="SelectImportFolder()">
         <ion-icon slot="start" name="arrow-down-circle"></ion-icon>
         <ion-label> {{lang.text['UserFsDir']['ImportFolder']}} </ion-label>
@@ -40,7 +40,7 @@
     </div>
     <ion-accordion-group #FileSel>
       <div *ngFor="let file of FileList; index as i">
-        <ion-accordion *ngIf="CurrentDir == file.dir" [value]="file.path">
+        <ion-accordion *ngIf="CurrentDir == file.dir || is_file_selector" [value]="file.path">
           <ion-item slot="header">
             <ion-icon *ngIf="file.viewer == 'image'" slot="start" name="image"></ion-icon>
             <ion-icon *ngIf="file.viewer == 'audio'" slot="start" name="musical-notes"></ion-icon>
@@ -59,7 +59,11 @@
                 (click)="OpenFile(file)">
                 {{lang.text['UserFsDir']['Open']}}
               </ion-button>
-              <ion-button *ngIf="cant_dedicated" class="ion-text-right" (click)="DownloadFile(file)">
+              <ion-button *ngIf="is_file_selector" class="ion-text-right" (click)="dismiss_page(file)">
+                {{lang.text['UserFsDir']['Select']}}
+              </ion-button>
+              <ion-button *ngIf="cant_dedicated && !is_file_selector" class="ion-text-right"
+                (click)="DownloadFile(file)">
                 {{lang.text['UserFsDir']['Download']}}
               </ion-button>
               <ion-button class="ion-text-end" (click)="RemoveFile(file, i)">
