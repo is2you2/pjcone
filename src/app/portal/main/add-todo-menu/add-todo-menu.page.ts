@@ -893,9 +893,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       } else throw 'not overwrite';
     } catch (e) {
       this_file = {};
-      if (index === undefined)
-        this.userInput.attach.push(this_file);
-      else this.userInput.attach.splice(index + 1, 0, this_file);
+      this.userInput.attach.push(this_file);
     }
     this_file['filename'] = v.data['name'];
     this_file['file_ext'] = 'png';
