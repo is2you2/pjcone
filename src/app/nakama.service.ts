@@ -3077,14 +3077,12 @@ export class NakamaService {
         this.noti.ClearNoti(8);
       }
       _msg.content['path'] = path;
-      if (!this.channels_orig[_is_official][_target][_msg.channel_id]['HideAutoThumbnail']) {
-        let url: string;
-        if (_msg.content.viewer != 'godot') {
-          let blob = await this.indexed.loadBlobFromUserPath(path, msg.content['type'] || '')
-          url = URL.createObjectURL(blob);
-        }
-        await this.global.modulate_thumbnail((this.OnTransferMessage[_msg.message_id] || msg).content, url);
+      let url: string;
+      if (_msg.content.viewer != 'godot') {
+        let blob = await this.indexed.loadBlobFromUserPath(path, msg.content['type'] || '')
+        url = URL.createObjectURL(blob);
       }
+      await this.global.modulate_thumbnail((this.OnTransferMessage[_msg.message_id] || msg).content, url);
       delete this.OnTransfer[_is_official][_target][_msg.channel_id][_msg.message_id];
       delete this.OnTransferMessage[_msg.message_id];
     }
