@@ -115,6 +115,10 @@ export class GlobalActService {
       }
       p.keyPressed = (ev) => {
         switch (ev['code']) {
+          case 'Backquote':
+            if (p['KeyShortCut']['Backquote'])
+              p['KeyShortCut']['Backquote']();
+            break;
           // 메뉴 나열순
           case 'Digit1': // 보여지는 리스트 메뉴 최상단부터 아래로
           case 'Digit2':
