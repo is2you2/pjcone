@@ -805,6 +805,8 @@ export class NakamaService {
         });
       }
     });
+    this.rearrange_channels();
+    this.rearrange_group_list();
   }
 
   /** 원격 할 일 카운터  
