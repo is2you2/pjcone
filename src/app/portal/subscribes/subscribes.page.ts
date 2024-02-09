@@ -46,7 +46,7 @@ export class SubscribesPage implements OnInit {
         this.go_to_page('group-server');
       }
       this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-        if (this.nakama.channels.length >= index)
+        if (this.nakama.channels.length > index)
           this.go_to_chatroom(this.nakama.channels[index]);
         else this.add_new_group();
       };
