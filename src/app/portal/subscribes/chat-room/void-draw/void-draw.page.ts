@@ -96,7 +96,7 @@ export class VoidDrawPage implements OnInit {
     return new Promise((done) => setTimeout(() => {
       done(undefined);
     }, millis))
-  } 
+  }
   isCropMode = false;
   create_p5voidDraw(initData: any) {
     let targetDiv = document.getElementById('voidDraw');
@@ -292,17 +292,16 @@ export class VoidDrawPage implements OnInit {
           canvas.show();
           p.redraw();
         }
-        ActualCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
+        ActualCanvas = p.createGraphics(initData.width, initData.height);
         ActualCanvas.pixelDensity(PIXEL_DENSITY);
         ActualCanvas.noLoop();
         ActualCanvas.noFill();
         p['ActualCanvas'] = ActualCanvas;
-        ImageCanvas = p.createGraphics(initData.width, initData.height, p.WEBGL);
+        ImageCanvas = p.createGraphics(initData.width, initData.height);
         ImageCanvas.pixelDensity(PIXEL_DENSITY);
         ImageCanvas.noLoop();
         ImageCanvas.noFill();
         ImageCanvas.background(255);
-        ImageCanvas.imageMode(p.CENTER);
         p['ImageCanvas'] = ImageCanvas;
         // 사용자 그리기 판넬 생성
         if (initData['path']) { // 배경 이미지 파일이 포함됨
@@ -404,7 +403,7 @@ export class VoidDrawPage implements OnInit {
         TargetCanvas.strokeWeight(targetDraw['weight']);
         TargetCanvas.beginShape();
         for (let i = 0, j = targetDraw['pos'].length; i < j; i++)
-          TargetCanvas.curveVertex(targetDraw['pos'][i].x, targetDraw['pos'][i].y);
+          TargetCanvas.curveVertex(targetDraw['pos'][i].x + TargetCanvas.width / 2, targetDraw['pos'][i].y + TargetCanvas.height / 2);
         TargetCanvas.endShape();
         TargetCanvas.pop();
         TargetCanvas.redraw();
