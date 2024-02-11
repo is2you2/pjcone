@@ -180,7 +180,7 @@ export class LocalNotiService {
   WebNoties = {} as { [id: string]: any };
 
   /** 권한 요청 처리 */
-  initialize() {
+  async initialize() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
       if (!("Notification" in window)) {
         console.error('Notification 미지원 브라우저입니다');
@@ -191,7 +191,7 @@ export class LocalNotiService {
       }, e => {
         console.error('지원하지 않는 브라우저:', e);
       });
-    } else this.noti.requestPermission();
+    } // 안드로이드라면 app.component.ts 에서 권한 처리
   }
   /**
    * 로컬 푸쉬 알림을 동작시킵니다

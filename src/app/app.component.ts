@@ -13,6 +13,7 @@ import { NakamaService } from './nakama.service';
 import { AdMob } from "@capacitor-community/admob";
 import { LanguageSettingService } from './language-setting.service';
 import { GlobalActService } from './global-act.service';
+import { LocalNotifications } from "@capacitor/local-notifications";
 /** 페이지가 돌고 있는 플렛폼 구분자 */
 export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'DesktopPWA';
 /** Nativefier로 실행중인지 검토하기 */
@@ -56,6 +57,11 @@ export class AppComponent {
       global.initialize();
       nakama.AddressToQRCodeAct(init);
       noti.initialize();
+      if (isPlatform == 'Android') // 알림 권한 설정
+        LocalNotifications.checkPermissions().then(async v => {
+          if (v.display != 'granted')
+            await LocalNotifications.requestPermissions();
+        });
       noti.load_settings();
       indexed.GetFileListFromDB('tmp_files', list => {
         list.forEach(path => indexed.removeFileFromUserPath(path));
