@@ -9,7 +9,7 @@ import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 import * as p5 from 'p5';
 import { LocalNotiService } from './local-noti.service';
-import { AlertController, LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
+import { AlertController, IonicSafeString, LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 import { LanguageSettingService } from './language-setting.service';
 import { AdMob, AdMobRewardItem, RewardAdOptions, RewardAdPluginEvents } from '@capacitor-community/admob';
@@ -2741,10 +2741,10 @@ export class NakamaService {
         }, 'global_noti_all', (_ev: any) => {
           this.alertCtrl.create({
             header: this.servers[_is_official][_target].info.name,
-            message: `<img *ngIf="${decode_image}" src="${decode_image}" alt="noti_image" style="border-radius: 2px">
-<div>${decode_body}</div>`,
+            message: new IonicSafeString(`<img *ngIf="${decode_image}" src="${decode_image}" alt="noti_image" style="border-radius: 2px">
+<div>${decode_body}</div>`),
             buttons: [{
-              text: '확인',
+              text: this.lang.text['Nakama']['LocalNotiOK'],
               handler: () => {
                 this.servers[_is_official][_target].client.deleteNotifications(
                   this.servers[_is_official][_target].session, [v.id]);

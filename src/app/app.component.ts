@@ -5,7 +5,7 @@ import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
-import { AlertController, ModalController, Platform } from '@ionic/angular';
+import { AlertController, IonicSafeString, ModalController, Platform } from '@ionic/angular';
 import { IndexedDBService } from './indexed-db.service';
 import { LocalNotiService } from './local-noti.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
@@ -148,10 +148,10 @@ export class AppComponent {
           case 'AllUserNotification':
             alertCtrl.create({
               header: ev.data.title,
-              message: `<img *ngIf="${ev.data.image}" src="${ev.data.image}" alt="noti_image" style="border-radius: 2px">
-<div>${ev.data.body}</div>`,
+              message: new IonicSafeString(`<img *ngIf="${ev.data.image}" src="${ev.data.image}" alt="noti_image" style="border-radius: 2px">
+<div>${ev.data.body}</div>`),
               buttons: [{
-                text: '확인',
+                text: lang.text['Nakama']['LocalNotiOK'],
                 handler: () => {
                   nakama.servers[ev.data.isOfficial][ev.data.target].client.deleteNotifications(
                     nakama.servers[ev.data.isOfficial][ev.data.target].session, [ev.data.noti_id]);
