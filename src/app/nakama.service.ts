@@ -2739,10 +2739,12 @@ export class NakamaService {
           group_ln: 'all_user_noti',
           iconColor_ln: 'ff754e',
         }, 'global_noti_all', (_ev: any) => {
+          let image_form = `<img *ngIf="${decode_image}" src="${decode_image}" alt="noti_image" style="border-radius: 2px">`;
+          let text_form = `<div>${decode_body}</div>`;
+          let result_form = decode_image ? image_form + text_form : text_form;
           this.alertCtrl.create({
             header: this.servers[_is_official][_target].info.name,
-            message: new IonicSafeString(`<img *ngIf="${decode_image}" src="${decode_image}" alt="noti_image" style="border-radius: 2px">
-<div>${decode_body}</div>`),
+            message: new IonicSafeString(result_form),
             buttons: [{
               text: this.lang.text['Nakama']['LocalNotiOK'],
               handler: () => {
