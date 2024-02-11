@@ -1052,12 +1052,19 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
         // 이미 존재하는 파일로 알려졌다면 저장 시도하지 않도록 구성, 또는 썸네일 재구성
         let blob: Blob;
+        let alternative_thumbnail = false;
+        let orig_path = this.userInput.attach[i]['path'];
+        try { // 이미지가 아닌 파일이 대안 썸네일을 가지고 있는 경우 동작하기
+          if (header_image) throw 'already exist';
+          blob = await this.indexed.loadBlobFromUserPath(`${orig_path}_thumbnail.png`, 'image/png');
+          alternative_thumbnail = true;
+        } catch (e) { }
         if (!this.userInput.attach[i]['exist'] || (!header_image && this.userInput.attach[i]['viewer'] == 'image')) {
           blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
           this.userInput.attach[i]['path'] = `todo/${this.userInput.id}/${this.userInput.attach[i]['filename']}`;
           await this.indexed.saveBlobToUserPath(blob, this.userInput.attach[i]['path']);
         } else delete this.userInput.attach[i]['exist'];
-        if (!header_image && this.userInput.attach[i]['viewer'] == 'image') {
+        if (!header_image && (this.userInput.attach[i]['viewer'] == 'image' || alternative_thumbnail)) {
           header_image = URL.createObjectURL(blob);
         }
       }
