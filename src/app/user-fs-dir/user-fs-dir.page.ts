@@ -143,7 +143,9 @@ export class UserFsDirPage implements OnInit {
         color: 'b0b0b0',
       });
     if (this.is_file_selector) {
-      let _ionic_list = await this.indexed.GetFileListFromDB('/files/')
+      let _ionic_list = await this.indexed.GetFileListFromDB('/files/');
+      let _todo_list = await this.indexed.GetFileListFromDB('/todo/');
+      _ionic_list.push.apply(_ionic_list, _todo_list);
       await this.ModulateIndexedFile(_ionic_list);
     } else {
       if (this.indexed.godotDB) {
