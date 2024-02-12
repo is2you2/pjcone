@@ -3211,6 +3211,8 @@ export class NakamaService {
       this.users.self['online'] = true;
       this.save_self_profile();
     }
+    if (init['use_test_server'])
+      json.push({ type: 'use_test_server' });
     if (init['server']) { // 그룹 서버 등록
       for (let i = 0, j = init['server'].length; i < j; i++) {
         let sep = init['server'][i].split(',');
@@ -3313,6 +3315,20 @@ export class NakamaService {
           break;
         case 'tmp_user': // 빠른 임시 진입을 위해 사용자 정보를 임의로 기입
           break;
+        case 'use_test_server': // 개발 테스트 서버 사용 여부
+          for (let j = 0, k = 10; j < k; j++)
+            try {
+              this.lang.text['Nakama']['TryOnline']; // 번역 준비 검토
+              await this.toggle_all_session();
+              break;
+            } catch (e) {
+              await new Promise((done) => {
+                setTimeout(() => {
+                  done(undefined);
+                }, 500);
+              });
+            }
+          break;
         case 'server': // 그룹 서버 자동등록처리
           let hasAlreadyTargetKey = Boolean(this.statusBar.groupServer['unofficial'][json[i].value.name]);
           if (hasAlreadyTargetKey) {
@@ -3353,7 +3369,7 @@ export class NakamaService {
           break;
         case 'group': // 그룹 자동 등록 시도
           // 시작과 동시에 진입할 때 서버 연결 시간을 고려함
-          for (let j = 0, k = 20; j < k; j++)
+          for (let j = 0, k = 10; j < k; j++)
             try {
               await this.try_add_group(json[i]);
               break;
@@ -3372,7 +3388,7 @@ export class NakamaService {
             }
           break;
         case 'open_prv_channel': // 1:1 대화 열기 (폰에서 넘어가기 보조용)
-          for (let j = 0; j < 20; j++)
+          for (let j = 0; j < 10; j++)
             try {
               let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], true);
               this.go_to_chatroom_without_admob_act(c);
@@ -3386,7 +3402,7 @@ export class NakamaService {
             }
           break;
         case 'open_channel': // 그룹 대화 열기 (폰에서 넘어가기 보조용)
-          for (let j = 0; j < 20; j++)
+          for (let j = 0; j < 10; j++)
             try {
               let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], true);
               this.go_to_chatroom_without_admob_act(c);
