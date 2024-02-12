@@ -41,7 +41,7 @@ export class AddGroupPage implements OnInit {
   /** 사용자가 작성한 그룹 정보 */
   userInput = {
     server: undefined,
-    id: undefined,
+    id: '',
     name: undefined,
     description: undefined,
     max_count: undefined,
@@ -106,7 +106,28 @@ export class AddGroupPage implements OnInit {
   isSaveClicked = false;
   /** 정상처리되지 않았다면 작성 중 정보 임시 저장 */
   isSavedWell = false;
-  save() {
+  async save() {
+    if (this.userInput.id) {
+      this.isSaveClicked = true;
+      let target_server = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target];
+      try {
+        await target_server.client.joinGroup(target_server.session, this.userInput.id);
+        await this.nakama.get_group_list_from_server(this.servers[this.index].isOfficial, this.servers[this.index].target);
+        this.isSavedWell = true;
+        this.p5toast.show({
+          text: this.lang.text['AddGroup']['join_group_succ'],
+        });
+        setTimeout(() => {
+          this.modalCtrl.dismiss();
+        }, 500);
+      } catch (e) {
+        this.p5toast.show({
+          text: this.lang.text['AddGroup']['check_group_id'],
+        });
+        this.isSaveClicked = false;
+      }
+      return;
+    }
     if (this.statusBar.groupServer[this.servers[this.index].isOfficial][this.servers[this.index].target] != 'online') {
       this.p5toast.show({
         text: this.lang.text['AddGroup']['cannot_use_selected_server'],
@@ -134,7 +155,6 @@ export class AddGroupPage implements OnInit {
       try {
         await this.nakama.join_chat_with_modulation(v.id, 3, this.servers[this.index].isOfficial, this.servers[this.index].target);
         this.isSavedWell = true;
-        localStorage.removeItem('add-group');
         this.p5toast.show({
           text: this.lang.text['AddGroup']['group_created'],
         });
@@ -176,9 +196,9 @@ export class AddGroupPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    if (!this.isSavedWell) {
+    if (!this.isSavedWell)
       localStorage.setItem('add-group', JSON.stringify(this.userInput));
-    }
+    else localStorage.removeItem('add-group');
   }
 
   file_sel_id = '';
