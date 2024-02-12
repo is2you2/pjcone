@@ -742,13 +742,17 @@ export class NakamaService {
         this.servers[_is_official][_target].info.is_admin = metadata['is_admin'];
       });
     // 개인 정보를 서버에 맞춤
-    if (!this.users.self['display_name'])
-      this.servers[_is_official][_target].client.getAccount(
-        this.servers[_is_official][_target].session).then(v => {
-          let keys = Object.keys(v.user);
-          keys.forEach(key => this.users.self[key] = v.user[key]);
-          this.save_self_profile();
+    this.servers[_is_official][_target].client.getAccount(
+      this.servers[_is_official][_target].session).then(v => {
+        let keys = Object.keys(v.user);
+        keys.forEach(key => {
+          if (key == 'display_name')
+            this.users.self[key] = v.user[key];
+          else if (!this.users.self['display_name'])
+            this.users.self[key] = v.user[key];
         });
+        this.save_self_profile();
+      });
     // 개인 프로필 이미지를 서버에 맞춤
     if (!this.users.self['img'])
       this.servers[_is_official][_target].client.readStorageObjects(
