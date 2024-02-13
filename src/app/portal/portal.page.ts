@@ -4,7 +4,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonTabs, iosTransitionAnimation, NavController } from '@ionic/angular';
 import { NakamaService } from '../nakama.service';
-import * as p5 from 'p5';
 import { GlobalActService } from '../global-act.service';
 import { IndexedDBService } from '../indexed-db.service';
 
@@ -89,6 +88,8 @@ export class PortalPage implements OnInit {
   ionViewWillLeave() {
     this.CacheKeyShortCut = this.global.p5key['KeyShortCut'];
     this.global.p5key['KeyShortCut'] = {};
-    this.global.p5todo['StopCanvas']();
+    try {
+      this.global.p5todo['StopCanvas']();
+    } catch (e) { }
   }
 }

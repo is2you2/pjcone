@@ -3315,7 +3315,17 @@ export class NakamaService {
           this.removeBanner();
           break;
         case 'open_subscribes':
-          this.act_callback_link['portal_tab_subscribes']();
+          for (let j = 0, k = 10; j < k; j++)
+            try {
+              this.act_callback_link['portal_tab_subscribes']();
+              break;
+            } catch (e) {
+              await new Promise((done) => {
+                setTimeout(() => {
+                  done(undefined);
+                }, 500);
+              });
+            }
           break;
         case 'tmp_user': // 빠른 임시 진입을 위해 사용자 정보를 임의로 기입
           break;
