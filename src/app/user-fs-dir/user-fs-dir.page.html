@@ -59,18 +59,18 @@
           <div slot="content">
             <ion-item button>
               <ion-label>{{lang.text['UserFsDir']['Action']}}</ion-label>
-              <ion-button *ngIf="file.viewer != 'disabled' && file.viewer != 'image'" class="ion-text-right"
+              <ion-button *ngIf="file.viewer != 'disabled' && file.viewer != 'image'" class="ion-text-right button_dist"
                 (click)="OpenFile(file)">
                 {{lang.text['UserFsDir']['Open']}}
               </ion-button>
-              <ion-button *ngIf="is_file_selector" class="ion-text-right" (click)="dismiss_page(file)">
+              <ion-button *ngIf="is_file_selector" class="ion-text-right button_dist" (click)="dismiss_page(file)">
                 {{lang.text['UserFsDir']['Select']}}
               </ion-button>
-              <ion-button *ngIf="cant_dedicated && !is_file_selector" class="ion-text-right"
+              <ion-button *ngIf="cant_dedicated && !is_file_selector" class="ion-text-right button_dist"
                 (click)="DownloadFile(file)">
                 {{lang.text['UserFsDir']['Download']}}
               </ion-button>
-              <ion-button class="ion-text-end" (click)="RemoveFile(file, i)">
+              <ion-button class="ion-text-end button_dist" (click)="RemoveFile(file, i)">
                 {{lang.text['UserFsDir']['Delete']}}
               </ion-button>
             </ion-item>
