@@ -3332,7 +3332,7 @@ export class NakamaService {
         case 'use_test_server': // 개발 테스트 서버 사용 여부
           for (let j = 0, k = 10; j < k; j++)
             try {
-              this.lang.text['Nakama']['TryOnline']; // 번역 준비 검토
+              this.lang.text['TTSExport']['ReadThis']; // 번역 준비 검토
               await this.toggle_all_session();
               break;
             } catch (e) {

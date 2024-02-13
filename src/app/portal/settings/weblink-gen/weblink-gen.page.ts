@@ -31,6 +31,7 @@ export class WeblinkGenPage implements OnInit {
     open_profile: false,
     open_subscribes: false,
     use_tmp_user: false,
+    use_test_server: false,
     tmp_user: {
       email: undefined,
       password: undefined,
@@ -93,6 +94,11 @@ export class WeblinkGenPage implements OnInit {
   information_changed() {
     this.result_address = this.userInput.root || `${SERVER_PATH_ROOT}pjcone_pwa/`;
     let count = 0;
+    if (this.userInput.use_test_server) {
+      this.result_address += count ? '&' : '?';
+      this.result_address += 'use_test_server=true';
+      count++;
+    }
     for (let i = 0, j = this.userInput.servers.length; i < j; i++) {
       this.result_address += count ? '&' : '?';
       this.result_address += 'server=';
