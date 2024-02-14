@@ -18,6 +18,7 @@ export class LanguageSettingService {
   text = {
     Portal: {},
     Main: {},
+    Subscribes: {},
   };
 
   constructor() {

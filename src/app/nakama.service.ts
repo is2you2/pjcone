@@ -3317,6 +3317,8 @@ export class NakamaService {
         case 'open_subscribes':
           for (let j = 0, k = 10; j < k; j++)
             try {
+              if (!this.lang.text['TTSExport']['ReadThis']) // 번역 준비 검토
+                throw '번역 준비 안됨';
               this.act_callback_link['portal_tab_subscribes']();
               break;
             } catch (e) {
@@ -3332,7 +3334,8 @@ export class NakamaService {
         case 'use_test_server': // 개발 테스트 서버 사용 여부
           for (let j = 0, k = 10; j < k; j++)
             try {
-              this.lang.text['TTSExport']['ReadThis']; // 번역 준비 검토
+              if (!this.lang.text['TTSExport']['ReadThis']) // 번역 준비 검토
+                throw '번역 준비 안됨';
               await this.toggle_all_session();
               break;
             } catch (e) {
@@ -3385,6 +3388,8 @@ export class NakamaService {
           // 시작과 동시에 진입할 때 서버 연결 시간을 고려함
           for (let j = 0, k = 10; j < k; j++)
             try {
+              if (!this.lang.text['TTSExport']['ReadThis']) // 번역 준비 검토
+                throw '번역 준비 안됨';
               await this.try_add_group(json[i]);
               break;
             } catch (e) {
@@ -3404,6 +3409,8 @@ export class NakamaService {
         case 'open_prv_channel': // 1:1 대화 열기 (폰에서 넘어가기 보조용)
           for (let j = 0; j < 10; j++)
             try {
+              if (!this.lang.text['TTSExport']['ReadThis']) // 번역 준비 검토
+                throw '번역 준비 안됨';
               let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], true);
               this.go_to_chatroom_without_admob_act(c);
               break;
@@ -3418,6 +3425,8 @@ export class NakamaService {
         case 'open_channel': // 그룹 대화 열기 (폰에서 넘어가기 보조용)
           for (let j = 0; j < 10; j++)
             try {
+              if (!this.lang.text['TTSExport']['ReadThis']) // 번역 준비 검토
+                throw '번역 준비 안됨';
               let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], true);
               this.go_to_chatroom_without_admob_act(c);
               break;
@@ -3432,6 +3441,8 @@ export class NakamaService {
         case 'rtcserver':
           let ServerInfos = [];
           try {
+            if (!this.lang.text['TTSExport']['ReadThis']) // 번역 준비 검토
+              throw '번역 준비 안됨';
             let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
             ServerInfos = JSON.parse(list);
           } catch (e) { }
@@ -3441,8 +3452,8 @@ export class NakamaService {
         case 'voidDraw':
           for (let j = 0; j < 20; j++)
             try {
-              if (!this.lang.text['ChatRoom']['voidDraw'] || !this.lang.text['voidDraw']['ConnectToAddress'])
-                throw 'Lang not ready';
+              if (!this.lang.text['TTSExport']['ReadThis']) // 번역 준비 검토
+                throw '번역 준비 안됨';
               this.modalCtrl.create({
                 component: VoidDrawPage,
                 componentProps: {
