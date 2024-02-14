@@ -122,6 +122,7 @@ export class UserFsDirPage implements OnInit {
         return_data = await this.indexed.loadBlobFromUserPath(file.path, '');
         return_data['name'] = file.name;
         return_data['file_ext'] = file.file_ext;
+        return_data['user_fs'] = true;
       }
       this.modalCtrl.dismiss(return_data);
     }

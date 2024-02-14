@@ -28,6 +28,7 @@ import clipboard from "clipboardy";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { SpeechRecognition } from "@capacitor-community/speech-recognition";
+import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -163,7 +164,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         await this.NewAttach.open();
         this.removeShortCutKey();
         this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-          let TempFunc = ['image', 'load', 'link'];
+          let TempFunc = ['image', 'load', 'link', 'inapp'];
           if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && TempFunc.length > index)
             this.new_attach({ detail: { value: TempFunc[index] } });
         }
@@ -374,6 +375,21 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           });
         }
         break;
+      case 'inapp': // 인앱 탐색기에서 가져오기
+        this.modalCtrl.create({
+          component: UserFsDirPage,
+          componentProps: {
+            only_files: true,
+          },
+        }).then(v => {
+          v.onWillDismiss().then(async v => {
+            if (v.data) this.selected_blobFile_callback_act(v.data);
+          });
+          v.onDidDismiss().then(() => {
+            this.ionViewDidEnter();
+          });
+          v.present();
+        });
     }
     this.NewAttach.value = '';
   }
@@ -599,14 +615,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 선택한 파일의 썸네일 만들기 */
   async create_selected_thumbnail() {
-    if (!this.userInput.file.blob || this.userInput.file.blob['size'] === undefined) { // 인앱 탐색기에서 넘어오는 경우
-      this.global.set_viewer_category_from_ext(this.userInput.file);
-      if (this.userInput.file.url) {
-        this.userInput.file.thumbnail = this.userInput.file.url;
-        this.userInput.file.typeheader = this.userInput.file.viewer;
-        return;
-      } else this.userInput.file.blob = await this.indexed.loadBlobFromUserPath(this.userInput.file.path, this.userInput.file.type);
-    }
+    try {
+      if (this.userInput.file.blob.user_fs) { // 인앱 탐색기에서 넘어오는 경우
+        this.global.set_viewer_category_from_ext(this.userInput.file);
+        if (this.userInput.file.url) {
+          this.userInput.file.thumbnail = this.userInput.file.url;
+          this.userInput.file.typeheader = this.userInput.file.viewer;
+          return;
+        } else this.userInput.file.thumbnail = await this.indexed.loadBlobFromUserPath(this.userInput.file.path, this.userInput.file.type);
+      }
+    } catch (e) { }
     let FileURL = URL.createObjectURL(this.userInput.file.blob);
     this.userInput.file['typeheader'] = this.userInput.file.blob.type.split('/')[0] || this.userInput.file.viewer;
     setTimeout(() => {
