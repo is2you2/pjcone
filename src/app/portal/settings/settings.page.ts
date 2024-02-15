@@ -53,6 +53,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.check_if_admin();
     }
     this.can_use_http = (window.location.protocol == 'http:') || isNativefier;
+    this.use_test_server = Boolean(localStorage.getItem('use_test_server'));
   }
 
   /** 관리자로 등록된 서버들 */
@@ -87,6 +88,15 @@ export class SettingsPage implements OnInit, OnDestroy {
     } else {
       this.start_minimalchat('ws://127.0.0.1');
     }
+  }
+
+  use_test_server = false;
+  /** 사설 서버가 없을 때 테스트 서버 자동 연결 토글링 */
+  toggle_use_test_server() {
+    // 토글이 눌리고 나서 함수 동작함
+    if (this.use_test_server) {
+      localStorage.setItem('use_test_server', '1');
+    } else localStorage.removeItem('use_test_server');
   }
 
   /** 광고 정보 불러오기 */

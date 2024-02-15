@@ -130,6 +130,9 @@ export class NakamaService {
           this.servers[info.isOfficial][info.target].info = info;
           this.init_server(info);
         });
+      } else { // 저장된 사설서버가 따로 없음
+        let use_test_server = localStorage.getItem('use_test_server');
+        if (use_test_server) this.toggle_all_session();
       }
       this.catch_group_server_header('offline');
       // 서버별 그룹 정보 불러오기
