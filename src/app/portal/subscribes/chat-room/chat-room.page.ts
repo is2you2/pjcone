@@ -260,6 +260,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     },];
 
+  /** 다른 modal 페이지로 넘어갔는지 여부 */
+  is_modal = false;
+  /** 페이지 넘어간지 여부를 검토 후 단축키 추가하기 */
+  add_shortcut() {
+    if (!this.is_modal)
+      this.ionViewDidEnter();
+  }
+
   ionViewDidEnter() {
     this.nakama.resumeBanner();
     this.global.p5key['KeyShortCut']['Escape'] = () => {
@@ -328,6 +336,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           v.onWillDismiss().then(async v => {
             if (v.data) await this.voidDraw_fileAct_callback(v, content_related_creator);
           });
+          v.onDidDismiss().then(() => {
+            this.is_modal = false;
+            this.ionViewDidEnter();
+          });
+          this.is_modal = true;
           v.present();
         });
         break;
@@ -386,8 +399,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             if (v.data) this.selected_blobFile_callback_act(v.data);
           });
           v.onDidDismiss().then(() => {
+            this.is_modal = false;
             this.ionViewDidEnter();
           });
+          this.is_modal = true;
           v.present();
         });
     }
