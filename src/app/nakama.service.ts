@@ -131,8 +131,8 @@ export class NakamaService {
           this.init_server(info);
         });
       } else { // 저장된 사설서버가 따로 없음
-        let use_test_server = localStorage.getItem('use_test_server');
-        if (use_test_server) this.toggle_all_session();
+        let dont_use_test_server = localStorage.getItem('dont_use_test_server');
+        if (!dont_use_test_server) this.toggle_all_session();
       }
       this.catch_group_server_header('offline');
       // 서버별 그룹 정보 불러오기
@@ -3218,8 +3218,6 @@ export class NakamaService {
       this.users.self['online'] = true;
       this.save_self_profile();
     }
-    if (init['use_test_server'])
-      json.push({ type: 'use_test_server' });
     if (init['server']) { // 그룹 서버 등록
       for (let i = 0, j = init['server'].length; i < j; i++) {
         let sep = init['server'][i].split(',');
@@ -3333,21 +3331,6 @@ export class NakamaService {
             }
           break;
         case 'tmp_user': // 빠른 임시 진입을 위해 사용자 정보를 임의로 기입
-          break;
-        case 'use_test_server': // 개발 테스트 서버 사용 여부
-          for (let j = 0, k = 10; j < k; j++)
-            try {
-              if (!this.lang.text['TTSExport']['ReadThis']) // 번역 준비 검토
-                throw '번역 준비 안됨';
-              await this.toggle_all_session();
-              break;
-            } catch (e) {
-              await new Promise((done) => {
-                setTimeout(() => {
-                  done(undefined);
-                }, 500);
-              });
-            }
           break;
         case 'server': // 그룹 서버 자동등록처리
           let hasAlreadyTargetKey = Boolean(this.statusBar.groupServer['unofficial'][json[i].value.name]);

@@ -24,8 +24,8 @@ SPDX-License-Identifier: MIT -->
     <ion-label>{{lang.text['Settings']['env_info']}}</ion-label>
   </ion-item-divider>
   <ion-item button (click)="toggle_use_test_server()">
-    <ion-toggle [(ngModel)]="use_test_server">
-      {{lang.text['Settings']['use_test_server']}}
+    <ion-toggle [(ngModel)]="dont_use_test_server">
+      {{lang.text['Settings']['dont_use_test_server']}}
     </ion-toggle>
   </ion-item>
   <ion-item button (click)="go_to_page('noti-alert')">
