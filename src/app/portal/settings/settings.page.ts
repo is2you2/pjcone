@@ -192,6 +192,10 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.nav.pop();
     }
     let LinkButton = [];
+    LinkButton.push(() => {
+      this.use_test_server = !this.use_test_server;
+      this.toggle_use_test_server()
+    });
     LinkButton.push(() => this.go_to_page('noti-alert'));
     LinkButton.push(() => this.go_to_webrtc_manager());
     LinkButton.push(() => this.go_to_qr_share());
