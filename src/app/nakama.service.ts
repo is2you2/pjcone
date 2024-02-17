@@ -379,9 +379,6 @@ export class NakamaService {
     if (this.TogglingSession) return;
     this.TogglingSession = true;
     if (!this.isRewardAdsUsed) {
-      this.p5toast.show({
-        text: this.lang.text['Nakama']['AccessTestServer'],
-      });
       const options: RewardAdOptions = {
         adId: 'ca-app-pub-6577630868247944/4325703911',
       };
@@ -450,6 +447,10 @@ export class NakamaService {
     let Targets = Object.keys(this.servers['official']);
     for (let i = 0, j = Targets.length; i < j; i++)
       await this.init_session(this.servers['official'][Targets[i]].info);
+    if (this.statusBar.settings.groupServer == 'online')
+      this.p5toast.show({
+        text: this.lang.text['Nakama']['AccessTestServer'],
+      });
   }
 
   /** 서버 연결하기 */
