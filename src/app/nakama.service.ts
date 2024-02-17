@@ -103,80 +103,75 @@ export class NakamaService {
     'unofficial': {},
   };
 
-  initialize() {
+  async initialize() {
     // 기등록 알림 id 검토
     this.noti.GetNotificationIds((list) => {
       this.registered_id = list;
     });
-    this.set_all_todo_notification();
-    this.indexed.loadTextFromUserPath('servers/self/profile.json', (e, v) => {
-      if (e && v) this.users.self = JSON.parse(v);
-    });
+    await this.set_all_todo_notification();
+    let profile = await this.indexed.loadTextFromUserPath('servers/self/profile.json');
+    if (profile) this.users.self = JSON.parse(profile);
     // 저장된 사설서버들 정보 불러오기
-    this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
-      if (e && v) { // 내용이 있을 때에만 동작
-        let list: string[] = v.split('\n');
-        list.forEach(ele => {
-          let sep = ele.split(',');
-          let info: ServerInfo = {
-            isOfficial: sep[1],
-            name: sep[2],
-            target: sep[3],
-            address: sep[4],
-            port: +sep[5],
-            useSSL: Boolean(sep[6] == 'true'),
-          }
-          this.servers[info.isOfficial][info.target] = {};
-          this.servers[info.isOfficial][info.target].info = info;
-          this.init_server(info);
-        });
-      } else { // 저장된 사설서버가 따로 없음
-        let dont_use_test_server = localStorage.getItem('dont_use_test_server');
-        if (!dont_use_test_server) this.toggle_all_session();
-      }
-      this.catch_group_server_header('offline');
-      // 서버별 그룹 정보 불러오기
-      this.indexed.loadTextFromUserPath('servers/groups.json', (e, v) => {
-        if (e && v)
-          this.groups = JSON.parse(v);
-        let all_groups = this.rearrange_group_list();
-        all_groups.forEach(group => {
-          if (group['status'] != 'missing') {
-            this.indexed.loadTextFromUserPath(`servers/${group['server']['isOfficial']}/${group['server']['target']}/groups/${group.id}.img`, (e, v) => {
-              if (e && v) group['img'] = v.replace(/"|=|\\/g, '');
-            });
-            delete group['status'];
-            let _is_official = group['server']['isOfficial'];
-            let _target = group['server']['target'];
-            if (group['users'])
-              for (let i = 0, j = group['users'].length; i < j; i++)
-                if (!group['users'][i]['is_me'])
-                  group['users'][i]['user'] = this.load_other_user(group['users'][i]['user']['id'], _is_official, _target);
-          }
-        });
-        // 채널 불러오기
-        this.load_channel_list();
-      });
-    });
-    // 마지막 상태바 정보 불러오기: 사용자의 연결 여부 의사가 반영되어있음
-    this.indexed.loadTextFromUserPath('servers/list.json', (e, v) => {
-      if (e && v)
-        this.statusBar.groupServer = JSON.parse(v);
-      let isOfficial = Object.keys(this.statusBar.groupServer);
-      isOfficial.forEach(_is_official => {
-        if (!this.servers[_is_official])
-          delete this.statusBar.groupServer[_is_official];
-        else {
-          let Target = Object.keys(this.statusBar.groupServer[_is_official]);
-          Target.forEach(_target => {
-            if (!this.servers[_is_official][_target])
-              delete this.statusBar.groupServer[_is_official][_target];
-          });
+    let list_detail = await this.indexed.loadTextFromUserPath('servers/list_detail.csv');
+    if (list_detail) { // 내용이 있을 때에만 동작
+      let list: string[] = list_detail.split('\n');
+      list.forEach(ele => {
+        let sep = ele.split(',');
+        let info: ServerInfo = {
+          isOfficial: sep[1],
+          name: sep[2],
+          target: sep[3],
+          address: sep[4],
+          port: +sep[5],
+          useSSL: Boolean(sep[6] == 'true'),
         }
+        this.servers[info.isOfficial][info.target] = {};
+        this.servers[info.isOfficial][info.target].info = info;
+        this.init_server(info);
       });
-      if (this.users.self['online'])
-        this.init_all_sessions();
+    } else { // 저장된 사설서버가 따로 없음
+      let dont_use_test_server = localStorage.getItem('dont_use_test_server');
+      if (!dont_use_test_server) this.toggle_all_session();
+    }
+    this.catch_group_server_header('offline');
+    // 서버별 그룹 정보 불러오기
+    let groups = await this.indexed.loadTextFromUserPath('servers/groups.json');
+    if (groups)
+      this.groups = JSON.parse(groups);
+    let all_groups = this.rearrange_group_list();
+    all_groups.forEach(async group => {
+      if (group['status'] != 'missing') {
+        let group_img = await this.indexed.loadTextFromUserPath(`servers/${group['server']['isOfficial']}/${group['server']['target']}/groups/${group.id}.img`);
+        if (group_img) group['img'] = group_img.replace(/"|=|\\/g, '');
+        delete group['status'];
+        let _is_official = group['server']['isOfficial'];
+        let _target = group['server']['target'];
+        if (group['users'])
+          for (let i = 0, j = group['users'].length; i < j; i++)
+            if (!group['users'][i]['is_me'])
+              group['users'][i]['user'] = this.load_other_user(group['users'][i]['user']['id'], _is_official, _target);
+      }
     });
+    // 채널 불러오기
+    await this.load_channel_list();
+    // 마지막 상태바 정보 불러오기: 사용자의 연결 여부 의사가 반영되어있음
+    let list = await this.indexed.loadTextFromUserPath('servers/list.json');
+    if (list)
+      this.statusBar.groupServer = JSON.parse(list);
+    let isOfficial = Object.keys(this.statusBar.groupServer);
+    isOfficial.forEach(_is_official => {
+      if (!this.servers[_is_official])
+        delete this.statusBar.groupServer[_is_official];
+      else {
+        let Target = Object.keys(this.statusBar.groupServer[_is_official]);
+        Target.forEach(_target => {
+          if (!this.servers[_is_official][_target])
+            delete this.statusBar.groupServer[_is_official][_target];
+        });
+      }
+    });
+    if (this.users.self['online'])
+      this.init_all_sessions();
   }
   /** 시작시 해야할 일 알림을 설정 */
   async set_all_todo_notification() {
@@ -1255,28 +1250,27 @@ export class NakamaService {
   }
 
   /** 채팅 기록 가져오기 */
-  load_channel_list() {
-    this.indexed.loadTextFromUserPath('servers/channels.json', (e, v) => {
-      if (e && v) {
-        this.channels_orig = JSON.parse(v);
-        let isOfficial = Object.keys(this.channels_orig);
-        isOfficial.forEach(_is_official => {
-          let Target = Object.keys(this.channels_orig[_is_official]);
-          Target.forEach(_target => {
-            let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
-            channel_ids.forEach(_cid => {
-              if (this.channels_orig[_is_official][_target][_cid]['redirect']['type'] == 2)
-                this.channels_orig[_is_official][_target][_cid]['info'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
-              if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
-                delete this.channels_orig[_is_official][_target][_cid]['status'];
-              if (this.channels_orig[_is_official][_target][_cid]['is_new'] && !this.subscribe_lock)
-                this.has_new_channel_msg = true;
-            });
+  async load_channel_list() {
+    let channels = await this.indexed.loadTextFromUserPath('servers/channels.json');
+    if (channels) {
+      this.channels_orig = JSON.parse(channels);
+      let isOfficial = Object.keys(this.channels_orig);
+      isOfficial.forEach(_is_official => {
+        let Target = Object.keys(this.channels_orig[_is_official]);
+        Target.forEach(_target => {
+          let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
+          channel_ids.forEach(_cid => {
+            if (this.channels_orig[_is_official][_target][_cid]['redirect']['type'] == 2)
+              this.channels_orig[_is_official][_target][_cid]['info'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
+            if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
+              delete this.channels_orig[_is_official][_target][_cid]['status'];
+            if (this.channels_orig[_is_official][_target][_cid]['is_new'] && !this.subscribe_lock)
+              this.has_new_channel_msg = true;
           });
         });
-      }
-      this.rearrange_channels();
-    });
+      });
+    }
+    this.rearrange_channels();
   }
 
   /** 알림 아이디  
@@ -1901,19 +1895,18 @@ export class NakamaService {
     this.save_groups_with_less_info();
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');
     // 파일로부터 일치하는 정보 삭제
-    this.indexed.loadTextFromUserPath('servers/list_detail.csv', (e, v) => {
-      if (e && v) {
-        let lines = v.split('\n');
-        for (let i = 0, j = lines.length; i < j; i++) {
-          let sep = lines[i].split(',');
-          if (sep[3] == _target) {
-            lines.splice(i, 1);
-            break;
-          }
+    let list_detail = await this.indexed.loadTextFromUserPath('servers/list_detail.csv');
+    if (list_detail) {
+      let lines = list_detail.split('\n');
+      for (let i = 0, j = lines.length; i < j; i++) {
+        let sep = lines[i].split(',');
+        if (sep[3] == _target) {
+          lines.splice(i, 1);
+          break;
         }
-        this.indexed.saveTextFileToUserPath(lines.join('\n'), 'servers/list_detail.csv');
       }
-    });
+      this.indexed.saveTextFileToUserPath(lines.join('\n'), 'servers/list_detail.csv');
+    }
     setTimeout(() => {
       this.noti.ClearNoti(9);
     }, 100);
