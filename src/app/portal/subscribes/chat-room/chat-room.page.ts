@@ -102,7 +102,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   this.extended_buttons.forEach(button => {
                     button.isHide = true;
                   });
-                  this.extended_buttons[7].isHide = false;
+                  this.extended_buttons[8].isHide = false;
                   this.extended_buttons[0].isHide = false;
                 }
               });
@@ -118,6 +118,20 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     },
     { // 1
+      icon: 'document-attach-outline',
+      act: async () => {
+        if (!this.userInputTextArea)
+          this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+        await this.NewAttach.open();
+        this.removeShortCutKey();
+        this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+          let TempFunc = ['image', 'load', 'link', 'inapp'];
+          if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && TempFunc.length > index)
+            this.new_attach({ detail: { value: TempFunc[index] } });
+        }
+      }
+    },
+    { // 2
       icon: 'camera-outline',
       act: async () => {
         try {
@@ -154,20 +168,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             });
           loading.dismiss();
         } catch (e) { }
-      }
-    },
-    { // 2
-      icon: 'document-attach-outline',
-      act: async () => {
-        if (!this.userInputTextArea)
-          this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-        await this.NewAttach.open();
-        this.removeShortCutKey();
-        this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-          let TempFunc = ['image', 'load', 'link', 'inapp'];
-          if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && TempFunc.length > index)
-            this.new_attach({ detail: { value: TempFunc[index] } });
-        }
       }
     }, { // 3
       icon: 'server-outline',
@@ -224,7 +224,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.extended_buttons.forEach(button => {
               button.isHide = true;
             });
-            this.extended_buttons[7].isHide = false;
+            this.extended_buttons[8].isHide = false;
           } catch (e) {
             console.error('채널에서 나오기 실패: ', e);
           }
@@ -233,7 +233,28 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
         this.ionViewDidEnter();
       }
-    }, { // 7
+    }, { // 7 
+      isHide: false,
+      icon: 'images-outline',
+      act: () => {
+        this.modalCtrl.create({
+          component: UserFsDirPage,
+          componentProps: {
+            path: `/${this.info['id']}/files/`,
+          },
+        }).then(v => {
+          v.onWillDismiss().then(async v => {
+            if (v.data) this.selected_blobFile_callback_act(v.data);
+          });
+          v.onDidDismiss().then(() => {
+            this.is_modal = false;
+            this.ionViewDidEnter();
+          });
+          this.is_modal = true;
+          v.present();
+        });
+      }
+    }, { // 8
       isHide: true,
       icon: 'close-circle-outline',
       act: async () => {
@@ -391,9 +412,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       case 'inapp': // 인앱 탐색기에서 가져오기
         this.modalCtrl.create({
           component: UserFsDirPage,
-          componentProps: {
-            only_files: true,
-          },
         }).then(v => {
           v.onWillDismiss().then(async v => {
             if (v.data) this.selected_blobFile_callback_act(v.data);
@@ -761,6 +779,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         button.isHide = true;
       });
       this.extended_buttons[7].isHide = false;
+      this.extended_buttons[8].isHide = false;
       if (this.info['redirect']['type'] == 3)
         this.extended_buttons[0].isHide = false;
     }

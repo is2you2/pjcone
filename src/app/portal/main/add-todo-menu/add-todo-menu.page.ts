@@ -603,9 +603,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       case 'inapp': // 인앱 탐색기에서 가져오기
         this.modalCtrl.create({
           component: UserFsDirPage,
-          componentProps: {
-            only_files: true,
-          },
         }).then(v => {
           v.onWillDismiss().then(async v => {
             if (v.data) this.selected_blobFile_callback_act(v.data);

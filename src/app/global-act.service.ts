@@ -36,6 +36,7 @@ export interface ContentCreatorInfo {
 
 /** 뷰어 동작 호완을 위한 틀 */
 export interface FileInfo {
+  name?: string;
   filename?: string;
   type?: string;
   file_ext?: string;

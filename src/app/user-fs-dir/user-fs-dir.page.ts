@@ -144,10 +144,15 @@ export class UserFsDirPage implements OnInit {
         color: 'b0b0b0',
       });
     if (this.is_file_selector) {
-      let _ionic_list = await this.indexed.GetFileListFromDB('/files/');
-      let _todo_list = await this.indexed.GetFileListFromDB('/todo/');
-      _ionic_list.push.apply(_ionic_list, _todo_list);
-      await this.ModulateIndexedFile(_ionic_list);
+      if (this.navParams.get('path')) { // 특정 경로 파일 보기
+        let target_list = await this.indexed.GetFileListFromDB(this.navParams.get('path'));
+        await this.ModulateIndexedFile(target_list);
+      } else { // 인앱 파일 고르기
+        let _ionic_list = await this.indexed.GetFileListFromDB('/files/');
+        let _todo_list = await this.indexed.GetFileListFromDB('/todo/');
+        _ionic_list.push.apply(_ionic_list, _todo_list);
+        await this.ModulateIndexedFile(_ionic_list);
+      }
     } else {
       if (this.indexed.godotDB) {
         let _godot_list = await this.indexed.GetFileListFromDB('/', undefined, this.indexed.godotDB)
@@ -239,6 +244,10 @@ export class UserFsDirPage implements OnInit {
         break;
       default:
         document.removeEventListener('ionBackButton', this.EventListenerAct);
+        let createRelevances = [];
+        if (this.is_file_selector && this.navParams.data['path'])
+          for (let i = 0, j = this.FileList.length; i < j; i++)
+            createRelevances.push({ content: this.FileList[i] });
         this.modalCtrl.create({
           component: IonicViewerPage,
           componentProps: {
@@ -254,6 +263,7 @@ export class UserFsDirPage implements OnInit {
             targetDB: this.indexed.ionicDB,
             no_edit: true,
             path: info.path,
+            relevance: createRelevances,
           },
           cssClass: 'fullscreen',
         }).then(v => {
