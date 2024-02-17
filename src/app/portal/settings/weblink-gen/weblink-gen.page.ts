@@ -28,7 +28,6 @@ export class WeblinkGenPage implements OnInit {
 
   userInput = {
     root: undefined,
-    open_profile: false,
     open_subscribes: false,
     use_tmp_user: false,
     tmp_user: {
@@ -76,10 +75,6 @@ export class WeblinkGenPage implements OnInit {
   SelectGroupChannel(ev: any) {
     this.userInput.groups = ev.detail.value;
     this.information_changed();
-    if (!this.userInput.use_tmp_user && this.userInput.groups.length)
-      this.p5toast.show({
-        text: this.lang.text['WebLinkGen']['CanMissedChnInfo'],
-      });
   }
 
   baseURLChanged(ev: any) {
@@ -97,11 +92,6 @@ export class WeblinkGenPage implements OnInit {
       this.result_address += count ? '&' : '?';
       this.result_address += 'server=';
       this.result_address += `${this.userInput.servers[i].name || ''},${this.userInput.servers[i].address || ''},${this.userInput.servers[i].useSSL || ''},${this.userInput.servers[i].port || 7350},${this.userInput.servers[i].key || ''}`;
-      count++;
-    }
-    if (this.userInput.open_profile) {
-      this.result_address += count ? '&' : '?';
-      this.result_address += 'open_profile=true';
       count++;
     }
     for (let i = 0, j = this.userInput.groups.length; i < j; i++) {
