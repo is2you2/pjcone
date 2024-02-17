@@ -104,6 +104,7 @@ export class VoidDrawPage implements OnInit {
     this.p5voidDraw = new p5((p: p5) => {
       /** 스케일 조정 편의를 위해 모든게 여기서 작업됨 */
       let ActualCanvas: p5.Graphics;
+      let ActualCanvasSizeHalf: p5.Vector;
       /** 배경이미지 캔버스, 복구 불가능한 이전 기록이 이곳에 같이 누적됨 */
       let ImageCanvas: p5.Graphics;
       let canvas: p5.Renderer;
@@ -204,10 +205,9 @@ export class VoidDrawPage implements OnInit {
         p['apply_crop'] = () => {
           if (this.isMobile)
             CropModePosition.div(CamScale);
-          let BeforeResize = p.createVector(ActualCanvas.width, ActualCanvas.height);
           ActualCanvas.resizeCanvas(CropSize.x, CropSize.y);
+          ActualCanvasSizeHalf = p.createVector(ActualCanvas.width / 2, ActualCanvas.height / 2);
           CropPosition.sub(CropModePosition);
-          CropPosition.add(BeforeResize.sub(CropSize).div(2));
           updateActualCanvas();
           ImageCanvas.resizeCanvas(CropSize.x, CropSize.y);
           ImageCanvas.push();
@@ -293,6 +293,7 @@ export class VoidDrawPage implements OnInit {
           p.redraw();
         }
         ActualCanvas = p.createGraphics(initData.width, initData.height);
+        ActualCanvasSizeHalf = p.createVector(ActualCanvas.width / 2, ActualCanvas.height / 2);
         ActualCanvas.pixelDensity(PIXEL_DENSITY);
         ActualCanvas.noLoop();
         ActualCanvas.noFill();
@@ -339,7 +340,9 @@ export class VoidDrawPage implements OnInit {
         p.translate(ScaleCenter);
         p.scale(CamScale);
         p.translate(CamPosition);
-        if (ImageCanvas)
+        p.image(ImageCanvas, 0, 0);
+        p.image(ImageCanvas, 0, 0);
+        if (ActualCanvas)
           p.image(ImageCanvas, 0, 0);
         if (ActualCanvas)
           p.image(ActualCanvas, 0, 0);
@@ -378,7 +381,7 @@ export class VoidDrawPage implements OnInit {
             p.strokeWeight(CurrentDraw['weight']);
             p.beginShape();
             for (let i = 0, j = CurrentDraw['pos'].length; i < j; i++)
-              p.curveVertex(CurrentDraw['pos'][i].x, CurrentDraw['pos'][i].y);
+              p.curveVertex(CurrentDraw['pos'][i].x - ActualCanvasSizeHalf.x, CurrentDraw['pos'][i].y - ActualCanvasSizeHalf.y);
             p.endShape();
             p.pop();
           }
@@ -403,7 +406,7 @@ export class VoidDrawPage implements OnInit {
         TargetCanvas.strokeWeight(targetDraw['weight']);
         TargetCanvas.beginShape();
         for (let i = 0, j = targetDraw['pos'].length; i < j; i++)
-          TargetCanvas.curveVertex(targetDraw['pos'][i].x + TargetCanvas.width / 2, targetDraw['pos'][i].y + TargetCanvas.height / 2);
+          TargetCanvas.curveVertex(targetDraw['pos'][i].x, targetDraw['pos'][i].y);
         TargetCanvas.endShape();
         TargetCanvas.pop();
         TargetCanvas.redraw();
@@ -472,6 +475,7 @@ export class VoidDrawPage implements OnInit {
         RedoButton.style.fill = 'var(--ion-color-medium)';
         let pos = MappingPosition(_x, _y);
         pos.sub(CropPosition);
+        pos.add(ActualCanvasSizeHalf);
         let _pos = { x: pos.x, y: pos.y };
         let color = p5ColorPicker['color']().levels;
         let color_hex = `#${p.hex(color[0], 2)}${p.hex(color[1], 2)}${p.hex(color[2], 2)}`;
@@ -496,6 +500,7 @@ export class VoidDrawPage implements OnInit {
             } else {
               let pos = MappingPosition();
               pos.sub(CropPosition);
+              pos.add(ActualCanvasSizeHalf);
               let _pos = { x: pos.x, y: pos.y };
               if (CurrentDraw && CurrentDraw['pos'])
                 CurrentDraw['pos'].push(_pos);
@@ -528,6 +533,7 @@ export class VoidDrawPage implements OnInit {
             } else if (!isClickOnMenu) {
               let pos = MappingPosition();
               pos.sub(CropPosition);
+              pos.add(ActualCanvasSizeHalf);
               let _pos = { x: pos.x, y: pos.y };
               if (CurrentDraw) {
                 CurrentDraw['pos'].push(_pos);
@@ -599,6 +605,7 @@ export class VoidDrawPage implements OnInit {
             } else {
               let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
               pos.sub(CropPosition);
+              pos.add(ActualCanvasSizeHalf);
               let _pos = { x: pos.x, y: pos.y };
               if (CurrentDraw && CurrentDraw['pos'])
                 CurrentDraw['pos'].push(_pos);
@@ -630,6 +637,7 @@ export class VoidDrawPage implements OnInit {
               if (CurrentDraw) {
                 let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
                 pos.sub(CropPosition);
+                pos.add(ActualCanvasSizeHalf);
                 let _pos = { x: pos.x, y: pos.y };
                 CurrentDraw['pos'].push(_pos);
                 CurrentDraw['pos'].push(_pos);

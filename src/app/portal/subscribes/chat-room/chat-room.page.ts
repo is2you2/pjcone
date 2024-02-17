@@ -125,7 +125,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         await this.NewAttach.open();
         this.removeShortCutKey();
         this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-          let TempFunc = ['image', 'load', 'link', 'inapp'];
+          let TempFunc = ['image', 'link', 'inapp', 'load'];
           if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && TempFunc.length > index)
             this.new_attach({ detail: { value: TempFunc[index] } });
         }

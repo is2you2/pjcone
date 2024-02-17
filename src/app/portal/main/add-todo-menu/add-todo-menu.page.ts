@@ -354,7 +354,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   AddShortCut() {
-    if (!this.NewAttach.value)
+    if (!this.NewAttach.value && !this.WillLeavePage)
       setTimeout(() => {
         delete this.global.p5key['KeyShortCut']['Digit'];
         this.global.p5key['KeyShortCut']['Escape'] = () => {
@@ -499,9 +499,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     delete this.global.p5key['KeyShortCut']['Escape'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
     let NumberShortCutAct = [
-      'text', 'image', 'camera', 'inapp', 'load'
+      'camera', 'text', 'image', 'inapp', 'load'
     ];
-    if (!this.isMobile) NumberShortCutAct.splice(2, 1);
     this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
       if (this.checkIfInputFocus()) return;
       delete this.global.p5key['KeyShortCut']['Digit'];
@@ -1339,7 +1338,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     });
   }
 
+  WillLeavePage = false;
   async ionViewWillLeave() {
+    this.WillLeavePage = true;
     delete this.global.p5key['KeyShortCut']['Escape'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
     delete this.global.p5key['KeyShortCut']['Digit'];
