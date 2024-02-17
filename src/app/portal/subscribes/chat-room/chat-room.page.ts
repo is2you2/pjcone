@@ -799,6 +799,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     delete this.last_message_viewer['is_me'];
   }
 
+  /** 충분히 스크롤 되어있어서 최하단으로 내려도 됨 */
   NeedScrollDown(): boolean {
     return this.ChatLogs.scrollHeight < this.ChatLogs.scrollTop + this.ChatLogs.clientHeight + 200;
   }
@@ -1076,19 +1077,25 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 핸드폰 가상키보드의 움직임을 고려하여 눈이 덜 불편하도록 지연 */
   open_ext_with_delay() {
+    this.ScrollNearLogs();
     this.isHidden = !this.isHidden;
   }
 
   /** 확장 메뉴 숨기기 */
   make_ext_hidden() {
+    this.ScrollNearLogs();
+    if (isPlatform != 'DesktopPWA')
+      this.isHidden = true;
+  }
+
+  /** 최근 메시지에 가까이 있다면 스크롤 내리기 */
+  ScrollNearLogs() {
     if (this.NeedScrollDown()) {
       this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
       setTimeout(() => {
         this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
       }, 150);
     }
-    if (isPlatform != 'DesktopPWA')
-      this.isHidden = true;
   }
 
   userInputTextArea: HTMLElement;
