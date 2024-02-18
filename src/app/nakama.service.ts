@@ -1849,8 +1849,7 @@ export class NakamaService {
     }
     if (!this.channels_orig[_is_official][_target][p.channel_id || p.id])
       this.channels_orig[_is_official][_target][p.channel_id || p.id] = {};
-    if (this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] != 'missing' &&
-      this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] != 'offline')
+    if (this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] != 'missing')
       this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] = result_status;
   }
 
