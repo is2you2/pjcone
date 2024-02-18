@@ -745,7 +745,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
     // 실시간 채팅을 받는 경우 행동처리
     if (this.nakama.channels_orig[this.isOfficial][this.target] &&
-      this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
+      this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']] &&
+      this.info['status'] != 'missing')
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'] = (c: any) => {
         this.nakama.check_sender_and_show_name(c, this.isOfficial, this.target);
         if (c.content['filename']) this.ModulateFileEmbedMessage(c);
