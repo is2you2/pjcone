@@ -54,6 +54,7 @@ export class QuickShareReviewPage implements OnInit {
     for (let i = 0, j = this.rtcserver.length; i < j; i++)
       if (this.rtcserver[i].grant)
         selected.push(this.rtcserver[i]);
+    console.log(selected);
     await this.nakama.act_from_QRInfo(selected);
     this.p5toast.show({
       text: this.lang.text['QuickQRShare']['success_received'],

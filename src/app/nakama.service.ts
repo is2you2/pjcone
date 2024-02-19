@@ -728,6 +728,7 @@ export class NakamaService {
     this.TogglingSession = false;
   }
 
+  AfterLoginActDone = false;
   /** 첫 로그인 시도 이후 행동 (빠른 진입 1회 행동) */
   AfterLoginAct: Function[] = [];
   /** 자기 자신과의 매칭 정보  
@@ -823,6 +824,7 @@ export class NakamaService {
         console.error('진입 동작 오류: ', e);
       }
     this.AfterLoginAct.length = 0;
+    this.AfterLoginActDone = true;
   }
 
   /** 원격 할 일 카운터  
@@ -3385,7 +3387,9 @@ export class NakamaService {
           this.removeBanner();
           break;
         case 'open_subscribes':
-          this.AfterLoginAct.push(() => this.act_callback_link['portal_tab_subscribes']());
+          if (this.AfterLoginActDone)
+            this.act_callback_link['portal_tab_subscribes']();
+          else this.AfterLoginAct.push(() => this.act_callback_link['portal_tab_subscribes']());
           break;
         case 'tmp_user': // 빠른 임시 진입을 위해 사용자 정보를 임의로 기입
           break;
@@ -3429,16 +3433,24 @@ export class NakamaService {
           break;
         case 'group': // 그룹 자동 등록 시도
           // 시작과 동시에 진입할 때 서버 연결 시간을 고려함
-          this.AfterLoginAct.push(async () => await this.try_add_group(json[i]));
+          if (this.AfterLoginActDone)
+            await this.try_add_group(json[i]);
+          else this.AfterLoginAct.push(async () => await this.try_add_group(json[i]));
           break;
         case 'open_prv_channel': // 1:1 대화 열기 (폰에서 넘어가기 보조용)
-          this.AfterLoginAct.push(async () => {
+          if (this.AfterLoginActDone) {
+            let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], true);
+            this.go_to_chatroom_without_admob_act(c);
+          } else this.AfterLoginAct.push(async () => {
             let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           });
           break;
         case 'open_channel': // 그룹 대화 열기 (폰에서 넘어가기 보조용)
-          this.AfterLoginAct.push(async () => {
+          if (this.AfterLoginActDone) {
+            let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], true);
+            this.go_to_chatroom_without_admob_act(c);
+          } else this.AfterLoginAct.push(async () => {
             let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           });
@@ -3455,7 +3467,14 @@ export class NakamaService {
           await this.indexed.saveTextFileToUserPath(JSON.stringify(ServerInfos), 'servers/webrtc_server.json');
           break;
         case 'voidDraw':
-          this.AfterLoginAct.push(async () => {
+          if (this.AfterLoginActDone) {
+            this.modalCtrl.create({
+              component: VoidDrawPage,
+              componentProps: {
+                addresses: json[i]['addresses'],
+              },
+            }).then(v => v.present());
+          } else this.AfterLoginAct.push(async () => {
             this.modalCtrl.create({
               component: VoidDrawPage,
               componentProps: {
