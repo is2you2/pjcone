@@ -197,9 +197,9 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.toggle_use_test_server()
     });
     LinkButton.push(() => this.go_to_page('noti-alert'));
-    LinkButton.push(() => this.go_to_webrtc_manager());
     LinkButton.push(() => this.go_to_qr_share());
     LinkButton.push(() => this.open_inapp_explorer());
+    LinkButton.push(() => this.go_to_webrtc_manager());
     LinkButton.push(() => this.go_to_page('weblink-gen'));
     LinkButton.push(() => this.go_to_page('qrcode-gen'));
     if (!this.is_nativefier) LinkButton.push(() => this.go_to_page('tts-export'));
