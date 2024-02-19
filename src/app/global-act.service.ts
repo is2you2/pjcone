@@ -558,7 +558,7 @@ export class GlobalActService {
       case 'png':
       case 'jpeg':
       case 'jpg':
-      // case 'webp':
+      case 'webp':
       case 'gif':
         info['viewer'] = 'image';
         break;

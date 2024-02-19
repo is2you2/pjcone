@@ -334,7 +334,7 @@ export class IndexedDBService {
           text: this.lang.text['ContentViewer']['fileSaved'],
         });
       } catch (e) {
-        console.log('DownloadFileFromUserPath: ', e);
+        console.error('DownloadFileFromUserPath: ', e);
         this.p5toast.show({
           text: `${this.lang.text['IndexedDB']['FailedToDownloadFile']}: ${e}`,
         });
