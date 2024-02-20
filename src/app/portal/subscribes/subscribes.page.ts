@@ -142,25 +142,17 @@ export class SubscribesPage implements OnInit {
 
   /** 새 그룹 추가하기 */
   add_new_group() {
-    let all_online_server = this.nakama.get_all_server_info(true, true);
-    if (all_online_server.length)
-      this.modalCtrl.create({
-        component: AddGroupPage,
-      }).then(v => {
-        let cache_func = this.global.p5key['KeyShortCut'];
-        this.global.p5key['KeyShortCut'] = {};
-        v.onDidDismiss().then(() => {
-          this.global.p5key['KeyShortCut'] = cache_func;
-          this.ionViewWillEnter();
-        });
-        v.present();
+    this.modalCtrl.create({
+      component: AddGroupPage,
+    }).then(v => {
+      let cache_func = this.global.p5key['KeyShortCut'];
+      this.global.p5key['KeyShortCut'] = {};
+      v.onDidDismiss().then(() => {
+        this.global.p5key['KeyShortCut'] = cache_func;
+        this.ionViewWillEnter();
       });
-    else {
-      this.p5toast.show({
-        text: this.lang.text['Subscribes']['Disconnected'],
-      });
-      this.go_to_page('group-server');
-    }
+      v.present();
+    });
   }
 
   ionViewWillLeave() {

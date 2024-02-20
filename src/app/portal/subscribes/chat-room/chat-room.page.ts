@@ -152,13 +152,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.userInput.file.type = `image/${image.format}`;
           this.userInput.file.typeheader = 'image';
           this.userInput.file.content_related_creator = [{
-            user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
             timestamp: new Date().getTime(),
             display_name: this.nakama.users.self['display_name'],
             various: 'camera',
           }];
           this.userInput.file.content_creator = {
-            user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
             timestamp: new Date().getTime(),
             display_name: this.nakama.users.self['display_name'],
             various: 'camera',
@@ -382,13 +382,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let this_file: FileInfo = {};
           this_file.url = pasted_url;
           this_file['content_related_creator'] = [{
-            user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
             timestamp: new Date().getTime(),
             display_name: this.nakama.users.self['display_name'],
             various: 'link',
           }];
           this_file['content_creator'] = {
-            user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
             timestamp: new Date().getTime(),
             display_name: this.nakama.users.self['display_name'],
             various: 'link',
@@ -633,13 +633,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.userInput.file['type'] = blob.type;
     this.userInput.file['content_related_creator'] = [
       ...contentRelated, {
-        user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+        user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
         timestamp: new Date().getTime(),
         display_name: this.nakama.users.self['display_name'],
         various: various as any,
       }];
     this.userInput.file['content_creator'] = {
-      user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+      user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
       timestamp: new Date().getTime(),
       display_name: this.nakama.users.self['display_name'],
       various: various as any,
@@ -743,6 +743,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         delete this.extended_buttons[0].isHide;
         this.extended_buttons[4].isHide = true;
         break;
+      case 0:
+        this.extended_buttons.forEach(button => {
+          button.isHide = true;
+        });
+        this.extended_buttons[1].isHide = false;
+        this.extended_buttons[2].isHide = false;
+        this.extended_buttons[5].isHide = false;
+        this.extended_buttons[6].isHide = false;
+        this.extended_buttons[8].isHide = false;
+        break;
       default:
         break;
     }
@@ -751,11 +761,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']] &&
       this.info['status'] != 'missing')
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'] = (c: any) => {
-        this.nakama.check_sender_and_show_name(c, this.isOfficial, this.target);
+        let is_local = c['sender_id'] == 'local';
+        if (!is_local) this.nakama.check_sender_and_show_name(c, this.isOfficial, this.target);
         if (c.content['filename']) this.ModulateFileEmbedMessage(c);
         this.info['last_read_id'] = this.info['last_comment_id'];
         this.nakama.save_channels_with_less_info();
-        this.check_if_send_msg(c);
+        if (!is_local) this.check_if_send_msg(c);
         this.messages.push(c);
         if (this.ViewMsgIndex + this.ViewCount == this.messages.length - 1)
           this.ViewMsgIndex++;
@@ -771,7 +782,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.init_last_message_viewer();
             this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
           } else {
-            this.last_message_viewer['is_me'] = c.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id;
+            if (this.info['local'])
+              this.last_message_viewer['is_me'] = true;
+            else this.last_message_viewer['is_me'] = c.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id;
             this.last_message_viewer['user_id'] = c.sender_id;
             this.last_message_viewer['message'] = c.content['msg'];
             this.last_message_viewer['color'] = c.color;
@@ -883,6 +896,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.pullable = false;
     if (isHistory) {
       try {
+        if (this.info['local']) throw 'Local channel';
         if (this.info['status'] === undefined || this.info['status'] == 'missing') throw 'Channel missing';
         if (this.ViewMsgIndex != 0) { // 위에 더 볼 수 있는 메시지가 있음 (이미 받은 것으로)
           let ShowMeAgainCount = Math.min(this.ViewMsgIndex, this.RefreshCount)
@@ -1028,7 +1042,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             let json: any[] = JSON.parse(v.trim());
             for (let i = json.length - 1; i >= 0; i--) {
               this.nakama.translate_updates(json[i]);
-              json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
+              if (!this.info['local'])
+                json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
               this.nakama.ModulateTimeDate(json[i]);
               this.messages.unshift(json[i]);
             }
@@ -1174,6 +1189,47 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     result['local_comp'] = Math.random();
     let tmp = { content: JSON.parse(JSON.stringify(result)) };
     this.nakama.content_to_hyperlink(tmp);
+    if (this.info['local']) { // 로컬 채널 전용 행동 (셀프 보내기)
+      /** 업로드가 진행중인 메시지 개체 */
+      let local_msg_id = new Date().getTime().toString();
+      if (FileAttach && !isURL) { // 첨부 파일이 포함된 경우, 링크는 아닌 경우
+        let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${local_msg_id}.${this.userInput.file.file_ext}`;
+        await this.indexed.saveBlobToUserPath(this.userInput.file.blob, path);
+      }
+      delete this.userInput.quickShare;
+      delete this.userInput.file;
+      if (isLongText) {
+        result['msg'] = isLongText;
+        this.LongTextMessageAsFile(result);
+      }
+      let msg = {
+        channel_id: this.info.id,
+        code: 0,
+        color: '888',
+        ...tmp,
+        create_time: new Date().toISOString(),
+        sender_id: 'local',
+        message_id: local_msg_id,
+        user_display_name: this.nakama.users.self['display_name'],
+        is_me: true,
+      };
+      this.nakama.ModulateTimeDate(msg);
+      this.nakama.channels_orig[this.isOfficial][this.target][msg.channel_id]['last_comment_time'] = msg.create_time;
+      this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment_id'] = local_msg_id;
+      this.nakama.rearrange_channels();
+      this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'](msg);
+      this.nakama.saveListedMessage([msg], this.info, this.isOfficial, this.target);
+      let hasFile = msg.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
+      this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment'] = hasFile +
+        (this.userInput.text || msg.content['noti'] || (msg.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined) || '');
+      this.nakama.save_channels_with_less_info();
+      setTimeout(() => {
+        this.userInput.text = '';
+        this.userInputTextArea.style.height = '36px';
+        this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
+      }, 0);
+      return;
+    } // 아래, 온라인 행동
     this.sending_msg.push(tmp);
     try {
       await this.nakama.servers[this.isOfficial][this.target].socket
@@ -1233,13 +1289,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     let this_file: FileInfo = {};
     this_file.blob = blob;
     this_file['content_related_creator'] = [{
-      user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+      user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
       timestamp: new Date().getTime(),
       display_name: this.nakama.users.self['display_name'],
       various: 'long_text',
     }];
     this_file['content_creator'] = {
-      user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+      user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
       timestamp: new Date().getTime(),
       display_name: this.nakama.users.self['display_name'],
       various: 'long_text',
@@ -1512,20 +1568,20 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (related_creators) {
         this.userInput.file.content_related_creator = related_creators;
         this.userInput.file.content_creator = {
-          user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+          user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
           timestamp: new Date().getTime(),
           display_name: this.nakama.users.self['display_name'],
           various: 'voidDraw',
         };
       } else {
         this.userInput.file.content_related_creator = [{
-          user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+          user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
           timestamp: new Date().getTime(),
           display_name: this.nakama.users.self['display_name'],
           various: 'voidDraw',
         }];
         this.userInput.file.content_creator = {
-          user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+          user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
           timestamp: new Date().getTime(),
           display_name: this.nakama.users.self['display_name'],
           various: 'voidDraw',

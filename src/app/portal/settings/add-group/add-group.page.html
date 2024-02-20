@@ -26,13 +26,15 @@ SPDX-License-Identifier: MIT -->
       </div>
     </ion-accordion>
   </ion-accordion-group>
-  <ion-item-divider>
-    <ion-label>{{lang.text['AddGroup']['JoinGroupWithId']}}</ion-label>
-  </ion-item-divider>
-  <ion-item [disabled]="isSaveClicked" button>
-    <ion-input [label]="lang.text['AddGroup']['InputGroupId']" class="ion-text-right" [(ngModel)]="userInput.id"
-      placeholder="00000000-0000-0000-0000-000000000000"></ion-input>
-  </ion-item>
+  <div *ngIf="!userInput.server['local']">
+    <ion-item-divider>
+      <ion-label>{{lang.text['AddGroup']['JoinGroupWithId']}}</ion-label>
+    </ion-item-divider>
+    <ion-item [disabled]="isSaveClicked" button>
+      <ion-input [label]="lang.text['AddGroup']['InputGroupId']" class="ion-text-right" [(ngModel)]="userInput.id"
+        placeholder="00000000-0000-0000-0000-000000000000"></ion-input>
+    </ion-item>
+  </div>
   <ion-item-divider>
     <ion-label>{{lang.text['AddGroup']['GroupInfo']}}</ion-label>
   </ion-item-divider>
@@ -60,14 +62,16 @@ SPDX-License-Identifier: MIT -->
   </ion-item-divider>
   <textarea class="infobox" [disabled]="isSaveClicked || userInput.id != ''" [(ngModel)]="userInput.description"
     [placeholder]="lang.text['AddGroup']['GroupDetail_placeholder']"></textarea>
-  <ion-item [disabled]="isSaveClicked || userInput.id != ''">
-    <ion-input [label]="lang.text['AddGroup']['MemberMaxLimit']" type="number" class="ion-text-right" min="2"
-      [(ngModel)]="userInput.max_count" placeholder="2"></ion-input>
-  </ion-item>
-  <ion-item [disabled]="isSaveClicked || userInput.id != ''" #AddGroupPublic button>
-    <ion-toggle style="pointer-events: none;" [(ngModel)]="userInput.open" (ionChange)="isPublicToggle()">
-      {{lang.text['AddGroup']['IsOpen']}}</ion-toggle>
-  </ion-item>
+  <div *ngIf="!userInput.server['local']">
+    <ion-item [disabled]="isSaveClicked || userInput.id != ''">
+      <ion-input [label]="lang.text['AddGroup']['MemberMaxLimit']" type="number" class="ion-text-right" min="2"
+        [(ngModel)]="userInput.max_count" placeholder="2"></ion-input>
+    </ion-item>
+    <ion-item [disabled]="isSaveClicked || userInput.id != ''" #AddGroupPublic button>
+      <ion-toggle style="pointer-events: none;" [(ngModel)]="userInput.open" (ionChange)="isPublicToggle()">
+        {{lang.text['AddGroup']['IsOpen']}}</ion-toggle>
+    </ion-item>
+  </div>
   <ion-item button (click)="save()" [disabled]="isSaveClicked">
     <ion-label class="ion-text-center">{{lang.text['AddGroup']['submit']}}</ion-label>
   </ion-item>

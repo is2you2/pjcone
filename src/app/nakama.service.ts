@@ -1288,6 +1288,8 @@ export class NakamaService {
               this.channels_orig[_is_official][_target][_cid]['info'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
             if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
               delete this.channels_orig[_is_official][_target][_cid]['status'];
+            if (this.channels_orig[_is_official][_target][_cid]['redirect']['type'] == 0)
+              this.channels_orig[_is_official][_target][_cid]['status'] = 'online';
             if (this.channels_orig[_is_official][_target][_cid]['is_new'] && !this.subscribe_lock)
               this.has_new_channel_msg = true;
           });
@@ -1368,6 +1370,9 @@ export class NakamaService {
                 this.count_channel_online_member(this.channels_orig[_is_official][_target][channel_ids[i]], _is_official, _target);
                 this.save_channels_with_less_info();
                 break;
+              case 0: // 로컬 채널
+                console.log('여기: ');
+                break;
               default:
                 console.warn('예상하지 못한 리다이렉션 타입: ', this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type']);
                 break;
@@ -1420,6 +1425,8 @@ export class NakamaService {
                   this.channels_orig[_is_official][_target][_cid]['title'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]['name'];
                 } else this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
               }
+              break;
+            case 0: // 로컬 대화 기록
               break;
             default:
               console.error('예상하지 않은 대화형식: ', this.channels_orig[_is_official][_target][_cid]);

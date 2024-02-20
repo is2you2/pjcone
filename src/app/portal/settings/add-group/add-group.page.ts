@@ -34,6 +34,13 @@ export class AddGroupPage implements OnInit {
     if (tmp)
       this.userInput = tmp;
     this.servers = this.nakama.get_all_server_info(true, true);
+    let local_info = {
+      name: this.lang.text['AddGroup']['UseLocalStorage'],
+      isOfficial: 'local',
+      target: 'channels',
+      local: true,
+    };
+    this.servers.push(local_info);
     this.userInput.server = this.servers[this.index];
     this.file_sel_id = `add_group_${new Date().getTime()}`;
   }
@@ -60,6 +67,8 @@ export class AddGroupPage implements OnInit {
   select_server(i: number) {
     this.index = i;
     this.userInput.server = this.servers[i];
+    if (this.servers[i]['local'])
+      this.userInput.id = '';
     this.isExpanded = false;
   }
 
@@ -107,34 +116,14 @@ export class AddGroupPage implements OnInit {
   /** 정상처리되지 않았다면 작성 중 정보 임시 저장 */
   isSavedWell = false;
   async save() {
+    this.isSaveClicked = true;
+    // 로컬에 채널 양식으로 기록 남기기
+    if (this.servers[this.index]['local']) {
+      this.SaveLocalAct();
+      return;
+    }
     if (this.userInput.id) {
-      let SuccJoinedChat = false;
-      this.isSaveClicked = true;
-      let target_server = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target];
-      try {
-        await target_server.client.joinGroup(target_server.session, this.userInput.id);
-        await this.nakama.get_group_list_from_server(this.servers[this.index].isOfficial, this.servers[this.index].target);
-        SuccJoinedChat = true;
-      } catch (e) {
-        try {
-          await this.nakama.join_chat_with_modulation(this.userInput.id, 2, this.servers[this.index].isOfficial, this.servers[this.index].target);
-          SuccJoinedChat = true;
-        } catch (e) {
-          this.p5toast.show({
-            text: this.lang.text['AddGroup']['check_group_id'],
-          });
-          this.isSaveClicked = false;
-        }
-      }
-      if (SuccJoinedChat) {
-        this.isSavedWell = true;
-        this.p5toast.show({
-          text: this.lang.text['AddGroup']['join_group_succ'],
-        });
-        setTimeout(() => {
-          this.modalCtrl.dismiss();
-        }, 500);
-      }
+      await this.JoinWithSpecificId();
       return;
     }
     if (this.statusBar.groupServer[this.servers[this.index].isOfficial][this.servers[this.index].target] != 'online') {
@@ -148,7 +137,6 @@ export class AddGroupPage implements OnInit {
     this.userInput['owner'] = session.user_id;
     this.userInput['status'] = 'online';
 
-    this.isSaveClicked = true;
     this.userInput.lang_tag = this.userInput.lang_tag || navigator.language.split('-')[0] || this.lang.lang;
     this.userInput.max_count = this.userInput.max_count || 2;
     client.createGroup(session, {
@@ -202,6 +190,69 @@ export class AddGroupPage implements OnInit {
           break;
       }
     });
+  }
+
+  /** 로컬 채널 생성 */
+  SaveLocalAct() {
+    if (!this.nakama.channels_orig['local']) this.nakama.channels_orig['local'] = {};
+    if (!this.nakama.channels_orig['local']['channels']) this.nakama.channels_orig['local']['channels'] = {};
+    // 아이디 중복 검토
+    if (this.nakama.channels_orig['local']['channels'][this.userInput.name]) {
+      this.p5toast.show({
+        text: this.lang.text['AddGroup']['AlreadyExist'],
+      });
+      this.isSaveClicked = false;
+      return;
+    }
+    this.nakama.channels_orig['local']['channels'][this.userInput.name] = {
+      id: this.userInput.name,
+      local: true,
+      title: this.userInput.name,
+      redirect: {
+        type: 0,
+      },
+      status: 'online',
+      HideAutoThumbnail: false,
+      info: {
+        ...this.userInput,
+        status: 'online',
+      }
+    };
+    this.isSavedWell = true;
+    this.nakama.rearrange_channels();
+    setTimeout(() => {
+      this.modalCtrl.dismiss();
+    }, 500);
+  }
+
+  /** ID로 채널 진입하기 */
+  async JoinWithSpecificId() {
+    let SuccJoinedChat = false;
+    let target_server = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target];
+    try { // 그룹 채널로 시도
+      await target_server.client.joinGroup(target_server.session, this.userInput.id);
+      await this.nakama.get_group_list_from_server(this.servers[this.index].isOfficial, this.servers[this.index].target);
+      SuccJoinedChat = true;
+    } catch (e) {
+      try { // 1:1 채널로 재시도
+        await this.nakama.join_chat_with_modulation(this.userInput.id, 2, this.servers[this.index].isOfficial, this.servers[this.index].target);
+        SuccJoinedChat = true;
+      } catch (e) {
+        this.p5toast.show({
+          text: this.lang.text['AddGroup']['check_group_id'],
+        });
+        this.isSaveClicked = false;
+      }
+    }
+    if (SuccJoinedChat) {
+      this.isSavedWell = true;
+      this.p5toast.show({
+        text: this.lang.text['AddGroup']['join_group_succ'],
+      });
+      setTimeout(() => {
+        this.modalCtrl.dismiss();
+      }, 500);
+    }
   }
 
   ionViewWillLeave() {
