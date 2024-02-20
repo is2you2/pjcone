@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonAccordionGroup, IonModal, IonToggle, LoadingController, ModalController, NavController } from '@ionic/angular';
+import { IonAccordionGroup, IonModal, IonToggle, LoadingController, ModalController, NavController, NavParams } from '@ionic/angular';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -32,12 +32,15 @@ export class GroupServerPage implements OnInit {
     private loadingCtrl: LoadingController,
     private mClipboard: Clipboard,
     private navCtrl: NavController,
+    private navParams: NavParams,
   ) { }
 
   info: string;
   servers: ServerInfo[];
 
   isSSLConnect = false;
+  /** 서버 정보가 있는 경우 uid 받기 */
+  session_uid = '';
 
   ngOnInit() {
     this.servers = this.nakama.get_all_server_info(true);
@@ -90,6 +93,12 @@ export class GroupServerPage implements OnInit {
     }
     this.p5canvas = new p5(sketch);
     this.announce_update_profile = this.original_profile['display_name'] !== undefined;
+
+    if (this.navParams.data['target']) {
+      let isOfficial = this.navParams.get('isOfficial');
+      let target = this.navParams.get('target');
+      this.session_uid = this.nakama.servers[isOfficial][target].session.user_id;
+    }
   }
 
   ionViewWillEnter() {
@@ -543,6 +552,11 @@ export class GroupServerPage implements OnInit {
 
   OpenNewServerForm() {
     this.RegisterNewServer.present();
+  }
+
+  copy_id() {
+    this.mClipboard.copy(this.session_uid)
+      .catch(_e => clipboard.write(this.session_uid));
   }
 
   async go_back() {

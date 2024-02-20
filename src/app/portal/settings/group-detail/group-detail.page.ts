@@ -267,6 +267,10 @@ export class GroupDetailPage implements OnInit {
       if (userInfo['is_me']) {
         this.modalCtrl.create({
           component: GroupServerPage,
+          componentProps: {
+            isOfficial: this.info['server']['isOfficial'],
+            target: this.info['server']['target'],
+          }
         }).then(v => {
           v.present();
           this.lock_modal_open = false;
