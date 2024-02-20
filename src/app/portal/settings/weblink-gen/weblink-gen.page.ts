@@ -120,7 +120,11 @@ export class WeblinkGenPage implements OnInit {
     if (this.userInput.open_prv_channel) {
       this.result_address += count ? '&' : '?';
       this.result_address += 'open_prv_channel=';
-      this.result_address += `${this.userInput.open_prv_channel},${this.servers[0].isOfficial},${this.userInput.servers[0].target}`;
+      try {
+        this.result_address += `${this.userInput.open_prv_channel},${this.servers[0].isOfficial},${this.userInput.servers[0].target}`;
+      } catch (e) {
+        this.result_address += `${this.userInput.open_prv_channel},official,DevTestServer`;
+      }
       count++;
     }
     if (this.userInput.open_channel) {
