@@ -57,12 +57,12 @@ SPDX-License-Identifier: MIT -->
     <ion-label color="medium">{{imageURL_placeholder}}</ion-label>
   </ion-item>
   <input hidden type="file" [id]="file_sel_id" accept="image/*" (change)="inputImageSelected($event)">
-  <ion-item-divider>
-    <ion-label>{{lang.text['AddGroup']['GroupDetail']}}</ion-label>
-  </ion-item-divider>
-  <textarea class="infobox" [disabled]="isSaveClicked || userInput.id != ''" [(ngModel)]="userInput.description"
-    [placeholder]="lang.text['AddGroup']['GroupDetail_placeholder']"></textarea>
   <div *ngIf="!userInput.server['local']">
+    <ion-item-divider>
+      <ion-label>{{lang.text['AddGroup']['GroupDetail']}}</ion-label>
+    </ion-item-divider>
+    <textarea class="infobox" [disabled]="isSaveClicked || userInput.id != ''" [(ngModel)]="userInput.description"
+      [placeholder]="lang.text['AddGroup']['GroupDetail_placeholder']"></textarea>
     <ion-item [disabled]="isSaveClicked || userInput.id != ''">
       <ion-input [label]="lang.text['AddGroup']['MemberMaxLimit']" type="number" class="ion-text-right" min="2"
         [(ngModel)]="userInput.max_count" placeholder="2"></ion-input>
