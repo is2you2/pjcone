@@ -108,11 +108,25 @@ export class AddGroupPage implements OnInit {
   isSavedWell = false;
   async save() {
     if (this.userInput.id) {
+      let SuccJoinedChat = false;
       this.isSaveClicked = true;
       let target_server = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target];
       try {
         await target_server.client.joinGroup(target_server.session, this.userInput.id);
         await this.nakama.get_group_list_from_server(this.servers[this.index].isOfficial, this.servers[this.index].target);
+        SuccJoinedChat = true;
+      } catch (e) {
+        try {
+          await this.nakama.join_chat_with_modulation(this.userInput.id, 2, this.servers[this.index].isOfficial, this.servers[this.index].target);
+          SuccJoinedChat = true;
+        } catch (e) {
+          this.p5toast.show({
+            text: this.lang.text['AddGroup']['check_group_id'],
+          });
+          this.isSaveClicked = false;
+        }
+      }
+      if (SuccJoinedChat) {
         this.isSavedWell = true;
         this.p5toast.show({
           text: this.lang.text['AddGroup']['join_group_succ'],
@@ -120,11 +134,6 @@ export class AddGroupPage implements OnInit {
         setTimeout(() => {
           this.modalCtrl.dismiss();
         }, 500);
-      } catch (e) {
-        this.p5toast.show({
-          text: this.lang.text['AddGroup']['check_group_id'],
-        });
-        this.isSaveClicked = false;
       }
       return;
     }

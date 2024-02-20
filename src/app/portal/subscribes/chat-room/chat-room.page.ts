@@ -102,8 +102,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   this.extended_buttons.forEach(button => {
                     button.isHide = true;
                   });
-                  this.extended_buttons[8].isHide = false;
                   this.extended_buttons[0].isHide = false;
+                  this.extended_buttons[6].isHide = false;
+                  this.extended_buttons[8].isHide = false;
                 }
               });
               v.onDidDismiss().then(() => {
@@ -213,27 +214,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.toggle_speakermode();
       }
     }, { // 6
-      icon: 'log-out-outline',
-      act: async () => {
-        if (this.info['redirect']['type'] != 3) {
-          try {
-            await this.nakama.remove_group_list(
-              this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target, false);
-            await this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
-            this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
-            this.extended_buttons.forEach(button => {
-              button.isHide = true;
-            });
-            this.extended_buttons[8].isHide = false;
-          } catch (e) {
-            console.error('채널에서 나오기 실패: ', e);
-          }
-        } else {
-          this.extended_buttons[6].isHide = true;
-        }
-        this.ionViewDidEnter();
-      }
-    }, { // 7 
       isHide: false,
       icon: 'images-outline',
       act: () => {
@@ -253,6 +233,28 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.is_modal = true;
           v.present();
         });
+      }
+    }, { // 7 
+      icon: 'log-out-outline',
+      act: async () => {
+        if (this.info['redirect']['type'] != 3) {
+          try {
+            await this.nakama.remove_group_list(
+              this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target, false);
+            await this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
+            this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
+            this.extended_buttons.forEach(button => {
+              button.isHide = true;
+            });
+            this.extended_buttons[6].isHide = false;
+            this.extended_buttons[8].isHide = false;
+          } catch (e) {
+            console.error('채널에서 나오기 실패: ', e);
+          }
+        } else {
+          this.extended_buttons[7].isHide = true;
+        }
+        this.ionViewDidEnter();
       }
     }, { // 8
       isHide: true,
@@ -530,6 +532,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.route.queryParams.subscribe(async _p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
       if (navParams) this.info = navParams.info;
+      await new Promise(res => setTimeout(res, 100)); // init 지연
       await this.init_chatroom();
       this.userInput.file = navParams.file;
       if (this.userInput.file) this.create_selected_thumbnail();
@@ -736,7 +739,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       case 3: // 그룹 대화라면
         if (this.info['status'] != 'missing')
           await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
-        this.extended_buttons[6].isHide = true;
+        this.extended_buttons[7].isHide = true;
         delete this.extended_buttons[0].isHide;
         this.extended_buttons[4].isHide = true;
         break;
@@ -779,7 +782,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.extended_buttons.forEach(button => {
         button.isHide = true;
       });
-      this.extended_buttons[7].isHide = false;
+      this.extended_buttons[6].isHide = false;
       this.extended_buttons[8].isHide = false;
       if (this.info['redirect']['type'] == 3)
         this.extended_buttons[0].isHide = false;
