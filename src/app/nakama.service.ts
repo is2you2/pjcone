@@ -103,6 +103,7 @@ export class NakamaService {
     'unofficial': {},
   };
 
+  dont_use_test_server = true;
   async initialize() {
     // 기등록 알림 id 검토
     this.noti.GetNotificationIds((list) => {
@@ -130,8 +131,8 @@ export class NakamaService {
         this.init_server(info);
       });
     } else { // 저장된 사설서버가 따로 없음
-      let dont_use_test_server = localStorage.getItem('dont_use_test_server');
-      if (!dont_use_test_server) this.toggle_all_session();
+      this.dont_use_test_server = !Boolean(localStorage.getItem('dont_use_test_server'));
+      if (this.dont_use_test_server) this.toggle_all_session();
     }
     this.catch_group_server_header('offline');
     // 서버별 그룹 정보 불러오기
@@ -428,6 +429,7 @@ export class NakamaService {
 
   /** 공식 테스트 서버 접근 권한 생성 */
   async AccessToOfficialTestServer() {
+    if (!this.dont_use_test_server) return;
     let res = await fetch(`${SERVER_PATH_ROOT}assets/data/WSAddress.txt`);
     let address = (await res.text()).split('\n')[0];
     await this.add_group_server({
@@ -1370,9 +1372,6 @@ export class NakamaService {
                 this.count_channel_online_member(this.channels_orig[_is_official][_target][channel_ids[i]], _is_official, _target);
                 this.save_channels_with_less_info();
                 break;
-              case 0: // 로컬 채널
-                console.log('여기: ');
-                break;
               default:
                 console.warn('예상하지 못한 리다이렉션 타입: ', this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type']);
                 break;
@@ -1399,7 +1398,7 @@ export class NakamaService {
       let Targets = Object.keys(this.channels_orig[_is_official]);
       Targets.forEach(_target => {
         let ChannelIds = Object.keys(this.channels_orig[_is_official][_target]);
-        ChannelIds.forEach(_cid => {
+        ChannelIds.forEach(async _cid => {
           this.channels_orig[_is_official][_target][_cid]['server'] = {
             isOfficial: _is_official,
             target: _target,
@@ -1426,7 +1425,13 @@ export class NakamaService {
                 } else this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
               }
               break;
-            case 0: // 로컬 대화 기록
+            case 0: // 로컬 대화 기록, 채널로부터 복사하기
+              if (!this.channels_orig[_is_official][_target][_cid]['info']) this.channels_orig[_is_official][_target][_cid]['info'] = {};
+              this.channels_orig[_is_official][_target][_cid]['info']['name'] = this.channels_orig[_is_official][_target][_cid]['title'];
+              if (!this.channels_orig[_is_official][_target][_cid]['info']['img']) {
+                let img = await this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${_cid}.img`);
+                this.channels_orig[_is_official][_target][_cid]['info']['img'] = img;
+              }
               break;
             default:
               console.error('예상하지 않은 대화형식: ', this.channels_orig[_is_official][_target][_cid]);
@@ -1437,7 +1442,7 @@ export class NakamaService {
       });
     });
     result.sort((a, b) => {
-      return (new Date(b['last_comment_time']) as any) - (new Date(a['last_comment_time']) as any);
+      return (new Date(b['last_comment_time'] || 0).getTime()) - (new Date(a['last_comment_time'] || 0).getTime());
     });
     result.sort((a, b) => {
       if (a['is_new'])

@@ -104,7 +104,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   });
                   this.extended_buttons[0].isHide = false;
                   this.extended_buttons[6].isHide = false;
-                  this.extended_buttons[8].isHide = false;
+                  this.extended_buttons[9].isHide = false;
                 }
               });
               v.onDidDismiss().then(() => {
@@ -117,8 +117,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
         }
       }
+    }, { // 1
+      icon: 'image-outline',
+      isHide: true,
+      act: () => {
+        document.getElementById('local_channel').click();
+      }
     },
-    { // 1
+    { // 2
       icon: 'document-attach-outline',
       act: async () => {
         if (!this.userInputTextArea)
@@ -132,7 +138,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }
     },
-    { // 2
+    { // 3
       icon: 'camera-outline',
       act: async () => {
         try {
@@ -170,7 +176,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           loading.dismiss();
         } catch (e) { }
       }
-    }, { // 3
+    }, { // 4
       icon: 'server-outline',
       act: () => {
         this.modalCtrl.create({
@@ -189,7 +195,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           v.present();
         });
       }
-    }, { // 4
+    }, { // 5
       icon: 'call-outline',
       act: async () => {
         try {
@@ -208,14 +214,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           console.log('webrtc 시작단계 오류: ', e);
         }
       }
-    }, { // 5
-      icon: 'volume-mute-outline',
-      act: async () => {
-        this.toggle_speakermode();
-      }
     }, { // 6
       isHide: false,
-      icon: 'images-outline',
+      icon: 'documents-outline',
       act: () => {
         this.modalCtrl.create({
           component: UserFsDirPage,
@@ -234,7 +235,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           v.present();
         });
       }
-    }, { // 7 
+    }, { // 7
+      icon: 'volume-mute-outline',
+      act: async () => {
+        this.toggle_speakermode();
+      }
+    }, { // 8 
       icon: 'log-out-outline',
       act: async () => {
         if (this.info['redirect']['type'] != 3) {
@@ -247,39 +253,54 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               button.isHide = true;
             });
             this.extended_buttons[6].isHide = false;
-            this.extended_buttons[8].isHide = false;
+            this.extended_buttons[9].isHide = false;
           } catch (e) {
             console.error('채널에서 나오기 실패: ', e);
           }
         } else {
-          this.extended_buttons[7].isHide = true;
+          this.extended_buttons[8].isHide = true;
         }
         this.ionViewDidEnter();
       }
-    }, { // 8
+    }, { // 9
       isHide: true,
       icon: 'close-circle-outline',
-      act: async () => {
-        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-        loading.present();
-        delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
-        if (this.info['redirect']['type'] == 3) // 그룹방
-          await this.nakama.remove_group_list(
-            this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target);
-        try {
-          delete this.nakama.groups[this.isOfficial][this.target][this.info['group_id']];
-        } catch (e) {
-          console.log('DeleteGroupFailed: ', e);
-        }
-        this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
-        this.nakama.save_groups_with_less_info();
-        let list = await this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`);
-        for (let i = 0, j = list.length; i < j; i++) {
-          loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
-          await this.indexed.removeFileFromUserPath(list[i]);
-        }
-        loading.dismiss();
-        this.navCtrl.pop();
+      act: () => {
+        this.alertCtrl.create({
+          header: this.lang.text['ChatRoom']['RemoveChannel'],
+          message: this.lang.text['ChatRoom']['CannotUndone'],
+          buttons: [{
+            text: this.lang.text['ChatRoom']['Delete'],
+            handler: async () => {
+              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+              loading.present();
+              delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
+              switch (this.info['redirect']['type']) {
+                case 3: // 그룹방
+                  await this.nakama.remove_group_list(
+                    this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target);
+                  break;
+                case 0: // 로컬 채널
+                  await this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
+                  break;
+              }
+              try {
+                delete this.nakama.groups[this.isOfficial][this.target][this.info['group_id']];
+              } catch (e) {
+                console.log('DeleteGroupFailed: ', e);
+              }
+              this.nakama.remove_channel_files(this.isOfficial, this.target, this.info.id);
+              this.nakama.save_groups_with_less_info();
+              let list = await this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`);
+              for (let i = 0, j = list.length; i < j; i++) {
+                loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
+                await this.indexed.removeFileFromUserPath(list[i]);
+              }
+              loading.dismiss();
+              this.navCtrl.pop();
+            }
+          }]
+        }).then(v => v.present());
       }
     },];
 
@@ -431,7 +452,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   async toggle_speakermode(force?: boolean) {
     this.useSpeaker = force ?? !this.useSpeaker;
-    this.extended_buttons[5].icon = this.useSpeaker
+    this.extended_buttons[7].icon = this.useSpeaker
       ? 'volume-high-outline' : 'volume-mute-outline';
     if (!this.useSpeaker) try {
       await TextToSpeech.stop();
@@ -497,6 +518,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       delete this.userInput.file;
       this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
     }
+  }
+
+  /** 로컬채널 대표이미지 변경 */
+  async LocalChannelImageChanged(ev: any) {
+    let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
+    this.nakama.limit_image_size(base64, (v) => {
+      this.info['info']['img'] = v['canvas'].toDataURL();
+      this.indexed.saveTextFileToUserPath(this.info['info']['img'],
+        `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
+      this.p5toast.show({
+        text: this.lang.text['ChatRoom']['LocalImageChanged'],
+      });
+    });
   }
 
   /** 옛날로 가는 커서 */
@@ -733,25 +767,26 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
           delete this.extended_buttons[6].isHide;
           this.extended_buttons[0].isHide = true;
-          this.extended_buttons[4].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
+          this.extended_buttons[5].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
         }
         break;
       case 3: // 그룹 대화라면
         if (this.info['status'] != 'missing')
           await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
-        this.extended_buttons[7].isHide = true;
+        this.extended_buttons[8].isHide = true;
         delete this.extended_buttons[0].isHide;
-        this.extended_buttons[4].isHide = true;
+        this.extended_buttons[5].isHide = true;
         break;
-      case 0:
+      case 0: // 로컬 채널형 기록
         this.extended_buttons.forEach(button => {
           button.isHide = true;
         });
         this.extended_buttons[1].isHide = false;
         this.extended_buttons[2].isHide = false;
-        this.extended_buttons[5].isHide = false;
+        this.extended_buttons[3].isHide = false;
         this.extended_buttons[6].isHide = false;
-        this.extended_buttons[8].isHide = false;
+        this.extended_buttons[7].isHide = false;
+        this.extended_buttons[9].isHide = false;
         break;
       default:
         break;
@@ -796,11 +831,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         button.isHide = true;
       });
       this.extended_buttons[6].isHide = false;
-      this.extended_buttons[8].isHide = false;
+      this.extended_buttons[9].isHide = false;
       if (this.info['redirect']['type'] == 3)
         this.extended_buttons[0].isHide = false;
     }
-    this.extended_buttons[5].isHide = isNativefier || this.info['status'] == 'missing';
+    this.extended_buttons[7].isHide = isNativefier || this.info['status'] == 'missing';
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
     setTimeout(() => {

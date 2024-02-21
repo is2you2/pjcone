@@ -47,7 +47,7 @@ SPDX-License-Identifier: MIT -->
       style="pointer-events: none;">{{lang.text['Profile']['login_toggle']}}</ion-toggle>
   </ion-item>
   <ion-item button (click)="toggle_use_test_server()">
-    <ion-toggle [(ngModel)]="dont_use_test_server">
+    <ion-toggle [(ngModel)]="nakama.dont_use_test_server">
       {{lang.text['Settings']['use_test_server']}}
     </ion-toggle>
   </ion-item>

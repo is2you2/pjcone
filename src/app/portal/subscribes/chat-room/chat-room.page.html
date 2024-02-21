@@ -180,6 +180,7 @@ SPDX-License-Identifier: MIT -->
     <tr id="ext_menu" [hidden]="isHidden">
       <td>
         <div class="expanded">
+          <input hidden type="file" id="local_channel" accept="image/*" (change)="LocalChannelImageChanged($event)">
           <input hidden type="file" [id]="file_sel_id" accept="*" multiple (change)="inputFileSelected($event)">
           <div *ngFor="let button of extended_buttons" style="display: inline-block;">
             <div class="ext_button" [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'"

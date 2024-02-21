@@ -11,6 +11,7 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
+import { IndexedDBService } from 'src/app/indexed-db.service';
 
 @Component({
   selector: 'app-add-group',
@@ -27,6 +28,7 @@ export class AddGroupPage implements OnInit {
     public lang: LanguageSettingService,
     private global: GlobalActService,
     private mClipboard: Clipboard,
+    private indexed: IndexedDBService,
   ) { }
 
   ngOnInit() {
@@ -219,6 +221,8 @@ export class AddGroupPage implements OnInit {
       }
     };
     this.isSavedWell = true;
+    if (this.userInput.img)
+      this.indexed.saveTextFileToUserPath(this.userInput.img, `servers/local/channels/groups/${this.userInput.name}.img`);
     this.nakama.rearrange_channels();
     setTimeout(() => {
       this.modalCtrl.dismiss();
