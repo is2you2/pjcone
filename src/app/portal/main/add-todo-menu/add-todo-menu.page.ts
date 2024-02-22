@@ -930,7 +930,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   async doneTodo() {
     this.isButtonClicked = true;
     this.userInput.done = true;
-    if (this.global.p5todo['add_todo'])
+    if (this.global.p5todo && this.global.p5todo['add_todo'])
       this.global.p5todo['add_todo'](JSON.stringify(this.userInput));
     if (this.userInput.remote) {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
@@ -1206,7 +1206,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         return;
       }
     }
-    if (this.global.p5todo['add_todo'])
+    if (this.global.p5todo && this.global.p5todo['add_todo'])
       this.global.p5todo['add_todo'](JSON.stringify(this.userInput));
     await this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`);
     this.navCtrl.pop();
@@ -1331,7 +1331,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           delete this.nakama.web_noti_id[this.userInput.noti_id];
         }
       this.noti.ClearNoti(this.userInput.noti_id);
-      if (isDelete)
+      if (isDelete && this.global.p5todo)
         this.global.p5todo['remove_todo'](JSON.stringify(this.userInput));
       loading.dismiss();
       this.navCtrl.pop();
