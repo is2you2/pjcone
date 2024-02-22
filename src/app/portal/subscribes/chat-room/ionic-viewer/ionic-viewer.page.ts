@@ -513,9 +513,13 @@ export class IonicViewerPage implements OnInit {
                 case 0: // 손을 전부 뗌
                   if (isInitStatus && !Repositioning) {
                     if (endPos.x > SWIPE_SIZE)
-                      this.ChangeToAnother(-1);
+                      setTimeout(() => {
+                        this.ChangeToAnother(-1);
+                      }, 0);
                     else if (endPos.x < -SWIPE_SIZE)
-                      this.ChangeToAnother(1);
+                      setTimeout(() => {
+                        this.ChangeToAnother(1);
+                      }, 0);
                   }
                   Repositioning = false;
                   break;
