@@ -7,8 +7,8 @@ android {
         applicationId "org.pjcone.portal"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 352
-        versionName "0.43.4"
+        versionCode 353
+        versionName "0.43.5"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
