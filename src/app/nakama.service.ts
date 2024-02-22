@@ -2584,7 +2584,12 @@ export class NakamaService {
     } catch (error) {
       is_me = c.content['user_update'];
     }
-    let target = is_me ? this.users.self : this.load_other_user(c.sender_id, _is_official, _target);
+    let target: any;
+    try { // 온라인인 경우 검토
+      target = is_me ? this.users.self : this.load_other_user(c.sender_id, _is_official, _target);
+    } catch (e) { // 로컬 채널은 무조건 나임
+      target = this.users.self;
+    }
     switch (c.code) {
       case 0: // 사용자가 작성한 일반적인 메시지
         if (c.content['filename']) { // 파일이라면 전송 정보 연결 시도하기
