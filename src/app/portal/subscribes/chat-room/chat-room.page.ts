@@ -1639,8 +1639,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (msg['is_me']) // 내 정보
         this.modalCtrl.create({
           component: GroupServerPage,
+          componentProps: {
+            isOfficial: this.info['server']['isOfficial'],
+            target: this.info['server']['target'],
+          }
         }).then(v => {
           v.onDidDismiss().then((_v) => {
+            this.ionViewDidEnter();
             this.noti.Current = this.info['cnoti_id'];
             if (this.info['cnoti_id'])
               this.noti.ClearNoti(this.info['cnoti_id']);

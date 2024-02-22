@@ -97,7 +97,9 @@ export class GroupServerPage implements OnInit {
     if (this.navParams.data['target']) {
       let isOfficial = this.navParams.get('isOfficial');
       let target = this.navParams.get('target');
-      this.session_uid = this.nakama.servers[isOfficial][target].session.user_id;
+      try {
+        this.session_uid = this.nakama.servers[isOfficial][target].session.user_id;
+      } catch (e) { } // 로컬 채널은 uid 설정 무시
     }
   }
 
