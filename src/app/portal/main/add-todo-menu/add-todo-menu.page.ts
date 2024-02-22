@@ -970,7 +970,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.userInput.id = new Date(this.userInput.create_at).toISOString().replace(/[:|.|\/]/g, '_');
       else {
         let counter = await this.nakama.getRemoteTodoCounter(this.userInput.remote.isOfficial, this.userInput.remote.target);
-        this.userInput.id = `RemoteTodo_${counter + 1}`;
+        this.userInput.id = `RemoteTodo_${(counter || 0) + 1}`;
       }
     }
     // 알림 예약 생성

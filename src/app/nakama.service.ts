@@ -848,7 +848,7 @@ export class NakamaService {
         let count = todos.objects[0].value['data'];
         if (!this.RemoteTodoCounter[_is_official])
           this.RemoteTodoCounter[_is_official] = {};
-        this.RemoteTodoCounter[_is_official][_target] = todos.objects[0].value['data'];
+        this.RemoteTodoCounter[_is_official][_target] = count;
         for (let i = 0, j = count.length; i < j; i++) {
           try {
             let todo = await this.servers[_is_official][_target].client.readStorageObjects(
@@ -913,6 +913,7 @@ export class NakamaService {
     this.updateRemoteCounter(_is_official, _target);
   }
 
+  /** 원격 할 일 중 완료/삭제된 내용 업데이트 */
   removeRemoteTodoCounter(_is_official: string, _target: string, index: number) {
     try {
       let find_index = this.RemoteTodoCounter[_is_official][_target].indexOf(index);
@@ -926,6 +927,7 @@ export class NakamaService {
     this.updateRemoteCounter(_is_official, _target);
   }
 
+  /** 원격 할 일 카운터 숫자 조정 */
   updateRemoteCounter(_is_official: string, _target: string) {
     this.servers[_is_official][_target].client.writeStorageObjects(
       this.servers[_is_official][_target].session, [{
