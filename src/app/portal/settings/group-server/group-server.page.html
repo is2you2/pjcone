@@ -65,7 +65,7 @@ SPDX-License-Identifier: MIT -->
             <h2>{{server.name}}</h2>
             <p *ngIf="server.isOfficial != 'official'">{{server.address}}</p>
           </ion-label>
-          <ion-button (click)="remove_server(server.isOfficial, server.target)">
+          <ion-button *ngIf="server.isOfficial != 'official'" (click)="remove_server(server.isOfficial, server.target)">
             {{statusBar.groupServer[server.isOfficial][server.target] == 'online' ?
             lang.text['GroupServer']['RemoveAccount']
             : lang.text['GroupServer']['RemoveUnofficial']}}
