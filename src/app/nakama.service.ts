@@ -1398,7 +1398,7 @@ export class NakamaService {
       let Targets = Object.keys(this.channels_orig[_is_official]);
       Targets.forEach(_target => {
         let ChannelIds = Object.keys(this.channels_orig[_is_official][_target]);
-        ChannelIds.forEach(async _cid => {
+        ChannelIds.forEach(_cid => {
           this.channels_orig[_is_official][_target][_cid]['server'] = {
             isOfficial: _is_official,
             target: _target,
@@ -1428,10 +1428,10 @@ export class NakamaService {
             case 0: // 로컬 대화 기록, 채널로부터 복사하기
               if (!this.channels_orig[_is_official][_target][_cid]['info']) this.channels_orig[_is_official][_target][_cid]['info'] = {};
               this.channels_orig[_is_official][_target][_cid]['info']['name'] = this.channels_orig[_is_official][_target][_cid]['title'];
-              if (!this.channels_orig[_is_official][_target][_cid]['info']['img']) {
-                let img = await this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${_cid}.img`);
-                this.channels_orig[_is_official][_target][_cid]['info']['img'] = img;
-              }
+              if (!this.channels_orig[_is_official][_target][_cid]['info']['img'])
+                this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${_cid}.img`, (e, v) => {
+                  if (e && v) this.channels_orig[_is_official][_target][_cid]['info']['img'] = v;
+                });
               break;
             default:
               console.error('예상하지 않은 대화형식: ', this.channels_orig[_is_official][_target][_cid]);
@@ -1442,14 +1442,24 @@ export class NakamaService {
       });
     });
     result.sort((a, b) => {
-      return (new Date(b['last_comment_time'] || 0).getTime()) - (new Date(a['last_comment_time'] || 0).getTime());
+      let a_time = new Date(a['last_comment_time'] || 0).getTime();
+      let b_time = new Date(b['last_comment_time'] || 0).getTime();
+      if (a_time < b_time)
+        return 1;
+      else if (a_time > b_time)
+        return -1;
+      else return 0;
     });
     result.sort((a, b) => {
-      if (a['is_new'])
-        if (b['is_new'])
+      if (a['is_new']) {
+        if (b['is_new']) {
           return 0;
-        else return -1;
-      else return 1;
+        } else return 1;
+      } else {
+        if (b['is_new']) {
+          return -1;
+        } else return 0;
+      }
     });
     this.channels = result;
     this.save_channels_with_less_info();
