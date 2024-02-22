@@ -80,7 +80,6 @@ export class WebrtcService {
       out_link += `?tmp_user=${this.nakama.users.self['email']},${this.nakama.users.self['password']},${this.nakama.users.self['display_name']}`;
       for (let i = 0, j = servers.length; i < j; i++)
         out_link += `&server=${servers[i].info.name || ''},${servers[i].info.address || ''},${servers[i].info.useSSL || ''},${servers[i].info.port || ''},${servers[i].info.key || ''}`;
-      out_link += '&open_subscribes=true';
       out_link += `&open_prv_channel=${nakama.user_id},${nakama.isOfficial || 'official'},${nakama.target || 'DevTestServer'}`;
       try {
         let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');

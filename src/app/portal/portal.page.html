@@ -1,12 +1,12 @@
 <ion-content>
   <ion-tabs>
     <ion-tab-bar slot="bottom">
+      <ion-tab-button [disabled]="!indexed.ionicDB" tab="main" (click)="bottom_tab_selected()">
+        <ion-icon [name]="TodoIcon"></ion-icon>
+      </ion-tab-button>
       <ion-tab-button [disabled]="!indexed.ionicDB" (click)="subscribe_button()" tab="subscribes">
         <ion-icon [name]="SubscribesIcon"></ion-icon>
         <ion-badge *ngIf="nakama.has_new_channel_msg" color="danger" mode="md"></ion-badge>
-      </ion-tab-button>
-      <ion-tab-button [disabled]="!indexed.ionicDB" tab="main" (click)="bottom_tab_selected()">
-        <ion-icon [name]="TodoIcon"></ion-icon>
       </ion-tab-button>
       <ion-tab-button [disabled]="!indexed.ionicDB" (click)="setting_button()">
         <ion-icon name="settings-outline"></ion-icon>

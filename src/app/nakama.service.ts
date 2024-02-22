@@ -3308,8 +3308,6 @@ export class NakamaService {
     let json = [];
     if (init['open_profile']) // 프로필 화면 유도
       json.push({ type: 'open_profile' });
-    if (init['open_subscribes'])
-      json.push({ type: 'open_subscribes' })
     if (init['tmp_user']) { // 임시 사용자 정보 기입, 첫 데이터로 반영
       let sep = init['tmp_user'][0].split(',');
       this.users.self['email'] = sep[0];
@@ -3359,8 +3357,8 @@ export class NakamaService {
       json.push({
         type: 'open_prv_channel',
         user_id: sep[0],
-        isOfficial: sep[1],
-        target: sep[2],
+        isOfficial: sep[1] || 'official',
+        target: sep[2] || 'DevTestServer',
       });
     }
     if (init['open_channel']) {
@@ -3401,12 +3399,6 @@ export class NakamaService {
     else await this.act_from_QRInfo(json);
   }
 
-  /** 다른 페이지에서 QR에 의한 행동 규정이 필요할 때 등록  
-   * 이 곳에 등록된 것은 삭제되지 않음  
-   * act_callback_link['key'] = Function()
-   */
-  act_callback_link = {};
-
   async act_from_QRInfo(json: any) {
     this.removeBanner();
     for (let i = 0, j = json.length; i < j; i++)
@@ -3414,11 +3406,6 @@ export class NakamaService {
         case 'open_profile': // 프로필 페이지 열기 유도
           this.nav.navigateForward('settings/group-server');
           this.removeBanner();
-          break;
-        case 'open_subscribes':
-          if (this.AfterLoginActDone)
-            this.act_callback_link['portal_tab_subscribes']();
-          else this.AfterLoginAct.push(() => this.act_callback_link['portal_tab_subscribes']());
           break;
         case 'tmp_user': // 빠른 임시 진입을 위해 사용자 정보를 임의로 기입
           break;

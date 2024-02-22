@@ -34,10 +34,6 @@
         ginfo['server']['name'] + ')'}}</ion-select-option>
     </ion-select>
   </ion-item>
-  <ion-item button (click)="userInput.open_subscribes = !userInput.open_subscribes; information_changed()">
-    <ion-toggle class="ignore_toggles"
-      [(ngModel)]="userInput.open_subscribes">{{lang.text['WebLinkGen']['OpenChannelTab']}}</ion-toggle>
-  </ion-item>
   <ion-item button (click)="toggle_tmp_user()">
     <ion-toggle class="ignore_toggles"
       [(ngModel)]="userInput.use_tmp_user">{{lang.text['WebLinkGen']['UseTempUser']}}</ion-toggle>

@@ -19,6 +19,8 @@ export class LanguageSettingService {
     Portal: {},
     Main: {},
     Subscribes: {},
+    ChatRoom: {},
+    Profile: {},
   };
 
   constructor() {

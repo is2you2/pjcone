@@ -356,7 +356,7 @@ export class GroupDetailPage implements OnInit {
 
   /** 시작 진입 주소 생성 */
   copy_startup_address() {
-    let startup_address = `https://is2you2.github.io/pjcone_pwa/?group=${this.info['name']},${this.info['id']}&open_subscribes=true`;
+    let startup_address = `https://is2you2.github.io/pjcone_pwa/?group=${this.info['name']},${this.info['id']}`;
     this.mClipboard.copy(startup_address)
       .catch(_e => clipboard.write(startup_address));
   }

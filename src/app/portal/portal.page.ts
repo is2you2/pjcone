@@ -6,6 +6,7 @@ import { IonTabs, iosTransitionAnimation, NavController } from '@ionic/angular';
 import { NakamaService } from '../nakama.service';
 import { GlobalActService } from '../global-act.service';
 import { IndexedDBService } from '../indexed-db.service';
+import { WebrtcService } from '../webrtc.service';
 
 @Component({
   selector: 'app-portal',
@@ -21,14 +22,10 @@ export class PortalPage implements OnInit {
     public nakama: NakamaService,
     private global: GlobalActService,
     public indexed: IndexedDBService,
+    private _webrtc: WebrtcService,
   ) { }
 
-  ngOnInit() {
-    this.nakama.act_callback_link['portal_tab_subscribes'] = () => {
-      this.ionTabs.select('subscribes');
-      this.subscribe_button();
-    }
-  }
+  ngOnInit() { }
 
   ionViewDidEnter() {
     if (this.CacheKeyShortCut)
@@ -44,12 +41,12 @@ export class PortalPage implements OnInit {
       this.global.p5key['KeyShortCut']['BottomTab'] = (char: string) => {
         switch (char) {
           case 'Q':
-            this.ionTabs.select('subscribes');
-            this.subscribe_button();
-            break;
-          case 'W':
             this.ionTabs.select('main');
             this.bottom_tab_selected();
+            break;
+          case 'W':
+            this.ionTabs.select('subscribes');
+            this.subscribe_button();
             break;
           case 'E':
             this.setting_button();
@@ -76,8 +73,8 @@ export class PortalPage implements OnInit {
     });
   }
 
-  SubscribesIcon = 'chatbubbles-outline';
-  TodoIcon = 'checkbox';
+  SubscribesIcon = 'chatbubbles';
+  TodoIcon = 'checkbox-outline';
 
   bottom_tab_selected() {
     this.SubscribesIcon = 'chatbubbles-outline';

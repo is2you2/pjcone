@@ -28,7 +28,6 @@ export class WeblinkGenPage implements OnInit {
 
   userInput = {
     root: undefined,
-    open_subscribes: false,
     use_tmp_user: false,
     tmp_user: {
       email: undefined,
@@ -100,11 +99,6 @@ export class WeblinkGenPage implements OnInit {
       this.result_address += `${this.userInput.groups[i]['name']},${this.userInput.groups[i]['id']}`;
       count++;
     }
-    if (this.userInput.open_subscribes) {
-      this.result_address += count ? '&' : '?';
-      this.result_address += 'open_subscribes=true';
-      count++;
-    }
     if (this.userInput.use_tmp_user) {
       const availableStrings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
       const StringLen = availableStrings.length;
@@ -123,7 +117,7 @@ export class WeblinkGenPage implements OnInit {
       try {
         this.result_address += `${this.userInput.open_prv_channel},${this.servers[0].isOfficial},${this.userInput.servers[0].target}`;
       } catch (e) {
-        this.result_address += `${this.userInput.open_prv_channel},official,DevTestServer`;
+        this.result_address += `${this.userInput.open_prv_channel},,`;
       }
       count++;
     }
