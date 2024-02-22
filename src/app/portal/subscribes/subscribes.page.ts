@@ -40,7 +40,16 @@ export class SubscribesPage implements OnInit {
 
   cant_dedicated = false;
 
-  ionViewWillEnter() {
+  try_add_shortcut() {
+    if (this.global.p5key && this.global.p5key['KeyShortCut'])
+      this.AddShortcut();
+    else setTimeout(() => {
+      this.try_add_shortcut();
+    }, 100);
+  }
+
+  /** 단축키 생성 */
+  AddShortcut() {
     if (this.global.p5key && this.global.p5key['KeyShortCut']) {
       this.global.p5key['KeyShortCut']['Backquote'] = () => {
         this.go_to_page('group-server');
@@ -63,6 +72,7 @@ export class SubscribesPage implements OnInit {
     this.nakama.resumeBanner();
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
+    this.try_add_shortcut();
   }
 
   go_to_page(_page: string) {
@@ -149,7 +159,7 @@ export class SubscribesPage implements OnInit {
       this.global.p5key['KeyShortCut'] = {};
       v.onDidDismiss().then(() => {
         this.global.p5key['KeyShortCut'] = cache_func;
-        this.ionViewWillEnter();
+        this.try_add_shortcut();
       });
       v.present();
     });
