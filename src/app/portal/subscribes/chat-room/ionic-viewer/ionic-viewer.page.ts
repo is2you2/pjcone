@@ -62,12 +62,14 @@ export class IonicViewerPage implements OnInit {
   OpenInChannelChat = false;
   targetDB: IDBDatabase;
   isChannelOnline = true;
+  fromLocalChannel = false;
 
   EventListenerAct = (ev: any) => {
     ev.detail.register(120, (_processNextHandler: any) => { });
   }
 
   async ngOnInit() {
+    this.fromLocalChannel = this.navParams.get('local');
     this.MessageInfo = this.navParams.get('info');
     this.OpenInChannelChat = this.MessageInfo['code'] !== undefined;
     this.CurrentViewId = this.MessageInfo.message_id;

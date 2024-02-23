@@ -2255,6 +2255,8 @@ export class NakamaService {
       let msg = tmp_msg.shift();
       delete msg.content['text'];
       delete msg.content['img'];
+      delete msg.content['local_comp'];
+      delete msg.content['path'];
       delete msg['msgDate'];
       delete msg['msgTime'];
       delete msg['isLastRead'];

@@ -206,8 +206,9 @@ export class AddGroupPage implements OnInit {
       this.isSaveClicked = false;
       return;
     }
-    this.nakama.channels_orig['local']['channels'][this.userInput.name] = {
-      id: this.userInput.name,
+    let generated_id = this.CreateRandomLocalId();
+    this.nakama.channels_orig['local']['channels'][generated_id] = {
+      id: generated_id,
       local: true,
       title: this.userInput.name,
       redirect: {
@@ -222,11 +223,26 @@ export class AddGroupPage implements OnInit {
     };
     this.isSavedWell = true;
     if (this.userInput.img)
-      this.indexed.saveTextFileToUserPath(this.userInput.img, `servers/local/channels/groups/${this.userInput.name}.img`);
+      this.indexed.saveTextFileToUserPath(this.userInput.img, `servers/local/channels/groups/${generated_id}.img`);
     this.nakama.rearrange_channels();
     setTimeout(() => {
       this.modalCtrl.dismiss();
     }, 500);
+  }
+
+  /** 로컬 채널 아이디 생성기 */
+  CreateRandomLocalId(): string {
+    let result = '';
+    const ID_GEN_CHAR = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0, j = 16; i < j; i++) {
+      let randomAt = Math.floor(Math.random() * ID_GEN_CHAR.length);
+      result += ID_GEN_CHAR.charAt(randomAt);
+    }
+    console.log(result);
+    console.log(this.nakama.channels_orig['local']['channels']);
+    if (!this.nakama.channels_orig['local']['channels'][result])
+      return result;
+    else return this.CreateRandomLocalId();
   }
 
   /** ID로 채널 진입하기 */

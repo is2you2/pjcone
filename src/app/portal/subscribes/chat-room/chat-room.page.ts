@@ -939,6 +939,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
           for (let i = 0; i < ShowMeAgainCount; i++)
             try {
+              this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
               let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
               let FileURL = URL.createObjectURL(blob);
               this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
@@ -1010,6 +1011,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
       for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
         try {
+          this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
           let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
           let FileURL = URL.createObjectURL(blob);
           this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
@@ -1057,6 +1059,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
       for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
         try {
+          this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
           let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
           let FileURL = URL.createObjectURL(blob);
           this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
@@ -1087,6 +1090,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.modulate_chatmsg(0, json.length);
             for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
               try {
+                this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
                 let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
                 let FileURL = URL.createObjectURL(blob);
                 this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
@@ -1113,6 +1117,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let ShowMeAgainCount = Math.min(Math.min(json.length, this.RefreshCount), this.ViewableMessage.length);
           for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
             try {
+              this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
               let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
               let FileURL = URL.createObjectURL(blob);
               this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
@@ -1540,6 +1545,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           target: this.target,
           targetDB: this.indexed.ionicDB,
           relevance: attaches,
+          local: this.info['local'],
         },
         cssClass: 'fullscreen',
       }).then(v => {
