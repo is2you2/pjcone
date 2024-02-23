@@ -206,7 +206,7 @@ export class IonicViewerPage implements OnInit {
     this.FileInfo = { file_ext: '' };
     setTimeout(() => {
       this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
-    }, 70);
+    }, 100);
   }
 
   async DownloadCurrentFile(index?: number) {
@@ -521,7 +521,6 @@ export class IonicViewerPage implements OnInit {
                   break;
               }
             }
-            return false;
           }
         });
         break;
