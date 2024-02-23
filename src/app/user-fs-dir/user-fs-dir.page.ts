@@ -371,6 +371,9 @@ export class UserFsDirPage implements OnInit {
     await this.importThisFolder(entry, loading);
     this.InAppBrowser = true;
     loading.dismiss();
+    this.p5toast.show({
+      text: this.lang.text['UserFsDir']['NeedResetToApply'],
+    });
   }
 
   /** 이 폴더와 파일 재귀 임포팅 */
@@ -414,6 +417,9 @@ export class UserFsDirPage implements OnInit {
       await this.indexed.saveBlobToUserPath(ev.target.files[i], ev.target.files[i].webkitRelativePath);
     this.LoadAllIndexedFiles();
     loading.dismiss();
+    this.p5toast.show({
+      text: this.lang.text['UserFsDir']['NeedResetToApply'],
+    });
   }
 
   RemoveDirectoryRecursive() {
