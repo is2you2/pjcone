@@ -116,8 +116,7 @@ export class VoidDrawPage implements OnInit {
       let RedoButton: any;
       /** 임시방편 색상 선택기 */
       let p5ColorPicker = p.createColorPicker('#000');
-      let SetBrushSize = p.min(initData['width'], initData['heigth']);
-      let strokeWeight = SetBrushSize / 100;
+      let strokeWeight = p.min(initData['width'], initData['heigth']) / 100;
       const PIXEL_DENSITY = 1;
       p.setup = async () => {
         p.pixelDensity(PIXEL_DENSITY);
@@ -239,7 +238,7 @@ export class VoidDrawPage implements OnInit {
           this.p5toast.show({
             text: this.lang.text['voidDraw']['Preparing'], // 번역도 삭제
           }); // 기능 준비되면 p5toast 개체 삭제 (상단에서도)
-        } // 동작 준비중
+        } // 동작 준비중 // A 단축키 기능 재연결과 new_image() 삭제
         let CropCell = top_row.insertCell(1); // Crop
         CropCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="crop"></ion-icon>`;
         CropCell.style.textAlign = 'center';
@@ -329,6 +328,8 @@ export class VoidDrawPage implements OnInit {
           ImageCanvas.redraw();
           p['SetCanvasViewportInit']();
         }
+        if (initData['width'] < initData['height'])
+          strokeWeight = strokeWeight / CamScale;
       }
       /** Viewport 행동을 위한 변수들 */
       let CamPosition = p.createVector();
