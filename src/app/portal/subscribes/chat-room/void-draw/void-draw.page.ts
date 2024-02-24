@@ -8,6 +8,7 @@ import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
+import { P5ToastService } from 'src/app/p5-toast.service';
 
 @Component({
   selector: 'app-void-draw',
@@ -24,6 +25,7 @@ export class VoidDrawPage implements OnInit {
     public global: GlobalActService,
     private navParams: NavParams,
     private indexed: IndexedDBService,
+    private p5toast: P5ToastService,
   ) { }
 
   ngOnInit() { }
@@ -85,7 +87,6 @@ export class VoidDrawPage implements OnInit {
   async create_new_canvas(inputInfo?: any) {
     inputInfo['width'] = inputInfo['width'] || 432;
     inputInfo['height'] = inputInfo['height'] || 432;
-    this.isCropable = true;
     if (this.p5voidDraw) this.p5voidDraw.remove();
     this.create_p5voidDraw(inputInfo);
   }
@@ -174,13 +175,15 @@ export class VoidDrawPage implements OnInit {
           HistoryPointer = p.min(p.max(0, HistoryPointer + direction), p['DrawingStack'].length);
           switch (direction) {
             case 1: // Redo
-              UndoButton.style.fill = 'var(--ion-color-dark)';
+              if (p['DrawingStack'].length)
+                UndoButton.style.fill = 'var(--ion-color-dark)';
               if (HistoryPointer == p['DrawingStack'].length)
                 RedoButton.style.fill = 'var(--ion-color-medium)';
               updateDrawingCurve(ActualCanvas, p['DrawingStack'][HistoryPointer - 1]);
               break;
             case -1: // Undo
-              RedoButton.style.fill = 'var(--ion-color-dark)';
+              if (p['DrawingStack'].length)
+                RedoButton.style.fill = 'var(--ion-color-dark)';
               if (HistoryPointer < 1) {
                 UndoButton.style.fill = 'var(--ion-color-medium)';
                 ActualCanvas.clear(255, 255, 255, 255);
@@ -227,15 +230,18 @@ export class VoidDrawPage implements OnInit {
         TopMenu.style('background-color: var(--voidDraw-menu-background);')
         TopMenu.parent(targetDiv);
         let top_row = TopMenu.elt.insertRow(0); // 상단 메뉴
-        let AddCell = top_row.insertCell(0); // 추가
-        AddCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="add"></ion-icon>`;
-        AddCell.style.textAlign = 'center';
-        AddCell.style.cursor = 'pointer';
-        AddCell.onclick = () => { this.new_image() }
+        let AddTextCell = top_row.insertCell(0); // 추가
+        AddTextCell.innerHTML = `<ion-icon id="AddTextIcon" style="width: 27px; height: 27px" name="text"></ion-icon>`;
+        document.getElementById('AddTextIcon').style.fill = 'var(--ion-color-medium)'; // 동작 준비가 완료되면 이 줄 지우기
+        AddTextCell.style.textAlign = 'center';
+        AddTextCell.style.cursor = 'pointer';
+        AddTextCell.onclick = () => {
+          this.p5toast.show({
+            text: this.lang.text['voidDraw']['Preparing'], // 번역도 삭제
+          }); // 기능 준비되면 p5toast 개체 삭제 (상단에서도)
+        } // 동작 준비중
         let CropCell = top_row.insertCell(1); // Crop
-        CropCell.innerHTML = `<ion-icon id="CropToolIcon" style="width: 27px; height: 27px" name="crop"></ion-icon>`;
-        if (!this.isCropable)
-          document.getElementById('CropToolIcon').style.fill = 'var(--ion-color-medium)';
+        CropCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="crop"></ion-icon>`;
         CropCell.style.textAlign = 'center';
         CropCell.style.cursor = 'pointer';
         CropCell.onclick = () => { this.open_crop_tool() }
@@ -400,6 +406,7 @@ export class VoidDrawPage implements OnInit {
       }
       /** 마지막 행동에 해당하는 선 전체 그리기 */
       let updateDrawingCurve = (TargetCanvas: p5.Graphics, targetDraw = CurrentDraw) => {
+        if (!targetDraw['color']) return;
         TargetCanvas.push();
         TargetCanvas.translate(CropPosition);
         TargetCanvas.stroke(targetDraw['color']);
@@ -704,11 +711,8 @@ export class VoidDrawPage implements OnInit {
     this.p5voidDraw['set_line_weight']();
   }
 
-  /** 원격 참여자 Crop 행동 제한 */
-  isCropable = true;
   open_crop_tool() {
-    if (this.isCropable)
-      this.p5voidDraw['open_crop_tool']();
+    this.p5voidDraw['open_crop_tool']();
   }
 
   /** 사용하기를 누른 경우 */
