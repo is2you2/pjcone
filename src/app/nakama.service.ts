@@ -1585,6 +1585,7 @@ export class NakamaService {
                       this.update_from_channel_msg(channel.messages[0], servers[i].info.isOfficial, servers[i].info.target);
                     this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
                     this.save_groups_with_less_info();
+                    this.go_to_chatroom_without_admob_act(c);
                   } catch (e) {
                     console.error('채널 정보 추가 오류: ', e);
                   }
@@ -3435,7 +3436,7 @@ export class NakamaService {
               key: decodeURIComponent(json[i].value.key),
             };
             await this.add_group_server(new_server_info);
-            await this.init_session(new_server_info);
+            this.init_session(new_server_info);
           }
           break;
         case 'group_dedi': // 그룹사설 채팅 접근

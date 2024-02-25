@@ -37,7 +37,7 @@
             <ion-label class="ion-text-end">{{server.value.key || 'defaultkey'}}</ion-label>
           </ion-item>
           <ion-item button>
-            <ion-toggle class="ion_toggle_ignore"
+            <ion-toggle class="ion_toggle_ignore" disabled
               [(ngModel)]="server.value.isSSL">{{lang.text['GroupServer']['isSSL']}}</ion-toggle>
           </ion-item>
         </div>

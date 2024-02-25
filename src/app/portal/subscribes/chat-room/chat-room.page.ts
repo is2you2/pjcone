@@ -570,7 +570,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.info = c;
       await this.init_chatroom();
       this.userInput.file = _fileinfo;
-      if (this.userInput.file) this.create_selected_thumbnail();
+      if (this.userInput.file) this.create_thumbnail_imported(_fileinfo);
     }
     this.route.queryParams.subscribe(async _p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
@@ -578,7 +578,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       await new Promise(res => setTimeout(res, 100)); // init 지연
       await this.init_chatroom();
       this.userInput.file = navParams.file;
-      if (this.userInput.file) this.create_selected_thumbnail();
+      if (this.userInput.file) this.create_thumbnail_imported(navParams.file);
     });
     if (isPlatform == 'DesktopPWA')
       setTimeout(() => {
@@ -690,6 +690,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.userInput.file.blob = blob;
     this.create_selected_thumbnail();
     this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
+  }
+
+  /** 다른 채널에 공유하기로 진입한 경우 재구성하기 */
+  async create_thumbnail_imported(FileInfo: FileInfo) {
+    let blob = await this.indexed.loadBlobFromUserPath(FileInfo.path, FileInfo.type);
+    blob['name'] = FileInfo.filename;
+    this.selected_blobFile_callback_act(blob, FileInfo.content_related_creator);
   }
 
   /** 선택한 파일의 썸네일 만들기 */

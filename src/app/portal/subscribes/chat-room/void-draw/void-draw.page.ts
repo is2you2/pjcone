@@ -219,7 +219,7 @@ export class VoidDrawPage implements OnInit {
           ImageCanvas.translate(CropPosition);
           if (p['BaseImage'])
             ImageCanvas.image(p['BaseImage'], 0, 0);
-          if (hasTextContent.length) DrawText();
+          if (hasTextContent) DrawText();
           ImageCanvas.pop();
           ImageCanvas.redraw();
           this.isCropMode = false;
@@ -313,7 +313,7 @@ export class VoidDrawPage implements OnInit {
         ImageCanvas.background(255);
         // 텍스트 파일을 이미지로 처리한 경우 텍스트 그리기
         hasTextContent = this.navParams.get('text');
-        if (hasTextContent.length) DrawText();
+        if (hasTextContent) DrawText();
         p['ImageCanvas'] = ImageCanvas;
         // 사용자 그리기 판넬 생성
         if (initData['path']) { // 배경 이미지 파일이 포함됨
