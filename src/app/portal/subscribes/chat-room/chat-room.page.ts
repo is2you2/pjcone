@@ -98,13 +98,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               },
             }).then(v => {
               v.onWillDismiss().then(data => {
-                if (data.data) { // 탈퇴시
+                if (data.data) { // 그룹 탈퇴/삭제시
                   this.extended_buttons.forEach(button => {
                     button.isHide = true;
                   });
                   this.extended_buttons[0].isHide = false;
-                  this.extended_buttons[6].isHide = false;
-                  this.extended_buttons[9].isHide = false;
+                  this.extended_buttons[7].isHide = false;
+                  this.extended_buttons[10].isHide = false;
                 }
               });
               v.onDidDismiss().then(() => {
@@ -118,13 +118,52 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }
     }, { // 1
-      icon: 'image-outline',
+      icon: 'hammer-outline',
       isHide: true,
       act: () => {
         document.getElementById('local_channel').click();
       }
+    }, { // 2
+      icon_img: 'voidDraw.png',
+      act: async () => {
+        if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+        let props = {}
+        let content_related_creator: ContentCreatorInfo[];
+        if (this.userInput.file && this.userInput.file.typeheader == 'image') { // 선택한 파일을 편집하는 경우
+          try {
+            if (this.userInput.file.url)
+              this.userInput.file.blob = await fetch(this.userInput.file.url).then(r => r.blob());
+            let tmp_work_path = `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`;
+            await this.indexed.saveBlobToUserPath(this.userInput.file.blob, tmp_work_path, undefined, this.indexed.godotDB)
+            let thumbnail_image = document.getElementById('ChatroomSelectedImage');
+            props['path'] = tmp_work_path;
+            props['width'] = thumbnail_image['naturalWidth'];
+            props['height'] = thumbnail_image['naturalHeight'];
+            content_related_creator = this.userInput.file.content_related_creator;
+          } catch (e) {
+            this.p5toast.show({
+              text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
+            });
+            return;
+          }
+        }
+        this.modalCtrl.create({
+          component: VoidDrawPage,
+          componentProps: props,
+        }).then(v => {
+          v.onWillDismiss().then(async v => {
+            if (v.data) await this.voidDraw_fileAct_callback(v, content_related_creator);
+          });
+          v.onDidDismiss().then(() => {
+            this.is_modal = false;
+            this.ionViewDidEnter();
+          });
+          this.is_modal = true;
+          v.present();
+        });
+      }
     },
-    { // 2
+    { // 3
       icon: 'document-attach-outline',
       act: async () => {
         if (!this.userInputTextArea)
@@ -132,13 +171,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         await this.NewAttach.open();
         this.removeShortCutKey();
         this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-          let TempFunc = ['image', 'link', 'inapp', 'load'];
+          let TempFunc = ['link', 'inapp', 'load'];
           if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && TempFunc.length > index)
             this.new_attach({ detail: { value: TempFunc[index] } });
         }
       }
     },
-    { // 3
+    { // 4
       icon: 'camera-outline',
       act: async () => {
         try {
@@ -176,7 +215,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           loading.dismiss();
         } catch (e) { }
       }
-    }, { // 4
+    }, { // 5
       icon: 'server-outline',
       act: () => {
         this.modalCtrl.create({
@@ -195,7 +234,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           v.present();
         });
       }
-    }, { // 5
+    }, { // 6
       icon: 'call-outline',
       act: async () => {
         try {
@@ -214,7 +253,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           console.log('webrtc 시작단계 오류: ', e);
         }
       }
-    }, { // 6
+    }, { // 7
       isHide: false,
       icon: 'documents-outline',
       act: () => {
@@ -235,12 +274,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           v.present();
         });
       }
-    }, { // 7
+    }, { // 8
       icon: 'volume-mute-outline',
       act: async () => {
         this.toggle_speakermode();
       }
-    }, { // 8 
+    }, { // 9
       icon: 'log-out-outline',
       act: async () => {
         if (this.info['redirect']['type'] != 3) {
@@ -252,17 +291,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.extended_buttons.forEach(button => {
               button.isHide = true;
             });
-            this.extended_buttons[6].isHide = false;
-            this.extended_buttons[9].isHide = false;
+            this.extended_buttons[7].isHide = false;
+            this.extended_buttons[10].isHide = false;
           } catch (e) {
             console.error('채널에서 나오기 실패: ', e);
           }
         } else {
-          this.extended_buttons[8].isHide = true;
+          this.extended_buttons[9].isHide = true;
         }
         this.ionViewDidEnter();
       }
-    }, { // 9
+    }, { // 10
       isHide: true,
       icon: 'close-circle-outline',
       act: () => {
@@ -351,43 +390,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
         document.getElementById(this.file_sel_id).click();
         break;
-      case 'image':
-        if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-        let props = {}
-        let content_related_creator: ContentCreatorInfo[];
-        if (this.userInput.file && this.userInput.file.typeheader == 'image') { // 선택한 파일을 편집하는 경우
-          try {
-            if (this.userInput.file.url)
-              this.userInput.file.blob = await fetch(this.userInput.file.url).then(r => r.blob());
-            let tmp_work_path = `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`;
-            await this.indexed.saveBlobToUserPath(this.userInput.file.blob, tmp_work_path, undefined, this.indexed.godotDB)
-            let thumbnail_image = document.getElementById('ChatroomSelectedImage');
-            props['path'] = tmp_work_path;
-            props['width'] = thumbnail_image['naturalWidth'];
-            props['height'] = thumbnail_image['naturalHeight'];
-            content_related_creator = this.userInput.file.content_related_creator;
-          } catch (e) {
-            this.p5toast.show({
-              text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
-            });
-            return;
-          }
-        }
-        this.modalCtrl.create({
-          component: VoidDrawPage,
-          componentProps: props,
-        }).then(v => {
-          v.onWillDismiss().then(async v => {
-            if (v.data) await this.voidDraw_fileAct_callback(v, content_related_creator);
-          });
-          v.onDidDismiss().then(() => {
-            this.is_modal = false;
-            this.ionViewDidEnter();
-          });
-          this.is_modal = true;
-          v.present();
-        });
-        break;
       case 'link':
         try {
           let pasted_url: string;
@@ -452,7 +454,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   async toggle_speakermode(force?: boolean) {
     this.useSpeaker = force ?? !this.useSpeaker;
-    this.extended_buttons[7].icon = this.useSpeaker
+    this.extended_buttons[8].icon = this.useSpeaker
       ? 'volume-high-outline' : 'volume-mute-outline';
     if (!this.useSpeaker) try {
       await TextToSpeech.stop();
@@ -765,17 +767,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
           else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
             this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
-          delete this.extended_buttons[6].isHide;
+          delete this.extended_buttons[7].isHide;
           this.extended_buttons[0].isHide = true;
-          this.extended_buttons[5].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
+          this.extended_buttons[6].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
         }
         break;
       case 3: // 그룹 대화라면
         if (this.info['status'] != 'missing')
           await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
-        this.extended_buttons[8].isHide = true;
+        this.extended_buttons[9].isHide = true;
         delete this.extended_buttons[0].isHide;
-        this.extended_buttons[5].isHide = true;
+        this.extended_buttons[6].isHide = true;
         break;
       case 0: // 로컬 채널형 기록
         this.extended_buttons.forEach(button => {
@@ -784,9 +786,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.extended_buttons[1].isHide = false;
         this.extended_buttons[2].isHide = false;
         this.extended_buttons[3].isHide = false;
-        this.extended_buttons[6].isHide = false;
+        this.extended_buttons[4].isHide = false;
         this.extended_buttons[7].isHide = false;
-        this.extended_buttons[9].isHide = false;
+        this.extended_buttons[8].isHide = false;
+        this.extended_buttons[10].isHide = false;
         break;
       default:
         break;
@@ -830,12 +833,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.extended_buttons.forEach(button => {
         button.isHide = true;
       });
-      this.extended_buttons[6].isHide = false;
-      this.extended_buttons[9].isHide = false;
+      this.extended_buttons[7].isHide = false;
+      this.extended_buttons[10].isHide = false;
       if (this.info['redirect']['type'] == 3)
         this.extended_buttons[0].isHide = false;
     }
-    this.extended_buttons[7].isHide = isNativefier || this.info['status'] == 'missing';
+    this.extended_buttons[8].isHide = isNativefier || this.info['status'] == 'missing';
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
     setTimeout(() => {
