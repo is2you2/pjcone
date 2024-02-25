@@ -178,7 +178,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         await this.NewAttach.open();
         this.removeShortCutKey();
         this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-          let TempFunc = ['link', 'inapp', 'load'];
+          let TempFunc = ['load', 'link'];
           if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && TempFunc.length > index)
             this.new_attach({ detail: { value: TempFunc[index] } });
         }
@@ -262,7 +262,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     }, { // 7
       isHide: false,
-      icon: 'documents-outline',
+      icon: 'file-tray-full-outline',
       act: () => {
         this.modalCtrl.create({
           component: UserFsDirPage,
@@ -441,20 +441,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           });
         }
         break;
-      case 'inapp': // 인앱 탐색기에서 가져오기
-        this.modalCtrl.create({
-          component: UserFsDirPage,
-        }).then(v => {
-          v.onWillDismiss().then(async v => {
-            if (v.data) this.selected_blobFile_callback_act(v.data);
-          });
-          v.onDidDismiss().then(() => {
-            this.is_modal = false;
-            this.ionViewDidEnter();
-          });
-          this.is_modal = true;
-          v.present();
-        });
     }
     this.NewAttach.value = '';
   }
