@@ -783,6 +783,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                   path: v.data.path || this.userInput.attach[v.data.index]['path'],
                   width: v.data.width,
                   height: v.data.height,
+                  text: v.data.text,
                 },
               }).then(w => {
                 this.removeShortCut();

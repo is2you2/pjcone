@@ -129,22 +129,29 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
         let props = {}
         let content_related_creator: ContentCreatorInfo[];
-        if (this.userInput.file && this.userInput.file.typeheader == 'image') { // 선택한 파일을 편집하는 경우
-          try {
-            if (this.userInput.file.url)
-              this.userInput.file.blob = await fetch(this.userInput.file.url).then(r => r.blob());
-            let tmp_work_path = `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`;
-            await this.indexed.saveBlobToUserPath(this.userInput.file.blob, tmp_work_path, undefined, this.indexed.godotDB)
-            let thumbnail_image = document.getElementById('ChatroomSelectedImage');
-            props['path'] = tmp_work_path;
-            props['width'] = thumbnail_image['naturalWidth'];
-            props['height'] = thumbnail_image['naturalHeight'];
-            content_related_creator = this.userInput.file.content_related_creator;
-          } catch (e) {
-            this.p5toast.show({
-              text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
-            });
-            return;
+        if (this.userInput.file) { // 선택한 파일을 편집하는 경우
+          switch (this.userInput.file.typeheader) {
+            case 'image':
+              try {
+                if (this.userInput.file.url)
+                  this.userInput.file.blob = await fetch(this.userInput.file.url).then(r => r.blob());
+                let tmp_work_path = `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`;
+                await this.indexed.saveBlobToUserPath(this.userInput.file.blob, tmp_work_path, undefined, this.indexed.godotDB)
+                let thumbnail_image = document.getElementById('ChatroomSelectedImage');
+                props['path'] = tmp_work_path;
+                props['width'] = thumbnail_image['naturalWidth'];
+                props['height'] = thumbnail_image['naturalHeight'];
+                content_related_creator = this.userInput.file.content_related_creator;
+              } catch (e) {
+                this.p5toast.show({
+                  text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
+                });
+                return;
+              }
+              break;
+            case 'text':
+              props['text'] = this.userInput.file.thumbnail;
+              break;
           }
         }
         this.modalCtrl.create({
@@ -1579,6 +1586,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     path: v.data.path || _path,
                     width: v.data.width,
                     height: v.data.height,
+                    text: v.data.text,
                   },
                 }).then(v => {
                   v.onWillDismiss().then(async v => {

@@ -820,31 +820,12 @@ export class IonicViewerPage implements OnInit {
       }
         break;
       case 'text': // 텍스트를 이미지화하기
-        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-        loading.present();
-        this.image_info['width'] = this.p5canvas['TextArea'].clientWidth;
-        this.image_info['height'] = this.p5canvas['TextArea'].scrollHeight;
-        this.p5canvas.pixelDensity(1);
-        this.p5canvas.createCanvas(this.image_info['width'], this.image_info['height']);
-        this.p5canvas.textSize(16);
-        this.p5canvas.textWrap(this.p5canvas.WORD);
-        let margin = this.p5canvas.width * .05;
-        this.p5canvas.text(this.p5canvas['TextArea'].textContent,
-          margin, margin, this.p5canvas.width - margin * 2);
-        this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
-          try {
-            loading.dismiss();
-            this.image_info['path'] = 'tmp_files/modify_image.png';
-            await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''), this.image_info['path']);
-            this.modalCtrl.dismiss({
-              type: 'image',
-              ...this.image_info,
-              msg: this.MessageInfo,
-              index: this.RelevanceIndex - 1,
-            });
-          } catch (e) {
-            console.log('파일 저장 오류: ', e);
-          }
+        let TextLineArray = this.p5canvas['TextArea'].textContent.split('\n');
+        this.modalCtrl.dismiss({
+          type: 'image',
+          text: TextLineArray,
+          msg: this.MessageInfo,
+          index: this.RelevanceIndex - 1,
         });
         break;
       case 'video': // 마지막 프레임 저장하기
