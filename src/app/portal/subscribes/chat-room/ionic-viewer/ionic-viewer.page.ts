@@ -718,6 +718,7 @@ export class IonicViewerPage implements OnInit {
   ChangeContentWithKeyInput() {
     if (this.p5canvas) {
       this.p5canvas.keyPressed = (ev) => {
+        if (this.isTextEditMode) return;
         switch (ev['code']) {
           case 'KeyA': // 왼쪽 이동
           case 'ArrowLeft':
