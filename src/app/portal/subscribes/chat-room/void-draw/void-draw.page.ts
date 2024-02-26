@@ -117,6 +117,7 @@ export class VoidDrawPage implements OnInit {
       /** 임시방편 색상 선택기 */
       let p5ColorPicker = p.createColorPicker('#000');
       let strokeWeight = p.min(initData['width'], initData['heigth']) / 100;
+      let strokeRatio = 1;
       const PIXEL_DENSITY = 1;
       /** 문서파일을 이미지 편집할 경우 문서 내용 */
       let hasTextContent: string[] = [];
@@ -136,17 +137,23 @@ export class VoidDrawPage implements OnInit {
             inputs: [{
               label: this.lang.text['voidDraw']['weight'],
               name: 'weight',
-              placeholder: `${strokeWeight}`,
+              placeholder: `${strokeRatio}`,
               type: 'number',
             }],
             buttons: [{
               text: this.lang.text['voidDraw']['apply'],
               handler: (ev: any) => {
                 if (ev['weight'])
-                  strokeWeight = Number(ev['weight']);
+                  strokeRatio = Number(ev['weight']);
               }
             }]
-          }).then(v => v.present());
+          }).then(v => {
+            Drawable = false;
+            v.onWillDismiss().then(() => {
+              Drawable = true;
+            });
+            v.present();
+          });
         }
         p['change_color'] = () => {
           p5ColorPicker.elt.click();
@@ -463,6 +470,7 @@ export class VoidDrawPage implements OnInit {
       let CropStartSize: p5.Vector;
       let isClickOnMenu = false;
       p.mousePressed = (ev: any) => {
+        if (!Drawable) return;
         if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) {
           isClickOnMenu = true;
           return;
@@ -507,13 +515,14 @@ export class VoidDrawPage implements OnInit {
         CurrentDraw = {
           pos: [],
           color: color_hex,
-          weight: strokeWeight,
+          weight: strokeWeight * strokeRatio,
         };
         CurrentDraw['pos'].push(_pos);
         CurrentDraw['pos'].push(_pos);
         p.redraw();
       }
       p.mouseDragged = (ev: any) => {
+        if (!Drawable) return;
         switch (ev['which']) {
           case 1: // 왼쪽
             if (this.isCropMode && !isClickOnMenu) {
@@ -540,6 +549,7 @@ export class VoidDrawPage implements OnInit {
         }
       }
       p.mouseWheel = (ev: any) => {
+        if (!Drawable) return;
         if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) {
           isClickOnMenu = true;
           return;
@@ -552,6 +562,7 @@ export class VoidDrawPage implements OnInit {
         p.redraw();
       }
       p.mouseReleased = (ev: any) => {
+        if (!Drawable) return;
         switch (ev['which']) {
           case 1: // 왼쪽
             if (this.isCropMode) {
@@ -586,8 +597,11 @@ export class VoidDrawPage implements OnInit {
       let touches = [];
       /** 터치 중인지 여부, 3손가락 터치시 행동 제약을 걸기 위해서 존재 */
       let isTouching = false;
+      /** 그리기 가능 여부, 메뉴 생성시 그리기 불가처리를 위해 존재함 */
+      let Drawable = true;
       const HEADER_HEIGHT = 56;
       p.touchStarted = (ev: any) => {
+        if (!Drawable) return;
         touches = ev['touches'];
         if (ev['changedTouches'][0].clientY < BUTTON_HEIGHT
           || ev['changedTouches'][0].clientY > p.height - BUTTON_HEIGHT) {
@@ -617,7 +631,7 @@ export class VoidDrawPage implements OnInit {
         }
       }
       p.touchMoved = (ev: any) => {
-        if (!isTouching) return;
+        if (!Drawable || !isTouching) return;
         touches = ev['touches'];
         switch (touches.length) {
           case 1: { // 그리기
@@ -652,7 +666,7 @@ export class VoidDrawPage implements OnInit {
         return false;
       }
       p.touchEnded = (ev: any) => {
-        if (!ev['changedTouches']) return;
+        if (!Drawable || !ev['changedTouches']) return;
         touches = ev['touches'];
         isTouching = false;
         switch (touches.length) {
