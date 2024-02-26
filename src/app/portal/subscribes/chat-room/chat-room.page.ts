@@ -157,6 +157,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.modalCtrl.create({
           component: VoidDrawPage,
           componentProps: props,
+          cssClass: 'fullscreen',
         }).then(v => {
           v.onWillDismiss().then(async v => {
             if (v.data) await this.voidDraw_fileAct_callback(v, content_related_creator);
@@ -1581,6 +1582,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     height: v.data.height,
                     text: v.data.text,
                   },
+                  cssClass: 'fullscreen',
                 }).then(v => {
                   v.onWillDismiss().then(async v => {
                     if (v.data) await this.voidDraw_fileAct_callback(v, related_creators);

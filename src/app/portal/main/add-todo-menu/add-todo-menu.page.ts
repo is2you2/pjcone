@@ -539,6 +539,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       case 'image':
         this.modalCtrl.create({
           component: VoidDrawPage,
+          cssClass: 'fullscreen',
         }).then(v => {
           this.removeShortCut();
           v.onWillDismiss().then(async v => {
@@ -785,6 +786,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                   height: v.data.height,
                   text: v.data.text,
                 },
+                cssClass: 'fullscreen',
               }).then(w => {
                 this.removeShortCut();
                 w.onWillDismiss().then(w => {

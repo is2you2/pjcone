@@ -69,7 +69,9 @@ export class VoidDrawPage implements OnInit {
       }
     }
     this.global.p5key['KeyShortCut']['AddAct'] = () => {
-      this.new_image();
+      this.p5toast.show({
+        text: this.lang.text['voidDraw']['Preparing'], // 번역도 삭제
+      }); // 기능 준비되면 p5toast 개체 삭제 (상단에서도)
     }
     this.global.p5key['KeyShortCut']['SKeyAct'] = () => {
       this.open_crop_tool();

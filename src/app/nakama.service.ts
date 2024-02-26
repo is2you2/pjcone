@@ -3492,6 +3492,7 @@ export class NakamaService {
               componentProps: {
                 addresses: json[i]['addresses'],
               },
+              cssClass: 'fullscreen',
             }).then(v => v.present());
           } else this.AfterLoginAct.push(async () => {
             this.modalCtrl.create({
@@ -3499,6 +3500,7 @@ export class NakamaService {
               componentProps: {
                 addresses: json[i]['addresses'],
               },
+              cssClass: 'fullscreen',
             }).then(v => v.present());
           });
           break;
