@@ -299,7 +299,6 @@ export class IonicViewerPage implements OnInit {
   }
 
   set_various_display(target: ContentCreatorInfo) {
-    target['various_display'] = this.lang.text['GlobalAct']['UnknownSource'];
     switch (target.various) {
       case 'camera':
         target['various_display'] = this.lang.text['GlobalAct']['FromCamera'];
@@ -318,6 +317,9 @@ export class IonicViewerPage implements OnInit {
         break;
       case 'textedit':
         target['various_display'] = this.lang.text['GlobalAct']['FromTextEditor'];
+        break;
+      default:
+        target['various_display'] = this.lang.text['GlobalAct']['UnknownSource'];
         break;
     }
   }
@@ -921,6 +923,15 @@ export class IonicViewerPage implements OnInit {
             break;
         }
       });
+  }
+
+  /** 칩 선택시 내용을 상세히 알려줌 (p5toast) */
+  toast_info(worker: any) {
+    if (!worker['various_display'])
+      this.set_various_display(worker);
+    this.p5toast.show({
+      text: worker['various_display'],
+    });
   }
 
   ShareContent() {
