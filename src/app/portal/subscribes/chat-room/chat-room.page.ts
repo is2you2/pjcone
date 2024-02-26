@@ -682,7 +682,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   async create_thumbnail_imported(FileInfo: FileInfo) {
     let blob = await this.indexed.loadBlobFromUserPath(FileInfo.path, FileInfo.type);
     blob['name'] = FileInfo.filename;
-    this.selected_blobFile_callback_act(blob, FileInfo.content_related_creator);
+    this.selected_blobFile_callback_act(blob, FileInfo.content_related_creator, 'shared');
   }
 
   /** 선택한 파일의 썸네일 만들기 */

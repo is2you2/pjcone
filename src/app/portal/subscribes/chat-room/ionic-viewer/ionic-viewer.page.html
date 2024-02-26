@@ -129,6 +129,7 @@ SPDX-License-Identifier: MIT -->
               <ion-icon *ngIf="worker.various == 'link'" name="link-outline"></ion-icon>
               <ion-icon *ngIf="worker.various == 'long_text'" name="text-outline"></ion-icon>
               <ion-icon *ngIf="worker.various == 'textedit'" name="document-text-outline"></ion-icon>
+              <ion-icon *ngIf="worker.various == 'shared'" name="share-social-outline"></ion-icon>
               <ion-avatar *ngIf="worker.various == 'voidDraw'"> <img src="assets/icon/voidDraw.png" /> </ion-avatar>
               <ion-label>{{worker.publisher ||
                 worker.display_name || lang.text['Profile']['noname_user']}}</ion-label>

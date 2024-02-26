@@ -318,6 +318,9 @@ export class IonicViewerPage implements OnInit {
       case 'textedit':
         target['various_display'] = this.lang.text['GlobalAct']['FromTextEditor'];
         break;
+      case 'shared':
+        target['various_display'] = this.lang.text['GlobalAct']['SharedContent'];
+        break;
       default:
         target['various_display'] = this.lang.text['GlobalAct']['UnknownSource'];
         break;
