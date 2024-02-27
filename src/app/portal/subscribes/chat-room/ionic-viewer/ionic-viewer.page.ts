@@ -593,7 +593,7 @@ export class IonicViewerPage implements OnInit {
             if (canvasRatio > videoRatio) { // 세로 영상
               height = canvasHeight;
               width = width / mediaObject['elt']['videoHeight'] * height;
-              mediaObject['elt'].setAttribute('style', 'position: relative; top: 50%; left: 50%; transform: translateX(-50%);');
+              mediaObject['elt'].setAttribute('style', 'position: relative; left: 50%; transform: translateX(-50%);');
             } else { // 가로 영상
               width = canvasWidth;
               height = (height / mediaObject['elt']['videoWidth'] * width) || (canvasHeight / 2);
