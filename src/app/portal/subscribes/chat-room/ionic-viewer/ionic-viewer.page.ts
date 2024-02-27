@@ -585,15 +585,19 @@ export class IonicViewerPage implements OnInit {
           let ResizeVideo = () => {
             let canvasWidth = this.ContentBox.offsetWidth;
             let canvasHeight = this.ContentBox.offsetHeight - this.FileHeader.offsetHeight;
-            let width = mediaObject['width'];
-            let height = mediaObject['height'];
-            mediaObject['elt'].setAttribute('style', 'position: relative; top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);');
-            if (width < height) { // 가로 영상
+            let width = mediaObject['elt']['videoWidth'];
+            let height = mediaObject['elt']['videoHeight'];
+            if (width == 0 || height == 0) return;
+            let canvasRatio = canvasWidth / canvasHeight;
+            let videoRatio = width / height;
+            if (canvasRatio > videoRatio) { // 세로 영상
               height = canvasHeight;
-              width = width / mediaObject['height'] * height;
-            } else { // 세로 영상
+              width = width / mediaObject['elt']['videoHeight'] * height;
+              mediaObject['elt'].setAttribute('style', 'position: relative; top: 50%; left: 50%; transform: translateX(-50%);');
+            } else { // 가로 영상
               width = canvasWidth;
-              height = (height / mediaObject['width'] * width) || (canvasHeight / 2);
+              height = (height / mediaObject['elt']['videoWidth'] * width) || (canvasHeight / 2);
+              mediaObject['elt'].setAttribute('style', 'position: relative; top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);');
             }
             mediaObject['size'](width, height);
           }
