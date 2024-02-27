@@ -829,6 +829,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.last_message_viewer['color'] = c.color;
           }
         }, 0);
+        // 수신된 메시지를 실시간 고도 패키지에 연결해주기
+        if (this.global.godot_window && this.global.godot_window['received_msg']) {
+          let regen_msg = {
+            sender_id: c.sender_id,
+            user_display_name: c.user_display_name,
+            content: c.content,
+          }
+          this.global.godot_window['received_msg'](regen_msg);
+        }
       }
     if (this.info['status'] === undefined || this.info['status'] == 'missing') {
       this.extended_buttons.forEach(button => {

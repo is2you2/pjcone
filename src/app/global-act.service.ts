@@ -71,7 +71,7 @@ interface GodotFrameKeys {
   ext?: string;
   /** 배경 이미지, p5 에서 불러올 수 있는 주소로 제공 */
   background?: string;
-  /** **ViewerEX 전용**  
+  /** **사용금지**  
    * 썸네일 미지원 패키지로부터 썸네일을 생성시 실행됨, ViewerEX 전용
    */
   create_thumbnail_p5?: Function;
@@ -83,6 +83,13 @@ interface GodotFrameKeys {
    * 패키지 불러오기 상태를 반환함 (Client 기본값)
    */
   update_load?: Function;
+  /** 해당 채널의 정보 (채널 채팅에서 직접 열람시) */
+  channel_info?: any;
+  /** **사용 금지**  
+   * 현재 채널에서 수신받은 메시지 (고도 프로젝트에서 생성됨, 자동완성용)  
+   * received_msg(_msg) => { ...수신된 메시지로 고도엔진에서 행동함 }
+   */
+  received_msg?: Function;
   /** 고도엔진과 상호작용하기 위한 값들, 고도엔진에서 JavaScript.get_interface('window')[id]로 접근 */
   [id: string]: any;
 }
@@ -255,7 +262,7 @@ export class GlobalActService {
    * @param keys 고도엔진 iframe.window에 작성될 값들
    * @returns iframe 개체 돌려주기
    */
-  CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys, waiting_key: string = ''): Promise<any> {
+  CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys, waiting_key = ''): Promise<any> {
     let ready_to_show = false;
     return new Promise(async (done: any) => {
       let refresh_it_loading = async () => {
