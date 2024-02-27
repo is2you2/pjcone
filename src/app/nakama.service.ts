@@ -3144,7 +3144,7 @@ export class NakamaService {
       if (msg.content['url']) { // 링크
         msg.content['thumbnail'] = msg.content['url'];
       } else { // 서버에 업로드된 파일
-        msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
+        msg.content['text'] = [this.lang.text['ChatRoom']['SavingFile']];
         delete msg.content['transfer_index'];
         delete this.OnTransfer[_is_official][_target][_msg.channel_id][_msg.message_id]['index'];
         this.p5toast.show({
