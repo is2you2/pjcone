@@ -1452,16 +1452,9 @@ export class NakamaService {
         return -1;
       else return 0;
     });
-    result.sort((a, b) => {
-      if (a['is_new']) {
-        if (b['is_new']) {
-          return 0;
-        } else return 1;
-      } else {
-        if (b['is_new']) {
-          return -1;
-        } else return 0;
-      }
+    result.sort((a, _b) => {
+      if (a['is_new']) return -1;
+      else return 1;
     });
     this.channels = result;
     this.save_channels_with_less_info();
