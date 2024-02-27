@@ -45,20 +45,8 @@ const routes: Routes = [
     loadChildren: () => import('./admin-tools/admin-tools.module').then( m => m.AdminToolsPageModule)
   },
   {
-    path: 'qrcode-gen',
-    loadChildren: () => import('./qrcode-gen/qrcode-gen.module').then( m => m.QrcodeGenPageModule)
-  },
-  {
-    path: 'wsclient',
-    loadChildren: () => import('./wsclient/wsclient.module').then( m => m.WsclientPageModule)
-  },
-  {
     path: 'weblink-gen',
     loadChildren: () => import('./weblink-gen/weblink-gen.module').then( m => m.WeblinkGenPageModule)
-  },
-  {
-    path: 'tts-export',
-    loadChildren: () => import('./tts-export/tts-export.module').then( m => m.TtsExportPageModule)
   },
 ];
 

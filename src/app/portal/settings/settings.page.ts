@@ -184,12 +184,9 @@ export class SettingsPage implements OnInit, OnDestroy {
     let LinkButton = [];
     LinkButton.push(() => this.go_to_page('noti-alert'));
     LinkButton.push(() => this.go_to_qr_share());
-    LinkButton.push(() => this.go_to_webrtc_manager());
     LinkButton.push(() => this.open_inapp_explorer());
     LinkButton.push(() => this.go_to_page('weblink-gen'));
-    LinkButton.push(() => this.go_to_page('qrcode-gen'));
-    if (!this.is_nativefier) LinkButton.push(() => this.go_to_page('tts-export'));
-    LinkButton.push(() => this.go_to_page('wsclient'));
+    LinkButton.push(() => this.go_to_webrtc_manager());
     LinkButton.push(() => this.download_serverfile());
     if (this.as_admin.length) {
       if (!this.cant_dedicated && this.can_use_http)

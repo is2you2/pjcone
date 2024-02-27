@@ -3477,7 +3477,7 @@ export class NakamaService {
         case 'rtcserver':
           let ServerInfos = [];
           try {
-            if (!this.lang.text['TTSExport']['ReadThis']) // 번역 준비 검토
+            if (!this.lang.text['WebRTCDevManager']['NoRegServer']) // 번역 준비 검토
               throw '번역 준비 안됨';
             let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
             ServerInfos = JSON.parse(list);
