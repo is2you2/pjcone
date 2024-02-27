@@ -57,6 +57,7 @@ export class IonicViewerPage implements OnInit {
   RelevanceIndex = 0;
   HaveRelevances = false;
   NeedDownloadFile = false;
+  ContentOnLoad = false;
   isDownloading = false;
   CurrentViewId: string;
   OpenInChannelChat = false;
@@ -113,6 +114,7 @@ export class IonicViewerPage implements OnInit {
   async reinit_content_data(msg: any) {
     this.NewTextFileName = '';
     this.NeedDownloadFile = true;
+    this.ContentOnLoad = false;
     this.isTextEditMode = false;
     this.MessageInfo = msg;
     this.CurrentViewId = this.MessageInfo.message_id;
@@ -122,6 +124,7 @@ export class IonicViewerPage implements OnInit {
       this.FileURL = this.FileInfo.url;
       this.CreateContentInfo();
       this.NeedDownloadFile = false;
+      this.ContentOnLoad = true;
       this.ionViewDidEnter();
     } else {
       let path = this.FileInfo['path'] ||
@@ -137,6 +140,7 @@ export class IonicViewerPage implements OnInit {
         this.blob = undefined;
         this.isDownloading = false;
         this.NeedDownloadFile = true;
+        this.ContentOnLoad = false;
         this.CreateContentInfo();
         if (this.p5canvas) this.p5canvas.remove();
         this.p5canvas = new p5((p: p5) => {
@@ -720,6 +724,7 @@ export class IonicViewerPage implements OnInit {
         this.download_file();
         break;
     }
+    this.ContentOnLoad = true;
     this.ChangeContentWithKeyInput();
   }
 
