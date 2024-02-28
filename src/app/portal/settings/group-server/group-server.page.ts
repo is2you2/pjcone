@@ -476,7 +476,7 @@ export class GroupServerPage implements OnInit {
   lerpVal: number;
   @ViewChild('ToggleOnline') ToggleOnline: IonToggle;
   @ViewChild('ServersList') ServersList: IonAccordionGroup;
-  toggle_online() {
+  async toggle_online() {
     this.nakama.users.self['online'] = this.ToggleOnline.checked;
     if (this.ToggleOnline.checked) {
       this.announce_update_profile = false;
@@ -494,7 +494,11 @@ export class GroupServerPage implements OnInit {
           throw '비밀번호 공백';
         }
         this.nakama.save_self_profile();
-        this.nakama.init_all_sessions();
+        await this.nakama.init_all_sessions();
+        if (!this.servers.length) { // 사설 서버가 없다면 개발 테스트 서버로 연결
+          await this.nakama.WatchAdsAndGetDevServerInfo();
+          this.servers = this.nakama.get_all_server_info(true);
+        }
       } catch (e) {
         this.nakama.users.self['online'] = false;
         this.ToggleOnline.checked = false;

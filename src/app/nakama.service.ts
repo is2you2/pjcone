@@ -129,8 +129,10 @@ export class NakamaService {
         this.servers[info.isOfficial][info.target].info = info;
         this.init_server(info);
       });
-    } else { // 저장된 사설서버가 따로 없음
-      this.toggle_all_session();
+    } else { // 저장된 사설서버가 따로 없음, 사용자가 로그인을 원함
+      let has_data = location.href.split('?').length > 1;
+      if (this.users.self['online'] || has_data)
+        this.toggle_all_session();
     }
     this.catch_group_server_header('offline');
     // 서버별 그룹 정보 불러오기
@@ -372,31 +374,8 @@ export class NakamaService {
   async toggle_all_session() {
     if (this.TogglingSession) return;
     this.TogglingSession = true;
-    if (!this.isRewardAdsUsed) {
-      const options: RewardAdOptions = {
-        adId: 'ca-app-pub-6577630868247944/4325703911',
-      };
-      /** 광고 정보 불러오기 */
-      try { // 파일이 있으면 보여주고, 없다면 보여주지 않음
-        let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/admob.txt`);
-        if (!res.ok) throw "준비된 광고가 없습니다";
-        await AdMob.prepareRewardVideoAd(options);
-        await AdMob.showRewardVideoAd()
-        this.bgmode.disable();
-        AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
-          this.bgmode.enable();
-        });
-        AdMob.addListener(RewardAdPluginEvents.Rewarded, async (reward: AdMobRewardItem) => {
-          if (reward.amount != 0)
-            await this.AccessToOfficialTestServer();
-        });
-        return;
-      } catch (e) { // 파일이 없는 경우 동작
-        console.log(e);
-        await this.AccessToOfficialTestServer();
-        return;
-      }
-    }
+    let UseOfficial = await this.WatchAdsAndGetDevServerInfo();
+    if (UseOfficial) return;
     if (this.statusBar.settings.groupServer == 'online') {
       this.logout_all_server();
       this.p5toast.show({
@@ -425,8 +404,37 @@ export class NakamaService {
     this.TogglingSession = false;
   }
 
+  /** 광고 시청 후 개발자 테스트 서버에 참여하기 */
+  async WatchAdsAndGetDevServerInfo() {
+    if (!this.isRewardAdsUsed) {
+      const options: RewardAdOptions = {
+        adId: 'ca-app-pub-6577630868247944/4325703911',
+      };
+      /** 광고 정보 불러오기 */
+      try { // 파일이 있으면 보여주고, 없다면 보여주지 않음
+        let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/admob.txt`);
+        if (!res.ok) throw "준비된 광고가 없습니다";
+        await AdMob.prepareRewardVideoAd(options);
+        await AdMob.showRewardVideoAd()
+        this.bgmode.disable();
+        AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
+          this.bgmode.enable();
+        });
+        AdMob.addListener(RewardAdPluginEvents.Rewarded, async (reward: AdMobRewardItem) => {
+          if (reward.amount != 0)
+            await this.AccessToOfficialTestServer();
+        });
+      } catch (e) { // 파일이 없는 경우 동작
+        console.log(e);
+        await this.AccessToOfficialTestServer();
+      }
+      return true;
+    }
+    return false;
+  }
+
   /** 공식 테스트 서버 접근 권한 생성 */
-  async AccessToOfficialTestServer() {
+  async AccessToOfficialTestServer() {  
     let res = await fetch(`${SERVER_PATH_ROOT}assets/data/WSAddress.txt`);
     let address = (await res.text()).split('\n')[0];
     await this.add_group_server({
