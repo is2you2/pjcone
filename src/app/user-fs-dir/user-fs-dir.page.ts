@@ -330,6 +330,7 @@ export class UserFsDirPage implements OnInit {
           throw '이거 폴더임';
         };
         if (this.CheckIfAccessable(list[i])) {
+          loading.message = `${this.lang.text['UserFsDir']['ExportDirTitle']}: ${filename}`
           await this.file.writeFile(this.file.externalDataDirectory + only_path + '/', filename, blob, {
             replace: true,
           });
