@@ -137,7 +137,8 @@ export class AppComponent {
                       this_server.client.deleteNotifications(this_server.session, [props.data.noti_id]);
                       nakama.update_notifications(props.data.isOfficial, props.data.Target);
                     })
-                }
+                },
+                cssClass: 'red_font',
               }],
             }).then(v => v.present());
             return;

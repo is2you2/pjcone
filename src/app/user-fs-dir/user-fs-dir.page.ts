@@ -485,7 +485,8 @@ export class UserFsDirPage implements OnInit {
           setTimeout(() => {
             this.noti.ClearNoti(4);
           }, 100);
-        }
+        },
+        cssClass: 'red_font',
       }],
     }).then(v => v.present());
   }
@@ -500,7 +501,8 @@ export class UserFsDirPage implements OnInit {
           this.indexed.removeFileFromUserPath(info.path, () => {
             this.FileList.splice(i, 1);
           });
-        }
+        },
+        cssClass: 'red_font',
       }]
     }).then(v => v.present());
   }

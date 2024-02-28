@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
-import { AlertController, IonToggle, ModalController, NavParams } from '@ionic/angular';
+import { IonToggle, ModalController, NavParams } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -27,7 +27,6 @@ export class ServerDetailPage implements OnInit {
     private nakama: NakamaService,
     private global: GlobalActService,
     private mClipboard: Clipboard,
-    private alertCtrl: AlertController,
   ) { }
 
   dedicated_info: ServerInfo;

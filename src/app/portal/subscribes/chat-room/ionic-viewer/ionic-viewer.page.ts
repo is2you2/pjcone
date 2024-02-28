@@ -978,7 +978,8 @@ export class IonicViewerPage implements OnInit {
         text: this.lang.text['TodoDetail']['remove'],
         handler: () => {
           this.RemoveFileAct();
-        }
+        },
+        cssClass: 'red_font',
       }]
     }).then(v => v.present());
   }

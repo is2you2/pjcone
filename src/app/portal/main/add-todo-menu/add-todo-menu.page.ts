@@ -1177,6 +1177,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         handler: () => {
           this.deleteFromStorage();
         },
+        cssClass: 'red_font',
       }]
     }).then(v => v.present());
   }

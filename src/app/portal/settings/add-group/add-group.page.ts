@@ -238,8 +238,6 @@ export class AddGroupPage implements OnInit {
       let randomAt = Math.floor(Math.random() * ID_GEN_CHAR.length);
       result += ID_GEN_CHAR.charAt(randomAt);
     }
-    console.log(result);
-    console.log(this.nakama.channels_orig['local']['channels']);
     if (!this.nakama.channels_orig['local']['channels'][result])
       return result;
     else return this.CreateRandomLocalId();

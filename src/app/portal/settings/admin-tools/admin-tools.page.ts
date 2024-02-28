@@ -247,7 +247,7 @@ export class AdminToolsPage implements OnInit {
       message: this.lang.text['AdminTools']['ForceBreakUp'],
       buttons: [{
         text: this.lang.text['GroupDetail']['BreakupGroup'],
-        cssClass: 'danger',
+        cssClass: 'red_font',
         handler: () => {
           this.ForceBreakupGroupAct(group);
         }
@@ -339,7 +339,7 @@ export class AdminToolsPage implements OnInit {
       message: this.lang.text['AdminTools']['ForceLeave'],
       buttons: [{
         text: this.lang.text['AdminTools']['ApplyLeave'],
-        cssClass: 'danger',
+        cssClass: 'red_font',
         handler: async () => {
           let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
           loading.present();

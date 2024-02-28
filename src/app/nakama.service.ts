@@ -2799,7 +2799,8 @@ export class NakamaService {
                   } catch (e) {
                     console.error('사용자 강퇴 오류: ', e);
                   }
-                }
+                },
+                cssClass: 'red_font',
               }],
             }).then(v => v.present());
           } else {
@@ -2865,10 +2866,10 @@ export class NakamaService {
           group_ln: 'all_user_noti',
           iconColor_ln: 'ff754e',
         }, 'global_noti_all', (_ev: any) => {
-          let image_form = `<img *ngIf="${decode_image}" src="${decode_image}" alt="noti_image" style="border-radius: 2px">`;
+          let image_form = `<img src="${decode_image}" alt="noti_image" style="border-radius: 2px">`;
           let text_form = `<div>${decode_body}</div>`;
           let result_form = decode_image ? image_form + text_form : text_form;
-          this.alertCtrl.create({
+          this.alertCtrl.create({ // 전체 알림 알람 내용보기
             header: this.servers[_is_official][_target].info.name,
             message: new IonicSafeString(result_form),
             buttons: [{

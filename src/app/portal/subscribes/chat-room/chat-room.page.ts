@@ -347,7 +347,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               }
               loading.dismiss();
               this.navCtrl.pop();
-            }
+            },
+            cssClass: 'red_font',
           }]
         }).then(v => v.present());
       }

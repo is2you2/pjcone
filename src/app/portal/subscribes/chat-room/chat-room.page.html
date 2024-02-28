@@ -76,7 +76,7 @@ SPDX-License-Identifier: MIT -->
             <div *ngIf="msg['isLastRead']" class="read_last_here">
               {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
           </div>
-          <div *ngFor="let msg of sending_msg" (click)="message_detail(msg)">
+          <div *ngFor="let msg of sending_msg">
             <div *ngIf="msg.content['quickShare']" class="quickShare_form" (click)="quickShare_act(msg)">
               {{lang.text['ChatRoom']['QuickShare']}}
             </div>
