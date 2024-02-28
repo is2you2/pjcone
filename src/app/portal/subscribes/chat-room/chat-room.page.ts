@@ -103,8 +103,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     button.isHide = true;
                   });
                   this.extended_buttons[0].isHide = false;
-                  this.extended_buttons[7].isHide = false;
-                  this.extended_buttons[10].isHide = false;
+                  this.extended_buttons[8].isHide = false;
+                  this.extended_buttons[11].isHide = false;
                 }
               });
               v.onDidDismiss().then(() => {
@@ -173,19 +173,21 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     },
     { // 3
       icon: 'document-attach-outline',
-      act: async () => {
+      act: () => {
         if (!this.userInputTextArea)
           this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-        await this.NewAttach.open();
-        this.removeShortCutKey();
-        this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-          let TempFunc = ['load', 'link'];
-          if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && TempFunc.length > index)
-            this.new_attach({ detail: { value: TempFunc[index] } });
-        }
+        this.new_attach({ detail: { value: 'load' } });
       }
     },
     { // 4
+      icon: 'link-outline',
+      act: () => {
+        if (!this.userInputTextArea)
+          this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+        this.new_attach({ detail: { value: 'link' } });
+      }
+    },
+    { // 5
       icon: 'camera-outline',
       act: async () => {
         try {
@@ -223,7 +225,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           loading.dismiss();
         } catch (e) { }
       }
-    }, { // 5
+    }, { // 6
       icon: 'server-outline',
       act: () => {
         this.modalCtrl.create({
@@ -242,7 +244,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           v.present();
         });
       }
-    }, { // 6
+    }, { // 7
       icon: 'call-outline',
       act: async () => {
         try {
@@ -261,7 +263,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           console.log('webrtc 시작단계 오류: ', e);
         }
       }
-    }, { // 7
+    }, { // 8
       isHide: false,
       icon: 'file-tray-full-outline',
       act: () => {
@@ -282,12 +284,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           v.present();
         });
       }
-    }, { // 8
+    }, { // 9
       icon: 'volume-mute-outline',
       act: async () => {
         this.toggle_speakermode();
       }
-    }, { // 9
+    }, { // 10
       icon: 'log-out-outline',
       act: async () => {
         if (this.info['redirect']['type'] != 3) {
@@ -299,17 +301,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.extended_buttons.forEach(button => {
               button.isHide = true;
             });
-            this.extended_buttons[7].isHide = false;
-            this.extended_buttons[10].isHide = false;
+            this.extended_buttons[8].isHide = false;
+            this.extended_buttons[11].isHide = false;
           } catch (e) {
             console.error('채널에서 나오기 실패: ', e);
           }
         } else {
-          this.extended_buttons[9].isHide = true;
+          this.extended_buttons[10].isHide = true;
         }
         this.ionViewDidEnter();
       }
-    }, { // 10
+    }, { // 11
       isHide: true,
       icon: 'close-circle-outline',
       act: () => {
@@ -390,7 +392,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }
 
-  @ViewChild('NewChatRoomAttach') NewAttach: IonSelect;
   /** 첨부 파일 타입 정하기 */
   async new_attach(ev: any) {
     switch (ev.detail.value) {
@@ -443,12 +444,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
         break;
     }
-    this.NewAttach.value = '';
   }
 
   async toggle_speakermode(force?: boolean) {
     this.useSpeaker = force ?? !this.useSpeaker;
-    this.extended_buttons[8].icon = this.useSpeaker
+    this.extended_buttons[9].icon = this.useSpeaker
       ? 'volume-high-outline' : 'volume-mute-outline';
     if (!this.useSpeaker) try {
       await TextToSpeech.stop();
@@ -768,17 +768,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
           else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
             this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
-          delete this.extended_buttons[7].isHide;
+          delete this.extended_buttons[8].isHide;
           this.extended_buttons[0].isHide = true;
-          this.extended_buttons[6].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
+          this.extended_buttons[7].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
         }
         break;
       case 3: // 그룹 대화라면
         if (this.info['status'] != 'missing')
           await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
-        this.extended_buttons[9].isHide = true;
+        this.extended_buttons[10].isHide = true;
         delete this.extended_buttons[0].isHide;
-        this.extended_buttons[6].isHide = true;
+        this.extended_buttons[7].isHide = true;
         break;
       case 0: // 로컬 채널형 기록
         this.extended_buttons.forEach(button => {
@@ -788,9 +788,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.extended_buttons[2].isHide = false;
         this.extended_buttons[3].isHide = false;
         this.extended_buttons[4].isHide = false;
-        this.extended_buttons[7].isHide = false;
+        this.extended_buttons[5].isHide = false;
         this.extended_buttons[8].isHide = false;
-        this.extended_buttons[10].isHide = false;
+        this.extended_buttons[9].isHide = false;
+        this.extended_buttons[11].isHide = false;
         break;
       default:
         break;
@@ -843,12 +844,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.extended_buttons.forEach(button => {
         button.isHide = true;
       });
-      this.extended_buttons[7].isHide = false;
-      this.extended_buttons[10].isHide = false;
+      this.extended_buttons[8].isHide = false;
+      this.extended_buttons[11].isHide = false;
       if (this.info['redirect']['type'] == 3)
         this.extended_buttons[0].isHide = false;
     }
-    this.extended_buttons[8].isHide = isNativefier || this.info['status'] == 'missing';
+    this.extended_buttons[9].isHide = isNativefier || this.info['status'] == 'missing';
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
     setTimeout(() => {
