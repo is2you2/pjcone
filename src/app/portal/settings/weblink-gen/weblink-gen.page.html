@@ -34,26 +34,6 @@
         ginfo['server']['name'] + ')'}}</ion-select-option>
     </ion-select>
   </ion-item>
-  <ion-item button (click)="toggle_tmp_user()">
-    <ion-toggle class="ignore_toggles"
-      [(ngModel)]="userInput.use_tmp_user">{{lang.text['WebLinkGen']['UseTempUser']}}</ion-toggle>
-  </ion-item>
-  <div *ngIf="userInput.use_tmp_user">
-    <ion-item>
-      <ion-input [label]="lang.text['Profile']['email_address']" class="ion-text-end" (ionInput)="information_changed()"
-        [(ngModel)]="userInput.tmp_user.email" placeholder="test@example.com"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-input [label]="lang.text['Profile']['password']" class="ion-text-end" (ionInput)="information_changed()"
-        [(ngModel)]="userInput.tmp_user.password"
-        [placeholder]="userInput.tmp_user.pass_placeholder || lang.text['Profile']['at_least']"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-input [label]="lang.text['Profile']['user_display_name']" class="ion-text-end"
-        (ionInput)="information_changed()" [(ngModel)]="userInput.tmp_user.display_name"
-        [placeholder]="lang.text['Profile']['name_placeholder']"></ion-input>
-    </ion-item>
-  </div>
   <ion-item-divider>
     <ion-label>{{lang.text['WebLinkGen']['AutoOpenChannel']}}</ion-label>
   </ion-item-divider>

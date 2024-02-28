@@ -7,7 +7,6 @@ import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
-import { P5ToastService } from 'src/app/p5-toast.service';
 
 @Component({
   selector: 'app-weblink-gen',
@@ -21,20 +20,12 @@ export class WeblinkGenPage implements OnInit {
     private mClipboard: Clipboard,
     private nakama: NakamaService,
     private indexed: IndexedDBService,
-    private p5toast: P5ToastService,
     private global: GlobalActService,
     private navCtrl: NavController,
   ) { }
 
   userInput = {
     root: undefined,
-    use_tmp_user: false,
-    tmp_user: {
-      email: undefined,
-      password: undefined,
-      pass_placeholder: undefined,
-      display_name: undefined,
-    },
     servers: [] as ServerInfo[],
     groups: [],
     group_dedi: undefined,
@@ -99,18 +90,6 @@ export class WeblinkGenPage implements OnInit {
       this.result_address += `${this.userInput.groups[i]['name']},${this.userInput.groups[i]['id']}`;
       count++;
     }
-    if (this.userInput.use_tmp_user) {
-      const availableStrings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      const StringLen = availableStrings.length;
-      let randomLength = 8 + Math.floor(Math.random() * 8);
-      this.userInput.tmp_user.pass_placeholder = '';
-      if (!this.userInput.tmp_user.password)
-        for (let i = 0; i < randomLength; i++)
-          this.userInput.tmp_user.pass_placeholder += availableStrings.charAt(Math.floor(Math.random() * StringLen));
-      this.result_address += count ? '&' : '?';
-      this.result_address += `tmp_user=${this.userInput.tmp_user.email || 'test@example.com'},${this.userInput.tmp_user.password || this.userInput.tmp_user.pass_placeholder || ''},${this.userInput.tmp_user.display_name || ''}`;
-      count++;
-    }
     if (this.userInput.open_prv_channel) {
       this.result_address += count ? '&' : '?';
       this.result_address += 'open_prv_channel=';
@@ -127,18 +106,6 @@ export class WeblinkGenPage implements OnInit {
       this.result_address += `${this.userInput.groups[0]['id']},${this.userInput.groups[0]['server']['isOfficial']},${this.userInput.groups[0]['server']['target']}`;
       count++;
     }
-  }
-
-  /** 임시 사용자 토글시 정보 삭제 동작을 포함 */
-  toggle_tmp_user() {
-    this.userInput.use_tmp_user = !this.userInput.use_tmp_user;
-    if (!this.userInput.use_tmp_user) {
-      this.userInput.tmp_user.display_name = undefined;
-      this.userInput.tmp_user.email = undefined;
-      this.userInput.tmp_user.password = undefined;
-      this.userInput.tmp_user.pass_placeholder = undefined;
-    }
-    this.information_changed();
   }
 
   copy_result_address() {
