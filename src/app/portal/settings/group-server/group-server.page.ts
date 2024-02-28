@@ -506,14 +506,6 @@ export class GroupServerPage implements OnInit {
     } else {
       this.nakama.logout_all_server();
       delete this.nakama.users.self['password'];
-      this.nakama.groups = {
-        'official': {},
-        'unofficial': {},
-      };
-      this.nakama.channels_orig = {
-        'official': {},
-        'unofficial': {},
-      };
       this.nakama.save_groups_with_less_info();
       this.nakama.rearrange_channels();
     }
