@@ -2458,6 +2458,8 @@ export class NakamaService {
             this.has_new_channel_msg = !is_me;
         }
         break;
+      case 2: // 채널 메시지를 삭제한 경우
+        break;
       case 3: // 열린 그룹 상태에서 사용자 들어오기 요청
       case 4: // 채널에 새로 들어온 사람 알림
       case 5: // 그룹에 있던 사용자 나감(들어오려다가 포기한 사람 포함)
@@ -2631,6 +2633,8 @@ export class NakamaService {
             this.OnTransferMessage[c.message_id] = c;
           } catch (e) { }
         }
+        break;
+      case 2: // 사용자가 삭제한 메시지
         break;
       case 3: // 열린 그룹에 들어온 사용자 알림
       case 4: // 채널에 새로 들어온 사람 알림

@@ -27,7 +27,7 @@ SPDX-License-Identifier: MIT -->
             (click)="pull_msg_history()">
             <ion-label>{{lang.text['ChatRoom']['fetch_previous_chat']}}</ion-label>
           </ion-item>
-          <div *ngFor="let msg of ViewableMessage" (click)="message_detail(msg)">
+          <div *ngFor="let msg of ViewableMessage; let i = index" (click)="message_detail(msg, i)">
             <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
               style="text-align: center; font-size: 16px; padding-top: 8px;">
               <font color="#888"> {{msg['msgDate']}} </font>
@@ -48,14 +48,14 @@ SPDX-License-Identifier: MIT -->
             <div *ngIf="msg.content['match']" class="quickShare_form" (click)="JoinWebRTCMatch(msg)">
               {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
             </div>
-            <div *ngIf="msg.content['filename']" class="file_message_form" (click)="file_detail(msg)">
-              <div *ngIf="!msg.content['thumbnail']" class="file_button"
+            <div *ngIf="msg.content['filename']" class="file_message_form">
+              <div *ngIf="!msg.content['thumbnail']" class="file_button" (click)="file_detail(msg)"
                 [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
                 <p class="file_info"> {{msg.content['filename']}} </p>
                 <div *ngIf="msg.content['text']" class="text_seperator"></div>
                 <span *ngFor="let line of msg.content['text']" class="file_info file_text_thumbnail"> {{line}} </span>
               </div>
-              <div *ngIf="msg.content['thumbnail']" class="file_name_form">
+              <div *ngIf="msg.content['thumbnail']" class="file_name_form" (click)="file_detail(msg)">
                 <img class="file_thumbnail" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
                   [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
               </div>
@@ -80,7 +80,7 @@ SPDX-License-Identifier: MIT -->
             <div *ngIf="msg.content['quickShare']" class="quickShare_form" (click)="quickShare_act(msg)">
               {{lang.text['ChatRoom']['QuickShare']}}
             </div>
-            <div *ngIf="msg.content['filename']" class="file_message_form" (click)="file_detail(msg)">
+            <div *ngIf="msg.content['filename']" class="file_message_form">
               <div *ngIf="!msg.content['thumbnail']" class="file_button"
                 [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
                 <p class="file_info"> {{msg.content['filename']}} </p>

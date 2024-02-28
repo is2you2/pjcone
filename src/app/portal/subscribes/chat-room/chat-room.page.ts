@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChannelMessage } from '@heroiclabs/nakama-js';
-import { AlertController, IonSelect, LoadingController, ModalController, NavController } from '@ionic/angular';
+import { AlertController, IonicSafeString, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 import * as p5 from "p5";
@@ -808,7 +808,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.info['last_read_id'] = this.info['last_comment_id'];
         this.nakama.save_channels_with_less_info();
         if (!is_local) this.check_if_send_msg(c);
-        this.messages.push(c);
+        if (c.code != 2) this.messages.push(c);
         if (this.ViewMsgIndex + this.ViewCount == this.messages.length - 1)
           this.ViewMsgIndex++;
         this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
@@ -988,7 +988,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
               this.nakama.ModulateTimeDate(msg);
               this.nakama.content_to_hyperlink(msg);
-              this.messages.unshift(msg);
+              if (msg.code != 2) this.messages.unshift(msg);
               this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
               this.modulate_chatmsg(0, this.ViewableMessage.length);
             });
@@ -1014,7 +1014,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }];
             this.next_cursor = undefined;
             this.isHistoryLoaded = true;
-            tmp.forEach(tmsg => this.messages.push(tmsg));
+            tmp.forEach(tmsg => {
+              if (tmsg['code'] != 2) this.messages.push(tmsg)
+            });
             return;
           }
         this.LoadLocalChatHistory();
@@ -1068,7 +1070,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   LocalHistoryList = [];
   /** 내부 저장소 채팅 기록 열람 */
   async LoadLocalChatHistory() {
-    if (this.ViewMsgIndex > 0) { // 위에 더 볼 수 있는 메시지가 있음 (이미 받은 것으로)
+    if (this.ViewMsgIndex > 0) { // 위에 더 볼 수 있는 메시지가 있음 (열람된 파일에서)
       let ShowMeAgainCount = Math.min(this.ViewableMessage.length, Math.min(this.ViewMsgIndex, this.RefreshCount));
       this.ViewMsgIndex -= ShowMeAgainCount;
       this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
@@ -1100,7 +1102,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               if (!this.info['local'])
                 json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
               this.nakama.ModulateTimeDate(json[i]);
-              this.messages.unshift(json[i]);
+              if (json[i]['code'] != 2) this.messages.unshift(json[i]);
             }
             this.ViewMsgIndex = Math.max(0, this.messages.length - this.RefreshCount);
             this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.RefreshCount);
@@ -1129,7 +1131,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.nakama.translate_updates(json[i]);
             json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
             this.nakama.ModulateTimeDate(json[i]);
-            this.messages.unshift(json[i]);
+            if (json[i]['code'] != 2) this.messages.unshift(json[i]);
           }
           this.ViewMsgIndex = Math.max(0, json.length - this.RefreshCount);
           this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
@@ -1272,21 +1274,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         user_display_name: this.nakama.users.self['display_name'],
         is_me: true,
       };
-      this.nakama.ModulateTimeDate(msg);
-      this.nakama.channels_orig[this.isOfficial][this.target][msg.channel_id]['last_comment_time'] = msg.create_time;
-      this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment_id'] = local_msg_id;
-      this.nakama.rearrange_channels();
-      this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'](msg);
-      this.nakama.saveListedMessage([msg], this.info, this.isOfficial, this.target);
-      let hasFile = msg.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
-      this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment'] = hasFile +
-        (this.userInput.text || msg.content['noti'] || (msg.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined) || '');
-      this.nakama.save_channels_with_less_info();
-      setTimeout(() => {
-        this.userInput.text = '';
-        this.userInputTextArea.style.height = '36px';
-        this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
-      }, 0);
+      this.SendLocalMessage(msg);
       return;
     } // 아래, 온라인 행동
     this.sending_msg.push(tmp);
@@ -1341,6 +1329,26 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 원격 발송 없이 로컬에 저장하기 */
+  SendLocalMessage(msg: any) {
+    this.nakama.ModulateTimeDate(msg);
+    this.nakama.channels_orig[this.isOfficial][this.target][msg.channel_id]['last_comment_time'] = msg.create_time;
+    this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment_id'] = msg.message_id;
+    this.nakama.rearrange_channels();
+    this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'](msg);
+    this.nakama.saveListedMessage([msg], this.info, this.isOfficial, this.target);
+    let hasFile = msg.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
+    this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment'] = hasFile +
+      (this.userInput.text || msg.content['noti'] || (msg.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined) || '');
+    this.nakama.save_channels_with_less_info();
+    setTimeout(() => {
+      this.userInput.text = '';
+      if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+      this.userInputTextArea.style.height = '36px';
+      this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
+    }, 0);
+  }
+
   /** 바로 전달하기 어려운 긴 글은 파일화 시켜서 보내기 */
   async LongTextMessageAsFile(result: any) {
     let blob = new Blob([result['msg']]);
@@ -1380,12 +1388,89 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     });
   }
 
+  isOtherAct = false;
   /** 메시지 정보 상세 */
-  message_detail(msg: any) {
+  async message_detail(msg: any, index: number) {
+    if (this.isOtherAct) return; // 다른 행동과 중첩 방지
+    if (this.info['status'] != 'online') return;
+    let MsgText = ''; // 메시지 평문화
+    for (let i = 0, j = msg.content['msg'].length; i < j; i++) {
+      for (let k = 0, l = msg.content['msg'][i].length; k < l; k++)
+        MsgText += msg.content['msg'][i][k].text;
+      MsgText += '\n';
+    }
+    let FileURL: any;
+    if (msg.content['viewer'] == 'image') {
+      try { // 파일 불러오기 실패시 그저 망치기
+        let blob = await this.indexed.loadBlobFromUserPath(msg.content['path'], msg.content['type']);
+        FileURL = URL.createObjectURL(blob);
+      } catch (e) { }
+    }
+    let text_form = `<div>${MsgText}</div>`;
+    let image_form = `<img src="${FileURL}" alt="${msg.content['filename']}" style="border-radius: 2px">`;
+    let result_form = FileURL ? image_form + text_form : text_form;
+    this.alertCtrl.create({
+      header: this.lang.text['ChatRoom']['RemoveChat'],
+      message: new IonicSafeString(result_form),
+      buttons: [{
+        text: this.lang.text['UserFsDir']['Delete'],
+        cssClass: 'red_font',
+        handler: async () => {
+          if (!this.info['local']) { // 서버와 연결된 채널인 경우
+            try {
+              await this.nakama.servers[this.isOfficial][this.target].socket.removeChatMessage(this.info['id'], msg.message_id);
+              if (FileURL) {
+                let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['DeleteFile'] });
+                loading.present();
+                for (let i = 0; i < msg.content['partsize']; i++) {
+                  await this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
+                    this.nakama.servers[this.isOfficial][this.target].session, {
+                    object_ids: [{
+                      collection: `file_${msg.channel_id.replace(/[.]/g, '_')}`,
+                      key: `msg_${msg.message_id}_${i}`,
+                    }],
+                  });
+                  loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${msg.content['filename']}_${msg.content['partsize'] - i}`;
+                }
+                loading.dismiss();
+              }
+            } catch (e) {
+              console.error('채널 메시지 삭제 오류: ', e);
+            }
+          }
+          if (FileURL) {
+            try {
+              let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+              await this.indexed.removeFileFromUserPath(path);
+            } catch (e) { }
+          }
+          this.ViewableMessage.splice(index, 1);
+          for (let i = 0, j = this.messages.length; i < j; i++)
+            if (this.messages[i]['message_id'] == msg['message_id']) {
+              this.messages.splice(i, 1);
+              break;
+            }
+          msg['code'] = 2;
+          this.SendLocalMessage(msg);
+          for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
+            this.modulate_chatmsg(i, this.ViewableMessage.length);
+          this.p5toast.show({
+            text: this.lang.text['ChatRoom']['MsgRemoved'],
+          });
+        }
+      }]
+    }).then(v => {
+      v.onDidDismiss().then(() => {
+        URL.revokeObjectURL(FileURL);
+        this.isOtherAct = false;
+      });
+      v.present();
+    });
   }
 
   /** 메시지 내 파일 정보, 파일 다운받기 */
   async file_detail(msg: any) {
+    this.isOtherAct = true;
     if (msg.content['url']) {
       msg.content['thumbnail'] = msg.content['url'];
       this.open_viewer(msg, msg.content['url']);
@@ -1447,6 +1532,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }
     }
+    this.isOtherAct = false;
   }
 
   /** QR행동처럼 처리하기 */
@@ -1468,7 +1554,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
    * 연산 줄이기 용도
    * @param i 현재 메시지 번호
    * @param j 메시지 전체 길이
-   * @param msg 메시지 개체
    */
   modulate_chatmsg(i: number, j: number) {
     // 1회성 보여주기 양식 생성 (채팅방 전용 정보)
@@ -1662,6 +1747,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 사용자 정보보기 */
   user_detail(msg: ChannelMessage) {
     if (!this.lock_modal_open) {
+      this.isOtherAct = true;
       this.lock_modal_open = true;
       if (msg['is_me']) // 내 정보
         this.modalCtrl.create({
@@ -1672,6 +1758,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
         }).then(v => {
           v.onDidDismiss().then((_v) => {
+            this.isOtherAct = false;
             this.ionViewDidEnter();
             this.noti.Current = this.info['cnoti_id'];
             if (this.info['cnoti_id'])
@@ -1692,6 +1779,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           },
         }).then(v => {
           v.onDidDismiss().then((_v) => {
+            this.isOtherAct = false;
             this.noti.Current = this.info['cnoti_id'];
             if (this.info['cnoti_id'])
               this.noti.ClearNoti(this.info['cnoti_id']);
