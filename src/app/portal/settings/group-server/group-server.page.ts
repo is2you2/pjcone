@@ -103,19 +103,6 @@ export class GroupServerPage implements OnInit {
     }
   }
 
-  /** 사설 서버가 없을 때 테스트 서버 자동 연결 토글링 */
-  async toggle_use_test_server() {
-    // 토글이 눌리고 나서 함수 동작함
-    if (this.nakama.dont_use_test_server) {
-      localStorage.removeItem('dont_use_test_server');
-      await this.nakama.AccessToOfficialTestServer();
-    } else {
-      localStorage.setItem('dont_use_test_server', '1');
-      await this.nakama.remove_server('official', 'DevTestServer');
-    }
-    this.servers = this.nakama.get_all_server_info(true);
-  }
-
   ionViewWillEnter() {
     this.ServersList.value = this.ToggleOnline.checked ? 'open' : undefined;
   }

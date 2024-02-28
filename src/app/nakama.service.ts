@@ -103,7 +103,6 @@ export class NakamaService {
     'unofficial': {},
   };
 
-  dont_use_test_server = true;
   async initialize() {
     // 기등록 알림 id 검토
     this.noti.GetNotificationIds((list) => {
@@ -131,8 +130,7 @@ export class NakamaService {
         this.init_server(info);
       });
     } else { // 저장된 사설서버가 따로 없음
-      this.dont_use_test_server = !Boolean(localStorage.getItem('dont_use_test_server'));
-      if (this.dont_use_test_server) this.toggle_all_session();
+      this.toggle_all_session();
     }
     this.catch_group_server_header('offline');
     // 서버별 그룹 정보 불러오기
@@ -429,7 +427,6 @@ export class NakamaService {
 
   /** 공식 테스트 서버 접근 권한 생성 */
   async AccessToOfficialTestServer() {
-    if (!this.dont_use_test_server) return;
     let res = await fetch(`${SERVER_PATH_ROOT}assets/data/WSAddress.txt`);
     let address = (await res.text()).split('\n')[0];
     await this.add_group_server({
