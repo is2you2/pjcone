@@ -48,10 +48,9 @@ interface NakamaGroup {
 
 export enum MatchOpCode {
   /** 해야할 일 생성/수정/삭제/완료 */
-  ADD_TODO = 10,
+  MANAGE_TODO = 10,
   /** 프로필 정보/이미지 수정 */
   EDIT_PROFILE = 11,
-  ENGINE_PPT = 13,
   /** 새로운 채널에 참여됨 */
   ADD_CHANNEL = 14,
   /** WebRTC 시작 요청 */
@@ -434,7 +433,7 @@ export class NakamaService {
   }
 
   /** 공식 테스트 서버 접근 권한 생성 */
-  async AccessToOfficialTestServer() {  
+  async AccessToOfficialTestServer() {
     let res = await fetch(`${SERVER_PATH_ROOT}assets/data/WSAddress.txt`);
     let address = (await res.text()).split('\n')[0];
     await this.add_group_server({
@@ -951,7 +950,7 @@ export class NakamaService {
     todo_info['remote']['target'] = _target;
     todo_info['remote']['type'] = `${_is_official}/${_target}`;
     this.set_todo_notification(todo_info);
-    if (this.global.p5todo['add_todo']) this.global.p5todo['add_todo'](JSON.stringify(todo_info));
+    if (this.global.p5todo && this.global.p5todo['add_todo']) this.global.p5todo['add_todo'](JSON.stringify(todo_info));
     this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`, undefined, this.indexed.godotDB);
   }
 
@@ -2062,7 +2061,7 @@ export class NakamaService {
     socket.onmatchdata = async (m) => {
       m['data_str'] = decodeURIComponent(new TextDecoder().decode(m.data));
       switch (m.op_code) {
-        case MatchOpCode.ADD_TODO: {
+        case MatchOpCode.MANAGE_TODO: {
           let sep = m['data_str'].split(',');
           switch (sep[0]) {
             case 'add': // 추가
@@ -2078,8 +2077,32 @@ export class NakamaService {
                   this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
                   let json = v.objects[0].value as any;
                   let CounterIndex = Number(json.id.split('_')[1]);
-                  let find_index = this.RemoteTodoCounter[_is_official][_target].indexOf(CounterIndex);
+                  let find_index = -1;
+                  try {
+                    find_index = this.RemoteTodoCounter[_is_official][_target].indexOf(CounterIndex);
+                  } catch (e) { }
                   if (find_index == -1) this.addRemoteTodoCounter(_is_official, _target, CounterIndex);
+                  this.noti.PushLocal({ // 일을 받은 경우 알림 띄우기
+                    id: json.noti_id,
+                    title: json.title,
+                    body: json.description,
+                    smallIcon_ln: 'todo',
+                    iconColor_ln: json.custom_color,
+                    group_ln: 'todo',
+                    extra_ln: {
+                      page: {
+                        component: 'AddTodoMenuPage',
+                        componentProps: {
+                          data: JSON.stringify(json),
+                        },
+                      },
+                    },
+                  }, undefined, (_ev: any) => {
+                    this.open_add_todo_page(JSON.stringify(json));
+                  });
+                  this.p5toast.show({
+                    text: `${this.lang.text['Main']['RequestTodo']}: ${json.title}`,
+                  });
                 }
               });
               break;
@@ -2090,6 +2113,7 @@ export class NakamaService {
                   todo_info.done = true;
                   this.modify_remote_info_as_local(todo_info, _is_official, _target);
                   this.addRemoteTodoCounter(_is_official, _target, Number(todo_info['id'].split('_')[1]));
+                  this.noti.ClearNoti(todo_info.noti_id);
                 }
               }, this.indexed.godotDB);
               break;
@@ -2105,15 +2129,21 @@ export class NakamaService {
                         delete this.web_noti_id[todo_info.noti_id];
                       }
                     this.noti.ClearNoti(todo_info.noti_id);
-                    this.global.p5todo['remove_todo'](JSON.stringify(todo_info));
+                    if (this.global.p5todo && this.global.p5todo['remove_todo'])
+                      this.global.p5todo['remove_todo'](JSON.stringify(todo_info));
                   }, this.indexed.godotDB);
                   this.addRemoteTodoCounter(_is_official, _target, Number(todo_info['id'].split('_')[1]));
                 }
               }, this.indexed.godotDB);
               break;
             case 'worker': // 매니저 입장에서, 작업자 완료
+              let isDelete = sep[3] == 'true';
               if (this.AddTodoManageUpdateAct)
-                this.AddTodoManageUpdateAct(sep[1], sep[2], sep[3] == 'true', Number(sep[4]));
+                this.AddTodoManageUpdateAct(sep[1], sep[2], isDelete, Number(sep[4]));
+              let userAct = isDelete ? this.lang.text['Main']['WorkerAbandon'] : this.lang.text['Main']['WorkerDone'];
+              this.p5toast.show({
+                text: `${userAct}: ${this.users[_is_official][_target][sep[2]]['display_name']}`,
+              });
               // 로컬 자료를 변경해야함
               this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
                 if (e && v) {
@@ -2170,8 +2200,6 @@ export class NakamaService {
               break;
           }
         }
-          break;
-        case MatchOpCode.ENGINE_PPT: { }
           break;
         case MatchOpCode.ADD_CHANNEL: {
           this.get_group_list_from_server(_is_official, _target);

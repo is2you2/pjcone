@@ -6,7 +6,7 @@ import { GlobalActService, isDarkMode } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize } from '@capacitor-community/admob';
-import { SERVER_PATH_ROOT } from 'src/app/app.component';
+import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import * as p5 from 'p5';
@@ -69,7 +69,8 @@ export class MainPage implements OnInit {
   isEmptyTodo = false;
   CreateTodoManager() {
     setTimeout(() => {
-      this.toggleCanvasPlaying();
+      if (isPlatform != 'DesktopPWA')
+        this.toggleCanvasPlaying();
     }, 8000);
     // 해야할 일 관리자 생성 행동
     let todo_div = document.getElementById('todo');
@@ -161,6 +162,7 @@ export class MainPage implements OnInit {
               break;
             }
           this.isEmptyTodo = !Boolean(Object.keys(TodoKeys).length);
+          p['count_todo']();
         }
         // 해야할 일 리스트 업데이트
         p['ListUpdate'] = async () => {

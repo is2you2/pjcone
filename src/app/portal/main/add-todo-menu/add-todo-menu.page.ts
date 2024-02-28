@@ -891,7 +891,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       loading.present();
       if (this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target])
         await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-          .socket.sendMatchState(this.nakama.self_match[this.userInput.remote.isOfficial][this.userInput.remote.target].match_id, MatchOpCode.ADD_TODO,
+          .socket.sendMatchState(this.nakama.self_match[this.userInput.remote.isOfficial][this.userInput.remote.target].match_id, MatchOpCode.MANAGE_TODO,
             encodeURIComponent(`done,${this.userInput.id}`));
       loading.dismiss();
     }
@@ -1056,8 +1056,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (!has_attach && attach_changed) { // 첨부된게 전혀 없다면 모든 이미지 삭제
       if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
         await this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/thumbnail.png`);
-        for (let i = 0, j = received_json.attach.length; i < j; i++)
-          await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
+        if (received_json['attach'])
+          for (let i = 0, j = received_json.attach.length; i < j; i++)
+            await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
       }
     }
     this.userInput.attach.forEach(attach => {
@@ -1108,7 +1109,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
                   .socket.joinMatch(match.objects[0].value['match_id']);
                 await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-                  .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.ADD_TODO,
+                  .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.MANAGE_TODO,
                     encodeURIComponent(`add,server_todo,${this.userInput.id}`));
                 await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
                   .socket.leaveMatch(match.objects[0].value['match_id']);
@@ -1124,7 +1125,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             value: this.userInput,
           }]).then(async v => {
             await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-              .socket.sendMatchState(this.nakama.self_match[this.userInput.remote.isOfficial][this.userInput.remote.target].match_id, MatchOpCode.ADD_TODO,
+              .socket.sendMatchState(this.nakama.self_match[this.userInput.remote.isOfficial][this.userInput.remote.target].match_id, MatchOpCode.MANAGE_TODO,
                 encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
           });
         if (has_attach && attach_changed)
@@ -1203,7 +1204,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         for (let i = 0, j = this.userInput.attach.length; i < j; i++)
           await this.nakama.sync_remove_file(this.userInput.attach[i].path, isOfficial, target, 'todo_attach');
         if (isDelete) await this.nakama.servers[isOfficial][target]
-          .socket.sendMatchState(this.nakama.self_match[isOfficial][target].match_id, MatchOpCode.ADD_TODO,
+          .socket.sendMatchState(this.nakama.self_match[isOfficial][target].match_id, MatchOpCode.MANAGE_TODO,
             encodeURIComponent(`delete,${this.userInput.id}`));
       } catch (e) {
         console.error('해야할 일 삭제 요청이 서버에 전송되지 않음: ', e);
@@ -1236,7 +1237,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
                 .socket.joinMatch(match.objects[0].value['match_id']);
               await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-                .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.ADD_TODO,
+                .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.MANAGE_TODO,
                   encodeURIComponent(`worker,${this.userInput.id},${this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id},${isDelete},${act_time}`));
               await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
                 .socket.leaveMatch(match.objects[0].value['match_id']);
@@ -1267,7 +1268,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
                 .socket.joinMatch(match.objects[0].value['match_id']);
               await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-                .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.ADD_TODO,
+                .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.MANAGE_TODO,
                   encodeURIComponent(isDelete ? `delete,${this.userInput.id}` : `done,${this.userInput.id}`));
               await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
                 .socket.leaveMatch(match.objects[0].value['match_id']);
