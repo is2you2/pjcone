@@ -1392,7 +1392,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 메시지 정보 상세 */
   async message_detail(msg: any, index: number) {
     if (this.isOtherAct) return; // 다른 행동과 중첩 방지
-    if (this.info['status'] != 'online') return;
+    if (this.info['status'] == 'offline' || this.info['status'] == 'missing') return;
+    if (!msg['is_me']) return;
     let MsgText = ''; // 메시지 평문화
     for (let i = 0, j = msg.content['msg'].length; i < j; i++) {
       for (let k = 0, l = msg.content['msg'][i].length; k < l; k++)
@@ -1400,11 +1401,18 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       MsgText += '\n';
     }
     let FileURL: any;
-    if (msg.content['viewer'] == 'image') {
+    if (msg.content['viewer']) {
       try { // 파일 불러오기 실패시 그저 망치기
+        if (msg.content['viewer'] != 'image') throw '이미지 파일이 아님';
         let blob = await this.indexed.loadBlobFromUserPath(msg.content['path'], msg.content['type']);
         FileURL = URL.createObjectURL(blob);
-      } catch (e) { }
+      } catch (e) {
+        try { // 대안 썸네일 불러오기 (영상 등 이미지가 아닌 파일의 썸네일)
+          let blob = await this.indexed.loadBlobFromUserPath(`${msg.content['path']}_thumbnail.png`, msg.content['type']);
+          FileURL = URL.createObjectURL(blob);
+        } catch (e) { }
+      }
+      MsgText = `(${this.lang.text['ChatRoom']['attachments']}) ${MsgText}`
     }
     let text_form = `<div>${MsgText}</div>`;
     let image_form = `<img src="${FileURL}" alt="${msg.content['filename']}" style="border-radius: 2px">`;
