@@ -12,6 +12,7 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IndexedDBService } from 'src/app/indexed-db.service';
+import * as p5 from 'p5';
 
 @Component({
   selector: 'app-add-group',
@@ -45,6 +46,20 @@ export class AddGroupPage implements OnInit {
     this.servers.push(local_info);
     this.userInput.server = this.servers[this.index];
     this.file_sel_id = `add_group_${new Date().getTime()}`;
+    this.ChangeContentWithKeyInput();
+  }
+
+  p5canvas: p5;
+  ChangeContentWithKeyInput() {
+    this.p5canvas = new p5((p: p5) => {
+      p.keyPressed = (ev) => {
+        switch (ev['code']) {
+          case 'Enter':
+            this.save();
+            break;
+        }
+      }
+    });
   }
 
   /** 사용자가 작성한 그룹 정보 */
@@ -277,6 +292,7 @@ export class AddGroupPage implements OnInit {
     if (!this.isSavedWell)
       localStorage.setItem('add-group', JSON.stringify(this.userInput));
     else localStorage.removeItem('add-group');
+    if (this.p5canvas) this.p5canvas.remove();
   }
 
   file_sel_id = '';
