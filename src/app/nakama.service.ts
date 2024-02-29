@@ -405,7 +405,8 @@ export class NakamaService {
 
   /** 광고 시청 후 개발자 테스트 서버에 참여하기 */
   async WatchAdsAndGetDevServerInfo() {
-    if (!this.isRewardAdsUsed) {
+    let RegisteredServer = this.get_all_server_info(true);
+    if (!this.isRewardAdsUsed && !RegisteredServer.length) {
       const options: RewardAdOptions = {
         adId: 'ca-app-pub-6577630868247944/4325703911',
       };
@@ -1028,7 +1029,7 @@ export class NakamaService {
         this.save_groups_with_less_info();
       }
     } catch (e) {
-      console.error('load_groups: ', e);
+      console.log('load_groups_error: ', e);
     }
   }
 
