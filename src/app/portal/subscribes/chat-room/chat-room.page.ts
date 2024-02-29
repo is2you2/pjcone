@@ -1415,7 +1415,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       MsgText = `(${this.lang.text['ChatRoom']['attachments']}) ${MsgText}`
     }
     let text_form = `<div>${MsgText}</div>`;
-    let image_form = `<img src="${FileURL}" alt="${msg.content['filename']}" style="border-radius: 2px">`;
+    let image_form = `<div style="width: 100%;"><img src="${FileURL}" alt="${msg.content['filename']}" style="border-radius: 2px; max-height: 230px; position: relative; left: 50%; transform: translateX(-50%);"></div>`;
     let result_form = FileURL ? image_form + text_form : text_form;
     this.alertCtrl.create({
       header: this.lang.text['ChatRoom']['RemoveChat'],
@@ -1572,11 +1572,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     // 날짜 표시
     this.ViewableMessage[i]['showInfo']['date'] = Boolean(this.ViewableMessage[i]['msgDate']);
     // 발신인과 시간 표시
-    this.ViewableMessage[i]['showInfo']['sender'] = !this.ViewableMessage[i].content.noti && this.ViewableMessage[i].user_display_name;
+    this.ViewableMessage[i]['showInfo']['sender'] = !this.ViewableMessage[i].content.noti;
     // 이전 메시지와 정보를 비교하여 이전 메시지와 지금 메시지의 상태를 결정 (실시간 메시지 받기류)
     if (i - 1 >= 0) {
       this.ViewableMessage[i]['showInfo']['date'] = Boolean(this.ViewableMessage[i]['msgDate']) && (this.ViewableMessage[i]['msgDate'] != this.ViewableMessage[i - 1]['msgDate']);
-      this.ViewableMessage[i]['showInfo']['sender'] = !this.ViewableMessage[i].content.noti && this.ViewableMessage[i].user_display_name && (this.ViewableMessage[i - 1]['isLastRead'] || this.ViewableMessage[i].sender_id != this.ViewableMessage[i - 1].sender_id || this.ViewableMessage[i - 1].content.noti || this.ViewableMessage[i]['msgDate'] != this.ViewableMessage[i - 1]['msgDate'] || this.ViewableMessage[i]['msgTime'] != this.ViewableMessage[i - 1]['msgTime']);
+      this.ViewableMessage[i]['showInfo']['sender'] = !this.ViewableMessage[i].content.noti && (this.ViewableMessage[i - 1]['isLastRead'] || this.ViewableMessage[i].sender_id != this.ViewableMessage[i - 1].sender_id || this.ViewableMessage[i - 1].content.noti || this.ViewableMessage[i]['msgDate'] != this.ViewableMessage[i - 1]['msgDate'] || this.ViewableMessage[i]['msgTime'] != this.ViewableMessage[i - 1]['msgTime']);
     }
     // url 링크 개체 즉시 불러오기
     if (this.ViewableMessage[i]['content']['url']) {
@@ -1588,7 +1588,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     try {
       if (i + 1 < j) {
         this.ViewableMessage[i + 1]['showInfo']['date'] = Boolean(this.ViewableMessage[i]['msgDate']) && (this.ViewableMessage[i]['msgDate'] != this.ViewableMessage[i + 1]['msgDate']);
-        this.ViewableMessage[i + 1]['showInfo']['sender'] = !this.ViewableMessage[i + 1].content.noti && this.ViewableMessage[i + 1].user_display_name && (this.ViewableMessage[i]['isLastRead'] || this.ViewableMessage[i].sender_id != this.ViewableMessage[i + 1].sender_id || this.ViewableMessage[i].content.noti || this.ViewableMessage[i]['msgDate'] != this.ViewableMessage[i + 1]['msgDate'] || this.ViewableMessage[i]['msgTime'] != this.ViewableMessage[i + 1]['msgTime']);
+        this.ViewableMessage[i + 1]['showInfo']['sender'] = !this.ViewableMessage[i + 1].content.noti && (this.ViewableMessage[i]['isLastRead'] || this.ViewableMessage[i].sender_id != this.ViewableMessage[i + 1].sender_id || this.ViewableMessage[i].content.noti || this.ViewableMessage[i]['msgDate'] != this.ViewableMessage[i + 1]['msgDate'] || this.ViewableMessage[i]['msgTime'] != this.ViewableMessage[i + 1]['msgTime']);
       }
     } catch (e) { }
   }

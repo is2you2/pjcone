@@ -37,7 +37,7 @@ SPDX-License-Identifier: MIT -->
                 <b>
                   <font
                     color="#{{(msg['is_me'] && nakama.users.self['online']) || (!msg['is_me'] && nakama.users[isOfficial][target][msg.sender_id]['online']) ? msg.color : '888'}}">
-                    {{msg.user_display_name}}</font>
+                    {{msg.user_display_name || lang.text['Profile']['noname_user']}}</font>
                 </b>
               </span>
               <span class="time_form">{{msg['msgTime']}}</span>
