@@ -38,14 +38,11 @@ export class GroupServerPage implements OnInit {
   info: string;
   servers: ServerInfo[];
 
-  isSSLConnect = false;
   /** 서버 정보가 있는 경우 uid 받기 */
   session_uid = '';
 
   ngOnInit() {
     this.servers = this.nakama.get_all_server_info(true);
-    this.isSSLConnect = (window.location.protocol == 'https:') && !isNativefier;
-    if (this.isSSLConnect) this.dedicated_info.useSSL = true;
 
     this.file_sel_id = `self_profile_${new Date().getTime()}`;
     this.content_sel_id = `self_content_${new Date().getTime()}`;
@@ -144,8 +141,8 @@ export class GroupServerPage implements OnInit {
     let AddrPort = (this.dedicated_info.address || '192.168.0.1').split(':');
     this.dedicated_info.address = AddrPort[0];
     this.dedicated_info.port = Number(AddrPort[1]) || 7350;
-    if (this.isSSLConnect) this.dedicated_info.useSSL = true;
-    this.dedicated_info.useSSL = this.dedicated_info.useSSL || Boolean(this.dedicated_info.address.replace(/0-9|\./g, ''));
+    this.dedicated_info.useSSL = (window.location.protocol == 'https:') && !isNativefier;
+    this.dedicated_info.useSSL = this.dedicated_info.useSSL || Boolean(this.dedicated_info.address.replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, ''));
     this.dedicated_info.key = this.dedicated_info.key || 'defaultkey';
 
     this.nakama.add_group_server(this.dedicated_info, () => {
@@ -157,7 +154,6 @@ export class GroupServerPage implements OnInit {
       this.dedicated_info.port = undefined;
       this.dedicated_info.key = undefined;
       this.dedicated_info.useSSL = undefined;
-      if (this.isSSLConnect) this.dedicated_info.useSSL = true;
       this.dedicated_info.isOfficial = undefined;
     });
     this.RegisterNewServer.dismiss();

@@ -37,10 +37,8 @@ export class WeblinkGenPage implements OnInit {
   groups = [];
   rtcServer = [];
 
-  isSSLConnect = false;
 
   ngOnInit() {
-    this.isSSLConnect = (window.location.protocol == 'https:') && !isNativefier;
     this.servers = this.nakama.get_all_server_info();
     this.groups = this.nakama.rearrange_group_list();
     this.indexed.loadTextFromUserPath('servers/webrtc_server.json', (e, v) => {
