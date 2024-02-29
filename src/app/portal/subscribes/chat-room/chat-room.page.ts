@@ -827,7 +827,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.last_message_viewer['is_me'] = true;
             else this.last_message_viewer['is_me'] = c.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id;
             this.last_message_viewer['user_id'] = c.sender_id;
-            this.last_message_viewer['message'] = c.content['msg'];
+            let message_copied = JSON.parse(JSON.stringify(c.content['msg']))
+            if (c.content['filename']) // 파일이 첨부된 경우
+              if (message_copied.length) { // 최신 메시지 보기에 (첨부파일) 메시지를 임의로 추가
+                message_copied[0][0]['text'] = `(${this.lang.text['ChatRoom']['attachments']}) ${message_copied[0][0]['text']}`;
+              } else message_copied = [[{ text: `(${this.lang.text['ChatRoom']['attachments']})` }]];
+            this.last_message_viewer['message'] = message_copied;
             this.last_message_viewer['color'] = c.color;
           }
         }, 0);
@@ -1389,6 +1394,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   isOtherAct = false;
+  SetOtherAct() {
+    this.isOtherAct = true;
+    setTimeout(() => {
+      this.isOtherAct = false;
+    }, 0);
+  }
   /** 메시지 정보 상세 */
   async message_detail(msg: any, index: number) {
     if (this.isOtherAct) return; // 다른 행동과 중첩 방지
