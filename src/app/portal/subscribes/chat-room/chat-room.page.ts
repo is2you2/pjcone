@@ -575,7 +575,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.isMobile = isPlatform == 'Android' || isPlatform == 'iOS';
   }
 
-  /** 음성 인식, 목소리를 글자로 변경해서 입력해줌 */
   async GetSpeechToText() {
     let result = await SpeechRecognition.start({
       language: this.lang.lang,
@@ -828,12 +827,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.last_message_viewer['is_me'] = true;
             else this.last_message_viewer['is_me'] = c.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id;
             this.last_message_viewer['user_id'] = c.sender_id;
-            let message_copied = JSON.parse(JSON.stringify(c.content['msg']))
-            if (c.content['filename']) // 파일이 첨부된 경우
-              if (message_copied.length) { // 최신 메시지 보기에 (첨부파일) 메시지를 임의로 추가
-                message_copied[0][0]['text'] = `(${this.lang.text['ChatRoom']['attachments']}) ${message_copied[0][0]['text']}`;
-              } else message_copied = [[{ text: `(${this.lang.text['ChatRoom']['attachments']})` }]];
-            this.last_message_viewer['message'] = message_copied;
+            this.last_message_viewer['message'] = c.content['msg'];
             this.last_message_viewer['color'] = c.color;
           }
         }, 0);
@@ -1603,7 +1597,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   ModulateFileEmbedMessage(msg: any) {
     let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
     msg.content['path'] = path;
-    msg.content['msg'] = msg.content['msg'] || []; // 빈 문자열이라면 빈 배열로 변환
     try {
       msg.content['transfer_index'] = this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id][msg.message_id];
     } catch (e) { }
