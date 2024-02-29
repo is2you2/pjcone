@@ -1450,6 +1450,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             try {
               let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
               await this.indexed.removeFileFromUserPath(path);
+              await this.indexed.removeFileFromUserPath(`${path}_thumbnail.png`);
             } catch (e) { }
           }
           this.ViewableMessage.splice(index, 1);
@@ -1564,6 +1565,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
    * @param j 메시지 전체 길이
    */
   modulate_chatmsg(i: number, j: number) {
+    if (j == 0) return;
     // 1회성 보여주기 양식 생성 (채팅방 전용 정보)
     if (!this.ViewableMessage[i]['showInfo'])
       this.ViewableMessage[i]['showInfo'] = {};
