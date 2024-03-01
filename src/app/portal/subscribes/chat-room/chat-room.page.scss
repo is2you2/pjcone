@@ -197,9 +197,21 @@
     max-height: 36px;
 }
 
-.TextAreaInput {
+.md .TextAreaInput {
     width: 100%;
     height: 36px;
+    max-height: 156px;
+    resize: none;
+    padding: 6px;
+    margin-top: 5px;
+    border: 0;
+    overflow: hidden;
+    background-color: var(--chatroom-input-background);
+}
+
+.ios .TextAreaInput {
+    width: 100%;
+    height: 60px;
     max-height: 156px;
     resize: none;
     padding: 6px;

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NavController, mdTransitionAnimation } from '@ionic/angular';
+import { NavController } from '@ionic/angular';
 import { isNativefier, isPlatform } from '../app.component';
 import * as p5 from 'p5';
 import { LanguageSettingService } from '../language-setting.service';
@@ -50,7 +50,6 @@ export class FrontPage implements OnInit {
 
   StartUse() {
     this.navCtrl.navigateRoot('portal', {
-      animation: mdTransitionAnimation,
       animated: true,
       animationDirection: 'back',
     });

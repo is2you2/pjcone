@@ -3,7 +3,7 @@
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChannelMessage } from '@heroiclabs/nakama-js';
-import { AlertController, IonicSafeString, LoadingController, ModalController, NavController } from '@ionic/angular';
+import { AlertController, IonicSafeString, LoadingController, ModalController, NavController, Platform } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 import * as p5 from "p5";
@@ -66,6 +66,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private p5toast: P5ToastService,
     private mClipboard: Clipboard,
     private alertCtrl: AlertController,
+    private platform: Platform,
   ) { }
 
   /** 채널 정보 */
@@ -541,6 +542,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   isMobile = false;
 
   ngOnInit() {
+    this.isIphone = this.platform.is('iphone');
     this.ChatLogs = document.getElementById('chatroom_div');
     this.ChatLogs.onscroll = (_ev: any) => {
       if (Math.abs(this.ChatLogs.scrollHeight - (this.ChatLogs.scrollTop + this.ChatLogs.clientHeight)) < 1) {
@@ -1191,6 +1193,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }
 
+  isIphone = false;
+  /** 플랫폼별 높이 관리를 위한 함수 분리, 사용자 입력칸 높이 조정 함수 */
+  ResizeTextArea() {
+    this.userInputTextArea.style.height = this.isIphone ? '60px' : '36px';
+  }
+
   userInputTextArea: HTMLElement;
   ChannelUserInputId = 'ChannelUserInputId';
   check_key(ev: any) {
@@ -1200,13 +1208,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.send(true);
       } else {
         setTimeout(() => {
-          this.userInputTextArea.style.height = '36px';
+          this.ResizeTextArea();
           this.userInputTextArea.style.height = this.userInputTextArea.scrollHeight + 'px';
         }, 0);
       }
     } else {
       setTimeout(() => {
-        this.userInputTextArea.style.height = '36px';
+        this.ResizeTextArea();
         this.userInputTextArea.style.height = this.userInputTextArea.scrollHeight + 'px';
       }, 0);
     }
@@ -1218,7 +1226,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (!this.userInput.text.trim() && !this.userInput['file'] && !this.userInput['quickShare']) {
       setTimeout(() => {
         this.userInput.text = '';
-        this.userInputTextArea.style.height = '36px';
+        this.ResizeTextArea();
       }, 0);
       return;
     }
@@ -1310,7 +1318,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           delete this.userInput.quickShare;
           delete this.userInput.file;
           this.userInput.text = '';
-          this.userInputTextArea.style.height = '36px';
+          this.ResizeTextArea();
           this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
           if (isLongText) {
             result['msg'] = isLongText;
@@ -1333,7 +1341,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
       setTimeout(() => {
         this.userInput.text = '';
-        this.userInputTextArea.style.height = '36px';
+        this.ResizeTextArea();
       }, 0);
       setTimeout(() => {
         for (let i = this.sending_msg.length - 1; i >= 0; i--) {
@@ -1360,7 +1368,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     setTimeout(() => {
       this.userInput.text = '';
       if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-      this.userInputTextArea.style.height = '36px';
+      this.ResizeTextArea();
       this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
     }, 0);
   }
@@ -1394,7 +1402,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     delete this.userInput.quickShare;
     delete this.userInput.file;
     this.userInput.text = '';
-    this.userInputTextArea.style.height = '36px';
+    this.ResizeTextArea();
     this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
     this.userInput.file = this_file;
     this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;

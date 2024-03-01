@@ -30,3 +30,31 @@
     border-radius: 4px;
     background: #ff4961;
 }
+
+.md .qr_code_scan {
+    position: absolute;
+    right: 116px;
+    top: 16px;
+    cursor: pointer;
+}
+
+.ios .qr_code_scan {
+    position: absolute;
+    right: 116px;
+    top: 10px;
+    cursor: pointer;
+}
+
+.md .add_group {
+    position: absolute;
+    right: 68px;
+    top: 16px;
+    cursor: pointer;
+}
+
+.ios .add_group {
+    position: absolute;
+    right: 68px;
+    top: 10px;
+    cursor: pointer;
+}
