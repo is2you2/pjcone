@@ -882,13 +882,14 @@ export class IonicViewerPage implements OnInit {
   /** 덮어쓰기 전단계 */
   forceWrite = false;
   download_file() {
+    console.log(this.FileInfo);
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
-      this.indexed.DownloadFileFromUserPath(this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'], this.targetDB);
+      this.indexed.DownloadFileFromUserPath(this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name'], this.targetDB);
     else this.alertCtrl.create({
       header: this.lang.text['ContentViewer']['Filename'],
       inputs: [{
         name: 'filename',
-        placeholder: this.FileInfo['filename'],
+        placeholder: this.FileInfo['filename'] || this.FileInfo['name'],
         type: 'text',
       }],
       buttons: [{
@@ -903,7 +904,7 @@ export class IonicViewerPage implements OnInit {
   async DownloadFileAct(input: any) {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
-    let filename = input['filename'] ? input['filename'].replace(/:|\?|\/|\\|<|>/g, '') : this.FileInfo['filename'];
+    let filename = input['filename'] ? input['filename'].replace(/:|\?|\/|\\|<|>/g, '') : (this.FileInfo['filename'] || this.FileInfo['name']);
     let blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path, this.FileInfo['type'], undefined, this.targetDB);
     if (this.forceWrite && !input['filename'])
       this.file.writeExistingFile(this.file.externalDataDirectory, filename, blob)
@@ -1018,13 +1019,13 @@ export class IonicViewerPage implements OnInit {
           this.p5canvas.push()
           this.p5canvas.translate(margin_ratio / 6, margin_ratio / 6);
           this.p5canvas.fill(0)
-          this.p5canvas.text(this.FileInfo['filename'],
+          this.p5canvas.text((this.FileInfo['filename'] || this.FileInfo['name']),
             margin_ratio, margin_ratio,
             width - margin_ratio * 2, height - margin_ratio * 2);
           this.p5canvas.filter(this.p5canvas.BLUR, 3);
           this.p5canvas.pop();
           this.p5canvas.fill(255);
-          this.p5canvas.text(this.FileInfo['filename'],
+          this.p5canvas.text((this.FileInfo['filename'] || this.FileInfo['name']),
             margin_ratio, margin_ratio,
             width - margin_ratio * 2, height - margin_ratio * 2);
           this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
