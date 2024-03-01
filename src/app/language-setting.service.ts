@@ -16,6 +16,7 @@ export class LanguageSettingService {
    * 데이터 구성: { 페이지 구분: { 키워드: 문장 } }
    */
   text = {
+    Front: {},
     Portal: {},
     Main: {},
     Subscribes: {},
