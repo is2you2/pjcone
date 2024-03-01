@@ -153,7 +153,7 @@ export class AppComponent {
       } catch (e) { // 페이지 연결이 없는 알림
         switch (ev.data.type) {
           case 'AllUserNotification':
-            let image_form = `<img *ngIf="${ev.data.image}" src="${ev.data.image}" alt="noti_image" style="border-radius: 2px">`;
+            let image_form = `<img *ngIf="${ev.data.image}" src="${ev.data.image}" alt="noti_image" style="border-radius: 8px">`;
             let text_form = `<div>${ev.data.body}</div>`;
             let result_form = ev.data.image ? image_form + text_form : text_form;
             alertCtrl.create({

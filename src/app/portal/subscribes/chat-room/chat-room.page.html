@@ -66,11 +66,16 @@ SPDX-License-Identifier: MIT -->
               <div class="notice"> {{msg.content['noti']}} </div>
             </div>
             <div *ngIf="msg.content['msg']" class="message_content_form">
-              <div *ngFor="let line of msg.content['msg']">
-                <span *ngFor="let part of line">
-                  <span *ngIf="!part.href" [style]="'font-size: ' + (part.size || 16) + 'px'" (click)="SetOtherAct()"> {{part.text}} </span>
-                  <a *ngIf="part.href" [href]="part.text" target="_system" (click)="SetOtherAct()">{{part.text}}</a>
-                </span>
+              <div *ngFor="let line of msg.content['msg']; let i = index">
+                <span>
+                  <span *ngFor="let part of line">
+                    <span *ngIf="!part.href" [style]="'font-size: ' + (part.size || 16) + 'px'" (click)="SetOtherAct()">
+                      {{part.text}} </span>
+                    <a *ngIf="part.href" [href]="part.text" target="_system" (click)="SetOtherAct()">{{part.text}}</a>
+                  </span>
+                </span><span *ngIf="msg.content['edited'] && i == msg.content['msg'].length - 1"
+                  style="color: #888; font-size: 12px;">{{'(' + lang.text['ChatRoom']['MsgEdited'] +
+                  ')'}}</span>
               </div>
             </div>
             <div *ngIf="msg['isLastRead']" class="read_last_here">

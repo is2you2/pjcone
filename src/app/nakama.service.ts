@@ -2459,6 +2459,7 @@ export class NakamaService {
             this.has_new_channel_msg = !is_me;
         }
         break;
+      case 1: // 채널 메시지를 편집한 경우
       case 2: // 채널 메시지를 삭제한 경우
         break;
       case 3: // 열린 그룹 상태에서 사용자 들어오기 요청
@@ -2499,7 +2500,7 @@ export class NakamaService {
     this.check_sender_and_show_name(c, _is_official, _target);
     let original_msg = msg.content['msg'];
     this.content_to_hyperlink(c);
-    this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_time'] = msg.create_time;
+    this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_time'] = msg.update_time;
     this.channels_orig[_is_official][_target][c.channel_id]['last_comment_id'] = c.message_id;
     this.rearrange_channels();
     if (!isNewChannel && this.channels_orig[_is_official][_target][c.channel_id]['update'])
@@ -2549,7 +2550,7 @@ export class NakamaService {
    * 이 곳에서 메시지가 작은 단위별로 쪼개지며 메시지에 필요한 정보가 구성된다
    */
   content_to_hyperlink(msg: any) {
-    if (!msg.content['msg']) return;
+    if (!msg.content['msg'] || typeof msg.content['msg'] == 'object') return;
     let sep_msg = msg.content['msg'].split('\n');
     msg.content['msg'] = [];
     sep_msg.forEach(_msg => {
@@ -2587,8 +2588,6 @@ export class NakamaService {
             result_msg.push({ text: end_msg });
           }
           msg.content['msg'][i] = result_msg;
-          // } else { // 주소가 없는 경우 양식을 일치시킴
-          //   msg.content['msg'][i] = [msg.content['msg'][i]];
         }
       }
   }
@@ -2635,6 +2634,7 @@ export class NakamaService {
           } catch (e) { }
         }
         break;
+      case 1: // 사용자가 편집한 메시지
       case 2: // 사용자가 삭제한 메시지
         break;
       case 3: // 열린 그룹에 들어온 사용자 알림
