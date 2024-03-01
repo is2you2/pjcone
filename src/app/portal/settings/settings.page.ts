@@ -255,7 +255,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   go_to_page(_page: string) {
-    this.nav.navigateForward(`settings/${_page}`, {
+    this.nav.navigateForward(`portal/settings/${_page}`, {
       animation: iosTransitionAnimation,
     });
   }

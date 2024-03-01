@@ -5,7 +5,7 @@ SPDX-License-Identifier: MIT -->
   <ion-toolbar>
     <ion-title>{{info['title'] || lang.text['ChatRoom']['noname_chatroom']}}</ion-title>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="subscribes"></ion-back-button>
+      <ion-back-button defaultHref="portal/subscribes"></ion-back-button>
     </ion-buttons>
     <ion-icon *ngIf="!info['HideAutoThumbnail']" class="top_icon" slot="end" name="eye-outline"
       (click)="toggle_thumbnail()"></ion-icon>

@@ -395,7 +395,7 @@ export class NakamaService {
           this.p5toast.show({
             text: this.lang.text['Subscribes']['Disconnected'],
           });
-          this.nav.navigateForward('settings/group-server');
+          this.nav.navigateForward('portal/settings/group-server');
           this.removeBanner();
         }
       } catch (e) { }
@@ -676,7 +676,8 @@ export class NakamaService {
           this.p5toast.show({
             text: this.lang.text['Nakama']['NeedLoginInfo'],
           });
-          this.nav.navigateForward('settings/group-server');
+          this.nav.navigateForward('portal/settings/group-server');
+          this.removeBanner();
           this.users.self['online'] = false;
           delete this.users.self['password'];
           this.set_group_statusBar('offline', info.isOfficial, info.target);
@@ -3439,7 +3440,7 @@ export class NakamaService {
     for (let i = 0, j = json.length; i < j; i++)
       switch (json[i].type) {
         case 'open_profile': // 프로필 페이지 열기 유도
-          this.nav.navigateForward('settings/group-server');
+          this.nav.navigateForward('portal/settings/group-server');
           this.removeBanner();
           break;
         case 'tmp_user': // 빠른 임시 진입을 위해 사용자 정보를 임의로 기입

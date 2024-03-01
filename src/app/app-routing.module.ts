@@ -4,7 +4,7 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    loadChildren: () => import('./portal/portal.module').then(m => m.PortalPageModule)
+    loadChildren: () => import('./front/front.module').then(m => m.FrontPageModule)
   },
   {
     path: 'minimal-chat',
@@ -16,23 +16,27 @@ const routes: Routes = [
   },
   {
     path: 'user-fs-dir',
-    loadChildren: () => import('./user-fs-dir/user-fs-dir.module').then( m => m.UserFsDirPageModule)
+    loadChildren: () => import('./user-fs-dir/user-fs-dir.module').then(m => m.UserFsDirPageModule)
   },
   {
     path: 'add-todo-menu',
-    loadChildren: () => import('./portal/main/add-todo-menu/add-todo-menu.module').then( m => m.AddTodoMenuPageModule)
+    loadChildren: () => import('./portal/main/add-todo-menu/add-todo-menu.module').then(m => m.AddTodoMenuPageModule)
   },
   {
     path: 'chat-room',
-    loadChildren: () => import('./portal/subscribes/chat-room/chat-room.module').then( m => m.ChatRoomPageModule)
+    loadChildren: () => import('./portal/subscribes/chat-room/chat-room.module').then(m => m.ChatRoomPageModule)
   },
   {
     path: 'share-content-to-other',
-    loadChildren: () => import('./share-content-to-other/share-content-to-other.module').then( m => m.ShareContentToOtherPageModule)
+    loadChildren: () => import('./share-content-to-other/share-content-to-other.module').then(m => m.ShareContentToOtherPageModule)
   },
   {
     path: 'webrtc-manage-io-dev',
-    loadChildren: () => import('./webrtc-manage-io-dev/webrtc-manage-io-dev.module').then( m => m.WebrtcManageIoDevPageModule)
+    loadChildren: () => import('./webrtc-manage-io-dev/webrtc-manage-io-dev.module').then(m => m.WebrtcManageIoDevPageModule)
+  },
+  {
+    path: 'portal',
+    loadChildren: () => import('./portal/portal.module').then(m => m.PortalPageModule)
   },
 ];
 

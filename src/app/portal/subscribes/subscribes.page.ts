@@ -76,7 +76,7 @@ export class SubscribesPage implements OnInit {
   }
 
   go_to_page(_page: string) {
-    this.nav.navigateForward(`settings/${_page}`);
+    this.nav.navigateForward(`portal/settings/${_page}`);
     this.nakama.removeBanner();
   }
 
