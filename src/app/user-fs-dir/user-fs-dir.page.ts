@@ -11,6 +11,7 @@ import { File } from '@awesome-cordova-plugins/file/ngx';
 import { Filesystem } from '@capacitor/filesystem';
 import { LocalNotiService } from '../local-noti.service';
 import { NakamaService } from '../nakama.service';
+import * as p5 from 'p5';
 
 /** userfs 의 파일과 폴더 형식 */
 interface FileDir {
@@ -76,7 +77,12 @@ export class UserFsDirPage implements OnInit {
     localStorage.setItem('user-fs-thumbnail', `${this.HideThumbnail ? '1' : '0'}`);
   }
 
-  ngOnInit() { }
+  ngOnInit() {
+    if (isPlatform == 'DesktopPWA')
+      setTimeout(() => {
+        this.CreateDrop();
+      }, 0);
+  }
 
   initLoadingElement: HTMLIonLoadingElement;
 
@@ -90,6 +96,198 @@ export class UserFsDirPage implements OnInit {
         this.initLoadingElement.dismiss();
         this.is_ready = true;
       }
+    }
+  }
+
+  p5canvas: p5;
+  CreateDrop() {
+    let parent = document.getElementById('p5Drop_userfs');
+    this.p5canvas = new p5((p: p5) => {
+      p.setup = () => {
+        let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
+        canvas.parent(parent);
+        p.pixelDensity(1);
+        canvas.drop((file: any) => {
+          let _Millis = p.millis();
+          if (LastDropAt < _Millis - 400) { // 새로운 파일로 인식
+            isMultipleSend = false;
+            Drops.length = 0;
+            Drops.push(file);
+          } else { // 여러 파일 입력으로 인식
+            isMultipleSend = true;
+            Drops.push(file);
+          }
+          LastDropAt = _Millis;
+          clearTimeout(StartAct);
+          StartAct = setTimeout(async () => {
+            if (!isMultipleSend) {
+              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+              loading.present();
+              this.importSelected(file.file);
+              loading.dismiss();
+            } else { // 여러 파일 발송 여부 검토 후, 아니라고 하면 첫 파일만
+              this.alertCtrl.create({
+                header: this.lang.text['UserFsDir']['MultipleSave'],
+                message: `${this.lang.text['ChatRoom']['CountFile']}: ${Drops.length}`,
+                buttons: [{
+                  text: this.lang.text['UserFsDir']['OK'],
+                  handler: () => {
+                    this.MultipleDrops(Drops);
+                  }
+                }]
+              }).then(v => v.present());
+            }
+          }, 400);
+        });
+      }
+      let StartAct: any;
+      let isMultipleSend = false;
+      let LastDropAt = 0;
+      let Drops = [];
+      p.mouseMoved = (ev: any) => {
+        if (ev['dataTransfer']) {
+          parent.style.pointerEvents = 'all';
+          parent.style.backgroundColor = '#0008';
+        } else {
+          parent.style.pointerEvents = 'none';
+          parent.style.backgroundColor = 'transparent';
+        }
+      }
+    });
+  }
+
+  /** 폴더 만들기 */
+  CreateNewFolder() {
+    this.alertCtrl.create({
+      header: this.lang.text['UserFsDir']['CreateFolder'],
+      inputs: [{
+        type: 'text',
+        placeholder: this.lang.text['UserFsDir']['FolderName'],
+      }],
+      buttons: [{
+        text: this.lang.text['UserFsDir']['Create'],
+        handler: async (ev: any) => {
+          if (ev[0]) {
+            try {
+              let targetPath = `${this.CurrentDir}/${ev[0]}`;
+              await this.indexed.createDirectory(targetPath);
+              let info = await this.indexed.GetFileInfoFromDB(targetPath);
+              let _info: FileDir = {
+                path: targetPath,
+                mode: info['mode'],
+                timestamp: new Date(info['timestamp']).toLocaleString(),
+                db: this.indexed.ionicDB,
+              };
+              _info.name = ev[0];
+              _info.dir = this.CurrentDir;
+              this.DirList.push(_info);
+            } catch (e) {
+              console.error('폴더 생성 실패: ', e);
+              this.p5toast.show({
+                text: `${this.lang.text['UserFsDir']['FailedToCreateFolder']}: ${e}`,
+              });
+            }
+          } else {
+            this.p5toast.show({
+              text: this.lang.text['UserFsDir']['NeedFolderName'],
+            });
+          }
+        }
+      }]
+    }).then(v => v.present());
+  }
+
+  /** 파일 추가하기 */
+  SelectFiles() {
+    document.getElementById('import_file').click();
+  }
+
+  async MultipleDrops(Drops: any) {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    loading.present();
+    for (let i = 0, j = Drops.length; i < j; i++) {
+      await this.importSelected(Drops[i].file);
+    }
+    loading.dismiss();
+  }
+
+  /** 파일 첨부하기 */
+  async inputFileSelected(ev: any) {
+    if (ev.target.files.length) {
+      let is_multiple_files = ev.target.files.length != 1;
+      if (is_multiple_files) {
+        let alert = await this.alertCtrl.create({
+          header: this.lang.text['UserFsDir']['AddFile'],
+          message: this.lang.text['UserFsDir']['AddThisFile'],
+          buttons: [{
+            text: this.lang.text['UserFsDir']['OK'],
+            handler: async () => {
+              let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['MultipleSave'] });
+              loading.present();
+              this.noti.noti.schedule({
+                id: 4,
+                title: this.lang.text['UserFsDir']['MultipleSave'],
+                progressBar: { indeterminate: true },
+                sound: null,
+                smallIcon: 'res://diychat',
+                color: 'b0b0b0',
+              });
+              for (let i = 0, j = ev.target.files.length; i < j; i++) {
+                loading.message = `${this.lang.text['UserFsDir']['MultipleSave']}: ${j - i}`;
+                this.noti.noti.schedule({
+                  id: 4,
+                  title: this.lang.text['UserFsDir']['MultipleSave'],
+                  progressBar: { value: i, maxValue: j },
+                  sound: null,
+                  smallIcon: 'res://diychat',
+                  color: 'b0b0b0',
+                });
+                await this.importSelected(ev.target.files[i]);
+              }
+              this.noti.ClearNoti(4);
+              loading.dismiss();
+            }
+          }]
+        });
+        alert.present();
+      } else {
+        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+        loading.present();
+        await this.importSelected(ev.target.files[0]);
+        loading.dismiss();
+      }
+    }
+  }
+
+  async importSelected(file: any) {
+    try {
+      let targetPath = `${this.CurrentDir}/${file.name}`;
+      await this.indexed.saveBlobToUserPath(file, targetPath);
+      let info = await this.indexed.GetFileInfoFromDB(targetPath);
+      let _info: FileDir = {
+        path: targetPath,
+        mode: info['mode'],
+        timestamp: new Date(info['timestamp']).toLocaleString(),
+        db: this.indexed.ionicDB,
+      };
+      _info.name = file.name;
+      _info.dir = this.CurrentDir;
+      _info.file_ext = _info.name.split('.').pop();
+      this.global.set_viewer_category_from_ext(_info);
+      if (_info.viewer == 'image')
+        this.indexed.loadBlobFromUserPath(_info.path, '', blob => {
+          let TmpURL = URL.createObjectURL(blob);
+          _info.thumbnail = this.sanitizer.bypassSecurityTrustUrl(TmpURL);
+        });
+      try { // 사용자 이름 재지정
+        let sep = _info.path.split('/');
+        if (sep.length != 5 || sep[3] != 'groups') throw '그룹 이미지 파일이 아님';
+        this.SetDisplayGroupImageName(_info, sep);
+      } catch (error) { }
+
+      this.FileList.push(_info);
+    } catch (e) {
+
     }
   }
 
@@ -482,7 +680,7 @@ export class UserFsDirPage implements OnInit {
 
   RemoveDirectoryRecursive() {
     this.alertCtrl.create({
-      header: this.CurrentDir.substring(this.CurrentDir.lastIndexOf('/') + 1),
+      header: this.CurrentDir.substring(this.CurrentDir.lastIndexOf('/') + 1) || this.lang.text['UserFsDir']['ResetDB'],
       message: this.lang.text['UserFsDir']['RemoveThisFolder'],
       buttons: [{
         text: this.lang.text['UserFsDir']['RemoveApply'],

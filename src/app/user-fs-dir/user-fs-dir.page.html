@@ -12,29 +12,38 @@
 </ion-header>
 
 <ion-content>
+  <div id="p5Drop_userfs" style="position: absolute; width: 100%; height: 100%; display: flex; pointer-events: none;">
+    <input hidden type="file" id="import_file" accept="*" multiple (change)="inputFileSelected($event)">
+  </div>
   <ion-list *ngIf="InAppBrowser">
-    <div *ngIf="CurrentDir != ''">
-      <ion-item button>
-        <ion-icon slot="start" name="folder"></ion-icon>
-        <ion-label>.</ion-label>
-        <ion-button *ngIf="!cant_dedicated" style="padding-right: 4px;" (click)="ExportDirectoryRecursive()">
-          {{lang.text['UserFsDir']['ExportDir']}}
-        </ion-button>
-        <ion-button (click)="RemoveDirectoryRecursive()">
-          {{lang.text['UserFsDir']['RemoveCurrentDir']}}
-        </ion-button>
-      </ion-item>
-      <ion-item button (click)="MoveToUpDir()">
-        <ion-icon slot="start" name="folder"></ion-icon>
-        <ion-label>..</ion-label>
-      </ion-item>
-    </div>
     <div *ngIf="CurrentDir == '' && !is_file_selector">
       <ion-item button (click)="SelectImportFolder()">
         <ion-icon slot="start" name="arrow-down-circle"></ion-icon>
         <ion-label> {{lang.text['UserFsDir']['ImportFolder']}} </ion-label>
       </ion-item>
       <input hidden type="file" id="folder_sel_id" webkitdirectory (change)="inputImageSelected($event)">
+    </div>
+    <div>
+      <ion-item button>
+        <ion-icon slot="start" name="folder"></ion-icon>
+        <ion-label>.</ion-label>
+        <ion-button *ngIf="!cant_dedicated" class="folder_button" (click)="ExportDirectoryRecursive()">
+          {{lang.text['UserFsDir']['ExportDir']}}
+        </ion-button>
+        <ion-button class="folder_button" (click)="CreateNewFolder()">
+          {{lang.text['UserFsDir']['NewFolder']}}
+        </ion-button>
+        <ion-button class="folder_button" (click)="SelectFiles()">
+          {{lang.text['UserFsDir']['AddFile']}}
+        </ion-button>
+        <ion-button (click)="RemoveDirectoryRecursive()">
+          {{lang.text['UserFsDir']['RemoveCurrentDir']}}
+        </ion-button>
+      </ion-item>
+      <ion-item *ngIf="CurrentDir != ''" button (click)="MoveToUpDir()">
+        <ion-icon slot="start" name="folder"></ion-icon>
+        <ion-label>..</ion-label>
+      </ion-item>
     </div>
     <div *ngFor="let folder of DirList">
       <ion-item *ngIf="CurrentDir == folder.dir" button (click)="SelectFolder(folder)">

@@ -68,7 +68,7 @@ export class IndexedDBService {
     let lastIndexOf = path.lastIndexOf('/');
     let dir = path.substring(0, lastIndexOf);
     if (!dir) return;
-    this.checkIfFileExist(dir, b => {
+    this.checkIfFileExist(dir, _b => {
       let put = targetDB.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
         timestamp: new Date(),
         mode: 16893,
@@ -81,6 +81,27 @@ export class IndexedDBService {
       put.onerror = (e) => {
         console.error('IndexedDB createRecursiveDirectory failed: ', e);
       }
+    });
+  }
+
+  /** 인앱탐색기 편의기능 */
+  createDirectory(path: string) {
+    return new Promise((done, err) => {
+      this.checkIfFileExist(path, _b => {
+        let put = this.ionicDB.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
+          timestamp: new Date(),
+          mode: 16893,
+        }, `/userfs/${path}`);
+        put.onsuccess = (ev) => {
+          if (ev.type != 'success')
+            console.error('저장 실패: ', path);
+          done(undefined);
+        }
+        put.onerror = (e) => {
+          console.error('IndexedDB createRecursiveDirectory failed: ', e);
+          err(e);
+        }
+      });
     });
   }
 
