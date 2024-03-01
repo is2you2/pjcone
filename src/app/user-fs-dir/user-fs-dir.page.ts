@@ -126,16 +126,7 @@ export class UserFsDirPage implements OnInit {
               this.importSelected(file.file);
               loading.dismiss();
             } else { // 여러 파일 발송 여부 검토 후, 아니라고 하면 첫 파일만
-              this.alertCtrl.create({
-                header: this.lang.text['UserFsDir']['MultipleSave'],
-                message: `${this.lang.text['ChatRoom']['CountFile']}: ${Drops.length}`,
-                buttons: [{
-                  text: this.lang.text['UserFsDir']['OK'],
-                  handler: () => {
-                    this.MultipleDrops(Drops);
-                  }
-                }]
-              }).then(v => v.present());
+              this.MultipleDrops(Drops);
             }
           }, 400);
         });
@@ -216,40 +207,30 @@ export class UserFsDirPage implements OnInit {
     if (ev.target.files.length) {
       let is_multiple_files = ev.target.files.length != 1;
       if (is_multiple_files) {
-        let alert = await this.alertCtrl.create({
-          header: this.lang.text['UserFsDir']['AddFile'],
-          message: this.lang.text['UserFsDir']['AddThisFile'],
-          buttons: [{
-            text: this.lang.text['UserFsDir']['OK'],
-            handler: async () => {
-              let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['MultipleSave'] });
-              loading.present();
-              this.noti.noti.schedule({
-                id: 4,
-                title: this.lang.text['UserFsDir']['MultipleSave'],
-                progressBar: { indeterminate: true },
-                sound: null,
-                smallIcon: 'res://diychat',
-                color: 'b0b0b0',
-              });
-              for (let i = 0, j = ev.target.files.length; i < j; i++) {
-                loading.message = `${this.lang.text['UserFsDir']['MultipleSave']}: ${j - i}`;
-                this.noti.noti.schedule({
-                  id: 4,
-                  title: this.lang.text['UserFsDir']['MultipleSave'],
-                  progressBar: { value: i, maxValue: j },
-                  sound: null,
-                  smallIcon: 'res://diychat',
-                  color: 'b0b0b0',
-                });
-                await this.importSelected(ev.target.files[i]);
-              }
-              this.noti.ClearNoti(4);
-              loading.dismiss();
-            }
-          }]
+        let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['MultipleSave'] });
+        loading.present();
+        this.noti.noti.schedule({
+          id: 4,
+          title: this.lang.text['UserFsDir']['MultipleSave'],
+          progressBar: { indeterminate: true },
+          sound: null,
+          smallIcon: 'res://diychat',
+          color: 'b0b0b0',
         });
-        alert.present();
+        for (let i = 0, j = ev.target.files.length; i < j; i++) {
+          loading.message = `${this.lang.text['UserFsDir']['MultipleSave']}: ${j - i}`;
+          this.noti.noti.schedule({
+            id: 4,
+            title: this.lang.text['UserFsDir']['MultipleSave'],
+            progressBar: { value: i, maxValue: j },
+            sound: null,
+            smallIcon: 'res://diychat',
+            color: 'b0b0b0',
+          });
+          await this.importSelected(ev.target.files[i]);
+        }
+        this.noti.ClearNoti(4);
+        loading.dismiss();
       } else {
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
         loading.present();
