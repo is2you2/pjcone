@@ -10,6 +10,7 @@ import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ion
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { Filesystem } from '@capacitor/filesystem';
 import { LocalNotiService } from '../local-noti.service';
+import { NakamaService } from '../nakama.service';
 
 /** userfs 의 파일과 폴더 형식 */
 interface FileDir {
@@ -61,6 +62,7 @@ export class UserFsDirPage implements OnInit {
     private navCtrl: NavController,
     private noti: LocalNotiService,
     private navParams: NavParams,
+    private nakama: NakamaService,
   ) { }
 
   is_ready = false;
@@ -210,9 +212,28 @@ export class UserFsDirPage implements OnInit {
                 let TmpURL = URL.createObjectURL(blob);
                 _info.thumbnail = this.sanitizer.bypassSecurityTrustUrl(TmpURL);
               }, targetDB);
+            try { // 사용자 이름 재지정
+              let sep = _info.path.split('/');
+              if (sep.length != 5 || sep[3] != 'groups') throw '그룹 이미지 파일이 아님';
+              this.SetDisplayGroupImageName(_info, sep);
+            } catch (error) { }
             this.FileList.push(_info);
             break;
           case 16893: // 폴더인 경우
+            if (_info.path.indexOf('todo/') == 0)
+              this.SetDisplayTodoName(_info);
+            let SetRename = false; // 이름 재지정 여부 검토
+            let sep = _info.path.split('/');
+            try { // 채널 이름 재지정
+              if (sep.length != 5 || sep[3] != 'channels') throw '채널 폴더가 아님';
+              this.SetDisplayChannelName(_info, sep);
+              SetRename = true;
+            } catch (e) { }
+            try { // 사용자 이름 재지정
+              if (SetRename || sep.length != 5 || sep[3] != 'users') throw '사용자 폴더가 아님';
+              this.SetDisplayUserName(_info, sep);
+              SetRename = true;
+            } catch (error) { }
             this.DirList.push(_info);
             break
           default: // 예외처리
@@ -220,6 +241,42 @@ export class UserFsDirPage implements OnInit {
             break;
         }
       }, targetDB);
+    }
+  }
+
+  // 아래 SetDisplay~Name 함수들은 사람이 읽기 좋은 파일 구조를 보여주기 위해 구성됨
+  async SetDisplayTodoName(info: FileDir) {
+    try {
+      let open_file = await this.indexed.loadTextFromUserPath(`${info.path}/info.todo`);
+      let json = JSON.parse(open_file);
+      info.name = json['title'];
+    } catch (e) {
+      console.error('SetDisplayTodoName error: ', e);
+    }
+  }
+
+  SetDisplayUserName(info: FileDir, sep: string[]) {
+    try {
+      info.name = this.nakama.users[sep[1]][sep[2]][sep[4]]['display_name'];
+    } catch (e) {
+      console.error('SetDisplayUserName error: ', e);
+    }
+  }
+
+  SetDisplayChannelName(info: FileDir, sep: string[]) {
+    try {
+      info.name = this.nakama.channels_orig[sep[1]][sep[2]][info.name]['title'];
+    } catch (e) {
+      console.error('SetDisplayChannelName error: ', e);
+    }
+  }
+
+  SetDisplayGroupImageName(info: FileDir, sep: string[]) {
+    try {
+      info.name = `${this.nakama.groups[sep[1]][sep[2]][sep[4].split('.').shift()]['name']}.img`;
+    } catch (e) {
+      console.error('SetDisplayGroupImageName error: ', e);
+
     }
   }
 
