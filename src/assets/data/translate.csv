@@ -419,7 +419,6 @@ MultipleSave,여러 파일 저장,Save multiple files
 OK,확인,OK
 ResetDB,모든 파일 삭제,Delete all files
 LoadingExplorer,준비중,Explorer
-CannotOpenFile,이 파일은 열 수 없습니다,This file cannot be opened
 DeleteFile,파일 삭제,Delete file
 CannotBeUndo,이 작업은 되돌릴 수 없습니다,This action cannot be undone
 DeleteAccept,삭제,Delete

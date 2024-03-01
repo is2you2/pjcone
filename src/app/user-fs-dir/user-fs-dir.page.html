@@ -68,8 +68,7 @@
           <div slot="content">
             <ion-item button>
               <ion-label>{{lang.text['UserFsDir']['Action']}}</ion-label>
-              <ion-button *ngIf="file.viewer != 'disabled' && file.viewer != 'image'" class="ion-text-right button_dist"
-                (click)="OpenFile(file)">
+              <ion-button *ngIf="file.viewer != 'image'" class="ion-text-right button_dist" (click)="OpenFile(file)">
                 {{lang.text['UserFsDir']['Open']}}
               </ion-button>
               <ion-button *ngIf="is_file_selector" class="ion-text-right button_dist" (click)="dismiss_page(file)">

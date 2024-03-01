@@ -265,11 +265,14 @@ export class UserFsDirPage implements OnInit {
         if (sep.length != 5 || sep[3] != 'groups') throw '그룹 이미지 파일이 아님';
         this.SetDisplayGroupImageName(_info, sep);
       } catch (error) { }
-
+      // 같은 이름의 파일 덮어쓰기처리
+      for (let i = 0, j = this.FileList.length; i < j; i++)
+        if (this.FileList[i].path == targetPath) {
+          this.FileList.splice(i, 1);
+          break;
+        }
       this.FileList.push(_info);
-    } catch (e) {
-
-    }
+    } catch (e) { }
   }
 
   StopIndexing = false;
@@ -472,47 +475,44 @@ export class UserFsDirPage implements OnInit {
 
   OpenFile(info: FileDir) {
     if (!this.CheckIfAccessable(info.path)) return;
-    switch (info.viewer) {
-      case 'disabled':
-        this.p5toast.show({
-          text: this.lang.text['UserFsDir']['CannotOpenFile'],
-        });
-        break;
-      default:
-        document.removeEventListener('ionBackButton', this.EventListenerAct);
-        let createRelevances = [];
-        if (this.is_file_selector && this.navParams.data['path'])
-          for (let i = 0, j = this.FileList.length; i < j; i++)
-            createRelevances.push({ content: this.FileList[i] });
-        this.modalCtrl.create({
-          component: IonicViewerPage,
-          componentProps: {
-            info: {
-              content: {
-                filename: info.name,
-                file_ext: info.file_ext,
-                type: '',
-                viewer: info.viewer,
-                path: info.path,
-              }
-            },
-            targetDB: this.indexed.ionicDB,
-            no_edit: true,
-            path: info.path,
-            relevance: createRelevances,
-          },
-          cssClass: 'fullscreen',
-        }).then(v => {
-          delete this.global.p5key['KeyShortCut']['Escape'];
-          delete this.global.p5key['KeyShortCut']['Digit'];
-          v.onDidDismiss().then(_v => {
-            document.addEventListener('ionBackButton', this.EventListenerAct)
-            this.ionViewDidEnter();
-          });
-          v.present()
-        });
-        break;
+    document.removeEventListener('ionBackButton', this.EventListenerAct);
+    let createRelevances = [];
+    if (this.is_file_selector) {
+      if (this.navParams.data['path'])
+        for (let i = 0, j = this.FileList.length; i < j; i++)
+          createRelevances.push({ content: this.FileList[i] });
+    } else {
+      for (let i = 0, j = this.FileList.length; i < j; i++)
+        if (this.FileList[i]['dir'] == this.CurrentDir)
+          createRelevances.push({ content: this.FileList[i] });
     }
+    this.modalCtrl.create({
+      component: IonicViewerPage,
+      componentProps: {
+        info: {
+          content: {
+            filename: info.name,
+            file_ext: info.file_ext,
+            type: '',
+            viewer: info.viewer,
+            path: info.path,
+          }
+        },
+        targetDB: this.indexed.ionicDB,
+        no_edit: true,
+        path: info.path,
+        relevance: createRelevances,
+      },
+      cssClass: 'fullscreen',
+    }).then(v => {
+      delete this.global.p5key['KeyShortCut']['Escape'];
+      delete this.global.p5key['KeyShortCut']['Digit'];
+      v.onDidDismiss().then(_v => {
+        document.addEventListener('ionBackButton', this.EventListenerAct)
+        this.ionViewDidEnter();
+      });
+      v.present()
+    });
   }
 
   CheckIfAccessable(path: string) {
