@@ -61,6 +61,10 @@ SPDX-License-Identifier: MIT -->
   </ion-item-divider>
   <textarea class="infobox" [disabled]="!has_admin" [(ngModel)]="info.description"
     [placeholder]="lang.text['GroupDetail']['NoDetailGroup']"></textarea>
+  <ion-item style="pointer-events: none;">
+    <ion-toggle [(ngModel)]="info['open']"
+      style="pointer-events: none;">{{lang.text['GroupDetail']['IsOpen']}}</ion-toggle>
+  </ion-item>
   <ion-item-divider *ngIf="info['users'] && info['users'].length">
     <ion-label>{{lang.text['GroupDetail']['Members'] + ' (' + info['users'].length + '/' + info['max_count'] + ')'}}
     </ion-label>

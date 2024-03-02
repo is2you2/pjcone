@@ -1730,7 +1730,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         });
       });
     this.global.set_viewer_category(msg.content);
-    this.indexed.checkIfFileExist(path, (b) => {
+    this.indexed.checkIfFileExist(path, async (b) => {
       if (b) {
         msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
         this.indexed.loadBlobFromUserPath(path,
@@ -1745,10 +1745,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               }, 100);
           });
       } else { // 대안 썸네일 생성
-        this.indexed.loadBlobFromUserPath(`${msg.content['path']}_thumbnail.png`, 'image/png', (blob => {
+        try {
+          let blob = await this.indexed.loadBlobFromUserPath(`${msg.content['path']}_thumbnail.png`, 'image/png');
           let FileURL = URL.createObjectURL(blob);
           this.global.modulate_thumbnail(msg.content, FileURL);
-        }));
+        } catch (e) { }
       }
     });
   }
