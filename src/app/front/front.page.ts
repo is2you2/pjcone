@@ -23,7 +23,7 @@ export class FrontPage implements OnInit {
   ngOnInit() { }
 
   ionViewDidEnter() {
-    this.isPWA = (isPlatform == 'MobilePWA') && !isNativefier;
+    this.isPWA = (isPlatform == 'MobilePWA' || isPlatform == 'DesktopPWA') && !isNativefier;
     this.alwaysStart = Boolean(localStorage.getItem('auto_start'));
     let include_infos = location.href.indexOf('?') >= 0;
     if (!this.isPWA || this.alwaysStart || include_infos) // 무시하고 바로 시작하는 경우를 허용
@@ -33,7 +33,7 @@ export class FrontPage implements OnInit {
         p.noCanvas();
         console.log(this.lang.lang);
         p.loadStrings(`assets/data/infos/${this.lang.lang}/intro.txt`, v => {
-          this.information = v;
+          this.information = v.join('\n');
           p.remove();
         }, e => {
           console.error('번역가 정보 불러오기 실패: ', e);
