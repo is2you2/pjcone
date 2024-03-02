@@ -27,5 +27,5 @@ logger:
 
 console:
     idle_timeout_ms: 300000
-    username: "pjcone"
-    password: "nfyfamf3hduf?"
+    username: "username"
+    password: "password"
