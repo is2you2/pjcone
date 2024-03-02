@@ -427,8 +427,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             display_name: this.nakama.users.self['display_name'],
             various: 'link',
           };
-          this_file.file_ext = this_file.url.split('.').pop().split('?').shift();
-          this_file.filename = `${this.lang.text['ChatRoom']['ExternalLinkFile']}.${this_file.file_ext}`;
+          let sep = this_file.url.split('.');
+          this_file.file_ext = sep.pop().split('?').shift();
+          this_file.filename = `${sep.pop().split('/').pop() || this.lang.text['ChatRoom']['ExternalLinkFile']}.${this_file.file_ext}`;
           this.global.set_viewer_category_from_ext(this_file);
           this_file.type = '';
           this_file.typeheader = this_file.viewer;
