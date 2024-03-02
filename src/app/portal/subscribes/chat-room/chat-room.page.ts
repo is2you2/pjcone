@@ -974,7 +974,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
               let FileURL = URL.createObjectURL(blob);
               this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-            } catch (e) { }
+            } catch (e) {
+              try { // 썸네일 생성이 어려우면 대안 썸네일이 있는지 시도
+                let blob = await this.indexed.loadBlobFromUserPath(`${this.ViewableMessage[i].content['path']}_thumbnail.png`, 'image/png');
+                let FileURL = URL.createObjectURL(blob);
+                this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+              } catch (e) { }
+            }
           this.modulate_chatmsg(0, this.ViewableMessage.length);
           this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
           this.pullable = true;
@@ -1096,7 +1102,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
           let FileURL = URL.createObjectURL(blob);
           this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-        } catch (e) { }
+        } catch (e) {
+          try { // 썸네일 생성이 어려우면 대안 썸네일이 있는지 시도
+            let blob = await this.indexed.loadBlobFromUserPath(`${this.ViewableMessage[i].content['path']}_thumbnail.png`, 'image/png');
+            let FileURL = URL.createObjectURL(blob);
+            this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+          } catch (e) { }
+        }
         this.modulate_chatmsg(i, ShowMeAgainCount + 1);
       }
       this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
@@ -1129,7 +1141,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
                 let FileURL = URL.createObjectURL(blob);
                 this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-              } catch (e) { }
+              } catch (e) {
+                try { // 썸네일 생성이 어려우면 대안 썸네일이 있는지 시도
+                  let blob = await this.indexed.loadBlobFromUserPath(`${this.ViewableMessage[i].content['path']}_thumbnail.png`, 'image/png');
+                  let FileURL = URL.createObjectURL(blob);
+                  this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+                } catch (e) { }
+              }
               this.modulate_chatmsg(i, this.ViewableMessage.length);
             }
             if (this.ViewableMessage.length < this.RefreshCount)
@@ -1158,7 +1176,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
               let FileURL = URL.createObjectURL(blob);
               this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-            } catch (e) { }
+            } catch (e) {
+              try { // 썸네일 생성이 어려우면 대안 썸네일이 있는지 시도
+                let blob = await this.indexed.loadBlobFromUserPath(`${this.ViewableMessage[i].content['path']}_thumbnail.png`, 'image/png');
+                let FileURL = URL.createObjectURL(blob);
+                this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+              } catch (e) { }
+            }
             this.modulate_chatmsg(i, ShowMeAgainCount);
           }
           this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
@@ -1569,8 +1593,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   async file_detail(msg: any) {
     this.isOtherAct = true;
     if (msg.content['url']) {
-      msg.content['thumbnail'] = msg.content['url'];
       this.open_viewer(msg, msg.content['url']);
+      setTimeout(() => {
+        this.isOtherAct = false;
+      }, 0);
       return;
     }
     let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
@@ -1718,6 +1744,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 this.scroll_down_logs();
               }, 100);
           });
+      } else { // 대안 썸네일 생성
+        this.indexed.loadBlobFromUserPath(`${msg.content['path']}_thumbnail.png`, 'image/png', (blob => {
+          let FileURL = URL.createObjectURL(blob);
+          this.global.modulate_thumbnail(msg.content, FileURL);
+        }));
       }
     });
   }

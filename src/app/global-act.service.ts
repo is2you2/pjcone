@@ -472,41 +472,27 @@ export class GlobalActService {
 
   /** 메시지에 썸네일 콘텐츠를 생성 */
   async modulate_thumbnail(msg_content: FileInfo, ObjectURL: string) {
-    if (msg_content['url']) {
-      switch (msg_content['viewer']) {
-        case 'text':
-          let text = await fetch(msg_content['url']).then(r => r.text());
-          msg_content['text'] = text.split('\n');
-          msg_content['thumbnail'] = text.split('\n');
-          break;
-        case 'image':
-          msg_content['thumbnail'] = msg_content['url'];
-          break;
-        default:
-          console.log('썸네일이 없음: ', msg_content);
-          delete msg_content['thumbnail'];
-          break;
-      }
-      setTimeout(() => {
-        URL.revokeObjectURL(ObjectURL);
-      }, 100);
-      return;
-    }
     try { // 대안 썸네일이 있다면 보여주고 끝내기
       let blob = await this.indexed.loadBlobFromUserPath(`${msg_content['path']}_thumbnail.png`, 'image/png');
       let FileURL = URL.createObjectURL(blob);
       msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
       setTimeout(() => {
         URL.revokeObjectURL(FileURL);
-      }, 0);
+      }, 100);
       return;
     } catch (e) { }
     switch (msg_content['viewer']) {
       case 'image':
-        msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(ObjectURL);
+        if (msg_content['url'])
+          msg_content['thumbnail'] = msg_content['url'];
+        else msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(ObjectURL);
         break;
       case 'text':
-        new p5((p: p5) => {
+        if (msg_content['url']) {
+          let text = await fetch(msg_content['url']).then(r => r.text());
+          msg_content['text'] = text.split('\n');
+          msg_content['thumbnail'] = text.split('\n');
+        } else new p5((p: p5) => {
           p.setup = () => {
             p.noCanvas();
             p.loadStrings(ObjectURL, v => {

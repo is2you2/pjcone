@@ -721,7 +721,8 @@ export class IonicViewerPage implements OnInit {
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
         loading.present();
         loading.dismiss();
-        this.download_file();
+        if (this.content_creator.various != 'link')
+          this.download_file();
         break;
     }
     this.ContentOnLoad = true;
