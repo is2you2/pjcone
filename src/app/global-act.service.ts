@@ -617,4 +617,18 @@ export class GlobalActService {
       reader.readAsDataURL(file);
     });
   }
+
+  /** base64를 넣어서 blob 받기
+   * @param base64 자료
+   * @param type 파일 타입
+   */
+  Base64ToBlob(base64: string, type = ''): Blob {
+    let byteStr = atob(base64.split(',')[1]);
+    let arrayBuffer = new ArrayBuffer(byteStr.length);
+    let int8Array = new Int8Array(arrayBuffer);
+    for (let i = 0, j = byteStr.length; i < j; i++)
+      int8Array[i] = byteStr.charCodeAt(i);
+    let blob = new Blob([int8Array], { type: type });
+    return blob;
+  }
 }

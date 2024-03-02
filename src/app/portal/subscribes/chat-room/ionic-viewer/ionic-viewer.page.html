@@ -43,15 +43,14 @@ SPDX-License-Identifier: MIT -->
             <ng-template>
               <ion-content>
                 <ion-list>
-                  <ion-item button *ngIf="!NeedDownloadFile && FileInfo['viewer'] == 'text' && !HasNoEditButton"
+                  <ion-item button *ngIf="!NeedDownloadFile && FileInfo['viewer'] == 'text'"
                     (click)="open_text_editor()">
                     <ion-label>{{lang.text['ContentViewer']['EditText']}}</ion-label>
                   </ion-item>
-                  <ion-item button *ngIf="!NeedDownloadFile && FileInfo['viewer'] != 'audio' && !HasNoEditButton"
-                    (click)="modify_image()">
+                  <ion-item button *ngIf="!NeedDownloadFile && FileInfo['viewer'] != 'audio'" (click)="modify_image()">
                     <ion-label>{{lang.text['ContentViewer']['Edit']}}</ion-label>
                   </ion-item>
-                  <ion-item button *ngIf="FileInfo['content_creator']" (click)="open_bottom_modal()">
+                  <ion-item button (click)="open_bottom_modal()">
                     <ion-label>{{lang.text['ContentViewer']['ContentInfo']}}</ion-label>
                   </ion-item>
                   <ion-item button *ngIf="!NeedDownloadFile" (click)="ShareContent()">
@@ -105,7 +104,7 @@ SPDX-License-Identifier: MIT -->
         <ion-item-divider>
           <ion-label>{{lang.text['ContentInfo']['WorkLogs']}}</ion-label>
         </ion-item-divider>
-        <ion-item button (click)="copy_url(content_creator.user_id)">
+        <ion-item *ngIf="!FromUserFsDir" button (click)="copy_url(content_creator.user_id)">
           <ion-label>{{lang.text['ContentInfo']['LastPost']}}</ion-label>
           <ion-label class="ion-text-end">
             {{content_creator.publisher || content_creator.display_name ||

@@ -44,7 +44,7 @@ export class IonicViewerPage implements OnInit {
   FileURL: string;
   ContentBox: HTMLElement;
   FileHeader: HTMLElement;
-  HasNoEditButton: boolean;
+  FromUserFsDir: boolean;
   CurrentFileSize: string;
 
   content_creator: ContentCreatorInfo;
@@ -85,7 +85,7 @@ export class IonicViewerPage implements OnInit {
         || this.nakama.channels_orig[this.isOfficial][this.target][this.MessageInfo['channel_id']]['status'] == 'pending';
     } catch (e) { }
     this.targetDB = this.navParams.get('targetDB');
-    this.HasNoEditButton = this.navParams.get('no_edit') || false;
+    this.FromUserFsDir = this.navParams.get('no_edit') || false;
     switch (this.FileInfo['is_new']) {
       case 'text':
         break;
@@ -247,9 +247,9 @@ export class IonicViewerPage implements OnInit {
   CreateContentInfo() {
     try { // 파일 정보 검토
       this.CurrentFileSize = this.formatBytes(this.FileInfo.size || this.FileInfo['filesize']);
-      this.content_creator = this.FileInfo['content_creator'];
+      this.content_creator = this.FileInfo['content_creator'] || { timestamp: this.FileInfo['timestamp'] } as any;
       this.content_creator.timeDisplay = new Date(this.content_creator.timestamp).toLocaleString();
-      this.content_related_creator = this.FileInfo['content_related_creator'];
+      this.content_related_creator = this.FileInfo['content_related_creator'] || [];
       if (this.content_creator.user_id)
         try {
           this.content_creator.is_me =
@@ -786,7 +786,6 @@ export class IonicViewerPage implements OnInit {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
       let tmp_path = `tmp_files/texteditor/${this.FileInfo.filename || this.FileInfo.name}`;
-      console.log(this.FileInfo);
       if (!this.FileInfo.path) this.FileInfo.path = tmp_path;
       await this.indexed.saveBlobToUserPath(blob, tmp_path, undefined, this.targetDB);
       loading.dismiss();
@@ -882,7 +881,6 @@ export class IonicViewerPage implements OnInit {
   /** 덮어쓰기 전단계 */
   forceWrite = false;
   download_file() {
-    console.log(this.FileInfo);
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.indexed.DownloadFileFromUserPath(this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name'], this.targetDB);
     else this.alertCtrl.create({

@@ -12,11 +12,12 @@ import { Filesystem } from '@capacitor/filesystem';
 import { LocalNotiService } from '../local-noti.service';
 import { NakamaService } from '../nakama.service';
 import * as p5 from 'p5';
+import { VoidDrawPage } from '../portal/subscribes/chat-room/void-draw/void-draw.page';
 
 /** userfs 의 파일과 폴더 형식 */
 interface FileDir {
   path?: string;
-  timestamp?: string;
+  timestamp?: number;
   mode?: number;
   /** 현재 경로와 대조하는 용도 */
   dir?: string;
@@ -166,7 +167,7 @@ export class UserFsDirPage implements OnInit {
               let _info: FileDir = {
                 path: targetPath,
                 mode: info['mode'],
-                timestamp: new Date(info['timestamp']).toLocaleString(),
+                timestamp: info['timestamp'],
                 db: this.indexed.ionicDB,
               };
               _info.name = ev[0];
@@ -248,7 +249,7 @@ export class UserFsDirPage implements OnInit {
       let _info: FileDir = {
         path: targetPath,
         mode: info['mode'],
-        timestamp: new Date(info['timestamp']).toLocaleString(),
+        timestamp: info['timestamp'],
         db: this.indexed.ionicDB,
       };
       _info.name = file.name;
@@ -272,7 +273,9 @@ export class UserFsDirPage implements OnInit {
           break;
         }
       this.FileList.push(_info);
-    } catch (e) { }
+    } catch (e) {
+      console.log('importSelected error: ', e);
+    }
   }
 
   StopIndexing = false;
@@ -380,7 +383,7 @@ export class UserFsDirPage implements OnInit {
         let _info: FileDir = {
           path: _list[i],
           mode: info['mode'],
-          timestamp: new Date(info['timestamp']).toLocaleString(),
+          timestamp: info['timestamp'],
           db: targetDB,
         };
         _info.name = _info.path.substring(_info.path.lastIndexOf('/') + 1);
@@ -473,7 +476,7 @@ export class UserFsDirPage implements OnInit {
     this.FileSel.value = undefined;
   }
 
-  OpenFile(info: FileDir) {
+  async OpenFile(info: FileDir) {
     if (!this.CheckIfAccessable(info.path)) return;
     document.removeEventListener('ionBackButton', this.EventListenerAct);
     let createRelevances = [];
@@ -485,18 +488,15 @@ export class UserFsDirPage implements OnInit {
       for (let i = 0, j = this.FileList.length; i < j; i++)
         if (this.FileList[i]['dir'] == this.CurrentDir)
           createRelevances.push({ content: this.FileList[i] });
+    } {
+      let blob = await this.indexed.loadBlobFromUserPath(info.path, '');
+      info['size'] = blob.size;
     }
     this.modalCtrl.create({
       component: IonicViewerPage,
       componentProps: {
         info: {
-          content: {
-            filename: info.name,
-            file_ext: info.file_ext,
-            type: '',
-            viewer: info.viewer,
-            path: info.path,
-          }
+          content: info,
         },
         targetDB: this.indexed.ionicDB,
         no_edit: true,
@@ -507,9 +507,40 @@ export class UserFsDirPage implements OnInit {
     }).then(v => {
       delete this.global.p5key['KeyShortCut']['Escape'];
       delete this.global.p5key['KeyShortCut']['Digit'];
-      v.onDidDismiss().then(_v => {
-        document.addEventListener('ionBackButton', this.EventListenerAct)
-        this.ionViewDidEnter();
+      v.onDidDismiss().then(v => {
+        if (v.data) { // 파일 편집하기를 누른 경우
+          switch (v.data.type) {
+            case 'image':
+              this.modalCtrl.create({
+                component: VoidDrawPage,
+                componentProps: {
+                  path: v.data.path,
+                  width: v.data.width,
+                  height: v.data.height,
+                  text: v.data.text,
+                },
+                cssClass: 'fullscreen',
+              }).then(v => {
+                v.onWillDismiss().then(async v => {
+                  let blob = this.global.Base64ToBlob(v.data['img'], 'image/png');
+                  blob['name'] = v.data['name'];
+                  await this.importSelected(blob);
+                  v.data['loadingCtrl'].dismiss();
+                  document.addEventListener('ionBackButton', this.EventListenerAct);
+                  this.ionViewDidEnter();
+                });
+                v.present();
+              });
+              return;
+            case 'text':
+              console.log(v);
+              this.importSelected(v.data['blob']);
+              break;
+          }
+        } else {
+          document.addEventListener('ionBackButton', this.EventListenerAct);
+          this.ionViewDidEnter();
+        }
       });
       v.present()
     });
