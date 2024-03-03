@@ -880,9 +880,23 @@ export class IonicViewerPage implements OnInit {
 
   /** 덮어쓰기 전단계 */
   forceWrite = false;
-  download_file() {
+  async download_file() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
-      this.indexed.DownloadFileFromUserPath(this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name'], this.targetDB);
+      if (this.FileInfo['url']) {
+        try {
+          let res = await fetch(this.FileInfo.url);
+          let blob = await res.blob();
+          if (res.ok) {
+            await this.indexed.saveBlobToUserPath(blob, this.FileInfo.path);
+            this.indexed.DownloadFileFromUserPath(this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name'], this.targetDB);
+          } else throw '제대로 다운받아지지 않음';
+        } catch (e) {
+          console.log('다운받기 실패: ', e);
+          this.p5toast.show({
+            text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`
+          });
+        }
+      } else this.indexed.DownloadFileFromUserPath(this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name'], this.targetDB);
     else this.alertCtrl.create({
       header: this.lang.text['ContentViewer']['Filename'],
       inputs: [{
@@ -892,13 +906,28 @@ export class IonicViewerPage implements OnInit {
       }],
       buttons: [{
         text: this.lang.text['ContentViewer']['saveFile'],
-        handler: (input) => {
-          this.DownloadFileAct(input);
+        handler: async (input) => {
+          if (this.FileInfo['url']) {
+            try {
+              let res = await fetch(this.FileInfo.url);
+              let blob = await res.blob();
+              if (res.ok) {
+                await this.indexed.saveBlobToUserPath(blob, this.FileInfo.path);
+                this.DownloadFileAct(input);
+              } else throw '제대로 다운받아지지 않음';
+            } catch (e) {
+              console.log('다운받기 실패: ', e);
+              this.p5toast.show({
+                text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`
+              });
+            }
+          } else this.DownloadFileAct(input);
         }
       }]
     }).then(v => v.present());
   }
 
+  /** 모바일용, 저장소에 저장하기 */
   async DownloadFileAct(input: any) {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
