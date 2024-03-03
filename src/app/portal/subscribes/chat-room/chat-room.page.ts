@@ -418,6 +418,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               throw e;
             }
           }
+          try { // 정상적인 주소인지 검토
+            let res = await fetch(pasted_url);
+            if (!res.ok) throw 'URL 구조가 정상이 아님';
+          } catch (e) {
+            throw 'URL 구조가 정상이 아님';
+          }
           let this_file: FileInfo = {};
           this_file.url = pasted_url;
           this_file['content_related_creator'] = [{
