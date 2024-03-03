@@ -182,10 +182,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     },
     { // 4
       icon: 'link-outline',
-      act: () => {
+      act: async () => {
         if (!this.userInputTextArea)
           this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-        this.new_attach({ detail: { value: 'link' } });
+        if (this.useCDN)
+          try {
+            await this.new_attach({ detail: { value: 'link' } });
+            return; // 파일 넣기 성공시 링크 발송 기능 여전히 사용
+          } catch (e) { }
+        this.toggle_linked_attach();
       }
     },
     { // 5
@@ -441,12 +446,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.userInput.file = this_file;
           this.inputPlaceholder = `(${this.lang.text['ChatRoom']['FileLink']}: ${this.userInput.file.filename})`;
         } catch (e) {
-          this.p5toast.show({
-            text: `${this.lang.text['ChatRoom']['FailedToPasteData']}: ${e}`,
-          });
+          console.warn('인식 불가능한 URL 정보: ', e);
+          throw '인식 불가능한 URL 정보';
         }
         break;
     }
+  }
+
+  useCDN = true;
+  /** 파일을 업로드하는 방식 설정 (기본값: cdn 서버 업로드 선호) */
+  async toggle_linked_attach() {
+    this.useCDN = !this.useCDN;
+    this.extended_buttons[4].icon = this.useCDN
+      ? 'link-outline' : 'unlink-outline';
   }
 
   async toggle_speakermode(force?: boolean) {
@@ -1279,7 +1291,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       } else result['msg'] = result['msg'];
       result['content_creator'] = this.userInput.file.content_creator;
       result['content_related_creator'] = this.userInput.file.content_related_creator;
-      if (!isURL && !this.info['local']) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
+      if (!isURL && this.useCDN && !this.info['local']) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
         let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
         let address = this.nakama.servers[this.isOfficial][this.target].info.address;
         let savedAddress = await this.global.upload_file_to_storage(this.userInput.file, protocol, address);
