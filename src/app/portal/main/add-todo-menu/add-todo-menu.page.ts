@@ -871,7 +871,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
     this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
     this.indexed.saveBase64ToUserPath(v.data['img'], 'tmp_files/todo/attach.jpeg', (raw) => {
-      this_file.blob = new Blob([raw], { type: this_file['type'] });
+      let blob = new Blob([raw], { type: this_file['type'] })
+      this_file.blob = new File([blob], v.data['name']);
       this_file.size = this_file.blob.size;
     });
     this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path'], (_) => {

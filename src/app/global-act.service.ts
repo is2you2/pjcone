@@ -628,7 +628,7 @@ export class GlobalActService {
     let formData = new FormData();
     formData.append("files", file.blob);
     let upload_time = new Date().getTime();
-    let filename = file.blob.name.split('.')[0];
+    let filename = file.filename.split('.')[0];
     let CatchedAddress: string;
     let Catched = false;
     try {

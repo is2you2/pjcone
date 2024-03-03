@@ -1877,6 +1877,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.userInput.file.typeheader = 'image';
       if (related_creators) {
         this.userInput.file.content_related_creator = related_creators;
+        this.userInput.file.content_related_creator.push(this.userInput.file.content_creator);
         this.userInput.file.content_creator = {
           user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
           timestamp: new Date().getTime(),
@@ -1898,7 +1899,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         };
       }
       await this.indexed.saveBase64ToUserPath(v.data['img'], `tmp_files/chatroom/${this.userInput.file.filename}`, (raw) => {
-        this.userInput.file.blob = new Blob([raw], { type: this.userInput.file['type'] })
+        let blob = new Blob([raw], { type: this.userInput.file['type'] });
+        this.userInput.file.blob = new File([blob], this.userInput.file.filename);
       });
       this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
     } catch (e) {
