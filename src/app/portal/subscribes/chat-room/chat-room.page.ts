@@ -1451,6 +1451,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (!msg['is_me']) return;
     let MsgText = this.deserialize_text(msg);
     let FileURL: any;
+    let MsgTextThumbnail: string;
     if (msg.content['viewer']) {
       try { // 파일 불러오기 실패시 그저 망치기
         if (msg.content['viewer'] != 'image') throw '이미지 파일이 아님';
@@ -1462,9 +1463,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           FileURL = URL.createObjectURL(blob);
         } catch (e) { }
       }
-      MsgText = `(${this.lang.text['ChatRoom']['attachments']}) ${MsgText}`
+      MsgTextThumbnail = `(${this.lang.text['ChatRoom']['attachments']}) ${MsgText}`
     }
-    let text_form = FileURL ? `<div style="text-align: center;">${MsgText}</div>` : `<div>${MsgText}</div>`;
+    let text_form = FileURL ? `<div style="text-align: center;">${MsgTextThumbnail}</div>` : `<div>${MsgTextThumbnail}</div>`;
     let image_form = `<div style="width: 100%;"><img src="${FileURL}" alt="${msg.content['filename']}" style="border-radius: 8px; max-height: 230px; position: relative; left: 50%; transform: translateX(-50%); ${this.info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''}"></div>`;
     let result_form = FileURL ? image_form + text_form : text_form;
     this.alertCtrl.create({
@@ -1478,7 +1479,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             inputs: [{
               type: 'textarea',
               value: MsgText,
-              placeholder: MsgText,
+              placeholder: MsgTextThumbnail,
             }],
             buttons: [{
               text: this.lang.text['ChatRoom']['EditChat'],
