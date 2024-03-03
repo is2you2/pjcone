@@ -111,7 +111,7 @@ SPDX-License-Identifier: MIT -->
             {{content_creator.publisher || content_creator.display_name ||
             lang.text['Profile']['noname_user']}}</ion-label>
         </ion-item>
-        <ion-item *ngIf="content_creator.various" (click)="copy_url(FileInfo['url'])" button>
+        <ion-item *ngIf="content_creator.various" button>
           <ion-label>{{lang.text['ContentInfo']['SourceFrom']}}</ion-label>
           <ion-label class="ion-text-end">{{content_creator['various_display']}}</ion-label>
         </ion-item>
