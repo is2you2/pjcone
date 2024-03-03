@@ -1555,13 +1555,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['DeleteFile'] });
                 loading.present();
                 for (let i = 0; i < msg.content['partsize']; i++) {
-                  await this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
-                    this.nakama.servers[this.isOfficial][this.target].session, {
-                    object_ids: [{
-                      collection: `file_${msg.channel_id.replace(/[.]/g, '_')}`,
-                      key: `msg_${msg.message_id}_${i}`,
-                    }],
-                  });
+                  try { // 파일이 없어도 순회 작업 진행
+                    await this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
+                      this.nakama.servers[this.isOfficial][this.target].session, {
+                      object_ids: [{
+                        collection: `file_${msg.channel_id.replace(/[.]/g, '_')}`,
+                        key: `msg_${msg.message_id}_${i}`,
+                      }],
+                    });
+                  } catch (e) { }
                   loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${msg.content['filename']}_${msg.content['partsize'] - i}`;
                 } // 서버에서 삭제되지 않았을 경우 파일을 남겨두기
                 let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
