@@ -309,7 +309,7 @@ export class IonicViewerPage implements OnInit {
         target['various_display'] = this.lang.text['GlobalAct']['FromCamera'];
         break;
       case 'link':
-        target['various_display'] = this.FileInfo.url;
+        target['various_display'] = this.lang.text['ChatRoom']['ExternalLinkFile'];
         break;
       case 'loaded':
         target['various_display'] = this.lang.text['GlobalAct']['variousCreator'];
