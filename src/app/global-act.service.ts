@@ -570,6 +570,7 @@ export class GlobalActService {
       // 마크다운
       case 'md':
       // 텍스트류
+      case 'prop':
       case 'txt':
       case 'cs':
       case 'gd':
