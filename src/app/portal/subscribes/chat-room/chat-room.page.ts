@@ -1304,9 +1304,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         isURL = Boolean(savedAddress);
         if (!isURL) throw '링크 만들기 실패';
         result['url'] = savedAddress;
-        result.content_creator.various = 'link';
-        for (let i = 0, j = result.content_related_creator.length; i < j; i++)
-          result.content_related_creator[i].various = 'link';
       } catch (e) {
         console.log('cdn 업로드 처리 실패: ', e);
       }
@@ -1877,7 +1874,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.userInput.file.typeheader = 'image';
       if (related_creators) {
         this.userInput.file.content_related_creator = related_creators;
-        this.userInput.file.content_related_creator.push(this.userInput.file.content_creator);
         this.userInput.file.content_creator = {
           user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
           timestamp: new Date().getTime(),
