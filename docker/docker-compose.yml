@@ -10,6 +10,7 @@ services:
       DISPLAY: :1
       PATH: $PATH:/root/Android/Sdk/platform-tools:/usr/local/sbin:/usr/sbin:/sbin
       GODOT_SILENCE_ROOT_WARNING: 1
+      CAPACITOR_ANDROID_STUDIO_PATH: /root/android-studio
     ports:
       - "4000:4000"
       - "5901:5901"
