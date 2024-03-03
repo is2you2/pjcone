@@ -22,6 +22,7 @@ export class LanguageSettingService {
     Subscribes: {},
     ChatRoom: {},
     Profile: {},
+    GroupServer: {},
   };
 
   constructor() {
