@@ -618,4 +618,36 @@ export class GlobalActService {
     let blob = new Blob([int8Array], { type: type });
     return blob;
   }
+
+  /** 병행 스토리지 서버에 파일 업로드 시도
+   * @param file ev.target.files[i] / blob
+   * @param address 해당 서버 주소
+   * @returns 등록된 주소 반환
+   */
+  async upload_file_to_storage(file: any, protocol: string, address: string): Promise<string> {
+    let formData = new FormData();
+    formData.append("files", file.blob);
+    let upload_time = new Date().getTime();
+    let filename = file.blob.name.split('.')[0];
+    let CatchedAddress: string;
+    let Catched = false;
+    try {
+      await fetch(`${protocol}//${address}:9001/${filename}.${file.file_ext}`, { method: "POST", body: formData, mode: 'no-cors' });
+      for (let i = 1, j = 100; i < j; i++) { // 1초까지 검토하기
+        try {
+          let targetAddress = `${protocol}//${address}:9002/${filename}_${upload_time + i}.${file.file_ext}`;
+          let res = await fetch(targetAddress);
+          if (res.ok) {
+            CatchedAddress = targetAddress;
+            Catched = true;
+            break;
+          }
+        } catch (e) { }
+      }
+    } catch (e) {
+      console.warn('cdn 업로드 실패:', e);
+      return undefined;
+    }
+    return Catched ? CatchedAddress : undefined;
+  }
 }

@@ -1279,6 +1279,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       } else result['msg'] = result['msg'];
       result['content_creator'] = this.userInput.file.content_creator;
       result['content_related_creator'] = this.userInput.file.content_related_creator;
+      if (!isURL && !this.info['local']) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
+        let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
+        let address = this.nakama.servers[this.isOfficial][this.target].info.address;
+        let savedAddress = await this.global.upload_file_to_storage(this.userInput.file, protocol, address);
+        isURL = Boolean(savedAddress);
+        if (!isURL) throw '링크 만들기 실패';
+        result['url'] = savedAddress;
+        result.content_creator.various = 'link';
+        for (let i = 0, j = result.content_related_creator.length; i < j; i++)
+          result.content_related_creator[i].various = 'link';
+      } catch (e) {
+        console.log('cdn 업로드 처리 실패: ', e);
+      }
       FileAttach = true;
       for (let i = 0, j = result['content_related_creator'].length; i < j; i++) {
         delete result['content_related_creator'][i]['is_me'];
