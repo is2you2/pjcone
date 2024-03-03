@@ -1465,6 +1465,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
       MsgTextThumbnail = `(${this.lang.text['ChatRoom']['attachments']}) ${MsgText}`
     }
+    if (msg.content['url']) FileURL = msg.content['thumbnail'];
     let text_form = FileURL ? `<div style="text-align: center;">${MsgTextThumbnail}</div>` : `<div>${MsgTextThumbnail}</div>`;
     let image_form = `<div style="width: 100%;"><img src="${FileURL}" alt="${msg.content['filename']}" style="border-radius: 8px; max-height: 230px; position: relative; left: 50%; transform: translateX(-50%); ${this.info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''}"></div>`;
     let result_form = FileURL ? image_form + text_form : text_form;
