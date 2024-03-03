@@ -633,7 +633,7 @@ export class GlobalActService {
     let Catched = false;
     try {
       await fetch(`${protocol}//${address}:9001/${filename}.${file.file_ext}`, { method: "POST", body: formData, mode: 'no-cors' });
-      for (let i = 1, j = 100; i < j; i++) { // 1초까지 검토하기
+      for (let i = 1, j = 50; i < j; i++) { // 1초까지 검토하기
         try {
           let targetAddress = `${protocol}//${address}:9002/${filename}_${upload_time + i}.${file.file_ext}`;
           let res = await fetch(targetAddress);
