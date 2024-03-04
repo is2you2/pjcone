@@ -989,7 +989,7 @@ export class IonicViewerPage implements OnInit {
         }
       }).then(v => {
         v.onDidDismiss().then((v) => {
-          if (v.data) this.modalCtrl.dismiss()
+          if (v.data) this.modalCtrl.dismiss();
         });
         v.present();
       });

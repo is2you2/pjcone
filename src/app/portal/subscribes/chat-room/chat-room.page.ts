@@ -677,12 +677,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }, 300);
   }
 
-  async selected_blobFile_callback_act(blob: any, contentRelated: ContentCreatorInfo[] = [], various = 'loaded') {
+  /** 파일 선택시 행동
+   * @param path 다른 채널에서 공유시 원본이 저장된 경로
+   */
+  async selected_blobFile_callback_act(blob: any, contentRelated: ContentCreatorInfo[] = [], various = 'loaded', path?: string) {
     this.userInput['file'] = {};
     this.userInput.file['filename'] = blob.name;
     this.userInput.file['file_ext'] = blob.name.split('.').pop() || blob.type || this.lang.text['ChatRoom']['unknown_ext'];
     this.userInput.file['size'] = blob.size;
     this.userInput.file['type'] = blob.type;
+    if (path) this.userInput.file.path = path;
     this.userInput.file['content_related_creator'] = [
       ...contentRelated, {
         user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
@@ -704,22 +708,18 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 다른 채널에 공유하기로 진입한 경우 재구성하기 */
   async create_thumbnail_imported(FileInfo: FileInfo) {
     let blob = await this.indexed.loadBlobFromUserPath(FileInfo.path, FileInfo.type);
-    blob['name'] = FileInfo.filename;
-    this.selected_blobFile_callback_act(blob, FileInfo.content_related_creator, 'shared');
+    blob['name'] = FileInfo.filename || FileInfo.name;
+    this.selected_blobFile_callback_act(blob, FileInfo.content_related_creator, 'shared', FileInfo.path);
   }
 
   /** 선택한 파일의 썸네일 만들기 */
   async create_selected_thumbnail() {
-    try {
-      if (this.userInput.file.blob.user_fs) { // 인앱 탐색기에서 넘어오는 경우
-        this.global.set_viewer_category_from_ext(this.userInput.file);
-        if (this.userInput.file.url) {
-          this.userInput.file.thumbnail = this.userInput.file.url;
-          this.userInput.file.typeheader = this.userInput.file.viewer;
-          return;
-        } else this.userInput.file.thumbnail = await this.indexed.loadBlobFromUserPath(this.userInput.file.path, this.userInput.file.type);
-      }
-    } catch (e) { }
+    this.global.set_viewer_category_from_ext(this.userInput.file);
+    if (this.userInput.file.url) {
+      this.userInput.file.thumbnail = this.userInput.file.url;
+      this.userInput.file.typeheader = this.userInput.file.viewer;
+      return;
+    } else this.userInput.file.thumbnail = await this.indexed.loadBlobFromUserPath(this.userInput.file.path, this.userInput.file.type);
     let FileURL = URL.createObjectURL(this.userInput.file.blob);
     this.userInput.file['typeheader'] = this.userInput.file.blob.type.split('/')[0] || this.userInput.file.viewer;
     setTimeout(() => {
