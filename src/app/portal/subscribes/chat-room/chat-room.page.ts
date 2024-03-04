@@ -1302,6 +1302,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         let address = this.nakama.servers[this.isOfficial][this.target].info.address;
         let savedAddress = await this.global.upload_file_to_storage(this.userInput.file, protocol, address);
         isURL = Boolean(savedAddress);
+        delete result['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
         if (!isURL) throw '링크 만들기 실패';
         result['url'] = savedAddress;
       } catch (e) {
