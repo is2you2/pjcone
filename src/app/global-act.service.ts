@@ -644,7 +644,6 @@ export class GlobalActService {
     } catch (e) {
       loading.message = this.lang.text['GlobalAct']['CancelingUpload'];
       console.warn('cdn 파일 업로드 단계 실패:', e);
-      return undefined;
     }
     loading.dismiss();
     return Catched ? CatchedAddress : undefined;
