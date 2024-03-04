@@ -49,7 +49,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  uploader: # 파일 업로드 서버
+  uploader: # 파일 업로드 서버 (http 연결로, 앱에서만 사용 가능)
     container_name: uploader
     image: svenatwork/fileuploadrobust
     volumes:
@@ -57,26 +57,23 @@ services:
       - "./server.js:/app/server.js"
     ports:
       - "9001:9001"
-  apache: # 파일 공개 서버
+  apache: # 파일 업로드 공개 서버
     container_name: apache
     image: httpd
     volumes:
       - "./cdn:/usr/local/apache2/htdocs"
       - "./httpd.conf:/usr/local/apache2/conf/httpd.conf"
+      - "./httpd-ssl.conf:/usr/local/apache2/conf/extra/httpd-ssl.conf"
+      - "./data/public.crt:/usr/local/apache2/conf/public.crt"
+      - "./data/private.key:/usr/local/apache2/conf/private.key"
     ports:
-      - "9002:80" # 컴퓨터:도커
+      - "9002:443" # 컴퓨터:도커
   coturn: # WebRTC 서버 (사용시 등록 필요)
     container_name: coturn
     image: coturn/coturn
-    ports:
-      - "3478:3478"
-      - "3478:3478/udp"
-      - "5349:5349"
-      - "5349:5349/udp"
-      - "49152:65535"
-      - "49152:65535/udp"
+    network_mode: host
     volumes:
-      - ./turnserver.conf/:/etc/coturn/turnserver.conf
+      - ./data/:/etc/coturn/
     environment:
       DETECT_EXTERNAL_IP: yes
       DETECT_RELAY_IP: yes

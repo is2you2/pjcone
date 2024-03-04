@@ -636,7 +636,7 @@ export class GlobalActService {
     let _file = new File([file.blob], filename);
     formData.append("files", _file);
     let Catched = false;
-    let CatchedAddress = `http://${address}:9002/${filename}`;
+    let CatchedAddress = `https://${address}:9002/${filename}`;
     try {
       await fetch(`http://${address}:9001/${filename}`, { method: "POST", body: formData, mode: 'no-cors' });
       let res = await fetch(CatchedAddress);
