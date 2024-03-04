@@ -719,7 +719,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.userInput.file.thumbnail = this.userInput.file.url;
       this.userInput.file.typeheader = this.userInput.file.viewer;
       return;
-    } else this.userInput.file.thumbnail = await this.indexed.loadBlobFromUserPath(this.userInput.file.path, this.userInput.file.type);
+    } else try {
+      this.userInput.file.thumbnail = await this.indexed.loadBlobFromUserPath(this.userInput.file.path, this.userInput.file.type);
+    } catch (e) { }
     let FileURL = URL.createObjectURL(this.userInput.file.blob);
     this.userInput.file['typeheader'] = this.userInput.file.blob.type.split('/')[0] || this.userInput.file.viewer;
     setTimeout(() => {
