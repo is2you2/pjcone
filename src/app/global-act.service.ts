@@ -8,6 +8,7 @@ import * as QRCode from "qrcode-svg";
 import { DomSanitizer } from '@angular/platform-browser';
 import * as p5 from "p5";
 import { IndexedDBService } from './indexed-db.service';
+import { LoadingController } from '@ionic/angular';
 
 export var isDarkMode = false;
 /** 파일 입출 크기 제한 */
@@ -105,6 +106,7 @@ export class GlobalActService {
     private lang: LanguageSettingService,
     private sanitizer: DomSanitizer,
     private indexed: IndexedDBService,
+    private loadingCtrl: LoadingController,
   ) {
     isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
@@ -624,30 +626,27 @@ export class GlobalActService {
    * @param address 해당 서버 주소
    * @returns 등록된 주소 반환
    */
-  async upload_file_to_storage(file: any, protocol: string, address: string): Promise<string> {
+  async upload_file_to_storage(file: any, channel_id: string, address: string): Promise<string> {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['GlobalAct']['CheckCdnServer'] });
+    loading.present();
     let formData = new FormData();
-    formData.append("files", file.blob);
     let upload_time = new Date().getTime();
-    let filename = file.filename.split('.')[0];
-    let CatchedAddress: string;
+    let only_filename = file.filename.split('.')[0];
+    let filename = `${channel_id}_${only_filename}_${upload_time}.${file.file_ext}`;
+    let _file = new File([file.blob], filename);
+    formData.append("files", _file);
     let Catched = false;
+    let CatchedAddress = `http://${address}:9002/${filename}`;
     try {
-      await fetch(`${protocol}//${address}:9001/${filename}.${file.file_ext}`, { method: "POST", body: formData, mode: 'no-cors' });
-      for (let i = 1, j = 50; i < j; i++) { // 1초까지 검토하기
-        try {
-          let targetAddress = `${protocol}//${address}:9002/${filename}_${upload_time + i}.${file.file_ext}`;
-          let res = await fetch(targetAddress);
-          if (res.ok) {
-            CatchedAddress = targetAddress;
-            Catched = true;
-            break;
-          }
-        } catch (e) { }
-      }
+      await fetch(`http://${address}:9001/${filename}`, { method: "POST", body: formData, mode: 'no-cors' });
+      let res = await fetch(CatchedAddress);
+      if (res.ok) Catched = true;
     } catch (e) {
-      console.warn('cdn 업로드 실패:', e);
+      loading.message = this.lang.text['GlobalAct']['CancelingUpload'];
+      console.warn('cdn 파일 업로드 단계 실패:', e);
       return undefined;
     }
+    loading.dismiss();
     return Catched ? CatchedAddress : undefined;
   }
 }

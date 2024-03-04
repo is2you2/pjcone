@@ -54,6 +54,7 @@ services:
     image: svenatwork/fileuploadrobust
     volumes:
       - "./cdn:/app/uploads"
+      - "./server.js:/app/server.js"
     ports:
       - "9001:9001"
   apache: # 파일 공개 서버

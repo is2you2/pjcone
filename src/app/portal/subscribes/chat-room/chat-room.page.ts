@@ -1300,12 +1300,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       result['content_creator'] = this.userInput.file.content_creator;
       result['content_related_creator'] = this.userInput.file.content_related_creator;
       if (!isURL && this.useCDN && !this.info['local']) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
-        let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
         let address = this.nakama.servers[this.isOfficial][this.target].info.address;
-        let savedAddress = await this.global.upload_file_to_storage(this.userInput.file, protocol, address);
+        let savedAddress = await this.global.upload_file_to_storage(this.userInput.file, this.info['id'], address);
         isURL = Boolean(savedAddress);
-        delete result['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
         if (!isURL) throw '링크 만들기 실패';
+        delete result['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
         result['url'] = savedAddress;
       } catch (e) {
         console.log('cdn 업로드 처리 실패: ', e);
@@ -1900,8 +1899,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         };
       }
       await this.indexed.saveBase64ToUserPath(v.data['img'], `tmp_files/chatroom/${this.userInput.file.filename}`, (raw) => {
-        let blob = new Blob([raw], { type: this.userInput.file['type'] });
-        this.userInput.file.blob = new File([blob], this.userInput.file.filename);
+        this.userInput.file.blob = new Blob([raw], { type: this.userInput.file['type'] });
       });
       this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
     } catch (e) {
