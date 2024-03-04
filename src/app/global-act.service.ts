@@ -573,6 +573,8 @@ export class GlobalActService {
       case 'md':
       // 텍스트류
       case 'prop':
+      case 'conf':
+      case 'log':
       case 'txt':
       case 'cs':
       case 'gd':
