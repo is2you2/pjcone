@@ -628,7 +628,7 @@ export class GlobalActService {
    * @param address 해당 서버 주소
    * @returns 등록된 주소 반환
    */
-  async upload_file_to_storage(file: any, channel_id: string, address: string): Promise<string> {
+  async upload_file_to_storage(file: any, channel_id: string, protocol: string, address: string): Promise<string> {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['GlobalAct']['CheckCdnServer'] });
     loading.present();
     let formData = new FormData();
@@ -638,7 +638,7 @@ export class GlobalActService {
     let _file = new File([file.blob], filename);
     formData.append("files", _file);
     let Catched = false;
-    let CatchedAddress = `https://${address}:9002/${filename}`;
+    let CatchedAddress = `${protocol}://${address}:9002/${filename}`;
     try {
       await fetch(`http://${address}:9001/${filename}`, { method: "POST", body: formData, mode: 'no-cors' });
       let res = await fetch(CatchedAddress);
