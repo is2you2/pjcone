@@ -1,10 +1,12 @@
 /** Define dependencies.*/
 
+// var cors = require('cors')
 var express = require("express");
 var multer = require('multer');
 var app = express();
 var done = false;
 
+app.use(cors());
 
 /** Express Timeout Setting 10 minutes */
 app.use(function (req, res, next) {

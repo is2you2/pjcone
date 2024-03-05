@@ -55,6 +55,7 @@ services:
     volumes:
       - "./cdn:/app/uploads"
       - "./server.js:/app/server.js"
+      - "./package.json:/app/package.json"
     ports:
       - "9001:9001"
   apache: # 파일 업로드 공개 서버

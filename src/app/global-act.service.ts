@@ -640,7 +640,9 @@ export class GlobalActService {
     let Catched = false;
     let CatchedAddress = `${protocol}//${address}:9002/${filename}`;
     try {
-      await fetch(`http://${address}:9001/${filename}`, { method: "POST", body: formData, mode: 'no-cors' });
+      let headers = new Headers();
+      headers.append('Access-Control-Allow-Origin', '*');
+      await fetch(`http://${address}:9001/${filename}`, { method: "POST", headers: headers, body: formData });
       let res = await fetch(CatchedAddress);
       if (res.ok) Catched = true;
     } catch (e) {
