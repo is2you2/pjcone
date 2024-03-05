@@ -738,6 +738,9 @@ export class IonicViewerPage implements OnInit {
           case 'ArrowLeft':
             this.ChangeToAnother(-1);
             break;
+          case 'KeyS': // 파일 저장
+            this.download_file();
+            break;
           case 'KeyD': // 오른쪽 이동
           case 'ArrowRight':
             this.ChangeToAnother(1);
