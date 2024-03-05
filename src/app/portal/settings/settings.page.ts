@@ -187,12 +187,11 @@ export class SettingsPage implements OnInit, OnDestroy {
     LinkButton.push(() => this.open_inapp_explorer());
     LinkButton.push(() => this.go_to_page('weblink-gen'));
     LinkButton.push(() => this.go_to_webrtc_manager());
+    if (!this.cant_dedicated && this.can_use_http)
+      LinkButton.push(() => this.start_minimalserver());
     LinkButton.push(() => this.download_serverfile());
-    if (this.as_admin.length) {
-      if (!this.cant_dedicated && this.can_use_http)
-        LinkButton.push(() => this.start_minimalserver());
+    if (this.as_admin.length)
       LinkButton.push(() => this.go_to_page('admin-tools'));
-    }
     LinkButton.push(() => this.go_to_page('creator'));
     if (this.lang.lang != 'ko')
       LinkButton.push(() => this.go_to_page('translator'));
