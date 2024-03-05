@@ -1302,7 +1302,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (!isURL && this.useCDN && !this.info['local']) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
         let address = this.nakama.servers[this.isOfficial][this.target].info.address;
         let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
-        let savedAddress = await this.global.upload_file_to_storage(this.userInput.file, protocol, this.info['id'], address);
+        let savedAddress = await this.global.upload_file_to_storage(this.userInput.file,
+          this.nakama.servers[this.isOfficial][this.target].session.user_id,
+          protocol, address);
         isURL = Boolean(savedAddress);
         if (!isURL) throw '링크 만들기 실패';
         delete result['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
