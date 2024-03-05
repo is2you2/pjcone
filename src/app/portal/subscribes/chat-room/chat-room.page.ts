@@ -974,6 +974,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   ViewCount = 45;
   /** 더 최근 메시지 가져오기 버튼 보이기 여부 (아래로 스크롤 검토) */
   ShowRecentMsg = false;
+  /** 오프라인이면서 비공개 그룹일 경우 */
+  isOfflineClosedGroup = false;
   /** 서버로부터 메시지 더 받아오기
    * @param isHistory 옛날 정보 불러오기 유무, false면 최신정보 불러오기 진행
    */
@@ -1045,20 +1047,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (this.nakama.groups[this.isOfficial][this.target]
             && this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]
             && !this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open']) {
-            let tmp = [{
-              content: {
-                msg: [{ text: this.lang.text['ChatRoom']['closed_group_must_online'] }],
-              }
-            }, {
-              content: {
-                msg: [{ text: this.lang.text['ChatRoom']['closed_group_not_allow'] }],
-              }
-            }];
+            this.isOfflineClosedGroup = true;
             this.next_cursor = undefined;
             this.isHistoryLoaded = true;
-            tmp.forEach(tmsg => {
-              if (tmsg['code'] != 2) this.messages.push(tmsg)
-            });
             return;
           }
         this.LoadLocalChatHistory();
@@ -1497,7 +1488,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
       MsgText = `(${this.lang.text['ChatRoom']['attachments']}) ${MsgText}`
     }
-    console.log(MsgText);
     if (msg.content['url']) FileURL = msg.content['thumbnail'];
     let text_form = FileURL ? `<div style="text-align: center;">${MsgText}</div>` : `<div>${MsgText}</div>`;
     let image_form = `<div style="width: 100%;"><img src="${FileURL}" alt="${msg.content['filename']}" style="border-radius: 8px; max-height: 230px; position: relative; left: 50%; transform: translateX(-50%); ${this.info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''}"></div>`;
