@@ -46,6 +46,9 @@ export class AddGroupPage implements OnInit {
     this.servers.push(local_info);
     this.userInput.server = this.servers[this.index];
     this.file_sel_id = `add_group_${new Date().getTime()}`;
+  }
+
+  ionViewWillEnter() {
     this.ChangeContentWithKeyInput();
   }
 
@@ -55,7 +58,8 @@ export class AddGroupPage implements OnInit {
       p.keyPressed = (ev) => {
         switch (ev['code']) {
           case 'Enter':
-            this.save();
+            if (document.activeElement.id != 'group_desc')
+              this.save();
             break;
         }
       }
