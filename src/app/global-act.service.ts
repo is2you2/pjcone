@@ -642,7 +642,9 @@ export class GlobalActService {
     try {
       let headers = new Headers();
       headers.append('Access-Control-Allow-Origin', '*');
-      await fetch(`http://${address}:9001/${filename}`, { method: "POST", headers: headers, body: formData });
+      headers.append('Access-Control-Allow-Method', '*');
+      headers.append('Access-Control-Allow-Headers', '*');
+      await fetch(`${protocol}//${address}:9001/${filename}`, { method: "POST", headers: headers, body: formData });
       let res = await fetch(CatchedAddress);
       if (res.ok) Catched = true;
     } catch (e) {

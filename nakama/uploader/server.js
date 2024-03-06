@@ -5,6 +5,8 @@ var express = require("express");
 var multer = require('multer');
 var app = express();
 var done = false;
+const https = require('node:https');
+const fs = require('node:fs');
 
 app.use(cors());
 
@@ -15,6 +17,13 @@ app.use(function (req, res, next) {
         res.send(408);
     });
 
+    next();
+});
+
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "*");
+    res.header("Access-Control-Allow-Method", "*");
     next();
 });
 
@@ -68,7 +77,16 @@ app.post('/v1/upload', function (req, res) {
     };
 });
 
-/** Run the server.*/
-app.listen(9001, "0.0.0.0", function () {
+const options = {
+    key: fs.readFileSync('/usr/local/apache2/conf/private.key'),
+    cert: fs.readFileSync('/usr/local/apache2/conf/public.crt'),
+};
+
+https.createServer(options, app).listen(9001, "0.0.0.0", () => {
     console.log("Working on port 9001");
 });
+
+/** Run the server.*/
+// app.listen(9001, "0.0.0.0", function () {
+//     console.log("Working on port 9001");
+// });
