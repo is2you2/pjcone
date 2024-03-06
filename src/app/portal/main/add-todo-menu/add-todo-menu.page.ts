@@ -238,11 +238,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   isModifiable = false;
   received_data: string;
   async ionViewWillEnter() {
-    let ionInput = document.getElementById('titleInput');
-    this.titleIonInput = ionInput.children[0].children[1].children[0];
-    setTimeout(() => {
-      this.titleIonInput.focus();
-    }, 0);
     // 저장소로 사용 가능한 서버와 그룹 수집
     let servers: RemoteInfo[] = [];
     let isOfficial = Object.keys(this.nakama.servers);
@@ -274,6 +269,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       let tomorrow = new Date(new Date().getTime() + 43200000);
       this.userInput.limit = tomorrow.getTime();
     }
+    let ionInput = document.getElementById('titleInput');
+    this.titleIonInput = ionInput.children[0].children[1].children[0];
+    setTimeout(() => {
+      if (!this.isModify)
+        this.titleIonInput.focus();
+    }, 0);
     this.file_sel_id = `todo_${this.userInput.id || 'new_todo_id'}_${new Date().getTime()}`;
     // 첨부 이미지가 있음
     if (this.userInput.attach.length)
