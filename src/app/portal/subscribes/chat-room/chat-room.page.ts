@@ -785,6 +785,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       id: this.info.id,
     }
     this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
+    this.extended_buttons.forEach(button => {
+      button.isHide = false;
+    });
     switch (this.info['redirect']['type']) {
       case 2: // 1:1 대화라면
         if (this.info['status'] != 'missing') {
@@ -792,30 +795,27 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
           else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
             this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
-          delete this.extended_buttons[8].isHide;
           this.extended_buttons[0].isHide = true;
+          this.extended_buttons[1].isHide = true;
           this.extended_buttons[7].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
+          delete this.extended_buttons[8].isHide;
+          this.extended_buttons[11].isHide = true;
         }
         break;
       case 3: // 그룹 대화라면
         if (this.info['status'] != 'missing')
           await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
+        this.extended_buttons[1].isHide = true;
         this.extended_buttons[10].isHide = true;
         delete this.extended_buttons[0].isHide;
         this.extended_buttons[7].isHide = true;
+        this.extended_buttons[11].isHide = true;
         break;
       case 0: // 로컬 채널형 기록
-        this.extended_buttons.forEach(button => {
-          button.isHide = true;
-        });
-        this.extended_buttons[1].isHide = false;
-        this.extended_buttons[2].isHide = false;
-        this.extended_buttons[3].isHide = false;
-        this.extended_buttons[4].isHide = false;
-        this.extended_buttons[5].isHide = false;
-        this.extended_buttons[8].isHide = false;
-        this.extended_buttons[9].isHide = false;
-        this.extended_buttons[11].isHide = false;
+        this.extended_buttons[0].isHide = true;
+        this.extended_buttons[6].isHide = true;
+        this.extended_buttons[7].isHide = true;
+        this.extended_buttons[10].isHide = true;
         break;
       default:
         break;
