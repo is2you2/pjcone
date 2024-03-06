@@ -6,3 +6,6 @@ postgres/*
 # nakama ssl key 무시
 data/private.key
 data/public.crt
+
+uploader/node_modules
+uploader/package-lock.json

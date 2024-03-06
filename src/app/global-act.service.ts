@@ -638,7 +638,7 @@ export class GlobalActService {
     let _file = new File([file.blob], filename);
     formData.append("files", _file);
     let Catched = false;
-    let CatchedAddress = `${protocol}//${address}:9002/${filename}`;
+    let CatchedAddress = `${protocol}//${address}:9002/cdn/${filename}`;
     try {
       let headers = new Headers();
       headers.append('Access-Control-Allow-Origin', '*');

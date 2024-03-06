@@ -1,6 +1,6 @@
 /** Define dependencies.*/
 
-// var cors = require('cors')
+var cors = require('cors')
 var express = require("express");
 var multer = require('multer');
 var app = express();
@@ -20,7 +20,7 @@ app.use(function (req, res, next) {
 
 /** Configure the multer.*/
 app.use(multer({
-    dest: './uploads/',
+    dest: './cdn/',
 
     rename: function (fieldname, filename) {
         return filename;
