@@ -54,6 +54,11 @@ export class AddGroupPage implements OnInit {
 
   p5canvas: p5;
   ChangeContentWithKeyInput() {
+    let group_name = document.getElementById('group_name');
+    let name_html = group_name.childNodes[1].childNodes[1].childNodes[0] as HTMLElement;
+    setTimeout(() => {
+      name_html.focus();
+    }, 0);
     this.p5canvas = new p5((p: p5) => {
       p.keyPressed = (ev) => {
         switch (ev['code']) {
@@ -134,8 +139,6 @@ export class AddGroupPage implements OnInit {
   }
 
   isSaveClicked = false;
-  /** 정상처리되지 않았다면 작성 중 정보 임시 저장 */
-  isSavedWell = false;
   async save() {
     this.isSaveClicked = true;
     // 로컬에 채널 양식으로 기록 남기기
@@ -172,7 +175,6 @@ export class AddGroupPage implements OnInit {
       this.nakama.save_group_info(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target);
       try {
         await this.nakama.join_chat_with_modulation(v.id, 3, this.servers[this.index].isOfficial, this.servers[this.index].target);
-        this.isSavedWell = true;
         this.p5toast.show({
           text: this.lang.text['AddGroup']['group_created'],
         });
@@ -240,7 +242,6 @@ export class AddGroupPage implements OnInit {
         status: 'online',
       }
     };
-    this.isSavedWell = true;
     if (this.userInput.img)
       this.indexed.saveTextFileToUserPath(this.userInput.img, `servers/local/channels/groups/${generated_id}.img`);
     this.nakama.rearrange_channels();
@@ -282,7 +283,6 @@ export class AddGroupPage implements OnInit {
       }
     }
     if (SuccJoinedChat) {
-      this.isSavedWell = true;
       this.p5toast.show({
         text: this.lang.text['AddGroup']['join_group_succ'],
       });
@@ -293,9 +293,6 @@ export class AddGroupPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    if (!this.isSavedWell)
-      localStorage.setItem('add-group', JSON.stringify(this.userInput));
-    else localStorage.removeItem('add-group');
     if (this.p5canvas) this.p5canvas.remove();
   }
 
