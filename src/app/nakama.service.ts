@@ -2271,7 +2271,6 @@ export class NakamaService {
    * @param messages 메시지[]
    */
   saveListedMessage(messages: any[], channel_info: any, _is_official: string, _target: string) {
-    if (channel_info['redirect']['type'] == 3 && !this.groups[_is_official][_target][channel_info['group_id']]['open']) return;
     let SepByDate = {};
     let tmp_msg: any[] = JSON.parse(JSON.stringify(messages));
     while (tmp_msg.length) {
