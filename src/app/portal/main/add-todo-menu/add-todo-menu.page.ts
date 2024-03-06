@@ -100,8 +100,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     attach: [] as FileInfo[],
     /** 이 업무는 완료되었습니다, 완료 후에도 변경될 수 있음 */
     done: undefined,
-    /** 업무 집중 여부 */
-    is_focus: undefined,
     /** 알림 아이디 저장 */
     noti_id: undefined,
   };
@@ -240,6 +238,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   isModifiable = false;
   received_data: string;
   async ionViewWillEnter() {
+    let ionInput = document.getElementById('titleInput');
+    this.titleIonInput = ionInput.children[0].children[1].children[0];
+    setTimeout(() => {
+      this.titleIonInput.focus();
+    }, 0);
     // 저장소로 사용 가능한 서버와 그룹 수집
     let servers: RemoteInfo[] = [];
     let isOfficial = Object.keys(this.nakama.servers);
@@ -509,12 +512,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
     this.NewAttach.open();
   }
-
+  /** 할 일 제목 입력칸 */
+  titleIonInput: any;
   input_ele_ids = [];
   checkIfInputFocus(): boolean {
     if (!this.input_ele_ids.length) {
-      let titleIonInput = document.getElementById('titleInput');
-      this.input_ele_ids.push(titleIonInput.children[0].children[1].children[0]);
+      this.input_ele_ids.push(this.titleIonInput);
       this.input_ele_ids.push(document.getElementById('descInput'));
     }
     let result = false;
