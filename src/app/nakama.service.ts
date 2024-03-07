@@ -245,13 +245,13 @@ export class NakamaService {
           break;
         }
       if (!noti_info['done'] && not_registered && schedule_at > new Date().getTime()) {
-        let color = '00bbbb'; // 메모
+        let color = '58a192'; // 메모
         switch (noti_info.importance) {
           case '1': // 기억해야 함
-            color = 'dddd0c';
+            color = 'ddbb41';
             break;
           case '2': // 중요함
-            color = '880000';
+            color = 'ff754e';
             break;
         }
         if (noti_info['custom_color'])

@@ -275,6 +275,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       if (!this.isModify)
         this.titleIonInput.focus();
     }, 0);
+    this.ImporantSelChanged({ detail: { value: this.userInput.importance } });
     this.file_sel_id = `todo_${this.userInput.id || 'new_todo_id'}_${new Date().getTime()}`;
     // 첨부 이미지가 있음
     if (this.userInput.attach.length)
@@ -702,17 +703,17 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     switch (this.userInput.importance) {
       case '0': // 메모
         this.normal_color = '#888b';
-        this.alert_color = '#0bbb';
+        this.alert_color = '#58a192bb';
         this.AlertLerpStartFrom = .8;
         break;
       case '1': // 기억해야함
         this.normal_color = '#888b';
-        this.alert_color = '#dddd0cbb';
+        this.alert_color = '#ddbb41bb';
         this.AlertLerpStartFrom = .5;
         break;
       case '2': // 중요함
         this.normal_color = '#dddd0cbb';
-        this.alert_color = '#800b';
+        this.alert_color = '#ff754ebb';
         this.AlertLerpStartFrom = .4;
         break;
     }
