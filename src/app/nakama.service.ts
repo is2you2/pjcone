@@ -1373,10 +1373,12 @@ export class NakamaService {
                   this.save_other_user(targetUser, _is_official, _target);
                 } catch (e) { }
               case 3: // 그룹 채팅
-                let c_msg = await this.servers[_is_official][_target].client.listChannelMessages(
-                  this.servers[_is_official][_target].session, channel_ids[i], 1, false);
-                if (c_msg.messages.length)
-                  this.update_from_channel_msg(c_msg.messages[0], _is_official, _target);
+                if (!this.channels_orig[_is_official][_target][channel_ids[i]]['update']) {
+                  let c_msg = await this.servers[_is_official][_target].client.listChannelMessages(
+                    this.servers[_is_official][_target].session, channel_ids[i], 1, false);
+                  if (c_msg.messages.length)
+                    this.update_from_channel_msg(c_msg.messages[0], _is_official, _target);
+                }
                 this.count_channel_online_member(this.channels_orig[_is_official][_target][channel_ids[i]], _is_official, _target);
                 this.save_channels_with_less_info();
                 break;
