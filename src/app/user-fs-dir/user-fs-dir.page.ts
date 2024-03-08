@@ -72,6 +72,8 @@ export class UserFsDirPage implements OnInit {
   is_file_selector: boolean = false;
   /** 인앱 브라우저 내 썸네일 토글 */
   HideThumbnail = false;
+  /** 모바일 웹에서는 폴더 수입 제한 */
+  CanImportFolder = true;
 
   toggle_thumbnail() {
     this.HideThumbnail = !this.HideThumbnail;
@@ -83,6 +85,7 @@ export class UserFsDirPage implements OnInit {
       setTimeout(() => {
         this.CreateDrop();
       }, 0);
+    this.CanImportFolder = isPlatform != 'MobilePWA';
   }
 
   initLoadingElement: HTMLIonLoadingElement;

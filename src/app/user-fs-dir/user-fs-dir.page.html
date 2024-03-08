@@ -16,7 +16,7 @@
     <input hidden type="file" id="import_file" accept="*" multiple (change)="inputFileSelected($event)">
   </div>
   <ion-list *ngIf="InAppBrowser">
-    <div *ngIf="CurrentDir == '' && !is_file_selector">
+    <div *ngIf="CurrentDir == '' && !is_file_selector && CanImportFolder">
       <ion-item button (click)="SelectImportFolder()">
         <ion-icon slot="start" name="arrow-down-circle"></ion-icon>
         <ion-label> {{lang.text['UserFsDir']['ImportFolder']}} </ion-label>
