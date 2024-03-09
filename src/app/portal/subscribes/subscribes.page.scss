@@ -5,9 +5,8 @@
 .content {
     color: #888;
     height: 24px;
-    display: table-cell;
     vertical-align: middle;
-    padding: 0px 16px;
+    overflow: hidden;
 }
 
 .status_bar {
