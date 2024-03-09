@@ -582,7 +582,16 @@ export class NakamaService {
     line += `,${info.address}`;
     line += `,${info.port}`;
     line += `,${info.useSSL}`;
-    return new Promise((done) => {
+    return new Promise(async (done) => {
+      // WebRTC 정보 자동 생성처리 (기본 정보 기반)
+      {
+        let auto_gen_server = {
+          urls: [`stun:${info.address}:3478`, `turn:${info.address}:3478`],
+          username: 'username',
+          credential: 'password',
+        }
+        await this.SaveWebRTCServer(auto_gen_server);
+      }
       if (info.isOfficial != 'official')
         this.indexed.loadTextFromUserPath('servers/list_detail.csv', async (e, v) => {
           let list: string[] = [];
@@ -604,6 +613,51 @@ export class NakamaService {
         done();
       }
     });
+  }
+
+  /** WebRTC 정보 저장하기 */
+  async SaveWebRTCServer(info: any) {
+    let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json') || '[]';
+    let savedWebRTCData = JSON.parse(list);
+    let isExist = false;
+    let keys = Object.keys(savedWebRTCData);
+    for (let i = 0, j = keys.length; i < j; i++) {
+      let add = this.catch_address_from_rtc_server_address(info);
+      let exist = this.catch_address_from_rtc_server_address(savedWebRTCData[i]);
+      if (add == exist) {
+        isExist = true;
+        break;
+      }
+    }
+    if (!isExist) savedWebRTCData.push(info);
+    await this.indexed.saveTextFileToUserPath(JSON.stringify(savedWebRTCData), 'servers/webrtc_server.json');
+  }
+
+  /** 서버를 삭제할 때 해당 주소의 WebRTC 서버를 삭제하기 */
+  async RemoveWebRTCServer(address: string) {
+    let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json') || '[]';
+    let savedWebRTCData = JSON.parse(list);
+    let keys = Object.keys(savedWebRTCData);
+    for (let i = 0, j = keys.length; i < j; i++) {
+      let exist = this.catch_address_from_rtc_server_address(savedWebRTCData[i]);
+      if (address == exist) savedWebRTCData.splice(i, 1); // 모든 동일 명 서버 삭제
+    }
+    await this.indexed.saveTextFileToUserPath(JSON.stringify(savedWebRTCData), 'servers/webrtc_server.json');
+  }
+
+  /** WebRTC 서버 주소로부터 일반 주소 추출하기 */
+  catch_address_from_rtc_server_address(info: any) {
+    let result = undefined;
+    try { // 가운데 있는 주소부분만 추출
+      let addressForm: string = info['urls'][0];
+      if (addressForm.indexOf('stun:') >= 0 || addressForm.indexOf('turn:') >= 0)
+        addressForm = addressForm.substring(5);
+      let SepPort = addressForm.lastIndexOf(':');
+      result = addressForm.substring(0, SepPort);
+    } catch (e) {
+      console.error('webrtc 서버 정보 검토 오류: ', e);
+    }
+    return result;
   }
 
   /** 전체 서버 상태를 검토하여 설정-그룹서버의 상태를 조율함 */
@@ -1958,6 +2012,8 @@ export class NakamaService {
     loading.message = this.lang.text['Nakama']['DeletingServerInfo'];
     this.set_group_statusBar('offline', _is_official, _target);
     delete this.statusBar.groupServer[_is_official][_target];
+    // 동일 주소 WebRTC 서버 일괄 삭제
+    this.RemoveWebRTCServer(this.servers[_is_official][_target].info.address);
     delete this.servers[_is_official][_target];
     this.save_groups_with_less_info();
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');

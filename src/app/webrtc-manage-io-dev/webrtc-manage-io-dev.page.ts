@@ -7,6 +7,7 @@ import { SERVER_PATH_ROOT } from '../app.component';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from 'clipboardy';
 import { P5ToastService } from '../p5-toast.service';
+import { NakamaService } from '../nakama.service';
 
 @Component({
   selector: 'app-webrtc-manage-io-dev',
@@ -23,6 +24,7 @@ export class WebrtcManageIoDevPage implements OnInit {
     private global: GlobalActService,
     private mClipboard: Clipboard,
     private p5toast: P5ToastService,
+    private nakama: NakamaService,
   ) { }
 
   InOut = [];
@@ -124,6 +126,7 @@ export class WebrtcManageIoDevPage implements OnInit {
       });
       return;
     }
+    await this.nakama.SaveWebRTCServer(this.userInput);
     let address = `${SERVER_PATH_ROOT}pjcone_pwa/?rtcserver=[${this.userInput.urls}],${this.userInput.username},${this.userInput.credential}`;
     let QRCode = this.global.readasQRCodeFromString(address);
     this.QRCodes.push(QRCode);
@@ -135,7 +138,6 @@ export class WebrtcManageIoDevPage implements OnInit {
     }
     this.UserInputUrlsLength.length = 0;
     this.UserInputUrlsLength.push(0);
-    await this.indexed.saveTextFileToUserPath(JSON.stringify(this.ServerInfos), 'servers/webrtc_server.json');
     this.RegisterServer.dismiss();
   }
 
