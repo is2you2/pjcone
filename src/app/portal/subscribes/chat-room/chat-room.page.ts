@@ -1473,7 +1473,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (this.isOtherAct) return; // 다른 행동과 중첩 방지
     if (this.info['status'] == 'offline' || this.info['status'] == 'missing') return;
     if (!msg['is_me']) return;
-    let MsgText = this.deserialize_text(msg);
+    let orig_msg = this.deserialize_text(msg);
+    let MsgText = orig_msg;
     let FileURL: any;
     if (msg.content['viewer']) {
       try { // 파일 불러오기 실패시 그저 망치기
@@ -1502,7 +1503,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             header: this.lang.text['ChatRoom']['EditChat'],
             inputs: [{
               type: 'textarea',
-              value: MsgText,
+              value: orig_msg,
               placeholder: MsgText,
             }],
             buttons: [{
@@ -1542,7 +1543,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         text: this.lang.text['UserFsDir']['Delete'],
         cssClass: 'red_font',
         handler: async () => {
-          let delete_well = false;
           if (!this.info['local']) { // 서버와 연결된 채널인 경우
             try {
               await this.nakama.servers[this.isOfficial][this.target].socket.removeChatMessage(this.info['id'], msg.message_id);
@@ -1566,21 +1566,20 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 await this.indexed.removeFileFromUserPath(`${path}_thumbnail.png`);
                 loading.dismiss();
               }
-              delete_well = true;
             } catch (e) {
               console.error('채널 메시지 삭제 오류: ', e);
             }
           } else { // 로컬 채널인경우 첨부파일을 즉시 삭제
             if (FileURL) {
+              let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
               try {
-                let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
                 await this.indexed.removeFileFromUserPath(path);
+              } catch (e) { }
+              try {
                 await this.indexed.removeFileFromUserPath(`${path}_thumbnail.png`);
-                delete_well = true;
               } catch (e) { }
             }
           }
-          if (!delete_well) return;
           this.ViewableMessage.splice(index, 1);
           for (let i = 0, j = this.messages.length; i < j; i++)
             if (this.messages[i]['message_id'] == msg['message_id']) {

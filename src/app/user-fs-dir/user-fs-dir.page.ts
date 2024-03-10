@@ -445,17 +445,13 @@ export class UserFsDirPage implements OnInit {
   SetDisplayUserName(info: FileDir, sep: string[]) {
     try {
       info.name = this.nakama.users[sep[1]][sep[2]][sep[4]]['display_name'];
-    } catch (e) {
-      console.error('SetDisplayUserName error: ', e);
-    }
+    } catch (e) { }
   }
 
   SetDisplayChannelName(info: FileDir, sep: string[]) {
     try {
       info.name = this.nakama.channels_orig[sep[1]][sep[2]][info.name]['title'];
-    } catch (e) {
-      console.error('SetDisplayChannelName error: ', e);
-    }
+    } catch (e) { }
   }
 
   SetDisplayGroupImageName(info: FileDir, sep: string[]) {
