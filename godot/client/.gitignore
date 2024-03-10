@@ -38,3 +38,5 @@ assets
 # 테스트용 키 심볼릭 링크 무시
 public.crt
 private.key
+
+.godot/
