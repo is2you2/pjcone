@@ -715,13 +715,12 @@ export class IonicViewerPage implements OnInit {
             else this.global.godot_window['start_load_pck']();
           }, 100);
         break;
-      case 'disabled':
+      default:
+        console.log('정의되지 않은 파일 정보: ', this.FileInfo['viewer']);
+      case 'disabled': // 사용 불가
         this.p5canvas = new p5((p: p5) => {
           p.setup = () => { p.noCanvas() }
         });
-        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-        loading.present();
-        loading.dismiss();
         break;
     }
     this.ContentOnLoad = true;

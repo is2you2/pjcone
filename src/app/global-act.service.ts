@@ -544,7 +544,9 @@ export class GlobalActService {
       // case 'stl':
       // case 'glb':
       // case 'gltf':
-      // case 'blender':
+      case 'blend':
+        info['viewer'] = 'blender';
+        break;
       // 고도엔진 패키지 파일
       case 'pck':
         info['viewer'] = 'godot';
