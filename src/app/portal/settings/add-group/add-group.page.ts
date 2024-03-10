@@ -55,7 +55,7 @@ export class AddGroupPage implements OnInit {
   p5canvas: p5;
   ChangeContentWithKeyInput() {
     let group_name = document.getElementById('group_name');
-    let name_html = group_name.childNodes[1].childNodes[1].childNodes[0] as HTMLElement;
+    let name_html = group_name.childNodes[1].childNodes[1].childNodes[1] as HTMLElement;
     setTimeout(() => {
       name_html.focus();
     }, 0);
