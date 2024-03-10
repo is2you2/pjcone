@@ -118,7 +118,7 @@ export class VoidDrawPage implements OnInit {
       let RedoButton: any;
       /** 임시방편 색상 선택기 */
       let p5ColorPicker = p.createColorPicker('#000');
-      let strokeWeight = p.min(initData['width'], initData['heigth']) / 100;
+      let strokeWeight = Math.min(initData['width'], initData['height']) / 100;
       let strokeRatio = 1;
       const PIXEL_DENSITY = 1;
       /** 문서파일을 이미지 편집할 경우 문서 내용 */
