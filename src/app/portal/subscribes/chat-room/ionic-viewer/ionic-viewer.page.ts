@@ -757,10 +757,13 @@ export class IonicViewerPage implements OnInit {
               loading.dismiss();
               if (!blob) { // 파일이 열리지 않음 알림
                 this.p5toast.show({
-                  text: this.lang['ContentViewer']['CannotOpenText'],
+                  text: this.lang.text['ContentViewer']['CannotOpenText'],
                 });
                 return;
               }
+              this.p5toast.show({
+                text: this.lang.text['ContentViewer']['BlenderViewerInfo'],
+              });
               let blend = await jsBlend.elt.contentWindow['JSBLEND'](blob);
               // 모든 개체를 돌며 개체에 맞는 생성 동작
               const RATIO = 100;
