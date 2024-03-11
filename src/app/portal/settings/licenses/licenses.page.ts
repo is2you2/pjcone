@@ -39,6 +39,7 @@ export class LicensesPage implements OnInit {
       freetype: '',
       mbedtls: '',
     },
+    jsblend: '',
   };
 
   p5canvas: p5;
@@ -57,6 +58,9 @@ export class LicensesPage implements OnInit {
         });
         p.loadStrings('assets/data/docs/mbedtls.txt', (v: string[]) => {
           this.licenses.godot.mbedtls = v.join('\n');
+        });
+        p.loadStrings('assets/data/docs/js.blend.txt', (v: string[]) => {
+          this.licenses.jsblend = v.join('\n');
         });
       }
     }

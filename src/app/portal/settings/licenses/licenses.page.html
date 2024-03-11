@@ -31,4 +31,10 @@ SPDX-License-Identifier: MIT -->
     <ion-label>mbed TLS</ion-label>
   </ion-item-divider>
   <textarea class="infobox" disabled [(ngModel)]="licenses['godot']['mbedtls']"></textarea>
+  <ion-list-header>
+    <ion-label>JS.BLEND</ion-label>
+    <ion-button
+      (click)="open_link('https://github.com/acweathersby/js.blend')">{{lang.text['Licenses']['open_link']}}</ion-button>
+  </ion-list-header>
+  <textarea class="infobox" disabled [(ngModel)]="licenses['jsblend']"></textarea>
 </ion-content>
