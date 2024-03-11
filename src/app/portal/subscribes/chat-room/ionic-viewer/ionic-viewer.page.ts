@@ -717,13 +717,16 @@ export class IonicViewerPage implements OnInit {
         break;
       case 'blender':
         this.p5canvas = new p5((p: p5) => {
+          /** 수집된 광원 */
           let lights = [];
+          /** 수집된 모델 */
           let models = [];
+          /** 수집된 카메라 */
           let cameras = [];
           p.setup = async () => {
             let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight, p.WEBGL);
             canvas.parent(canvasDiv);
-            p.background(255, 0, 0);
+            p.clear(255, 255, 255, 0);
             let blob: Blob;
             try {
               blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path, this.FileInfo.type || '');
@@ -750,43 +753,53 @@ export class IonicViewerPage implements OnInit {
                 let obj = blend.file.objects.Object[i];
                 switch (obj.type) {
                   case 1: // mesh
-                    console.log('mesh 발견: ', obj.data);
-                    console.log('mesh 발견: ', obj.data.loc);
-                    let MeshBlob = new Blob([obj.data.loc.buffer]);
-                    console.log(MeshBlob);
-                    let FileURL = URL.createObjectURL(blob);
-                    p.loadModel(FileURL, v => {
-                      console.log('성공: ', v);
-                      URL.revokeObjectURL(FileURL);
-                    }, e => {
-                      URL.revokeObjectURL(FileURL);
-                      console.log('불러오기 실패: ', e);
-                    });
-                    // var buffered_geometry = createMesh(obj.data, [0, 0, 0]);
-
-                    // var blend_material = obj.data.mat[0];
-
-                    // if (blend_material) {
-                    //   var material = createMaterial(blend_material);
-                    // } else {
-                    //   //create generic material
-                    // }
-
-                    // //var geometry = createThreeJSGeometry(obj.data, [0, 0, 0]);
-                    // ///*
-                    // //create a transform from the mesh object
-                    // var mesh = new THREE.Mesh(buffered_geometry, material);
-
-                    // mesh.castShadow = true;
-                    // mesh.receiveShadow = true;
-
-                    // three_scene.add(mesh);
-
-                    // mesh.rotateZ(obj.rot[2]);
-                    // mesh.rotateY(obj.rot[1]);
-                    // mesh.rotateX(obj.rot[0]);
-                    // mesh.scale.fromArray(obj.size, 0);
-                    // mesh.position.fromArray([obj.loc[0], (obj.loc[2]), (-obj.loc[1])], 0);
+                    console.log('mesh 발견: ', obj);
+                    { // 모델 정보 기반으로 Geometry 개체 만들기
+                      let shape: any;
+                      /** 모델의 정점 정보 수집 (position) */
+                      let vertex_id = (obj.data.vdata.layers[0] || obj.data.vdata.layers).data;
+                      /** 각 정점간 연결 정보 (x: 시작점, y: 대상점) */
+                      let edge_id = (obj.data.edata.layers[0] || obj.data.edata.layers).data;
+                      /** 각 면과 관련된 정보 */
+                      let qface_info = (obj.data.ldata.layers[0] || obj.data.ldata.layers).data;
+                      // 정보 기반 그리기 행동
+                      p['beginGeometry']();
+                      // console.log(vertex_id);
+                      // console.log(edge_id);
+                      // console.log(qface_info);
+                      p.push();
+                      p.scale(
+                        obj.size[0],
+                        obj.size[1],
+                        obj.size[2]
+                      );
+                      p.translate(-obj.loc[0] * 100,
+                        -obj.loc[2] * 100,
+                        obj.loc[1] * 100
+                      );
+                      let hasRot = obj.rot[0] + obj.rot[1] + obj.rot[2];
+                      console.log(obj.aname, '_rot: ', obj.rot, '/ hasRot: ', Boolean(hasRot));
+                      if (hasRot) { // 각도가 설정되어있다면
+                        p.rotate(p.HALF_PI, p.createVector(obj.rot[0], obj.rot[2], obj.rot[1]));
+                      }
+                      p.beginShape(p.LINES);
+                      for (let i = 0, j = edge_id.length; i < j; i++) {
+                        p.vertex(
+                          -vertex_id[edge_id[i].x].x * 100,
+                          -vertex_id[edge_id[i].x].z * 100,
+                          vertex_id[edge_id[i].x].y * 100
+                        );
+                        p.vertex(
+                          -vertex_id[edge_id[i].y].x * 100,
+                          -vertex_id[edge_id[i].y].z * 100,
+                          vertex_id[edge_id[i].y].y * 100
+                        );
+                      }
+                      p.endShape();
+                      p.pop();
+                      shape = p['endGeometry']();
+                      models.push(shape);
+                    }
                     break;
                   case 10: // lamp
                     console.log('lamp 발견: ', obj.data);
@@ -801,7 +814,10 @@ export class IonicViewerPage implements OnInit {
             };
           }
           p.draw = () => {
-            p.box(50);
+            p.clear(255, 255, 255, 0);
+            p.orbitControl();
+            for (let i = 0, j = models.length; i < j; i++)
+              p.model(models[i]);
           }
           p.windowResized = () => {
             setTimeout(() => {
