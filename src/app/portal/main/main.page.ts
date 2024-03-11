@@ -603,6 +603,7 @@ export class MainPage implements OnInit {
       const HEADER_HEIGHT = 56;
       p.touchStarted = (ev: any) => {
         if (BlockInput) return;
+        isClickable = true;
         touches = ev['touches'];
         isTouching = true;
         switch (touches.length) {
