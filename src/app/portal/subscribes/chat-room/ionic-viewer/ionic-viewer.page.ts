@@ -837,7 +837,7 @@ export class IonicViewerPage implements OnInit {
                               checkIfCanClosed = vertex_linked[current_id].includes(head_id);
                             if (checkIfCanClosed) throw '돌아갈 수 있는데 돌아가지 않는다면 새 시작점으로 인식';
                           } catch (e) { // 새 시작점으로 인식
-                            p.endShape();
+                            p.endShape(p.CLOSE);
                             last_id = undefined;
                             continue;
                           }
