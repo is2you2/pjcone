@@ -734,7 +734,12 @@ export class IonicViewerPage implements OnInit {
             try {
               blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path, this.FileInfo.type || '');
             } catch (e) {
-              console.log('뷰어에서 파일 불러오기 실패: ', e);
+              try {
+                let from_url = await fetch(this.FileInfo.url);
+                blob = await from_url.blob();
+              } catch (e) {
+                console.log('뷰어에서 파일 불러오기 실패: ', e);
+              }
             }
             // js.blend 페이지 불러오기
             let jsBlend = p.createElement('iframe');
