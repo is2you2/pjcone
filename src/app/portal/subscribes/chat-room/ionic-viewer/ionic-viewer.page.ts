@@ -727,6 +727,7 @@ export class IonicViewerPage implements OnInit {
             let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight, p.WEBGL);
             canvas.parent(canvasDiv);
             p.clear(255, 255, 255, 0);
+            p.pixelDensity(1);
             let blob: Blob;
             try {
               blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path, this.FileInfo.type || '');
@@ -746,14 +747,18 @@ export class IonicViewerPage implements OnInit {
             canvasDiv.appendChild(jsBlend.elt);
             jsBlend.elt.contentWindow['TARGET_FILE'] = blob;
             jsBlend.elt.onload = async () => {
+              if (!blob) { // 파일이 열리지 않음 알림
+                this.p5toast.show({
+                  text: this.lang['ContentViewer']['CannotOpenText'],
+                });
+                return;
+              }
               let blend = await jsBlend.elt.contentWindow['JSBLEND'](blob);
-              console.log('파일 전체: ', blob);
               // 모든 개체를 돌며 개체에 맞는 생성 동작
               for (let i = 0; i < blend.file.objects.Object.length; i++) {
                 let obj = blend.file.objects.Object[i];
                 switch (obj.type) {
                   case 1: // mesh
-                    console.log('mesh 발견: ', obj);
                     { // 모델 정보 기반으로 Geometry 개체 만들기
                       let shape: any;
                       /** 모델의 정점 정보 수집 (position) */
@@ -764,9 +769,6 @@ export class IonicViewerPage implements OnInit {
                       let qface_info = (obj.data.ldata.layers[0] || obj.data.ldata.layers).data;
                       // 정보 기반 그리기 행동
                       p['beginGeometry']();
-                      // console.log(vertex_id);
-                      // console.log(edge_id);
-                      // console.log(qface_info);
                       p.push();
                       p.scale(
                         obj.size[0],
@@ -778,7 +780,6 @@ export class IonicViewerPage implements OnInit {
                         obj.loc[1] * 100
                       );
                       let hasRot = obj.rot[0] + obj.rot[1] + obj.rot[2];
-                      console.log(obj.aname, '_rot: ', obj.rot, '/ hasRot: ', Boolean(hasRot));
                       if (hasRot) { // 각도가 설정되어있다면
                         p.rotate(p.HALF_PI, p.createVector(obj.rot[0], obj.rot[2], obj.rot[1]));
                       }
@@ -802,12 +803,10 @@ export class IonicViewerPage implements OnInit {
                     }
                     break;
                   case 10: // lamp
-                    console.log('lamp 발견: ', obj.data);
-                    // let light = createLight(obj, blender_file);
-                    // three_scene.add(light);
                     break;
                   case 11: // camera
-                    console.log('camera 발견: ', obj.data);
+                    break;
+                  default: // 준비되지 않은 데이터 필터용
                     break;
                 }
               }
@@ -967,6 +966,32 @@ export class IonicViewerPage implements OnInit {
             try {
               loading.dismiss();
               this.image_info['path'] = 'tmp_files/modify_image.png';
+              await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''), this.image_info['path']);
+              this.modalCtrl.dismiss({
+                type: 'image',
+                ...this.image_info,
+                msg: this.MessageInfo,
+                index: this.RelevanceIndex - 1,
+              });
+            } catch (e) {
+              console.log('파일 저장 오류: ', e);
+            }
+          });
+        } catch (e) {
+          console.log('재생중인 비디오 이미지 추출 오류: ', e);
+        }
+        break;
+      case 'blender':
+        try {
+          let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+          loading.present();
+          this.p5canvas.pixelDensity(1);
+          this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
+            try {
+              loading.dismiss();
+              this.image_info['path'] = 'tmp_files/modify_image.png';
+              this.image_info['width'] = this.p5canvas.width;
+              this.image_info['height'] = this.p5canvas.height;
               await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''), this.image_info['path']);
               this.modalCtrl.dismiss({
                 type: 'image',
@@ -1189,6 +1214,18 @@ export class IonicViewerPage implements OnInit {
           let list = await this.indexed.GetFileListFromDB('tmp_files', undefined, this.indexed.godotDB);
           list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB))
         } catch (e) { }
+        break;
+      case 'blender':
+        this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
+          try {
+            let base64 = c[0]['imageData'].replace(/"|=|\\/g, '');
+            await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`, undefined, this.targetDB);
+            this.FileInfo.thumbnail = base64;
+            this.global.modulate_thumbnail(this.FileInfo, '');
+          } catch (e) {
+            console.log('썸네일 저장 오류: ', e);
+          }
+        });
         break;
     }
     if (this.p5canvas) this.p5canvas.remove();
