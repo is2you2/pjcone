@@ -31,7 +31,6 @@ export class FrontPage implements OnInit {
     else new p5((p: p5) => {
       p.setup = () => {
         p.noCanvas();
-        console.log(this.lang.lang);
         p.loadStrings(`assets/data/infos/${this.lang.lang}/intro.txt`, v => {
           this.information = v.join('\n');
           p.remove();

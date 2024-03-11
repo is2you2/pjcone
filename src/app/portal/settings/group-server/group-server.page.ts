@@ -102,6 +102,8 @@ export class GroupServerPage implements OnInit {
 
   ionViewWillEnter() {
     this.ServersList.value = this.ToggleOnline.checked ? 'open' : undefined;
+    if (!this.nakama.users.self['email'])
+      (document.getElementById('email_input').childNodes[1].childNodes[1].childNodes[1] as HTMLElement).focus();
   }
 
   link_group(_is_official: string, _target: string) {
