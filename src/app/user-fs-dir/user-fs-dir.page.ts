@@ -652,6 +652,7 @@ export class UserFsDirPage implements OnInit {
         await this.importThisFolder(RecursiveEntry[i], loading);
       else {
         let target_path = RecursiveEntry[i].nativeURL.split('org.pjcone.portal/files/')[1];
+        console.log('Now importing: ', target_path);
         try {
           const data = await Filesystem.readFile({
             path: RecursiveEntry[i].nativeURL,
