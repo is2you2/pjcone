@@ -792,20 +792,55 @@ export class IonicViewerPage implements OnInit {
                       if (hasRot) { // 각도가 설정되어있다면
                         p.rotate(p.HALF_PI, p.createVector(obj.rot[0], obj.rot[2], obj.rot[1]));
                       }
-                      p.beginShape(p.LINES);
-                      for (let i = 0, j = edge_id.length; i < j; i++) {
-                        p.vertex(
-                          -vertex_id[edge_id[i].x].x * RATIO,
-                          -vertex_id[edge_id[i].x].z * RATIO,
-                          vertex_id[edge_id[i].x].y * RATIO
-                        );
-                        p.vertex(
-                          -vertex_id[edge_id[i].y].x * RATIO,
-                          -vertex_id[edge_id[i].y].z * RATIO,
-                          vertex_id[edge_id[i].y].y * RATIO
-                        );
+                      { // 정점 관계도 사용 구간
+                        /** 정점간 관계도 구축 (선으로 연결되는지 여부 수집) */
+                        let vertex_linked = [];
+                        for (let i = 0, j = vertex_id.length; i < j; i++)
+                          vertex_linked.push([]);
+                        for (let i = 0, j = edge_id.length; i < j; i++) {
+                          vertex_linked[edge_id[i].x].push(edge_id[i].y);
+                          vertex_linked[edge_id[i].y].push(edge_id[i].x);
+                        }
+                        // 면 생성하기
+                        for (let i = 0, j = qface_info.length,
+                          head_id = undefined, last_id = undefined;
+                          i < j; i++) {
+                          /** 현재 사용할 정점 */
+                          let current_id = qface_info[i]['i'];
+                          // 가장 처음에 시작할 때, 그리기 시작
+                          if (last_id === undefined) {
+                            p.beginShape();
+                            p.vertex(
+                              -vertex_id[current_id].x * RATIO,
+                              -vertex_id[current_id].z * RATIO,
+                              vertex_id[current_id].y * RATIO
+                            );
+                            head_id = current_id;
+                            last_id = current_id;
+                            continue;
+                          } // 아래, 처음 이후 그리기 동작
+                          try {
+                            // 현재 정점이 이전 정점으로부터 그려질 수 있는지 검토
+                            let checkIfCanLinked = vertex_linked[last_id].includes(current_id);
+                            if (!checkIfCanLinked) throw '마지막 점으로부터 그릴 수 없음';
+                            p.vertex(
+                              -vertex_id[current_id].x * RATIO,
+                              -vertex_id[current_id].z * RATIO,
+                              vertex_id[current_id].y * RATIO
+                            );
+                            let checkIfCanClosed = false;
+                            // 시작점이 곧 마지막 점이 아니라면, 시작점으로 돌아갈 수 있는지 여부 확인
+                            if (last_id != head_id)
+                              checkIfCanClosed = vertex_linked[current_id].includes(head_id);
+                            if (checkIfCanClosed) throw '돌아갈 수 있는데 돌아가지 않는다면 새 시작점으로 인식';
+                          } catch (e) { // 새 시작점으로 인식
+                            p.endShape();
+                            last_id = undefined;
+                            continue;
+                          }
+                          last_id = current_id;
+                        }
                       }
-                      p.endShape();
                       p.pop();
                       shape = p['endGeometry']();
                       models.push(shape);
