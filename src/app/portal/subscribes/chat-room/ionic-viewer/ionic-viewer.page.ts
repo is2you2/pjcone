@@ -716,6 +716,8 @@ export class IonicViewerPage implements OnInit {
           }, 100);
         break;
       case 'blender':
+        let loading = await this.loadingCtrl.create({ message: this.lang.text['ContentViewer']['OnLoadContent'] });
+        loading.present();
         this.p5canvas = new p5((p: p5) => {
           /** 수집된 광원 */
           let lights = [];
@@ -747,6 +749,7 @@ export class IonicViewerPage implements OnInit {
             canvasDiv.appendChild(jsBlend.elt);
             jsBlend.elt.contentWindow['TARGET_FILE'] = blob;
             jsBlend.elt.onload = async () => {
+              loading.dismiss();
               if (!blob) { // 파일이 열리지 않음 알림
                 this.p5toast.show({
                   text: this.lang['ContentViewer']['CannotOpenText'],
@@ -755,6 +758,7 @@ export class IonicViewerPage implements OnInit {
               }
               let blend = await jsBlend.elt.contentWindow['JSBLEND'](blob);
               // 모든 개체를 돌며 개체에 맞는 생성 동작
+              const RATIO = 100;
               for (let i = 0; i < blend.file.objects.Object.length; i++) {
                 let obj = blend.file.objects.Object[i];
                 switch (obj.type) {
@@ -775,9 +779,9 @@ export class IonicViewerPage implements OnInit {
                         obj.size[1],
                         obj.size[2]
                       );
-                      p.translate(-obj.loc[0] * 100,
-                        -obj.loc[2] * 100,
-                        obj.loc[1] * 100
+                      p.translate(-obj.loc[0] * RATIO,
+                        -obj.loc[2] * RATIO,
+                        obj.loc[1] * RATIO
                       );
                       let hasRot = obj.rot[0] + obj.rot[1] + obj.rot[2];
                       if (hasRot) { // 각도가 설정되어있다면
@@ -786,14 +790,14 @@ export class IonicViewerPage implements OnInit {
                       p.beginShape(p.LINES);
                       for (let i = 0, j = edge_id.length; i < j; i++) {
                         p.vertex(
-                          -vertex_id[edge_id[i].x].x * 100,
-                          -vertex_id[edge_id[i].x].z * 100,
-                          vertex_id[edge_id[i].x].y * 100
+                          -vertex_id[edge_id[i].x].x * RATIO,
+                          -vertex_id[edge_id[i].x].z * RATIO,
+                          vertex_id[edge_id[i].x].y * RATIO
                         );
                         p.vertex(
-                          -vertex_id[edge_id[i].y].x * 100,
-                          -vertex_id[edge_id[i].y].z * 100,
-                          vertex_id[edge_id[i].y].y * 100
+                          -vertex_id[edge_id[i].y].x * RATIO,
+                          -vertex_id[edge_id[i].y].z * RATIO,
+                          vertex_id[edge_id[i].y].y * RATIO
                         );
                       }
                       p.endShape();
@@ -981,7 +985,7 @@ export class IonicViewerPage implements OnInit {
           console.log('재생중인 비디오 이미지 추출 오류: ', e);
         }
         break;
-      case 'blender':
+      case 'blender': // 마지막 프레임 저장하기
         try {
           let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
           loading.present();
