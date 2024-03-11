@@ -715,6 +715,101 @@ export class IonicViewerPage implements OnInit {
             else this.global.godot_window['start_load_pck']();
           }, 100);
         break;
+      case 'blender':
+        this.p5canvas = new p5((p: p5) => {
+          let lights = [];
+          let models = [];
+          let cameras = [];
+          p.setup = async () => {
+            let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight, p.WEBGL);
+            canvas.parent(canvasDiv);
+            p.background(255, 0, 0);
+            let blob: Blob;
+            try {
+              blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path, this.FileInfo.type || '');
+            } catch (e) {
+              console.log('뷰어에서 파일 불러오기 실패: ', e);
+            }
+            // js.blend 페이지 불러오기
+            let jsBlend = p.createElement('iframe');
+            jsBlend.elt.id = 'jsBlend';
+            jsBlend.elt.setAttribute("src", "assets/js.blend/index.html");
+            jsBlend.elt.setAttribute("frameborder", "0");
+            jsBlend.elt.setAttribute('class', 'full_screen');
+            jsBlend.elt.setAttribute('allow', 'fullscreen; encrypted-media');
+            jsBlend.elt.setAttribute('scrolling', 'no');
+            jsBlend.elt.setAttribute('withCredentials', 'true');
+            jsBlend.elt.setAttribute('hidden', 'true');
+            canvasDiv.appendChild(jsBlend.elt);
+            jsBlend.elt.contentWindow['TARGET_FILE'] = blob;
+            jsBlend.elt.onload = async () => {
+              let blend = await jsBlend.elt.contentWindow['JSBLEND'](blob);
+              console.log('파일 전체: ', blob);
+              // 모든 개체를 돌며 개체에 맞는 생성 동작
+              for (let i = 0; i < blend.file.objects.Object.length; i++) {
+                let obj = blend.file.objects.Object[i];
+                switch (obj.type) {
+                  case 1: // mesh
+                    console.log('mesh 발견: ', obj.data);
+                    console.log('mesh 발견: ', obj.data.loc);
+                    let MeshBlob = new Blob([obj.data.loc.buffer]);
+                    console.log(MeshBlob);
+                    let FileURL = URL.createObjectURL(blob);
+                    p.loadModel(FileURL, v => {
+                      console.log('성공: ', v);
+                      URL.revokeObjectURL(FileURL);
+                    }, e => {
+                      URL.revokeObjectURL(FileURL);
+                      console.log('불러오기 실패: ', e);
+                    });
+                    // var buffered_geometry = createMesh(obj.data, [0, 0, 0]);
+
+                    // var blend_material = obj.data.mat[0];
+
+                    // if (blend_material) {
+                    //   var material = createMaterial(blend_material);
+                    // } else {
+                    //   //create generic material
+                    // }
+
+                    // //var geometry = createThreeJSGeometry(obj.data, [0, 0, 0]);
+                    // ///*
+                    // //create a transform from the mesh object
+                    // var mesh = new THREE.Mesh(buffered_geometry, material);
+
+                    // mesh.castShadow = true;
+                    // mesh.receiveShadow = true;
+
+                    // three_scene.add(mesh);
+
+                    // mesh.rotateZ(obj.rot[2]);
+                    // mesh.rotateY(obj.rot[1]);
+                    // mesh.rotateX(obj.rot[0]);
+                    // mesh.scale.fromArray(obj.size, 0);
+                    // mesh.position.fromArray([obj.loc[0], (obj.loc[2]), (-obj.loc[1])], 0);
+                    break;
+                  case 10: // lamp
+                    console.log('lamp 발견: ', obj.data);
+                    // let light = createLight(obj, blender_file);
+                    // three_scene.add(light);
+                    break;
+                  case 11: // camera
+                    console.log('camera 발견: ', obj.data);
+                    break;
+                }
+              }
+            };
+          }
+          p.draw = () => {
+            p.box(50);
+          }
+          p.windowResized = () => {
+            setTimeout(() => {
+              p.resizeCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
+            }, 50);
+          }
+        });
+        break;
       default:
         console.log('정의되지 않은 파일 정보: ', this.FileInfo['viewer']);
       case 'disabled': // 사용 불가
