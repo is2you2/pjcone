@@ -801,8 +801,10 @@ export class IonicViewerPage implements OnInit {
                         for (let i = 0, j = vertex_id.length; i < j; i++)
                           vertex_linked.push([]);
                         for (let i = 0, j = edge_id.length; i < j; i++) {
-                          vertex_linked[edge_id[i].x].push(edge_id[i].y);
-                          vertex_linked[edge_id[i].y].push(edge_id[i].x);
+                          let edge_id_start = edge_id[i].x ?? edge_id[i].v1;
+                          let edge_id_end = edge_id[i].y ?? edge_id[i].v2;
+                          vertex_linked[edge_id_start].push(edge_id_end);
+                          vertex_linked[edge_id_end].push(edge_id_start);
                         }
                         // 면 생성하기
                         for (let i = 0, j = qface_info.length,
@@ -811,12 +813,15 @@ export class IonicViewerPage implements OnInit {
                           /** 현재 사용할 정점 */
                           let current_id = qface_info[i]['i'];
                           // 가장 처음에 시작할 때, 그리기 시작
+                          let vertexTargetX = vertex_id[current_id].x ?? vertex_id[current_id]['co'][0];
+                          let vertexTargetY = vertex_id[current_id].y ?? vertex_id[current_id]['co'][1];
+                          let vertexTargetZ = vertex_id[current_id].z ?? vertex_id[current_id]['co'][2];
                           if (last_id === undefined) {
                             p.beginShape();
                             p.vertex(
-                              -vertex_id[current_id].x * RATIO,
-                              -vertex_id[current_id].z * RATIO,
-                              vertex_id[current_id].y * RATIO
+                              -vertexTargetX * RATIO,
+                              -vertexTargetZ * RATIO,
+                              vertexTargetY * RATIO
                             );
                             head_id = current_id;
                             last_id = current_id;
@@ -827,9 +832,9 @@ export class IonicViewerPage implements OnInit {
                             let checkIfCanLinked = vertex_linked[last_id].includes(current_id);
                             if (!checkIfCanLinked) throw '마지막 점으로부터 그릴 수 없음';
                             p.vertex(
-                              -vertex_id[current_id].x * RATIO,
-                              -vertex_id[current_id].z * RATIO,
-                              vertex_id[current_id].y * RATIO
+                              -vertexTargetX * RATIO,
+                              -vertexTargetZ * RATIO,
+                              vertexTargetY * RATIO
                             );
                             let checkIfCanClosed = false;
                             // 시작점이 곧 마지막 점이 아니라면, 시작점으로 돌아갈 수 있는지 여부 확인
