@@ -2312,11 +2312,16 @@ export class NakamaService {
       }
     }
     socket.ondisconnect = (_e) => {
-      this.link_group(_is_official, _target, false);
-      let keys = Object.keys(this.on_socket_disconnected);
-      keys.forEach(key => this.on_socket_disconnected[key]());
+      this.OnSocketDisconnect(_is_official, _target);
     }
     return socket;
+  }
+
+  /** 소켓 닫힐 때 행동 */
+  OnSocketDisconnect(_is_official: string, _target: string) {
+    this.link_group(_is_official, _target, false);
+    let keys = Object.keys(this.on_socket_disconnected);
+    keys.forEach(key => this.on_socket_disconnected[key]());
   }
 
   /** 현재 보여지는 메시지들을 저장함  

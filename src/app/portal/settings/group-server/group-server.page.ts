@@ -113,7 +113,11 @@ export class GroupServerPage implements OnInit {
     }
     if (this.statusBar.groupServer[_is_official][_target] == 'offline')
       this.nakama.link_group(_is_official, _target);
-    else this.nakama.servers[_is_official][_target].socket.disconnect(true);
+    else try {
+      this.nakama.servers[_is_official][_target].socket.disconnect(true);
+    } catch (e) {
+      this.nakama.OnSocketDisconnect(_is_official, _target);
+    }
   }
 
   /** 사설서버 주소 사용자 input */
