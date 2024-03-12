@@ -1227,7 +1227,7 @@ export class IonicViewerPage implements OnInit {
           this.p5canvas.createCanvas(width, height);
           this.p5canvas.pixelDensity(1);
           this.p5canvas.imageMode(this.p5canvas.CORNER);
-          this.p5canvas.image(this.p5canvas['VideoMedia'], 0, 0, width * this.image_info['width'] / size.width, height * this.image_info['height'] / size.height);
+          this.p5canvas.image(this.p5canvas['VideoMedia'], 0, 0, width, height);
           this.p5canvas.fill(255, 128);
           this.p5canvas.rect(0, 0, width, height);
           this.p5canvas.textWrap(this.p5canvas.CHAR);
@@ -1272,13 +1272,56 @@ export class IonicViewerPage implements OnInit {
         }
         break;
       case 'blender':
-        this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
+        this.p5canvas.saveFrames('', 'png', 1, 1, c => {
           try {
             let base64 = c[0]['imageData'].replace(/"|=|\\/g, '');
-            await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`, undefined, this.targetDB);
-            this.FileInfo.thumbnail = base64;
-            this.global.modulate_thumbnail(this.FileInfo, '');
-            if (this.p5canvas) this.p5canvas.remove();
+            new p5((p: p5) => {
+              p.setup = () => {
+                p.loadImage(base64, v => {
+                  let width: number, height: number;
+                  if (v.width > v.height) {
+                    width = 192;
+                    height = v.height / v.width * 192;
+                  } else {
+                    width = v.width / v.height * 192;
+                    height = 192;
+                  }
+                  p.createCanvas(width, height);
+                  p.pixelDensity(1);
+                  p.imageMode(p.CORNER);
+                  p.image(v, 0, 0, p.width, p.height);
+                  p.fill(255, 128);
+                  p.rect(0, 0, width, height);
+                  p.textWrap(p.CHAR);
+                  p.textSize(16);
+                  let margin_ratio = height / 16;
+                  p.push()
+                  p.translate(margin_ratio / 6, margin_ratio / 6);
+                  p.fill(0)
+                  p.text((this.FileInfo['filename'] || this.FileInfo['name']),
+                    margin_ratio, margin_ratio,
+                    width - margin_ratio * 2, height - margin_ratio * 2);
+                  p.filter(p.BLUR, 3);
+                  p.pop();
+                  p.fill(255);
+                  p.text((this.FileInfo['filename'] || this.FileInfo['name']),
+                    margin_ratio, margin_ratio,
+                    width - margin_ratio * 2, height - margin_ratio * 2);
+                  p.saveFrames('', 'png', 1, 1, async b => {
+                    let base64 = b[0]['imageData'].replace(/"|=|\\/g, '');
+                    await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`, undefined, this.targetDB);
+                    this.FileInfo.thumbnail = base64;
+                    this.global.modulate_thumbnail(this.FileInfo, '');
+                    p.remove();
+                  });
+                  if (this.p5canvas) this.p5canvas.remove();
+                }, e => {
+                  console.log('블렌더 썸네일 배경 받아오기 오류: ', e);
+                  p.remove();
+                  if (this.p5canvas) this.p5canvas.remove();
+                });
+              }
+            });
           } catch (e) {
             console.log('blender 썸네일 저장 오류: ', e);
           }
