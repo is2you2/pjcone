@@ -385,12 +385,7 @@ export class NakamaService {
       });
       try {
         let count_server = await this.init_all_sessions();
-        if (count_server) {
-          this.p5toast.show({
-            text: this.lang.text['Nakama']['LoggedIn'],
-            lateable: true,
-          });
-        } else {
+        if (!count_server) {
           this.p5toast.show({
             text: this.lang.text['Subscribes']['Disconnected'],
           });
