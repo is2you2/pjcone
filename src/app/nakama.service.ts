@@ -14,7 +14,6 @@ import { GroupDetailPage } from './portal/settings/group-detail/group-detail.pag
 import { LanguageSettingService } from './language-setting.service';
 import { AdMob, AdMobRewardItem, RewardAdOptions, RewardAdPluginEvents } from '@capacitor-community/admob';
 import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
-import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { VoidDrawPage } from './portal/subscribes/chat-room/void-draw/void-draw.page';
@@ -3528,17 +3527,6 @@ export class NakamaService {
             await this.add_group_server(new_server_info);
             this.init_session(new_server_info);
           }
-          break;
-        case 'group_dedi': // 그룹사설 채팅 접근
-          await this.modalCtrl.create({
-            component: MinimalChatPage,
-            componentProps: {
-              address: json[i].value.address,
-              name: this.users.self['display_name'],
-            },
-          }).then(v => {
-            v.present();
-          });
           break;
         case 'group': // 그룹 자동 등록 시도
           // 시작과 동시에 진입할 때 서버 연결 시간을 고려함

@@ -7,10 +7,6 @@ const routes: Routes = [
     loadChildren: () => import('./front/front.module').then(m => m.FrontPageModule)
   },
   {
-    path: 'minimal-chat',
-    loadChildren: () => import('./minimal-chat/minimal-chat.module').then(m => m.MinimalChatPageModule)
-  },
-  {
     path: 'others-profile',
     loadChildren: () => import('./others-profile/others-profile.module').then(m => m.OthersProfilePageModule)
   },
