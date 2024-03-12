@@ -867,6 +867,7 @@ export class IonicViewerPage implements OnInit {
           }
           p.windowResized = () => {
             setTimeout(() => {
+              canvasDiv.style.maxHeight = (window.innerHeight - 56 - 45) + 'px';
               p.resizeCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
             }, 50);
           }
