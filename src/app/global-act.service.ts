@@ -300,6 +300,7 @@ export class GlobalActService {
           new p5((p: p5) => {
             p.setup = () => {
               p.noCanvas();
+              p.pixelDensity(1);
               p.loadImage('data:image/png;base64,' + base64, v => {
                 p.createCanvas(v.width, v.height);
                 p.image(v, 0, 0)

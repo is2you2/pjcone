@@ -1225,6 +1225,7 @@ export class IonicViewerPage implements OnInit {
             height = 192;
           }
           this.p5canvas.createCanvas(width, height);
+          this.p5canvas.pixelDensity(1);
           this.p5canvas.imageMode(this.p5canvas.CORNER);
           this.p5canvas.image(this.p5canvas['VideoMedia'], 0, 0, width * this.image_info['width'] / size.width, height * this.image_info['height'] / size.height);
           this.p5canvas.fill(255, 128);
