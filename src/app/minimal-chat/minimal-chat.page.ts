@@ -8,7 +8,6 @@ import { ILocalNotificationAction, ILocalNotificationActionType } from '@awesome
 import { IonInput, ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
-import * as p5 from 'p5';
 import { StatusManageService } from '../status-manage.service';
 import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
