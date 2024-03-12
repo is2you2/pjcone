@@ -8,12 +8,14 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
+import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 import { LocalNotiService } from '../../local-noti.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { WebrtcManageIoDevPage } from 'src/app/webrtc-manage-io-dev/webrtc-manage-io-dev.page';
 import { QrSharePage } from './qr-share/qr-share.page';
+import { LocalGroupServerService } from 'src/app/local-group-server.service';
 
 @Component({
   selector: 'app-settings',
@@ -34,9 +36,11 @@ export class SettingsPage implements OnInit, OnDestroy {
     private file: File,
     private p5toast: P5ToastService,
     private loadingCtrl: LoadingController,
+    public server: LocalGroupServerService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
+  can_use_http = false;
   is_nativefier = isNativefier;
 
   ngOnInit() {
@@ -48,6 +52,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.nakama.on_socket_disconnected['settings_admin_check'] = () => {
       this.check_if_admin();
     }
+    this.can_use_http = (window.location.protocol == 'http:') || isNativefier;
   }
 
   /** 관리자로 등록된 서버들 */
@@ -58,6 +63,30 @@ export class SettingsPage implements OnInit, OnDestroy {
     for (let i = this.as_admin.length - 1; i >= 0; i--)
       if (!this.as_admin[i].is_admin)
         this.as_admin.splice(i, 1);
+  }
+
+  /** 최소한의 기능을 가진 채팅 서버 만들기 */
+  start_minimalserver() {
+    if (this.statusBar.dedicated.official['groupchat'] == 'offline') {
+      this.statusBar.settings['dedicatedServer'] = 'pending';
+      this.statusBar.dedicated.official['groupchat'] = 'pending';
+      this.server.funcs.onStart = () => {
+        this.statusBar.settings['dedicatedServer'] = 'online';
+        this.statusBar.dedicated.official['groupchat'] = 'online';
+        this.start_minimalchat('ws://127.0.0.1');
+      }
+      this.server.funcs.onFailed = () => {
+        this.statusBar.settings['dedicatedServer'] = 'missing';
+        this.statusBar.dedicated.official['groupchat'] = 'missing';
+        setTimeout(() => {
+          this.statusBar.settings['dedicatedServer'] = 'offline';
+          this.statusBar.dedicated.official['groupchat'] = 'offline';
+        }, 1500);
+      }
+      this.server.initialize();
+    } else {
+      this.start_minimalchat('ws://127.0.0.1');
+    }
   }
 
   /** 광고 정보 불러오기 */
@@ -158,6 +187,8 @@ export class SettingsPage implements OnInit, OnDestroy {
     LinkButton.push(() => this.open_inapp_explorer());
     LinkButton.push(() => this.go_to_page('weblink-gen'));
     LinkButton.push(() => this.go_to_webrtc_manager());
+    if (!this.cant_dedicated && this.can_use_http)
+      LinkButton.push(() => this.start_minimalserver());
     LinkButton.push(() => this.download_serverfile());
     if (this.as_admin.length)
       LinkButton.push(() => this.go_to_page('admin-tools'));
@@ -175,8 +206,37 @@ export class SettingsPage implements OnInit, OnDestroy {
         LinkButton[index]();
     }
   }
-
   /** 채팅방 이중진입 방지용 */
+  will_enter = false;
+  /** 사설 서버 주소, 없으면 공식서버 랜덤채팅 */
+  chat_address: string;
+  /** 페이지 이동 제한 (중복 행동 방지용) */
+  lock_modal_open = false;
+  /** 최소한의 기능을 가진 채팅 시작하기 */
+  start_minimalchat(_address?: string) {
+    if (!this.lock_modal_open) {
+      this.lock_modal_open = true;
+      if (this.will_enter) return;
+      if (this.statusBar.settings[_address ? 'dedicated_groupchat' : 'community_ranchat'] != 'online'
+        && this.statusBar.settings[_address ? 'dedicated_groupchat' : 'community_ranchat'] != 'certified')
+        this.statusBar.settings[_address ? 'dedicated_groupchat' : 'community_ranchat'] = 'pending';
+      this.will_enter = true;
+      setTimeout(() => {
+        this.will_enter = false;
+      }, 500);
+      this.modalCtrl.create({
+        component: MinimalChatPage,
+        componentProps: {
+          address: _address,
+          name: this.nakama.users.self['display_name'],
+        },
+      }).then(async v => {
+        await v.present();
+        this.lock_modal_open = false;
+      });
+    }
+  }
+
   open_inapp_explorer() {
     this.nav.navigateForward('user-fs-dir', {
       animation: iosTransitionAnimation,

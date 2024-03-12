@@ -8,6 +8,7 @@ import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { AlertController, IonicSafeString, ModalController, Platform } from '@ionic/angular';
 import { IndexedDBService } from './indexed-db.service';
 import { LocalNotiService } from './local-noti.service';
+import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { NakamaService } from './nakama.service';
 import { AdMob } from "@capacitor-community/admob";
 import { LanguageSettingService } from './language-setting.service';
@@ -95,6 +96,10 @@ export class AppComponent {
         switch (ev.data.page.component) {
           case 'ChatRoomPage':
             noti_id = props['info']['noti_id'];
+            break;
+          case 'MinimalChatPage':
+            page = MinimalChatPage;
+            noti_id = props['noti_id'];
             break;
           case 'AddTodoMenuPage':
             props = {
@@ -200,6 +205,10 @@ export class AppComponent {
             throw 'ChatRoomPage props 재정비';
           }
           this.nakama.go_to_chatroom_without_admob_act(props.info);
+          break;
+        case 'MinimalChatPage':
+          if (!this.lang.text['MinimalChat']['leave_chat_group']) throw 'MinimalChatPage 번역 준비중';
+          modal.present();
           break;
         case 'AddTodoMenuPage':
           if (!this.lang.text['TodoDetail']['ToggleWorkers']) throw 'AddTodoMenuPage 번역 준비중';
