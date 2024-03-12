@@ -680,14 +680,12 @@ export class IonicViewerPage implements OnInit {
               }
             }, 'start_load_pck');
             if (!createDuplicate) {
-              try {
+              try { // 내부에 파일이 있는지 검토
                 let blob = await this.indexed.loadBlobFromUserPath(
                   this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
                 await this.indexed.GetGodotIndexedDB();
                 await this.indexed.saveBlobToUserPath(blob, 'tmp_files/duplicate/viewer.pck', undefined, this.indexed.godotDB);
-              } catch (e) {
-                console.log('내부 파일 없음_dp: ', e);
-              }
+              } catch (e) { }
               await this.global.CreateGodotIFrame('content_viewer_canvas', {
                 path: 'tmp_files/duplicate/viewer.pck',
                 alt_path: this.FileInfo['path'] || this.navParams.get('path'),
@@ -1252,6 +1250,7 @@ export class IonicViewerPage implements OnInit {
               await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`, undefined, this.targetDB);
               this.FileInfo.thumbnail = base64;
               this.global.modulate_thumbnail(this.FileInfo, '');
+              if (this.p5canvas) this.p5canvas.remove();
             } catch (e) {
               console.log('썸네일 저장 오류: ', e);
             }
@@ -1266,7 +1265,10 @@ export class IonicViewerPage implements OnInit {
           this.global.godot_window['create_thumbnail'](this.FileInfo);
           let list = await this.indexed.GetFileListFromDB('tmp_files', undefined, this.indexed.godotDB);
           list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB))
-        } catch (e) { }
+          if (this.p5canvas) this.p5canvas.remove();
+        } catch (e) {
+          console.log('godot 썸네일 저장 오류: ', e);
+        }
         break;
       case 'blender':
         this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
@@ -1275,13 +1277,16 @@ export class IonicViewerPage implements OnInit {
             await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`, undefined, this.targetDB);
             this.FileInfo.thumbnail = base64;
             this.global.modulate_thumbnail(this.FileInfo, '');
+            if (this.p5canvas) this.p5canvas.remove();
           } catch (e) {
-            console.log('썸네일 저장 오류: ', e);
+            console.log('blender 썸네일 저장 오류: ', e);
           }
         });
         break;
+      default:
+        if (this.p5canvas) this.p5canvas.remove();
+        break;
     }
-    if (this.p5canvas) this.p5canvas.remove();
     URL.revokeObjectURL(this.FileURL);
     try {
       let is_exist = await this.file.checkFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);

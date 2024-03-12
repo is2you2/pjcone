@@ -168,10 +168,10 @@ export class MainPage implements OnInit {
         p['ListUpdate'] = async () => {
           Todos = {};
           TodoKeys.length = 0;
-          let list = await this.indexed.GetFileListFromDB('todo/', undefined, this.indexed.godotDB);
+          let list = await this.indexed.GetFileListFromDB('todo/');
           for (let i = 0, j = list.length; i < j; i++)
             if (list[i].indexOf('/info.todo') >= 0) {
-              let data = await this.indexed.loadTextFromUserPath(list[i], undefined, this.indexed.godotDB);
+              let data = await this.indexed.loadTextFromUserPath(list[i]);
               p['add_todo'](data);
             }
           this.isEmptyTodo = !Boolean(Object.keys(TodoKeys).length);

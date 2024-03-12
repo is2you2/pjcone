@@ -137,7 +137,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 if (this.userInput.file.url)
                   this.userInput.file.blob = await fetch(this.userInput.file.url).then(r => r.blob());
                 let tmp_work_path = `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`;
-                await this.indexed.saveBlobToUserPath(this.userInput.file.blob, tmp_work_path, undefined, this.indexed.godotDB)
+                await this.indexed.saveBlobToUserPath(this.userInput.file.blob, tmp_work_path);
                 let thumbnail_image = document.getElementById('ChatroomSelectedImage');
                 props['path'] = tmp_work_path;
                 props['width'] = thumbnail_image['naturalWidth'];

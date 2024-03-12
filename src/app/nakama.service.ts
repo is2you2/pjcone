@@ -1002,7 +1002,7 @@ export class NakamaService {
     todo_info['remote']['type'] = `${_is_official}/${_target}`;
     this.set_todo_notification(todo_info);
     if (this.global.p5todo && this.global.p5todo['add_todo']) this.global.p5todo['add_todo'](JSON.stringify(todo_info));
-    this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`, undefined, this.indexed.godotDB);
+    this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
   }
 
   /** 저장된 그룹 업데이트하여 반영 */
@@ -2170,14 +2170,14 @@ export class NakamaService {
                   this.addRemoteTodoCounter(_is_official, _target, Number(todo_info['id'].split('_')[1]));
                   this.noti.ClearNoti(todo_info.noti_id);
                 }
-              }, this.indexed.godotDB);
+              });
               break;
             case 'delete': // 삭제
               this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
                 if (e && v) {
                   let todo_info = JSON.parse(v);
                   this.indexed.GetFileListFromDB(`todo/${sep[1]}`, (v) => {
-                    v.forEach(_path => this.indexed.removeFileFromUserPath(_path, undefined, this.indexed.godotDB));
+                    v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
                     if (todo_info.noti_id)
                       if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
                         clearTimeout(this.web_noti_id[todo_info.noti_id]);
@@ -2186,10 +2186,10 @@ export class NakamaService {
                     this.noti.ClearNoti(todo_info.noti_id);
                     if (this.global.p5todo && this.global.p5todo['remove_todo'])
                       this.global.p5todo['remove_todo'](JSON.stringify(todo_info));
-                  }, this.indexed.godotDB);
+                  });
                   this.addRemoteTodoCounter(_is_official, _target, Number(todo_info['id'].split('_')[1]));
                 }
-              }, this.indexed.godotDB);
+              });
               break;
             case 'worker': // 매니저 입장에서, 작업자 완료
               let isDelete = sep[3] == 'true';
@@ -2212,7 +2212,7 @@ export class NakamaService {
                   this.modify_remote_info_as_local(todo_info, _is_official, _target);
                   this.addRemoteTodoCounter(_is_official, _target, Number(todo_info['id'].split('_')[1]));
                 }
-              }, this.indexed.godotDB);
+              });
               break;
             default:
               console.warn('등록되지 않은 할 일 행동: ', m);
