@@ -33,7 +33,7 @@
     "@capacitor-community/barcode-scanner": "^4.0.1",
     "@capacitor-community/speech-recognition": "^5.0.0",
     "@capacitor-community/text-to-speech": "^3.0.1",
-    "@capacitor/android": "5.4.1",
+    "@capacitor/android": "5.7.2",
     "@capacitor/app": "5.0.7",
     "@capacitor/camera": "^5.0.7",
     "@capacitor/core": "5.7.2",
