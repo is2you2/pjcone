@@ -184,9 +184,11 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.Fallback_FS_input_element.onfocus = () => {
       delete this.global.p5key['KeyShortCut']['Digit'];
     }
+    this.WillLeave = false;
     this.Fallback_FS_input_element.addEventListener('focusout', () => {
-      this.ionViewDidEnter();
-    })
+      if (!this.WillLeave)
+        this.ionViewDidEnter();
+    });
   }
 
   Fallback_FS_input_element: HTMLInputElement;
@@ -390,7 +392,9 @@ export class SettingsPage implements OnInit, OnDestroy {
     delete this.global.p5key['KeyShortCut']['Digit'];
   }
 
+  WillLeave = false;
   ionViewWillLeave() {
+    this.WillLeave = true;
     this.RemoveKeyShortCut();
   }
 
