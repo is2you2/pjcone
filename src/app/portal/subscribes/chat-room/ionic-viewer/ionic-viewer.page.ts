@@ -338,6 +338,9 @@ export class IonicViewerPage implements OnInit {
     } else this.reinit_content_data(this.MessageInfo);
   }
 
+  /** 비디오/오디오 콘텐츠가 종료되면 끝에서 다음 콘텐츠로 자동 넘김 */
+  AutoPlayNext = false;
+
   async ionViewDidEnter() {
     if (this.FileInfo.url) {
       this.FileURL = this.FileInfo.url;
@@ -545,6 +548,10 @@ export class IonicViewerPage implements OnInit {
             mediaObject = p.createAudio([this.FileURL], () => {
               canvasDiv.appendChild(mediaObject['elt']);
               mediaObject['elt'].hidden = true;
+              mediaObject['elt'].onended = () => {
+                if (this.AutoPlayNext)
+                  this.ChangeToAnother(1);
+              }
               setTimeout(() => {
                 ResizeAudio();
                 mediaObject['elt'].hidden = false;
@@ -575,6 +582,10 @@ export class IonicViewerPage implements OnInit {
             mediaObject = p.createVideo([this.FileURL], () => {
               canvasDiv.appendChild(mediaObject['elt']);
               mediaObject['elt'].hidden = true;
+              mediaObject['elt'].onended = () => {
+                if (this.AutoPlayNext)
+                  this.ChangeToAnother(1);
+              }
               setTimeout(() => {
                 this.image_info['width'] = mediaObject['elt']['videoWidth'];
                 this.image_info['height'] = mediaObject['elt']['videoHeight'];
