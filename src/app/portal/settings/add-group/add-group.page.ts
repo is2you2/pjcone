@@ -43,7 +43,7 @@ export class AddGroupPage implements OnInit {
       target: 'channels',
       local: true,
     };
-    this.servers.push(local_info);
+    this.servers.unshift(local_info);
     this.userInput.server = this.servers[this.index];
     this.file_sel_id = `add_group_${new Date().getTime()}`;
   }
