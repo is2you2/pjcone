@@ -651,6 +651,10 @@ export class GlobalActService {
       let res = await fetch(CatchedAddress);
       if (res.ok) Catched = true;
     } catch (e) {
+      let fallback = localStorage.getItem('fallback_fs');
+      if (fallback) { // 대안 서버 주소가 있다면 추가 시도
+        console.log(fallback);
+      }
       loading.message = this.lang.text['GlobalAct']['CancelingUpload'];
       console.warn('cdn 파일 업로드 단계 실패:', e);
     }

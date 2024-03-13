@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { iosTransitionAnimation, LoadingController, ModalController, NavController } from '@ionic/angular';
+import { IonAccordionGroup, iosTransitionAnimation, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { isNativefier, isPlatform, SERVER_PATH_ROOT } from 'src/app/app.component';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -168,6 +168,9 @@ export class SettingsPage implements OnInit, OnDestroy {
     window.open(_link, '_system')
   }
 
+  FallbackServerAddress = '';
+  @ViewChild('Devkit') Devkit: IonAccordionGroup;
+
   self = {};
   /** 프로필 썸네일 */
   profile_filter: string;
@@ -176,34 +179,84 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.profile_filter = "filter: grayscale(0) contrast(1);";
     else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
     this.check_if_admin();
+    this.FallbackServerAddress = localStorage.getItem('fallback_fs');
+    this.Fallback_FS_input_element = document.getElementById('fallback_fs_input').childNodes[0].childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
+    this.Fallback_FS_input_element.onfocus = () => {
+      delete this.global.p5key['KeyShortCut']['Digit'];
+    }
+    this.Fallback_FS_input_element.addEventListener('focusout', () => {
+      this.ionViewDidEnter();
+    })
   }
+
+  Fallback_FS_input_element: HTMLInputElement;
+  /** 대안 파일 서버 주소 입력칸으로 포커싱 */
+  focus_to_fallback_fs_input() {
+    this.Devkit.value = 'Devkit';
+    setTimeout(() => {
+      this.Fallback_FS_input_element.focus();
+    }, 50);
+  }
+
+  fallback_fs_input() {
+    if (this.FallbackServerAddress) {
+      localStorage.setItem('fallback_fs', this.FallbackServerAddress);
+    } else localStorage.removeItem('fallback_fs')
+  }
+
+  LinkButton = [];
+  ToggleAccordion() {
+    if (this.Devkit.value) { // 닫기
+      let count_menu = (!this.cant_dedicated && this.can_use_http) ? 5 : 4;
+      this.LinkButton.splice(4, count_menu);
+      this.Devkit.value = undefined;
+    } else { // 열기
+      this.Devkit.value = 'Devkit';
+      this.LinkButton.splice(4, 0,
+        () => this.go_to_page('weblink-gen'),
+        () => this.focus_to_fallback_fs_input(),
+        () => this.go_to_webrtc_manager()
+      );
+      if (!this.cant_dedicated && this.can_use_http) {
+        this.LinkButton.splice(7, 0,
+          () => this.start_minimalserver(),
+          () => this.download_serverfile());
+      } else this.LinkButton.splice(7, 0, () => this.download_serverfile());
+    }
+  }
+
+  /** AddKeyShortcut() 으로 사용할 수 있음 */
   ionViewDidEnter() {
     this.global.p5key['KeyShortCut']['Escape'] = () => {
       this.nav.pop();
     }
-    let LinkButton = [];
-    LinkButton.push(() => this.go_to_page('noti-alert'));
-    LinkButton.push(() => this.go_to_qr_share());
-    LinkButton.push(() => this.open_inapp_explorer());
-    LinkButton.push(() => this.go_to_page('weblink-gen'));
-    LinkButton.push(() => this.go_to_webrtc_manager());
-    if (!this.cant_dedicated && this.can_use_http)
-      LinkButton.push(() => this.start_minimalserver());
-    LinkButton.push(() => this.download_serverfile());
+    this.LinkButton.length = 0;
+    this.LinkButton.push(() => this.go_to_page('noti-alert'));
+    this.LinkButton.push(() => this.go_to_qr_share());
+    this.LinkButton.push(() => this.open_inapp_explorer());
+    this.LinkButton.push(() => this.ToggleAccordion());
+    if (this.Devkit.value) {
+      this.LinkButton.push(() => this.go_to_page('weblink-gen'));
+      this.LinkButton.push(() => this.focus_to_fallback_fs_input());
+      this.LinkButton.push(() => this.go_to_webrtc_manager());
+      if (!this.cant_dedicated && this.can_use_http)
+        this.LinkButton.push(() => this.start_minimalserver());
+      this.LinkButton.push(() => this.download_serverfile());
+    }
     if (this.as_admin.length)
-      LinkButton.push(() => this.go_to_page('admin-tools'));
-    LinkButton.push(() => this.go_to_page('creator'));
+      this.LinkButton.push(() => this.go_to_page('admin-tools'));
+    this.LinkButton.push(() => this.go_to_page('creator'));
     if (this.lang.lang != 'ko')
-      LinkButton.push(() => this.go_to_page('translator'));
-    LinkButton.push(() => this.LangClicked());
-    LinkButton.push(() => this.go_to_page('licenses'));
+      this.LinkButton.push(() => this.go_to_page('translator'));
+    this.LinkButton.push(() => this.LangClicked());
+    this.LinkButton.push(() => this.go_to_page('licenses'));
     if (this.cant_dedicated)
-      LinkButton.push(() => this.open_playstore());
+      this.LinkButton.push(() => this.open_playstore());
     // 환경에 맞춰 단축키 구성
     this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
       // 설정 메뉴 정렬처리
-      if (LinkButton[index])
-        LinkButton[index]();
+      if (this.LinkButton[index])
+        this.LinkButton[index]();
     }
   }
   /** 채팅방 이중진입 방지용 */
@@ -308,8 +361,7 @@ export class SettingsPage implements OnInit, OnDestroy {
         NoReturn: true,
       }
     }).then(v => {
-      delete this.global.p5key['KeyShortCut']['Escape'];
-      delete this.global.p5key['KeyShortCut']['Digit'];
+      this.RemoveKeyShortCut();
       v.onDidDismiss().then(() => {
         this.ionViewDidEnter();
       });
@@ -321,8 +373,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.modalCtrl.create({
       component: WebrtcManageIoDevPage,
     }).then(v => {
-      delete this.global.p5key['KeyShortCut']['Escape'];
-      delete this.global.p5key['KeyShortCut']['Digit'];
+      this.RemoveKeyShortCut();
       v.onDidDismiss().then(() => {
         this.ionViewDidEnter();
       });
@@ -334,9 +385,13 @@ export class SettingsPage implements OnInit, OnDestroy {
     window.open('https://play.google.com/store/apps/details?id=org.pjcone.portal', '_system');
   }
 
-  ionViewWillLeave() {
+  RemoveKeyShortCut() {
     delete this.global.p5key['KeyShortCut']['Escape'];
     delete this.global.p5key['KeyShortCut']['Digit'];
+  }
+
+  ionViewWillLeave() {
+    this.RemoveKeyShortCut();
   }
 
   ngOnDestroy(): void {
