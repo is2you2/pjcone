@@ -641,8 +641,15 @@ export class GlobalActService {
     let _file = new File([file.blob], filename);
     formData.append("files", _file);
     let Catched = false;
-    let CatchedAddress = `${protocol}//${address}:9002/cdn/${filename}`;
-    try {
+    let CatchedAddress: string;
+    loading.message = this.lang.text['Settings']['TryToFallbackFS'];
+    CatchedAddress = await this.try_upload_to_user_custom_fs(file, user_id, formData);
+    try { // 사설 연계 서버에 업로드 시도
+      if (CatchedAddress) {
+        Catched = true;
+        throw '사용자 지정서버에서 이미 성공함'
+      };
+      CatchedAddress = `${protocol}//${address}:9002/cdn/${filename}`;
       let headers = new Headers();
       headers.append('Access-Control-Allow-Origin', '*');
       headers.append('Access-Control-Allow-Method', '*');
@@ -651,14 +658,40 @@ export class GlobalActService {
       let res = await fetch(CatchedAddress);
       if (res.ok) Catched = true;
     } catch (e) {
-      let fallback = localStorage.getItem('fallback_fs');
-      if (fallback) { // 대안 서버 주소가 있다면 추가 시도
-        console.log(fallback);
-      }
       loading.message = this.lang.text['GlobalAct']['CancelingUpload'];
       console.warn('cdn 파일 업로드 단계 실패:', e);
     }
     loading.dismiss();
     return Catched ? CatchedAddress : undefined;
+  }
+
+  /** 사용자 지정 서버에 업로드 시도 */
+  async try_upload_to_user_custom_fs(file: any, user_id: string, formData: FormData) {
+    let upload_time = new Date().getTime();
+    let only_filename = file.filename.split('.')[0];
+    let filename = `${user_id}_${only_filename}_${upload_time}.${file.file_ext}`;
+    if (!formData) { // 채널 채팅 등에서 넘어와서 정보가 없는 경우 생성처리
+      let formData = new FormData();
+      let _file = new File([file.blob], filename);
+      formData.append("files", _file);
+    }
+    let CatchedAddress: string;
+    let fallback = localStorage.getItem('fallback_fs');
+    try { // 사용자 지정 서버 업로드 시도 우선
+      if (!fallback) throw '사용자 지정 서버 없음';
+      let address = fallback.split(':');
+      let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
+      let protocol = checkProtocol ? 'https:' : 'http:';
+      CatchedAddress = `${protocol}//${address[0]}:${address[1] || 9002}/cdn/${filename}`;
+      let headers = new Headers();
+      headers.append('Access-Control-Allow-Origin', '*');
+      headers.append('Access-Control-Allow-Method', '*');
+      headers.append('Access-Control-Allow-Headers', '*');
+      await fetch(`${protocol}//${address[0]}:9001/${filename}`, { method: "POST", headers: headers, body: formData });
+      let res = await fetch(CatchedAddress);
+      if (res.ok) return CatchedAddress;
+    } catch (e) {
+      return undefined;
+    }
   }
 }
