@@ -643,7 +643,7 @@ export class GlobalActService {
     let Catched = false;
     let CatchedAddress: string;
     loading.message = this.lang.text['Settings']['TryToFallbackFS'];
-    CatchedAddress = await this.try_upload_to_user_custom_fs(file, user_id, formData);
+    CatchedAddress = await this.try_upload_to_user_custom_fs(file, user_id, formData, loading);
     try { // 사설 연계 서버에 업로드 시도
       if (CatchedAddress) {
         Catched = true;
@@ -666,12 +666,16 @@ export class GlobalActService {
   }
 
   /** 사용자 지정 서버에 업로드 시도 */
-  async try_upload_to_user_custom_fs(file: any, user_id: string, formData: FormData) {
+  async try_upload_to_user_custom_fs(file: any, user_id: string, formData?: FormData, loading?: HTMLIonLoadingElement) {
+    let innerLoading: HTMLIonLoadingElement;
+    if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['GlobalAct']['CheckCdnServer'] });
+    else innerLoading = loading;
+    innerLoading.message = this.lang.text['Settings']['TryToFallbackFS'];
     let upload_time = new Date().getTime();
     let only_filename = file.filename.split('.')[0];
     let filename = `${user_id}_${only_filename}_${upload_time}.${file.file_ext}`;
     if (!formData) { // 채널 채팅 등에서 넘어와서 정보가 없는 경우 생성처리
-      let formData = new FormData();
+      formData = new FormData();
       let _file = new File([file.blob], filename);
       formData.append("files", _file);
     }
@@ -689,8 +693,10 @@ export class GlobalActService {
       headers.append('Access-Control-Allow-Headers', '*');
       await fetch(`${protocol}//${address[0]}:9001/${filename}`, { method: "POST", headers: headers, body: formData });
       let res = await fetch(CatchedAddress);
+      if (!loading) innerLoading.dismiss();
       if (res.ok) return CatchedAddress;
     } catch (e) {
+      if (!loading) innerLoading.dismiss();
       return undefined;
     }
   }

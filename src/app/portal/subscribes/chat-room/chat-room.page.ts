@@ -1326,14 +1326,23 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       /** 업로드가 진행중인 메시지 개체 */
       let local_msg_id = new Date().getTime().toString();
       if (FileAttach && !isURL) { // 첨부 파일이 포함된 경우, 링크는 아닌 경우
-        let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${local_msg_id}.${this.userInput.file.file_ext}`;
-        await this.indexed.saveBlobToUserPath(this.userInput.file.blob, path);
+        try {
+          let CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.file, this.nakama.users.self['display_name']);
+          if (CatchedAddress) {
+            delete tmp.content['path'];
+            delete tmp.content['partsize'];
+            tmp.content['url'] = CatchedAddress;
+          } else throw '업로드 실패';
+        } catch (e) { // 사설 서버 업로드 실패시 직접 저장
+          let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${local_msg_id}.${this.userInput.file.file_ext}`;
+          await this.indexed.saveBlobToUserPath(this.userInput.file.blob, path);
+        }
       }
       delete this.userInput.quickShare;
       delete this.userInput.file;
       if (isLongText) {
-        result['msg'] = isLongText;
-        this.LongTextMessageAsFile(result);
+        tmp['msg'] = isLongText;
+        this.LongTextMessageAsFile(tmp);
       }
       let getNow = new Date().toISOString();
       let msg = {
