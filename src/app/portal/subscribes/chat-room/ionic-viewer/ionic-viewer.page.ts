@@ -207,6 +207,8 @@ export class IonicViewerPage implements OnInit {
     let tmp_calced = this.RelevanceIndex + direction;
     if (tmp_calced <= 0 || tmp_calced > this.Relevances.length)
       return;
+    if (!this.PIPLinkedVideoElement && this.p5canvas['VideoMedia'])
+      this.PIPLinkedVideoElement = this.p5canvas['VideoMedia']['elt'];
     if (this.p5canvas) this.p5canvas.remove();
     this.RelevanceIndex = tmp_calced;
     this.FileInfo = { file_ext: '' };
@@ -340,6 +342,8 @@ export class IonicViewerPage implements OnInit {
 
   /** 비디오/오디오 콘텐츠가 종료되면 끝에서 다음 콘텐츠로 자동 넘김 */
   AutoPlayNext = false;
+  /** PIP 동작 연계를 위한 비디오 개체 기억하기 */
+  PIPLinkedVideoElement: HTMLVideoElement;
 
   async ionViewDidEnter() {
     if (this.FileInfo.url) {
@@ -580,6 +584,11 @@ export class IonicViewerPage implements OnInit {
             p.noCanvas();
             p.noLoop();
             mediaObject = p.createVideo([this.FileURL], () => {
+              if (this.PIPLinkedVideoElement) {
+                mediaObject.elt.remove();
+                mediaObject.elt = this.PIPLinkedVideoElement;
+                mediaObject.elt.setAttribute('src', this.FileURL);
+              }
               canvasDiv.appendChild(mediaObject['elt']);
               mediaObject['elt'].hidden = true;
               mediaObject['elt'].onended = () => {
@@ -1223,6 +1232,8 @@ export class IonicViewerPage implements OnInit {
 
   async ionViewWillLeave() {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
+    await document.exitPictureInPicture();
+    if (this.PIPLinkedVideoElement) this.PIPLinkedVideoElement.remove();
     switch (this.FileInfo.viewer) {
       case 'video':
         try {
