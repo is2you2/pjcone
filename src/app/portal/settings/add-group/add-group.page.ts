@@ -140,6 +140,7 @@ export class AddGroupPage implements OnInit {
 
   isSaveClicked = false;
   async save() {
+    if (this.isSaveClicked) return;
     this.isSaveClicked = true;
     // 로컬에 채널 양식으로 기록 남기기
     if (this.servers[this.index]['local']) {
