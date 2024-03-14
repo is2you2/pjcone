@@ -374,7 +374,10 @@ export class NakamaService {
     if (this.TogglingSession) return;
     this.TogglingSession = true;
     let UseOfficial = await this.WatchAdsAndGetDevServerInfo();
-    if (UseOfficial) return;
+    if (UseOfficial) {
+      this.TogglingSession = false;
+      return;
+    }
     if (this.statusBar.settings.groupServer == 'online') {
       this.logout_all_server();
       this.p5toast.show({
@@ -399,9 +402,9 @@ export class NakamaService {
   }
 
   /** 광고 시청 후 개발자 테스트 서버에 참여하기 */
-  async WatchAdsAndGetDevServerInfo() {
+  async WatchAdsAndGetDevServerInfo(force = false) {
     let RegisteredServer = this.get_all_server_info(true);
-    if (!this.isRewardAdsUsed && !RegisteredServer.length) {
+    if ((!this.isRewardAdsUsed && !RegisteredServer.length) || force) {
       const options: RewardAdOptions = {
         adId: 'ca-app-pub-6577630868247944/4325703911',
       };

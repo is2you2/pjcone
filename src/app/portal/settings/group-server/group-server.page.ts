@@ -100,10 +100,23 @@ export class GroupServerPage implements OnInit {
     }
   }
 
+  /** 모바일 PWA 여부를 검토하여 하단 modal 시작 높이를 조정 */
+  isMobilePWA = false;
+  CanAddTestServer = false;
   ionViewWillEnter() {
     this.ServersList.value = this.ToggleOnline.checked ? 'open' : undefined;
     if (!this.nakama.users.self['email'])
       (document.getElementById('email_input').childNodes[1].childNodes[1].childNodes[1] as HTMLElement).focus();
+    this.CanAddTestServer =
+      Object.keys(this.nakama.servers['official']).length == 0
+      && Object.keys(this.nakama.servers['unofficial']).length != 0;
+    this.isMobilePWA = isPlatform == 'MobilePWA';
+  }
+
+  /** 사용자가 개발 테스트 서버를 사용하기를 원함 */
+  async add_dev_test_server() {
+    this.CanAddTestServer = !(await this.nakama.WatchAdsAndGetDevServerInfo(true));
+    this.servers = this.nakama.get_all_server_info(true);
   }
 
   link_group(_is_official: string, _target: string) {
