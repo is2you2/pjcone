@@ -632,7 +632,7 @@ export class GlobalActService {
    * @returns 등록된 주소 반환
    */
   async upload_file_to_storage(file: any, user_id: string, protocol: string, address: string): Promise<string> {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['GlobalAct']['CheckCdnServer'] });
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['GlobalAct']['TryToFallbackFS'] });
     loading.present();
     let formData = new FormData();
     let upload_time = new Date().getTime();
@@ -642,8 +642,8 @@ export class GlobalActService {
     formData.append("files", _file);
     let Catched = false;
     let CatchedAddress: string;
-    loading.message = this.lang.text['Settings']['TryToFallbackFS'];
     CatchedAddress = await this.try_upload_to_user_custom_fs(file, user_id, formData, loading);
+    loading.message = this.lang.text['Settings']['CheckCdnServer'];
     try { // 사설 연계 서버에 업로드 시도
       if (CatchedAddress) {
         Catched = true;
@@ -668,9 +668,8 @@ export class GlobalActService {
   /** 사용자 지정 서버에 업로드 시도 */
   async try_upload_to_user_custom_fs(file: any, user_id: string, formData?: FormData, loading?: HTMLIonLoadingElement) {
     let innerLoading: HTMLIonLoadingElement;
-    if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['GlobalAct']['CheckCdnServer'] });
+    if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['Settings']['TryToFallbackFS'] });
     else innerLoading = loading;
-    innerLoading.message = this.lang.text['Settings']['TryToFallbackFS'];
     let upload_time = new Date().getTime();
     let only_filename = file.filename.split('.')[0];
     let filename = `${user_id}_${only_filename}_${upload_time}.${file.file_ext}`;
