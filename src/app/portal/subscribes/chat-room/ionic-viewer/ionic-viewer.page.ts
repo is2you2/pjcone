@@ -803,18 +803,18 @@ export class IonicViewerPage implements OnInit {
                       // 정보 기반 그리기 행동
                       p['beginGeometry']();
                       p.push();
-                      p.scale(
-                        obj.size[0],
-                        obj.size[1],
-                        obj.size[2]
-                      );
                       p.translate(-obj.loc[0] * RATIO,
                         -obj.loc[2] * RATIO,
                         obj.loc[1] * RATIO
                       );
+                      p.scale(
+                        obj.size[0],
+                        obj.size[2],
+                        obj.size[1]
+                      );
                       let hasRot = obj.rot[0] + obj.rot[1] + obj.rot[2];
                       if (hasRot) { // 각도가 설정되어있다면
-                        p.rotate(p.HALF_PI, p.createVector(obj.rot[0], obj.rot[2], obj.rot[1]));
+                        p.rotate(p.HALF_PI, p.createVector(obj.rot[0], obj.rot[2], -obj.rot[1]));
                       }
                       { // 정점 관계도 사용 구간
                         /** 정점간 관계도 구축 (선으로 연결되는지 여부 수집) */
