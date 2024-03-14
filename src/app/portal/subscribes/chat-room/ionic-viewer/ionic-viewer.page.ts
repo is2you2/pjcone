@@ -1235,7 +1235,9 @@ export class IonicViewerPage implements OnInit {
 
   async ionViewWillLeave() {
     document.removeEventListener('ionBackButton', this.EventListenerAct);
-    await document.exitPictureInPicture();
+    try {
+      await document.exitPictureInPicture();
+    } catch (e) { }
     if (this.PIPLinkedVideoElement) this.PIPLinkedVideoElement.remove();
     switch (this.FileInfo.viewer) {
       case 'video':
