@@ -180,7 +180,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
     this.check_if_admin();
     this.FallbackServerAddress = localStorage.getItem('fallback_fs');
-    this.Fallback_FS_input_element = document.getElementById('fallback_fs_input').childNodes[0].childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
+    this.Fallback_FS_input_element = document.getElementById('fallback_fs_input').childNodes[1].childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
     this.Fallback_FS_input_element.onfocus = () => {
       delete this.global.p5key['KeyShortCut']['Digit'];
     }
