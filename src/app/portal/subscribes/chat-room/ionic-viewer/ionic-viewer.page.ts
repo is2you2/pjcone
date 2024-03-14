@@ -119,6 +119,9 @@ export class IonicViewerPage implements OnInit {
     this.MessageInfo = msg;
     this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
+    let canvasDiv: HTMLElement = document.getElementById('content_viewer_canvas');
+    for (let i = 0, j = canvasDiv.childNodes.length; i < j; i++)
+      canvasDiv.removeChild(canvasDiv.childNodes[i]);
     URL.revokeObjectURL(this.FileURL);
     if (this.FileInfo.url) {
       this.FileURL = this.FileInfo.url;
