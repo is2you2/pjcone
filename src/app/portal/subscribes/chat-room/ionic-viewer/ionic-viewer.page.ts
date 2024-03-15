@@ -885,6 +885,8 @@ export class IonicViewerPage implements OnInit {
                       // 머터리얼 정보 받아오기
                       let imgtex_id: any;
                       let base_color: p5.Color;
+                      let emission_color: p5.Color;
+                      let emission_strength: number = 0;
                       try {
                         if (!obj.data.mat.length) throw '재질이 정의되지 않음';
                         for (let i = 0, j = obj.data.mat.length; i < j; i++) {
@@ -899,6 +901,18 @@ export class IonicViewerPage implements OnInit {
                             );
                           } catch (e) {
                             console.log('베이스 색상 가져오기 실패: ', e);
+                          }
+                          try {
+                            let _EmissionColor = obj.data.mat[i].nodetree.nodes.first.next.inputs.last.prev.default_value.value;
+                            emission_strength = obj.data.mat[i].nodetree.nodes.first.next.inputs.last.default_value.value;
+                            emission_color = p.color(
+                              _EmissionColor[0] * 255,
+                              _EmissionColor[1] * 255,
+                              _EmissionColor[2] * 255,
+                              _EmissionColor[3] * 255
+                            );
+                          } catch (e) {
+                            console.log('이미션 정보 수집 실패: ', e);
                           }
                           // 이미지 텍스처 재질 받기
                           if (obj.data.mat[i].nodetree.nodes.last.id) { // 내장 이미지 파일을 읽어내기
@@ -934,7 +948,10 @@ export class IonicViewerPage implements OnInit {
                       // 개체 정보 누적
                       meshes.push({
                         id: obj.data.address,
+                        name: obj.data.aname,
                         color: base_color,
+                        emissionColor: emission_color,
+                        emissionStrength: emission_strength,
                         texture: imgtex_id,
                         mesh: shape,
                       });
@@ -966,6 +983,8 @@ export class IonicViewerPage implements OnInit {
                 if (meshes[i].color)
                   p.ambientMaterial(meshes[i].color);
               }
+              if (meshes[i].emissionStrength)
+                p.emissiveMaterial(meshes[i].emissionColor);
               p.model(meshes[i].mesh);
               p.pop();
             }
