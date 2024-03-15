@@ -211,6 +211,7 @@ DownloadLoadedList,뷰어에 로드된 모든 파일 다운받기,Download all f
 RemoveFile,파일 삭제,Remove file
 BlenderViewerInfo,테스트중인 기능으로 실제 파일 정보와 다를 수 있습니다,This is a feature being tested and may differ from actual file information.
 CannotOpenText,열람할 수 없는 파일입니다,This file cannot be viewed
+ReadObject,개체 정보 읽는중,Reading object information
 ## MinimalChat,,
 concurrent_users,동시접속자,Concurrent users
 shareAddress,주소 공유,Share address

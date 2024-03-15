@@ -742,10 +742,12 @@ export class IonicViewerPage implements OnInit {
         this.p5canvas = new p5((p: p5) => {
           /** 수집된 광원 */
           let lights = [];
-          /** 수집된 모델 */
-          let models = [];
+          /** 수집된 메쉬들 */
+          let meshes = [];
           /** 수집된 카메라 */
           let cameras = [];
+          /** 텍스처 이미지 불러오기 [데이터 id로 분류]: p5.Image */
+          let texture_images = {};
           p.setup = async () => {
             let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight, p.WEBGL);
             canvas.parent(canvasDiv);
@@ -775,11 +777,11 @@ export class IonicViewerPage implements OnInit {
             canvasDiv.appendChild(jsBlend.elt);
             jsBlend.elt.contentWindow['TARGET_FILE'] = blob;
             jsBlend.elt.onload = async () => {
-              loading.dismiss();
               if (!blob) { // 파일이 열리지 않음 알림
                 this.p5toast.show({
                   text: this.lang.text['ContentViewer']['CannotOpenText'],
                 });
+                loading.dismiss();
                 return;
               }
               this.p5toast.show({
@@ -788,9 +790,15 @@ export class IonicViewerPage implements OnInit {
               let blend = await jsBlend.elt.contentWindow['JSBLEND'](blob);
               // 모든 개체를 돌며 개체에 맞는 생성 동작
               const RATIO = 100;
+              /** 블랜더 파일 (ArrayBuffer) */
+              let blenderFile = blend.file.AB;
               for (let i = 0; i < blend.file.objects.Object.length; i++) {
+                /** 이 개체의 정보 */
                 let obj = blend.file.objects.Object[i];
+                loading.message = `${this.lang.text['ContentViewer']['ReadObject']}: ${obj.aname}`;
                 switch (obj.type) {
+                  case 0: // empty
+                    break;
                   case 1: // mesh
                     { // 모델 정보 기반으로 Geometry 개체 만들기
                       let shape: any;
@@ -816,7 +824,7 @@ export class IonicViewerPage implements OnInit {
                       if (hasRot) { // 각도가 설정되어있다면
                         p.rotate(p.HALF_PI, p.createVector(obj.rot[0], obj.rot[2], -obj.rot[1]));
                       }
-                      { // 정점 관계도 사용 구간
+                      try { // 정점 관계도 사용 구간
                         /** 정점간 관계도 구축 (선으로 연결되는지 여부 수집) */
                         let vertex_linked = [];
                         for (let i = 0, j = vertex_id.length; i < j; i++)
@@ -869,10 +877,67 @@ export class IonicViewerPage implements OnInit {
                           }
                           last_id = current_id;
                         }
+                      } catch (e) {
+                        console.log('메쉬 정보 불러오기 오류: ', e);
                       }
                       p.pop();
                       shape = p['endGeometry']();
-                      models.push(shape);
+                      // 머터리얼 정보 받아오기
+                      let imgtex_id: any;
+                      let base_color: p5.Color;
+                      try {
+                        if (!obj.data.mat.length) throw '재질이 정의되지 않음';
+                        for (let i = 0, j = obj.data.mat.length; i < j; i++) {
+                          // 머터리얼 기반 색상 찾기
+                          try {
+                            let _BaseColor = obj.data.mat[i].nodetree.nodes.first.next.inputs.first.default_value.value;
+                            base_color = p.color(
+                              _BaseColor[0] * 255,
+                              _BaseColor[1] * 255,
+                              _BaseColor[2] * 255,
+                              _BaseColor[3] * 255
+                            );
+                          } catch (e) {
+                            console.log('베이스 색상 가져오기 실패: ', e);
+                          }
+                          // 이미지 텍스처 재질 받기
+                          if (obj.data.mat[i].nodetree.nodes.last.id) { // 내장 이미지 파일을 읽어내기
+                            let packedfile = obj.data.mat[i].nodetree.nodes.last.id.packedfile;
+                            if (!packedfile) throw 'unpacked';
+                            if (texture_images[packedfile.data['__data_address__']]) throw 'duplicated';
+                            imgtex_id = packedfile.data['__data_address__'];
+                            let data_size = packedfile.size;
+                            let ImageBuffer = blenderFile.slice(imgtex_id, imgtex_id + data_size);
+                            let blob = new Blob([ImageBuffer]);
+                            let ImageTextureURL = URL.createObjectURL(blob);
+                            p.loadImage(ImageTextureURL, v => {
+                              texture_images[packedfile.data['__data_address__']] = v;
+                              URL.revokeObjectURL(ImageTextureURL);
+                            }, e => {
+                              console.log('텍스쳐 불러오기 실패: ', e);
+                              URL.revokeObjectURL(ImageTextureURL);
+                            });
+                          }
+                        }
+                      } catch (e) {
+                        switch (e) {
+                          case 'unpacked': // 파일에 내장되지 않음(링크 파일)
+                            console.log(obj.aname, '_텍스처 파일이 내장되지 않음');
+                            break;
+                          case 'duplicated': // 중복 등록 행동 방지
+                            break;
+                          default: // 정의되지 않은 오류
+                            console.log(obj.aname, '_재질 정보 불러오기 오류: ', e);
+                            break;
+                        }
+                      }
+                      // 개체 정보 누적
+                      meshes.push({
+                        id: obj.data.address,
+                        color: base_color,
+                        texture: imgtex_id,
+                        mesh: shape,
+                      });
                     }
                     break;
                   case 10: // lamp
@@ -882,14 +947,28 @@ export class IonicViewerPage implements OnInit {
                   default: // 준비되지 않은 데이터 필터용
                     break;
                 }
+                await new Promise(res => setTimeout(res, 0));
               }
+              loading.dismiss();
             };
           }
           p.draw = () => {
             p.clear(255, 255, 255, 0);
             p.orbitControl();
-            for (let i = 0, j = models.length; i < j; i++)
-              p.model(models[i]);
+            p.lights();
+            for (let i = 0, j = meshes.length; i < j; i++) {
+              p.push();
+              if (meshes[i].texture) {
+                // if (texture_images[meshes[i].texture]) {
+                //   p.texture(texture_images[meshes[i].texture]);
+                // }
+              } else {
+                if (meshes[i].color)
+                  p.ambientMaterial(meshes[i].color);
+              }
+              p.model(meshes[i].mesh);
+              p.pop();
+            }
           }
           p.windowResized = () => {
             setTimeout(() => {
