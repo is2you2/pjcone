@@ -858,8 +858,6 @@ export class IonicViewerPage implements OnInit {
                         }
                         // 면 UV 직접 지정
                         let isPlaneMesh = qface_info.length == 4;
-                        if (isPlaneMesh)
-                          console.log(obj.aname, '_data: ', obj.data);
                         let plane_uv = [
                           { u: 0, v: 1 },
                           { u: 1, v: 1 },
@@ -1458,9 +1456,8 @@ export class IonicViewerPage implements OnInit {
           this.p5canvas.text((this.FileInfo['filename'] || this.FileInfo['name']),
             margin_ratio, margin_ratio,
             width - margin_ratio * 2, height - margin_ratio * 2);
-          let c = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+          let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
           try {
-            let base64 = c[0]['imageData'].replace(/"|=|\\/g, '');
             await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`, undefined, this.targetDB);
             this.FileInfo.thumbnail = base64;
             this.global.modulate_thumbnail(this.FileInfo, '');
@@ -1506,9 +1503,9 @@ export class IonicViewerPage implements OnInit {
                 p.textWrap(p.CHAR);
                 p.textSize(16);
                 let margin_ratio = height / 16;
-                p.push()
+                p.push();
                 p.translate(margin_ratio / 6, margin_ratio / 6);
-                p.fill(0)
+                p.fill(0);
                 p.text((this.FileInfo['filename'] || this.FileInfo['name']),
                   margin_ratio, margin_ratio,
                   width - margin_ratio * 2, height - margin_ratio * 2);
