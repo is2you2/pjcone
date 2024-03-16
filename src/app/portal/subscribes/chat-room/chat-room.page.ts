@@ -90,31 +90,38 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.extended_buttons[0].isHide = true;
         } else {
           if (!this.lock_modal_open) {
-            this.lock_modal_open = true;
-            this.modalCtrl.create({
-              component: GroupDetailPage,
-              componentProps: {
-                info: this.nakama.groups[this.isOfficial][this.target][this.info['group_id']],
-                server: { isOfficial: this.isOfficial, target: this.target },
-              },
-            }).then(v => {
-              v.onWillDismiss().then(data => {
-                if (data.data) { // 그룹 탈퇴/삭제시
-                  this.extended_buttons.forEach(button => {
-                    button.isHide = true;
-                  });
-                  this.extended_buttons[0].isHide = false;
-                  this.extended_buttons[9].isHide = false;
-                  this.extended_buttons[12].isHide = false;
-                }
+            try {
+              this.lock_modal_open = true;
+              this.modalCtrl.create({
+                component: GroupDetailPage,
+                componentProps: {
+                  info: this.nakama.groups[this.isOfficial][this.target][this.info['group_id']],
+                  server: { isOfficial: this.isOfficial, target: this.target },
+                },
+              }).then(v => {
+                v.onWillDismiss().then(data => {
+                  if (data.data) { // 그룹 탈퇴/삭제시
+                    this.extended_buttons.forEach(button => {
+                      button.isHide = true;
+                    });
+                    this.extended_buttons[0].isHide = false;
+                    this.extended_buttons[9].isHide = false;
+                    this.extended_buttons[12].isHide = false;
+                  }
+                });
+                v.onDidDismiss().then(() => {
+                  this.ionViewDidEnter();
+                });
+                this.removeShortCutKey();
+                v.present();
+                this.lock_modal_open = false;
               });
-              v.onDidDismiss().then(() => {
-                this.ionViewDidEnter();
-              });
-              this.removeShortCutKey();
-              v.present();
+            } catch (e) {
               this.lock_modal_open = false;
-            });
+              this.p5toast.show({
+                text: this.lang.text['ChatRoom']['AlreadyRemoved'],
+              });
+            }
           }
         }
       }
@@ -336,14 +343,18 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
               loading.present();
               delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
-              switch (this.info['redirect']['type']) {
-                case 3: // 그룹방
-                  await this.nakama.remove_group_list(
-                    this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target);
-                  break;
-                case 0: // 로컬 채널
-                  await this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
-                  break;
+              try {
+                switch (this.info['redirect']['type']) {
+                  case 3: // 그룹방
+                    await this.nakama.remove_group_list(
+                      this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target);
+                    break;
+                  case 0: // 로컬 채널
+                    await this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
+                    break;
+                }
+              } catch (e) {
+                console.log('그룹 이미지 삭제 오류: ', e);
               }
               try {
                 delete this.nakama.groups[this.isOfficial][this.target][this.info['group_id']];
