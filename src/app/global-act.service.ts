@@ -301,8 +301,8 @@ export class GlobalActService {
             p.setup = () => {
               p.noCanvas();
               p.pixelDensity(1);
-              p.loadImage('data:image/png;base64,' + base64, v => {
-                p.createCanvas(v.width, v.height);
+              p.loadImage('data:image/png;base64,' + base64, async v => {
+                let canvas = p.createCanvas(v.width, v.height);
                 p.image(v, 0, 0)
                 p.textSize(16);
                 p.textWrap(p.CHAR);
@@ -319,16 +319,14 @@ export class GlobalActService {
                 p.text(this.godot_window['filename'],
                   margin_ratio, margin_ratio,
                   p.width - margin_ratio * 2, p.height - margin_ratio * 2);
-                p.saveFrames('', 'png', 1, 1, async c => {
-                  try {
-                    await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
-                      `${(keys['alt_path'] || keys['path'])}_thumbnail.png`);
-                    this.modulate_thumbnail(info, '');
-                  } catch (e) {
-                    console.log('p.saveFrames: ', e);
-                  }
-                  p.remove();
-                });
+                let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+                try {
+                  await this.indexed.saveBase64ToUserPath(base64, `${(keys['alt_path'] || keys['path'])}_thumbnail.png`);
+                  this.modulate_thumbnail(info, '');
+                } catch (e) {
+                  console.log('p.saveFrames: ', e);
+                }
+                p.remove();
               }, e => {
                 console.error('create_thumbnail_load thumbnail failed: ', e);
                 p.remove();

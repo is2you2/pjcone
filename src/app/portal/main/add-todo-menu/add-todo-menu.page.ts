@@ -1039,14 +1039,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 p.smooth();
                 p.pixelDensity(1);
                 p.image(v, -(v.width - 128) / 2, -(v.height - 128) / 2);
-                p.saveFrames('', 'png', 1, 1, c => {
-                  this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''),
-                    `todo/${this.userInput.id}/thumbnail.png`, (_) => {
-                      done();
-                    });
-                  URL.revokeObjectURL(header_image);
-                  p.remove();
+                let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+                this.indexed.saveBase64ToUserPath(base64, `todo/${this.userInput.id}/thumbnail.png`, (_) => {
+                  done();
                 });
+                URL.revokeObjectURL(header_image);
+                p.remove();
               }, e => {
                 console.error('Todo-등록된 이미지 불러오기 실패: ', e);
                 done();

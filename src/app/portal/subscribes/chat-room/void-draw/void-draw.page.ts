@@ -163,21 +163,19 @@ export class VoidDrawPage implements OnInit {
         p['save_image'] = () => {
           new p5((sp: p5) => {
             sp.setup = () => {
-              sp.createCanvas(ActualCanvas.width, ActualCanvas.height);
+              let canvas = sp.createCanvas(ActualCanvas.width, ActualCanvas.height);
               sp.pixelDensity(PIXEL_DENSITY);
               if (ImageCanvas)
                 sp.image(ImageCanvas, 0, 0);
               if (ActualCanvas)
                 sp.image(ActualCanvas, 0, 0);
-              sp.saveFrames('', 'png', 1, 1, c => {
-                let img = c[0]['imageData'].replace(/"|=|\\/g, '');
-                this.modalCtrl.dismiss({
-                  name: `voidDraw_${sp.year()}-${sp.nf(sp.month(), 2)}-${sp.nf(sp.day(), 2)}_${sp.nf(sp.hour(), 2)}-${sp.nf(sp.minute(), 2)}-${sp.nf(sp.second(), 2)}.png`,
-                  img: img,
-                  loadingCtrl: this.mainLoading,
-                });
-                sp.remove();
+              let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+              this.modalCtrl.dismiss({
+                name: `voidDraw_${sp.year()}-${sp.nf(sp.month(), 2)}-${sp.nf(sp.day(), 2)}_${sp.nf(sp.hour(), 2)}-${sp.nf(sp.minute(), 2)}-${sp.nf(sp.second(), 2)}.png`,
+                img: base64,
+                loadingCtrl: this.mainLoading,
               });
+              sp.remove();
             }
           });
         }

@@ -752,6 +752,7 @@ export class IonicViewerPage implements OnInit {
           p.setup = async () => {
             let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight, p.WEBGL);
             canvas.parent(canvasDiv);
+            p['canvas'] = canvas;
             p.textureMode(p.NORMAL);
             p.textureWrap(p.REPEAT);
             p.clear(255, 255, 255, 0);
@@ -1219,23 +1220,22 @@ export class IonicViewerPage implements OnInit {
           this.p5canvas.pixelDensity(1);
           this.p5canvas['VideoMedia'].pause();
           this.p5canvas['VideoMedia']['size'](this.image_info['width'], this.image_info['height']);
-          this.p5canvas.createCanvas(this.image_info['width'], this.image_info['height']);
+          let canvas = this.p5canvas.createCanvas(this.image_info['width'], this.image_info['height']);
           this.p5canvas.image(this.p5canvas['VideoMedia'], 0, 0, this.p5canvas.width, this.p5canvas.height);
-          this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
-            try {
-              loading.dismiss();
-              this.image_info['path'] = 'tmp_files/modify_image.png';
-              await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''), this.image_info['path']);
-              this.modalCtrl.dismiss({
-                type: 'image',
-                ...this.image_info,
-                msg: this.MessageInfo,
-                index: this.RelevanceIndex - 1,
-              });
-            } catch (e) {
-              console.log('파일 저장 오류: ', e);
-            }
-          });
+          let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+          try {
+            loading.dismiss();
+            this.image_info['path'] = 'tmp_files/modify_image.png';
+            await this.indexed.saveBase64ToUserPath(base64, this.image_info['path']);
+            this.modalCtrl.dismiss({
+              type: 'image',
+              ...this.image_info,
+              msg: this.MessageInfo,
+              index: this.RelevanceIndex - 1,
+            });
+          } catch (e) {
+            console.log('파일 저장 오류: ', e);
+          }
         } catch (e) {
           console.log('재생중인 비디오 이미지 추출 오류: ', e);
         }
@@ -1245,23 +1245,22 @@ export class IonicViewerPage implements OnInit {
           let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
           loading.present();
           this.p5canvas.pixelDensity(1);
-          this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
-            try {
-              loading.dismiss();
-              this.image_info['path'] = 'tmp_files/modify_image.png';
-              this.image_info['width'] = this.p5canvas.width;
-              this.image_info['height'] = this.p5canvas.height;
-              await this.indexed.saveBase64ToUserPath(c[0]['imageData'].replace(/"|=|\\/g, ''), this.image_info['path']);
-              this.modalCtrl.dismiss({
-                type: 'image',
-                ...this.image_info,
-                msg: this.MessageInfo,
-                index: this.RelevanceIndex - 1,
-              });
-            } catch (e) {
-              console.log('파일 저장 오류: ', e);
-            }
-          });
+          let base64 = this.p5canvas['canvas']['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+          try {
+            loading.dismiss();
+            this.image_info['path'] = 'tmp_files/modify_image.png';
+            this.image_info['width'] = this.p5canvas.width;
+            this.image_info['height'] = this.p5canvas.height;
+            await this.indexed.saveBase64ToUserPath(base64, this.image_info['path']);
+            this.modalCtrl.dismiss({
+              type: 'image',
+              ...this.image_info,
+              msg: this.MessageInfo,
+              index: this.RelevanceIndex - 1,
+            });
+          } catch (e) {
+            console.log('파일 저장 오류: ', e);
+          }
         } catch (e) {
           console.log('재생중인 비디오 이미지 추출 오류: ', e);
         }
@@ -1436,7 +1435,7 @@ export class IonicViewerPage implements OnInit {
             width = size.width / size.height * 192;
             height = 192;
           }
-          this.p5canvas.createCanvas(width, height);
+          let canvas = this.p5canvas.createCanvas(width, height);
           this.p5canvas.pixelDensity(1);
           this.p5canvas.imageMode(this.p5canvas.CORNER);
           this.p5canvas.image(this.p5canvas['VideoMedia'], 0, 0, width, height);
@@ -1457,17 +1456,16 @@ export class IonicViewerPage implements OnInit {
           this.p5canvas.text((this.FileInfo['filename'] || this.FileInfo['name']),
             margin_ratio, margin_ratio,
             width - margin_ratio * 2, height - margin_ratio * 2);
-          this.p5canvas.saveFrames('', 'png', 1, 1, async c => {
-            try {
-              let base64 = c[0]['imageData'].replace(/"|=|\\/g, '');
-              await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`, undefined, this.targetDB);
-              this.FileInfo.thumbnail = base64;
-              this.global.modulate_thumbnail(this.FileInfo, '');
-              if (this.p5canvas) this.p5canvas.remove();
-            } catch (e) {
-              console.log('썸네일 저장 오류: ', e);
-            }
-          });
+          let c = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+          try {
+            let base64 = c[0]['imageData'].replace(/"|=|\\/g, '');
+            await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`, undefined, this.targetDB);
+            this.FileInfo.thumbnail = base64;
+            this.global.modulate_thumbnail(this.FileInfo, '');
+            if (this.p5canvas) this.p5canvas.remove();
+          } catch (e) {
+            console.log('썸네일 저장 오류: ', e);
+          }
         } catch (e) {
           console.log('비디오 썸네일 생성 취소: ', e);
         }
@@ -1484,60 +1482,56 @@ export class IonicViewerPage implements OnInit {
         }
         break;
       case 'blender':
-        this.p5canvas.saveFrames('', 'png', 1, 1, c => {
-          try {
-            let base64 = c[0]['imageData'].replace(/"|=|\\/g, '');
-            new p5((p: p5) => {
-              p.setup = () => {
-                p.loadImage(base64, v => {
-                  let width: number, height: number;
-                  if (v.width > v.height) {
-                    width = 192;
-                    height = v.height / v.width * 192;
-                  } else {
-                    width = v.width / v.height * 192;
-                    height = 192;
-                  }
-                  p.createCanvas(width, height);
-                  p.pixelDensity(1);
-                  p.imageMode(p.CORNER);
-                  p.image(v, 0, 0, p.width, p.height);
-                  p.fill(255, 128);
-                  p.rect(0, 0, width, height);
-                  p.textWrap(p.CHAR);
-                  p.textSize(16);
-                  let margin_ratio = height / 16;
-                  p.push()
-                  p.translate(margin_ratio / 6, margin_ratio / 6);
-                  p.fill(0)
-                  p.text((this.FileInfo['filename'] || this.FileInfo['name']),
-                    margin_ratio, margin_ratio,
-                    width - margin_ratio * 2, height - margin_ratio * 2);
-                  p.filter(p.BLUR, 3);
-                  p.pop();
-                  p.fill(255);
-                  p.text((this.FileInfo['filename'] || this.FileInfo['name']),
-                    margin_ratio, margin_ratio,
-                    width - margin_ratio * 2, height - margin_ratio * 2);
-                  p.saveFrames('', 'png', 1, 1, async b => {
-                    let base64 = b[0]['imageData'].replace(/"|=|\\/g, '');
-                    await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`, undefined, this.targetDB);
-                    this.FileInfo.thumbnail = base64;
-                    this.global.modulate_thumbnail(this.FileInfo, '');
-                    p.remove();
-                  });
-                  if (this.p5canvas) this.p5canvas.remove();
-                }, e => {
-                  console.log('블렌더 썸네일 배경 받아오기 오류: ', e);
-                  p.remove();
-                  if (this.p5canvas) this.p5canvas.remove();
-                });
-              }
-            });
-          } catch (e) {
-            console.log('blender 썸네일 저장 오류: ', e);
-          }
-        });
+        let base64 = this.p5canvas['canvas']['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+        try {
+          new p5((p: p5) => {
+            p.setup = () => {
+              p.loadImage(base64, async v => {
+                let width: number, height: number;
+                if (v.width > v.height) {
+                  width = 192;
+                  height = v.height / v.width * 192;
+                } else {
+                  width = v.width / v.height * 192;
+                  height = 192;
+                }
+                let canvas = p.createCanvas(width, height);
+                p.pixelDensity(1);
+                p.imageMode(p.CORNER);
+                p.image(v, 0, 0, p.width, p.height);
+                p.fill(255, 128);
+                p.rect(0, 0, width, height);
+                p.textWrap(p.CHAR);
+                p.textSize(16);
+                let margin_ratio = height / 16;
+                p.push()
+                p.translate(margin_ratio / 6, margin_ratio / 6);
+                p.fill(0)
+                p.text((this.FileInfo['filename'] || this.FileInfo['name']),
+                  margin_ratio, margin_ratio,
+                  width - margin_ratio * 2, height - margin_ratio * 2);
+                p.filter(p.BLUR, 3);
+                p.pop();
+                p.fill(255);
+                p.text((this.FileInfo['filename'] || this.FileInfo['name']),
+                  margin_ratio, margin_ratio,
+                  width - margin_ratio * 2, height - margin_ratio * 2);
+                let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+                await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`, undefined, this.targetDB);
+                this.FileInfo.thumbnail = base64;
+                this.global.modulate_thumbnail(this.FileInfo, '');
+                p.remove();
+                if (this.p5canvas) this.p5canvas.remove();
+              }, e => {
+                console.log('블렌더 썸네일 배경 받아오기 오류: ', e);
+                p.remove();
+                if (this.p5canvas) this.p5canvas.remove();
+              });
+            }
+          });
+        } catch (e) {
+          console.log('blender 썸네일 저장 오류: ', e);
+        }
         break;
       default:
         if (this.p5canvas) this.p5canvas.remove();
