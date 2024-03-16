@@ -1006,15 +1006,20 @@ export class IonicViewerPage implements OnInit {
             for (let i = 0, j = meshes.length; i < j; i++) {
               p.push();
               if (meshes[i].texture) {
+                p.noStroke();
                 if (texture_images[meshes[i].texture]) {
                   p.texture(texture_images[meshes[i].texture]);
                 }
               } else {
-                if (meshes[i].color)
+                if (meshes[i].color) {
+                  p.noStroke();
                   p.ambientMaterial(meshes[i].color);
+                }
               }
-              if (meshes[i].emissionStrength)
+              if (meshes[i].emissionStrength) {
+                p.noStroke();
                 p.emissiveMaterial(meshes[i].emissionColor);
+              }
               // shade 옵션 (Flat/Smooth)
               meshes[i].mesh['computeNormals']();
               p.model(meshes[i].mesh);
