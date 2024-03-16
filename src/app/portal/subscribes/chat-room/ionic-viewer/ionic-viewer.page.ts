@@ -802,6 +802,11 @@ export class IonicViewerPage implements OnInit {
                   -obj.loc[2] * RATIO,
                   obj.loc[1] * RATIO
                 );
+                let rotation = p.createVector(
+                  obj.rot[0],
+                  obj.rot[2],
+                  -obj.rot[1]
+                );
                 switch (obj.type) {
                   case 0: // empty
                     break;
@@ -824,9 +829,8 @@ export class IonicViewerPage implements OnInit {
                         obj.size[1]
                       );
                       let hasRot = obj.rot[0] + obj.rot[1] + obj.rot[2];
-                      if (hasRot) { // 각도가 설정되어있다면
-                        p.rotate(p.HALF_PI, p.createVector(obj.rot[0], obj.rot[2], -obj.rot[1]));
-                      }
+                      if (hasRot) // 각도가 설정되어있다면
+                        p.rotate(p.HALF_PI, rotation);
                       try { // 정점 관계도 사용 구간
                         /** 정점간 관계도 구축 (선으로 연결되는지 여부 수집) */
                         let vertex_linked = [];
@@ -960,8 +964,20 @@ export class IonicViewerPage implements OnInit {
                       });
                     }
                     break;
-                  case 10: // lamp
+                  }
+                  case 10: { // lamp
+                    // 빛의 종류 구분이 필요
+                    if (lights.length < 5) {
+                      // 빛 정보 구분이 어려우므로 일단 포인트 조명으로 통일
+                      lights.push({
+                        type: 'point',
+                        loc: location,
+                        rot: rotation,
+                        color: p.color(255, 255, 255),
+                      });
+                    }
                     break;
+                  }
                   case 11: // camera
                     break;
                   default: // 준비되지 않은 데이터 필터용
@@ -975,7 +991,18 @@ export class IonicViewerPage implements OnInit {
           p.draw = () => {
             p.clear(255, 255, 255, 0);
             p.orbitControl();
-            p.lights();
+            if (lights.length) {
+              for (let i = 0, j = lights.length; i < j; i++) {
+                switch (lights[i].type) {
+                  case 'point':
+                    p.pointLight(lights[i].color, lights[i].loc);
+                    break;
+                  default:
+                    break;
+                }
+              }
+            } else // 빛이 없다면 기본 빛 부여
+              p.lights();
             for (let i = 0, j = meshes.length; i < j; i++) {
               p.push();
               if (meshes[i].texture) {
