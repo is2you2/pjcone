@@ -972,7 +972,7 @@ export class IonicViewerPage implements OnInit {
                             let ImageTextureURL = URL.createObjectURL(blob);
                             p.loadImage(ImageTextureURL, v => {
                               texture_images[packedfile.data['__data_address__']] = v;
-                              LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-medium-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['OnWorkReadUV']}</div>`;
+                              LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-danger-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['OnWorkReadUV']}</div>`;
                               URL.revokeObjectURL(ImageTextureURL);
                             }, e => {
                               console.log('텍스쳐 불러오기 실패: ', e);
