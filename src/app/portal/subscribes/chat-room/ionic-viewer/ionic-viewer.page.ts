@@ -753,6 +753,7 @@ export class IonicViewerPage implements OnInit {
             let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight, p.WEBGL);
             canvas.parent(canvasDiv);
             p['canvas'] = canvas;
+            canvas.elt.addEventListener("contextmenu", (e: any) => e.preventDefault());
             p.textureMode(p.NORMAL);
             p.textureWrap(p.REPEAT);
             p.clear(255, 255, 255, 0);
@@ -797,6 +798,7 @@ export class IonicViewerPage implements OnInit {
               LogDiv.style('height', '100%');
               LogDiv.style('max-height', `${canvasDiv.clientHeight}px`);
               LogDiv.style('pointer-events', 'none');
+              LogDiv.elt.addEventListener("contextmenu", (e: any) => e.preventDefault());
               let blend = await jsBlend.elt.contentWindow['JSBLEND'](blob);
               // 모든 개체를 돌며 개체에 맞는 생성 동작
               const RATIO = 100;
