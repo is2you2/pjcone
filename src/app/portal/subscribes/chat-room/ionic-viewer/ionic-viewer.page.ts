@@ -836,8 +836,10 @@ export class IonicViewerPage implements OnInit {
                         obj.size[1]
                       );
                       let hasRot = obj.rot[0] + obj.rot[1] + obj.rot[2];
-                      if (hasRot) // 각도가 설정되어있다면
+                      if (hasRot) {  // 각도가 설정되어있다면
+                        LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-warning-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['MayGimbalLock']}</div>`;
                         p.rotate(p.HALF_PI, rotation);
+                      }
                       try { // 정점 관계도 사용 구간
                         /** 정점간 관계도 구축 (선으로 연결되는지 여부 수집) */
                         let vertex_linked = [];
@@ -964,6 +966,8 @@ export class IonicViewerPage implements OnInit {
                             break;
                         }
                       }
+                      // shade 옵션 (Flat/Smooth)
+                      shape['computeNormals']();
                       // 개체 정보 누적
                       meshes.push({
                         id: obj.data.address,
@@ -1037,8 +1041,6 @@ export class IonicViewerPage implements OnInit {
                 p.noStroke();
                 p.emissiveMaterial(meshes[i].emissionColor);
               }
-              // shade 옵션 (Flat/Smooth)
-              meshes[i].mesh['computeNormals']();
               p.model(meshes[i].mesh);
               p.pop();
             }
