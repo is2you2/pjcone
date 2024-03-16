@@ -748,6 +748,7 @@ export class IonicViewerPage implements OnInit {
           let cameras = [];
           /** 텍스처 이미지 불러오기 [데이터 id로 분류]: p5.Image */
           let texture_images = {};
+          let LogDiv: p5.Element;
           p.setup = async () => {
             let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight, p.WEBGL);
             canvas.parent(canvasDiv);
@@ -776,6 +777,7 @@ export class IonicViewerPage implements OnInit {
             jsBlend.elt.setAttribute('hidden', 'true');
             canvasDiv.appendChild(jsBlend.elt);
             jsBlend.elt.contentWindow['TARGET_FILE'] = blob;
+            // 불러오기 로딩 관련 로그 보여주기
             jsBlend.elt.onload = async () => {
               if (!blob) { // 파일이 열리지 않음 알림
                 this.p5toast.show({
@@ -784,9 +786,14 @@ export class IonicViewerPage implements OnInit {
                 loading.dismiss();
                 return;
               }
-              this.p5toast.show({
-                text: this.lang.text['ContentViewer']['BlenderViewerInfo'],
-              });
+              LogDiv = p.createDiv()
+              LogDiv.parent(canvasDiv);
+              LogDiv.id('logDiv');
+              LogDiv.style('position', 'absolute');
+              LogDiv.style('width', '100%');
+              LogDiv.style('height', '100%');
+              LogDiv.style('max-height', `${canvasDiv.clientHeight}px`);
+              LogDiv.style('pointer-events', 'none');
               let blend = await jsBlend.elt.contentWindow['JSBLEND'](blob);
               // 모든 개체를 돌며 개체에 맞는 생성 동작
               const RATIO = 100;
@@ -895,7 +902,7 @@ export class IonicViewerPage implements OnInit {
                       let emission_color: p5.Color;
                       let emission_strength: number = 0;
                       try {
-                        if (!obj.data.mat.length) throw '재질이 정의되지 않음';
+                        if (!obj.data.mat.length) throw 'no_mat';
                         for (let i = 0, j = obj.data.mat.length; i < j; i++) {
                           // 머터리얼 기반 색상 찾기
                           try {
@@ -933,6 +940,7 @@ export class IonicViewerPage implements OnInit {
                             let ImageTextureURL = URL.createObjectURL(blob);
                             p.loadImage(ImageTextureURL, v => {
                               texture_images[packedfile.data['__data_address__']] = v;
+                              LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-medium-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['OnWorkReadUV']}</div>`;
                               URL.revokeObjectURL(ImageTextureURL);
                             }, e => {
                               console.log('텍스쳐 불러오기 실패: ', e);
@@ -943,12 +951,16 @@ export class IonicViewerPage implements OnInit {
                       } catch (e) {
                         switch (e) {
                           case 'unpacked': // 파일에 내장되지 않음(링크 파일)
-                            console.log(obj.aname, '_텍스처 파일이 내장되지 않음');
+                            LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-warning-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['LinkedTexFile']}</div>`;
                             break;
                           case 'duplicated': // 중복 등록 행동 방지
                             break;
+                          case 'no_mat':
+                            LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-medium-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['NoMaterial']}</div>`;
+                            break;
                           default: // 정의되지 않은 오류
                             console.log(obj.aname, '_재질 정보 불러오기 오류: ', e);
+                            LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-danger-shade)">${obj.aname}: ${e}</div>`;
                             break;
                         }
                       }
@@ -968,6 +980,7 @@ export class IonicViewerPage implements OnInit {
                   case 10: { // lamp
                     // 빛의 종류 구분이 필요
                     if (lights.length < 5) {
+                      LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-warning-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['OnWorkReadLightMode']}</div>`;
                       // 빛 정보 구분이 어려우므로 일단 포인트 조명으로 통일
                       lights.push({
                         type: 'point',
@@ -975,17 +988,21 @@ export class IonicViewerPage implements OnInit {
                         rot: rotation,
                         color: p.color(255, 255, 255),
                       });
-                    }
+                    } else LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-medium-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['ReachLightLimit']}</div>`;
                     break;
                   }
                   case 11: // camera
                     break;
                   default: // 준비되지 않은 데이터 필터용
+                    LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-medium-shade)>${obj.aname}: ${this.lang.text['ContentViewer']['OnWorkObjectType']}_${obj.type}</div>`;
                     break;
                 }
                 await new Promise(res => setTimeout(res, 0));
               }
               loading.dismiss();
+              setTimeout(() => {
+                LogDiv.elt.remove();
+              }, 8000);
             };
           }
           p.draw = () => {
@@ -1029,6 +1046,7 @@ export class IonicViewerPage implements OnInit {
           p.windowResized = () => {
             setTimeout(() => {
               canvasDiv.style.maxHeight = (window.innerHeight - 56 - 45) + 'px';
+              if (LogDiv) LogDiv.style('max-height', `${canvasDiv.clientHeight}px`);
               p.resizeCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
             }, 50);
           }
