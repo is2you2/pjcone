@@ -796,10 +796,16 @@ export class IonicViewerPage implements OnInit {
                 /** 이 개체의 정보 */
                 let obj = blend.file.objects.Object[i];
                 loading.message = `${this.lang.text['ContentViewer']['ReadObject']}: ${obj.aname}`;
+                // 공통 정보
+                let location = p.createVector(
+                  -obj.loc[0] * RATIO,
+                  -obj.loc[2] * RATIO,
+                  obj.loc[1] * RATIO
+                );
                 switch (obj.type) {
                   case 0: // empty
                     break;
-                  case 1: // mesh
+                  case 1: { // mesh
                     { // 모델 정보 기반으로 Geometry 개체 만들기
                       let shape: any;
                       /** 모델의 정점 정보 수집 (position) */
@@ -811,10 +817,7 @@ export class IonicViewerPage implements OnInit {
                       // 정보 기반 그리기 행동
                       p['beginGeometry']();
                       p.push();
-                      p.translate(-obj.loc[0] * RATIO,
-                        -obj.loc[2] * RATIO,
-                        obj.loc[1] * RATIO
-                      );
+                      p.translate(location);
                       p.scale(
                         obj.size[0],
                         obj.size[2],
@@ -836,9 +839,9 @@ export class IonicViewerPage implements OnInit {
                           vertex_linked[edge_id_end].push(edge_id_start);
                         }
                         // 면 생성하기
-                        for (let i = 0, j = qface_info.length,
+                        for (let i = qface_info.length - 1,
                           head_id = undefined, last_id = undefined;
-                          i < j; i++) {
+                          i >= 0; i--) {
                           /** 현재 사용할 정점 */
                           let current_id = qface_info[i]['i'];
                           // 가장 처음에 시작할 때, 그리기 시작
@@ -976,15 +979,17 @@ export class IonicViewerPage implements OnInit {
             for (let i = 0, j = meshes.length; i < j; i++) {
               p.push();
               if (meshes[i].texture) {
-                // if (texture_images[meshes[i].texture]) {
-                //   p.texture(texture_images[meshes[i].texture]);
-                // }
+                if (texture_images[meshes[i].texture]) {
+                  p.texture(texture_images[meshes[i].texture]);
+                }
               } else {
                 if (meshes[i].color)
                   p.ambientMaterial(meshes[i].color);
               }
               if (meshes[i].emissionStrength)
                 p.emissiveMaterial(meshes[i].emissionColor);
+              // shade 옵션 (Flat/Smooth)
+              meshes[i].mesh['computeNormals']();
               p.model(meshes[i].mesh);
               p.pop();
             }
