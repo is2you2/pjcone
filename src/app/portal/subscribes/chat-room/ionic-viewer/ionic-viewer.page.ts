@@ -752,6 +752,8 @@ export class IonicViewerPage implements OnInit {
           p.setup = async () => {
             let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight, p.WEBGL);
             canvas.parent(canvasDiv);
+            p.textureMode(p.NORMAL);
+            p.textureWrap(p.REPEAT);
             p.clear(255, 255, 255, 0);
             p.pixelDensity(1);
             let blob: Blob;
@@ -851,6 +853,16 @@ export class IonicViewerPage implements OnInit {
                           vertex_linked[edge_id_start].push(edge_id_end);
                           vertex_linked[edge_id_end].push(edge_id_start);
                         }
+                        // 면 UV 직접 지정
+                        let isPlaneMesh = qface_info.length == 4;
+                        if (isPlaneMesh)
+                          console.log(obj.aname, '_data: ', obj.data);
+                        let plane_uv = [
+                          { u: 0, v: 1 },
+                          { u: 1, v: 1 },
+                          { u: 1, v: 0 },
+                          { u: 0, v: 0 },
+                        ]
                         // 면 생성하기
                         for (let i = qface_info.length - 1,
                           head_id = undefined, last_id = undefined;
@@ -863,11 +875,20 @@ export class IonicViewerPage implements OnInit {
                           let vertexTargetZ = vertex_id[current_id].z ?? vertex_id[current_id]['co'][2];
                           if (last_id === undefined) {
                             p.beginShape();
-                            p.vertex(
-                              -vertexTargetX * RATIO,
-                              -vertexTargetZ * RATIO,
-                              vertexTargetY * RATIO
-                            );
+                            if (isPlaneMesh)
+                              p.vertex(
+                                -vertexTargetX * RATIO,
+                                -vertexTargetZ * RATIO,
+                                vertexTargetY * RATIO,
+                                plane_uv[i].u,
+                                plane_uv[i].v,
+                              );
+                            else
+                              p.vertex(
+                                -vertexTargetX * RATIO,
+                                -vertexTargetZ * RATIO,
+                                vertexTargetY * RATIO
+                              );
                             head_id = current_id;
                             last_id = current_id;
                             continue;
@@ -876,11 +897,20 @@ export class IonicViewerPage implements OnInit {
                             // 현재 정점이 이전 정점으로부터 그려질 수 있는지 검토
                             let checkIfCanLinked = vertex_linked[last_id].includes(current_id);
                             if (!checkIfCanLinked) throw '마지막 점으로부터 그릴 수 없음';
-                            p.vertex(
-                              -vertexTargetX * RATIO,
-                              -vertexTargetZ * RATIO,
-                              vertexTargetY * RATIO
-                            );
+                            if (isPlaneMesh)
+                              p.vertex(
+                                -vertexTargetX * RATIO,
+                                -vertexTargetZ * RATIO,
+                                vertexTargetY * RATIO,
+                                plane_uv[i].u,
+                                plane_uv[i].v,
+                              );
+                            else
+                              p.vertex(
+                                -vertexTargetX * RATIO,
+                                -vertexTargetZ * RATIO,
+                                vertexTargetY * RATIO
+                              );
                             let checkIfCanClosed = false;
                             // 시작점이 곧 마지막 점이 아니라면, 시작점으로 돌아갈 수 있는지 여부 확인
                             if (last_id != head_id)
