@@ -583,31 +583,34 @@ export class IonicViewerPage implements OnInit {
       case 'video': // 비디오
         this.p5canvas = new p5((p: p5) => {
           var mediaObject: p5.MediaElement;
-          p.setup = () => {
+          p.setup = async () => {
             p.noCanvas();
             p.noLoop();
-            mediaObject = p.createVideo([this.FileURL], () => {
-              if (this.PIPLinkedVideoElement) {
-                mediaObject.elt.remove();
-                mediaObject.elt = this.PIPLinkedVideoElement;
-                mediaObject.elt.setAttribute('src', this.FileURL);
-              }
-              canvasDiv.appendChild(mediaObject['elt']);
-              mediaObject['elt'].hidden = true;
-              mediaObject['elt'].onended = () => {
-                if (this.AutoPlayNext)
-                  this.ChangeToAnother(1);
-              }
-              setTimeout(() => {
-                this.image_info['width'] = mediaObject['elt']['videoWidth'];
-                this.image_info['height'] = mediaObject['elt']['videoHeight'];
-                ResizeVideo();
-                mediaObject['elt'].hidden = false;
-              }, 50);
-              mediaObject.showControls();
-              mediaObject.play();
-            });
-            p['VideoMedia'] = mediaObject;
+            let res = await fetch(this.FileURL);
+            if (res.ok) {
+              mediaObject = p.createVideo([this.FileURL], () => {
+                if (this.PIPLinkedVideoElement) {
+                  mediaObject.elt.remove();
+                  mediaObject.elt = this.PIPLinkedVideoElement;
+                  mediaObject.elt.setAttribute('src', this.FileURL);
+                }
+                canvasDiv.appendChild(mediaObject['elt']);
+                mediaObject['elt'].hidden = true;
+                mediaObject['elt'].onended = () => {
+                  if (this.AutoPlayNext)
+                    this.ChangeToAnother(1);
+                }
+                setTimeout(() => {
+                  this.image_info['width'] = mediaObject['elt']['videoWidth'];
+                  this.image_info['height'] = mediaObject['elt']['videoHeight'];
+                  ResizeVideo();
+                  mediaObject['elt'].hidden = false;
+                }, 50);
+                mediaObject.showControls();
+                mediaObject.play();
+              });
+              p['VideoMedia'] = mediaObject;
+            }
           }
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let ResizeVideo = () => {
