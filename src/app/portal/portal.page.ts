@@ -45,12 +45,12 @@ export class PortalPage implements OnInit {
       this.global.p5key['KeyShortCut']['BottomTab'] = (char: string) => {
         switch (char) {
           case 'Q':
-            this.ionTabs.select('main');
             this.bottom_tab_selected();
+            this.ionTabs.select('main');
             break;
           case 'W':
-            this.ionTabs.select('subscribes');
             this.subscribe_button();
+            this.ionTabs.select('subscribes');
             break;
           case 'E':
             this.setting_button();
