@@ -33,6 +33,15 @@ SPDX-License-Identifier: MIT -->
       </div>
     </ion-accordion>
   </ion-accordion-group>
+  <div [hidden]="isAdHiding">
+    <ion-item-divider>
+      <ion-label>{{lang.text['Settings']['CommunityAds']}}</ion-label>
+      <ion-button slot="end" (click)="open_link('https://is2you2.github.io/')" fill="clear" shape="round">
+        {{lang.text['Settings']['AdsContact']}}
+      </ion-button>
+    </ion-item-divider>
+    <div id="advertise" class="advertise_banner"></div>
+  </div>
   <ion-item-divider>
     <ion-label>{{lang.text['Subscribes']['myProfile']}}</ion-label>
   </ion-item-divider>

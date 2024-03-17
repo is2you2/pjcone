@@ -40,6 +40,82 @@ export class SubscribesPage implements OnInit {
     });
   }
 
+  /** 광고 정보 불러오기 */
+  async checkAdsInfo() {
+    try {
+      let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/${this.lang.lang}.txt`);
+      if (res.ok) {
+        let text = await (await res.blob()).text();
+        this.indexed.saveTextFileToUserPath(text, 'ads_list.txt');
+        let lines: string[] = text.split('\n');
+        this.listAvailableAds(lines);
+      } else throw "광고가 없는 것으로 단정합니다";
+    } catch (e) { // 로컬 정보 기반으로 광고
+      this.indexed.loadTextFromUserPath('ads_list.txt', (e, v) => {
+        if (e && v) this.listAvailableAds(v.split('\n'));
+      });
+    }
+  }
+
+  /** 사용가능한 광고 리스트 추리기 */
+  availables = [];
+  /** 광고 판넬 구성하기 */
+  listAvailableAds(lines: string[]) {
+    let currentTime = new Date().getTime();
+    // 양식: 시작시간,끝시간,사이트주소
+    this.availables.length = 0;
+    let NotYet: number;
+    for (let i = 0, j = lines.length; i < j; i++) {
+      let sep = lines[i].split(',');
+      if (Number(sep[0]) < currentTime) {
+        if (currentTime < Number(sep[1]))
+          this.availables.push([Number(sep[0]), Number(sep[1]), sep[2]]);
+      } else { // 아직 도래하지 않은 광고리스트
+        if (!NotYet) NotYet = Number(sep[0]);
+        else if (Number(sep[0]) < NotYet)
+          NotYet = Number(sep[0]);
+      }
+    }
+    let children = this.AD_Div.childNodes;
+    children.forEach(child => {
+      child.remove();
+    });
+    if (this.availables.length)
+      this.displayRandomAds();
+    else if (NotYet) {
+      this.refreshAds = setTimeout(() => {
+        this.checkAdsInfo();
+      }, NotYet - new Date().getTime());
+    }
+  }
+
+  /** 광고 게시 여부 */
+  isAdHiding = true;
+  refreshAds: any;
+  AD_Div: HTMLElement;
+  displayRandomAds() {
+    this.isAdHiding = true;
+    let randomIndex = Math.floor(Math.random() * this.availables.length);
+    let currentAd = this.availables[randomIndex];
+    this.refreshAds = setTimeout(() => {
+      this.indexed.loadTextFromUserPath('ads_list.txt', (e, v) => {
+        if (e && v) this.listAvailableAds(v.split('\n'));
+      });
+    }, currentAd[1] - new Date().getTime());
+    let AdFrame = document.createElement('iframe');
+    AdFrame.id = 'AdFrame';
+    AdFrame.setAttribute("src", currentAd[2]);
+    AdFrame.setAttribute("frameborder", "0");
+    AdFrame.setAttribute('class', 'full_screen');
+    this.isAdHiding = false;
+    this.AD_Div.appendChild(AdFrame);
+  }
+
+  /** 웹 사이트 주소 열기 */
+  open_link(_link: string) {
+    window.open(_link, '_system')
+  }
+
   async add_admob_banner() {
     AdMob.addListener(BannerAdPluginEvents.SizeChanged, (size: AdMobBannerSize) => {
       this.nakama.appMargin = size.height;
@@ -95,6 +171,11 @@ export class SubscribesPage implements OnInit {
       this.global.p5key['KeyShortCut']['AddAct'] = () => {
         this.add_new_group();
       };
+  }
+
+  ionViewWillEnter() {
+    this.AD_Div = document.getElementById('advertise');
+    this.checkAdsInfo();
   }
 
   ionViewDidEnter() {
