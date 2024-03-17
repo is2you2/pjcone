@@ -582,16 +582,18 @@ export class IonicViewerPage implements OnInit {
           let touches: { [id: string]: p5.Vector } = {};
           p.touchStarted = (ev: any) => {
             if (!this.useP5Navigator) return;
-            for (let i = 0, j = ev.changedTouches.length; i < j; i++)
-              touches[ev.changedTouches[i].identifier] =
-                p.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
-            let size = Object.keys(touches).length;
-            switch (size) {
-              case 1: // 첫 탭
-                startPos = touches[ev.changedTouches[0].identifier].copy();
-                break;
-              default: // 그 이상은 무시
-                break;
+            if ('changedTouches' in ev) {
+              for (let i = 0, j = ev.changedTouches.length; i < j; i++)
+                touches[ev.changedTouches[i].identifier] =
+                  p.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
+              let size = Object.keys(touches).length;
+              switch (size) {
+                case 1: // 첫 탭
+                  startPos = touches[ev.changedTouches[0].identifier].copy();
+                  break;
+                default: // 그 이상은 무시
+                  break;
+              }
             }
           }
           const SWIPE_SIZE = 50;
@@ -678,16 +680,18 @@ export class IonicViewerPage implements OnInit {
           let touches: { [id: string]: p5.Vector } = {};
           p.touchStarted = (ev: any) => {
             if (!this.useP5Navigator) return;
-            for (let i = 0, j = ev.changedTouches.length; i < j; i++)
-              touches[ev.changedTouches[i].identifier] =
-                p.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
-            let size = Object.keys(touches).length;
-            switch (size) {
-              case 1: // 첫 탭
-                startPos = touches[ev.changedTouches[0].identifier].copy();
-                break;
-              default: // 그 이상은 무시
-                break;
+            if ('changedTouches' in ev) {
+              for (let i = 0, j = ev.changedTouches.length; i < j; i++)
+                touches[ev.changedTouches[i].identifier] =
+                  p.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
+              let size = Object.keys(touches).length;
+              switch (size) {
+                case 1: // 첫 탭
+                  startPos = touches[ev.changedTouches[0].identifier].copy();
+                  break;
+                default: // 그 이상은 무시
+                  break;
+              }
             }
           }
           const SWIPE_SIZE = 50;
