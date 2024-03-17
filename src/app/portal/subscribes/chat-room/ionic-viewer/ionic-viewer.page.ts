@@ -135,7 +135,6 @@ export class IonicViewerPage implements OnInit {
         canvasDiv.removeChild(canvasDiv.childNodes[i]);
     URL.revokeObjectURL(this.FileURL);
     if (this.FileInfo.url) {
-      this.FileURL = this.FileInfo.url;
       this.CreateContentInfo();
       this.NeedDownloadFile = false;
       this.ContentOnLoad = true;
@@ -227,10 +226,8 @@ export class IonicViewerPage implements OnInit {
     if (this.p5canvas) this.p5canvas.remove();
     this.RelevanceIndex = tmp_calced;
     this.FileInfo = { file_ext: '' };
-    setTimeout(() => {
-      this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
-      this.ContentChanging = false;
-    }, 100);
+    this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
+    this.ContentChanging = false;
   }
 
   async DownloadCurrentFile(index?: number) {
@@ -636,32 +633,29 @@ export class IonicViewerPage implements OnInit {
           p.setup = async () => {
             p.noCanvas();
             p.noLoop();
-            let res = await fetch(this.FileURL);
-            if (res.ok) {
-              mediaObject = p.createVideo([this.FileURL], () => {
-                if (this.global.PIPLinkedVideoElement) {
-                  mediaObject.elt.remove();
-                  mediaObject.elt = this.global.PIPLinkedVideoElement;
-                  mediaObject.elt.setAttribute('src', this.FileURL);
-                } else this.global.PIPLinkedVideoElement = mediaObject['elt'];
-                if (canvasDiv)
-                  canvasDiv.appendChild(mediaObject['elt']);
-                mediaObject['elt'].onended = () => {
-                  if (this.AutoPlayNext)
-                    this.ChangeToAnother(1);
-                }
-                setTimeout(() => {
-                  this.image_info['width'] = mediaObject['elt']['videoWidth'];
-                  this.image_info['height'] = mediaObject['elt']['videoHeight'];
-                  ResizeVideo();
-                  mediaObject['elt'].hidden = false;
-                }, 50);
-                mediaObject.showControls();
-                mediaObject.play();
-              });
-              mediaObject['elt'].hidden = true;
-              p['VideoMedia'] = mediaObject;
-            }
+            mediaObject = p.createVideo([this.FileURL], () => {
+              if (this.global.PIPLinkedVideoElement) {
+                mediaObject.elt.remove();
+                mediaObject.elt = this.global.PIPLinkedVideoElement;
+                mediaObject.elt.setAttribute('src', this.FileURL);
+              } else this.global.PIPLinkedVideoElement = mediaObject['elt'];
+              if (canvasDiv)
+                canvasDiv.appendChild(mediaObject['elt']);
+              mediaObject['elt'].onended = () => {
+                if (this.AutoPlayNext)
+                  this.ChangeToAnother(1);
+              }
+              setTimeout(() => {
+                this.image_info['width'] = mediaObject['elt']['videoWidth'];
+                this.image_info['height'] = mediaObject['elt']['videoHeight'];
+                ResizeVideo();
+                mediaObject['elt'].hidden = false;
+              }, 50);
+              mediaObject.showControls();
+              mediaObject.play();
+            });
+            mediaObject['elt'].hidden = true;
+            p['VideoMedia'] = mediaObject;
           }
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let ResizeVideo = () => {
