@@ -5,8 +5,7 @@ import { Component, OnInit } from '@angular/core';
 import { GlobalActService, isDarkMode } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
-import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize } from '@capacitor-community/admob';
-import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
+import { isPlatform } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import * as p5 from 'p5';
@@ -26,37 +25,7 @@ export class MainPage implements OnInit {
     private indexed: IndexedDBService,
   ) { }
 
-  ngOnInit() {
-    this.add_admob_banner();
-  }
-
-  async add_admob_banner() {
-    AdMob.addListener(BannerAdPluginEvents.SizeChanged, (size: AdMobBannerSize) => {
-      this.nakama.appMargin = size.height;
-      const app: HTMLElement = document.querySelector('ion-router-outlet');
-
-      if (this.nakama.appMargin === 0)
-        app.style.marginBottom = '';
-      else if (this.nakama.appMargin > 0)
-        app.style.marginBottom = this.nakama.appMargin + 'px';
-    });
-    const options: BannerAdOptions = {
-      adId: 'ca-app-pub-6577630868247944/4829889344',
-      adSize: BannerAdSize.ADAPTIVE_BANNER,
-      position: BannerAdPosition.BOTTOM_CENTER,
-    };
-    /** 광고 정보 불러오기 */
-    try { // 파일이 있으면 보여주고, 없다면 보여주지 않음
-      this.nakama.isBannerShowing = false;
-      let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/admob.txt`);
-      if (!res.ok) throw "준비된 광고가 없습니다";
-      AdMob.showBanner(options).then(() => {
-        this.nakama.isBannerShowing = true;
-      });
-    } catch (e) { // 로컬 정보 기반으로 광고
-      console.log(e);
-    }
-  }
+  ngOnInit() { }
 
   isPlayingCanvas = { loop: true };
   /** 캔버스 연산 멈추기 (인풋은 영향받지 않음) */
