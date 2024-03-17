@@ -565,7 +565,6 @@ export class IonicViewerPage implements OnInit {
             p.noLoop();
             mediaObject = p.createAudio([this.FileURL], () => {
               canvasDiv.appendChild(mediaObject['elt']);
-              mediaObject['elt'].hidden = true;
               mediaObject['elt'].onended = () => {
                 if (this.AutoPlayNext)
                   this.ChangeToAnother(1);
@@ -577,6 +576,7 @@ export class IonicViewerPage implements OnInit {
               mediaObject.showControls();
               mediaObject.play();
             });
+            mediaObject['elt'].hidden = true;
           }
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let ResizeAudio = () => {
@@ -646,7 +646,6 @@ export class IonicViewerPage implements OnInit {
                 } else this.global.PIPLinkedVideoElement = mediaObject['elt'];
                 if (canvasDiv)
                   canvasDiv.appendChild(mediaObject['elt']);
-                mediaObject['elt'].hidden = true;
                 mediaObject['elt'].onended = () => {
                   if (this.AutoPlayNext)
                     this.ChangeToAnother(1);
@@ -660,6 +659,7 @@ export class IonicViewerPage implements OnInit {
                 mediaObject.showControls();
                 mediaObject.play();
               });
+              mediaObject['elt'].hidden = true;
               p['VideoMedia'] = mediaObject;
             }
           }
