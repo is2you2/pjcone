@@ -578,6 +578,43 @@ export class IonicViewerPage implements OnInit {
               ResizeAudio();
             }, 50);
           }
+          let startPos: p5.Vector = p.createVector();
+          let touches: { [id: string]: p5.Vector } = {};
+          p.touchStarted = (ev: any) => {
+            if (!this.useP5Navigator) return;
+            for (let i = 0, j = ev.changedTouches.length; i < j; i++)
+              touches[ev.changedTouches[i].identifier] =
+                p.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
+            let size = Object.keys(touches).length;
+            switch (size) {
+              case 1: // 첫 탭
+                startPos = touches[ev.changedTouches[0].identifier].copy();
+                break;
+              default: // 그 이상은 무시
+                break;
+            }
+          }
+          const SWIPE_SIZE = 50;
+          p.touchEnded = (ev: any) => {
+            if (!this.useP5Navigator) return;
+            if ('changedTouches' in ev) {
+              let lastPos: p5.Vector;
+              for (let i = 0, j = ev.changedTouches.length; i < j; i++) {
+                lastPos = p.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
+                delete touches[ev.changedTouches[i].identifier];
+              }
+              let size = Object.keys(touches).length;
+              switch (size) {
+                case 0: // 손을 전부 뗌
+                  lastPos.sub(startPos);
+                  if (lastPos.x > SWIPE_SIZE)
+                    this.ChangeToAnother(-1);
+                  else if (lastPos.x < -SWIPE_SIZE)
+                    this.ChangeToAnother(1);
+                  break;
+              }
+            }
+          }
         });
         break;
       case 'video': // 비디오
@@ -636,6 +673,43 @@ export class IonicViewerPage implements OnInit {
             setTimeout(() => {
               ResizeVideo();
             }, 50);
+          }
+          let startPos: p5.Vector = p.createVector();
+          let touches: { [id: string]: p5.Vector } = {};
+          p.touchStarted = (ev: any) => {
+            if (!this.useP5Navigator) return;
+            for (let i = 0, j = ev.changedTouches.length; i < j; i++)
+              touches[ev.changedTouches[i].identifier] =
+                p.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
+            let size = Object.keys(touches).length;
+            switch (size) {
+              case 1: // 첫 탭
+                startPos = touches[ev.changedTouches[0].identifier].copy();
+                break;
+              default: // 그 이상은 무시
+                break;
+            }
+          }
+          const SWIPE_SIZE = 50;
+          p.touchEnded = (ev: any) => {
+            if (!this.useP5Navigator) return;
+            if ('changedTouches' in ev) {
+              let lastPos: p5.Vector;
+              for (let i = 0, j = ev.changedTouches.length; i < j; i++) {
+                lastPos = p.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
+                delete touches[ev.changedTouches[i].identifier];
+              }
+              let size = Object.keys(touches).length;
+              switch (size) {
+                case 0: // 손을 전부 뗌
+                  lastPos.sub(startPos);
+                  if (lastPos.x > SWIPE_SIZE)
+                    this.ChangeToAnother(-1);
+                  else if (lastPos.x < -SWIPE_SIZE)
+                    this.ChangeToAnother(1);
+                  break;
+              }
+            }
           }
         });
         break;
