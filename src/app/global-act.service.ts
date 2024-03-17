@@ -114,6 +114,9 @@ export class GlobalActService {
   /** 해야할 일 캔버스 */
   p5todo: p5;
 
+  /** PIP 동작 연계를 위한 비디오 개체 기억하기 */
+  PIPLinkedVideoElement: HTMLVideoElement;
+
   /** 페이지별 단축키 관리자 */
   p5key: p5;
   initialize() {
