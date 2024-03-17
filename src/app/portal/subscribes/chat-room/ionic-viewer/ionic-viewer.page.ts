@@ -206,7 +206,10 @@ export class IonicViewerPage implements OnInit {
     this.noti.ClearNoti(6);
   }
 
+  ContentChanging = false;
   ChangeToAnother(direction: number) {
+    if (this.ContentChanging) return;
+    this.ContentChanging = true;
     let tmp_calced = this.RelevanceIndex + direction;
     if (tmp_calced <= 0 || tmp_calced > this.Relevances.length)
       return;
@@ -217,6 +220,7 @@ export class IonicViewerPage implements OnInit {
     this.FileInfo = { file_ext: '' };
     setTimeout(() => {
       this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
+      this.ContentChanging = false;
     }, 100);
   }
 
