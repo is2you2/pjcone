@@ -592,7 +592,7 @@ export class IonicViewerPage implements OnInit {
           let startPos: p5.Vector = p.createVector();
           let touches: { [id: string]: p5.Vector } = {};
           p.touchStarted = (ev: any) => {
-            if (!this.useP5Navigator) return;
+            if (!this.useP5Navigator || document.pictureInPictureElement) return;
             if ('changedTouches' in ev) {
               for (let i = 0, j = ev.changedTouches.length; i < j; i++)
                 touches[ev.changedTouches[i].identifier] =
@@ -609,7 +609,7 @@ export class IonicViewerPage implements OnInit {
           }
           const SWIPE_SIZE = 50;
           p.touchEnded = (ev: any) => {
-            if (!this.useP5Navigator) return;
+            if (!this.useP5Navigator || document.pictureInPictureElement) return;
             if ('changedTouches' in ev) {
               let lastPos: p5.Vector;
               for (let i = 0, j = ev.changedTouches.length; i < j; i++) {
@@ -691,7 +691,7 @@ export class IonicViewerPage implements OnInit {
           let startPos: p5.Vector = p.createVector();
           let touches: { [id: string]: p5.Vector } = {};
           p.touchStarted = (ev: any) => {
-            if (!this.useP5Navigator) return;
+            if (!this.useP5Navigator || document.pictureInPictureElement) return;
             if ('changedTouches' in ev) {
               for (let i = 0, j = ev.changedTouches.length; i < j; i++)
                 touches[ev.changedTouches[i].identifier] =
@@ -708,7 +708,7 @@ export class IonicViewerPage implements OnInit {
           }
           const SWIPE_SIZE = 50;
           p.touchEnded = (ev: any) => {
-            if (!this.useP5Navigator) return;
+            if (!this.useP5Navigator || document.pictureInPictureElement) return;
             if ('changedTouches' in ev) {
               let lastPos: p5.Vector;
               for (let i = 0, j = ev.changedTouches.length; i < j; i++) {
