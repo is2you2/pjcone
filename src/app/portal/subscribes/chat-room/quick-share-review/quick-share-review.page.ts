@@ -25,7 +25,17 @@ export class QuickShareReviewPage implements OnInit {
   groups = [];
   rtcserver = [];
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.replaceState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.modalCtrl.dismiss();
+    };
+  }
   async ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     let received = this.navParams.get('data');
     let init = this.global.CatchGETs(received);
     let json = await this.nakama.AddressToQRCodeAct(init, true);

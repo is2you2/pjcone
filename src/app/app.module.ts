@@ -19,6 +19,7 @@ import { Clipboard } from "@awesome-cordova-plugins/clipboard/ngx";
   imports: [BrowserModule, IonicModule.forRoot({
     innerHTMLTemplatesEnabled: true,
     experimentalCloseWatcher: true,
+    hardwareBackButton: true,
   }), AppRoutingModule, ServiceWorkerModule.register('ngsw-worker.js', {
     enabled: environment.production,
     // Register the ServiceWorker as soon as the application is stable

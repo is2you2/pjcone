@@ -18,7 +18,18 @@ export class NotiAlertPage implements OnInit {
     private navCtrl: NavController,
   ) { }
 
-  ngOnInit() { }
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.navCtrl.back();
+    };
+  }
+  ngOnInit() {
+    this.InitBrowserBackButtonOverride();
+  }
 
   ionViewDidEnter() {
     this.global.p5key['KeyShortCut']['Escape'] = () => {

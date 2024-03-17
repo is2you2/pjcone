@@ -26,7 +26,7 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   constructor(
     private modalCtrl: ModalController,
-    private nav: NavController,
+    private navCtrl: NavController,
     public statusBar: StatusManageService,
     public nakama: NakamaService,
     private indexed: IndexedDBService,
@@ -43,6 +43,15 @@ export class SettingsPage implements OnInit, OnDestroy {
   can_use_http = false;
   is_nativefier = isNativefier;
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.navCtrl.back();
+    };
+  }
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
@@ -175,6 +184,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   /** 프로필 썸네일 */
   profile_filter: string;
   ionViewWillEnter() {
+    this.InitBrowserBackButtonOverride();
     if (this.statusBar.settings['groupServer'] == 'online')
       this.profile_filter = "filter: grayscale(0) contrast(1);";
     else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
@@ -230,7 +240,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   /** AddKeyShortcut() 으로 사용할 수 있음 */
   ionViewDidEnter() {
     this.global.p5key['KeyShortCut']['Escape'] = () => {
-      this.nav.pop();
+      this.navCtrl.pop();
     }
     this.LinkButton.length = 0;
     this.LinkButton.push(() => this.go_to_page('noti-alert'));
@@ -293,7 +303,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   open_inapp_explorer() {
-    this.nav.navigateForward('user-fs-dir', {
+    this.navCtrl.navigateForward('user-fs-dir', {
       animation: iosTransitionAnimation,
     });
   }
@@ -309,7 +319,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   go_to_page(_page: string) {
-    this.nav.navigateForward(`portal/settings/${_page}`, {
+    this.navCtrl.navigateForward(`portal/settings/${_page}`, {
       animation: iosTransitionAnimation,
     });
   }

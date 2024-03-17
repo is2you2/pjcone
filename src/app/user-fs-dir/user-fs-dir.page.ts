@@ -80,7 +80,17 @@ export class UserFsDirPage implements OnInit {
     localStorage.setItem('user-fs-thumbnail', `${this.HideThumbnail ? '1' : '0'}`);
   }
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.navCtrl.back();
+    };
+  }
   ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     if (isPlatform == 'DesktopPWA')
       setTimeout(() => {
         this.CreateDrop();

@@ -21,7 +21,18 @@ export class ShareContentToOtherPage implements OnInit {
 
   channels: any[];
 
+
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.replaceState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.modalCtrl.dismiss();
+    };
+  }
   ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     this.channels = this.navParams.get('channels');
   }
 

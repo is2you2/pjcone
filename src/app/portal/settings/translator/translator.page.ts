@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
+import { NavController } from '@ionic/angular';
 import * as p5 from "p5";
 import { LanguageSettingService } from 'src/app/language-setting.service';
 
@@ -14,6 +15,7 @@ export class TranslatorPage implements OnInit {
 
   constructor(
     public lang: LanguageSettingService,
+    private navCtrl: NavController,
   ) { }
 
   /** 번역가 페이지 정보 */
@@ -26,7 +28,17 @@ export class TranslatorPage implements OnInit {
     text: '기능 준비중',
   };
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.navCtrl.back();
+    };
+  }
   ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     new p5((p: p5) => {
       p.setup = () => {
         p.noCanvas();

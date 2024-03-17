@@ -79,7 +79,18 @@ export class MinimalChatPage implements OnInit {
 
   /** 그룹채팅인지 랜덤채팅인지 분류 */
   target: 'dedicated_groupchat' | 'community_ranchat' = 'community_ranchat';
+
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.replaceState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.modalCtrl.dismiss();
+    };
+  }
   ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     this.isMobileApp = isPlatform == 'Android' || isPlatform == 'iOS';
     this.local_server.funcs.onCheck = (v: any) => {
       let keys = Object.keys(v);

@@ -21,7 +21,17 @@ export class LicensesPage implements OnInit {
     private navCtrl: NavController,
   ) { }
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.navCtrl.back();
+    };
+  }
   ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     this.loadTexts();
   }
 

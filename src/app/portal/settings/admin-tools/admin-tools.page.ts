@@ -53,7 +53,17 @@ export class AdminToolsPage implements OnInit {
     msg: '',
   }
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.navCtrl.back();
+    };
+  }
   ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     this.servers = this.nakama.get_all_server_info(true, true);
     for (let i = this.servers.length - 1; i >= 0; i--) {
       if (!this.servers[i].is_admin)

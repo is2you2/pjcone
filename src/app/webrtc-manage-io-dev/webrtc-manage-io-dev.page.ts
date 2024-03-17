@@ -46,7 +46,17 @@ export class WebrtcManageIoDevPage implements OnInit {
   }
   UserInputUrlsLength = [0];
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.replaceState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.modalCtrl.dismiss();
+    };
+  }
   ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     this.InOut = this.navParams.get('list') || [];
     for (let i = 0, j = this.InOut.length; i < j; i++) {
       if (this.InOut[i].kind.indexOf('videoinput') >= 0)

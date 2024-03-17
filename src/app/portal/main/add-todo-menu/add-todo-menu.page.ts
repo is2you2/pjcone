@@ -112,7 +112,14 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   MainDiv: HTMLElement;
   isMobile = false;
 
+  BackButtonPressed = false;
   ngOnInit() {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.navCtrl.back();
+    };
     this.MainDiv = document.getElementById('main_div');
     this.isMobile = isPlatform == 'Android' || isPlatform == 'iOS';
     this.nakama.removeBanner();

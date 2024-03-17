@@ -41,7 +41,17 @@ export class QrSharePage implements OnInit {
   /** 설정에서 들어온 경우 데이터 돌려줄 필요 없음을 구분하기 위해 */
   NoReturn = false;
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.replaceState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.modalCtrl.dismiss();
+    };
+  }
   ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     // 브라우저 여부에 따라 송신 설정 토글
     this.NoReturn = this.navParams.get('NoReturn');
     this.servers = this.nakama.get_all_server_info();

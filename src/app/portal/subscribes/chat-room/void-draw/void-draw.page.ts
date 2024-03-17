@@ -28,7 +28,18 @@ export class VoidDrawPage implements OnInit {
     private p5toast: P5ToastService,
   ) { }
 
-  ngOnInit() { }
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.replaceState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.modalCtrl.dismiss();
+    };
+  }
+  ngOnInit() {
+    this.InitBrowserBackButtonOverride();
+  }
   mainLoading: HTMLIonLoadingElement;
 
   EventListenerAct = (ev: any) => {

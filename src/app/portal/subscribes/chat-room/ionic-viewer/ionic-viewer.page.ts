@@ -69,7 +69,17 @@ export class IonicViewerPage implements OnInit {
     ev.detail.register(120, (_processNextHandler: any) => { });
   }
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.replaceState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.modalCtrl.dismiss();
+    };
+  }
   async ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     this.fromLocalChannel = this.navParams.get('local');
     this.MessageInfo = this.navParams.get('info');
     this.OpenInChannelChat = this.MessageInfo['code'] !== undefined;

@@ -32,7 +32,17 @@ export class AddGroupPage implements OnInit {
     private indexed: IndexedDBService,
   ) { }
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.replaceState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.modalCtrl.dismiss();
+    };
+  }
   ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     let tmp = JSON.parse(localStorage.getItem('add-group'));
     if (tmp)
       this.userInput = tmp;

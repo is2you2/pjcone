@@ -26,7 +26,17 @@ export class QRelsePage implements OnInit {
   /** 바코드 스캔 결과물 */
   result: any = {};
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.replaceState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.modalCtrl.dismiss();
+    };
+  }
   ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     this.result = this.navParams.get('result');
     this.result.text = this.result.content.split('\n');
     for (let i = 0, j = this.result.text.length; i < j; i++) {

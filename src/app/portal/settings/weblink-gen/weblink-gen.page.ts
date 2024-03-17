@@ -38,7 +38,17 @@ export class WeblinkGenPage implements OnInit {
   rtcServer = [];
 
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.navCtrl.back();
+    };
+  }
   ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     this.servers = this.nakama.get_all_server_info();
     this.groups = this.nakama.rearrange_group_list();
     this.indexed.loadTextFromUserPath('servers/webrtc_server.json', (e, v) => {

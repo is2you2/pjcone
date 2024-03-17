@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonAccordionGroup, IonModal, IonToggle, LoadingController, ModalController, NavController, NavParams } from '@ionic/angular';
+import { IonAccordionGroup, IonModal, IonToggle, LoadingController, NavController, NavParams } from '@ionic/angular';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -27,7 +27,6 @@ export class GroupServerPage implements OnInit {
     public statusBar: StatusManageService,
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
-    private modalCtrl: ModalController,
     public global: GlobalActService,
     private loadingCtrl: LoadingController,
     private mClipboard: Clipboard,
@@ -41,7 +40,15 @@ export class GroupServerPage implements OnInit {
   /** 서버 정보가 있는 경우 uid 받기 */
   session_uid = '';
 
+  BackButtonPressed = false;
   ngOnInit() {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.navCtrl.back();
+    };
+
     this.servers = this.nakama.get_all_server_info(true);
 
     this.file_sel_id = `self_profile_${new Date().getTime()}`;
@@ -570,11 +577,5 @@ export class GroupServerPage implements OnInit {
   copy_id() {
     this.mClipboard.copy(this.session_uid)
       .catch(_e => clipboard.write(this.session_uid));
-  }
-
-  async go_back() {
-    try {
-      await this.modalCtrl.dismiss();
-    } catch (e) { }
   }
 }

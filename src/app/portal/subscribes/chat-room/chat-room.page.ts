@@ -587,7 +587,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   ShowGoToBottom = false;
   isMobile = false;
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.navCtrl.back();
+    };
+  }
   ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     this.isIphone = this.platform.is('iphone');
     this.ChatLogs = document.getElementById('chatroom_div');
     this.ChatLogs.onscroll = (_ev: any) => {

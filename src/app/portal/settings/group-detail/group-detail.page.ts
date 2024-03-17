@@ -47,7 +47,17 @@ export class GroupDetailPage implements OnInit {
   isOfficial: string;
   target: string
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.replaceState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.modalCtrl.dismiss();
+    };
+  }
   async ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     this.info = this.navParams.get('info');
     this.file_sel_id = `group_detail_${this.info.id}_${new Date().getTime()}}`;
     this.info_orig = JSON.parse(JSON.stringify(this.navParams.get('info')));

@@ -74,6 +74,7 @@ export class MainPage implements OnInit {
     }, 8000);
     // 해야할 일 관리자 생성 행동
     let todo_div = document.getElementById('todo');
+    if (this.global.p5todo) this.global.p5todo.remove();
     this.global.p5todo = new p5((p: p5) => {
       let Todos: { [id: string]: TodoElement } = {};
       let TodoKeys: string[] = [];
@@ -98,6 +99,7 @@ export class MainPage implements OnInit {
       p.setup = async () => {
         let canvas = p.createCanvas(todo_div.clientWidth, todo_div.clientHeight);
         canvas.parent(todo_div);
+        canvas.id('p5todo');
         p.smooth();
         p.noStroke();
         p.pixelDensity(1);
@@ -717,7 +719,8 @@ export class MainPage implements OnInit {
   }
 
   ionViewDidEnter() {
-    if (!this.global.p5todo)
+    let p5todo_canvas = document.getElementById('p5todo');
+    if (!p5todo_canvas)
       this.CreateTodoManager();
     else this.global.p5todo['PlayCanvas']();
     this.nakama.resumeBanner();

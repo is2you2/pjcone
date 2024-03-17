@@ -28,7 +28,17 @@ export class CreatorPage implements OnInit {
 
   isMobileApp = false;
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.navCtrl.back();
+    };
+  }
   ngOnInit() {
+    this.InitBrowserBackButtonOverride();
     this.isMobileApp = isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA';
     // 기능 구현 전까지 숨기기
     this.isMobileApp = false;
