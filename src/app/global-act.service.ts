@@ -516,7 +516,6 @@ export class GlobalActService {
     if (ObjectURL) setTimeout(() => {
       URL.revokeObjectURL(ObjectURL);
     }, 100);
-
   }
 
   /** 콘텐츠 카테고리 분류  

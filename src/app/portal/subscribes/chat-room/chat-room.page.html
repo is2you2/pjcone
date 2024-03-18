@@ -172,7 +172,8 @@ SPDX-License-Identifier: MIT -->
                     <td class="avatar_form my_avatar_form">
                       <div *ngIf="msg['showInfo'] && msg['showInfo']['sender']" class="avatar_image"
                         (click)="user_detail(msg)">
-                        <img class="avatar_image" [src]="nakama.users.self['img']" alt="my_img"
+                        <img class="avatar_image" [src]="nakama.users.self['img'] || 'assets/data/avatar.svg'"
+                          alt="my_img"
                           [style]="nakama.users.self['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'">
                       </div>
                     </td>
