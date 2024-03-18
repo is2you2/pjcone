@@ -648,6 +648,26 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.isMobile = isPlatform == 'Android' || isPlatform == 'iOS';
   }
 
+  ionViewWillEnter() {
+    document.getElementById(this.ChannelUserInputId).onpaste = (ev: any) => {
+      ev.preventDefault();
+      let stack = [];
+      for (const clipboardItem of ev.clipboardData.files)
+        if (clipboardItem.type.startsWith('image/'))
+          stack.push({ file: clipboardItem });
+      this.alertCtrl.create({
+        header: this.lang.text['ChatRoom']['MultipleSend'],
+        message: `${this.lang.text['ChatRoom']['CountFile']}: ${stack.length}`,
+        buttons: [{
+          text: this.lang.text['ChatRoom']['Send'],
+          handler: () => {
+            this.DropSendAct(stack);
+          }
+        }]
+      }).then(v => v.present());
+    }
+  }
+
   async GetSpeechToText() {
     let result = await SpeechRecognition.start({
       language: this.lang.lang,
@@ -716,6 +736,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     });
   }
 
+  /** 한번에 여러파일 보내기 */
   async DropSendAct(Drops: any) {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
