@@ -140,7 +140,6 @@ export class VoidDrawPage implements OnInit {
         p.noFill();
         p.imageMode(p.CENTER);
         canvas = p.createCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
-        canvas.elt.addEventListener("contextmenu", (e: any) => e.preventDefault());
         canvas.parent(targetDiv);
         CamPosition.x = p.width / 2;
         CamPosition.y = p.height / 2;
