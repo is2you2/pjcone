@@ -1408,6 +1408,7 @@ export class NakamaService {
             );
             if (!this.channels_orig[_is_official][_target][channel_ids[i]]['cnoti_id'])
               this.channels_orig[_is_official][_target][channel_ids[i]]['cnoti_id'] = this.get_noti_id();
+            this.channels_orig[_is_official][_target][channel_ids[i]]['color'] = (this.channels_orig[_is_official][_target][channel_ids[i]]['id'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
             switch (this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type']) {
               case 2: // 1:1 채팅
                 try {
@@ -1514,9 +1515,16 @@ export class NakamaService {
         return -1;
       else return 0;
     });
-    result.sort((a, _b) => {
-      if (a['is_new']) return -1;
-      else return 1;
+    result.sort((a, b) => {
+      if (a['is_new']) {
+        if (b['is_new']) {
+          return 0;
+        } else return -1;
+      } else {
+        if (b['is_new']) {
+          return 1;
+        } else return 0;
+      }
     });
     this.channels = result;
     this.save_channels_with_less_info();
@@ -1539,6 +1547,7 @@ export class NakamaService {
           delete channels_copy[_is_official][_target][_cid]['presences'];
           delete channels_copy[_is_official][_target][_cid]['cnoti_id'];
           delete channels_copy[_is_official][_target][_cid]['status'];
+          delete channels_copy[_is_official][_target][_cid]['color'];
           if (!channels_copy[_is_official][_target][_cid]['is_new'])
             delete channels_copy[_is_official][_target][_cid]['is_new'];
         });

@@ -10,3 +10,24 @@
     vertical-align: middle;
     padding: 0px 16px;
 }
+
+.channel_image {
+    width: 52px;
+    height: 52px;
+    border-radius: 64px;
+    object-fit: cover;
+}
+
+// 새 메시지 알림용
+.status_circle {
+    position: relative;
+    top: -56px;
+    left: 38px;
+    width: 12px;
+    height: 12px;
+    border-radius: 12px;
+}
+
+.channel_text_form {
+    margin-left: 12px;
+}

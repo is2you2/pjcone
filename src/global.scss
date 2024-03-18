@@ -110,7 +110,7 @@
     height: 81%;
 }
 
-// 각 대화/업무의 이미지
+// 각 대화/업무의 이미지 (관리자 메뉴에서 계속 사용됨)
 .bg_img_form {
     overflow: hidden;
     right: 0;
@@ -118,6 +118,13 @@
     height: 100%;
     mask-image: linear-gradient(to right, #0000, #bbbb);
     mask-repeat: repeat-y;
+}
+
+.new_bg_form {
+    overflow: hidden;
+    right: 0;
+    width: 70%;
+    height: 100%;
 }
 
 .profile_img {

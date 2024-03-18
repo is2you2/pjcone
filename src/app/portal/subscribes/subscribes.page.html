@@ -58,17 +58,18 @@ SPDX-License-Identifier: MIT -->
       <ion-label>{{lang.text['Subscribes']['JoinedChannels']}}</ion-label>
     </ion-item-divider>
     <ion-item *ngFor="let channel of nakama.channels" button (click)="go_to_chatroom(channel)">
-      <div class="additional_form status_bar_double"
-        [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']">
-        <div *ngIf="channel['is_new']" class="new_circle"></div>
+      <div class="channel_image">
+        <img *ngIf="channel['info']" class="channel_image" [src]="channel['info']['img'] || 'assets/data/channel.svg'"
+          alt="ch_img"
+          [style]="(channel['status'] == 'online' || (channel['redirect']['type'] == 3 && channel['status'] == 'pending')) ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'">
+        <div class="status_circle" [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']">
+        </div>
       </div>
-      <div class="additional_form bg_img_form">
-        <img *ngIf="channel['info']" class="profile_img"
-          [style]="(channel['status'] == 'online' || (channel['redirect']['type'] == 3 && channel['status'] == 'pending')) ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'"
-          [src]="channel['info']['img']">
+      <div *ngIf="channel['is_new']" class="additional_form new_bg_form"
+        [style]="'background-image: linear-gradient(to right, #0000, #' + (channel['color'] || 'abcdef') + '44)'">
       </div>
       <ion-label>
-        <div class="form_margin header">
+        <div class="channel_text_form header">
           <table>
             <tr>
               <td>
@@ -82,7 +83,7 @@ SPDX-License-Identifier: MIT -->
             </tr>
           </table>
         </div>
-        <div class="form_margin content"> {{channel['last_comment'] || channel['noti'] ||
+        <div class="channel_text_form content"> {{channel['last_comment'] || channel['noti'] ||
           lang.text['Subscribes']['noMessageHistory']}} </div>
       </ion-label>
     </ion-item>

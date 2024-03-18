@@ -697,6 +697,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       for (const clipboardItem of ev.clipboardData.files)
         if (clipboardItem.type.startsWith('image/'))
           stack.push({ file: clipboardItem });
+      if (!stack.length) return;
       if (stack.length == 1)
         this.selected_blobFile_callback_act(stack[0].file);
       else this.alertCtrl.create({
@@ -903,9 +904,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.target = this.info['server']['target'];
     this.info = this.nakama.channels_orig[this.isOfficial][this.target][this.info.id];
     this.users_image = {};
-    try {
+    try { // 그룹 채널에서 사용자 이미지 분류
       for (let i = 0, j = this.info['info'].users.length; i < j; i++)
-        this.users_image[this.info['info'].users[i].user.id] = this.info['info'].users[i].user.image;
+        this.users_image[this.info['info'].users[i].user.id] = this.info['info'].users[i].user.img;
+    } catch (e) { }
+    try { // 1:1 채팅에서 상대방 이미지 분류
+      this.users_image[this.info['info']['id']] = this.info['info']['img'];
     } catch (e) { }
     this.LoadChannelBackgroundImage();
     this.nakama.opened_page_info['channel'] = {
