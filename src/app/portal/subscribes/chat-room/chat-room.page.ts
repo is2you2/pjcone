@@ -39,6 +39,8 @@ interface ExtendButtonForm {
   icon_img?: string;
   /** 마우스 커서 스타일 */
   cursor?: string;
+  /** 메뉴 이름 (문자열) */
+  name: string;
   act: Function;
 }
 
@@ -85,6 +87,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   extended_buttons: ExtendButtonForm[] = [
     { // 0
       icon: 'settings-outline',
+      name: this.lang.text['ChatRoom']['ExtSettings'],
       act: () => {
         if (this.info['redirect']['type'] != 3) {
           this.extended_buttons[0].isHide = true;
@@ -127,12 +130,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     }, { // 1
       icon: 'hammer-outline',
+      name: this.lang.text['ChatRoom']['ExtSoloImage'],
       isHide: true,
       act: () => {
         document.getElementById('local_channel').click();
       }
     }, { // 2
       icon_img: 'voidDraw.png',
+      name: this.lang.text['ChatRoom']['voidDraw'],
       act: async () => {
         if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
         let props = {}
@@ -181,6 +186,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     },
     { // 3
       icon: 'document-attach-outline',
+      name: this.lang.text['ChatRoom']['attachments'],
       act: () => {
         if (!this.userInputTextArea)
           this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
@@ -189,6 +195,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     },
     { // 4
       icon: 'link-outline',
+      name: this.lang.text['ChatRoom']['FileLink'],
       act: async () => {
         if (!this.userInputTextArea)
           this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
@@ -202,12 +209,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     },
     { // 5
       icon: 'cloud-done-outline',
+      name: this.lang.text['ChatRoom']['UseCloud'],
       act: () => {
         this.toggle_custom_attach();
       }
     },
     { // 6
       icon: 'camera-outline',
+      name: this.lang.text['ChatRoom']['Camera'],
       act: async () => {
         try {
           const image = await Camera.getPhoto({
@@ -246,6 +255,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     }, { // 7
       icon: 'server-outline',
+      name: this.lang.text['ChatRoom']['ShareInfo'],
       act: () => {
         this.modalCtrl.create({
           component: QrSharePage,
@@ -265,6 +275,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     }, { // 8
       icon: 'call-outline',
+      name: this.lang.text['ChatRoom']['VoiceChat'],
       act: async () => {
         try {
           await this.webrtc.initialize('audio', undefined, {
@@ -285,6 +296,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }, { // 9
       isHide: false,
       icon: 'file-tray-full-outline',
+      name: this.lang.text['ChatRoom']['EmbedFiles'],
       act: () => {
         this.modalCtrl.create({
           component: UserFsDirPage,
@@ -305,11 +317,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     }, { // 10
       icon: 'volume-mute-outline',
+      name: this.lang.text['ChatRoom']['ReadText'],
       act: async () => {
         this.toggle_speakermode();
       }
     }, { // 11
       icon: 'log-out-outline',
+      name: this.lang.text['ChatRoom']['LogOut'],
       act: async () => {
         if (this.info['redirect']['type'] != 3) {
           try {
@@ -332,6 +346,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     }, { // 12
       isHide: true,
+      name: this.lang.text['ChatRoom']['RemoveHistory'],
       icon: 'close-circle-outline',
       act: () => {
         this.alertCtrl.create({
