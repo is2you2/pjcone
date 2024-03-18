@@ -876,6 +876,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   };
 
   async init_chatroom() {
+    this.userInput.text = '';
+    delete this.userInput.quickShare;
+    delete this.userInput.file;
+    this.ResizeTextArea();
     this.nakama.OnTransferMessage = {};
     this.ViewableMessage.length = 0;
     this.ViewMsgIndex = 0;
