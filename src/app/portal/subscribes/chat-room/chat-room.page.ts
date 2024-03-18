@@ -553,7 +553,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   ChangeBackgroundImage(ev: any) {
     let main_table = document.getElementById('main_table');
     let imageFile = ev.target.files[0];
-    console.log(imageFile);
     let FileURL = URL.createObjectURL(imageFile);
     main_table.style.backgroundImage = `url('${FileURL}')`;
     this.indexed.saveBlobToUserPath(imageFile, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/backgroundImage.png`);
@@ -700,7 +699,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       for (const clipboardItem of ev.clipboardData.files)
         if (clipboardItem.type.startsWith('image/'))
           stack.push({ file: clipboardItem });
-      this.alertCtrl.create({
+      if (stack.length == 1)
+        this.selected_blobFile_callback_act(stack[0].file);
+      else this.alertCtrl.create({
         header: this.lang.text['ChatRoom']['MultipleSend'],
         message: `${this.lang.text['ChatRoom']['CountFile']}: ${stack.length}`,
         buttons: [{
