@@ -105,7 +105,15 @@
 }
 
 .message_content_form {
+    display: inline-flex;
     margin: 4px 0px 0px 0px;
+}
+
+.edited_form {
+    color: #888;
+    font-size: 12px;
+    margin: 0px 8px;
+    align-self: flex-end;
 }
 
 // 발송하였으나 재수신되지 않은, 발신중으로 판단되는 메시지들을 위한 클래스

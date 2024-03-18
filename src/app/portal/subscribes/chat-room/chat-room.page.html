@@ -85,7 +85,7 @@ SPDX-License-Identifier: MIT -->
                             (click)="SetOtherAct()">{{part.text}}</a>
                         </span>
                       </span><span *ngIf="msg.content['edited'] && i == msg.content['msg'].length - 1"
-                        style="color: #888; font-size: 12px;">{{'(' + lang.text['ChatRoom']['MsgEdited'] +
+                        class="edited_form">{{'(' + lang.text['ChatRoom']['MsgEdited'] +
                         ')'}}</span>
                     </div>
                   </div>
@@ -111,12 +111,16 @@ SPDX-License-Identifier: MIT -->
                     </b>
                   </span>
                 </div>
-                <div *ngIf="msg.content['quickShare']" class="quickShare_form" (click)="quickShare_act(msg)">
-                  {{lang.text['ChatRoom']['QuickShare']}}
+                <div *ngIf="msg.content['quickShare']" class="my_file_message_form" (click)="quickShare_act(msg)">
+                  <div class="quickShare_form">
+                    {{lang.text['ChatRoom']['QuickShare']}}
+                  </div>
                 </div>
                 <!-- 음성채팅인 경우 -->
-                <div *ngIf="msg.content['match']" class="quickShare_form" (click)="JoinWebRTCMatch(msg)">
-                  {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
+                <div *ngIf="msg.content['match']" class="my_file_message_form" (click)="JoinWebRTCMatch(msg)">
+                  <div class="quickShare_form">
+                    {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
+                  </div>
                 </div>
                 <div *ngIf="msg.content['filename']" class="my_file_message_form">
                   <div *ngIf="!msg.content['thumbnail']" class="file_button" (click)="file_detail(msg)"
@@ -137,8 +141,11 @@ SPDX-License-Identifier: MIT -->
                   <div class="notice"> {{msg.content['noti']}} </div>
                 </div>
                 <div *ngIf="msg.content['msg']" class="message_content_form my_file_message_form">
+                  <div *ngIf="msg.content['edited']" class="edited_form">{{'(' +
+                    lang.text['ChatRoom']['MsgEdited'] +
+                    ')'}}</div>
                   <div class="msg_balloon" [style]="'background-color: #' + msg.color + '88'">
-                    <div *ngFor="let line of msg.content['msg']; let i = index" class="msg_inside_balloon">
+                    <div *ngFor="let line of msg.content['msg']" class="msg_inside_balloon">
                       <span>
                         <span *ngFor="let part of line">
                           <span *ngIf="!part.href" [style]="'font-size: ' + (part.size || 16) + 'px'"
@@ -147,9 +154,7 @@ SPDX-License-Identifier: MIT -->
                           <a *ngIf="part.href" [href]="part.text" target="_system"
                             (click)="SetOtherAct()">{{part.text}}</a>
                         </span>
-                      </span><span *ngIf="msg.content['edited'] && i == msg.content['msg'].length - 1"
-                        style="color: #888; font-size: 12px;">{{'(' + lang.text['ChatRoom']['MsgEdited'] +
-                        ')'}}</span>
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -158,10 +163,12 @@ SPDX-License-Identifier: MIT -->
               </div>
             </div>
             <div *ngFor="let msg of sending_msg">
-              <div *ngIf="msg.content['quickShare']" class="quickShare_form" (click)="quickShare_act(msg)">
-                {{lang.text['ChatRoom']['QuickShare']}}
+              <div *ngIf="msg.content['quickShare']" class="my_file_message_form" (click)="quickShare_act(msg)">
+                <div class="quickShare_form">
+                  {{lang.text['ChatRoom']['QuickShare']}}
+                </div>
               </div>
-              <div *ngIf="msg.content['filename']" class="file_message_form">
+              <div *ngIf="msg.content['filename']" class="my_file_message_form">
                 <div *ngIf="!msg.content['thumbnail']" class="file_button"
                   [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
                   <p class="file_info"> {{msg.content['filename']}} </p>
@@ -173,13 +180,15 @@ SPDX-License-Identifier: MIT -->
                     [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
                 </div>
               </div>
-              <div *ngIf="msg.content['msg']" class="message_content_form">
-                <div *ngFor="let line of msg.content['msg']">
-                  <span *ngFor="let part of line">
-                    <span *ngIf="!part.href" class="comp_local_content" (click)="SetOtherAct()"> {{part.text}} </span>
-                    <a *ngIf="part.href" [href]="part.text" class="comp_local_content" target="_system"
-                      (click)="SetOtherAct()">{{part.text}}</a>
-                  </span>
+              <div *ngIf="msg.content['msg']" class="message_content_form my_file_message_form">
+                <div class="msg_balloon" [style]="'background-color: #' + msg.color + '88'">
+                  <div *ngFor="let line of msg.content['msg']">
+                    <span *ngFor="let part of line">
+                      <span *ngIf="!part.href" class="comp_local_content" (click)="SetOtherAct()"> {{part.text}} </span>
+                      <a *ngIf="part.href" [href]="part.text" class="comp_local_content" target="_system"
+                        (click)="SetOtherAct()">{{part.text}}</a>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
