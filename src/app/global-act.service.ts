@@ -589,6 +589,9 @@ export class GlobalActService {
       case 'csv':
       case 'ts':
       case 'js':
+      case 'cpp': // C++
+      case 'rs': // rust
+      case 'java':
       case 'shader':
         info['viewer'] = 'text';
         break;
