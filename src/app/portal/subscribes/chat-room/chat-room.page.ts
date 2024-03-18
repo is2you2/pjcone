@@ -1851,7 +1851,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
    * @param i 현재 메시지 번호
    * @param j 메시지 전체 길이
    */
-  modulate_chatmsg(i: number, j: number) {
+  async modulate_chatmsg(i: number, j: number) {
     if (j == 0) return; // 길이가 없을 때 오류 방지용
     // 1회성 보여주기 양식 생성 (채팅방 전용 정보)
     if (!this.ViewableMessage[i]['showInfo'])
@@ -1867,9 +1867,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
     // url 링크 개체 즉시 불러오기
     if (this.ViewableMessage[i]['content']['url']) {
-      if (this.ViewableMessage[i]['content'].viewer == 'image')
-        this.ViewableMessage[i]['content']['thumbnail'] = this.ViewableMessage[i]['content']['url'];
-      else delete this.ViewableMessage[i]['content']['thumbnail'];
+      try { // 대안 썸네일이 있다면 보여주고 끝내기
+        let blob = await this.indexed.loadBlobFromUserPath(`${this.ViewableMessage[i]['content']['path']}_thumbnail.png`, 'image/png');
+        let FileURL = URL.createObjectURL(blob);
+        this.ViewableMessage[i]['content']['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
+        setTimeout(() => {
+          URL.revokeObjectURL(FileURL);
+        }, 100);
+        return;
+      } catch (e) { // 대안 썸네일이 없는 경우 썸네일 생성 시도
+        if (this.ViewableMessage[i]['content'].viewer == 'image')
+          this.ViewableMessage[i]['content']['thumbnail'] = this.ViewableMessage[i]['content']['url'];
+        else delete this.ViewableMessage[i]['content']['thumbnail'];
+      }
     }
     // 다음 메시지와 정보를 비교하여 다음 메시지의 상태를 결정 (기록 불러오기류)
     try {
