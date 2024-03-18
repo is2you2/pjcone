@@ -29,59 +29,132 @@ SPDX-License-Identifier: MIT -->
               <ion-label>{{lang.text['ChatRoom']['fetch_previous_chat']}}</ion-label>
             </ion-item>
             <div *ngFor="let msg of ViewableMessage; let i = index" (click)="message_detail(msg, i)">
-              <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
-                style="text-align: center; font-size: 16px; padding-top: 8px;">
-                <font color="#888"> {{msg['msgDate']}} </font>
-              </div>
-              <div class="message_form" *ngIf="msg['showInfo'] && msg['showInfo']['sender']">
-                <span class="message_span_form" (click)="user_detail(msg)">
-                  <b>
-                    <font
-                      color="#{{(msg['is_me'] && nakama.users.self['online']) || (!msg['is_me'] && nakama.users[isOfficial][target][msg.sender_id]['online']) ? msg.color : '888'}}">
-                      {{msg.user_display_name || lang.text['Profile']['noname_user']}}</font>
-                  </b>
-                </span>
-                <span class="time_form">{{msg['msgTime']}}</span>
-              </div>
-              <div *ngIf="msg.content['quickShare']" class="quickShare_form" (click)="quickShare_act(msg)">
-                {{lang.text['ChatRoom']['QuickShare']}}
-              </div>
-              <div *ngIf="msg.content['match']" class="quickShare_form" (click)="JoinWebRTCMatch(msg)">
-                {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
-              </div>
-              <div *ngIf="msg.content['filename']" class="file_message_form">
-                <div *ngIf="!msg.content['thumbnail']" class="file_button" (click)="file_detail(msg)"
-                  [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
-                  <p class="file_info"> {{msg.content['filename']}} </p>
-                  <div *ngIf="msg.content['text']" class="text_seperator"></div>
-                  <span *ngFor="let line of msg.content['text']" class="file_info file_text_thumbnail"> {{line}} </span>
+              <div *ngIf="!msg['is_me']">
+                <!-- 날짜 표시 -->
+                <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
+                  style="text-align: center; font-size: 16px; padding-top: 8px;">
+                  <font color="#888"> {{msg['msgDate']}} </font>
                 </div>
-                <div *ngIf="msg.content['thumbnail']" class="file_name_form" (click)="file_detail(msg)">
-                  <img class="file_thumbnail" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
-                    [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
+                <!-- 이름 표시 -->
+                <div class="message_form" *ngIf="msg['showInfo'] && msg['showInfo']['sender']">
+                  <span (click)="user_detail(msg)">
+                    <b>
+                      <font
+                        color="#{{(msg['is_me'] && nakama.users.self['online']) || (!msg['is_me'] && nakama.users[isOfficial][target][msg.sender_id]['online']) ? msg.color : '888'}}">
+                        {{msg.user_display_name || lang.text['Profile']['noname_user']}}</font>
+                    </b>
+                  </span>
+                  <!-- 시간 표시 -->
+                  <span class="time_form message_span_form">{{msg['msgTime']}}</span>
                 </div>
-                <div *ngIf="msg.content['transfer_index']" class="transfer_count">
-                  {{msg.content['transfer_index']['index']}}</div>
-              </div>
-              <div *ngIf="msg.content['noti']" class="notice_form">
-                <div class="notice"> {{msg.content['noti']}} </div>
-              </div>
-              <div *ngIf="msg.content['msg']" class="message_content_form">
-                <div *ngFor="let line of msg.content['msg']; let i = index">
-                  <span>
-                    <span *ngFor="let part of line">
-                      <span *ngIf="!part.href" [style]="'font-size: ' + (part.size || 16) + 'px'"
-                        (click)="SetOtherAct()">
-                        {{part.text}} </span>
-                      <a *ngIf="part.href" [href]="part.text" target="_system" (click)="SetOtherAct()">{{part.text}}</a>
+                <div *ngIf="msg.content['quickShare']" class="quickShare_form" (click)="quickShare_act(msg)">
+                  {{lang.text['ChatRoom']['QuickShare']}}
+                </div>
+                <!-- 음성채팅인 경우 -->
+                <div *ngIf="msg.content['match']" class="quickShare_form" (click)="JoinWebRTCMatch(msg)">
+                  {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
+                </div>
+                <div *ngIf="msg.content['filename']" class="file_message_form">
+                  <div *ngIf="!msg.content['thumbnail']" class="file_button" (click)="file_detail(msg)"
+                    [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
+                    <p class="file_info"> {{msg.content['filename']}} </p>
+                    <div *ngIf="msg.content['text']" class="text_seperator"></div>
+                    <span *ngFor="let line of msg.content['text']" class="file_info file_text_thumbnail"> {{line}}
                     </span>
-                  </span><span *ngIf="msg.content['edited'] && i == msg.content['msg'].length - 1"
-                    style="color: #888; font-size: 12px;">{{'(' + lang.text['ChatRoom']['MsgEdited'] +
-                    ')'}}</span>
+                  </div>
+                  <div *ngIf="msg.content['thumbnail']" class="file_name_form" (click)="file_detail(msg)">
+                    <img class="file_thumbnail" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
+                      [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
+                  </div>
+                  <div *ngIf="msg.content['transfer_index']" class="transfer_count">
+                    {{msg.content['transfer_index']['index']}}</div>
                 </div>
+                <div *ngIf="msg.content['noti']" class="notice_form">
+                  <div class="notice"> {{msg.content['noti']}} </div>
+                </div>
+                <div *ngIf="msg.content['msg']" class="message_content_form">
+                  <div class="msg_balloon" [style]="'background-color: #' + msg.color + '88'">
+                    <div *ngFor="let line of msg.content['msg']; let i = index">
+                      <span>
+                        <span *ngFor="let part of line">
+                          <span *ngIf="!part.href" [style]="'font-size: ' + (part.size || 16) + 'px'"
+                            (click)="SetOtherAct()">
+                            {{part.text}} </span>
+                          <a *ngIf="part.href" [href]="part.text" target="_system"
+                            (click)="SetOtherAct()">{{part.text}}</a>
+                        </span>
+                      </span><span *ngIf="msg.content['edited'] && i == msg.content['msg'].length - 1"
+                        style="color: #888; font-size: 12px;">{{'(' + lang.text['ChatRoom']['MsgEdited'] +
+                        ')'}}</span>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="msg['isLastRead']" class="read_last_here">
+                  {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
               </div>
-              <div *ngIf="msg['isLastRead']" class="read_last_here">
-                {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
+              <div *ngIf="msg['is_me']" class="my_message_right">
+                <!-- 날짜 표시 -->
+                <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
+                  style="text-align: center; font-size: 16px; padding-top: 8px;">
+                  <font color="#888"> {{msg['msgDate']}} </font>
+                </div>
+                <!-- 이름 표시 -->
+                <div class="message_form" *ngIf="msg['showInfo'] && msg['showInfo']['sender']">
+                  <!-- 시간 표시 -->
+                  <span class="time_form message_span_form_me">{{msg['msgTime']}}</span>
+                  <span (click)="user_detail(msg)">
+                    <b>
+                      <font
+                        color="#{{(msg['is_me'] && nakama.users.self['online']) || (!msg['is_me'] && nakama.users[isOfficial][target][msg.sender_id]['online']) ? msg.color : '888'}}">
+                        {{msg.user_display_name || lang.text['Profile']['noname_user']}}</font>
+                    </b>
+                  </span>
+                </div>
+                <div *ngIf="msg.content['quickShare']" class="quickShare_form" (click)="quickShare_act(msg)">
+                  {{lang.text['ChatRoom']['QuickShare']}}
+                </div>
+                <!-- 음성채팅인 경우 -->
+                <div *ngIf="msg.content['match']" class="quickShare_form" (click)="JoinWebRTCMatch(msg)">
+                  {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
+                </div>
+                <div *ngIf="msg.content['filename']" class="my_file_message_form">
+                  <div *ngIf="!msg.content['thumbnail']" class="file_button" (click)="file_detail(msg)"
+                    [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
+                    <p class="file_info"> {{msg.content['filename']}} </p>
+                    <div *ngIf="msg.content['text']" class="text_seperator"></div>
+                    <span *ngFor="let line of msg.content['text']" class="file_info file_text_thumbnail"> {{line}}
+                    </span>
+                  </div>
+                  <div *ngIf="msg.content['thumbnail']" class="file_name_form" (click)="file_detail(msg)">
+                    <img class="file_thumbnail" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
+                      [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
+                  </div>
+                  <div *ngIf="msg.content['transfer_index']" class="transfer_count">
+                    {{msg.content['transfer_index']['index']}}</div>
+                </div>
+                <div *ngIf="msg.content['noti']" class="notice_form">
+                  <div class="notice"> {{msg.content['noti']}} </div>
+                </div>
+                <div *ngIf="msg.content['msg']" class="message_content_form my_file_message_form">
+                  <div class="msg_balloon" [style]="'background-color: #' + msg.color + '88'">
+                    <div *ngFor="let line of msg.content['msg']; let i = index">
+                      <span>
+                        <span *ngFor="let part of line">
+                          <span *ngIf="!part.href" [style]="'font-size: ' + (part.size || 16) + 'px'"
+                            (click)="SetOtherAct()">
+                            {{part.text}} </span>
+                          <a *ngIf="part.href" [href]="part.text" target="_system"
+                            (click)="SetOtherAct()">{{part.text}}</a>
+                        </span>
+                      </span><span *ngIf="msg.content['edited'] && i == msg.content['msg'].length - 1"
+                        style="color: #888; font-size: 12px;">{{'(' + lang.text['ChatRoom']['MsgEdited'] +
+                        ')'}}</span>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="msg['isLastRead']" class="read_last_here">
+                  {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
+              </div>
             </div>
             <div *ngFor="let msg of sending_msg">
               <div *ngIf="msg.content['quickShare']" class="quickShare_form" (click)="quickShare_act(msg)">

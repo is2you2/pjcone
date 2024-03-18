@@ -15,11 +15,27 @@
 }
 
 .message_form {
-    margin: 8px 0px 0px 0px;
+    margin: 8px 0px 4px 0px;
 }
 
 .message_span_form {
+    margin-left: 8px;
+}
+
+.message_span_form_me {
     margin-right: 8px;
+}
+
+.my_message_right {
+    text-align: end;
+}
+
+// 사용자 말풍선
+.msg_balloon {
+    width: fit-content;
+    border: 16px;
+    border-radius: 16px;
+    padding: 5px 12px 8px 12px;
 }
 
 .time_form {
@@ -29,6 +45,11 @@
 
 .file_message_form {
     display: flex;
+}
+
+.my_file_message_form {
+    text-align: right;
+    text-align: -webkit-right;
 }
 
 .file_name_form {
