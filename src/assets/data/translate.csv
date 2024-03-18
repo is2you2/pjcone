@@ -147,7 +147,8 @@ noname_chatroom,이름 없는 채팅방,Unnamed chat room
 fetch_previous_chat,이전 기록 불러오기,Recall previous record
 unknown_ext,검토 불가,No review
 ExtSettings,채널설정,Settings
-ExtSoloImage,사진지정,Ch Pic.
+ExtSoloImage,채널사진,Ch Pic.
+BackgroundImage,배경사진,BGImg.
 attachments,첨부파일,Attachments
 FileLink,외부링크,External link
 voidDraw,그림판,Paint

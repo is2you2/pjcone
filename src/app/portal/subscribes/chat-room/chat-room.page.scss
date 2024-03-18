@@ -15,7 +15,16 @@
 }
 
 .message_form {
-    margin: 8px 0px 4px 0px;
+    margin: 8px 0px 6px 0px;
+    text-shadow: 0px 0px 4px var(--chatroom-background),
+        0px 0px 4px var(--chatroom-background),
+        0px 0px 4px var(--chatroom-background);
+}
+
+.channel_bg {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 
 .message_span_form {
