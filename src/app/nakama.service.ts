@@ -110,8 +110,10 @@ export class NakamaService {
     await this.set_all_todo_notification();
     let profile = await this.indexed.loadTextFromUserPath('servers/self/profile.json');
     if (profile) this.users.self = JSON.parse(profile);
-    let profile_image = (await this.indexed.loadTextFromUserPath('servers/self/profile.img')).replace(/"|\\|=/g, '');
-    if (profile_image) this.users.self['img'] = profile_image;
+    try {
+      let profile_image = (await this.indexed.loadTextFromUserPath('servers/self/profile.img')).replace(/"|\\|=/g, '');
+      if (profile_image) this.users.self['img'] = profile_image;
+    } catch (e) { }
     // 저장된 사설서버들 정보 불러오기
     let list_detail = await this.indexed.loadTextFromUserPath('servers/list_detail.csv');
     if (list_detail) { // 내용이 있을 때에만 동작
