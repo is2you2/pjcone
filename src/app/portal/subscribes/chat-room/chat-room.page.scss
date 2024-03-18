@@ -48,6 +48,10 @@
     max-width: 80vw;
 }
 
+.msg_inside_balloon {
+    text-align: start;
+}
+
 .time_form {
     font-size: 12px;
     color: #888;
@@ -78,6 +82,7 @@
 
 .file_info {
     margin: 0px 4px;
+    text-align: start;
 }
 
 .file_text_thumbnail {

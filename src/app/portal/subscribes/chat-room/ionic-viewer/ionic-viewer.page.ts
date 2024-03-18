@@ -390,6 +390,7 @@ export class IonicViewerPage implements OnInit {
               imageOriginalSize = p.createVector(img.elt.naturalWidth, img.elt.naturalHeight);
               RePositioningImage();
               img.remove();
+              this.ContentOnLoad = true;
             }
             p.noLoop();
           }
@@ -572,6 +573,7 @@ export class IonicViewerPage implements OnInit {
               }, 50);
               mediaObject.showControls();
               mediaObject.play();
+              this.ContentOnLoad = true;
             });
             mediaObject['elt'].hidden = true;
           }
@@ -653,6 +655,7 @@ export class IonicViewerPage implements OnInit {
               }, 50);
               mediaObject.showControls();
               mediaObject.play();
+              this.ContentOnLoad = true;
             });
             mediaObject['elt'].hidden = true;
             p['VideoMedia'] = mediaObject;
@@ -739,9 +742,11 @@ export class IonicViewerPage implements OnInit {
               this.open_text_editor(textArea.elt);
             } else p.loadStrings(this.FileURL, v => {
               textArea.elt.textContent = v.join('\n');
+              this.ContentOnLoad = true;
             }, _e => {
               canvasDiv.textContent = this.lang.text['ContentViewer']['CannotOpenText'];
               this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
+              this.ContentOnLoad = true;
             });
           }
         });
@@ -817,6 +822,7 @@ export class IonicViewerPage implements OnInit {
                 }
               }, 'start_load_pck');
             }
+            this.ContentOnLoad = true;
             if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
             if (this.FileInfo.url)
               this.global.godot_window['download_url']();
@@ -1123,6 +1129,7 @@ export class IonicViewerPage implements OnInit {
               setTimeout(() => {
                 LogDiv.elt.remove();
               }, 8000);
+              this.ContentOnLoad = true;
             };
           }
           p.draw = () => {
@@ -1176,9 +1183,9 @@ export class IonicViewerPage implements OnInit {
         this.p5canvas = new p5((p: p5) => {
           p.setup = () => { p.noCanvas() }
         });
+        this.ContentOnLoad = true;
         break;
     }
-    this.ContentOnLoad = true;
     this.ChangeContentWithKeyInput();
   }
 

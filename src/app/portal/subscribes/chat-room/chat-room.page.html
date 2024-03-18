@@ -75,7 +75,7 @@ SPDX-License-Identifier: MIT -->
                 </div>
                 <div *ngIf="msg.content['msg']" class="message_content_form">
                   <div class="msg_balloon" [style]="'background-color: #' + msg.color + '88'">
-                    <div *ngFor="let line of msg.content['msg']; let i = index">
+                    <div *ngFor="let line of msg.content['msg']; let i = index" class="msg_inside_balloon">
                       <span>
                         <span *ngFor="let part of line">
                           <span *ngIf="!part.href" [style]="'font-size: ' + (part.size || 16) + 'px'"
@@ -138,7 +138,7 @@ SPDX-License-Identifier: MIT -->
                 </div>
                 <div *ngIf="msg.content['msg']" class="message_content_form my_file_message_form">
                   <div class="msg_balloon" [style]="'background-color: #' + msg.color + '88'">
-                    <div *ngFor="let line of msg.content['msg']; let i = index">
+                    <div *ngFor="let line of msg.content['msg']; let i = index" class="msg_inside_balloon">
                       <span>
                         <span *ngFor="let part of line">
                           <span *ngIf="!part.href" [style]="'font-size: ' + (part.size || 16) + 'px'"

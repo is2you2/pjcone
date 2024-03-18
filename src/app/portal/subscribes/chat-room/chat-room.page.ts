@@ -534,9 +534,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       let blob = await this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/backgroundImage.png`, '');
       this.ChangeBackgroundImage({ target: { files: [blob] } });
       this.HasBackgroundImage = true;
-    } catch (e) {
-      console.log('동작 이슈: ', e);
-    }
+    } catch (e) { }
   }
 
   /** 채널 배경화면 지우기 */
@@ -1356,6 +1354,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   isIphone = false;
   /** 플랫폼별 높이 관리를 위한 함수 분리, 사용자 입력칸 높이 조정 함수 */
   ResizeTextArea() {
+    if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
     this.userInputTextArea.style.height = this.isIphone ? '60px' : '36px';
   }
 
