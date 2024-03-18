@@ -873,6 +873,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     is_me: undefined,
   };
 
+  /** 사용자 이미지 재정렬 users_image[id] = img; */
+  users_image = {};
   async init_chatroom() {
     this.userInput.text = '';
     delete this.userInput.quickShare;
@@ -900,6 +902,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
     this.info = this.nakama.channels_orig[this.isOfficial][this.target][this.info.id];
+    this.users_image = {};
+    for (let i = 0, j = this.info['info'].users.length; i < j; i++)
+      this.users_image[this.info['info'].users[i].user.id] = this.info['info'].users[i].user.image
     this.LoadChannelBackgroundImage();
     this.nakama.opened_page_info['channel'] = {
       isOfficial: this.isOfficial,

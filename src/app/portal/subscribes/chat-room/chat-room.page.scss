@@ -15,7 +15,7 @@
 }
 
 .message_form {
-    margin: 8px 0px 6px 0px;
+    margin-top: 8px;
     text-shadow: 0px 0px 4px var(--chatroom-background),
         0px 0px 4px var(--chatroom-background),
         0px 0px 4px var(--chatroom-background);
@@ -37,6 +37,7 @@
 
 .my_message_right {
     text-align: end;
+    margin-bottom: -4px;
 }
 
 // 사용자 말풍선
@@ -59,6 +60,7 @@
 
 .file_message_form {
     display: flex;
+    flex-direction: column;
 }
 
 .my_file_message_form {
@@ -107,6 +109,7 @@
 .message_content_form {
     display: inline-flex;
     margin: 4px 0px 0px 0px;
+    place-self: flex-end;
 }
 
 .edited_form {
@@ -114,6 +117,24 @@
     font-size: 12px;
     margin: 0px 8px;
     align-self: flex-end;
+}
+
+.avatar_form {
+    width: 56px;
+    vertical-align: top;
+    padding: 12px 8px 0px 0px;
+    max-width: 56px;
+}
+
+.my_avatar_form {
+    padding: 12px 0px 0px 8px;
+}
+
+.avatar_image {
+    width: 48px;
+    height: 48px;
+    border-radius: 64px;
+    object-fit: cover;
 }
 
 // 발송하였으나 재수신되지 않은, 발신중으로 판단되는 메시지들을 위한 클래스

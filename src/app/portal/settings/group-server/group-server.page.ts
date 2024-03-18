@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonAccordionGroup, IonModal, IonToggle, LoadingController, NavController, NavParams } from '@ionic/angular';
+import { IonAccordionGroup, IonModal, IonToggle, LoadingController, ModalController, NavController, NavParams } from '@ionic/angular';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -32,6 +32,7 @@ export class GroupServerPage implements OnInit {
     private mClipboard: Clipboard,
     private navCtrl: NavController,
     private navParams: NavParams,
+    private modalCtrl: ModalController,
   ) { }
 
   info: string;
@@ -577,5 +578,12 @@ export class GroupServerPage implements OnInit {
   copy_id() {
     this.mClipboard.copy(this.session_uid)
       .catch(_e => clipboard.write(this.session_uid));
+  }
+
+  /** 채널 채팅에서 넘어온 경우 modal 페이지임 */
+  async go_back() {
+    try {
+      await this.modalCtrl.dismiss();
+    } catch (e) { }
   }
 }
