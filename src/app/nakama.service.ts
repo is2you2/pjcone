@@ -1055,32 +1055,26 @@ export class NakamaService {
         }
         if (gulist.group_users.length)
           this.groups[_is_official][_target][_gid]['users'] = gulist.group_users;
-        gulist.group_users.forEach(async User => {
-          if (User['is_me'])
-            User['user'] = this.users.self;
-          else {
-            if (User['user'].id != this.servers[_is_official][_target].session.user_id
-              && (this.load_other_user(User['user'].id, _is_official, _target)['avatar_url'] != User['user'].avatar_url
-                || !this.load_other_user(User['user'].id, _is_official, _target)['img'])) {
-              try {
-                let image = await this.servers[_is_official][_target].client.readStorageObjects(
-                  this.servers[_is_official][_target].session, {
-                  object_ids: [{
-                    collection: 'user_public',
-                    key: 'profile_image',
-                    user_id: User['user']['id'],
-                  }],
-                });
-                if (image.objects.length)
-                  User['user']['img'] = image.objects[0].value['img'];
-                else delete User['user']['img'];
-                this.save_other_user(User['user'], _is_official, _target);
-              } catch (e) {
-                console.error('다른 사용자 이미지 업데이트 오류: ', e);
-              }
-            } else this.save_other_user(User['user'], _is_official, _target);
+        for (let i = 0, j = gulist.group_users.length; i < j; i++)
+          if (gulist.group_users[i]['is_me'])
+            gulist.group_users[i]['user'] = this.users.self;
+          else try {
+            let image = await this.servers[_is_official][_target].client.readStorageObjects(
+              this.servers[_is_official][_target].session, {
+              object_ids: [{
+                collection: 'user_public',
+                key: 'profile_image',
+                user_id: gulist.group_users[i]['user']['id'],
+              }],
+            });
+            if (image.objects.length)
+              gulist.group_users[i]['user']['img'] = image.objects[0].value['img'];
+            else delete gulist.group_users[i]['user']['img'];
+            this.save_other_user(gulist.group_users[i]['user'], _is_official, _target);
+          } catch (e) {
+            console.error('다른 사용자 이미지 업데이트 오류: ', e);
+            this.save_other_user(gulist.group_users[i]['user'], _is_official, _target);
           }
-        });
         this.save_groups_with_less_info();
       }
     } catch (e) {
@@ -1291,12 +1285,14 @@ export class NakamaService {
     switch (this.channels_orig[_is_official][_target][channel_info.id]['redirect']['type']) {
       case 2: // 1:1 대화
         let targetId = this.channels_orig[_is_official][_target][channel_info.id]['redirect']['id'];
+        this.channels_orig[_is_official][_target][channel_info.id]['color'] = (targetId.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
         let result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
         this.channels_orig[_is_official][_target][channel_info.id]['status'] = result_status;
         break;
       case 3: // 새로 개설된 그룹 채널인 경우
         try {
           let group_id = this.channels_orig[_is_official][_target][channel_info.id]['redirect']['id'];
+          this.channels_orig[_is_official][_target][channel_info.id]['color'] = (group_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
           let users = await this.servers[_is_official][_target].client.listGroupUsers(
             this.servers[_is_official][_target].session, group_id);
           if (!this.groups[_is_official][_target][group_id]['users'])
@@ -1408,7 +1404,7 @@ export class NakamaService {
             );
             if (!this.channels_orig[_is_official][_target][channel_ids[i]]['cnoti_id'])
               this.channels_orig[_is_official][_target][channel_ids[i]]['cnoti_id'] = this.get_noti_id();
-            this.channels_orig[_is_official][_target][channel_ids[i]]['color'] = (this.channels_orig[_is_official][_target][channel_ids[i]]['id'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
+            this.channels_orig[_is_official][_target][channel_ids[i]]['color'] = (this.channels_orig[_is_official][_target][channel_ids[i]]['info']['id'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
             switch (this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type']) {
               case 2: // 1:1 채팅
                 try {
