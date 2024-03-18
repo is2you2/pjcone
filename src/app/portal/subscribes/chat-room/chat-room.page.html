@@ -42,7 +42,8 @@ SPDX-License-Identifier: MIT -->
                       <div *ngIf="msg['showInfo'] && msg['showInfo']['sender']" class="avatar_image"
                         (click)="user_detail(msg)">
                         <img class="avatar_image" [src]="users_image[msg.sender_id] || 'assets/data/avatar.svg'"
-                          alt="img">
+                          alt="img"
+                          [style]="nakama.users[isOfficial][target][msg.sender_id]['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'">
                       </div>
                     </td>
                     <td>
@@ -177,7 +178,8 @@ SPDX-License-Identifier: MIT -->
                     <td class="avatar_form my_avatar_form">
                       <div *ngIf="msg['showInfo'] && msg['showInfo']['sender']" class="avatar_image"
                         (click)="user_detail(msg)">
-                        <img class="avatar_image" [src]="nakama.users.self['img']" alt="my_img">
+                        <img class="avatar_image" [src]="nakama.users.self['img']" alt="my_img"
+                          [style]="nakama.users.self['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'">
                       </div>
                     </td>
                   </tr>
