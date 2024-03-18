@@ -1421,7 +1421,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       let msg = {
         channel_id: this.info.id,
         code: 0,
-        color: '888',
+        color: '888888',
         ...tmp,
         create_time: getNow,
         update_time: getNow,
