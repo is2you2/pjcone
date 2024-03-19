@@ -2483,7 +2483,7 @@ export class NakamaService {
     let is_new = msg.message_id != this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_id'];
     let c = this.modulation_channel_message(msg, _is_official, _target);
     if (!is_me && is_new) {
-      this.noti.PushLocal({
+      let PushInfo = {
         id: this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'],
         title: this.channels_orig[_is_official][_target][msg.channel_id]['info']['name']
           || this.channels_orig[_is_official][_target][msg.channel_id]['info']['display_name']
@@ -2509,7 +2509,10 @@ export class NakamaService {
         smallIcon_ln: 'diychat',
         autoCancel_ln: true,
         iconColor_ln: '271e38',
-      }, this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'], (ev: any) => {
+      }
+      if (c.content['url'] && c.content['type'].indexOf('image/') == 0)
+        PushInfo['image'] = c.content['url'];
+      this.noti.PushLocal(PushInfo, this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'], (ev: any) => {
         // 알림 아이디가 같으면 진입 허용
         if (ev && ev['id'] == this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']) {
           this.go_to_chatroom_without_admob_act(this.channels_orig[_is_official][_target][msg.channel_id]);
