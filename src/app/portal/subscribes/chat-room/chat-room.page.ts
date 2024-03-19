@@ -486,10 +486,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 사용자 지정 우선 서버 사용 여부 */
   useFirstCustomCDN = true;
-  async toggle_custom_attach() {
-    this.useFirstCustomCDN = !this.useFirstCustomCDN;
+  async toggle_custom_attach(force?: boolean) {
+    this.useFirstCustomCDN = force ?? !this.useFirstCustomCDN;
     this.extended_buttons[6].icon = this.useFirstCustomCDN
       ? 'cloud-done-outline' : 'cloud-offline-outline';
+    if (this.useFirstCustomCDN)
+      localStorage.setItem('useFFSCDN', `${this.useFirstCustomCDN}`);
+    else localStorage.removeItem('useFFSCDN');
   }
 
   async toggle_speakermode(force?: boolean) {
@@ -635,6 +638,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.InitBrowserBackButtonOverride();
     this.useSpeaker = Boolean(localStorage.getItem('useChannelSpeaker'));
     this.toggle_speakermode(this.useSpeaker);
+    this.useFirstCustomCDN = Boolean(localStorage.getItem('useFFSCDN'));
+    this.toggle_custom_attach(this.useFirstCustomCDN);
     this.isIphone = this.platform.is('iphone');
     this.ChatLogs = document.getElementById('chatroom_div');
     this.ChatLogs.onscroll = (_ev: any) => {
