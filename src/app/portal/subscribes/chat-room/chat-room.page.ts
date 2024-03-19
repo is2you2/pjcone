@@ -1149,10 +1149,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   if (!this.ViewableMessage[i].content['file_ext']) throw '파일이 없는 메시지';
                   if (this.ViewableMessage[i].content['url']) throw '링크된 파일';
                   this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
-                  this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext, (blob) => {
-                    FileURL = URL.createObjectURL(blob);
-                    this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-                  });
+                  this.indexed.checkIfFileExist(this.ViewableMessage[i].content['path'], b => {
+                    if (b) this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext, (blob) => {
+                      FileURL = URL.createObjectURL(blob);
+                      this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+                    });
+                  })
                 } catch (e) { }
                 this.modulate_chatmsg(i, j + 1);
               }
