@@ -121,6 +121,7 @@ export class IonicViewerPage implements OnInit {
     }
   }
 
+  canvasDiv: HTMLElement;
   async reinit_content_data(msg: any) {
     this.NewTextFileName = '';
     this.NeedDownloadFile = true;
@@ -129,10 +130,11 @@ export class IonicViewerPage implements OnInit {
     this.MessageInfo = msg;
     this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
-    let canvasDiv: HTMLElement = document.getElementById('content_viewer_canvas');
-    if (canvasDiv)
-      for (let i = 0, j = canvasDiv.childNodes.length; i < j; i++)
-        canvasDiv.removeChild(canvasDiv.childNodes[i]);
+    if (this.p5canvas) this.p5canvas.remove();
+    this.canvasDiv = document.getElementById('content_viewer_canvas');
+    if (this.canvasDiv)
+      for (let i = 0, j = this.canvasDiv.childNodes.length; i < j; i++)
+        this.canvasDiv.removeChild(this.canvasDiv.childNodes[i]);
     URL.revokeObjectURL(this.FileURL);
     if (this.FileInfo.url) {
       this.CreateContentInfo();
@@ -365,8 +367,8 @@ export class IonicViewerPage implements OnInit {
       this.FileURL = URL.createObjectURL(this.blob);
     }
     this.forceWrite = false;
-    let canvasDiv = document.getElementById('content_viewer_canvas');
-    if (canvasDiv) canvasDiv.style.backgroundImage = '';
+    this.canvasDiv = document.getElementById('content_viewer_canvas');
+    if (this.canvasDiv) this.canvasDiv.style.backgroundImage = '';
     document.removeEventListener('ionBackButton', this.EventListenerAct);
     if (this.p5canvas) this.p5canvas.remove();
     // 경우에 따라 로딩하는 캔버스를 구분
@@ -374,17 +376,17 @@ export class IonicViewerPage implements OnInit {
       case 'image': // 이미지
         this.p5canvas = new p5((p: p5) => {
           p.setup = async () => {
-            canvasDiv.style.maxWidth = '100%';
-            canvasDiv.style.overflow = 'hidden';
+            this.canvasDiv.style.maxWidth = '100%';
+            this.canvasDiv.style.overflow = 'hidden';
             this.ContentBox.style.overflow = 'hidden';
             p.noCanvas();
             let img = p.createElement('img');
             img.elt.hidden = true;
             img.elt.src = this.FileURL;
             img.elt.onload = () => {
-              canvasDiv.style.backgroundImage = `url('${this.FileURL}')`;
-              canvasDiv.style.backgroundRepeat = 'no-repeat';
-              canvasDiv.style.pointerEvents = 'none';
+              this.canvasDiv.style.backgroundImage = `url('${this.FileURL}')`;
+              this.canvasDiv.style.backgroundRepeat = 'no-repeat';
+              this.canvasDiv.style.pointerEvents = 'none';
               this.image_info['width'] = img.elt.naturalWidth;
               this.image_info['height'] = img.elt.naturalHeight;
               imageOriginalSize = p.createVector(img.elt.naturalWidth, img.elt.naturalHeight);
@@ -396,18 +398,18 @@ export class IonicViewerPage implements OnInit {
           }
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let RePositioningImage = () => {
-            if (this.image_info['width'] / this.image_info['height'] < canvasDiv.clientWidth / canvasDiv.clientHeight) {
-              let tmp_width = this.image_info['width'] * canvasDiv.clientHeight / this.image_info['height'];
-              canvasDiv.style.backgroundSize = `${tmp_width}px`;
-              canvasDiv.style.backgroundPositionX = `${(canvasDiv.clientWidth - tmp_width) / 2}px`;
-              canvasDiv.style.backgroundPositionY = `0px`;
+            if (this.image_info['width'] / this.image_info['height'] < this.canvasDiv.clientWidth / this.canvasDiv.clientHeight) {
+              let tmp_width = this.image_info['width'] * this.canvasDiv.clientHeight / this.image_info['height'];
+              this.canvasDiv.style.backgroundSize = `${tmp_width}px`;
+              this.canvasDiv.style.backgroundPositionX = `${(this.canvasDiv.clientWidth - tmp_width) / 2}px`;
+              this.canvasDiv.style.backgroundPositionY = `0px`;
             } else {
-              canvasDiv.style.backgroundSize = `${canvasDiv.clientWidth}px`;
-              canvasDiv.style.backgroundPositionX = '0px';
-              let imageRatio = canvasDiv.clientWidth / imageOriginalSize.x;
+              this.canvasDiv.style.backgroundSize = `${this.canvasDiv.clientWidth}px`;
+              this.canvasDiv.style.backgroundPositionX = '0px';
+              let imageRatio = this.canvasDiv.clientWidth / imageOriginalSize.x;
               let centerHeight =
-                canvasDiv.clientHeight / 2 - imageOriginalSize.y * imageRatio / 2;
-              canvasDiv.style.backgroundPositionY = `${centerHeight}px`;
+                this.canvasDiv.clientHeight / 2 - imageOriginalSize.y * imageRatio / 2;
+              this.canvasDiv.style.backgroundPositionY = `${centerHeight}px`;
             }
             isInitStatus = true;
           }
@@ -422,20 +424,20 @@ export class IonicViewerPage implements OnInit {
           let endPos: p5.Vector = p.createVector();
           let lastScale: number = 1;
           let TransformImage = () => {
-            canvasDiv.style.backgroundPositionX = `${lastPos.x + endPos.x}px`;
-            canvasDiv.style.backgroundPositionY = `${lastPos.y + endPos.y}px`;
+            this.canvasDiv.style.backgroundPositionX = `${lastPos.x + endPos.x}px`;
+            this.canvasDiv.style.backgroundPositionY = `${lastPos.y + endPos.y}px`;
           }
           let ScaleImage = (center: p5.Vector, ratio: number) => {
             let beforeCalced = lastScale;
             let Calced = lastScale * ratio;
-            let posX = Number(canvasDiv.style.backgroundPositionX.split('px')[0]);
-            let posY = Number(canvasDiv.style.backgroundPositionY.split('px')[0]);
+            let posX = Number(this.canvasDiv.style.backgroundPositionX.split('px')[0]);
+            let posY = Number(this.canvasDiv.style.backgroundPositionY.split('px')[0]);
             let widthMoved = (beforeCalced - Calced) * p.map(center.x, posX, posX + beforeCalced, 0, 1);
             let scaledImageHeight = (beforeCalced - Calced) / imageOriginalSize.x * imageOriginalSize.y;
             let heightMoved = scaledImageHeight * p.map(center.y, posY, posY + beforeCalced / imageOriginalSize.x * imageOriginalSize.y, 0, 1);
-            canvasDiv.style.backgroundPositionX = `${posX + widthMoved}px`
-            canvasDiv.style.backgroundPositionY = `${posY + heightMoved}px`;
-            canvasDiv.style.backgroundSize = `${Calced}px`;
+            this.canvasDiv.style.backgroundPositionX = `${posX + widthMoved}px`
+            this.canvasDiv.style.backgroundPositionY = `${posY + heightMoved}px`;
+            this.canvasDiv.style.backgroundSize = `${Calced}px`;
           }
           p.mousePressed = () => {
             if (!this.useP5Navigator) return;
@@ -444,15 +446,15 @@ export class IonicViewerPage implements OnInit {
             if (isPlatform == 'DesktopPWA') {
               lastPos =
                 p.createVector(
-                  Number(canvasDiv.style.backgroundPositionX.split('px')[0]),
-                  Number(canvasDiv.style.backgroundPositionY.split('px')[0]));
+                  Number(this.canvasDiv.style.backgroundPositionX.split('px')[0]),
+                  Number(this.canvasDiv.style.backgroundPositionY.split('px')[0]));
               startPos = p.createVector(p.mouseX, p.mouseY);
             }
           }
           p.mouseWheel = (ev: any) => {
             if (!this.useP5Navigator) return;
-            lastScale = Number(canvasDiv.style.backgroundSize.split('px')[0]);
-            ScaleImage(p.createVector(canvasDiv.clientWidth / 2, canvasDiv.clientHeight / 2), 1 - ev.delta / 1000);
+            lastScale = Number(this.canvasDiv.style.backgroundSize.split('px')[0]);
+            ScaleImage(p.createVector(this.canvasDiv.clientWidth / 2, this.canvasDiv.clientHeight / 2), 1 - ev.delta / 1000);
           }
           p.mouseDragged = () => {
             if (!this.useP5Navigator) return;
@@ -478,19 +480,19 @@ export class IonicViewerPage implements OnInit {
               case 1: // 첫 탭
                 lastPos =
                   p.createVector(
-                    Number(canvasDiv.style.backgroundPositionX.split('px')[0]),
-                    Number(canvasDiv.style.backgroundPositionY.split('px')[0]));
+                    Number(this.canvasDiv.style.backgroundPositionX.split('px')[0]),
+                    Number(this.canvasDiv.style.backgroundPositionY.split('px')[0]));
                 startPos = touches[ev.changedTouches[0].identifier].copy();
                 break;
               case 2: // 두번째 손가락이 들어옴
                 lastPos =
                   p.createVector(
-                    Number(canvasDiv.style.backgroundPositionX.split('px')[0]),
-                    Number(canvasDiv.style.backgroundPositionY.split('px')[0]));
+                    Number(this.canvasDiv.style.backgroundPositionX.split('px')[0]),
+                    Number(this.canvasDiv.style.backgroundPositionY.split('px')[0]));
                 let firstCopy = touches[0].copy();
                 dist_two = firstCopy.dist(touches[1]);
                 startPos = firstCopy.add(touches[1]).div(2).copy();
-                lastScale = Number(canvasDiv.style.backgroundSize.split('px')[0]);
+                lastScale = Number(this.canvasDiv.style.backgroundSize.split('px')[0]);
                 TransformImage();
                 break;
               default: // 그 이상은 정렬
@@ -537,8 +539,8 @@ export class IonicViewerPage implements OnInit {
                 case 1: // 아직 이동중
                   lastPos =
                     p.createVector(
-                      Number(canvasDiv.style.backgroundPositionX.split('px')[0]),
-                      Number(canvasDiv.style.backgroundPositionY.split('px')[0]));
+                      Number(this.canvasDiv.style.backgroundPositionX.split('px')[0]),
+                      Number(this.canvasDiv.style.backgroundPositionY.split('px')[0]));
                   startPos = touches[Object.keys(touches)[0]].copy();
                   break;
                 case 0: // 손을 전부 뗌
@@ -562,7 +564,7 @@ export class IonicViewerPage implements OnInit {
             p.noCanvas();
             p.noLoop();
             mediaObject = p.createAudio([this.FileURL], () => {
-              canvasDiv.appendChild(mediaObject['elt']);
+              this.canvasDiv.appendChild(mediaObject['elt']);
               mediaObject['elt'].onended = () => {
                 if (this.AutoPlayNext)
                   this.ChangeToAnother(1);
@@ -641,8 +643,8 @@ export class IonicViewerPage implements OnInit {
                 mediaObject.elt = this.global.PIPLinkedVideoElement;
                 mediaObject.elt.setAttribute('src', this.FileURL);
               } else this.global.PIPLinkedVideoElement = mediaObject['elt'];
-              if (canvasDiv)
-                canvasDiv.appendChild(mediaObject['elt']);
+              if (this.canvasDiv)
+                this.canvasDiv.appendChild(mediaObject['elt']);
               mediaObject['elt'].onended = () => {
                 if (this.AutoPlayNext)
                   this.ChangeToAnother(1);
@@ -736,18 +738,23 @@ export class IonicViewerPage implements OnInit {
             textArea.elt.className = 'infobox';
             textArea.elt.setAttribute('style', 'height: 100%; display: block;');
             textArea.elt.textContent = '';
-            canvasDiv.appendChild(textArea.elt);
+            this.canvasDiv.appendChild(textArea.elt);
             p['TextArea'] = textArea.elt;
             if (this.FileInfo['is_new']) {
               this.open_text_editor(textArea.elt);
             } else p.loadStrings(this.FileURL, v => {
               textArea.elt.textContent = v.join('\n');
+              this.open_text_reader(p);
               this.ContentOnLoad = true;
             }, _e => {
-              canvasDiv.textContent = this.lang.text['ContentViewer']['CannotOpenText'];
+              this.canvasDiv.textContent = this.lang.text['ContentViewer']['CannotOpenText'];
               this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
               this.ContentOnLoad = true;
             });
+          }
+          p.windowResized = () => {
+            let target_height = window.innerHeight - 45 - 56;
+            p['SyntaxHighlightReader'].setAttribute('style', `height: ${target_height}px; display: block; overflow-y: scroll;`);
           }
         });
         break;
@@ -843,8 +850,8 @@ export class IonicViewerPage implements OnInit {
           let texture_images = {};
           let LogDiv: p5.Element;
           p.setup = async () => {
-            let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight, p.WEBGL);
-            canvas.parent(canvasDiv);
+            let canvas = p.createCanvas(this.canvasDiv.clientWidth, this.canvasDiv.clientHeight, p.WEBGL);
+            canvas.parent(this.canvasDiv);
             p['canvas'] = canvas;
             p.textureMode(p.NORMAL);
             p.textureWrap(p.REPEAT);
@@ -871,7 +878,7 @@ export class IonicViewerPage implements OnInit {
             jsBlend.elt.setAttribute('scrolling', 'no');
             jsBlend.elt.setAttribute('withCredentials', 'true');
             jsBlend.elt.setAttribute('hidden', 'true');
-            canvasDiv.appendChild(jsBlend.elt);
+            this.canvasDiv.appendChild(jsBlend.elt);
             jsBlend.elt.contentWindow['TARGET_FILE'] = blob;
             // 불러오기 로딩 관련 로그 보여주기
             jsBlend.elt.onload = async () => {
@@ -883,12 +890,12 @@ export class IonicViewerPage implements OnInit {
                 return;
               }
               LogDiv = p.createDiv()
-              LogDiv.parent(canvasDiv);
+              LogDiv.parent(this.canvasDiv);
               LogDiv.id('logDiv');
               LogDiv.style('position', 'absolute');
               LogDiv.style('width', '100%');
               LogDiv.style('height', '100%');
-              LogDiv.style('max-height', `${canvasDiv.clientHeight}px`);
+              LogDiv.style('max-height', `${this.canvasDiv.clientHeight}px`);
               LogDiv.style('pointer-events', 'none');
               let blend = await jsBlend.elt.contentWindow['JSBLEND'](blob);
               // 모든 개체를 돌며 개체에 맞는 생성 동작
@@ -1170,9 +1177,9 @@ export class IonicViewerPage implements OnInit {
           }
           p.windowResized = () => {
             setTimeout(() => {
-              canvasDiv.style.maxHeight = (window.innerHeight - 56 - 45) + 'px';
-              if (LogDiv) LogDiv.style('max-height', `${canvasDiv.clientHeight}px`);
-              p.resizeCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
+              this.canvasDiv.style.maxHeight = (window.innerHeight - 56 - 45) + 'px';
+              if (LogDiv) LogDiv.style('max-height', `${this.canvasDiv.clientHeight}px`);
+              p.resizeCanvas(this.canvasDiv.clientWidth, this.canvasDiv.clientHeight);
             }, 50);
           }
         });
@@ -1227,11 +1234,40 @@ export class IonicViewerPage implements OnInit {
 
   isTextEditMode = false;
   open_text_editor(_textarea = this.p5canvas['TextArea']) {
+    this.p5canvas['SyntaxHighlightReader'].style.display = 'none';
+    _textarea.style.display = 'block';
     _textarea.disabled = false;
     setTimeout(() => {
       this.isTextEditMode = true;
       _textarea.focus();
     }, 500);
+  }
+
+  /** 구문 강조가 가능한 재구성처리 */
+  open_text_reader(p = this.p5canvas) {
+    if (!p['SyntaxHighlightReader']) {
+      let syntaxHighlightReader = p.createDiv();
+      syntaxHighlightReader.elt.className = 'infobox';
+      syntaxHighlightReader.elt.setAttribute('style', `height: ${p['TextArea'].clientHeight}px; display: block; overflow-y: scroll;`);
+      this.canvasDiv.appendChild(syntaxHighlightReader.elt);
+      p['SyntaxHighlightReader'] = syntaxHighlightReader.elt;
+    }
+    // 구문 강조처리용 구성 변환
+    let getText = p['TextArea'].textContent;
+    let text_as_line: string[] = getText.split('\n');
+    for (let i = 0, j = text_as_line.length; i < j; i++) {
+      // div 안에서 띄어쓰기 정보를 표현함
+      let line = p.createDiv();
+      let exact_line_text = text_as_line[i];
+      let sep_by_whitespace = exact_line_text.split(' ');
+      for (let k = 0, l = sep_by_whitespace.length; k < l; k++) {
+        let word = p.createSpan(sep_by_whitespace[k] + '&nbsp');
+        word.parent(line);
+      }
+      line.parent(p['SyntaxHighlightReader']);
+    }
+    p['TextArea'].style.display = 'none';
+    p['SyntaxHighlightReader'].style.display = 'block';
   }
 
   NewTextFileName = '';
