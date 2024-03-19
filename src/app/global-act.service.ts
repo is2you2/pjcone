@@ -482,6 +482,7 @@ export class GlobalActService {
       msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
       setTimeout(() => {
         URL.revokeObjectURL(FileURL);
+        if (ObjectURL) URL.revokeObjectURL(ObjectURL);
       }, 100);
       return;
     } catch (e) { }

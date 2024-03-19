@@ -1125,19 +1125,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let ShowMeAgainCount = Math.min(this.ViewMsgIndex, this.RefreshCount)
           this.ViewMsgIndex -= ShowMeAgainCount;
           this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
-          for (let i = 0; i < ShowMeAgainCount; i++)
+          for (let i = 0; i < ShowMeAgainCount; i++) {
+            let FileURL: any;
             try {
               this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
               let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
-              let FileURL = URL.createObjectURL(blob);
-              this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-            } catch (e) {
-              try { // 썸네일 생성이 어려우면 대안 썸네일이 있는지 시도
-                let blob = await this.indexed.loadBlobFromUserPath(`${this.ViewableMessage[i].content['path']}_thumbnail.png`, 'image/png');
-                let FileURL = URL.createObjectURL(blob);
-                this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-              } catch (e) { }
-            }
+              FileURL = URL.createObjectURL(blob);
+            } catch (e) { }
+            this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+            this.modulate_chatmsg(i, ShowMeAgainCount + 1);
+          }
           this.modulate_chatmsg(0, this.ViewableMessage.length);
           this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
           this.pullable = true;
@@ -1169,6 +1166,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.nakama.content_to_hyperlink(msg);
               if (msg.code != 2) this.messages.unshift(msg);
               this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+              for (let i = 0, j = this.ViewableMessage.length; i < j; i++) {
+                let FileURL: any;
+                try {
+                  if (!this.ViewableMessage[i].content['file_ext']) throw '파일이 없는 메시지';
+                  if (this.ViewableMessage[i].content['url']) throw '링크된 파일';
+                  this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
+                  this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext, (blob) => {
+                    FileURL = URL.createObjectURL(blob);
+                    this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+                  });
+                } catch (e) { }
+                this.modulate_chatmsg(i, j + 1);
+              }
               this.modulate_chatmsg(0, this.ViewableMessage.length);
             });
             this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
@@ -1195,12 +1205,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.ViewMsgIndex += Math.min(this.RefreshCount, subtract);
       this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
       for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
+        let FileURL: any;
         try {
           this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
           let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
-          let FileURL = URL.createObjectURL(blob);
-          this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+          FileURL = URL.createObjectURL(blob);
         } catch (e) { }
+        this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
         this.modulate_chatmsg(i, this.ViewableMessage.length);
       }
       this.pullable = true;
@@ -1243,18 +1254,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.ViewMsgIndex -= ShowMeAgainCount;
       this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
       for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
+        let FileURL: any;
         try {
           this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
           let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
-          let FileURL = URL.createObjectURL(blob);
-          this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-        } catch (e) {
-          try { // 썸네일 생성이 어려우면 대안 썸네일이 있는지 시도
-            let blob = await this.indexed.loadBlobFromUserPath(`${this.ViewableMessage[i].content['path']}_thumbnail.png`, 'image/png');
-            let FileURL = URL.createObjectURL(blob);
-            this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-          } catch (e) { }
-        }
+          FileURL = URL.createObjectURL(blob);
+        } catch (e) { }
+        this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
         this.modulate_chatmsg(i, ShowMeAgainCount + 1);
       }
       this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
@@ -1282,18 +1288,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.RefreshCount);
             this.modulate_chatmsg(0, json.length);
             for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
+              let FileURL: any;
               try {
                 this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
                 let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
-                let FileURL = URL.createObjectURL(blob);
-                this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-              } catch (e) {
-                try { // 썸네일 생성이 어려우면 대안 썸네일이 있는지 시도
-                  let blob = await this.indexed.loadBlobFromUserPath(`${this.ViewableMessage[i].content['path']}_thumbnail.png`, 'image/png');
-                  let FileURL = URL.createObjectURL(blob);
-                  this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-                } catch (e) { }
-              }
+                FileURL = URL.createObjectURL(blob);
+              } catch (e) { }
+              this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
               this.modulate_chatmsg(i, this.ViewableMessage.length);
             }
             if (this.ViewableMessage.length < this.RefreshCount)
@@ -1317,18 +1318,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
           let ShowMeAgainCount = Math.min(Math.min(json.length, this.RefreshCount), this.ViewableMessage.length);
           for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
+            let FileURL: any;
             try {
               this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
               let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
-              let FileURL = URL.createObjectURL(blob);
-              this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-            } catch (e) {
-              try { // 썸네일 생성이 어려우면 대안 썸네일이 있는지 시도
-                let blob = await this.indexed.loadBlobFromUserPath(`${this.ViewableMessage[i].content['path']}_thumbnail.png`, 'image/png');
-                let FileURL = URL.createObjectURL(blob);
-                this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-              } catch (e) { }
-            }
+              FileURL = URL.createObjectURL(blob);
+            } catch (e) { }
+            this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
             this.modulate_chatmsg(i, ShowMeAgainCount);
           }
           this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
@@ -1876,9 +1872,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }, 100);
         return;
       } catch (e) { // 대안 썸네일이 없는 경우 썸네일 생성 시도
-        if (this.ViewableMessage[i]['content'].viewer == 'image')
+        if (this.ViewableMessage[i]['content'].viewer == 'image' && this.ViewableMessage[i]['content']['url'])
           this.ViewableMessage[i]['content']['thumbnail'] = this.ViewableMessage[i]['content']['url'];
-        else delete this.ViewableMessage[i]['content']['thumbnail'];
       }
     }
     // 다음 메시지와 정보를 비교하여 다음 메시지의 상태를 결정 (기록 불러오기류)
