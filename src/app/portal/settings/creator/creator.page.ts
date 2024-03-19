@@ -25,6 +25,7 @@ export class CreatorPage implements OnInit {
     name: undefined,
   };
   special_thanks_to = [];
+  tester = [];
 
   isMobileApp = false;
 
@@ -61,7 +62,19 @@ export class CreatorPage implements OnInit {
           this.special_thanks_to = v;
           p.remove();
         }, e => {
-          console.error('번역가 정보 불러오기 실패: ', e);
+          console.error('도움주신분들 정보 불러오기 실패: ', e);
+          p.remove();
+        });
+      }
+    });
+    new p5((p: p5) => {
+      p.setup = () => {
+        p.noCanvas();
+        p.loadJSON(`assets/data/infos/tester.json`, v => {
+          this.tester = v;
+          p.remove();
+        }, e => {
+          console.error('테스트 정보 불러오기 실패: ', e);
           p.remove();
         });
       }
