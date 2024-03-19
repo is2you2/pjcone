@@ -1582,6 +1582,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   isOtherAct = false;
+  /** 다른 행동을 하는 경우 메시지 상세 행동을 하지 않음 */
   SetOtherAct() {
     this.isOtherAct = true;
     setTimeout(() => {
@@ -1727,6 +1728,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 메시지 평문화 */
   deserialize_text(msg: any) {
     let MsgText = '';
+    if (!msg.content['msg']) return MsgText;
     for (let i = 0, j = msg.content['msg'].length; i < j; i++) {
       for (let k = 0, l = msg.content['msg'][i].length; k < l; k++)
         MsgText += msg.content['msg'][i][k].text;
@@ -1806,6 +1808,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** QR행동처럼 처리하기 */
   async quickShare_act(_msg: any) {
+    this.SetOtherAct();
     this.modalCtrl.create({
       component: QuickShareReviewPage,
       componentProps: {
@@ -1815,6 +1818,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   JoinWebRTCMatch(msg: any) {
+    this.SetOtherAct();
     this.nakama.JoinWebRTCMatch(msg, this.isOfficial, this.target, this.info);
   }
 
