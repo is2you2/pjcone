@@ -28,7 +28,6 @@ import clipboard from "clipboardy";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { SpeechRecognition } from "@capacitor-community/speech-recognition";
-import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 
 interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -108,8 +107,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                       button.isHide = true;
                     });
                     this.extended_buttons[0].isHide = false;
-                    this.extended_buttons[10].isHide = false;
-                    this.extended_buttons[13].isHide = false;
+                    this.extended_buttons[12].isHide = false;
                   }
                 });
                 v.onDidDismiss().then(() => {
@@ -302,34 +300,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }
     }, { // 10
-      isHide: false,
-      icon: 'file-tray-full-outline',
-      name: this.lang.text['ChatRoom']['EmbedFiles'],
-      act: () => {
-        this.modalCtrl.create({
-          component: UserFsDirPage,
-          componentProps: {
-            path: `/${this.info['id']}/files/`,
-          },
-        }).then(v => {
-          v.onWillDismiss().then(async v => {
-            if (v.data) this.selected_blobFile_callback_act(v.data);
-          });
-          v.onDidDismiss().then(() => {
-            this.is_modal = false;
-            this.ionViewDidEnter();
-          });
-          this.is_modal = true;
-          v.present();
-        });
-      }
-    }, { // 11
       icon: 'volume-mute-outline',
       name: this.lang.text['ChatRoom']['ReadText'],
       act: async () => {
         this.toggle_speakermode();
       }
-    }, { // 12
+    }, { // 11
       icon: 'log-out-outline',
       name: this.lang.text['ChatRoom']['LogOut'],
       act: async () => {
@@ -342,17 +318,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.extended_buttons.forEach(button => {
               button.isHide = true;
             });
-            this.extended_buttons[10].isHide = false;
-            this.extended_buttons[13].isHide = false;
+            this.extended_buttons[12].isHide = false;
           } catch (e) {
             console.error('채널에서 나오기 실패: ', e);
           }
         } else {
-          this.extended_buttons[12].isHide = true;
+          this.extended_buttons[11].isHide = true;
         }
         this.ionViewDidEnter();
       }
-    }, { // 13
+    }, { // 12
       isHide: true,
       name: this.lang.text['ChatRoom']['RemoveHistory'],
       icon: 'close-circle-outline',
@@ -519,7 +494,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   async toggle_speakermode(force?: boolean) {
     this.useSpeaker = force ?? !this.useSpeaker;
-    this.extended_buttons[11].icon = this.useSpeaker
+    this.extended_buttons[10].icon = this.useSpeaker
       ? 'volume-high-outline' : 'volume-mute-outline';
     if (this.useSpeaker)
       localStorage.setItem('useChannelSpeaker', `${this.useSpeaker}`);
@@ -937,24 +912,23 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.extended_buttons[0].isHide = true;
           this.extended_buttons[1].isHide = true;
           this.extended_buttons[9].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
-          delete this.extended_buttons[10].isHide;
-          this.extended_buttons[13].isHide = true;
+          this.extended_buttons[12].isHide = true;
         }
         break;
       case 3: // 그룹 대화라면
         if (this.info['status'] != 'missing')
           await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
         this.extended_buttons[1].isHide = true;
-        this.extended_buttons[12].isHide = true;
+        this.extended_buttons[11].isHide = true;
         delete this.extended_buttons[0].isHide;
         this.extended_buttons[9].isHide = true;
-        this.extended_buttons[13].isHide = true;
+        this.extended_buttons[12].isHide = true;
         break;
       case 0: // 로컬 채널형 기록
         this.extended_buttons[0].isHide = true;
         this.extended_buttons[8].isHide = true;
         this.extended_buttons[9].isHide = true;
-        this.extended_buttons[12].isHide = true;
+        this.extended_buttons[11].isHide = true;
         break;
       default:
         break;
@@ -1020,12 +994,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.extended_buttons.forEach(button => {
         button.isHide = true;
       });
-      this.extended_buttons[10].isHide = false;
-      this.extended_buttons[13].isHide = false;
+      this.extended_buttons[12].isHide = false;
       if (this.info['redirect']['type'] == 3)
         this.extended_buttons[0].isHide = false;
     }
-    this.extended_buttons[11].isHide = isNativefier || this.info['status'] == 'missing';
+    this.extended_buttons[10].isHide = isNativefier || this.info['status'] == 'missing';
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
     setTimeout(() => {
