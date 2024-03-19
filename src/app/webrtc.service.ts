@@ -388,7 +388,7 @@ export class WebrtcService {
                 this.PeerConnection.removeStream(this.localStream);
                 this.localStream = await navigator.mediaDevices.getUserMedia(info);
                 this.localMedia.srcObject = this.localStream;
-                this.PeerConnection.addStream(this.localStream);
+                this.localStream.getTracks().forEach((track: any) => this.PeerConnection.addTrack(track, this.localStream));
               } catch (e) { }
             });
             v.present()
@@ -481,7 +481,7 @@ export class WebrtcService {
       });
     // Add local stream to connection and create offer to connect.
     if (this.TypeIn != 'data') {
-      this.PeerConnection.addStream(this.localStream);
+      this.localStream.getTracks().forEach((track: any) => this.PeerConnection.addTrack(track, this.localStream));
       this.PeerConnection.addEventListener('addstream', (ev: any) => {
         this.remoteMedia.srcObject = ev.stream;
       });
