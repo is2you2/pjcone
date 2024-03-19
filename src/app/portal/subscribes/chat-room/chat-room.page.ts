@@ -1147,24 +1147,24 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.nakama.ModulateTimeDate(msg);
               this.nakama.content_to_hyperlink(msg);
               if (msg.code != 2) this.messages.unshift(msg);
-              this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
-              for (let i = 0, j = this.ViewableMessage.length; i < j; i++) {
-                let FileURL: any;
-                try {
-                  if (!this.ViewableMessage[i].content['file_ext']) throw '파일이 없는 메시지';
-                  if (this.ViewableMessage[i].content['url']) throw '링크된 파일';
-                  this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
-                  this.indexed.checkIfFileExist(this.ViewableMessage[i].content['path'], b => {
-                    if (b) this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext, (blob) => {
-                      FileURL = URL.createObjectURL(blob);
-                      this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-                    });
-                  })
-                } catch (e) { }
-                this.modulate_chatmsg(i, j + 1);
-              }
-              this.modulate_chatmsg(0, this.ViewableMessage.length);
             });
+            this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+            for (let i = 0, j = this.ViewableMessage.length; i < j; i++) {
+              let FileURL: any;
+              try {
+                if (!this.ViewableMessage[i].content['file_ext']) throw '파일이 없는 메시지';
+                if (this.ViewableMessage[i].content['url']) throw '링크된 파일';
+                this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
+                this.indexed.checkIfFileExist(this.ViewableMessage[i].content['path'], b => {
+                  if (b) this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext, (blob) => {
+                    FileURL = URL.createObjectURL(blob);
+                    this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+                  });
+                })
+              } catch (e) { }
+              this.modulate_chatmsg(i, j + 1);
+            }
+            this.modulate_chatmsg(0, this.ViewableMessage.length);
             this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
             this.next_cursor = v.next_cursor;
             this.prev_cursor = v.prev_cursor;
