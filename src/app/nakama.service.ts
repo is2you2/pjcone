@@ -2603,7 +2603,6 @@ export class NakamaService {
       await this.servers[_is_official][_target].socket.sendMatchState(
         msg.content.match, MatchOpCode.WEBRTC_INIT_REQ_SIGNAL, encodeURIComponent(''))
     } catch (e) {
-      console.log('참여 실패: ', e);
       switch (e.code) {
         case 4:
           this.p5toast.show({
@@ -2611,6 +2610,7 @@ export class NakamaService {
           });
           break;
         default:
+          console.log('참여 실패: ', e);
           this.p5toast.show({
             text: `${this.lang.text['ChatRoom']['JoinMatchFailed']}: ${e}`,
           });

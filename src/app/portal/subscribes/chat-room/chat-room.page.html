@@ -33,7 +33,7 @@ SPDX-License-Identifier: MIT -->
               <div *ngIf="!msg['is_me']">
                 <!-- 날짜 표시 -->
                 <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
-                  style="text-align: center; font-size: 16px; padding-top: 8px;">
+                  style="text-align: center; font-size: 16px; padding-top: 8px;" (click)="SetOtherAct()">
                   <font color="#888"> {{msg['msgDate']}} </font>
                 </div>
                 <table>
@@ -57,7 +57,7 @@ SPDX-License-Identifier: MIT -->
                           </b>
                         </span>
                         <!-- 시간 표시 -->
-                        <span class="time_form message_span_form">{{msg['msgTime']}}</span>
+                        <span class="time_form message_span_form" (click)="SetOtherAct()">{{msg['msgTime']}}</span>
                       </div>
                       <div *ngIf="msg.content['quickShare']" class="quickShare_form" (click)="quickShare_act(msg)">
                         {{lang.text['ChatRoom']['QuickShare']}}
@@ -107,7 +107,7 @@ SPDX-License-Identifier: MIT -->
               <div *ngIf="msg['is_me']" class="my_message_right">
                 <!-- 날짜 표시 -->
                 <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
-                  style="text-align: center; font-size: 16px; padding-top: 8px;">
+                  style="text-align: center; font-size: 16px; padding-top: 8px;" (click)="SetOtherAct()">
                   <font color="#888"> {{msg['msgDate']}} </font>
                 </div>
                 <table style="display: inline-flex;">
@@ -116,7 +116,7 @@ SPDX-License-Identifier: MIT -->
                       <!-- 이름 표시 -->
                       <div class="message_form" *ngIf="msg['showInfo'] && msg['showInfo']['sender']">
                         <!-- 시간 표시 -->
-                        <span class="time_form message_span_form_me">{{msg['msgTime']}}</span>
+                        <span class="time_form message_span_form_me" (click)="SetOtherAct()">{{msg['msgTime']}}</span>
                         <span (click)="user_detail(msg)">
                           <b>
                             <font color="#{{nakama.users.self['online'] ? msg.color : '888'}}">
