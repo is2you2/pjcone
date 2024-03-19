@@ -521,6 +521,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.useSpeaker = force ?? !this.useSpeaker;
     this.extended_buttons[11].icon = this.useSpeaker
       ? 'volume-high-outline' : 'volume-mute-outline';
+    if (this.useSpeaker)
+      localStorage.setItem('useChannelSpeaker', `${this.useSpeaker}`);
+    else localStorage.removeItem('useChannelSpeaker');
     if (!this.useSpeaker) try {
       await TextToSpeech.stop();
     } catch (e) { }
@@ -655,6 +658,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
   ngOnInit() {
     this.InitBrowserBackButtonOverride();
+    this.useSpeaker = Boolean(localStorage.getItem('useChannelSpeaker'));
+    this.toggle_speakermode(this.useSpeaker);
     this.isIphone = this.platform.is('iphone');
     this.ChatLogs = document.getElementById('chatroom_div');
     this.ChatLogs.onscroll = (_ev: any) => {
@@ -894,7 +899,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.prev_cursor = '';
     this.next_cursor = '';
     this.pullable = true;
-    this.toggle_speakermode(false);
     this.init_last_message_viewer();
     this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
     this.ChannelUserInputId = `chatroom_input_${this.info.id}_${new Date().getTime()}`;
