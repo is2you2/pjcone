@@ -1371,6 +1371,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }
 
+  block_send = false;
   async send(with_key = false) {
     if (with_key && (isPlatform == 'Android' || isPlatform == 'iOS')) return;
     if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
@@ -1381,6 +1382,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }, 0);
       return;
     }
+    if (this.block_send) return;
+    this.block_send = true;
     this.userInputTextArea.focus();
     setTimeout(() => { // iOS 보정용
       this.userInputTextArea.focus();
@@ -1476,33 +1479,33 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         is_me: true,
       };
       this.SendLocalMessage(msg);
+      this.block_send = false;
       return;
     } // 아래, 온라인 행동
     this.sending_msg.push(tmp);
     try {
-      await this.nakama.servers[this.isOfficial][this.target].socket
-        .writeChatMessage(this.info['id'], result).then(v => {
-          /** 업로드가 진행중인 메시지 개체 */
-          if (FileAttach && !isURL) { // 첨부 파일이 포함된 경우, 링크는 아닌 경우
-            // 로컬에 파일을 저장
-            let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.file_ext}`;
-            this.indexed.saveBlobToUserPath(this.userInput.file.blob, path, () => {
-              this.auto_open_thumbnail({
-                content: result,
-                message_id: v.message_id,
-              });
-            });
-          }
-          delete this.userInput.quickShare;
-          delete this.userInput.file;
-          this.userInput.text = '';
-          this.ResizeTextArea();
-          this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
-          if (isLongText) {
-            result['msg'] = isLongText;
-            this.LongTextMessageAsFile(result);
-          }
+      let v = await this.nakama.servers[this.isOfficial][this.target].socket
+        .writeChatMessage(this.info['id'], result);
+      /** 업로드가 진행중인 메시지 개체 */
+      if (FileAttach && !isURL) { // 첨부 파일이 포함된 경우, 링크는 아닌 경우
+        // 로컬에 파일을 저장
+        let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.file_ext}`;
+        this.indexed.saveBlobToUserPath(this.userInput.file.blob, path, () => {
+          this.auto_open_thumbnail({
+            content: result,
+            message_id: v.message_id,
+          });
         });
+      }
+      delete this.userInput.quickShare;
+      delete this.userInput.file;
+      this.userInput.text = '';
+      this.ResizeTextArea();
+      this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
+      if (isLongText) {
+        result['msg'] = isLongText;
+        this.LongTextMessageAsFile(result);
+      }
     } catch (e) {
       switch (e.code) {
         case 3: // 채널 연결 실패 (삭제된 경우)
@@ -1528,6 +1531,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }, 1500);
     }
+    this.block_send = false;
   }
 
   /** 원격 발송 없이 로컬에 저장하기 */

@@ -293,7 +293,7 @@ SPDX-License-Identifier: MIT -->
               </td>
               <td>
                 <ion-button fill="clear" mode="md" (click)="send(false)" expand="block"
-                  [disabled]="!info['status'] || info['status'] == 'missing' || info['status'] == 'offline'">
+                  [disabled]="block_send || !info['status'] || info['status'] == 'missing' || info['status'] == 'offline'">
                   <ion-icon name="send"></ion-icon>
                 </ion-button>
               </td>
