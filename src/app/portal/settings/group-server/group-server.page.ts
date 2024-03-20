@@ -473,11 +473,11 @@ export class GroupServerPage implements OnInit {
       this.change_img_smoothly(undefined);
     } else try {
       let v = await clipboard.read();
-      this.check_if_clipboard_available(v);
+      await this.check_if_clipboard_available(v);
     } catch (e) {
       try {
         let v = await this.mClipboard.paste();
-        this.check_if_clipboard_available(v);
+        await this.check_if_clipboard_available(v);
       } catch (e) {
         document.getElementById(this.file_sel_id).click();
       }
@@ -552,13 +552,31 @@ export class GroupServerPage implements OnInit {
     this.p5canvas.loop();
   }
 
-  check_if_clipboard_available(v: string) {
-    if (v.indexOf('http') == 0) {
-      this.change_img_smoothly(v);
-    } else if (v.indexOf('data:image') == 0) {
-      this.nakama.limit_image_size(v, (rv) => this.change_img_smoothly(rv['canvas'].toDataURL()));
-    } else {
-      throw '사용불가 이미지';
+  async check_if_clipboard_available(v: string) {
+    try {
+      if (v.indexOf('http') == 0) {
+        await new Promise((done, err) => {
+          let img = document.createElement('img');
+          img.src = v;
+          img.onload = () => {
+            this.change_img_smoothly(v);
+            img.remove();
+            done(undefined);
+          }
+          img.onerror = () => {
+            img.remove();
+            err();
+          }
+        });
+      } else throw 'URL 주소가 아님';
+    } catch (e) {
+      try {
+        if (v.indexOf('data:image') == 0) {
+          this.nakama.limit_image_size(v, (rv) => this.change_img_smoothly(rv['canvas'].toDataURL()));
+        } else throw 'DataURL 주소가 아님';
+      } catch (e) {
+        throw '사용불가 이미지';
+      }
     }
   }
 
