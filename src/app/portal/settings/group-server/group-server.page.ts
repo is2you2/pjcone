@@ -267,7 +267,6 @@ export class GroupServerPage implements OnInit {
           this.nakama.users.self['email'] = EmailInput.value();
           this.email_modified();
         }
-        p['EmailInput'] = EmailInput;
         let PasswordInput = p.createInput();
         PasswordInput.style('margin-top', '10px');
         PasswordInput.style('align-self', 'center');
@@ -280,10 +279,6 @@ export class GroupServerPage implements OnInit {
           this.nakama.users.self['password'] = PasswordInput.value();
         }
         p['PasswordInput'] = PasswordInput;
-        if (this.OnlineToggle) {
-          EmailInput.hide();
-          PasswordInput.hide();
-        }
         let LoginButton = p.createButton(this.OnlineToggle ? this.lang.text['Profile']['LogOut'] : this.lang.text['Profile']['login_toggle']);
         LoginButton.style('margin-top', '17px');
         LoginButton.style('align-self', 'center');
@@ -322,8 +317,22 @@ export class GroupServerPage implements OnInit {
         trashed_image.style('filter', `grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)})`);
         if (hasColorLerp)
           UserColorGradient.style('background-image', `linear-gradient(to top, rgba(${user_rgb_color}, ${p.min(1, userColorLerp) / 2}), rgba(${user_rgb_color}, 0))`);
-        if (FadeOutTrashedLerp <= 0 && (this.lerpVal >= 1 || this.lerpVal <= 0) && (hasColorLerp && userColorLerp >= 1))
+        if (FadeOutTrashedLerp <= 0 && (this.lerpVal >= 1 || this.lerpVal <= 0) && (!hasColorLerp || userColorLerp >= 1)) {
+          this.OnlineToggle = this.lerpVal >= 1;
+          if (this.OnlineToggle) {
+            this.p5canvas['InputForm'].hide();
+            p['LoginButton'].html(this.lang.text['Profile']['LogOut']);
+            p['OnlineLamp'].style('background-color', this.statusBar.colors['online']);
+          } else {
+            this.p5canvas['InputForm'].show();
+            this.p5canvas['InputForm'].style('display', 'flex');
+            p['LoginButton'].html(this.lang.text['Profile']['login_toggle']);
+            p['OnlineLamp'].style('background-color', this.statusBar.colors['offline']);
+          }
+          this.ShowServerList = this.OnlineToggle;
+          this.p5canvas['PasswordInput'].value('');
           p.noLoop();
+        }
       }
       p.windowResized = () => {
         p['OnlineLamp'].style('left', `${this.gsCanvasDiv.clientWidth / 2 + 38}px`);
@@ -728,31 +737,16 @@ export class GroupServerPage implements OnInit {
           await this.nakama.WatchAdsAndGetDevServerInfo();
           this.servers = this.nakama.get_all_server_info(true);
         }
-        this.p5canvas['EmailInput'].hide();
-        this.p5canvas['PasswordInput'].hide();
-        this.p5canvas['PasswordInput'].value('');
       } catch (e) {
         this.nakama.users.self['online'] = false;
         this.OnlineToggle = false;
       }
     } else {
       this.nakama.logout_all_server();
-      this.p5canvas['EmailInput'].show();
-      this.p5canvas['PasswordInput'].show();
-      this.p5canvas['PasswordInput'].value('');
       delete this.nakama.users.self['password'];
       this.nakama.save_groups_with_less_info();
       this.nakama.rearrange_channels();
     }
-    if (this.OnlineToggle)
-      this.p5canvas['InputForm'].hide();
-    else {
-      this.p5canvas['InputForm'].show();
-      this.p5canvas['InputForm'].style('display', 'flex');
-    }
-    this.p5canvas['LoginButton'].html(this.OnlineToggle ? this.lang.text['Profile']['LogOut'] : this.lang.text['Profile']['login_toggle']);
-    this.p5canvas['OnlineLamp'].style('background-color', this.OnlineToggle ? this.statusBar.colors['online'] : this.statusBar.colors['offline']);
-    this.ShowServerList = this.OnlineToggle;
     this.p5canvas.loop();
   }
 
