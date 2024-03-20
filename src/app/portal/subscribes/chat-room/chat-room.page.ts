@@ -1219,7 +1219,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   async SpeechingTexts() {
     let read_this = this.SpeechThese.shift();
     this.isSpeeching = true;
-    await TextToSpeech.speak({
+    if (this.platform.is('ios')) {
+      await TextToSpeech.stop();
+      TextToSpeech.speak({
+        text: read_this,
+        lang: this.lang.lang,
+      });
+    } else await TextToSpeech.speak({
       text: read_this,
       lang: this.lang.lang,
     });
