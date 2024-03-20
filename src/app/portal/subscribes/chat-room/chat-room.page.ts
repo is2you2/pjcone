@@ -640,7 +640,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.toggle_speakermode(this.useSpeaker);
     this.useFirstCustomCDN = Boolean(localStorage.getItem('useFFSCDN'));
     this.toggle_custom_attach(this.useFirstCustomCDN);
-    this.isIphone = this.platform.is('iphone');
     this.ChatLogs = document.getElementById('chatroom_div');
     this.ChatLogs.onscroll = (_ev: any) => {
       if (Math.abs(this.ChatLogs.scrollHeight - (this.ChatLogs.scrollTop + this.ChatLogs.clientHeight)) < 1) {
@@ -1346,11 +1345,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }
 
-  isIphone = false;
   /** 플랫폼별 높이 관리를 위한 함수 분리, 사용자 입력칸 높이 조정 함수 */
   ResizeTextArea() {
     if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-    this.userInputTextArea.style.height = this.isIphone ? '60px' : '36px';
+    this.userInputTextArea.style.height = '36px';
   }
 
   userInputTextArea: HTMLElement;
