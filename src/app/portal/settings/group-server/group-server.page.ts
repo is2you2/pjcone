@@ -42,6 +42,7 @@ export class GroupServerPage implements OnInit {
   session_uid = '';
 
   BackButtonPressed = false;
+  gsCanvasDiv: HTMLElement;
   ngOnInit() {
     window.history.pushState(null, null, window.location.href);
     window.onpopstate = () => {
@@ -69,7 +70,23 @@ export class GroupServerPage implements OnInit {
     this.nakama.socket_reactive['self_profile_content_update'] = () => {
       this.update_content_from_server();
     }
-    let sketch = (p: p5) => {
+    this.announce_update_profile = this.original_profile['display_name'] !== undefined;
+
+    if (this.navParams.data['target']) {
+      let isOfficial = this.navParams.get('isOfficial');
+      let target = this.navParams.get('target');
+      try {
+        this.session_uid = this.nakama.servers[isOfficial][target].session.user_id;
+      } catch (e) { } // 로컬 채널은 uid 설정 무시
+    }
+  }
+
+  /** 모바일 PWA 여부를 검토하여 하단 modal 시작 높이를 조정 */
+  isMobilePWA = false;
+  CanAddTestServer = false;
+  ionViewWillEnter() {
+    this.gsCanvasDiv = document.getElementById('GroupServerCanvasDiv');
+    this.p5canvas = new p5((p: p5) => {
       let img = document.getElementById('profile_img');
       let tmp_img = document.getElementById('profile_tmp_img');
       const LERP_SIZE = .025;
@@ -95,23 +112,7 @@ export class GroupServerPage implements OnInit {
         img.setAttribute('style', `filter: grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)});`);
         tmp_img.setAttribute('style', `filter: grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)});`);
       }
-    }
-    this.p5canvas = new p5(sketch);
-    this.announce_update_profile = this.original_profile['display_name'] !== undefined;
-
-    if (this.navParams.data['target']) {
-      let isOfficial = this.navParams.get('isOfficial');
-      let target = this.navParams.get('target');
-      try {
-        this.session_uid = this.nakama.servers[isOfficial][target].session.user_id;
-      } catch (e) { } // 로컬 채널은 uid 설정 무시
-    }
-  }
-
-  /** 모바일 PWA 여부를 검토하여 하단 modal 시작 높이를 조정 */
-  isMobilePWA = false;
-  CanAddTestServer = false;
-  ionViewWillEnter() {
+    });
     this.ServersList.value = this.ToggleOnline.checked ? 'open' : undefined;
     if (!this.nakama.users.self['email'])
       (document.getElementById('email_input').childNodes[1].childNodes[1].childNodes[1] as HTMLElement).focus();
