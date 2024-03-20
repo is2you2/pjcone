@@ -11,15 +11,15 @@ SPDX-License-Identifier: MIT -->
 </ion-header>
 
 <ion-content>
-  <div id="GroupServerCanvasDiv" style="position: absolute; width: 100%; height: 100%; display: flex; pointer-events: none;">
+  <div id="GroupServerCanvasDiv" style="position: absolute; width: 100%; height: 100%; display: flex;">
   </div>
-  <div class="profile_img_form">
+  <input hidden type="file" [id]="file_sel_id" accept="image/*" (change)="inputImageSelected($event)">
+  <!-- <div class="profile_img_form">
     <img [hidden]="!nakama.users.self['img']" id="profile_img" class="profile_img" [src]="nakama.users.self['img']"
       [alt]="lang.text['Profile']['img_alt']">
     <img [hidden]="!tmp_img" id="profile_tmp_img" class="profile_img" [src]="tmp_img"
       [alt]="lang.text['Profile']['img_alt']">
     <div class="fore-gradient" (click)="change_img_from_file()"></div>
-    <input hidden type="file" [id]="file_sel_id" accept="image/*" (change)="inputImageSelected($event)">
     <div class="username">{{nakama.users.self['display_name'] || lang.text['Profile']['noname_user']}}</div>
   </div>
   <ion-item>
@@ -74,7 +74,7 @@ SPDX-License-Identifier: MIT -->
         </ion-item>
       </div>
     </ion-accordion>
-  </ion-accordion-group>
+  </ion-accordion-group> -->
 
   <ion-modal #RegisterNewServer [initialBreakpoint]="isMobilePWA ? .6 : .4" [breakpoints]="[.4, .6]">
     <ng-template>

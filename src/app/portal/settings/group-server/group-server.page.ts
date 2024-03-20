@@ -62,7 +62,7 @@ export class GroupServerPage implements OnInit {
       });
     }
     this.nakama.socket_reactive['profile'] = (img_url: string) => {
-      this.change_img_smoothly(img_url);
+      this.p5canvas['ChangeImageSmooth'](img_url);
     }
     setTimeout(() => {
       this.check_user_content();
@@ -87,30 +87,129 @@ export class GroupServerPage implements OnInit {
   ionViewWillEnter() {
     this.gsCanvasDiv = document.getElementById('GroupServerCanvasDiv');
     this.p5canvas = new p5((p: p5) => {
-      let img = document.getElementById('profile_img');
-      let tmp_img = document.getElementById('profile_tmp_img');
       const LERP_SIZE = .025;
+      let nameDiv: p5.Element;
+      let nameEditDiv: p5.Element;
+      let selected_image: p5.Element;
+      /** 변경 전 이미지 */
+      let trashed_image: p5.Element;
+      let FadeOutTrashedLerp = 1;
       p.setup = () => {
         p.noCanvas();
+        p.pixelDensity(1);
+        let imgDiv = p.createDiv();
+        const IMAGE_SIZE = '156px';
+        // 사용자 이미지
+        imgDiv.style('width', IMAGE_SIZE);
+        imgDiv.style('height', IMAGE_SIZE);
+        imgDiv.style('position', 'absolute');
+        imgDiv.style('top', '120px');
+        imgDiv.style('left', '50%');
+        imgDiv.style('transform', 'translateX(-50%)');
+        imgDiv.style('border-radius', IMAGE_SIZE);
+        imgDiv.style('background-image', 'url(assets/data/avatar.svg)');
+        imgDiv.style('background-position', 'center');
+        imgDiv.style('background-repeat', 'no-repeat');
+        imgDiv.style('background-size', 'cover');
+        imgDiv.parent(this.gsCanvasDiv);
+        imgDiv.elt.onclick = () => {
+          this.change_img_from_file();
+        }
+        // 부드러운 이미지 전환
+        selected_image = p.createImg(this.nakama.users.self['img'], 'profile_img');
+        selected_image.style('width', IMAGE_SIZE);
+        selected_image.style('height', IMAGE_SIZE);
+        selected_image.style('border-radius', IMAGE_SIZE);
+        selected_image.style('position', 'absolute');
+        selected_image.style('object-fit', 'cover');
+        if (!this.nakama.users.self['img'])
+          selected_image.hide();
+        selected_image.parent(imgDiv);
+        trashed_image = p.createImg(undefined, 'before_img');
+        trashed_image.style('width', IMAGE_SIZE);
+        trashed_image.style('height', IMAGE_SIZE);
+        trashed_image.style('border-radius', IMAGE_SIZE);
+        trashed_image.style('position', 'absolute');
+        trashed_image.style('object-fit', 'cover');
+        trashed_image.hide();
+        trashed_image.parent(imgDiv);
+        p['ChangeImageSmooth'] = (url: string) => {
+          if (!url) {
+            trashed_image.elt.src = selected_image.elt.src;
+            trashed_image.show();
+          } else {
+            trashed_image.elt.src = undefined;
+            trashed_image.hide();
+          }
+          selected_image.elt.src = url;
+          FadeOutTrashedLerp = 1;
+          p.loop();
+          this.nakama.users.self['img'] = url;
+          this.sync_to_all_server();
+          let file_sel = document.getElementById(this.file_sel_id);
+          file_sel['value'] = '';
+          if (url) {
+            selected_image.show();
+          } else selected_image.hide();
+        }
+        const NAME_DECK_Y = 330;
+        const NAME_SIZE = '36px';
+        // 사용자 이름 (display)
+        nameDiv = p.createDiv(this.nakama.users.self['display_name']);
+        nameDiv.style('position', 'absolute');
+        nameDiv.style('top', `${NAME_DECK_Y}px`);
+        nameDiv.style('left', '50%');
+        nameDiv.style('font-size', NAME_SIZE);
+        nameDiv.style('font-weight', 'bold');
+        nameDiv.style('transform', 'translateX(-50%)');
+        nameDiv.style('width', '80%');
+        nameDiv.style('text-align', 'center');
+        nameDiv.parent(this.gsCanvasDiv);
+        nameDiv.elt.onclick = () => { // 편집 모드로 변경
+          nameEditDiv.value(nameDiv.html());
+          nameEditDiv.show();
+          nameDiv.hide();
+          nameEditDiv.elt.focus();
+        }
+        // 사용자 이름 (input)
+        nameEditDiv = p.createInput();
+        nameEditDiv.style('position', 'absolute');
+        nameEditDiv.style('top', `${NAME_DECK_Y - 3}px`);
+        nameEditDiv.style('left', '50%');
+        nameEditDiv.style('transform', 'translateX(-50%)');
+        nameEditDiv.style('font-size', NAME_SIZE);
+        nameEditDiv.style('font-weight', 'bold');
+        nameEditDiv.style('width', '80%');
+        nameEditDiv.style('text-align', 'center');
+        nameDiv.style('text-align', 'center');
+        nameEditDiv.parent(this.gsCanvasDiv);
+        nameEditDiv.hide();
+        nameEditDiv.elt.addEventListener('focusout', () => {
+          this.nakama.users.self['display_name'] = nameEditDiv.value();
+          nameDiv.html(`${nameEditDiv.value()}`);
+          nameEditDiv.hide();
+          nameDiv.show();
+        });
       }
       p.draw = () => {
+        if (FadeOutTrashedLerp > 0) {
+          FadeOutTrashedLerp -= LERP_SIZE;
+          trashed_image.style('opacity', `${FadeOutTrashedLerp}`);
+          selected_image.style('opacity', `${1 - FadeOutTrashedLerp}`);
+        }
         if (this.nakama.users.self['online']) {
           if (this.lerpVal < 1) {
             this.lerpVal += LERP_SIZE;
-          } else {
-            this.lerpVal = 1;
-            p.noLoop();
-          }
+          } else this.lerpVal = 1;
         } else {
           if (this.lerpVal > 0) {
             this.lerpVal -= LERP_SIZE;
-          } else {
-            this.lerpVal = 0;
-            p.noLoop();
-          }
+          } else this.lerpVal = 0;
         }
-        img.setAttribute('style', `filter: grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)});`);
-        tmp_img.setAttribute('style', `filter: grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)});`);
+        selected_image.style('filter', `grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)})`);
+        trashed_image.style('filter', `grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)})`);
+        if (FadeOutTrashedLerp <= 0 && (this.lerpVal >= 1 || this.lerpVal <= 0))
+          p.noLoop();
       }
     });
     this.ServersList.value = this.ToggleOnline.checked ? 'open' : undefined;
@@ -412,33 +511,6 @@ export class GroupServerPage implements OnInit {
     if (server_len) loading.dismiss();
   }
 
-  /** 부드러운 이미지 변환 */
-  change_img_smoothly(_url: string) {
-    new p5((p: p5) => {
-      let profile_tmp_img = document.getElementById('profile_tmp_img');
-      let file_sel = document.getElementById(this.file_sel_id);
-      const LERP_SIZE = .035;
-      let lerpVal = 0;
-      p.setup = () => {
-        p.noCanvas();
-        file_sel['value'] = '';
-        profile_tmp_img.setAttribute('style', `filter: grayscale(${this.nakama.users.self['online'] ? 0 : .9}) contrast(${this.nakama.users.self['online'] ? 1 : 1.4}) opacity(${lerpVal})`);
-        this.tmp_img = _url;
-      }
-      p.draw = () => {
-        if (lerpVal < 1) {
-          lerpVal += LERP_SIZE;
-        } else {
-          lerpVal = 1;
-          this.nakama.users.self['img'] = this.tmp_img;
-          this.sync_to_all_server();
-          p.remove();
-        }
-        profile_tmp_img.setAttribute('style', `filter: grayscale(${this.nakama.users.self['online'] ? 0 : .9}) contrast(${this.nakama.users.self['online'] ? 1 : 1.4}) opacity(${lerpVal})`);
-      }
-    });
-  }
-
   /** 모든 서버에 프로필 변경됨 고지 및 동기화 */
   sync_to_all_server() {
     let servers = this.nakama.get_all_online_server();
@@ -471,7 +543,7 @@ export class GroupServerPage implements OnInit {
   async change_img_from_file() {
     // 클립보드로부터 받아오기 시도 후 실패시 파일 선택
     if (this.nakama.users.self['img']) {
-      this.change_img_smoothly(undefined);
+      this.p5canvas['ChangeImageSmooth']();
     } else try {
       let v = await clipboard.read();
       await this.check_if_clipboard_available(v);
@@ -492,7 +564,7 @@ export class GroupServerPage implements OnInit {
       clearInterval(updater);
     }, 1500);
     let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
-    this.nakama.limit_image_size(base64, (v: any) => { this.change_img_smoothly(v['canvas'].toDataURL()) });
+    this.nakama.limit_image_size(base64, (v: any) => { this.p5canvas['ChangeImageSmooth'](v['canvas'].toDataURL()) });
   }
 
   /** 온라인 전환 자동처리 가능여부 */
@@ -560,7 +632,7 @@ export class GroupServerPage implements OnInit {
           let img = document.createElement('img');
           img.src = v;
           img.onload = () => {
-            this.change_img_smoothly(v);
+            this.p5canvas['ChangeImageSmooth'](v);
             img.remove();
             done(undefined);
           }
@@ -573,7 +645,7 @@ export class GroupServerPage implements OnInit {
     } catch (e) {
       try {
         if (v.indexOf('data:image') == 0) {
-          this.nakama.limit_image_size(v, (rv) => this.change_img_smoothly(rv['canvas'].toDataURL()));
+          this.nakama.limit_image_size(v, (rv) => this.p5canvas['ChangeImageSmooth'](rv['canvas'].toDataURL()));
         } else throw 'DataURL 주소가 아님';
       } catch (e) {
         throw '사용불가 이미지';
