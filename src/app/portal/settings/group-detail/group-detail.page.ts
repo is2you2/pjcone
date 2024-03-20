@@ -154,9 +154,22 @@ export class GroupDetailPage implements OnInit {
 
   file_sel_id = '';
   /** ionic 버튼을 눌러 input-file 동작 */
-  buttonClickInputFile() {
-    if (this.has_admin)
-      document.getElementById(this.file_sel_id).click();
+  async buttonClickInputFile() {
+    if (this.has_admin) { // 방장인 경우
+      if (this.info.img)
+        this.info.img = undefined;
+      else try {
+        let v = await clipboard.read();
+        this.check_if_clipboard_available(v);
+      } catch (e) {
+        try {
+          let v = await this.mClipboard.paste();
+          this.check_if_clipboard_available(v);
+        } catch (e) {
+          document.getElementById(this.file_sel_id).click();
+        }
+      }
+    }
   }
   async inputImageSelected(ev: any) {
     let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
@@ -180,31 +193,9 @@ export class GroupDetailPage implements OnInit {
     });
   }
 
-  imageURL_disabled = false;
-  imageURL_placeholder = this.lang.text['Profile']['pasteURI'];
-  /** 외부 주소 붙여넣기 */
-  imageURLPasted() {
-    this.imageURL_disabled = true;
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-      clipboard.read().then(v => {
-        this.check_if_clipboard_available(v);
-      });
-    } else {
-      this.mClipboard.paste().then(v => {
-        this.check_if_clipboard_available(v);
-      }, e => {
-        console.log('클립보드 자료받기 오류: ', e);
-      });
-    }
-    setTimeout(() => {
-      this.imageURL_disabled = false;
-    }, 1500);
-  }
-
   check_if_clipboard_available(v: string) {
     if (v.indexOf('http') == 0) {
       this.info.img = v;
-      this.imageURL_placeholder = v;
       this.announce_update_group_image(v);
     } else if (v.indexOf('data:image') == 0) {
       this.nakama.limit_image_size(v, (rv) => {
@@ -212,9 +203,7 @@ export class GroupDetailPage implements OnInit {
         this.announce_update_group_image(this.info.img);
       });
     } else {
-      this.p5toast.show({
-        text: this.lang.text['Profile']['copyURIFirst'],
-      });
+      throw '사용불가 이미지';
     }
   }
 

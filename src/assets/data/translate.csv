@@ -130,8 +130,6 @@ user_content_changed,사용자 콘텐츠 변경,User content changed
 user_content_removed,사용자 콘텐츠 삭제,User content removed
 need_email,이메일 주소를 입력해주세요,Please enter your email address
 need_password,비밀번호를 입력해주세요,Please enter a password
-pasteURI,눌러서 외부이미지 주소 붙여넣기,Click to paste external image address
-copyURIFirst,먼저 웹 페이지에서 이미지 주소를 복사해주세요,Copy the image address from the web page first
 user_profile_changed,사용자 프로필 변경,Change user profile
 ## OtherProfile,,
 Title,사용자 정보,User info

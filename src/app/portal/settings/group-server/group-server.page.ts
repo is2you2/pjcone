@@ -467,7 +467,23 @@ export class GroupServerPage implements OnInit {
 
   file_sel_id = '';
   content_sel_id = '';
-  change_img_from_file() { document.getElementById(this.file_sel_id).click(); }
+  async change_img_from_file() {
+    // 클립보드로부터 받아오기 시도 후 실패시 파일 선택
+    if (this.nakama.users.self['img']) {
+      this.change_img_smoothly(undefined);
+    } else try {
+      let v = await clipboard.read();
+      this.check_if_clipboard_available(v);
+    } catch (e) {
+      try {
+        let v = await this.mClipboard.paste();
+        this.check_if_clipboard_available(v);
+      } catch (e) {
+        document.getElementById(this.file_sel_id).click();
+      }
+    }
+  }
+
   /** 파일 선택시 로컬에서 반영 */
   async inputImageSelected(ev: any) {
     let updater = setInterval(() => { }, 110);
@@ -536,36 +552,13 @@ export class GroupServerPage implements OnInit {
     this.p5canvas.loop();
   }
 
-  imageURL_disabled = false;
-  /** 외부 주소 붙여넣기 */
-  imageURLPasted() {
-    this.imageURL_disabled = true;
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-      clipboard.read().then(v => {
-        this.check_if_clipboard_available(v);
-      });
-    } else {
-      this.mClipboard.paste().then(v => {
-        this.check_if_clipboard_available(v);
-      }, e => {
-        console.log('클립보드 자료받기 오류: ', e);
-      });
-    }
-    setTimeout(() => {
-      this.imageURL_disabled = false;
-    }, 1500);
-  }
-
   check_if_clipboard_available(v: string) {
     if (v.indexOf('http') == 0) {
       this.change_img_smoothly(v);
     } else if (v.indexOf('data:image') == 0) {
       this.nakama.limit_image_size(v, (rv) => this.change_img_smoothly(rv['canvas'].toDataURL()));
     } else {
-      this.p5toast.show({
-        text: this.lang.text['Profile']['copyURIFirst'],
-      });
-      this.change_img_smoothly('');
+      throw '사용불가 이미지';
     }
   }
 
