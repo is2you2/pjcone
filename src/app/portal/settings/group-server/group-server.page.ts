@@ -213,6 +213,7 @@ export class GroupServerPage implements OnInit {
         // 사용자 이름 (input)
         nameEditDiv = p.createInput();
         nameEditDiv.style('font-size', NAME_SIZE);
+        nameEditDiv.style('margin-top', '-3px');
         nameEditDiv.style('font-weight', 'bold');
         nameEditDiv.style('align-self', 'center');
         nameEditDiv.style('width', '80%');
@@ -288,6 +289,7 @@ export class GroupServerPage implements OnInit {
         LoginButton.style('padding', '12px 30px');
         LoginButton.parent(InputForm);
         LoginButton.elt.onclick = () => {
+          LoginButton.elt.disabled = true;
           this.toggle_online();
         }
         p['LoginButton'] = LoginButton;
@@ -331,6 +333,7 @@ export class GroupServerPage implements OnInit {
           }
           this.ShowServerList = this.OnlineToggle;
           this.p5canvas['PasswordInput'].value('');
+          p['LoginButton'].elt.disabled = false;
           p.noLoop();
         }
       }
