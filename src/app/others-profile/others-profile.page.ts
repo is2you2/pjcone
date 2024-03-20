@@ -9,7 +9,7 @@ import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
 import { P5ToastService } from '../p5-toast.service';
 import { StatusManageService } from "../status-manage.service";
-import { FileInfo, GlobalActService } from '../global-act.service';
+import { FileInfo, GlobalActService, isDarkMode } from '../global-act.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from "clipboardy";
 
@@ -84,34 +84,6 @@ export class OthersProfilePage implements OnInit {
         });
     }, 150);
     this.catch_user_noties();
-    let sketch = (p: p5) => {
-      let img = document.getElementById('other_profile_img');
-      let tmp_img = document.getElementById('profile_tmp_img');
-      const LERP_SIZE = .025;
-      p.setup = () => {
-        p.noCanvas();
-      }
-      p.draw = () => {
-        if (this.info['user']['online']) {
-          if (this.lerpVal < 1) {
-            this.lerpVal += LERP_SIZE;
-          } else {
-            this.lerpVal = 1;
-            p.noLoop();
-          }
-        } else {
-          if (this.lerpVal > 0) {
-            this.lerpVal -= LERP_SIZE;
-          } else {
-            this.lerpVal = 0;
-            p.noLoop();
-          }
-        }
-        img.setAttribute('style', `filter: grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)});`);
-        tmp_img.setAttribute('style', `filter: grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)});`);
-      }
-    }
-    this.p5canvas = new p5(sketch);
   }
 
   OtherCanvasDiv: any;
@@ -120,12 +92,22 @@ export class OthersProfilePage implements OnInit {
     this.p5canvas = new p5((p: p5) => {
       const LERP_SIZE = .025;
       let nameDiv: p5.Element;
-      let nameEditDiv: p5.Element;
       let selected_image: p5.Element;
       /** 변경 전 이미지 */
       let trashed_image: p5.Element;
       let FadeOutTrashedLerp = 1;
+      /** 사용자 색상 표시 */
+      let UserColorGradient: p5.Element;
+      let user_rgb_color = '0, 0, 0';
+      let userColorLerp = 0;
       p.setup = () => {
+        let user_color = p.color(`#${(this.info['user']['id'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6)}`);
+        user_rgb_color = `${p.red(user_color)}, ${p.green(user_color)}, ${p.blue(user_color)}`;
+        UserColorGradient = p.createDiv();
+        UserColorGradient.style('width', '100%');
+        UserColorGradient.style('height', '100%');
+        UserColorGradient.style('background-image', `linear-gradient(to top, rgba(${user_rgb_color}, 0), rgba(${user_rgb_color}, 0))`);
+        UserColorGradient.parent(this.OtherCanvasDiv);
         p.noCanvas();
         p.pixelDensity(1);
         let imgDiv = p.createDiv();
@@ -238,9 +220,12 @@ export class OthersProfilePage implements OnInit {
             this.lerpVal = 0;
           }
         }
+        if (userColorLerp < 1)
+          userColorLerp += LERP_SIZE;
         selected_image.style('filter', `grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)})`);
         trashed_image.style('filter', `grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)})`);
-        if (FadeOutTrashedLerp <= 0 && (this.lerpVal >= 1 || this.lerpVal <= 0)) {
+        UserColorGradient.style('background-image', `linear-gradient(to top, rgba(${user_rgb_color}, ${p.min(1, userColorLerp)}), rgba(${user_rgb_color}, 0))`);
+        if (FadeOutTrashedLerp <= 0 && (this.lerpVal >= 1 || this.lerpVal <= 0) && userColorLerp >= 1) {
           this.p5canvas['OnlineLamp'].style('background-color', this.info['user']['online'] ? this.statusBar.colors['online'] : this.statusBar.colors['offline']);
           p.noLoop();
         }
