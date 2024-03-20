@@ -3,7 +3,7 @@
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChannelMessage } from '@heroiclabs/nakama-js';
-import { AlertController, IonicSafeString, LoadingController, ModalController, NavController, Platform } from '@ionic/angular';
+import { AlertController, IonicSafeString, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 import * as p5 from "p5";
@@ -67,7 +67,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private p5toast: P5ToastService,
     private mClipboard: Clipboard,
     private alertCtrl: AlertController,
-    private platform: Platform,
   ) { }
 
   /** 채널 정보 */
@@ -1824,7 +1823,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       componentProps: {
         data: _msg.content['quickShare']
       },
-    }).then(v => v.present());
+    }).then(v => {
+      v.onDidDismiss().then(() => {
+        this.ionViewDidEnter();
+      });
+      this.removeShortCutKey();
+      v.present()
+    });
   }
 
   JoinWebRTCMatch(msg: any) {
@@ -1995,6 +2000,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.noti.ClearNoti(this.info['cnoti_id']);
           this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
         });
+        this.removeShortCutKey();
         this.noti.Current = 'IonicViewerPage';
         v.present();
         this.nakama.removeBanner();
@@ -2064,6 +2070,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.noti.ClearNoti(this.info['cnoti_id']);
             this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
           });
+          this.removeShortCutKey();
           this.noti.Current = 'GroupServerPage';
           v.present();
           this.lock_modal_open = false;
@@ -2078,6 +2085,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           },
         }).then(v => {
           v.onDidDismiss().then((_v) => {
+            this.ionViewDidEnter();
             this.isOtherAct = false;
             this.noti.Current = this.info['cnoti_id'];
             if (this.info['cnoti_id'])
@@ -2085,6 +2093,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
           });
           this.noti.Current = 'OthersProfilePage';
+          this.removeShortCutKey();
           v.present();
           this.lock_modal_open = false;
         });
