@@ -213,7 +213,6 @@ export class GroupServerPage implements OnInit {
         // 사용자 이름 (input)
         nameEditDiv = p.createInput();
         nameEditDiv.style('font-size', NAME_SIZE);
-        nameEditDiv.style('margin-top', '-3px');
         nameEditDiv.style('font-weight', 'bold');
         nameEditDiv.style('align-self', 'center');
         nameEditDiv.style('width', '80%');
