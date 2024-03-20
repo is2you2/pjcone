@@ -2,14 +2,12 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { ModalController, NavParams } from '@ionic/angular';
 import * as p5 from "p5";
-import { IndexedDBService } from '../indexed-db.service';
 import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
 import { P5ToastService } from '../p5-toast.service';
 import { StatusManageService } from "../status-manage.service";
-import { FileInfo, GlobalActService, isDarkMode } from '../global-act.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from "clipboardy";
 
@@ -26,10 +24,7 @@ export class OthersProfilePage implements OnInit {
     private nakama: NakamaService,
     public statusBar: StatusManageService,
     private p5toast: P5ToastService,
-    private indexed: IndexedDBService,
     public lang: LanguageSettingService,
-    private global: GlobalActService,
-    private loadingCtrl: LoadingController,
     private mClipboard: Clipboard,
   ) { }
 
@@ -64,7 +59,6 @@ export class OthersProfilePage implements OnInit {
     this.group_info = this.navParams.get('group');
     this.isOfficial = this.group_info['server']['isOfficial'];
     this.target = this.group_info['server']['target'];
-    this.user_content_id = `user_content_${this.info['user']['id']}`;
     this.nakama.load_other_user(this.info['user']['id'], this.isOfficial, this.target);
     this.nakama.socket_reactive['others-profile'] = (img_url: string) => {
       this.p5canvas['ChangeImageSmooth'](img_url);
@@ -72,17 +66,6 @@ export class OthersProfilePage implements OnInit {
     this.nakama.socket_reactive['others-online'] = () => {
       this.p5canvas.loop();
     };
-    this.nakama.socket_reactive['other_user_content_update'] = () => {
-      this.update_content_from_server();
-    }
-    setTimeout(async () => {
-      let is_exist = await this.indexed.checkIfFileExist(`servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`);
-      if (is_exist)
-        await this.global.CreateGodotIFrame(this.user_content_id, {
-          ext: 'pck',
-          path: `servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`,
-        });
-    }, 150);
     this.catch_user_noties();
   }
 
@@ -238,48 +221,6 @@ export class OthersProfilePage implements OnInit {
     });
   }
 
-  user_content_id = '';
-
-  async update_content_from_server() {
-    this.global.godot.remove();
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-    loading.present();
-    let server = this.nakama.servers[this.isOfficial][this.target];
-    let target_info: FileInfo;
-    try {
-      let getContent = await server.client.readStorageObjects(
-        server.session, {
-        object_ids: [{
-          collection: 'user_public',
-          key: 'main_content',
-          user_id: this.info['user']['id'],
-        }],
-      });
-      target_info = getContent.objects[0].value;
-      let base64 = '';
-      for (let i = 0, j = target_info.partsize; i < j; i++) {
-        let part = await server.client.readStorageObjects(
-          server.session, {
-          object_ids: [{
-            collection: 'user_public',
-            key: `main_content_${i}`,
-            user_id: this.info['user']['id'],
-          }]
-        });
-        base64 += part.objects[i].value['data'];
-      }
-      await this.indexed.saveBase64ToUserPath(base64.replace(/"|=|\\/g, ''), `servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`);
-      await this.global.CreateGodotIFrame(this.user_content_id, {
-        ext: 'pck',
-        path: `servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`,
-      });
-    } catch (e) {
-      await this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/content.pck`);
-      this.global.godot.remove();
-    }
-    loading.dismiss();
-  }
-
   isOfficial: string;
   target: string;
   /** 이 사용자와 관련된 알림 검토 (그룹 리액션 검토용) */
@@ -401,14 +342,9 @@ export class OthersProfilePage implements OnInit {
       .catch(_e => clipboard.write(this.info['user'].id));
   }
 
-  focus_on_content() {
-    console.warn('콘텐츠 자세히보기 기능 준비중');
-  }
-
   ionViewDidLeave() {
     delete this.nakama.socket_reactive['others-profile'];
     delete this.nakama.socket_reactive['others-online'];
-    delete this.nakama.socket_reactive['other_user_content_update'];
     this.p5canvas.remove();
   }
 }

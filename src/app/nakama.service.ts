@@ -2257,11 +2257,6 @@ export class NakamaService {
                 } else this.indexed.removeFileFromUserPath('servers/self/profile.img');
               });
               break;
-            case 'content': {
-              if (this.socket_reactive['self_profile_content_update'])
-                this.socket_reactive['self_profile_content_update']();
-            }
-              break;
             default:
               console.warn('예상하지 못한 프로필 동기화 정보: ', m);
               break;
@@ -2762,14 +2757,11 @@ export class NakamaService {
   translate_updates(msg: any) {
     if (msg.content['user_update'])
       switch (msg.content['user_update']) {
-        case 'modify_data': // 프로필 또는 이미지가 변경됨
+        case 'modify_data': // 프로필 정보가 변경됨
           msg.content['noti'] = `${this.lang.text['Profile']['user_profile_changed']}${msg.content['noti_form']}`;
           break;
-        case 'modify_content':
-          msg.content['noti'] = `${this.lang.text['Profile']['user_content_changed']}${msg.content['noti_form']}`;
-          break;
-        case 'remove_content':
-          msg.content['noti'] = `${this.lang.text['Profile']['user_content_removed']}${msg.content['noti_form']}`;
+        case 'modify_img': // 프로필 이미지가 변경됨
+          msg.content['noti'] = `${this.lang.text['Profile']['user_image_changed']}${msg.content['noti_form']}`;
           break;
       }
     if (msg.content['gupdate'])
@@ -2787,7 +2779,7 @@ export class NakamaService {
   async update_group_user_info(c: ChannelMessage, _is_official: string, _target: string) {
     this.translate_updates(c);
     switch (c.content['user_update']) {
-      case 'modify_data': // 프로필 또는 이미지가 변경됨
+      case 'modify_data': // 프로필 정보가 변경됨
         try {
           let other = await this.servers[_is_official][_target].client.getUsers(
             this.servers[_is_official][_target].session, [c.sender_id]
@@ -2799,13 +2791,32 @@ export class NakamaService {
             this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${c.sender_id}/profile.json`)
           }
         } catch (e) {
-          console.error('다른 사용자 프로필 이미지 변경 오류: ', e);
+          console.error('다른 사용자 프로필 정보 변경 오류: ', e);
         }
         break;
-      case 'modify_content':
-      case 'remove_content':
-        if (this.socket_reactive['other_user_content_update'])
-          this.socket_reactive['other_user_content_update']();
+      case 'modify_img': // 프로필 이미지 변경됨
+        try {
+          let user_img = await this.servers[_is_official][_target].client.readStorageObjects(
+            this.servers[_is_official][_target].session, {
+            object_ids: [{
+              collection: 'user_public',
+              key: 'profile_image',
+              user_id: c.sender_id,
+            }]
+          }
+          );
+          console.log(user_img.objects);
+          if (user_img.objects.length) {
+            this.users[_is_official][_target][c.sender_id]['img'] = user_img.objects[0].value['img'].replace(/"|\\|=/g, '');
+            this.indexed.saveTextFileToUserPath(this.users[_is_official][_target][c.sender_id]['img'],
+              `servers/${_is_official}/${_target}/users/${c.sender_id}/profile.img`);
+          } else {
+            delete this.users[_is_official][_target][c.sender_id]['img'];
+            this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${c.sender_id}/profile.img`)
+          }
+        } catch (e) {
+          console.error('다른 사용자 프로필 이미지 변경 오류: ', e);
+        }
         break;
       default:
         console.warn('예상하지 못한 그룹 사용자 행동: ', c);

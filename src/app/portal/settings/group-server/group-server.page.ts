@@ -54,7 +54,6 @@ export class GroupServerPage implements OnInit {
     this.servers = this.nakama.get_all_server_info(true);
 
     this.file_sel_id = `self_profile_${new Date().getTime()}`;
-    this.content_sel_id = `self_content_${new Date().getTime()}`;
     this.original_profile = JSON.parse(JSON.stringify(this.nakama.users.self));
     if (!this.nakama.users.self['img']) {
       this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
@@ -63,12 +62,6 @@ export class GroupServerPage implements OnInit {
     }
     this.nakama.socket_reactive['profile'] = (img_url: string) => {
       this.p5canvas['ChangeImageSmooth'](img_url);
-    }
-    setTimeout(() => {
-      this.check_user_content();
-    }, 150);
-    this.nakama.socket_reactive['self_profile_content_update'] = () => {
-      this.update_content_from_server();
     }
     this.announce_update_profile = this.original_profile['display_name'] !== undefined;
 
@@ -442,14 +435,14 @@ export class GroupServerPage implements OnInit {
     this.servers = this.nakama.get_all_server_info(true);
   }
 
-  announce_update_profile = true;
+  /** 프로필이 변경됨 알림 */
+  announce_update_profile = false;
 
   async ionViewWillLeave() {
     delete this.global.p5key['KeyShortCut']['Escape'];
     if (this.nakama.on_socket_disconnected['group_unlink_by_user'])
       delete this.nakama.on_socket_disconnected['group_unlink_by_user'];
     delete this.nakama.socket_reactive['profile'];
-    delete this.nakama.socket_reactive['self_profile_content_update'];
     let keys = Object.keys(this.nakama.users.self);
     let isProfileChanged = false;
     for (let i = 0, j = keys.length; i < j; i++)
@@ -475,7 +468,7 @@ export class GroupServerPage implements OnInit {
         // 해당 서버 연결된 채널에 고지
         if (NeedAnnounceUpdate && this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]) {
           let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
-          if (all_channels)
+          if (all_channels) {
             all_channels.forEach((channelId: any) => {
               if (this.announce_update_profile)
                 servers[i].socket.writeChatMessage(channelId, {
@@ -485,6 +478,7 @@ export class GroupServerPage implements OnInit {
                     : `: ${this.original_profile['display_name']} -> ${this.nakama.users.self['display_name']}`,
                 });
             });
+          }
         }
       }
       this.nakama.save_self_profile();
@@ -501,185 +495,61 @@ export class GroupServerPage implements OnInit {
 
   p5canvas: p5;
 
-  async check_user_content() {
-    try {
-      let is_exist = await this.indexed.checkIfFileExist('servers/self/content.pck');
-      if (is_exist) {
-        await this.global.CreateGodotIFrame('my_content', {
-          ext: 'pck',
-          path: 'servers/self/content.pck',
-        });
-      } else throw '로컬에 준비된 파일 없음';
-    } catch (e) {
-      console.log('check_user_content: ', e);
-      this.update_content_from_server();
-    }
-  }
-
-  async update_content_from_server() {
-    let load_user_content: FileInfo = { path: 'servers/self/content.pck', }
-    let servers = this.nakama.get_all_online_server();
-    let is_saved = false;
-    for (let i = 0, j = servers.length; i < j; i++) {
-      try {
-        let blob = await this.nakama.sync_load_file(load_user_content, servers[i].info.isOfficial, servers[i].info.target,
-          'user_public', servers[i].session.user_id, 'main_content');
-        is_saved = Boolean(blob);
-        break;
-      } catch (e) {
-        console.log('update_content_from_server: ', e);
-        continue;
-      }
-    }
-    if (is_saved) {
-      this.global.godot.remove();
-      await this.global.CreateGodotIFrame('my_content', {
-        ext: 'pck',
-        path: 'servers/self/content.pck',
-      });
-    }
-  }
-
-  change_content() {
-    document.getElementById(this.content_sel_id).click();
-  }
-  async inputFileSelected(ev: any) {
-    if (ev.target.files.length) {
-      this.global.godot.remove();
-      let this_file: FileInfo = {};
-      this_file.filename = ev.target.files[0].name;
-      this_file.file_ext = ev.target.files[0].name.split('.').pop() || ev.target.files[0].type || this.lang.text['ChatRoom']['unknown_ext'];
-      if (this_file.file_ext != 'pck') {
-        this.p5toast.show({
-          text: this.lang.text['EngineWorksPPT']['FileExtPck'],
-        });
-        return;
-      }
-      this_file.size = ev.target.files[0].size;
-      this_file.type = ev.target.files[0].type;
-      this_file.typeheader = ev.target.files[0].type.split('/')[0];
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      this_file.blob = ev.target.files[0];
-      this_file.path = 'servers/self/content.pck';
-      loading.present();
-      let servers = this.nakama.get_all_online_server();
-      if (servers.length)
-        for (let i = 0, j = servers.length; i < j; i++) {
-          try {
-            await this.nakama.sync_save_file(this_file, servers[i].info.isOfficial, servers[i].info.target, 'user_public', 'main_content');
-            await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
-              encodeURIComponent('content'));
-            let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
-            if (all_channels)
-              all_channels.forEach((channelId: any) => {
-                if (this.announce_update_profile)
-                  servers[i].socket.writeChatMessage(channelId, {
-                    user_update: 'modify_content',
-                    noti_form: `: ${this.original_profile['display_name']}`,
-                  });
-              });
-          } catch (e) {
-            console.log('inputFileSelected: ', e);
-            continue;
-          }
-        }
-      else await this.indexed.saveBlobToUserPath(ev.target.files[0], this_file.path);
-      loading.dismiss();
-      await this.global.CreateGodotIFrame('my_content', {
-        ext: 'pck',
-        path: 'servers/self/content.pck',
-      });
-    }
-  }
-
-  async remove_content() {
-    await this.indexed.removeFileFromUserPath('servers/self/content.pck');
-    let servers = this.nakama.get_all_online_server();
-    let server_len = servers.length;
-    let loading: HTMLIonLoadingElement;
-    if (server_len) {
-      loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      loading.present();
-    }
-    for (let i = 0, j = servers.length; i < j; i++) {
-      try {
-        let getContent = await servers[i].client.readStorageObjects(
-          servers[i].session, {
-          object_ids: [{
-            collection: 'user_public',
-            key: 'main_content',
-            user_id: servers[i].session.user_id,
-          }],
-        });
-        let file_info: FileInfo = getContent.objects[0].value;
-        for (let k = 0, l = file_info.partsize; k < l; k++)
-          await servers[i].client.deleteStorageObjects(
-            servers[i].session, {
-            object_ids: [{
-              collection: 'user_public',
-              key: `main_content_${k}`,
-            }],
-          });
-        await servers[i].client.deleteStorageObjects(
-          servers[i].session, {
-          object_ids: [{
-            collection: 'user_public',
-            key: 'main_content',
-          }],
-        });
-      } catch (e) {
-        console.log('remove_content: ', e);
-      }
-      try {
-        let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
-        if (all_channels.length)
-          all_channels.forEach((channelId: any) => {
-            if (this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target][channelId]['status'] != 'missing')
-              if (this.announce_update_profile)
-                servers[i].socket.writeChatMessage(channelId, {
-                  user_update: 'remove_content',
-                  noti_form: `: ${this.original_profile['display_name']}`,
-                });
-          });
-      } catch (e) {
-        console.log('변경을 알릴 채널 없음: ', e);
-      }
-      await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
-        encodeURIComponent('content'));
-    }
-    this.global.godot.remove();
-    if (server_len) loading.dismiss();
-  }
-
   /** 모든 서버에 프로필 변경됨 고지 및 동기화 */
-  sync_to_all_server() {
+  async sync_to_all_server() {
     let servers = this.nakama.get_all_online_server();
     this.nakama.save_self_profile();
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.nakama.users.self['img']), 'servers/self/profile.img');
     this.tmp_img = '';
     for (let i = 0, j = servers.length; i < j; i++) {
-      servers[i].client.writeStorageObjects(servers[i].session, [{
-        collection: 'user_public',
-        key: 'profile_image',
-        value: { img: this.nakama.users.self['img'] },
-        permission_read: 2,
-        permission_write: 1,
-      }]).then(async v => {
+      if (this.nakama.users.self['img']) {
         try {
+          let v = await servers[i].client.writeStorageObjects(servers[i].session, [{
+            collection: 'user_public',
+            key: 'profile_image',
+            value: { img: this.nakama.users.self['img'] },
+            permission_read: 2,
+            permission_write: 1,
+          }]);
           await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
             encodeURIComponent('image'));
-        } catch (e) { }
-        await servers[i].client.updateAccount(servers[i].session, {
-          avatar_url: v.acks[0].version,
+          await servers[i].client.updateAccount(servers[i].session, {
+            avatar_url: v.acks[0].version,
+          });
+        } catch (e) {
+          console.error('inputImageSelected_err: ', e);
+        }
+      } else {
+        try {
+          await servers[i].client.deleteStorageObjects(servers[i].session, {
+            object_ids: [{
+              collection: 'user_public',
+              key: 'profile_image',
+            }]
+          });
+          await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
+            encodeURIComponent('image'));
+          await servers[i].client.updateAccount(servers[i].session, {
+            avatar_url: '',
+          });
+        } catch (e) {
+          console.error('inputImageSelected_err: ', e);
+        }
+      }
+      let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
+      if (all_channels) {
+        all_channels.forEach((channelId: any) => {
+          if (this.announce_update_profile)
+            servers[i].socket.writeChatMessage(channelId, {
+              user_update: 'modify_img',
+              noti_form: `: ${this.nakama.users.self['display_name']}`,
+            });
         });
-      }).catch(e => {
-        console.error('inputImageSelected_err: ', e);
-      });
+      }
     }
   }
 
   file_sel_id = '';
-  content_sel_id = '';
   async change_img_from_file() {
     // 클립보드로부터 받아오기 시도 후 실패시 파일 선택
     if (this.nakama.users.self['img']) {
