@@ -1382,7 +1382,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }, 0);
       return;
     }
-    setTimeout(() => {
+    this.userInputTextArea.focus();
+    setTimeout(() => { // iOS 보정용
       this.userInputTextArea.focus();
     }, 0);
     this.isHidden = true;
