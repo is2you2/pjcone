@@ -1384,7 +1384,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }, 0);
       return;
     }
-    this.userInputTextArea.focus();
+    setTimeout(() => {
+      this.userInputTextArea.focus();
+    }, 0);
     this.isHidden = true;
     let result: FileInfo = {};
     result['msg'] = this.userInput.text;
