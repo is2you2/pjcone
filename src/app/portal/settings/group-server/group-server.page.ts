@@ -268,6 +268,11 @@ export class GroupServerPage implements OnInit {
           this.nakama.users.self['email'] = EmailInput.value();
           this.email_modified();
         }
+        EmailInput.elt.onkeypress = (ev: any) => {
+          if (ev.key == 'Enter') {
+            PasswordInput.elt.focus();
+          }
+        }
         let PasswordInput = p.createInput();
         PasswordInput.style('margin-top', '10px');
         PasswordInput.style('align-self', 'center');
@@ -278,6 +283,13 @@ export class GroupServerPage implements OnInit {
         PasswordInput.parent(InputForm);
         PasswordInput.elt.onchange = () => {
           this.nakama.users.self['password'] = PasswordInput.value();
+        }
+        PasswordInput.elt.onkeypress = (ev: any) => {
+          if (ev.key == 'Enter') {
+            this.nakama.users.self['password'] = PasswordInput.value();
+            LoginButton.elt.disabled = true;
+            this.toggle_online();
+          }
         }
         p['PasswordInput'] = PasswordInput;
         let LoginButton = p.createButton(this.OnlineToggle ? this.lang.text['Profile']['LogOut'] : this.lang.text['Profile']['login_toggle']);
