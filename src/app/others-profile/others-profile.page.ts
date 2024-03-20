@@ -67,7 +67,7 @@ export class OthersProfilePage implements OnInit {
     this.user_content_id = `user_content_${this.info['user']['id']}`;
     this.nakama.load_other_user(this.info['user']['id'], this.isOfficial, this.target);
     this.nakama.socket_reactive['others-profile'] = (img_url: string) => {
-      this.change_img_smoothly(img_url);
+      this.p5canvas['ChangeImageSmooth'](img_url);
     };
     this.nakama.socket_reactive['others-online'] = () => {
       this.p5canvas.loop();
@@ -112,6 +112,143 @@ export class OthersProfilePage implements OnInit {
       }
     }
     this.p5canvas = new p5(sketch);
+  }
+
+  OtherCanvasDiv: any;
+  ionViewWillEnter() {
+    this.OtherCanvasDiv = document.getElementById('OtherUserCanvasDiv');
+    this.p5canvas = new p5((p: p5) => {
+      const LERP_SIZE = .025;
+      let nameDiv: p5.Element;
+      let nameEditDiv: p5.Element;
+      let selected_image: p5.Element;
+      /** 변경 전 이미지 */
+      let trashed_image: p5.Element;
+      let FadeOutTrashedLerp = 1;
+      p.setup = () => {
+        p.noCanvas();
+        p.pixelDensity(1);
+        let imgDiv = p.createDiv();
+        const IMAGE_SIZE = '156px';
+        // 사용자 이미지
+        imgDiv.style('width', IMAGE_SIZE);
+        imgDiv.style('height', IMAGE_SIZE);
+        imgDiv.style('position', 'absolute');
+        imgDiv.style('top', '120px');
+        imgDiv.style('left', '50%');
+        imgDiv.style('transform', 'translateX(-50%)');
+        imgDiv.style('border-radius', IMAGE_SIZE);
+        imgDiv.style('background-image', 'url(assets/data/avatar.svg)');
+        imgDiv.style('background-position', 'center');
+        imgDiv.style('background-repeat', 'no-repeat');
+        imgDiv.style('background-size', 'cover');
+        imgDiv.parent(this.OtherCanvasDiv);
+        // 온라인 표시등
+        let OnlineLamp = p.createDiv();
+        const LAMP_SIZE = '36px';
+        OnlineLamp.style('background-color', this.info['user']['online'] ? this.statusBar.colors['online'] : this.statusBar.colors['offline']);
+        OnlineLamp.style('width', LAMP_SIZE);
+        OnlineLamp.style('height', LAMP_SIZE);
+        OnlineLamp.style('position', 'absolute');
+        OnlineLamp.style('top', '128px');
+        OnlineLamp.style('left', `${this.OtherCanvasDiv.clientWidth / 2 + 38}px`);
+        setTimeout(() => {
+          OnlineLamp.style('left', `${this.OtherCanvasDiv.clientWidth / 2 + 38}px`);
+        }, 0);
+        OnlineLamp.style('border-radius', LAMP_SIZE);
+        OnlineLamp.parent(this.OtherCanvasDiv);
+        p['OnlineLamp'] = OnlineLamp;
+        // 부드러운 이미지 전환
+        selected_image = p.createImg(this.info['user'].img, 'profile_img');
+        selected_image.style('width', IMAGE_SIZE);
+        selected_image.style('height', IMAGE_SIZE);
+        selected_image.style('border-radius', IMAGE_SIZE);
+        selected_image.style('position', 'absolute');
+        selected_image.style('object-fit', 'cover');
+        if (!this.info['user'].img)
+          selected_image.hide();
+        selected_image.parent(imgDiv);
+        trashed_image = p.createImg(undefined, 'before_img');
+        trashed_image.style('width', IMAGE_SIZE);
+        trashed_image.style('height', IMAGE_SIZE);
+        trashed_image.style('border-radius', IMAGE_SIZE);
+        trashed_image.style('position', 'absolute');
+        trashed_image.style('object-fit', 'cover');
+        trashed_image.hide();
+        trashed_image.parent(imgDiv);
+        p['ChangeImageSmooth'] = (url: string) => {
+          if (!url) {
+            trashed_image.elt.src = selected_image.elt.src;
+            trashed_image.show();
+          } else {
+            trashed_image.elt.src = undefined;
+            trashed_image.hide();
+          }
+          selected_image.elt.src = url;
+          FadeOutTrashedLerp = 1;
+          p.loop();
+          this.info['user'].img = url;
+          if (url) {
+            selected_image.show();
+          } else selected_image.hide();
+        }
+        const NAME_DECK_Y = 330;
+        const NAME_SIZE = '36px';
+        // 사용자 이름 (display)
+        nameDiv = p.createDiv(this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']);
+        nameDiv.style('position', 'absolute');
+        nameDiv.style('top', `${NAME_DECK_Y}px`);
+        nameDiv.style('left', '50%');
+        nameDiv.style('font-size', NAME_SIZE);
+        nameDiv.style('font-weight', 'bold');
+        nameDiv.style('transform', 'translateX(-50%)');
+        nameDiv.style('width', '80%');
+        nameDiv.style('text-align', 'center');
+        nameDiv.parent(this.OtherCanvasDiv);
+        // 사용자 UID
+        let uuidDiv = p.createDiv(this.info['user']['id']);
+        uuidDiv.style('position', 'absolute');
+        uuidDiv.style('top', `${NAME_DECK_Y + 80}px`);
+        uuidDiv.style('left', '50%');
+        uuidDiv.style('color', 'var(--ion-color-medium)');
+        uuidDiv.style('transform', 'translateX(-50%)');
+        uuidDiv.style('width', '80%');
+        uuidDiv.style('text-align', 'center');
+        uuidDiv.parent(this.OtherCanvasDiv);
+        uuidDiv.elt.onclick = () => {
+          this.copy_id();
+        }
+      }
+      p.draw = () => {
+        if (FadeOutTrashedLerp > 0) {
+          FadeOutTrashedLerp -= LERP_SIZE;
+          trashed_image.style('opacity', `${FadeOutTrashedLerp}`);
+          selected_image.style('opacity', `${1 - FadeOutTrashedLerp}`);
+        }
+        if (this.info['user']['online']) {
+          if (this.lerpVal < 1) {
+            this.lerpVal += LERP_SIZE;
+          } else {
+            this.lerpVal = 1;
+          }
+        } else {
+          if (this.lerpVal > 0) {
+            this.lerpVal -= LERP_SIZE;
+          } else {
+            this.lerpVal = 0;
+          }
+        }
+        selected_image.style('filter', `grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)})`);
+        trashed_image.style('filter', `grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)})`);
+        if (FadeOutTrashedLerp <= 0 && (this.lerpVal >= 1 || this.lerpVal <= 0)) {
+          this.p5canvas['OnlineLamp'].style('background-color', this.info['user']['online'] ? this.statusBar.colors['online'] : this.statusBar.colors['offline']);
+          p.noLoop();
+        }
+      }
+      p.windowResized = () => {
+        p['OnlineLamp'].style('left', `${this.OtherCanvasDiv.clientWidth / 2 + 38}px`);
+      }
+    });
   }
 
   user_content_id = '';
@@ -168,36 +305,6 @@ export class OthersProfilePage implements OnInit {
           this.additional_buttons[this.nakama.noti_origin[this.isOfficial][this.target][noti_id]['code'].toString()] = noti_id;
       });
     }
-  }
-
-  /** 부드러운 이미지 변환 */
-  change_img_smoothly(_url: string) {
-    let updater = setInterval(() => { }, 110);
-    setTimeout(() => {
-      clearInterval(updater);
-    }, 1500);
-    new p5((p: p5) => {
-      let profile_tmp_img = document.getElementById('profile_tmp_img');
-      const LERP_SIZE = .035;
-      let lerpVal = 0;
-      p.setup = () => {
-        p.noCanvas();
-        profile_tmp_img.setAttribute('style', `filter: grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)}) opacity(${lerpVal})`);
-        this.tmp_img = _url;
-      }
-      p.draw = () => {
-        if (lerpVal < 1) {
-          lerpVal += LERP_SIZE;
-        } else {
-          lerpVal = 1;
-          this.info['user']['img'] = this.tmp_img;
-          this.indexed.saveTextFileToUserPath(this.info['user']['img'], `servers/${this.isOfficial}/${this.target}/users/${this.info['user']['id']}/profile.img`)
-          this.tmp_img = '';
-          p.remove();
-        }
-        profile_tmp_img.setAttribute('style', `filter: grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)}) opacity(${lerpVal})`);
-      }
-    });
   }
 
   onDismissData = {};

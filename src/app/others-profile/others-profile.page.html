@@ -11,50 +11,33 @@ SPDX-License-Identifier: MIT -->
 </ion-header>
 
 <ion-content>
-  <table style="width: 100%; height: 100%;">
-    <tr style="height: 100%;">
-      <td style="vertical-align: top;">
-        <div class="profile_img_form">
-          <img [hidden]="!info['user'].img" id="other_profile_img" class="profile_img" [src]="info['user'].img"
-            alt="Profile_Image">
-          <img [hidden]="!tmp_img" id="profile_tmp_img" class="profile_img" [src]="tmp_img" alt="Profile_Image">
-          <div class="fore-gradient"></div>
-          <div class="username">{{info['user'].display_name || lang.text['Profile']['noname_user']}}</div>
-        </div>
-        <ion-item (click)="copy_id()">
-          <ion-label text-wrap color="medium" class="ion-text-center">{{info['user'].id}}</ion-label>
-        </ion-item>
-      </td>
-    </tr>
-    <tr *ngIf="statusBar.groupServer[isOfficial][target] == 'online'">
-      <td>
-        <div style="width: 100%;">
-          <table id="input_table" style="width: 100%; background-color: black;">
-            <tr>
-              <td *ngIf="has_admin && additional_buttons['-5']">
-                <ion-button (click)="notification_react(-5)" expand="block">
-                  {{lang.text['OtherProfile']['add_to_group']}}
-                </ion-button>
-              </td>
-              <td *ngIf="additional_buttons['-2']">
-                <ion-button (click)="notification_react(-2)" expand="block">
-                  {{lang.text['OtherProfile']['add_friend']}}
-                </ion-button>
-              </td>
-              <td>
-                <ion-button [disabled]="lock_create_chat" (click)="create_chat()" expand="block">
-                  {{lang.text['OtherProfile']['privacy_chat']}}
-                </ion-button>
-              </td>
-              <td *ngIf="has_admin">
-                <ion-button (click)="kick_user_from_group()" color="danger" expand="block">
-                  {{lang.text['OtherProfile']['kick_from_group']}}
-                </ion-button>
-              </td>
-            </tr>
-          </table>
-        </div>
-      </td>
-    </tr>
-  </table>
+  <div id="OtherUserCanvasDiv" style="position: absolute; width: 100%; height: 100%; display: flex;">
+  </div>
+  <div *ngIf="statusBar.groupServer[isOfficial][target] == 'online'"
+    style="width: 100%; position: absolute; bottom: 0;">
+    <table id="input_table" style="width: 100%; background-color: black;">
+      <tr>
+        <td *ngIf="has_admin && additional_buttons['-5']">
+          <ion-button (click)="notification_react(-5)" expand="block">
+            {{lang.text['OtherProfile']['add_to_group']}}
+          </ion-button>
+        </td>
+        <td *ngIf="additional_buttons['-2']">
+          <ion-button (click)="notification_react(-2)" expand="block">
+            {{lang.text['OtherProfile']['add_friend']}}
+          </ion-button>
+        </td>
+        <td>
+          <ion-button [disabled]="lock_create_chat" (click)="create_chat()" expand="block">
+            {{lang.text['OtherProfile']['privacy_chat']}}
+          </ion-button>
+        </td>
+        <td *ngIf="has_admin">
+          <ion-button (click)="kick_user_from_group()" color="danger" expand="block">
+            {{lang.text['OtherProfile']['kick_from_group']}}
+          </ion-button>
+        </td>
+      </tr>
+    </table>
+  </div>
 </ion-content>
