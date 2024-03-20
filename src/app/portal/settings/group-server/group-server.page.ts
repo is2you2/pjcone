@@ -264,7 +264,6 @@ export class GroupServerPage implements OnInit {
         LoginButton.style('font-size', '24px');
         LoginButton.style('border-radius', '16px');
         LoginButton.style('padding', '12px 30px');
-        LoginButton.attribute('placeholder', this.lang.text['Profile']['at_least']);
         LoginButton.parent(InputForm);
         LoginButton.elt.onclick = () => {
           this.toggle_online();

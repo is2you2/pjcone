@@ -13,39 +13,7 @@ SPDX-License-Identifier: MIT -->
 <ion-content>
   <div id="GroupServerCanvasDiv" style="position: absolute; width: 100%; height: 100%; display: flex;">
   </div>
-  <input hidden type="file" [id]="file_sel_id" accept="image/*" (change)="inputImageSelected($event)">
-  <!-- <div class="profile_img_form">
-    <img [hidden]="!nakama.users.self['img']" id="profile_img" class="profile_img" [src]="nakama.users.self['img']"
-      [alt]="lang.text['Profile']['img_alt']">
-    <img [hidden]="!tmp_img" id="profile_tmp_img" class="profile_img" [src]="tmp_img"
-      [alt]="lang.text['Profile']['img_alt']">
-    <div class="fore-gradient" (click)="change_img_from_file()"></div>
-    <div class="username">{{nakama.users.self['display_name'] || lang.text['Profile']['noname_user']}}</div>
-  </div>
-  <ion-item>
-    <ion-input [label]="lang.text['Profile']['user_display_name']" class="ion-text-right"
-      [(ngModel)]="nakama.users.self['display_name']"
-      [placeholder]="lang.text['Profile']['name_placeholder']"></ion-input>
-  </ion-item>
-  <div *ngIf="!nakama.users.self['online']">
-    <ion-item-divider>
-      <ion-label>{{lang.text['Profile']['login_info']}}</ion-label>
-    </ion-item-divider>
-    <ion-item>
-      <ion-input id="email_input" [label]="lang.text['Profile']['email_address']" class="ion-text-right"
-        [(ngModel)]="nakama.users.self['email']" (ionChange)="email_modified()"
-        [placeholder]="'test@example.com'"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-input [label]="lang.text['Profile']['password']" class="ion-text-right" type="password"
-        [(ngModel)]="nakama.users.self['password']" [placeholder]="lang.text['Profile']['at_least']"></ion-input>
-    </ion-item>
-  </div>
-  <ion-item button>
-    <ion-toggle #ToggleOnline [(ngModel)]="nakama.users.self['online']" (ionChange)="toggle_online()"
-      style="pointer-events: none;">{{lang.text['Profile']['login_toggle']}}</ion-toggle>
-  </ion-item>
-  <ion-accordion-group #ServersList>
+  <ion-accordion-group>
     <ion-accordion value="open">
       <ion-item button slot="header">
         <ion-label>{{lang.text['GroupServer']['JoinedServerList']}}</ion-label>
@@ -74,7 +42,8 @@ SPDX-License-Identifier: MIT -->
         </ion-item>
       </div>
     </ion-accordion>
-  </ion-accordion-group> -->
+  </ion-accordion-group>
+  <input hidden type="file" [id]="file_sel_id" accept="image/*" (change)="inputImageSelected($event)">
 
   <ion-modal #RegisterNewServer [initialBreakpoint]="isMobilePWA ? .6 : .4" [breakpoints]="[.4, .6]">
     <ng-template>
