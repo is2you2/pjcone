@@ -48,14 +48,6 @@ SPDX-License-Identifier: MIT -->
         </div>
       </ion-accordion>
     </ion-accordion-group>
-    <div *ngIf="session_uid">
-      <ion-item-divider>
-        <ion-label>{{lang.text['GroupServer']['SessionUid']}}</ion-label>
-      </ion-item-divider>
-      <ion-item>
-        <ion-label text-wrap color="medium" class="ion-text-center" (click)="copy_id()">{{session_uid}}</ion-label>
-      </ion-item>
-    </div>
   </div>
   <input hidden type="file" [id]="file_sel_id" accept="image/*" (change)="inputImageSelected($event)">
 

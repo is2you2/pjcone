@@ -97,7 +97,21 @@ export class GroupServerPage implements OnInit {
       /** 변경 전 이미지 */
       let trashed_image: p5.Element;
       let FadeOutTrashedLerp = 1;
+      /** 사용자 색상 표시 */
+      let UserColorGradient: p5.Element;
+      let user_rgb_color = '0, 0, 0';
+      let userColorLerp = 0;
+      let hasColorLerp = Boolean(this.session_uid);
       p.setup = () => {
+        if (hasColorLerp) {
+          let user_color = p.color(`#${(this.session_uid.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6)}`);
+          user_rgb_color = `${p.red(user_color)}, ${p.green(user_color)}, ${p.blue(user_color)}`;
+          UserColorGradient = p.createDiv();
+          UserColorGradient.style('width', '100%');
+          UserColorGradient.style('height', '100%');
+          UserColorGradient.style('background-image', `linear-gradient(to top, rgba(${user_rgb_color}, 0), rgba(${user_rgb_color}, 0))`);
+          UserColorGradient.parent(this.gsCanvasDiv);
+        }
         p.noCanvas();
         p.pixelDensity(1);
         let imgDiv = p.createDiv();
@@ -274,6 +288,21 @@ export class GroupServerPage implements OnInit {
           this.toggle_online();
         }
         p['LoginButton'] = LoginButton;
+        // 사용자 UID
+        if (this.session_uid) {
+          let uuidDiv = p.createDiv(this.session_uid);
+          uuidDiv.style('position', 'absolute');
+          uuidDiv.style('top', `${NAME_DECK_Y + 80}px`);
+          uuidDiv.style('left', '50%');
+          uuidDiv.style('color', 'var(--ion-color-medium)');
+          uuidDiv.style('transform', 'translateX(-50%)');
+          uuidDiv.style('width', '80%');
+          uuidDiv.style('text-align', 'center');
+          uuidDiv.parent(this.gsCanvasDiv);
+          uuidDiv.elt.onclick = () => {
+            this.copy_id();
+          }
+        }
       }
       p.draw = () => {
         if (FadeOutTrashedLerp > 0) {
@@ -294,9 +323,13 @@ export class GroupServerPage implements OnInit {
             this.lerpVal = 0;
           }
         }
+        if (hasColorLerp && userColorLerp < 1)
+          userColorLerp += LERP_SIZE;
         selected_image.style('filter', `grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)})`);
         trashed_image.style('filter', `grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)})`);
-        if (FadeOutTrashedLerp <= 0 && (this.lerpVal >= 1 || this.lerpVal <= 0))
+        if (hasColorLerp)
+          UserColorGradient.style('background-image', `linear-gradient(to top, rgba(${user_rgb_color}, ${p.min(1, userColorLerp) / 2}), rgba(${user_rgb_color}, 0))`);
+        if (FadeOutTrashedLerp <= 0 && (this.lerpVal >= 1 || this.lerpVal <= 0) && (hasColorLerp && userColorLerp >= 1))
           p.noLoop();
       }
       p.windowResized = () => {

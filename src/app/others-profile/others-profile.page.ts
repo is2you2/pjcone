@@ -224,7 +224,7 @@ export class OthersProfilePage implements OnInit {
           userColorLerp += LERP_SIZE;
         selected_image.style('filter', `grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)})`);
         trashed_image.style('filter', `grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)})`);
-        UserColorGradient.style('background-image', `linear-gradient(to top, rgba(${user_rgb_color}, ${p.min(1, userColorLerp)}), rgba(${user_rgb_color}, 0))`);
+        UserColorGradient.style('background-image', `linear-gradient(to top, rgba(${user_rgb_color}, ${p.min(1, userColorLerp) / 2}), rgba(${user_rgb_color}, 0))`);
         if (FadeOutTrashedLerp <= 0 && (this.lerpVal >= 1 || this.lerpVal <= 0) && userColorLerp >= 1) {
           this.p5canvas['OnlineLamp'].style('background-color', this.info['user']['online'] ? this.statusBar.colors['online'] : this.statusBar.colors['offline']);
           p.noLoop();
