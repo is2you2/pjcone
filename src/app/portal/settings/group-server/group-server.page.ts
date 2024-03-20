@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonAccordionGroup, IonModal, IonToggle, LoadingController, ModalController, NavController, NavParams } from '@ionic/angular';
+import { IonModal, LoadingController, ModalController, NavController, NavParams } from '@ionic/angular';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -84,8 +84,11 @@ export class GroupServerPage implements OnInit {
   /** 모바일 PWA 여부를 검토하여 하단 modal 시작 높이를 조정 */
   isMobilePWA = false;
   CanAddTestServer = false;
+  OnlineToggle = false;
+  ShowServerList = false;
   ionViewWillEnter() {
     this.gsCanvasDiv = document.getElementById('GroupServerCanvasDiv');
+    this.OnlineToggle = this.nakama.users.self['online'];
     this.p5canvas = new p5((p: p5) => {
       const LERP_SIZE = .025;
       let nameDiv: p5.Element;
@@ -115,6 +118,21 @@ export class GroupServerPage implements OnInit {
         imgDiv.elt.onclick = () => {
           this.change_img_from_file();
         }
+        // 온라인 표시등
+        let OnlineLamp = p.createDiv();
+        const LAMP_SIZE = '36px';
+        OnlineLamp.style('background-color', this.OnlineToggle ? this.statusBar.colors['online'] : this.statusBar.colors['offline']);
+        OnlineLamp.style('width', LAMP_SIZE);
+        OnlineLamp.style('height', LAMP_SIZE);
+        OnlineLamp.style('position', 'absolute');
+        OnlineLamp.style('top', '128px');
+        OnlineLamp.style('left', `${this.gsCanvasDiv.clientWidth / 2 + 38}px`);
+        OnlineLamp.style('border-radius', LAMP_SIZE);
+        OnlineLamp.parent(this.gsCanvasDiv);
+        OnlineLamp.elt.onclick = () => {
+          this.toggle_online();
+        }
+        p['OnlineLamp'] = OnlineLamp;
         // 부드러운 이미지 전환
         selected_image = p.createImg(this.nakama.users.self['img'], 'profile_img');
         selected_image.style('width', IMAGE_SIZE);
@@ -155,7 +173,7 @@ export class GroupServerPage implements OnInit {
         const NAME_DECK_Y = 330;
         const NAME_SIZE = '36px';
         // 사용자 이름 (display)
-        nameDiv = p.createDiv(this.nakama.users.self['display_name']);
+        nameDiv = p.createDiv(this.nakama.users.self['display_name'] || this.lang.text['Profile']['noname_user']);
         nameDiv.style('position', 'absolute');
         nameDiv.style('top', `${NAME_DECK_Y}px`);
         nameDiv.style('left', '50%');
@@ -166,7 +184,7 @@ export class GroupServerPage implements OnInit {
         nameDiv.style('text-align', 'center');
         nameDiv.parent(this.gsCanvasDiv);
         nameDiv.elt.onclick = () => { // 편집 모드로 변경
-          nameEditDiv.value(nameDiv.html());
+          nameEditDiv.value(this.nakama.users.self['display_name'] ? nameDiv.html() : '');
           nameEditDiv.show();
           nameDiv.hide();
           nameEditDiv.elt.focus();
@@ -181,15 +199,77 @@ export class GroupServerPage implements OnInit {
         nameEditDiv.style('font-weight', 'bold');
         nameEditDiv.style('width', '80%');
         nameEditDiv.style('text-align', 'center');
+        nameEditDiv.attribute('placeholder', this.lang.text['Profile']['name_placeholder'])
         nameDiv.style('text-align', 'center');
         nameEditDiv.parent(this.gsCanvasDiv);
         nameEditDiv.hide();
         nameEditDiv.elt.addEventListener('focusout', () => {
           this.nakama.users.self['display_name'] = nameEditDiv.value();
-          nameDiv.html(`${nameEditDiv.value()}`);
+          nameDiv.html(`${nameEditDiv.value() || this.lang.text['Profile']['noname_user']}`);
           nameEditDiv.hide();
           nameDiv.show();
         });
+        // 사용자 정보 입력
+        let InputForm = p.createDiv();
+        InputForm.style('position', 'absolute');
+        InputForm.style('top', '480px');
+        InputForm.style('left', '50%');
+        InputForm.style('transform', 'translateX(-50%)');
+        InputForm.style('width', '80%');
+        InputForm.style('max-width', '384px');
+        InputForm.style('height', '180px');
+        InputForm.style('background-color', '#8888');
+        InputForm.style('text-align', 'center');
+        InputForm.style('border-radius', '24px');
+        InputForm.parent(this.gsCanvasDiv);
+        let EmailInput = p.createInput(this.nakama.users.self['email']);
+        EmailInput.id('email_input');
+        EmailInput.style('position', 'absolute');
+        EmailInput.style('top', '28px');
+        EmailInput.style('left', '50%');
+        EmailInput.style('transform', 'translateX(-50%)');
+        EmailInput.style('width', '50%');
+        EmailInput.style('text-align', 'center');
+        EmailInput.attribute('placeholder', 'test@example.com');
+        EmailInput.parent(InputForm);
+        EmailInput.elt.onchange = () => {
+          this.nakama.users.self['email'] = EmailInput.value();
+          this.email_modified();
+        }
+        p['EmailInput'] = EmailInput;
+        let PasswordInput = p.createInput();
+        PasswordInput.style('position', 'absolute');
+        PasswordInput.style('top', '67px');
+        PasswordInput.style('left', '50%');
+        PasswordInput.style('transform', 'translateX(-50%)');
+        PasswordInput.style('width', '50%');
+        PasswordInput.style('text-align', 'center');
+        PasswordInput.attribute('type', 'password');
+        PasswordInput.attribute('placeholder', this.lang.text['Profile']['at_least']);
+        PasswordInput.parent(InputForm);
+        PasswordInput.elt.onchange = () => {
+          this.nakama.users.self['password'] = PasswordInput.value();
+        }
+        p['PasswordInput'] = PasswordInput;
+        if (this.OnlineToggle) {
+          EmailInput.hide();
+          PasswordInput.hide();
+        }
+        let LoginButton = p.createButton(this.OnlineToggle ? this.lang.text['Profile']['LogOut'] : this.lang.text['Profile']['login_toggle']);
+        LoginButton.style('position', 'absolute');
+        LoginButton.style('top', '112px');
+        LoginButton.style('left', '50%');
+        LoginButton.style('transform', 'translateX(-50%)');
+        LoginButton.style('text-align', 'center');
+        LoginButton.style('font-size', '24px');
+        LoginButton.style('border-radius', '16px');
+        LoginButton.style('padding', '12px 30px');
+        LoginButton.attribute('placeholder', this.lang.text['Profile']['at_least']);
+        LoginButton.parent(InputForm);
+        LoginButton.elt.onclick = () => {
+          this.toggle_online();
+        }
+        p['LoginButton'] = LoginButton;
       }
       p.draw = () => {
         if (FadeOutTrashedLerp > 0) {
@@ -200,21 +280,28 @@ export class GroupServerPage implements OnInit {
         if (this.nakama.users.self['online']) {
           if (this.lerpVal < 1) {
             this.lerpVal += LERP_SIZE;
-          } else this.lerpVal = 1;
+          } else {
+            this.lerpVal = 1;
+          }
         } else {
           if (this.lerpVal > 0) {
             this.lerpVal -= LERP_SIZE;
-          } else this.lerpVal = 0;
+          } else {
+            this.lerpVal = 0;
+          }
         }
         selected_image.style('filter', `grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)})`);
         trashed_image.style('filter', `grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)})`);
         if (FadeOutTrashedLerp <= 0 && (this.lerpVal >= 1 || this.lerpVal <= 0))
           p.noLoop();
       }
+      p.windowResized = () => {
+        p['OnlineLamp'].style('left', `${this.gsCanvasDiv.clientWidth / 2 + 38}px`);
+      }
     });
-    this.ServersList.value = this.ToggleOnline.checked ? 'open' : undefined;
+    this.ShowServerList = this.OnlineToggle;
     if (!this.nakama.users.self['email'])
-      (document.getElementById('email_input').childNodes[1].childNodes[1].childNodes[1] as HTMLElement).focus();
+      document.getElementById('email_input').focus();
     this.CanAddTestServer =
       Object.keys(this.nakama.servers['official']).length == 0
       && Object.keys(this.nakama.servers['unofficial']).length != 0;
@@ -582,15 +669,15 @@ export class GroupServerPage implements OnInit {
         this.toggle_online();
       this.nakama.users.self['online'] = false;
       delete this.nakama.users.self['password'];
+      this.p5canvas['PasswordInput'].value('');
     }
   }
   /** 채도 변화자 */
   lerpVal: number;
-  @ViewChild('ToggleOnline') ToggleOnline: IonToggle;
-  @ViewChild('ServersList') ServersList: IonAccordionGroup;
   async toggle_online() {
-    this.nakama.users.self['online'] = this.ToggleOnline.checked;
-    if (this.ToggleOnline.checked) {
+    this.OnlineToggle = !this.OnlineToggle;
+    this.nakama.users.self['online'] = this.OnlineToggle;
+    if (this.OnlineToggle) {
       this.announce_update_profile = false;
       try {
         if (!this.nakama.users.self['email']) {
@@ -611,17 +698,25 @@ export class GroupServerPage implements OnInit {
           await this.nakama.WatchAdsAndGetDevServerInfo();
           this.servers = this.nakama.get_all_server_info(true);
         }
+        this.p5canvas['EmailInput'].hide();
+        this.p5canvas['PasswordInput'].hide();
+        this.p5canvas['PasswordInput'].value('');
       } catch (e) {
         this.nakama.users.self['online'] = false;
-        this.ToggleOnline.checked = false;
+        this.OnlineToggle = false;
       }
     } else {
       this.nakama.logout_all_server();
+      this.p5canvas['EmailInput'].show();
+      this.p5canvas['PasswordInput'].show();
+      this.p5canvas['PasswordInput'].value('');
       delete this.nakama.users.self['password'];
       this.nakama.save_groups_with_less_info();
       this.nakama.rearrange_channels();
     }
-    this.ServersList.value = this.ToggleOnline.checked ? 'open' : undefined;
+    this.p5canvas['LoginButton'].html(this.OnlineToggle ? this.lang.text['Profile']['LogOut'] : this.lang.text['Profile']['login_toggle']);
+    this.p5canvas['OnlineLamp'].style('background-color', this.OnlineToggle ? this.statusBar.colors['online'] : this.statusBar.colors['offline']);
+    this.ShowServerList = this.OnlineToggle;
     this.p5canvas.loop();
   }
 

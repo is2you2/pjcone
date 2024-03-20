@@ -122,6 +122,7 @@ password,비밀번호,Password
 at_least,최소 8자리,at least 8 digits
 user_display_name,사용자 표시명,Display name
 login_toggle,로그인,Login
+LogOut,로그아웃,Logout
 main_content,메인 콘텐츠,Main contents
 upload,올리기,Upload
 remove_content,삭제,Remove
