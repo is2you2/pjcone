@@ -30,7 +30,7 @@ SPDX-License-Identifier: MIT -->
               <ion-label>{{lang.text['ChatRoom']['fetch_previous_chat']}}</ion-label>
             </ion-item>
             <div *ngFor="let msg of ViewableMessage; let i = index" (click)="message_detail(msg, i)">
-              <div *ngIf="!msg['is_me']">
+              <div *ngIf="!msg['is_me'] && !msg.content['noti']">
                 <!-- 날짜 표시 -->
                 <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
                   style="text-align: center; font-size: 16px; padding-top: 8px;" (click)="SetOtherAct()">
@@ -104,7 +104,7 @@ SPDX-License-Identifier: MIT -->
                 <div *ngIf="msg['isLastRead']" class="read_last_here">
                   {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
               </div>
-              <div *ngIf="msg['is_me']" class="my_message_right">
+              <div *ngIf="msg['is_me'] && !msg.content['noti']" class="my_message_right">
                 <!-- 날짜 표시 -->
                 <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
                   style="text-align: center; font-size: 16px; padding-top: 8px;" (click)="SetOtherAct()">
