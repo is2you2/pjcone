@@ -127,6 +127,9 @@ export class GroupServerPage implements OnInit {
         OnlineLamp.style('position', 'absolute');
         OnlineLamp.style('top', '128px');
         OnlineLamp.style('left', `${this.gsCanvasDiv.clientWidth / 2 + 38}px`);
+        setTimeout(() => {
+          OnlineLamp.style('left', `${this.gsCanvasDiv.clientWidth / 2 + 38}px`);
+        }, 0);
         OnlineLamp.style('border-radius', LAMP_SIZE);
         OnlineLamp.parent(this.gsCanvasDiv);
         OnlineLamp.elt.onclick = () => {
@@ -222,6 +225,8 @@ export class GroupServerPage implements OnInit {
         InputForm.style('text-align', 'center');
         InputForm.style('border-radius', '24px');
         InputForm.parent(this.gsCanvasDiv);
+        p['InputForm'] = InputForm;
+        if (this.OnlineToggle) InputForm.hide();
         let EmailInput = p.createInput(this.nakama.users.self['email']);
         EmailInput.id('email_input');
         EmailInput.style('position', 'absolute');
@@ -713,6 +718,9 @@ export class GroupServerPage implements OnInit {
       this.nakama.save_groups_with_less_info();
       this.nakama.rearrange_channels();
     }
+    if (this.OnlineToggle)
+      this.p5canvas['InputForm'].hide();
+    else this.p5canvas['InputForm'].show();
     this.p5canvas['LoginButton'].html(this.OnlineToggle ? this.lang.text['Profile']['LogOut'] : this.lang.text['Profile']['login_toggle']);
     this.p5canvas['OnlineLamp'].style('background-color', this.OnlineToggle ? this.statusBar.colors['online'] : this.statusBar.colors['offline']);
     this.ShowServerList = this.OnlineToggle;

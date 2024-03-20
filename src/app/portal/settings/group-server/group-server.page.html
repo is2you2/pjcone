@@ -13,36 +13,50 @@ SPDX-License-Identifier: MIT -->
 <ion-content>
   <div id="GroupServerCanvasDiv" style="position: absolute; width: 100%; height: 100%; display: flex;">
   </div>
-  <ion-accordion-group>
-    <ion-accordion value="open">
-      <ion-item button slot="header">
-        <ion-label>{{lang.text['GroupServer']['JoinedServerList']}}</ion-label>
+  <div *ngIf="OnlineToggle" style="position: absolute; top: 560px; width: 100%;">
+    <ion-item>
+      <ion-label class="ion-text-center" color="warning">{{lang.text['Profile']['LogOut']}}</ion-label>
+    </ion-item>
+    <ion-accordion-group>
+      <ion-accordion value="open">
+        <ion-item button slot="header">
+          <ion-label>{{lang.text['GroupServer']['JoinedServerList']}}</ion-label>
+        </ion-item>
+        <div slot="content">
+          <ion-item *ngIf="CanAddTestServer" button (click)="add_dev_test_server()">
+            <ion-label color="secondary">{{lang.text['GroupServer']['UseDevTestServer']}}</ion-label>
+          </ion-item>
+          <ion-item *ngFor="let server of servers" button (click)="link_group(server.isOfficial, server.target)">
+            <div class="additional_form status_bar_single"
+              [style]="'background-color: ' + statusBar.colors[(statusBar.groupServer[server.isOfficial][server.target]) || 'offline']">
+            </div>
+            <ion-label class="form_margin">
+              <h2>{{server.name}}</h2>
+              <p *ngIf="server.isOfficial != 'official'">{{server.useSSL ? lang.text['GroupServer']['useSSL'] :
+                lang.text['GroupServer']['NotuseSSL']}}</p>
+            </ion-label>
+            <ion-button *ngIf="server.isOfficial != 'official'"
+              (click)="remove_server(server.isOfficial, server.target)">
+              {{statusBar.groupServer[server.isOfficial][server.target] == 'online' ?
+              lang.text['GroupServer']['RemoveAccount']
+              : lang.text['GroupServer']['RemoveUnofficial']}}
+            </ion-button>
+          </ion-item>
+          <ion-item button (click)="OpenNewServerForm()">
+            <ion-label class="ion-text-center">{{lang.text['GroupServer']['RegisterServer']}}</ion-label>
+          </ion-item>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+    <div *ngIf="session_uid">
+      <ion-item-divider>
+        <ion-label>{{lang.text['GroupServer']['SessionUid']}}</ion-label>
+      </ion-item-divider>
+      <ion-item>
+        <ion-label text-wrap color="medium" class="ion-text-center" (click)="copy_id()">{{session_uid}}</ion-label>
       </ion-item>
-      <div slot="content">
-        <ion-item *ngIf="CanAddTestServer" button (click)="add_dev_test_server()">
-          <ion-label color="secondary">{{lang.text['GroupServer']['UseDevTestServer']}}</ion-label>
-        </ion-item>
-        <ion-item *ngFor="let server of servers" button (click)="link_group(server.isOfficial, server.target)">
-          <div class="additional_form status_bar_single"
-            [style]="'background-color: ' + statusBar.colors[(statusBar.groupServer[server.isOfficial][server.target]) || 'offline']">
-          </div>
-          <ion-label class="form_margin">
-            <h2>{{server.name}}</h2>
-            <p *ngIf="server.isOfficial != 'official'">{{server.useSSL ? lang.text['GroupServer']['useSSL'] :
-              lang.text['GroupServer']['NotuseSSL']}}</p>
-          </ion-label>
-          <ion-button *ngIf="server.isOfficial != 'official'" (click)="remove_server(server.isOfficial, server.target)">
-            {{statusBar.groupServer[server.isOfficial][server.target] == 'online' ?
-            lang.text['GroupServer']['RemoveAccount']
-            : lang.text['GroupServer']['RemoveUnofficial']}}
-          </ion-button>
-        </ion-item>
-        <ion-item button (click)="OpenNewServerForm()">
-          <ion-label class="ion-text-center">{{lang.text['GroupServer']['RegisterServer']}}</ion-label>
-        </ion-item>
-      </div>
-    </ion-accordion>
-  </ion-accordion-group>
+    </div>
+  </div>
   <input hidden type="file" [id]="file_sel_id" accept="image/*" (change)="inputImageSelected($event)">
 
   <ion-modal #RegisterNewServer [initialBreakpoint]="isMobilePWA ? .6 : .4" [breakpoints]="[.4, .6]">
@@ -71,12 +85,4 @@ SPDX-License-Identifier: MIT -->
       </ion-content>
     </ng-template>
   </ion-modal>
-  <div *ngIf="session_uid">
-    <ion-item-divider>
-      <ion-label>{{lang.text['GroupServer']['SessionUid']}}</ion-label>
-    </ion-item-divider>
-    <ion-item>
-      <ion-label text-wrap color="medium" class="ion-text-center" (click)="copy_id()">{{session_uid}}</ion-label>
-    </ion-item>
-  </div>
 </ion-content>
