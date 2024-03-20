@@ -187,19 +187,23 @@ export class GroupServerPage implements OnInit {
             selected_image.show();
           } else selected_image.hide();
         }
-        const NAME_DECK_Y = 330;
+        // 사용자 정보 모음 div (밀림 구성 방지용)
+        let ExceptPic = p.createDiv();
+        ExceptPic.style('width', '100%');
+        ExceptPic.style('position', 'absolute');
+        ExceptPic.style('top', '330px');
+        ExceptPic.style('display', 'flex');
+        ExceptPic.style('flex-direction', 'column');
+        ExceptPic.parent(this.gsCanvasDiv);
         const NAME_SIZE = '36px';
         // 사용자 이름 (display)
         nameDiv = p.createDiv(this.nakama.users.self['display_name'] || this.lang.text['Profile']['noname_user']);
-        nameDiv.style('position', 'absolute');
-        nameDiv.style('top', `${NAME_DECK_Y}px`);
-        nameDiv.style('left', '50%');
         nameDiv.style('font-size', NAME_SIZE);
         nameDiv.style('font-weight', 'bold');
-        nameDiv.style('transform', 'translateX(-50%)');
+        nameDiv.style('align-self', 'center');
         nameDiv.style('width', '80%');
         nameDiv.style('text-align', 'center');
-        nameDiv.parent(this.gsCanvasDiv);
+        nameDiv.parent(ExceptPic);
         nameDiv.elt.onclick = () => { // 편집 모드로 변경
           nameEditDiv.value(this.nakama.users.self['display_name'] ? nameDiv.html() : '');
           nameEditDiv.show();
@@ -208,17 +212,14 @@ export class GroupServerPage implements OnInit {
         }
         // 사용자 이름 (input)
         nameEditDiv = p.createInput();
-        nameEditDiv.style('position', 'absolute');
-        nameEditDiv.style('top', `${NAME_DECK_Y - 3}px`);
-        nameEditDiv.style('left', '50%');
-        nameEditDiv.style('transform', 'translateX(-50%)');
         nameEditDiv.style('font-size', NAME_SIZE);
         nameEditDiv.style('font-weight', 'bold');
+        nameEditDiv.style('align-self', 'center');
         nameEditDiv.style('width', '80%');
         nameEditDiv.style('text-align', 'center');
         nameEditDiv.attribute('placeholder', this.lang.text['Profile']['name_placeholder'])
         nameDiv.style('text-align', 'center');
-        nameEditDiv.parent(this.gsCanvasDiv);
+        nameEditDiv.parent(ExceptPic);
         nameEditDiv.hide();
         nameEditDiv.elt.addEventListener('focusout', () => {
           this.nakama.users.self['display_name'] = nameEditDiv.value();
@@ -226,27 +227,38 @@ export class GroupServerPage implements OnInit {
           nameEditDiv.hide();
           nameDiv.show();
         });
+        // 사용자 UID
+        if (this.session_uid) {
+          let uuidDiv = p.createDiv(this.session_uid);
+          uuidDiv.style('margin-top', '36px');
+          uuidDiv.style('color', 'var(--ion-color-medium)');
+          uuidDiv.style('width', '80%');
+          uuidDiv.style('text-align', 'center');
+          uuidDiv.style('align-self', 'center');
+          uuidDiv.parent(ExceptPic);
+          uuidDiv.elt.onclick = () => {
+            this.copy_id();
+          }
+        }
         // 사용자 정보 입력
         let InputForm = p.createDiv();
-        InputForm.style('position', 'absolute');
-        InputForm.style('top', '480px');
-        InputForm.style('left', '50%');
-        InputForm.style('transform', 'translateX(-50%)');
+        InputForm.style('margin-top', '60px');
         InputForm.style('width', '80%');
+        InputForm.style('align-self', 'center');
         InputForm.style('max-width', '384px');
         InputForm.style('height', '180px');
         InputForm.style('background-color', '#8888');
         InputForm.style('text-align', 'center');
         InputForm.style('border-radius', '24px');
-        InputForm.parent(this.gsCanvasDiv);
+        InputForm.style('display', 'flex');
+        InputForm.style('flex-direction', 'column');
+        InputForm.parent(ExceptPic);
         p['InputForm'] = InputForm;
         if (this.OnlineToggle) InputForm.hide();
         let EmailInput = p.createInput(this.nakama.users.self['email']);
+        EmailInput.style('align-self', 'center');
         EmailInput.id('email_input');
-        EmailInput.style('position', 'absolute');
-        EmailInput.style('top', '28px');
-        EmailInput.style('left', '50%');
-        EmailInput.style('transform', 'translateX(-50%)');
+        EmailInput.style('margin-top', '24px');
         EmailInput.style('width', '50%');
         EmailInput.style('text-align', 'center');
         EmailInput.attribute('placeholder', 'test@example.com');
@@ -257,10 +269,8 @@ export class GroupServerPage implements OnInit {
         }
         p['EmailInput'] = EmailInput;
         let PasswordInput = p.createInput();
-        PasswordInput.style('position', 'absolute');
-        PasswordInput.style('top', '67px');
-        PasswordInput.style('left', '50%');
-        PasswordInput.style('transform', 'translateX(-50%)');
+        PasswordInput.style('margin-top', '10px');
+        PasswordInput.style('align-self', 'center');
         PasswordInput.style('width', '50%');
         PasswordInput.style('text-align', 'center');
         PasswordInput.attribute('type', 'password');
@@ -275,10 +285,8 @@ export class GroupServerPage implements OnInit {
           PasswordInput.hide();
         }
         let LoginButton = p.createButton(this.OnlineToggle ? this.lang.text['Profile']['LogOut'] : this.lang.text['Profile']['login_toggle']);
-        LoginButton.style('position', 'absolute');
-        LoginButton.style('top', '112px');
-        LoginButton.style('left', '50%');
-        LoginButton.style('transform', 'translateX(-50%)');
+        LoginButton.style('margin-top', '17px');
+        LoginButton.style('align-self', 'center');
         LoginButton.style('text-align', 'center');
         LoginButton.style('font-size', '24px');
         LoginButton.style('border-radius', '16px');
@@ -288,21 +296,6 @@ export class GroupServerPage implements OnInit {
           this.toggle_online();
         }
         p['LoginButton'] = LoginButton;
-        // 사용자 UID
-        if (this.session_uid) {
-          let uuidDiv = p.createDiv(this.session_uid);
-          uuidDiv.style('position', 'absolute');
-          uuidDiv.style('top', `${NAME_DECK_Y + 80}px`);
-          uuidDiv.style('left', '50%');
-          uuidDiv.style('color', 'var(--ion-color-medium)');
-          uuidDiv.style('transform', 'translateX(-50%)');
-          uuidDiv.style('width', '80%');
-          uuidDiv.style('text-align', 'center');
-          uuidDiv.parent(this.gsCanvasDiv);
-          uuidDiv.elt.onclick = () => {
-            this.copy_id();
-          }
-        }
       }
       p.draw = () => {
         if (FadeOutTrashedLerp > 0) {
@@ -753,7 +746,10 @@ export class GroupServerPage implements OnInit {
     }
     if (this.OnlineToggle)
       this.p5canvas['InputForm'].hide();
-    else this.p5canvas['InputForm'].show();
+    else {
+      this.p5canvas['InputForm'].show();
+      this.p5canvas['InputForm'].style('display', 'flex');
+    }
     this.p5canvas['LoginButton'].html(this.OnlineToggle ? this.lang.text['Profile']['LogOut'] : this.lang.text['Profile']['login_toggle']);
     this.p5canvas['OnlineLamp'].style('background-color', this.OnlineToggle ? this.statusBar.colors['online'] : this.statusBar.colors['offline']);
     this.ShowServerList = this.OnlineToggle;

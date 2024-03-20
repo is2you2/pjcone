@@ -174,29 +174,31 @@ export class OthersProfilePage implements OnInit {
             selected_image.show();
           } else selected_image.hide();
         }
-        const NAME_DECK_Y = 330;
         const NAME_SIZE = '36px';
+        // 사용자 정보 모음 div (밀림 구성 방지용)
+        let ExceptPic = p.createDiv();
+        ExceptPic.style('width', '100%');
+        ExceptPic.style('position', 'absolute');
+        ExceptPic.style('top', '330px');
+        ExceptPic.style('display', 'flex');
+        ExceptPic.style('flex-direction', 'column');
+        ExceptPic.parent(this.OtherCanvasDiv);
         // 사용자 이름 (display)
         nameDiv = p.createDiv(this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']);
-        nameDiv.style('position', 'absolute');
-        nameDiv.style('top', `${NAME_DECK_Y}px`);
-        nameDiv.style('left', '50%');
         nameDiv.style('font-size', NAME_SIZE);
         nameDiv.style('font-weight', 'bold');
-        nameDiv.style('transform', 'translateX(-50%)');
+        nameDiv.style('align-self', 'center');
         nameDiv.style('width', '80%');
         nameDiv.style('text-align', 'center');
-        nameDiv.parent(this.OtherCanvasDiv);
+        nameDiv.parent(ExceptPic);
         // 사용자 UID
         let uuidDiv = p.createDiv(this.info['user']['id']);
-        uuidDiv.style('position', 'absolute');
-        uuidDiv.style('top', `${NAME_DECK_Y + 80}px`);
-        uuidDiv.style('left', '50%');
         uuidDiv.style('color', 'var(--ion-color-medium)');
-        uuidDiv.style('transform', 'translateX(-50%)');
+        uuidDiv.style('align-self', 'center');
+        uuidDiv.style('margin-top', '36px');
         uuidDiv.style('width', '80%');
         uuidDiv.style('text-align', 'center');
-        uuidDiv.parent(this.OtherCanvasDiv);
+        uuidDiv.parent(ExceptPic);
         uuidDiv.elt.onclick = () => {
           this.copy_id();
         }
