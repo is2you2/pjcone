@@ -1205,13 +1205,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   useSpeaker = false;
   /** 마지막에 받은 메시지 읽기 */
   SpeechReceivedMessage(msg: any) {
-    let getMessage = JSON.parse(JSON.stringify(msg.content.msg));
-    let read_this = '';
-    for (let i = 0, j = getMessage.length; i < j; i++)
-      for (let k = 0, l = getMessage[i].length; k < l; k++)
-        read_this += getMessage[i][k]['text'] + ' ';
-    this.SpeechThese.push(read_this);
-    if (!this.isSpeeching) this.SpeechingTexts();
+    try {
+      let getMessage = JSON.parse(JSON.stringify(msg.content.msg));
+      let read_this = '';
+      for (let i = 0, j = getMessage.length; i < j; i++)
+        for (let k = 0, l = getMessage[i].length; k < l; k++)
+          read_this += getMessage[i][k]['text'] + ' ';
+      this.SpeechThese.push(read_this);
+      if (!this.isSpeeching) this.SpeechingTexts();
+    } catch (e) { }
   }
 
   isSpeeching = false;

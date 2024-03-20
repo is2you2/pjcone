@@ -1261,13 +1261,29 @@ export class IonicViewerPage implements OnInit {
       let exact_line_text = text_as_line[i];
       let sep_by_whitespace = exact_line_text.split(' ');
       for (let k = 0, l = sep_by_whitespace.length; k < l; k++) {
-        let word = p.createSpan(sep_by_whitespace[k] + '&nbsp');
+        let text = this.HTMLEncode(sep_by_whitespace[k]);
+        let word = p.createSpan(text + '&nbsp');
         word.parent(line);
       }
       line.parent(p['SyntaxHighlightReader']);
     }
     p['TextArea'].style.display = 'none';
     p['SyntaxHighlightReader'].style.display = 'block';
+  }
+
+  /** HTML 내 특수 문자 허용 */
+  HTMLEncode(str: any) {
+    str = [...str];
+    let i = str.length, aRet = [];
+    while (i--) {
+      var iC = str[i].codePointAt(0);
+      if (iC < 65 || iC > 127 || (iC > 90 && iC < 97)) {
+        aRet[i] = '&#' + iC + ';';
+      } else {
+        aRet[i] = str[i];
+      }
+    }
+    return aRet.join('');
   }
 
   NewTextFileName = '';
