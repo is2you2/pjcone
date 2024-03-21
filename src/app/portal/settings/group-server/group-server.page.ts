@@ -250,7 +250,6 @@ export class GroupServerPage implements OnInit {
         if (this.OnlineToggle) InputForm.hide();
         let EmailInput = p.createInput(this.nakama.users.self['email']);
         EmailInput.style('align-self', 'center');
-        EmailInput.id('email_input');
         EmailInput.style('margin-top', '24px');
         EmailInput.style('width', '50%');
         EmailInput.style('text-align', 'center');
@@ -265,6 +264,8 @@ export class GroupServerPage implements OnInit {
             PasswordInput.elt.focus();
           }
         }
+        if (!this.nakama.users.self['email'])
+          EmailInput.elt.focus();
         let PasswordInput = p.createInput();
         PasswordInput.style('margin-top', '10px');
         PasswordInput.style('align-self', 'center');
@@ -335,6 +336,10 @@ export class GroupServerPage implements OnInit {
             p['LoginButton'].html(this.lang.text['Profile']['login_toggle']);
             p['OnlineLamp'].style('background-color', this.statusBar.colors['offline']);
           }
+          if (this.nakama.users.self['display_name']) {
+            nameDiv.html(this.nakama.users.self['display_name']);
+            nameEditDiv.value(this.nakama.users.self['display_name']);
+          }
           this.ShowServerList = this.OnlineToggle;
           this.p5canvas['PasswordInput'].value('');
           p['LoginButton'].elt.disabled = false;
@@ -346,8 +351,6 @@ export class GroupServerPage implements OnInit {
       }
     });
     this.ShowServerList = this.OnlineToggle;
-    if (!this.nakama.users.self['email'])
-      document.getElementById('email_input').focus();
     this.CanAddTestServer =
       Object.keys(this.nakama.servers['official']).length == 0
       && Object.keys(this.nakama.servers['unofficial']).length != 0;

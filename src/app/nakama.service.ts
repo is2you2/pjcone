@@ -2805,7 +2805,6 @@ export class NakamaService {
             }]
           }
           );
-          console.log(user_img.objects);
           if (user_img.objects.length) {
             this.users[_is_official][_target][c.sender_id]['img'] = user_img.objects[0].value['img'].replace(/"|\\|=/g, '');
             this.indexed.saveTextFileToUserPath(this.users[_is_official][_target][c.sender_id]['img'],
