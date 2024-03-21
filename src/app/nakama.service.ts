@@ -1208,6 +1208,8 @@ export class NakamaService {
 
   /** 다른 사람의 정보 간소화하여 저장하기 */
   save_other_user(userInfo: any, _is_official: string, _target: string) {
+    if (this.servers[_is_official][_target].session.user_id == userInfo['id'])
+      return; // 내 정보는 저장하지 않음
     let copied = JSON.parse(JSON.stringify(userInfo));
     if (userInfo['id'] == this.servers[_is_official][_target].session.user_id) return;
     delete copied['img'];
@@ -2778,6 +2780,8 @@ export class NakamaService {
   /** 그룹 채널 사용자 상태 변경 처리 */
   async update_group_user_info(c: ChannelMessage, _is_official: string, _target: string) {
     this.translate_updates(c);
+    if (this.servers[_is_official][_target].session.user_id == c.sender_id)
+      return; // 혹시 내가 보낸 정보라면 처리하지 마세요
     switch (c.content['user_update']) {
       case 'modify_data': // 프로필 정보가 변경됨
         try {
@@ -2806,7 +2810,7 @@ export class NakamaService {
           }
           );
           if (user_img.objects.length) {
-            this.users[_is_official][_target][c.sender_id]['img'] = user_img.objects[0].value['img'].replace(/"|\\|=/g, '');
+            this.load_other_user(c.sender_id, _is_official, _target)['img'] = user_img.objects[0].value['img'].replace(/"|\\|=/g, '');
             this.indexed.saveTextFileToUserPath(this.users[_is_official][_target][c.sender_id]['img'],
               `servers/${_is_official}/${_target}/users/${c.sender_id}/profile.img`);
           } else {
