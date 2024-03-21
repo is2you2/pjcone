@@ -1683,6 +1683,10 @@ export class IonicViewerPage implements OnInit {
     } catch (e) { }
   }
 
+  ionViewDidLeave() {
+    this.noti.ClearNoti(6);
+  }
+
   copy_url(data: string) {
     this.mClipboard.copy(data)
       .catch(_e => clipboard.write(data));
