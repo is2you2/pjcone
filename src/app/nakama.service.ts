@@ -822,26 +822,24 @@ export class NakamaService {
       this.save_self_profile();
     } catch (e) { }
     // 개인 프로필 이미지를 서버에 맞춤
-    if (!this.users.self['img']) {
-      try {
-        let image = await this.servers[_is_official][_target].client.readStorageObjects(
-          this.servers[_is_official][_target].session, {
-          object_ids: [{
-            collection: 'user_public',
-            key: 'profile_image',
-            user_id: this.servers[_is_official][_target].session.user_id,
-          }],
-        });
-        if (image.objects.length) {
-          if (this.socket_reactive['profile']) {
-            this.socket_reactive['profile'](image.objects[0].value['img']);
-          } else {
-            this.users.self['img'] = image.objects[0].value['img'];
-            this.indexed.saveTextFileToUserPath(JSON.stringify(this.users.self['img']), 'servers/self/profile.img');
-          }
+    try {
+      let image = await this.servers[_is_official][_target].client.readStorageObjects(
+        this.servers[_is_official][_target].session, {
+        object_ids: [{
+          collection: 'user_public',
+          key: 'profile_image',
+          user_id: this.servers[_is_official][_target].session.user_id,
+        }],
+      });
+      if (image.objects.length) {
+        if (this.socket_reactive['profile']) {
+          this.socket_reactive['profile'](image.objects[0].value['img']);
+        } else {
+          this.users.self['img'] = image.objects[0].value['img'];
+          this.indexed.saveTextFileToUserPath(JSON.stringify(this.users.self['img']), 'servers/self/profile.img');
         }
-      } catch (e) { }
-    }
+      }
+    } catch (e) { }
     await this.load_server_todo(_is_official, _target);
     // 통신 소켓 연결하기
     let socket = await this.connect_to(_is_official, _target);
