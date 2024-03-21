@@ -496,7 +496,6 @@ export class GlobalActService {
         if (msg_content['url']) {
           let text = await fetch(msg_content['url']).then(r => r.text());
           msg_content['text'] = text.split('\n');
-          msg_content['thumbnail'] = text.split('\n');
         } else new p5((p: p5) => {
           p.setup = () => {
             p.noCanvas();

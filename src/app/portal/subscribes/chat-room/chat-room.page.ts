@@ -1159,7 +1159,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
                   });
                 })
-              } catch (e) { }
+              } catch (e) {
+                this.global.modulate_thumbnail(this.ViewableMessage[i].content, '');
+              }
               this.modulate_chatmsg(i, j + 1);
             }
             this.modulate_chatmsg(0, this.ViewableMessage.length);
