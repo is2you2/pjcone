@@ -232,6 +232,7 @@ export class UserFsDirPage implements OnInit {
           color: 'b0b0b0',
         });
         for (let i = 0, j = ev.target.files.length; i < j; i++) {
+          if (this.StopIndexing) break;
           loading.message = `${this.lang.text['UserFsDir']['MultipleSave']}: ${j - i}`;
           this.noti.noti.schedule({
             id: 4,
@@ -589,6 +590,10 @@ export class UserFsDirPage implements OnInit {
     loading.present();
     let list = await this.indexed.GetFileListFromDB(this.CurrentDir);
     for (let i = 0, j = list.length; i < j; i++) {
+      if (this.StopIndexing) {
+        loading.dismiss();
+        return;
+      }
       let FileInfo = await this.indexed.GetFileInfoFromDB(list[i]);
       let blob = await this.indexed.loadBlobFromUserPath(list[i], '');
       let last_sep = list[i].lastIndexOf('/');
@@ -657,12 +662,15 @@ export class UserFsDirPage implements OnInit {
     let path = entry.nativeURL.substring(0, entry.nativeURL.length - 1);
     let last_sep = path.lastIndexOf('/');
     let RecursiveEntry: any[] = await this.file.listDir(path.substring(0, last_sep) + '/', path.substring(last_sep + 1));
-    for (let i = 0, j = RecursiveEntry.length; i < j; i++)
+    for (let i = 0, j = RecursiveEntry.length; i < j; i++) {
+      if (this.StopIndexing) {
+        loading.dismiss();
+        return;
+      }
       if (RecursiveEntry[i].isDirectory)
         await this.importThisFolder(RecursiveEntry[i], loading);
       else {
         let target_path = RecursiveEntry[i].nativeURL.split('org.pjcone.portal/files/')[1];
-        console.log('Now importing: ', target_path);
         try {
           const data = await Filesystem.readFile({
             path: RecursiveEntry[i].nativeURL,
@@ -677,6 +685,7 @@ export class UserFsDirPage implements OnInit {
           });
         }
       }
+    }
   }
 
   SelectImportFolder() {
@@ -690,8 +699,13 @@ export class UserFsDirPage implements OnInit {
   async inputImageSelected(ev: any) {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });
     loading.present();
-    for (let i = 0, j = ev.target.files.length; i < j; i++)
+    for (let i = 0, j = ev.target.files.length; i < j; i++) {
+      if (this.StopIndexing) {
+        loading.dismiss();
+        return;
+      }
       await this.indexed.saveBlobToUserPath(ev.target.files[i], ev.target.files[i].webkitRelativePath);
+    }
     this.LoadAllIndexedFiles();
     loading.dismiss();
     this.p5toast.show({
@@ -719,6 +733,10 @@ export class UserFsDirPage implements OnInit {
             });
           let list = await this.indexed.GetFileListFromDB(this.CurrentDir);
           for (let i = 0, j = list.length; i < j; i++) {
+            if (this.StopIndexing) {
+              loading.dismiss();
+              return;
+            }
             if (isPlatform == 'Android' || isPlatform == 'iOS')
               this.noti.noti.schedule({
                 id: 5,
@@ -739,7 +757,11 @@ export class UserFsDirPage implements OnInit {
               this.FileList.splice(i, 1);
           list = await this.indexed.GetFileListFromDB(this.CurrentDir);
           for (let i = 0, j = list.length; i < j; i++) {
-            if (isPlatform == 'Android' || isPlatform == 'iOS')
+            if (isPlatform == 'Android' || isPlatform == 'iOS') {
+              if (this.StopIndexing) {
+                loading.dismiss();
+                return;
+              }
               this.noti.noti.schedule({
                 id: 5,
                 title: `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`,
@@ -748,6 +770,7 @@ export class UserFsDirPage implements OnInit {
                 smallIcon: 'res://icon_mono',
                 color: 'b0b0b0',
               });
+            }
             loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`;
             await this.indexed.removeFileFromUserPath(list[i]);
           }
@@ -758,7 +781,6 @@ export class UserFsDirPage implements OnInit {
             if (this.FileList[i].path.indexOf(this.CurrentDir) == 0)
               this.FileList.splice(i, 1);
           this.MoveToUpDir();
-          loading.dismiss();
           setTimeout(() => {
             this.noti.ClearNoti(4);
           }, 100);
