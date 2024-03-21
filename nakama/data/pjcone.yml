@@ -15,7 +15,7 @@ runtime:
 
 session:
     token_expiry_sec: 32400
-    single_socket: true
+    # single_socket: true
 
 logger:
     stdout: true

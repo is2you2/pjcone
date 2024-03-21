@@ -1278,49 +1278,50 @@ export class NakamaService {
    * 채널 추가에 사용하려는 경우 join_chat_with_modulation() 를 대신 사용하세요
    */
   async add_channels(channel_info: Channel, _is_official: string, _target: string) {
-    if (!this.channels_orig[_is_official][_target][channel_info.id])
+    if (!this.channels_orig[_is_official][_target][channel_info.id]) {
       this.channels_orig[_is_official][_target][channel_info.id] = {};
-    let keys = Object.keys(channel_info);
-    keys.forEach(key => this.channels_orig[_is_official][_target][channel_info.id][key] = channel_info[key]);
-    if (!this.channels_orig[_is_official][_target][channel_info.id]['cnoti_id'])
-      this.channels_orig[_is_official][_target][channel_info.id]['cnoti_id'] = this.get_noti_id();
-    switch (this.channels_orig[_is_official][_target][channel_info.id]['redirect']['type']) {
-      case 2: // 1:1 대화
-        let targetId = this.channels_orig[_is_official][_target][channel_info.id]['redirect']['id'];
-        this.channels_orig[_is_official][_target][channel_info.id]['color'] = (targetId.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
-        let result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
-        this.channels_orig[_is_official][_target][channel_info.id]['status'] = result_status;
-        break;
-      case 3: // 새로 개설된 그룹 채널인 경우
-        try {
-          let group_id = this.channels_orig[_is_official][_target][channel_info.id]['redirect']['id'];
-          this.channels_orig[_is_official][_target][channel_info.id]['color'] = (group_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
-          let users = await this.servers[_is_official][_target].client.listGroupUsers(
-            this.servers[_is_official][_target].session, group_id);
-          if (!this.groups[_is_official][_target][group_id]['users'])
-            this.groups[_is_official][_target][group_id]['users'] = [];
-          users.group_users.forEach(_user => {
-            if (_user.user.id != this.servers[_is_official][_target].session.user_id)
-              if (!this.users[_is_official][_target][_user.user['id']])
-                this.save_other_user(_user.user, _is_official, _target);
-            if (_user.user.id == this.servers[_is_official][_target].session.user_id)
-              _user.user['is_me'] = true;
-            else if (!this.users[_is_official][_target][_user.user['id']]) this.save_other_user(_user.user, _is_official, _target);
-            _user.user = this.load_other_user(_user.user.id, _is_official, _target);
-            this.add_group_user_without_duplicate(_user, group_id, _is_official, _target);
-          });
-        } catch (e) {
-          console.error('그룹 채널 생성 오류: ', e);
-        }
-        this.count_channel_online_member(this.channels_orig[_is_official][_target][channel_info.id], _is_official, _target);
-        break;
-      default:
-        console.error('예상하지 못한 채널 종류: ', this.channels_orig[_is_official][_target][channel_info.id]);
-        break;
+      let keys = Object.keys(channel_info);
+      keys.forEach(key => this.channels_orig[_is_official][_target][channel_info.id][key] = channel_info[key]);
+      if (!this.channels_orig[_is_official][_target][channel_info.id]['cnoti_id'])
+        this.channels_orig[_is_official][_target][channel_info.id]['cnoti_id'] = this.get_noti_id();
+      switch (this.channels_orig[_is_official][_target][channel_info.id]['redirect']['type']) {
+        case 2: // 1:1 대화
+          let targetId = this.channels_orig[_is_official][_target][channel_info.id]['redirect']['id'];
+          this.channels_orig[_is_official][_target][channel_info.id]['color'] = (targetId.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
+          let result_status = this.load_other_user(targetId, _is_official, _target)['online'] ? 'online' : 'pending';
+          this.channels_orig[_is_official][_target][channel_info.id]['status'] = result_status;
+          break;
+        case 3: // 새로 개설된 그룹 채널인 경우
+          try {
+            let group_id = this.channels_orig[_is_official][_target][channel_info.id]['redirect']['id'];
+            this.channels_orig[_is_official][_target][channel_info.id]['color'] = (group_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
+            let users = await this.servers[_is_official][_target].client.listGroupUsers(
+              this.servers[_is_official][_target].session, group_id);
+            if (!this.groups[_is_official][_target][group_id]['users'])
+              this.groups[_is_official][_target][group_id]['users'] = [];
+            users.group_users.forEach(_user => {
+              if (_user.user.id != this.servers[_is_official][_target].session.user_id)
+                if (!this.users[_is_official][_target][_user.user['id']])
+                  this.save_other_user(_user.user, _is_official, _target);
+              if (_user.user.id == this.servers[_is_official][_target].session.user_id)
+                _user.user['is_me'] = true;
+              else if (!this.users[_is_official][_target][_user.user['id']]) this.save_other_user(_user.user, _is_official, _target);
+              _user.user = this.load_other_user(_user.user.id, _is_official, _target);
+              this.add_group_user_without_duplicate(_user, group_id, _is_official, _target);
+            });
+          } catch (e) {
+            console.error('그룹 채널 생성 오류: ', e);
+          }
+          this.count_channel_online_member(this.channels_orig[_is_official][_target][channel_info.id], _is_official, _target);
+          break;
+        default:
+          console.error('예상하지 못한 채널 종류: ', this.channels_orig[_is_official][_target][channel_info.id]);
+          break;
+      }
+      this.rearrange_channels();
+      this.servers[_is_official][_target].socket.sendMatchState(this.self_match[_is_official][_target].match_id, MatchOpCode.ADD_CHANNEL,
+        encodeURIComponent(''));
     }
-    this.rearrange_channels();
-    this.servers[_is_official][_target].socket.sendMatchState(this.self_match[_is_official][_target].match_id, MatchOpCode.ADD_CHANNEL,
-      encodeURIComponent(''));
   }
 
   add_group_user_without_duplicate(user: GroupUser, gid: string, _is_official: string, _target: string) {
