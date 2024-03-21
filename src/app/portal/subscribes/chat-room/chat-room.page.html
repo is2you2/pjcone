@@ -179,10 +179,10 @@ SPDX-License-Identifier: MIT -->
                     </td>
                   </tr>
                 </table>
-                <div *ngIf="msg['isLastRead']" class="read_last_here">
+                <div *ngIf="msg['isLastRead']" class="read_last_here" (click)="SetOtherAct()">
                   {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
               </div>
-              <div *ngIf="msg.content['noti']" class="notice_form">
+              <div *ngIf="msg.content['noti']" class="notice_form" (click)="SetOtherAct()">
                 <div class="notice"> {{msg.content['noti']}} </div>
               </div>
             </div>
