@@ -106,7 +106,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                       button.isHide = true;
                     });
                     this.extended_buttons[0].isHide = false;
-                    this.extended_buttons[12].isHide = false;
+                    this.extended_buttons[11].isHide = false;
                   }
                 });
                 v.onDidDismiss().then(() => {
@@ -192,34 +192,26 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     { // 4
       icon: 'document-attach-outline',
       name: this.lang.text['ChatRoom']['attachments'],
-      act: () => {
-        if (!this.userInputTextArea)
-          this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-        this.new_attach({ detail: { value: 'load' } });
-      }
-    },
-    { // 5
-      icon: 'link-outline',
-      name: this.lang.text['ChatRoom']['FileLink'],
       act: async () => {
         if (!this.userInputTextArea)
           this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-        if (this.useCDN)
-          try {
-            await this.new_attach({ detail: { value: 'link' } });
-            return; // 파일 넣기 성공시 링크 발송 기능 여전히 사용
-          } catch (e) { }
-        this.toggle_linked_attach();
+        try {
+          await this.new_attach({ detail: { value: 'link' } });
+          return; // 파일 넣기 성공시 링크 발송 기능 여전히 사용
+        } catch (e) {
+          if (e != 'done')
+            this.new_attach({ detail: { value: 'load' } });
+        }
       }
     },
-    { // 6
+    { // 5
       icon: 'cloud-done-outline',
       name: this.lang.text['ChatRoom']['UseCloud'],
       act: () => {
         this.toggle_custom_attach();
       }
     },
-    { // 7
+    { // 6
       icon: 'camera-outline',
       name: this.lang.text['ChatRoom']['Camera'],
       act: async () => {
@@ -258,7 +250,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           loading.dismiss();
         } catch (e) { }
       }
-    }, { // 8
+    }, { // 7
       icon: 'server-outline',
       name: this.lang.text['ChatRoom']['ShareInfo'],
       act: () => {
@@ -278,7 +270,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           v.present();
         });
       }
-    }, { // 9
+    }, { // 8
       icon: 'call-outline',
       name: this.lang.text['ChatRoom']['VoiceChat'],
       act: async () => {
@@ -298,13 +290,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           console.log('webrtc 시작단계 오류: ', e);
         }
       }
-    }, { // 10
+    }, { // 9
       icon: 'volume-mute-outline',
       name: this.lang.text['ChatRoom']['ReadText'],
       act: async () => {
         this.toggle_speakermode();
       }
-    }, { // 11
+    }, { // 10
       icon: 'log-out-outline',
       name: this.lang.text['ChatRoom']['LogOut'],
       act: async () => {
@@ -317,16 +309,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.extended_buttons.forEach(button => {
               button.isHide = true;
             });
-            this.extended_buttons[12].isHide = false;
+            this.extended_buttons[11].isHide = false;
           } catch (e) {
             console.error('채널에서 나오기 실패: ', e);
           }
         } else {
-          this.extended_buttons[11].isHide = true;
+          this.extended_buttons[10].isHide = true;
         }
         this.ionViewDidEnter();
       }
-    }, { // 12
+    }, { // 11
       isHide: true,
       name: this.lang.text['ChatRoom']['RemoveHistory'],
       icon: 'close-circle-outline',
@@ -433,6 +425,21 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 throw e;
               }
             }
+          try { // DataURL 주소인지 검토
+            let blob = this.global.Base64ToBlob(pasted_url);
+            let getType = pasted_url.split(';')[0].split(':')[1];
+            let file = new File([blob],
+              `${this.lang.text['ChatRoom']['FileLink']}.${getType.split('/').pop()}`, {
+              type: getType,
+            });
+            await this.selected_blobFile_callback_act(file);
+            throw 'done';
+          } catch (e) {
+            switch (e) {
+              case 'done':
+                throw e;
+            }
+          }
           try { // 정상적인 주소인지 검토
             if (this.userInput.file) throw '이미 파일이 첨부됨, 토글만 시도';
             let res = await fetch(pasted_url);
@@ -468,26 +475,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.userInput.file = this_file;
           this.inputPlaceholder = `(${this.lang.text['ChatRoom']['FileLink']}: ${this.userInput.file.filename})`;
         } catch (e) {
-          console.warn('인식 불가능한 URL 정보: ', e);
-          throw '인식 불가능한 URL 정보';
+          if (e == 'done')
+            throw e;
+          else throw `인식 불가능한 URL 정보: ${e}`;
         }
         break;
     }
-  }
-  /** 사설 연계 서버 우선 사용 여부 */
-  useCDN = true;
-  /** 파일을 업로드하는 방식 설정 (기본값: cdn 서버 업로드 선호) */
-  async toggle_linked_attach() {
-    this.useCDN = !this.useCDN;
-    this.extended_buttons[5].icon = this.useCDN
-      ? 'link-outline' : 'unlink-outline';
   }
 
   /** 사용자 지정 우선 서버 사용 여부 */
   useFirstCustomCDN = true;
   async toggle_custom_attach(force?: boolean) {
     this.useFirstCustomCDN = force ?? !this.useFirstCustomCDN;
-    this.extended_buttons[6].icon = this.useFirstCustomCDN
+    this.extended_buttons[5].icon = this.useFirstCustomCDN
       ? 'cloud-done-outline' : 'cloud-offline-outline';
     if (this.useFirstCustomCDN)
       localStorage.setItem('useFFSCDN', `${this.useFirstCustomCDN}`);
@@ -496,7 +496,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   async toggle_speakermode(force?: boolean) {
     this.useSpeaker = force ?? !this.useSpeaker;
-    this.extended_buttons[10].icon = this.useSpeaker
+    this.extended_buttons[9].icon = this.useSpeaker
       ? 'volume-high-outline' : 'volume-mute-outline';
     if (this.useSpeaker)
       localStorage.setItem('useChannelSpeaker', `${this.useSpeaker}`);
@@ -914,24 +914,24 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
           this.extended_buttons[0].isHide = true;
           this.extended_buttons[1].isHide = true;
-          this.extended_buttons[9].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
-          this.extended_buttons[12].isHide = true;
+          this.extended_buttons[8].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
+          this.extended_buttons[11].isHide = true;
         }
         break;
       case 3: // 그룹 대화라면
         if (this.info['status'] != 'missing')
           await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
         this.extended_buttons[1].isHide = true;
-        this.extended_buttons[11].isHide = true;
+        this.extended_buttons[10].isHide = true;
         delete this.extended_buttons[0].isHide;
-        this.extended_buttons[9].isHide = true;
-        this.extended_buttons[12].isHide = true;
+        this.extended_buttons[8].isHide = true;
+        this.extended_buttons[11].isHide = true;
         break;
       case 0: // 로컬 채널형 기록
         this.extended_buttons[0].isHide = true;
+        this.extended_buttons[7].isHide = true;
         this.extended_buttons[8].isHide = true;
-        this.extended_buttons[9].isHide = true;
-        this.extended_buttons[11].isHide = true;
+        this.extended_buttons[10].isHide = true;
         break;
       default:
         break;
@@ -997,11 +997,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.extended_buttons.forEach(button => {
         button.isHide = true;
       });
-      this.extended_buttons[12].isHide = false;
+      this.extended_buttons[11].isHide = false;
       if (this.info['redirect']['type'] == 3)
         this.extended_buttons[0].isHide = false;
     }
-    this.extended_buttons[10].isHide = isNativefier || this.info['status'] == 'missing';
+    this.extended_buttons[9].isHide = isNativefier || this.info['status'] == 'missing';
     // 마지막 대화 기록을 받아온다
     this.pull_msg_history();
     setTimeout(() => {
@@ -1413,7 +1413,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       } else result['msg'] = result['msg'];
       result['content_creator'] = this.userInput.file.content_creator;
       result['content_related_creator'] = this.userInput.file.content_related_creator;
-      if (!isURL && this.useCDN && !this.info['local']) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
+      if (!isURL && !this.info['local']) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
         let address = this.nakama.servers[this.isOfficial][this.target].info.address;
         let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
         let savedAddress = await this.global.upload_file_to_storage(this.userInput.file,
