@@ -781,6 +781,7 @@ export class UserFsDirPage implements OnInit {
             if (this.FileList[i].path.indexOf(this.CurrentDir) == 0)
               this.FileList.splice(i, 1);
           this.MoveToUpDir();
+          loading.dismiss();
           setTimeout(() => {
             this.noti.ClearNoti(4);
           }, 100);
@@ -811,8 +812,10 @@ export class UserFsDirPage implements OnInit {
     this.FileList.forEach(file => {
       URL.revokeObjectURL(file.thumbnail);
     });
-    this.noti.ClearNoti(4);
-    this.noti.ClearNoti(5);
+    setTimeout(() => {
+      this.noti.ClearNoti(4);
+      this.noti.ClearNoti(5);
+    }, 500);
   }
 
   ionViewWillLeave() {

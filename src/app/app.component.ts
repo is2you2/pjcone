@@ -107,7 +107,7 @@ export class AppComponent {
             };
             noti_id = JSON.parse(props['data'])['id'];
             break;
-          case 'NakamaReqContTitle': // 서버 진입 알림
+          case 'NakamaReqContTitle': // 그룹 진입 요청 알림
             let this_server = nakama.servers[props.data.isOfficial][props.data.Target];
             let msg = '';
             msg += `${lang.text['Nakama']['ReqContServer']}: ${props.data.serverName}<br>`;
