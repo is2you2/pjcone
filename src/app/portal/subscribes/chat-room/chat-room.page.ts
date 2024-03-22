@@ -1425,6 +1425,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
     if (this.block_send) return;
     this.block_send = true;
+    // 입력칸 높이를 일시적으로 고정시킴
+    this.userInputTextArea.style.maxHeight = `${this.userInputTextArea.offsetHeight}px`;
     this.userInputTextArea.focus();
     setTimeout(() => { // iOS 보정용
       this.userInputTextArea.focus();
@@ -1520,10 +1522,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         is_me: true,
       };
       this.SendLocalMessage(msg);
+      this.userInputTextArea.style.maxHeight = null;
       this.block_send = false;
       return;
     } // 아래, 온라인 행동
     this.sending_msg.push(tmp);
+    setTimeout(() => {
+      this.scroll_down_logs();
+    }, 0);
     try {
       let v = await this.nakama.servers[this.isOfficial][this.target].socket
         .writeChatMessage(this.info['id'], result);
@@ -1572,6 +1578,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }, 1500);
     }
+    this.userInputTextArea.style.maxHeight = null;
     this.block_send = false;
   }
 
