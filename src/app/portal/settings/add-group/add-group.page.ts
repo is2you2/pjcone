@@ -167,13 +167,14 @@ export class AddGroupPage implements OnInit {
 
     this.userInput.lang_tag = this.userInput.lang_tag || navigator.language.split('-')[0] || this.lang.lang;
     this.userInput.max_count = this.userInput.max_count || 2;
-    client.createGroup(session, {
-      name: this.userInput.name,
-      lang_tag: this.userInput.lang_tag,
-      description: this.userInput.description,
-      max_count: this.userInput.max_count,
-      open: this.userInput.open,
-    }).then(async v => {
+    try {
+      let v = await client.createGroup(session, {
+        name: this.userInput.name,
+        lang_tag: this.userInput.lang_tag,
+        description: this.userInput.description,
+        max_count: this.userInput.max_count,
+        open: this.userInput.open,
+      });
       this.userInput.id = v.id;
       this.userInput.creator_id = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session.user_id;
       this.nakama.save_group_info(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target);
@@ -185,10 +186,26 @@ export class AddGroupPage implements OnInit {
       } catch (e) {
         console.error(e);
       }
+      let self = await this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].client.getAccount(
+        this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session);
+      let user_metadata = JSON.parse(self.user.metadata);
+      if (user_metadata['is_manager']) {
+        user_metadata['is_manager'].push(v.id);
+      } else user_metadata['is_manager'] = [v.id];
+      try {
+        await this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].client.rpc(
+          this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session,
+          'update_user_metadata_fn', {
+          user_id: this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session.user_id,
+          metadata: user_metadata,
+        });
+      } catch (e) {
+        console.log('그룹 생성자를 매니저로 승격');
+      }
       setTimeout(() => {
         this.modalCtrl.dismiss();
       }, 500);
-    }).catch(e => {
+    } catch (e) {
       console.error('그룹 생성 실패: ', e);
       switch (e.status) {
         case 400:
@@ -216,7 +233,7 @@ export class AddGroupPage implements OnInit {
           }, 500);
           break;
       }
-    });
+    }
   }
 
   /** 로컬 채널 생성 */

@@ -660,11 +660,16 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 if (!this.AvailableWorker[group.id])
                   this.AvailableWorker[group.id] = [];
                 for (let k = 0, l = group.users.length; k < l; k++) {
+                  if (!(group.users[k].user.user_id || group.users[k].user.id) // 작업자가 없거나 나라면 건너뛰기
+                    || (group.users[k].user.user_id || group.users[k].user.id) == this.nakama.servers[value.isOfficial][value.target].session.user_id)
+                    continue;
                   let user = this.nakama.load_other_user(group.users[k].user.user_id || group.users[k].user.id,
                     value.isOfficial, value.target);
                   delete user.todo_checked; // 기존 정보 무시
-                  if ((user.id || user.user_id) != this.nakama.servers[value.isOfficial][value.target].session.user_id)
+                  if ((user.id || user.user_id) != this.nakama.servers[value.isOfficial][value.target].session.user_id
+                    && user['display_name']) {
                     this.AvailableWorker[group.id].push(user);
+                  }
                 }
                 if (!this.AvailableWorker[group.id].length)
                   delete this.AvailableWorker[group.id];
