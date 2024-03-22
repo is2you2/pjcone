@@ -223,8 +223,10 @@ export class IonicViewerPage implements OnInit {
     if (this.ContentChanging) return;
     this.ContentChanging = true;
     let tmp_calced = this.RelevanceIndex + direction;
-    if (tmp_calced <= 0 || tmp_calced > this.Relevances.length)
+    if (tmp_calced <= 0 || tmp_calced > this.Relevances.length) {
+      this.ContentChanging = false;
       return;
+    }
     if (this.p5canvas) this.p5canvas.remove();
     this.RelevanceIndex = tmp_calced;
     this.FileInfo = { file_ext: '' };
