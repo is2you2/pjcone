@@ -1195,7 +1195,17 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         },
         cssClass: 'red_font',
       }]
-    }).then(v => v.present());
+    }).then(v => {
+      this.global.p5key['KeyShortCut']['Escape'] = () => {
+        v.dismiss();
+      }
+      v.onDidDismiss().then(() => {
+        this.global.p5key['KeyShortCut']['Escape'] = () => {
+          this.navCtrl.pop();
+        }
+      });
+      v.present();
+    });
   }
 
   /** 저장소로부터 데이터를 삭제하는 명령 모음  

@@ -262,7 +262,17 @@ export class AdminToolsPage implements OnInit {
           this.ForceBreakupGroupAct(group);
         }
       }]
-    }).then(v => v.present());
+    }).then(v => {
+      this.global.p5key['KeyShortCut']['Escape'] = () => {
+        v.dismiss();
+      }
+      v.onDidDismiss().then(() => {
+        this.global.p5key['KeyShortCut']['Escape'] = () => {
+          this.navCtrl.pop();
+        }
+      });
+      v.present();
+    });
   }
 
   ForceBreakupGroupAct(group: any) {
@@ -357,7 +367,17 @@ export class AdminToolsPage implements OnInit {
           loading.dismiss();
         }
       }]
-    }).then(v => v.present());
+    }).then(v => {
+      this.global.p5key['KeyShortCut']['Escape'] = () => {
+        v.dismiss();
+      }
+      v.onDidDismiss().then(() => {
+        this.global.p5key['KeyShortCut']['Escape'] = () => {
+          this.navCtrl.pop();
+        }
+      });
+      v.present();
+    });
   }
 
   async RemoveUser(user: any) {

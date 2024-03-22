@@ -199,7 +199,15 @@ export class UserFsDirPage implements OnInit {
           }
         }
       }]
-    }).then(v => v.present());
+    }).then(v => {
+      this.global.p5key['KeyShortCut']['Escape'] = () => {
+        v.dismiss();
+      }
+      v.onDidDismiss().then(() => {
+        this.ionViewDidEnter();
+      });
+      v.present();
+    });
   }
 
   /** 파일 추가하기 */
@@ -582,7 +590,15 @@ export class UserFsDirPage implements OnInit {
           this.ExportDirectoryRecursiveAct();
         }
       }]
-    }).then(v => v.present());
+    }).then(v => {
+      this.global.p5key['KeyShortCut']['Escape'] = () => {
+        v.dismiss();
+      }
+      v.onDidDismiss().then(() => {
+        this.ionViewDidEnter();
+      });
+      v.present();
+    });
   }
 
   async ExportDirectoryRecursiveAct() {
@@ -788,7 +804,15 @@ export class UserFsDirPage implements OnInit {
         },
         cssClass: 'red_font',
       }],
-    }).then(v => v.present());
+    }).then(v => {
+      this.global.p5key['KeyShortCut']['Escape'] = () => {
+        v.dismiss();
+      }
+      v.onDidDismiss().then(() => {
+        this.ionViewDidEnter();
+      });
+      v.present();
+    });
   }
 
   RemoveFile(info: FileDir, i: number) {
@@ -804,7 +828,15 @@ export class UserFsDirPage implements OnInit {
         },
         cssClass: 'red_font',
       }]
-    }).then(v => v.present());
+    }).then(v => {
+      this.global.p5key['KeyShortCut']['Escape'] = () => {
+        v.dismiss();
+      }
+      v.onDidDismiss().then(() => {
+        this.ionViewDidEnter();
+      });
+      v.present();
+    });
   }
 
   ionViewDidLeave() {

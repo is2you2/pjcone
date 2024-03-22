@@ -362,7 +362,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             },
             cssClass: 'red_font',
           }]
-        }).then(v => v.present());
+        }).then(v => {
+          this.global.p5key['KeyShortCut']['Escape'] = () => {
+            v.dismiss();
+          }
+          v.onDidDismiss().then(() => {
+            this.global.p5key['KeyShortCut']['Escape'] = () => {
+              this.navCtrl.pop();
+            }
+          });
+          v.present();
+        });
       }
     },];
 
@@ -588,6 +598,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }
           }]
         });
+        this.global.p5key['KeyShortCut']['Escape'] = () => {
+          alert.dismiss();
+        }
+        alert.onDidDismiss().then(() => {
+          this.global.p5key['KeyShortCut']['Escape'] = () => {
+            this.navCtrl.pop();
+          }
+        });
         alert.present();
       } else {
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
@@ -691,7 +709,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.DropSendAct(stack);
           }
         }]
-      }).then(v => v.present());
+      }).then(v => {
+        this.global.p5key['KeyShortCut']['Escape'] = () => {
+          v.dismiss();
+        }
+        v.onDidDismiss().then(() => {
+          this.global.p5key['KeyShortCut']['Escape'] = () => {
+            this.navCtrl.pop();
+          }
+        });
+        v.present();
+      });
     }
   }
 
@@ -742,7 +770,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     this.DropSendAct(Drops);
                   }
                 }]
-              }).then(v => v.present());
+              }).then(v => {
+                this.global.p5key['KeyShortCut']['Escape'] = () => {
+                  v.dismiss();
+                }
+                v.onDidDismiss().then(() => {
+                  this.global.p5key['KeyShortCut']['Escape'] = () => {
+                    this.navCtrl.pop();
+                  }
+                });
+                v.present();
+              });
             }
           }, 400);
         });
@@ -1673,6 +1711,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.ionViewDidEnter();
             });
             this.removeShortCutKey();
+            this.global.p5key['KeyShortCut']['Escape'] = () => {
+              v.dismiss();
+            }
             v.present();
           });
         }
@@ -1733,7 +1774,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }]
     }).then(v => {
+      this.global.p5key['KeyShortCut']['Escape'] = () => {
+        v.dismiss();
+      }
       v.onDidDismiss().then(() => {
+        this.global.p5key['KeyShortCut']['Escape'] = () => {
+          this.navCtrl.pop();
+        }
         URL.revokeObjectURL(FileURL);
         this.isOtherAct = false;
       });
