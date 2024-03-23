@@ -756,7 +756,7 @@ export class IonicViewerPage implements OnInit {
           }
           p.windowResized = () => {
             let target_height = window.innerHeight - 45 - 56;
-            p['SyntaxHighlightReader'].setAttribute('style', `height: ${target_height}px; display: block; overflow-y: scroll;`);
+            p['SyntaxHighlightReader'].setAttribute('style', `height: ${target_height}px; display: ${this.isTextEditMode ? 'none' : 'block'}; overflow-y: scroll;`);
           }
         });
         break;
