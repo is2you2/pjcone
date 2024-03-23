@@ -564,6 +564,7 @@ export class GlobalActService {
       case 'wav':
       case 'ogg':
       case 'mp3':
+      case 'aac':
         info['viewer'] = 'audio';
         break;
       // 비디오류
@@ -586,6 +587,7 @@ export class GlobalActService {
       case 'gitignore':
       case 'json':
       case 'csv':
+      case 'c': // C
       case 'ts':
       case 'js':
       case 'cpp': // C++

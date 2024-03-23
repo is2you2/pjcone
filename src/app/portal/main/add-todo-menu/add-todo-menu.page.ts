@@ -19,6 +19,7 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SpeechRecognition } from "@capacitor-community/speech-recognition";
 import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
+import { VoiceRecorder } from "capacitor-voice-recorder";
 
 /** 서버에서 생성한 경우 */
 interface RemoteInfo {
@@ -732,6 +733,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   async SpeechToTitleText() {
+    await VoiceRecorder.requestAudioRecordingPermission();
     let result = await SpeechRecognition.start({
       language: this.lang.lang,
       maxResults: 1,
@@ -743,6 +745,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   async SpeechToDetailText() {
+    await VoiceRecorder.requestAudioRecordingPermission();
     let result = await SpeechRecognition.start({
       language: this.lang.lang,
       maxResults: 1,

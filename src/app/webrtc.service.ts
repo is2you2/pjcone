@@ -9,6 +9,7 @@ import { MatchOpCode, NakamaService } from './nakama.service';
 import { Match } from '@heroiclabs/nakama-js';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IndexedDBService } from './indexed-db.service';
+import { VoiceRecorder } from "capacitor-voice-recorder";
 
 @Injectable({
   providedIn: 'root'
@@ -93,6 +94,7 @@ export class WebrtcService {
       window.open(out_link, '_system');
       throw '모바일 권한 오류';
     }
+    await VoiceRecorder.requestAudioRecordingPermission();
     if (this.OnUse) {
       this.p5toast.show({
         text: this.lang.text['WebRTCDevManager']['AlreadyCalling'],
