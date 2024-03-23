@@ -3576,6 +3576,7 @@ export class NakamaService {
             let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           });
+          await this.AutoConnectServer();
           break;
         case 'open_channel': // 그룹 대화 열기 (폰에서 넘어가기 보조용)
           if (this.AfterLoginActDone) {
@@ -3585,6 +3586,7 @@ export class NakamaService {
             let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           });
+          await this.AutoConnectServer();
           break;
         case 'rtcserver':
           let ServerInfos = [];
@@ -3620,5 +3622,11 @@ export class NakamaService {
           this.resumeBanner();
           throw "지정된 틀 아님";
       }
+  }
+  /** 등록된 서버가 없다면 자동으로 테스트 서버에 연결 시도 */
+  async AutoConnectServer() {
+    let servers = this.get_all_server_info();
+    if (!servers.length)
+      await this.WatchAdsAndGetDevServerInfo(true);
   }
 }
