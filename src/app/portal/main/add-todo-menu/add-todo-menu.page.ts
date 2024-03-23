@@ -414,8 +414,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   startTimeP5Display: number;
   limitTimeP5Display: number;
   /** 평소 기한 가시화 색상 */
-  normal_color = '#888b';
-  alert_color = '#0bbb';
+  normal_color = '#8888';
+  alert_color = '#0bb8';
   AlertLerpStartFrom = .8;
   show_count_timer() {
     this.p5timer = new p5((p: p5) => {
@@ -440,9 +440,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           lerpVal = 1;
         else lerpVal = p.map(currentTime, this.startTimeP5Display, this.limitTimeP5Display, 0, 1, true);
         if (lerpVal <= this.AlertLerpStartFrom) {
-          color = p.color(this.userInput.custom_color ? this.userInput.custom_color + 'bb' : this.normal_color);
+          color = p.color(this.userInput.custom_color ? this.userInput.custom_color + '88' : this.normal_color);
         } else if (lerpVal > this.AlertLerpStartFrom)
-          color = this.userInput.custom_color ? p.color(this.userInput.custom_color + 'bb')
+          color = this.userInput.custom_color ? p.color(this.userInput.custom_color + '88')
             : p.lerpColor(p.color(this.normal_color), p.color(this.alert_color), p.map(lerpVal, this.AlertLerpStartFrom, 1, 0, 1) * startAnimLerp);
       }
       p.draw = () => {
@@ -716,17 +716,17 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     switch (this.userInput.importance) {
       case '0': // 메모
         this.normal_color = '#888b';
-        this.alert_color = '#58a192bb';
+        this.alert_color = '#58a19288';
         this.AlertLerpStartFrom = .8;
         break;
       case '1': // 기억해야함
         this.normal_color = '#888b';
-        this.alert_color = '#ddbb41bb';
+        this.alert_color = '#ddbb4188';
         this.AlertLerpStartFrom = .5;
         break;
       case '2': // 중요함
-        this.normal_color = '#dddd0cbb';
-        this.alert_color = '#ff754ebb';
+        this.normal_color = '#dddd0c88';
+        this.alert_color = '#ff754e88';
         this.AlertLerpStartFrom = .4;
         break;
     }

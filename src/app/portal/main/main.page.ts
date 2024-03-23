@@ -76,7 +76,7 @@ export class MainPage implements OnInit {
         p.rectMode(p.CENTER);
         p.textAlign(p.CENTER, p.CENTER);
         p.textSize(TextSize);
-        p.textLeading(TextSize * 1.6);
+        p.textLeading(TextSize * 1.4);
         p.textWrap(p.CHAR);
         p.imageMode(p.CENTER);
         let InitScale = Number(localStorage.getItem('p5todoScale') || 1);
@@ -298,7 +298,7 @@ export class MainPage implements OnInit {
             0, 1, true);
           if (this.isAddButton || (this.json.written > this.json.limit)) this.LerpProgress = 1;
           p.fill((this.json.custom_color || this.defaultColor.toString('#rrggbb'))
-            + p.hex(p.floor(p.lerp(34, 180, this.LerpProgress)), 2));
+            + p.hex(p.floor(p.lerp(34, 96, this.LerpProgress)), 2));
           p.ellipse(0, 0, this.EllipseSize, this.EllipseSize);
           // 썸네일 이미지 표기
           if (this.ThumbnailImage)
@@ -665,11 +665,9 @@ export class MainPage implements OnInit {
       /** 모든 입력을 제거했을 때 공통 행동 */
       let ReleaseAllAct = () => {
         if (GrabbedElement) {
-          let GrabbedDist = GrabbedElement.EllipseSize;
           GrabbedElement.isGrabbed = false;
           GrabbedElement.Velocity = VECTOR_ZERO.copy();
           GrabbedElement.Accel = VECTOR_ZERO.copy();
-          GrabbedDist = GrabbedElement.position.dist(MovementStartPosition);
           GrabbedElement = undefined;
         }
         MovementStartPosition = undefined;
