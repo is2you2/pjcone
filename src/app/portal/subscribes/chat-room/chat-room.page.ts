@@ -1582,6 +1582,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.block_send = false;
   }
 
+  /** 하이퍼링크 열기 행동 후 포커스 빼기 */
+  open_url_link() {
+    this.userInputTextArea.focus();
+    this.SetOtherAct();
+  }
+
   /** 원격 발송 없이 로컬에 저장하기 */
   SendLocalMessage(msg: any) {
     let MsgText = this.deserialize_text(msg);

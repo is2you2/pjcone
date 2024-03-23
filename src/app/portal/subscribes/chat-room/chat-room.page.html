@@ -90,7 +90,7 @@ SPDX-License-Identifier: MIT -->
                                   (click)="SetOtherAct()">
                                   {{part.text}} </span>
                                 <a *ngIf="part.href" [href]="part.text" target="_system"
-                                  (click)="SetOtherAct()">{{part.text}}</a>
+                                  (click)="open_url_link()">{{part.text}}</a>
                               </span>
                             </span><span *ngIf="msg.content['edited'] && i == msg.content['msg'].length - 1"
                               class="edited_form">{{'(' + lang.text['ChatRoom']['MsgEdited'] +
@@ -162,7 +162,7 @@ SPDX-License-Identifier: MIT -->
                                   (click)="SetOtherAct()">
                                   {{part.text}} </span>
                                 <a *ngIf="part.href" [href]="part.text" target="_system"
-                                  (click)="SetOtherAct()">{{part.text}}</a>
+                                  (click)="open_url_link()">{{part.text}}</a>
                               </span>
                             </span>
                           </div>
@@ -213,7 +213,7 @@ SPDX-License-Identifier: MIT -->
                           [style]="'font-size: ' + (part.size || 16) + 'px'" (click)="SetOtherAct()">
                           {{part.text}} </span>
                         <a *ngIf="part.href" [href]="part.text" class="comp_local_content" target="_system"
-                          (click)="SetOtherAct()">{{part.text}}</a>
+                          (click)="open_url_link()">{{part.text}}</a>
                       </span>
                     </span>
                   </div>
@@ -265,7 +265,7 @@ SPDX-License-Identifier: MIT -->
               <span *ngFor="let line of last_message_viewer.message">
                 <span *ngFor="let part of line">
                   <span *ngIf="!part.href" (click)="SetOtherAct()"> {{part.text}} </span>
-                  <a *ngIf="part.href" [href]="part.text" target="_system" (click)="SetOtherAct()">{{part.text}}</a>
+                  <a *ngIf="part.href" [href]="part.text" target="_system" (click)="open_url_link()">{{part.text}}</a>
                 </span>
               </span>
             </td>
