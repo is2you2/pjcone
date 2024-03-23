@@ -1250,7 +1250,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       for (let i = 0, j = getMessage.length; i < j; i++)
         for (let k = 0, l = getMessage[i].length; k < l; k++)
           read_this += getMessage[i][k]['text'] + ' ';
-      if (read_this) this.SpeechThese.push(read_this);
+      if (read_this.trim()) this.SpeechThese.push(read_this);
       if (!this.isSpeeching) this.SpeechingTexts();
     } catch (e) { }
   }
