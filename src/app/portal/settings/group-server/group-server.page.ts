@@ -352,8 +352,7 @@ export class GroupServerPage implements OnInit {
     });
     this.ShowServerList = this.OnlineToggle;
     this.CanAddTestServer =
-      Object.keys(this.nakama.servers['official']).length == 0
-      && Object.keys(this.nakama.servers['unofficial']).length != 0;
+      Object.keys(this.nakama.servers['official']).length == 0;
     this.isMobilePWA = isPlatform == 'MobilePWA';
   }
 
@@ -620,10 +619,6 @@ export class GroupServerPage implements OnInit {
         }
         this.nakama.save_self_profile();
         await this.nakama.init_all_sessions();
-        if (!this.servers.length) { // 사설 서버가 없다면 개발 테스트 서버로 연결
-          await this.nakama.WatchAdsAndGetDevServerInfo();
-          this.servers = this.nakama.get_all_server_info(true);
-        }
       } catch (e) {
         this.nakama.users.self['online'] = false;
         this.OnlineToggle = false;

@@ -279,9 +279,7 @@ SPDX-License-Identifier: MIT -->
           <table id="input_table" style="width: 100%; background-color: var(--chatroom-input-background);">
             <tr>
               <td>
-                <ion-button fill="clear" mode="md"
-                  [disabled]="((info['status'] ? info['status'] : info.info['status']) || 'offline') == 'offline'"
-                  (click)="open_ext_with_delay()" class="ion-text-center">
+                <ion-button fill="clear" mode="md" (click)="open_ext_with_delay()" class="ion-text-center">
                   <ion-icon name="add"></ion-icon>
                 </ion-button>
               </td>

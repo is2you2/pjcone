@@ -374,14 +374,9 @@ export class NakamaService {
    */
   isRewardAdsUsed = false;
   /** 모든 세션을 토글 */
-  async toggle_all_session() {
+  async toggle_all_session(lampAct = false) {
     if (this.TogglingSession) return;
     this.TogglingSession = true;
-    let UseOfficial = await this.WatchAdsAndGetDevServerInfo();
-    if (UseOfficial) {
-      this.TogglingSession = false;
-      return;
-    }
     if (this.statusBar.settings.groupServer == 'online') {
       this.logout_all_server();
       this.p5toast.show({
@@ -397,7 +392,7 @@ export class NakamaService {
           this.p5toast.show({
             text: this.lang.text['Subscribes']['Disconnected'],
           });
-          this.nav.navigateForward('portal/settings/group-server');
+          if (lampAct) this.nav.navigateForward('portal/settings/group-server');
           this.removeBanner();
         }
       } catch (e) { }
@@ -3521,7 +3516,6 @@ export class NakamaService {
   }
 
   async act_from_QRInfo(json: any) {
-    this.removeBanner();
     for (let i = 0, j = json.length; i < j; i++)
       switch (json[i].type) {
         case 'open_profile': // 프로필 페이지 열기 유도
