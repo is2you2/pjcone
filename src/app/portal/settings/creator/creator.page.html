@@ -21,19 +21,6 @@ SPDX-License-Identifier: MIT -->
   </ion-item-divider>
   <textarea class="infobox content_size" disabled>{{info['text']}}</textarea>
   <ion-item-divider>
-    <ion-label>{{lang.text['CreatorInfo']['Tester']}}</ion-label>
-  </ion-item-divider>
-  <div class="infobox content_size thanks_bg">
-    <ion-chip *ngFor="let user of tester; let i = index" (click)="go_to_helper_page(user.url)"
-      [style]="user.mvp ? 'filter: drop-shadow(0px 0px 12px var(--ion-color-dark))' : ''">
-      <ion-avatar *ngIf="user.avatar">
-        <img [src]="user.avatar" />
-      </ion-avatar>
-      <ion-icon *ngIf="!user.avatar" name="person-circle-outline"></ion-icon>
-      <ion-label>{{user[lang.lang]}}</ion-label>
-    </ion-chip>
-  </div>
-  <ion-item-divider>
     <ion-label>{{lang.text['CreatorInfo']['thanks_to']}}</ion-label>
   </ion-item-divider>
   <div class="infobox content_size thanks_bg">
