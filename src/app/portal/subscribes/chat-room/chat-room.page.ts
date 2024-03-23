@@ -1250,7 +1250,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       for (let i = 0, j = getMessage.length; i < j; i++)
         for (let k = 0, l = getMessage[i].length; k < l; k++)
           read_this += getMessage[i][k]['text'] + ' ';
-      if (read_this.trim()) this.SpeechThese.push(read_this);
+      if (read_this && read_this.trim()) this.SpeechThese.push(read_this);
       if (!this.isSpeeching) this.SpeechingTexts();
     } catch (e) { }
   }
@@ -1260,10 +1260,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   async SpeechingTexts() {
     let read_this = this.SpeechThese.shift();
     this.isSpeeching = true;
-    await TextToSpeech.speak({
-      text: read_this,
-      lang: this.lang.lang,
-    });
+    if (read_this && read_this.trim())
+      await TextToSpeech.speak({
+        text: read_this,
+        lang: this.lang.lang,
+      });
     if (this.SpeechThese.length)
       this.SpeechingTexts();
     else this.isSpeeching = false;
