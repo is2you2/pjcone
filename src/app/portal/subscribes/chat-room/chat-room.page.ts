@@ -1563,7 +1563,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         default: // 검토 필요 오류
           console.log('오류 검토 필요: ', e);
           this.p5toast.show({
-            text: `${this.lang.text['ChatRoom']['FailedToSend']}: ${e.message}`,
+            text: `${this.lang.text['ChatRoom']['FailedToSend']}: ${typeof e == 'string' ? e : e.message}`,
           });
           break;
       }
