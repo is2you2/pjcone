@@ -276,6 +276,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     } else { // 새로 만드는 경우
       let tomorrow = new Date(new Date().getTime() + 43200000);
       this.userInput.limit = tomorrow.getTime();
+      if (this.AvailableStorageList.length) {
+        this.StoreAt.value = this.AvailableStorageList[0].target;
+        this.StoreAtSelChanged({ detail: { value: this.AvailableStorageList[0] } });
+      }
     }
     let ionInput = document.getElementById('titleInput');
     this.titleIonInput = ionInput.children[0].children[1].children[0];
@@ -598,7 +602,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   /** 사용가능한 원격 서버 리스트 */
   AvailableStorageList: RemoteInfo[] = [];
-  @ViewChild('StoreAt') StoreAt: any;
+  @ViewChild('StoreAt') StoreAt: IonSelect;
   StoreAtSelClicked() {
     this.StoreAt.open();
   }
