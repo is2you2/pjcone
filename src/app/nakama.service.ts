@@ -2281,8 +2281,16 @@ export class NakamaService {
                   let todo_info = JSON.parse(v);
                   todo_info.done = true;
                   this.modify_remote_info_as_local(todo_info, _is_official, _target);
-                  this.addRemoteTodoCounter(_is_official, _target, Number(todo_info['id'].split('_')[1]));
-                  this.noti.ClearNoti(todo_info.noti_id);
+                  this.indexed.GetFileListFromDB(`todo/${sep[1]}`, (v) => {
+                    v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+                    if (todo_info.noti_id)
+                      if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+                        clearTimeout(this.web_noti_id[todo_info.noti_id]);
+                        delete this.web_noti_id[todo_info.noti_id];
+                      }
+                    this.noti.ClearNoti(todo_info.noti_id);
+                    this.addRemoteTodoCounter(_is_official, _target, Number(todo_info['id'].split('_')[1]));
+                  });
                 }
               });
               break;
