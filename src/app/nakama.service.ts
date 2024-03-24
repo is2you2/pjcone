@@ -836,6 +836,7 @@ export class NakamaService {
       }
     } catch (e) { }
     await this.load_server_todo(_is_official, _target);
+    await this.RemoteTodoSelfCheck(_is_official, _target);
     // 통신 소켓 연결하기
     let socket = await this.connect_to(_is_official, _target);
     this.set_group_statusBar('online', _is_official, _target);
@@ -924,6 +925,41 @@ export class NakamaService {
       }
     } catch (e) {
       console.log('원격 할 일의 수 불러오기 실패: ', e);
+    }
+  }
+
+  /** 로컬에 있는 해야할 일들은 스스로가 원격에 남아있는지 검토하고, 없으면 스스로를 삭제한다 */
+  async RemoteTodoSelfCheck(_is_official: string, _target: string) {
+    let list = await this.indexed.GetFileListFromDB('todo/RemoteTodo_');
+    for (let i = 0, j = list.length; i < j; i++) {
+      if (list[i].indexOf('info.todo') >= 0) {
+        let todo = await this.indexed.loadTextFromUserPath(list[i]);
+        let json = JSON.parse(todo);
+        // 이 서버에 대한 검토만을 진행할 예정
+        if (json.remote.isOfficial == _is_official && json.remote.target == _target) {
+          let check = await this.servers[_is_official][_target].client.readStorageObjects(
+            this.servers[_is_official][_target].session, {
+            object_ids: [{
+              collection: 'server_todo',
+              key: json.id,
+              user_id: this.servers[_is_official][_target].session.user_id,
+            }]
+          });
+          if (!check.objects.length) { // 원격에서 삭제된 할 일임
+            let list = await this.indexed.GetFileListFromDB(`todo/${json.id}`);
+            list.forEach(path => this.indexed.removeFileFromUserPath(path));
+            if (json.noti_id)
+              if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+                clearTimeout(this.web_noti_id[json.noti_id]);
+                delete this.web_noti_id[json.noti_id];
+              }
+            this.noti.ClearNoti(json.id);
+            if (this.global.p5todo && this.global.p5todo['remove_todo'])
+              this.global.p5todo['remove_todo'](todo);
+            this.addRemoteTodoCounter(_is_official, _target, Number(json.id.split('_')[1]));
+          }
+        }
+      }
     }
   }
 
