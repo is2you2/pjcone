@@ -57,7 +57,8 @@ SPDX-License-Identifier: MIT -->
     <ion-item-divider>
       <ion-label>{{lang.text['Subscribes']['JoinedChannels']}}</ion-label>
     </ion-item-divider>
-    <ion-item *ngFor="let channel of nakama.channels" button (click)="go_to_chatroom(channel)">
+    <ion-item *ngFor="let channel of nakama.channels" button (click)="go_to_chatroom(channel)"
+      [id]="channel['server'].isOfficial + '_' + channel['server'].target + '_' + channel['id']">
       <div class="channel_image channel_image_div">
         <img class="channel_image"
           [src]="channel['info'] && channel['info']['img'] || (channel['local'] ? 'assets/data/local.svg' : 'assets/data/channel.svg')"

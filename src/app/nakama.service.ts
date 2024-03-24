@@ -1521,8 +1521,111 @@ export class NakamaService {
       }
     });
     this.channels = result;
+    this.MakeChannelHaveContextMenuAct();
     this.save_channels_with_less_info();
     return result;
+  }
+
+  /** 구독 페이지에서 우클릭시 채널 종류에 따른 정보 보여주기 */
+  MakeChannelHaveContextMenuAct() {
+    setTimeout(() => {
+      for (let i = 0, j = this.channels.length; i < j; i++) {
+        let TargetChannel = document.getElementById(`${this.channels[i]['server'].isOfficial}_${this.channels[i]['server'].target}_${this.channels[i]['id']}`);
+        if (TargetChannel && TargetChannel.oncontextmenu == null)
+          TargetChannel.oncontextmenu = () => {
+            let index: number;
+            for (let k = 0, l = this.channels.length; k < l; k++)
+              if (`${this.channels[k]['server'].isOfficial}_${this.channels[k]['server'].target}_${this.channels[k].id}` == TargetChannel.id) {
+                index = k;
+                break;
+              }
+            let isOfficial = this.channels[index]['server'].isOfficial;
+            let target = this.channels[index]['server'].target;
+            switch (this.channels[index]['redirect'].type) {
+              case 2: // 1:1 채널
+                if (this.channels_orig[isOfficial][target][this.channels[index].id]['status'] == 'missing') {
+                  this.alertCtrl.create({
+                    header: this.lang.text['ChatRoom']['RemoveChannel'],
+                    message: this.lang.text['ChatRoom']['CannotUndone'],
+                    buttons: [{
+                      text: this.lang.text['ChatRoom']['Delete'],
+                      handler: async () => {
+                        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+                        loading.present();
+                        delete this.channels_orig[isOfficial][target][this.channels[index].id];
+                        this.remove_channel_files(isOfficial, target, this.channels[index].id);
+                        let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${this.channels[index].id}`);
+                        for (let i = 0, j = list.length; i < j; i++) {
+                          loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
+                          await this.indexed.removeFileFromUserPath(list[i]);
+                        }
+                        loading.dismiss();
+                        this.rearrange_channels();
+                      },
+                      cssClass: 'red_font',
+                    }]
+                  }).then(v => v.present());
+                } else this.alertCtrl.create({
+                  header: this.lang.text['ChatRoom']['LogOut'],
+                  message: this.lang.text['ChatRoom']['UnlinkChannel'],
+                  buttons: [{
+                    text: this.lang.text['ChatRoom']['LogOut'],
+                    handler: async () => {
+                      try {
+                        await this.servers[isOfficial][target].socket.leaveChat(this.channels[index].id);
+                        this.channels_orig[isOfficial][target][this.channels[index].id]['status'] = 'missing';
+                      } catch (e) {
+                        console.error('채널에서 나오기 실패: ', e);
+                      }
+                      this.rearrange_channels();
+                    },
+                    cssClass: 'red_font',
+                  }]
+                }).then(v => v.present());
+                break;
+              case 3: // 그룹 채널
+                this.modalCtrl.create({
+                  component: GroupDetailPage,
+                  componentProps: {
+                    info: this.groups[isOfficial][target][this.channels[index]['group_id']],
+                    server: { isOfficial: isOfficial, target: target },
+                  },
+                }).then(v => v.present());
+                break;
+              case 0: // 로컬 채널
+                this.alertCtrl.create({
+                  header: this.lang.text['ChatRoom']['RemoveChannel'],
+                  message: this.lang.text['ChatRoom']['CannotUndone'],
+                  buttons: [{
+                    text: this.lang.text['ChatRoom']['Delete'],
+                    handler: async () => {
+                      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+                      loading.present();
+                      delete this.channels_orig[isOfficial][target][this.channels[index].id];
+                      try {
+                        await this.indexed.removeFileFromUserPath(`servers/${isOfficial}/${target}/groups/${this.channels[index].id}.img`);
+                      } catch (e) {
+                        console.log('그룹 이미지 삭제 오류: ', e);
+                      }
+                      this.remove_channel_files(isOfficial, target, this.channels[index].id);
+                      this.save_groups_with_less_info();
+                      let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${this.channels[index].id}`);
+                      for (let i = 0, j = list.length; i < j; i++) {
+                        loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
+                        await this.indexed.removeFileFromUserPath(list[i]);
+                      }
+                      loading.dismiss();
+                      this.rearrange_channels();
+                    },
+                    cssClass: 'red_font',
+                  }]
+                }).then(v => v.present());
+                break;
+            }
+            return false;
+          }
+      }
+    }, 100);
   }
 
   /** 채널별로 정보를 분리 저장한 후 초기 로드시 병합시키는 구성 필요함 */
@@ -1801,52 +1904,55 @@ export class NakamaService {
       let userGroups = await this.servers[_is_official][_target].client.listUserGroups(
         this.servers[_is_official][_target].session,
         this.servers[_is_official][_target].session.user_id);
-      userGroups.user_groups.forEach(async user_group => {
-        if (!this.groups[_is_official][_target][user_group.group.id]) { // 로컬에 없던 그룹은 이미지 확인
-          this.groups[_is_official][_target][user_group.group.id] = {};
-          try {
+      for (let i = 0, j = userGroups.user_groups.length; i < j; i++) {
+        if (!this.groups[_is_official][_target][userGroups.user_groups[i].group.id]) {
+          this.groups[_is_official][_target][userGroups.user_groups[i].group.id] = {};
+          try { // 로컬에 없던 그룹은 이미지 확인
             let gimg = await this.servers[_is_official][_target].client.readStorageObjects(
               this.servers[_is_official][_target].session, {
               object_ids: [{
                 collection: 'group_public',
-                key: `group_${user_group.group.id}`,
-                user_id: user_group.group.creator_id,
+                key: `group_${userGroups.user_groups[i].group.id}`,
+                user_id: userGroups.user_groups[i].group.creator_id,
               }],
             });
             if (gimg.objects.length) {
-              this.groups[_is_official][_target][user_group.group.id]['img'] = gimg.objects[0].value['img'];
-              this.indexed.saveTextFileToUserPath(gimg.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${user_group.group.id}.img`);
+              this.groups[_is_official][_target][userGroups.user_groups[i].group.id]['img'] = gimg.objects[0].value['img'];
+              this.indexed.saveTextFileToUserPath(gimg.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${userGroups.user_groups[i].group.id}.img`);
             }
           } catch (e) {
             console.error('그룹 이미지 가져오기 오류: ', e);
           }
         }
-        this.groups[_is_official][_target][user_group.group.id]
-          = { ...this.groups[_is_official][_target][user_group.group.id], ...user_group.group };
-        this.groups[_is_official][_target][user_group.group.id]['status'] = 'online';
+        this.groups[_is_official][_target][userGroups.user_groups[i].group.id]
+          = { ...this.groups[_is_official][_target][userGroups.user_groups[i].group.id], ...userGroups.user_groups[i].group };
+        this.groups[_is_official][_target][userGroups.user_groups[i].group.id]['status'] = 'online';
         try {
           let _guser = await this.servers[_is_official][_target].client.listGroupUsers(
-            this.servers[_is_official][_target].session, user_group.group.id
+            this.servers[_is_official][_target].session, userGroups.user_groups[i].group.id
           );
-          _guser.group_users.forEach(_user => {
-            if (_user.user.id == this.servers[_is_official][_target].session.user_id)
-              _user.user['is_me'] = true;
+          for (let k = 0, l = _guser.group_users.length; k < l; k++) {
+            if (_guser.group_users[k].user.id == this.servers[_is_official][_target].session.user_id)
+              _guser.group_users[k].user['is_me'] = true;
             else {
-              _user.user['img'] = null;
-              this.save_other_user(_user.user, _is_official, _target);
+              _guser.group_users[k].user['img'] = null;
+              this.save_other_user(_guser.group_users[k].user, _is_official, _target);
             }
-            _user.user = this.load_other_user(_user.user.id, _is_official, _target);
-            this.add_group_user_without_duplicate(_user, user_group.group.id, _is_official, _target);
-          });
+            _guser.group_users[k].user = this.load_other_user(_guser.group_users[k].user.id, _is_official, _target);
+            this.add_group_user_without_duplicate(_guser.group_users[k], userGroups.user_groups[i].group.id, _is_official, _target);
+          }
         } catch (e) {
           console.error('그룹 사용자 가져오기 오류: ', e);
         }
-        await this.join_chat_with_modulation(user_group.group.id, 3, _is_official, _target);
-        this.save_groups_with_less_info();
-      });
+        try {
+          await this.join_chat_with_modulation(userGroups.user_groups[i].group.id, 3, _is_official, _target);
+        } catch (e) { }
+      }
+      this.save_groups_with_less_info();
     } catch (e) {
       console.error('사용자 그룹 가져오기 오류: ', e);
     }
+    this.MakeChannelHaveContextMenuAct();
   }
 
   /** 그룹을 재배열화한 후에 */

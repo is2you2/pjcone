@@ -327,8 +327,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       act: async () => {
         if (this.info['redirect']['type'] != 3) {
           try {
-            await this.nakama.remove_group_list(
-              this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target, false);
             await this.nakama.servers[this.isOfficial][this.target].socket.leaveChat(this.info['id']);
             this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
             this.extended_buttons.forEach(button => {
