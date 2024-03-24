@@ -1030,6 +1030,23 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
         if (this.useSpeaker) this.SpeechReceivedMessage(c);
         setTimeout(() => {
+          let CurrentMsg = document.getElementById(c.message_id);
+          if (CurrentMsg.oncontextmenu == null)
+            CurrentMsg.oncontextmenu = () => {
+              try {
+                let catch_index: number;
+                for (let i = 0, j = this.ViewableMessage.length; i < j; i++)
+                  if (c == this.ViewableMessage[i]) {
+                    catch_index = i;
+                    break;
+                  }
+                if (!catch_index) throw '메시지를 찾을 수 없음';
+                this.message_detail(c, catch_index);
+              } catch (e) {
+                console.log('메시지 상세보기 실패: ', e);
+              }
+              return false;
+            }
           this.info['is_new'] = false;
           this.nakama.has_new_channel_msg = false;
           if (this.NeedScrollDown() && !this.ShowRecentMsg) {
@@ -1186,57 +1203,56 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.pullable = true;
           return;
         }
-        await this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
+        let v = await this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
           this.nakama.servers[this.isOfficial][this.target].session,
-          this.info['id'], this.RefreshCount, false, this.next_cursor).then(v => {
-            this.info['is_new'] = false;
-            v.messages.forEach(msg => {
-              msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
-              this.nakama.check_sender_and_show_name(msg, this.isOfficial, this.target);
-              if (!this.info['last_comment']) {
-                let hasFile = msg.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
-                this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
-              }
-              // 마지막으로 읽은 메시지인지 검토
-              if (!this.foundLastRead && this.info['last_read_id']) {
-                if (this.info['last_read_id'] == msg.message_id) {
-                  msg['isLastRead'] = true;
-                  this.foundLastRead = true;
-                  this.info['last_read_id'] = this.info['last_comment_id'];
-                  this.nakama.save_channels_with_less_info();
-                }
-              } else this.foundLastRead = true;
-              this.nakama.translate_updates(msg);
-              if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
-              this.nakama.ModulateTimeDate(msg);
-              this.nakama.content_to_hyperlink(msg);
-              if (msg.code != 2) this.messages.unshift(msg);
-            });
-            this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
-            for (let i = 0, j = this.ViewableMessage.length; i < j; i++) {
-              let FileURL: any;
-              try {
-                if (!this.ViewableMessage[i].content['file_ext']) throw '파일이 없는 메시지';
-                if (this.ViewableMessage[i].content['url']) throw '링크된 파일';
-                this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
-                this.indexed.checkIfFileExist(this.ViewableMessage[i].content['path'], b => {
-                  if (b) this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext, (blob) => {
-                    FileURL = URL.createObjectURL(blob);
-                    this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-                  });
-                })
-              } catch (e) {
-                this.global.modulate_thumbnail(this.ViewableMessage[i].content, '');
-              }
-              this.modulate_chatmsg(i, j + 1);
+          this.info['id'], this.RefreshCount, false, this.next_cursor);
+        this.info['is_new'] = false;
+        v.messages.forEach(msg => {
+          msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
+          this.nakama.check_sender_and_show_name(msg, this.isOfficial, this.target);
+          if (!this.info['last_comment']) {
+            let hasFile = msg.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
+            this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
+          }
+          // 마지막으로 읽은 메시지인지 검토
+          if (!this.foundLastRead && this.info['last_read_id']) {
+            if (this.info['last_read_id'] == msg.message_id) {
+              msg['isLastRead'] = true;
+              this.foundLastRead = true;
+              this.info['last_read_id'] = this.info['last_comment_id'];
+              this.nakama.save_channels_with_less_info();
             }
-            this.modulate_chatmsg(0, this.ViewableMessage.length);
-            this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
-            this.next_cursor = v.next_cursor;
-            this.prev_cursor = v.prev_cursor;
-            this.pullable = true;
-            this.nakama.saveListedMessage(this.messages, this.info, this.isOfficial, this.target);
-          });
+          } else this.foundLastRead = true;
+          this.nakama.translate_updates(msg);
+          if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
+          this.nakama.ModulateTimeDate(msg);
+          this.nakama.content_to_hyperlink(msg);
+          if (msg.code != 2) this.messages.unshift(msg);
+        });
+        this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+        for (let i = 0, j = this.ViewableMessage.length; i < j; i++) {
+          let FileURL: any;
+          try {
+            if (!this.ViewableMessage[i].content['file_ext']) throw '파일이 없는 메시지';
+            if (this.ViewableMessage[i].content['url']) throw '링크된 파일';
+            this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
+            this.indexed.checkIfFileExist(this.ViewableMessage[i].content['path'], b => {
+              if (b) this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext, (blob) => {
+                FileURL = URL.createObjectURL(blob);
+                this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+              });
+            })
+          } catch (e) {
+            this.global.modulate_thumbnail(this.ViewableMessage[i].content, '');
+          }
+          this.modulate_chatmsg(i, j + 1);
+        }
+        this.modulate_chatmsg(0, this.ViewableMessage.length);
+        this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
+        this.next_cursor = v.next_cursor;
+        this.prev_cursor = v.prev_cursor;
+        this.pullable = true;
+        this.nakama.saveListedMessage(this.messages, this.info, this.isOfficial, this.target);
       } catch (e) {
         if (this.info['redirect']['type'] == 3) // 그룹대화라면 공개여부 검토
           if (this.nakama.groups[this.isOfficial][this.target]
@@ -1266,6 +1282,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
       this.pullable = true;
     }
+    this.MakeViewableMessagesHaveContextMenuAct();
   }
 
   useSpeaker = false;
@@ -1386,6 +1403,31 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.pullable = Boolean(this.LocalHistoryList.length);
       });
     }
+    this.MakeViewableMessagesHaveContextMenuAct();
+  }
+
+  MakeViewableMessagesHaveContextMenuAct() {
+    setTimeout(() => {
+      for (let i = 0, j = this.ViewableMessage.length; i < j; i++) {
+        let CurrentMsg = document.getElementById(this.ViewableMessage[i].message_id);
+        if (CurrentMsg.oncontextmenu == null)
+          CurrentMsg.oncontextmenu = () => {
+            try {
+              let catch_index: number;
+              for (let k = 0, l = this.ViewableMessage.length; k < l; k++)
+                if (this.ViewableMessage[i] == this.ViewableMessage[k]) {
+                  catch_index = k;
+                  break;
+                }
+              if (catch_index === undefined) throw '메시지를 찾을 수 없음';
+              this.message_detail(this.ViewableMessage[i], catch_index);
+            } catch (e) {
+              console.log('메시지 상세보기 실패: ', e);
+            }
+            return false;
+          }
+      }
+    }, 0);
   }
 
   /** 추가 매뉴 숨김여부 */
@@ -1685,6 +1727,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.isOtherAct = false;
     }, 0);
   }
+
   /** 메시지 정보 상세 */
   async message_detail(msg: any, index: number) {
     if (this.isOtherAct) return; // 다른 행동과 중첩 방지
