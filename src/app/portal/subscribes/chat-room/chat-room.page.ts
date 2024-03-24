@@ -1338,6 +1338,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.pullable = this.ViewMsgIndex != 0 || Boolean(this.LocalHistoryList.length);
       if (this.ViewableMessage.length < this.RefreshCount)
         this.LoadLocalChatHistory();
+      this.MakeViewableMessagesHaveContextMenuAct();
       return;
     }
     if (!this.isHistoryLoaded) // 기록 리스트 잡아두기
@@ -1376,34 +1377,34 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         });
       });
     else { // 다음 파일에서 읽기
-      this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop(), async (e, v) => {
-        if (e && v) {
-          let json: any[] = JSON.parse(v.trim());
-          for (let i = json.length - 1; i >= 0; i--) {
-            this.nakama.translate_updates(json[i]);
-            json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
-            this.nakama.ModulateTimeDate(json[i]);
-            if (json[i]['code'] != 2) this.messages.unshift(json[i]);
-          }
-          this.ViewMsgIndex = Math.max(0, json.length - this.RefreshCount);
-          this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
-          let ShowMeAgainCount = Math.min(Math.min(json.length, this.RefreshCount), this.ViewableMessage.length);
-          for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
-            let FileURL: any;
-            try {
-              this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
-              let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
-              FileURL = URL.createObjectURL(blob);
-            } catch (e) { }
-            this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-            this.modulate_chatmsg(i, ShowMeAgainCount);
-          }
-          this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
-        } else if (e) this.LoadLocalChatHistory();
-        this.pullable = Boolean(this.LocalHistoryList.length);
-      });
+      let v = await this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop());
+      if (v) {
+        let json: any[] = JSON.parse(v.trim());
+        for (let i = json.length - 1; i >= 0; i--) {
+          this.nakama.translate_updates(json[i]);
+          json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
+          this.nakama.ModulateTimeDate(json[i]);
+          if (json[i]['code'] != 2) this.messages.unshift(json[i]);
+        }
+        this.ViewMsgIndex = Math.max(0, json.length - this.RefreshCount);
+        this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+        let ShowMeAgainCount = Math.min(Math.min(json.length, this.RefreshCount), this.ViewableMessage.length);
+        for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
+          let FileURL: any;
+          try {
+            this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
+            let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
+            FileURL = URL.createObjectURL(blob);
+          } catch (e) { }
+          this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+          this.modulate_chatmsg(i, ShowMeAgainCount);
+        }
+        this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
+      } else this.LoadLocalChatHistory();
+      this.pullable = Boolean(this.LocalHistoryList.length);
     }
-    this.MakeViewableMessagesHaveContextMenuAct();
+    if (this.pullable)
+      this.MakeViewableMessagesHaveContextMenuAct();
   }
 
   MakeViewableMessagesHaveContextMenuAct() {
@@ -1415,19 +1416,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             try {
               let catch_index: number;
               for (let k = 0, l = this.ViewableMessage.length; k < l; k++)
-                if (this.ViewableMessage[i] == this.ViewableMessage[k]) {
+                if (CurrentMsg.id == this.ViewableMessage[k].message_id) {
                   catch_index = k;
                   break;
                 }
               if (catch_index === undefined) throw '메시지를 찾을 수 없음';
-              this.message_detail(this.ViewableMessage[i], catch_index);
+              this.message_detail(this.ViewableMessage[catch_index], catch_index);
             } catch (e) {
               console.log('메시지 상세보기 실패: ', e);
             }
             return false;
           }
       }
-    }, 0);
+    }, 100);
   }
 
   /** 추가 매뉴 숨김여부 */
