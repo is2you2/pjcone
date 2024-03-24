@@ -191,6 +191,11 @@ export class GlobalActService {
     });
   }
 
+  /** 다크모드 여부 업데이트 */
+  UpdateIsDarkMode(update: boolean) {
+    isDarkMode = update;
+  }
+
   /** 브라우저에서 딥 링크마냥 행동하기
    * @returns GET 으로 작성된 key-value 쌍
   */

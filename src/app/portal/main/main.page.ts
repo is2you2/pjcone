@@ -160,6 +160,7 @@ export class MainPage implements OnInit {
         if (!this.isPlayingCanvas.loop) p.redraw();
       }
       p.draw = () => {
+        this.global.UpdateIsDarkMode(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
         p.clear(255, 255, 255, 255);
         p.push();
         p.translate(ScaleCenter);
