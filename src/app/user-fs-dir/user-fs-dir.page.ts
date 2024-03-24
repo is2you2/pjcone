@@ -516,7 +516,6 @@ export class UserFsDirPage implements OnInit {
         info: {
           content: info,
         },
-        targetDB: this.indexed.ionicDB,
         no_edit: true,
         path: info.path,
         relevance: createRelevances,

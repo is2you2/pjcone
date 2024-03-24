@@ -778,7 +778,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         info: { content: this.userInput.attach[index] },
         path: this.userInput.attach[index]['path'],
         relevance: createRelevances,
-        targetDB: this.indexed.ionicDB,
       },
       cssClass: 'fullscreen',
     }).then(v => {

@@ -61,7 +61,6 @@ export class IonicViewerPage implements OnInit {
   isDownloading = false;
   CurrentViewId: string;
   OpenInChannelChat = false;
-  targetDB: IDBDatabase;
   isChannelOnline = true;
   fromLocalChannel = false;
 
@@ -94,7 +93,6 @@ export class IonicViewerPage implements OnInit {
       this.isChannelOnline = this.isChannelOnline || this.nakama.channels_orig[this.isOfficial][this.target][this.MessageInfo['channel_id']]['status'] == 'online'
         || this.nakama.channels_orig[this.isOfficial][this.target][this.MessageInfo['channel_id']]['status'] == 'pending';
     } catch (e) { }
-    this.targetDB = this.navParams.get('targetDB');
     this.FromUserFsDir = this.navParams.get('no_edit') || false;
     switch (this.FileInfo['is_new']) {
       case 'text':
@@ -145,9 +143,9 @@ export class IonicViewerPage implements OnInit {
       let path = this.FileInfo['path'] ||
         `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
       this.image_info['path'] = path;
-      this.NeedDownloadFile = await this.indexed.checkIfFileExist(`${path}.history`, undefined, this.targetDB);
+      this.NeedDownloadFile = await this.indexed.checkIfFileExist(`${path}.history`);
       try {
-        this.blob = await this.indexed.loadBlobFromUserPath(path, this.FileInfo['type'], undefined, this.targetDB);
+        this.blob = await this.indexed.loadBlobFromUserPath(path, this.FileInfo['type']);
         this.CreateContentInfo();
         this.ionViewDidEnter();
       } catch (e) {
@@ -208,7 +206,7 @@ export class IonicViewerPage implements OnInit {
           color: 'b0b0b0',
         });
       let path = `servers/${this.isOfficial}/${this.target}/channels/${this.Relevances[i].channel_id}/files/msg_${this.Relevances[i].message_id}.${this.Relevances[i].content['file_ext']}`;
-      let FileExist = await this.indexed.checkIfFileExist(path, undefined, this.targetDB);
+      let FileExist = await this.indexed.checkIfFileExist(path);
       if (!FileExist) try {
         await this.DownloadCurrentFile(i);
       } catch (e) {
@@ -240,7 +238,7 @@ export class IonicViewerPage implements OnInit {
     let target = this.Relevances[index ?? (this.RelevanceIndex - 1)];
     let path = `servers/${this.isOfficial}/${this.target}/channels/${target.channel_id}/files/msg_${target.message_id}.${target.content['file_ext']}`;
     try {
-      let v = await this.indexed.loadTextFromUserPath(`${path}.history`, undefined, this.targetDB);
+      let v = await this.indexed.loadTextFromUserPath(`${path}.history`);
       let json = JSON.parse(v);
       startFrom = json['index'];
     } catch (e) { }
@@ -364,8 +362,8 @@ export class IonicViewerPage implements OnInit {
     if (this.FileInfo.url) {
       this.FileURL = this.FileInfo.url;
     } else if (!this.FileInfo['is_new']) {
-      if (!this.blob) try {
-        this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type'], undefined, this.targetDB);
+      try {
+        this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type']);
         this.FileURL = URL.createObjectURL(this.blob);
       } catch (e) {
         console.log(e);
@@ -769,7 +767,7 @@ export class IonicViewerPage implements OnInit {
         let GetViewId = this.MessageInfo.message_id;
         try {
           let thumbnail = await this.indexed.loadBlobFromUserPath((this.FileInfo['path'] || this.navParams.get('path'))
-            + '_thumbnail.png', '', undefined, this.targetDB);
+            + '_thumbnail.png', '');
           ThumbnailURL = URL.createObjectURL(thumbnail);
         } catch (e) { }
         if (!this.NeedDownloadFile && this.CurrentViewId == GetViewId)
@@ -1308,7 +1306,7 @@ export class IonicViewerPage implements OnInit {
       loading.present();
       let tmp_path = `tmp_files/texteditor/${this.FileInfo.filename || this.FileInfo.name}`;
       if (!this.FileInfo.path) this.FileInfo.path = tmp_path;
-      await this.indexed.saveBlobToUserPath(blob, tmp_path, undefined, this.targetDB);
+      await this.indexed.saveBlobToUserPath(blob, tmp_path);
       loading.dismiss();
       this.p5toast.show({
         text: this.lang.text['ContentViewer']['fileSaved'],
@@ -1433,7 +1431,7 @@ export class IonicViewerPage implements OnInit {
           let blob = await res.blob();
           if (res.ok) {
             await this.indexed.saveBlobToUserPath(blob, this.FileInfo.path);
-            this.indexed.DownloadFileFromUserPath(this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name'], this.targetDB);
+            this.indexed.DownloadFileFromUserPath(this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
           } else throw '제대로 다운받아지지 않음';
         } catch (e) {
           console.log('다운받기 실패: ', e);
@@ -1441,7 +1439,7 @@ export class IonicViewerPage implements OnInit {
             text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`
           });
         }
-      } else this.indexed.DownloadFileFromUserPath(this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name'], this.targetDB);
+      } else this.indexed.DownloadFileFromUserPath(this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
     else this.alertCtrl.create({
       header: this.lang.text['ContentViewer']['Filename'],
       inputs: [{
@@ -1477,7 +1475,7 @@ export class IonicViewerPage implements OnInit {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
     let filename = input['filename'] ? input['filename'].replace(/:|\?|\/|\\|<|>/g, '') : (this.FileInfo['filename'] || this.FileInfo['name']);
-    let blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path, this.FileInfo['type'], undefined, this.targetDB);
+    let blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path, this.FileInfo['type']);
     if (this.forceWrite && !input['filename'])
       this.file.writeExistingFile(this.file.externalDataDirectory, filename, blob)
         .then(_v => {
@@ -1561,7 +1559,7 @@ export class IonicViewerPage implements OnInit {
     URL.revokeObjectURL(this.FileURL);
     delete this.FileInfo.thumbnail;
     delete this.FileInfo['text'];
-    await this.indexed.removeFileFromUserPath(this.FileInfo.path, undefined, this.targetDB);
+    await this.indexed.removeFileFromUserPath(this.FileInfo.path);
     this.RelevanceIndex -= 1;
     this.ChangeToAnother(1);
   }
@@ -1603,7 +1601,7 @@ export class IonicViewerPage implements OnInit {
             width - margin_ratio * 2, height - margin_ratio * 2);
           let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
           try {
-            await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`, undefined, this.targetDB);
+            await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`);
             this.FileInfo.thumbnail = base64;
             this.global.modulate_thumbnail(this.FileInfo, '');
             if (this.p5canvas) this.p5canvas.remove();
@@ -1661,7 +1659,7 @@ export class IonicViewerPage implements OnInit {
                   margin_ratio, margin_ratio,
                   width - margin_ratio * 2, height - margin_ratio * 2);
                 let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
-                await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`, undefined, this.targetDB);
+                await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`);
                 this.FileInfo.thumbnail = base64;
                 this.global.modulate_thumbnail(this.FileInfo, '');
                 p.remove();
