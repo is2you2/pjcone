@@ -3424,34 +3424,34 @@ export class NakamaService {
   }
 
   /** 로컬 파일을 저장하며 원격에 분산하여 올리기 */
-  async sync_save_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _key_force = '', targetDB?: IDBDatabase) {
+  async sync_save_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _key_force = '') {
     try {
-      let copied_info = JSON.parse(JSON.stringify(info));
-      await this.indexed.saveBlobToUserPath(info.blob, copied_info.path, undefined, targetDB);
-      let file_info = await this.global.req_file_info(copied_info.path, targetDB);
-      copied_info.partsize = Math.ceil((copied_info['filesize'] || file_info.contents.length) / FILE_BINARY_LIMIT);
-      delete copied_info['blob'];
+      if (info.blob.size)
+        await this.indexed.saveBlobToUserPath(info.blob, info.path);
+      let file_info = await this.global.req_file_info(info.path);
+      info.partsize = Math.ceil((info['filesize'] || file_info.contents.length) / FILE_BINARY_LIMIT);
+      delete info['blob'];
       await this.servers[_is_official][_target].client.writeStorageObjects(
         this.servers[_is_official][_target].session, [{
           collection: _collection,
-          key: _key_force || copied_info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
+          key: _key_force || info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
           permission_read: 2,
           permission_write: 1,
-          value: copied_info,
+          value: info,
         }]);
       // 여기서 전체 길이로 for문을 돌리고 매 회차마다 파트를 받아서 base64 변환 후 집어넣어야 함
-      for (let i = 0; i < copied_info.partsize; i++) {
-        let part = this.global.req_file_part_base64(file_info, i, copied_info.path, targetDB);
+      for (let i = 0; i < info.partsize; i++) {
+        let part = this.global.req_file_part_base64(file_info, i, info.path);
         await this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
             collection: _collection,
-            key: _key_force ? `${_key_force}_${i}` : (copied_info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`),
+            key: _key_force ? `${_key_force}_${i}` : (info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`),
             permission_read: 2,
             permission_write: 1,
             value: { data: part },
           }]);
       }
-      this.indexed.removeFileFromUserPath(`${copied_info.path}.history`, undefined, targetDB);
+      this.indexed.removeFileFromUserPath(`${info.path}.history`);
     } catch (e) {
       console.log('SyncSaveFailed: ', e);
     }
@@ -3460,33 +3460,92 @@ export class NakamaService {
   /** 로컬에 있는 파일을 불러오기, 로컬에 없다면 원격에서 요청하여 생성 후 불러오기
    * @returns 파일의 blob
    */
-  async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid = '', _key_force = '', targetDB?: IDBDatabase) {
-    let copied_info = JSON.parse(JSON.stringify(info));
+  async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid = '', _key_force = '') {
     try {
-      return await this.indexed.loadBlobFromUserPath(copied_info.path, copied_info.type || '', undefined, targetDB);
+      return await this.indexed.loadBlobFromUserPath(info.path, info.type || '');
     } catch (e) {
       try {
         let file_info = await this.servers[_is_official][_target].client.readStorageObjects(
           this.servers[_is_official][_target].session, {
           object_ids: [{
             collection: _collection,
-            key: _key_force || copied_info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
+            key: _key_force || info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
             user_id: _userid || this.servers[_is_official][_target].session.user_id,
           }],
         });
         let info_json: FileInfo = file_info.objects[0].value;
+        let isSuccessful = true;
         for (let i = 0; i < info_json.partsize; i++) {
-          let part = await this.servers[_is_official][_target].client.readStorageObjects(
-            this.servers[_is_official][_target].session, {
-            object_ids: [{
-              collection: _collection,
-              key: _key_force ? `${_key_force}_${i}` : (info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`),
-              user_id: _userid || this.servers[_is_official][_target].session.user_id,
-            }],
-          });
-          this.global.save_file_part(info_json.path, i, part.objects[0].value['data'], targetDB);
+          try {
+            let part = await this.servers[_is_official][_target].client.readStorageObjects(
+              this.servers[_is_official][_target].session, {
+              object_ids: [{
+                collection: _collection,
+                key: _key_force ? `${_key_force}_${i}` : (info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`),
+                user_id: _userid || this.servers[_is_official][_target].session.user_id,
+              }],
+            });
+            this.global.save_file_part(info_json.path, i, part.objects[0].value['data']);
+          } catch (e) {
+            console.log('ReadStorage_From_channel: ', e);
+            isSuccessful = false;
+            this.p5toast.show({
+              text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
+            });
+            break;
+          }
         }
-        return await this.indexed.loadBlobFromUserPath(info_json.path, info_json.type || '', undefined, targetDB);
+        if (isSuccessful) {
+          if (info['url']) { // 링크
+            info['thumbnail'] = info['url'];
+          } else { // 서버에 업로드된 파일
+            info['text'] = [this.lang.text['ChatRoom']['SavingFile']];
+            this.p5toast.show({
+              text: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
+            });
+            if (isPlatform == 'Android' || isPlatform == 'iOS')
+              this.noti.noti.schedule({
+                id: 8,
+                title: `${this.lang.text['ContentViewer']['SavingFile']}: ${info_json.filename}`,
+                progressBar: { indeterminate: true },
+                sound: null,
+                smallIcon: 'res://diychat',
+                color: 'b0b0b0',
+              });
+            let GatheringInt8Array = [];
+            let ByteSize = 0;
+            await new Promise(async (done, err) => {
+              for (let i = 0, j = info_json['partsize']; i < j; i++)
+                try {
+                  let part = await this.indexed.GetFileInfoFromDB(`${info_json.path}_part/${i}.part`);
+                  ByteSize += part.contents.length;
+                  GatheringInt8Array[i] = part;
+                } catch (e) {
+                  console.log('파일 병합하기 오류: ', e);
+                  break;
+                }
+              try {
+                let SaveForm: Int8Array = new Int8Array(ByteSize);
+                let offset = 0;
+                for (let i = 0, j = GatheringInt8Array.length; i < j; i++) {
+                  SaveForm.set(GatheringInt8Array[i].contents, offset);
+                  offset += GatheringInt8Array[i].contents.length;
+                }
+                await this.indexed.saveInt8ArrayToUserPath(SaveForm, info_json.path);
+                for (let i = 0, j = info_json['partsize']; i < j; i++)
+                  this.indexed.removeFileFromUserPath(`${info_json.path}_part/${i}.part`)
+                await this.indexed.removeFileFromUserPath(`${info_json.path}_part`)
+              } catch (e) {
+                console.log('파일 최종 저장하기 오류: ', e);
+                err();
+              }
+              done(undefined);
+            });
+            this.noti.ClearNoti(8);
+            this.indexed.removeFileFromUserPath(`${info_json.path}.history`);
+          }
+        }
+        return await this.indexed.loadBlobFromUserPath(info_json.path, info_json.type || '');
       } catch (e) {
         return null;
       }
@@ -3494,9 +3553,9 @@ export class NakamaService {
   }
 
   /** 로컬 파일을 삭제하며 원격 분산파일도 삭제하기 */
-  async sync_remove_file(path: string, _is_official: string, _target: string, _collection: string, _userid: string = '', targetDB?: IDBDatabase) {
+  async sync_remove_file(path: string, _is_official: string, _target: string, _collection: string, _userid: string = '') {
     try {
-      await this.indexed.removeFileFromUserPath(path, undefined, targetDB);
+      await this.indexed.removeFileFromUserPath(path);
       let file_info = await this.servers[_is_official][_target].client.readStorageObjects(
         this.servers[_is_official][_target].session, {
         object_ids: [{

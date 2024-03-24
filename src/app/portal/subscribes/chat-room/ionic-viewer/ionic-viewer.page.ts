@@ -364,9 +364,12 @@ export class IonicViewerPage implements OnInit {
     if (this.FileInfo.url) {
       this.FileURL = this.FileInfo.url;
     } else if (!this.FileInfo['is_new']) {
-      if (!this.blob)
+      if (!this.blob) try {
         this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type'], undefined, this.targetDB);
-      this.FileURL = URL.createObjectURL(this.blob);
+        this.FileURL = URL.createObjectURL(this.blob);
+      } catch (e) {
+        console.log(e);
+      }
     }
     this.forceWrite = false;
     this.canvasDiv = document.getElementById('content_viewer_canvas');
