@@ -14,9 +14,6 @@ SPDX-License-Identifier: MIT -->
   <div id="GroupServerCanvasDiv" style="position: absolute; width: 100%; height: 100%; display: flex;">
   </div>
   <div *ngIf="ShowServerList" style="position: absolute; bottom: 0; width: 100%;">
-    <ion-item button (click)="toggle_online()">
-      <ion-label class="ion-text-center" color="tertiary">{{lang.text['Profile']['LogOut']}}</ion-label>
-    </ion-item>
     <ion-accordion-group>
       <ion-accordion value="open">
         <ion-item button slot="header">
@@ -48,6 +45,9 @@ SPDX-License-Identifier: MIT -->
         </div>
       </ion-accordion>
     </ion-accordion-group>
+    <ion-item button (click)="toggle_online()">
+      <ion-label class="ion-text-center" color="tertiary">{{lang.text['Profile']['LogOut']}}</ion-label>
+    </ion-item>
   </div>
   <input hidden type="file" [id]="file_sel_id" accept="image/*" (change)="inputImageSelected($event)">
 
