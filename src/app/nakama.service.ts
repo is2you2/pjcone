@@ -904,19 +904,35 @@ export class NakamaService {
         if (!this.RemoteTodoCounter[_is_official])
           this.RemoteTodoCounter[_is_official] = {};
         this.RemoteTodoCounter[_is_official][_target] = count;
-        for (let i = 0, j = count.length; i < j; i++) {
+        for (let i = 1, j = count.pop() + 1; i < j; i++) {
           try {
             let todo = await this.servers[_is_official][_target].client.readStorageObjects(
               this.servers[_is_official][_target].session, {
               object_ids: [{
                 collection: 'server_todo',
-                key: `RemoteTodo_${count[i]}`,
+                key: `RemoteTodo_${i}`,
                 user_id: this.servers[_is_official][_target].session.user_id,
               }]
             });
             if (todo.objects.length)
               this.modify_remote_info_as_local(todo.objects[0].value, _is_official, _target);
-            else this.removeRemoteTodoCounter(_is_official, _target, count[i]);
+            else this.indexed.loadTextFromUserPath(`todo/RemoteTodo_${i}/info.todo`, (e, v) => {
+              if (e && v) {
+                let todo_info = JSON.parse(v);
+                this.indexed.GetFileListFromDB(`todo/RemoteTodo_${i}`, (v) => {
+                  v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+                  if (todo_info.noti_id)
+                    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+                      clearTimeout(this.web_noti_id[todo_info.noti_id]);
+                      delete this.web_noti_id[todo_info.noti_id];
+                    }
+                  this.noti.ClearNoti(todo_info.noti_id);
+                  if (this.global.p5todo && this.global.p5todo['remove_todo'])
+                    this.global.p5todo['remove_todo'](JSON.stringify(todo_info));
+                });
+                this.addRemoteTodoCounter(_is_official, _target, Number(todo_info['id'].split('_')[1]));
+              }
+            });
           } catch (e) {
             console.log('서버 해야할 일 불러오기 오류: ', e);
           }
