@@ -252,7 +252,9 @@ export class UserFsDirPage implements OnInit {
           });
           await this.importSelected(ev.target.files[i]);
         }
-        this.noti.ClearNoti(4);
+        setTimeout(() => {
+          this.noti.ClearNoti(4);
+        }, 500);
         loading.dismiss();
       } else {
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
@@ -362,10 +364,6 @@ export class UserFsDirPage implements OnInit {
         await this.ModulateIndexedFile(_ionic_list);
       }
     } else {
-      if (this.indexed.godotDB) {
-        let _godot_list = await this.indexed.GetFileListFromDB('/', undefined, this.indexed.godotDB)
-        await this.ModulateIndexedFile(_godot_list, this.indexed.godotDB);
-      }
       let _ionic_list = await this.indexed.GetFileListFromDB('/')
       await this.ModulateIndexedFile(_ionic_list);
     }
@@ -381,7 +379,7 @@ export class UserFsDirPage implements OnInit {
     });
     setTimeout(() => {
       this.noti.ClearNoti(5);
-    }, 100);
+    }, 500);
     this.initLoadingElement.dismiss();
     this.is_ready = true;
   }
@@ -448,6 +446,9 @@ export class UserFsDirPage implements OnInit {
         }
       }, targetDB);
     }
+    setTimeout(() => {
+      this.noti.ClearNoti(5);
+    }, 500);
   }
 
   // 아래 SetDisplay~Name 함수들은 사람이 읽기 좋은 파일 구조를 보여주기 위해 구성됨
@@ -755,38 +756,13 @@ export class UserFsDirPage implements OnInit {
             }
             if (isPlatform == 'Android' || isPlatform == 'iOS')
               this.noti.noti.schedule({
-                id: 5,
+                id: 4,
                 title: `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`,
                 progressBar: { value: i, maxValue: j },
                 sound: null,
                 smallIcon: 'res://icon_mono',
                 color: 'b0b0b0',
               });
-            loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`;
-            await this.indexed.removeFileFromUserPath(list[i]);
-          }
-          for (let i = this.DirList.length - 1; i >= 0; i--)
-            if (this.DirList[i].path.indexOf(this.CurrentDir) == 0)
-              this.DirList.splice(i, 1);
-          for (let i = this.FileList.length - 1; i >= 0; i--)
-            if (this.FileList[i].path.indexOf(this.CurrentDir) == 0)
-              this.FileList.splice(i, 1);
-          list = await this.indexed.GetFileListFromDB(this.CurrentDir);
-          for (let i = 0, j = list.length; i < j; i++) {
-            if (isPlatform == 'Android' || isPlatform == 'iOS') {
-              if (this.StopIndexing) {
-                loading.dismiss();
-                return;
-              }
-              this.noti.noti.schedule({
-                id: 5,
-                title: `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`,
-                progressBar: { value: i, maxValue: j },
-                sound: null,
-                smallIcon: 'res://icon_mono',
-                color: 'b0b0b0',
-              });
-            }
             loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`;
             await this.indexed.removeFileFromUserPath(list[i]);
           }
@@ -800,7 +776,7 @@ export class UserFsDirPage implements OnInit {
           loading.dismiss();
           setTimeout(() => {
             this.noti.ClearNoti(4);
-          }, 100);
+          }, 500);
         },
         cssClass: 'red_font',
       }],
