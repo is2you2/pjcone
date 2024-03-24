@@ -254,7 +254,7 @@ export class UserFsDirPage implements OnInit {
         }
         setTimeout(() => {
           this.noti.ClearNoti(4);
-        }, 500);
+        }, 1000);
         loading.dismiss();
       } else {
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
@@ -379,7 +379,7 @@ export class UserFsDirPage implements OnInit {
     });
     setTimeout(() => {
       this.noti.ClearNoti(5);
-    }, 500);
+    }, 1000);
     this.initLoadingElement.dismiss();
     this.is_ready = true;
   }
@@ -448,7 +448,7 @@ export class UserFsDirPage implements OnInit {
     }
     setTimeout(() => {
       this.noti.ClearNoti(5);
-    }, 500);
+    }, 1000);
   }
 
   // 아래 SetDisplay~Name 함수들은 사람이 읽기 좋은 파일 구조를 보여주기 위해 구성됨
@@ -776,7 +776,7 @@ export class UserFsDirPage implements OnInit {
           loading.dismiss();
           setTimeout(() => {
             this.noti.ClearNoti(4);
-          }, 500);
+          }, 1000);
         },
         cssClass: 'red_font',
       }],
@@ -823,7 +823,7 @@ export class UserFsDirPage implements OnInit {
     setTimeout(() => {
       this.noti.ClearNoti(4);
       this.noti.ClearNoti(5);
-    }, 500);
+    }, 1000);
   }
 
   ionViewWillLeave() {
