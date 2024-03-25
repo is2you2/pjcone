@@ -599,6 +599,7 @@ export class GlobalActService {
       case 'shader': // 고도엔진 셰이더
       case 'py': // Python
       case 'ino': // Arduino
+      case 'pde': // Processing
       case 'asm': // 어셈블리
       case 'bas': // 베이직
       case 'pas': // 파스칼
