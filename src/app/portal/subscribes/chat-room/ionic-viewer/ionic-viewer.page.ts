@@ -15,6 +15,7 @@ import { NakamaService } from 'src/app/nakama.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from 'clipboardy';
 import { LocalNotiService } from 'src/app/local-noti.service';
+import { IonPopover } from '@ionic/angular/common';
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -357,6 +358,7 @@ export class IonicViewerPage implements OnInit {
 
   /** 비디오/오디오 콘텐츠가 종료되면 끝에서 다음 콘텐츠로 자동 넘김 */
   AutoPlayNext = false;
+  @ViewChild('FileMenu') FileMenu: IonPopover;
 
   async ionViewDidEnter() {
     if (this.FileInfo.url) {
@@ -371,6 +373,12 @@ export class IonicViewerPage implements OnInit {
     }
     this.forceWrite = false;
     this.canvasDiv = document.getElementById('content_viewer_canvas');
+    if (this.canvasDiv.oncontextmenu == null) {
+      this.canvasDiv.oncontextmenu = () => {
+        this.FileMenu.present();
+        return false;
+      }
+    }
     if (this.canvasDiv) this.canvasDiv.style.backgroundImage = '';
     document.removeEventListener('ionBackButton', this.EventListenerAct);
     if (this.p5canvas) this.p5canvas.remove();
