@@ -399,7 +399,6 @@ export class IonicViewerPage implements OnInit {
             img.elt.onload = () => {
               this.canvasDiv.style.backgroundImage = `url('${this.FileURL}')`;
               this.canvasDiv.style.backgroundRepeat = 'no-repeat';
-              this.canvasDiv.style.pointerEvents = 'none';
               this.image_info['width'] = img.elt.naturalWidth;
               this.image_info['height'] = img.elt.naturalHeight;
               imageOriginalSize = p.createVector(img.elt.naturalWidth, img.elt.naturalHeight);
