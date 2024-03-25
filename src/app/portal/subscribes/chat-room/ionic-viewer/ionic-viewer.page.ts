@@ -167,20 +167,6 @@ export class IonicViewerPage implements OnInit {
     }
   }
 
-  /** 현재 조회된 모든 파일들 받기 */
-  DownloadAllListFiles() {
-    this.alertCtrl.create({
-      header: this.lang.text['ContentViewer']['DownloadAllFiles'],
-      message: this.lang.text['ContentViewer']['DownloadLoadedList'],
-      buttons: [{
-        text: this.lang.text['ContentViewer']['DownloadThisFile'],
-        handler: () => {
-          this.DownloadInOrder();
-        },
-      }]
-    }).then(v => v.present());
-  }
-
   async DownloadInOrder() {
     if (isPlatform == 'Android' || isPlatform == 'iOS')
       this.noti.noti.schedule({

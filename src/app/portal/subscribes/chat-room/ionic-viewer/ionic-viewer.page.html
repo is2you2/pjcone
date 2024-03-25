@@ -37,11 +37,6 @@ SPDX-License-Identifier: MIT -->
           <ion-button *ngIf="isTextEditMode" (click)="SaveText()">
             <ion-icon name="save-outline"></ion-icon>
           </ion-button>
-          <ion-button *ngIf="isChannelOnline && HaveRelevances && !isTextEditMode && !fromLocalChannel"
-            [disabled]="isDownloading || (MessageInfo.content.transfer_index && MessageInfo.content.transfer_index.OnTransfer == 'download')"
-            class="ion-align-items-center" (click)="DownloadAllListFiles()">
-            <ion-icon name="code-download-outline"></ion-icon>
-          </ion-button>
           <ion-button *ngIf="!isTextEditMode" id="menu_trigger">
             <ion-icon name="ellipsis-vertical"></ion-icon>
           </ion-button>
