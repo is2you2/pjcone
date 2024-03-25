@@ -581,24 +581,33 @@ export class GlobalActService {
       // 마크다운
       case 'md':
       // 텍스트류
-      case 'prop':
-      case 'conf':
+      case 'ino': // Arduino
+      case 'prop': // 설정 파일
+      case 'conf': // 설정 파일
       case 'log':
       case 'txt':
-      case 'cs':
-      case 'gd':
-      case 'py':
+      case 'gd': // Godot script
+      case 'py': // Python
       case 'yml':
+      case 'pl':
+      case 'asm': // 어셈블리
+      case 'bas': // 베이직
+      case 'pas': // 파스칼
       case 'gitignore':
       case 'json':
-      case 'csv':
+      case 'asp': // MS WebScript
+      case 'csv': // Table
+      case 'cs': // C#
       case 'c': // C
-      case 'ts':
-      case 'js':
+      case 'ts': // Typescript
+      case 'js': // Javascrupt
+      case 'cc': // C++
+      case 'php': // C++
+      case 'h': // 헤더파일
       case 'cpp': // C++
       case 'rs': // rust
       case 'java':
-      case 'shader':
+      case 'shader': // 고도엔진 셰이더
         info['viewer'] = 'text';
         break;
       default: // 뷰어 제한 파일 (파일 오프너 활용됨)

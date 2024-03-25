@@ -1258,14 +1258,146 @@ export class IonicViewerPage implements OnInit {
     // 구문 강조처리용 구성 변환
     let getText = p['TextArea'].textContent;
     let text_as_line: string[] = getText.split('\n');
+    /** 간단한 하이라이트 코드 구성 (정확히 일치하면 색상처리) */
+    const SIMPLE_HIGHLIGHT_CODE = [
+      // 구성
+      'void', 'static', 'import', 'include', '#include', 'using',
+      'from', 'as', 'public', 'protected', 'private', 'use', 'package', 'local',
+      'program', 'namespace', 'begin', 'end', 'puts',
+      'Private', 'Protected', 'Public', 'Sub', 'End',
+      // 변수 ,종류
+      'var', 'let',
+      'String', 'char',
+      'Integer', 'Float', 'Boolean', 'Array', 'NULL', 'Resource',
+      'strings', 'integer', 'complex',
+      'byte', 'ubyte', 'int', 'uint', 'short', 'ushort', 'long', 'ulong',
+      'bvec2', 'bvec3', 'bvec4', 'ivec2', 'ivec3', 'ivec4',
+      'uvec2', 'uvec3', 'uvec4', 'mat2', 'mat3', 'mat4',
+      'Vector', 'Vector2', 'Vector3',
+      'PVector', 'PImage', 'PGraphics',
+      'float', 'double', 'number',
+      'color',
+      'bool', 'boolean',
+      'Arary', 'Object', 'Table', 'TableRow', 'HashMap',
+      'null', 'undefined', 'data',
+      // 함수 구분
+      'function', 'func', 'fn', 'def', 'fun',
+      // 클래스 구분
+      'class', 'extends', 'implements', 'object',
+    ]
+    /** 고정수 표현 */
+    const FIXED_VALUE = [
+      'final', 'const',
+    ]
+    /** 연산자 색상 */
+    const OPERATOR = [
+      'for', 'match', 'switch', 'if', 'else', 'elif', 'return', 'continue', 'pass',
+      'loop', 'while', 'in', 'try', 'catch', 'and', 'or', 'do', 'then', 'yield',
+    ];
+    const COMPARISON_OP = [
+      '!=', '>=', '<=', '==', '<', '>',
+    ];
+    /** 이게 존재하는 줄은 전부 주석색 */
+    const ANNOTATION = [
+      '#', '##', '<!--', '-->', '/**', '*/', '//',
+    ];
+    /** 값 대입 표시 */
+    const EQUAL_MARK = ['='];
+    /** 문법 */
+    const SPECIAL_CHARACTER = [
+      '{', '}', '<<', '>>', ':', '-', '(', ')', '[', ']', '>>>', '->', '<-',
+    ];
+    /** 명령어 */
+    const COMMAND = [
+      'SELECT', 'UPDATE', 'DELETE', 'INSERT INTO', 'CREATE DATABASE', 'ALTER DATABASE', 'CREATE TABLE', 'ALTER TABLE', 'DROP TABLE', 'CREATE INDEX', 'DROP INDEX',
+      'ECHO', 'FROM', 'WHERE', 'AND', 'OR', 'NOT',
+      'ALTER', 'ADD',
+      'echo', '<?php', '?>',
+    ]
     for (let i = 0, j = text_as_line.length; i < j; i++) {
       // div 안에서 띄어쓰기 정보를 표현함
       let line = p.createDiv();
       let exact_line_text = text_as_line[i];
       let sep_by_whitespace = exact_line_text.split(' ');
+      let isCommentLine = false;
       for (let k = 0, l = sep_by_whitespace.length; k < l; k++) {
         let text = this.HTMLEncode(sep_by_whitespace[k]);
+        let isColored = false;
+        // 특성 색상으로 강조 표시
+        for (let m = 0, n = ANNOTATION.length; m < n; m++)
+          if (sep_by_whitespace[k] == ANNOTATION[m]) {
+            isCommentLine = true;
+            break;
+          }
+        if (!isCommentLine) {
+          for (let m = 0, n = EQUAL_MARK.length; m < n; m++)
+            if (sep_by_whitespace[k] == EQUAL_MARK[m]) {
+              let word = p.createSpan(text + '&nbsp');
+              word.style('color', 'var(--syntax-text-coding-equalmark)');
+              word.parent(line);
+              isColored = true;
+              break;
+            }
+          if (isColored) continue;
+          for (let m = 0, n = FIXED_VALUE.length; m < n; m++)
+            if (sep_by_whitespace[k] == FIXED_VALUE[m]) {
+              let word = p.createSpan(text + '&nbsp');
+              word.style('color', 'var(--syntax-text-coding-final)');
+              word.parent(line);
+              isColored = true;
+              break;
+            }
+          for (let m = 0, n = COMPARISON_OP.length; m < n; m++)
+            if (sep_by_whitespace[k] == COMPARISON_OP[m]) {
+              let word = p.createSpan(text + '&nbsp');
+              word.style('color', 'var(--syntax-text-coding-comparion-op)');
+              word.parent(line);
+              isColored = true;
+              break;
+            }
+          if (isColored) continue;
+          if (isColored) continue;
+          for (let m = 0, n = OPERATOR.length; m < n; m++)
+            if (sep_by_whitespace[k] == OPERATOR[m]) {
+              let word = p.createSpan(text + '&nbsp');
+              word.style('color', 'var(--syntax-text-coding-operator)');
+              word.parent(line);
+              isColored = true;
+              break;
+            }
+          if (isColored) continue;
+          for (let m = 0, n = SPECIAL_CHARACTER.length; m < n; m++)
+            if (sep_by_whitespace[k] == SPECIAL_CHARACTER[m]) {
+              let word = p.createSpan(text + '&nbsp');
+              word.style('color', 'var(--syntax-text-coding-spechar)');
+              word.parent(line);
+              isColored = true;
+              break;
+            }
+          if (isColored) continue;
+          for (let m = 0, n = COMMAND.length; m < n; m++)
+            if (sep_by_whitespace[k] == COMMAND[m]) {
+              let word = p.createSpan(text + '&nbsp');
+              word.style('color', 'var(--syntax-text-coding-command)');
+              word.parent(line);
+              isColored = true;
+              break;
+            }
+          if (isColored) continue;
+          for (let m = 0, n = SIMPLE_HIGHLIGHT_CODE.length; m < n; m++)
+            if (sep_by_whitespace[k] == SIMPLE_HIGHLIGHT_CODE[m]) {
+              let word = p.createSpan(text + '&nbsp');
+              word.style('color', 'var(--syntax-text-coding-basic)');
+              word.parent(line);
+              isColored = true;
+              break;
+            }
+          if (isColored) continue;
+        }
+        // 일반 평문
         let word = p.createSpan(text + '&nbsp');
+        if (isCommentLine)
+          word.style('color', 'var(--syntax-text-coding-comments)');
         word.parent(line);
       }
       line.parent(p['SyntaxHighlightReader']);

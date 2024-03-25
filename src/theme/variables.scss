@@ -90,6 +90,16 @@
   --voidDraw-menu-background: #ddd;
 
   --wsclient-logs-background: #eee;
+
+  --syntax-text-coding-basic: #0f60bd;
+  --syntax-text-coding-final: #0a7e61;
+  --syntax-text-coding-operator: #fd0bdd;
+  --syntax-text-coding-comparion-op: #04790a;
+  --syntax-text-coding-spechar: #b35f00;
+  --syntax-text-coding-comments: #0f7425;
+  --syntax-text-coding-equalmark: #0381a0;
+  --syntax-text-coding-number: #5db30c;
+  --syntax-text-coding-command: #b30c0c;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -177,6 +187,16 @@
     --voidDraw-menu-background: #444;
 
     --wsclient-logs-background: #222;
+
+    --syntax-text-coding-basic: #7b93ff;
+    --syntax-text-coding-final: #7bd3aa;
+    --syntax-text-coding-operator: #bb61f8;
+    --syntax-text-coding-comparion-op: #c3f0b7;
+    --syntax-text-coding-spechar: #fcf37a;
+    --syntax-text-coding-comments: #3a864b;
+    --syntax-text-coding-equalmark: #bbd5eb;
+    --syntax-text-coding-number: #80c9a1;
+    --syntax-text-coding-command: #d10606;
   }
 
   /*
