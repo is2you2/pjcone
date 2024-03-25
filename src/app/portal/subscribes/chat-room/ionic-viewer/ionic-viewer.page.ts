@@ -935,11 +935,32 @@ export class IonicViewerPage implements OnInit {
                       }
                       let shape: any;
                       /** 모델의 정점 정보 수집 (position) */
-                      let vertex_id = (obj.data.vdata.layers[0] || obj.data.vdata.layers).data;
+                      let vertex_id: any;
+                      if (obj.data.vdata.layers.length) {
+                      for (let i = 0, j = obj.data.vdata.layers.length; i < j; i++)
+                        if (obj.data.vdata.layers[i].name == 'position') {
+                          vertex_id = obj.data.vdata.layers[i].data;
+                          break;
+                        }
+                      } else vertex_id = obj.data.vdata.layers.data;
                       /** 각 정점간 연결 정보 (x: 시작점, y: 대상점) */
-                      let edge_id = (obj.data.edata.layers[0] || obj.data.edata.layers).data;
+                      let edge_id: any;
+                      if (obj.data.edata.layers.length) {
+                      for (let i = 0, j = obj.data.edata.layers.length; i < j; i++)
+                        if (obj.data.edata.layers[i].name == '.edge_verts') {
+                          edge_id = obj.data.edata.layers[i].data;
+                          break;
+                        }
+                      } else edge_id = obj.data.edata.layers.data;
                       /** 각 면과 관련된 정보 */
-                      let qface_info = (obj.data.ldata.layers[0] || obj.data.ldata.layers).data;
+                      let qface_info: any;
+                      if (obj.data.ldata.layers.length) {
+                      for (let i = 0, j = obj.data.ldata.layers.length; i < j; i++)
+                        if (obj.data.ldata.layers[i].name == '.corner_vert') {
+                          qface_info = obj.data.ldata.layers[i].data;
+                          break;
+                        }
+                      } else qface_info = obj.data.ldata.layers.data;
                       // 정보 기반 그리기 행동
                       p['beginGeometry']();
                       p.push();
@@ -1035,6 +1056,7 @@ export class IonicViewerPage implements OnInit {
                         }
                       } catch (e) {
                         console.log('메쉬 정보 불러오기 오류: ', e);
+                        LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-danger-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['LoadMeshFailed']}: ${e}</div>`;
                       }
                       p.pop();
                       shape = p['endGeometry']();
@@ -1057,6 +1079,7 @@ export class IonicViewerPage implements OnInit {
                             );
                           } catch (e) {
                             console.log('베이스 색상 가져오기 실패: ', e);
+                            LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-danger-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['FailedGetBaseColor']}: ${e}</div>`;
                           }
                           try {
                             let _EmissionColor = obj.data.mat[i].nodetree.nodes.first.next.inputs.last.prev.default_value.value;
@@ -1069,6 +1092,7 @@ export class IonicViewerPage implements OnInit {
                             );
                           } catch (e) {
                             console.log('이미션 정보 수집 실패: ', e);
+                            LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-danger-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['FailedGetEmitColor']}: ${e}</div>`;
                           }
                           // 이미지 텍스처 재질 받기
                           if (obj.data.mat[i].nodetree.nodes.last.id) { // 내장 이미지 파일을 읽어내기
