@@ -132,8 +132,6 @@ export class VoidDrawPage implements OnInit {
       let strokeWeight = Math.min(initData['width'], initData['height']) / 100;
       let strokeRatio = 1;
       const PIXEL_DENSITY = 1;
-      /** 문서파일을 이미지 편집할 경우 문서 내용 */
-      let hasTextContent: string[] = [];
       p.setup = async () => {
         p.pixelDensity(PIXEL_DENSITY);
         p.noLoop();
@@ -232,11 +230,10 @@ export class VoidDrawPage implements OnInit {
           updateActualCanvas();
           ImageCanvas.resizeCanvas(CropSize.x, CropSize.y);
           ImageCanvas.push();
-          ImageCanvas.background(255);
+          ImageCanvas.background(this.navParams.data['isDarkMode'] ? 0 : 255);
           ImageCanvas.translate(CropPosition);
           if (p['BaseImage'])
             ImageCanvas.image(p['BaseImage'], 0, 0);
-          if (hasTextContent) DrawText();
           ImageCanvas.pop();
           ImageCanvas.redraw();
           this.isCropMode = false;
@@ -327,10 +324,7 @@ export class VoidDrawPage implements OnInit {
         ImageCanvas.pixelDensity(PIXEL_DENSITY);
         ImageCanvas.noLoop();
         ImageCanvas.noFill();
-        ImageCanvas.background(255);
-        // 텍스트 파일을 이미지로 처리한 경우 텍스트 그리기
-        hasTextContent = this.navParams.get('text');
-        if (hasTextContent) DrawText();
+        ImageCanvas.background(this.navParams.data['isDarkMode'] ? 0 : 255);
         p['ImageCanvas'] = ImageCanvas;
         // 사용자 그리기 판넬 생성
         if (initData['path']) { // 배경 이미지 파일이 포함됨
@@ -354,16 +348,6 @@ export class VoidDrawPage implements OnInit {
         }
         if (initData['width'] < initData['height'])
           strokeWeight = strokeWeight / CamScale;
-      }
-      /** 텍스트의 이미지 편집이라면 텍스트를 그리기 */
-      let DrawText = () => {
-        ImageCanvas.push();
-        ImageCanvas.textSize(16);
-        ImageCanvas.textWrap(p.CHAR);
-        ImageCanvas.fill(0);
-        for (let i = 0, j = hasTextContent.length; i < j; i++)
-          ImageCanvas.text(hasTextContent[i], 0, 24 * i, (initData['width'] || 432));
-        ImageCanvas.pop();
       }
       /** Viewport 행동을 위한 변수들 */
       let CamPosition = p.createVector();

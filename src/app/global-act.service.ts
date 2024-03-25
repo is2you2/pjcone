@@ -196,6 +196,12 @@ export class GlobalActService {
     isDarkMode = update;
   }
 
+  /** 다크모드 여부를 현재 기준으로 검토하여 가져옴 */
+  GetExactDarkMode() {
+    isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return isDarkMode;
+  }
+
   /** 브라우저에서 딥 링크마냥 행동하기
    * @returns GET 으로 작성된 key-value 쌍
   */

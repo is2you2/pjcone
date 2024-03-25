@@ -16,6 +16,7 @@ import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from 'clipboardy';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { IonPopover } from '@ionic/angular/common';
+import * as domtoimage from "dom-to-image";
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -1495,13 +1496,29 @@ export class IonicViewerPage implements OnInit {
         break;
       case 'code':
       case 'text': // 텍스트를 이미지화하기
-        let TextLineArray = this.p5canvas['TextArea'].textContent.split('\n');
-        this.modalCtrl.dismiss({
-          type: 'image',
-          text: TextLineArray,
-          msg: this.MessageInfo,
-          index: this.RelevanceIndex - 1,
-        });
+        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+        loading.present();
+        try {
+          this.p5canvas['SyntaxHighlightReader'].style.height = 'fit-content';
+          let blob = await domtoimage.toBlob(this.p5canvas['SyntaxHighlightReader']);
+          this.image_info['width'] = this.p5canvas['SyntaxHighlightReader'].clientWidth;
+          this.image_info['height'] = this.p5canvas['SyntaxHighlightReader'].clientHeight;
+          this.image_info['path'] = 'tmp_files/modify_image.png';
+          await this.indexed.saveBlobToUserPath(blob, this.image_info['path']);
+          this.modalCtrl.dismiss({
+            type: 'image',
+            ...this.image_info,
+            path: this.image_info['path'],
+            msg: this.MessageInfo,
+            index: this.RelevanceIndex - 1,
+            isDarkMode: this.global.GetExactDarkMode(),
+          });
+        } catch (e) {
+          this.p5toast.show({
+            text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
+          });
+        }
+        loading.dismiss();
         break;
       case 'video': // 마지막 프레임 저장하기
         try {
