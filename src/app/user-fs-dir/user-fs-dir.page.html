@@ -60,6 +60,8 @@
             <ion-icon *ngIf="file.viewer == 'video'" slot="start" name="play-circle"></ion-icon>
             <ion-icon *ngIf="file.viewer == 'text'" slot="start" name="reader"></ion-icon>
             <ion-icon *ngIf="file.viewer == 'godot'" slot="start" name="extension-puzzle"></ion-icon>
+            <ion-icon *ngIf="file.viewer == 'code'" slot="start" name="code-slash-outline"></ion-icon>
+            <ion-icon *ngIf="file.viewer == 'blender'" slot="start" name="cube-outline"></ion-icon>
             <ion-icon *ngIf="file.viewer == 'disabled'" slot="start" name="document"></ion-icon>
             <ion-label *ngIf="FileSel.value == file.path" text-wrap>{{file.name}}</ion-label>
             <ion-label *ngIf="FileSel.value != file.path">{{file.name}}</ion-label>

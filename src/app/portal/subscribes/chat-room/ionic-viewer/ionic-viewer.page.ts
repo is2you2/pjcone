@@ -96,6 +96,7 @@ export class IonicViewerPage implements OnInit {
     } catch (e) { }
     this.FromUserFsDir = this.navParams.get('no_edit') || false;
     switch (this.FileInfo['is_new']) {
+      case 'code':
       case 'text':
         break;
       default:
@@ -375,7 +376,8 @@ export class IonicViewerPage implements OnInit {
     this.canvasDiv = document.getElementById('content_viewer_canvas');
     if (this.canvasDiv.oncontextmenu == null) {
       this.canvasDiv.oncontextmenu = () => {
-        this.FileMenu.present();
+        if (this.FileInfo.viewer != 'blender')
+          this.FileMenu.present();
         return false;
       }
     }
@@ -739,6 +741,7 @@ export class IonicViewerPage implements OnInit {
           }
         });
         break;
+      case 'code':
       case 'text': // 텍스트 파일
         this.p5canvas = new p5((p: p5) => {
           p.setup = () => {
@@ -1313,7 +1316,7 @@ export class IonicViewerPage implements OnInit {
     const EQUAL_MARK = ['='];
     /** 문법 */
     const SPECIAL_CHARACTER = [
-      '{', '}', '<<', '>>', ':', '-', '(', ')', '[', ']', '>>>', '->', '<-',
+      '{', '}', '<<', '>>', ':', '-', '(', ')', '[', ']', '>>>', '->', '<-', '=>', '<=',
     ];
     /** 명령어 */
     const COMMAND = [
@@ -1491,6 +1494,7 @@ export class IonicViewerPage implements OnInit {
         loading.dismiss();
       }
         break;
+      case 'code':
       case 'text': // 텍스트를 이미지화하기
         let TextLineArray = this.p5canvas['TextArea'].textContent.split('\n');
         this.modalCtrl.dismiss({

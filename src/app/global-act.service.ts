@@ -546,7 +546,7 @@ export class GlobalActService {
   set_viewer_category_from_ext(info: any) {
     switch (info['file_ext']) {
       // 모델링류
-      // case 'obj':
+      // case 'obj': // obj, stl 이 p5.loadModel 에 의해 불러와지지 않음을 확인
       // case 'stl':
       // case 'glb':
       // case 'gltf':
@@ -578,25 +578,7 @@ export class GlobalActService {
       case 'webm':
         info['viewer'] = 'video';
         break;
-      // 마크다운
-      case 'md':
-      // 텍스트류
-      case 'ino': // Arduino
-      case 'prop': // 설정 파일
-      case 'conf': // 설정 파일
-      case 'log':
-      case 'txt':
-      case 'gd': // Godot script
-      case 'py': // Python
-      case 'yml':
-      case 'pl':
-      case 'asm': // 어셈블리
-      case 'bas': // 베이직
-      case 'pas': // 파스칼
-      case 'gitignore':
-      case 'json':
-      case 'asp': // MS WebScript
-      case 'csv': // Table
+      // 코드류
       case 'cs': // C#
       case 'c': // C
       case 'ts': // Typescript
@@ -607,7 +589,31 @@ export class GlobalActService {
       case 'cpp': // C++
       case 'rs': // rust
       case 'java':
+      case 'gd': // Godot script
       case 'shader': // 고도엔진 셰이더
+      case 'py': // Python
+      case 'ino': // Arduino
+      case 'asm': // 어셈블리
+      case 'bas': // 베이직
+      case 'pas': // 파스칼
+      case 'asp': // MS WebScript
+      case 'csv': // Table
+      case 'html':
+      case 'css':
+      case 'pl': // Perl
+      case 'scss':
+        info['viewer'] = 'code';
+        break;
+      // 마크다운
+      case 'md':
+      // 텍스트류
+      case 'prop': // 설정 파일
+      case 'conf': // 설정 파일
+      case 'log':
+      case 'txt':
+      case 'yml':
+      case 'gitignore':
+      case 'json':
         info['viewer'] = 'text';
         break;
       default: // 뷰어 제한 파일 (파일 오프너 활용됨)
