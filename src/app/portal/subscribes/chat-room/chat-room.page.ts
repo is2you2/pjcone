@@ -1129,20 +1129,24 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.temporary_open_thumbnail[msg.message_id]();
     } catch (e) {
       this.temporary_open_thumbnail[msg.message_id] = () => {
-        this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
-          msg.content['type'],
-          v => {
-            msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
-            let url = URL.createObjectURL(v);
-            this.global.modulate_thumbnail(msg.content, url);
-            if (this.NeedScrollDown())
-              setTimeout(() => {
-                this.scroll_down_logs();
-              }, 100);
-            // 서버에 파일을 업로드
-            this.nakama.WriteStorage_From_channel(msg, msg.content['path'], this.isOfficial, this.target);
-          });
-        delete this.temporary_open_thumbnail[msg.message_id];
+        if (msg.content.url) {
+          this.global.modulate_thumbnail(msg.content, '');
+        } else {
+          this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
+            msg.content['type'],
+            v => {
+              msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+              let url = URL.createObjectURL(v);
+              this.global.modulate_thumbnail(msg.content, url);
+              if (this.NeedScrollDown())
+                setTimeout(() => {
+                  this.scroll_down_logs();
+                }, 100);
+              // 서버에 파일을 업로드
+              this.nakama.WriteStorage_From_channel(msg, msg.content['path'], this.isOfficial, this.target);
+            });
+          delete this.temporary_open_thumbnail[msg.message_id];
+        }
       }
     }
   }
@@ -1604,15 +1608,22 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       let v = await this.nakama.servers[this.isOfficial][this.target].socket
         .writeChatMessage(this.info['id'], result);
       /** 업로드가 진행중인 메시지 개체 */
-      if (FileAttach && !isURL) { // 첨부 파일이 포함된 경우, 링크는 아닌 경우
-        // 로컬에 파일을 저장
-        let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.file_ext}`;
-        this.indexed.saveBlobToUserPath(this.userInput.file.blob, path, () => {
+      if (FileAttach) { // 첨부 파일이 포함된 경우, 링크는 아닌 경우
+        if (isURL) {
           this.auto_open_thumbnail({
             content: result,
             message_id: v.message_id,
           });
-        });
+        } else {
+          // 로컬에 파일을 저장
+          let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.file_ext}`;
+          this.indexed.saveBlobToUserPath(this.userInput.file.blob, path, () => {
+            this.auto_open_thumbnail({
+              content: result,
+              message_id: v.message_id,
+            });
+          });
+        }
       }
       delete this.userInput.quickShare;
       delete this.userInput.file;
