@@ -1276,6 +1276,8 @@ export class IonicViewerPage implements OnInit {
       'color',
       'bool', 'boolean',
       'Arary', 'Object', 'Table', 'TableRow', 'HashMap',
+      'JSONObject', 'JSONArray', 'ArrayList',
+      'IntDict', 'IntList', 'FloatDict', 'FloatList', 'StringDict', 'StringList',
       'null', 'undefined', 'data',
       // 함수 구분
       'function', 'func', 'fn', 'def', 'fun',
