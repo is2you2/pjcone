@@ -922,6 +922,17 @@ export class IonicViewerPage implements OnInit {
                     break;
                   case 1: { // mesh
                     { // 모델 정보 기반으로 Geometry 개체 만들기
+                      {
+                        // 충돌체 및 임시 개체 무시 (https://docs.godotengine.org/en/4.1/tutorials/assets_pipeline/importing_scenes.html)
+                        let suffixes = ['noimp', 'colonly', 'convcolonly', 'navmesh'];
+                        let ignore_mesh = false;
+                        for (let i = 0, j = suffixes.length; i < j; i++)
+                          if (obj.aname.indexOf(suffixes[i], obj.aname.length - suffixes[i].length) !== -1) {
+                            ignore_mesh = true;
+                            break;
+                          }
+                        if (ignore_mesh) continue;
+                      }
                       let shape: any;
                       /** 모델의 정점 정보 수집 (position) */
                       let vertex_id = (obj.data.vdata.layers[0] || obj.data.vdata.layers).data;
