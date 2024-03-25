@@ -1248,7 +1248,7 @@ export class IonicViewerPage implements OnInit {
     if (!p['SyntaxHighlightReader']) {
       let syntaxHighlightReader = p.createDiv();
       syntaxHighlightReader.elt.className = 'infobox';
-      syntaxHighlightReader.elt.setAttribute('style', `height: ${p['TextArea'].clientHeight}px; display: block; overflow-y: scroll;`);
+      syntaxHighlightReader.elt.setAttribute('style', `height: ${p['TextArea'].clientHeight}px; display: block; overflow-y: auto;`);
       this.canvasDiv.appendChild(syntaxHighlightReader.elt);
       p['SyntaxHighlightReader'] = syntaxHighlightReader.elt;
     }
@@ -1282,7 +1282,7 @@ export class IonicViewerPage implements OnInit {
       // 함수 구분
       'function', 'func', 'fn', 'def', 'fun',
       // 클래스 구분
-      'class', 'extends', 'implements', 'object',
+      'class', 'extends', 'implements', 'object', 'override', 'partial',
     ]
     /** 고정수 표현 */
     const FIXED_VALUE = [
@@ -1314,10 +1314,9 @@ export class IonicViewerPage implements OnInit {
       'echo', '<?php', '?>',
     ]
     for (let i = 0, j = text_as_line.length; i < j; i++) {
-      // div 안에서 띄어쓰기 정보를 표현함
+      // div 안에서 띄어쓰기 단위로 정보를 표현함
       let line = p.createDiv();
-      let exact_line_text = text_as_line[i];
-      let sep_by_whitespace = exact_line_text.split(' ');
+      let sep_by_whitespace = text_as_line[i].split(' ');
       let isCommentLine = false;
       for (let k = 0, l = sep_by_whitespace.length; k < l; k++) {
         let text = this.HTMLEncode(sep_by_whitespace[k]);
@@ -1333,6 +1332,7 @@ export class IonicViewerPage implements OnInit {
             if (sep_by_whitespace[k] == EQUAL_MARK[m]) {
               let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-equalmark)');
+              word.style('white-space', 'pre');
               word.parent(line);
               isColored = true;
               break;
@@ -1342,6 +1342,7 @@ export class IonicViewerPage implements OnInit {
             if (sep_by_whitespace[k] == FIXED_VALUE[m]) {
               let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-final)');
+              word.style('white-space', 'pre');
               word.parent(line);
               isColored = true;
               break;
@@ -1350,6 +1351,7 @@ export class IonicViewerPage implements OnInit {
             if (sep_by_whitespace[k] == COMPARISON_OP[m]) {
               let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-comparion-op)');
+              word.style('white-space', 'pre');
               word.parent(line);
               isColored = true;
               break;
@@ -1360,6 +1362,7 @@ export class IonicViewerPage implements OnInit {
             if (sep_by_whitespace[k] == OPERATOR[m]) {
               let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-operator)');
+              word.style('white-space', 'pre');
               word.parent(line);
               isColored = true;
               break;
@@ -1369,6 +1372,7 @@ export class IonicViewerPage implements OnInit {
             if (sep_by_whitespace[k] == SPECIAL_CHARACTER[m]) {
               let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-spechar)');
+              word.style('white-space', 'pre');
               word.parent(line);
               isColored = true;
               break;
@@ -1378,6 +1382,7 @@ export class IonicViewerPage implements OnInit {
             if (sep_by_whitespace[k] == COMMAND[m]) {
               let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-command)');
+              word.style('white-space', 'pre');
               word.parent(line);
               isColored = true;
               break;
@@ -1387,6 +1392,7 @@ export class IonicViewerPage implements OnInit {
             if (sep_by_whitespace[k] == SIMPLE_HIGHLIGHT_CODE[m]) {
               let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-basic)');
+              word.style('white-space', 'pre');
               word.parent(line);
               isColored = true;
               break;
@@ -1397,6 +1403,7 @@ export class IonicViewerPage implements OnInit {
         let word = p.createSpan(text + '&nbsp');
         if (isCommentLine)
           word.style('color', 'var(--syntax-text-coding-comments)');
+        word.style('white-space', 'pre');
         word.parent(line);
       }
       line.parent(p['SyntaxHighlightReader']);

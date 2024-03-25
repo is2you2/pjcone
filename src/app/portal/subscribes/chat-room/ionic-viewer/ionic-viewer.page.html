@@ -44,7 +44,7 @@ SPDX-License-Identifier: MIT -->
             <ng-template>
               <ion-content>
                 <ion-list>
-                  <ion-item button *ngIf="!NeedDownloadFile && FileInfo['viewer'] == 'text'"
+                  <ion-item button *ngIf="!NeedDownloadFile && (FileInfo['viewer'] == 'text' || FileInfo['viewer'] == 'code')"
                     (click)="open_text_editor()">
                     <ion-label>{{lang.text['ContentViewer']['EditText']}}</ion-label>
                   </ion-item>
