@@ -263,6 +263,10 @@
     color: var(--chatroom-you-read-here-text);
 }
 
+.text_span {
+    white-space: break-spaces;
+}
+
 .ext_icon_img {
     max-width: 36px;
     max-height: 36px;

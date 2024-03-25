@@ -1332,7 +1332,7 @@ export class IonicViewerPage implements OnInit {
             if (sep_by_whitespace[k] == EQUAL_MARK[m]) {
               let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-equalmark)');
-              word.style('white-space', 'pre');
+              word.style('white-space', 'break-spaces');
               word.parent(line);
               isColored = true;
               break;
@@ -1342,7 +1342,7 @@ export class IonicViewerPage implements OnInit {
             if (sep_by_whitespace[k] == FIXED_VALUE[m]) {
               let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-final)');
-              word.style('white-space', 'pre');
+              word.style('white-space', 'break-spaces');
               word.parent(line);
               isColored = true;
               break;
@@ -1351,7 +1351,7 @@ export class IonicViewerPage implements OnInit {
             if (sep_by_whitespace[k] == COMPARISON_OP[m]) {
               let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-comparion-op)');
-              word.style('white-space', 'pre');
+              word.style('white-space', 'break-spaces');
               word.parent(line);
               isColored = true;
               break;
@@ -1362,7 +1362,7 @@ export class IonicViewerPage implements OnInit {
             if (sep_by_whitespace[k] == OPERATOR[m]) {
               let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-operator)');
-              word.style('white-space', 'pre');
+              word.style('white-space', 'break-spaces');
               word.parent(line);
               isColored = true;
               break;
@@ -1372,7 +1372,7 @@ export class IonicViewerPage implements OnInit {
             if (sep_by_whitespace[k] == SPECIAL_CHARACTER[m]) {
               let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-spechar)');
-              word.style('white-space', 'pre');
+              word.style('white-space', 'break-spaces');
               word.parent(line);
               isColored = true;
               break;
@@ -1382,7 +1382,7 @@ export class IonicViewerPage implements OnInit {
             if (sep_by_whitespace[k] == COMMAND[m]) {
               let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-command)');
-              word.style('white-space', 'pre');
+              word.style('white-space', 'break-spaces');
               word.parent(line);
               isColored = true;
               break;
@@ -1392,7 +1392,7 @@ export class IonicViewerPage implements OnInit {
             if (sep_by_whitespace[k] == SIMPLE_HIGHLIGHT_CODE[m]) {
               let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-basic)');
-              word.style('white-space', 'pre');
+              word.style('white-space', 'break-spaces');
               word.parent(line);
               isColored = true;
               break;
@@ -1403,7 +1403,7 @@ export class IonicViewerPage implements OnInit {
         let word = p.createSpan(text + '&nbsp');
         if (isCommentLine)
           word.style('color', 'var(--syntax-text-coding-comments)');
-        word.style('white-space', 'pre');
+        word.style('white-space', 'break-spaces');
         word.parent(line);
       }
       line.parent(p['SyntaxHighlightReader']);
