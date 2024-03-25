@@ -31,6 +31,10 @@ Project: Cone 커뮤니티를 위한 채팅 앱 클라이언트
   - icon 구성할 때 debug/release/main을 작업해도 스플래시는 안바뀜
   - android/app/src/main/res/ 아래 있는 splash 파일들 일괄 수정 필요
 
+## 블렌더 임포트 제한사항
+- Triangluate 처리가 되어있어야 함
+- 리소스가 포함된 파일이어야 함
+
 ## Nakama 서버에서 알림
 - 1: 사용자 전체에게 알림 메시지 발송
 

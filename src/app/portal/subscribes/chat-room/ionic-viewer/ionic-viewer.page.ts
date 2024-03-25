@@ -902,7 +902,30 @@ export class IonicViewerPage implements OnInit {
               const RATIO = 100;
               /** 블랜더 파일 (ArrayBuffer) */
               let blenderFile = blend.file.AB;
-              for (let i = 0; i < blend.file.objects.Object.length; i++) {
+              // 내장 파일 불러오기 (PackedFiles)
+              for (let i = 0, j = blend.file.objects.PackedFile.length; i < j; i++) {
+                let PackedFile = blend.file.objects.PackedFile[i];
+                let data_address = PackedFile.data['__data_address__'];
+                let data_size = PackedFile.size;
+                let ImageBuffer = blenderFile.slice(data_address, data_address + data_size);
+                let blob = new Blob([ImageBuffer]);
+                let ImageTextureURL = URL.createObjectURL(blob);
+                p.loadImage(ImageTextureURL, v => {
+                  texture_images[PackedFile.data['__data_address__']] = v;
+                  URL.revokeObjectURL(ImageTextureURL);
+                }, e => {
+                  console.log('텍스쳐 불러오기 실패: ', e);
+                  URL.revokeObjectURL(ImageTextureURL);
+                });
+              }
+              /** 개체별 UV 누적정보 */
+              let UVPositionList = blend.file.objects.vec2f;
+              /** 현재 개체가 참고하게될 UV 정보 시작점 */
+              let UVPositionIndex = 0;
+              /** UV 위치 탐색을 위해 Mesh가 아닌 개체들을 몇개나 무시하는지 */
+              let IgnoreObjectCounter = 0;
+              // 모델 정보 불러오기
+              for (let i = 0, j = blend.file.objects.Object.length; i < j; i++) {
                 /** 이 개체의 정보 */
                 let obj = blend.file.objects.Object[i];
                 loading.message = `${this.lang.text['ContentViewer']['ReadObject']}: ${obj.aname}`;
@@ -918,9 +941,7 @@ export class IonicViewerPage implements OnInit {
                   -obj.rot[1]
                 );
                 switch (obj.type) {
-                  case 0: // empty
-                    break;
-                  case 1: { // mesh
+                  case 1: // mesh
                     { // 모델 정보 기반으로 Geometry 개체 만들기
                       {
                         // 충돌체 및 임시 개체 무시 (https://docs.godotengine.org/en/4.1/tutorials/assets_pipeline/importing_scenes.html)
@@ -933,33 +954,45 @@ export class IonicViewerPage implements OnInit {
                           }
                         if (ignore_mesh) continue;
                       }
+                      { // 이 개체의 UV 정보 위치 잡기
+                        let StackIndex = -1;
+                        for (let k = 0, l = UVPositionList.length; k < l; k++)
+                          if (UVPositionList[k].address) {
+                            StackIndex++;
+                            if (StackIndex + IgnoreObjectCounter == i) {
+                              UVPositionIndex = k;
+                              break;
+                            }
+                          }
+                      }
+                      console.log('UVPositionIndex: ', UVPositionIndex);
                       let shape: any;
                       /** 모델의 정점 정보 수집 (position) */
                       let vertex_id: any;
                       if (obj.data.vdata.layers.length) {
-                      for (let i = 0, j = obj.data.vdata.layers.length; i < j; i++)
-                        if (obj.data.vdata.layers[i].name == 'position') {
-                          vertex_id = obj.data.vdata.layers[i].data;
-                          break;
-                        }
+                        for (let i = 0, j = obj.data.vdata.layers.length; i < j; i++)
+                          if (obj.data.vdata.layers[i].name == 'position') {
+                            vertex_id = obj.data.vdata.layers[i].data;
+                            break;
+                          }
                       } else vertex_id = obj.data.vdata.layers.data;
                       /** 각 정점간 연결 정보 (x: 시작점, y: 대상점) */
                       let edge_id: any;
                       if (obj.data.edata.layers.length) {
-                      for (let i = 0, j = obj.data.edata.layers.length; i < j; i++)
-                        if (obj.data.edata.layers[i].name == '.edge_verts') {
-                          edge_id = obj.data.edata.layers[i].data;
-                          break;
-                        }
+                        for (let i = 0, j = obj.data.edata.layers.length; i < j; i++)
+                          if (obj.data.edata.layers[i].name == '.edge_verts') {
+                            edge_id = obj.data.edata.layers[i].data;
+                            break;
+                          }
                       } else edge_id = obj.data.edata.layers.data;
                       /** 각 면과 관련된 정보 */
                       let qface_info: any;
                       if (obj.data.ldata.layers.length) {
-                      for (let i = 0, j = obj.data.ldata.layers.length; i < j; i++)
-                        if (obj.data.ldata.layers[i].name == '.corner_vert') {
-                          qface_info = obj.data.ldata.layers[i].data;
-                          break;
-                        }
+                        for (let i = 0, j = obj.data.ldata.layers.length; i < j; i++)
+                          if (obj.data.ldata.layers[i].name == '.corner_vert') {
+                            qface_info = obj.data.ldata.layers[i].data;
+                            break;
+                          }
                       } else qface_info = obj.data.ldata.layers.data;
                       // 정보 기반 그리기 행동
                       p['beginGeometry']();
@@ -986,16 +1019,8 @@ export class IonicViewerPage implements OnInit {
                           vertex_linked[edge_id_start].push(edge_id_end);
                           vertex_linked[edge_id_end].push(edge_id_start);
                         }
-                        // 면 UV 직접 지정
-                        let isPlaneMesh = qface_info.length == 4;
-                        let plane_uv = [
-                          { u: 0, v: 1 },
-                          { u: 1, v: 1 },
-                          { u: 1, v: 0 },
-                          { u: 0, v: 0 },
-                        ]
                         // 면 생성하기
-                        for (let i = qface_info.length - 1,
+                        for (let h = qface_info.length - 1, i = h,
                           head_id = undefined, last_id = undefined;
                           i >= 0; i--) {
                           /** 현재 사용할 정점 */
@@ -1006,20 +1031,13 @@ export class IonicViewerPage implements OnInit {
                           let vertexTargetZ = vertex_id[current_id].z ?? vertex_id[current_id]['co'][2];
                           if (last_id === undefined) {
                             p.beginShape();
-                            if (isPlaneMesh)
-                              p.vertex(
-                                -vertexTargetX * RATIO,
-                                -vertexTargetZ * RATIO,
-                                vertexTargetY * RATIO,
-                                plane_uv[i].u,
-                                plane_uv[i].v,
-                              );
-                            else
-                              p.vertex(
-                                -vertexTargetX * RATIO,
-                                -vertexTargetZ * RATIO,
-                                vertexTargetY * RATIO
-                              );
+                            p.vertex(
+                              -vertexTargetX * RATIO,
+                              -vertexTargetZ * RATIO,
+                              vertexTargetY * RATIO,
+                              UVPositionList[UVPositionIndex + i].x,
+                              -UVPositionList[UVPositionIndex + i].y
+                            );
                             head_id = current_id;
                             last_id = current_id;
                             continue;
@@ -1028,20 +1046,13 @@ export class IonicViewerPage implements OnInit {
                             // 현재 정점이 이전 정점으로부터 그려질 수 있는지 검토
                             let checkIfCanLinked = vertex_linked[last_id].includes(current_id);
                             if (!checkIfCanLinked) throw '마지막 점으로부터 그릴 수 없음';
-                            if (isPlaneMesh)
-                              p.vertex(
-                                -vertexTargetX * RATIO,
-                                -vertexTargetZ * RATIO,
-                                vertexTargetY * RATIO,
-                                plane_uv[i].u,
-                                plane_uv[i].v,
-                              );
-                            else
-                              p.vertex(
-                                -vertexTargetX * RATIO,
-                                -vertexTargetZ * RATIO,
-                                vertexTargetY * RATIO
-                              );
+                            p.vertex(
+                              -vertexTargetX * RATIO,
+                              -vertexTargetZ * RATIO,
+                              vertexTargetY * RATIO,
+                              UVPositionList[UVPositionIndex + i].x,
+                              -UVPositionList[UVPositionIndex + i].y
+                            );
                             let checkIfCanClosed = false;
                             // 시작점이 곧 마지막 점이 아니라면, 시작점으로 돌아갈 수 있는지 여부 확인
                             if (last_id != head_id)
@@ -1098,28 +1109,14 @@ export class IonicViewerPage implements OnInit {
                           if (obj.data.mat[i].nodetree.nodes.last.id) { // 내장 이미지 파일을 읽어내기
                             let packedfile = obj.data.mat[i].nodetree.nodes.last.id.packedfile;
                             if (!packedfile) throw 'unpacked';
-                            if (texture_images[packedfile.data['__data_address__']]) throw 'duplicated';
                             imgtex_id = packedfile.data['__data_address__'];
-                            let data_size = packedfile.size;
-                            let ImageBuffer = blenderFile.slice(imgtex_id, imgtex_id + data_size);
-                            let blob = new Blob([ImageBuffer]);
-                            let ImageTextureURL = URL.createObjectURL(blob);
-                            p.loadImage(ImageTextureURL, v => {
-                              texture_images[packedfile.data['__data_address__']] = v;
-                              LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-danger-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['OnWorkReadUV']}</div>`;
-                              URL.revokeObjectURL(ImageTextureURL);
-                            }, e => {
-                              console.log('텍스쳐 불러오기 실패: ', e);
-                              URL.revokeObjectURL(ImageTextureURL);
-                            });
+                            LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-danger-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['OnWorkReadUV']}</div>`;
                           }
                         }
                       } catch (e) {
                         switch (e) {
                           case 'unpacked': // 파일에 내장되지 않음(링크 파일)
                             LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-warning-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['LinkedTexFile']}</div>`;
-                            break;
-                          case 'duplicated': // 중복 등록 행동 방지
                             break;
                           case 'no_mat':
                             LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-medium-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['NoMaterial']}</div>`;
@@ -1144,7 +1141,6 @@ export class IonicViewerPage implements OnInit {
                       });
                     }
                     break;
-                  }
                   case 10: { // lamp
                     // 빛의 종류 구분이 필요
                     if (lights.length < 5) {
@@ -1157,12 +1153,15 @@ export class IonicViewerPage implements OnInit {
                         color: p.color(255, 255, 255),
                       });
                     } else LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-medium-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['ReachLightLimit']}</div>`;
-                    break;
                   }
-                  case 11: // camera
-                    break;
+                  // case 0: // empty
+                  //   break;
+                  // case 11: // camera
+                  //   break;
+                  // case 25: // Armature
+                  //   break;
                   default: // 준비되지 않은 데이터 필터용
-                    LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-medium-shade)>${obj.aname}: ${this.lang.text['ContentViewer']['OnWorkObjectType']}_${obj.type}</div>`;
+                    IgnoreObjectCounter++;
                     break;
                 }
                 await new Promise(res => setTimeout(res, 0));
@@ -1189,6 +1188,7 @@ export class IonicViewerPage implements OnInit {
               }
             } else // 빛이 없다면 기본 빛 부여
               p.lights();
+            p.ambientLight(16);
             for (let i = 0, j = meshes.length; i < j; i++) {
               p.push();
               if (meshes[i].texture) {
