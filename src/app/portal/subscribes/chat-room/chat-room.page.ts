@@ -703,7 +703,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (this.ShowRecentMsg)
           this.pull_msg_history(false);
       }
-      this.ShowGoToBottom = this.ChatLogs.scrollHeight - 220 > this.ChatLogs.scrollTop + this.ChatLogs.clientHeight;
+      this.ShowGoToBottom = (this.ChatLogs.scrollHeight - 220 > this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) || this.ShowRecentMsg;
     }
     this.nakama.ChatroomLinkAct = async (c: any, _fileinfo: FileInfo) => {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
@@ -1040,7 +1040,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (this.useSpeaker) this.SpeechReceivedMessage(c);
         setTimeout(() => {
           let CurrentMsg = document.getElementById(c.message_id);
-          if (CurrentMsg.oncontextmenu == null)
+          if (CurrentMsg && CurrentMsg.oncontextmenu == null)
             CurrentMsg.oncontextmenu = () => {
               try {
                 let catch_index: number;
