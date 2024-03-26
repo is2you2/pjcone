@@ -373,11 +373,14 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.limitDisplay = this.limitDisplay.substring(0, this.limitDisplay.lastIndexOf(':'));
     this.isLimitChangable = true;
     if (this.userInput.workers) { // 작업자 이름 동기화 시도
-      for (let i = 0, j = this.userInput.workers.length; i < j; i++)
+      for (let i = 0, j = this.userInput.workers.length; i < j; i++) {
         try {
           this.userInput.workers[i]['name'] = this.nakama.load_other_user(this.userInput.workers[i]['id'],
             this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
         } catch (e) { }
+        if (this.userInput.workers[i].timestamp)
+          this.userInput.workers[i]['displayTime'] = new Date(this.userInput.workers[i].timestamp).toLocaleString();
+      }
     }
   }
 

@@ -1023,7 +1023,7 @@ export class NakamaService {
     this.servers[_is_official][_target].client.writeStorageObjects(
       this.servers[_is_official][_target].session, [{
         collection: 'server_todo',
-        key: `RemoteTodo_Counter`,
+        key: 'RemoteTodo_Counter',
         permission_read: 2,
         permission_write: 1,
         value: { data: this.RemoteTodoCounter[_is_official][_target] },
