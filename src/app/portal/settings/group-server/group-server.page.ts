@@ -627,6 +627,8 @@ export class GroupServerPage implements OnInit {
       this.nakama.logout_all_server();
       delete this.nakama.users.self['password'];
       this.nakama.save_groups_with_less_info();
+      this.nakama.channels_orig['official'] = {};
+      this.nakama.channels_orig['unofficial'] = {};
       this.nakama.rearrange_channels();
     }
     this.p5canvas.loop();
