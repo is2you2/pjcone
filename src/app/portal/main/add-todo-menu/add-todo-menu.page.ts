@@ -346,9 +346,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           throw { text: "Server disconnected", isModifiable: false };
         } else if (this.statusBar.groupServer[this.userInput.remote.isOfficial][this.userInput.remote.target] == 'online')
           this.isModifiable = true;
-        this.AmICreator =
-          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id == this.userInput.remote.creator_id;
-        this.userInput.display_creator = this.AmICreator ? this.lang.text['TodoDetail']['WrittenByMe'] : this.nakama.load_other_user(this.userInput.remote.creator_id, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
+        // 제작자가 있다면 그게 나인지 검토
+        if (this.userInput.remote.creator_id)
+          this.AmICreator =
+            this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id == this.userInput.remote.creator_id;
+        this.userInput.display_creator =
+          this.AmICreator ? this.lang.text['TodoDetail']['WrittenByMe'] : this.nakama.load_other_user(this.userInput.remote.creator_id, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
         if (this.userInput.remote.group_id)
           this.isModifiable = this.nakama.groups[this.userInput.remote.isOfficial][this.userInput.remote.target][this.userInput.remote.group_id]['status'] == 'online';
       }
