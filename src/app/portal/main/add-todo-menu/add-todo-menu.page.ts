@@ -245,6 +245,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 로컬/원격 상태에 따른 수정 가능 여부 */
   isModifiable = false;
   received_data: string;
+  /** 진입 후 저장소가 변경되었는지 검토 */
+  isStoreAtChanged = false;
+  /** 저장소 변경이 가능한지 검토 (원격이면서 작성자가 남이 아닌지 검토) */
+  isStoreAtChangable = true;
   async ionViewWillEnter() {
     // 저장소로 사용 가능한 서버와 그룹 수집
     let servers: RemoteInfo[] = [];
@@ -273,6 +277,15 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       received_json = JSON.parse(this.received_data);
       this.userInput = { ...this.userInput, ...received_json };
       this.isModify = true;
+      // 기록된 저장소로 설정
+      if (this.userInput.storeAt == 'local')
+        this.StoreAt.value = 'local';
+      else for (let i = 0, j = this.AvailableStorageList.length; i < j; i++)
+        if (this.userInput.remote.isOfficial == this.AvailableStorageList[i].isOfficial
+          && this.userInput.remote.target == this.AvailableStorageList[i].target) {
+          this.StoreAt.value = this.AvailableStorageList[i];
+          break;
+        }
     } else { // 새로 만드는 경우
       let tomorrow = new Date(new Date().getTime() + 43200000);
       this.userInput.limit = tomorrow.getTime();
@@ -614,6 +627,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   WorkerGroups = [];
   /** 저장소 변경됨 */
   StoreAtSelChanged(ev: any) {
+    this.isStoreAtChanged = true;
     let value: any = ev.detail.value;
     if (value == 'local') {
       this.userInput.storeAt = 'local';
@@ -943,6 +957,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     } // ^ 같으면 저장 동작을 하지 않음
     if (!this.userInput.create_at) // 생성 날짜 기록
       this.userInput.create_at = new Date().getTime();
+    // 저장소가 변경되었다면 기존 저장소에서 삭제 시도하고 아래 모든 저장 행동을 새 작업으로 간주하여 실행
+    let received_json = this.received_data ? JSON.parse(this.received_data) : undefined;
+    if (this.isStoreAtChanged) {
+      await this.deleteFromStorage(true, received_json);
+      this.isModify = false;
+    }
     if (!this.userInput.id || !this.isModify) { // 할 일 구분자 생성 (내 기록은 날짜시간, 서버는 서버-시간 (isOfficial/target/DateTime),
       if (!this.userInput.remote) // local
         this.userInput.id = new Date(this.userInput.create_at).toISOString().replace(/[:|.|\/]/g, '_');
@@ -961,7 +981,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     } // 알림 아이디가 없다면 새로 배정
     this.userInput.noti_id = this.nakama.get_noti_id();
     this.nakama.set_todo_notification(this.userInput);
-    let received_json = this.received_data ? JSON.parse(this.received_data) : undefined;
     let attach_changed = false;
     if (this.userInput.workers) { // 작업자 지정처리
       this.userInput.workers.length = 0;
@@ -1189,7 +1208,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.navCtrl.pop();
   }
 
-  /** 이 해야할 일 삭제 */
+  /** 이 해야할 일 삭제 (삭제 버튼 전용) */
   deleteData() {
     this.alertCtrl.create({
       header: this.lang.text['TodoDetail']['remove'],
@@ -1217,117 +1236,117 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 저장소로부터 데이터를 삭제하는 명령 모음  
    * @param isDelete 삭제 여부를 검토하여 애니메이션 토글
    */
-  async deleteFromStorage(isDelete = true) {
+  async deleteFromStorage(isDelete = true, targetInfo = this.userInput) {
     this.isButtonClicked = true;
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
-    if (this.userInput.remote) {
-      try {
-        if (!this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target])
+    if (targetInfo.remote) {
+      try { // 원격 할 일인 경우 원격 저장소에서 삭제
+        if (!this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target])
           throw 'Server deleted.';
         try {
-          let isOfficial = this.userInput.remote.isOfficial;
-          let target = this.userInput.remote.target;
+          let isOfficial = targetInfo.remote.isOfficial;
+          let target = targetInfo.remote.target;
           await this.nakama.servers[isOfficial][target].client.deleteStorageObjects(
             this.nakama.servers[isOfficial][target].session, {
             object_ids: [{
               collection: 'server_todo',
-              key: this.userInput.id,
+              key: targetInfo.id,
             }],
           });
-          for (let i = 0, j = this.userInput.attach.length; i < j; i++)
-            await this.nakama.sync_remove_file(this.userInput.attach[i].path, isOfficial, target, 'todo_attach');
-          if (isDelete) await this.nakama.servers[isOfficial][target]
-            .socket.sendMatchState(this.nakama.self_match[isOfficial][target].match_id, MatchOpCode.MANAGE_TODO,
-              encodeURIComponent(`delete,${this.userInput.id}`));
+          for (let i = 0, j = targetInfo.attach.length; i < j; i++)
+            await this.nakama.sync_remove_file(targetInfo.attach[i].path, isOfficial, target, 'todo_attach');
+          if (isDelete) {
+            await this.nakama.servers[isOfficial][target]
+              .socket.sendMatchState(this.nakama.self_match[isOfficial][target].match_id, MatchOpCode.MANAGE_TODO,
+                encodeURIComponent(`delete,${targetInfo.id}`));
+          }
         } catch (e) {
           console.error('해야할 일 삭제 요청이 서버에 전송되지 않음: ', e);
         }
-        // 지시받은 업무인 경우
-        try {
-          if (this.userInput.remote.creator_id != this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id) {
+        try { // 지시받은 업무인 경우, 완료됨 전송
+          if (targetInfo.remote.creator_id != this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session.user_id) {
             let act_time = new Date().getTime();
             try { // 서버 rpc로 변경행동 보내기
-              await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(
-                this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session,
+              await this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].client.rpc(
+                this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session,
                 'manage_todo_done_fn', {
-                id: this.userInput.id,
-                creator_id: this.userInput.remote.creator_id,
-                user_id: this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id,
+                id: targetInfo.id,
+                creator_id: targetInfo.remote.creator_id,
+                user_id: this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session.user_id,
                 timestamp: act_time,
                 isDelete: isDelete,
               });
             } catch (e) { }
             try { // 변경되었음을 매니저에게 알림
-              let match = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.readStorageObjects(
-                this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, {
+              let match = await this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].client.readStorageObjects(
+                this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session, {
                 object_ids: [{
                   collection: 'self_share',
                   key: 'private_match',
-                  user_id: this.userInput.remote.creator_id,
+                  user_id: targetInfo.remote.creator_id,
                 }],
               });
               if (match.objects.length) { // 가용 매치일 경우에 메시지 발송하기
-                await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+                await this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
                   .socket.joinMatch(match.objects[0].value['match_id']);
-                await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+                await this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
                   .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.MANAGE_TODO,
-                    encodeURIComponent(`worker,${this.userInput.id},${this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id},${isDelete},${act_time}`));
-                await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+                    encodeURIComponent(`worker,${targetInfo.id},${this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session.user_id},${isDelete},${act_time}`));
+                await this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
                   .socket.leaveMatch(match.objects[0].value['match_id']);
               }
             } catch (e) { }
           }
         } catch (e) { }
-        if (this.userInput.workers) { // 매니저 기준 행동
-          try {
-            await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(
-              this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session,
+        if (targetInfo.workers) { // 매니저 기준 행동
+          try { // 모든 등록된 작업자의 기록을 삭제 처리
+            await this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].client.rpc(
+              this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session,
               'manage_todo_delete_fn', {
-              id: this.userInput.id,
-              workers: this.userInput.workers,
+              id: targetInfo.id,
+              workers: targetInfo.workers,
             });
           } catch (e) { }
-          for (let i = 0, j = this.userInput.workers.length; i < j; i++) {
+          for (let i = 0, j = targetInfo.workers.length; i < j; i++) {
             try {
-              let match = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.readStorageObjects(
-                this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, {
+              let match = await this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].client.readStorageObjects(
+                this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session, {
                 object_ids: [{
                   collection: 'self_share',
                   key: 'private_match',
-                  user_id: this.userInput.workers[i].id,
+                  user_id: targetInfo.workers[i].id,
                 }],
               });
               if (match.objects.length) { // 가용 매치일 경우에 메시지 발송하기
-                await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+                await this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
                   .socket.joinMatch(match.objects[0].value['match_id']);
-                await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+                await this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
                   .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.MANAGE_TODO,
-                    encodeURIComponent(isDelete ? `delete,${this.userInput.id}` : `done,${this.userInput.id}`));
-                await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+                    encodeURIComponent(isDelete ? `delete,${targetInfo.id}` : `done,${targetInfo.id}`));
+                await this.nakama.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
                   .socket.leaveMatch(match.objects[0].value['match_id']);
               }
             } catch (e) { }
           }
         }
-        this.nakama.removeRemoteTodoCounter(this.userInput.remote.isOfficial, this.userInput.remote.target, Number(this.userInput['id'].split('_')[1]));
+        this.nakama.removeRemoteTodoCounter(targetInfo.remote.isOfficial, targetInfo.remote.target, Number(targetInfo['id'].split('_')[1]));
       } catch (e) {
         console.log('서버 정보 없음, 로컬에서 행동: ', e);
       }
     }
-    this.indexed.GetFileListFromDB(`todo/${this.userInput.id}`, async (v) => {
-      v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-      if (this.userInput.noti_id)
-        if (!this.isMobile) {
-          clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
-          delete this.nakama.web_noti_id[this.userInput.noti_id];
-        }
-      this.noti.ClearNoti(this.userInput.noti_id);
-      if (isDelete && this.global.p5todo)
-        this.global.p5todo['remove_todo'](JSON.stringify(this.userInput));
-      loading.dismiss();
-      this.navCtrl.pop();
-    });
+    let list = await this.indexed.GetFileListFromDB(`todo/${targetInfo.id}`);
+    list.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+    if (targetInfo.noti_id)
+      if (!this.isMobile) {
+        clearTimeout(this.nakama.web_noti_id[targetInfo.noti_id]);
+        delete this.nakama.web_noti_id[targetInfo.noti_id];
+      }
+    this.noti.ClearNoti(targetInfo.noti_id);
+    if (isDelete && this.global.p5todo)
+      this.global.p5todo['remove_todo'](JSON.stringify(targetInfo));
+    loading.dismiss();
+    if (this.userInput == targetInfo) this.navCtrl.pop();
   }
 
   WillLeavePage = false;

@@ -35,6 +35,7 @@ export class MainPage implements OnInit {
       this.global.p5todo.loop();
     else this.global.p5todo.noLoop();
   }
+  /** 모든 할 일을 완료한 경우 */
   isEmptyTodo = false;
   CreateTodoManager() {
     setTimeout(() => {
@@ -134,6 +135,7 @@ export class MainPage implements OnInit {
             }
           this.isEmptyTodo = !Boolean(Object.keys(TodoKeys).length);
           p['count_todo']();
+          p.redraw();
         }
         // 해야할 일 리스트 업데이트
         p['ListUpdate'] = async () => {
