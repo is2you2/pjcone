@@ -25,10 +25,6 @@ SPDX-License-Identifier: MIT -->
       <td style="vertical-align: top;">
         <div id="chatroom_div" class="main" style="max-width: 100vw;">
           <div *ngIf="!isOfflineClosedGroup">
-            <ion-item [disabled]="(next_cursor === undefined && !ViewMsgIndex) || !pullable" button
-              (click)="pull_msg_history()">
-              <ion-label>{{lang.text['ChatRoom']['fetch_previous_chat']}}</ion-label>
-            </ion-item>
             <div *ngFor="let msg of ViewableMessage; let i = index" [id]=" msg.message_id">
               <div *ngIf="!msg['is_me'] && !msg.content['noti']">
                 <!-- 날짜 표시 -->
