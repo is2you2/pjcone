@@ -230,7 +230,7 @@ export class VoidDrawPage implements OnInit {
           updateActualCanvas();
           ImageCanvas.resizeCanvas(CropSize.x, CropSize.y);
           ImageCanvas.push();
-          ImageCanvas.background(this.navParams.data['isDarkMode'] ? 0 : 255);
+          ImageCanvas.background(this.navParams.data['isDarkMode'] ? 26 : 255);
           ImageCanvas.translate(CropPosition);
           if (p['BaseImage'])
             ImageCanvas.image(p['BaseImage'], 0, 0);
@@ -324,7 +324,7 @@ export class VoidDrawPage implements OnInit {
         ImageCanvas.pixelDensity(PIXEL_DENSITY);
         ImageCanvas.noLoop();
         ImageCanvas.noFill();
-        ImageCanvas.background(this.navParams.data['isDarkMode'] ? 0 : 255);
+        ImageCanvas.background(this.navParams.data['isDarkMode'] ? 26 : 255);
         p['ImageCanvas'] = ImageCanvas;
         // 사용자 그리기 판넬 생성
         if (initData['path']) { // 배경 이미지 파일이 포함됨

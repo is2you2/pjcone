@@ -1594,6 +1594,7 @@ export class IonicViewerPage implements OnInit {
               ...this.image_info,
               msg: this.MessageInfo,
               index: this.RelevanceIndex - 1,
+              isDarkMode: this.global.GetExactDarkMode(),
             });
           } catch (e) {
             console.log('파일 저장 오류: ', e);
