@@ -1783,6 +1783,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   async message_detail(msg: any, index: number) {
     if (this.isOtherAct) return; // 다른 행동과 중첩 방지
     if (this.info['status'] == 'offline' || this.info['status'] == 'missing') return;
+    if (msg.content['user_update']) return; // 시스템 메시지 관리 불가
     if (!msg['is_me']) return;
     let orig_msg = this.deserialize_text(msg);
     let MsgText = orig_msg;
