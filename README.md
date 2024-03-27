@@ -13,6 +13,9 @@ Project: Cone 커뮤니티를 위한 채팅 앱 클라이언트
   - npm config set user 0
   - Sync Project with Gradle Files (상단 버튼 또는 File 메뉴 아래)
 
+## 플러그인 설치/삭제 후
+- npx cap sync
+
 ## 고도 프레임 사용 제한사항
 * **정말 이상하지만 Mobile chrome 에서 wasm 로드 오류 mono 버전으로 출시하면 문제 해결됨**
 - GodotViewer 구성 제한사항

@@ -57,16 +57,16 @@ export class LicensesPage implements OnInit {
     let loader = (p: p5) => {
       p.setup = () => {
         p.noCanvas();
-        p.loadStrings('assets/data/docs/godot.txt', (v: string[]) => {
+        p.loadStrings('assets/data/docs/godot/godot.txt', (v: string[]) => {
           this.licenses.godot.engine = v.join('\n');
         });
-        p.loadStrings('assets/data/docs/FreeType.txt', (v: string[]) => {
+        p.loadStrings('assets/data/docs/godot/FreeType.txt', (v: string[]) => {
           this.licenses.godot.freetype = v.join('\n');
         });
-        p.loadStrings('assets/data/docs/enet.txt', (v: string[]) => {
+        p.loadStrings('assets/data/docs/godot/enet.txt', (v: string[]) => {
           this.licenses.godot.enet = v.join('\n');
         });
-        p.loadStrings('assets/data/docs/mbedtls.txt', (v: string[]) => {
+        p.loadStrings('assets/data/docs/godot/mbedtls.txt', (v: string[]) => {
           this.licenses.godot.mbedtls = v.join('\n');
         });
         p.loadStrings('assets/data/docs/js.blend.txt', (v: string[]) => {
