@@ -967,6 +967,16 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     // 저장소가 변경되었다면 기존 저장소에서 삭제 시도하고 아래 모든 저장 행동을 새 작업으로 간주하여 실행
     let received_json = this.received_data ? JSON.parse(this.received_data) : undefined;
     if (this.isStoreAtChanged && this.isModify) {
+      // 첨부파일 복제 후 재등록
+      for (let i = 0, j = received_json.attach.length; i < j; i++) {
+        let filename = received_json.attach[i].filename;
+        let blob = await this.indexed.loadBlobFromUserPath(received_json.attach[i].path, received_json.attach[i].type);
+        let tmp_path = `tmp_files/todo/${filename}`;
+        await this.indexed.saveBlobToUserPath(blob, tmp_path);
+        this.userInput.attach[i].path = tmp_path;
+        this.userInput.attach[i].blob = blob;
+        delete this.userInput.attach[i]['exist'];
+      }
       await this.deleteFromStorage(true, received_json);
       this.isModify = false;
     }
