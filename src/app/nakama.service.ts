@@ -2297,12 +2297,22 @@ export class NakamaService {
                     find_index = this.RemoteTodoCounter[_is_official][_target].indexOf(CounterIndex);
                   } catch (e) { }
                   if (find_index == -1) this.addRemoteTodoCounter(_is_official, _target, CounterIndex);
+                  let default_color = '58a192';
+                  switch (json.importance) {
+                    case '1': // 기억해야함
+                      default_color = 'ddbb41';
+                      break;
+                    case '2': // 중요함
+                      default_color = 'ff754e';
+                      break;
+                  }
+                  this.noti.ClearNoti(json.noti_id);
                   this.noti.PushLocal({ // 일을 받은 경우 알림 띄우기
                     id: json.noti_id,
                     title: json.title,
                     body: json.description,
                     smallIcon_ln: 'todo',
-                    iconColor_ln: json.custom_color,
+                    iconColor_ln: json.custom_color || default_color,
                     group_ln: 'todo',
                     extra_ln: {
                       page: {
