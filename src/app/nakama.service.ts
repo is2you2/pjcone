@@ -1008,7 +1008,8 @@ export class NakamaService {
   removeRemoteTodoCounter(_is_official: string, _target: string, index: number) {
     try {
       let find_index = this.RemoteTodoCounter[_is_official][_target].indexOf(index);
-      this.RemoteTodoCounter[_is_official][_target].splice(find_index, 1);
+      if (find_index >= 0)
+        this.RemoteTodoCounter[_is_official][_target].splice(find_index, 1);
     } catch (e) {
       if (!this.RemoteTodoCounter[_is_official])
         this.RemoteTodoCounter[_is_official] = {};
