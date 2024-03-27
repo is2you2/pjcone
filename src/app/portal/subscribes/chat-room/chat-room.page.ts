@@ -663,6 +663,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   prev_cursor = '';
   file_sel_id = 'file_sel_id';
   ChatLogs: HTMLElement;
+  ChatContDiv: HTMLElement;
 
   ShowGoToBottom = false;
   isMobile = false;
@@ -728,6 +729,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ionViewWillEnter() {
+    this.ChatContDiv = document.getElementById('chatroom_content_div');
     document.getElementById(this.ChannelUserInputId).onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
@@ -1294,6 +1296,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
         await this.LoadLocalChatHistory();
       }
+      setTimeout(() => { // 스크롤이 생기지 않았다면 메시지 더 가져오기
+        if (this.next_cursor !== undefined)
+          if (this.ChatContDiv && this.ChatContDiv.clientHeight < this.ChatLogs.clientHeight)
+            this.pull_msg_history();
+      }, 0);
     } else { // 최근 메시지를 보려고 함
       let subtract = this.messages.length - this.ViewMsgIndex - this.ViewCount;
       this.ShowRecentMsg = !(subtract == 0);
