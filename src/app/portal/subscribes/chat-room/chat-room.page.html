@@ -29,7 +29,7 @@ SPDX-License-Identifier: MIT -->
               (click)="pull_msg_history()">
               <ion-label>{{lang.text['ChatRoom']['fetch_previous_chat']}}</ion-label>
             </ion-item>
-            <div *ngFor="let msg of ViewableMessage; let i = index" [id]=" msg.message_id">
+            <div *ngFor="let msg of ViewableMessage; let i = index" [id]="msg.message_id">
               <div *ngIf="!msg['is_me'] && !msg.content['noti']">
                 <!-- 날짜 표시 -->
                 <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"

@@ -1036,11 +1036,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               try {
                 let catch_index: number;
                 for (let i = 0, j = this.ViewableMessage.length; i < j; i++)
-                  if (c == this.ViewableMessage[i]) {
+                  if (CurrentMsg.id == this.ViewableMessage[i].message_id) {
                     catch_index = i;
                     break;
                   }
-                if (!catch_index) throw '메시지를 찾을 수 없음';
+                if (catch_index === undefined) throw '메시지를 찾을 수 없음';
                 if (!this.ViewableMessage[catch_index]['is_me'])
                   this.CopyMessageText(this.ViewableMessage[catch_index]);
                 this.message_detail(c, catch_index);
@@ -1440,7 +1440,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     setTimeout(() => {
       for (let i = 0, j = this.ViewableMessage.length; i < j; i++) {
         let CurrentMsg = document.getElementById(this.ViewableMessage[i].message_id);
-        if (CurrentMsg.oncontextmenu == null)
+        if (CurrentMsg && CurrentMsg.oncontextmenu == null)
           CurrentMsg.oncontextmenu = () => {
             try {
               let catch_index: number;
@@ -1770,6 +1770,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 메시지 정보 상세 */
   async message_detail(msg: any, index: number) {
+    console.log(msg);
     if (this.isOtherAct) return; // 다른 행동과 중첩 방지
     if (this.info['status'] == 'offline' || this.info['status'] == 'missing') return;
     if (msg.content['user_update']) return; // 시스템 메시지 관리 불가
