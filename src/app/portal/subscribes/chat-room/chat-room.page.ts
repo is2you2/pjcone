@@ -1760,6 +1760,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.p5toast.show({
       text: this.lang.text['ChatRoom']['CreateAsTextFile'],
     });
+    this.block_send = false;
   }
 
   isOtherAct = false;
