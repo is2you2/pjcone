@@ -14,7 +14,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { GroupServerPage } from '../group-server/group-server.page';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from "clipboardy";
-import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
+import { SERVER_PATH_ROOT } from 'src/app/app.component';
 
 
 @Component({
@@ -156,9 +156,18 @@ export class GroupDetailPage implements OnInit {
   /** ionic 버튼을 눌러 input-file 동작 */
   async buttonClickInputFile() {
     if (this.has_admin) { // 방장인 경우
-      if (this.info.img)
+      if (this.info.img) {
         this.info.img = undefined;
-      else try {
+        this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.deleteStorageObjects(
+          this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, {
+          object_ids: [{
+            collection: 'group_public',
+            key: `group_${this.info.id}`,
+          }],
+        }).then(_info => {
+          this.indexed.removeFileFromUserPath(`servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
+        });
+      } else try {
         let v = await clipboard.read();
         await this.check_if_clipboard_available(v);
       } catch (e) {
