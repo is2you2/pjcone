@@ -1626,7 +1626,14 @@ export class NakamaService {
                     info: this.groups[isOfficial][target][this.channels[index]['group_id']],
                     server: { isOfficial: isOfficial, target: target },
                   },
-                }).then(v => v.present());
+                }).then(v => {
+                  let cache_func = this.global.p5key['KeyShortCut'];
+                  this.global.p5key['KeyShortCut'] = {};
+                  v.onDidDismiss().then(() => {
+                    this.global.p5key['KeyShortCut'] = cache_func;
+                  });
+                  v.present();
+                });
                 break;
               case 0: // 로컬 채널
                 this.alertCtrl.create({
