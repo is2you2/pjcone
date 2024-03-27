@@ -1100,8 +1100,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     await this.pull_msg_history();
     setTimeout(() => {
       let scrollHeight = this.ChatLogs.scrollHeight;
-      this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'instant' });
-    }, 0);
+      this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+    }, 500);
   }
 
   /** 선택한 메시지 복사 */
@@ -1234,7 +1234,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
         let v = await this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
           this.nakama.servers[this.isOfficial][this.target].session,
-          this.info['id'], this.ViewCount, false, this.next_cursor);
+          this.info['id'], this.RefreshCount, false, this.next_cursor);
         this.info['is_new'] = false;
         v.messages.forEach(msg => {
           msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
@@ -1392,7 +1392,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (json[i]['code'] != 2) this.messages.unshift(json[i]);
         }
         this.ViewMsgIndex = Math.max(0, this.messages.length - this.RefreshCount);
-        this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+        this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.RefreshCount);
         this.modulate_chatmsg(0, json.length);
         for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
           let FileURL: any;
@@ -1404,7 +1404,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
           this.modulate_chatmsg(i, this.ViewableMessage.length);
         }
-        if (this.ViewableMessage.length < this.ViewCount)
+        if (this.ViewableMessage.length < this.RefreshCount)
           await this.LoadLocalChatHistory();
       }
       this.next_cursor = null;
