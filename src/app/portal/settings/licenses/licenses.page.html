@@ -12,6 +12,10 @@ SPDX-License-Identifier: MIT -->
 
 <ion-content>
   <ion-list-header>
+    <ion-label>Ionic frameworks modules</ion-label>
+  </ion-list-header>
+  <textarea class="infobox" style="height: 480px;" disabled [(ngModel)]="licenses['modules']"></textarea>
+  <ion-list-header>
     <ion-label>Godot engine</ion-label>
     <ion-button (click)="open_link('https://godotengine.org/')">{{lang.text['Licenses']['open_link']}}</ion-button>
   </ion-list-header>

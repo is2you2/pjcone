@@ -50,6 +50,7 @@ export class LicensesPage implements OnInit {
       mbedtls: '',
     },
     jsblend: '',
+    modules: '',
   };
 
   p5canvas: p5;
@@ -72,10 +73,16 @@ export class LicensesPage implements OnInit {
         p.loadStrings('assets/data/docs/js.blend.txt', (v: string[]) => {
           this.licenses.jsblend = v.join('\n');
         });
+        p.loadStrings('assets/data/docs/licenses.txt', (v: string[]) => {
+          this.licenses.modules = v.join('\n');
+        });
       }
     }
     this.p5canvas = new p5(loader);
   }
+
+  /** 모든 라이선스 조회 */
+  showMore = false;
 
   ionViewWillLeave() {
     delete this.global.p5key['KeyShortCut']['Escape'];
