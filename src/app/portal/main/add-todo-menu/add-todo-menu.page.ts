@@ -343,6 +343,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         }
         if (this.statusBar.groupServer[this.userInput.remote.isOfficial]
           && this.statusBar.groupServer[this.userInput.remote.isOfficial][this.userInput.remote.target] != 'online') {
+          this.isStoreAtChangable = false;
           throw { text: "Server disconnected", isModifiable: false };
         } else if (this.statusBar.groupServer[this.userInput.remote.isOfficial][this.userInput.remote.target] == 'online')
           this.isModifiable = true;
