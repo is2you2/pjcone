@@ -966,7 +966,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       this.userInput.create_at = new Date().getTime();
     // 저장소가 변경되었다면 기존 저장소에서 삭제 시도하고 아래 모든 저장 행동을 새 작업으로 간주하여 실행
     let received_json = this.received_data ? JSON.parse(this.received_data) : undefined;
-    if (this.isStoreAtChanged) {
+    if (this.isStoreAtChanged && this.isModify) {
       await this.deleteFromStorage(true, received_json);
       this.isModify = false;
     }

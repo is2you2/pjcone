@@ -966,7 +966,9 @@ export class NakamaService {
   /** 원격 할 일 카운터 불러오기 */
   async getRemoteTodoCounter(_is_official: string, _target: string): Promise<number> {
     try {
-      this.RemoteTodoCounter[_is_official][_target].sort();
+      this.RemoteTodoCounter[_is_official][_target].sort((a, b) => {
+        return a - b;
+      });
       return this.RemoteTodoCounter[_is_official][_target][this.RemoteTodoCounter[_is_official][_target].length - 1];
     } catch (e) {
       let v = await this.servers[_is_official][_target].client.readStorageObjects(
