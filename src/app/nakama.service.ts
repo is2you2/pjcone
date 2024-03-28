@@ -1476,7 +1476,6 @@ export class NakamaService {
             }
           } catch (e) {
             this.channels_orig[_is_official][_target][channel_ids[i]]['status'] = 'missing';
-            delete this.channels_orig[_is_official][_target][channel_ids[i]]['info'];
             this.save_channels_with_less_info();
           }
         }
