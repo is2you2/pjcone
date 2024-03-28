@@ -1293,7 +1293,7 @@ export class IonicViewerPage implements OnInit {
     /** 간단한 하이라이트 코드 구성 (정확히 일치하면 색상처리) */
     const SIMPLE_HIGHLIGHT_CODE = [
       // 구성
-      'void', 'static', 'import', 'include', '#include', 'using',
+      'void', 'static', 'import', 'export', 'interface', 'include', '#include', 'using',
       'from', 'as', 'public', 'protected', 'private', 'use', 'package', 'local',
       'program', 'namespace', 'begin', 'end', 'puts',
       'Private', 'Protected', 'Public', 'Sub', 'End',
