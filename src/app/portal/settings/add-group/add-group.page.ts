@@ -54,6 +54,7 @@ export class AddGroupPage implements OnInit {
       local: true,
     };
     this.servers.unshift(local_info);
+    if (this.servers.length > 1) this.index = 1;
     this.userInput.server = this.servers[this.index];
     this.file_sel_id = `add_group_${new Date().getTime()}`;
   }
