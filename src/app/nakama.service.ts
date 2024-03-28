@@ -1581,8 +1581,26 @@ export class NakamaService {
             let isOfficial = this.channels[index]['server'].isOfficial;
             let target = this.channels[index]['server'].target;
             switch (this.channels[index]['redirect'].type) {
+              case 3: // 그룹 채널
+                if (this.channels[index]['status'] == 'online' || this.channels[index]['status'] == 'pending') {
+                  this.modalCtrl.create({
+                    component: GroupDetailPage,
+                    componentProps: {
+                      info: this.groups[isOfficial][target][this.channels[index]['group_id']],
+                      server: { isOfficial: isOfficial, target: target },
+                    },
+                  }).then(v => {
+                    let cache_func = this.global.p5key['KeyShortCut'];
+                    this.global.p5key['KeyShortCut'] = {};
+                    v.onDidDismiss().then(() => {
+                      this.global.p5key['KeyShortCut'] = cache_func;
+                    });
+                    v.present();
+                  });
+                  break;
+                }
               case 2: // 1:1 채널
-                if (this.channels_orig[isOfficial][target][this.channels[index].id]['status'] == 'missing') {
+                if (this.channels[index]['status'] == 'missing') {
                   this.alertCtrl.create({
                     header: this.lang.text['ChatRoom']['RemoveChannel'],
                     message: this.lang.text['ChatRoom']['CannotUndone'],
@@ -1621,22 +1639,6 @@ export class NakamaService {
                     cssClass: 'red_font',
                   }]
                 }).then(v => v.present());
-                break;
-              case 3: // 그룹 채널
-                this.modalCtrl.create({
-                  component: GroupDetailPage,
-                  componentProps: {
-                    info: this.groups[isOfficial][target][this.channels[index]['group_id']],
-                    server: { isOfficial: isOfficial, target: target },
-                  },
-                }).then(v => {
-                  let cache_func = this.global.p5key['KeyShortCut'];
-                  this.global.p5key['KeyShortCut'] = {};
-                  v.onDidDismiss().then(() => {
-                    this.global.p5key['KeyShortCut'] = cache_func;
-                  });
-                  v.present();
-                });
                 break;
               case 0: // 로컬 채널
                 this.alertCtrl.create({
