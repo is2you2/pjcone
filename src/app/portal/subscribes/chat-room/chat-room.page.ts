@@ -1022,6 +1022,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.nakama.save_channels_with_less_info();
         if (!is_local) this.check_if_send_msg(c);
         if (!(c.code == 1 || c.code == 2)) this.messages.push(c);
+        if (c.code == 2) { // 메시지 삭제하기 동작
+          for (let i = this.messages.length - 1; i >= 0; i--)
+            if (this.messages[i].message_id == c.message_id) {
+              this.messages.splice(i, 1);
+              break;
+            }
+        }
         if (this.ViewMsgIndex + this.ViewCount == this.messages.length - 1)
           this.ViewMsgIndex++;
         this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
