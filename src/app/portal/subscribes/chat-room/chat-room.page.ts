@@ -267,10 +267,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let blob = this.global.Base64ToBlob(`${data.value.mimeType},${data.value.recordDataBase64}`);
           blob['name'] = `${this.lang.text['ChatRoom']['VoiceRecord']}.${data.value.mimeType.split('/').pop().split(';')[0]}`;
           blob['type_override'] = data.value.mimeType;
-          let file = new File([blob],
-            `${this.lang.text['ChatRoom']['VoiceRecord']}.${data.value.mimeType.split('/').pop().split(';')[0]}`, {
-            type: data.value.mimeType,
-          });
           this.selected_blobFile_callback_act(blob);
           this.extended_buttons[7].icon = 'mic-circle-outline';
         }
@@ -441,7 +437,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   /** 첨부 파일 타입 정하기 */
-  async new_attach(ev: any) {
+  async new_attach(ev: any, override: FileInfo = undefined) {
+    if (override === undefined)
+      override = {};
     switch (ev.detail.value) {
       case 'load':
         if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
@@ -449,8 +447,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         break;
       case 'link':
         try {
-          let pasted_url: string;
-          if (!this.userInput.file)
+          let pasted_url = override.url;
+          if (!this.userInput.file && pasted_url === undefined)
             try {
               pasted_url = await this.mClipboard.paste()
             } catch (e) {
@@ -476,7 +474,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }
           }
           try { // 정상적인 주소인지 검토
-            if (this.userInput.file) throw '이미 파일이 첨부됨, 토글만 시도';
+            if (this.userInput.file && override.filename === undefined) throw '이미 파일이 첨부됨, 토글만 시도';
             let res = await fetch(pasted_url);
             if (!res.ok) throw 'URL 구조가 정상이 아님';
           } catch (e) {
@@ -484,24 +482,25 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
           let this_file: FileInfo = {};
           this_file.url = pasted_url;
-          this_file['content_related_creator'] = [{
-            user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-            timestamp: new Date().getTime(),
-            display_name: this.nakama.users.self['display_name'],
-            various: 'link',
-          }];
+          this_file['content_related_creator'] = [
+            ...override.content_related_creator, {
+              user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
+              timestamp: new Date().getTime(),
+              display_name: this.nakama.users.self['display_name'],
+              various: override.url ? 'shared' : 'link',
+            }];
           this_file['content_creator'] = {
             user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
             timestamp: new Date().getTime(),
             display_name: this.nakama.users.self['display_name'],
-            various: 'link',
+            various: override.url ? 'shared' : 'link',
           };
           let sep = this_file.url.split('.');
-          this_file.file_ext = sep.pop().split('?').shift();
-          this_file.filename = decodeURIComponent(`${sep.pop().split('/').pop() || this.lang.text['ChatRoom']['ExternalLinkFile']}.${this_file.file_ext}`);
+          this_file.file_ext = override.file_ext || sep.pop().split('?').shift();
+          this_file.filename = override.filename || decodeURIComponent(`${sep.pop().split('/').pop() || this.lang.text['ChatRoom']['ExternalLinkFile']}.${this_file.file_ext}`);
           this.global.set_viewer_category_from_ext(this_file);
-          this_file.type = '';
-          this_file.typeheader = this_file.viewer;
+          this_file.type = override.type || '';
+          this_file.typeheader = override.typeheader || this_file.viewer;
           this.global.modulate_thumbnail(this_file, this_file.url);
           if (this.NeedScrollDown())
             setTimeout(() => {
@@ -873,9 +872,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 다른 채널에 공유하기로 진입한 경우 재구성하기 */
   async create_thumbnail_imported(FileInfo: FileInfo) {
-    let blob = await this.indexed.loadBlobFromUserPath(FileInfo.path, FileInfo.type);
-    blob['name'] = FileInfo.filename || FileInfo.name;
-    this.selected_blobFile_callback_act(blob, FileInfo.content_related_creator, 'shared', FileInfo.path);
+    if (FileInfo.url) {
+      await this.new_attach({ detail: { value: 'link' } }, FileInfo);
+    } else {
+      let blob = await this.indexed.loadBlobFromUserPath(FileInfo.path, FileInfo.type);
+      let file = new File([blob], FileInfo.filename || FileInfo.name);
+      this.selected_blobFile_callback_act(file, FileInfo.content_related_creator, 'shared', FileInfo.path);
+    }
   }
 
   /** 선택한 파일의 썸네일 만들기 */
