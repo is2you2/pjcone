@@ -1339,7 +1339,7 @@ export class IonicViewerPage implements OnInit {
     const EQUAL_MARK = ['='];
     /** 문법 */
     const SPECIAL_CHARACTER = [
-      '{', '}', '<<', '>>', ':', '-', '(', ')', '[', ']', '>>>', '->', '<-', '=>', '<=',
+      '{', '}', '<<', '>>', ':', '(', ')', '[', ']', '>>>', '->', '<-', '=>', '<=',
     ];
     /** 명령어 */
     const COMMAND = [
