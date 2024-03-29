@@ -1365,9 +1365,7 @@ export class IonicViewerPage implements OnInit {
         if (!isCommentLine) {
           for (let m = 0, n = EQUAL_MARK.length; m < n; m++)
             if (sep_by_whitespace[k] == EQUAL_MARK[m]) {
-              let word: p5.Element;
-              if (m == 0) word = p.createSpan(text);
-              else word = p.createSpan('&nbsp' + text);
+              let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-equalmark)');
               word.style('white-space', 'break-spaces');
               word.parent(line);
@@ -1377,9 +1375,7 @@ export class IonicViewerPage implements OnInit {
           if (isColored) continue;
           for (let m = 0, n = FIXED_VALUE.length; m < n; m++)
             if (sep_by_whitespace[k] == FIXED_VALUE[m]) {
-              let word: p5.Element;
-              if (m == 0) word = p.createSpan(text);
-              else word = p.createSpan('&nbsp' + text);
+              let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-final)');
               word.style('white-space', 'break-spaces');
               word.parent(line);
@@ -1388,9 +1384,7 @@ export class IonicViewerPage implements OnInit {
             }
           for (let m = 0, n = COMPARISON_OP.length; m < n; m++)
             if (sep_by_whitespace[k] == COMPARISON_OP[m]) {
-              let word: p5.Element;
-              if (m == 0) word = p.createSpan(text);
-              else word = p.createSpan('&nbsp' + text);
+              let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-comparion-op)');
               word.style('white-space', 'break-spaces');
               word.parent(line);
@@ -1401,9 +1395,7 @@ export class IonicViewerPage implements OnInit {
           if (isColored) continue;
           for (let m = 0, n = OPERATOR.length; m < n; m++)
             if (sep_by_whitespace[k] == OPERATOR[m]) {
-              let word: p5.Element;
-              if (m == 0) word = p.createSpan(text);
-              else word = p.createSpan('&nbsp' + text);
+              let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-operator)');
               word.style('white-space', 'break-spaces');
               word.parent(line);
@@ -1413,9 +1405,7 @@ export class IonicViewerPage implements OnInit {
           if (isColored) continue;
           for (let m = 0, n = SPECIAL_CHARACTER.length; m < n; m++)
             if (sep_by_whitespace[k] == SPECIAL_CHARACTER[m]) {
-              let word: p5.Element;
-              if (m == 0) word = p.createSpan(text);
-              else word = p.createSpan('&nbsp' + text);
+              let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-spechar)');
               word.style('white-space', 'break-spaces');
               word.parent(line);
@@ -1425,9 +1415,7 @@ export class IonicViewerPage implements OnInit {
           if (isColored) continue;
           for (let m = 0, n = COMMAND.length; m < n; m++)
             if (sep_by_whitespace[k] == COMMAND[m]) {
-              let word: p5.Element;
-              if (m == 0) word = p.createSpan(text);
-              else word = p.createSpan('&nbsp' + text);
+              let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-command)');
               word.style('white-space', 'break-spaces');
               word.parent(line);
@@ -1437,9 +1425,7 @@ export class IonicViewerPage implements OnInit {
           if (isColored) continue;
           for (let m = 0, n = SIMPLE_HIGHLIGHT_CODE.length; m < n; m++)
             if (sep_by_whitespace[k] == SIMPLE_HIGHLIGHT_CODE[m]) {
-              let word: p5.Element;
-              if (m == 0) word = p.createSpan(text);
-              else word = p.createSpan('&nbsp' + text);
+              let word = p.createSpan(text + '&nbsp');
               word.style('color', 'var(--syntax-text-coding-basic)');
               word.style('white-space', 'break-spaces');
               word.parent(line);
@@ -1449,9 +1435,7 @@ export class IonicViewerPage implements OnInit {
           if (isColored) continue;
         }
         // 일반 평문
-        let word: p5.Element;
-        if (k == 0) word = p.createSpan(text);
-        else word = p.createSpan('&nbsp' + text);
+        let word = p.createSpan(text + '&nbsp');
         if (isCommentLine)
           word.style('color', 'var(--syntax-text-coding-comments)');
         word.style('white-space', 'break-spaces');
