@@ -201,7 +201,7 @@ export class AddGroupPage implements OnInit {
           metadata: user_metadata,
         });
       } catch (e) {
-        console.log('그룹 생성자를 매니저로 승격');
+        console.log('그룹 생성자를 매니저로 승격 오류: ', e);
       }
       setTimeout(() => {
         this.modalCtrl.dismiss();
