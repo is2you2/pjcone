@@ -534,17 +534,20 @@ export class GlobalActService {
    */
   set_viewer_category(msg_content: any) {
     try { // 자동지정 타입이 있는 경우
-      if (msg_content['type'].indexOf('image/') == 0) // 분류상 이미지
-        msg_content['viewer'] = 'image';
-      else if (msg_content['type'].indexOf('audio/') == 0) // 분류상 소리
-        msg_content['viewer'] = 'audio';
-      else if (msg_content['type'].indexOf('video/') == 0) // 분류상 비디오
-        msg_content['viewer'] = 'video';
-      else if (msg_content['type'].indexOf('text/') == 0) // 분류상 텍스트 문서
-        msg_content['viewer'] = 'text';
-      else throw "자동지정되지 않은 타입";
-    } catch (_e) { // 자동지정 타입이 없는 경우
       this.set_viewer_category_from_ext(msg_content);
+      if (msg_content.viewer == 'disabled') {
+        if (msg_content['type'].indexOf('image/') == 0) // 분류상 이미지
+          msg_content['viewer'] = 'image';
+        else if (msg_content['type'].indexOf('audio/') == 0) // 분류상 소리
+          msg_content['viewer'] = 'audio';
+        else if (msg_content['type'].indexOf('video/') == 0) // 분류상 비디오
+          msg_content['viewer'] = 'video';
+        else if (msg_content['type'].indexOf('text/') == 0) // 분류상 텍스트 문서
+          msg_content['viewer'] = 'text';
+        else throw "자동지정되지 않은 타입";
+      }
+    } catch (e) { // 자동지정 타입이 없는 경우
+      console.log('불확실한 타입 지정: ', e);
     }
   }
 
@@ -604,7 +607,6 @@ export class GlobalActService {
       case 'bas': // 베이직
       case 'pas': // 파스칼
       case 'asp': // MS WebScript
-      case 'csv': // Table
       case 'html':
       case 'css':
       case 'pl': // Perl
@@ -614,6 +616,7 @@ export class GlobalActService {
       // 마크다운
       case 'md':
       // 텍스트류
+      case 'csv': // Table
       case 'prop': // 설정 파일
       case 'conf': // 설정 파일
       case 'log':
