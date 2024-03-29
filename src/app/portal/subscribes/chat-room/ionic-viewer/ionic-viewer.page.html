@@ -44,21 +44,22 @@ SPDX-License-Identifier: MIT -->
             <ng-template>
               <ion-content>
                 <ion-list>
-                  <ion-item button *ngIf="!NeedDownloadFile && (FileInfo['viewer'] == 'text' || FileInfo['viewer'] == 'code')"
+                  <ion-item button
+                    *ngIf="!NeedDownloadFile && (FileInfo['viewer'] == 'text' || FileInfo['viewer'] == 'code')"
                     (click)="open_text_editor()">
                     <ion-label>{{lang.text['ContentViewer']['EditText']}}</ion-label>
                   </ion-item>
                   <ion-item button *ngIf="!NeedDownloadFile && FileInfo['viewer'] != 'audio'" (click)="modify_image()">
                     <ion-label>{{lang.text['ContentViewer']['Edit']}}</ion-label>
                   </ion-item>
-                  <ion-item button (click)="open_bottom_modal()">
-                    <ion-label>{{lang.text['ContentViewer']['ContentInfo']}}</ion-label>
-                  </ion-item>
                   <ion-item button *ngIf="!NeedDownloadFile" (click)="ShareContent()">
                     <ion-label>{{lang.text['ContentViewer']['ShareContent']}}</ion-label>
                   </ion-item>
                   <ion-item button *ngIf="!NeedDownloadFile" (click)="download_file()">
                     <ion-label>{{lang.text['ContentViewer']['Download']}}</ion-label>
+                  </ion-item>
+                  <ion-item button (click)="open_bottom_modal()">
+                    <ion-label>{{lang.text['ContentViewer']['ContentInfo']}}</ion-label>
                   </ion-item>
                   <ion-item button *ngIf="!NeedDownloadFile && OpenInChannelChat && !FileInfo['url']"
                     (click)="RemoveFile()">
