@@ -489,7 +489,7 @@ export class VoidDrawPage implements OnInit {
         let ClickedPos = MappingPosition(_x, _y);
         let CornerPos = CropModePosition.copy().add(CropSize).sub(p.createVector(ActualCanvas.width / 2, ActualCanvas.height / 2));
         let dist = ClickedPos.dist(CornerPos);
-        let targetDist = p.max(ActualCanvas.width, ActualCanvas.height) * .2;
+        let targetDist = p.max(CropSize.x, CropSize.y) * .2;
         isCropSizing = dist < targetDist;
         if (isCropSizing) {
           CropStartScalePos = p.createVector(p.mouseX, p.mouseY);
