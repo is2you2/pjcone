@@ -133,7 +133,7 @@ export class AdminToolsPage implements OnInit {
           this.all_users[i] = { ...this.all_users[i], ...this.nakama.load_other_user(user_id, this.isOfficial, this.target) };
           if (typeof this.all_users[i].metadata == 'object') {
             if (this.all_users[i].metadata.is_manager !== undefined)
-              for (let k = 0, l = this.all_users[i].metadata.is_manager.length; k < l; i++) {
+              for (let k = 0, l = this.all_users[i].metadata.is_manager.length; k < l; k++) {
                 if (this.all_users[i].metadata.is_manager === undefined)
                   break;
                 if (!this.PromotableGroup[user_id])
