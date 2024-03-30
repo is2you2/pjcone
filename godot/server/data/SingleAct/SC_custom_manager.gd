@@ -24,7 +24,7 @@ func refresh_list():
 			_file = dir.get_next()
 		Root.logging(HEADER, str('list_refreshed'))
 	else: # 폴더찾기 실패시
-		Root.logging(HEADER, str('list dir failed: ', err), Root.LOG_ERR)
+		Root.logging(HEADER, str('list dir failed: ', err, '... Path info: ', _path), Root.LOG_ERR)
 
 # 폴더를 올리면 내부 파일을 리스트화 시켜서 돌려줌 (직접 생성시)
 func catch_all_files(path:String, target:String):
