@@ -1601,7 +1601,7 @@ export class NakamaService {
               case 2: // 1:1 채널
                 if (this.channels[index]['status'] == 'online' || this.channels[index]['status'] == 'pending') {
                   this.alertCtrl.create({
-                    header: this.channels[index]['info'].display_name,
+                    header: this.channels[index]['info'].name || this.channels[index]['info'].display_name,
                     message: this.lang.text['ChatRoom']['UnlinkChannel'],
                     buttons: [{
                       text: this.lang.text['ChatRoom']['LogOut'],
@@ -1618,7 +1618,7 @@ export class NakamaService {
                     }]
                   }).then(v => v.present());
                 } else this.alertCtrl.create({
-                  header: this.channels[index]['info'].display_name,
+                  header: this.channels[index]['info'].name || this.channels[index]['info'].display_name,
                   message: this.lang.text['ChatRoom']['RemoveChannelLogs'],
                   buttons: [{
                     text: this.lang.text['ChatRoom']['Delete'],
