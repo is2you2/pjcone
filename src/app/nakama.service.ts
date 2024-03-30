@@ -1599,40 +1599,40 @@ export class NakamaService {
                   break;
                 }
               case 2: // 1:1 채널
-                if (this.channels[index]['status'] == 'missing') {
+                if (this.channels[index]['status'] == 'online' || this.channels[index]['status'] == 'pending') {
                   this.alertCtrl.create({
-                    header: this.lang.text['ChatRoom']['RemoveChannel'],
-                    message: this.lang.text['ChatRoom']['CannotUndone'],
+                    header: this.channels[index]['info'].display_name,
+                    message: this.lang.text['ChatRoom']['UnlinkChannel'],
                     buttons: [{
-                      text: this.lang.text['ChatRoom']['Delete'],
+                      text: this.lang.text['ChatRoom']['LogOut'],
                       handler: async () => {
-                        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-                        loading.present();
-                        delete this.channels_orig[isOfficial][target][this.channels[index].id];
-                        this.remove_channel_files(isOfficial, target, this.channels[index].id);
-                        let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${this.channels[index].id}`);
-                        for (let i = 0, j = list.length; i < j; i++) {
-                          loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
-                          await this.indexed.removeFileFromUserPath(list[i]);
+                        try {
+                          await this.servers[isOfficial][target].socket.leaveChat(this.channels[index].id);
+                          this.channels_orig[isOfficial][target][this.channels[index].id]['status'] = 'missing';
+                        } catch (e) {
+                          console.error('채널에서 나오기 실패: ', e);
                         }
-                        loading.dismiss();
                         this.rearrange_channels();
                       },
                       cssClass: 'red_font',
                     }]
                   }).then(v => v.present());
                 } else this.alertCtrl.create({
-                  header: this.lang.text['ChatRoom']['LogOut'],
-                  message: this.lang.text['ChatRoom']['UnlinkChannel'],
+                  header: this.channels[index]['info'].display_name,
+                  message: this.lang.text['ChatRoom']['RemoveChannelLogs'],
                   buttons: [{
-                    text: this.lang.text['ChatRoom']['LogOut'],
+                    text: this.lang.text['ChatRoom']['Delete'],
                     handler: async () => {
-                      try {
-                        await this.servers[isOfficial][target].socket.leaveChat(this.channels[index].id);
-                        this.channels_orig[isOfficial][target][this.channels[index].id]['status'] = 'missing';
-                      } catch (e) {
-                        console.error('채널에서 나오기 실패: ', e);
+                      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+                      loading.present();
+                      delete this.channels_orig[isOfficial][target][this.channels[index].id];
+                      this.remove_channel_files(isOfficial, target, this.channels[index].id);
+                      let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${this.channels[index].id}`);
+                      for (let i = 0, j = list.length; i < j; i++) {
+                        loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
+                        await this.indexed.removeFileFromUserPath(list[i]);
                       }
+                      loading.dismiss();
                       this.rearrange_channels();
                     },
                     cssClass: 'red_font',
@@ -1641,8 +1641,8 @@ export class NakamaService {
                 break;
               case 0: // 로컬 채널
                 this.alertCtrl.create({
-                  header: this.lang.text['ChatRoom']['RemoveChannel'],
-                  message: this.lang.text['ChatRoom']['CannotUndone'],
+                  header: this.channels[index]['info'].name,
+                  message: this.lang.text['ChatRoom']['RemoveChannelLogs'],
                   buttons: [{
                     text: this.lang.text['ChatRoom']['Delete'],
                     handler: async () => {
