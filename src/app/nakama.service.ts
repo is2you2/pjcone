@@ -2569,7 +2569,8 @@ export class NakamaService {
   /** 메시지 수신 시각을 수신자에게 맞춤 */
   ModulateTimeDate(msg: any) {
     let currentTime = new Date(msg.create_time);
-    msg['msgDate'] = `${currentTime.getFullYear()}-${("00" + (currentTime.getMonth() + 1)).slice(-2)}-${("00" + currentTime.getDate()).slice(-2)}`;
+    let localeDate = currentTime.toLocaleDateString(this.lang.lang);
+    msg['msgDate'] = localeDate;
     msg['msgTime'] = `${("00" + currentTime.getHours()).slice(-2)}:${("00" + currentTime.getMinutes()).slice(-2)}`;
   }
 
