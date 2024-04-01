@@ -10,6 +10,7 @@ import { Match } from '@heroiclabs/nakama-js';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IndexedDBService } from './indexed-db.service';
 import { VoiceRecorder } from "capacitor-voice-recorder";
+import { isDarkMode } from './global-act.service';
 
 @Injectable({
   providedIn: 'root'
@@ -227,11 +228,13 @@ export class WebrtcService {
       let div: p5.Element;
       /** 내용물 개체 */
       let content: p5.Element;
-      /** 현재 상태 알려주기 텍스트 */
+      /** 현재 상태 알려주기 텍스트 / 이름으로 변경됨 */
       let status: p5.Element;
       /** 내부 border 처리용 */
       let border: p5.Element;
       // 통신 관련 버튼
+      /** 버튼 줄 관리 */
+      let buttons: p5.Element;
       let call_button: p5.Element;
       let mute_button: p5.Element;
       let unmute_button: p5.Element;
@@ -240,6 +243,7 @@ export class WebrtcService {
       let hangup_button: p5.Element;
       /** 새 메시지 알림을 위한 외곽선 조정용 */
       let borderLerp = 1;
+      const BORDER_RADIUS = 32;
       p.setup = () => {
         let osc: p5.Oscillator;
         let waiting = () => {
@@ -287,39 +291,46 @@ export class WebrtcService {
         border.parent(div);
         border.style("display: flex; justify-content: center;");
         border.style("width: fit-content; height: fit-content");
-        border.style("border-radius: 64px");
+        border.style(`border-radius: ${BORDER_RADIUS}px`);
         border.style("background: #44a6fa88");
-        border.style("padding: 12px");
+        border.style("padding: 6px 12px");
 
         content = p.createDiv();
         content.parent(border);
         content.id('webrtc_content');
         content.style("display: flex; justify-content: center;");
+        content.style('flex-direction', 'column');
         content.style("width: fit-content; height: fit-content");
         content.style("word-break: break-all");
         content.style("background: #44a6fa88");
-        content.style("border-radius: 64px");
-        content.style("padding: 12px");
-        content.style("color: white");
+        content.style(`border-radius: ${BORDER_RADIUS}px`);
+        content.style("padding: 6px 12px");
+        content.style(`color: ${isDarkMode ? 'white' : 'black'}`);
         update_border();
 
         if (this.isOfficial && this.target) {
           if (this.user_id) // 1:1 대화인 경우
             status = p.createDiv(this.nakama.users[this.isOfficial][this.target][this.user_id]['display_name']);
           status.parent(content);
-          status.style('position', 'absolute');
-          status.style('top', '7px');
-          status.style('left', '50%');
-          status.style('width', 'fit-content');
+          status.style('text-align', 'center');
+          status.style('align-self', 'center');
+          status.style('width', '100%');
           status.style('height', 'fit-content');
-          status.style('transform', 'translateX(-50%)');
+          status.style('pointer-events', 'none');
         }
 
+        buttons = p.createDiv();
+        buttons.parent(content);
+        buttons.id('webrtc_content');
+        buttons.style("display: flex; justify-content: center;");
+        buttons.style("align-self", "center");
+        buttons.style("width: fit-content; height: fit-content");
+
         call_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="call-outline"></ion-icon>');
-        call_button.parent(content);
+        call_button.parent(buttons);
         call_button.style('padding', '0px');
         call_button.style('margin', '4px');
-        call_button.style('border-radius', '32px');
+        call_button.style('border-radius', `${BORDER_RADIUS / 2}px`);
         call_button.style('width', '40px');
         call_button.style('height', '40px');
         call_button.mouseClicked(() => {
@@ -329,10 +340,10 @@ export class WebrtcService {
         p['call_button'] = call_button;
 
         mute_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="mic-outline"></ion-icon>');
-        mute_button.parent(content);
+        mute_button.parent(buttons);
         mute_button.style('padding', '0px');
         mute_button.style('margin', '4px');
-        mute_button.style('border-radius', '32px');
+        mute_button.style('border-radius', `${BORDER_RADIUS / 2}px`);
         mute_button.style('width', '40px');
         mute_button.style('height', '40px');
         mute_button.mouseClicked(() => {
@@ -344,11 +355,11 @@ export class WebrtcService {
         });
 
         unmute_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="mic-off-outline"></ion-icon>');
-        unmute_button.parent(content);
+        unmute_button.parent(buttons);
         unmute_button.style('background-color', 'grey')
         unmute_button.style('padding', '0px');
         unmute_button.style('margin', '4px');
-        unmute_button.style('border-radius', '32px');
+        unmute_button.style('border-radius', `${BORDER_RADIUS / 2}px`);
         unmute_button.style('width', '40px');
         unmute_button.style('height', '40px');
         unmute_button.mouseClicked(() => {
@@ -361,10 +372,10 @@ export class WebrtcService {
         unmute_button.hide();
 
         dev_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="settings-outline"></ion-icon>');
-        dev_button.parent(content);
+        dev_button.parent(buttons);
         dev_button.style('padding', '0px');
         dev_button.style('margin', '4px');
-        dev_button.style('border-radius', '32px');
+        dev_button.style('border-radius', `${BORDER_RADIUS / 2}px`);
         dev_button.style('width', '40px');
         dev_button.style('height', '40px');
         dev_button.mouseClicked(async () => {
@@ -401,11 +412,11 @@ export class WebrtcService {
         });
 
         hangup_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="close-circle-outline"></ion-icon>');
-        hangup_button.parent(content);
+        hangup_button.parent(buttons);
         hangup_button.style('background-color', 'red');
         hangup_button.style('padding', '0px');
         hangup_button.style('margin', '4px');
-        hangup_button.style('border-radius', '32px');
+        hangup_button.style('border-radius', `${BORDER_RADIUS / 2}px`);
         hangup_button.style('width', '40px');
         hangup_button.style('height', '40px');
         hangup_button.mouseClicked(async () => {
@@ -433,8 +444,9 @@ export class WebrtcService {
       /** Toast 외곽 조정 */
       let update_border = () => {
         let calced = p.lerpColor(p.color('#44a6fabb'), p.color('#ffd94ebb'), borderLerp)['levels'];
-        border.style(`padding: ${4 * borderLerp}px`);
-        content.style(`padding: ${p.lerp(12, 8, borderLerp)}px`);
+        let border_calced = 4 * borderLerp;
+        border.style(`padding: ${border_calced}px ${border_calced}px`);
+        content.style(`padding: ${p.lerp(6, 2, borderLerp)}px ${p.lerp(12, 8, borderLerp)}px`);
         border.style(`background: rgba(${calced[0]}, ${calced[1]}, ${calced[2]}, ${calced[3] / 255})`);
       }
     });
