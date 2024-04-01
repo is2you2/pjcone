@@ -2526,6 +2526,7 @@ export class NakamaService {
       delete msg.content['local_comp'];
       delete msg.content['path'];
       delete msg['msgDate'];
+      delete msg['displayDate'];
       delete msg['msgTime'];
       delete msg['isLastRead'];
       delete msg['showInfo'];
@@ -2570,7 +2571,8 @@ export class NakamaService {
   ModulateTimeDate(msg: any) {
     let currentTime = new Date(msg.create_time);
     let localeDate = currentTime.toLocaleDateString(this.lang.lang);
-    msg['msgDate'] = localeDate;
+    msg['displayDate'] = localeDate;
+    msg['msgDate'] = `${currentTime.getFullYear()}-${("00" + (currentTime.getMonth() + 1)).slice(-2)}-${("00" + currentTime.getDate()).slice(-2)}`;
     msg['msgTime'] = `${("00" + currentTime.getHours()).slice(-2)}:${("00" + currentTime.getMinutes()).slice(-2)}`;
   }
 

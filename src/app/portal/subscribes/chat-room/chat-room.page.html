@@ -34,7 +34,7 @@ SPDX-License-Identifier: MIT -->
                 <!-- 날짜 표시 -->
                 <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
                   style="text-align: center; font-size: 16px; padding-top: 8px;" (click)="SetOtherAct()">
-                  <font color="#888"> {{msg['msgDate']}} </font>
+                  <font color="#888"> {{msg['displayDate']}} </font>
                 </div>
                 <table>
                   <tr>
@@ -108,7 +108,7 @@ SPDX-License-Identifier: MIT -->
                 <!-- 날짜 표시 -->
                 <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
                   style="text-align: center; font-size: 16px; padding-top: 8px;" (click)="SetOtherAct()">
-                  <font color="#888"> {{msg['msgDate']}} </font>
+                  <font color="#888"> {{msg['displayDate']}} </font>
                 </div>
                 <table style="display: inline-flex;">
                   <tr>
