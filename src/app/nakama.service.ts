@@ -63,6 +63,8 @@ export enum MatchOpCode {
   WEBRTC_ICE_CANDIDATES = 23,
   /** Stream 변경 등으로 재교환시 */
   WEBRTC_NEGOCIATENEEDED = 24,
+  /** 다른 기기에서 통화를 수신함 */
+  WEBRTC_RECEIVED_CALL_SELF = 25,
   /** 통화 종료함 */
   WEBRTC_HANGUP = 30,
 }
@@ -2462,6 +2464,12 @@ export class NakamaService {
           let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
           if (!is_me && this.socket_reactive['WEBRTC_NEGOCIATENEEDED'])
             this.socket_reactive['WEBRTC_NEGOCIATENEEDED'](m['data_str']);
+        }
+          break;
+        // 여러 기기를 이용할 경우 한 기기에서 통화를 받음
+        case MatchOpCode.WEBRTC_RECEIVED_CALL_SELF: {
+          if (this.socket_reactive['WEBRTC_RECEIVED_CALL_SELF'])
+            this.socket_reactive['WEBRTC_RECEIVED_CALL_SELF']();
         }
           break;
         case MatchOpCode.WEBRTC_HANGUP: {

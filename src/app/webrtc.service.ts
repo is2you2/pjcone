@@ -105,7 +105,7 @@ export class WebrtcService {
     this.TypeIn = type;
     this.nakama.socket_reactive['WEBRTC_INIT_REQ_SIGNAL'] = async () => {
       let data_str = JSON.stringify(this.LocalOffer);
-      let part = data_str.match(/(.{1,250})/g);
+      let part = data_str.match(/(.{1,64})/g);
       for (let i = 0, j = part.length; i < j; i++)
         await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
           this.CurrentMatch.match_id, MatchOpCode.WEBRTC_REPLY_INIT_SIGNAL, encodeURIComponent(part[i]));
@@ -133,6 +133,9 @@ export class WebrtcService {
         this.ReceivedOfferPart = '';
         this.CreateAnswer();
       } else this.ReceivedOfferPart += data_str;
+    }
+    this.nakama.socket_reactive['WEBRTC_RECEIVED_CALL_SELF'] = (data_str: string) => {
+      this.close_webrtc(false);
     }
     if (nakama) {
       this.isOfficial = nakama.isOfficial;
@@ -257,9 +260,9 @@ export class WebrtcService {
         p['waiting_act'] = setTimeout(() => {
           waiting();
         }, 0);
-
-        p['hangup'] = () => {
-          if (!this.isConnected) return;
+        // 다른 기기에서 통화가 연결된 경우 나머지 기기에서 중복 연결 안내음 표시 제거
+        p['hangup'] = (duplicated = false) => {
+          if (!this.isConnected && !duplicated) return;
           osc.stop(.1);
           clearTimeout(p['waiting_act']);
           osc = new p5.Oscillator(380, 'sine');
@@ -503,7 +506,7 @@ export class WebrtcService {
 
         if (this.TypeIn != 'data') {
           let data_str = JSON.stringify(this.LocalOffer);
-          let part = data_str.match(/(.{1,250})/g);
+          let part = data_str.match(/(.{1,64})/g);
           for (let i = 0, j = part.length; i < j; i++)
             await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
               this.CurrentMatch.match_id, MatchOpCode.WEBRTC_NEGOCIATENEEDED, encodeURIComponent(part[i]));
@@ -629,14 +632,16 @@ export class WebrtcService {
 
     if (this.TypeIn != 'data') {
       let data_str = JSON.stringify(description);
-      let part = data_str.match(/(.{1,250})/g);
+      let part = data_str.match(/(.{1,64})/g);
       for (let i = 0, j = part.length; i < j; i++)
         await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
           this.CurrentMatch.match_id, MatchOpCode.WEBRTC_RECEIVE_ANSWER, encodeURIComponent(part[i]));
       await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
         this.CurrentMatch.match_id, MatchOpCode.WEBRTC_RECEIVE_ANSWER, encodeURIComponent('EOL'));
     }
-
+    // 스스로에게 통화 수신됨을 알림 (self_match)
+    await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+      this.nakama.self_match[this.isOfficial][this.target].match_id, MatchOpCode.WEBRTC_RECEIVED_CALL_SELF, encodeURIComponent(''));
     this.JoinInited = true;
   }
 
@@ -709,6 +714,7 @@ export class WebrtcService {
     delete this.nakama.socket_reactive['WEBRTC_RECEIVE_ANSWER'];
     delete this.nakama.socket_reactive['WEBRTC_ICE_CANDIDATES'];
     delete this.nakama.socket_reactive['WEBRTC_NEGOCIATENEEDED'];
+    delete this.nakama.socket_reactive['WEBRTC_RECEIVED_CALL_SELF'];
     this.IceCandidates.length = 0;
   }
 }
