@@ -3,6 +3,7 @@
 
 import { Injectable } from '@angular/core';
 import * as p5 from 'p5';
+import { isDarkMode } from './global-act.service';
 
 /** 생성하는 토스트 정보 */
 interface ToastInfo {
@@ -95,7 +96,7 @@ export class P5ToastService {
           border.style("display: flex; justify-content: center;");
           border.style("width: fit-content; height: fit-content");
           border.style("border-radius: 24px");
-          border.style("background: #44a6fa88");
+          border.style(`background: #${isDarkMode ? '30564e88' : 'ff754e88'}`);
           border.style("padding: 4px");
 
           content = p.createDiv();
@@ -103,7 +104,7 @@ export class P5ToastService {
           content.style("display: flex; justify-content: center;");
           content.style("width: fit-content; height: fit-content");
           content.style("word-break: break-all");
-          content.style("background: #44a6fa88");
+          content.style(`background: #${isDarkMode ? '30564e88' : 'ff754e88'}`);
           content.style("border-radius: 20px");
           content.style("padding: 12px");
           content.style("color: white");
@@ -165,7 +166,7 @@ export class P5ToastService {
         }
         /** Toast 외곽 조정 */
         let update_border = () => {
-          let calced = p.lerpColor(p.color('#44a6fabb'), p.color('#ffd94ebb'), borderLerp)['levels'];
+          let calced = p.lerpColor(p.color(`#${isDarkMode ? '30564e88' : 'ff754e88'}`), p.color('#ffd94ebb'), borderLerp)['levels'];
           border.style(`padding: ${4 * borderLerp}px`);
           content.style(`padding: ${p.lerp(16, 12, borderLerp)}px`);
           content.style(`border-radius: ${p.lerp(24, 20, borderLerp)}px`);
