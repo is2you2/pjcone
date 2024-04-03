@@ -146,9 +146,9 @@ export class NakamaService {
       this.groups = JSON.parse(groups);
     let all_groups = this.rearrange_group_list();
     all_groups.forEach(async group => {
+      let group_img = await this.indexed.loadTextFromUserPath(`servers/${group['server']['isOfficial']}/${group['server']['target']}/groups/${group.id}.img`);
+      if (group_img) group['img'] = group_img.replace(/"|=|\\/g, '');
       if (group['status'] != 'missing') {
-        let group_img = await this.indexed.loadTextFromUserPath(`servers/${group['server']['isOfficial']}/${group['server']['target']}/groups/${group.id}.img`);
-        if (group_img) group['img'] = group_img.replace(/"|=|\\/g, '');
         delete group['status'];
         let _is_official = group['server']['isOfficial'];
         let _target = group['server']['target'];
@@ -474,7 +474,8 @@ export class NakamaService {
       if (this.groups[_is_official] && this.groups[_is_official][_target]) {
         let groups_id = Object.keys(this.groups[_is_official][_target]);
         groups_id.forEach(_gid => {
-          this.groups[_is_official][_target][_gid]['status'] = 'offline';
+          if (this.groups[_is_official][_target][_gid]['status'] != 'missing')
+            this.groups[_is_official][_target][_gid]['status'] = 'offline';
         });
       }
       this.set_group_statusBar('offline', _is_official, _target);
@@ -1521,6 +1522,7 @@ export class NakamaService {
                 if (this.groups[_is_official][_target] && this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]) { // 유효한 그룹인 경우
                   this.channels_orig[_is_official][_target][_cid]['info'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']];
                   this.channels_orig[_is_official][_target][_cid]['title'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]['name'];
+                  this.channels_orig[_is_official][_target][_cid]['status'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]['status'];
                 } else this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
               }
               break;
@@ -1599,7 +1601,7 @@ export class NakamaService {
                     v.present();
                   });
                   break;
-                }
+                } // 온라인 그룹이 아니라면 1:1 채널과 같게 처리
               case 2: // 1:1 채널
                 if (this.channels[index]['status'] == 'online' || this.channels[index]['status'] == 'pending') {
                   this.alertCtrl.create({
@@ -1627,6 +1629,7 @@ export class NakamaService {
                     handler: async () => {
                       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
                       loading.present();
+                      this.remove_group_list(this.channels_orig[isOfficial][target][this.channels[index].id]['info'], isOfficial, target, true);
                       delete this.channels_orig[isOfficial][target][this.channels[index].id];
                       this.remove_channel_files(isOfficial, target, this.channels[index].id);
                       let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${this.channels[index].id}`);
@@ -1656,7 +1659,7 @@ export class NakamaService {
                       } catch (e) {
                         console.log('그룹 이미지 삭제 오류: ', e);
                       }
-                      this.remove_channel_files(isOfficial, target, this.channels[index].id);
+                      this.remove_channel_files(isOfficial, target, this.channels[index].id, true);
                       this.save_groups_with_less_info();
                       let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${this.channels[index].id}`);
                       for (let i = 0, j = list.length; i < j; i++) {
@@ -1917,14 +1920,11 @@ export class NakamaService {
           throw "No group image found";
         }
       } else throw "not a group creator";
-    } catch (e) {
-      try {
-        if (_remove_history)
-          await this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
-      } catch (e) {
-        console.log(e);
-      }
-    }
+    } catch (e) { }
+    try {
+      if (_remove_history)
+        await this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
+    } catch (e) { }
   }
 
   /** 그룹 내에서 사용했던 서버 파일들 전부 삭제  
@@ -2919,9 +2919,7 @@ export class NakamaService {
       case 'remove': // 그룹이 삭제됨
       case 'force_remove': // 그룹이 강제 삭제됨
         this.groups[_is_official][_target][c.group_id]['status'] = 'missing';
-        delete this.groups[_is_official][_target][c.group_id]['img'];
         this.save_groups_with_less_info();
-        this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${c.group_id}.img`);
         this.channels_orig[_is_official][_target][c.channel_id]['status'] = 'missing';
         this.servers[_is_official][_target].socket.leaveChat(c.channel_id);
         break;

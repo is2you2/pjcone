@@ -99,8 +99,10 @@ export class GroupDetailPage implements OnInit {
           this.nakama.groups[this.isOfficial][this.target][this.info.id]['img'] = v.objects[0].value['img'].replace(/"|=|\\/g, '');
           this.indexed.saveTextFileToUserPath(v.objects[0].value['img'], `servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
         } else {
-          delete this.nakama.groups[this.isOfficial][this.target][this.info.id]['img'];
-          this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
+          if (this.info['status']) {
+            delete this.nakama.groups[this.isOfficial][this.target][this.info.id]['img'];
+            this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
+          }
         }
       });
     } catch (e) {
@@ -386,11 +388,8 @@ export class GroupDetailPage implements OnInit {
   /** 그룹 채널에서 나오기 */
   leave_channel() {
     if (this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']] && this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']])
-      if (this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] != 'missing') {
-        delete this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['img'];
+      if (this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] != 'missing')
         this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] = 'missing';
-        delete this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['info'];
-      }
     this.nakama.save_channels_with_less_info();
   }
 
