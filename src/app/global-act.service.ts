@@ -327,7 +327,7 @@ export class GlobalActService {
                 p.text(this.godot_window['filename'],
                   margin_ratio, margin_ratio,
                   p.width - margin_ratio * 2, p.height - margin_ratio * 2);
-                p.filter(p.BLUR, 3);
+                p.filter(p.BLUR, 3, false);
                 p.pop();
                 p.fill(255);
                 p.text(this.godot_window['filename'],

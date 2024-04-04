@@ -7,10 +7,10 @@ SPDX-License-Identifier: MIT -->
     <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
       <ion-back-button defaultHref=""></ion-back-button>
     </ion-buttons>
-    <ion-icon *ngIf="(FileInfo.viewer == 'video' || FileInfo.viewer == 'audio') && AutoPlayNext"
+    <ion-icon *ngIf="HaveRelevances && (FileInfo.viewer == 'video' || FileInfo.viewer == 'audio') && AutoPlayNext"
       class="relevance_change" style="padding-right: 16px;" slot="end" name="pause-circle"
       (click)="AutoPlayNext = !AutoPlayNext"></ion-icon>
-    <ion-icon *ngIf="(FileInfo.viewer == 'video' || FileInfo.viewer == 'audio') && !AutoPlayNext"
+    <ion-icon *ngIf="HaveRelevances && (FileInfo.viewer == 'video' || FileInfo.viewer == 'audio') && !AutoPlayNext"
       class="relevance_change" style="padding-right: 16px;" slot="end" name="play-circle"
       (click)="AutoPlayNext = !AutoPlayNext"></ion-icon>
     <ion-icon *ngIf="HaveRelevances" class="relevance_change" style="padding-right: 4px;" slot="end"

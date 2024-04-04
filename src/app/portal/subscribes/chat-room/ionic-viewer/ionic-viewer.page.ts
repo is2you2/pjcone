@@ -1784,7 +1784,7 @@ export class IonicViewerPage implements OnInit {
           this.p5canvas.text((this.FileInfo['filename'] || this.FileInfo['name']),
             margin_ratio, margin_ratio,
             width - margin_ratio * 2, height - margin_ratio * 2);
-          this.p5canvas.filter(this.p5canvas.BLUR, 3);
+          this.p5canvas.filter(this.p5canvas.BLUR, 3, false);
           this.p5canvas.pop();
           this.p5canvas.fill(255);
           this.p5canvas.text((this.FileInfo['filename'] || this.FileInfo['name']),
@@ -1843,7 +1843,7 @@ export class IonicViewerPage implements OnInit {
                 p.text((this.FileInfo['filename'] || this.FileInfo['name']),
                   margin_ratio, margin_ratio,
                   width - margin_ratio * 2, height - margin_ratio * 2);
-                p.filter(p.BLUR, 3);
+                p.filter(p.BLUR, 3, false);
                 p.pop();
                 p.fill(255);
                 p.text((this.FileInfo['filename'] || this.FileInfo['name']),
