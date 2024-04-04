@@ -1893,6 +1893,7 @@ export class NakamaService {
     this.indexed.saveTextFileToUserPath(JSON.stringify(copied_group), 'servers/groups.json', () => {
       _CallBack();
     });
+    this.MakeChannelHaveContextMenuAct();
   }
 
   /** 그룹 리스트 로컬/리모트에서 삭제하기 (방장일 경우)  
@@ -2001,7 +2002,6 @@ export class NakamaService {
     } catch (e) {
       console.error('사용자 그룹 가져오기 오류: ', e);
     }
-    this.MakeChannelHaveContextMenuAct();
   }
 
   /** 그룹을 재배열화한 후에 */
