@@ -1207,7 +1207,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
         }
         if (!this.isModify)
-          this.nakama.addRemoteTodoCounter(this.userInput.remote.isOfficial, this.userInput.remote.target, Number(this.userInput['id'].split('_')[1]));
+          this.nakama.addRemoteTodoCounter(this.userInput.remote.isOfficial, this.userInput.remote.target, Number(this.userInput['id'].split('_').pop()));
         loading.dismiss();
       } catch (e) {
         console.error('해야할 일이 서버에 전송되지 않음: ', e);
@@ -1347,7 +1347,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             } catch (e) { }
           }
         }
-        this.nakama.removeRemoteTodoCounter(targetInfo.remote.isOfficial, targetInfo.remote.target, Number(targetInfo['id'].split('_')[1]));
+        this.nakama.removeRemoteTodoCounter(targetInfo.remote.isOfficial, targetInfo.remote.target, Number(targetInfo['id'].split('_').pop()));
       } catch (e) {
         console.log('서버 정보 없음, 로컬에서 행동: ', e);
       }

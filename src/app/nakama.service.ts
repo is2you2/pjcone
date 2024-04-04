@@ -972,7 +972,9 @@ export class NakamaService {
       this.RemoteTodoCounter[_is_official][_target].sort((a, b) => {
         return a - b;
       });
-      return this.RemoteTodoCounter[_is_official][_target][this.RemoteTodoCounter[_is_official][_target].length - 1];
+      let len = this.RemoteTodoCounter[_is_official][_target].length;
+      if (!len) this.addRemoteTodoCounter(_is_official, _target, 0);
+      return this.RemoteTodoCounter[_is_official][_target][len - 1];
     } catch (e) {
       let v = await this.servers[_is_official][_target].client.readStorageObjects(
         this.servers[_is_official][_target].session, {
@@ -998,7 +1000,7 @@ export class NakamaService {
   /** 원격 할 일 카운터 증가 */
   addRemoteTodoCounter(_is_official: string, _target: string, index: number) {
     try {
-      this.RemoteTodoCounter[_is_official][_target].push(index);
+      this.RemoteTodoCounter[_is_official][_target].push(index || 0);
       this.RemoteTodoCounter[_is_official][_target].sort();
     } catch (e) {
       if (!this.RemoteTodoCounter[_is_official])
@@ -1026,6 +1028,7 @@ export class NakamaService {
 
   /** 원격 할 일 카운터 숫자 조정 */
   updateRemoteCounter(_is_official: string, _target: string) {
+    this.RemoteTodoCounter[_is_official][_target] = this.RemoteTodoCounter[_is_official][_target].filter(Number);
     this.servers[_is_official][_target].client.writeStorageObjects(
       this.servers[_is_official][_target].session, [{
         collection: 'server_todo',
@@ -2049,7 +2052,6 @@ export class NakamaService {
       if (p['group_id']) { // 그룹 채널인 경우
         if (this.groups[_is_official][_target][p['group_id']]
           && this.groups[_is_official][_target][p['group_id']]['users']) {
-          this.servers[_is_official][_target].client.listGroupUsers
           let user_length = this.groups[_is_official][_target][p['group_id']]['users'].length;
           if (user_length == 1) result_status = this.users.self['online'] ? 'online' : 'offline'; // 그룹에 혼자만 있음
           else for (let i = 0; i < user_length; i++) { // 2명 이상의 그룹원
