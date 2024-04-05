@@ -1149,7 +1149,6 @@ export class IonicViewerPage implements OnInit {
                               _EmissionColor[3] * 255
                             );
                           } catch (e) {
-                            console.log('이미션 정보 수집 실패: ', e);
                             LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-danger-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['FailedGetEmitColor']}: ${e}</div>`;
                           }
                           // 이미지 텍스처 재질 받기
@@ -1157,7 +1156,6 @@ export class IonicViewerPage implements OnInit {
                             let packedfile = obj.data.mat[i].nodetree.nodes.last.id.packedfile;
                             if (!packedfile) throw 'unpacked';
                             imgtex_id = packedfile.data['__data_address__'];
-                            LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-danger-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['OnWorkReadUV']}</div>`;
                           }
                         }
                       } catch (e) {
