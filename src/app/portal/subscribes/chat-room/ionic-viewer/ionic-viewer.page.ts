@@ -972,7 +972,7 @@ export class IonicViewerPage implements OnInit {
                           MeshIndex = k;
                           break;
                         }
-                      { // 이 개체의 UV 정보 위치 잡기
+                      try { // 이 개체의 UV 정보 위치 잡기
                         let StackIndex = -1;
                         for (let k = 0, l = UVPositionList.length; k < l; k++)
                           if (UVPositionList[k].address) {
@@ -982,10 +982,10 @@ export class IonicViewerPage implements OnInit {
                               break;
                             }
                           }
-                      }
+                      } catch (e) { }
                       /** 모델의 정점 정보 수집 (position) */
                       let vertex_id: any;
-                      { // 이 개체의 점 정보 잡기
+                      try { // 이 개체의 점 정보 잡기
                         let StackIndex = -1;
                         let CatchIndex = false;
                         let l = MeshVertexPositions.length;
@@ -1004,10 +1004,10 @@ export class IonicViewerPage implements OnInit {
                           }
                         if (!vertex_id)
                           vertex_id = MeshVertexPositions.slice(MeshVertexIndex, l);
-                      }
+                      } catch (e) { }
                       /** 각 정점간 연결 정보 (x: 시작점, y: 대상점) */
                       let edge_id: any;
-                      { // 이 개체의 선 정보 잡기
+                      try { // 이 개체의 선 정보 잡기
                         let StackIndex = -1;
                         let CatchIndex = false;
                         let l = MeshEdgeData.length;
@@ -1026,7 +1026,7 @@ export class IonicViewerPage implements OnInit {
                           }
                         if (!edge_id)
                           edge_id = MeshEdgeData.slice(MeshEdgeIndex, l);
-                      }
+                      } catch (e) { }
                       let shape: any; // p5.Geometry
                       /** 각 면과 관련된 정보 */
                       let qface_info: any;
