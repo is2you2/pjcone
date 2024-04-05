@@ -923,8 +923,16 @@ export class IonicViewerPage implements OnInit {
               let UVPositionList = blend.file.objects.vec2f;
               /** 현재 개체가 참고하게될 UV 정보 시작점 */
               let UVPositionIndex = 0;
-              /** UV 위치 탐색을 위해 Mesh가 아닌 개체들을 몇개나 무시하는지 */
-              let IgnoreObjectCounter = 0;
+              /** 파일에 준비된 메쉬들(정보 검토용) */
+              let Meshes = blend.file.objects.Mesh;
+              /** 모든 개체의 점 위치 정보 나열 */
+              let MeshVertexPositions = blend.file.objects.vec3f;
+              /** 현재 개체가 참고하게될 점 정보 시작점 */
+              let MeshVertexIndex = 0;
+              /** 모든 개체의 선 구성 정보 나열 */
+              let MeshEdgeData = blend.file.objects.vec2i;
+              /** 현재 개체가 참고하게될 선 정보의 시작점 */
+              let MeshEdgeIndex = 0;
               // 모델 정보 불러오기
               for (let i = 0, j = blend.file.objects.Object.length; i < j; i++) {
                 /** 이 개체의 정보 */
@@ -941,7 +949,6 @@ export class IonicViewerPage implements OnInit {
                   obj.rot[2],
                   -obj.rot[1]
                 );
-                console.log(obj.aname, '_정보 검토: ', obj.data);
                 switch (obj.type) {
                   case 1: // mesh
                     { // 모델 정보 기반으로 Geometry 개체 만들기
@@ -954,46 +961,84 @@ export class IonicViewerPage implements OnInit {
                             ignore_mesh = true;
                             break;
                           }
+                        if (!ignore_mesh) // 숨겨진 개체인지 검토 (object-hidden)
+                          ignore_mesh = obj.base_flag == 448;
                         if (ignore_mesh) continue;
                       }
+                      /** 이 메쉬가 몇번째로 등록된 메쉬인지 검토 */
+                      let MeshIndex = null;
+                      for (let k = 0, l = Meshes.length; k < l; k++)
+                        if (Meshes[k].address == obj.data.address) {
+                          MeshIndex = k;
+                          break;
+                        }
                       { // 이 개체의 UV 정보 위치 잡기
                         let StackIndex = -1;
                         for (let k = 0, l = UVPositionList.length; k < l; k++)
                           if (UVPositionList[k].address) {
                             StackIndex++;
-                            if (StackIndex + IgnoreObjectCounter == i) {
+                            if (StackIndex == MeshIndex) {
                               UVPositionIndex = k;
                               break;
                             }
                           }
                       }
-                      console.log('UVPositionIndex: ', UVPositionIndex);
-                      let shape: any;
                       /** 모델의 정점 정보 수집 (position) */
                       let vertex_id: any;
-                      if (obj.data.vdata.layers.length) {
-                        for (let i = 0, j = obj.data.vdata.layers.length; i < j; i++)
-                          if (obj.data.vdata.layers[i].name == 'position') {
-                            vertex_id = obj.data.vdata.layers[i].data;
-                            break;
+                      { // 이 개체의 점 정보 잡기
+                        let StackIndex = -1;
+                        let CatchIndex = false;
+                        let l = MeshVertexPositions.length;
+                        for (let k = 0; k < l; k++)
+                          if (MeshVertexPositions[k].address) {
+                            StackIndex++;
+                            if (!CatchIndex) {
+                              if (StackIndex == MeshIndex) {
+                                MeshVertexIndex = k;
+                                CatchIndex = true;
+                              }
+                            } else { // 정보 길이 검토
+                              vertex_id = MeshVertexPositions.slice(MeshVertexIndex, k);
+                              break;
+                            }
                           }
-                      } else vertex_id = obj.data.vdata.layers.data;
+                        if (!vertex_id)
+                          vertex_id = MeshVertexPositions.slice(MeshVertexIndex, l);
+                      }
                       /** 각 정점간 연결 정보 (x: 시작점, y: 대상점) */
                       let edge_id: any;
-                      if (obj.data.edata.layers.length) {
-                        for (let i = 0, j = obj.data.edata.layers.length; i < j; i++)
-                          if (obj.data.edata.layers[i].name == '.edge_verts') {
-                            edge_id = obj.data.edata.layers[i].data;
-                            break;
+                      { // 이 개체의 선 정보 잡기
+                        let StackIndex = -1;
+                        let CatchIndex = false;
+                        let l = MeshEdgeData.length;
+                        for (let k = 0; k < l; k++)
+                          if (MeshEdgeData[k].address) {
+                            StackIndex++;
+                            if (!CatchIndex) {
+                              if (StackIndex == MeshIndex) {
+                                MeshEdgeIndex = k;
+                                CatchIndex = true;
+                              }
+                            } else { // 정보 길이 검토
+                              edge_id = MeshEdgeData.slice(MeshEdgeIndex, k);
+                              break;
+                            }
                           }
-                      } else edge_id = obj.data.edata.layers.data;
+                        if (!edge_id)
+                          edge_id = MeshEdgeData.slice(MeshEdgeIndex, l);
+                      }
+                      let shape: any; // p5.Geometry
                       /** 각 면과 관련된 정보 */
                       let qface_info: any;
                       if (obj.data.ldata.layers.length) {
                         for (let i = 0, j = obj.data.ldata.layers.length; i < j; i++)
-                          if (obj.data.ldata.layers[i].name == '.corner_vert') {
-                            qface_info = obj.data.ldata.layers[i].data;
-                            break;
+                          switch (obj.data.ldata.layers[i].type) {
+                            case 11: // 면을 구성하는 점 정보가 나열됨
+                              qface_info = obj.data.ldata.layers[i].data;
+                              break;
+                            default:
+                              // console.log(obj.data.ldata.layers[i].type, '_ldata 준비되지 않음: ', obj.data.ldata.layers[i]);
+                              break;
                           }
                       } else qface_info = obj.data.ldata.layers.data;
                       // 정보 기반 그리기 행동
@@ -1163,7 +1208,6 @@ export class IonicViewerPage implements OnInit {
                   // case 25: // Armature
                   //   break;
                   default: // 준비되지 않은 데이터 필터용
-                    IgnoreObjectCounter++;
                     break;
                 }
                 await new Promise(res => setTimeout(res, 0));
