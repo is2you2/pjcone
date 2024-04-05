@@ -903,21 +903,22 @@ export class IonicViewerPage implements OnInit {
               /** 블랜더 파일 (ArrayBuffer) */
               let blenderFile = blend.file.AB;
               // 내장 파일 불러오기 (PackedFiles)
-              for (let i = 0, j = blend.file.objects.PackedFile.length; i < j; i++) {
-                let PackedFile = blend.file.objects.PackedFile[i];
-                let data_address = PackedFile.data['__data_address__'];
-                let data_size = PackedFile.size;
-                let ImageBuffer = blenderFile.slice(data_address, data_address + data_size);
-                let blob = new Blob([ImageBuffer]);
-                let ImageTextureURL = URL.createObjectURL(blob);
-                p.loadImage(ImageTextureURL, v => {
-                  texture_images[PackedFile.data['__data_address__']] = v;
-                  URL.revokeObjectURL(ImageTextureURL);
-                }, e => {
-                  console.log('텍스쳐 불러오기 실패: ', e);
-                  URL.revokeObjectURL(ImageTextureURL);
-                });
-              }
+              if (blend.file.objects.PackedFile)
+                for (let i = 0, j = blend.file.objects.PackedFile.length; i < j; i++) {
+                  let PackedFile = blend.file.objects.PackedFile[i];
+                  let data_address = PackedFile.data['__data_address__'];
+                  let data_size = PackedFile.size;
+                  let ImageBuffer = blenderFile.slice(data_address, data_address + data_size);
+                  let blob = new Blob([ImageBuffer]);
+                  let ImageTextureURL = URL.createObjectURL(blob);
+                  p.loadImage(ImageTextureURL, v => {
+                    texture_images[PackedFile.data['__data_address__']] = v;
+                    URL.revokeObjectURL(ImageTextureURL);
+                  }, e => {
+                    console.log('텍스쳐 불러오기 실패: ', e);
+                    URL.revokeObjectURL(ImageTextureURL);
+                  });
+                }
               /** 개체별 UV 누적정보 */
               let UVPositionList = blend.file.objects.vec2f;
               /** 현재 개체가 참고하게될 UV 정보 시작점 */
@@ -940,6 +941,7 @@ export class IonicViewerPage implements OnInit {
                   obj.rot[2],
                   -obj.rot[1]
                 );
+                console.log(obj.aname, '_정보 검토: ', obj.data);
                 switch (obj.type) {
                   case 1: // mesh
                     { // 모델 정보 기반으로 Geometry 개체 만들기
