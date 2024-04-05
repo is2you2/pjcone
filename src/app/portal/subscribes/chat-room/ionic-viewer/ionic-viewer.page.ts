@@ -1216,6 +1216,7 @@ export class IonicViewerPage implements OnInit {
               }, 8000);
               this.ContentOnLoad = true;
             };
+            p.camera(0, 0, -(p.height / 2) / p.tan(p.PI * 30.0 / 180.0), 0, 0, 0, 0, 1, 0);
           }
           p.draw = () => {
             p.clear(255, 255, 255, 0);
