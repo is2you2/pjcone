@@ -1232,8 +1232,8 @@ export class IonicViewerPage implements OnInit {
                 }
               }
             } else // 빛이 없다면 기본 빛 부여
-              p.lights();
-            p.ambientLight(16);
+              p.directionalLight(128, 128, 128, -1, 1, 1);
+            p.ambientLight(128);
             for (let i = 0, j = meshes.length; i < j; i++) {
               p.push();
               if (meshes[i].texture) {
