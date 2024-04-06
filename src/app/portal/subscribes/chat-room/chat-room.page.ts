@@ -1371,8 +1371,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
       this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
       this.pullable = this.ViewMsgIndex != 0 || Boolean(this.LocalHistoryList.length);
-      if (this.ViewableMessage.length < this.RefreshCount)
-        await this.LoadLocalChatHistory();
       this.MakeViewableMessagesHaveContextMenuAct();
       return;
     }
@@ -1410,8 +1408,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
           this.modulate_chatmsg(i, this.ViewableMessage.length);
         }
-        if (this.ViewableMessage.length < this.RefreshCount)
-          await this.LoadLocalChatHistory();
       }
       this.next_cursor = null;
       this.pullable = true;
