@@ -1525,6 +1525,8 @@ export class NakamaService {
                 if (this.groups[_is_official][_target] && this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]) { // 유효한 그룹인 경우
                   this.channels_orig[_is_official][_target][_cid]['info'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']];
                   this.channels_orig[_is_official][_target][_cid]['title'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]['name'];
+                  if (this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]['status'] == 'missing')
+                    this.channels_orig[_is_official][_target][_cid]['status'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]['status'];
                 } else this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
               }
               break;
