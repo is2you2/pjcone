@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonModal, LoadingController, ModalController, NavController, NavParams } from '@ionic/angular';
+import { IonModal, ModalController, NavController, NavParams } from '@ionic/angular';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -28,7 +28,6 @@ export class GroupServerPage implements OnInit {
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
     public global: GlobalActService,
-    private loadingCtrl: LoadingController,
     private mClipboard: Clipboard,
     private navCtrl: NavController,
     private navParams: NavParams,
@@ -486,6 +485,7 @@ export class GroupServerPage implements OnInit {
       this.nakama.save_self_profile();
     }
     this.p5canvas.remove();
+    this.nakama.MakeChannelHaveContextMenuAct();
   }
 
   /** 부드러운 이미지 교체를 위한 이미지 임시 배정 */
