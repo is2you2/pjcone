@@ -327,7 +327,6 @@ export class NakamaService {
   go_to_chatroom_without_admob_act(_info: any, _file?: FileInfo) {
     this.has_new_channel_msg = false;
     this.rearrange_channels();
-    this.save_channels_with_less_info();
     if (this.ChatroomLinkAct)
       this.ChatroomLinkAct(_info, _file);
     else this.ngZone.run(() => {
@@ -1078,7 +1077,7 @@ export class NakamaService {
                   this.groups[_is_official][_target][_gid]['status'] = 'pending';
                   break;
                 default:
-                  console.warn('이해할 수 없는 코드 반환: ', gulist.group_users[i].state);
+                  console.log('이해할 수 없는 코드 반환: ', gulist.group_users[i].state);
                   this.groups[_is_official][_target][_gid]['status'] = 'missing';
                   break;
               }
@@ -1474,15 +1473,13 @@ export class NakamaService {
                     this.update_from_channel_msg(c_msg.messages[0], _is_official, _target);
                 }
                 this.count_channel_online_member(this.channels_orig[_is_official][_target][channel_ids[i]], _is_official, _target);
-                this.save_channels_with_less_info();
                 break;
               default:
-                console.warn('예상하지 못한 리다이렉션 타입: ', this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type']);
+                console.log('예상하지 못한 리다이렉션 타입: ', this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type']);
                 break;
             }
           } catch (e) {
             this.channels_orig[_is_official][_target][channel_ids[i]]['status'] = 'missing';
-            this.save_channels_with_less_info();
           }
         }
       this.rearrange_channels();
@@ -1514,7 +1511,6 @@ export class NakamaService {
           }
           switch (this.channels_orig[_is_official][_target][_cid]['redirect']['type']) {
             case 1: // 방 대화
-              console.warn('방 대화 기능 준비중...');
               break;
             case 2: // 1:1 대화
               this.channels_orig[_is_official][_target][_cid]['info'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
@@ -1749,7 +1745,7 @@ export class NakamaService {
         try {
           let v: any = await servers[i].client.joinGroup(servers[i].session, _info.id);
           if (!v) {
-            console.warn('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
+            console.log('그룹 join 실패... 벤 당했을 때인듯? 향후에 검토 필');
             return;
           }
           v = await servers[i].client.listGroups(servers[i].session, decodeURIComponent(_info['name']));
@@ -1801,7 +1797,6 @@ export class NakamaService {
                     if (channel.messages.length)
                       this.update_from_channel_msg(channel.messages[0], servers[i].info.isOfficial, servers[i].info.target);
                     this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
-                    this.save_groups_with_less_info();
                     this.go_to_chatroom_without_admob_act(c);
                   } catch (e) {
                     console.error('채널 정보 추가 오류: ', e);
@@ -1910,7 +1905,7 @@ export class NakamaService {
       if (this.servers[_is_official][_target] && is_creator) {
         let v = await this.servers[_is_official][_target].client.deleteGroup(
           this.servers[_is_official][_target].session, info['id']);
-        if (!v) console.warn('그룹 삭제 오류 검토 필요');
+        if (!v) console.log('그룹 삭제 오류 검토 필요');
         this.remove_channel_files(_is_official, _target, info['channel_id'], is_creator);
         try {
           await this.servers[_is_official][_target].client.deleteStorageObjects(
@@ -2399,7 +2394,7 @@ export class NakamaService {
               });
               break;
             default:
-              console.warn('등록되지 않은 할 일 행동: ', m);
+              console.log('등록되지 않은 할 일 행동: ', m);
               break;
           }
         }
@@ -2430,7 +2425,7 @@ export class NakamaService {
               });
               break;
             default:
-              console.warn('예상하지 못한 프로필 동기화 정보: ', m);
+              console.log('예상하지 못한 프로필 동기화 정보: ', m);
               break;
           }
         }
@@ -2481,7 +2476,7 @@ export class NakamaService {
         }
           break;
         default:
-          console.warn('예상하지 못한 동기화 정보: ', m);
+          console.log('예상하지 못한 동기화 정보: ', m);
           break;
       }
     }
@@ -2730,7 +2725,7 @@ export class NakamaService {
           try {
             let noti = await this.servers[_is_official][_target].client.deleteNotifications(
               this.servers[_is_official][_target].session, empty_ids);
-            if (!noti) console.warn('사용하지 않는 알림 삭제 후 오류');
+            if (!noti) console.log('사용하지 않는 알림 삭제 후 오류');
             this.update_notifications(_is_official, _target);
           } catch (e) {
             console.error('알림 삭제 오류: ', e);
@@ -2751,14 +2746,13 @@ export class NakamaService {
     this.content_to_hyperlink(c);
     this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_time'] = msg.update_time;
     this.channels_orig[_is_official][_target][c.channel_id]['last_comment_id'] = c.message_id;
-    this.rearrange_channels();
     if (!isNewChannel && this.channels_orig[_is_official][_target][c.channel_id]['update'])
       this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
     this.saveListedMessage([c], this.channels_orig[_is_official][_target][c.channel_id], _is_official, _target);
     let hasFile = c.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
     this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile +
       (original_msg || c.content['noti'] || (c.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined) || '');
-    this.save_channels_with_less_info();
+    this.rearrange_channels();
   }
 
   /** WebRTC 통화 채널에 참가하기 */
@@ -2909,7 +2903,7 @@ export class NakamaService {
         }, 50);
         break;
       default:
-        console.warn('예상하지 못한 메시지 코드: ', c);
+        console.log('예상하지 못한 메시지 코드: ', c);
         break;
     }
     return c;
@@ -2927,7 +2921,7 @@ export class NakamaService {
         this.servers[_is_official][_target].socket.leaveChat(c.channel_id);
         break;
       default:
-        console.warn('예상하지 못한 그룹 행동: ', c);
+        console.log('예상하지 못한 그룹 행동: ', c);
         break;
     }
   }
@@ -2999,7 +2993,7 @@ export class NakamaService {
         }
         break;
       default:
-        console.warn('예상하지 못한 그룹 사용자 행동: ', c);
+        console.log('예상하지 못한 그룹 사용자 행동: ', c);
         break;
     }
   }
@@ -3022,7 +3016,7 @@ export class NakamaService {
         this.noti.ClearNoti(this_noti.code);
         try {
           let noti = await this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
-          if (!noti) console.warn('알림 거부처리 검토 필요');
+          if (!noti) console.log('알림 거부처리 검토 필요');
           this.update_notifications(_is_official, _target);
         } catch (e) {
           console.error('알림 삭제 오류: ', e);
@@ -3043,13 +3037,13 @@ export class NakamaService {
                 handler: async () => {
                   try {
                     let user = await this_server.client.addGroupUsers(this_server.session, this_noti['content']['group_id'], [other_user.users[0].id]);
-                    if (!user) console.warn('밴인 경우인 것 같음, 확인 필요');
+                    if (!user) console.log('밴인 경우인 것 같음, 확인 필요');
                     this.noti.RemoveListener(`check${this_noti.code}`);
                     this.noti.ClearNoti(this_noti.code);
                     try {
                       let noti = await this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
                       if (noti) this.update_notifications(_is_official, _target);
-                      else console.warn('알림 지우기 실패: ', noti);
+                      else console.log('알림 지우기 실패: ', noti);
                     } catch (e) {
                       console.error('알림 삭제 오류: ', e);
                     }
@@ -3062,7 +3056,7 @@ export class NakamaService {
                 handler: async () => {
                   try {
                     let kick = await this_server.client.kickGroupUsers(this_server.session, this_noti['content']['group_id'], [other_user.users[0].id]);
-                    if (!kick) console.warn('그룹 참여 거절을 kick한 경우 오류');
+                    if (!kick) console.log('그룹 참여 거절을 kick한 경우 오류');
                     this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
                     this.update_notifications(_is_official, _target);
                   } catch (e) {
@@ -3075,7 +3069,7 @@ export class NakamaService {
           } else {
             try {
               let noti = await this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
-              if (!noti) console.warn('알림 거부처리 검토 필요');
+              if (!noti) console.log('알림 거부처리 검토 필요');
               this.p5toast.show({
                 text: this.lang.text['Nakama']['UserNotFound'],
               })
@@ -3092,7 +3086,7 @@ export class NakamaService {
         this.LoginAgain(this.noti_origin, _is_official, _target);
         break;
       default:
-        console.warn('예상하지 못한 알림 구분: ', this_noti.code);
+        console.log('예상하지 못한 알림 구분: ', this_noti.code);
         break;
     }
   }
@@ -3110,7 +3104,7 @@ export class NakamaService {
         try {
           let noti = await this.servers[_is_official][_target].client.deleteNotifications(
             this.servers[_is_official][_target].session, [v['id']]);
-          if (!noti) console.warn('알림 거부처리 검토 필요');
+          if (!noti) console.log('알림 거부처리 검토 필요');
           this.update_notifications(_is_official, _target);
         } catch (e) {
           console.error('알림 삭제 오류: ', e);
@@ -3166,7 +3160,7 @@ export class NakamaService {
             this.join_chat_with_modulation(v['sender_id'], targetType, _is_official, _target);
             break;
           default:
-            console.warn('예상하지 못한 알림 행동처리: ', v, targetType);
+            console.log('예상하지 못한 알림 행동처리: ', v, targetType);
             v['request'] = `${v.code}-${v.subject}`;
             break;
         }
@@ -3174,7 +3168,7 @@ export class NakamaService {
         try {
           let noti = await this.servers[_is_official][_target].client.deleteNotifications(
             this.servers[_is_official][_target].session, [v['id']]);
-          if (!noti) console.warn('알림 거부처리 검토 필요');
+          if (!noti) console.log('알림 거부처리 검토 필요');
           this.update_notifications(_is_official, _target);
         } catch (e) {
           console.error('알림 삭제 오류: ', e);
@@ -3252,7 +3246,7 @@ export class NakamaService {
             let noti = await this.servers[_is_official][_target].client.deleteNotifications(
               this.servers[_is_official][_target].session, [v.id]);
             if (noti) this.update_notifications(_is_official, _target);
-            else console.warn('알림 지우기 실패: ', noti);
+            else console.log('알림 지우기 실패: ', noti);
           } catch (e) {
             console.error('알림 제거 오류: ', e);
           }
@@ -3317,7 +3311,7 @@ export class NakamaService {
         this.LoginAgain(v, _is_official, _target);
         break;
       default:
-        console.warn('확인되지 않은 실시간 알림_nakama_noti: ', v);
+        console.log('확인되지 않은 실시간 알림_nakama_noti: ', v);
         v['request'] = `${v.code}-${v.subject}`;
         break;
     }

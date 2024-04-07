@@ -390,7 +390,6 @@ export class GroupDetailPage implements OnInit {
     if (this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']] && this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']])
       if (this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] != 'missing')
         this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] = 'missing';
-    this.nakama.save_channels_with_less_info();
   }
 
   copy_id() {

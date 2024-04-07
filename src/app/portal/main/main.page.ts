@@ -162,7 +162,9 @@ export class MainPage implements OnInit {
         if (!this.isPlayingCanvas.loop) p.redraw();
       }
       p.draw = () => {
-        this.global.UpdateIsDarkMode(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        let CurrentDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (isDarkMode != CurrentDarkMode)
+          this.global.UpdateIsDarkMode(CurrentDarkMode);
         p.clear(255, 255, 255, 255);
         p.push();
         p.translate(ScaleCenter);

@@ -1019,10 +1019,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           return;
         }
         let is_local = c['sender_id'] == 'local';
-        if (!is_local) this.nakama.check_sender_and_show_name(c, this.isOfficial, this.target);
         if (c.content['filename']) this.ModulateFileEmbedMessage(c);
         this.info['last_read_id'] = this.info['last_comment_id'];
-        this.nakama.save_channels_with_less_info();
         if (!is_local) this.check_if_send_msg(c);
         if (!(c.code == 1 || c.code == 2)) this.messages.push(c);
         if (c.code == 2) { // 메시지 삭제하기 동작
@@ -1723,7 +1721,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     let hasFile = msg.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
     this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment'] = hasFile +
       (MsgText || msg.content['noti'] || (msg.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined) || '');
-    this.nakama.save_channels_with_less_info();
     setTimeout(() => {
       this.userInput.text = '';
       if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
