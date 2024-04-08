@@ -162,9 +162,6 @@ export class MainPage implements OnInit {
         if (!this.isPlayingCanvas.loop) p.redraw();
       }
       p.draw = () => {
-        let CurrentDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (isDarkMode != CurrentDarkMode)
-          this.global.UpdateIsDarkMode(CurrentDarkMode);
         p.clear(255, 255, 255, 255);
         p.push();
         p.translate(ScaleCenter);
@@ -691,6 +688,9 @@ export class MainPage implements OnInit {
   }
 
   ionViewDidEnter() {
+    let CurrentDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (isDarkMode != CurrentDarkMode)
+      this.global.UpdateIsDarkMode(CurrentDarkMode);
     let p5todo_canvas = document.getElementById('p5todo');
     if (!p5todo_canvas)
       this.CreateTodoManager();
