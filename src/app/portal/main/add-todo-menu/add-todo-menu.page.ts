@@ -973,8 +973,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.userInput.id = new Date(this.userInput.create_at).toISOString().replace(/[:|.|\/]/g, '_');
       else {
         let counter = await this.nakama.getRemoteTodoCounter(this.userInput.remote.isOfficial, this.userInput.remote.target);
-        this.userInput.id = `RemoteTodo_${this.userInput.remote.creator_id ||
-          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id}_${(counter || 0) + 1}`;
+        this.userInput.id = `RemoteTodo_${this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id}_${counter}`;
       }
     }
     // 알림 예약 생성
@@ -1196,7 +1195,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
         }
         if (!this.isModify)
-          this.nakama.addRemoteTodoCounter(this.userInput.remote.isOfficial, this.userInput.remote.target, Number(this.userInput['id'].split('_').pop()));
+          await this.nakama.updateRemoteCounter(this.userInput.remote.isOfficial, this.userInput.remote.target);
         loading.dismiss();
       } catch (e) {
         console.error('해야할 일이 서버에 전송되지 않음: ', e);

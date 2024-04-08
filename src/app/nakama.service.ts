@@ -837,6 +837,7 @@ export class NakamaService {
         }
       }
     } catch (e) { }
+    await this.SyncTodoCounter(_is_official, _target);
     await this.load_server_todo(_is_official, _target);
     await this.RemoteTodoSelfCheck(_is_official, _target);
     // 통신 소켓 연결하기
@@ -909,17 +910,22 @@ export class NakamaService {
         this.RemoteTodoCounter[_is_official][_target] = count;
         for (let i = 0, j = count.length; i < j; i++) {
           try {
+            let key = `RemoteTodo_${this.servers[_is_official][_target].session.user_id}_${count[i]}`;
             let todo = await this.servers[_is_official][_target].client.readStorageObjects(
               this.servers[_is_official][_target].session, {
               object_ids: [{
                 collection: 'server_todo',
-                key: `RemoteTodo_${count[i]}`,
+                key: key,
                 user_id: this.servers[_is_official][_target].session.user_id,
               }]
             });
             if (todo.objects.length)
               this.modify_remote_info_as_local(todo.objects[0].value, _is_official, _target);
-            else this.removeRemoteTodoCounter(_is_official, _target, count[i]);
+            else try { // 로컬에 있는 같은 id의 할 일 삭제
+              let data = await this.indexed.loadTextFromUserPath(`todo/${key}/info.todo`)
+              let json = JSON.parse(data);
+              this.deleteTodoFromStorage(true, json);
+            } catch (e) { }
           } catch (e) {
             console.log('서버 해야할 일 불러오기 오류: ', e);
           }
@@ -958,7 +964,6 @@ export class NakamaService {
             this.noti.ClearNoti(json.id);
             if (this.global.p5todo && this.global.p5todo['remove_todo'])
               this.global.p5todo['remove_todo'](todo);
-            this.addRemoteTodoCounter(_is_official, _target, Number(json.id.split('_')[1]));
           }
         }
       }
@@ -973,9 +978,27 @@ export class NakamaService {
       });
       let len = this.RemoteTodoCounter[_is_official][_target].length;
       if (!len) throw '정해진 값이 없어?';
-      return this.RemoteTodoCounter[_is_official][_target][len - 1];
+      let value = this.RemoteTodoCounter[_is_official][_target][len - 1] + 1;
+      this.RemoteTodoCounter[_is_official][_target].push(value);
+      return value;
     } catch (e) {
-      let v = await this.servers[_is_official][_target].client.readStorageObjects(
+      let v = await this.SyncTodoCounter(_is_official, _target);
+      let result = 0;
+      if (v.objects.length && v.objects[0].value['data'].length) {
+        result = v.objects[0].value['data'].pop() + 1;
+      } else {
+        if (!this.RemoteTodoCounter[_is_official])
+          this.RemoteTodoCounter[_is_official] = {};
+        this.RemoteTodoCounter[_is_official][_target] = [0];
+      }
+      return result;
+    }
+  }
+
+  /** 서버로부터 카운터를 받아 동기화하기 */
+  async SyncTodoCounter(_is_official: string, _target: string) {
+    try {
+      let data = await this.servers[_is_official][_target].client.readStorageObjects(
         this.servers[_is_official][_target].session, {
         object_ids: [{
           collection: 'server_todo',
@@ -983,35 +1006,15 @@ export class NakamaService {
           user_id: this.servers[_is_official][_target].session.user_id,
         }]
       });
-      let result = 0;
-      if (v.objects.length) {
-        result = v.objects[0].value['data'].length;
-      } else {
-        if (!this.RemoteTodoCounter[_is_official])
-          this.RemoteTodoCounter[_is_official] = {};
-        if (!this.RemoteTodoCounter[_is_official][_target])
-          this.RemoteTodoCounter[_is_official][_target] = [];
-      }
-      return result;
-    }
-  }
-
-  /** 원격 할 일 카운터 증가 */
-  addRemoteTodoCounter(_is_official: string, _target: string, index: number) {
-    try {
-      this.RemoteTodoCounter[_is_official][_target].push(index || 0);
-      this.RemoteTodoCounter[_is_official][_target].sort();
-    } catch (e) {
       if (!this.RemoteTodoCounter[_is_official])
         this.RemoteTodoCounter[_is_official] = {};
-      if (!this.RemoteTodoCounter[_is_official][_target])
-        this.RemoteTodoCounter[_is_official][_target] = [index];
-    }
-    this.updateRemoteCounter(_is_official, _target);
+      this.RemoteTodoCounter[_is_official][_target] = data.objects[0].value['data'];
+      return data;
+    } catch (e) { }
   }
 
   /** 원격 할 일 중 완료/삭제된 내용 업데이트 */
-  removeRemoteTodoCounter(_is_official: string, _target: string, index: number) {
+  async removeRemoteTodoCounter(_is_official: string, _target: string, index: number) {
     try {
       let find_index = this.RemoteTodoCounter[_is_official][_target].indexOf(index);
       if (find_index >= 0)
@@ -1022,17 +1025,24 @@ export class NakamaService {
       if (!this.RemoteTodoCounter[_is_official][_target])
         this.RemoteTodoCounter[_is_official][_target] = [];
     }
-    this.updateRemoteCounter(_is_official, _target);
+    await this.updateRemoteCounter(_is_official, _target);
   }
 
   /** 원격 할 일 카운터 숫자 조정 */
-  updateRemoteCounter(_is_official: string, _target: string) {
-    if (this.RemoteTodoCounter[_is_official][_target].length)
+  async updateRemoteCounter(_is_official: string, _target: string) {
+    if (this.RemoteTodoCounter[_is_official][_target].length) {
       for (let i = this.RemoteTodoCounter[_is_official][_target].length - 1; i >= 0; i--)
         if (this.RemoteTodoCounter[_is_official][_target][i] === undefined || this.RemoteTodoCounter[_is_official][_target][i] == null) {
           this.RemoteTodoCounter[_is_official][_target].splice(i, 1);
         }
-    this.servers[_is_official][_target].client.writeStorageObjects(
+      this.RemoteTodoCounter[_is_official][_target].sort((a, b) => {
+        return a - b;
+      });
+      for (let i = this.RemoteTodoCounter[_is_official][_target].length - 2; i >= 0; i--)
+        if (this.RemoteTodoCounter[_is_official][_target][i + 1] == this.RemoteTodoCounter[_is_official][_target][i])
+          this.RemoteTodoCounter[_is_official][_target].splice(i, 1);
+    }
+    await this.servers[_is_official][_target].client.writeStorageObjects(
       this.servers[_is_official][_target].session, [{
         collection: 'server_todo',
         key: 'RemoteTodo_Counter',
@@ -1167,7 +1177,7 @@ export class NakamaService {
             } catch (e) { }
           }
         }
-        this.removeRemoteTodoCounter(targetInfo.remote.isOfficial, targetInfo.remote.target, Number(targetInfo['id'].split('_').pop()));
+        await this.removeRemoteTodoCounter(targetInfo.remote.isOfficial, targetInfo.remote.target, Number(targetInfo['id'].split('_').pop()));
       } catch (e) {
         console.log('서버 정보 없음, 로컬에서 행동: ', e);
       }
@@ -2416,7 +2426,7 @@ export class NakamaService {
         case MatchOpCode.MANAGE_TODO: {
           let sep = m['data_str'].split(',');
           switch (sep[0]) {
-            case 'add': // 추가
+            case 'add': // 추가 또는 수정
               this.servers[_is_official][_target].client.readStorageObjects(
                 this.servers[_is_official][_target].session, {
                 object_ids: [{
@@ -2428,12 +2438,11 @@ export class NakamaService {
                 if (v.objects.length) {
                   this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
                   let json = v.objects[0].value as any;
-                  let CounterIndex = Number(json.id.split('_')[1]);
-                  let find_index = -1;
-                  try {
-                    find_index = this.RemoteTodoCounter[_is_official][_target].indexOf(CounterIndex);
-                  } catch (e) { }
-                  if (find_index == -1) this.addRemoteTodoCounter(_is_official, _target, CounterIndex);
+                  { // 수정인 경우 기존 알림을 삭제
+                    let data = await this.indexed.loadTextFromUserPath(`todo/${json.id}/info.todo`);
+                    let get_json = JSON.parse(data);
+                    this.noti.ClearNoti(get_json.noti_id);
+                  }
                   let default_color = '58a192';
                   switch (json.importance) {
                     case '1': // 기억해야함
@@ -2482,7 +2491,7 @@ export class NakamaService {
                         delete this.web_noti_id[todo_info.noti_id];
                       }
                     this.noti.ClearNoti(todo_info.noti_id);
-                    this.addRemoteTodoCounter(_is_official, _target, Number(todo_info['id'].split('_')[1]));
+                    this.SyncTodoCounter(_is_official, _target);
                   });
                 }
               });
@@ -2502,7 +2511,7 @@ export class NakamaService {
                     if (this.global.p5todo && this.global.p5todo['remove_todo'])
                       this.global.p5todo['remove_todo'](JSON.stringify(todo_info));
                   });
-                  this.addRemoteTodoCounter(_is_official, _target, Number(todo_info['id'].split('_')[1]));
+                  this.SyncTodoCounter(_is_official, _target);
                 }
               });
               break;
@@ -2525,7 +2534,7 @@ export class NakamaService {
                       break;
                     }
                   this.modify_remote_info_as_local(todo_info, _is_official, _target);
-                  this.addRemoteTodoCounter(_is_official, _target, Number(todo_info['id'].split('_')[1]));
+                  this.SyncTodoCounter(_is_official, _target);
                 }
               });
               break;
