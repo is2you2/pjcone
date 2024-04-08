@@ -1339,11 +1339,11 @@ export class IonicViewerPage implements OnInit {
     const SIMPLE_HIGHLIGHT_CODE = [
       // 구성
       'void', 'static', 'import', 'export', 'interface', 'include', '#include', 'using',
-      'from', 'as', 'public', 'protected', 'private', 'use', 'package', 'local',
+      'from', 'as', 'public', 'protected', 'private', 'use', 'package', 'local', 'async', 'await',
       'program', 'namespace', 'begin', 'end', 'puts',
       'Private', 'Protected', 'Public', 'Sub', 'End',
       // 변수 ,종류
-      'var', 'let',
+      'var', 'let', 'enum',
       'String', 'char',
       'Integer', 'Float', 'Boolean', 'Array', 'NULL', 'Resource',
       'strings', 'integer', 'complex',
@@ -1370,7 +1370,7 @@ export class IonicViewerPage implements OnInit {
     ]
     /** 연산자 색상 */
     const OPERATOR = [
-      'for', 'match', 'switch', 'if', 'else', 'elif', 'return', 'continue', 'pass',
+      'for', 'match', 'switch', 'if', 'else', 'elif', 'return', 'continue', 'pass', 'throw',
       'loop', 'while', 'in', 'try', 'catch', 'and', 'or', 'do', 'then', 'yield',
     ];
     const COMPARISON_OP = [
