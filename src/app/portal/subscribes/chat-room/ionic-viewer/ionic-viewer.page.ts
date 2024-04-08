@@ -60,6 +60,7 @@ export class IonicViewerPage implements OnInit {
   HaveRelevances = false;
   NeedDownloadFile = false;
   ContentOnLoad = false;
+  ContentFailedLoad = true;
   isDownloading = false;
   CurrentViewId: string;
   OpenInChannelChat = false;
@@ -127,6 +128,7 @@ export class IonicViewerPage implements OnInit {
     this.NewTextFileName = '';
     this.NeedDownloadFile = true;
     this.ContentOnLoad = false;
+    this.ContentFailedLoad = true;
     this.isTextEditMode = false;
     this.MessageInfo = msg;
     this.CurrentViewId = this.MessageInfo.message_id;
@@ -156,7 +158,8 @@ export class IonicViewerPage implements OnInit {
         this.blob = undefined;
         this.isDownloading = false;
         this.NeedDownloadFile = true;
-        this.ContentOnLoad = false;
+        this.ContentOnLoad = true;
+        this.ContentFailedLoad = false;
         this.CreateContentInfo();
         if (this.p5canvas) this.p5canvas.remove();
         this.p5canvas = new p5((p: p5) => {
@@ -392,6 +395,7 @@ export class IonicViewerPage implements OnInit {
               RePositioningImage();
               img.remove();
               this.ContentOnLoad = true;
+              this.ContentFailedLoad = false;
             }
             p.noLoop();
           }
@@ -575,6 +579,7 @@ export class IonicViewerPage implements OnInit {
               mediaObject.showControls();
               mediaObject.play();
               this.ContentOnLoad = true;
+              this.ContentFailedLoad = false;
             });
             mediaObject['elt'].hidden = true;
           }
@@ -657,6 +662,7 @@ export class IonicViewerPage implements OnInit {
               mediaObject.showControls();
               mediaObject.play();
               this.ContentOnLoad = true;
+              this.ContentFailedLoad = false;
             });
             mediaObject['elt'].hidden = true;
             p['VideoMedia'] = mediaObject;
@@ -746,6 +752,7 @@ export class IonicViewerPage implements OnInit {
               textArea.elt.textContent = v.join('\n');
               this.open_text_reader(p);
               this.ContentOnLoad = true;
+              this.ContentFailedLoad = false;
             }, _e => {
               this.canvasDiv.textContent = this.lang.text['ContentViewer']['CannotOpenText'];
               this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
@@ -830,6 +837,7 @@ export class IonicViewerPage implements OnInit {
               }, 'start_load_pck');
             }
             this.ContentOnLoad = true;
+            this.ContentFailedLoad = false;
             if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
             if (this.FileInfo.url)
               this.global.godot_window['download_url']();
@@ -1215,6 +1223,7 @@ export class IonicViewerPage implements OnInit {
                 LogDiv.elt.remove();
               }, 8000);
               this.ContentOnLoad = true;
+              this.ContentFailedLoad = false;
             };
             p.camera(0, 0, -(p.height / 2) / p.tan(p.PI * 30.0 / 180.0), 0, 0, 0, 0, 1, 0);
           }
