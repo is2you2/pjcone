@@ -972,7 +972,7 @@ export class NakamaService {
         return a - b;
       });
       let len = this.RemoteTodoCounter[_is_official][_target].length;
-      if (!len) return 0;
+      if (!len) throw '정해진 값이 없어?';
       return this.RemoteTodoCounter[_is_official][_target][len - 1];
     } catch (e) {
       let v = await this.servers[_is_official][_target].client.readStorageObjects(

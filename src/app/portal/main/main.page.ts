@@ -82,14 +82,18 @@ export class MainPage implements OnInit {
                 message: Todos[TodoKeys[i]].json.description,
                 buttons: [{
                   text: this.lang.text['TodoDetail']['TodoComplete'],
-                  handler: () => {
-                    nakama.doneTodo(Todos[TodoKeys[i]].json);
+                  handler: async () => {
+                    try {
+                      await nakama.doneTodo(Todos[TodoKeys[i]].json);
+                    } catch (e) { }
                   }
                 }, {
                   text: this.lang.text['TodoDetail']['remove'],
                   cssClass: 'red_font',
-                  handler: () => {
-                    nakama.deleteTodoFromStorage(true, Todos[TodoKeys[i]].json);
+                  handler: async () => {
+                    try {
+                      await nakama.deleteTodoFromStorage(true, Todos[TodoKeys[i]].json);
+                    } catch (e) { }
                   }
                 }],
               }).then(v => {
