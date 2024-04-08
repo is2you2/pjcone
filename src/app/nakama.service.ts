@@ -972,7 +972,7 @@ export class NakamaService {
         return a - b;
       });
       let len = this.RemoteTodoCounter[_is_official][_target].length;
-      if (!len) this.addRemoteTodoCounter(_is_official, _target, 0);
+      if (!len) return 0;
       return this.RemoteTodoCounter[_is_official][_target][len - 1];
     } catch (e) {
       let v = await this.servers[_is_official][_target].client.readStorageObjects(
@@ -1027,7 +1027,11 @@ export class NakamaService {
 
   /** 원격 할 일 카운터 숫자 조정 */
   updateRemoteCounter(_is_official: string, _target: string) {
-    this.RemoteTodoCounter[_is_official][_target] = this.RemoteTodoCounter[_is_official][_target].filter(Number);
+    if (this.RemoteTodoCounter[_is_official][_target].length)
+      for (let i = this.RemoteTodoCounter[_is_official][_target].length - 1; i >= 0; i--)
+        if (this.RemoteTodoCounter[_is_official][_target][i] === undefined || this.RemoteTodoCounter[_is_official][_target][i] == null) {
+          this.RemoteTodoCounter[_is_official][_target].splice(i, 1);
+        }
     this.servers[_is_official][_target].client.writeStorageObjects(
       this.servers[_is_official][_target].session, [{
         collection: 'server_todo',
