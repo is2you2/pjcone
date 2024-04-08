@@ -1053,6 +1053,138 @@ export class NakamaService {
     this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
   }
 
+  /** 이 일을 완료했습니다 */
+  async doneTodo(targetInfo: any) {
+    targetInfo.done = true;
+    if (this.global.p5todo && this.global.p5todo['add_todo'])
+      this.global.p5todo['add_todo'](JSON.stringify(targetInfo));
+    if (targetInfo.remote) {
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      loading.present();
+      if (this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target])
+        await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
+          .socket.sendMatchState(this.self_match[targetInfo.remote.isOfficial][targetInfo.remote.target].match_id, MatchOpCode.MANAGE_TODO,
+            encodeURIComponent(`done,${targetInfo.id}`));
+      loading.dismiss();
+    }
+    await this.deleteTodoFromStorage(false, targetInfo);
+    this.navCtrl.pop();
+  }
+
+  /** 저장소로부터 데이터를 삭제하는 명령 모음  
+   * @param isDelete 삭제 여부를 검토하여 애니메이션 토글
+   */
+  async deleteTodoFromStorage(isDelete: boolean, targetInfo: any) {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    loading.present();
+    if (targetInfo.remote) {
+      try { // 원격 할 일인 경우 원격 저장소에서 삭제
+        if (!this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target])
+          throw 'Server deleted.';
+        try {
+          let isOfficial = targetInfo.remote.isOfficial;
+          let target = targetInfo.remote.target;
+          await this.servers[isOfficial][target].client.deleteStorageObjects(
+            this.servers[isOfficial][target].session, {
+            object_ids: [{
+              collection: 'server_todo',
+              key: targetInfo.id,
+            }],
+          });
+          for (let i = 0, j = targetInfo.attach.length; i < j; i++)
+            await this.sync_remove_file(targetInfo.attach[i].path, isOfficial, target, 'todo_attach');
+          if (isDelete) {
+            await this.servers[isOfficial][target]
+              .socket.sendMatchState(this.self_match[isOfficial][target].match_id, MatchOpCode.MANAGE_TODO,
+                encodeURIComponent(`delete,${targetInfo.id}`));
+          }
+        } catch (e) {
+          console.error('해야할 일 삭제 요청이 서버에 전송되지 않음: ', e);
+        }
+        try { // 지시받은 업무인 경우, 완료됨 전송
+          if (targetInfo.remote.creator_id != this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session.user_id) {
+            let act_time = new Date().getTime();
+            try { // 서버 rpc로 변경행동 보내기
+              await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].client.rpc(
+                this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session,
+                'manage_todo_done_fn', {
+                id: targetInfo.id,
+                creator_id: targetInfo.remote.creator_id,
+                user_id: this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session.user_id,
+                timestamp: act_time,
+                isDelete: isDelete,
+              });
+            } catch (e) { }
+            try { // 변경되었음을 매니저에게 알림
+              let match = await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].client.readStorageObjects(
+                this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session, {
+                object_ids: [{
+                  collection: 'self_share',
+                  key: 'private_match',
+                  user_id: targetInfo.remote.creator_id,
+                }],
+              });
+              if (match.objects.length) { // 가용 매치일 경우에 메시지 발송하기
+                await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
+                  .socket.joinMatch(match.objects[0].value['match_id']);
+                await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
+                  .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.MANAGE_TODO,
+                    encodeURIComponent(`worker,${targetInfo.id},${this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session.user_id},${isDelete},${act_time}`));
+                await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
+                  .socket.leaveMatch(match.objects[0].value['match_id']);
+              }
+            } catch (e) { }
+          }
+        } catch (e) { }
+        if (targetInfo.workers) { // 매니저 기준 행동
+          try { // 모든 등록된 작업자의 기록을 삭제 처리
+            await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].client.rpc(
+              this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session,
+              'manage_todo_delete_fn', {
+              id: targetInfo.id,
+              workers: targetInfo.workers,
+            });
+          } catch (e) { }
+          for (let i = 0, j = targetInfo.workers.length; i < j; i++) {
+            try {
+              let match = await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].client.readStorageObjects(
+                this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session, {
+                object_ids: [{
+                  collection: 'self_share',
+                  key: 'private_match',
+                  user_id: targetInfo.workers[i].id,
+                }],
+              });
+              if (match.objects.length) { // 가용 매치일 경우에 메시지 발송하기
+                await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
+                  .socket.joinMatch(match.objects[0].value['match_id']);
+                await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
+                  .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.MANAGE_TODO,
+                    encodeURIComponent(isDelete ? `delete,${targetInfo.id}` : `done,${targetInfo.id}`));
+                await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
+                  .socket.leaveMatch(match.objects[0].value['match_id']);
+              }
+            } catch (e) { }
+          }
+        }
+        this.removeRemoteTodoCounter(targetInfo.remote.isOfficial, targetInfo.remote.target, Number(targetInfo['id'].split('_').pop()));
+      } catch (e) {
+        console.log('서버 정보 없음, 로컬에서 행동: ', e);
+      }
+    }
+    let list = await this.indexed.GetFileListFromDB(`todo/${targetInfo.id}`);
+    list.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+    if (targetInfo.noti_id)
+      if (!(isPlatform == 'Android' || isPlatform == 'iOS')) {
+        clearTimeout(this.web_noti_id[targetInfo.noti_id]);
+        delete this.web_noti_id[targetInfo.noti_id];
+      }
+    this.noti.ClearNoti(targetInfo.noti_id);
+    if (isDelete && this.global.p5todo)
+      this.global.p5todo['remove_todo'](JSON.stringify(targetInfo));
+    loading.dismiss();
+  }
+
   /** 저장된 그룹 업데이트하여 반영 */
   async load_groups(_is_official: string, _target: string, _gid: string) {
     // 온라인이라면 서버정보로 덮어쓰기

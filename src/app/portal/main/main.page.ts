@@ -9,6 +9,7 @@ import { isPlatform } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import * as p5 from 'p5';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-main',
@@ -23,6 +24,7 @@ export class MainPage implements OnInit {
     public nakama: NakamaService,
     public statusBar: StatusManageService,
     private indexed: IndexedDBService,
+    private alertCtrl: AlertController,
   ) { }
 
   ngOnInit() { }
@@ -70,6 +72,37 @@ export class MainPage implements OnInit {
         let canvas = p.createCanvas(todo_div.clientWidth, todo_div.clientHeight);
         canvas.parent(todo_div);
         canvas.id('p5todo');
+        canvas.elt.oncontextmenu = (ev: any) => {
+          for (let i = 0, j = TodoKeys.length; i < j; i++) {
+            if (Todos[TodoKeys[i]].json.id == 'AddButton') continue;
+            let dist = Todos[TodoKeys[i]].position.dist(MappingPosition(ev.offsetX, ev.offsetY));
+            if (dist < Todos[TodoKeys[i]].EllipseSize / 2) {
+              this.alertCtrl.create({
+                header: Todos[TodoKeys[i]].json.title,
+                message: Todos[TodoKeys[i]].json.description,
+                buttons: [{
+                  text: this.lang.text['TodoDetail']['TodoComplete'],
+                  handler: () => {
+                    nakama.doneTodo(Todos[TodoKeys[i]].json);
+                  }
+                }, {
+                  text: this.lang.text['TodoDetail']['remove'],
+                  cssClass: 'red_font',
+                  handler: () => {
+                    nakama.deleteTodoFromStorage(true, Todos[TodoKeys[i]].json);
+                  }
+                }],
+              }).then(v => {
+                v.onDidDismiss().then(() => {
+                  BlockInput = false;
+                });
+                BlockInput = true;
+                v.present()
+              });
+              break;
+            }
+          }
+        }
         p.smooth();
         p.noStroke();
         p.pixelDensity(1);
