@@ -690,7 +690,15 @@ export class GlobalActService {
       headers.append('Access-Control-Allow-Origin', '*');
       headers.append('Access-Control-Allow-Method', '*');
       headers.append('Access-Control-Allow-Headers', '*');
-      await fetch(`${protocol}//${address}:9001/${filename}`, { method: "POST", headers: headers, body: formData });
+      const cont = new AbortController();
+      const id = setTimeout(() => {
+        this.p5toast.show({
+          text: this.lang.text['GlobalAct']['UploadFailed'],
+        });
+        cont.abort();
+      }, 6000);
+      await fetch(`${protocol}//${address}:9001/${filename}`, { method: "POST", headers: headers, body: formData, signal: cont.signal });
+      clearTimeout(id);
       let res = await fetch(CatchedAddress);
       if (res.ok) Catched = true;
     } catch (e) {
@@ -726,7 +734,15 @@ export class GlobalActService {
       headers.append('Access-Control-Allow-Origin', '*');
       headers.append('Access-Control-Allow-Method', '*');
       headers.append('Access-Control-Allow-Headers', '*');
-      await fetch(`${protocol}//${address[0]}:9001/${filename}`, { method: "POST", headers: headers, body: formData });
+      const cont = new AbortController();
+      const id = setTimeout(() => {
+        this.p5toast.show({
+          text: this.lang.text['GlobalAct']['FFSFailed'],
+        });
+        cont.abort();
+      }, 1500);
+      await fetch(`${protocol}//${address[0]}:9001/${filename}`, { method: "POST", headers: headers, body: formData, signal: cont.signal });
+      clearTimeout(id);
       let res = await fetch(CatchedAddress);
       if (!loading) innerLoading.dismiss();
       if (res.ok) return CatchedAddress;
