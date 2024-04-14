@@ -182,10 +182,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             if (v.data) await this.voidDraw_fileAct_callback(v, content_related_creator);
           });
           v.onDidDismiss().then(() => {
-            this.is_modal = false;
             this.ionViewDidEnter();
           });
           this.is_modal = true;
+          this.removeShortCutKey();
           v.present();
         });
       }
@@ -407,6 +407,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   ionViewDidEnter() {
     this.nakama.resumeBanner();
+    this.is_modal = false;
     this.global.p5key['KeyShortCut']['Escape'] = () => {
       this.navCtrl.pop();
     }
@@ -2023,6 +2024,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.ionViewDidEnter();
       });
       this.removeShortCutKey();
+      this.is_modal = true;
       v.present()
     });
   }
@@ -2178,9 +2180,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   },
                   cssClass: 'fullscreen',
                 }).then(v => {
+                  v.onDidDismiss().then(() => {
+                    this.ionViewDidEnter();
+                  });
                   v.onWillDismiss().then(async v => {
                     if (v.data) await this.voidDraw_fileAct_callback(v, related_creators);
                   });
+                  this.is_modal = true;
+                  this.removeShortCutKey();
                   v.present();
                 });
                 return;
@@ -2196,6 +2203,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         });
         this.removeShortCutKey();
         this.noti.Current = 'IonicViewerPage';
+        this.is_modal = true;
         v.present();
         this.nakama.removeBanner();
         this.lock_modal_open = false;
