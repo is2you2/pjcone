@@ -984,7 +984,7 @@ export class NakamaService {
     } catch (e) {
       let v = await this.SyncTodoCounter(_is_official, _target);
       let result = 0;
-      if (v.objects.length && v.objects[0].value['data'].length) {
+      if (v && v.objects.length && v.objects[0].value['data'].length) {
         result = v.objects[0].value['data'].pop() + 1;
       } else {
         if (!this.RemoteTodoCounter[_is_official])
