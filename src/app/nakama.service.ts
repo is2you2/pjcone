@@ -230,7 +230,7 @@ export class NakamaService {
     let targetTime = noti_info.startFrom || noti_info.limit;
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') { // 웹은 예약 발송이 없으므로 지금부터 수를 세야함
       let ScheduleAt = new Date(targetTime).getTime() - new Date().getTime();
-      if (ScheduleAt > 0) {
+      if (ScheduleAt > 0 && ScheduleAt < 2000000000) { // settimeout 최댓값이 있는 것 같다
         let schedule = setTimeout(() => {
           this.noti.PushLocal({
             id: noti_info.noti_id,

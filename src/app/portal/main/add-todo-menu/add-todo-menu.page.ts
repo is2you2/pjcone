@@ -982,6 +982,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
         delete this.nakama.web_noti_id[this.userInput.noti_id];
       }
+      this.nakama.removeRegisteredId(this.userInput.noti_id);
       this.noti.ClearNoti(this.userInput.noti_id);
     } // 알림 아이디가 없다면 새로 배정
     this.userInput.noti_id = this.nakama.get_noti_id();
