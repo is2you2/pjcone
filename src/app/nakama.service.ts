@@ -186,6 +186,7 @@ export class NakamaService {
         this.indexed.loadTextFromUserPath(info, (e, v) => {
           if (e && v) {
             let noti_info = JSON.parse(v);
+            this.registered_id.push(noti_info.noti_id)
             this.set_todo_notification(noti_info);
           }
         });
@@ -1189,6 +1190,7 @@ export class NakamaService {
         clearTimeout(this.web_noti_id[targetInfo.noti_id]);
         delete this.web_noti_id[targetInfo.noti_id];
       }
+    this.removeRegisteredId(targetInfo.noti_id);
     this.noti.ClearNoti(targetInfo.noti_id);
     if (isDelete && this.global.p5todo)
       this.global.p5todo['remove_todo'](JSON.stringify(targetInfo));
@@ -1559,6 +1561,7 @@ export class NakamaService {
   /** 로컬알림에 사용될 채널별 id 구성용 */
   get_noti_id(): number {
     this.noti_id = this.check_If_RegisteredId(this.noti_id + 1);
+    this.registered_id.push(this.noti_id);
     return this.noti_id;
   }
   check_If_RegisteredId(expectation_number: number): number {
@@ -1566,7 +1569,6 @@ export class NakamaService {
     for (let i = 0, j = this.registered_id.length; i < j; i++)
       if (this.registered_id[i] == expectation_number) {
         already_registered = true;
-        this.registered_id.splice(i, 1);
         break;
       } // ^ 검토할 숫자를 줄이기 위해 기존 정보를 삭제함
     if (already_registered)
@@ -1575,6 +1577,13 @@ export class NakamaService {
   }
   /** 기등록된 아이디 수집 */
   registered_id: number[] = [];
+  removeRegisteredId(id: number) {
+    for (let i = 0, j = this.registered_id.length; i < j; i++)
+      if (this.registered_id[i] == id) {
+        this.registered_id.splice(i, 1);
+        break;
+      }
+  }
   /** 세션 재접속 시 기존 정보를 이용하여 채팅방에 다시 로그인함  
    * 개인 채팅에 대해서만 검토
    */
@@ -2441,6 +2450,7 @@ export class NakamaService {
                   { // 수정인 경우 기존 알림을 삭제
                     let data = await this.indexed.loadTextFromUserPath(`todo/${json.id}/info.todo`);
                     let get_json = JSON.parse(data);
+                    this.removeRegisteredId(get_json.noti_id);
                     this.noti.ClearNoti(get_json.noti_id);
                   }
                   let default_color = '58a192';
@@ -2490,6 +2500,7 @@ export class NakamaService {
                         clearTimeout(this.web_noti_id[todo_info.noti_id]);
                         delete this.web_noti_id[todo_info.noti_id];
                       }
+                    this.removeRegisteredId(todo_info.noti_id);
                     this.noti.ClearNoti(todo_info.noti_id);
                     this.SyncTodoCounter(_is_official, _target);
                   });
@@ -2507,6 +2518,7 @@ export class NakamaService {
                         clearTimeout(this.web_noti_id[todo_info.noti_id]);
                         delete this.web_noti_id[todo_info.noti_id];
                       }
+                    this.removeRegisteredId(todo_info.noti_id);
                     this.noti.ClearNoti(todo_info.noti_id);
                     if (this.global.p5todo && this.global.p5todo['remove_todo'])
                       this.global.p5todo['remove_todo'](JSON.stringify(todo_info));
