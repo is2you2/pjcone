@@ -1414,34 +1414,38 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.next_cursor = null;
       this.pullable = true;
     } else { // 다음 파일에서 읽기
-      let v = await this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop());
-      if (v) {
-        let json: any[] = JSON.parse(v.trim());
-        let ExactAddedChatCount = 0;
-        for (let i = json.length - 1; i >= 0; i--) {
-          this.nakama.translate_updates(json[i]);
-          json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
-          this.nakama.ModulateTimeDate(json[i]);
-          if (json[i]['code'] != 2) {
-            ExactAddedChatCount++;
-            this.messages.unshift(json[i]);
+      try {
+        let target_path = this.LocalHistoryList.pop();
+        if (!target_path) throw '기록 없음';
+        let v = await this.indexed.loadTextFromUserPath(target_path);
+        if (v) {
+          let json: any[] = JSON.parse(v.trim());
+          let ExactAddedChatCount = 0;
+          for (let i = json.length - 1; i >= 0; i--) {
+            this.nakama.translate_updates(json[i]);
+            json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
+            this.nakama.ModulateTimeDate(json[i]);
+            if (json[i]['code'] != 2) {
+              ExactAddedChatCount++;
+              this.messages.unshift(json[i]);
+            }
           }
-        }
-        this.ViewMsgIndex = Math.max(0, ExactAddedChatCount - this.RefreshCount);
-        this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.RefreshCount);
-        let ShowMeAgainCount = Math.min(Math.min(json.length, this.RefreshCount), this.ViewableMessage.length);
-        for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
-          let FileURL: any;
-          try {
-            this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
-            let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
-            FileURL = URL.createObjectURL(blob);
-          } catch (e) { }
-          this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
-          this.modulate_chatmsg(i, ShowMeAgainCount);
-        }
-        this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
-      } else await this.LoadLocalChatHistory();
+          this.ViewMsgIndex = Math.max(0, ExactAddedChatCount - this.RefreshCount);
+          this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.RefreshCount);
+          let ShowMeAgainCount = Math.min(Math.min(json.length, this.RefreshCount), this.ViewableMessage.length);
+          for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
+            let FileURL: any;
+            try {
+              this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
+              let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
+              FileURL = URL.createObjectURL(blob);
+            } catch (e) { }
+            this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+            this.modulate_chatmsg(i, ShowMeAgainCount);
+          }
+          this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
+        } else await this.LoadLocalChatHistory();
+      } catch (e) { }
       this.pullable = Boolean(this.LocalHistoryList.length);
     }
     this.MakeViewableMessagesHaveContextMenuAct();
