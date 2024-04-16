@@ -29,7 +29,7 @@ export class SubscribesPage implements OnInit {
     public statusBar: StatusManageService,
     public lang: LanguageSettingService,
     private global: GlobalActService,
-    private nav: NavController,
+    private navCtrl: NavController,
     private indexed: IndexedDBService,
   ) { }
 
@@ -187,7 +187,7 @@ export class SubscribesPage implements OnInit {
   }
 
   go_to_page(_page: string) {
-    this.nav.navigateForward(`portal/settings/${_page}`);
+    this.navCtrl.navigateForward(`portal/settings/${_page}`);
     this.nakama.removeBanner();
   }
 

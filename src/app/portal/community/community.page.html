@@ -1,6 +1,16 @@
-<ion-header [translucent]="true">
+<!-- SPDX-FileCopyrightText: © 2024 그림또따 <is2you246@gmail.com>
+SPDX-License-Identifier: MIT -->
+
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>community</ion-title>
+    <ion-title>{{lang.text['Community']['Title']}}</ion-title>
+    <div (click)="add_post()" class="add_post">
+      <ion-icon button style="width: 24px; height: 24px; " name="add-circle-outline"></ion-icon>
+    </div>
+    <div class="header_online_circle"
+      [style]="'background-color: ' + statusBar.colors[statusBar.settings.groupServer] + '; cursor: pointer;'"
+      (click)="nakama.toggle_all_session(true)">
+    </div>
   </ion-toolbar>
 </ion-header>
 
