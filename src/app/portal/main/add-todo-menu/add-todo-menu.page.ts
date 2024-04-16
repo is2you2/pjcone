@@ -287,8 +287,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           break;
         }
     } else { // 새로 만드는 경우
-      let tomorrow = new Date(new Date().getTime() + 43200000);
-      this.userInput.limit = tomorrow.getTime();
+      this.userInput.limit = new Date().getTime();
+      this.limitTimeP5Display = this.userInput.limit;
       if (this.AvailableStorageList.length) {
         this.StoreAt.value = this.AvailableStorageList[0].target;
         this.StoreAtSelChanged({ detail: { value: this.AvailableStorageList[0] } });
@@ -444,7 +444,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   show_count_timer() {
     this.p5timer = new p5((p: p5) => {
       let startAnimLerp = 0;
-      this.startTimeP5Display = new Date(this.userInput.startFrom || this.userInput.written).getTime();
+      {
+        let catchStart = this.userInput.startFrom || this.userInput.written;
+        this.startTimeP5Display = catchStart ? new Date(this.userInput.startFrom || this.userInput.written).getTime() : new Date().getTime();
+      }
+      this.startTimeP5Display = p.min(this.startTimeP5Display, this.limitTimeP5Display);
       let currentTime: number;
       let color = p.color(this.normal_color);
       p.setup = () => {
