@@ -181,17 +181,15 @@ export class NakamaService {
   }
   /** 시작시 해야할 일 알림을 설정 */
   async set_all_todo_notification() {
-    this.indexed.GetFileListFromDB('info.todo', _list => {
-      _list.forEach(info => {
-        this.indexed.loadTextFromUserPath(info, (e, v) => {
-          if (e && v) {
-            let noti_info = JSON.parse(v);
-            this.registered_id.push(noti_info.noti_id)
-            this.set_todo_notification(noti_info);
-          }
-        });
-      });
-    });
+    let _list = await this.indexed.GetFileListFromDB('info.todo');
+    for (let i = 0, j = _list.length; i < j; i++) {
+      let v = await this.indexed.loadTextFromUserPath(_list[i]);
+      if (v) {
+        let noti_info = JSON.parse(v);
+        this.registered_id.push(noti_info.noti_id);
+        this.set_todo_notification(noti_info);
+      }
+    }
   }
 
   async getGodotDBRecursive() {
@@ -1738,6 +1736,10 @@ export class NakamaService {
               }
             let isOfficial = this.channels[index]['server'].isOfficial;
             let target = this.channels[index]['server'].target;
+            let targetHeader = this.channels[index]['info'].name || this.channels[index]['info'].display_name;
+            if (this.channels[index]['redirect'].type == 2) // 1:1 대화인 경우
+              targetHeader = targetHeader || this.lang.text['Profile']['noname_user'];
+            else targetHeader = targetHeader || this.lang.text['ChatRoom']['noname_chatroom'];
             switch (this.channels[index]['redirect'].type) {
               case 3: // 그룹 채널
                 if (this.channels[index]['status'] == 'online' || this.channels[index]['status'] == 'pending') {
@@ -1760,7 +1762,7 @@ export class NakamaService {
               case 2: // 1:1 채널
                 if (this.channels[index]['status'] == 'online' || this.channels[index]['status'] == 'pending') {
                   this.alertCtrl.create({
-                    header: this.channels[index]['info'].name || this.channels[index]['info'].display_name,
+                    header: targetHeader,
                     message: this.lang.text['ChatRoom']['UnlinkChannel'],
                     buttons: [{
                       text: this.lang.text['ChatRoom']['LogOut'],
@@ -1777,7 +1779,7 @@ export class NakamaService {
                     }]
                   }).then(v => v.present());
                 } else this.alertCtrl.create({
-                  header: this.channels[index]['info'].name || this.channels[index]['info'].display_name,
+                  header: targetHeader,
                   message: this.lang.text['ChatRoom']['RemoveChannelLogs'],
                   buttons: [{
                     text: this.lang.text['ChatRoom']['Delete'],
@@ -1801,7 +1803,7 @@ export class NakamaService {
                 break;
               case 0: // 로컬 채널
                 this.alertCtrl.create({
-                  header: this.channels[index]['info'].name,
+                  header: targetHeader,
                   message: this.lang.text['ChatRoom']['RemoveChannelLogs'],
                   buttons: [{
                     text: this.lang.text['ChatRoom']['Delete'],
