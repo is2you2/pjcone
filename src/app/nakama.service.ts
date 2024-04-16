@@ -2447,14 +2447,15 @@ export class NakamaService {
                 }],
               }).then(async v => {
                 if (v.objects.length) {
-                  this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
-                  let json = v.objects[0].value as any;
-                  { // 수정인 경우 기존 알림을 삭제
+                  try { // 수정인 경우 기존 알림을 삭제
+                    let json = v.objects[0].value as any;
                     let data = await this.indexed.loadTextFromUserPath(`todo/${json.id}/info.todo`);
                     let get_json = JSON.parse(data);
                     this.removeRegisteredId(get_json.noti_id);
                     this.noti.ClearNoti(get_json.noti_id);
-                  }
+                  } catch (e) { }
+                  this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
+                  let json = v.objects[0].value as any;
                   let default_color = '58a192';
                   switch (json.importance) {
                     case '1': // 기억해야함
