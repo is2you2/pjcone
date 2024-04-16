@@ -11,7 +11,7 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import clipboard from "clipboardy";
 import { isNativefier, isPlatform } from 'src/app/app.component';
 import * as p5 from 'p5';
-import { FileInfo, GlobalActService } from 'src/app/global-act.service';
+import { GlobalActService } from 'src/app/global-act.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 
 @Component({

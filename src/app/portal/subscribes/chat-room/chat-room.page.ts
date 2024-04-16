@@ -483,13 +483,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
           let this_file: FileInfo = {};
           this_file.url = pasted_url;
-          this_file['content_related_creator'] = [
-            ...override.content_related_creator, {
-              user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-              timestamp: new Date().getTime(),
-              display_name: this.nakama.users.self['display_name'],
-              various: override.url ? 'shared' : 'link',
-            }];
+          this_file['content_related_creator'] = [];
+          if (override && override.content_related_creator) this_file['content_related_creator'] = [...override.content_related_creator]
+          this_file['content_related_creator'].push({
+            user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            timestamp: new Date().getTime(),
+            display_name: this.nakama.users.self['display_name'],
+            various: override.url ? 'shared' : 'link',
+          });
           this_file['content_creator'] = {
             user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
             timestamp: new Date().getTime(),
