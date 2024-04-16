@@ -14,10 +14,30 @@ SPDX-License-Identifier: MIT -->
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content>
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">community</ion-title>
     </ion-toolbar>
   </ion-header>
+  <div *ngIf="nakama.posts.length">
+    <ion-card button>
+      <img src="about:blank" alt="">
+      <ion-card-header>
+        <ion-card-subtitle>Awesome Subtitle</ion-card-subtitle>
+        <ion-card-title>Awesome Title</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        Awesome content
+      </ion-card-content>
+    </ion-card>
+  </div>
+  <div *ngIf="!nakama.posts.length">
+    <div class="disconnect_info">
+      <ion-icon style="width: 60px; height: 60px;" color="medium" name="document-text-outline"></ion-icon>
+      <div>
+        <ion-label color="medium">{{lang.text['Community']['NoPosts']}}</ion-label>
+      </div>
+    </div>
+  </div>
 </ion-content>

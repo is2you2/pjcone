@@ -19,7 +19,7 @@ export class PortalPage implements OnInit {
   @ViewChild(IonTabs) ionTabs: IonTabs;
 
   constructor(
-    private nav: NavController,
+    private navCtrl: NavController,
     public nakama: NakamaService,
     private global: GlobalActService,
     public indexed: IndexedDBService,
@@ -37,7 +37,7 @@ export class PortalPage implements OnInit {
     if (this.global.p5todo && this.global.p5todo['PlayCanvas'] && this.TodoIcon == 'checkbox')
       this.global.p5todo['PlayCanvas']();
     if (this.nakama.AfterLoginAct.length) { // 빠른 진입 행동 보완
-      this.nav.navigateForward('portal/settings/group-server');
+      this.navCtrl.navigateForward('portal/settings/group-server');
       this.nakama.removeBanner();
     }
   }
@@ -82,7 +82,7 @@ export class PortalPage implements OnInit {
   /** 하단 탭을 눌러 설정페이지로 이동 */
   setting_button() {
     this.nakama.removeBanner();
-    this.nav.navigateForward('portal/settings', {
+    this.navCtrl.navigateForward('portal/settings', {
       animation: iosTransitionAnimation,
     });
   }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
+// SPDX-FileCopyrightText: © 2024 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
@@ -67,5 +67,4 @@ export class CommunityPage implements OnInit {
     delete this.global.p5key['KeyShortCut']['Digit'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
   }
-
 }

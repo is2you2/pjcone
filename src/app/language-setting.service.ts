@@ -24,6 +24,7 @@ export class LanguageSettingService {
     Profile: {},
     GroupServer: {},
     Settings: {},
+    Community: {},
   };
 
   constructor() {

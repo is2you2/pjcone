@@ -2810,8 +2810,6 @@ export class NakamaService {
   subscribe_lock = false;
   /** 채널에 새 메시지가 있는 경우 뱃지 표시 */
   has_new_channel_msg = false;
-  /** 사설 SNS에 새 글이 게시된 경우 뱃지 표시 */
-  has_new_post = false;
   /** 채널 메시지를 변조 후 전파하기 */
   async update_from_channel_msg(msg: ChannelMessage, _is_official: string, _target: string, isNewChannel = false) {
     let is_me = msg.sender_id == this.servers[_is_official][_target].session.user_id;
@@ -2918,6 +2916,13 @@ export class NakamaService {
       (original_msg || c.content['noti'] || (c.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined) || '');
     this.rearrange_channels();
   }
+
+  /** 사설 SNS에 새 글이 게시된 경우 뱃지 표시 */
+  has_new_post = false;
+  /** 내가 참여한 채널의 게시물들 */
+  posts_orig = {};
+  /** 내가 참여한 채널의 게시물들 (정렬됨) */
+  posts = [];
 
   /** WebRTC 통화 채널에 참가하기 */
   async JoinWebRTCMatch(msg: any, _is_official: string, _target: string, c_info: any) {
