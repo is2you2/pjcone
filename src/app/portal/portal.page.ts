@@ -7,6 +7,7 @@ import { NakamaService } from '../nakama.service';
 import { GlobalActService } from '../global-act.service';
 import { IndexedDBService } from '../indexed-db.service';
 import { WebrtcService } from '../webrtc.service';
+import { StatusManageService } from '../status-manage.service';
 
 @Component({
   selector: 'app-portal',
@@ -23,6 +24,7 @@ export class PortalPage implements OnInit {
     private global: GlobalActService,
     public indexed: IndexedDBService,
     private _webrtc: WebrtcService,
+    public statusBar: StatusManageService,
   ) { }
 
   ngOnInit() { }
@@ -40,6 +42,7 @@ export class PortalPage implements OnInit {
     }
   }
 
+  /** 포털 화면 단축키 구성 */
   try_add_shortcut() {
     if (this.global.p5key && this.global.p5key['KeyShortCut'])
       this.global.p5key['KeyShortCut']['BottomTab'] = (char: string) => {
@@ -52,7 +55,13 @@ export class PortalPage implements OnInit {
             this.subscribe_button();
             this.ionTabs.select('subscribes');
             break;
-          case 'E':
+          case 'E': // 상황에 따라, 커뮤니티 또는 설정
+            if (this.statusBar.settings.groupServer == 'online') {
+              this.community_tab_selected();
+              this.ionTabs.select('community');
+              break;
+            }
+          case 'R':
             this.setting_button();
             break;
         }
@@ -67,6 +76,7 @@ export class PortalPage implements OnInit {
     this.nakama.has_new_channel_msg = false;
     this.SubscribesIcon = 'chatbubbles';
     this.TodoIcon = 'checkbox-outline';
+    this.CommunityIcon = 'newspaper-outline';
   }
 
   /** 하단 탭을 눌러 설정페이지로 이동 */
@@ -79,10 +89,19 @@ export class PortalPage implements OnInit {
 
   SubscribesIcon = 'chatbubbles';
   TodoIcon = 'checkbox-outline';
+  CommunityIcon = 'newspaper-outline';
 
+  /** 구 버전 함수 이름이 계승됨, 할 일이 눌렸을 때 */
   bottom_tab_selected() {
     this.SubscribesIcon = 'chatbubbles-outline';
     this.TodoIcon = 'checkbox';
+    this.CommunityIcon = 'newspaper-outline';
+  }
+
+  community_tab_selected() {
+    this.SubscribesIcon = 'chatbubbles-outline';
+    this.TodoIcon = 'checkbox-outline';
+    this.CommunityIcon = 'newspaper';
   }
 
   CacheKeyShortCut: any;

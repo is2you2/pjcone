@@ -2808,7 +2808,10 @@ export class NakamaService {
 
   /** 연결 페이지를 보고있는지 여부 */
   subscribe_lock = false;
+  /** 채널에 새 메시지가 있는 경우 뱃지 표시 */
   has_new_channel_msg = false;
+  /** 사설 SNS에 새 글이 게시된 경우 뱃지 표시 */
+  has_new_post = false;
   /** 채널 메시지를 변조 후 전파하기 */
   async update_from_channel_msg(msg: ChannelMessage, _is_official: string, _target: string, isNewChannel = false) {
     let is_me = msg.sender_id == this.servers[_is_official][_target].session.user_id;
