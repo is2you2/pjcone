@@ -2556,6 +2556,7 @@ export class NakamaService {
               console.log('등록되지 않은 할 일 행동: ', m);
               break;
           }
+          this.SyncTodoCounter(_is_official, _target);
         }
           break;
         case MatchOpCode.EDIT_PROFILE: {
