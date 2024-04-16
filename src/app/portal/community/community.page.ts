@@ -31,6 +31,7 @@ export class CommunityPage implements OnInit {
 
   ionViewDidEnter() {
     this.try_add_shortcut();
+    this.nakama.is_post_lock = true;
   }
 
   try_add_shortcut() {
@@ -66,5 +67,6 @@ export class CommunityPage implements OnInit {
   ionViewWillLeave() {
     delete this.global.p5key['KeyShortCut']['Digit'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
+    this.nakama.is_post_lock = false;
   }
 }
