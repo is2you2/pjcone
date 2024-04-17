@@ -5,7 +5,6 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonToggle, ModalController } from '@ionic/angular';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { isPlatform } from 'src/app/app.component';
 import clipboard from "clipboardy";
 import { StatusManageService } from 'src/app/status-manage.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';

@@ -7,6 +7,7 @@ import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
+import { AddPostPage } from './add-post/add-post.page';
 
 @Component({
   selector: 'app-community',
@@ -26,7 +27,8 @@ export class CommunityPage implements OnInit {
   ngOnInit() { }
 
   add_post() {
-    console.log('새 포스트 작성');
+    this.navCtrl.navigateForward('portal/community/add-post');
+    this.nakama.removeBanner();
   }
 
   ionViewDidEnter() {
@@ -46,7 +48,7 @@ export class CommunityPage implements OnInit {
   AddShortcut() {
     if (this.global.p5key && this.global.p5key['KeyShortCut']) {
       this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-        console.log('숫자에 따른 포스트 상세 열기');
+        console.log('숫자에 따른 포스트 상세 열기: ', index);
         // if (this.nakama.channels.length > index)
         //   this.go_to_chatroom(this.nakama.channels[index]);
         // else this.add_new_group();
@@ -57,11 +59,6 @@ export class CommunityPage implements OnInit {
       this.global.p5key['KeyShortCut']['AddAct'] = () => {
         this.add_post();
       };
-  }
-
-  go_to_page(_page: string) {
-    this.navCtrl.navigateForward(`portal/settings/${_page}`);
-    this.nakama.removeBanner();
   }
 
   ionViewWillLeave() {
