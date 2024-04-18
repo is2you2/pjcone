@@ -44,6 +44,23 @@ export class CommunityPage implements OnInit {
     }, 100);
   }
 
+  /** 사용자 정보를 열람하는 경우 카드 열람 무시 */
+  isOpenProfile = false;
+  /** 작성자 정보 열기 */
+  open_profile() {
+    this.isOpenProfile = true;
+    console.log('open_profile');
+    setTimeout(() => {
+      this.isOpenProfile = false;
+    }, 0);
+  }
+
+  /** 게시글 읽기 */
+  open_post() {
+    if (this.isOpenProfile) return;
+    console.log('open_post');
+  }
+
   /** 단축키 생성 */
   AddShortcut() {
     if (this.global.p5key && this.global.p5key['KeyShortCut']) {

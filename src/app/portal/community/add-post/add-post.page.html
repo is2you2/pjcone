@@ -23,4 +23,11 @@
       </div>
     </ion-accordion>
   </ion-accordion-group>
+  <ion-item button (click)="go_to_profile()">
+    <div class="additional_form new_bg_form"
+      [style]="'background-image: linear-gradient(to right, #0000, #' + userInput.UserColor + '44)'">
+    </div>
+    <ion-label>{{lang.text['AddPost']['Creator']}}</ion-label>
+    <ion-label class="ion-text-end">{{userInput.creator_name || lang.text['Profile']['noname_user']}}</ion-label>
+  </ion-item>
 </ion-content>
