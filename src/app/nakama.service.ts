@@ -894,40 +894,30 @@ export class NakamaService {
   /** 서버에 저장시킨 해야할 일 목록 불러오기 */
   async load_server_todo(_is_official: string, _target: string) {
     try {
-      let todos = await this.servers[_is_official][_target].client.readStorageObjects(
-        this.servers[_is_official][_target].session, {
-        object_ids: [{
-          collection: 'server_todo',
-          key: 'RemoteTodo_Counter',
-          user_id: this.servers[_is_official][_target].session.user_id,
-        }]
-      });
-      if (todos.objects.length) {
-        let count = todos.objects[0].value['data'];
-        if (!this.RemoteTodoCounter[_is_official])
-          this.RemoteTodoCounter[_is_official] = {};
-        this.RemoteTodoCounter[_is_official][_target] = count;
-        for (let i = 0, j = count.length; i < j; i++) {
-          try {
-            let key = `RemoteTodo_${this.servers[_is_official][_target].session.user_id}_${count[i]}`;
-            let todo = await this.servers[_is_official][_target].client.readStorageObjects(
-              this.servers[_is_official][_target].session, {
-              object_ids: [{
-                collection: 'server_todo',
-                key: key,
-                user_id: this.servers[_is_official][_target].session.user_id,
-              }]
-            });
-            if (todo.objects.length)
-              this.modify_remote_info_as_local(todo.objects[0].value, _is_official, _target);
-            else try { // 로컬에 있는 같은 id의 할 일 삭제
-              let data = await this.indexed.loadTextFromUserPath(`todo/${key}/info.todo`)
-              let json = JSON.parse(data);
-              this.deleteTodoFromStorage(true, json);
-            } catch (e) { }
-          } catch (e) {
-            console.log('서버 해야할 일 불러오기 오류: ', e);
-          }
+      let count = this.RemoteTodoCounter[_is_official][_target];
+      if (!this.RemoteTodoCounter[_is_official])
+        this.RemoteTodoCounter[_is_official] = {};
+      for (let i = count.length - 1; i >= 0; i--) {
+        try {
+          let key = `RemoteTodo_${this.servers[_is_official][_target].session.user_id}_${count[i]}`;
+          let todo = await this.servers[_is_official][_target].client.readStorageObjects(
+            this.servers[_is_official][_target].session, {
+            object_ids: [{
+              collection: 'server_todo',
+              key: key,
+              user_id: this.servers[_is_official][_target].session.user_id,
+            }]
+          });
+          if (todo.objects.length)
+            this.modify_remote_info_as_local(todo.objects[0].value, _is_official, _target);
+          else try { // 로컬에 있는 같은 id의 할 일 삭제
+            this.RemoteTodoCounter[_is_official][_target].splice(i, 1);
+            let data = await this.indexed.loadTextFromUserPath(`todo/${key}/info.todo`)
+            let json = JSON.parse(data);
+            this.deleteTodoFromStorage(true, json);
+          } catch (e) { }
+        } catch (e) {
+          console.log('서버 해야할 일 불러오기 오류: ', e);
         }
       }
     } catch (e) {
