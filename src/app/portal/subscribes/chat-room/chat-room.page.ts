@@ -643,6 +643,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       delete this.userInput.file;
       this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
     }
+    let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
+    input.value = '';
   }
 
   /** 로컬채널 대표이미지 변경 */

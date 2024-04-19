@@ -338,5 +338,7 @@ export class AddGroupPage implements OnInit {
   async inputImageSelected(ev: any) {
     let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
     this.nakama.limit_image_size(base64, (v) => this.userInput.img = v['canvas'].toDataURL())
+    let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
+    input.value = '';
   }
 }

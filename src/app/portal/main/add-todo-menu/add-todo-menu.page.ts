@@ -622,6 +622,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (!ev.target.files.length) return;
     for (let i = 0, j = ev.target.files.length; i < j; i++)
       await this.selected_blobFile_callback_act(ev.target.files[i]);
+    let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
+    input.value = '';
   }
 
   /** 사용가능한 원격 서버 리스트 */

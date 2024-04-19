@@ -577,6 +577,8 @@ export class GroupServerPage implements OnInit {
     }, 1500);
     let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
     this.nakama.limit_image_size(base64, (v: any) => { this.p5canvas['ChangeImageSmooth'](v['canvas'].toDataURL()) });
+    let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
+    input.value = '';
   }
 
   /** 온라인 전환 자동처리 가능여부 */
