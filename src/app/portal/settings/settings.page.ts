@@ -244,45 +244,9 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   async download_serverfile() {
-    if (isPlatform == 'Android' || isPlatform == 'iOS') {
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      loading.present();
-      let filename = 'nakama.zip';
-      let blob = await fetch('assets/data/nakama.zip').then(r => r.blob());
-      try {
-        await this.file.writeFile(this.file.externalDataDirectory, filename, blob);
-        loading.dismiss();
-        this.p5toast.show({
-          text: this.lang.text['ContentViewer']['fileSaved'],
-        });
-      } catch (e) {
-        console.log('download_serverfile: ', e);
-        try {
-          await this.file.writeExistingFile(this.file.externalDataDirectory, filename, blob);
-          loading.dismiss();
-          this.p5toast.show({
-            text: this.lang.text['ContentViewer']['fileSaved'],
-          });
-        } catch (e) {
-          console.log('download_serverfile_rewrite: ', e);
-          loading.dismiss();
-          this.p5toast.show({
-            text: this.lang.text['ContentViewer']['fileSaveFailed'],
-          });
-        }
-      }
-    } else {
-      let link = document.createElement("a");
-      link.download = 'nakama.zip';
-      link.href = 'assets/data/nakama.zip';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      link.remove();
-      this.p5toast.show({
-        text: this.lang.text['ContentViewer']['fileSaved'],
-      });
-    }
+    if (this.lang.lang == 'ko')
+      window.open('https://is2you2.github.io/posts/how-to-use-pjcone-server/', '_system');
+    else window.open('https://is2you2.github.io/posts/how-to-use-pjcone-server-en/', '_system');
   }
 
   go_to_qr_share() {
