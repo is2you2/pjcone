@@ -710,6 +710,28 @@ export class GlobalActService {
     return Catched ? CatchedAddress : undefined;
   }
 
+  /** 해당 주소의 파일 삭제 요청 (cdn 기반 파일) */
+  async remove_file_from_storage(url: string) {
+    let sep = url.split('/cdn/');
+    let target_file_name = sep.pop();
+    let target_address = sep.shift();
+    let lastIndex = target_address.lastIndexOf(':');
+    if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
+    let headers = new Headers();
+    headers.append('Access-Control-Allow-Origin', '*');
+    headers.append('Access-Control-Allow-Method', '*');
+    headers.append('Access-Control-Allow-Headers', '*');
+    const cont = new AbortController();
+    const id = setTimeout(() => {
+      this.p5toast.show({
+        text: this.lang.text['GlobalAct']['UploadFailed'],
+      });
+      cont.abort();
+    }, 6000);
+    await fetch(`${target_address}:9001/remove/${target_file_name}`, { method: "POST", headers: headers, signal: cont.signal });
+    clearTimeout(id);
+  }
+
   /** 사용자 지정 서버에 업로드 시도 */
   async try_upload_to_user_custom_fs(file: any, user_id: string, formData?: FormData, loading?: HTMLIonLoadingElement) {
     let innerLoading: HTMLIonLoadingElement;

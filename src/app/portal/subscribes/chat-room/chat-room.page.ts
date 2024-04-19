@@ -1066,7 +1066,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (this.NeedScrollDown() && !this.ShowRecentMsg) {
             this.init_last_message_viewer();
             this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
-          } else {
+          } else if (c.code != 2) {
             if (this.info['local'])
               this.last_message_viewer['is_me'] = true;
             else this.last_message_viewer['is_me'] = c.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id;
@@ -1869,25 +1869,29 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (!this.info['local']) { // 서버와 연결된 채널인 경우
             try {
               await this.nakama.servers[this.isOfficial][this.target].socket.removeChatMessage(this.info['id'], msg.message_id);
-              if (FileURL) {
-                let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['DeleteFile'] });
-                loading.present();
-                for (let i = 0; i < msg.content['partsize']; i++) {
-                  try { // 파일이 없어도 순회 작업 진행
-                    await this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
-                      this.nakama.servers[this.isOfficial][this.target].session, {
-                      object_ids: [{
-                        collection: `file_${msg.channel_id.replace(/[.]/g, '_')}`,
-                        key: `msg_${msg.message_id}_${i}`,
-                      }],
-                    });
-                  } catch (e) { }
-                  loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${msg.content['filename']}_${msg.content['partsize'] - i}`;
-                } // 서버에서 삭제되지 않았을 경우 파일을 남겨두기
-                let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
-                await this.indexed.removeFileFromUserPath(path);
-                await this.indexed.removeFileFromUserPath(`${path}_thumbnail.png`);
-                loading.dismiss();
+              if (FileURL) { // 첨부파일이 포함되어 있는 경우
+                if (msg.content.url) { // 링크된 파일인 경우
+                  this.global.remove_file_from_storage(msg.content.url);
+                } else { // 파트 업로드 파일인 경우
+                  let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['DeleteFile'] });
+                  loading.present();
+                  for (let i = 0; i < msg.content['partsize']; i++) {
+                    try { // 파일이 없어도 순회 작업 진행
+                      await this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
+                        this.nakama.servers[this.isOfficial][this.target].session, {
+                        object_ids: [{
+                          collection: `file_${msg.channel_id.replace(/[.]/g, '_')}`,
+                          key: `msg_${msg.message_id}_${i}`,
+                        }],
+                      });
+                    } catch (e) { }
+                    loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${msg.content['filename']}_${msg.content['partsize'] - i}`;
+                  } // 서버에서 삭제되지 않았을 경우 파일을 남겨두기
+                  let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+                  await this.indexed.removeFileFromUserPath(path);
+                  await this.indexed.removeFileFromUserPath(`${path}_thumbnail.png`);
+                  loading.dismiss();
+                }
               }
             } catch (e) {
               console.error('채널 메시지 삭제 오류: ', e);
