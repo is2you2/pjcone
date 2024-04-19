@@ -620,6 +620,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               loading.dismiss();
               setTimeout(() => {
                 this.scroll_down_logs();
+                let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
+                input.value = '';
               }, 300);
             }
           }]
@@ -638,13 +640,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         loading.present();
         await this.selected_blobFile_callback_act(ev.target.files[0]);
         loading.dismiss();
+        let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
+        input.value = '';
       }
     } else {
       delete this.userInput.file;
       this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
+      let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
+      input.value = '';
     }
-    let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
-    input.value = '';
   }
 
   /** 로컬채널 대표이미지 변경 */

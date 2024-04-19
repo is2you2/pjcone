@@ -263,8 +263,6 @@ export class UserFsDirPage implements OnInit {
         loading.dismiss();
       }
     }
-    let input = document.getElementById('import_file') as HTMLInputElement;
-    input.value = '';
   }
 
   async importSelected(file: any) {
@@ -729,8 +727,6 @@ export class UserFsDirPage implements OnInit {
     this.p5toast.show({
       text: this.lang.text['UserFsDir']['NeedResetToApply'],
     });
-    let input = document.getElementById('folder_sel_id') as HTMLInputElement;
-    input.value = '';
   }
 
   RemoveDirectoryRecursive() {
