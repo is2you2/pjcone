@@ -297,6 +297,7 @@ export class NakamaService {
   isBannerShowing = false;
   appMargin: number;
   async resumeBanner() {
+    return;
     if (!this.isBannerShowing) return;
     const result = await AdMob.resumeBanner()
       .catch(e => console.log(e));
@@ -309,6 +310,7 @@ export class NakamaService {
   }
 
   async removeBanner() {
+    return;
     if (!this.isBannerShowing) return;
     const result = await AdMob.hideBanner()
       .catch(e => console.log(e));

@@ -230,7 +230,7 @@ export class AppComponent {
   init_admob() {
     this.platform.ready().then(() => {
       AdMob.initialize({
-        testingDevices: [],
+        testingDevices: ['1bc3817e4873fd6f'],
         initializeForTesting: true,
       });
     });

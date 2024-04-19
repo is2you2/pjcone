@@ -117,6 +117,7 @@ export class SubscribesPage implements OnInit {
   }
 
   async add_admob_banner() {
+    return;
     AdMob.addListener(BannerAdPluginEvents.SizeChanged, (size: AdMobBannerSize) => {
       this.nakama.appMargin = size.height;
       const app: HTMLElement = document.querySelector('ion-router-outlet');
