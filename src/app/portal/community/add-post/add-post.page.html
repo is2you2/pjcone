@@ -30,4 +30,21 @@
     <ion-label>{{lang.text['AddPost']['Creator']}}</ion-label>
     <ion-label class="ion-text-end">{{userInput.creator_name || lang.text['Profile']['noname_user']}}</ion-label>
   </ion-item>
+  <ion-item-divider>
+    <ion-label>{{lang.text['AddPost']['AddNewPost']}}</ion-label>
+  </ion-item-divider>
+  <ion-item button>
+    <ion-input id="add_post_title" [placeholder]="lang.text['AddPost']['TitlePlaceholder']"
+      [(ngModel)]="userInput.title"></ion-input>
+  </ion-item>
+  <textarea id="add_post_content" class="infobox" style="height: 50%;" [placeholder]=""></textarea>
+  <ion-item-divider (click)="add_attachment()">
+    <ion-label>{{lang.text['AddPost']['AddAttaches']}}</ion-label>
+  </ion-item-divider>
+  <ion-item button *ngFor="let attach of userInput.attachments; let i = index">
+    <ion-label>{{'['+ i + '] ' + 'Click me'}}</ion-label>
+  </ion-item>
+  <ion-item button (click)="postData()">
+    <ion-label class="ion-text-center">{{lang.text['AddPost']['Post']}}</ion-label>
+  </ion-item>
 </ion-content>

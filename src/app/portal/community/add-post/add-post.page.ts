@@ -1,9 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController, NavController } from '@ionic/angular';
-import { GlobalActService } from 'src/app/global-act.service';
+import { FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { GroupServerPage } from '../../settings/group-server/group-server.page';
+
+/** 첨부파일 리스트 양식  
+ * [{ 주소(또는 경로), 자료 형식(url | data) }, ...]
+ */
+interface PostAttachment extends FileInfo {
+  /** 데이터 구성요소
+   * - url: 외부 링크 정보, url 텍스트가 작성됨
+   * - part: nakama_parted 정보, 데이터 경로(collection-key)가 작성됨 (path)
+   * - blob: 파일이 첨부됨, 게시물 작성 중일 때 사용되며 게시하는 과정에서 url 또는 part 로 변환됨
+   */
+  datatype: 'url' | 'part' | 'blob';
+}
 
 @Component({
   selector: 'app-add-post',
@@ -32,6 +44,7 @@ export class AddPostPage implements OnInit {
     create_time: undefined,
     modify_time: undefined,
     server: undefined,
+    attachments: [] as PostAttachment[],
   }
   index = 0;
   isOfficial: string;
@@ -53,6 +66,10 @@ export class AddPostPage implements OnInit {
   ionViewWillEnter() {
     this.AddShortcut();
     this.catchBottomTabShortCut();
+    let title_input = document.getElementById('add_post_title').childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
+    if (!this.userInput.title)
+      title_input.focus();
+    else document.getElementById('add_post_content').focus();
   }
 
   go_to_profile() {
@@ -90,10 +107,18 @@ export class AddPostPage implements OnInit {
     }
   }
 
+  add_attachment() {
+    console.log('첨부파일 추가하기 테스트');
+    this.userInput.attachments.push({
+      filename: 'test.psd',
+      datatype: 'url',
+    });
+  }
+
   /** 포스트 등록하기  
    * 글 내용이 길어질 수 있으므로 글이 아무리 짧더라도 txt 파일로 변환하여 게시
    */
-  UploadPost() {
+  postData() {
     this.isSaveClicked = true;
     // 너무 긴 제목 자르기
     // 게시글의 도입부 첫 줄 자르기

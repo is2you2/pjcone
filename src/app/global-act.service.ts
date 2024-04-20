@@ -39,6 +39,7 @@ export interface ContentCreatorInfo {
 export interface FileInfo {
   name?: string;
   filename?: string;
+  /** blob 파일 형식 (blob.type) */
   type?: string;
   file_ext?: string;
   /** 전체 파일 크기 */
