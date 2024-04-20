@@ -43,8 +43,16 @@ export class AddPostPage implements OnInit {
     this.userInput.creator_name = this.nakama.users.self['display_name'];
   }
 
+  BottomTabShortcut: any;
+  /** 하단 탭 단축키 캐싱 */
+  catchBottomTabShortCut() {
+    this.BottomTabShortcut = this.global.p5key['KeyShortCut']['BottomTab'];
+    delete this.global.p5key['KeyShortCut']['BottomTab'];
+  }
+
   ionViewWillEnter() {
     this.AddShortcut();
+    this.catchBottomTabShortCut();
   }
 
   go_to_profile() {
@@ -102,5 +110,6 @@ export class AddPostPage implements OnInit {
 
   ionViewWillLeave() {
     delete this.global.p5key['KeyShortCut']['Escape'];
+    this.global.p5key['KeyShortCut']['BottomTab'] = this.BottomTabShortcut;
   }
 }
