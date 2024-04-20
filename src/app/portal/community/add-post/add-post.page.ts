@@ -4,6 +4,7 @@ import { FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { GroupServerPage } from '../../settings/group-server/group-server.page';
+import { P5ToastService } from 'src/app/p5-toast.service';
 
 /** 첨부파일 리스트 양식  
  * [{ 주소(또는 경로), 자료 형식(url | data) }, ...]
@@ -29,6 +30,7 @@ export class AddPostPage implements OnInit {
     private navCtrl: NavController,
     private nakama: NakamaService,
     private modalCtrl: ModalController,
+    private p5toast: P5ToastService,
   ) { }
 
   servers: ServerInfo[] = [];
@@ -108,6 +110,7 @@ export class AddPostPage implements OnInit {
   }
 
   add_attachment() {
+    if (this.isSaveClicked) return;
     console.log('첨부파일 추가하기 테스트');
     this.userInput.attachments.push({
       filename: 'test.psd',
@@ -119,6 +122,9 @@ export class AddPostPage implements OnInit {
    * 글 내용이 길어질 수 있으므로 글이 아무리 짧더라도 txt 파일로 변환하여 게시
    */
   postData() {
+    this.p5toast.show({
+      text: '게시물 작성 기능 준비중',
+    });
     this.isSaveClicked = true;
     // 너무 긴 제목 자르기
     // 게시글의 도입부 첫 줄 자르기
