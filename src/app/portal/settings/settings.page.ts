@@ -3,16 +3,13 @@
 
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonAccordionGroup, iosTransitionAnimation, LoadingController, ModalController, NavController } from '@ionic/angular';
-import { isNativefier, isPlatform, SERVER_PATH_ROOT } from 'src/app/app.component';
-import { IndexedDBService } from 'src/app/indexed-db.service';
+import { isNativefier, isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 import { LocalNotiService } from '../../local-noti.service';
 import { GlobalActService } from 'src/app/global-act.service';
-import { File } from '@awesome-cordova-plugins/file/ngx';
-import { P5ToastService } from 'src/app/p5-toast.service';
 import { WebrtcManageIoDevPage } from 'src/app/webrtc-manage-io-dev/webrtc-manage-io-dev.page';
 import { QrSharePage } from './qr-share/qr-share.page';
 import { LocalGroupServerService } from 'src/app/local-group-server.service';
@@ -29,13 +26,9 @@ export class SettingsPage implements OnInit, OnDestroy {
     private navCtrl: NavController,
     public statusBar: StatusManageService,
     public nakama: NakamaService,
-    private indexed: IndexedDBService,
     public lang: LanguageSettingService,
     public noti: LocalNotiService,
     private global: GlobalActService,
-    private file: File,
-    private p5toast: P5ToastService,
-    private loadingCtrl: LoadingController,
     public server: LocalGroupServerService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
@@ -52,6 +45,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.navCtrl.back();
     };
   }
+
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
@@ -60,6 +54,13 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.check_if_admin();
     }
     this.can_use_http = (window.location.protocol == 'http:') || isNativefier;
+  }
+
+  /** 채널 리스트에서 해당 서버이름 보기 토글 */
+  toggle_ShowServer() {
+    if (this.nakama.showServer)
+      localStorage.setItem('showServer', '1');
+    else localStorage.removeItem('showServer');
   }
 
   /** 관리자로 등록된 서버들 */
@@ -163,6 +164,10 @@ export class SettingsPage implements OnInit, OnDestroy {
     }
     this.LinkButton.length = 0;
     this.LinkButton.push(() => this.go_to_page('noti-alert'));
+    this.LinkButton.push(() => {
+      this.nakama.showServer = !this.nakama.showServer;
+      this.toggle_ShowServer()
+    });
     this.LinkButton.push(() => this.go_to_qr_share());
     this.LinkButton.push(() => this.open_inapp_explorer());
     this.LinkButton.push(() => this.ToggleAccordion());

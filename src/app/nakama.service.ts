@@ -104,6 +104,9 @@ export class NakamaService {
     'unofficial': {},
   };
 
+  /** 채널 리스트에 서버 이름 표시 여부 */
+  showServer = false;
+
   async initialize() {
     // 기등록 알림 id 검토
     this.noti.GetNotificationIds((list) => {
@@ -178,6 +181,7 @@ export class NakamaService {
     });
     if (this.users.self['online'])
       this.init_all_sessions();
+    this.showServer = Boolean(localStorage.getItem('showServer'));
   }
   /** 시작시 해야할 일 알림을 설정 */
   async set_all_todo_notification() {

@@ -16,7 +16,7 @@ export class ShareContentToOtherPage implements OnInit {
     private navParams: NavParams,
     public modalCtrl: ModalController,
     public statusBar: StatusManageService,
-    private nakama: NakamaService,
+    public nakama: NakamaService,
   ) { }
 
   channels: any[];

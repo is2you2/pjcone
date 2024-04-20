@@ -38,11 +38,11 @@
       [(ngModel)]="userInput.title"></ion-input>
   </ion-item>
   <textarea id="add_post_content" class="infobox" style="height: 50%;" [disabled]="isSaveClicked"
-    [placeholder]=""></textarea>
+    [placeholder]="lang.text['AddPost']['ContentPlaceHolder']"></textarea>
   <ion-item-divider (click)="add_attachment()">
     <ion-label>{{lang.text['AddPost']['AddAttaches']}}</ion-label>
   </ion-item-divider>
-  <ion-item button *ngFor="let attach of userInput.attachments; let i = index">
+  <ion-item button *ngFor="let attach of userInput.attachments; let i = index" [disabled]="isSaveClicked">
     <ion-label>{{'['+ i + '] ' + 'Click me'}}</ion-label>
   </ion-item>
   <ion-item button [disabled]="isSaveClicked" (click)="postData()">

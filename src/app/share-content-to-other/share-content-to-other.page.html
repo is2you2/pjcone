@@ -31,7 +31,7 @@
               lang.text['ChatRoom']['noname_chatroom']) : (channel['title'] ||
               lang.text['ChatRoom']['noname_chatroom'])}}
             </td>
-            <td class="channel_text_form server_target">
+            <td *ngIf="nakama.showServer" class="channel_text_form server_target">
               {{'(' + channel['server']['target'] + ')'}}
             </td>
           </tr>
