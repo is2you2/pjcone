@@ -1401,6 +1401,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (!this.info['local'])
             json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
           this.nakama.ModulateTimeDate(json[i]);
+          json[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${json[i].message_id}.${json[i].content['file_ext']}`;
           if (json[i]['code'] != 2) this.messages.unshift(json[i]);
         }
         this.ViewMsgIndex = Math.max(0, this.messages.length - this.RefreshCount);
@@ -1409,7 +1410,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
           let FileURL: any;
           try {
-            this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
             let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
             FileURL = URL.createObjectURL(blob);
           } catch (e) { }
@@ -1433,6 +1433,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.nakama.translate_updates(json[i]);
             json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
             this.nakama.ModulateTimeDate(json[i]);
+            json[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${json[i].message_id}.${json[i].content['file_ext']}`;
             if (json[i]['code'] != 2) {
               ExactAddedChatCount++;
               this.messages.unshift(json[i]);
@@ -1444,7 +1445,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
             let FileURL: any;
             try {
-              this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
               let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
               FileURL = URL.createObjectURL(blob);
             } catch (e) { }
