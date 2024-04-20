@@ -292,7 +292,7 @@ export class WebrtcService {
         border.style("display: flex; justify-content: center;");
         border.style("width: fit-content; height: fit-content");
         border.style(`border-radius: ${BORDER_RADIUS}px`);
-        border.style(`background: #${isDarkMode ? '30564e88' : 'ff754e88'}`);
+        border.style(`background: #${isDarkMode ? '30564e88' : 'b9543788'}`);
         border.style("padding: 6px 12px");
 
         content = p.createDiv();
@@ -302,7 +302,7 @@ export class WebrtcService {
         content.style('flex-direction', 'column');
         content.style("width: fit-content; height: fit-content");
         content.style("word-break: break-all");
-        content.style(`background: #${isDarkMode ? '30564e88' : 'ff754e88'}`);
+        content.style(`background: #${isDarkMode ? '30564e88' : 'b9543788'}`);
         content.style(`border-radius: ${BORDER_RADIUS}px`);
         content.style("padding: 6px 12px");
         content.style(`color: ${isDarkMode ? 'white' : 'black'}`);
@@ -443,7 +443,7 @@ export class WebrtcService {
 
       /** Toast 외곽 조정 */
       let update_border = () => {
-        let calced = p.lerpColor(p.color(`#${isDarkMode ? '30564e88' : 'ff754e88'}`), p.color('#ffd94ebb'), borderLerp)['levels'];
+        let calced = p.lerpColor(p.color(`#${isDarkMode ? '30564e88' : 'b9543788'}`), p.color('#ffd94ebb'), borderLerp)['levels'];
         let border_calced = 4 * borderLerp;
         border.style(`padding: ${border_calced}px ${border_calced}px`);
         content.style(`padding: ${p.lerp(6, 2, borderLerp)}px ${p.lerp(12, 8, borderLerp)}px`);

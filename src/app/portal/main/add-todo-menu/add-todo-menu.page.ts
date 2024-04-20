@@ -757,7 +757,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         break;
       case '2': // 중요함
         this.normal_color = '#dddd0c88';
-        this.alert_color = '#ff754e88';
+        this.alert_color = '#b9543788';
         this.AlertLerpStartFrom = .4;
         break;
     }

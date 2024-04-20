@@ -259,7 +259,7 @@ export class MainPage implements OnInit {
                 this.defaultColor = p.color('#ddbb41');
                 break;
               case '2': // 중요도 높음
-                this.defaultColor = p.color('#ff754e');
+                this.defaultColor = p.color('#b95437');
                 break;
             }
           }

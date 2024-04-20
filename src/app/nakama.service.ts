@@ -260,7 +260,7 @@ export class NakamaService {
             color = 'ddbb41';
             break;
           case '2': // 중요함
-            color = 'ff754e';
+            color = 'b95437';
             break;
         }
         if (noti_info['custom_color'])
@@ -2467,7 +2467,7 @@ export class NakamaService {
                       default_color = 'ddbb41';
                       break;
                     case '2': // 중요함
-                      default_color = 'ff754e';
+                      default_color = 'b95437';
                       break;
                   }
                   this.noti.ClearNoti(json.noti_id);
@@ -3303,7 +3303,7 @@ export class NakamaService {
           },
           smallIcon_ln: 'diychat',
           group_ln: 'all_user_noti',
-          iconColor_ln: 'ff754e',
+          iconColor_ln: 'b95437',
         }, 'global_noti_all', (_ev: any) => {
           let image_form = `<img src="${decode_image}" alt="noti_image" style="border-radius: 2px">`;
           let text_form = `<div>${decode_body}</div>`;
