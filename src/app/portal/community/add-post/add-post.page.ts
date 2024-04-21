@@ -49,6 +49,7 @@ export class AddPostPage implements OnInit {
 
   servers: ServerInfo[] = [];
   userInput = {
+    id: undefined,
     title: undefined,
     /** 대표 이미지 설정, blob 링크 */
     titleImage: undefined,
@@ -60,6 +61,7 @@ export class AddPostPage implements OnInit {
     create_time: undefined,
     modify_time: undefined,
     server: undefined,
+    mainImage: undefined as PostAttachment,
     attachments: [] as PostAttachment[],
   }
   index = 0;
@@ -170,10 +172,23 @@ export class AddPostPage implements OnInit {
   }
 
   useVoiceRecording = false;
-
+  MainPostImage = undefined;
   /** 확장 버튼 행동들 */
   extended_buttons: ExtendButtonForm[] = [
     { // 0
+      icon: 'image-outline',
+      name: this.lang.text['AddPost']['MainPostImage'],
+      act: () => {
+        if (!this.MainPostImage)
+          document.getElementById('PostMainImage_sel').click();
+        else {
+          this.MainPostImage = undefined;
+          let input = document.getElementById('PostMainImage_sel') as HTMLInputElement;
+          input.value = '';
+        }
+      }
+    },
+    { // 1
       icon: 'document-attach-outline',
       name: this.lang.text['ChatRoom']['attachments'],
       act: async () => {
@@ -186,7 +201,7 @@ export class AddPostPage implements OnInit {
             this.new_attach({ detail: { value: 'load' } });
         }
       }
-    }, { // 1
+    }, { // 2
       icon_img: 'voidDraw.png',
       name: this.lang.text['ChatRoom']['voidDraw'],
       act: async () => {
@@ -208,7 +223,7 @@ export class AddPostPage implements OnInit {
           v.present();
         });
       }
-    }, { // 2
+    }, { // 3
       icon: 'camera-outline',
       name: this.lang.text['ChatRoom']['Camera'],
       act: async () => {
@@ -250,7 +265,7 @@ export class AddPostPage implements OnInit {
           loading.dismiss();
         } catch (e) { }
       }
-    }, { // 3
+    }, { // 4
       icon: 'mic-circle-outline',
       name: this.lang.text['ChatRoom']['Voice'],
       act: async () => {
@@ -274,8 +289,20 @@ export class AddPostPage implements OnInit {
           this.extended_buttons[3].icon = 'mic-circle-outline';
         }
       }
-    }
-  ];
+    }];
+
+  /** 채널 배경화면 변경 (from PostMainImage_sel) */
+  ChangeMainPostImage(ev: any) {
+    let imageFile = ev.target.files[0];
+    let FileURL = URL.createObjectURL(imageFile);
+    let path = `tmp_files/post/MainImage.png`;
+    this.indexed.saveBlobToUserPath(imageFile, path);
+    this.userInput.mainImage = { filename: 'MainImage.png' };
+    this.MainPostImage = FileURL;
+    setTimeout(() => {
+      URL.revokeObjectURL(FileURL);
+    }, 100);
+  }
 
   /** 파일이 선택되고 나면 */
   async selected_blobFile_callback_act(blob: any, contentRelated: ContentCreatorInfo[] = [], various = 'loaded', path?: string) {
