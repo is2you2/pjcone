@@ -74,6 +74,7 @@ AddAttaches,첨부 파일 추가,Add attachment
 Post,게시하기,Post
 MainPostImage,대표사진,Header
 NeedPostTitle,제목을 입력해주세요,Please enter the subject
+RemoveAttach,첨부파일 제거,Remove attachment
 ## Settings,,
 Title,설정,Settings
 CommunityAds,개발자 광고,Developer Ads

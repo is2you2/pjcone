@@ -262,6 +262,7 @@ export class AddPostPage implements OnInit {
               file.blob = new Blob([raw], { type: file['type'] })
             });
           this.userInput.attachments.push(file);
+          this.MakeAttachHaveContextMenu();
           loading.dismiss();
         } catch (e) { }
       }
@@ -329,6 +330,7 @@ export class AddPostPage implements OnInit {
     file.path = `tmp_files/post/${file.filename}_${this.userInput.attachments.length}.${file.file_ext}`;
     this.create_selected_thumbnail(file);
     this.userInput.attachments.push(file);
+    this.MakeAttachHaveContextMenu();
     this.indexed.saveBlobToUserPath(file.blob, file.path);
   }
 
@@ -394,6 +396,7 @@ export class AddPostPage implements OnInit {
         file.blob = new Blob([raw], { type: file['type'] });
       });
       this.userInput.attachments.push(file);
+      this.MakeAttachHaveContextMenu();
     } catch (e) {
       console.error('godot-이미지 편집 사용 불가: ', e);
     }
@@ -468,6 +471,7 @@ export class AddPostPage implements OnInit {
           this_file.typeheader = override.typeheader || this_file.viewer;
           this.global.modulate_thumbnail(this_file, this_file.url);
           this.userInput.attachments.push(this_file);
+          this.MakeAttachHaveContextMenu();
         } catch (e) {
           if (e == 'done')
             throw e;
@@ -475,6 +479,22 @@ export class AddPostPage implements OnInit {
         }
         break;
     }
+  }
+
+  MakeAttachHaveContextMenu() {
+    setTimeout(() => {
+      for (let i = this.userInput.attachments.length - 1; i >= 0; i--) {
+        let FileItem = document.getElementById(`PostAttach_${i}`);
+        FileItem.oncontextmenu = () => {
+          this.p5toast.show({
+            text: `${this.lang.text['AddPost']['RemoveAttach']}: ${this.userInput.attachments[i].filename}`,
+          });
+          this.userInput.attachments.splice(i, 1);
+          this.MakeAttachHaveContextMenu();
+          return false;
+        }
+      }
+    }, 0);
   }
 
   /** 파일 첨부하기 */
