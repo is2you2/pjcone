@@ -275,7 +275,7 @@ export class AddPostPage implements OnInit {
         if (this.useVoiceRecording) { // 녹음 시작
           let req = await VoiceRecorder.hasAudioRecordingPermission();
           if (req.value) { // 권한 있음
-            this.extended_buttons[3].icon = 'stop-circle-outline';
+            this.extended_buttons[4].icon = 'stop-circle-outline';
             await VoiceRecorder.startRecording();
             this.p5toast.show({
               text: this.lang.text['ChatRoom']['StartVRecord'],
@@ -287,7 +287,7 @@ export class AddPostPage implements OnInit {
           blob['name'] = `${this.lang.text['ChatRoom']['VoiceRecord']}.${data.value.mimeType.split('/').pop().split(';')[0]}`;
           blob['type_override'] = data.value.mimeType;
           this.selected_blobFile_callback_act(blob);
-          this.extended_buttons[3].icon = 'mic-circle-outline';
+          this.extended_buttons[4].icon = 'mic-circle-outline';
         }
       }
     }];
