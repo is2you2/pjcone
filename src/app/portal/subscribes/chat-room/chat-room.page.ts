@@ -1378,7 +1378,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
       this.pullable = this.ViewMsgIndex != 0 || Boolean(this.LocalHistoryList.length);
       if (this.ViewableMessage.length && this.ViewableMessage.length < this.RefreshCount)
-        this.LoadLocalChatHistory();
+        await this.LoadLocalChatHistory();
       this.MakeViewableMessagesHaveContextMenuAct();
       return;
     }
@@ -1396,17 +1396,21 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       let v = await this.indexed.loadTextFromUserPath(this.LocalHistoryList.pop());
       if (v) {
         let json: any[] = JSON.parse(v.trim());
+        let ExactAddedChatCount = 0;
         for (let i = json.length - 1; i >= 0; i--) {
           this.nakama.translate_updates(json[i]);
           if (!this.info['local'])
             json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
           this.nakama.ModulateTimeDate(json[i]);
           json[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${json[i].message_id}.${json[i].content['file_ext']}`;
-          if (json[i]['code'] != 2) this.messages.unshift(json[i]);
+          if (json[i]['code'] != 2) {
+            ExactAddedChatCount++;
+            this.messages.unshift(json[i]);
+          }
         }
         this.ViewMsgIndex = Math.max(0, this.messages.length - this.RefreshCount);
         this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.RefreshCount);
-        this.modulate_chatmsg(0, json.length);
+        this.modulate_chatmsg(0, ExactAddedChatCount);
         for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
           let FileURL: any;
           try {
@@ -1417,7 +1421,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.modulate_chatmsg(i, this.ViewableMessage.length);
         }
         if (this.ViewableMessage.length < this.RefreshCount)
-          this.LoadLocalChatHistory();
+          await this.LoadLocalChatHistory();
       }
       this.next_cursor = null;
       this.pullable = true;
@@ -1440,8 +1444,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }
           }
           this.ViewMsgIndex = Math.max(0, ExactAddedChatCount - this.RefreshCount);
-          this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.RefreshCount);
-          let ShowMeAgainCount = Math.min(Math.min(json.length, this.RefreshCount), this.ViewableMessage.length);
+          this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+          let ShowMeAgainCount = Math.min(Math.min(ExactAddedChatCount, this.RefreshCount), this.ViewableMessage.length);
           for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
             let FileURL: any;
             try {
