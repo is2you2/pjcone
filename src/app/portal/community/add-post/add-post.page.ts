@@ -13,6 +13,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { VoiceRecorder } from "capacitor-voice-recorder";
 import clipboard from "clipboardy";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
+import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 
 /** 첨부파일 리스트 양식  
  * [{ 주소(또는 경로), 자료 형식(url | data) }, ...]
@@ -239,8 +240,10 @@ export class AddPostPage implements OnInit {
             display_name: this.nakama.users.self['display_name'],
             various: 'camera',
           };
+          file.viewer = 'image';
+          file.path = `tmp_files/post/${file.filename}`;
           await this.indexed.saveBase64ToUserPath('data:image/jpeg;base64,' + image.base64String,
-            `tmp_files/chatroom/${file.filename}`, (raw) => {
+            file.path, (raw) => {
               file.blob = new Blob([raw], { type: file['type'] })
             });
           this.userInput.attachments.push(file);
@@ -296,8 +299,10 @@ export class AddPostPage implements OnInit {
       various: various as any,
     };
     file.blob = blob;
+    file.path = `tmp_files/post/${file.filename}_${this.userInput.attachments.length}.${file.file_ext}`;
     this.create_selected_thumbnail(file);
     this.userInput.attachments.push(file);
+    this.indexed.saveBlobToUserPath(file.blob, file.path);
   }
 
   /** 선택한 파일의 썸네일 만들기 */
@@ -356,7 +361,9 @@ export class AddPostPage implements OnInit {
           various: 'voidDraw',
         };
       }
-      await this.indexed.saveBase64ToUserPath(v.data['img'], `tmp_files/chatroom/${file.filename}`, (raw) => {
+      file.path = `tmp_files/post/${file.filename}`;
+      file.viewer = 'image';
+      await this.indexed.saveBase64ToUserPath(v.data['img'], file.path, (raw) => {
         file.blob = new Blob([raw], { type: file['type'] });
       });
       this.userInput.attachments.push(file);
@@ -485,6 +492,78 @@ export class AddPostPage implements OnInit {
         let input = document.getElementById('add_post_input') as HTMLInputElement;
         input.value = '';
       }
+    }
+  }
+
+  lock_modal_open = false;
+  open_viewer(info: PostAttachment) {
+    let attaches = [];
+    for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
+      attaches.push({ content: this.userInput.attachments[i] });
+    if (!this.lock_modal_open) {
+      this.lock_modal_open = true;
+      delete this.global.p5key['KeyShortCut']['Escape'];
+      this.modalCtrl.create({
+        component: IonicViewerPage,
+        componentProps: {
+          info: { content: info },
+          path: info.path,
+          alt_path: info.path,
+          isOfficial: this.isOfficial,
+          target: this.target,
+          relevance: attaches,
+          local: this.servers[this.index].isOfficial == 'local',
+        },
+        cssClass: 'fullscreen',
+      }).then(v => {
+        v.onDidDismiss().then((v) => {
+          this.AddShortcut();
+          if (v.data) { // 파일 편집하기를 누른 경우
+            switch (v.data.type) {
+              case 'image':
+                let related_creators: ContentCreatorInfo[] = [];
+                if (v.data.msg.content['content_related_creator'])
+                  related_creators = [...v.data.msg.content['content_related_creator']];
+                if (v.data.msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
+                  let is_already_exist = false;
+                  for (let i = 0, j = related_creators.length; i < j; i++)
+                    if (related_creators[i].user_id == v.data.msg.content['content_creator']['user_id']) {
+                      is_already_exist = true;
+                      break;
+                    }
+                  if (!is_already_exist) related_creators.push(v.data.msg.content['content_creator']);
+                }
+                this.modalCtrl.create({
+                  component: VoidDrawPage,
+                  componentProps: {
+                    path: v.data.path || info.path,
+                    width: v.data.width,
+                    height: v.data.height,
+                    isDarkMode: v.data.isDarkMode,
+                  },
+                  cssClass: 'fullscreen',
+                }).then(v => {
+                  v.onDidDismiss().then(() => {
+                    this.AddShortcut();
+                  });
+                  v.onWillDismiss().then(async v => {
+                    if (v.data) await this.voidDraw_fileAct_callback(v, related_creators);
+                  });
+                  delete this.global.p5key['KeyShortCut']['Escape'];
+                  v.present();
+                });
+                return;
+              case 'text':
+                this.selected_blobFile_callback_act(v.data.blob, v.data.contentRelated, 'textedit');
+                break;
+            }
+          }
+        });
+        delete this.global.p5key['KeyShortCut']['Escape'];
+        v.present();
+        this.nakama.removeBanner();
+        this.lock_modal_open = false;
+      });
     }
   }
 
