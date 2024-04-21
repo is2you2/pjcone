@@ -93,6 +93,15 @@ export class AddPostPage implements OnInit {
     this.AddShortcut();
     this.catchBottomTabShortCut();
     let title_input = document.getElementById('add_post_title').childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
+    title_input.onpaste = (ev: any) => {
+      let stack = [];
+      for (const clipboardItem of ev.clipboardData.files)
+        if (clipboardItem.type.startsWith('image/'))
+          stack.push({ file: clipboardItem });
+      if (!stack.length) return;
+      if (stack.length == 1)
+        this.ChangeMainPostImage({ target: { files: [stack[0].file] } });
+    }
     if (!this.userInput.title)
       title_input.focus();
     else document.getElementById('add_post_content').focus();
@@ -183,6 +192,7 @@ export class AddPostPage implements OnInit {
           document.getElementById('PostMainImage_sel').click();
         else {
           this.MainPostImage = undefined;
+          this.userInput.mainImage = undefined;
           let input = document.getElementById('PostMainImage_sel') as HTMLInputElement;
           input.value = '';
         }
