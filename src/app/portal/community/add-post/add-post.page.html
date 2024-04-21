@@ -39,37 +39,25 @@
   </ion-item>
   <textarea id="add_post_content" class="infobox" style="height: 50%;" [disabled]="isSaveClicked"
     [placeholder]="lang.text['AddPost']['ContentPlaceHolder']"></textarea>
+  <input hidden type="file" id="add_post_input" accept="*" multiple (change)="inputFileSelected($event)">
   <div style="width: 100%; text-align: center; padding-bottom: 16px;">
-    <div style="display: inline-block;" (click)="add_attachment('load')">
-      <div class="ext_button ext_button_override">
-        <ion-icon slot="icon-only" name="document-attach-outline" style="width: 36px; height: 36px;">
+    <div *ngFor="let button of extended_buttons" style="display: inline-block;">
+      <div class="ext_button ext_button_override" [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'"
+        (click)="button['act']()" [hidden]="button.isHide">
+        <ion-icon *ngIf="button['icon']" slot="icon-only" [name]="button['icon'] || 'close-circle'"
+          style="width: 36px; height: 36px;">
         </ion-icon>
-        <div>{{this.lang.text['ChatRoom']['attachments']}}</div>
-      </div>
-    </div>
-    <div style="display: inline-block;" (click)="add_attachment('voidDraw')">
-      <div class="ext_button ext_button_override">
-        <img class="ext_icon_img" src="assets/icon/voidDraw.png">
-        <div>{{this.lang.text['ChatRoom']['voidDraw']}}</div>
-      </div>
-    </div>
-    <div style="display: inline-block;" (click)="add_attachment('camera')">
-      <div class="ext_button ext_button_override">
-        <ion-icon slot="icon-only" name="camera-outline" style="width: 36px; height: 36px;">
-        </ion-icon>
-        <div>{{this.lang.text['ChatRoom']['Camera']}}</div>
-      </div>
-    </div>
-    <div style="display: inline-block;" (click)="add_attachment('voice')">
-      <div class="ext_button ext_button_override">
-        <ion-icon slot="icon-only" name="mic-circle-outline" style="width: 36px; height: 36px;">
-        </ion-icon>
-        <div>{{this.lang.text['ChatRoom']['Voice']}}</div>
+        <img *ngIf="button['icon_img']" class="ext_icon_img" [src]="'assets/icon/' + button['icon_img']"
+          [alt]="button['title']">
+        <div>{{button['name']}}</div>
       </div>
     </div>
   </div>
   <ion-item button *ngFor="let attach of userInput.attachments; let i = index" [disabled]="isSaveClicked">
     <ion-label>{{'['+ i + '] ' + attach.filename}}</ion-label>
+    <div class="additional_form bg_img_form">
+      <img class="profile_img" [src]="attach.thumbnail">
+    </div>
   </ion-item>
   <ion-item button [disabled]="isSaveClicked" (click)="postData()">
     <ion-label class="ion-text-center">{{lang.text['AddPost']['Post']}}</ion-label>

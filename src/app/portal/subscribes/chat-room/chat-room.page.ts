@@ -30,7 +30,7 @@ import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { SpeechRecognition } from "@capacitor-community/speech-recognition";
 import { VoiceRecorder } from "capacitor-voice-recorder";
 
-interface ExtendButtonForm {
+export interface ExtendButtonForm {
   /** 버튼 숨기기 */
   isHide?: boolean;
   /** 아이콘 상대경로-이름, 크기: 64 x 64 px */
