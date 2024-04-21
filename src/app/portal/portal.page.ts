@@ -56,11 +56,9 @@ export class PortalPage implements OnInit {
             this.ionTabs.select('subscribes');
             break;
           case 'E': // 상황에 따라, 커뮤니티 또는 설정
-            if (this.statusBar.settings.groupServer == 'online') {
-              this.community_tab_selected();
-              this.ionTabs.select('community');
-              break;
-            }
+            this.community_tab_selected();
+            this.ionTabs.select('community');
+            break;
           case 'R':
             this.setting_button();
             break;

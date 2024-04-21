@@ -54,7 +54,15 @@ export class AddPostPage implements OnInit {
 
   ngOnInit() {
     this.servers = this.nakama.get_all_server_info(true, true);
-    this.select_server(0);
+    let local_info = {
+      name: this.lang.text['AddGroup']['UseLocalStorage'],
+      isOfficial: 'local',
+      target: 'channels',
+      local: true,
+    };
+    this.servers.unshift(local_info);
+    if (this.servers.length > 1) this.index = 1;
+    this.select_server(this.index);
     this.userInput.creator_name = this.nakama.users.self['display_name'];
   }
 
@@ -95,9 +103,14 @@ export class AddPostPage implements OnInit {
     this.isExpanded = false;
     this.isOfficial = this.servers[i].isOfficial;
     this.target = this.servers[i].target;
-    // 변경된 서버 user_id 를 적용함
-    this.userInput.creator_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
-    this.userInput.UserColor = (this.userInput.creator_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
+    try { // 변경된 서버 user_id 를 적용함
+      this.userInput.creator_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
+      this.userInput.UserColor = (this.userInput.creator_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
+    } catch (e) { // 그게 아니라면 로컬입니다
+      this.userInput.creator_id = this.nakama.users.self['display_name'];
+      this.userInput.creator_name = this.nakama.users.self['display_name'];
+      this.userInput.UserColor = '888888';
+    }
   }
 
   /** 단축키 생성 */
@@ -122,6 +135,14 @@ export class AddPostPage implements OnInit {
    * 글 내용이 길어질 수 있으므로 글이 아무리 짧더라도 txt 파일로 변환하여 게시
    */
   postData() {
+    if (!this.userInput.title) {
+      this.p5toast.show({
+        text: this.lang.text['AddPost']['NeedPostTitle'],
+      });
+      let title_input = document.getElementById('add_post_title').childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
+      title_input.focus();
+      return;
+    }
     this.p5toast.show({
       text: '게시물 작성 기능 준비중',
     });
@@ -137,6 +158,7 @@ export class AddPostPage implements OnInit {
     // 서버 정보 지우기
     // 전체 정보(UserInput)를 텍스트 파일화
     // 서버에 동기화
+    console.log('입력됨: ', this.userInput);
   }
 
   ionViewWillLeave() {
