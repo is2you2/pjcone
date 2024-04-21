@@ -142,6 +142,20 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         else document.getElementById('backgroundImage_sel').click();
       }
     }, { // 3
+      icon: 'document-attach-outline',
+      name: this.lang.text['ChatRoom']['attachments'],
+      act: async () => {
+        if (!this.userInputTextArea)
+          this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+        try {
+          await this.new_attach({ detail: { value: 'link' } });
+          return; // 파일 넣기 성공시 링크 발송 기능 여전히 사용
+        } catch (e) {
+          if (e != 'done')
+            this.new_attach({ detail: { value: 'load' } });
+        }
+      }
+    }, { // 4
       icon_img: 'voidDraw.png',
       name: this.lang.text['ChatRoom']['voidDraw'],
       act: async () => {
@@ -188,20 +202,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.removeShortCutKey();
           v.present();
         });
-      }
-    }, { // 4
-      icon: 'document-attach-outline',
-      name: this.lang.text['ChatRoom']['attachments'],
-      act: async () => {
-        if (!this.userInputTextArea)
-          this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-        try {
-          await this.new_attach({ detail: { value: 'link' } });
-          return; // 파일 넣기 성공시 링크 발송 기능 여전히 사용
-        } catch (e) {
-          if (e != 'done')
-            this.new_attach({ detail: { value: 'load' } });
-        }
       }
     }, { // 5
       icon: 'cloud-done-outline',

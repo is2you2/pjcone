@@ -196,3 +196,28 @@ ion-modal.fullscreen {
 button.alert-button.red_font {
     color: red;
 }
+
+///// 채널 채팅 및 게시물
+// 확장메뉴
+.expanded {
+    height: 240px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    text-align: center;
+    background-color: var(--chatroom-input-background)
+}
+
+// 확장메뉴의 각 버튼들
+.ext_button {
+    width: 64px;
+    height: 48px;
+    margin: 24px 12px 0px 12px;
+    text-align: center;
+}
+
+// 확장 메뉴 아이콘
+.ext_icon_img {
+    max-width: 36px;
+    max-height: 36px;
+}

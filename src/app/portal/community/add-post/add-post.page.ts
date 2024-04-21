@@ -122,9 +122,20 @@ export class AddPostPage implements OnInit {
     }
   }
 
-  add_attachment() {
+  /** 첨부파일 동작 */
+  add_attachment(type: string) {
+    console.log('add_attachment: ', type);
     if (this.isSaveClicked) return;
-    console.log('첨부파일 추가하기 테스트');
+    switch (type) {
+      case 'load':
+        break;
+      case 'voidDraw':
+        break;
+      case 'camera':
+        break;
+      case 'voice':
+        break;
+    }
     this.userInput.attachments.push({
       filename: 'test.psd',
       datatype: 'url',
