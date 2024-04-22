@@ -49,7 +49,7 @@ export class AddGroupPage implements OnInit {
     let local_info = {
       name: this.lang.text['AddGroup']['UseLocalStorage'],
       isOfficial: 'local',
-      target: 'channels',
+      target: 'target',
       local: true,
     };
     this.servers.unshift(local_info);
@@ -239,9 +239,9 @@ export class AddGroupPage implements OnInit {
   /** 로컬 채널 생성 */
   SaveLocalAct() {
     if (!this.nakama.channels_orig['local']) this.nakama.channels_orig['local'] = {};
-    if (!this.nakama.channels_orig['local']['channels']) this.nakama.channels_orig['local']['channels'] = {};
+    if (!this.nakama.channels_orig['local']['target']) this.nakama.channels_orig['local']['target'] = {};
     // 아이디 중복 검토
-    if (this.nakama.channels_orig['local']['channels'][this.userInput.name]) {
+    if (this.nakama.channels_orig['local']['target'][this.userInput.name]) {
       this.p5toast.show({
         text: this.lang.text['AddGroup']['AlreadyExist'],
       });
@@ -249,7 +249,7 @@ export class AddGroupPage implements OnInit {
       return;
     }
     let generated_id = this.CreateRandomLocalId();
-    this.nakama.channels_orig['local']['channels'][generated_id] = {
+    this.nakama.channels_orig['local']['target'][generated_id] = {
       id: generated_id,
       local: true,
       title: this.userInput.name,
@@ -264,7 +264,7 @@ export class AddGroupPage implements OnInit {
       }
     };
     if (this.userInput.img)
-      this.indexed.saveTextFileToUserPath(this.userInput.img, `servers/local/channels/groups/${generated_id}.img`);
+      this.indexed.saveTextFileToUserPath(this.userInput.img, `servers/local/target/groups/${generated_id}.img`);
     this.nakama.rearrange_channels();
     setTimeout(() => {
       this.modalCtrl.dismiss();
@@ -279,7 +279,7 @@ export class AddGroupPage implements OnInit {
       let randomAt = Math.floor(Math.random() * ID_GEN_CHAR.length);
       result += ID_GEN_CHAR.charAt(randomAt);
     }
-    if (!this.nakama.channels_orig['local']['channels'][result])
+    if (!this.nakama.channels_orig['local']['target'][result])
       return result;
     else return this.CreateRandomLocalId();
   }

@@ -72,7 +72,7 @@ export class AddPostPage implements OnInit {
     let local_info = {
       name: this.lang.text['AddGroup']['UseLocalStorage'],
       isOfficial: 'local',
-      target: 'channels',
+      target: 'target',
       local: true,
     };
     this.servers.unshift(local_info);
@@ -92,6 +92,8 @@ export class AddPostPage implements OnInit {
   TitleInput: HTMLInputElement;
   /** 게시물 내용 작성칸 */
   ContentTextArea: HTMLTextAreaElement;
+  /** 기존 게시물 편집 여부 */
+  isModify = false;
   ionViewWillEnter() {
     this.AddShortcut();
     this.catchBottomTabShortCut();
@@ -142,6 +144,7 @@ export class AddPostPage implements OnInit {
         v.present();
       });
     }
+    this.isModify = Boolean(this.userInput.id);
   }
 
   go_to_profile() {
@@ -665,12 +668,23 @@ export class AddPostPage implements OnInit {
     this.isSaveClicked = true;
     /** 로컬 서버인지 여부 */
     let is_local = Boolean(this.userInput.server['local']);
+    let isOfficial = this.userInput.server['isOfficial'];
+    let target = this.userInput.server['target'];
+    // 게시물 아이디 구성하기
+    if (!this.isModify) { // 새 게시물 작성시에만 생성
+      // 기존 게시물 순번 검토 후 새 게시물 번호 받아오기
+      if (is_local) {
+        this.indexed.GetFileListFromDB('servers/local/target')
+      } else {
+      }
+    }
     // 게시물 날짜 업데이트
     if (this.userInput.create_time) // 생성 시간이 있다면 편집으로 간주
       this.userInput.modify_time = new Date().getTime();
     else // 생성 시간이 없다면 최초 생성으로 간주
       this.userInput.create_time = new Date().getTime();
     // 서버 정보 지우기
+    delete this.userInput.server;
     // 썸네일 정보 삭제
     for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
       delete this.userInput.attachments[i].thumbnail;

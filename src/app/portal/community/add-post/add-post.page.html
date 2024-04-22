@@ -1,6 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>{{lang.text['AddPost']['Title']}}</ion-title>
+    <ion-title *ngIf="isModify">{{lang.text['AddPost']['EditTitle']}}</ion-title>
+    <ion-title *ngIf="!isModify">{{lang.text['AddPost']['Title']}}</ion-title>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="portal/community"></ion-back-button>
     </ion-buttons>

@@ -66,6 +66,7 @@ Title,게시물,Post
 NoPosts,게시물 없음,No posts
 ## AddPost,,
 Title,새 게시물,New post
+EditTitle,게시물 편집,Edit post
 Creator,작성자,Creator
 AddNewPost,게시물 작성,Write a post
 TitlePlaceholder,게시글의 제목을 입력합니다,Enter the title of the post
