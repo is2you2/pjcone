@@ -51,8 +51,6 @@ export class AddPostPage implements OnInit {
   userInput = {
     id: undefined,
     title: undefined,
-    /** 대표 이미지 설정, blob 링크 */
-    titleImage: undefined,
     /** 내용물, txt 파일 변환하여 저장됨 */
     content: undefined,
     creator_id: undefined,
@@ -61,6 +59,7 @@ export class AddPostPage implements OnInit {
     create_time: undefined,
     modify_time: undefined,
     server: undefined,
+    /** 대표 이미지 설정 */
     mainImage: undefined as PostAttachment,
     attachments: [] as PostAttachment[],
   }
@@ -186,6 +185,7 @@ export class AddPostPage implements OnInit {
   }
 
   useVoiceRecording = false;
+  /** 게시물 편집기에서 보여지는 대표 이미지 링크 주소 */
   MainPostImage = undefined;
   /** 확장 버튼 행동들 */
   extended_buttons: ExtendButtonForm[] = [
@@ -314,11 +314,17 @@ export class AddPostPage implements OnInit {
 
   /** 채널 배경화면 변경 (from PostMainImage_sel) */
   ChangeMainPostImage(ev: any) {
-    let imageFile = ev.target.files[0];
-    let FileURL = URL.createObjectURL(imageFile);
-    let path = `tmp_files/post/MainImage.png`;
-    this.indexed.saveBlobToUserPath(imageFile, path);
-    this.userInput.mainImage = { filename: 'MainImage.png' };
+    let blob = ev.target.files[0];
+    let file = {} as PostAttachment;
+    file['filename'] = blob.name;
+    file['file_ext'] = blob.name.split('.').pop() || blob.type || this.lang.text['ChatRoom']['unknown_ext'];
+    file['size'] = blob.size;
+    file['type'] = blob.type || blob.type_override;
+    file.blob = blob;
+    file.path = `tmp_files/post/MainImage.${file['file_ext']}`;
+    this.userInput.mainImage = file;
+    let FileURL = URL.createObjectURL(blob);
+    this.indexed.saveBlobToUserPath(blob, file.path);
     this.MainPostImage = FileURL;
     setTimeout(() => {
       URL.revokeObjectURL(FileURL);
@@ -657,17 +663,20 @@ export class AddPostPage implements OnInit {
       text: '게시물 작성 기능 준비중',
     });
     this.isSaveClicked = true;
-    // 너무 긴 제목 자르기
-    // 게시글의 도입부 첫 줄 자르기
+    /** 로컬 서버인지 여부 */
+    let is_local = Boolean(this.userInput.server['local']);
     // 게시물 날짜 업데이트
-    if (this.userInput.create_time) { // 생성 시간이 있다면 편집으로 간주
+    if (this.userInput.create_time) // 생성 시간이 있다면 편집으로 간주
       this.userInput.modify_time = new Date().getTime();
-    } else { // 생성 시간이 없다면 최초 생성으로 간주
+    else // 생성 시간이 없다면 최초 생성으로 간주
       this.userInput.create_time = new Date().getTime();
-    }
     // 서버 정보 지우기
-    // 전체 정보(UserInput)를 텍스트 파일화
-    // 서버에 동기화
+    // 썸네일 정보 삭제
+    for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
+      delete this.userInput.attachments[i].thumbnail;
+    // 첨부파일 저장
+    // 전체 정보(UserInput)를 텍스트 파일로 저장
+    // 게시물 id 구분자 추가 (서버)
     console.log('입력됨: ', this.userInput);
   }
 
