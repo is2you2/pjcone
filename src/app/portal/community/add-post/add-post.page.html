@@ -43,7 +43,7 @@
       [(ngModel)]="userInput.title"></ion-input>
   </ion-item>
   <textarea id="add_post_content" class="infobox" style="height: 50%;" [disabled]="isSaveClicked"
-    [placeholder]="lang.text['AddPost']['ContentPlaceHolder']"></textarea>
+    [placeholder]="lang.text['AddPost']['ContentPlaceHolder']" [(ngModel)]="userInput.content"></textarea>
   <input hidden type="file" id="add_post_input" accept="*" multiple (change)="inputFileSelected($event)">
   <input hidden type="file" id="PostMainImage_sel" accept="image/png" (change)="ChangeMainPostImage($event)">
   <div style="width: 100%; text-align: center; padding-bottom: 16px;">
@@ -59,8 +59,8 @@
       </div>
     </div>
   </div>
-  <ion-item button *ngFor="let attach of userInput.attachments; let i = index" [id]="'PostAttach_' + i" [disabled]="isSaveClicked"
-    (click)="open_viewer(attach)">
+  <ion-item button *ngFor="let attach of userInput.attachments; let i = index" [id]="'PostAttach_' + i"
+    [disabled]="isSaveClicked" (click)="open_viewer(attach)">
     <ion-label>{{'['+ i + '] ' + attach.filename}}</ion-label>
     <div class="additional_form bg_img_form">
       <img class="profile_img" [src]="attach.thumbnail">

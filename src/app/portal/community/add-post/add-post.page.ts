@@ -89,11 +89,15 @@ export class AddPostPage implements OnInit {
     delete this.global.p5key['KeyShortCut']['BottomTab'];
   }
 
+  /** 게시물 제목 작성칸 */
+  TitleInput: HTMLInputElement;
+  /** 게시물 내용 작성칸 */
+  ContentTextArea: HTMLTextAreaElement;
   ionViewWillEnter() {
     this.AddShortcut();
     this.catchBottomTabShortCut();
-    let title_input = document.getElementById('add_post_title').childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
-    title_input.onpaste = (ev: any) => {
+    this.TitleInput = document.getElementById('add_post_title').childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
+    this.TitleInput.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
         if (clipboardItem.type.startsWith('image/'))
@@ -102,10 +106,11 @@ export class AddPostPage implements OnInit {
       if (stack.length == 1)
         this.ChangeMainPostImage({ target: { files: [stack[0].file] } });
     }
+    this.ContentTextArea = document.getElementById('add_post_content') as HTMLTextAreaElement;
     if (!this.userInput.title)
-      title_input.focus();
-    else document.getElementById('add_post_content').focus();
-    document.getElementById('add_post_content').onpaste = (ev: any) => {
+      this.TitleInput.focus();
+    else this.ContentTextArea.focus();
+    this.ContentTextArea.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
         if (clipboardItem.type.startsWith('image/'))
@@ -225,7 +230,10 @@ export class AddPostPage implements OnInit {
           cssClass: 'fullscreen',
         }).then(v => {
           v.onWillDismiss().then(async v => {
-            if (v.data) await this.voidDraw_fileAct_callback(v, content_related_creator);
+            if (v.data) {
+              this.AddAttachTextForm();
+              await this.voidDraw_fileAct_callback(v, content_related_creator);
+            }
           });
           v.onDidDismiss().then(() => {
             this.AddShortcut();
@@ -272,6 +280,7 @@ export class AddPostPage implements OnInit {
             file.path, (raw) => {
               file.blob = new Blob([raw], { type: file['type'] })
             });
+          this.AddAttachTextForm();
           this.userInput.attachments.push(file);
           this.MakeAttachHaveContextMenu();
           loading.dismiss();
@@ -340,9 +349,17 @@ export class AddPostPage implements OnInit {
     file.blob = blob;
     file.path = `tmp_files/post/${file.filename}_${this.userInput.attachments.length}.${file.file_ext}`;
     this.create_selected_thumbnail(file);
+    this.AddAttachTextForm();
     this.userInput.attachments.push(file);
     this.MakeAttachHaveContextMenu();
     this.indexed.saveBlobToUserPath(file.blob, file.path);
+  }
+
+  /** 게시물 내용에 첨부파일 링크를 추가함 */
+  AddAttachTextForm() {
+    if (this.ContentTextArea.value)
+      this.ContentTextArea.value += `\n[${this.userInput.attachments.length}]\n`;
+    else this.ContentTextArea.value += `[${this.userInput.attachments.length}]\n`;
   }
 
   /** 선택한 파일의 썸네일 만들기 */
@@ -633,8 +650,7 @@ export class AddPostPage implements OnInit {
       this.p5toast.show({
         text: this.lang.text['AddPost']['NeedPostTitle'],
       });
-      let title_input = document.getElementById('add_post_title').childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
-      title_input.focus();
+      this.TitleInput.focus();
       return;
     }
     this.p5toast.show({
