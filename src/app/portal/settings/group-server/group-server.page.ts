@@ -62,7 +62,6 @@ export class GroupServerPage implements OnInit {
     this.nakama.socket_reactive['profile'] = (img_url: string) => {
       this.p5canvas['ChangeImageSmooth'](img_url);
     }
-    this.announce_update_profile = this.original_profile['display_name'] !== undefined;
 
     if (this.navParams.data['target']) {
       let isOfficial = this.navParams.get('isOfficial');
@@ -436,7 +435,7 @@ export class GroupServerPage implements OnInit {
     this.servers = this.nakama.get_all_server_info(true);
   }
 
-  /** 프로필이 변경됨 알림 */
+  /** 프로필이 변경됨 알림이 필요한지 여부 */
   announce_update_profile = false;
 
   async ionViewWillLeave() {
@@ -455,29 +454,27 @@ export class GroupServerPage implements OnInit {
     if (isProfileChanged) {
       let servers = this.nakama.get_all_online_server();
       for (let i = 0, j = servers.length; i < j; i++) {
-        let NeedAnnounceUpdate = false;
         if (this.nakama.users.self['display_name'] != this.original_profile['display_name'])
-          await servers[i].client.updateAccount(servers[i].session, {
-            display_name: this.nakama.users.self['display_name'],
-          }).then(async _v => {
-            NeedAnnounceUpdate = true;
+          try {
+            await servers[i].client.updateAccount(servers[i].session, {
+              display_name: this.nakama.users.self['display_name'],
+            });
             try {
               await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
                 encodeURIComponent('info'));
             } catch (e) { }
-          });
+          } catch (e) { }
         // 해당 서버 연결된 채널에 고지
-        if (NeedAnnounceUpdate && this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]) {
+        if (this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]) {
           let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
           if (all_channels) {
             all_channels.forEach((channelId: any) => {
-              if (this.announce_update_profile)
-                servers[i].socket.writeChatMessage(channelId, {
-                  user_update: 'modify_data',
-                  noti_form: this.original_profile['display_name'] == this.nakama.users.self['display_name']
-                    ? `: ${this.original_profile['display_name']}`
-                    : `: ${this.original_profile['display_name']} -> ${this.nakama.users.self['display_name']}`,
-                });
+              servers[i].socket.writeChatMessage(channelId, {
+                user_update: 'modify_data',
+                noti_form: this.original_profile['display_name'] == this.nakama.users.self['display_name']
+                  ? `: ${this.original_profile['display_name']}`
+                  : `: ${this.original_profile['display_name']} -> ${this.nakama.users.self['display_name']}`,
+              });
             });
           }
         }
@@ -547,6 +544,7 @@ export class GroupServerPage implements OnInit {
               noti_form: `: ${this.nakama.users.self['display_name']}`,
             });
         });
+        this.announce_update_profile = false;
       }
     }
   }
@@ -554,6 +552,7 @@ export class GroupServerPage implements OnInit {
   file_sel_id = '';
   async change_img_from_file() {
     // 클립보드로부터 받아오기 시도 후 실패시 파일 선택
+    this.announce_update_profile = true;
     if (this.nakama.users.self['img']) {
       this.p5canvas['ChangeImageSmooth']();
     } else try {
