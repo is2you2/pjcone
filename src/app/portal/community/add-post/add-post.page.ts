@@ -66,6 +66,8 @@ export class AddPostPage implements OnInit {
   index = 0;
   isOfficial: string;
   target: string;
+  /** 서버 정보 */
+  OriginalServerInfo: string;
 
   ngOnInit() {
     this.servers = this.nakama.get_all_server_info(true, true);
@@ -161,13 +163,18 @@ export class AddPostPage implements OnInit {
   isExpanded = false;
   /** 저장버튼 눌림 여부 */
   isSaveClicked = false;
+  /** 게시 서버 변경 여부, 이 경우 기존 서버에서 삭제 후 다시 등록해야함 */
+  isServerChanged = false;
   /** 아코디언에서 서버 선택하기 */
-  select_server(i: number) {
+  select_server(i: number, changed = false) {
     this.index = i;
     this.userInput.server = this.servers[i];
     this.isExpanded = false;
     this.isOfficial = this.servers[i].isOfficial;
     this.target = this.servers[i].target;
+    if (changed) {
+      this.isServerChanged = this.OriginalServerInfo != `${this.isOfficial}/${this.target}`;
+    } else this.OriginalServerInfo = `${this.isOfficial}/${this.target}`;
     try { // 변경된 서버 user_id 를 적용함
       this.userInput.creator_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
       this.userInput.UserColor = (this.userInput.creator_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
@@ -654,7 +661,7 @@ export class AddPostPage implements OnInit {
   /** 포스트 등록하기  
    * 글 내용이 길어질 수 있으므로 글이 아무리 짧더라도 txt 파일로 변환하여 게시
    */
-  postData() {
+  async postData() {
     if (!this.userInput.title) {
       this.p5toast.show({
         text: this.lang.text['AddPost']['NeedPostTitle'],
@@ -662,20 +669,66 @@ export class AddPostPage implements OnInit {
       this.TitleInput.focus();
       return;
     }
-    this.p5toast.show({
-      text: '게시물 작성 기능 준비중',
-    });
-    this.isSaveClicked = true;
     /** 로컬 서버인지 여부 */
     let is_local = Boolean(this.userInput.server['local']);
+    if (!is_local) {
+      this.p5toast.show({
+        text: '게시물 작성 기능 준비중',
+      });
+      return;
+    }
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['WIP'] });
+    loading.present();
+    this.isSaveClicked = true;
     let isOfficial = this.userInput.server['isOfficial'];
     let target = this.userInput.server['target'];
+    // 서버 정보 지우기
+    delete this.userInput.server;
     // 게시물 아이디 구성하기
     if (!this.isModify) { // 새 게시물 작성시에만 생성
       // 기존 게시물 순번 검토 후 새 게시물 번호 받아오기
       if (is_local) {
-        this.indexed.GetFileListFromDB('servers/local/target')
-      } else {
+        let counter = Number(await this.indexed.loadTextFromUserPath('servers/local/target/posts/counter.txt')) || 0;
+        this.userInput.id = `LocalPost_${counter}`;
+        try {
+          await this.indexed.saveTextFileToUserPath(`${counter + 1}`, 'servers/local/target/posts/counter.txt');
+        } catch (e) {
+          this.p5toast.show({
+            text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
+          });
+          console.log(e);
+        }
+      } else { // 서버 게시물인 경우
+        try {
+          let v = await this.nakama.servers[isOfficial][target].client.readStorageObjects(
+            this.nakama.servers[isOfficial][target].session, {
+            object_ids: [{
+              collection: 'server_post',
+              key: 'Counter',
+              user_id: this.nakama.servers[isOfficial][target].session.user_id,
+            }],
+          });
+          let CurrentCounter = 0;
+          // 받은 정보로 아이디 구성
+          if (v.objects.length) {
+            CurrentCounter = v.objects[0].value['counter'];
+            this.userInput.id = `ServerPost_${CurrentCounter}`;
+          } else this.userInput.id = `ServerPost_${CurrentCounter}`;
+          // 카운터 업데이트
+          await this.nakama.servers[isOfficial][target].client.writeStorageObjects(
+            this.nakama.servers[isOfficial][target].session, [{
+              collection: 'server_post',
+              key: 'Counter',
+              permission_write: 1,
+              permission_read: 2,
+              value: { counter: CurrentCounter + 1 },
+            }]);
+        } catch (e) {
+          this.p5toast.show({
+            text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
+          });
+          console.log(e);
+        }
       }
     }
     // 게시물 날짜 업데이트
@@ -683,13 +736,70 @@ export class AddPostPage implements OnInit {
       this.userInput.modify_time = new Date().getTime();
     else // 생성 시간이 없다면 최초 생성으로 간주
       this.userInput.create_time = new Date().getTime();
-    // 서버 정보 지우기
-    delete this.userInput.server;
     // 썸네일 정보 삭제
     for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
       delete this.userInput.attachments[i].thumbnail;
-    // 첨부파일 저장
+    // 대표 이미지 저장
+    if (this.userInput.mainImage) {
+      loading.message = this.lang.text['AddPost']['SyncMainImage'];
+      if (is_local) {
+        try {
+          await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, `servers/local/target/posts/${this.userInput.id}/${this.userInput.mainImage.filename}`);
+        } catch (e) {
+          this.p5toast.show({
+            text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
+          });
+          console.log(e);
+        }
+      } else {
+        console.log('서버 대표이미지 저장 준비중');
+      }
+    }
+    // 첨부파일들 전부 저장
+    let attach_len = this.userInput.attachments.length;
+    if (attach_len) {
+      loading.message = this.lang.text['AddPost']['SyncAttaches'];
+      if (is_local) {
+        for (let i = attach_len - 1; i >= 0; i--) {
+          try {
+            loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`;
+            await this.indexed.saveBlobToUserPath(this.userInput.attachments[i].blob, `servers/local/target/posts/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`);
+          } catch (e) {
+            this.p5toast.show({
+              text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
+            });
+            console.log(e);
+          }
+          delete this.userInput.attachments[i].blob;
+        }
+      } else {
+        console.log('서버 첨부파일 저장 준비중');
+      }
+    }
     // 전체 정보(UserInput)를 텍스트 파일로 저장
+    let json_str = JSON.stringify(this.userInput);
+    if (is_local) {
+      try {
+        await this.indexed.saveTextFileToUserPath(json_str, `servers/local/target/posts/${this.userInput.id}/info.json`);
+      } catch (e) {
+        this.p5toast.show({
+          text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
+        });
+        console.log(e);
+      }
+    } else {
+      let blob = new Blob([json_str], { type: 'text/plain' });
+      let file: FileInfo = {};
+      file.filename = 'info.txt';
+      file.blob = blob;
+      file.size = blob.size;
+      file.type = 'text/plain';
+      file.file_ext = 'txt';
+      file.typeheader = 'text';
+      await this.nakama.sync_save_file(file, isOfficial, target, 'server_post', this.userInput.id);
+    }
+    loading.dismiss();
+    this.navCtrl.navigateBack('portal/community');
     // 게시물 id 구분자 추가 (서버)
     console.log('입력됨: ', this.userInput);
   }
