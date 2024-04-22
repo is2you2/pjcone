@@ -188,6 +188,7 @@ export class AddPostPage implements OnInit {
       icon: 'image-outline',
       name: this.lang.text['AddPost']['MainPostImage'],
       act: () => {
+        if (this.isSaveClicked) return;
         if (!this.MainPostImage)
           document.getElementById('PostMainImage_sel').click();
         else {
