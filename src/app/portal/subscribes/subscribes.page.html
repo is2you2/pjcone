@@ -80,7 +80,7 @@ SPDX-License-Identifier: MIT -->
                 lang.text['ChatRoom']['noname_chatroom'])}}
               </td>
               <td *ngIf="nakama.showServer" class="server_target">
-                {{'(' + (channel['server']['name'] || channel['server']['target']) + ')'}}
+                {{'(' + (channel['local'] ? lang.text['AddGroup']['UseLocalStorage'] : (channel['server']['name'] || channel['server']['target'])) + ')'}}
               </td>
             </tr>
           </table>
