@@ -1797,7 +1797,7 @@ export class IonicViewerPage implements OnInit {
         handler: () => {
           this.RemoveFileAct();
         },
-        cssClass: 'red_font',
+        cssClass: 'redfont',
       }]
     }).then(v => v.present());
   }

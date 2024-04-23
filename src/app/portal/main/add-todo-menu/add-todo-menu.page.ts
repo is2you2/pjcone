@@ -1224,7 +1224,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   deleteData() {
     this.alertCtrl.create({
       header: this.lang.text['TodoDetail']['remove'],
-      message: this.lang.text['TodoDetail']['terminateTodo'],
+      message: this.lang.text['ChatRoom']['CannotUndone'],
       buttons: [{
         text: this.lang.text['TodoDetail']['remove'],
         handler: async () => {
@@ -1232,7 +1232,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           await this.nakama.deleteTodoFromStorage(true, this.userInput);
           this.navCtrl.pop();
         },
-        cssClass: 'red_font',
+        cssClass: 'redfont',
       }]
     }).then(v => {
       this.global.p5key['KeyShortCut']['Escape'] = () => {

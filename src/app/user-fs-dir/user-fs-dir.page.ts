@@ -777,7 +777,7 @@ export class UserFsDirPage implements OnInit {
             this.noti.ClearNoti(4);
           }, 1000);
         },
-        cssClass: 'red_font',
+        cssClass: 'redfont',
       }],
     }).then(v => {
       this.global.p5key['KeyShortCut']['Escape'] = () => {
@@ -793,7 +793,7 @@ export class UserFsDirPage implements OnInit {
   RemoveFile(info: FileDir, i: number) {
     this.alertCtrl.create({
       header: this.lang.text['UserFsDir']['DeleteFile'],
-      message: this.lang.text['UserFsDir']['CannotBeUndo'],
+      message: this.lang.text['ChatRoom']['CannotUndone'],
       buttons: [{
         text: this.lang.text['UserFsDir']['DeleteAccept'],
         handler: () => {
@@ -801,7 +801,7 @@ export class UserFsDirPage implements OnInit {
             this.FileList.splice(i, 1);
           });
         },
-        cssClass: 'red_font',
+        cssClass: 'redfont',
       }]
     }).then(v => {
       this.global.p5key['KeyShortCut']['Escape'] = () => {

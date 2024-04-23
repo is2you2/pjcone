@@ -12,3 +12,20 @@
     [src]="PostInfo['mainImage']['MainThumbnail']" alt="MainImage">
   <div id="PostContent" style="padding: 16px;"></div>
 </ion-content>
+
+<ion-footer *ngIf="isOwner">
+  <table style="width: 100%; background-color: black;">
+    <tr>
+      <td>
+        <ion-button expand="block" (click)="EditPost()">
+          {{lang.text['AddPost']['EditTitle']}}
+        </ion-button>
+      </td>
+      <td>
+        <ion-button color="danger" expand="block" (click)="RemovePost()">
+          {{lang.text['PostViewer']['RemovePost']}}
+        </ion-button>
+      </td>
+    </tr>
+  </table>
+</ion-footer>

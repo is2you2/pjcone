@@ -89,7 +89,7 @@ export class MainPage implements OnInit {
                   }
                 }, {
                   text: this.lang.text['TodoDetail']['remove'],
-                  cssClass: 'red_font',
+                  cssClass: 'redfont',
                   handler: async () => {
                     try {
                       await nakama.deleteTodoFromStorage(true, Todos[TodoKeys[i]].json);

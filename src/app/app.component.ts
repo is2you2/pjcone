@@ -138,7 +138,7 @@ export class AppComponent {
                       nakama.update_notifications(props.data.isOfficial, props.data.Target);
                     })
                 },
-                cssClass: 'red_font',
+                cssClass: 'redfont',
               }],
             }).then(v => v.present());
             return;

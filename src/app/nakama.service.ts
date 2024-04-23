@@ -1800,7 +1800,7 @@ export class NakamaService {
                         }
                         this.rearrange_channels();
                       },
-                      cssClass: 'red_font',
+                      cssClass: 'redfont',
                     }]
                   }).then(v => v.present());
                 } else this.alertCtrl.create({
@@ -1822,7 +1822,7 @@ export class NakamaService {
                       loading.dismiss();
                       this.rearrange_channels();
                     },
-                    cssClass: 'red_font',
+                    cssClass: 'redfont',
                   }]
                 }).then(v => v.present());
                 break;
@@ -1851,7 +1851,7 @@ export class NakamaService {
                       loading.dismiss();
                       this.rearrange_channels();
                     },
-                    cssClass: 'red_font',
+                    cssClass: 'redfont',
                   }]
                 }).then(v => v.present());
                 break;
@@ -3260,7 +3260,7 @@ export class NakamaService {
                     console.error('사용자 강퇴 오류: ', e);
                   }
                 },
-                cssClass: 'red_font',
+                cssClass: 'redfont',
               }],
             }).then(v => v.present());
           } else {

@@ -38,7 +38,6 @@ new_draw,새 그림,New painting
 user_fs,인앱 탐색기,Inapp explorer
 add_attach,가져오기,Load
 load_failed,파일 가져오기에 실패하였습니다,Failed to load file
-delete_attach,삭제,Delete
 attachments,첨부파일 추가,Attachments
 open_content_viewer,클릭하여 파일 뷰어에서 열기,Click to open in file viewer
 logs,기록,Logs
@@ -46,7 +45,6 @@ remove,삭제,Remove
 buttonDisplay_add,추가,Add
 buttonDisplay_modify,수정,Modify
 needDisplayName,표시명을 작성하여야 합니다,Display name must be written
-terminateTodo,이 작업은 되돌릴 수 없습니다,This action cannot be undone
 WIP,작업을 완료중입니다...,Work in progress...
 ManageWorker,작업자 관리,Manage workers
 ToggleWorkers,모든 사용자 선택,Select all users
@@ -84,6 +82,7 @@ SyncErr,게시물 저장 오류,Error saving post
 Title,게시물 뷰어,Post viewer
 CreateTime,작성일,Creation date
 ModifyTime,수정일,Modifition date
+RemovePost,게시물 삭제,Remove post
 ## Settings,,
 Title,설정,Settings
 CommunityAds,개발자 광고,Developer Ads
@@ -468,7 +467,6 @@ OK,확인,OK
 ResetDB,모든 파일 삭제,Delete all files
 LoadingExplorer,준비중,Explorer
 DeleteFile,파일 삭제,Delete file
-CannotBeUndo,이 작업은 되돌릴 수 없습니다,This action cannot be undone
 DeleteAccept,삭제,Delete
 Action,이 파일을..,Action..
 Use,사용하기,Use

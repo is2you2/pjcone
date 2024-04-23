@@ -149,7 +149,7 @@ SPDX-License-Identifier: MIT -->
             <ion-item>
               <ion-label text-wrap>{{attach.filename}}</ion-label>
               <ion-button (click)="remove_attach(i)">
-                {{lang.text['TodoDetail']['delete_attach']}}
+                {{lang.text['TodoDetail']['remove']}}
               </ion-button>
             </ion-item>
             <div *ngIf="attach['viewer']" (click)="open_content_viewer(i)">

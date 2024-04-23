@@ -379,7 +379,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               loading.dismiss();
               this.navCtrl.pop();
             },
-            cssClass: 'red_font',
+            cssClass: 'redfont',
           }]
         }).then(v => {
           this.global.p5key['KeyShortCut']['Escape'] = () => {
@@ -1872,7 +1872,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }, {
         text: this.lang.text['UserFsDir']['Delete'],
-        cssClass: 'red_font',
+        cssClass: 'redfont',
         handler: async () => {
           if (!this.info['local']) { // 서버와 연결된 채널인 경우
             try {

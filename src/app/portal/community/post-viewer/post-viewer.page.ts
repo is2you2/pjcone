@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController, NavParams } from '@ionic/angular';
+import { AlertController, ModalController, NavParams } from '@ionic/angular';
 import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { GroupServerPage } from '../../settings/group-server/group-server.page';
+import { NakamaService } from 'src/app/nakama.service';
 
 @Component({
   selector: 'app-post-viewer',
@@ -18,9 +19,12 @@ export class PostViewerPage implements OnInit {
     private navParam: NavParams,
     public lang: LanguageSettingService,
     private indexed: IndexedDBService,
+    private nakama: NakamaService,
+    private alertCtrl: AlertController,
   ) { }
 
   PostInfo: any;
+  isOwner = false;
   FileURLs = [];
   ngOnInit() {
     this.PostInfo = this.navParam.get('data');
@@ -30,6 +34,8 @@ export class PostViewerPage implements OnInit {
       this.FileURLs.push(FileURL);
     }
     this.create_content();
+    this.isOwner = this.PostInfo['creator_id'] == 'local'
+      || this.PostInfo['creator_id'] == this.nakama.servers[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']].session.user_id;
   }
 
   p5canvas: p5;
@@ -55,12 +61,11 @@ export class PostViewerPage implements OnInit {
         }
         // 작성자
         let creator = p.createDiv(this.PostInfo['creator_name']);
-        console.log(this.PostInfo);
         creator.style('color', `#${this.PostInfo['UserColor']}`);
         creator.style('font-weight', 'bold');
         creator.style('padding-bottom', '16px');
         creator.elt.onclick = () => {
-          if (this.PostInfo['creator_id'] == 'local') {
+          if (this.isOwner) {
             this.modalCtrl.create({
               component: GroupServerPage,
             }).then(v => v.present());
@@ -126,6 +131,24 @@ export class PostViewerPage implements OnInit {
         }
       }
     });
+  }
+
+  EditPost() {
+    console.log('게시물 편집');
+  }
+
+  RemovePost() {
+    this.alertCtrl.create({
+      header: this.lang.text['PostViewer']['RemovePost'],
+      message: this.lang.text['ChatRoom']['CannotUndone'],
+      buttons: [{
+        text: this.lang.text['TodoDetail']['remove'],
+        cssClass: 'redfont',
+        handler: () => {
+          console.log('삭제 행동: ', this.PostInfo);
+        }
+      }],
+    }).then(v => v.present());
   }
 
   ionViewDidLeave() {
