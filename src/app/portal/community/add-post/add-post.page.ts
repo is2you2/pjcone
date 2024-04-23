@@ -92,8 +92,6 @@ export class AddPostPage implements OnInit {
 
   /** 게시물 제목 작성칸 */
   TitleInput: HTMLInputElement;
-  /** 게시물 내용 작성칸 */
-  ContentTextArea: HTMLTextAreaElement;
   /** 기존 게시물 편집 여부 */
   isModify = false;
   ionViewWillEnter() {
@@ -109,11 +107,11 @@ export class AddPostPage implements OnInit {
       if (stack.length == 1)
         this.ChangeMainPostImage({ target: { files: [stack[0].file] } });
     }
-    this.ContentTextArea = document.getElementById('add_post_content') as HTMLTextAreaElement;
+    let ContentTextArea = document.getElementById('add_post_content') as HTMLTextAreaElement;
     if (!this.userInput.title)
       this.TitleInput.focus();
-    else this.ContentTextArea.focus();
-    this.ContentTextArea.onpaste = (ev: any) => {
+    else ContentTextArea.focus();
+    ContentTextArea.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
         if (clipboardItem.type.startsWith('image/'))
@@ -373,9 +371,9 @@ export class AddPostPage implements OnInit {
 
   /** 게시물 내용에 첨부파일 링크를 추가함 */
   AddAttachTextForm() {
-    if (this.ContentTextArea.value)
-      this.ContentTextArea.value += `\n[${this.userInput.attachments.length}]\n`;
-    else this.ContentTextArea.value += `[${this.userInput.attachments.length}]\n`;
+    if (this.userInput.content)
+      this.userInput.content += `\n[${this.userInput.attachments.length}]\n`;
+    else this.userInput.content = `[${this.userInput.attachments.length}]\n`;
   }
 
   /** 선택한 파일의 썸네일 만들기 */

@@ -88,38 +88,48 @@ export class PostViewerPage implements OnInit {
             } catch (e) { }
             if (is_attach) {
               switch (this.PostInfo['attachments'][index]['viewer']) {
-                case 'image':
-                  if (this.PostInfo['attachments'][index]['url']) {
-                    let img = p.createImg(this.PostInfo['attachments'][index]['url'], `${index}`);
-                    img.parent(contentDiv);
-                  } else {
-                    try {
-                      let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][index]['path'], this.PostInfo['attachments'][index]['type']);
-                      let FileURL = URL.createObjectURL(blob);
-                      this.FileURLs.push(FileURL);
-                      let img = p.createImg(FileURL, `${index}`);
-                      img.elt.onclick = () => {
-                        let createRelevances = [];
-                        for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++)
-                          createRelevances.push({ content: this.PostInfo['attachments'][i] });
-                        this.modalCtrl.create({
-                          component: IonicViewerPage,
-                          componentProps: {
-                            info: { content: this.PostInfo['attachments'][index] },
-                            path: this.PostInfo['attachments'][index]['path'],
-                            relevance: createRelevances,
-                            noEdit: true,
-                          },
-                          cssClass: 'fullscreen',
-                        }).then(v => v.present());
-                      }
-                      img.parent(contentDiv);
-                    } catch (e) {
-                      console.log('게시물 첨부파일 불러오기 오류: ', e);
-                    }
+                case 'image': {
+                  let FileURL = this.PostInfo['attachments'][index]['url'];
+                  if (!FileURL) try {
+                    let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][index]['path'], this.PostInfo['attachments'][index]['type']);
+                    FileURL = URL.createObjectURL(blob);
+                    this.FileURLs.push(FileURL);
+                  } catch (e) {
+                    console.log('게시물 첨부파일 불러오기 오류: ', e);
                   }
+                  let img = p.createImg(FileURL, `${index}`);
+                  img.elt.onclick = () => {
+                    let createRelevances = [];
+                    for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++)
+                      createRelevances.push({ content: this.PostInfo['attachments'][i] });
+                    this.modalCtrl.create({
+                      component: IonicViewerPage,
+                      componentProps: {
+                        info: { content: this.PostInfo['attachments'][index] },
+                        path: this.PostInfo['attachments'][index]['path'],
+                        relevance: createRelevances,
+                        noEdit: true,
+                      },
+                      cssClass: 'fullscreen',
+                    }).then(v => v.present());
+                  }
+                  img.parent(contentDiv);
+                }
                   break;
-                case 'audio':
+                case 'audio': {
+                  let FileURL = this.PostInfo['attachments'][index]['url'];
+                  if (!FileURL) try {
+                    let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][index]['path'], this.PostInfo['attachments'][index]['type']);
+                    FileURL = URL.createObjectURL(blob);
+                    this.FileURLs.push(FileURL);
+                  } catch (e) {
+                    console.log('게시물 첨부파일 불러오기 오류: ', e);
+                  }
+                  let audio = p.createAudio([FileURL]);
+                  audio.showControls();
+                  audio.parent(contentDiv);
+                }
+                  break;
                 case 'video':
                 case 'code':
                 case 'text':
