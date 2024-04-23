@@ -360,14 +360,15 @@ export class GroupServerPage implements OnInit {
     this.servers = this.nakama.get_all_server_info(true);
   }
 
-  link_group(_is_official: string, _target: string) {
+  async link_group(_is_official: string, _target: string) {
     if (this.isOverrideButtonPressed) {
       this.isOverrideButtonPressed = false;
       return;
     }
-    if (this.statusBar.groupServer[_is_official][_target] == 'offline')
-      this.nakama.link_group(_is_official, _target);
-    else try {
+    if (this.statusBar.groupServer[_is_official][_target] == 'offline') {
+      await this.nakama.link_group(_is_official, _target);
+      this.original_profile = JSON.parse(JSON.stringify(this.nakama.users.self));
+    } else try {
       this.nakama.servers[_is_official][_target].socket.disconnect(true);
     } catch (e) {
       this.nakama.OnSocketDisconnect(_is_official, _target);
@@ -620,6 +621,7 @@ export class GroupServerPage implements OnInit {
         }
         this.nakama.save_self_profile();
         await this.nakama.init_all_sessions();
+        this.original_profile = JSON.parse(JSON.stringify(this.nakama.users.self));
       } catch (e) {
         this.nakama.users.self['online'] = false;
         this.OnlineToggle = false;
