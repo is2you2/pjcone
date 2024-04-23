@@ -2920,9 +2920,11 @@ export class NakamaService {
   is_post_lock = false;
   /** 사설 SNS에 새 글이 게시된 경우 뱃지 표시 */
   has_new_post = false;
-  /** 내가 참여한 채널의 게시물들 */
+  /** 내가 참여한 채널의 게시물들  
+   * posts_orig[isOfficial][target][user_id][post.id] = { post_info... }
+   */
   posts_orig = {
-    local: { target: {} },
+    local: { target: { me: {} } },
     official: {},
     unofficial: {},
   };
@@ -2936,9 +2938,11 @@ export class NakamaService {
     for (let i = 0, j = isOfficial.length; i < j; i++) {
       let target = Object.keys(this.posts_orig[isOfficial[i]]);
       for (let k = 0, l = target.length; k < l; k++) {
-        let key = Object.keys(this.posts_orig[isOfficial[i]][target[k]]);
-        for (let m = 0, n = key.length; m < n; m++) {
-          this.posts.push(this.posts_orig[isOfficial[i]][target[k]][key[m]]);
+        let user_id = Object.keys(this.posts_orig[isOfficial[i]][target[k]]);
+        for (let m = 0, n = user_id.length; m < n; m++) {
+          let key = Object.keys(this.posts_orig[isOfficial[i]][target[k]][user_id[m]]);
+          for (let o = 0, p = key.length; o < p; o++)
+            this.posts.push(this.posts_orig[isOfficial[i]][target[k]][user_id[m]][key[o]]);
         }
       }
     }
@@ -2950,6 +2954,34 @@ export class NakamaService {
         return -1;
       return 0;
     });
+  }
+
+  /** 게시물 편집 */
+  EditPost() {
+    console.log('게시물 편집');
+  }
+
+  /** 게시물 삭제 */
+  RemovePost(info: any, ApplyCallBack?: Function) {
+    this.alertCtrl.create({
+      header: this.lang.text['PostViewer']['RemovePost'],
+      message: this.lang.text['ChatRoom']['CannotUndone'],
+      buttons: [{
+        text: this.lang.text['TodoDetail']['remove'],
+        cssClass: 'redfont',
+        handler: () => {
+          if (info['creator_id'] == 'local') {
+            this.indexed.GetFileListFromDB(`servers/local/target/posts/${info['id']}`)
+              .then(list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
+            delete this.posts_orig.local.target.me[info['id']];
+          } else { // 서버에서 삭제
+
+          }
+          this.rearrange_posts();
+          if (ApplyCallBack) ApplyCallBack();
+        }
+      }],
+    }).then(v => v.present());
   }
 
   /** WebRTC 통화 채널에 참가하기 */

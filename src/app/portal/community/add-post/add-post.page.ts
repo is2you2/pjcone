@@ -798,7 +798,7 @@ export class AddPostPage implements OnInit {
             URL.revokeObjectURL(FileURL);
           }, 100);
         }
-        this.nakama.posts_orig.local.target[this.userInput.id] = this.userInput;
+        this.nakama.posts_orig.local.target.me[this.userInput.id] = this.userInput;
         this.nakama.rearrange_posts();
         // 게시물 정보 저장하기
         await this.indexed.saveTextFileToUserPath(json_str, `servers/local/target/posts/${this.userInput.id}/info.json`);

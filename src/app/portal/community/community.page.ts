@@ -148,7 +148,7 @@ export class CommunityPage implements OnInit {
           }, 100);
         }
       }
-      this.nakama.posts_orig.local.target[json['id']] = json;
+      this.nakama.posts_orig.local.target.me[json['id']] = json;
       this.counter.local.target.me--;
     } else {
       this.counter.local.target.me--;
