@@ -106,8 +106,7 @@ export class PortalPage implements OnInit {
   ionViewWillLeave() {
     this.CacheKeyShortCut = this.global.p5key['KeyShortCut'];
     this.global.p5key['KeyShortCut'] = {};
-    try {
+    if (this.global.p5todo && this.global.p5todo['StopCanvas'])
       this.global.p5todo['StopCanvas']();
-    } catch (e) { }
   }
 }

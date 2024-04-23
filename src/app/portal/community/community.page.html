@@ -15,25 +15,29 @@ SPDX-License-Identifier: MIT -->
 </ion-header>
 
 <ion-content>
-  <div *ngIf="nakama.posts.length" style="display: ruby;">
-    <ion-card button class="card_style">
-      <img class="thumbnail_image" src="https://raw.githubusercontent.com/is2you2/image_link/master/result.png" alt="">
-      <ion-card-header>
-        <ion-card-subtitle (click)="open_profile()">
-          <span style="color: red;"> Awesome Subtitle </span>
-        </ion-card-subtitle>
-        <ion-card-title>Awesome Title</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        Awesome content
-      </ion-card-content>
-    </ion-card>
-  </div>
-  <div *ngIf="!nakama.posts.length">
-    <div class="disconnect_info">
-      <ion-icon style="width: 60px; height: 60px;" color="medium" name="document-text-outline"></ion-icon>
-      <div>
-        <ion-label color="medium">{{lang.text['Community']['NoPosts']}}</ion-label>
+  <div id="CommunityScrollDiv" style="height: 100%; overflow-y: auto;">
+    <div id="CommunityMainContent">
+      <div *ngIf="nakama.posts.length" style="display: ruby-text">
+        <ion-card *ngFor="let post of nakama.posts" button class="card_style">
+          <img *ngIf="post['mainImage']" class="thumbnail_image" [src]="post['mainImage']['thumbnail']" alt="">
+          <ion-card-header>
+            <ion-card-subtitle (click)="open_profile()">
+              <span [style]="'color: ' + post['UserColor']"> {{post['creator_name']}} </span>
+            </ion-card-subtitle>
+            <ion-card-title>{{post['title']}}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            {{post['content']}}
+          </ion-card-content>
+        </ion-card>
+      </div>
+      <div *ngIf="!nakama.posts.length">
+        <div class="disconnect_info">
+          <ion-icon style="width: 60px; height: 60px;" color="medium" name="document-text-outline"></ion-icon>
+          <div>
+            <ion-label color="medium">{{lang.text['Community']['NoPosts']}}</ion-label>
+          </div>
+        </div>
       </div>
     </div>
   </div>

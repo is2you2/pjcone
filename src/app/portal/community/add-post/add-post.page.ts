@@ -734,8 +734,10 @@ export class AddPostPage implements OnInit {
     // 게시물 날짜 업데이트
     if (this.userInput.create_time) // 생성 시간이 있다면 편집으로 간주
       this.userInput.modify_time = new Date().getTime();
-    else // 생성 시간이 없다면 최초 생성으로 간주
+    else { // 생성 시간이 없다면 최초 생성으로 간주
       this.userInput.create_time = new Date().getTime();
+      this.userInput.modify_time = this.userInput.create_time;
+    }
     // 썸네일 정보 삭제
     for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
       delete this.userInput.attachments[i].thumbnail;
@@ -744,7 +746,8 @@ export class AddPostPage implements OnInit {
       loading.message = this.lang.text['AddPost']['SyncMainImage'];
       if (is_local) {
         try {
-          await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, `servers/local/target/posts/${this.userInput.id}/${this.userInput.mainImage.filename}`);
+          this.userInput.mainImage.path = `servers/local/target/posts/${this.userInput.id}/${this.userInput.mainImage.filename}`;
+          await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
         } catch (e) {
           this.p5toast.show({
             text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
@@ -763,7 +766,8 @@ export class AddPostPage implements OnInit {
         for (let i = attach_len - 1; i >= 0; i--) {
           try {
             loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`;
-            await this.indexed.saveBlobToUserPath(this.userInput.attachments[i].blob, `servers/local/target/posts/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`);
+            this.userInput.attachments[i].path = `servers/local/target/posts/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`;
+            await this.indexed.saveBlobToUserPath(this.userInput.attachments[i].blob, this.userInput.attachments[i].path);
           } catch (e) {
             this.p5toast.show({
               text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
@@ -777,9 +781,25 @@ export class AddPostPage implements OnInit {
       }
     }
     // 전체 정보(UserInput)를 텍스트 파일로 저장
+    let CacheMainImageBlob: Blob;
+    if (this.userInput.mainImage) {
+      CacheMainImageBlob = this.userInput.mainImage.blob;
+      delete this.userInput.mainImage.blob;
+    }
     let json_str = JSON.stringify(this.userInput);
     if (is_local) {
       try {
+        // 게시물 리스트에 등록
+        if (this.userInput.mainImage) {
+          let FileURL = URL.createObjectURL(CacheMainImageBlob);
+          this.userInput.mainImage.thumbnail = FileURL;
+          setTimeout(() => {
+            URL.revokeObjectURL(FileURL);
+          }, 100);
+        }
+        this.nakama.posts_orig.local.target[this.userInput.id] = this.userInput;
+        this.nakama.rearrange_posts();
+        // 게시물 정보 저장하기
         await this.indexed.saveTextFileToUserPath(json_str, `servers/local/target/posts/${this.userInput.id}/info.json`);
       } catch (e) {
         this.p5toast.show({
@@ -801,11 +821,11 @@ export class AddPostPage implements OnInit {
     loading.dismiss();
     this.navCtrl.navigateBack('portal/community');
     // 게시물 id 구분자 추가 (서버)
-    console.log('입력됨: ', this.userInput);
   }
 
   ionViewWillLeave() {
     delete this.global.p5key['KeyShortCut']['Escape'];
     this.global.p5key['KeyShortCut']['BottomTab'] = this.BottomTabShortcut;
+    this.indexed.GetFileListFromDB('tmp_files/post').then(list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
   }
 }

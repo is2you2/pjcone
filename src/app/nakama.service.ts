@@ -2927,9 +2927,36 @@ export class NakamaService {
   /** 사설 SNS에 새 글이 게시된 경우 뱃지 표시 */
   has_new_post = false;
   /** 내가 참여한 채널의 게시물들 */
-  posts_orig = {};
+  posts_orig = {
+    local: { target: {} },
+    official: {},
+    unofficial: {},
+  };
   /** 내가 참여한 채널의 게시물들 (정렬됨) */
   posts = [];
+
+  /** 모든 포스트 정보를 재정렬 */
+  rearrange_posts() {
+    this.posts.length = 0;
+    let isOfficial = Object.keys(this.posts_orig);
+    for (let i = 0, j = isOfficial.length; i < j; i++) {
+      let target = Object.keys(this.posts_orig[isOfficial[i]]);
+      for (let k = 0, l = target.length; k < l; k++) {
+        let key = Object.keys(this.posts_orig[isOfficial[i]][target[k]]);
+        for (let m = 0, n = key.length; m < n; m++) {
+          this.posts.push(this.posts_orig[isOfficial[i]][target[k]][key[m]]);
+        }
+      }
+    }
+    // 시간순 정렬
+    this.posts.sort((a, b) => {
+      if (a['create_time'] < b['create_time'])
+        return 1;
+      if (a['create_time'] > b['create_time'])
+        return -1;
+      return 0;
+    });
+  }
 
   /** WebRTC 통화 채널에 참가하기 */
   async JoinWebRTCMatch(msg: any, _is_official: string, _target: string, c_info: any) {
