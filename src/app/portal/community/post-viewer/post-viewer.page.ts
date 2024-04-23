@@ -189,8 +189,47 @@ export class PostViewerPage implements OnInit {
                 case 'code':
                 case 'text':
                 case 'disabled': // 사용 불가
-                default: // 읽을 수 없는 파일들은 클릭시 뷰어 연결 div 생성 (채널 채팅 썸네일과 비슷함)
-                  console.log('준비되지 않은 파일 뷰어: ', this.PostInfo['attachments'][index]);
+                default: { // 읽을 수 없는 파일들은 클릭시 뷰어 연결 div 생성 (채널 채팅 썸네일과 비슷함)
+                  let EmptyDiv = p.createDiv();
+                  EmptyDiv.style('width', '160px');
+                  EmptyDiv.style('height', '112px');
+                  EmptyDiv.style('overflow', 'hidden');
+                  EmptyDiv.style('background-color', 'grey');
+                  EmptyDiv.style('margin-top', '4px');
+                  EmptyDiv.style('border-radius', '8px');
+                  EmptyDiv.parent(contentDiv);
+                  let FileName = p.createP(this.PostInfo['attachments'][index]['filename']);
+                  FileName.style('margin', '0px 4px');
+                  FileName.style('text-align', 'start');
+                  FileName.parent(EmptyDiv);
+                  let Seperator = p.createDiv();
+                  Seperator.style('background-color', 'white');
+                  Seperator.style('margin-top', '2px');
+                  Seperator.style('position', 'relative');
+                  Seperator.style('width', '100%');
+                  Seperator.style('height', '2px');
+                  Seperator.parent(EmptyDiv);
+                  let OpenViewerInfo = p.createSpan(this.lang.text['PostViewer']['OpenFromViewer']);
+                  OpenViewerInfo.style('margin', '2px 4px 0px 4px');
+                  OpenViewerInfo.style('text-align', 'start');
+                  OpenViewerInfo.style('display', 'grid');
+                  OpenViewerInfo.parent(EmptyDiv);
+                  EmptyDiv.elt.onclick = () => {
+                    let createRelevances = [];
+                    for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++)
+                      createRelevances.push({ content: this.PostInfo['attachments'][i] });
+                    this.modalCtrl.create({
+                      component: IonicViewerPage,
+                      componentProps: {
+                        info: { content: this.PostInfo['attachments'][index] },
+                        path: this.PostInfo['attachments'][index]['path'],
+                        relevance: createRelevances,
+                        noEdit: true,
+                      },
+                      cssClass: 'fullscreen',
+                    }).then(v => v.present());
+                  }
+                }
                   break;
               }
             } else { // 일반 문자열
