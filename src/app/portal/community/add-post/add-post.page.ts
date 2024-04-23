@@ -650,7 +650,6 @@ export class AddPostPage implements OnInit {
         });
         delete this.global.p5key['KeyShortCut']['Escape'];
         v.present();
-        this.nakama.removeBanner();
         this.lock_modal_open = false;
       });
     }

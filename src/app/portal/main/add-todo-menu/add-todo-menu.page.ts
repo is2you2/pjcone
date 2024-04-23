@@ -123,7 +123,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     };
     this.MainDiv = document.getElementById('main_div');
     this.isMobile = isPlatform == 'Android' || isPlatform == 'iOS';
-    this.nakama.removeBanner();
     // 미리 지정된 데이터 정보가 있는지 검토
     this.route.queryParams.subscribe(_p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
@@ -131,7 +130,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       if (this.received_data) this.userInput = { ...this.userInput, ...JSON.parse(this.received_data) };
     });
     this.nakama.AddTodoLinkAct = async (info: string) => {
-      this.nakama.removeBanner();
       if (this.p5timer) this.p5timer.remove();
       this.received_data = info;
       this.userInput = JSON.parse(this.received_data);

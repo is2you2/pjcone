@@ -13,7 +13,6 @@ import { AddGroupPage } from '../settings/add-group/add-group.page';
 import { QRelsePage } from './qrelse/qrelse.page';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
-import { AdMob, AdMobBannerSize, BannerAdOptions, BannerAdPluginEvents, BannerAdPosition, BannerAdSize } from '@capacitor-community/admob';
 
 @Component({
   selector: 'app-subscribes',
@@ -34,7 +33,6 @@ export class SubscribesPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.add_admob_banner();
     this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
       if (e && v) this.nakama.users.self['img'] = v.replace(/"|=|\\/g, '');
     });
@@ -116,35 +114,6 @@ export class SubscribesPage implements OnInit {
     window.open(_link, '_system')
   }
 
-  async add_admob_banner() {
-    return;
-    AdMob.addListener(BannerAdPluginEvents.SizeChanged, (size: AdMobBannerSize) => {
-      this.nakama.appMargin = size.height;
-      const app: HTMLElement = document.querySelector('ion-router-outlet');
-
-      if (this.nakama.appMargin === 0)
-        app.style.marginBottom = '';
-      else if (this.nakama.appMargin > 0)
-        app.style.marginBottom = this.nakama.appMargin + 'px';
-    });
-    const options: BannerAdOptions = {
-      adId: 'ca-app-pub-6577630868247944/4829889344',
-      adSize: BannerAdSize.ADAPTIVE_BANNER,
-      position: BannerAdPosition.BOTTOM_CENTER,
-    };
-    /** 광고 정보 불러오기 */
-    try { // 파일이 있으면 보여주고, 없다면 보여주지 않음
-      this.nakama.isBannerShowing = false;
-      let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/admob.txt`);
-      if (!res.ok) throw "준비된 광고가 없습니다";
-      AdMob.showBanner(options).then(() => {
-        this.nakama.isBannerShowing = true;
-      });
-    } catch (e) { // 로컬 정보 기반으로 광고
-      console.log(e);
-    }
-  }
-
   cant_dedicated = false;
 
   try_add_shortcut() {
@@ -181,7 +150,6 @@ export class SubscribesPage implements OnInit {
 
   ionViewDidEnter() {
     this.nakama.subscribe_lock = true;
-    this.nakama.resumeBanner();
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
     this.try_add_shortcut();
@@ -189,7 +157,6 @@ export class SubscribesPage implements OnInit {
 
   go_to_page(_page: string) {
     this.navCtrl.navigateForward(`portal/settings/${_page}`);
-    this.nakama.removeBanner();
   }
 
   EventListenerAct = (ev: any) => {

@@ -732,7 +732,6 @@ export class MainPage implements OnInit {
     if (!p5todo_canvas)
       this.CreateTodoManager();
     else this.global.p5todo['PlayCanvas']();
-    this.nakama.resumeBanner();
     this.try_add_shortcut();
   }
 

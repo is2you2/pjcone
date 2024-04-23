@@ -406,7 +406,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
-    this.nakama.resumeBanner();
     this.is_modal = false;
     this.global.p5key['KeyShortCut']['Escape'] = () => {
       this.navCtrl.pop();
@@ -2220,7 +2219,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.noti.Current = 'IonicViewerPage';
         this.is_modal = true;
         v.present();
-        this.nakama.removeBanner();
         this.lock_modal_open = false;
       });
     }

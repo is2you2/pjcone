@@ -33,12 +33,10 @@ export class PortalPage implements OnInit {
     if (this.CacheKeyShortCut)
       this.global.p5key['KeyShortCut'] = this.CacheKeyShortCut;
     this.try_add_shortcut();
-    this.nakama.resumeBanner();
     if (this.global.p5todo && this.global.p5todo['PlayCanvas'] && this.TodoIcon == 'checkbox')
       this.global.p5todo['PlayCanvas']();
     if (this.nakama.AfterLoginAct.length) { // 빠른 진입 행동 보완
       this.navCtrl.navigateForward('portal/settings/group-server');
-      this.nakama.removeBanner();
     }
   }
 
@@ -79,7 +77,6 @@ export class PortalPage implements OnInit {
 
   /** 하단 탭을 눌러 설정페이지로 이동 */
   setting_button() {
-    this.nakama.removeBanner();
     this.navCtrl.navigateForward('portal/settings', {
       animation: iosTransitionAnimation,
     });

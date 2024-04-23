@@ -36,7 +36,6 @@ export class CommunityPage implements OnInit {
 
   add_post() {
     this.navCtrl.navigateForward('portal/community/add-post');
-    this.nakama.removeBanner();
   }
 
   ionViewDidEnter() {

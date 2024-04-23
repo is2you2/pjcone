@@ -107,7 +107,6 @@ export class MinimalChatPage implements OnInit {
       });
     }
     this.local_server.check_addresses();
-    this.nakama.removeBanner();
     this.header_title = this.lang.text['MinimalChat']['header_title_ranchat'];
     let get_address = this.params.get('address');
     let name = this.params.get('name');
