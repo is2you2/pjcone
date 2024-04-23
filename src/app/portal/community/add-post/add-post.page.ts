@@ -712,8 +712,8 @@ export class AddPostPage implements OnInit {
           // 받은 정보로 아이디 구성
           if (v.objects.length) {
             CurrentCounter = v.objects[0].value['counter'];
-            this.userInput.id = `ServerPost_${CurrentCounter}`;
-          } else this.userInput.id = `ServerPost_${CurrentCounter}`;
+            this.userInput.id = `ServerPost_${this.userInput.creator_id}_${CurrentCounter}`;
+          } else this.userInput.id = `ServerPost_${this.userInput.creator_id}_${CurrentCounter}`;
           // 카운터 업데이트
           await this.nakama.servers[isOfficial][target].client.writeStorageObjects(
             this.nakama.servers[isOfficial][target].session, [{

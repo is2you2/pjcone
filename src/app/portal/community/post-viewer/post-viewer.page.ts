@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController, NavParams } from '@ionic/angular';
+import { AlertController, ModalController, NavParams } from '@ionic/angular';
 import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -20,6 +20,7 @@ export class PostViewerPage implements OnInit {
     public lang: LanguageSettingService,
     private indexed: IndexedDBService,
     private nakama: NakamaService,
+    private alertCtrl: AlertController,
   ) { }
 
   PostInfo: any;
@@ -133,13 +134,23 @@ export class PostViewerPage implements OnInit {
   }
 
   EditPost() {
-    console.log('게시물 편집');
+    this.modalCtrl.dismiss();
+    this.nakama.EditPost(this.PostInfo);
   }
 
   RemovePost() {
-    this.nakama.RemovePost(this.PostInfo, () => {
-      this.modalCtrl.dismiss();
-    });
+    this.alertCtrl.create({
+      header: this.lang.text['PostViewer']['RemovePost'],
+      message: this.lang.text['ChatRoom']['CannotUndone'],
+      buttons: [{
+        text: this.lang.text['TodoDetail']['remove'],
+        cssClass: 'redfont',
+        handler: async () => {
+          await this.nakama.RemovePost(this.PostInfo);
+          this.modalCtrl.dismiss();
+        }
+      }],
+    }).then(v => v.present());
   }
 
   ionViewDidLeave() {

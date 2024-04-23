@@ -2954,34 +2954,65 @@ export class NakamaService {
         return -1;
       return 0;
     });
+    this.MakeContextMenuOnPost();
+  }
+
+  /** 게시물 우클릭 행동 추가 */
+  MakeContextMenuOnPost() {
+    setTimeout(() => {
+      for (let i = 0, j = this.posts.length; i < j; i++) {
+        let TargetPost = document.getElementById(this.posts[i]['id']);
+        if (TargetPost && TargetPost.oncontextmenu == null)
+          TargetPost.oncontextmenu = () => {
+            let index: number;
+            for (let k = 0, l = this.posts.length; k < l; k++)
+              if (this.posts[k]['id'] == TargetPost.id) {
+                index = k;
+                break;
+              }
+            this.alertCtrl.create({
+              header: this.posts[index]['title'],
+              message: this.posts[index]['content'],
+              buttons: [{
+                text: this.lang.text['ChatRoom']['EditChat'],
+                handler: () => {
+                  this.EditPost(this.posts[index]);
+                }
+              }, {
+                text: this.lang.text['TodoDetail']['remove'],
+                handler: () => {
+                  this.RemovePost(this.posts[index]);
+                },
+                cssClass: 'redfont',
+              }],
+            }).then(v => v.present());
+            return false;
+          }
+      }
+    }, 100);
   }
 
   /** 게시물 편집 */
-  EditPost() {
-    console.log('게시물 편집');
+  EditPost(info: any) {
+    console.log('게시물 편집: ', info);
   }
 
   /** 게시물 삭제 */
-  RemovePost(info: any, ApplyCallBack?: Function) {
-    this.alertCtrl.create({
-      header: this.lang.text['PostViewer']['RemovePost'],
-      message: this.lang.text['ChatRoom']['CannotUndone'],
-      buttons: [{
-        text: this.lang.text['TodoDetail']['remove'],
-        cssClass: 'redfont',
-        handler: () => {
-          if (info['creator_id'] == 'local') {
-            this.indexed.GetFileListFromDB(`servers/local/target/posts/${info['id']}`)
-              .then(list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
-            delete this.posts_orig.local.target.me[info['id']];
-          } else { // 서버에서 삭제
+  async RemovePost(info: any) {
+    if (info['creator_id'] == 'local') {
+      let list = await this.indexed.GetFileListFromDB(`servers/local/target/posts/${info['id']}`);
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['PostViewer']['RemovePost'] });
+      loading.present();
+      for (let i = 0, j = list.length; i < j; i++) {
+        loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`;
+        await this.indexed.removeFileFromUserPath(list[i]);
+      }
+      loading.dismiss();
+      delete this.posts_orig.local.target.me[info['id']];
+    } else { // 서버에서 삭제
 
-          }
-          this.rearrange_posts();
-          if (ApplyCallBack) ApplyCallBack();
-        }
-      }],
-    }).then(v => v.present());
+    }
+    this.rearrange_posts();
   }
 
   /** WebRTC 통화 채널에 참가하기 */
