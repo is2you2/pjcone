@@ -37,7 +37,10 @@ export class CommunityPage implements OnInit {
 
   add_post(info?: any) {
     this.navCtrl.navigateForward('portal/community/add-post', {
-      state: info,
+      state: {
+        data: info,
+        act: true,
+      },
     });
   }
 

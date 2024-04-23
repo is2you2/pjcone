@@ -75,7 +75,13 @@ export class AddPostPage implements OnInit {
   ngOnInit() {
     this.route.queryParams.subscribe(async _p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
-      if (navParams) this.userInput = navParams as any;
+      let InitAct = false;
+      if (navParams) {
+        InitAct = Boolean(navParams.act);
+        if (navParams.data) this.userInput = navParams.data;
+      }
+      this.MakeAttachHaveContextMenu();
+      if (!InitAct) return;
       this.servers = this.nakama.get_all_server_info(true, true);
       let local_info = {
         name: this.lang.text['AddGroup']['UseLocalStorage'],
@@ -86,7 +92,7 @@ export class AddPostPage implements OnInit {
       this.servers.unshift(local_info);
       if (this.servers.length > 1) this.index = 1;
       /** 편집하기로 들어왔다면 */
-      if (navParams) { // 로컬이라면 첫번째 서버로 설정
+      if (navParams && navParams.data) { // 로컬이라면 첫번째 서버로 설정
         if (this.userInput.creator_id == 'local') {
           this.index = 0;
         } else { // 원격 서버 정보 검토하기
@@ -94,7 +100,6 @@ export class AddPostPage implements OnInit {
         }
       }
       this.select_server(this.index);
-      this.userInput.creator_name = this.nakama.users.self['display_name'];
     });
   }
 
@@ -188,12 +193,12 @@ export class AddPostPage implements OnInit {
     if (changed) {
       this.isServerChanged = this.OriginalServerInfo != `${this.isOfficial}/${this.target}`;
     } else this.OriginalServerInfo = `${this.isOfficial}/${this.target}`;
+    this.userInput.creator_name = this.nakama.users.self['display_name'];
     try { // 변경된 서버 user_id 를 적용함
       this.userInput.creator_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
       this.userInput.UserColor = (this.userInput.creator_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
     } catch (e) { // 그게 아니라면 로컬입니다
       this.userInput.creator_id = 'local';
-      this.userInput.creator_name = this.nakama.users.self['display_name'];
       this.userInput.UserColor = '888888';
     }
   }
