@@ -183,6 +183,7 @@ export class NakamaService {
       this.init_all_sessions();
     this.showServer = Boolean(localStorage.getItem('showServer'));
   }
+
   /** 시작시 해야할 일 알림을 설정 */
   async set_all_todo_notification() {
     let _list = await this.indexed.GetFileListFromDB('info.todo');
@@ -227,7 +228,7 @@ export class NakamaService {
   }
 
   /** 해야할 일 알림 추가하기 */
-  set_todo_notification(noti_info: any) {
+  async set_todo_notification(noti_info: any) {
     // 시작 시간이 있으면 시작할 때 알림, 시작시간이 없으면 끝날 때 알림
     let targetTime = noti_info.startFrom || noti_info.limit;
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') { // 웹은 예약 발송이 없으므로 지금부터 수를 세야함
@@ -246,14 +247,33 @@ export class NakamaService {
       }
     } else { // 모바일은 예약 발송을 설정
       let schedule_at = new Date(targetTime).getTime();
-      let not_registered = true;
       for (let i = 0, j = this.registered_id.length; i < j; i++)
         if (this.registered_id[i] == noti_info.id) {
           this.registered_id.splice(i, 1);
-          not_registered = false;
+          noti_info.id = this.get_noti_id();
+          if (!noti_info['done'] && noti_info['remote']) { // 서버 할 일이라면 알림 재등록
+            let isOfficial = noti_info['remote']['isOfficial'];
+            let target = noti_info['remote']['target'];
+            try {
+              await this.servers[isOfficial][target].client.writeStorageObjects(
+                this.servers[isOfficial][target].session, [{
+                  collection: 'server_todo',
+                  key: noti_info['id'],
+                  permission_read: 2,
+                  permission_write: 1,
+                  value: noti_info,
+                }]).then(async v => {
+                  await this.servers[isOfficial][target]
+                    .socket.sendMatchState(this.self_match[isOfficial][target].match_id, MatchOpCode.MANAGE_TODO,
+                      encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
+                });
+            } catch (e) {
+              console.log('서버 알림 재등록 실패: ', e);
+            }
+          }
           break;
         }
-      if (!noti_info['done'] && not_registered && schedule_at > new Date().getTime()) {
+      if (!noti_info['done'] && schedule_at > new Date().getTime()) {
         let color = '58a192'; // 메모
         switch (noti_info.importance) {
           case '1': // 기억해야 함
@@ -2461,34 +2481,8 @@ export class NakamaService {
                   } catch (e) { }
                   this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
                   let json = v.objects[0].value as any;
-                  let default_color = '58a192';
-                  switch (json.importance) {
-                    case '1': // 기억해야함
-                      default_color = 'ddbb41';
-                      break;
-                    case '2': // 중요함
-                      default_color = 'b95437';
-                      break;
-                  }
                   this.noti.ClearNoti(json.noti_id);
-                  this.noti.PushLocal({ // 일을 받은 경우 알림 띄우기
-                    id: json.noti_id,
-                    title: json.title,
-                    body: json.description,
-                    smallIcon_ln: 'todo',
-                    iconColor_ln: json.custom_color || default_color,
-                    group_ln: 'todo',
-                    extra_ln: {
-                      page: {
-                        component: 'AddTodoMenuPage',
-                        componentProps: {
-                          data: JSON.stringify(json),
-                        },
-                      },
-                    },
-                  }, undefined, (_ev: any) => {
-                    this.open_add_todo_page(JSON.stringify(json));
-                  });
+                  this.set_todo_notification(json);
                   this.p5toast.show({
                     text: `${this.lang.text['Main']['RequestTodo']}: ${json.title}`,
                   });
