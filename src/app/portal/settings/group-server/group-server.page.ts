@@ -119,6 +119,7 @@ export class GroupServerPage implements OnInit {
         imgDiv.style('background-position', 'center');
         imgDiv.style('background-repeat', 'no-repeat');
         imgDiv.style('background-size', 'cover');
+        imgDiv.style('cursor', 'pointer');
         imgDiv.parent(this.gsCanvasDiv);
         imgDiv.elt.onclick = () => {
           this.change_img_from_file();
@@ -136,6 +137,7 @@ export class GroupServerPage implements OnInit {
           OnlineLamp.style('left', `${this.gsCanvasDiv.clientWidth / 2 + 38}px`);
         }, 0);
         OnlineLamp.style('border-radius', LAMP_SIZE);
+        OnlineLamp.style('cursor', 'pointer');
         OnlineLamp.parent(this.gsCanvasDiv);
         OnlineLamp.elt.onclick = () => {
           this.toggle_online();

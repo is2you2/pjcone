@@ -23,8 +23,13 @@ SPDX-License-Identifier: MIT -->
           <img *ngIf="post['mainImage']" class="thumbnail_image" [src]="post['mainImage']['thumbnail']"
             [style]="post['isNSFW'] ? 'filter: blur(16px);' : ''" alt="">
           <ion-card-header>
-            <ion-card-subtitle class="cardCreator" (click)="open_profile(post)">
-              <span [style]="'color: ' + post['UserColor']"> {{post['creator_name']}} </span>
+            <ion-card-subtitle class="cardCreator">
+              <span [style]="'color: ' + post['UserColor']" (click)="open_profile(post)"> {{post['creator_name']}}
+              </span>
+              <span *ngIf="nakama.showServer" class="server_target serverTargetOverride">
+                {{'(' + (post['server'] ? (post['server']['name'] || post['server']['target']) :
+                lang.text['AddGroup']['UseLocalStorage']) + ')'}}
+              </span>
             </ion-card-subtitle>
             <ion-card-title class="cardTitle">{{post['title']}}</ion-card-title>
           </ion-card-header>

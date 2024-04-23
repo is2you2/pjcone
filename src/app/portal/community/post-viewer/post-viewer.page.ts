@@ -63,10 +63,11 @@ export class PostViewerPage implements OnInit {
           modify_time.parent(datetime);
         }
         // 작성자
-        let creator = p.createDiv(this.PostInfo['creator_name']);
+        let creator = p.createSpan(this.PostInfo['creator_name']);
         creator.style('color', `#${this.PostInfo['UserColor']}`);
         creator.style('font-weight', 'bold');
         creator.style('padding-bottom', '16px');
+        creator.style('cursor', 'pointer');
         creator.elt.onclick = () => {
           if (this.isOwner) {
             this.modalCtrl.create({
@@ -105,6 +106,7 @@ export class PostViewerPage implements OnInit {
                     console.log('게시물 image 첨부파일 불러오기 오류: ', e);
                   }
                   let img = p.createImg(FileURL, `${index}`);
+                  img.style('cursor', 'pointer');
                   img.elt.onclick = () => {
                     let createRelevances = [];
                     for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++)
@@ -203,6 +205,7 @@ export class PostViewerPage implements OnInit {
                   EmptyDiv.style('background-color', 'grey');
                   EmptyDiv.style('margin-top', '4px');
                   EmptyDiv.style('border-radius', '8px');
+                  EmptyDiv.style('cursor', 'pointer');
                   EmptyDiv.parent(contentDiv);
                   let FileName = p.createP(this.PostInfo['attachments'][index]['filename']);
                   FileName.style('margin', '0px 4px');

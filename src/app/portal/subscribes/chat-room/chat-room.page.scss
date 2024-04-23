@@ -85,6 +85,7 @@
     width: auto;
     height: auto;
     border-radius: 8px;
+    cursor: pointer;
 }
 
 .file_info {
@@ -141,6 +142,7 @@
     height: 48px;
     border-radius: 64px;
     object-fit: cover;
+    cursor: pointer;
 }
 
 // 발송하였으나 재수신되지 않은, 발신중으로 판단되는 메시지들을 위한 클래스
@@ -164,6 +166,7 @@
     background-color: grey;
     margin-top: 4px;
     border-radius: 8px;
+    cursor: pointer;
 }
 
 #send_thumbnail {
