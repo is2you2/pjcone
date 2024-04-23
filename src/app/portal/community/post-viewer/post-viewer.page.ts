@@ -4,6 +4,7 @@ import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
+import { GroupServerPage } from '../../settings/group-server/group-server.page';
 
 @Component({
   selector: 'app-post-viewer',
@@ -44,7 +45,6 @@ export class PostViewerPage implements OnInit {
         title.parent(contentDiv);
         // 작성일
         let datetime = p.createDiv();
-        datetime.style('padding-bottom', '16px');
         datetime.style('color', '#888');
         datetime.parent(contentDiv);
         let create_time = p.createDiv(`${this.lang.text['PostViewer']['CreateTime']}: ${new Date(this.PostInfo['create_time']).toLocaleString()}`);
@@ -53,6 +53,22 @@ export class PostViewerPage implements OnInit {
           let modify_time = p.createDiv(`${this.lang.text['PostViewer']['ModifyTime']}: ${new Date(this.PostInfo['modify_time']).toLocaleString()}`);
           modify_time.parent(datetime);
         }
+        // 작성자
+        let creator = p.createDiv(this.PostInfo['creator_name']);
+        console.log(this.PostInfo);
+        creator.style('color', `#${this.PostInfo['UserColor']}`);
+        creator.style('font-weight', 'bold');
+        creator.style('padding-bottom', '16px');
+        creator.elt.onclick = () => {
+          if (this.PostInfo['creator_id'] == 'local') {
+            this.modalCtrl.create({
+              component: GroupServerPage,
+            }).then(v => v.present());
+          } else { // 서버 사용자 검토
+
+          }
+        }
+        creator.parent(contentDiv);
         // 내용
         if (this.PostInfo['content']) {
           let content: string[] = this.PostInfo['content'].split('\n');

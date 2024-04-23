@@ -8,10 +8,6 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-item>
-    <ion-label>{{lang.text['AddPost']['Creator']}}</ion-label>
-    <ion-label class="ion-text-end">{{PostInfo['creator_name']}}</ion-label>
-  </ion-item>
   <img *ngIf="PostInfo['mainImage'] && PostInfo['mainImage']['MainThumbnail']" style="width: 100%; height: auto;"
     [src]="PostInfo['mainImage']['MainThumbnail']" alt="MainImage">
   <div id="PostContent" style="padding: 16px;"></div>
