@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AlertController, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -15,6 +15,8 @@ import clipboard from "clipboardy";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { ActivatedRoute, Router } from '@angular/router';
+import * as p5 from 'p5';
+import { isPlatform } from 'src/app/app.component';
 
 /** 첨부파일 리스트 양식  
  * [{ 주소(또는 경로), 자료 형식(url | data) }, ...]
@@ -33,7 +35,7 @@ interface PostAttachment extends FileInfo {
   templateUrl: './add-post.page.html',
   styleUrls: ['./add-post.page.scss'],
 })
-export class AddPostPage implements OnInit {
+export class AddPostPage implements OnInit, OnDestroy {
   constructor(
     private global: GlobalActService,
     public lang: LanguageSettingService,
@@ -49,6 +51,11 @@ export class AddPostPage implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
   ) { }
+
+  ngOnDestroy(): void {
+    if (this.p5canvas)
+      this.p5canvas.remove();
+  }
 
   servers: ServerInfo[] = [];
   userInput = {
@@ -100,6 +107,34 @@ export class AddPostPage implements OnInit {
         }
       }
       this.select_server(this.index);
+    });
+    if (isPlatform == 'DesktopPWA')
+      setTimeout(() => {
+        this.CreateDrop();
+      }, 0);
+  }
+
+  p5canvas: p5;
+  CreateDrop() {
+    let parent = document.getElementById('p5Drop_addPost');
+    this.p5canvas = new p5((p: p5) => {
+      p.setup = () => {
+        let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
+        canvas.parent(parent);
+        p.pixelDensity(.1);
+        canvas.drop(async (file: any) => {
+          await this.selected_blobFile_callback_act(file.file);
+        });
+      }
+      p.mouseMoved = (ev: any) => {
+        if (ev['dataTransfer']) {
+          parent.style.pointerEvents = 'all';
+          parent.style.backgroundColor = '#0008';
+        } else {
+          parent.style.pointerEvents = 'none';
+          parent.style.backgroundColor = 'transparent';
+        }
+      }
     });
   }
 

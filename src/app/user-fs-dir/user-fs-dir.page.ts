@@ -120,7 +120,7 @@ export class UserFsDirPage implements OnInit {
       p.setup = () => {
         let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
         canvas.parent(parent);
-        p.pixelDensity(1);
+        p.pixelDensity(.1);
         canvas.drop((file: any) => {
           let _Millis = p.millis();
           if (LastDropAt < _Millis - 400) { // 새로운 파일로 인식
