@@ -793,7 +793,6 @@ export class IonicViewerPage implements OnInit {
             await this.global.CreateGodotIFrame('content_viewer_canvas', {
               path: 'tmp_files/duplicate/viewer.pck',
               alt_path: this.FileInfo['path'] || this.navParams.get('path'),
-              ext: this.FileInfo['file_ext'],
               url: this.FileInfo.url,
               background: ThumbnailURL,
               // modify_image
@@ -820,7 +819,6 @@ export class IonicViewerPage implements OnInit {
               await this.global.CreateGodotIFrame('content_viewer_canvas', {
                 path: 'tmp_files/duplicate/viewer.pck',
                 alt_path: this.FileInfo['path'] || this.navParams.get('path'),
-                ext: this.FileInfo['file_ext'],
                 url: this.FileInfo.url,
                 background: ThumbnailURL,
                 // modify_image

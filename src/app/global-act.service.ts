@@ -69,8 +69,6 @@ interface GodotFrameKeys {
   path: string;
   /** 썸네일 생성을 위한 기존 경로 */
   alt_path?: string;
-  /** 확장자 검토, 향후 pck 외 3d 파일 열람용 */
-  ext?: string;
   /** 배경 이미지, p5 에서 불러올 수 있는 주소로 제공 */
   background?: string;
   /** **사용금지**  
@@ -574,6 +572,7 @@ export class GlobalActService {
       case 'jpg':
       case 'webp':
       case 'gif':
+      case 'svg':
         info['viewer'] = 'image';
         break;
       // 사운드류

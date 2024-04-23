@@ -98,8 +98,6 @@ export class CommunityPage implements OnInit {
       if (!this.counter[servers[i].isOfficial][servers[i].target])
         this.counter[servers[i].isOfficial][servers[i].target] = {};
       // 서버 갯수 업데이트
-      console.log(`서버 정보 업데이트 필요: ${servers[i].isOfficial}/${servers[i].target}`);
-      console.log(this.nakama.users);
     }
     this.load_post_cycles();
   }
