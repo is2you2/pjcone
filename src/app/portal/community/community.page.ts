@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: MIT
 
 import { Component, OnInit } from '@angular/core';
-import { NavController } from '@ionic/angular';
+import { ModalController, NavController } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
+import { GroupServerPage } from '../settings/group-server/group-server.page';
 
 @Component({
   selector: 'app-community',
@@ -23,21 +24,26 @@ export class CommunityPage implements OnInit {
     private global: GlobalActService,
     private navCtrl: NavController,
     private indexed: IndexedDBService,
+    private modalCtrl: ModalController,
   ) { }
 
-  ngOnInit() { }
+  async ngOnInit() {
+    this.nakama.is_post_lock = true;
+    if (!this.nakama.posts.length)
+      await this.load_posts_counter();
+  }
 
   add_post() {
     this.navCtrl.navigateForward('portal/community/add-post');
     this.nakama.removeBanner();
   }
 
-  async ionViewDidEnter() {
+  ionViewDidEnter() {
     this.try_add_shortcut();
-    this.nakama.is_post_lock = true;
-    if (!this.nakama.posts.length)
-      await this.load_posts_counter();
-    this.load_post_cycles();
+    // 스크롤이 내려가있다면 새로고침 처리(화면 변화 대응용)
+    if (this.ContentDiv && this.ContentScroll)
+      if (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 1)
+        this.load_post_cycles();
   }
 
   ContentScroll: HTMLDivElement;
@@ -53,7 +59,7 @@ export class CommunityPage implements OnInit {
       if (!this.ContentScroll) {
         this.ContentScroll = document.getElementById('CommunityScrollDiv') as HTMLDivElement;
         this.ContentScroll.onscroll = (_ev: any) => {
-          if (Math.abs(this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight)) < 1)
+          if (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 1)
             this.load_post_cycles();
         }
       }
@@ -92,7 +98,9 @@ export class CommunityPage implements OnInit {
         this.counter[servers[i].isOfficial][servers[i].target] = {};
       // 서버 갯수 업데이트
       console.log(`서버 정보 업데이트 필요: ${servers[i].isOfficial}/${servers[i].target}`);
+      console.log(this.nakama.users);
     }
+    this.load_post_cycles();
   }
 
   /** 게시물 정보 하나씩 불러오기  
@@ -150,9 +158,15 @@ export class CommunityPage implements OnInit {
   /** 사용자 정보를 열람하는 경우 카드 열람 무시 */
   isOpenProfile = false;
   /** 작성자 정보 열기 */
-  open_profile() {
+  open_profile(info: any) {
     this.isOpenProfile = true;
-    console.log('open_profile');
+    if (info['creator_id'] == 'local') { // 로컬 정보인 경우
+      this.modalCtrl.create({
+        component: GroupServerPage,
+      }).then(v => v.present());
+    } else { // 서버인 경우
+      console.log('서버 작성자 검토: ', info);
+    }
     setTimeout(() => {
       this.isOpenProfile = false;
     }, 0);
