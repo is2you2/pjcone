@@ -64,7 +64,7 @@ export class CommunityPage implements OnInit {
             this.load_post_cycles();
         }
       }
-      if (this.is_loadable && this.ContentDiv.clientHeight < this.ContentScroll.clientHeight)
+      if (this.is_loadable && (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 1))
         this.load_post_cycles();
     }, 50);
   }
