@@ -586,8 +586,14 @@ export class GlobalActService {
       // 비디오류
       case 'mp4':
       case 'ogv':
-      case 'webm':
         info['viewer'] = 'video';
+        break;
+      // 웹 미디어 병행가능한 구성
+      case 'webm':
+        if (info['type'].indexOf('audio/') == 0)
+          info['viewer'] = 'audio';
+        else if (info['type'].indexOf('video/') == 0)
+          info['viewer'] = 'video';
         break;
       // 코드류
       case 'cs': // C#
