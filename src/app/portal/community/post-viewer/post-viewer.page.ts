@@ -150,6 +150,11 @@ export class PostViewerPage implements OnInit {
                   break;
                 case 'godot': {
                   let targetFrameId = `PostViewer_godot_pck_${index}`;
+                  let godot_frame = p.createDiv();
+                  godot_frame.id(targetFrameId);
+                  godot_frame.style('width', '100%');
+                  godot_frame.style('height', '432px');
+                  godot_frame.parent(contentDiv);
                   setTimeout(async () => {
                     let createDuplicate = false;
                     if (this.indexed.godotDB) {

@@ -45,22 +45,7 @@ func download_complete(result, res_code, header, body):
 
 # 로컬 파일로 즉시 시작
 func start_load_pck(args):
-	match(window['ext']):
-		'pck':
-			load_pck()
-		'blend':
-			continue
-		'obj':
-			continue
-		'stl':
-			continue
-		'glb':
-			continue
-		'gltf':
-			# 파일읽기 준비중 알림
-			$CenterContainer/Label.text = 'Preparing open file ext:\n%s' % window['ext']
-		_: # 예외처리
-			$CenterContainer/Label.text = 'Cannot open file:\n%s' % ('user://%s' % window['path'])
+	load_pck()
 
 # pck 투척시 테스트를 위해 바로 받아보기
 func load_package_debug(files:PoolStringArray, scr):
