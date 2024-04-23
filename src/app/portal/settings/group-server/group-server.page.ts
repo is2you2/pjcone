@@ -228,6 +228,7 @@ export class GroupServerPage implements OnInit {
           uuidDiv.style('width', '80%');
           uuidDiv.style('text-align', 'center');
           uuidDiv.style('align-self', 'center');
+          uuidDiv.style('cursor', 'copy');
           uuidDiv.parent(ExceptPic);
           uuidDiv.elt.onclick = () => {
             this.copy_id();

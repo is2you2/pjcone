@@ -120,7 +120,6 @@ export class AddPostPage implements OnInit, OnDestroy {
       }
       this.select_server(this.index);
     });
-    console.log(this.userInput);
     if (isPlatform == 'DesktopPWA')
       setTimeout(() => {
         this.CreateDrop();

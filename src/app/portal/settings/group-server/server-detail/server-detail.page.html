@@ -11,7 +11,7 @@
   <ion-item-divider>
     <ion-label>{{lang.text['ServerDetail']['copy_scan_below']}}</ion-label>
   </ion-item-divider>
-  <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto;" alt="Loading"
+  <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;" alt="Loading"
     (click)="copy_startup_address()">
   <ion-item-divider>
     <ion-label>서버 설정</ion-label>

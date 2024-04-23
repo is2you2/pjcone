@@ -180,6 +180,7 @@ export class OthersProfilePage implements OnInit {
         uuidDiv.style('margin-top', '36px');
         uuidDiv.style('width', '80%');
         uuidDiv.style('text-align', 'center');
+        uuidDiv.style('cursor', 'copy');
         uuidDiv.parent(ExceptPic);
         uuidDiv.elt.onclick = () => {
           this.copy_id();
