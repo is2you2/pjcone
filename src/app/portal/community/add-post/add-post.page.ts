@@ -176,9 +176,11 @@ export class AddPostPage implements OnInit, OnDestroy {
         this.ChangeMainPostImage({ target: { files: [stack[0].file] } });
     }
     let ContentTextArea = document.getElementById('add_post_content') as HTMLTextAreaElement;
-    if (!this.userInput.title)
-      this.TitleInput.focus();
-    else ContentTextArea.focus();
+    setTimeout(() => {
+      if (!this.userInput.title)
+        this.TitleInput.focus();
+      else ContentTextArea.focus();
+    }, 200);
     ContentTextArea.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)

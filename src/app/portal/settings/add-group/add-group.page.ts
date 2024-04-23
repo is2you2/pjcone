@@ -68,7 +68,7 @@ export class AddGroupPage implements OnInit {
     let name_html = group_name.childNodes[1].childNodes[1].childNodes[1] as HTMLElement;
     setTimeout(() => {
       name_html.focus();
-    }, 0);
+    }, 200);
     this.p5canvas = new p5((p: p5) => {
       p.keyPressed = (ev) => {
         switch (ev['code']) {

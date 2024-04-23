@@ -297,7 +297,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     setTimeout(() => {
       if (!this.isModify)
         this.titleIonInput.focus();
-    }, 0);
+    }, 200);
     this.ImporantSelChanged({ detail: { value: this.userInput.importance } });
     this.file_sel_id = `todo_${this.userInput.id || 'new_todo_id'}_${new Date().getTime()}`;
     // 첨부 이미지가 있음
