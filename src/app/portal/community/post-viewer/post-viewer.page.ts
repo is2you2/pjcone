@@ -174,7 +174,7 @@ export class PostViewerPage implements OnInit {
                     await this.global.CreateGodotIFrame(targetFrameId, {
                       path: `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`,
                       url: this.PostInfo['attachments'][index].url,
-                    }, 'start_load_pck');
+                    }, 'start_load_pck', true);
                     if (!createDuplicate) {
                       try { // 내부에 파일이 있는지 검토
                         let blob = await this.indexed.loadBlobFromUserPath(
@@ -185,7 +185,7 @@ export class PostViewerPage implements OnInit {
                       await this.global.CreateGodotIFrame(targetFrameId, {
                         path: `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`,
                         url: this.PostInfo['attachments'][index].url,
-                      }, 'start_load_pck');
+                      }, 'start_load_pck', true);
                     }
                     if (this.PostInfo['attachments'][index].url)
                       this.global.godot_window['download_url']();
