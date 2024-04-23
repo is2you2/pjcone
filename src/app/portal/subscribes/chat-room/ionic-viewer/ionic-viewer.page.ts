@@ -66,6 +66,7 @@ export class IonicViewerPage implements OnInit {
   OpenInChannelChat = false;
   isChannelOnline = true;
   fromLocalChannel = false;
+  showEdit = true;
 
   EventListenerAct = (ev: any) => {
     ev.detail.register(120, (_processNextHandler: any) => { });
@@ -121,6 +122,7 @@ export class IonicViewerPage implements OnInit {
         this.CreateContentInfo();
         break;
     }
+    this.showEdit = !Boolean(this.navParams.get('noEdit'));
   }
 
   canvasDiv: HTMLElement;
