@@ -1,0 +1,18 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>post-viewer</ion-title>
+    <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
+      <ion-back-button defaultHref=""></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-item>
+    <ion-label>{{lang.text['AddPost']['Creator']}}</ion-label>
+    <ion-label class="ion-text-end">{{PostInfo['creator_name']}}</ion-label>
+  </ion-item>
+  <img *ngIf="PostInfo['mainImage'] && PostInfo['mainImage']['MainThumbnail']"
+    [src]="PostInfo['mainImage']['MainThumbnail']" alt="MainImage">
+  <div id="PostContent"></div>
+</ion-content>

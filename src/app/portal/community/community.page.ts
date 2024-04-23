@@ -9,6 +9,7 @@ import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { GroupServerPage } from '../settings/group-server/group-server.page';
+import { PostViewerPage } from './post-viewer/post-viewer.page';
 
 @Component({
   selector: 'app-community',
@@ -135,12 +136,17 @@ export class CommunityPage implements OnInit {
     if (v) {
       let json = JSON.parse(v);
       if (json['mainImage']) {
-        let blob = await this.indexed.loadBlobFromUserPath(json['mainImage']['path'], json['mainImage']['type']);
-        let FileURL = URL.createObjectURL(blob);
-        json['mainImage']['thumbnail'] = FileURL;
-        setTimeout(() => {
-          URL.revokeObjectURL(FileURL);
-        }, 100);
+        if (json['mainImage']['url']) {
+          json['mainImage']['thumbnail'] = json['mainImage']['url'];
+        } else { // URL 주소가 아니라면 이미지 직접 불러오기
+          let blob = await this.indexed.loadBlobFromUserPath(json['mainImage']['path'], json['mainImage']['type']);
+          json['mainImage']['blob'] = blob;
+          let FileURL = URL.createObjectURL(blob);
+          json['mainImage']['thumbnail'] = FileURL;
+          setTimeout(() => {
+            URL.revokeObjectURL(FileURL);
+          }, 100);
+        }
       }
       this.nakama.posts_orig.local.target[json['id']] = json;
       this.counter.local.target.me--;
@@ -173,9 +179,25 @@ export class CommunityPage implements OnInit {
   }
 
   /** 게시글 읽기 */
-  open_post() {
+  open_post(info: any) {
     if (this.isOpenProfile) return;
-    console.log('open_post');
+    this.isOpenProfile = true;
+    this.modalCtrl.create({
+      component: PostViewerPage,
+      componentProps: {
+        data: info,
+      }
+    }).then(v => {
+      delete this.global.p5key['KeyShortCut']['Digit'];
+      delete this.global.p5key['KeyShortCut']['AddAct'];
+      v.onDidDismiss().then(() => {
+        this.AddShortcut();
+      });
+      v.present();
+    });
+    setTimeout(() => {
+      this.isOpenProfile = false;
+    }, 0);
   }
 
   /** 단축키 생성 */

@@ -791,6 +791,7 @@ export class AddPostPage implements OnInit {
       try {
         // 게시물 리스트에 등록
         if (this.userInput.mainImage) {
+          this.userInput.mainImage.blob = CacheMainImageBlob;
           let FileURL = URL.createObjectURL(CacheMainImageBlob);
           this.userInput.mainImage.thumbnail = FileURL;
           setTimeout(() => {
