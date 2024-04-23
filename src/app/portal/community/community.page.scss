@@ -16,6 +16,24 @@
     width: 400px;
 }
 
+.cardCreator {
+    width: fit-content;
+    max-height: 20px;
+    overflow-y: hidden;
+}
+
+.cardTitle {
+    max-height: 24px;
+    overflow-y: hidden;
+}
+
+.cardContent {
+    max-height: 40px;
+    overflow-y: hidden;
+    padding-bottom: 0;
+    margin-bottom: 13px;
+}
+
 .thumbnail_image {
     width: 100%;
     max-height: 240px;

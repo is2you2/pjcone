@@ -21,12 +21,12 @@ SPDX-License-Identifier: MIT -->
         <ion-card *ngFor="let post of nakama.posts" button class="card_style">
           <img *ngIf="post['mainImage']" class="thumbnail_image" [src]="post['mainImage']['thumbnail']" alt="">
           <ion-card-header>
-            <ion-card-subtitle (click)="open_profile(post)">
+            <ion-card-subtitle class="cardCreator" (click)="open_profile(post)">
               <span [style]="'color: ' + post['UserColor']"> {{post['creator_name']}} </span>
             </ion-card-subtitle>
-            <ion-card-title>{{post['title']}}</ion-card-title>
+            <ion-card-title class="cardTitle">{{post['title']}}</ion-card-title>
           </ion-card-header>
-          <ion-card-content>
+          <ion-card-content class="cardContent">
             {{post['content']}}
           </ion-card-content>
         </ion-card>
