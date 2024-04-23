@@ -91,6 +91,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.MakeAttachHaveContextMenu();
       if (!InitAct) return;
       this.servers = this.nakama.get_all_server_info(true, true);
+      /** 이 기기에 저장에 사용하는 정보 */
       let local_info = {
         name: this.lang.text['AddGroup']['UseLocalStorage'],
         isOfficial: 'local',
@@ -100,9 +101,10 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.servers.unshift(local_info);
       if (this.servers.length > 1) this.index = 1;
       /** 편집하기로 들어왔다면 */
+      let is_local = this.userInput.creator_id == 'local';
       if (navParams && navParams.data) {
         // 로컬이라면 첫번째 서버로 설정
-        if (this.userInput.creator_id == 'local') {
+        if (is_local) {
           this.index = 0;
         } else { // 원격 서버 정보 검토하기
 
@@ -118,6 +120,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       }
       this.select_server(this.index);
     });
+    console.log(this.userInput);
     if (isPlatform == 'DesktopPWA')
       setTimeout(() => {
         this.CreateDrop();
@@ -127,25 +130,26 @@ export class AddPostPage implements OnInit, OnDestroy {
   p5canvas: p5;
   CreateDrop() {
     let parent = document.getElementById('p5Drop_addPost');
-    this.p5canvas = new p5((p: p5) => {
-      p.setup = () => {
-        let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
-        canvas.parent(parent);
-        p.pixelDensity(.1);
-        canvas.drop(async (file: any) => {
-          await this.selected_blobFile_callback_act(file.file);
-        });
-      }
-      p.mouseMoved = (ev: any) => {
-        if (ev['dataTransfer']) {
-          parent.style.pointerEvents = 'all';
-          parent.style.backgroundColor = '#0008';
-        } else {
-          parent.style.pointerEvents = 'none';
-          parent.style.backgroundColor = 'transparent';
+    if (!this.p5canvas)
+      this.p5canvas = new p5((p: p5) => {
+        p.setup = () => {
+          let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
+          canvas.parent(parent);
+          p.pixelDensity(.1);
+          canvas.drop(async (file: any) => {
+            await this.selected_blobFile_callback_act(file.file);
+          });
         }
-      }
-    });
+        p.mouseMoved = (ev: any) => {
+          if (ev['dataTransfer']) {
+            parent.style.pointerEvents = 'all';
+            parent.style.backgroundColor = '#0008';
+          } else {
+            parent.style.pointerEvents = 'none';
+            parent.style.backgroundColor = 'transparent';
+          }
+        }
+      });
   }
 
   BottomTabShortcut: any;

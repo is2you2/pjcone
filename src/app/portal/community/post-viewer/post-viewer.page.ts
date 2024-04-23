@@ -41,6 +41,7 @@ export class PostViewerPage implements OnInit {
   }
 
   p5canvas: p5;
+  /** 내용에 파일 뷰어를 포함한 구성 만들기 */
   create_content() {
     let contentDiv = document.getElementById('PostContent');
     this.p5canvas = new p5((p: p5) => {
@@ -76,6 +77,11 @@ export class PostViewerPage implements OnInit {
           }
         }
         creator.parent(contentDiv);
+        // 첨부파일 불러오기
+        for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++) {
+          let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][i]['path'], this.PostInfo['attachments'][i]['type']);
+          this.PostInfo['attachments'][i]['blob'] = blob;
+        }
         // 내용
         if (this.PostInfo['content']) {
           let content: string[] = this.PostInfo['content'].split('\n');
@@ -93,8 +99,7 @@ export class PostViewerPage implements OnInit {
                 case 'image': {
                   let FileURL = this.PostInfo['attachments'][index]['url'];
                   if (!FileURL) try {
-                    let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][index]['path'], this.PostInfo['attachments'][index]['type']);
-                    FileURL = URL.createObjectURL(blob);
+                    FileURL = URL.createObjectURL(this.PostInfo['attachments'][index]['blob']);
                     this.FileURLs.push(FileURL);
                   } catch (e) {
                     console.log('게시물 image 첨부파일 불러오기 오류: ', e);
@@ -121,8 +126,7 @@ export class PostViewerPage implements OnInit {
                 case 'audio': {
                   let FileURL = this.PostInfo['attachments'][index]['url'];
                   if (!FileURL) try {
-                    let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][index]['path'], this.PostInfo['attachments'][index]['type']);
-                    FileURL = URL.createObjectURL(blob);
+                    FileURL = URL.createObjectURL(this.PostInfo['attachments'][i]['blob']);
                     this.FileURLs.push(FileURL);
                   } catch (e) {
                     console.log('게시물 audio 첨부파일 불러오기 오류: ', e);
@@ -135,8 +139,7 @@ export class PostViewerPage implements OnInit {
                 case 'video': {
                   let FileURL = this.PostInfo['attachments'][index]['url'];
                   if (!FileURL) try {
-                    let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][index]['path'], this.PostInfo['attachments'][index]['type']);
-                    FileURL = URL.createObjectURL(blob);
+                    FileURL = URL.createObjectURL(this.PostInfo['attachments'][i]['blob']);
                     this.FileURLs.push(FileURL);
                   } catch (e) {
                     console.log('게시물 video 첨부파일 불러오기 오류: ', e);
@@ -159,10 +162,8 @@ export class PostViewerPage implements OnInit {
                     let createDuplicate = false;
                     if (this.indexed.godotDB) {
                       try {
-                        let blob = await this.indexed.loadBlobFromUserPath(
-                          this.PostInfo['attachments'][index]['path'], '', undefined, this.indexed.ionicDB);
                         await this.indexed.GetGodotIndexedDB();
-                        await this.indexed.saveBlobToUserPath(blob, `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`, undefined, this.indexed.godotDB);
+                        await this.indexed.saveBlobToUserPath(this.PostInfo['attachments'][i]['blob'], `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`, undefined, this.indexed.godotDB);
                         createDuplicate = true;
                       } catch (e) {
                         console.log('내부 파일 없음: ', e);
