@@ -24,7 +24,7 @@ SPDX-License-Identifier: MIT -->
             [style]="post['isNSFW'] ? 'filter: blur(16px);' : ''" alt="">
           <ion-card-header>
             <ion-card-subtitle class="cardCreator">
-              <span [style]="'color: ' + post['UserColor']" (click)="open_profile(post)"> {{post['creator_name']}}
+              <span [style]="'color: #' + post['UserColor']" (click)="open_profile(post)"> {{post['creator_name']}}
               </span>
               <span *ngIf="nakama.showServer" class="server_target serverTargetOverride">
                 {{'(' + (post['server'] ? (post['server']['name'] || post['server']['target']) :

@@ -2971,13 +2971,14 @@ export class NakamaService {
   }
 
   /** 게시물 삭제 */
-  async RemovePost(info: any) {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['PostViewer']['RemovePost'] });
+  async RemovePost(info: any, slient = false) {
+    let loading: HTMLIonLoadingElement;
+    if (!slient) loading = await this.loadingCtrl.create({ message: this.lang.text['PostViewer']['RemovePost'] });
     if (info['creator_id'] == 'local') {
       let list = await this.indexed.GetFileListFromDB(`servers/local/target/posts/${info['id']}`);
-      loading.present();
+      if (loading) loading.present();
       for (let i = 0, j = list.length; i < j; i++) {
-        loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`;
+        if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`;
         await this.indexed.removeFileFromUserPath(list[i]);
       }
       delete this.posts_orig.local.target.me[info['id']];
@@ -2988,11 +2989,11 @@ export class NakamaService {
     for (let i = 0, j = info['attachments'].length; i < j; i++)
       try {
         if (info['attachments'][i].url) {
-          loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
+          if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
           await this.global.remove_file_from_storage(info['attachments'][i].url);
         }
       } catch (e) { }
-    loading.dismiss();
+    if (loading) loading.dismiss();
     this.rearrange_posts();
   }
 
