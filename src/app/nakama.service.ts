@@ -2999,19 +2999,27 @@ export class NakamaService {
 
   /** 게시물 삭제 */
   async RemovePost(info: any) {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['PostViewer']['RemovePost'] });
     if (info['creator_id'] == 'local') {
       let list = await this.indexed.GetFileListFromDB(`servers/local/target/posts/${info['id']}`);
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['PostViewer']['RemovePost'] });
       loading.present();
       for (let i = 0, j = list.length; i < j; i++) {
         loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`;
         await this.indexed.removeFileFromUserPath(list[i]);
       }
-      loading.dismiss();
       delete this.posts_orig.local.target.me[info['id']];
     } else { // 서버에서 삭제
 
     }
+    // 링크로 연결된 파일들 삭제 시도
+    for (let i = 0, j = info['attachments'].length; i < j; i++)
+      try {
+        if (info['attachments'][i].url) {
+          loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
+          await this.global.remove_file_from_storage(info['attachments'][i].url);
+        }
+      } catch (e) { }
+    loading.dismiss();
     this.rearrange_posts();
   }
 
