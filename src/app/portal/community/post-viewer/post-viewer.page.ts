@@ -119,8 +119,19 @@ export class PostViewerPage implements OnInit {
                     }
                   }
                   break;
-                default:
-                  console.log('준비되지 않은 파일 뷰어');
+                case 'audio':
+                case 'video':
+                case 'code':
+                case 'text':
+                case 'godot':
+                case 'blender':
+                default: // 읽을 수 없는 파일들은 클릭시 뷰어 연결 div 생성 (채널 채팅 썸네일과 비슷함)
+                  console.log('준비되지 않은 파일 뷰어: ', this.PostInfo['attachments'][index]['viewer']);
+                  break;
+                case 'disabled': // 사용 불가
+                  this.p5canvas = new p5((p: p5) => {
+                    p.setup = () => { p.noCanvas() }
+                  });
                   break;
               }
             } else { // 일반 문자열

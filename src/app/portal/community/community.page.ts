@@ -204,10 +204,9 @@ export class CommunityPage implements OnInit {
   AddShortcut() {
     if (this.global.p5key && this.global.p5key['KeyShortCut']) {
       this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-        console.log('숫자에 따른 포스트 상세 열기: ', index);
-        // if (this.nakama.channels.length > index)
-        //   this.go_to_chatroom(this.nakama.channels[index]);
-        // else this.add_new_group();
+        if (this.nakama.posts.length > index)
+          this.open_post(this.nakama.posts[index]);
+        else this.add_post();
       };
     }
     if (this.global.p5key && this.global.p5key['KeyShortCut']
