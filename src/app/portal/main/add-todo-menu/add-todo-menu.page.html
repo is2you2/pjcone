@@ -111,7 +111,8 @@ SPDX-License-Identifier: MIT -->
               <button style="height: 27px; transform: translateY(-3px); padding: 0px 8px;"
                 (click)="toggle_custom_color()">
                 {{lang.text['TodoDetail']['remove']}} </button>
-              <input type="color" style="margin-right: 8px; height: 27px;" [(ngModel)]="userInput.custom_color">
+              <input type="color" style="margin-right: 8px; height: 27px; cursor: pointer;"
+                [(ngModel)]="userInput.custom_color">
             </div>
           </ion-item>
           <ion-accordion-group #DateTime>
