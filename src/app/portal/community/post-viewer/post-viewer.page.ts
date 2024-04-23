@@ -130,7 +130,22 @@ export class PostViewerPage implements OnInit {
                   audio.parent(contentDiv);
                 }
                   break;
-                case 'video':
+                case 'video': {
+                  let FileURL = this.PostInfo['attachments'][index]['url'];
+                  if (!FileURL) try {
+                    let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][index]['path'], this.PostInfo['attachments'][index]['type']);
+                    FileURL = URL.createObjectURL(blob);
+                    this.FileURLs.push(FileURL);
+                  } catch (e) {
+                    console.log('게시물 첨부파일 불러오기 오류: ', e);
+                  }
+                  let video = p.createVideo([FileURL]);
+                  video.style('width', '100%');
+                  video.style('height', 'auto');
+                  video.showControls();
+                  video.parent(contentDiv);
+                }
+                  break;
                 case 'code':
                 case 'text':
                 case 'godot':
