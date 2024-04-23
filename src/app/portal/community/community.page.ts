@@ -124,7 +124,7 @@ export class CommunityPage implements OnInit {
             await this.load_local_post_step_by_step(counter);
           } else { // 서버 게시물, 다른 사람의 게시물 불러오기
             console.log(`서버 업데이트 행동 없음: ${isOfficial[i]}/${target[k]}/${user_id[m]}`);
-            this.load_server_user_post_step_by_step();
+            this.load_server_user_post_step_by_step(counter);
           }
         }
       }
@@ -135,6 +135,7 @@ export class CommunityPage implements OnInit {
 
   /** 로컬 정보를 하나씩 업데이트 */
   async load_local_post_step_by_step(index: number) {
+    if (index < 0) return;
     let v = await this.indexed.loadTextFromUserPath(`servers/local/target/posts/LocalPost_${index}/info.json`);
     if (v) {
       let json = JSON.parse(v);
@@ -160,8 +161,8 @@ export class CommunityPage implements OnInit {
   }
 
   /** 서버별/사용자벌 게시물 정보 순차적으로 불러오기 */
-  load_server_user_post_step_by_step() {
-
+  load_server_user_post_step_by_step(index: number) {
+    if (index < 0) return;
   }
 
   /** 사용자 정보를 열람하는 경우 카드 열람 무시 */
