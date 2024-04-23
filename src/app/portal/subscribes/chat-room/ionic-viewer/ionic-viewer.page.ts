@@ -361,6 +361,8 @@ export class IonicViewerPage implements OnInit {
         this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type']);
         this.FileURL = URL.createObjectURL(this.blob);
       } catch (e) {
+        this.ContentOnLoad = true;
+        this.ContentFailedLoad = true;
         console.log(e);
       }
     }
@@ -874,6 +876,7 @@ export class IonicViewerPage implements OnInit {
                 blob = await from_url.blob();
               } catch (e) {
                 console.log('뷰어에서 파일 불러오기 실패: ', e);
+                this.ContentFailedLoad = true;
               }
             }
             // js.blend 페이지 불러오기
