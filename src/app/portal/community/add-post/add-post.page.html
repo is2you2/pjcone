@@ -37,8 +37,13 @@
     <ion-label>{{lang.text['AddPost']['AddNewPost']}}</ion-label>
   </ion-item-divider>
   <div *ngIf="MainPostImage" style="width: 100%; text-align: center; text-align: -webkit-center; padding: 8px;">
-    <div style="width: 400px;">
-      <img class="thumbnail_image" style="border-radius: 16px;" [src]="MainPostImage" alt="MainPostImage">
+    <ion-item button>
+      <ion-toggle style="pointer-events: none;"
+        [(ngModel)]="userInput.isNSFW">{{lang.text['AddPost']['NSFW']}}</ion-toggle>
+    </ion-item>
+    <div style="width: 400px; padding-top: 8px;">
+      <img class="thumbnail_image" [style]="userInput['isNSFW'] ? 'filter: blur(16px);' : ''" [src]="MainPostImage"
+        alt="MainPostImage">
     </div>
   </div>
   <ion-item button>

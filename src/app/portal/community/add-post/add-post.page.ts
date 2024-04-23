@@ -72,6 +72,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     /** 대표 이미지 설정 */
     mainImage: undefined as PostAttachment,
     attachments: [] as PostAttachment[],
+    isNSFW: false,
   }
   index = 0;
   isOfficial: string;
@@ -99,11 +100,20 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.servers.unshift(local_info);
       if (this.servers.length > 1) this.index = 1;
       /** 편집하기로 들어왔다면 */
-      if (navParams && navParams.data) { // 로컬이라면 첫번째 서버로 설정
+      if (navParams && navParams.data) {
+        // 로컬이라면 첫번째 서버로 설정
         if (this.userInput.creator_id == 'local') {
           this.index = 0;
         } else { // 원격 서버 정보 검토하기
 
+        }
+        // 대표 이미지가 있다면 구성
+        if (this.userInput.mainImage) {
+          let FileURL = URL.createObjectURL(this.userInput.mainImage.blob);
+          this.MainPostImage = FileURL;
+          setTimeout(() => {
+            URL.revokeObjectURL(FileURL);
+          }, 100);
         }
       }
       this.select_server(this.index);
