@@ -243,7 +243,7 @@ export class PostViewerPage implements OnInit {
   }
 
   EditPost() {
-    this.modalCtrl.dismiss();
+    this.modalCtrl.dismiss({ edit: true });
     this.nakama.EditPost(this.PostInfo);
   }
 

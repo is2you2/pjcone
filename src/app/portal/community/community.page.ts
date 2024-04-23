@@ -32,10 +32,13 @@ export class CommunityPage implements OnInit {
     this.nakama.is_post_lock = true;
     if (!this.nakama.posts.length)
       await this.load_posts_counter();
+    this.nakama.CommunityGoToEditPost = this.add_post;
   }
 
-  add_post() {
-    this.navCtrl.navigateForward('portal/community/add-post');
+  add_post(info?: any) {
+    this.navCtrl.navigateForward('portal/community/add-post', {
+      state: info,
+    });
   }
 
   ionViewDidEnter() {
@@ -187,8 +190,8 @@ export class CommunityPage implements OnInit {
     }).then(v => {
       delete this.global.p5key['KeyShortCut']['Digit'];
       delete this.global.p5key['KeyShortCut']['AddAct'];
-      v.onDidDismiss().then(() => {
-        this.AddShortcut();
+      v.onDidDismiss().then(v => {
+        if (!v.data) this.AddShortcut();
       });
       v.present();
     });

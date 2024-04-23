@@ -2962,9 +2962,12 @@ export class NakamaService {
     }, 100);
   }
 
+  /** 커뮤니티 탭에서 게시물 편집 열기 */
+  CommunityGoToEditPost: Function;
   /** 게시물 편집 */
   EditPost(info: any) {
-    console.log('게시물 편집: ', info);
+    if (this.CommunityGoToEditPost)
+      this.CommunityGoToEditPost(info);
   }
 
   /** 게시물 삭제 */
@@ -2978,7 +2981,7 @@ export class NakamaService {
         await this.indexed.removeFileFromUserPath(list[i]);
       }
       delete this.posts_orig.local.target.me[info['id']];
-    } else { // 서버에서 삭제
+    } else { // 서버에서 모든 관련된 파일 삭제 삭제
 
     }
     // 링크로 연결된 파일들 삭제 시도

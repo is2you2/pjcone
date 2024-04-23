@@ -14,6 +14,7 @@ import { VoiceRecorder } from "capacitor-voice-recorder";
 import clipboard from "clipboardy";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
+import { ActivatedRoute, Router } from '@angular/router';
 
 /** 첨부파일 리스트 양식  
  * [{ 주소(또는 경로), 자료 형식(url | data) }, ...]
@@ -45,6 +46,8 @@ export class AddPostPage implements OnInit {
     private sanitizer: DomSanitizer,
     private mClipboard: Clipboard,
     private alertCtrl: AlertController,
+    private route: ActivatedRoute,
+    private router: Router,
   ) { }
 
   servers: ServerInfo[] = [];
@@ -66,21 +69,33 @@ export class AddPostPage implements OnInit {
   index = 0;
   isOfficial: string;
   target: string;
-  /** 서버 정보 */
+  /** 서버 정보 비교를 위한 문자열 구성 */
   OriginalServerInfo: string;
 
   ngOnInit() {
-    this.servers = this.nakama.get_all_server_info(true, true);
-    let local_info = {
-      name: this.lang.text['AddGroup']['UseLocalStorage'],
-      isOfficial: 'local',
-      target: 'target',
-      local: true,
-    };
-    this.servers.unshift(local_info);
-    if (this.servers.length > 1) this.index = 1;
-    this.select_server(this.index);
-    this.userInput.creator_name = this.nakama.users.self['display_name'];
+    this.route.queryParams.subscribe(async _p => {
+      const navParams = this.router.getCurrentNavigation().extras.state;
+      if (navParams) this.userInput = navParams as any;
+      this.servers = this.nakama.get_all_server_info(true, true);
+      let local_info = {
+        name: this.lang.text['AddGroup']['UseLocalStorage'],
+        isOfficial: 'local',
+        target: 'target',
+        local: true,
+      };
+      this.servers.unshift(local_info);
+      if (this.servers.length > 1) this.index = 1;
+      /** 편집하기로 들어왔다면 */
+      if (navParams) { // 로컬이라면 첫번째 서버로 설정
+        if (this.userInput.creator_id == 'local') {
+          this.index = 0;
+        } else { // 원격 서버 정보 검토하기
+
+        }
+      }
+      this.select_server(this.index);
+      this.userInput.creator_name = this.nakama.users.self['display_name'];
+    });
   }
 
   BottomTabShortcut: any;
@@ -726,10 +741,10 @@ export class AddPostPage implements OnInit {
           });
           console.log(e);
         }
-      }
-    }
+      } // 편집된 게시물이라면 전부다 지우고 다시 등록
+    } else await this.nakama.RemovePost(this.userInput);
     // 게시물 날짜 업데이트
-    if (this.userInput.create_time) // 생성 시간이 있다면 편집으로 간주
+    if (this.isModify)
       this.userInput.modify_time = new Date().getTime();
     else { // 생성 시간이 없다면 최초 생성으로 간주
       this.userInput.create_time = new Date().getTime();
@@ -760,7 +775,7 @@ export class AddPostPage implements OnInit {
     if (attach_len) {
       loading.message = this.lang.text['AddPost']['SyncAttaches'];
       if (is_local) {
-        for (let i = attach_len - 1; i >= 0; i--) {
+        for (let i = attach_len - 1; i >= 0; i--)
           try {
             loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`;
             this.userInput.attachments[i].path = `servers/local/target/posts/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`;
@@ -771,25 +786,21 @@ export class AddPostPage implements OnInit {
             });
             console.log(e);
           }
-          delete this.userInput.attachments[i].blob;
-        }
       } else {
         console.log('서버 첨부파일 저장 준비중');
       }
     }
-    // 전체 정보(UserInput)를 텍스트 파일로 저장
-    let CacheMainImageBlob: Blob;
-    if (this.userInput.mainImage) {
-      CacheMainImageBlob = this.userInput.mainImage.blob;
-      delete this.userInput.mainImage.blob;
-    }
-    let json_str = JSON.stringify(this.userInput);
+    let make_copy_info = JSON.parse(JSON.stringify(this.userInput))
+    if (make_copy_info.mainImage)
+      delete make_copy_info.mainImage.blob;
+    for (let i = make_copy_info.attachments.length - 1; i >= 0; i--)
+      delete make_copy_info.attachments[i].blob;
+    let json_str = JSON.stringify(make_copy_info);
     if (is_local) {
       try {
         // 게시물 리스트에 등록
         if (this.userInput.mainImage) {
-          this.userInput.mainImage.blob = CacheMainImageBlob;
-          let FileURL = URL.createObjectURL(CacheMainImageBlob);
+          let FileURL = URL.createObjectURL(this.userInput.mainImage.blob);
           this.userInput.mainImage.thumbnail = FileURL;
           setTimeout(() => {
             URL.revokeObjectURL(FileURL);
