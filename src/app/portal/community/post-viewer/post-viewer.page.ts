@@ -63,10 +63,12 @@ export class PostViewerPage implements OnInit {
           modify_time.parent(datetime);
         }
         // 작성자
+        let creatorForm = p.createDiv();
+        creatorForm.style('padding-bottom', '8px');
+        creatorForm.parent(contentDiv);
         let creator = p.createSpan(this.PostInfo['creator_name']);
         creator.style('color', `#${this.PostInfo['UserColor']}`);
         creator.style('font-weight', 'bold');
-        creator.style('padding-bottom', '16px');
         creator.style('cursor', 'pointer');
         creator.elt.onclick = () => {
           if (this.isOwner) {
@@ -77,7 +79,7 @@ export class PostViewerPage implements OnInit {
 
           }
         }
-        creator.parent(contentDiv);
+        creator.parent(creatorForm);
         // 첨부파일 불러오기
         for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++) {
           let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][i]['path'], this.PostInfo['attachments'][i]['type']);
