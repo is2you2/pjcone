@@ -1207,8 +1207,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   ViewCount = 45;
   /** 더 최근 메시지 가져오기 버튼 보이기 여부 (아래로 스크롤 검토) */
   ShowRecentMsg = false;
-  /** 오프라인이면서 비공개 그룹일 경우 */
-  isOfflineClosedGroup = false;
   /** 서버로부터 메시지 더 받아오기
    * @param isHistory 옛날 정보 불러오기 유무, false면 최신정보 불러오기 진행
    */
@@ -1289,15 +1287,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.pullable = true;
         this.nakama.saveListedMessage(this.messages, this.info, this.isOfficial, this.target);
       } catch (e) {
-        if (this.info['redirect']['type'] == 3) // 그룹대화라면 공개여부 검토
-          if (this.nakama.groups[this.isOfficial][this.target]
-            && this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]
-            && !this.nakama.groups[this.isOfficial][this.target][this.info['group_id']]['open']) {
-            this.isOfflineClosedGroup = true;
-            this.next_cursor = undefined;
-            this.isHistoryLoaded = true;
-            return;
-          }
         await this.LoadLocalChatHistory();
       }
       setTimeout(() => { // 스크롤이 생기지 않았다면 메시지 더 가져오기
