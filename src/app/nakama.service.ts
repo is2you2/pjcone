@@ -4105,4 +4105,31 @@ export class NakamaService {
     if (!servers.length)
       await this.WatchAdsAndGetDevServerInfo(true);
   }
+
+  /** 아이디 기반 게시물 불러오기  
+  * @returns 정상적으로 불러와짐 여부 돌려줌
+  */
+  async load_local_post_with_id(id: string): Promise<boolean> {
+    let v = await this.indexed.loadTextFromUserPath(`servers/local/target/posts/${id}/info.json`);
+    try {
+      let json = JSON.parse(v);
+      if (json['mainImage']) {
+        if (json['mainImage']['url']) {
+          json['mainImage']['thumbnail'] = json['mainImage']['url'];
+        } else { // URL 주소가 아니라면 이미지 직접 불러오기
+          let blob = await this.indexed.loadBlobFromUserPath(json['mainImage']['path'], json['mainImage']['type']);
+          json['mainImage']['blob'] = blob;
+          let FileURL = URL.createObjectURL(blob);
+          json['mainImage']['thumbnail'] = FileURL;
+          setTimeout(() => {
+            URL.revokeObjectURL(FileURL);
+          }, 100);
+        }
+      }
+      this.posts_orig.local.target.me[json['id']] = json;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }

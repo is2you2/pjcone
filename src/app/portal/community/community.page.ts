@@ -119,7 +119,7 @@ export class CommunityPage implements OnInit {
         let user_id = Object.keys(this.counter[isOfficial[i]][target[k]]);
         for (let m = 0, n = user_id.length; m < n; m++) {
           let counter = this.counter[isOfficial[i]][target[k]][user_id[m]];
-          if (!has_counter && counter) has_counter = true;
+          if (!has_counter && counter > 0) has_counter = true;
           if (isOfficial[i] == 'local') { // 내 로컬 게시물 불러오기
             await this.load_local_post_step_by_step(counter);
           } else { // 서버 게시물, 다른 사람의 게시물 불러오기
@@ -136,28 +136,9 @@ export class CommunityPage implements OnInit {
   /** 로컬 정보를 하나씩 업데이트 */
   async load_local_post_step_by_step(index: number) {
     if (index < 0) return;
-    let v = await this.indexed.loadTextFromUserPath(`servers/local/target/posts/LocalPost_${index}/info.json`);
-    if (v) {
-      let json = JSON.parse(v);
-      if (json['mainImage']) {
-        if (json['mainImage']['url']) {
-          json['mainImage']['thumbnail'] = json['mainImage']['url'];
-        } else { // URL 주소가 아니라면 이미지 직접 불러오기
-          let blob = await this.indexed.loadBlobFromUserPath(json['mainImage']['path'], json['mainImage']['type']);
-          json['mainImage']['blob'] = blob;
-          let FileURL = URL.createObjectURL(blob);
-          json['mainImage']['thumbnail'] = FileURL;
-          setTimeout(() => {
-            URL.revokeObjectURL(FileURL);
-          }, 100);
-        }
-      }
-      this.nakama.posts_orig.local.target.me[json['id']] = json;
-      this.counter.local.target.me--;
-    } else {
-      this.counter.local.target.me--;
-      await this.load_local_post_step_by_step(this.counter.local.target.me);
-    }
+    let loaded = await this.nakama.load_local_post_with_id(`LocalPost_${index}`);
+    this.counter.local.target.me--;
+    if (!loaded) await this.load_local_post_step_by_step(this.counter.local.target.me);
   }
 
   /** 서버별/사용자벌 게시물 정보 순차적으로 불러오기 */

@@ -686,7 +686,9 @@ export class AddPostPage implements OnInit, OnDestroy {
     }
   }
 
-  /** 포스트 등록하기  
+  /** 게시물 등록하기 버튼을 눌러 데이터 변경하기가 이루어졌는지 여부 */
+  isApplyPostData = false;
+  /** 게시물 등록하기  
    * 글 내용이 길어질 수 있으므로 글이 아무리 짧더라도 txt 파일로 변환하여 게시
    */
   async postData() {
@@ -705,6 +707,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       });
       return;
     }
+    this.isApplyPostData = true;
     let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['WIP'] });
     loading.present();
     this.isSaveClicked = true;
@@ -832,7 +835,12 @@ export class AddPostPage implements OnInit, OnDestroy {
         });
         console.log(e);
       }
-    } else {
+    } else { // 서버에 게시물 정보 추가
+      // cdn 서버에 업로드 시도 우선
+      // 실패하면 서버로 분할 전송처리
+      // 서버에 게시물 대표 이미지 올리기
+      // 서버에 첨부파일 올리기
+      // 첨부파일이 url 처리가 되는 경우를 미리 전부 처리한 후 게시물 정보를 서버에 업로드
       let blob = new Blob([json_str], { type: 'text/plain' });
       let file: FileInfo = {};
       file.filename = 'info.txt';
@@ -845,12 +853,16 @@ export class AddPostPage implements OnInit, OnDestroy {
     }
     loading.dismiss();
     this.navCtrl.navigateBack('portal/community');
-    // 게시물 id 구분자 추가 (서버)
   }
 
   ionViewWillLeave() {
     delete this.global.p5key['KeyShortCut']['Escape'];
     this.global.p5key['KeyShortCut']['BottomTab'] = this.BottomTabShortcut;
     this.indexed.GetFileListFromDB('tmp_files/post').then(list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
+    // 데이터 저장이 아니라면 기존 데이터를 다시 불러와서 게시물 정보 원복시키기
+    if (!this.isApplyPostData) {
+      this.nakama.load_local_post_with_id(this.userInput.id);
+      this.nakama.rearrange_posts();
+    }
   }
 }
