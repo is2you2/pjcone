@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { AlertController, LoadingController, ModalController, NavController } from '@ionic/angular';
+import { LoadingController, ModalController, NavController } from '@ionic/angular';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -47,7 +47,6 @@ export class AddPostPage implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
     private sanitizer: DomSanitizer,
     private mClipboard: Clipboard,
-    private alertCtrl: AlertController,
     private route: ActivatedRoute,
     private router: Router,
   ) { }
@@ -714,7 +713,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     // 서버 정보 지우기
     delete this.userInput.server;
     // 게시물 아이디 구성하기
-    if (!this.isModify) { // 새 게시물 작성시에만 생성
+    if (!this.isModify || this.isServerChanged) { // 새 게시물 작성시에만 생성
       // 기존 게시물 순번 검토 후 새 게시물 번호 받아오기
       if (is_local) {
         let counter = Number(await this.indexed.loadTextFromUserPath('servers/local/target/posts/counter.txt')) || 0;

@@ -27,13 +27,14 @@ export class PostViewerPage implements OnInit {
 
   PostInfo: any;
   isOwner = false;
-  FileURLs = [];
   ngOnInit() {
     this.PostInfo = this.navParam.get('data');
     if (this.PostInfo['mainImage']) {
       let FileURL = URL.createObjectURL(this.PostInfo['mainImage']['blob']);
       this.PostInfo['mainImage']['MainThumbnail'] = FileURL;
-      this.FileURLs.push(FileURL);
+      setTimeout(() => {
+        URL.revokeObjectURL(FileURL);
+      }, 100);
     }
     this.create_content();
     this.isOwner = this.PostInfo['creator_id'] == 'local'
@@ -103,7 +104,9 @@ export class PostViewerPage implements OnInit {
                   let FileURL = this.PostInfo['attachments'][index]['url'];
                   if (!FileURL) try {
                     FileURL = URL.createObjectURL(this.PostInfo['attachments'][index]['blob']);
-                    this.FileURLs.push(FileURL);
+                    setTimeout(() => {
+                      URL.revokeObjectURL(FileURL)
+                    }, 100);
                   } catch (e) {
                     console.log('게시물 image 첨부파일 불러오기 오류: ', e);
                   }
@@ -131,7 +134,9 @@ export class PostViewerPage implements OnInit {
                   let FileURL = this.PostInfo['attachments'][index]['url'];
                   if (!FileURL) try {
                     FileURL = URL.createObjectURL(this.PostInfo['attachments'][i]['blob']);
-                    this.FileURLs.push(FileURL);
+                    setTimeout(() => {
+                      URL.revokeObjectURL(FileURL)
+                    }, 100);
                   } catch (e) {
                     console.log('게시물 audio 첨부파일 불러오기 오류: ', e);
                   }
@@ -144,7 +149,9 @@ export class PostViewerPage implements OnInit {
                   let FileURL = this.PostInfo['attachments'][index]['url'];
                   if (!FileURL) try {
                     FileURL = URL.createObjectURL(this.PostInfo['attachments'][i]['blob']);
-                    this.FileURLs.push(FileURL);
+                    setTimeout(() => {
+                      URL.revokeObjectURL(FileURL)
+                    }, 100);
                   } catch (e) {
                     console.log('게시물 video 첨부파일 불러오기 오류: ', e);
                   }
@@ -276,7 +283,5 @@ export class PostViewerPage implements OnInit {
   ionViewDidLeave() {
     if (this.p5canvas)
       this.p5canvas.remove();
-    for (let i = 0, j = this.FileURLs.length; i < j; i++)
-      URL.revokeObjectURL(this.FileURLs[i]);
   }
 }
