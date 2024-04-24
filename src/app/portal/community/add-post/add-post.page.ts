@@ -174,6 +174,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       if (!stack.length) return;
       if (stack.length == 1)
         this.ChangeMainPostImage({ target: { files: [stack[0].file] } });
+      return false;
     }
     let ContentTextArea = document.getElementById('add_post_content') as HTMLTextAreaElement;
     setTimeout(() => {
@@ -189,30 +190,9 @@ export class AddPostPage implements OnInit, OnDestroy {
       if (!stack.length) return;
       if (stack.length == 1)
         this.selected_blobFile_callback_act(stack[0].file);
-      else this.alertCtrl.create({
-        header: this.lang.text['ChatRoom']['MultipleSend'],
-        message: `${this.lang.text['ChatRoom']['CountFile']}: ${stack.length}`,
-        buttons: [{
-          text: this.lang.text['ChatRoom']['Send'],
-          handler: async () => {
-            let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-            loading.present();
-            for (let i = 0, j = stack.length; i < j; i++)
-              await this.selected_blobFile_callback_act(stack[i].file);
-            loading.dismiss();
-          }
-        }]
-      }).then(v => {
-        this.global.p5key['KeyShortCut']['Escape'] = () => {
-          v.dismiss();
-        }
-        v.onDidDismiss().then(() => {
-          this.global.p5key['KeyShortCut']['Escape'] = () => {
-            this.navCtrl.pop();
-          }
-        });
-        v.present();
-      });
+      else for (let i = 0, j = stack.length; i < j; i++)
+        this.selected_blobFile_callback_act(stack[i].file);
+      return false;
     }
     this.isModify = Boolean(this.userInput.id);
   }
@@ -614,35 +594,17 @@ export class AddPostPage implements OnInit, OnDestroy {
     if (ev.target.files.length) {
       let is_multiple_files = ev.target.files.length != 1;
       if (is_multiple_files) {
-        let alert = await this.alertCtrl.create({
-          header: this.lang.text['ChatRoom']['MultipleSend'],
-          message: `${this.lang.text['ChatRoom']['CountFile']}: ${ev.target.files.length}`,
-          buttons: [{
-            text: this.lang.text['ChatRoom']['Send'],
-            handler: async () => {
-              let loading = await this.loadingCtrl.create({ message: this.lang.text['ChatRoom']['MultipleSend'] });
-              loading.present();
-              for (let i = 0, j = ev.target.files.length; i < j; i++) {
-                loading.message = `${this.lang.text['ChatRoom']['MultipleSend']}: ${j - i}`;
-                await this.selected_blobFile_callback_act(ev.target.files[i]);
-              }
-              loading.dismiss();
-              setTimeout(() => {
-                let input = document.getElementById('add_post_input') as HTMLInputElement;
-                input.value = '';
-              }, 300);
-            }
-          }]
-        });
-        this.global.p5key['KeyShortCut']['Escape'] = () => {
-          alert.dismiss();
+        let loading = await this.loadingCtrl.create({ message: this.lang.text['ChatRoom']['MultipleSend'] });
+        loading.present();
+        for (let i = 0, j = ev.target.files.length; i < j; i++) {
+          loading.message = `${j - i}: ${ev.target.files[i].name}`;
+          await this.selected_blobFile_callback_act(ev.target.files[i]);
         }
-        alert.onDidDismiss().then(() => {
-          this.global.p5key['KeyShortCut']['Escape'] = () => {
-            this.navCtrl.pop();
-          }
-        });
-        alert.present();
+        loading.dismiss();
+        setTimeout(() => {
+          let input = document.getElementById('add_post_input') as HTMLInputElement;
+          input.value = '';
+        }, 300);
       } else {
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
         loading.present();

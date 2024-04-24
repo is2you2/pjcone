@@ -603,10 +603,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 color: 'b0b0b0',
               });
               for (let i = 0, j = ev.target.files.length; i < j; i++) {
-                loading.message = `${this.lang.text['ChatRoom']['MultipleSend']}: ${j - i}`;
+                loading.message = `${j - i}: ${ev.target.files[i].name}`;
                 this.noti.noti.schedule({
                   id: 7,
-                  title: this.lang.text['ChatRoom']['MultipleSend'],
+                  title: `${this.lang.text['ChatRoom']['MultipleSend']}: ${ev.target.files[i].name}`,
                   progressBar: { value: i, maxValue: j },
                   sound: null,
                   smallIcon: 'res://diychat',
@@ -753,6 +753,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         });
         v.present();
       });
+      return false;
     }
   }
 
