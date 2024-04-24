@@ -47,7 +47,7 @@ SPDX-License-Identifier: MIT -->
               class="ion-text-right" [placeholder]="lang.text['TodoDetail']['DisplayName_placeholder']"></ion-input>
             <ion-icon *ngIf="isMobile" slot="end" name="mic-outline" (click)="SpeechToTitleText()"></ion-icon>
           </ion-item>
-          <div *ngIf="userInput.storeAt != 'local' && isManager">
+          <div *ngIf="userInput.storeAt != 'local' && isManager && WorkerGroups.length">
             <ion-accordion-group #ManageWorker>
               <ion-accordion>
                 <ion-item button slot="header">
