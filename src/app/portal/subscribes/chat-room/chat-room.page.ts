@@ -131,7 +131,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       name: this.lang.text['ChatRoom']['ExtSoloImage'],
       isHide: true,
       act: () => {
-        document.getElementById('local_channel').click();
+        if (this.info['info']['img']) {
+          delete this.info['info']['img'];
+          this.indexed.removeFileFromUserPath(`servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
+          this.p5toast.show({
+            text: this.lang.text['ChatRoom']['LocalImageRemoved'],
+          });
+        } else document.getElementById('local_channel').click();
       }
     }, { // 2
       icon: 'image-outline',
