@@ -216,6 +216,9 @@ export class GroupServerPage implements OnInit {
         nameDiv.style('text-align', 'center');
         nameEditDiv.parent(ExceptPic);
         nameEditDiv.hide();
+        nameEditDiv.elt.addEventListener('input', () => {
+          this.nakama.users.self['display_name'] = nameEditDiv.value();
+        });
         nameEditDiv.elt.addEventListener('focusout', () => {
           this.nakama.users.self['display_name'] = nameEditDiv.value();
           nameDiv.html(`${nameEditDiv.value() || this.lang.text['Profile']['noname_user']}`);
