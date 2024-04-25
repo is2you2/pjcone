@@ -26,7 +26,7 @@ SPDX-License-Identifier: MIT -->
             <ion-card-subtitle class="cardCreator">
               <span [style]="'color: #' + post['UserColor']" (click)="open_profile(post)"> {{post['creator_name']}}
               </span>
-              <span *ngIf="nakama.showServer" class="server_target serverTargetOverride">
+              <span *ngIf="nakama.showServer" style="color: #888; font-weight: normal;">
                 {{'(' + (post['server'] ? (post['server']['name'] || post['server']['target']) :
                 lang.text['AddGroup']['UseLocalStorage']) + ')'}}
               </span>
