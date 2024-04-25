@@ -77,6 +77,7 @@ export class GroupServerPage implements OnInit {
   CanAddTestServer = false;
   OnlineToggle = false;
   ShowServerList = false;
+  isClickDisplayNameEdit = false;
   ionViewWillEnter() {
     this.gsCanvasDiv = document.getElementById('GroupServerCanvasDiv');
     this.OnlineToggle = this.nakama.users.self['online'];
@@ -202,6 +203,7 @@ export class GroupServerPage implements OnInit {
           nameEditDiv.show();
           nameDiv.hide();
           nameEditDiv.elt.focus();
+          this.isClickDisplayNameEdit = true;
         }
         // 사용자 이름 (input)
         nameEditDiv = p.createInput();
@@ -469,7 +471,7 @@ export class GroupServerPage implements OnInit {
             } catch (e) { }
           } catch (e) { }
         // 해당 서버 연결된 채널에 고지
-        if (this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]) {
+        if (this.isClickDisplayNameEdit && this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]) {
           let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
           if (all_channels) {
             all_channels.forEach((channelId: any) => {
