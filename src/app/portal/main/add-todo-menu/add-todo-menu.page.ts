@@ -205,11 +205,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       display_name: this.nakama.users.self['display_name'],
       various: 'loaded',
     };
-    let has_same_named_file = false;
-    has_same_named_file = await this.indexed.checkIfFileExist(this_file.path);
-    if (this.userInput.id && !has_same_named_file) has_same_named_file = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}/${this_file.filename}`);
-    if (has_same_named_file) // 동명의 파일 등록시 파일 이름 변형
-      this_file.filename = `${this_file.filename.substring(0, this_file.filename.lastIndexOf('.'))}_.${this_file.file_ext}`;
+    await this.checkHasSameFileAndRename(this_file);
     this.global.set_viewer_category(this_file);
     let FileURL = URL.createObjectURL(blob);
     if (this_file['viewer'] == 'image')
@@ -229,6 +225,90 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       saving_file.dismiss();
     }
     this.auto_scroll_down();
+    this.MakeContextMenuOnThumbnail();
+  }
+
+  /** 이름이 같은 파일인 경우 이름을 자동으로 변경 */
+  async checkHasSameFileAndRename(this_file: FileInfo) {
+    let has_same_named_file = false;
+    has_same_named_file = await this.indexed.checkIfFileExist(this_file.path);
+    if (this.userInput.id && !has_same_named_file) has_same_named_file = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}/${this_file.filename}`);
+    if (has_same_named_file) { // 동명의 파일 등록시 파일 이름 변형
+      this_file.filename = `${this_file.filename.substring(0, this_file.filename.lastIndexOf('.'))}_.${this_file.file_ext}`;
+      this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
+      await this.checkHasSameFileAndRename(this_file);
+    }
+  }
+
+  MakeContextMenuOnThumbnail() {
+    setTimeout(() => {
+      for (let i = this.userInput.attach.length - 1; i >= 0; i--) {
+        if (this.userInput.attach[i].viewer != 'image') continue;
+        let targetFilePath = this.userInput.attach[i].path;
+        let attach = document.getElementById(`TodoAttach_${i}`);
+        if (attach && attach.oncontextmenu == null) {
+          try {
+            let catch_index: number;
+            for (let k = 0, l = this.userInput.attach.length; k < l; k++)
+              if (targetFilePath == this.userInput.attach[k].path) {
+                catch_index = k;
+                break;
+              }
+            if (catch_index === undefined) throw '메시지를 찾을 수 없음';
+            attach.oncontextmenu = () => {
+              let FileURL = URL.createObjectURL(this.userInput.attach[catch_index].blob);
+              new p5((p: p5) => {
+                p.setup = () => {
+                  p.loadImage(FileURL, v => {
+                    let related_creators: ContentCreatorInfo[] = [];
+                    if (this.userInput.attach[catch_index]['content_related_creator'])
+                      related_creators = [...this.userInput.attach[catch_index]['content_related_creator']];
+                    if (this.userInput.attach[catch_index]['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
+                      let is_already_exist = false;
+                      for (let i = 0, j = related_creators.length; i < j; i++)
+                        if (related_creators[i].user_id !== undefined && this.userInput.attach[catch_index]['content_creator']['user_id'] !== undefined
+                          && related_creators[i].user_id == this.userInput.attach[catch_index]['content_creator']['user_id']) {
+                          is_already_exist = true;
+                          break;
+                        }
+                      if (!is_already_exist) related_creators.push(this.userInput.attach[catch_index]['content_creator']);
+                    }
+                    this.modalCtrl.create({
+                      component: VoidDrawPage,
+                      componentProps: {
+                        path: this.userInput.attach[catch_index].path,
+                        width: v.width,
+                        height: v.height,
+                      },
+                      cssClass: 'fullscreen',
+                    }).then(v => {
+                      this.removeShortCut();
+                      v.onDidDismiss().then(_w => {
+                        this.AddShortCut();
+                      });
+                      v.onWillDismiss().then(async v => {
+                        this.voidDraw_fileAct_callback(v, related_creators, catch_index, true);
+                      });
+                      v.present();
+                    });
+                    URL.revokeObjectURL(FileURL);
+                    p.remove();
+                  }, e => {
+                    console.log('빠른 편집기 이동 실패: ', e);
+                    URL.revokeObjectURL(FileURL);
+                    p.remove();
+                  });
+                }
+              });
+              return false;
+            }
+          } catch (e) {
+            console.log('이미지 즉시 편집 단축기능 실패: ', e);
+          }
+          return false;
+        }
+      }
+    }, 0);
   }
 
   /** 하단에 보여지는 버튼 */
@@ -938,6 +1018,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       v.data['loadingCtrl'].dismiss();
     });
     this.auto_scroll_down(100);
+    this.MakeContextMenuOnThumbnail();
   }
 
   doneTodo() {

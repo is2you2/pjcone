@@ -1176,8 +1176,10 @@ export class NakamaService {
         console.log('서버 정보 없음, 로컬에서 행동: ', e);
       }
     }
+    // 로컬에 저장된 파일 전부 삭제
     let list = await this.indexed.GetFileListFromDB(`todo/${targetInfo.id}`);
     list.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+    // 해당 할 일의 알림 삭제
     if (targetInfo.noti_id)
       if (!(isPlatform == 'Android' || isPlatform == 'iOS')) {
         clearTimeout(this.web_noti_id[targetInfo.noti_id]);

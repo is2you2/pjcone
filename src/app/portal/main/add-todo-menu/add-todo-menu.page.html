@@ -154,7 +154,7 @@ SPDX-License-Identifier: MIT -->
               </ion-button>
             </ion-item>
             <div *ngIf="attach['viewer']" (click)="open_content_viewer(i)">
-              <img *ngIf="attach['thumbnail']" class="image_thumbnail" [src]="attach['thumbnail']"
+              <img *ngIf="attach['thumbnail']" [id]="'TodoAttach_' + i" class="image_thumbnail" [src]="attach['thumbnail']"
                 [alt]="attach['filename']">
               <ion-item button *ngIf="!attach['thumbnail']">
                 <ion-label color="medium">{{lang.text['TodoDetail']['open_content_viewer']}}</ion-label>
