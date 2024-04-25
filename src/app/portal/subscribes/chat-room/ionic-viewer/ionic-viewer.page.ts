@@ -210,6 +210,7 @@ export class IonicViewerPage implements OnInit {
     this.noti.ClearNoti(6);
   }
 
+  /** 터치 상호작용 보완용 */
   ContentChanging = false;
   ChangeToAnother(direction: number) {
     if (this.ContentChanging) return;
@@ -1299,15 +1300,13 @@ export class IonicViewerPage implements OnInit {
             this.ChangeToAnother(-1);
             break;
           case 'KeyS': // 파일 저장
-            this.download_file();
+            if (this.NeedDownloadFile)
+              this.DownloadCurrentFile();
+            else this.download_file();
             break;
           case 'KeyD': // 오른쪽 이동
           case 'ArrowRight':
             this.ChangeToAnother(1);
-            break;
-          case 'KeyS': // 다운받기
-            if (this.NeedDownloadFile)
-              this.DownloadCurrentFile();
             break;
         }
       }

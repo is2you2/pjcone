@@ -20,15 +20,80 @@ export class PostViewerPage implements OnInit {
     private navParam: NavParams,
     public lang: LanguageSettingService,
     private indexed: IndexedDBService,
-    private nakama: NakamaService,
+    public nakama: NakamaService,
     private alertCtrl: AlertController,
     private global: GlobalActService,
   ) { }
 
   PostInfo: any;
   isOwner = false;
+  HavePosts = false;
+  /** 불러와진 모든 포스트 기준 현재 게시물 번호 */
+  CurrentIndex = 1;
   ngOnInit() {
     this.PostInfo = this.navParam.get('data');
+    this.initialize();
+  }
+
+  /** PC에서 키를 눌러 컨텐츠 전환 */
+  ChangeContentWithKeyInput() {
+    if (this.p5canvas) {
+      // 단축키 행동
+      this.p5canvas.keyPressed = (ev) => {
+        switch (ev['code']) {
+          case 'KeyA': // 왼쪽 이동
+          case 'ArrowLeft':
+            this.ChangeToAnother(-1);
+            break;
+          case 'KeyD': // 오른쪽 이동
+          case 'ArrowRight':
+            this.ChangeToAnother(1);
+            break;
+        }
+      }
+      // 터치 행동
+      let startPos: p5.Vector = this.p5canvas.createVector();
+      let touches: { [id: string]: p5.Vector } = {};
+      this.p5canvas.touchStarted = (ev: any) => {
+        if ('changedTouches' in ev) {
+          for (let i = 0, j = ev.changedTouches.length; i < j; i++)
+            touches[ev.changedTouches[i].identifier] =
+              this.p5canvas.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
+          let size = Object.keys(touches).length;
+          switch (size) {
+            case 1: // 첫 탭
+              startPos = touches[ev.changedTouches[0].identifier].copy();
+              break;
+            default: // 그 이상은 무시
+              break;
+          }
+        }
+      }
+      const SWIPE_SIZE = 50;
+      this.p5canvas.touchEnded = (ev: any) => {
+        if ('changedTouches' in ev) {
+          let lastPos: p5.Vector;
+          for (let i = 0, j = ev.changedTouches.length; i < j; i++) {
+            lastPos = this.p5canvas.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
+            delete touches[ev.changedTouches[i].identifier];
+          }
+          let size = Object.keys(touches).length;
+          switch (size) {
+            case 0: // 손을 전부 뗌
+              lastPos.sub(startPos);
+              if (lastPos.x > SWIPE_SIZE)
+                this.ChangeToAnother(-1);
+              else if (lastPos.x < -SWIPE_SIZE)
+                this.ChangeToAnother(1);
+              break;
+          }
+        }
+      }
+    }
+  }
+
+  /** 진입 정보를 어떻게 활용할 것인가 */
+  initialize() {
     if (this.PostInfo['mainImage']) {
       let FileURL = URL.createObjectURL(this.PostInfo['mainImage']['blob']);
       this.PostInfo['mainImage']['MainThumbnail'] = FileURL;
@@ -39,6 +104,26 @@ export class PostViewerPage implements OnInit {
     this.create_content();
     this.isOwner = this.PostInfo['creator_id'] == 'local'
       || this.PostInfo['creator_id'] == this.nakama.servers[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']].session.user_id;
+    this.HavePosts = this.nakama.posts.length > 1;
+    this.ChangeContentWithKeyInput();
+  }
+
+  /** 터치 상호작용 보완용 */
+  ContentChanging = false;
+  /** 게시물 전환 */
+  ChangeToAnother(direction: number) {
+    if (this.ContentChanging) return;
+    this.ContentChanging = true;
+    let tmp_calced = this.CurrentIndex + direction;
+    if (tmp_calced <= 0 || tmp_calced > this.nakama.posts.length) {
+      this.ContentChanging = false;
+      return;
+    }
+    if (this.p5canvas) this.p5canvas.remove();
+    this.CurrentIndex = tmp_calced;
+    this.PostInfo = this.nakama.posts[this.CurrentIndex - 1];
+    this.initialize();
+    this.ContentChanging = false;
   }
 
   p5canvas: p5;
