@@ -147,6 +147,14 @@ export class AddPostPage implements OnInit, OnDestroy {
             parent.style.backgroundColor = 'transparent';
           }
         }
+        p.keyPressed = (ev) => {
+          switch (ev['code']) {
+            case 'Enter':
+              if (document.activeElement.id == 'exact_post_title_id')
+                this.postData();
+              break;
+          }
+        }
       });
   }
 
@@ -165,6 +173,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.AddShortcut();
     this.catchBottomTabShortCut();
     this.TitleInput = document.getElementById('add_post_title').childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
+    this.TitleInput.id = 'exact_post_title_id';
     this.TitleInput.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
