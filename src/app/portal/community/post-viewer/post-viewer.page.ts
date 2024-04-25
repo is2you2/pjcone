@@ -103,7 +103,7 @@ export class PostViewerPage implements OnInit {
       }, 100);
     }
     this.create_content();
-    this.isOwner = this.PostInfo['creator_id'] == 'local'
+    this.isOwner = this.PostInfo['creator_id'] == 'me'
       || this.PostInfo['creator_id'] == this.nakama.servers[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']].session.user_id;
     this.HavePosts = this.nakama.posts.length > 1;
     this.ChangeContentWithKeyInput();

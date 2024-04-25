@@ -925,9 +925,7 @@ export class NakamaService {
           console.log('서버 해야할 일 불러오기 오류: ', e);
         }
       }
-    } catch (e) {
-      console.log('원격 할 일의 수 불러오기 실패: ', e);
-    }
+    } catch (e) { }
   }
 
   /** 로컬에 있는 해야할 일들은 스스로가 원격에 남아있는지 검토하고, 없으면 스스로를 삭제한다 */
@@ -2972,30 +2970,45 @@ export class NakamaService {
       this.CommunityGoToEditPost(info);
   }
 
-  /** 게시물 삭제 */
+  /** 게시물 폴더 삭제 */
   async RemovePost(info: any, slient = false) {
     let loading: HTMLIonLoadingElement;
     if (!slient) loading = await this.loadingCtrl.create({ message: this.lang.text['PostViewer']['RemovePost'] });
-    if (info['creator_id'] == 'local') {
-      let list = await this.indexed.GetFileListFromDB(`servers/local/target/posts/${info['id']}`);
-      if (loading) loading.present();
-      for (let i = 0, j = list.length; i < j; i++) {
-        if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`;
-        await this.indexed.removeFileFromUserPath(list[i]);
-      }
-      delete this.posts_orig.local.target.me[info['id']];
-    } else { // 서버에서 모든 관련된 파일 삭제 삭제
-
+    let list = await this.indexed.GetFileListFromDB(`servers/${info['server']['isOfficial']}/${info['server']['target']}/posts/${info['id']}`);
+    if (loading) loading.present();
+    for (let i = 0, j = list.length; i < j; i++) {
+      if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`;
+      await this.indexed.removeFileFromUserPath(list[i]);
     }
-    // 링크로 연결된 파일들 삭제 시도
+    // 첨부파일 삭제
     for (let i = 0, j = info['attachments'].length; i < j; i++)
       try {
+        if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
         if (info['attachments'][i].url) {
-          if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
           await this.global.remove_file_from_storage(info['attachments'][i].url);
+        } else {
+          try {
+            await this.sync_remove_file(`${info['id']}_attach_${i}`, info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}_attach_${i}`);
+          } catch (e) { }
         }
       } catch (e) { }
+    // 메인 사진 삭제
+    if (info['mainImage'])
+      try {
+        if (info['mainImage'].url) {
+          await this.global.remove_file_from_storage(info['mainImage'].url);
+        } else {
+          try {
+            await this.sync_remove_file(`${info['id']}_mainImage`, info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}_mainImage`);
+          } catch (e) { }
+        }
+      } catch (e) { }
+    // 게시물 정보 삭제하기
+    try {
+      await this.sync_remove_file(info['id'], info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}`);
+    } catch (e) { }
     if (loading) loading.dismiss();
+    delete this.posts_orig[info['server']['isOfficial']][info['server']['target']][info['creator_id']][info['id']];
     this.rearrange_posts();
   }
 
@@ -3868,9 +3881,11 @@ export class NakamaService {
   }
 
   /** 로컬 파일을 삭제하며 원격 분산파일도 삭제하기 */
-  async sync_remove_file(path: string, _is_official: string, _target: string, _collection: string, _userid: string = '') {
+  async sync_remove_file(path: string, _is_official: string, _target: string, _collection: string, _userid: string = '', force_path = '') {
     try {
       await this.indexed.removeFileFromUserPath(path);
+    } catch (e) { }
+    try {
       let file_info = await this.servers[_is_official][_target].client.readStorageObjects(
         this.servers[_is_official][_target].session, {
         object_ids: [{
@@ -3885,14 +3900,14 @@ export class NakamaService {
           this.servers[_is_official][_target].session,
           'remove_channel_file', {
           collection: _collection,
-          key: info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + '_',
+          key: (force_path || info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120)) + '_',
         });
       } catch (e) { }
       await this.servers[_is_official][_target].client.deleteStorageObjects(
         this.servers[_is_official][_target].session, {
         object_ids: [{
           collection: _collection,
-          key: info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
+          key: force_path || info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
         }],
       });
     } catch (e) {
@@ -4117,6 +4132,12 @@ export class NakamaService {
     let v = await this.indexed.loadTextFromUserPath(`servers/local/target/posts/${id}/info.json`);
     try {
       let json = JSON.parse(v);
+      json['server'] = {
+        name: this.lang.text['AddGroup']['UseLocalStorage'],
+        isOfficial: 'local',
+        target: 'target',
+        local: true,
+      }
       if (json['mainImage']) {
         if (json['mainImage']['url']) {
           json['mainImage']['thumbnail'] = json['mainImage']['url'];

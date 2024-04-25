@@ -236,7 +236,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.userInput.creator_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
       this.userInput.UserColor = (this.userInput.creator_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
     } catch (e) { // 그게 아니라면 로컬입니다
-      this.userInput.creator_id = 'local';
+      this.userInput.creator_id = 'me';
       this.userInput.UserColor = '888888';
     }
   }
@@ -710,20 +710,12 @@ export class AddPostPage implements OnInit, OnDestroy {
     }
     /** 로컬 서버인지 여부 */
     let is_local = Boolean(this.userInput.server['local']);
-    if (!is_local) {
-      this.p5toast.show({
-        text: '게시물 작성 기능 준비중',
-      });
-      return;
-    }
     this.isApplyPostData = true;
     let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['WIP'] });
     loading.present();
     this.isSaveClicked = true;
     let isOfficial = this.userInput.server['isOfficial'];
     let target = this.userInput.server['target'];
-    // 서버 정보 지우기
-    delete this.userInput.server;
     // 게시물 아이디 구성하기
     if (!this.isModify || this.isServerChanged) { // 새 게시물 작성시에만 생성
       // 기존 게시물 순번 검토 후 새 게시물 번호 받아오기
@@ -750,10 +742,8 @@ export class AddPostPage implements OnInit, OnDestroy {
           });
           let CurrentCounter = 0;
           // 받은 정보로 아이디 구성
-          if (v.objects.length) {
-            CurrentCounter = v.objects[0].value['counter'];
-            this.userInput.id = `ServerPost_${this.userInput.creator_id}_${CurrentCounter}`;
-          } else this.userInput.id = `ServerPost_${this.userInput.creator_id}_${CurrentCounter}`;
+          if (v.objects.length) CurrentCounter = v.objects[0].value['counter'];
+          this.userInput.id = `ServerPost_${CurrentCounter}`;
           // 카운터 업데이트
           await this.nakama.servers[isOfficial][target].client.writeStorageObjects(
             this.nakama.servers[isOfficial][target].session, [{
@@ -784,38 +774,39 @@ export class AddPostPage implements OnInit, OnDestroy {
     // 대표 이미지 저장
     if (this.userInput.mainImage) {
       loading.message = this.lang.text['AddPost']['SyncMainImage'];
-      if (is_local) {
-        try {
-          this.userInput.mainImage.path = `servers/local/target/posts/${this.userInput.id}/${this.userInput.mainImage.filename}`;
-          await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
-        } catch (e) {
-          this.p5toast.show({
-            text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
-          });
-          console.log(e);
-        }
-      } else {
-        console.log('서버 대표이미지 저장 준비중');
+      try {
+        this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.id}/${this.userInput.mainImage.filename}`;
+        await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
+      } catch (e) {
+        this.p5toast.show({
+          text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
+        });
+        console.log(e);
+      }
+      if (!is_local) { // 원격인 경우 서버에도 저장하기
+        console.log('cdn 시도 우선 필요');
+        await this.nakama.sync_save_file(this.userInput.mainImage, isOfficial, target, 'server_post', `${this.userInput.id}_mainImage`);
       }
     }
     // 첨부파일들 전부 저장
     let attach_len = this.userInput.attachments.length;
     if (attach_len) {
       loading.message = this.lang.text['AddPost']['SyncAttaches'];
-      if (is_local) {
-        for (let i = attach_len - 1; i >= 0; i--)
-          try {
-            loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`;
-            this.userInput.attachments[i].path = `servers/local/target/posts/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`;
-            await this.indexed.saveBlobToUserPath(this.userInput.attachments[i].blob, this.userInput.attachments[i].path);
-          } catch (e) {
-            this.p5toast.show({
-              text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
-            });
-            console.log(e);
-          }
-      } else {
-        console.log('서버 첨부파일 저장 준비중');
+      for (let i = attach_len - 1; i >= 0; i--) {
+        try {
+          loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`;
+          this.userInput.attachments[i].path = `servers/${isOfficial}/${target}/posts/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`;
+          await this.indexed.saveBlobToUserPath(this.userInput.attachments[i].blob, this.userInput.attachments[i].path);
+        } catch (e) {
+          this.p5toast.show({
+            text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
+          });
+          console.log(e);
+        }
+        if (!is_local) {
+          console.log(i, '_cdn 시도 우선 필요');
+          await this.nakama.sync_save_file(this.userInput.attachments[i], isOfficial, target, 'server_post', `${this.userInput.id}_attach_${i}`);
+        }
       }
     }
     let make_copy_info = JSON.parse(JSON.stringify(this.userInput))
@@ -823,33 +814,31 @@ export class AddPostPage implements OnInit, OnDestroy {
       delete make_copy_info.mainImage.blob;
     for (let i = make_copy_info.attachments.length - 1; i >= 0; i--)
       delete make_copy_info.attachments[i].blob;
+    delete make_copy_info.server;
     let json_str = JSON.stringify(make_copy_info);
-    if (is_local) {
-      try {
-        // 게시물 리스트에 등록
-        if (this.userInput.mainImage) {
-          let FileURL = URL.createObjectURL(this.userInput.mainImage.blob);
-          this.userInput.mainImage.thumbnail = FileURL;
-          setTimeout(() => {
-            URL.revokeObjectURL(FileURL);
-          }, 100);
-        }
-        this.nakama.posts_orig.local.target.me[this.userInput.id] = this.userInput;
-        this.nakama.rearrange_posts();
-        // 게시물 정보 저장하기
-        await this.indexed.saveTextFileToUserPath(json_str, `servers/local/target/posts/${this.userInput.id}/info.json`);
-      } catch (e) {
-        this.p5toast.show({
-          text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
-        });
-        console.log(e);
+    try {
+      // 게시물 리스트에 등록
+      if (this.userInput.mainImage) {
+        let FileURL = URL.createObjectURL(this.userInput.mainImage.blob);
+        this.userInput.mainImage.thumbnail = FileURL;
+        setTimeout(() => {
+          URL.revokeObjectURL(FileURL);
+        }, 100);
       }
-    } else { // 서버에 게시물 정보 추가
-      // cdn 서버에 업로드 시도 우선
-      // 실패하면 서버로 분할 전송처리
-      // 서버에 게시물 대표 이미지 올리기
-      // 서버에 첨부파일 올리기
-      // 첨부파일이 url 처리가 되는 경우를 미리 전부 처리한 후 게시물 정보를 서버에 업로드
+      if (!this.nakama.posts_orig[isOfficial][target])
+        this.nakama.posts_orig[isOfficial][target] = {};
+      if (!this.nakama.posts_orig[isOfficial][target][this.userInput.creator_id])
+        this.nakama.posts_orig[isOfficial][target][this.userInput.creator_id] = {};
+      this.nakama.posts_orig[isOfficial][target][this.userInput.creator_id][this.userInput.id] = this.userInput;
+      // 게시물 정보 저장하기
+      await this.indexed.saveTextFileToUserPath(json_str, `servers/${isOfficial}/${target}/posts/${this.userInput.id}/info.json`);
+    } catch (e) {
+      this.p5toast.show({
+        text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
+      });
+      console.log(e);
+    }
+    if (!is_local) { // 서버에 정보 등록
       let blob = new Blob([json_str], { type: 'text/plain' });
       let file: FileInfo = {};
       file.filename = 'info.txt';
@@ -858,8 +847,10 @@ export class AddPostPage implements OnInit, OnDestroy {
       file.type = 'text/plain';
       file.file_ext = 'txt';
       file.typeheader = 'text';
+      file.path = `servers/${isOfficial}/${target}/posts/${this.userInput.id}/info.json`;
       await this.nakama.sync_save_file(file, isOfficial, target, 'server_post', this.userInput.id);
     }
+    this.nakama.rearrange_posts();
     loading.dismiss();
     this.navCtrl.navigateBack('portal/community');
   }

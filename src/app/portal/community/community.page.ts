@@ -100,9 +100,45 @@ export class CommunityPage implements OnInit {
     this.counter.local.target.me = local_counter;
     let servers = this.nakama.get_all_server_info(true, true);
     for (let i = 0, j = servers.length; i < j; i++) {
-      if (!this.counter[servers[i].isOfficial][servers[i].target])
-        this.counter[servers[i].isOfficial][servers[i].target] = {};
-      // 서버 갯수 업데이트
+      let isOfficial = servers[i].isOfficial;
+      let target = servers[i].target;
+      if (!this.counter[isOfficial][target])
+        this.counter[isOfficial][target] = {};
+      // 해당 서버의 내 게시물 불러오기
+      try {
+        let my_counter = await this.nakama.servers[isOfficial][target].client.readStorageObjects(
+          this.nakama.servers[isOfficial][target].session, {
+          object_ids: [{
+            collection: 'server_post',
+            key: 'Counter',
+            user_id: this.nakama.servers[isOfficial][target].session.user_id,
+          }]
+        });
+        let my_exact_counter = 0;
+        if (my_counter.objects.length) my_exact_counter = my_counter.objects[0].value['counter'];
+        this.counter[isOfficial][target][this.nakama.servers[isOfficial][target].session.user_id] = my_exact_counter;
+      } catch (e) {
+        console.log('내 서버 소식 카운터 불러오기 오류: ', e);
+      }
+      // 해당 서버에서 아는 사람의 게시물 불러오기 (채널에 포함된 사람들)
+      let others = Object.keys(this.nakama.users[isOfficial][target]);
+      for (let k = 0, l = others.length; k < l; k++) {
+        try {
+          let other_counter = await this.nakama.servers[isOfficial][target].client.readStorageObjects(
+            this.nakama.servers[isOfficial][target].session, {
+            object_ids: [{
+              collection: 'server_post',
+              key: 'Counter',
+              user_id: others[k],
+            }]
+          });
+          let other_exact_counter = 0;
+          if (other_counter.objects.length) other_exact_counter = other_counter.objects[0].value['counter'];
+          this.counter[isOfficial][target][others[i]] = other_exact_counter;
+        } catch (e) {
+          console.log('다른 사람의 카운터 불러오기 오류: ', e);
+        }
+      }
     }
     this.load_post_cycles();
   }
@@ -123,8 +159,7 @@ export class CommunityPage implements OnInit {
           if (isOfficial[i] == 'local') { // 내 로컬 게시물 불러오기
             await this.load_local_post_step_by_step(counter);
           } else { // 서버 게시물, 다른 사람의 게시물 불러오기
-            console.log(`서버 업데이트 행동 없음: ${isOfficial[i]}/${target[k]}/${user_id[m]}`);
-            this.load_server_user_post_step_by_step(counter);
+            this.load_server_user_post_step_by_step(counter, isOfficial[i], target[k], user_id[m]);
           }
         }
       }
@@ -142,8 +177,55 @@ export class CommunityPage implements OnInit {
   }
 
   /** 서버별/사용자벌 게시물 정보 순차적으로 불러오기 */
-  load_server_user_post_step_by_step(index: number) {
+  async load_server_user_post_step_by_step(index: number, isOfficial: string, target: string, user_id: string) {
     if (index < 0) return;
+    let loaded = await this.load_server_post_with_id(`ServerPost_${index}`, isOfficial, target, user_id);
+    this.counter[isOfficial][target][user_id]--;
+    if (!loaded) await this.load_server_user_post_step_by_step(this.counter[isOfficial][target][user_id], isOfficial, target, user_id);
+  }
+
+  /** 아이디로 서버 포스트 불러오기 */
+  async load_server_post_with_id(post_id: string, isOfficial: string, target: string, user_id: string): Promise<boolean> {
+    try {
+      let info = {
+        path: `servers/${isOfficial}/${target}/posts/${post_id}/info.json`,
+        type: 'text/plain',
+      }
+      let res = await this.nakama.sync_load_file(info, isOfficial, target, 'server_post', user_id, post_id);
+      let text = await res.text();
+      let json = JSON.parse(text);
+      json['server'] = {
+        name: this.nakama.servers[isOfficial][target].info.name,
+        isOfficial: isOfficial,
+        target: target,
+      }
+      if (json['mainImage']) {
+        if (json['mainImage']['url']) {
+          json['mainImage']['thumbnail'] = json['mainImage']['url'];
+        } else { // URL 주소가 아니라면 이미지 직접 불러오기
+          let info = {
+            path: `servers/${isOfficial}/${target}/posts/${post_id}/info.json`,
+            type: 'text/plain',
+          }
+          let blob = await this.nakama.sync_load_file(info, isOfficial, target, 'server_post', user_id, `${post_id}_mainImage`);
+          json['mainImage']['blob'] = blob;
+          let FileURL = URL.createObjectURL(blob);
+          json['mainImage']['thumbnail'] = FileURL;
+          setTimeout(() => {
+            URL.revokeObjectURL(FileURL);
+          }, 100);
+        }
+      }
+      if (!this.nakama.posts_orig[isOfficial][target])
+        this.nakama.posts_orig[isOfficial][target] = {};
+      if (!this.nakama.posts_orig[isOfficial][target][user_id])
+        this.nakama.posts_orig[isOfficial][target][user_id] = {};
+      this.nakama.posts_orig[isOfficial][target][user_id][post_id] = json;
+      return true;
+    } catch (e) {
+      console.log('원격 소식 불러오기 오류: ', e);
+      return false;
+    }
   }
 
   /** 사용자 정보를 열람하는 경우 카드 열람 무시 */
