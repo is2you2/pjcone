@@ -164,13 +164,14 @@ export class CommunityPage implements OnInit {
   }
 
   /** 게시글 읽기 */
-  open_post(info: any) {
+  open_post(info: any, index: number) {
     if (this.isOpenProfile) return;
     this.isOpenProfile = true;
     this.modalCtrl.create({
       component: PostViewerPage,
       componentProps: {
         data: info,
+        index: index + 1,
       }
     }).then(v => {
       delete this.global.p5key['KeyShortCut']['Digit'];
@@ -190,7 +191,7 @@ export class CommunityPage implements OnInit {
     if (this.global.p5key && this.global.p5key['KeyShortCut']) {
       this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
         if (this.nakama.posts.length > index)
-          this.open_post(this.nakama.posts[index]);
+          this.open_post(this.nakama.posts[index], index);
         else this.add_post();
       };
     }

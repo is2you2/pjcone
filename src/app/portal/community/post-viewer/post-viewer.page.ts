@@ -32,6 +32,7 @@ export class PostViewerPage implements OnInit {
   CurrentIndex = 1;
   ngOnInit() {
     this.PostInfo = this.navParam.get('data');
+    this.CurrentIndex = this.navParam.get('index');
     this.initialize();
   }
 
