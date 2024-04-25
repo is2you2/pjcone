@@ -64,7 +64,8 @@ SPDX-License-Identifier: MIT -->
           [src]="channel['info'] && channel['info']['img'] || ((channel['local'] || (channel['info'] && channel['info']['max_count'] == 1)) ? 'assets/data/local.svg' : 'assets/data/channel.svg')"
           alt="ch_img"
           [style]="(channel['status'] == 'online' || (channel['redirect']['type'] == 3 && channel['status'] == 'pending')) ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'">
-        <div class="status_circle" [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']">
+        <div *ngIf="!channel['local']" class="status_circle"
+          [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']">
         </div>
       </div>
       <div *ngIf="channel['is_new']" class="additional_form new_bg_form"
@@ -80,7 +81,8 @@ SPDX-License-Identifier: MIT -->
                 lang.text['ChatRoom']['noname_chatroom'])}}
               </td>
               <td *ngIf="nakama.showServer" class="server_target">
-                {{'(' + (channel['local'] ? lang.text['AddGroup']['UseLocalStorage'] : (channel['server']['name'] || channel['server']['target'])) + ')'}}
+                {{'(' + (channel['local'] ? lang.text['AddGroup']['UseLocalStorage'] : (channel['server']['name'] ||
+                channel['server']['target'])) + ')'}}
               </td>
             </tr>
           </table>
