@@ -70,6 +70,7 @@ export class PostViewerPage implements OnInit {
         let creator = p.createSpan(this.PostInfo['creator_name']);
         creator.style('color', `#${this.PostInfo['UserColor']}`);
         creator.style('font-weight', 'bold');
+        creator.style('font-size', '17px');
         creator.style('cursor', 'pointer');
         creator.elt.onclick = () => {
           if (this.isOwner) {
