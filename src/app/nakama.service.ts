@@ -4110,6 +4110,8 @@ export class NakamaService {
   * @returns 정상적으로 불러와짐 여부 돌려줌
   */
   async load_local_post_with_id(id: string): Promise<boolean> {
+    if (this.posts_orig.local.target.me[id])
+      delete this.posts_orig.local.target.me[id];
     let v = await this.indexed.loadTextFromUserPath(`servers/local/target/posts/${id}/info.json`);
     try {
       let json = JSON.parse(v);
@@ -4126,7 +4128,7 @@ export class NakamaService {
           }, 100);
         }
       }
-      this.posts_orig.local.target.me[json['id']] = json;
+      this.posts_orig.local.target.me[id] = json;
       return true;
     } catch (e) {
       return false;
