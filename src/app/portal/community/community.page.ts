@@ -122,22 +122,24 @@ export class CommunityPage implements OnInit {
         console.log('내 서버 소식 카운터 불러오기 오류: ', e);
       }
       // 해당 서버에서 아는 사람의 게시물 불러오기 (채널에 포함된 사람들)
-      let others = Object.keys(this.nakama.users[isOfficial][target]);
-      for (let k = 0, l = others.length; k < l; k++) {
-        try {
-          let other_counter = await this.nakama.servers[isOfficial][target].client.readStorageObjects(
-            this.nakama.servers[isOfficial][target].session, {
-            object_ids: [{
-              collection: 'server_post',
-              key: 'Counter',
-              user_id: others[k],
-            }]
-          });
-          let other_exact_counter = 0;
-          if (other_counter.objects.length) other_exact_counter = other_counter.objects[0].value['counter'];
-          this.counter[isOfficial][target][others[i]] = other_exact_counter;
-        } catch (e) {
-          console.log('다른 사람의 카운터 불러오기 오류: ', e);
+      if (this.nakama.users[isOfficial][target]) {
+        let others = Object.keys(this.nakama.users[isOfficial][target]);
+        for (let k = 0, l = others.length; k < l; k++) {
+          try {
+            let other_counter = await this.nakama.servers[isOfficial][target].client.readStorageObjects(
+              this.nakama.servers[isOfficial][target].session, {
+              object_ids: [{
+                collection: 'server_post',
+                key: 'Counter',
+                user_id: others[k],
+              }]
+            });
+            let other_exact_counter = 0;
+            if (other_counter.objects.length) other_exact_counter = other_counter.objects[0].value['counter'];
+            this.counter[isOfficial][target][others[i]] = other_exact_counter;
+          } catch (e) {
+            console.log('다른 사람의 카운터 불러오기 오류: ', e);
+          }
         }
       }
     }
