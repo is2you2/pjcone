@@ -904,7 +904,7 @@ export class NakamaService {
         this.RemoteTodoCounter[_is_official] = {};
       for (let i = count.length - 1; i >= 0; i--) {
         try {
-          let key = `RemoteTodo_${this.servers[_is_official][_target].session.user_id}_${count[i]}`;
+          let key = `RemoteTodo_${count[i]}`;
           let todo = await this.servers[_is_official][_target].client.readStorageObjects(
             this.servers[_is_official][_target].session, {
             object_ids: [{
