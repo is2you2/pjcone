@@ -1237,7 +1237,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           let task_number = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(
             this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session,
             'manage_todo_add_fn', this.userInput);
-          this.userInput.id = `RemoteTodo_${this.userInput.remote.target}_${task_number.payload['value']}`;
+          this.userInput.id = `RemoteTodo_${task_number.payload['value']}`;
+          this.nakama.RemoteTodoCounter[this.userInput.remote.isOfficial][this.userInput.remote.target].push(task_number.payload['value']);
+          this.nakama.updateRemoteCounter(this.userInput.remote.isOfficial, this.userInput.remote.target);
           for (let i = 0, j = this.userInput.workers.length; i < j; i++) {
             try { // 바보같겠지만 서버에서는 매치에 참여할 수 없기 때문에 사용자가 진입해서 보내줘야 한다
               let match = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.readStorageObjects(
