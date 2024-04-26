@@ -12,9 +12,18 @@
     cursor: pointer;
 }
 
+.md .CardContainerDiv {
+    padding-top: 14px;
+}
+
+.ios .CardContainerDiv {
+    padding-top: 20px;
+}
+
 .card_style {
     width: 90%;
     max-width: 400px;
+    margin-top: 0;
 }
 
 .md .cardCreator {

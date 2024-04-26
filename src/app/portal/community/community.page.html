@@ -17,7 +17,7 @@ SPDX-License-Identifier: MIT -->
 <ion-content>
   <div id="CommunityScrollDiv" style="height: 100%; overflow-y: auto;">
     <div id="CommunityMainContent">
-      <div *ngIf="nakama.posts.length" style="display: ruby-text">
+      <div *ngIf="nakama.posts.length" style="display: ruby-text" class="CardContainerDiv">
         <ion-card *ngFor="let post of nakama.posts; let i = index" [id]="post['id']" button class="card_style"
           (click)="open_post(post, i)">
           <img *ngIf="post['mainImage']" class="thumbnail_image" [src]="post['mainImage']['thumbnail']"
