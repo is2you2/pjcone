@@ -2974,7 +2974,7 @@ export class NakamaService {
   async RemovePost(info: any, slient = false) {
     let loading: HTMLIonLoadingElement;
     if (!slient) loading = await this.loadingCtrl.create({ message: this.lang.text['PostViewer']['RemovePost'] });
-    let list = await this.indexed.GetFileListFromDB(`servers/${info['server']['isOfficial']}/${info['server']['target']}/posts/${info['id']}`);
+    let list = await this.indexed.GetFileListFromDB(`servers/${info['server']['isOfficial']}/${info['server']['target']}/posts/${info['creator_id']}/${info['id']}`);
     if (loading) loading.present();
     for (let i = 0, j = list.length; i < j; i++) {
       if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`;
@@ -4133,7 +4133,7 @@ export class NakamaService {
   async load_local_post_with_id(id: string): Promise<boolean> {
     if (this.posts_orig.local.target.me[id])
       delete this.posts_orig.local.target.me[id];
-    let v = await this.indexed.loadTextFromUserPath(`servers/local/target/posts/${id}/info.json`);
+    let v = await this.indexed.loadTextFromUserPath(`servers/local/target/posts/me/${id}/info.json`);
     try {
       let json = JSON.parse(v);
       json['server'] = {

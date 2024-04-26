@@ -750,10 +750,10 @@ export class AddPostPage implements OnInit, OnDestroy {
         await this.nakama.RemovePost(this.OriginalInfo);
       // 기존 게시물 순번 검토 후 새 게시물 번호 받아오기
       if (is_local) {
-        let counter = Number(await this.indexed.loadTextFromUserPath('servers/local/target/posts/counter.txt')) || 0;
+        let counter = Number(await this.indexed.loadTextFromUserPath('servers/local/target/posts/me/counter.txt')) || 0;
         this.userInput.id = `LocalPost_${counter}`;
         try {
-          await this.indexed.saveTextFileToUserPath(`${counter + 1}`, 'servers/local/target/posts/counter.txt');
+          await this.indexed.saveTextFileToUserPath(`${counter + 1}`, 'servers/local/target/posts/me/counter.txt');
         } catch (e) {
           this.p5toast.show({
             text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
@@ -805,7 +805,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     if (this.userInput.mainImage) {
       loading.message = this.lang.text['AddPost']['SyncMainImage'];
       try {
-        this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.id}/${this.userInput.mainImage.filename}`;
+        this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/${this.userInput.mainImage.filename}`;
         await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
       } catch (e) {
         this.p5toast.show({
@@ -833,7 +833,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             this.userInput.attachments[i]['url'] = CatchedAddress;
           } else throw '업로드 실패';
         } catch (e) {
-          this.userInput.attachments[i].path = `servers/${isOfficial}/${target}/posts/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`;
+          this.userInput.attachments[i].path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`;
           await this.indexed.saveBlobToUserPath(this.userInput.attachments[i].blob, this.userInput.attachments[i].path);
         }
         if (!is_local) {
@@ -873,7 +873,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       console.log(e);
     }
     let json_str = JSON.stringify(make_copy_info);
-    await this.indexed.saveTextFileToUserPath(json_str, `servers/${isOfficial}/${target}/posts/${this.userInput.id}/info.json`);
+    await this.indexed.saveTextFileToUserPath(json_str, `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/info.json`);
     if (!is_local) { // 서버에 정보 등록
       let blob = new Blob([json_str], { type: 'text/plain' });
       let file: FileInfo = {};
@@ -883,7 +883,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       file.type = 'text/plain';
       file.file_ext = 'txt';
       file.typeheader = 'text';
-      file.path = `servers/${isOfficial}/${target}/posts/${this.userInput.id}/info.json`;
+      file.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/info.json`;
       await this.nakama.sync_save_file(file, isOfficial, target, 'server_post', this.userInput.id);
     }
     this.nakama.rearrange_posts();

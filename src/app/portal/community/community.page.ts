@@ -97,7 +97,7 @@ export class CommunityPage implements OnInit {
   /** 게시물 갯수 불러오기 (첫 실행시) */
   async load_posts_counter() {
     // 카운터 정보 업데이트
-    let local_counter = Number(await this.indexed.loadTextFromUserPath('servers/local/target/posts/counter.txt')) || -1;
+    let local_counter = Number(await this.indexed.loadTextFromUserPath('servers/local/target/posts/me/counter.txt')) || 0;
     this.counter.local.target.me = local_counter;
     let servers = this.nakama.get_all_server_info(true, true);
     for (let i = 0, j = servers.length; i < j; i++) {
@@ -115,8 +115,8 @@ export class CommunityPage implements OnInit {
             user_id: this.nakama.servers[isOfficial][target].session.user_id,
           }]
         });
-        let my_exact_counter = -1;
-        if (my_counter.objects.length) my_exact_counter = my_counter.objects[0].value['counter'] - 1;
+        let my_exact_counter = 0;
+        if (my_counter.objects.length) my_exact_counter = my_counter.objects[0].value['counter'];
         this.counter[isOfficial][target][this.nakama.servers[isOfficial][target].session.user_id] = my_exact_counter;
       } catch (e) {
         console.log('내 서버 소식 카운터 불러오기 오류: ', e);
@@ -133,8 +133,8 @@ export class CommunityPage implements OnInit {
               user_id: others[k],
             }]
           });
-          let other_exact_counter = -1;
-          if (other_counter.objects.length) other_exact_counter = other_counter.objects[0].value['counter'] - 1;
+          let other_exact_counter = 0;
+          if (other_counter.objects.length) other_exact_counter = other_counter.objects[0].value['counter'];
           this.counter[isOfficial][target][others[i]] = other_exact_counter;
         } catch (e) {
           console.log('다른 사람의 카운터 불러오기 오류: ', e);
@@ -189,10 +189,10 @@ export class CommunityPage implements OnInit {
   async load_server_post_with_id(post_id: string, isOfficial: string, target: string, user_id: string): Promise<boolean> {
     try {
       let info = {
-        path: `servers/${isOfficial}/${target}/posts/${post_id}/info.json`,
+        path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/info.json`,
         type: 'text/plain',
       }
-      let res = await this.nakama.sync_load_file(info, isOfficial, target, 'server_post', user_id, post_id);
+      let res = await this.nakama.sync_load_file(info, isOfficial, target, 'server_post', user_id, post_id, false);
       let text = await res.text();
       let json = JSON.parse(text);
       json['server'] = {
@@ -205,7 +205,7 @@ export class CommunityPage implements OnInit {
           json['mainImage']['thumbnail'] = json['mainImage']['url'];
         } else { // URL 주소가 아니라면 이미지 직접 불러오기
           let info = {
-            path: `servers/${isOfficial}/${target}/posts/${post_id}/mainImage.png`,
+            path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/mainImage.png`,
             type: 'image/png',
           }
           let blob = await this.nakama.sync_load_file(info, isOfficial, target, 'server_post', user_id, `${post_id}_mainImage`, false);
