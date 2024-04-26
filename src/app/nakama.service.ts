@@ -2980,33 +2980,35 @@ export class NakamaService {
       if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`;
       await this.indexed.removeFileFromUserPath(list[i]);
     }
-    // 첨부파일 삭제
-    for (let i = 0, j = info['attachments'].length; i < j; i++)
+    if (!info.server.local) {
+      // 첨부파일 삭제
+      for (let i = 0, j = info['attachments'].length; i < j; i++)
+        try {
+          if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
+          if (info['attachments'][i].url) {
+            await this.global.remove_file_from_storage(info['attachments'][i].url);
+          } else {
+            try {
+              await this.sync_remove_file(`${info['id']}_attach_${i}`, info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}_attach_${i}`);
+            } catch (e) { }
+          }
+        } catch (e) { }
+      // 메인 사진 삭제
+      if (info['mainImage'])
+        try {
+          if (info['mainImage'].url) {
+            await this.global.remove_file_from_storage(info['mainImage'].url);
+          } else {
+            try {
+              await this.sync_remove_file(`${info['id']}_mainImage`, info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}_mainImage`);
+            } catch (e) { }
+          }
+        } catch (e) { }
+      // 게시물 정보 삭제하기
       try {
-        if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
-        if (info['attachments'][i].url) {
-          await this.global.remove_file_from_storage(info['attachments'][i].url);
-        } else {
-          try {
-            await this.sync_remove_file(`${info['id']}_attach_${i}`, info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}_attach_${i}`);
-          } catch (e) { }
-        }
+        await this.sync_remove_file(info['id'], info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}`);
       } catch (e) { }
-    // 메인 사진 삭제
-    if (info['mainImage'])
-      try {
-        if (info['mainImage'].url) {
-          await this.global.remove_file_from_storage(info['mainImage'].url);
-        } else {
-          try {
-            await this.sync_remove_file(`${info['id']}_mainImage`, info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}_mainImage`);
-          } catch (e) { }
-        }
-      } catch (e) { }
-    // 게시물 정보 삭제하기
-    try {
-      await this.sync_remove_file(info['id'], info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}`);
-    } catch (e) { }
+    }
     if (loading) loading.dismiss();
     delete this.posts_orig[info['server']['isOfficial']][info['server']['target']][info['creator_id']][info['id']];
     this.rearrange_posts();
@@ -3788,7 +3790,7 @@ export class NakamaService {
   /** 로컬에 있는 파일을 불러오기, 로컬에 없다면 원격에서 요청하여 생성 후 불러오기
    * @returns 파일의 blob
    */
-  async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid = '', _key_force = '') {
+  async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid = '', _key_force = '', show_noti = true) {
     try {
       return await this.indexed.loadBlobFromUserPath(info.path, info.type || '');
     } catch (e) {
@@ -3828,9 +3830,10 @@ export class NakamaService {
             info['thumbnail'] = info['url'];
           } else { // 서버에 업로드된 파일
             info['text'] = [this.lang.text['ChatRoom']['SavingFile']];
-            this.p5toast.show({
-              text: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
-            });
+            if (show_noti)
+              this.p5toast.show({
+                text: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
+              });
             if (isPlatform == 'Android' || isPlatform == 'iOS')
               this.noti.noti.schedule({
                 id: 8,

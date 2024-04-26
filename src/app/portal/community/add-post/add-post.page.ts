@@ -76,6 +76,8 @@ export class AddPostPage implements OnInit, OnDestroy {
   index = 0;
   isOfficial: string;
   target: string;
+  /** 원본 게시물 정보 */
+  OriginalInfo: any;
   /** 서버 정보 비교를 위한 문자열 구성 */
   OriginalServerInfo: string;
 
@@ -100,13 +102,15 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.servers.unshift(local_info);
       if (this.servers.length > 1) this.index = 1;
       /** 편집하기로 들어왔다면 */
-      let is_local = this.userInput.creator_id == 'local';
       if (navParams && navParams.data) {
         // 로컬이라면 첫번째 서버로 설정
-        if (is_local) {
-          this.index = 0;
-        } else { // 원격 서버 정보 검토하기
-
+        let inputServerInfo = `${this.userInput.server.isOfficial}/${this.userInput.server.target}`;
+        for (let i = 0, j = this.servers.length; i < j; i++) {
+          let ServerInfo = `${this.servers[i].isOfficial}/${this.servers[i].target}`;
+          if (ServerInfo == inputServerInfo) {
+            this.index = i;
+            break;
+          }
         }
         // 대표 이미지가 있다면 구성
         if (this.userInput.mainImage) {
@@ -118,6 +122,8 @@ export class AddPostPage implements OnInit, OnDestroy {
         }
       }
       this.select_server(this.index);
+      if (navParams && navParams.data)
+        this.OriginalInfo = JSON.parse(JSON.stringify(this.userInput));
     });
     if (isPlatform == 'DesktopPWA')
       setTimeout(() => {
@@ -177,7 +183,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.TitleInput.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
-        if (clipboardItem.type.startsWith('image/'))
+        if (clipboardItem.type.startsWith('image/png'))
           stack.push({ file: clipboardItem });
       if (!stack.length) return;
       if (stack.length == 1)
@@ -718,6 +724,8 @@ export class AddPostPage implements OnInit, OnDestroy {
     let target = this.userInput.server['target'];
     // 게시물 아이디 구성하기
     if (!this.isModify || this.isServerChanged) { // 새 게시물 작성시에만 생성
+      if (this.isServerChanged && this.OriginalInfo) // 기존 서버의 게시물 정보 삭제
+        await this.nakama.RemovePost(this.OriginalInfo);
       // 기존 게시물 순번 검토 후 새 게시물 번호 받아오기
       if (is_local) {
         let counter = Number(await this.indexed.loadTextFromUserPath('servers/local/target/posts/counter.txt')) || 0;
@@ -815,29 +823,21 @@ export class AddPostPage implements OnInit, OnDestroy {
     for (let i = make_copy_info.attachments.length - 1; i >= 0; i--)
       delete make_copy_info.attachments[i].blob;
     delete make_copy_info.server;
-    let json_str = JSON.stringify(make_copy_info);
     try {
-      // 게시물 리스트에 등록
-      if (this.userInput.mainImage) {
-        let FileURL = URL.createObjectURL(this.userInput.mainImage.blob);
-        this.userInput.mainImage.thumbnail = FileURL;
-        setTimeout(() => {
-          URL.revokeObjectURL(FileURL);
-        }, 100);
-      }
       if (!this.nakama.posts_orig[isOfficial][target])
         this.nakama.posts_orig[isOfficial][target] = {};
       if (!this.nakama.posts_orig[isOfficial][target][this.userInput.creator_id])
         this.nakama.posts_orig[isOfficial][target][this.userInput.creator_id] = {};
       this.nakama.posts_orig[isOfficial][target][this.userInput.creator_id][this.userInput.id] = this.userInput;
       // 게시물 정보 저장하기
-      await this.indexed.saveTextFileToUserPath(json_str, `servers/${isOfficial}/${target}/posts/${this.userInput.id}/info.json`);
     } catch (e) {
       this.p5toast.show({
         text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
       });
       console.log(e);
     }
+    let json_str = JSON.stringify(make_copy_info);
+    await this.indexed.saveTextFileToUserPath(json_str, `servers/${isOfficial}/${target}/posts/${this.userInput.id}/info.json`);
     if (!is_local) { // 서버에 정보 등록
       let blob = new Blob([json_str], { type: 'text/plain' });
       let file: FileInfo = {};

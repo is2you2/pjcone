@@ -28,10 +28,8 @@ export class CommunityPage implements OnInit {
     private modalCtrl: ModalController,
   ) { }
 
-  async ngOnInit() {
+  ngOnInit() {
     this.nakama.is_post_lock = true;
-    if (!this.nakama.posts.length)
-      await this.load_posts_counter();
     this.nakama.CommunityGoToEditPost = this.add_post;
   }
 
@@ -44,7 +42,9 @@ export class CommunityPage implements OnInit {
     });
   }
 
-  ionViewDidEnter() {
+  async ionViewDidEnter() {
+    this.is_loadable = true;
+    await this.load_posts_counter();
     this.try_add_shortcut();
     // 스크롤이 내려가있다면 새로고침 처리(화면 변화 대응용)
     if (this.ContentDiv && this.ContentScroll)
@@ -96,7 +96,7 @@ export class CommunityPage implements OnInit {
   /** 게시물 갯수 불러오기 (첫 실행시) */
   async load_posts_counter() {
     // 카운터 정보 업데이트
-    let local_counter = Number(await this.indexed.loadTextFromUserPath('servers/local/target/posts/counter.txt')) || 0;
+    let local_counter = Number(await this.indexed.loadTextFromUserPath('servers/local/target/posts/counter.txt')) || -1;
     this.counter.local.target.me = local_counter;
     let servers = this.nakama.get_all_server_info(true, true);
     for (let i = 0, j = servers.length; i < j; i++) {
@@ -114,8 +114,8 @@ export class CommunityPage implements OnInit {
             user_id: this.nakama.servers[isOfficial][target].session.user_id,
           }]
         });
-        let my_exact_counter = 0;
-        if (my_counter.objects.length) my_exact_counter = my_counter.objects[0].value['counter'];
+        let my_exact_counter = -1;
+        if (my_counter.objects.length) my_exact_counter = my_counter.objects[0].value['counter'] - 1;
         this.counter[isOfficial][target][this.nakama.servers[isOfficial][target].session.user_id] = my_exact_counter;
       } catch (e) {
         console.log('내 서버 소식 카운터 불러오기 오류: ', e);
@@ -132,8 +132,8 @@ export class CommunityPage implements OnInit {
               user_id: others[k],
             }]
           });
-          let other_exact_counter = 0;
-          if (other_counter.objects.length) other_exact_counter = other_counter.objects[0].value['counter'];
+          let other_exact_counter = -1;
+          if (other_counter.objects.length) other_exact_counter = other_counter.objects[0].value['counter'] - 1;
           this.counter[isOfficial][target][others[i]] = other_exact_counter;
         } catch (e) {
           console.log('다른 사람의 카운터 불러오기 오류: ', e);
@@ -159,7 +159,7 @@ export class CommunityPage implements OnInit {
           if (isOfficial[i] == 'local') { // 내 로컬 게시물 불러오기
             await this.load_local_post_step_by_step(counter);
           } else { // 서버 게시물, 다른 사람의 게시물 불러오기
-            this.load_server_user_post_step_by_step(counter, isOfficial[i], target[k], user_id[m]);
+            await this.load_server_user_post_step_by_step(counter, isOfficial[i], target[k], user_id[m]);
           }
         }
       }
@@ -204,10 +204,10 @@ export class CommunityPage implements OnInit {
           json['mainImage']['thumbnail'] = json['mainImage']['url'];
         } else { // URL 주소가 아니라면 이미지 직접 불러오기
           let info = {
-            path: `servers/${isOfficial}/${target}/posts/${post_id}/info.json`,
-            type: 'text/plain',
+            path: `servers/${isOfficial}/${target}/posts/${post_id}/mainImage.png`,
+            type: 'image/png',
           }
-          let blob = await this.nakama.sync_load_file(info, isOfficial, target, 'server_post', user_id, `${post_id}_mainImage`);
+          let blob = await this.nakama.sync_load_file(info, isOfficial, target, 'server_post', user_id, `${post_id}_mainImage`, false);
           json['mainImage']['blob'] = blob;
           let FileURL = URL.createObjectURL(blob);
           json['mainImage']['thumbnail'] = FileURL;
@@ -223,7 +223,6 @@ export class CommunityPage implements OnInit {
       this.nakama.posts_orig[isOfficial][target][user_id][post_id] = json;
       return true;
     } catch (e) {
-      console.log('원격 소식 불러오기 오류: ', e);
       return false;
     }
   }

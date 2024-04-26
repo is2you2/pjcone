@@ -66,7 +66,7 @@ NoPosts,소식 없음,No news
 Title,새 소식,New news
 EditTitle,소식 편집,Edit news
 Creator,작성자,Creator
-AddNewPost,thtlr 작성,Write a news
+AddNewPost,소식 작성,Write a news
 TitlePlaceholder,소식의 제목을 입력합니다,Enter the title of the news
 ContentPlaceHolder,서버 사람들과 공유하고 싶은 내용이 있으신가요?,Is there anything you'd like to share with the people on the server?
 AddAttaches,첨부 파일 추가,Add attachment

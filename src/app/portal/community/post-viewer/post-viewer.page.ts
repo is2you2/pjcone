@@ -169,9 +169,18 @@ export class PostViewerPage implements OnInit {
         }
         creator.parent(creatorForm);
         // 첨부파일 불러오기
-        for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++) {
-          let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][i]['path'], this.PostInfo['attachments'][i]['type']);
-          this.PostInfo['attachments'][i]['blob'] = blob;
+        if (this.PostInfo['server']['local'])
+          for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++) {
+            let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][i]['path'], this.PostInfo['attachments'][i]['type']);
+            this.PostInfo['attachments'][i]['blob'] = blob;
+          }
+        else for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++) {
+          try {
+            let blob = await this.nakama.sync_load_file(
+              this.PostInfo['attachments'][i], this.PostInfo['server']['isOfficial'], this.PostInfo['server']['target'], 'server_post',
+              this.PostInfo['creator_id'], `${this.PostInfo['id']}_attach_${i}`, false);
+            this.PostInfo['attachments'][i]['blob'] = blob;
+          } catch (e) { }
         }
         // 내용
         if (this.PostInfo['content']) {
