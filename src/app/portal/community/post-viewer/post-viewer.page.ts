@@ -99,7 +99,7 @@ export class PostViewerPage implements OnInit {
     if (this.PostInfo['mainImage']) {
       let FileURL = this.PostInfo['mainImage']['url'];
       if (!FileURL) {
-        URL.createObjectURL(this.PostInfo['mainImage']['blob']);
+        FileURL = URL.createObjectURL(this.PostInfo['mainImage']['blob']);
         setTimeout(() => {
           URL.revokeObjectURL(FileURL);
         }, 100);
