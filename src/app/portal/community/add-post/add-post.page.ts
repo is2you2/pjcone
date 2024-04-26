@@ -82,6 +82,8 @@ export class AddPostPage implements OnInit, OnDestroy {
   OriginalServerInfo: string;
 
   ngOnInit() {
+    this.useFirstCustomCDN = Boolean(localStorage.getItem('useFFSCDN'));
+    this.toggle_custom_attach(this.useFirstCustomCDN);
     this.route.queryParams.subscribe(async _p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
       let InitAct = false;
@@ -114,11 +116,14 @@ export class AddPostPage implements OnInit, OnDestroy {
         }
         // 대표 이미지가 있다면 구성
         if (this.userInput.mainImage) {
-          let FileURL = URL.createObjectURL(this.userInput.mainImage.blob);
+          let FileURL = this.userInput.mainImage['url'];
+          if (!FileURL) {
+            FileURL = URL.createObjectURL(this.userInput.mainImage.blob);
+            setTimeout(() => {
+              URL.revokeObjectURL(FileURL);
+            }, 100);
+          }
           this.MainPostImage = FileURL;
-          setTimeout(() => {
-            URL.revokeObjectURL(FileURL);
-          }, 100);
         }
       }
       this.select_server(this.index);
@@ -381,6 +386,12 @@ export class AddPostPage implements OnInit, OnDestroy {
           this.selected_blobFile_callback_act(blob);
           this.extended_buttons[4].icon = 'mic-circle-outline';
         }
+      }
+    }, { // 5
+      icon: 'cloud-done-outline',
+      name: this.lang.text['ChatRoom']['UseCloud'],
+      act: () => {
+        this.toggle_custom_attach();
       }
     }];
 
@@ -701,6 +712,17 @@ export class AddPostPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 사용자 지정 우선 서버 사용 여부 */
+  useFirstCustomCDN = true;
+  async toggle_custom_attach(force?: boolean) {
+    this.useFirstCustomCDN = force ?? !this.useFirstCustomCDN;
+    this.extended_buttons[5].icon = this.useFirstCustomCDN
+      ? 'cloud-done-outline' : 'cloud-offline-outline';
+    if (this.useFirstCustomCDN)
+      localStorage.setItem('useFFSCDN', `${this.useFirstCustomCDN}`);
+    else localStorage.removeItem('useFFSCDN');
+  }
+
   /** 게시물 등록하기 버튼을 눌러 데이터 변경하기가 이루어졌는지 여부 */
   isApplyPostData = false;
   /** 게시물 등록하기  
@@ -792,7 +814,6 @@ export class AddPostPage implements OnInit, OnDestroy {
         console.log(e);
       }
       if (!is_local) { // 원격인 경우 서버에도 저장하기
-        console.log('cdn 시도 우선 필요');
         await this.nakama.sync_save_file(this.userInput.mainImage, isOfficial, target, 'server_post', `${this.userInput.id}_mainImage`);
       }
     }
@@ -803,17 +824,32 @@ export class AddPostPage implements OnInit, OnDestroy {
       for (let i = attach_len - 1; i >= 0; i--) {
         try {
           loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`;
+          let CatchedAddress: string;
+          if (this.useFirstCustomCDN)
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name']);
+          if (CatchedAddress) {
+            delete this.userInput.attachments[i]['path'];
+            delete this.userInput.attachments[i]['partsize'];
+            this.userInput.attachments[i]['url'] = CatchedAddress;
+          } else throw '업로드 실패';
+        } catch (e) {
           this.userInput.attachments[i].path = `servers/${isOfficial}/${target}/posts/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`;
           await this.indexed.saveBlobToUserPath(this.userInput.attachments[i].blob, this.userInput.attachments[i].path);
-        } catch (e) {
-          this.p5toast.show({
-            text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
-          });
-          console.log(e);
         }
         if (!is_local) {
-          console.log(i, '_cdn 시도 우선 필요');
-          await this.nakama.sync_save_file(this.userInput.attachments[i], isOfficial, target, 'server_post', `${this.userInput.id}_attach_${i}`);
+          try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
+            let address = this.nakama.servers[this.isOfficial][this.target].info.address;
+            let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
+            let savedAddress = await this.global.upload_file_to_storage(this.userInput.attachments[i],
+              this.nakama.servers[this.isOfficial][this.target].session.user_id,
+              protocol, address, this.useFirstCustomCDN);
+            let isURL = Boolean(savedAddress);
+            if (!isURL) throw '링크 만들기 실패';
+            delete this.userInput.attachments[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
+            this.userInput.attachments[i]['url'] = savedAddress;
+          } catch (e) {
+            await this.nakama.sync_save_file(this.userInput.attachments[i], isOfficial, target, 'server_post', `${this.userInput.id}_attach_${i}`);
+          }
         }
       }
     }

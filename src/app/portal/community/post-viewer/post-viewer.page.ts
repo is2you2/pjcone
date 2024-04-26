@@ -96,11 +96,14 @@ export class PostViewerPage implements OnInit {
   /** 진입 정보를 어떻게 활용할 것인가 */
   initialize() {
     if (this.PostInfo['mainImage']) {
-      let FileURL = URL.createObjectURL(this.PostInfo['mainImage']['blob']);
+      let FileURL = this.PostInfo['mainImage']['url'];
+      if (!FileURL) {
+        URL.createObjectURL(this.PostInfo['mainImage']['blob']);
+        setTimeout(() => {
+          URL.revokeObjectURL(FileURL);
+        }, 100);
+      }
       this.PostInfo['mainImage']['MainThumbnail'] = FileURL;
-      setTimeout(() => {
-        URL.revokeObjectURL(FileURL);
-      }, 100);
     }
     this.create_content();
     this.isOwner = this.PostInfo['creator_id'] == 'me'

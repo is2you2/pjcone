@@ -2980,35 +2980,36 @@ export class NakamaService {
       if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`;
       await this.indexed.removeFileFromUserPath(list[i]);
     }
-    if (!info.server.local) {
-      // 첨부파일 삭제
-      for (let i = 0, j = info['attachments'].length; i < j; i++)
-        try {
-          if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
-          if (info['attachments'][i].url) {
-            await this.global.remove_file_from_storage(info['attachments'][i].url);
-          } else {
-            try {
-              await this.sync_remove_file(`${info['id']}_attach_${i}`, info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}_attach_${i}`);
-            } catch (e) { }
-          }
-        } catch (e) { }
-      // 메인 사진 삭제
-      if (info['mainImage'])
-        try {
-          if (info['mainImage'].url) {
-            await this.global.remove_file_from_storage(info['mainImage'].url);
-          } else {
-            try {
-              await this.sync_remove_file(`${info['id']}_mainImage`, info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}_mainImage`);
-            } catch (e) { }
-          }
-        } catch (e) { }
-      // 게시물 정보 삭제하기
+    // 첨부파일 삭제
+    for (let i = 0, j = info['attachments'].length; i < j; i++)
       try {
-        await this.sync_remove_file(info['id'], info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}`);
+        if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
+        if (info['attachments'][i].url) {
+          await this.global.remove_file_from_storage(info['attachments'][i].url);
+        } else {
+          try {
+            if (!info.server.local)
+              await this.sync_remove_file(`${info['id']}_attach_${i}`, info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}_attach_${i}`);
+          } catch (e) { }
+        }
       } catch (e) { }
-    }
+    // 메인 사진 삭제
+    if (info['mainImage'])
+      try {
+        if (info['mainImage'].url) {
+          await this.global.remove_file_from_storage(info['mainImage'].url);
+        } else {
+          try {
+            if (!info.server.local)
+              await this.sync_remove_file(`${info['id']}_mainImage`, info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}_mainImage`);
+          } catch (e) { }
+        }
+      } catch (e) { }
+    // 게시물 정보 삭제하기
+    try {
+      if (!info.server.local)
+        await this.sync_remove_file(info['id'], info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}`);
+    } catch (e) { }
     if (loading) loading.dismiss();
     delete this.posts_orig[info['server']['isOfficial']][info['server']['target']][info['creator_id']][info['id']];
     this.rearrange_posts();
