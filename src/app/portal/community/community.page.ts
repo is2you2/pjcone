@@ -45,11 +45,14 @@ export class CommunityPage implements OnInit {
 
   /** 더 불러올 게시물이 있는지 여부 */
   is_loadable = true;
+  /** 하단에 약간의 공간 보여주기 */
+  is_auto_load_end = false;
   async ionViewDidEnter() {
     this.is_loadable = true;
     await this.nakama.load_posts_counter();
     this.nakama.has_new_post = false;
     this.load_post_cycles();
+    this.is_auto_load_end = true;
     this.try_add_shortcut();
     // 스크롤이 내려가있다면 새로고침 처리(화면 변화 대응용)
     if (this.ContentDiv && this.ContentScroll)
