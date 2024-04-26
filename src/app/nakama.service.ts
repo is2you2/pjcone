@@ -849,6 +849,7 @@ export class NakamaService {
     this.set_group_statusBar('online', _is_official, _target);
     await this.get_group_list_from_server(_is_official, _target);
     await this.redirect_channel(_is_official, _target);
+    await this.load_posts_counter();
     if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
     if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
     await this.update_notifications(_is_official, _target);
@@ -4164,6 +4165,77 @@ export class NakamaService {
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  /** 사용자별 카운터 필요  
+   * counter[isOfficial][target][user_id] = counter;
+   */
+  post_counter = {
+    local: { target: { me: 0 } },
+    official: {},
+    unofficial: {},
+  }
+
+  /** 게시물 갯수 불러오기 (첫 실행시) */
+  async load_posts_counter() {
+    let last_counting = {};
+    try { // 저장된 소식 수 정보 일괄 불러오기
+      let v = await this.indexed.loadTextFromUserPath('servers/post_counter.json');
+      let json = JSON.parse(v);
+      last_counting = v;
+      this.post_counter = json;
+    } catch (e) { }
+    // 카운터 정보 업데이트
+    let local_counter = Number(await this.indexed.loadTextFromUserPath('servers/local/target/posts/me/counter.txt')) || 0;
+    this.post_counter.local.target.me = local_counter;
+    let servers = this.get_all_server_info(true, true);
+    for (let i = 0, j = servers.length; i < j; i++) {
+      let isOfficial = servers[i].isOfficial;
+      let target = servers[i].target;
+      if (!this.post_counter[isOfficial][target])
+        this.post_counter[isOfficial][target] = {};
+      // 해당 서버의 내 게시물 불러오기
+      try {
+        let my_counter = await this.servers[isOfficial][target].client.readStorageObjects(
+          this.servers[isOfficial][target].session, {
+          object_ids: [{
+            collection: 'server_post',
+            key: 'Counter',
+            user_id: this.servers[isOfficial][target].session.user_id,
+          }]
+        });
+        let my_exact_counter = 0;
+        if (my_counter.objects.length) my_exact_counter = my_counter.objects[0].value['counter'];
+        this.post_counter[isOfficial][target][this.servers[isOfficial][target].session.user_id] = my_exact_counter;
+      } catch (e) {
+        console.log('내 서버 소식 카운터 불러오기 오류: ', e);
+      }
+      // 해당 서버에서 아는 사람의 게시물 불러오기 (채널에 포함된 사람들)
+      if (this.users[isOfficial][target]) {
+        let others = Object.keys(this.users[isOfficial][target]);
+        for (let k = 0, l = others.length; k < l; k++) {
+          try {
+            let other_counter = await this.servers[isOfficial][target].client.readStorageObjects(
+              this.servers[isOfficial][target].session, {
+              object_ids: [{
+                collection: 'server_post',
+                key: 'Counter',
+                user_id: others[k],
+              }]
+            });
+            let other_exact_counter = 0;
+            if (other_counter.objects.length) other_exact_counter = other_counter.objects[0].value['counter'];
+            this.post_counter[isOfficial][target][others[k]] = other_exact_counter;
+          } catch (e) {
+            console.log('다른 사람의 카운터 불러오기 오류: ', e);
+          }
+        }
+      }
+      if (last_counting != JSON.stringify(this.post_counter)) {
+        await this.indexed.saveTextFileToUserPath(JSON.stringify(this.post_counter), 'servers/post_counter.json');
+        this.has_new_post = true;
+      }
     }
   }
 }

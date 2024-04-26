@@ -43,9 +43,13 @@ export class CommunityPage implements OnInit {
     });
   }
 
+  /** 더 불러올 게시물이 있는지 여부 */
+  is_loadable = true;
   async ionViewDidEnter() {
     this.is_loadable = true;
-    await this.load_posts_counter();
+    await this.nakama.load_posts_counter();
+    this.nakama.has_new_post = false;
+    this.load_post_cycles();
     this.try_add_shortcut();
     // 스크롤이 내려가있다면 새로고침 처리(화면 변화 대응용)
     if (this.ContentDiv && this.ContentScroll)
@@ -83,87 +87,24 @@ export class CommunityPage implements OnInit {
     }, 100);
   }
 
-  /** 더 불러올 게시물이 있는지 여부 */
-  is_loadable = true;
-  /** 사용자별 카운터 필요  
-   * counter[isOfficial][target][user_id] = counter;
-   */
-  counter = {
-    local: { target: { me: 0 } },
-    official: {},
-    unofficial: {},
-  }
-
-  /** 게시물 갯수 불러오기 (첫 실행시) */
-  async load_posts_counter() {
-    // 카운터 정보 업데이트
-    let local_counter = Number(await this.indexed.loadTextFromUserPath('servers/local/target/posts/me/counter.txt')) || 0;
-    this.counter.local.target.me = local_counter;
-    let servers = this.nakama.get_all_server_info(true, true);
-    for (let i = 0, j = servers.length; i < j; i++) {
-      let isOfficial = servers[i].isOfficial;
-      let target = servers[i].target;
-      if (!this.counter[isOfficial][target])
-        this.counter[isOfficial][target] = {};
-      // 해당 서버의 내 게시물 불러오기
-      try {
-        let my_counter = await this.nakama.servers[isOfficial][target].client.readStorageObjects(
-          this.nakama.servers[isOfficial][target].session, {
-          object_ids: [{
-            collection: 'server_post',
-            key: 'Counter',
-            user_id: this.nakama.servers[isOfficial][target].session.user_id,
-          }]
-        });
-        let my_exact_counter = 0;
-        if (my_counter.objects.length) my_exact_counter = my_counter.objects[0].value['counter'];
-        this.counter[isOfficial][target][this.nakama.servers[isOfficial][target].session.user_id] = my_exact_counter;
-      } catch (e) {
-        console.log('내 서버 소식 카운터 불러오기 오류: ', e);
-      }
-      // 해당 서버에서 아는 사람의 게시물 불러오기 (채널에 포함된 사람들)
-      if (this.nakama.users[isOfficial][target]) {
-        let others = Object.keys(this.nakama.users[isOfficial][target]);
-        for (let k = 0, l = others.length; k < l; k++) {
-          try {
-            let other_counter = await this.nakama.servers[isOfficial][target].client.readStorageObjects(
-              this.nakama.servers[isOfficial][target].session, {
-              object_ids: [{
-                collection: 'server_post',
-                key: 'Counter',
-                user_id: others[k],
-              }]
-            });
-            let other_exact_counter = 0;
-            if (other_counter.objects.length) other_exact_counter = other_counter.objects[0].value['counter'];
-            this.counter[isOfficial][target][others[i]] = other_exact_counter;
-          } catch (e) {
-            console.log('다른 사람의 카운터 불러오기 오류: ', e);
-          }
-        }
-      }
-    }
-    this.load_post_cycles();
-  }
-
   /** 게시물 정보 하나씩 불러오기  
    * 게시물 카운터가 정보를 불러오지 못하면 다시 불러오기 시도, 카운터가 0 이하라면 더이상 재시도하지 않음
    */
   async load_posts() {
     let has_counter = false;
-    let isOfficial = Object.keys(this.counter);
+    let isOfficial = Object.keys(this.nakama.post_counter);
     for (let i = 0, j = isOfficial.length; i < j; i++) {
-      let target = Object.keys(this.counter[isOfficial[i]]);
+      let target = Object.keys(this.nakama.post_counter[isOfficial[i]]);
       for (let k = 0, l = target.length; k < l; k++) {
-        let user_id = Object.keys(this.counter[isOfficial[i]][target[k]]);
+        let user_id = Object.keys(this.nakama.post_counter[isOfficial[i]][target[k]]);
         for (let m = 0, n = user_id.length; m < n; m++) {
-          let counter = this.counter[isOfficial[i]][target[k]][user_id[m]];
+          let counter = this.nakama.post_counter[isOfficial[i]][target[k]][user_id[m]];
           if (isOfficial[i] == 'local') { // 내 로컬 게시물 불러오기
             await this.load_local_post_step_by_step(counter);
           } else { // 서버 게시물, 다른 사람의 게시물 불러오기
             await this.load_server_user_post_step_by_step(counter, isOfficial[i], target[k], user_id[m]);
           }
-          if (!has_counter && this.counter[isOfficial[i]][target[k]][user_id[m]] >= 0) has_counter = true;
+          if (!has_counter && this.nakama.post_counter[isOfficial[i]][target[k]][user_id[m]] >= 0) has_counter = true;
         }
       }
     }
@@ -175,16 +116,16 @@ export class CommunityPage implements OnInit {
   async load_local_post_step_by_step(index: number) {
     if (index < 0) return;
     let loaded = await this.nakama.load_local_post_with_id(`LocalPost_${index}`);
-    this.counter.local.target.me--;
-    if (!loaded) await this.load_local_post_step_by_step(this.counter.local.target.me);
+    this.nakama.post_counter.local.target.me--;
+    if (!loaded) await this.load_local_post_step_by_step(this.nakama.post_counter.local.target.me);
   }
 
   /** 서버별/사용자벌 게시물 정보 순차적으로 불러오기 */
   async load_server_user_post_step_by_step(index: number, isOfficial: string, target: string, user_id: string) {
     if (index < 0) return;
     let loaded = await this.load_server_post_with_id(`ServerPost_${index}`, isOfficial, target, user_id);
-    this.counter[isOfficial][target][user_id]--;
-    if (!loaded) await this.load_server_user_post_step_by_step(this.counter[isOfficial][target][user_id], isOfficial, target, user_id);
+    this.nakama.post_counter[isOfficial][target][user_id]--;
+    if (!loaded) await this.load_server_user_post_step_by_step(this.nakama.post_counter[isOfficial][target][user_id], isOfficial, target, user_id);
   }
 
   /** 아이디로 서버 포스트 불러오기 */
