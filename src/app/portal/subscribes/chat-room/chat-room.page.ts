@@ -1901,13 +1901,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }
           } else { // 로컬 채널인경우 첨부파일을 즉시 삭제
             if (FileURL) {
-              let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
-              try {
-                await this.indexed.removeFileFromUserPath(path);
-              } catch (e) { }
-              try {
-                await this.indexed.removeFileFromUserPath(`${path}_thumbnail.png`);
-              } catch (e) { }
+              if (msg.content.url) { // 링크된 파일인 경우
+                this.global.remove_file_from_storage(msg.content.url);
+              } else { // 파트 업로드 파일인 경우
+                let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+                try {
+                  await this.indexed.removeFileFromUserPath(path);
+                } catch (e) { }
+                try {
+                  await this.indexed.removeFileFromUserPath(`${path}_thumbnail.png`);
+                } catch (e) { }
+              }
             }
           }
           this.ViewableMessage.splice(index, 1);
