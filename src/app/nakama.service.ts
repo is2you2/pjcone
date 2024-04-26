@@ -2940,22 +2940,23 @@ export class NakamaService {
                 index = k;
                 break;
               }
-            this.alertCtrl.create({
-              header: this.posts[index]['title'],
-              message: this.posts[index]['content'],
-              buttons: [{
-                text: this.lang.text['ChatRoom']['EditChat'],
-                handler: () => {
-                  this.EditPost(this.posts[index]);
-                }
-              }, {
-                text: this.lang.text['TodoDetail']['remove'],
-                handler: () => {
-                  this.RemovePost(this.posts[index]);
-                },
-                cssClass: 'redfont',
-              }],
-            }).then(v => v.present());
+            if (this.posts[index]['creator_id'] == this.servers[this.posts[index]['server']['isOfficial']][this.posts[index]['server']['target']].session.user_id)
+              this.alertCtrl.create({
+                header: this.posts[index]['title'],
+                message: this.posts[index]['content'],
+                buttons: [{
+                  text: this.lang.text['ChatRoom']['EditChat'],
+                  handler: () => {
+                    this.EditPost(this.posts[index]);
+                  }
+                }, {
+                  text: this.lang.text['TodoDetail']['remove'],
+                  handler: () => {
+                    this.RemovePost(this.posts[index]);
+                  },
+                  cssClass: 'redfont',
+                }],
+              }).then(v => v.present());
             return false;
           }
       }
