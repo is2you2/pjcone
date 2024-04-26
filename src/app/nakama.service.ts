@@ -4133,10 +4133,13 @@ export class NakamaService {
   * @returns 정상적으로 불러와짐 여부 돌려줌
   */
   async load_local_post_with_id(id: string): Promise<boolean> {
-    if (this.posts_orig.local.target.me[id])
-      delete this.posts_orig.local.target.me[id];
     let v = await this.indexed.loadTextFromUserPath(`servers/local/target/posts/me/${id}/info.json`);
     try {
+      try {
+        if (this.posts_orig.local.target.me[id]) throw 'exist';
+      } catch (e) {
+        if (e == 'exist') throw '이미 있는 소식지';
+      }
       let json = JSON.parse(v);
       json['server'] = {
         name: this.lang.text['AddGroup']['UseLocalStorage'],

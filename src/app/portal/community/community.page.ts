@@ -72,7 +72,7 @@ export class CommunityPage implements OnInit {
       }
       if (this.is_loadable && (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 1))
         this.load_post_cycles();
-    }, 50);
+    }, 100);
   }
 
   try_add_shortcut() {
@@ -158,12 +158,12 @@ export class CommunityPage implements OnInit {
         let user_id = Object.keys(this.counter[isOfficial[i]][target[k]]);
         for (let m = 0, n = user_id.length; m < n; m++) {
           let counter = this.counter[isOfficial[i]][target[k]][user_id[m]];
-          if (!has_counter && counter > 0) has_counter = true;
           if (isOfficial[i] == 'local') { // 내 로컬 게시물 불러오기
             await this.load_local_post_step_by_step(counter);
           } else { // 서버 게시물, 다른 사람의 게시물 불러오기
             await this.load_server_user_post_step_by_step(counter, isOfficial[i], target[k], user_id[m]);
           }
+          if (!has_counter && this.counter[isOfficial[i]][target[k]][user_id[m]] >= 0) has_counter = true;
         }
       }
     }
@@ -190,6 +190,11 @@ export class CommunityPage implements OnInit {
   /** 아이디로 서버 포스트 불러오기 */
   async load_server_post_with_id(post_id: string, isOfficial: string, target: string, user_id: string): Promise<boolean> {
     try {
+      try {
+        if (this.nakama.posts_orig[isOfficial][target][user_id][post_id]) throw 'exist';
+      } catch (e) {
+        if (e == 'exist') throw '이미 있는 소식지';
+      }
       let info = {
         path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/info.json`,
         type: 'text/plain',
