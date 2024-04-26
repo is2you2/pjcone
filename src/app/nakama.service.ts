@@ -2940,7 +2940,8 @@ export class NakamaService {
                 index = k;
                 break;
               }
-            if (this.posts[index]['creator_id'] == this.servers[this.posts[index]['server']['isOfficial']][this.posts[index]['server']['target']].session.user_id)
+            if (this.posts[index]['server']['local'] ||
+              this.posts[index]['creator_id'] == this.servers[this.posts[index]['server']['isOfficial']][this.posts[index]['server']['target']].session.user_id)
               this.alertCtrl.create({
                 header: this.posts[index]['title'],
                 message: this.posts[index]['content'],
