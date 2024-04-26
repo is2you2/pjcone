@@ -10,6 +10,7 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { GroupServerPage } from '../settings/group-server/group-server.page';
 import { PostViewerPage } from './post-viewer/post-viewer.page';
+import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 
 @Component({
   selector: 'app-community',
@@ -232,12 +233,36 @@ export class CommunityPage implements OnInit {
   /** 작성자 정보 열기 */
   open_profile(info: any) {
     this.isOpenProfile = true;
-    if (info['creator_id'] == 'local') { // 로컬 정보인 경우
+    if (info['creator_id'] == 'me') { // 로컬 정보인 경우
       this.modalCtrl.create({
         component: GroupServerPage,
       }).then(v => v.present());
     } else { // 서버인 경우
-      console.log('서버 작성자 검토: ', info);
+      let isOfficial = info['server']['isOfficial'];
+      let target = info['server']['target'];
+      let targetUid = info['creator_id'];
+      if (targetUid == this.nakama.servers[isOfficial][target].session.user_id) {
+        this.modalCtrl.create({
+          component: GroupServerPage,
+          componentProps: {
+            isOfficial: isOfficial,
+            target: target,
+          }
+        }).then(v => v.present());
+      } else {
+        this.modalCtrl.create({
+          component: OthersProfilePage,
+          componentProps: {
+            info: { user: this.nakama.load_other_user(targetUid, isOfficial, target) },
+            group: {
+              server: {
+                isOfficial: isOfficial,
+                target: target,
+              },
+            },
+          }
+        }).then(v => v.present());
+      }
     }
     setTimeout(() => {
       this.isOpenProfile = false;

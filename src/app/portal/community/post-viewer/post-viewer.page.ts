@@ -7,6 +7,7 @@ import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-v
 import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { NakamaService } from 'src/app/nakama.service';
 import { GlobalActService } from 'src/app/global-act.service';
+import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 
 @Component({
   selector: 'app-post-viewer',
@@ -162,12 +163,36 @@ export class PostViewerPage implements OnInit {
         creator.style('font-size', '17px');
         creator.style('cursor', 'pointer');
         creator.elt.onclick = () => {
-          if (this.isOwner) {
+          if (this.PostInfo['creator_id'] == 'me') {
             this.modalCtrl.create({
               component: GroupServerPage,
             }).then(v => v.present());
           } else { // 서버 사용자 검토
-
+            let isOfficial = this.PostInfo['server']['isOfficial'];
+            let target = this.PostInfo['server']['target'];
+            let targetUid = this.PostInfo['creator_id'];
+            if (targetUid == this.nakama.servers[isOfficial][target].session.user_id) {
+              this.modalCtrl.create({
+                component: GroupServerPage,
+                componentProps: {
+                  isOfficial: isOfficial,
+                  target: target,
+                }
+              }).then(v => v.present());
+            } else {
+              this.modalCtrl.create({
+                component: OthersProfilePage,
+                componentProps: {
+                  info: { user: this.nakama.load_other_user(targetUid, isOfficial, target) },
+                  group: {
+                    server: {
+                      isOfficial: isOfficial,
+                      target: target,
+                    },
+                  },
+                }
+              }).then(v => v.present());
+            }
           }
         }
         creator.parent(creatorForm);
