@@ -249,7 +249,12 @@ export class PostViewerPage implements OnInit {
                         noEdit: true,
                       },
                       cssClass: 'fullscreen',
-                    }).then(v => v.present());
+                    }).then(v => {
+                      v.onDidDismiss().then(v => {
+                        if (v.data && v.data['share']) this.modalCtrl.dismiss();
+                      });
+                      v.present();
+                    });
                   }
                   img.parent(contentDiv);
                 }
