@@ -4134,11 +4134,11 @@ export class NakamaService {
   /** 아이디 기반 게시물 불러오기  
   * @returns 정상적으로 불러와짐 여부 돌려줌
   */
-  async load_local_post_with_id(id: string): Promise<boolean> {
-    let v = await this.indexed.loadTextFromUserPath(`servers/local/target/posts/me/${id}/info.json`);
+  async load_local_post_with_id(id: string, isOfficial: string, target: string, user_id: string): Promise<boolean> {
+    let v = await this.indexed.loadTextFromUserPath(`servers/${isOfficial}/${target}/posts/${user_id}/${id}/info.json`);
     try {
       try {
-        if (this.posts_orig.local.target.me[id]) throw 'exist';
+        if (this.posts_orig[isOfficial][target][user_id][id]) throw 'exist';
       } catch (e) {
         if (e == 'exist') throw '이미 있는 소식지';
       }
@@ -4162,7 +4162,7 @@ export class NakamaService {
           }, 100);
         }
       }
-      this.posts_orig.local.target.me[id] = json;
+      this.posts_orig[isOfficial][target][user_id][id] = json;
       return true;
     } catch (e) {
       return false;

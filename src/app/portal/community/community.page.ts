@@ -102,11 +102,7 @@ export class CommunityPage implements OnInit {
         let user_id = Object.keys(this.nakama.post_counter[isOfficial[i]][target[k]]);
         for (let m = 0, n = user_id.length; m < n; m++) {
           let counter = this.nakama.post_counter[isOfficial[i]][target[k]][user_id[m]];
-          if (isOfficial[i] == 'local') { // 내 로컬 게시물 불러오기
-            await this.load_local_post_step_by_step(counter);
-          } else { // 서버 게시물, 다른 사람의 게시물 불러오기
-            await this.load_server_user_post_step_by_step(counter, isOfficial[i], target[k], user_id[m]);
-          }
+          await this.load_post_step_by_step(counter, isOfficial[i], target[k], user_id[m]);
           if (!has_counter && this.nakama.post_counter[isOfficial[i]][target[k]][user_id[m]] >= 0) has_counter = true;
         }
       }
@@ -116,19 +112,14 @@ export class CommunityPage implements OnInit {
   }
 
   /** 로컬 정보를 하나씩 업데이트 */
-  async load_local_post_step_by_step(index: number) {
+  async load_post_step_by_step(index: number, isOfficial: string, target: string, user_id: string) {
     if (index < 0) return;
-    let loaded = await this.nakama.load_local_post_with_id(`LocalPost_${index}`);
-    this.nakama.post_counter.local.target.me--;
-    if (!loaded) await this.load_local_post_step_by_step(this.nakama.post_counter.local.target.me);
-  }
-
-  /** 서버별/사용자벌 게시물 정보 순차적으로 불러오기 */
-  async load_server_user_post_step_by_step(index: number, isOfficial: string, target: string, user_id: string) {
-    if (index < 0) return;
-    let loaded = await this.load_server_post_with_id(`ServerPost_${index}`, isOfficial, target, user_id);
+    let loaded = await this.nakama.load_local_post_with_id(`LocalPost_${index}`, isOfficial, target, user_id);
+    if (!loaded) try { // 로컬에서 불러오기를 실패했다면 서버에서 불러오기를 시도
+      loaded = await this.load_server_post_with_id(`ServerPost_${index}`, isOfficial, target, user_id);
+    } catch (e) { }
     this.nakama.post_counter[isOfficial][target][user_id]--;
-    if (!loaded) await this.load_server_user_post_step_by_step(this.nakama.post_counter[isOfficial][target][user_id], isOfficial, target, user_id);
+    if (!loaded) await this.load_post_step_by_step(this.nakama.post_counter[isOfficial][target][user_id], isOfficial, target, user_id);
   }
 
   /** 아이디로 서버 포스트 불러오기 */
