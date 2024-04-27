@@ -896,11 +896,11 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.global.p5key['KeyShortCut']['BottomTab'] = this.BottomTabShortcut;
     this.indexed.GetFileListFromDB('tmp_files/post').then(list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     // 데이터 저장이 아니라면 기존 데이터를 다시 불러와서 게시물 정보 원복시키기
-    if (!this.isApplyPostData) {
-      if (this.nakama.posts_orig.local.target.me[this.userInput.id])
-        delete this.nakama.posts_orig.local.target.me[this.userInput.id];
-      this.nakama.load_local_post_with_id(this.userInput.id);
+    if (!this.isApplyPostData) try {
+      if (this.nakama.posts_orig[this.isOfficial][this.target][this.userInput.creator_id][this.userInput.id])
+        delete this.nakama.posts_orig[this.isOfficial][this.target][this.userInput.creator_id][this.userInput.id];
+      this.nakama.load_local_post_with_id(this.userInput.id, this.userInput.server.isOfficial, this.userInput.server.target, this.userInput.creator_id);
       this.nakama.rearrange_posts();
-    }
+    } catch (e) { }
   }
 }
