@@ -364,7 +364,7 @@ export class GroupServerPage implements OnInit {
 
   /** 사용자가 개발 테스트 서버를 사용하기를 원함 */
   async add_dev_test_server() {
-    this.CanAddTestServer = !(await this.nakama.WatchAdsAndGetDevServerInfo(true));
+    this.CanAddTestServer = !(await this.nakama.WatchAdsAndGetDevServerInfo());
     this.servers = this.nakama.get_all_server_info(true);
   }
 

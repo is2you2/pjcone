@@ -4004,16 +4004,6 @@ export class NakamaService {
         });
       }
     }
-    if (init['voidDraw']) {
-      for (let i = 0, j = init['voidDraw'].length; i < j; i++) {
-        let sep_array = init['voidDraw'][i].split(']');
-        let array = sep_array[0].split('[')[1];
-        json.push({
-          type: 'voidDraw',
-          addresses: array.split(','),
-        });
-      }
-    }
     if (NeedReturn) return json;
     else await this.act_from_QRInfo(json);
   }
@@ -4050,7 +4040,7 @@ export class NakamaService {
               key: decodeURIComponent(json[i].value.key),
             };
             await this.add_group_server(new_server_info);
-            this.init_session(new_server_info);
+            await this.init_session(new_server_info);
           }
           break;
         case 'group_dedi': // 그룹사설 채팅 접근
@@ -4068,27 +4058,30 @@ export class NakamaService {
           // 시작과 동시에 진입할 때 서버 연결 시간을 고려함
           if (this.AfterLoginActDone)
             await this.try_add_group(json[i]);
-          else this.AfterLoginAct.push(async () => await this.try_add_group(json[i]));
+          else this.AfterLoginAct.push(async () => {
+            await this.AutoConnectServer();
+            await this.try_add_group(json[i])
+          });
           break;
         case 'open_prv_channel': // 1:1 대화 열기 (폰에서 넘어가기 보조용)
           if (this.AfterLoginActDone) {
             let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           } else this.AfterLoginAct.push(async () => {
+            await this.AutoConnectServer();
             let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           });
-          await this.AutoConnectServer();
           break;
         case 'open_channel': // 그룹 대화 열기 (폰에서 넘어가기 보조용)
           if (this.AfterLoginActDone) {
             let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           } else this.AfterLoginAct.push(async () => {
+            await this.AutoConnectServer();
             let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           });
-          await this.AutoConnectServer();
           break;
         case 'rtcserver':
           let ServerInfos = [];
@@ -4100,25 +4093,6 @@ export class NakamaService {
           } catch (e) { }
           ServerInfos.push(json[i].value);
           await this.indexed.saveTextFileToUserPath(JSON.stringify(ServerInfos), 'servers/webrtc_server.json');
-          break;
-        case 'voidDraw':
-          if (this.AfterLoginActDone) {
-            this.modalCtrl.create({
-              component: VoidDrawPage,
-              componentProps: {
-                addresses: json[i]['addresses'],
-              },
-              cssClass: 'fullscreen',
-            }).then(v => v.present());
-          } else this.AfterLoginAct.push(async () => {
-            this.modalCtrl.create({
-              component: VoidDrawPage,
-              componentProps: {
-                addresses: json[i]['addresses'],
-              },
-              cssClass: 'fullscreen',
-            }).then(v => v.present());
-          });
           break;
         default: // 동작 미정 알림(debug)
           throw "지정된 틀 아님";
