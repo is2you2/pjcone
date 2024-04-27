@@ -3853,7 +3853,7 @@ export class NakamaService {
             await new Promise(async (done, err) => {
               for (let i = 0, j = info_json['partsize']; i < j; i++)
                 try {
-                  let part = await this.indexed.GetFileInfoFromDB(`${info_json.path}_part/${i}.part`);
+                  let part = await this.indexed.GetFileInfoFromDB(`${info.path}_part/${i}.part`);
                   ByteSize += part.contents.length;
                   GatheringInt8Array[i] = part;
                 } catch (e) {
@@ -3867,10 +3867,10 @@ export class NakamaService {
                   SaveForm.set(GatheringInt8Array[i].contents, offset);
                   offset += GatheringInt8Array[i].contents.length;
                 }
-                await this.indexed.saveInt8ArrayToUserPath(SaveForm, info_json.path);
+                await this.indexed.saveInt8ArrayToUserPath(SaveForm, info.path);
                 for (let i = 0, j = info_json['partsize']; i < j; i++)
-                  this.indexed.removeFileFromUserPath(`${info_json.path}_part/${i}.part`)
-                await this.indexed.removeFileFromUserPath(`${info_json.path}_part`)
+                  this.indexed.removeFileFromUserPath(`${info.path}_part/${i}.part`)
+                await this.indexed.removeFileFromUserPath(`${info.path}_part`)
               } catch (e) {
                 console.log('파일 최종 저장하기 오류: ', e);
                 err();
@@ -3878,10 +3878,10 @@ export class NakamaService {
               done(undefined);
             });
             this.noti.ClearNoti(8);
-            this.indexed.removeFileFromUserPath(`${info_json.path}.history`);
+            this.indexed.removeFileFromUserPath(`${info.path}.history`);
           }
         }
-        return await this.indexed.loadBlobFromUserPath(info_json.path, info_json.type || '');
+        return await this.indexed.loadBlobFromUserPath(info.path, info_json.type || '');
       } catch (e) {
         return null;
       }
