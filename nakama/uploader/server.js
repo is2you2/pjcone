@@ -55,8 +55,10 @@ app.use('/remove_key/', (req, res) => {
     let target_key = `${decodeURIComponent(req.url).substring(1)}`;
     fs.readdir('./cdn', (err, files) => {
         files.forEach(path => {
-            if (path.indexOf(target_key) >= 0)
+            if (path.indexOf(target_key) >= 0) {
                 fs.unlinkSync(`./cdn/${path}`);
+                console.log(`Remove file: ./cdn${decodeURIComponent(req.url)}`);
+            }
         });
     });
     res.end();

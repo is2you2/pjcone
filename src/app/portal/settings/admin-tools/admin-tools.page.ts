@@ -275,7 +275,7 @@ export class AdminToolsPage implements OnInit {
     });
   }
 
-  ForceBreakupGroupAct(group: any) {
+  async ForceBreakupGroupAct(group: any) {
     this.nakama.servers[this.isOfficial][this.target].client.rpc(
       this.nakama.servers[this.isOfficial][this.target].session,
       'force_remove_group', { group_id: group.id })
@@ -291,6 +291,14 @@ export class AdminToolsPage implements OnInit {
           text: `${this.lang.text['AdminTools']['ForceBreakedFailed']}: ${e.statusText}`,
         });
       });
+    this.nakama.remove_channel_files(this.isOfficial, this.target, this.nakama.groups[this.isOfficial][this.target][group.id]['channel_id']);
+    let server_info = this.nakama.servers[this.isOfficial][this.target].info;
+    try { // cdn 파일들 일괄 삭제처리
+      let target_address = `${server_info.useSSL ? 'https' : 'http'}://${server_info.address}`;
+      await this.global.remove_files_from_storage_with_key(target_address, group.id);
+    } catch (e) {
+      console.log('파일 일괄 삭제 요청 실패: ', e);
+    }
   }
 
   change_user_list_page(forward: number) {

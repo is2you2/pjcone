@@ -1811,7 +1811,6 @@ export class NakamaService {
                       } catch (e) {
                         console.log('그룹 이미지 삭제 오류: ', e);
                       }
-                      this.remove_channel_files(isOfficial, target, this.channels[index].id, true);
                       this.save_groups_with_less_info();
                       let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${this.channels[index].id}`);
                       for (let i = 0, j = list.length; i < j; i++) {
@@ -2048,11 +2047,11 @@ export class NakamaService {
   }
 
   /** 그룹 리스트 로컬/리모트에서 삭제하기 (방장일 경우)  
-   * 그룹 이미지 삭제처리
+   * 그룹 대표 이미지 삭제처리
    * @param [_remove_history=false] 로컬 파일을 남겨두는지 여부
    */
   async remove_group_list(info: any, _is_official: string, _target: string, _remove_history = false) {
-    try { // 내가 방장이면 해산처리 우선, 이 외의 경우 기록 삭제
+    try { // 내가 방장이면 해산처리 우선, 이후에는 방장 여부와 무관하게 기록 삭제
       let is_creator = info['creator_id'] == this.servers[_is_official][_target].session.user_id;
       if (this.servers[_is_official][_target] && is_creator) {
         try {
@@ -2085,7 +2084,7 @@ export class NakamaService {
     } catch (e) { }
   }
 
-  /** 그룹 내에서 사용했던 서버 파일들 전부 삭제  
+  /** 그룹 내에서 사용했던 서버 파일들 전부 삭제 요청 (nakama-postgre)
    * 채널 관리자라면 모든 파일 삭제  
    * 구성원이라면 자신의 파일만 삭제하기
    */

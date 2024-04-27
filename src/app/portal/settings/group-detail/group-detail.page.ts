@@ -234,6 +234,7 @@ export class GroupDetailPage implements OnInit {
     }
   }
 
+  /** 그룹 삭제 (방장 권한) */
   remove_group() {
     this.need_edit = false;
     try {
@@ -361,6 +362,7 @@ export class GroupDetailPage implements OnInit {
   /** 그룹 떠나기 */
   leave_group() {
     this.need_edit = false;
+    // 여기서의 status는 나의 상태, 가입 여부 및 방장 여부를 뜻한다
     if (this.info['status'] == 'online')
       this.after_leave_group(() => {
         this.leave_channel();
@@ -377,9 +379,17 @@ export class GroupDetailPage implements OnInit {
   after_leave_group(_CallBack = () => console.warn('after_leave_group_announce Func Null')) {
     this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.leaveGroup(
       this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, this.info['id'],
-    ).then(v => {
+    ).then(async v => {
       if (v) _CallBack();
       this.nakama.remove_channel_files(this.info['server']['isOfficial'], this.info['server']['target'], this.info['channel_id']);
+      try { // cdn 파일들 일괄 삭제처리
+        let server_info = this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].info;
+        let target_address = `${server_info.useSSL ? 'https' : 'http'}://${server_info.address}`;
+        await this.global.remove_files_from_storage_with_key(target_address,
+          `${this.info['id']}_${this.nakama.servers[server_info.isOfficial][server_info.target].session.user_id}`);
+      } catch (e) {
+        console.log('파일 일괄 삭제 요청 실패: ', e);
+      }
     });
   }
 
