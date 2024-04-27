@@ -375,8 +375,23 @@ export class PostViewerPage implements OnInit {
                   break;
               }
             } else { // 일반 문자열
-              let line = p.createDiv(content[i] + '&nbsp');
+              let line = p.createDiv();
               line.parent(contentDiv);
+              // 문자열을 띄어쓰기 단위로 나누기
+              let sep = content[i].split(' ');
+              for (let k = 0, l = sep.length; k < l; k++) {
+                // 웹 주소라면 하이퍼링크 처리
+                if (sep[k].indexOf('http:') == 0 || sep[k].indexOf('https:') == 0) {
+                  let link = p.createA(sep[k], sep[k]);
+                  link.attribute('target', '_system');
+                  link.parent(line);
+                  let word = p.createSpan('&nbsp');
+                  word.parent(line);
+                } else {
+                  let word = p.createSpan(sep[k] + '&nbsp');
+                  word.parent(line);
+                }
+              }
             }
           }
         }
