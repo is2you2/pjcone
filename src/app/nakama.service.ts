@@ -3792,6 +3792,7 @@ export class NakamaService {
   }
 
   /** 로컬에 있는 파일을 불러오기, 로컬에 없다면 원격에서 요청하여 생성 후 불러오기
+   * @param info { path, type }
    * @returns 파일의 blob
    */
   async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid = '', _key_force = '', show_noti = true) {
@@ -3815,11 +3816,11 @@ export class NakamaService {
               this.servers[_is_official][_target].session, {
               object_ids: [{
                 collection: _collection,
-                key: _key_force ? `${_key_force}_${i}` : (info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`),
+                key: _key_force ? `${_key_force}_${i}` : (info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`),
                 user_id: _userid || this.servers[_is_official][_target].session.user_id,
               }],
             });
-            this.global.save_file_part(info_json.path, i, part.objects[0].value['data']);
+            this.global.save_file_part(info.path, i, part.objects[0].value['data']);
           } catch (e) {
             console.log('ReadStorage_From_channel: ', e);
             isSuccessful = false;

@@ -805,7 +805,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     if (this.userInput.mainImage) {
       loading.message = this.lang.text['AddPost']['SyncMainImage'];
       try {
-        this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/${this.userInput.mainImage.filename}`;
+        this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/mainImage.png`;
         await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
       } catch (e) {
         this.p5toast.show({
@@ -814,7 +814,14 @@ export class AddPostPage implements OnInit, OnDestroy {
         console.log(e);
       }
       if (!is_local) { // 원격인 경우 서버에도 저장하기
+        let blob = this.userInput.mainImage.blob;
         await this.nakama.sync_save_file(this.userInput.mainImage, isOfficial, target, 'server_post', `${this.userInput.id}_mainImage`);
+        this.userInput.mainImage.blob = blob;
+        let FileURL = URL.createObjectURL(blob);
+        this.userInput.mainImage.thumbnail = FileURL;
+        setTimeout(() => {
+          URL.revokeObjectURL(blob);
+        }, 100);
       }
     }
     // 첨부파일들 전부 저장
