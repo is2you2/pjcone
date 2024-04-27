@@ -50,6 +50,18 @@ app.use('/remove/', (req, res) => {
     res.end();
 });
 
+/** 키워드가 포함된 모든 파일 삭제 */
+app.use('/remove_key/', (req, res) => {
+    let target_key = `${decodeURIComponent(req.url).substring(1)}`;
+    fs.readdir('./cdn', (err, files) => {
+        files.forEach(path => {
+            if (path.indexOf(target_key) >= 0)
+                fs.unlinkSync(`./cdn/${path}`);
+        });
+    });
+    res.end();
+});
+
 /** Rendering upload form with simple html */
 function displayForm(req, res) {
     res.writeHead(200, {

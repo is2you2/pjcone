@@ -742,6 +742,29 @@ export class GlobalActService {
     clearTimeout(id);
   }
 
+  /** 해당 키워드가 포함된 모든 파일 삭제 요청 (cdn 기반 파일)  
+   * 채널 삭제 또는 계정 삭제 등 일괄 삭제 처리가 필요할 때 사용됩니다
+   * @param target_address 해당 서버 주소 (protocol://address 까지) (FFS는 포함되지 않음)
+   * @param target_id 인덱스 키 값
+   */
+  async remove_files_from_storage_with_key(target_address: string, target_id: string) {
+    let lastIndex = target_address.lastIndexOf(':');
+    if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
+    let headers = new Headers();
+    headers.append('Access-Control-Allow-Origin', '*');
+    headers.append('Access-Control-Allow-Method', '*');
+    headers.append('Access-Control-Allow-Headers', '*');
+    const cont = new AbortController();
+    const id = setTimeout(() => {
+      this.p5toast.show({
+        text: this.lang.text['GlobalAct']['UploadFailed'],
+      });
+      cont.abort();
+    }, 6000);
+    await fetch(`${target_address}:9001/remove_key/${target_id}`, { method: "POST", headers: headers, signal: cont.signal });
+    clearTimeout(id);
+  }
+
   /** 사용자 지정 서버에 업로드 시도 */
   async try_upload_to_user_custom_fs(file: any, user_id: string, formData?: FormData, loading?: HTMLIonLoadingElement) {
     let innerLoading: HTMLIonLoadingElement;

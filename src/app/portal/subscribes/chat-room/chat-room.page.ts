@@ -1583,7 +1583,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         let address = this.nakama.servers[this.isOfficial][this.target].info.address;
         let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
         let savedAddress = await this.global.upload_file_to_storage(this.userInput.file,
-          this.nakama.servers[this.isOfficial][this.target].session.user_id,
+          `${this.info['group_id']}_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`,
           protocol, address, this.useFirstCustomCDN);
         isURL = Boolean(savedAddress);
         if (!isURL) throw '링크 만들기 실패';

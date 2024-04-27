@@ -2055,6 +2055,12 @@ export class NakamaService {
     try { // 내가 방장이면 해산처리 우선, 이 외의 경우 기록 삭제
       let is_creator = info['creator_id'] == this.servers[_is_official][_target].session.user_id;
       if (this.servers[_is_official][_target] && is_creator) {
+        try {
+          let target_address = `${info.server.useSSL ? 'https' : 'http'}://${info.server.address}`;
+          await this.global.remove_files_from_storage_with_key(target_address, info['id']);
+        } catch (e) {
+          console.log('파일 일괄 삭제 요청 실패: ', e);
+        }
         let v = await this.servers[_is_official][_target].client.deleteGroup(
           this.servers[_is_official][_target].session, info['id']);
         if (!v) console.log('그룹 삭제 오류 검토 필요');
