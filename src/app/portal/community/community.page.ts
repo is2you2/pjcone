@@ -51,7 +51,7 @@ export class CommunityPage implements OnInit {
     this.is_loadable = true;
     await this.nakama.load_posts_counter();
     this.nakama.has_new_post = false;
-    this.load_post_cycles();
+    await this.load_post_cycles();
     this.is_auto_load_end = true;
     this.try_add_shortcut();
     // 스크롤이 내려가있다면 새로고침 처리(화면 변화 대응용)
