@@ -388,8 +388,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           if (this.userInput.remote) {
             let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
             loading.present();
-            blob = await this.nakama.sync_load_file(this.userInput.attach[i],
-              this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id);
+            blob = (await this.nakama.sync_load_file(this.userInput.attach[i],
+              this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id)).value;
             loading.dismiss();
           } else if (this.userInput.attach[i].viewer == 'image' || this.userInput.attach[i].viewer == 'text')
             blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);

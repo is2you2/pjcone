@@ -115,7 +115,7 @@ export class CommunityPage implements OnInit {
   async load_post_step_by_step(index: number, isOfficial: string, target: string, user_id: string) {
     if (index < 0) return;
     let loaded = await this.nakama.load_local_post_with_id(`LocalPost_${index}`, isOfficial, target, user_id);
-    if (!loaded) try { // 로컬에서 불러오기를 실패했다면 서버에서 불러오기를 시도
+    if (!loaded && user_id != 'me') try { // 로컬에서 불러오기를 실패했다면 서버에서 불러오기를 시도 (서버 게시물만)
       loaded = await this.load_server_post_with_id(`ServerPost_${index}`, isOfficial, target, user_id);
     } catch (e) { }
     this.nakama.post_counter[isOfficial][target][user_id]--;
@@ -125,17 +125,12 @@ export class CommunityPage implements OnInit {
   /** 아이디로 서버 포스트 불러오기 */
   async load_server_post_with_id(post_id: string, isOfficial: string, target: string, user_id: string): Promise<boolean> {
     try {
-      try {
-        if (this.nakama.posts_orig[isOfficial][target][user_id][post_id]) throw 'exist';
-      } catch (e) {
-        if (e == 'exist') throw '이미 있는 소식지';
-      }
       let info = {
         path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/info.json`,
         type: 'text/plain',
       }
       let res = await this.nakama.sync_load_file(info, isOfficial, target, 'server_post', user_id, post_id, false);
-      let text = await res.text();
+      let text = await res.value.text();
       let json = JSON.parse(text);
       json['server'] = {
         name: this.nakama.servers[isOfficial][target].info.name,
@@ -150,7 +145,7 @@ export class CommunityPage implements OnInit {
             path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/mainImage.png`,
             type: 'image/png',
           }
-          let blob = await this.nakama.sync_load_file(info, isOfficial, target, 'server_post', user_id, `${post_id}_mainImage`, false);
+          let blob = (await this.nakama.sync_load_file(info, isOfficial, target, 'server_post', user_id, `${post_id}_mainImage`, false)).value;
           json['mainImage']['blob'] = blob;
           let FileURL = URL.createObjectURL(blob);
           json['mainImage']['thumbnail'] = FileURL;
@@ -164,8 +159,28 @@ export class CommunityPage implements OnInit {
       if (!this.nakama.posts_orig[isOfficial][target][user_id])
         this.nakama.posts_orig[isOfficial][target][user_id] = {};
       this.nakama.posts_orig[isOfficial][target][user_id][post_id] = json;
+      // 로컬에서 불러왔다면 원격에 남은 정보인지 검토
+      if (res.from == 'local') {
+        try {
+          let RemoteExist = await this.nakama.servers[isOfficial][target].client.readStorageObjects(
+            this.nakama.servers[isOfficial][target].session, {
+            object_ids: [{
+              collection: 'server_post',
+              key: post_id,
+              user_id: user_id,
+            }],
+          });
+          if (!RemoteExist.objects.length)
+            throw 'Not RemoteExist';
+        } catch (e) {
+          if (e == 'Not RemoteExist') throw 'RemoveSelf';
+        }
+      }
       return true;
     } catch (e) {
+      // 서버에서 삭제된 게시물이라면 로컬에서도 자료를 삭제
+      if (e == 'RemoveSelf')
+        this.nakama.RemovePost(this.nakama.posts_orig[isOfficial][target][user_id][post_id], true);
       return false;
     }
   }

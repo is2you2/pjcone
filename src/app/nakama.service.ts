@@ -3793,11 +3793,14 @@ export class NakamaService {
 
   /** 로컬에 있는 파일을 불러오기, 로컬에 없다면 원격에서 요청하여 생성 후 불러오기
    * @param info { path, type }
-   * @returns 파일의 blob
+   * @returns value { from: 검토 위치, value: Blob }
    */
   async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid = '', _key_force = '', show_noti = true) {
     try {
-      return await this.indexed.loadBlobFromUserPath(info.path, info.type || '');
+      return {
+        from: 'local',
+        value: await this.indexed.loadBlobFromUserPath(info.path, info.type || '')
+      };
     } catch (e) {
       try {
         let file_info = await this.servers[_is_official][_target].client.readStorageObjects(
@@ -3881,9 +3884,15 @@ export class NakamaService {
             this.indexed.removeFileFromUserPath(`${info.path}.history`);
           }
         }
-        return await this.indexed.loadBlobFromUserPath(info.path, info_json.type || '');
+        return {
+          from: 'remote',
+          value: await this.indexed.loadBlobFromUserPath(info.path, info_json.type || '')
+        };
       } catch (e) {
-        return null;
+        return {
+          from: 'failed',
+          value: null
+        };
       }
     }
   }

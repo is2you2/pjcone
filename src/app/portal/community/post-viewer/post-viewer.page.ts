@@ -207,7 +207,7 @@ export class PostViewerPage implements OnInit {
             let blob = await this.nakama.sync_load_file(
               this.PostInfo['attachments'][i], this.PostInfo['server']['isOfficial'], this.PostInfo['server']['target'], 'server_post',
               this.PostInfo['creator_id'], `${this.PostInfo['id']}_attach_${i}`, false);
-            this.PostInfo['attachments'][i]['blob'] = blob;
+            this.PostInfo['attachments'][i]['blob'] = blob.value;
           } catch (e) { }
         }
         // 내용
