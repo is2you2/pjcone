@@ -813,16 +813,15 @@ export class AddPostPage implements OnInit, OnDestroy {
         });
         console.log(e);
       }
-      if (!is_local) { // 원격인 경우 서버에도 저장하기
-        let blob = this.userInput.mainImage.blob;
+      let blob = this.userInput.mainImage.blob;
+      if (!is_local) // 원격인 경우 서버에도 저장하기
         await this.nakama.sync_save_file(this.userInput.mainImage, isOfficial, target, 'server_post', `${this.userInput.id}_mainImage`);
-        this.userInput.mainImage.blob = blob;
-        let FileURL = URL.createObjectURL(blob);
-        this.userInput.mainImage.thumbnail = FileURL;
-        setTimeout(() => {
-          URL.revokeObjectURL(blob);
-        }, 100);
-      }
+      this.userInput.mainImage.blob = blob;
+      let FileURL = URL.createObjectURL(blob);
+      this.userInput.mainImage.thumbnail = FileURL;
+      setTimeout(() => {
+        URL.revokeObjectURL(blob);
+      }, 100);
     }
     // 첨부파일들 전부 저장
     let attach_len = this.userInput.attachments.length;
