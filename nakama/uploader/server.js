@@ -45,8 +45,8 @@ app.use(multer({
 
 /** 파일 삭제 요청 */
 app.use('/remove/', (req, res) => {
-    fs.unlinkSync(`./cdn${req.url}`);
-    console.log(`Remove file: ./cdn${req.url}`);
+    fs.unlinkSync(`./cdn${decodeURIComponent(req.url)}`);
+    console.log(`Remove file: ./cdn${decodeURIComponent(req.url)}`);
     res.end();
 });
 
