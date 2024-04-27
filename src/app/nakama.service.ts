@@ -399,8 +399,7 @@ export class NakamaService {
 
   /** 광고 시청 후 개발자 테스트 서버에 참여하기 */
   async WatchAdsAndGetDevServerInfo(force = false) {
-    let RegisteredServer = this.get_all_server_info(true);
-    if ((!this.isRewardAdsUsed && !RegisteredServer.length) || force) {
+    if ((!this.isRewardAdsUsed) || force) {
       const options: RewardAdOptions = {
         adId: 'ca-app-pub-6577630868247944/4325703911',
       };
@@ -4109,9 +4108,7 @@ export class NakamaService {
   }
   /** 등록된 서버가 없다면 자동으로 테스트 서버에 연결 시도 */
   async AutoConnectServer() {
-    let servers = this.get_all_server_info();
-    if (!servers.length)
-      await this.WatchAdsAndGetDevServerInfo(true);
+    await this.WatchAdsAndGetDevServerInfo();
   }
 
   /** 아이디 기반 게시물 불러오기  
