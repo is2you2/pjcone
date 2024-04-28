@@ -477,9 +477,12 @@ export class AddPostPage implements OnInit, OnDestroy {
     }
   }
 
-  async voidDraw_fileAct_callback(v: any, related_creators?: any) {
+  async voidDraw_fileAct_callback(v: any, related_creators?: any, index?: number) {
+    let file = {} as PostAttachment;
+    if (index !== undefined)
+      this.userInput.attachments[index] = file;
+    else this.userInput.attachments.push(file);
     try {
-      let file = {} as PostAttachment;
       file.filename = v.data['name'];
       file.file_ext = 'png';
       file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
@@ -512,7 +515,6 @@ export class AddPostPage implements OnInit, OnDestroy {
       await this.indexed.saveBase64ToUserPath(v.data['img'], file.path, (raw) => {
         file.blob = new Blob([raw], { type: file['type'] });
       });
-      this.userInput.attachments.push(file);
       this.MakeAttachHaveContextMenu();
     } catch (e) {
       console.error('godot-이미지 편집 사용 불가: ', e);
@@ -642,7 +644,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   }
 
   lock_modal_open = false;
-  open_viewer(info: PostAttachment) {
+  open_viewer(info: PostAttachment, index: number) {
     let attaches = [];
     for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
       attaches.push({ content: this.userInput.attachments[i] });
@@ -693,7 +695,7 @@ export class AddPostPage implements OnInit, OnDestroy {
                     this.AddShortcut();
                   });
                   v.onWillDismiss().then(async v => {
-                    if (v.data) await this.voidDraw_fileAct_callback(v, related_creators);
+                    if (v.data) await this.voidDraw_fileAct_callback(v, related_creators, index);
                   });
                   delete this.global.p5key['KeyShortCut']['Escape'];
                   v.present();
