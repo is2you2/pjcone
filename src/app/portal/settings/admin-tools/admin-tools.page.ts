@@ -390,9 +390,16 @@ export class AdminToolsPage implements OnInit {
 
   async RemoveUser(user: any) {
     try {
-      await this.nakama.servers[this.isOfficial][this.target].client.rpc(
+      let server_info = this.nakama.servers[this.isOfficial][this.target].info;
+      let target_address = `${server_info.useSSL ? 'https' : 'http'}://${server_info.address}`;
+      this.nakama.servers[this.isOfficial][this.target].client.rpc(
         this.nakama.servers[this.isOfficial][this.target].session,
-        'remove_account_fn', { user_id: user.user_id || user.id });
+        'remove_account_fn', { user_id: user.user_id || user.id }).catch(e => { });
+      try { // cdn 파일들 일괄 삭제처리
+        await this.global.remove_files_from_storage_with_key(target_address, user.user_id);
+      } catch (e) {
+        console.log('파일 일괄 삭제 요청 실패: ', e);
+      }
       this.p5toast.show({
         text: `${this.lang.text['AdminTools']['UserLeaved']}: ${user.display_name || this.lang.text['Profile']['noname_user']}`,
       })

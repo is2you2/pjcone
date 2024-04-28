@@ -2253,11 +2253,18 @@ export class NakamaService {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
     loading.message = this.lang.text['Nakama']['RemovingAccount'];
-    try {
+    let server_info = this.servers[_is_official][_target].info;
+    try { // 나카마 서버에서 계정 삭제
+      let my_uid = this.servers[_is_official][_target].session.user_id;
+      let target_address = `${server_info.useSSL ? 'https' : 'http'}://${server_info.address}`;
       this.servers[_is_official][_target].client.rpc(
         this.servers[_is_official][_target].session,
-        'remove_account_fn', { user_id: this.servers[_is_official][_target].session.user_id })
-        .catch(_e => { });
+        'remove_account_fn', { user_id: my_uid }).catch(e => { }); // 계정 삭제시 오래 걸리므로 무시처리
+      try { // cdn 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
+        await this.global.remove_files_from_storage_with_key(target_address, my_uid);
+      } catch (e) {
+        console.log('파일 일괄 삭제 요청 실패: ', e);
+      }
     } catch (e) { }
     // 로그인 상태일 경우 로그오프처리
     loading.message = this.lang.text['Nakama']['LogoutAccount'];
