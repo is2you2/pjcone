@@ -275,3 +275,18 @@
     overflow: hidden;
     background-color: var(--chatroom-input-background);
 }
+
+// 확장메뉴
+.expanded {
+    height: 240px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    text-align: center;
+    background-color: var(--chatroom-input-background)
+}
+
+ion-button {
+    --padding-start: 12px;
+    --padding-end: 12px;
+}

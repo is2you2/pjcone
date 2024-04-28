@@ -197,17 +197,6 @@ button.alert-button.redfont {
     color: red;
 }
 
-///// 채널 채팅 및 게시물
-// 확장메뉴
-.expanded {
-    height: 240px;
-    overflow-x: hidden;
-    overflow-y: auto;
-    scroll-behavior: smooth;
-    text-align: center;
-    background-color: var(--chatroom-input-background)
-}
-
 // 확장메뉴의 각 버튼들
 .ext_button {
     width: 64px;
