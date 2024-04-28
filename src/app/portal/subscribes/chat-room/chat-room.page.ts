@@ -1452,7 +1452,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
         } else await this.LoadLocalChatHistory();
       } catch (e) { }
-      this.pullable = Boolean(this.LocalHistoryList.length);
+      this.pullable = true;
     }
     this.MakeViewableMessagesHaveContextMenuAct();
   }
