@@ -682,11 +682,13 @@ export class GroupServerPage implements OnInit {
   copy_id() {
     this.mClipboard.copy(this.session_uid)
       .catch(_e => {
-        clipboard.write(this.session_uid);
-        if (isPlatform == 'DesktopPWA')
-          this.p5toast.show({
-            text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.session_uid}`,
-          });
+        try {
+          clipboard.write(this.session_uid);
+          if (isPlatform == 'DesktopPWA')
+            this.p5toast.show({
+              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.session_uid}`,
+            });
+        } catch (e) { }
       });
   }
 

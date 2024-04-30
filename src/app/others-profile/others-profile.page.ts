@@ -341,11 +341,13 @@ export class OthersProfilePage implements OnInit {
   copy_id() {
     this.mClipboard.copy(this.info['user'].id)
       .catch(_e => {
-        clipboard.write(this.info['user'].id);
-        if (isPlatform == 'DesktopPWA')
-          this.p5toast.show({
-            text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.info['user'].id}`,
-          });
+        try {
+          clipboard.write(this.info['user'].id);
+          if (isPlatform == 'DesktopPWA')
+            this.p5toast.show({
+              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.info['user'].id}`,
+            });
+        } catch (e) { }
       });
   }
 

@@ -403,11 +403,13 @@ export class GroupDetailPage implements OnInit {
   copy_id() {
     this.mClipboard.copy(this.info.id)
       .catch(_e => {
-        clipboard.write(this.info.id);
-        if (isPlatform == 'DesktopPWA')
-          this.p5toast.show({
-            text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.info.id}`,
-          });
+        try {
+          clipboard.write(this.info.id);
+          if (isPlatform == 'DesktopPWA')
+            this.p5toast.show({
+              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.info.id}`,
+            });
+        } catch (e) { }
       });
   }
 
@@ -416,11 +418,13 @@ export class GroupDetailPage implements OnInit {
     let startup_address = `https://is2you2.github.io/pjcone_pwa/?group=${this.info['name']},${this.info['id']}`;
     this.mClipboard.copy(startup_address)
       .catch(_e => {
-        clipboard.write(startup_address);
-        if (isPlatform == 'DesktopPWA')
-          this.p5toast.show({
-            text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${startup_address}`,
-          });
+        try {
+          clipboard.write(startup_address);
+          if (isPlatform == 'DesktopPWA')
+            this.p5toast.show({
+              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${startup_address}`,
+            });
+        } catch (e) { }
       });
   }
 

@@ -127,11 +127,13 @@ export class WeblinkGenPage implements OnInit {
   copy_result_address() {
     this.mClipboard.copy(this.result_address)
       .catch(_e => {
-        clipboard.write(this.result_address);
-        if (isPlatform == 'DesktopPWA')
-          this.p5toast.show({
-            text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.result_address}`,
-          });
+        try {
+          clipboard.write(this.result_address);
+          if (isPlatform == 'DesktopPWA')
+            this.p5toast.show({
+              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.result_address}`,
+            });
+        } catch (e) { }
       });
   }
 
@@ -140,7 +142,11 @@ export class WeblinkGenPage implements OnInit {
       this.userInput.open_prv_channel = '';
     else await this.mClipboard.paste()
       .then(v => this.userInput.open_prv_channel = v)
-      .catch(async _e => this.userInput.open_prv_channel = await clipboard.read());
+      .catch(async _e => {
+        try {
+          this.userInput.open_prv_channel = await clipboard.read()
+        } catch (e) { }
+      });
     this.information_changed();
   }
 
