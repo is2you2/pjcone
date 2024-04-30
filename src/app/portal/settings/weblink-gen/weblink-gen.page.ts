@@ -127,13 +127,12 @@ export class WeblinkGenPage implements OnInit {
   copy_result_address() {
     this.mClipboard.copy(this.result_address)
       .catch(_e => {
-        try {
-          clipboard.write(this.result_address);
+        clipboard.write(this.result_address).then(() => {
           if (isPlatform == 'DesktopPWA')
             this.p5toast.show({
               text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.result_address}`,
             });
-        } catch (e) { }
+        });
       });
   }
 

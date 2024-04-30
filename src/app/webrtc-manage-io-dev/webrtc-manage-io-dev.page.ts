@@ -155,13 +155,12 @@ export class WebrtcManageIoDevPage implements OnInit {
     let address = `${SERVER_PATH_ROOT}pjcone_pwa/?rtcserver=[${this.ServerInfos[index].urls}],${this.ServerInfos[index].username},${this.ServerInfos[index].credential}`;
     this.mClipboard.copy(address)
       .catch(_e => {
-        try {
-          clipboard.write(address);
+        clipboard.write(address).then(() => {
           if (isPlatform == 'DesktopPWA')
             this.p5toast.show({
               text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${address}`,
             });
-        } catch (e) { }
+        });
       });
   }
 

@@ -360,13 +360,12 @@ export class AdminToolsPage implements OnInit {
   copy_id(id: string) {
     this.mClipboard.copy(id)
       .catch(_e => {
-        try {
-          clipboard.write(id);
+        clipboard.write(id).then(() => {
           if (isPlatform == 'DesktopPWA')
             this.p5toast.show({
               text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${id}`,
             });
-        } catch (e) { }
+        });
       });
   }
 

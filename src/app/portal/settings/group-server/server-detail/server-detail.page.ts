@@ -71,13 +71,12 @@ export class ServerDetailPage implements OnInit {
       `https://is2you2.github.io/pjcone_pwa/?server=${this.dedicated_info['name'] || ''},${this.dedicated_info['address'] || ''},${this.dedicated_info.useSSL || ''},${this.dedicated_info.port || ''},${this.dedicated_info.key || ''}&open_profile=true`;
     this.mClipboard.copy(startup_address)
       .catch(_e => {
-        try {
-          clipboard.write(startup_address);
+        clipboard.write(startup_address).then(() => {
           if (isPlatform == 'DesktopPWA')
             this.p5toast.show({
               text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${startup_address}`,
             });
-        } catch (e) { }
+        });
       });
   }
 

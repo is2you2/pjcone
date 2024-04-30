@@ -43,8 +43,7 @@
       [(ngModel)]="userInput.open_channel">{{lang.text['WebLinkGen']['OpenGroupChannel']}}</ion-toggle>
   </ion-item>
   <ion-item button [disabled]="userInput.open_channel" (click)="paste_user_id()">
-    <ion-label>{{lang.text['WebLinkGen']['OpenPrivateChannel']}}</ion-label>
-    <ion-label class="ion-text-end" color="medium">{{userInput.open_prv_channel ?
-      userInput.open_prv_channel : lang.text['WebLinkGen']['ClickToPaste']}}</ion-label>
+    <ion-input [label]="lang.text['WebLinkGen']['OpenPrivateChannel']" class="ion-text-right"
+      [(ngModel)]="userInput.open_prv_channel" [placeholder]="lang.text['WebLinkGen']['ClickToPaste']"></ion-input>
   </ion-item>
 </ion-content>
