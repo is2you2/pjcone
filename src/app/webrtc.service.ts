@@ -4,7 +4,6 @@ import * as p5 from 'p5';
 function import_p5sound() {
   if (window.location.protocol != 'http:' || window.location.host.indexOf('localhost') == 0) {
     import('p5/lib/addons/p5.sound').then(p5sound => {
-      console.log('p5sound import 됨: ', p5sound);
     });
   }
 }
