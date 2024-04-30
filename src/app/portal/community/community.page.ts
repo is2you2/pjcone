@@ -101,8 +101,12 @@ export class CommunityPage implements OnInit {
       for (let k = 0, l = target.length; k < l; k++) {
         let user_id = Object.keys(this.nakama.post_counter[isOfficial[i]][target[k]]);
         for (let m = 0, n = user_id.length; m < n; m++) {
+          let is_me = user_id[m] == 'me';
+          try { // 나인지 여부를 사전에 검토
+            if (user_id[m] != 'me') is_me = user_id[m] == this.nakama.servers[isOfficial[i]][target[k]].session.user_id;
+          } catch (e) { }
           let counter = this.nakama.post_counter[isOfficial[i]][target[k]][user_id[m]];
-          await this.load_post_step_by_step(counter, isOfficial[i], target[k], user_id[m]);
+          await this.load_post_step_by_step(counter, isOfficial[i], target[k], user_id[m], is_me);
           if (!has_counter && this.nakama.post_counter[isOfficial[i]][target[k]][user_id[m]] >= 0) has_counter = true;
         }
       }
@@ -112,18 +116,18 @@ export class CommunityPage implements OnInit {
   }
 
   /** 로컬 정보를 하나씩 업데이트 */
-  async load_post_step_by_step(index: number, isOfficial: string, target: string, user_id: string) {
+  async load_post_step_by_step(index: number, isOfficial: string, target: string, user_id: string, is_me: boolean) {
     if (index < 0) return;
     let loaded = await this.nakama.load_local_post_with_id(`LocalPost_${index}`, isOfficial, target, user_id);
     if (!loaded && user_id != 'me') try { // 로컬에서 불러오기를 실패했다면 서버에서 불러오기를 시도 (서버 게시물만)
-      loaded = await this.load_server_post_with_id(`ServerPost_${index}`, isOfficial, target, user_id);
+      loaded = await this.load_server_post_with_id(`ServerPost_${index}`, isOfficial, target, user_id, is_me);
     } catch (e) { }
     this.nakama.post_counter[isOfficial][target][user_id]--;
-    if (!loaded) await this.load_post_step_by_step(this.nakama.post_counter[isOfficial][target][user_id], isOfficial, target, user_id);
+    if (!loaded) await this.load_post_step_by_step(this.nakama.post_counter[isOfficial][target][user_id], isOfficial, target, user_id, is_me);
   }
 
   /** 아이디로 서버 포스트 불러오기 */
-  async load_server_post_with_id(post_id: string, isOfficial: string, target: string, user_id: string): Promise<boolean> {
+  async load_server_post_with_id(post_id: string, isOfficial: string, target: string, user_id: string, is_me: boolean): Promise<boolean> {
     try {
       let info = {
         path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/info.json`,
@@ -132,6 +136,10 @@ export class CommunityPage implements OnInit {
       let res = await this.nakama.sync_load_file(info, isOfficial, target, 'server_post', user_id, post_id, false);
       let text = await res.value.text();
       let json = JSON.parse(text);
+      // 내 게시물인지 여부를 로컬에 추가로 저장
+      if (is_me) json['is_me'] = true;
+      let blob = new Blob([JSON.stringify(json)], { type: 'text/plain' });
+      this.indexed.saveBlobToUserPath(blob, info.path);
       json['server'] = {
         name: this.nakama.servers[isOfficial][target].info.name,
         isOfficial: isOfficial,
@@ -198,7 +206,7 @@ export class CommunityPage implements OnInit {
       let isOfficial = info['server']['isOfficial'];
       let target = info['server']['target'];
       let targetUid = info['creator_id'];
-      if (targetUid == this.nakama.servers[isOfficial][target].session.user_id) {
+      if (info['is_me']) {
         this.modalCtrl.create({
           component: GroupServerPage,
           componentProps: {
