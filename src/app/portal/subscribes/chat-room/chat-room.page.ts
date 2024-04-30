@@ -1418,7 +1418,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           await this.LoadLocalChatHistory();
       }
       this.next_cursor = null;
-      this.pullable = true;
+      this.pullable = this.ViewMsgIndex != 0 || Boolean(this.LocalHistoryList.length);
     } else { // 다음 파일에서 읽기
       try {
         let target_path = this.LocalHistoryList.pop();
@@ -1452,7 +1452,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
         } else await this.LoadLocalChatHistory();
       } catch (e) { }
-      this.pullable = true;
+      this.pullable = this.ViewMsgIndex != 0 || Boolean(this.LocalHistoryList.length);
     }
     this.MakeViewableMessagesHaveContextMenuAct();
   }
