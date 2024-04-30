@@ -29,6 +29,11 @@ export class MainPage implements OnInit {
 
   ngOnInit() { }
 
+  toggle_session() {
+    this.nakama.toggle_all_session(true);
+    this.global.p5todo.redraw();
+  }
+
   isPlayingCanvas = { loop: true };
   /** 캔버스 연산 멈추기 (인풋은 영향받지 않음) */
   toggleCanvasPlaying() {
