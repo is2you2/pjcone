@@ -20,7 +20,7 @@ export class StatusManageService {
    * ```
    */
   colors = {
-    offline: '#888',
+    offline: '#888888',
     missing: '#880000',
     pending: '#dddd0c',
     online: '#4ff14f',

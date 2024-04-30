@@ -48,6 +48,7 @@ export class MainPage implements OnInit {
     let todo_div = document.getElementById('todo');
     if (this.global.p5todo) this.global.p5todo.remove();
     this.global.p5todo = new p5((p: p5) => {
+      let StatusBar = this.statusBar;
       let Todos: { [id: string]: TodoElement } = {};
       let TodoKeys: string[] = [];
       let DoneTodo: TodoElement[] = [];
@@ -336,7 +337,10 @@ export class MainPage implements OnInit {
             this.json.limit,
             0, 1, true);
           if (this.isAddButton || (this.json.written > this.json.limit)) this.LerpProgress = 1;
-          p.fill((this.json.custom_color || this.defaultColor.toString('#rrggbb'))
+          if (this.json.remote)
+            p.fill((StatusBar.colors[StatusBar.groupServer[this.json.remote.isOfficial][this.json.remote.target] || 'offline'])
+              + p.hex(p.floor(p.lerp(34, 96, this.LerpProgress)), 2));
+          else p.fill((this.json.custom_color || this.defaultColor.toString('#rrggbb'))
             + p.hex(p.floor(p.lerp(34, 96, this.LerpProgress)), 2));
           p.ellipse(0, 0, this.EllipseSize, this.EllipseSize);
           // 썸네일 이미지 표기
@@ -358,7 +362,9 @@ export class MainPage implements OnInit {
           }
           p.rotate(-p.PI / 2);
           let ProgressCircleSize = this.EllipseSize - this.ProgressWeight;
-          p.arc(0, 0, ProgressCircleSize, ProgressCircleSize, 0, this.LerpProgress * p.TWO_PI);
+          if (this.LerpProgress < 1)
+            p.arc(0, 0, ProgressCircleSize, ProgressCircleSize, 0, this.LerpProgress * p.TWO_PI);
+          else p.circle(0, 0, ProgressCircleSize);
           p.pop();
           // 타이틀 일부 표기
           let TextBox = this.EllipseSize * .9;
