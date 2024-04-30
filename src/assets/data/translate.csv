@@ -561,3 +561,4 @@ Username,사용자명,Username
 Credential,인증,credential
 Save,저장하기,Save
 NoRegServer,등록된 서버가 없습니다,There are no registered servers
+SecurityError,보안상 동작 불가,Impossible to operate due to security reasons

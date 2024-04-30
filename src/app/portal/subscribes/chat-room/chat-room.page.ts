@@ -314,7 +314,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.scroll_down_logs();
           this.webrtc.CreateOfffer();
         } catch (e) {
-          console.log('webrtc 시작단계 오류: ', e);
+          this.p5toast.show({
+            text: `${this.lang.text['ChatRoom']['JoinMatchFailed']}: ${e}`,
+          });
         }
       }
     }, { // 10
@@ -996,7 +998,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
           this.extended_buttons[0].isHide = true;
           this.extended_buttons[1].isHide = true;
-          this.extended_buttons[9].isHide = window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0 || false;
+          this.extended_buttons[9].isHide = false;
           this.extended_buttons[12].isHide = true;
         }
         break;

@@ -1,7 +1,14 @@
 import { Injectable } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import * as p5 from 'p5';
-import 'p5/lib/addons/p5.sound';
+function import_p5sound() {
+  if (window.location.protocol != 'http:' || window.location.host.indexOf('localhost') == 0) {
+    import('p5/lib/addons/p5.sound').then(p5sound => {
+      console.log('p5sound import 됨: ', p5sound);
+    });
+  }
+}
+import_p5sound();
 import { WebrtcManageIoDevPage } from './webrtc-manage-io-dev/webrtc-manage-io-dev.page';
 import { P5ToastService } from './p5-toast.service';
 import { LanguageSettingService } from './language-setting.service';
@@ -93,7 +100,7 @@ export class WebrtcService {
         await this.mClipboard.copy(out_link);
       } catch (error) { }
       window.open(out_link, '_system');
-      throw '모바일 권한 오류';
+      throw this.lang.text['WebRTCDevManager']['SecurityError'];
     }
     await VoiceRecorder.requestAudioRecordingPermission();
     if (this.OnUse) {
