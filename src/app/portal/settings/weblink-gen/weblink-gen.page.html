@@ -19,7 +19,7 @@
   </ion-item-divider>
   <ion-item>
     <ion-input [label]="lang.text['WebLinkGen']['baseURL']" class="ion-text-end" [(ngModel)]="userInput.root"
-      placeholder="https://is2you2.github.io/pjcone_pwa/" (ionInput)="baseURLChanged($event)"></ion-input>
+      [placeholder]="targetBaseURL" (ionInput)="baseURLChanged($event)"></ion-input>
   </ion-item>
   <ion-item>
     <ion-select [label]="lang.text['QuickQRShare']['GroupServer']" (ionChange)="SelectGroupServer($event)"

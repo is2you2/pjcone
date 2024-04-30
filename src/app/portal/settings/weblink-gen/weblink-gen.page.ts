@@ -49,7 +49,13 @@ export class WeblinkGenPage implements OnInit {
       this.navCtrl.back();
     };
   }
+
+  targetBaseURL: string;
   ngOnInit() {
+    if (isPlatform == 'Android' || isPlatform == 'iOS')
+      this.targetBaseURL = `${SERVER_PATH_ROOT}pjcone_pwa/`;
+    else this.targetBaseURL = `${location.protocol}//${location.host}${window['sub_path']}`
+    this.result_address = this.targetBaseURL;
     this.InitBrowserBackButtonOverride();
     this.servers = this.nakama.get_all_server_info();
     this.groups = this.nakama.rearrange_group_list();
@@ -84,9 +90,9 @@ export class WeblinkGenPage implements OnInit {
     this.information_changed();
   }
 
-  result_address = `${SERVER_PATH_ROOT}pjcone_pwa/`;
+  result_address: string;
   information_changed() {
-    this.result_address = this.userInput.root || `${SERVER_PATH_ROOT}pjcone_pwa/`;
+    this.result_address = this.userInput.root || this.targetBaseURL;
     let count = 0;
     for (let i = 0, j = this.userInput.servers.length; i < j; i++) {
       this.result_address += count ? '&' : '?';
