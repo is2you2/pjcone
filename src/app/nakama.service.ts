@@ -840,18 +840,8 @@ export class NakamaService {
         }
       }
     } catch (e) { }
-    await this.SyncTodoCounter(_is_official, _target);
-    await this.load_server_todo(_is_official, _target);
-    await this.RemoteTodoSelfCheck(_is_official, _target);
     // 통신 소켓 연결하기
     let socket = await this.connect_to(_is_official, _target);
-    this.set_group_statusBar('online', _is_official, _target);
-    await this.get_group_list_from_server(_is_official, _target);
-    await this.redirect_channel(_is_official, _target);
-    await this.load_posts_counter();
-    if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
-    if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
-    await this.update_notifications(_is_official, _target);
     try { // 셀프 매치 생성하기
       let prv_match = await this.servers[_is_official][_target].client.readStorageObjects(
         this.servers[_is_official][_target].session, {
@@ -880,6 +870,16 @@ export class NakamaService {
         );
       }
     } catch (e) { }
+    await this.SyncTodoCounter(_is_official, _target);
+    await this.load_server_todo(_is_official, _target);
+    await this.RemoteTodoSelfCheck(_is_official, _target);
+    this.set_group_statusBar('online', _is_official, _target);
+    await this.get_group_list_from_server(_is_official, _target);
+    await this.redirect_channel(_is_official, _target);
+    await this.load_posts_counter();
+    if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
+    if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
+    await this.update_notifications(_is_official, _target);
     this.rearrange_channels();
     this.rearrange_group_list();
     for (let i = 0, j = this.AfterLoginAct.length; i < j; i++)
@@ -1052,33 +1052,79 @@ export class NakamaService {
     todo_info['remote']['type'] = `${_is_official}/${_target}`;
     this.set_todo_notification(todo_info);
     if (this.global.p5todo && this.global.p5todo['add_todo']) this.global.p5todo['add_todo'](JSON.stringify(todo_info));
-    this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
+    this.indexed.loadTextFromUserPath(`todo/${todo_info['id']}/info.todo`, (e, v) => {
+      if (e && v) {
+        let json = JSON.parse(v);
+        // 온라인 할 일이지만 로컬에서 수정 처리가 되어있을 때, 동시에 원격 할 일이 최신 정보는 아님
+        if (todo_info.create_at <= json.create_at && json.modified) {
+          // 로컬에서는 이미 완료된 정보인 경우
+          if (json.done) {
+            this.doneTodo(todo_info, true);
+            return;
+          }
+          // 로컬에서는 삭제라고 명시한 경우
+          if (json.removed) {
+            this.deleteTodoFromStorage(true, json, true);
+            return;
+          }
+          // 로컬에서 내용이 변경된 경우 서버에 로컬 내용을 올림
+          delete json.modified;
+          this.indexed.saveTextFileToUserPath(JSON.stringify(json), `todo/${json['id']}/info.todo`);
+          this.servers[json.remote.isOfficial][json.remote.target].client.writeStorageObjects(
+            this.servers[json.remote.isOfficial][json.remote.target].session, [{
+              collection: 'server_todo',
+              key: json.id,
+              permission_read: 2,
+              permission_write: 1,
+              value: json,
+            }]).then(async v => {
+              await this.servers[json.remote.isOfficial][json.remote.target]
+                .socket.sendMatchState(this.self_match[json.remote.isOfficial][json.remote.target].match_id, MatchOpCode.MANAGE_TODO,
+                  encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
+            });
+        } else this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
+      } else this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
+    });
   }
 
   /** 이 일을 완료했습니다 */
-  async doneTodo(targetInfo: any) {
+  async doneTodo(targetInfo: any, slient = false) {
     targetInfo.done = true;
     if (this.global.p5todo && this.global.p5todo['add_todo'])
       this.global.p5todo['add_todo'](JSON.stringify(targetInfo));
     if (targetInfo.remote) {
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      let loading: HTMLIonLoadingElement;
+      if (!slient) { // 알림 없이 조용히 처리할 수도 있음
+        loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
-      if (this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target])
+      }
+      try {
+        if (this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target] && this.self_match[targetInfo.remote.isOfficial][targetInfo.remote.target])
         await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
           .socket.sendMatchState(this.self_match[targetInfo.remote.isOfficial][targetInfo.remote.target].match_id, MatchOpCode.MANAGE_TODO,
             encodeURIComponent(`done,${targetInfo.id}`));
-      loading.dismiss();
+        if (!slient) loading.dismiss();
+      } catch (e) { // 원격 동기화 실패시 로컬에 별도 저장처리
+        targetInfo.modified = true;
+        await this.indexed.saveTextFileToUserPath(JSON.stringify(targetInfo), `todo/${targetInfo['id']}/info.todo`);
+        if (!slient) loading.dismiss();
+        this.navCtrl.pop();
+        return;
+      }
     }
-    await this.deleteTodoFromStorage(false, targetInfo);
+    await this.deleteTodoFromStorage(false, targetInfo, slient);
     this.navCtrl.pop();
   }
 
   /** 저장소로부터 데이터를 삭제하는 명령 모음  
    * @param isDelete 삭제 여부를 검토하여 애니메이션 토글
    */
-  async deleteTodoFromStorage(isDelete: boolean, targetInfo: any) {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+  async deleteTodoFromStorage(isDelete: boolean, targetInfo: any, slient = false) {
+    let loading: HTMLIonLoadingElement;
+    if (!slient) {
+      loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
+    }
     if (targetInfo.remote) {
       try { // 원격 할 일인 경우 원격 저장소에서 삭제
         if (!this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target])
@@ -1170,8 +1216,12 @@ export class NakamaService {
           }
         }
         await this.removeRemoteTodoCounter(targetInfo.remote.isOfficial, targetInfo.remote.target, Number(targetInfo['id'].split('_').pop()));
-      } catch (e) {
-        console.log('서버 정보 없음, 로컬에서 행동: ', e);
+      } catch (e) { // 서버 행동 실패
+        targetInfo.modified = true;
+        targetInfo.removed = true;
+        await this.indexed.saveTextFileToUserPath(JSON.stringify(targetInfo), `todo/${targetInfo['id']}/info.todo`);
+        if (!slient) loading.dismiss();
+        return;
       }
     }
     // 로컬에 저장된 파일 전부 삭제
@@ -1187,7 +1237,7 @@ export class NakamaService {
     this.noti.ClearNoti(targetInfo.noti_id);
     if (isDelete && this.global.p5todo)
       this.global.p5todo['remove_todo'](JSON.stringify(targetInfo));
-    loading.dismiss();
+    if (!slient) loading.dismiss();
   }
 
   /** 저장된 그룹 업데이트하여 반영 */

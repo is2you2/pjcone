@@ -480,6 +480,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   AddShortCut() {
+    if (!this.NewAttach) return;
     if (!this.NewAttach.value && !this.WillLeavePage)
       setTimeout(() => {
         delete this.global.p5key['KeyShortCut']['Digit'];
@@ -637,7 +638,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       if (NumberShortCutAct.length > index)
         this.new_attach({ detail: { value: NumberShortCutAct[index] } });
     }
-    this.NewAttach.open();
+    if (this.NewAttach) this.NewAttach.open();
   }
   /** 할 일 제목 입력칸 */
   titleIonInput: any;
@@ -894,6 +895,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         info: { content: this.userInput.attach[index] },
         path: this.userInput.attach[index]['path'],
         relevance: createRelevances,
+        noEdit: !this.isModifiable,
       },
       cssClass: 'fullscreen',
     }).then(v => {
@@ -1298,11 +1300,20 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         loading.dismiss();
       } catch (e) {
         console.error('해야할 일이 서버에 전송되지 않음: ', e);
-        this.p5toast.show({
+        loading.dismiss();
+        // 기존 할 일을 수정하다가 오류가 났다면 로컬에 변경사항을 저장
+        if (this.isModify) {
+          this.p5toast.show({
+            text: this.lang.text['TodoDetail']['SaveAfterConnectServer'],
+          });
+          this.userInput['modified'] = true;
+          if (this.global.p5todo && this.global.p5todo['add_todo'])
+            this.global.p5todo['add_todo'](JSON.stringify(this.userInput));
+          await this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`);
+          this.navCtrl.pop();
+        } else this.p5toast.show({
           text: this.lang.text['TodoDetail']['CanAddToServer'],
         });
-        this.isButtonClicked = false;
-        loading.dismiss();
         return;
       }
     }
