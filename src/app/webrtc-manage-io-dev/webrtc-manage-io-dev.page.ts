@@ -154,7 +154,12 @@ export class WebrtcManageIoDevPage implements OnInit {
   copy_info(index: number) {
     let address = `${SERVER_PATH_ROOT}pjcone_pwa/?rtcserver=[${this.ServerInfos[index].urls}],${this.ServerInfos[index].username},${this.ServerInfos[index].credential}`;
     this.mClipboard.copy(address)
-      .catch(_e => clipboard.write(address));
+      .catch(_e => {
+        clipboard.write(address);
+        this.p5toast.show({
+          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${address}`,
+        });
+      });
   }
 
   async RemoveServer(index: number) {

@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { NavController } from '@ionic/angular';
 import clipboard from 'clipboardy';
-import { SERVER_PATH_ROOT, isNativefier } from 'src/app/app.component';
+import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
+import { P5ToastService } from 'src/app/p5-toast.service';
 
 @Component({
   selector: 'app-weblink-gen',
@@ -22,6 +23,7 @@ export class WeblinkGenPage implements OnInit {
     private indexed: IndexedDBService,
     private global: GlobalActService,
     private navCtrl: NavController,
+    private p5toast: P5ToastService,
   ) { }
 
   userInput = {
@@ -118,7 +120,12 @@ export class WeblinkGenPage implements OnInit {
 
   copy_result_address() {
     this.mClipboard.copy(this.result_address)
-      .catch(_e => clipboard.write(this.result_address));
+      .catch(_e => {
+        clipboard.write(this.result_address);
+        this.p5toast.show({
+          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.result_address}`,
+        });
+      });
   }
 
   async paste_user_id() {
