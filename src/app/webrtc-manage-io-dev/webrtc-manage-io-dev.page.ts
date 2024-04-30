@@ -160,7 +160,7 @@ export class WebrtcManageIoDevPage implements OnInit {
             this.p5toast.show({
               text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${address}`,
             });
-        });
+        }).catch(_e => { });
       });
   }
 

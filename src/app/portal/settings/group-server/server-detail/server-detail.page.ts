@@ -76,7 +76,7 @@ export class ServerDetailPage implements OnInit {
             this.p5toast.show({
               text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${startup_address}`,
             });
-        });
+        }).catch(_e => { });
       });
   }
 

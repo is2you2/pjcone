@@ -365,7 +365,7 @@ export class AdminToolsPage implements OnInit {
             this.p5toast.show({
               text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${id}`,
             });
-        });
+        }).catch(_e => { });
       });
   }
 

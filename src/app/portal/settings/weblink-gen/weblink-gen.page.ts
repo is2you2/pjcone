@@ -132,7 +132,7 @@ export class WeblinkGenPage implements OnInit {
             this.p5toast.show({
               text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.result_address}`,
             });
-        });
+        }).catch(_e => { });
       });
   }
 

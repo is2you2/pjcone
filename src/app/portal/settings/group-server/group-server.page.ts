@@ -687,7 +687,7 @@ export class GroupServerPage implements OnInit {
             this.p5toast.show({
               text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.session_uid}`,
             });
-        });
+        }).catch(_e => { });
       });
   }
 

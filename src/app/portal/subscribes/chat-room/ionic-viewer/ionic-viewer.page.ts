@@ -1526,7 +1526,7 @@ export class IonicViewerPage implements OnInit {
             this.p5toast.show({
               text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${data}`,
             });
-        });
+        }).catch(e => { });
       });
   }
 }

@@ -346,7 +346,7 @@ export class OthersProfilePage implements OnInit {
             this.p5toast.show({
               text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.info['user'].id}`,
             });
-        });
+        }).catch(_e => { });
       });
   }
 

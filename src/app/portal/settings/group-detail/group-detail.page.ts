@@ -408,7 +408,7 @@ export class GroupDetailPage implements OnInit {
             this.p5toast.show({
               text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.info.id}`,
             });
-        });
+        }).catch(_e => { });
       });
   }
 
@@ -422,7 +422,7 @@ export class GroupDetailPage implements OnInit {
             this.p5toast.show({
               text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${startup_address}`,
             });
-        });
+        }).catch(_e => { });
       });
   }
 
