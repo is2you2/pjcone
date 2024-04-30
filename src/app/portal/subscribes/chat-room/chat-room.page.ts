@@ -1126,9 +1126,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     } catch (e) {
       try {
         await clipboard.write(text);
-        this.p5toast.show({
-          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${text}`,
-        });
+        if (isPlatform == 'DesktopPWA')
+          this.p5toast.show({
+            text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${text}`,
+          });
       } catch (e) {
         console.log('클립보드 복사 실패: ', e);
       }

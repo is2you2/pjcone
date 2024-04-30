@@ -14,7 +14,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { GroupServerPage } from '../group-server/group-server.page';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from "clipboardy";
-import { SERVER_PATH_ROOT } from 'src/app/app.component';
+import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 
 
 @Component({
@@ -404,9 +404,10 @@ export class GroupDetailPage implements OnInit {
     this.mClipboard.copy(this.info.id)
       .catch(_e => {
         clipboard.write(this.info.id);
-        this.p5toast.show({
-          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.info.id}`,
-        });
+        if (isPlatform == 'DesktopPWA')
+          this.p5toast.show({
+            text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.info.id}`,
+          });
       });
   }
 
@@ -416,9 +417,10 @@ export class GroupDetailPage implements OnInit {
     this.mClipboard.copy(startup_address)
       .catch(_e => {
         clipboard.write(startup_address);
-        this.p5toast.show({
-          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${startup_address}`,
-        });
+        if (isPlatform == 'DesktopPWA')
+          this.p5toast.show({
+            text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${startup_address}`,
+          });
       });
   }
 

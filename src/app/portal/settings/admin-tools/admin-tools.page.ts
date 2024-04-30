@@ -8,6 +8,7 @@ import clipboard from "clipboardy";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { GlobalActService } from 'src/app/global-act.service';
+import { isPlatform } from 'src/app/app.component';
 
 
 @Component({
@@ -360,9 +361,10 @@ export class AdminToolsPage implements OnInit {
     this.mClipboard.copy(id)
       .catch(_e => {
         clipboard.write(id);
-        this.p5toast.show({
-          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${id}`,
-        });
+        if (isPlatform == 'DesktopPWA')
+          this.p5toast.show({
+            text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${id}`,
+          });
       });
   }
 

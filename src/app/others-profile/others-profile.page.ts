@@ -10,6 +10,7 @@ import { P5ToastService } from '../p5-toast.service';
 import { StatusManageService } from "../status-manage.service";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from "clipboardy";
+import { isPlatform } from '../app.component';
 
 @Component({
   selector: 'app-others-profile',
@@ -341,9 +342,10 @@ export class OthersProfilePage implements OnInit {
     this.mClipboard.copy(this.info['user'].id)
       .catch(_e => {
         clipboard.write(this.info['user'].id);
-        this.p5toast.show({
-          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.info['user'].id}`,
-        });
+        if (isPlatform == 'DesktopPWA')
+          this.p5toast.show({
+            text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.info['user'].id}`,
+          });
       });
   }
 

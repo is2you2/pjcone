@@ -1522,9 +1522,10 @@ export class IonicViewerPage implements OnInit {
     this.mClipboard.copy(data)
       .catch(_e => {
         clipboard.write(data);
-        this.p5toast.show({
-          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${data}`,
-        });
+        if (isPlatform == 'DesktopPWA')
+          this.p5toast.show({
+            text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${data}`,
+          });
       });
   }
 }

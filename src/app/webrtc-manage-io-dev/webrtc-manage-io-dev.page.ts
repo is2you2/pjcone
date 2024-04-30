@@ -3,7 +3,7 @@ import { IonModal, IonRadioGroup, ModalController, NavParams } from '@ionic/angu
 import { LanguageSettingService } from '../language-setting.service';
 import { IndexedDBService } from '../indexed-db.service';
 import { GlobalActService } from '../global-act.service';
-import { SERVER_PATH_ROOT } from '../app.component';
+import { SERVER_PATH_ROOT, isPlatform } from '../app.component';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import clipboard from 'clipboardy';
 import { P5ToastService } from '../p5-toast.service';
@@ -156,9 +156,10 @@ export class WebrtcManageIoDevPage implements OnInit {
     this.mClipboard.copy(address)
       .catch(_e => {
         clipboard.write(address);
-        this.p5toast.show({
-          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${address}`,
-        });
+        if (isPlatform == 'DesktopPWA')
+          this.p5toast.show({
+            text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${address}`,
+          });
       });
   }
 

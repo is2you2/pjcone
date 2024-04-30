@@ -8,7 +8,7 @@ import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import clipboard from "clipboardy";
-import { SERVER_PATH_ROOT } from 'src/app/app.component';
+import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 
 @Component({
   selector: 'app-server-detail',
@@ -72,9 +72,10 @@ export class ServerDetailPage implements OnInit {
     this.mClipboard.copy(startup_address)
       .catch(_e => {
         clipboard.write(startup_address);
-        this.p5toast.show({
-          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${startup_address}`,
-        });
+        if (isPlatform == 'DesktopPWA')
+          this.p5toast.show({
+            text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${startup_address}`,
+          });
       });
   }
 
