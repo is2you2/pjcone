@@ -855,7 +855,6 @@ export class NakamaService {
         if (!this.self_match[_is_official]) this.self_match[_is_official] = {};
         if (!this.self_match[_is_official][_target]) this.self_match[_is_official][_target] = undefined;
         this.self_match[_is_official][_target] = await socket.joinMatch(prv_match.objects[0].value['match_id']);
-        return; // 매치 진입 성공인 경우
       } catch (e) {
         let self_match = await socket.createMatch();
         this.self_match[_is_official][_target] = self_match;
@@ -1096,13 +1095,13 @@ export class NakamaService {
       let loading: HTMLIonLoadingElement;
       if (!slient) { // 알림 없이 조용히 처리할 수도 있음
         loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      loading.present();
+        loading.present();
       }
       try {
         if (this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target] && this.self_match[targetInfo.remote.isOfficial][targetInfo.remote.target])
-        await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
-          .socket.sendMatchState(this.self_match[targetInfo.remote.isOfficial][targetInfo.remote.target].match_id, MatchOpCode.MANAGE_TODO,
-            encodeURIComponent(`done,${targetInfo.id}`));
+          await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
+            .socket.sendMatchState(this.self_match[targetInfo.remote.isOfficial][targetInfo.remote.target].match_id, MatchOpCode.MANAGE_TODO,
+              encodeURIComponent(`done,${targetInfo.id}`));
         if (!slient) loading.dismiss();
       } catch (e) { // 원격 동기화 실패시 로컬에 별도 저장처리
         targetInfo.modified = true;
@@ -1123,7 +1122,7 @@ export class NakamaService {
     let loading: HTMLIonLoadingElement;
     if (!slient) {
       loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-    loading.present();
+      loading.present();
     }
     if (targetInfo.remote) {
       try { // 원격 할 일인 경우 원격 저장소에서 삭제
