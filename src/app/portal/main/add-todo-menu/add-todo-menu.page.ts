@@ -381,6 +381,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.ImporantSelChanged({ detail: { value: this.userInput.importance } });
     this.file_sel_id = `${this.userInput.id || 'new_todo_id'}_${new Date().getTime()}`;
     // 첨부 이미지가 있음
+    // 이 할 일이 썸네일을 가지고 있는지 검토
+    let has_thumbnail = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}/thumbnail.png`);
     if (this.userInput.attach.length)
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
         try {
@@ -390,6 +392,42 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             loading.present();
             blob = (await this.nakama.sync_load_file(this.userInput.attach[i],
               this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id)).value;
+            if (!has_thumbnail) {
+              if (this.userInput.attach[i].viewer == 'image') {
+                let header_image = URL.createObjectURL(blob);
+                await new Promise((done: any) => {
+                  new p5((p: p5) => {
+                    p.setup = () => {
+                      p.noCanvas();
+                      p.loadImage(header_image, v => {
+                        let isLandscapeImage = v.width > v.height;
+                        if (isLandscapeImage)
+                          v.resize(v.width / v.height * 128, 128);
+                        else v.resize(128, v.height / v.width * 128);
+                        let canvas = p.createCanvas(128, 128);
+                        canvas.hide();
+                        p.smooth();
+                        p.pixelDensity(1);
+                        p.image(v, -(v.width - 128) / 2, -(v.height - 128) / 2);
+                        let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+                        this.indexed.saveBase64ToUserPath(base64, `todo/${this.userInput.id}/thumbnail.png`, (_) => {
+                          if (this.global.p5todo && this.global.p5todo['add_todo'])
+                            this.global.p5todo['add_todo'](JSON.stringify(this.userInput));
+                          done();
+                        });
+                        URL.revokeObjectURL(header_image);
+                        p.remove();
+                      }, e => {
+                        console.error('Todo-등록된 이미지 불러오기 실패: ', e);
+                        done();
+                        URL.revokeObjectURL(header_image);
+                        p.remove();
+                      });
+                    }
+                  });
+                });
+              }
+            }
             loading.dismiss();
           } else if (this.userInput.attach[i].viewer == 'image' || this.userInput.attach[i].viewer == 'text')
             blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
