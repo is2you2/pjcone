@@ -1251,7 +1251,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.nakama.check_sender_and_show_name(msg, this.isOfficial, this.target);
           if (!this.info['last_comment']) {
             let hasFile = msg.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
-            this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
+            if (msg['code'] != 2) this.info['last_comment'] = hasFile + (msg['content']['msg'] || msg['content']['noti'] || '');
           }
           // 마지막으로 읽은 메시지인지 검토
           if (!this.foundLastRead && this.info['last_read_id']) {
@@ -1701,7 +1701,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'](msg);
     this.nakama.saveListedMessage([msg], this.info, this.isOfficial, this.target);
     let hasFile = msg.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
-    this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment'] = hasFile +
+    if (msg.code != 2) this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment'] = hasFile +
       (MsgText || msg.content['noti'] || (msg.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined) || '');
     setTimeout(() => {
       this.userInput.text = '';
@@ -1821,6 +1821,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 working_msg['code'] = 1;
                 if (this.info['local']) {
                   this.nakama.content_to_hyperlink(working_msg);
+                  working_msg['update_time'] = Date.now();
                   this.SendLocalMessage(working_msg);
                 }
               }
@@ -1891,6 +1892,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.messages.splice(i, 1);
               break;
             }
+          msg['update_time'] = Date.now();
           msg['code'] = 2;
           this.SendLocalMessage(msg);
           for (let i = this.ViewableMessage.length - 1; i >= 0; i--)

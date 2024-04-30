@@ -2893,7 +2893,7 @@ export class NakamaService {
       this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
     this.saveListedMessage([c], this.channels_orig[_is_official][_target][c.channel_id], _is_official, _target);
     let hasFile = c.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
-    this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile +
+    if (c.code != 2) this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile +
       (original_msg || c.content['noti'] || (c.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined) || '');
     this.rearrange_channels();
   }
