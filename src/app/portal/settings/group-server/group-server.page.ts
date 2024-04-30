@@ -681,7 +681,12 @@ export class GroupServerPage implements OnInit {
 
   copy_id() {
     this.mClipboard.copy(this.session_uid)
-      .catch(_e => clipboard.write(this.session_uid));
+      .catch(_e => {
+        clipboard.write(this.session_uid);
+        this.p5toast.show({
+          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.session_uid}`,
+        });
+      });
   }
 
   /** 채널 채팅에서 넘어온 경우 modal 페이지임 */

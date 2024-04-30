@@ -70,7 +70,12 @@ export class ServerDetailPage implements OnInit {
     let startup_address =
       `https://is2you2.github.io/pjcone_pwa/?server=${this.dedicated_info['name'] || ''},${this.dedicated_info['address'] || ''},${this.dedicated_info.useSSL || ''},${this.dedicated_info.port || ''},${this.dedicated_info.key || ''}&open_profile=true`;
     this.mClipboard.copy(startup_address)
-      .catch(_e => clipboard.write(startup_address));
+      .catch(_e => {
+        clipboard.write(startup_address);
+        this.p5toast.show({
+          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${startup_address}`,
+        });
+      });
   }
 
   async apply_changed_info() {

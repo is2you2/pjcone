@@ -358,7 +358,12 @@ export class AdminToolsPage implements OnInit {
 
   copy_id(id: string) {
     this.mClipboard.copy(id)
-      .catch(_e => clipboard.write(id));
+      .catch(_e => {
+        clipboard.write(id);
+        this.p5toast.show({
+          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${id}`,
+        });
+      });
   }
 
   remove_user(user: any) {

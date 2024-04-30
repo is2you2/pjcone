@@ -457,10 +457,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let pasted_url = override.url;
           if (!this.userInput.file && pasted_url === undefined)
             try {
-              pasted_url = await this.mClipboard.paste()
+              pasted_url = await this.mClipboard.paste();
             } catch (e) {
               try {
-                pasted_url = await clipboard.read()
+                pasted_url = await clipboard.read();
               } catch (e) {
                 throw e;
               }
@@ -1126,6 +1126,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     } catch (e) {
       try {
         await clipboard.write(text);
+        this.p5toast.show({
+          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${text}`,
+        });
       } catch (e) {
         console.log('클립보드 복사 실패: ', e);
       }

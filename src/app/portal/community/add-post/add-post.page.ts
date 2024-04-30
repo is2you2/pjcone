@@ -536,10 +536,10 @@ export class AddPostPage implements OnInit, OnDestroy {
           let pasted_url = override.url;
           if (pasted_url === undefined)
             try {
-              pasted_url = await this.mClipboard.paste()
+              pasted_url = await this.mClipboard.paste();
             } catch (e) {
               try {
-                pasted_url = await clipboard.read()
+                pasted_url = await clipboard.read();
               } catch (e) {
                 throw e;
               }
