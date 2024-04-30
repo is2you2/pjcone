@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, ModalController, NavParams } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -24,6 +24,7 @@ export class PostViewerPage implements OnInit {
     public nakama: NakamaService,
     private alertCtrl: AlertController,
     private global: GlobalActService,
+    private loadingCtrl: LoadingController,
   ) { }
 
   PostInfo: any;
@@ -36,6 +37,8 @@ export class PostViewerPage implements OnInit {
     this.CurrentIndex = this.navParam.get('index');
     this.initialize();
   }
+  /** 블렌더 파일 불러오기에 사용된 개체들 */
+  blenderViewers: p5[] = [];
 
   /** PC에서 키를 눌러 컨텐츠 전환 */
   ChangeContentWithKeyInput() {
@@ -331,7 +334,22 @@ export class PostViewerPage implements OnInit {
                   }, 100);
                 }
                   break;
-                case 'blender':
+                case 'blender': {
+                  let blender_frame = p.createDiv();
+                  blender_frame.style('position', 'relative');
+                  blender_frame.style('width', '100%');
+                  blender_frame.style('height', '432px');
+                  blender_frame.elt.onwheel = () => {
+                    return false;
+                  }
+                  blender_frame.elt.oncontextmenu = () => {
+                    return false;
+                  }
+                  blender_frame.parent(contentDiv);
+                  let blender_viewer = this.global.load_blender_file(blender_frame.elt, this.PostInfo['attachments'][index], undefined,
+                    () => { }, () => { });
+                  this.blenderViewers.push(blender_viewer);
+                } break;
                 case 'code':
                 case 'text':
                 case 'disabled': // 사용 불가
@@ -425,6 +443,8 @@ export class PostViewerPage implements OnInit {
   }
 
   ionViewDidLeave() {
+    for (let i = 0, j = this.blenderViewers.length; i < j; i++)
+      this.blenderViewers[i].remove();
     if (this.p5canvas)
       this.p5canvas.remove();
   }
