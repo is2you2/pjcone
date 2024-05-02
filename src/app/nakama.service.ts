@@ -4182,7 +4182,7 @@ export class NakamaService {
       try {
         if (this.posts_orig[isOfficial][target][user_id][id]) throw 'exist';
       } catch (e) {
-        if (e == 'exist') throw '이미 있는 소식지';
+        if (e == 'exist') throw '이미 있는 게시물';
       }
       let json = JSON.parse(v);
       json['server'] = {
@@ -4223,7 +4223,7 @@ export class NakamaService {
   /** 게시물 갯수 불러오기 (첫 실행시) */
   async load_posts_counter() {
     let last_counting = {};
-    try { // 저장된 소식 수 정보 일괄 불러오기
+    try { // 저장된 게시물 수 정보 일괄 불러오기
       let v = await this.indexed.loadTextFromUserPath('servers/post_counter.json');
       let json = JSON.parse(v);
       last_counting = v;
@@ -4252,7 +4252,7 @@ export class NakamaService {
         if (my_counter.objects.length) my_exact_counter = my_counter.objects[0].value['counter'];
         this.post_counter[isOfficial][target][this.servers[isOfficial][target].session.user_id] = my_exact_counter;
       } catch (e) {
-        console.log('내 서버 소식 카운터 불러오기 오류: ', e);
+        console.log('내 서버 게시물 카운터 불러오기 오류: ', e);
       }
       // 해당 서버에서 아는 사람의 게시물 불러오기 (채널에 포함된 사람들)
       if (this.users[isOfficial][target]) {

@@ -265,7 +265,7 @@ export class PostViewerPage implements OnInit {
                 case 'audio': {
                   let FileURL = this.PostInfo['attachments'][index]['url'];
                   if (!FileURL) try {
-                    FileURL = URL.createObjectURL(this.PostInfo['attachments'][i]['blob']);
+                    FileURL = URL.createObjectURL(this.PostInfo['attachments'][index]['blob']);
                     setTimeout(() => {
                       URL.revokeObjectURL(FileURL)
                     }, 100);
@@ -280,7 +280,7 @@ export class PostViewerPage implements OnInit {
                 case 'video': {
                   let FileURL = this.PostInfo['attachments'][index]['url'];
                   if (!FileURL) try {
-                    FileURL = URL.createObjectURL(this.PostInfo['attachments'][i]['blob']);
+                    FileURL = URL.createObjectURL(this.PostInfo['attachments'][index]['blob']);
                     setTimeout(() => {
                       URL.revokeObjectURL(FileURL)
                     }, 100);
@@ -306,7 +306,7 @@ export class PostViewerPage implements OnInit {
                     if (this.indexed.godotDB) {
                       try {
                         await this.indexed.GetGodotIndexedDB();
-                        await this.indexed.saveBlobToUserPath(this.PostInfo['attachments'][i]['blob'], `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`, undefined, this.indexed.godotDB);
+                        await this.indexed.saveBlobToUserPath(this.PostInfo['attachments'][index]['blob'], `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`, undefined, this.indexed.godotDB);
                         createDuplicate = true;
                       } catch (e) {
                         console.log('내부 파일 없음: ', e);
