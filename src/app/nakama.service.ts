@@ -3420,8 +3420,13 @@ export class NakamaService {
     let is_removed = false;
     v['server'] = this.servers[_is_official][_target].info;
     switch (v.code) {
-      case 404:
+      case 404: // 관리자에 의해 사용자 강제 탈퇴되어 서버를 삭제당함
         this.remove_server(_is_official, _target);
+        break;
+      case 100: // 사용자 프로필 변경됨
+      case 101: // 사용자 프로필 사진 변경됨
+      case 200: // 그룹 정보 변경됨
+      case 201: // 그룹 사진 변경됨
         break;
       case 1: // 전체 알림 메시지 수신
         try {
@@ -4081,6 +4086,8 @@ export class NakamaService {
   }
 
   async act_from_QRInfo(json: any) {
+    /** QRCode에 서버 정보가 포함되어 있습니까 */
+    let hasServerInQRInfo = false;
     for (let i = 0, j = json.length; i < j; i++)
       switch (json[i].type) {
         case 'open_profile': // 프로필 페이지 열기 유도
@@ -4100,7 +4107,12 @@ export class NakamaService {
               componentProps: {
                 data: json[i].value,
               },
-            }).then(v => v.present());
+            }).then(v => {
+              v.onWillDismiss().then(() => {
+                hasServerInQRInfo = true;
+              });
+              v.present();
+            });
           } else {
             let new_server_info: ServerInfo = {
               name: decodeURIComponent(json[i].value.name),
@@ -4131,7 +4143,8 @@ export class NakamaService {
           if (this.AfterLoginActDone)
             await this.try_add_group(json[i]);
           else this.AfterLoginAct.push(async () => {
-            await this.AutoConnectServer();
+            if (!hasServerInQRInfo)
+              await this.WatchAdsAndGetDevServerInfo();
             await this.try_add_group(json[i])
           });
           break;
@@ -4140,7 +4153,8 @@ export class NakamaService {
             let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           } else this.AfterLoginAct.push(async () => {
-            await this.AutoConnectServer();
+            if (!hasServerInQRInfo)
+              await this.WatchAdsAndGetDevServerInfo();
             let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           });
@@ -4150,7 +4164,8 @@ export class NakamaService {
             let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           } else this.AfterLoginAct.push(async () => {
-            await this.AutoConnectServer();
+            if (!hasServerInQRInfo)
+              await this.WatchAdsAndGetDevServerInfo();
             let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           });
@@ -4169,10 +4184,6 @@ export class NakamaService {
         default: // 동작 미정 알림(debug)
           throw "지정된 틀 아님";
       }
-  }
-  /** 등록된 서버가 없다면 자동으로 테스트 서버에 연결 시도 */
-  async AutoConnectServer() {
-    await this.WatchAdsAndGetDevServerInfo();
   }
 
   /** 아이디 기반 게시물 불러오기  
