@@ -721,16 +721,18 @@ export class MainPage implements OnInit {
           GrabbedElement = undefined;
         }
         MovementStartPosition = undefined;
-        let dist = TempStartCamPosition.dist(CamPosition);
-        if (dist < 15) { // 클릭 행동으로 간주
-          for (let i = 0, j = TodoKeys.length; i < j; i++) {
-            let dist = Todos[TodoKeys[i]].position.dist(MappingPosition());
-            if (dist < Todos[TodoKeys[i]].EllipseSize / 2) {
-              Todos[TodoKeys[i]].Clicked();
-              break;
+        try {
+          let dist = TempStartCamPosition.dist(CamPosition);
+          if (dist < 15) { // 클릭 행동으로 간주
+            for (let i = 0, j = TodoKeys.length; i < j; i++) {
+              let dist = Todos[TodoKeys[i]].position.dist(MappingPosition());
+              if (dist < Todos[TodoKeys[i]].EllipseSize / 2) {
+                Todos[TodoKeys[i]].Clicked();
+                break;
+              }
             }
-          }
-        }
+          } // TempStartCamPosition가 준비되지 않은 경우가 있음
+        } catch (e) { }
       }
     });
   }
