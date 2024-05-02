@@ -377,15 +377,12 @@ export class AddPostPage implements OnInit, OnDestroy {
             this.p5toast.show({
               text: this.lang.text['ChatRoom']['StartVRecord'],
             });
-          } else await VoiceRecorder.requestAudioRecordingPermission();
-        } else { // 녹음 종료
-          let data = await VoiceRecorder.stopRecording();
-          let blob = this.global.Base64ToBlob(`${data.value.mimeType},${data.value.recordDataBase64}`);
-          blob['name'] = `${this.lang.text['ChatRoom']['VoiceRecord']}.${data.value.mimeType.split('/').pop().split(';')[0]}`;
-          blob['type_override'] = data.value.mimeType;
-          this.selected_blobFile_callback_act(blob);
-          this.extended_buttons[4].icon = 'mic-circle-outline';
-        }
+          } else { // 권한이 없다면 권한 요청 및 UI 복구
+            this.useVoiceRecording = false;
+            this.extended_buttons[4].icon = 'mic-circle-outline';
+            await VoiceRecorder.requestAudioRecordingPermission();
+          }
+        } else await this.StopAndSaveVoiceRecording();
       }
     }, { // 5
       icon: 'cloud-done-outline',
@@ -394,6 +391,15 @@ export class AddPostPage implements OnInit, OnDestroy {
         this.toggle_custom_attach();
       }
     }];
+
+  async StopAndSaveVoiceRecording() {
+    let data = await VoiceRecorder.stopRecording();
+    let blob = this.global.Base64ToBlob(`${data.value.mimeType},${data.value.recordDataBase64}`);
+    blob['name'] = `${this.lang.text['ChatRoom']['VoiceRecord']}.${data.value.mimeType.split('/').pop().split(';')[0]}`;
+    blob['type_override'] = data.value.mimeType;
+    this.selected_blobFile_callback_act(blob);
+    this.extended_buttons[4].icon = 'mic-circle-outline';
+  }
 
   /** 채널 배경화면 변경 (from PostMainImage_sel) */
   ChangeMainPostImage(ev: any) {
@@ -738,6 +744,9 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.TitleInput.focus();
       return;
     }
+    // 음성 녹음중이라면 녹음을 마무리하여 파일로 저장한 후 게시물 저장처리 진행
+    if (this.useVoiceRecording)
+      await this.StopAndSaveVoiceRecording();
     /** 로컬 서버인지 여부 */
     let is_local = Boolean(this.userInput.server['local']);
     this.isApplyPostData = true;
