@@ -913,7 +913,7 @@ export class NakamaService {
             }]
           });
           if (todo.objects.length)
-            this.modify_remote_info_as_local(todo.objects[0].value, _is_official, _target);
+            await this.modify_remote_info_as_local(todo.objects[0].value, _is_official, _target);
           else try { // 로컬에 있는 같은 id의 할 일 삭제
             this.RemoteTodoCounter[_is_official][_target].splice(i, 1);
             let data = await this.indexed.loadTextFromUserPath(`todo/${key}/info.todo`)
@@ -1044,46 +1044,45 @@ export class NakamaService {
   }
 
   /** 원격 정보를 로컬에 맞게 수정, 그 후 로컬에 다시 저장하기 */
-  modify_remote_info_as_local(todo_info: any, _is_official: string, _target: string) {
+  async modify_remote_info_as_local(todo_info: any, _is_official: string, _target: string) {
     todo_info['remote']['name'] = this.servers[_is_official][_target].info.name;
     todo_info['remote']['isOfficial'] = _is_official;
     todo_info['remote']['target'] = _target;
     todo_info['remote']['type'] = `${_is_official}/${_target}`;
     this.set_todo_notification(todo_info);
     if (this.global.p5todo && this.global.p5todo['add_todo']) this.global.p5todo['add_todo'](JSON.stringify(todo_info));
-    this.indexed.loadTextFromUserPath(`todo/${todo_info['id']}/info.todo`, (e, v) => {
-      if (e && v) {
-        let json = JSON.parse(v);
-        // 온라인 할 일이지만 로컬에서 수정 처리가 되어있을 때, 동시에 원격 할 일이 최신 정보는 아님
-        if (todo_info.create_at <= json.create_at && json.modified) {
-          // 로컬에서는 이미 완료된 정보인 경우
-          if (json.done) {
-            this.doneTodo(todo_info, true);
-            return;
-          }
-          // 로컬에서는 삭제라고 명시한 경우
-          if (json.removed) {
-            this.deleteTodoFromStorage(true, json, true);
-            return;
-          }
-          // 로컬에서 내용이 변경된 경우 서버에 로컬 내용을 올림
-          delete json.modified;
-          this.indexed.saveTextFileToUserPath(JSON.stringify(json), `todo/${json['id']}/info.todo`);
-          this.servers[json.remote.isOfficial][json.remote.target].client.writeStorageObjects(
-            this.servers[json.remote.isOfficial][json.remote.target].session, [{
-              collection: 'server_todo',
-              key: json.id,
-              permission_read: 2,
-              permission_write: 1,
-              value: json,
-            }]).then(async v => {
-              await this.servers[json.remote.isOfficial][json.remote.target]
-                .socket.sendMatchState(this.self_match[json.remote.isOfficial][json.remote.target].match_id, MatchOpCode.MANAGE_TODO,
-                  encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
-            });
-        } else this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
+    let v = await this.indexed.loadTextFromUserPath(`todo/${todo_info['id']}/info.todo`);
+    if (v) {
+      let json = JSON.parse(v);
+      // 온라인 할 일이지만 로컬에서 수정 처리가 되어있을 때, 동시에 원격 할 일이 최신 정보는 아님
+      if (todo_info.create_at <= json.create_at && json.modified) {
+        // 로컬에서는 이미 완료된 정보인 경우
+        if (json.done) {
+          this.doneTodo(todo_info, true);
+          return;
+        }
+        // 로컬에서는 삭제라고 명시한 경우
+        if (json.removed) {
+          this.deleteTodoFromStorage(true, json, true);
+          return;
+        }
+        // 로컬에서 내용이 변경된 경우 서버에 로컬 내용을 올림
+        delete json.modified;
+        await this.indexed.saveTextFileToUserPath(JSON.stringify(json), `todo/${json['id']}/info.todo`);
+        await this.servers[json.remote.isOfficial][json.remote.target].client.writeStorageObjects(
+          this.servers[json.remote.isOfficial][json.remote.target].session, [{
+            collection: 'server_todo',
+            key: json.id,
+            permission_read: 2,
+            permission_write: 1,
+            value: json,
+          }]).then(async v => {
+            await this.servers[json.remote.isOfficial][json.remote.target]
+              .socket.sendMatchState(this.self_match[json.remote.isOfficial][json.remote.target].match_id, MatchOpCode.MANAGE_TODO,
+                encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
+          });
       } else this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
-    });
+    } else this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
   }
 
   /** 이 일을 완료했습니다 */
@@ -2510,7 +2509,7 @@ export class NakamaService {
                     this.removeRegisteredId(get_json.noti_id);
                     this.noti.ClearNoti(get_json.noti_id);
                   } catch (e) { }
-                  this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
+                  await this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
                   let json = v.objects[0].value as any;
                   this.noti.ClearNoti(json.noti_id);
                   this.set_todo_notification(json);
@@ -2521,11 +2520,11 @@ export class NakamaService {
               });
               break;
             case 'done': // 완료
-              this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
+              this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
                 if (e && v) {
                   let todo_info = JSON.parse(v);
                   todo_info.done = true;
-                  this.modify_remote_info_as_local(todo_info, _is_official, _target);
+                  await this.modify_remote_info_as_local(todo_info, _is_official, _target);
                   this.indexed.GetFileListFromDB(`todo/${sep[1]}`, (v) => {
                     v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
                     if (todo_info.noti_id)
@@ -2569,7 +2568,7 @@ export class NakamaService {
                 text: `${userAct}: ${this.users[_is_official][_target][sep[2]]['display_name']}`,
               });
               // 로컬 자료를 변경해야함
-              this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
+              this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
                 if (e && v) {
                   let todo_info = JSON.parse(v);
                   for (let i = 0, j = todo_info.workers.length; i < j; i++)
@@ -2578,7 +2577,7 @@ export class NakamaService {
                       todo_info.workers[i]['timestamp'] = Number(sep[4]);
                       break;
                     }
-                  this.modify_remote_info_as_local(todo_info, _is_official, _target);
+                  await this.modify_remote_info_as_local(todo_info, _is_official, _target);
                   this.SyncTodoCounter(_is_official, _target);
                 }
               });
