@@ -199,6 +199,8 @@ export class GroupServerPage implements OnInit {
         nameDiv.style('text-align', 'center');
         nameDiv.parent(ExceptPic);
         nameDiv.elt.onclick = () => { // 편집 모드로 변경
+          if (isPlatform != 'DesktopPWA')
+            this.ShowServerList = false;
           nameEditDiv.value(this.nakama.users.self['display_name'] ? nameDiv.html() : '');
           nameEditDiv.show();
           nameDiv.hide();
@@ -220,6 +222,8 @@ export class GroupServerPage implements OnInit {
           this.nakama.users.self['display_name'] = nameEditDiv.value();
         });
         nameEditDiv.elt.addEventListener('focusout', () => {
+          if (isPlatform != 'DesktopPWA')
+            this.ShowServerList = this.OnlineToggle;
           this.nakama.users.self['display_name'] = nameEditDiv.value();
           nameDiv.html(`${nameEditDiv.value() || this.lang.text['Profile']['noname_user']}`);
           nameEditDiv.hide();
