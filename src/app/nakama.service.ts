@@ -3767,7 +3767,7 @@ export class NakamaService {
         if (isPlatform == 'Android' || isPlatform == 'iOS')
           this.noti.noti.schedule({
             id: 8,
-            title: `${this.lang.text['ContentViewer']['SavingFile']}: ${msg.content.filename}`,
+            title: `${this.lang.text['ChatRoom']['SavingFile']}: ${msg.content.filename}`,
             progressBar: { indeterminate: true },
             sound: null,
             smallIcon: 'res://diychat',
@@ -3906,7 +3906,7 @@ export class NakamaService {
             if (isPlatform == 'Android' || isPlatform == 'iOS')
               this.noti.noti.schedule({
                 id: 8,
-                title: `${this.lang.text['ContentViewer']['SavingFile']}: ${info_json.filename}`,
+                title: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
                 progressBar: { indeterminate: true },
                 sound: null,
                 smallIcon: 'res://diychat',
@@ -3941,7 +3941,10 @@ export class NakamaService {
               }
               done(undefined);
             });
-            this.noti.ClearNoti(8);
+            setTimeout(() => {
+              console.log('게시물 받기 알림 종료: ', info.path);
+              this.noti.ClearNoti(8);
+            }, 1000);
             this.indexed.removeFileFromUserPath(`${info.path}.history`);
           }
         }

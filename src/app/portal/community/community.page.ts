@@ -131,14 +131,14 @@ export class CommunityPage implements OnInit {
     try {
       let info = {
         path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/info.json`,
-        type: 'text/plain',
+        type: 'application/json',
       }
       let res = await this.nakama.sync_load_file(info, isOfficial, target, 'server_post', user_id, post_id, false);
       let text = await res.value.text();
       let json = JSON.parse(text);
       // 내 게시물인지 여부를 로컬에 추가로 저장
       if (is_me) json['is_me'] = true;
-      let blob = new Blob([JSON.stringify(json)], { type: 'text/plain' });
+      let blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
       this.indexed.saveBlobToUserPath(blob, info.path);
       json['server'] = {
         name: this.nakama.servers[isOfficial][target].info.name,

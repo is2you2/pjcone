@@ -892,12 +892,12 @@ export class AddPostPage implements OnInit, OnDestroy {
     let json_str = JSON.stringify(make_copy_info);
     await this.indexed.saveTextFileToUserPath(json_str, `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/info.json`);
     if (!is_local) { // 서버에 정보 등록
-      let blob = new Blob([json_str], { type: 'text/plain' });
+      let blob = new Blob([json_str], { type: 'application/json' });
       let file: FileInfo = {};
-      file.filename = 'info.txt';
+      file.filename = 'info.json';
       file.blob = blob;
       file.size = blob.size;
-      file.type = 'text/plain';
+      file.type = 'application/json';
       file.file_ext = 'txt';
       file.typeheader = 'text';
       file.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/info.json`;
