@@ -40,6 +40,10 @@ export class PostViewerPage implements OnInit {
   blenderViewers: p5[] = [];
   /** 동영상, 음성 파일은 URL을 기록하고 있기 */
   FileURLs = [];
+  /** 재생이 가능한 동영상, 음성 개체 기록  
+   * 특정 재생기가 동작하면 다른 재생기들은 전부 멈추게 구성함
+   */
+  PlayableElements = [];
 
   /** PC에서 키를 눌러 컨텐츠 전환 */
   ChangeContentWithKeyInput() {
@@ -217,6 +221,10 @@ export class PostViewerPage implements OnInit {
         // 내용
         if (this.PostInfo['content']) {
           let content: string[] = this.PostInfo['content'].split('\n');
+          /** 내용이 전부 불러와지고나면 하는 행동  
+           * 보통 재생 가능한 콘텐츠가 준비될 때 해당 콘텐츠가 마지막에 로딩되는 것을 고려하여 구성됨
+           */
+          let AfterAllAct: Function[] = [];
           for (let i = 0, j = content.length; i < j; i++) {
             // 첨부파일인지 체크
             let is_attach = false;
@@ -272,9 +280,16 @@ export class PostViewerPage implements OnInit {
                     console.log('게시물 audio 첨부파일 불러오기 오류: ', e);
                   }
                   let audio = p.createAudio([FileURL]);
-                  audio.id(`Content_${index}`);
                   audio.showControls();
+                  audio.elt.onplay = () => {
+                    for (let i = 0, j = this.PlayableElements.length; i < j; i++)
+                      try {
+                        if (i != index)
+                          this.PlayableElements[i].pause();
+                      } catch (e) { }
+                  }
                   audio.parent(contentDiv);
+                  this.PlayableElements[index] = audio.elt;
                 }
                   break;
                 case 'video': {
@@ -286,11 +301,11 @@ export class PostViewerPage implements OnInit {
                     console.log('게시물 video 첨부파일 불러오기 오류: ', e);
                   }
                   let video = p.createVideo([FileURL]);
-                  video.id(`Content_${index}`);
                   video.style('width', '100%');
                   video.style('height', 'auto');
                   video.showControls();
                   video.parent(contentDiv);
+                  this.PlayableElements[index] = video.elt;
                 }
                   break;
                 case 'godot': {
@@ -397,36 +412,33 @@ export class PostViewerPage implements OnInit {
                   break;
               }
             } else { // 일반 문자열
-              try { // 일반 문자열이 json 구성을 띈 기능 정보인 경우
+              try { // 일반 문자열이 json 구성을 띈 기능 정보인 경우, 콘텐츠 시간 링크로 간주
                 let json = JSON.parse(content[i]);
-                switch (json['c']) {
-                  case 'v': { // 음성 파일 시간 기록자
-                    let AudioTimeLink = p.createDiv(`${this.PostInfo['attachments'][json['i']]['filename']}[${json['i']}]: (${json['t']})`);
-                    AudioTimeLink.style('background-color', '#8888');
-                    AudioTimeLink.style('width', 'fit-content');
-                    AudioTimeLink.style('height', 'fit-content');
-                    AudioTimeLink.style('border-radius', '16px');
-                    AudioTimeLink.style('padding', '8px 16px');
-                    AudioTimeLink.style('cursor', 'pointer');
-                    AudioTimeLink.parent(contentDiv);
-                    setTimeout(() => { // Div 개체가 반영되는 것을 잠시 기다림
-                      let CatchAudio = document.getElementById(`Content_${json['i']}`) as HTMLAudioElement;
-                      let sep = json['t'].split(':');
-                      let targetSecond = 0;
-                      let ratio = 1;
-                      for (let i = sep.length - 1; i >= 0; i--) {
-                        let AsNumber = Number(sep.pop());
-                        targetSecond += AsNumber * ratio;
-                        ratio *= 60;
-                      }
-                      AudioTimeLink.elt.onclick = () => {
-                        CatchAudio.currentTime = targetSecond;
-                        CatchAudio.play();
-                      }
-                    }, 100);
+                let TimeLink = p.createDiv(`${this.PostInfo['attachments'][json['i']]['filename']}[${json['i']}]: (${json['t']})`);
+                TimeLink.style('background-color', '#8888');
+                TimeLink.style('width', 'fit-content');
+                TimeLink.style('height', 'fit-content');
+                TimeLink.style('border-radius', '16px');
+                TimeLink.style('padding', '8px 16px');
+                TimeLink.style('cursor', 'pointer');
+                TimeLink.parent(contentDiv);
+                AfterAllAct.push(() => {
+                  let CatchMedia: HTMLAudioElement = this.PlayableElements[json['i']];
+                  let sep = json['t'].split(':');
+                  let targetSecond = 0;
+                  let ratio = 1;
+                  for (let i = sep.length - 1; i >= 0; i--) {
+                    let AsNumber = Number(sep.pop());
+                    targetSecond += AsNumber * ratio;
+                    ratio *= 60;
                   }
-                    break;
-                }
+                  TimeLink.elt.onclick = () => {
+                    try { // 사용자가 직접 타이핑 치는 경우를 대비
+                      CatchMedia.currentTime = targetSecond;
+                      CatchMedia.play();
+                    } catch (e) { }
+                  }
+                });
               } catch (e) { // 정말로 일반 문자열
                 let line = p.createDiv();
                 line.parent(contentDiv);
@@ -448,6 +460,8 @@ export class PostViewerPage implements OnInit {
               }
             }
           }
+          for (let i = 0, j = AfterAllAct.length; i < j; i++)
+            AfterAllAct[i]();
         }
       }
     });

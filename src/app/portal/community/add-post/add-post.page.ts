@@ -412,8 +412,8 @@ export class AddPostPage implements OnInit, OnDestroy {
       icon: 'timer-outline',
       act: () => {
         if (this.userInput.content)
-          this.userInput.content += `\n{"c":"v","i":"n","t":"${this.extended_buttons[4].name}"}\n`;
-        else this.userInput.content = `{"c":"v","i":"n","t":"${this.extended_buttons[4].name}"}\n`;
+          this.userInput.content += `\n{"i":"n","t":"${this.extended_buttons[4].name}"}\n`;
+        else this.userInput.content = `{"i":"n","t":"${this.extended_buttons[4].name}"}\n`;
       }
     }, { // 6
       icon: 'cloud-done-outline',
