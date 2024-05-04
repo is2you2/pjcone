@@ -159,6 +159,30 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           this.worker_done++;
         }
     }
+    this.nakama.StatusBarChangedCallback = () => {
+      if (!this.isModify) { // 새 할 일인 경우
+        this.LoadStorageList();
+      } else { // 기존 할 일을 수정중이라면
+        this.LoadStorageList();
+        if (this.userInput.remote) { // 원격이라면 연결 여부를 업데이트
+          try {
+            let CurrentOnline = false;
+            for (let i = 0, j = this.AvailableStorageList.length; i < j; i++) {
+              if (this.AvailableStorageList[i].type == `${this.userInput.remote.isOfficial}/${this.userInput.remote.target}`) {
+                CurrentOnline = true;
+                break;
+              }
+            }
+            this.isModifiable = CurrentOnline;
+            if (!CurrentOnline) { // 해당 서버가 온라인
+              this.userInput.display_creator = this.lang.text['TodoDetail']['Disconnected'];
+            } else { // 해당 서버가 오프라인
+              this.userInput.display_creator = this.nakama.load_other_user(this.userInput.remote.creator_id, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name']
+            }
+          } catch (e) { }
+        }
+      }
+    }
   }
 
   p5canvas: p5;
@@ -328,27 +352,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 저장소 변경이 가능한지 검토 (원격이면서 작성자가 남이 아닌지 검토) */
   isStoreAtChangable = true;
   async ionViewWillEnter() {
-    // 저장소로 사용 가능한 서버와 그룹 수집
-    let servers: RemoteInfo[] = [];
-    let isOfficial = Object.keys(this.nakama.servers);
-    isOfficial.forEach(_is_official => {
-      let Target = Object.keys(this.nakama.servers[_is_official]);
-      Target.forEach(_target => { // 온라인 그룹만 수집
-        if (this.statusBar.groupServer[_is_official][_target] == 'online') {
-          let serverInfo: RemoteInfo = {
-            name: `${this.nakama.servers[_is_official][_target].info.name}`,
-            isOfficial: _is_official,
-            target: _target,
-            type: `${_is_official}/${_target}`,
-          }
-          servers.push(serverInfo);
-        }
-      });
-    });
-    let merge = [...servers];
-    merge.forEach(info => {
-      this.AvailableStorageList.push(info);
-    });
+    this.LoadStorageList();
     let received_json: any;
     if (this.received_data) { // 이미 있는 데이터 조회
       this.buttonDisplay.saveTodo = this.lang.text['TodoDetail']['buttonDisplay_modify'];
@@ -508,6 +512,31 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.selected_blobFile_callback_act(stack[i].file);
       return false;
     }
+  }
+
+  /** 사용가능한 저장소 리스트 생성 */
+  LoadStorageList() {
+    // 저장소로 사용 가능한 서버와 그룹 수집
+    let servers: RemoteInfo[] = [];
+    let isOfficial = Object.keys(this.nakama.servers);
+    isOfficial.forEach(_is_official => {
+      let Target = Object.keys(this.nakama.servers[_is_official]);
+      Target.forEach(_target => { // 온라인 그룹만 수집
+        if (this.statusBar.groupServer[_is_official][_target] == 'online') {
+          let serverInfo: RemoteInfo = {
+            name: `${this.nakama.servers[_is_official][_target].info.name}`,
+            isOfficial: _is_official,
+            target: _target,
+            type: `${_is_official}/${_target}`,
+          }
+          servers.push(serverInfo);
+        }
+      });
+    });
+    let merge = [...servers];
+    merge.forEach(info => {
+      this.AvailableStorageList.push(info);
+    });
   }
 
   ionViewDidEnter() {
@@ -1411,5 +1440,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.nakama.AddTodoManageUpdateAct = undefined;
     if (this.p5canvas)
       this.p5canvas.remove();
+    delete this.nakama.StatusBarChangedCallback;
   }
 }

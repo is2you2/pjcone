@@ -2237,11 +2237,15 @@ export class NakamaService {
     return result;
   }
 
+  /** 서버 상태가 변경되는 경우 UI에 반영하기 위해 함수 설정을 받음 */
+  StatusBarChangedCallback: Function;
   /** 그룹 서버 및 설정-그룹서버의 상태 조정 */
   set_group_statusBar(_status: 'offline' | 'missing' | 'pending' | 'online' | 'certified', _is_official: string, _target: string) {
     if (this.statusBar.groupServer[_is_official][_target])
       this.statusBar.groupServer[_is_official][_target] = _status;
     this.catch_group_server_header(_status);
+    if (this.StatusBarChangedCallback)
+      this.StatusBarChangedCallback();
   }
 
   /** 채널 상태 검토 */
@@ -3961,7 +3965,6 @@ export class NakamaService {
               done(undefined);
             });
             setTimeout(() => {
-              console.log('게시물 받기 알림 종료: ', info.path);
               this.noti.ClearNoti(8);
             }, 1000);
             this.indexed.removeFileFromUserPath(`${info.path}.history`);
