@@ -2939,8 +2939,7 @@ export class NakamaService {
     this.check_sender_and_show_name(c, _is_official, _target);
     let original_msg = msg.content['msg'];
     this.content_to_hyperlink(c);
-    let already_lastchat = this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_time'] == msg.update_time;
-    if (!isNewChannel && !already_lastchat && this.channels_orig[_is_official][_target][c.channel_id]['update'])
+    if (!isNewChannel && this.channels_orig[_is_official][_target][c.channel_id]['update'])
       this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
     this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_time'] = msg.update_time;
     this.channels_orig[_is_official][_target][c.channel_id]['last_comment_id'] = c.message_id;
