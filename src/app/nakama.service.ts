@@ -3330,6 +3330,25 @@ export class NakamaService {
       case -2: // 친구 요청 받음
         break;
       case 1: // 전체 알림 수신
+        let image_form = `<img src="${this_noti.content['url']}" alt="noti_image" style="border-radius: 2px">`;
+        let text_form = `<div>${decodeURIComponent(this_noti.content['msg'])}</div>`;
+        let result_form = this_noti.content['url'] ? image_form + text_form : text_form;
+        this.alertCtrl.create({ // 전체 알림 알람 내용보기
+          header: this.servers[_is_official][_target].info.name,
+          message: new IonicSafeString(result_form),
+          buttons: [{
+            text: this.lang.text['Nakama']['LocalNotiOK'],
+            handler: async () => {
+              try {
+                await this.servers[_is_official][_target].client.deleteNotifications(
+                  this.servers[_is_official][_target].session, [this_noti.id]);
+              } catch (e) { }
+              this.noti.ClearNoti(this_noti.id);
+              this.update_notifications(_is_official, _target);
+            }
+          }]
+        }).then(v => v.present());
+        break;
       case -1: // 오프라인이거나 채널에 없을 때 알림받음
       // 채널에 없을 때 받은 알림은 메시지가 적혀있지 않아 그 내용을 저장할 수 없음
       case -3: // 상대방이 친구 요청 수락
@@ -3380,7 +3399,7 @@ export class NakamaService {
                   try {
                     let kick = await this_server.client.kickGroupUsers(this_server.session, this_noti['content']['group_id'], [other_user.users[0].id]);
                     if (!kick) console.log('그룹 참여 거절을 kick한 경우 오류');
-                    this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
+                    await this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
                     this.update_notifications(_is_official, _target);
                   } catch (e) {
                     console.error('사용자 강퇴 오류: ', e);
@@ -3429,14 +3448,7 @@ export class NakamaService {
       case 201: // 그룹 사진 변경됨
         break;
       case 1: // 전체 알림 메시지 수신
-        try {
-          let noti = await this.servers[_is_official][_target].client.deleteNotifications(
-            this.servers[_is_official][_target].session, [v['id']]);
-          if (!noti) console.log('알림 거부처리 검토 필요');
-          this.update_notifications(_is_official, _target);
-        } catch (e) {
-          console.error('알림 삭제 오류: ', e);
-        }
+        v['request'] = `${this.lang.text['Nakama']['ServerNoti']}: ${decodeURIComponent(v.content['msg'])}`;
         let decode_body = decodeURIComponent(v.content['msg']);
         let decode_image = decodeURIComponent(v.content['uri']);
         this.noti.PushLocal({
@@ -3465,9 +3477,12 @@ export class NakamaService {
             message: new IonicSafeString(result_form),
             buttons: [{
               text: this.lang.text['Nakama']['LocalNotiOK'],
-              handler: () => {
-                this.servers[_is_official][_target].client.deleteNotifications(
-                  this.servers[_is_official][_target].session, [v.id]);
+              handler: async () => {
+                try {
+                  await this.servers[_is_official][_target].client.deleteNotifications(
+                    this.servers[_is_official][_target].session, [v.id]);
+                } catch (e) { }
+                this.rearrange_notifications();
               }
             }]
           }).then(v => v.present());

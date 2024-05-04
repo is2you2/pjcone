@@ -409,6 +409,7 @@ AlreadyHaveTargetName,이미 같은 이름의 서버가 있습니다,There alrea
 NeedLoginInfo,로그인 정보를 확인해주세요,Please check your login information
 NeedLinkUser,사용자를 연결해주세요,Please link user device info
 NeedAccountReset,비밀번호를 확인해주세요,Please check your password
+ServerNoti,서버 알림,Server notification
 RegisterUserSucc,서버 이용자로 등록되었습니다,You are registered as a server user
 UnexpectedLoginErr,준비되지 않은 오류 유형,Unexpected error type
 CannotOpenImg,유효한 이미지가 아닙니다.,Not a valid image.

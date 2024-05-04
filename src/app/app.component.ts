@@ -132,9 +132,9 @@ export class AppComponent {
                 text: lang.text['Nakama']['ReqContReject'],
                 handler: () => {
                   this_server.client.kickGroupUsers(this_server.session, props.data.group_id, [props.data.user_id])
-                    .then(b => {
+                    .then(async b => {
                       if (!b) console.warn('그룹 참여 거절을 kick한 경우 오류');
-                      this_server.client.deleteNotifications(this_server.session, [props.data.noti_id]);
+                      await this_server.client.deleteNotifications(this_server.session, [props.data.noti_id]);
                       nakama.update_notifications(props.data.isOfficial, props.data.Target);
                     })
                 },
