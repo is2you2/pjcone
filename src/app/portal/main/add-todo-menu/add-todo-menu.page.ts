@@ -486,9 +486,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       this.startDisplay = date_start.toLocaleString(this.lang.lang);
       this.startDisplay = this.startDisplay.substring(0, this.startDisplay.lastIndexOf(':'));
     }
-    this.limitDisplay = date_limit.toLocaleString(this.lang.lang);
-    this.limitDisplay = this.limitDisplay.substring(0, this.limitDisplay.lastIndexOf(':'));
-    this.isLimitChangable = true;
+    this.limit_change({ detail: { value: this.userInput.limit } });
     if (this.userInput.workers) { // 작업자 이름 동기화 시도
       for (let i = 0, j = this.userInput.workers.length; i < j; i++) {
         try {
@@ -540,7 +538,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   start_change(ev: any) {
-    if (!this.isLimitChangable) return;
     this.userInput.startFrom = ev.detail.value;
     this.startDisplay = new Date(ev.detail.value).toLocaleString(this.lang.lang);
     this.startDisplay = this.startDisplay.substring(0, this.startDisplay.lastIndexOf(':'))
@@ -549,13 +546,16 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   /** 기한이 현재시간보다 미래로 되어있어 기한으로서 의미가 있음 */
   isLimitUsable = false;
-  isLimitChangable = false;
   /** 기한 변경됨 */
   limit_change(ev: any) {
-    if (!this.isLimitChangable) return;
     this.userInput.limit = ev.detail.value;
-    this.limitDisplay = new Date(ev.detail.value).toLocaleString(this.lang.lang);
-    this.limitDisplay = this.limitDisplay.substring(0, this.limitDisplay.lastIndexOf(':'))
+    let limitDate = new Date(ev.detail.value);
+    if (limitDate.getTime() <= Date.now()) {
+      this.limitDisplay = this.lang.text['TodoDetail']['NoDeadLine'];
+    } else {
+      this.limitDisplay = limitDate.toLocaleString(this.lang.lang);
+      this.limitDisplay = this.limitDisplay.substring(0, this.limitDisplay.lastIndexOf(':'))
+    }
     this.limitTimeP5Display = new Date(this.userInput.limit).getTime();
     this.startTimeP5Display = Date.now();
     this.isLimitUsable = this.limitTimeP5Display > this.startTimeP5Display;

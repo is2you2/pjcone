@@ -3,13 +3,13 @@
 HeaderLabel,브라우저앱 설치 안내,Browser app installation instructions
 UseAnyway,어쨌든 앱 실행,Run app anyway
 ## Main,,
-Title,퀘스트,Quest
-NoTodo,퀘스트 추가하기,Add quest
-RequestTodo,새로운 퀘스트를 받았습니다,Received new quest
-WorkerDone,퀘스트 완료,Quest completed
-WorkerAbandon,퀘스트 포기,Give up quest
+Title,해야할 일,Todo
+NoTodo,할 일 추가하기,Add todo
+RequestTodo,새로운 할 일을 받았습니다,Received new todo
+WorkerDone,할 일 완료,Todo completed
+WorkerAbandon,할 일 포기,Give up todo
 ## TodoDetail,,
-Title,퀘스트 상세,Quest detail
+Title,할 일 상세,Todo detail
 Server,서버,Server
 Group,채널,Group
 StoreAt,저장 위치,Save to
@@ -18,8 +18,7 @@ WrittenByMe,내가 작성,Written by me
 DeletedServer,서버 삭제됨,Server deleted
 Disconnected,연결 끊김,Disconnected
 TodoComplete,완료,Done
-TodoMoveTo,이관,Move
-TodoFocus,집중,Focus
+NoDeadLine,기한 없음,No deadline
 DisplayName,표시명,Display name
 DisplayName_placeholder,짧게,briefly
 CustomColor,색상,Color
