@@ -872,7 +872,6 @@ export class NakamaService {
     await this.SyncTodoCounter(_is_official, _target);
     await this.load_server_todo(_is_official, _target);
     await this.RemoteTodoSelfCheck(_is_official, _target);
-    this.set_group_statusBar('online', _is_official, _target);
     await this.get_group_list_from_server(_is_official, _target);
     await this.redirect_channel(_is_official, _target);
     await this.load_posts_counter();
@@ -881,6 +880,7 @@ export class NakamaService {
     await this.update_notifications(_is_official, _target);
     this.rearrange_channels();
     this.rearrange_group_list();
+    this.set_group_statusBar('online', _is_official, _target);
     for (let i = 0, j = this.AfterLoginAct.length; i < j; i++)
       try {
         await this.AfterLoginAct[i]();

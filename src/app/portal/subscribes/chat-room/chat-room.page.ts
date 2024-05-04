@@ -728,6 +728,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.CreateDrop();
       }, 0);
     this.isMobile = isPlatform == 'Android' || isPlatform == 'iOS';
+    this.nakama.StatusBarChangedCallback = async () => {
+      await this.SetExtensionButtons();
+    }
   }
 
   ionViewWillEnter() {
@@ -986,40 +989,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       id: this.info.id,
     }
     this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
-    this.extended_buttons.forEach(button => {
-      button.isHide = false;
-    });
-    switch (this.info['redirect']['type']) {
-      case 2: // 1:1 대화라면
-        if (this.info['status'] != 'missing') {
-          if (!this.info['redirect']) // 채널 최초 생성 오류 방지용
-            this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
-          else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
-            this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
-          this.extended_buttons[0].isHide = true;
-          this.extended_buttons[1].isHide = true;
-          this.extended_buttons[9].isHide = false;
-          this.extended_buttons[12].isHide = true;
-        }
-        break;
-      case 3: // 그룹 대화라면
-        if (this.info['status'] != 'missing')
-          await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
-        this.extended_buttons[1].isHide = true;
-        this.extended_buttons[11].isHide = true;
-        delete this.extended_buttons[0].isHide;
-        this.extended_buttons[9].isHide = true;
-        this.extended_buttons[12].isHide = true;
-        break;
-      case 0: // 로컬 채널형 기록
-        this.extended_buttons[0].isHide = true;
-        this.extended_buttons[8].isHide = true;
-        this.extended_buttons[9].isHide = true;
-        this.extended_buttons[11].isHide = true;
-        break;
-      default:
-        break;
-    }
+    await this.SetExtensionButtons();
     // 실시간 채팅을 받는 경우 행동처리
     if (this.nakama.channels_orig[this.isOfficial][this.target] &&
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']] &&
@@ -1101,6 +1071,49 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.global.godot_window['received_msg'](regen_msg);
         }
       }
+    // 마지막 대화 기록을 받아온다
+    await this.pull_msg_history();
+    setTimeout(() => {
+      let scrollHeight = this.ChatLogs.scrollHeight;
+      this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+    }, 500);
+  }
+
+  /** 확장버튼 설정 초기화 */
+  async SetExtensionButtons() {
+    this.extended_buttons.forEach(button => {
+      button.isHide = false;
+    });
+    switch (this.info['redirect']['type']) {
+      case 2: // 1:1 대화라면
+        if (this.info['status'] != 'missing') {
+          if (!this.info['redirect']) // 채널 최초 생성 오류 방지용
+            this.info['status'] = this.info['info']['online'] ? 'online' : 'pending';
+          else if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online')
+            this.info['status'] = this.nakama.load_other_user(this.info['redirect']['id'], this.isOfficial, this.target)['online'] ? 'online' : 'pending';
+          this.extended_buttons[0].isHide = true;
+          this.extended_buttons[1].isHide = true;
+          this.extended_buttons[9].isHide = false;
+          this.extended_buttons[12].isHide = true;
+        }
+        break;
+      case 3: // 그룹 대화라면
+        if (this.info['status'] != 'missing')
+          await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
+        this.extended_buttons[1].isHide = true;
+        this.extended_buttons[11].isHide = true;
+        delete this.extended_buttons[0].isHide;
+        this.extended_buttons[9].isHide = true;
+        this.extended_buttons[12].isHide = true;
+        break;
+      case 0: // 로컬 채널형 기록
+        this.extended_buttons[0].isHide = true;
+        this.extended_buttons[8].isHide = true;
+        this.extended_buttons[9].isHide = true;
+        this.extended_buttons[11].isHide = true;
+        break;
+    }
+    // 오프라인 상태라면 메뉴를 간소화한다
     if (this.info['status'] === undefined || this.info['status'] == 'missing') {
       this.extended_buttons.forEach(button => {
         button.isHide = true;
@@ -1110,12 +1123,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.extended_buttons[0].isHide = false;
     }
     this.extended_buttons[10].isHide = isNativefier || this.info['status'] == 'missing';
-    // 마지막 대화 기록을 받아온다
-    await this.pull_msg_history();
-    setTimeout(() => {
-      let scrollHeight = this.ChatLogs.scrollHeight;
-      this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
-    }, 500);
   }
 
   /** 선택한 메시지 복사 */
@@ -2320,5 +2327,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     try {
       await VoiceRecorder.stopRecording();
     } catch (e) { }
+    delete this.nakama.StatusBarChangedCallback;
   }
 }
