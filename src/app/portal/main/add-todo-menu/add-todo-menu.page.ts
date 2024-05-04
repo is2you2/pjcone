@@ -375,7 +375,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     let ionInput = document.getElementById('titleInput');
     this.titleIonInput = ionInput.children[0].children[1].children[0];
     setTimeout(() => {
-      if (!this.isModify)
+      if (!this.isModify && !this.checkIfInputFocus())
         this.titleIonInput.focus();
     }, 200);
     this.ImporantSelChanged({ detail: { value: this.userInput.importance } });
@@ -685,6 +685,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 할 일 제목 입력칸 */
   titleIonInput: any;
   input_ele_ids = [];
+  /** 현재 단축키를 쓸 수 있는 상황인지 검토하는 함수  
+   * @returns Title, desc에 포커싱 여부
+   */
   checkIfInputFocus(): boolean {
     if (!this.input_ele_ids.length) {
       this.input_ele_ids.push(this.titleIonInput);
