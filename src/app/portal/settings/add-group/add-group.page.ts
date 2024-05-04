@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonToggle, ModalController } from '@ionic/angular';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -18,7 +18,7 @@ import * as p5 from 'p5';
   templateUrl: './add-group.page.html',
   styleUrls: ['./add-group.page.scss'],
 })
-export class AddGroupPage implements OnInit {
+export class AddGroupPage implements OnInit, OnDestroy {
 
   constructor(
     public modalCtrl: ModalController,
@@ -45,6 +45,18 @@ export class AddGroupPage implements OnInit {
     let tmp = JSON.parse(localStorage.getItem('add-group'));
     if (tmp)
       this.userInput = tmp;
+    this.LoadListServer();
+    if (this.servers.length > 1) this.index = 1;
+    this.userInput.server = this.servers[this.index];
+    this.file_sel_id = `add_group_${new Date().getTime()}`;
+    this.nakama.StatusBarChangedCallback = () => {
+      this.LoadListServer();
+      this.index = 0;
+    };
+  }
+
+  /** 선택할 수 있는 서버 리스트 만들기 */
+  LoadListServer() {
     this.servers = this.nakama.get_all_server_info(true, true);
     let local_info = {
       name: this.lang.text['AddGroup']['UseLocalStorage'],
@@ -53,9 +65,6 @@ export class AddGroupPage implements OnInit {
       local: true,
     };
     this.servers.unshift(local_info);
-    if (this.servers.length > 1) this.index = 1;
-    this.userInput.server = this.servers[this.index];
-    this.file_sel_id = `add_group_${new Date().getTime()}`;
   }
 
   ionViewWillEnter() {
@@ -313,8 +322,9 @@ export class AddGroupPage implements OnInit {
     }
   }
 
-  ionViewWillLeave() {
+  ngOnDestroy(): void {
     if (this.p5canvas) this.p5canvas.remove();
+    delete this.nakama.StatusBarChangedCallback;
   }
 
   file_sel_id = '';
