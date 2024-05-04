@@ -141,6 +141,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     let parent = document.getElementById('p5Drop_addPost');
     if (!this.p5canvas)
       this.p5canvas = new p5((p: p5) => {
+        let VoiceStartTime = 0;
         p.setup = () => {
           let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
           canvas.parent(parent);
@@ -148,6 +149,25 @@ export class AddPostPage implements OnInit, OnDestroy {
           canvas.drop(async (file: any) => {
             await this.selected_blobFile_callback_act(file.file);
           });
+          p.noLoop();
+          p['StartVoiceTimer'] = () => {
+            p.loop();
+            VoiceStartTime = p.millis();
+          }
+          p['StopVoiceTimer'] = () => {
+            p.noLoop();
+          }
+        }
+        p.draw = () => {
+          if (this.useVoiceRecording)
+            this.extended_buttons[4].name = millis_to_timeDisplay(p.millis() - VoiceStartTime);
+        }
+        let millis_to_timeDisplay = (m: number) => {
+          let second = p.floor(m / 1000) % 60;
+          let minite = p.floor(second / 60) % 60;
+          let hours = p.floor(minite / 60);
+          let result = hours ? `${hours}:${minite}:${p.nf(second, 2)}` : `${minite}:${p.nf(second, 2)}`;
+          return result;
         }
         p.mouseMoved = (ev: any) => {
           if (ev['dataTransfer']) {
@@ -377,6 +397,8 @@ export class AddPostPage implements OnInit, OnDestroy {
             this.p5toast.show({
               text: this.lang.text['ChatRoom']['StartVRecord'],
             });
+            this.p5canvas['StartVoiceTimer']();
+            this.extended_buttons[5].isHide = false;
           } else { // 권한이 없다면 권한 요청 및 UI 복구
             this.useVoiceRecording = false;
             this.extended_buttons[4].icon = 'mic-circle-outline';
@@ -385,6 +407,15 @@ export class AddPostPage implements OnInit, OnDestroy {
         } else await this.StopAndSaveVoiceRecording();
       }
     }, { // 5
+      name: this.lang.text['AddPost']['RecordVoiceTime'],
+      isHide: true,
+      icon: 'timer-outline',
+      act: () => {
+        if (this.userInput.content)
+          this.userInput.content += `\n{"c":"v","i":"n","t":"${this.extended_buttons[4].name}"}\n`;
+        else this.userInput.content = `{"c":"v","i":"n","t":"${this.extended_buttons[4].name}"}\n`;
+      }
+    }, { // 6
       icon: 'cloud-done-outline',
       name: this.lang.text['ChatRoom']['UseCloud'],
       act: () => {
@@ -393,12 +424,38 @@ export class AddPostPage implements OnInit, OnDestroy {
     }];
 
   async StopAndSaveVoiceRecording() {
-    let data = await VoiceRecorder.stopRecording();
-    let blob = this.global.Base64ToBlob(`${data.value.mimeType},${data.value.recordDataBase64}`);
-    blob['name'] = `${this.lang.text['ChatRoom']['VoiceRecord']}.${data.value.mimeType.split('/').pop().split(';')[0]}`;
-    blob['type_override'] = data.value.mimeType;
-    this.selected_blobFile_callback_act(blob);
-    this.extended_buttons[4].icon = 'mic-circle-outline';
+    try {
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
+      loading.present();
+      let data = await VoiceRecorder.stopRecording();
+      let blob = this.global.Base64ToBlob(`${data.value.mimeType},${data.value.recordDataBase64}`);
+      blob['name'] = `${this.lang.text['ChatRoom']['VoiceRecord']}.${data.value.mimeType.split('/').pop().split(';')[0]}`;
+      blob['type_override'] = data.value.mimeType;
+      await this.selected_blobFile_callback_act(blob);
+      this.extended_buttons[4].icon = 'mic-circle-outline';
+      this.extended_buttons[4].name = this.lang.text['ChatRoom']['Voice'];
+      this.checkVoiceLinker();
+      loading.dismiss();
+    } catch (e) {
+      this.p5toast.show({
+        text: `${this.lang.text['AddPost']['FailedToSaveVoice']}:${e}`,
+      });
+    }
+  }
+
+  /** 게시물 내용에 음성 시간 링크가 있는지 확인 */
+  checkVoiceLinker() {
+    this.extended_buttons[5].isHide = true;
+    this.p5canvas['StopVoiceTimer']();
+    let content_as_line = this.userInput.content.split('\n');
+    for (let i = 0, j = content_as_line.length; i < j; i++)
+      try {
+        let json = JSON.parse(content_as_line[i]);
+        // 순번이 지정되지 않은 녹음위치 정보를 마지막 녹음의 소유로 판단
+        if (json['i'] = 'n') json['i'] = this.userInput.attachments.length - 1;
+        content_as_line[i] = JSON.stringify(json);
+      } catch (e) { }
+    this.userInput.content = content_as_line.join('\n');
   }
 
   /** 채널 배경화면 변경 (from PostMainImage_sel) */
@@ -724,8 +781,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   useFirstCustomCDN = true;
   async toggle_custom_attach(force?: boolean) {
     this.useFirstCustomCDN = force ?? !this.useFirstCustomCDN;
-    this.extended_buttons[5].icon = this.useFirstCustomCDN
-      ? 'cloud-done-outline' : 'cloud-offline-outline';
+    this.extended_buttons[6].icon = this.useFirstCustomCDN ? 'cloud-done-outline' : 'cloud-offline-outline';
     if (this.useFirstCustomCDN)
       localStorage.setItem('useFFSCDN', `${this.useFirstCustomCDN}`);
     else localStorage.removeItem('useFFSCDN');
