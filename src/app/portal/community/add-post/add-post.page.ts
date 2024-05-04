@@ -54,6 +54,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.p5canvas)
       this.p5canvas.remove();
+    delete this.nakama.StatusBarChangedCallback;
   }
 
   servers: ServerInfo[] = [];
@@ -93,15 +94,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       }
       this.MakeAttachHaveContextMenu();
       if (!InitAct) return;
-      this.servers = this.nakama.get_all_server_info(true, true);
-      /** 이 기기에 저장에 사용하는 정보 */
-      let local_info = {
-        name: this.lang.text['AddGroup']['UseLocalStorage'],
-        isOfficial: 'local',
-        target: 'target',
-        local: true,
-      };
-      this.servers.unshift(local_info);
+      this.LoadListServer();
       if (this.servers.length > 1) this.index = 1;
       /** 편집하기로 들어왔다면 */
       if (navParams && navParams.data) {
@@ -134,6 +127,22 @@ export class AddPostPage implements OnInit, OnDestroy {
       setTimeout(() => {
         this.CreateDrop();
       }, 0);
+    this.nakama.StatusBarChangedCallback = () => {
+      this.LoadListServer();
+      this.index = 0;
+    };
+  }
+
+  LoadListServer() {
+    this.servers = this.nakama.get_all_server_info(true, true);
+    /** 이 기기에 저장에 사용하는 정보 */
+    let local_info = {
+      name: this.lang.text['AddGroup']['UseLocalStorage'],
+      isOfficial: 'local',
+      target: 'target',
+      local: true,
+    };
+    this.servers.unshift(local_info);
   }
 
   p5canvas: p5;
