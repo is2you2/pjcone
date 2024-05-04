@@ -1508,10 +1508,6 @@ export class IonicViewerPage implements OnInit {
         break;
     }
     URL.revokeObjectURL(this.FileURL);
-    try {
-      let is_exist = await this.file.checkFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
-      if (is_exist) await this.file.removeFile(this.file.externalDataDirectory, `viewer_tmp.${this.FileInfo.file_ext}`);
-    } catch (e) { }
   }
 
   ionViewDidLeave() {
