@@ -8,7 +8,7 @@ services:
     environment:
       USER: root
       DISPLAY: :1
-      PATH: $PATH:/root/Android/Sdk/platform-tools:/usr/local/sbin:/usr/sbin:/sbin
+      PATH: /root/Android/Sdk/platform-tools:/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin
       GODOT_SILENCE_ROOT_WARNING: 1
       CAPACITOR_ANDROID_STUDIO_PATH: /root/android-studio/bin/studio.sh
     ports:
