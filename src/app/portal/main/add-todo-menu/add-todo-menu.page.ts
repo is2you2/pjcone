@@ -547,6 +547,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.startTimeP5Display = new Date(this.userInput.startFrom).getTime();
   }
 
+  /** 기한이 현재시간보다 미래로 되어있어 기한으로서 의미가 있음 */
+  isLimitUsable = false;
   isLimitChangable = false;
   /** 기한 변경됨 */
   limit_change(ev: any) {
@@ -555,6 +557,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.limitDisplay = new Date(ev.detail.value).toLocaleString(this.lang.lang);
     this.limitDisplay = this.limitDisplay.substring(0, this.limitDisplay.lastIndexOf(':'))
     this.limitTimeP5Display = new Date(this.userInput.limit).getTime();
+    this.startTimeP5Display = Date.now();
+    this.isLimitUsable = this.limitTimeP5Display > this.startTimeP5Display;
   }
 
   /** 첨부파일 삭제 */
