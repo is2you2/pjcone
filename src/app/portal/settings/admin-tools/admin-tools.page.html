@@ -31,6 +31,9 @@
       [placeholder]="lang.text['AdminTools']['EnterURI']">
     </ion-input>
   </ion-item>
+  <ion-item>
+    <ion-checkbox [(ngModel)]="notification.persistent">{{lang.text['AdminTools']['isPersistent']}}</ion-checkbox>
+  </ion-item>
   <textarea class="infobox content_size" [(ngModel)]="notification.msg"
     [placeholder]="lang.text['AdminTools']['NoNotiMsg']"></textarea>
   <ion-item button [disabled]="is_sending || (!notification.msg && !notification.uri)">
