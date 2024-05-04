@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { AlertController, ModalController, NavParams } from '@ionic/angular';
 import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -24,7 +24,6 @@ export class PostViewerPage implements OnInit {
     public nakama: NakamaService,
     private alertCtrl: AlertController,
     private global: GlobalActService,
-    private loadingCtrl: LoadingController,
   ) { }
 
   PostInfo: any;
@@ -39,6 +38,8 @@ export class PostViewerPage implements OnInit {
   }
   /** 블렌더 파일 불러오기에 사용된 개체들 */
   blenderViewers: p5[] = [];
+  /** 동영상, 음성 파일은 URL을 기록하고 있기 */
+  FileURLs = [];
 
   /** PC에서 키를 눌러 컨텐츠 전환 */
   ChangeContentWithKeyInput() {
@@ -266,13 +267,12 @@ export class PostViewerPage implements OnInit {
                   let FileURL = this.PostInfo['attachments'][index]['url'];
                   if (!FileURL) try {
                     FileURL = URL.createObjectURL(this.PostInfo['attachments'][index]['blob']);
-                    setTimeout(() => {
-                      URL.revokeObjectURL(FileURL)
-                    }, 100);
+                    this.FileURLs.push(FileURL);
                   } catch (e) {
                     console.log('게시물 audio 첨부파일 불러오기 오류: ', e);
                   }
                   let audio = p.createAudio([FileURL]);
+                  audio.id(`Content_${index}`);
                   audio.showControls();
                   audio.parent(contentDiv);
                 }
@@ -281,13 +281,12 @@ export class PostViewerPage implements OnInit {
                   let FileURL = this.PostInfo['attachments'][index]['url'];
                   if (!FileURL) try {
                     FileURL = URL.createObjectURL(this.PostInfo['attachments'][index]['blob']);
-                    setTimeout(() => {
-                      URL.revokeObjectURL(FileURL)
-                    }, 100);
+                    this.FileURLs.push(FileURL);
                   } catch (e) {
                     console.log('게시물 video 첨부파일 불러오기 오류: ', e);
                   }
                   let video = p.createVideo([FileURL]);
+                  video.id(`Content_${index}`);
                   video.style('width', '100%');
                   video.style('height', 'auto');
                   video.showControls();
@@ -398,21 +397,53 @@ export class PostViewerPage implements OnInit {
                   break;
               }
             } else { // 일반 문자열
-              let line = p.createDiv();
-              line.parent(contentDiv);
-              // 문자열을 띄어쓰기 단위로 나누기
-              let sep = content[i].split(' ');
-              for (let k = 0, l = sep.length; k < l; k++) {
-                // 웹 주소라면 하이퍼링크 처리
-                if (sep[k].indexOf('http:') == 0 || sep[k].indexOf('https:') == 0) {
-                  let link = p.createA(sep[k], sep[k]);
-                  link.attribute('target', '_system');
-                  link.parent(line);
-                  let word = p.createSpan('&nbsp');
-                  word.parent(line);
-                } else {
-                  let word = p.createSpan(sep[k] + '&nbsp');
-                  word.parent(line);
+              try { // 일반 문자열이 json 구성을 띈 기능 정보인 경우
+                let json = JSON.parse(content[i]);
+                switch (json['c']) {
+                  case 'v': { // 음성 파일 시간 기록자
+                    let AudioTimeLink = p.createDiv(`${this.PostInfo['attachments'][json['i']]['filename']}[${json['i']}]: (${json['t']})`);
+                    AudioTimeLink.style('background-color', '#8888');
+                    AudioTimeLink.style('width', 'fit-content');
+                    AudioTimeLink.style('height', 'fit-content');
+                    AudioTimeLink.style('border-radius', '16px');
+                    AudioTimeLink.style('padding', '8px 16px');
+                    AudioTimeLink.style('cursor', 'pointer');
+                    AudioTimeLink.parent(contentDiv);
+                    setTimeout(() => { // Div 개체가 반영되는 것을 잠시 기다림
+                      let CatchAudio = document.getElementById(`Content_${json['i']}`) as HTMLAudioElement;
+                      let sep = json['t'].split(':');
+                      let targetSecond = 0;
+                      let ratio = 1;
+                      for (let i = sep.length - 1; i >= 0; i--) {
+                        let AsNumber = Number(sep.pop());
+                        targetSecond += AsNumber * ratio;
+                        ratio *= 60;
+                      }
+                      AudioTimeLink.elt.onclick = () => {
+                        CatchAudio.currentTime = targetSecond;
+                        CatchAudio.play();
+                      }
+                    }, 100);
+                  }
+                    break;
+                }
+              } catch (e) { // 정말로 일반 문자열
+                let line = p.createDiv();
+                line.parent(contentDiv);
+                // 문자열을 띄어쓰기 단위로 나누기
+                let sep = content[i].split(' ');
+                for (let k = 0, l = sep.length; k < l; k++) {
+                  // 웹 주소라면 하이퍼링크 처리
+                  if (sep[k].indexOf('http:') == 0 || sep[k].indexOf('https:') == 0) {
+                    let link = p.createA(sep[k], sep[k]);
+                    link.attribute('target', '_system');
+                    link.parent(line);
+                    let word = p.createSpan('&nbsp');
+                    word.parent(line);
+                  } else {
+                    let word = p.createSpan(sep[k] + '&nbsp');
+                    word.parent(line);
+                  }
                 }
               }
             }
@@ -443,6 +474,8 @@ export class PostViewerPage implements OnInit {
   }
 
   ionViewDidLeave() {
+    for (let i = 0, j = this.FileURLs.length; i < j; i++)
+      URL.revokeObjectURL(this.FileURLs[i]);
     for (let i = 0, j = this.blenderViewers.length; i < j; i++)
       this.blenderViewers[i].remove();
     if (this.p5canvas)

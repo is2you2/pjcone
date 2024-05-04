@@ -452,7 +452,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       try {
         let json = JSON.parse(content_as_line[i]);
         // 순번이 지정되지 않은 녹음위치 정보를 마지막 녹음의 소유로 판단
-        if (json['i'] = 'n') json['i'] = this.userInput.attachments.length - 1;
+        if (json['i'] == 'n') json['i'] = this.userInput.attachments.length - 1;
         content_as_line[i] = JSON.stringify(json);
       } catch (e) { }
     this.userInput.content = content_as_line.join('\n');
