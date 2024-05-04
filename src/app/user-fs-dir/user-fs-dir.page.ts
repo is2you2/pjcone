@@ -688,12 +688,12 @@ export class UserFsDirPage implements OnInit {
       else {
         let target_path = RecursiveEntry[i].nativeURL.split('org.pjcone.portal/files/')[1];
         try {
+          loading.message = `${this.lang.text['UserFsDir']['Import']}: ${RecursiveEntry[i].name}`
           const data = await Filesystem.readFile({
             path: RecursiveEntry[i].nativeURL,
           });
           let base64 = (data.data as any).replace(/"|\\|=/g, '');
           await this.indexed.saveBase64ToUserPath(',' + base64, decodeURIComponent(target_path));
-          loading.message = `${this.lang.text['UserFsDir']['Import']}: ${RecursiveEntry[i].name}`
         } catch (e) {
           console.log('불러오기 실패: ', e);
           this.p5toast.show({
