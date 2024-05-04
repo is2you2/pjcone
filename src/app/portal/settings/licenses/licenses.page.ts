@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import * as p5 from "p5";
 import { GlobalActService } from 'src/app/global-act.service';
@@ -13,7 +13,7 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
   templateUrl: './licenses.page.html',
   styleUrls: ['./licenses.page.scss'],
 })
-export class LicensesPage implements OnInit {
+export class LicensesPage implements OnInit, OnDestroy {
 
   constructor(
     public lang: LanguageSettingService,
@@ -86,6 +86,9 @@ export class LicensesPage implements OnInit {
 
   ionViewWillLeave() {
     delete this.global.p5key['KeyShortCut']['Escape'];
+  }
+
+  ngOnDestroy(): void {
     this.p5canvas.remove();
   }
 

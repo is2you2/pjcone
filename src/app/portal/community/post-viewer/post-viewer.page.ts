@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AlertController, ModalController, NavParams } from '@ionic/angular';
 import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -14,7 +14,7 @@ import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
   templateUrl: './post-viewer.page.html',
   styleUrls: ['./post-viewer.page.scss'],
 })
-export class PostViewerPage implements OnInit {
+export class PostViewerPage implements OnInit, OnDestroy {
 
   constructor(
     public modalCtrl: ModalController,
@@ -487,7 +487,7 @@ export class PostViewerPage implements OnInit {
     }).then(v => v.present());
   }
 
-  ionViewDidLeave() {
+  ngOnDestroy(): void {
     for (let i = 0, j = this.FileURLs.length; i < j; i++)
       URL.revokeObjectURL(this.FileURLs[i]);
     for (let i = 0, j = this.blenderViewers.length; i < j; i++)

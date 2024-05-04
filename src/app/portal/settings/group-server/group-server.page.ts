@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonModal, ModalController, NavController, NavParams } from '@ionic/angular';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -19,7 +19,7 @@ import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
   templateUrl: './group-server.page.html',
   styleUrls: ['./group-server.page.scss'],
 })
-export class GroupServerPage implements OnInit {
+export class GroupServerPage implements OnInit, OnDestroy {
 
   constructor(
     public nakama: NakamaService,
@@ -494,8 +494,11 @@ export class GroupServerPage implements OnInit {
       }
       this.nakama.save_self_profile();
     }
-    this.p5canvas.remove();
     this.nakama.MakeChannelHaveContextMenuAct();
+  }
+
+  ngOnDestroy(): void {
+    this.p5canvas.remove();
   }
 
   /** 부드러운 이미지 교체를 위한 이미지 임시 배정 */

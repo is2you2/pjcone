@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
 // SPDX-License-Identifier: MIT
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
 import * as p5 from "p5";
 import { LanguageSettingService } from '../language-setting.service';
@@ -17,7 +17,7 @@ import { isPlatform } from '../app.component';
   templateUrl: './others-profile.page.html',
   styleUrls: ['./others-profile.page.scss'],
 })
-export class OthersProfilePage implements OnInit {
+export class OthersProfilePage implements OnInit, OnDestroy {
 
   constructor(
     public modalCtrl: ModalController,
@@ -350,7 +350,7 @@ export class OthersProfilePage implements OnInit {
       });
   }
 
-  ionViewDidLeave() {
+  ngOnDestroy(): void {
     delete this.nakama.socket_reactive['others-profile'];
     delete this.nakama.socket_reactive['others-online'];
     this.p5canvas.remove();
