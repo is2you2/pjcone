@@ -25,6 +25,7 @@ export class LanguageSettingService {
     GroupServer: {},
     Settings: {},
     Community: {},
+    MinimalChat: {},
   };
 
   constructor() {

@@ -10,10 +10,12 @@ import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
 import { StatusManageService } from '../status-manage.service';
 import { LanguageSettingService } from '../language-setting.service';
-import { NakamaService } from '../nakama.service';
 import { LocalGroupServerService } from '../local-group-server.service';
-import { SERVER_PATH_ROOT, isPlatform } from '../app.component';
+import { isPlatform } from '../app.component';
 import { GlobalActService, isDarkMode } from '../global-act.service';
+import clipboard from 'clipboardy';
+import { P5ToastService } from '../p5-toast.service';
+import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -32,9 +34,10 @@ export class MinimalChatPage implements OnInit {
     private params: NavParams,
     private statusBar: StatusManageService,
     public lang: LanguageSettingService,
-    private nakama: NakamaService,
     private local_server: LocalGroupServerService,
     private global: GlobalActService,
+    private mClipboard: Clipboard,
+    private p5toast: P5ToastService,
   ) { }
 
   uuid = this.device.uuid;
@@ -49,6 +52,7 @@ export class MinimalChatPage implements OnInit {
   /** 그룹사설서버 여부 */
   isCustomDedicated = false;
   isLocalAddress = false;
+  SelectedAddress = '';
   addresses: any[];
   isMobileApp = false;
   QRCodeSRC: any;
@@ -70,11 +74,22 @@ export class MinimalChatPage implements OnInit {
   }
 
   /** 주인장이 공유할 IP주소를 선택합니다 */
-  SelectOtherAddress(ev: any) {
+  async SelectOtherAddress(ev: any) {
     let address_text: string = ev.detail.value;
     let extract = address_text.substring(address_text.indexOf('(') + 1, address_text.indexOf(')'));
-    this.QRCodeSRC = this.global.readasQRCodeFromString(
-      `${SERVER_PATH_ROOT}pjcone_pwa/?group_dedi=ws://${extract}`);
+    try { // 사용자 지정 서버 업로드 시도 우선
+      let HasLocalPage = `${location.protocol}//${extract}:8080`;
+      const cont = new AbortController();
+      const id = setTimeout(() => {
+        cont.abort();
+      }, 500);
+      let res = await fetch(HasLocalPage, { signal: cont.signal });
+      clearTimeout(id);
+      if (res.ok) this.SelectedAddress = `${location.protocol}//${extract}:8080/?group_dedi=ws://${extract}`;
+    } catch (e) {
+      this.SelectedAddress = `http://pjcone.ddns.net/?group_dedi=ws://${extract}`;
+    }
+    this.QRCodeSRC = this.global.readasQRCodeFromString(this.SelectedAddress);
   }
 
   /** 그룹채팅인지 랜덤채팅인지 분류 */
@@ -118,13 +133,11 @@ export class MinimalChatPage implements OnInit {
       this.Header = 'simplechat';
       this.isCustomDedicated = true;
       this.isLocalAddress = get_address == 'ws://127.0.0.1';
-      if (!this.isLocalAddress)
-        this.QRCodeSRC = this.global.readasQRCodeFromId({
-          type: 'group_dedi',
-          value: {
-            address: get_address,
-          }
-        });
+      // 서버 주인 외의 사람이 진입한 경우 공유를 용이하게 QRCode를 즉시 게시
+      if (!this.isLocalAddress) {
+        this.SelectedAddress = `${location.protocol}//${location.host}/?group_dedi=ws://${get_address}`;
+        this.QRCodeSRC = this.global.readasQRCodeFromString(this.SelectedAddress);
+      }
     }
     this.noti.RemoveListener(`send${this.target}`);
     this.noti.RemoveListener(`reconn${this.target}`);
@@ -326,7 +339,6 @@ export class MinimalChatPage implements OnInit {
             break;
         }
       }
-      this.focus_on_input();
     }
     this.client.funcs[this.target].onclose = (_v: any) => {
       this.statusBar.settings[this.target] = 'missing';
@@ -336,7 +348,6 @@ export class MinimalChatPage implements OnInit {
       let failedJoin = { color: 'faa', text: this.lang.text['MinimalChat']['failed_to_join'] };
       this.client.userInput[this.target].logs.push(failedJoin);
       this.client.userInput[this.target].last_message = failedJoin;
-      this.focus_on_input();
       this.noti.PushLocal({
         id: this.lnId,
         title: this.lang.text['MinimalChat']['failed_to_join'],
@@ -380,7 +391,6 @@ export class MinimalChatPage implements OnInit {
         let GotMessage = { color: 'faa', text: text };
         this.client.userInput[this.target].logs.push(GotMessage);
         this.client.userInput[this.target].last_message = GotMessage;
-        this.focus_on_input();
         this.noti.PushLocal({
           id: this.lnId,
           title: text,
@@ -406,6 +416,19 @@ export class MinimalChatPage implements OnInit {
         }, this.Header, this.open_this);
       }
     }
+  }
+
+  /** 보여지는 QRCode 정보 복사 */
+  copy_qr_address() {
+    this.mClipboard.copy(this.SelectedAddress)
+      .catch(_e => {
+        clipboard.write(this.SelectedAddress).then(() => {
+          if (isPlatform == 'DesktopPWA')
+            this.p5toast.show({
+              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.SelectedAddress}`,
+            });
+        }).catch(_e => { });
+      });
   }
 
   @ViewChild('minimalchat_input') minimalchat_input: IonInput;
@@ -442,7 +465,6 @@ export class MinimalChatPage implements OnInit {
       let CannotMsg = { color: 'faa', text: text };
       this.client.userInput[this.target].logs.push(CannotMsg);
       this.client.userInput[this.target].last_message = CannotMsg;
-      this.focus_on_input();
       this.noti.PushLocal({
         id: this.lnId,
         title: text,

@@ -4145,6 +4145,11 @@ export class NakamaService {
           }
           break;
         case 'group_dedi': // 그룹사설 채팅 접근
+          for (let i = 0, j = 20; i < j; i++) {
+            await new Promise((done) => setTimeout(done, 100));
+            if (this.lang.text['MinimalChat']['leave_chat_group'])
+              break;
+          }
           await this.modalCtrl.create({
             component: MinimalChatPage,
             componentProps: {
