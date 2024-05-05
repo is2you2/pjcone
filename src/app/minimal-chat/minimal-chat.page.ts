@@ -158,7 +158,8 @@ export class MinimalChatPage implements OnInit {
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', `assets/icon/simplechat.png`);
 
-    if (!this.client.client[this.target] || this.client.client[this.target].readyState != this.client.client[this.target].OPEN) {
+    if (!this.client.client[this.target] || this.client.client[this.target].readyState != this.client.client[this.target].OPEN
+      && !(this.client.p5canvas && this.client.p5canvas['OnDediMessage'])) {
       this.noti.SetListener(`send${this.target}`, (v: any, eopts: any) => {
         this.noti.ClearNoti(v['id']);
         this.send(eopts['text']);
@@ -187,7 +188,8 @@ export class MinimalChatPage implements OnInit {
         let data = JSON.parse(v);
         let isMe = this.uuid == data['uid'];
         let target = isMe ? (name || this.lang.text['MinimalChat']['name_me']) : (data['name'] || (this.client.status[this.target] == 'custom' ? this.lang.text['MinimalChat']['name_stranger_group'] : this.lang.text['MinimalChat']['name_stranger_ran']));
-        let color = data['uid'] ? (data['uid'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6) : isDarkMode ? '888' : '444';
+        let color = data['uid'] ? (data['uid'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6) : isDarkMode ? '888888' : '444444';
+        if (this.client.p5canvas && this.client.p5canvas['OnDediMessage']) this.client.p5canvas['OnDediMessage'](color);
         if (data['msg']) {
           let getMessage = { color: color, text: data['msg'], target: target };
           this.client.userInput[this.target].logs.push(getMessage);
@@ -360,7 +362,7 @@ export class MinimalChatPage implements OnInit {
         smallIcon_ln: 'simplechat',
         iconColor_ln: this.iconColor,
       }, this.Header, this.open_this);
-      this.client.disconnect(this.target);
+      if (this.client.p5canvas && this.client.p5canvas['OnDediMessage']) this.client.p5canvas['OnDediMessage']('ff0000');
     }
     this.client.funcs[this.target].onopen = (_v: any) => {
       this.statusBar.settings[this.target] = 'online';
@@ -404,7 +406,7 @@ export class MinimalChatPage implements OnInit {
           smallIcon_ln: 'simplechat',
           iconColor_ln: this.iconColor,
         }, this.Header, this.open_this);
-        this.client.disconnect(this.target);
+        if (this.client.p5canvas && this.client.p5canvas['OnDediMessage']) this.client.p5canvas['OnDediMessage']('ff0000');
       }
     }
   }

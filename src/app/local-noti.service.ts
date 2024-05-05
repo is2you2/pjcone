@@ -192,6 +192,8 @@ export class LocalNotiService {
         console.error('지원하지 않는 브라우저:', e);
       });
     } // 안드로이드라면 app.component.ts 에서 권한 처리
+    // 사설 그룹 채팅 알림은 즉시 무시하기
+    this.ClearNoti(11);
   }
   /**
    * 로컬 푸쉬 알림을 동작시킵니다

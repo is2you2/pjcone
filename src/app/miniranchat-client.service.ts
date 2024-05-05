@@ -107,6 +107,10 @@ export class MiniranchatClientService {
         float_button.style("padding-top: 6px");
         float_button.style("background-color: #8888");
         float_button.style("border-radius: 24px");
+        // 메시지를 받으면 배경색이 변함
+        p['OnDediMessage'] = (color: string) => {
+          float_button.style(`background-color: #${color}88`);
+        }
         float_button.elt.onclick = () => {
           this.modalCtrl.create({
             component: MinimalChatPage,
