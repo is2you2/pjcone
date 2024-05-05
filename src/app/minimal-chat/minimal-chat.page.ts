@@ -92,9 +92,9 @@ export class MinimalChatPage implements OnInit {
       }, 500);
       let res = await fetch(HasLocalPage, { signal: cont.signal });
       clearTimeout(id);
-      if (res.ok) this.SelectedAddress = `${location.protocol}//${extract}:8080/?group_dedi=ws://${extract}`;
+      if (res.ok) this.SelectedAddress = `${location.protocol}//${extract}:8080/www/?group_dedi=${extract}`;
     } catch (e) {
-      this.SelectedAddress = `http://pjcone.ddns.net/?group_dedi=ws://${extract}`;
+      this.SelectedAddress = `http://pjcone.ddns.net/?group_dedi=${extract}`;
     }
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.SelectedAddress);
   }
@@ -139,7 +139,7 @@ export class MinimalChatPage implements OnInit {
       this.isLocalAddress = get_address == 'ws://127.0.0.1';
       // 서버 주인 외의 사람이 진입한 경우 공유를 용이하게 QRCode를 즉시 게시
       if (!this.isLocalAddress) {
-        this.SelectedAddress = `http://pjcone.ddns.net/?group_dedi=ws://${get_address}`;
+        this.SelectedAddress = `${location.protocol}//${location.host}${window['sub_path']}?group_dedi=${get_address.split('ws://').pop()}`;
         this.QRCodeSRC = this.global.readasQRCodeFromString(this.SelectedAddress);
       }
     }
