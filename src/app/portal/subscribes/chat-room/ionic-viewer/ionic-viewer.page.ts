@@ -759,7 +759,6 @@ export class IonicViewerPage implements OnInit {
               this.ContentOnLoad = true;
               this.ContentFailedLoad = false;
             }, _e => {
-              this.canvasDiv.textContent = this.lang.text['ContentViewer']['CannotOpenText'];
               this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
               this.ContentOnLoad = true;
             });
