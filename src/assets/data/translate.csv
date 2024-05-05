@@ -260,9 +260,7 @@ MayGimbalLock,짐벌락 현상으로 각도가 다르게 표현될 수 있음,Th
 ## MinimalChat,,
 concurrent_users,동시접속자,Concurrent users
 shareAddress,주소 공유,Share address
-start_chat,대화 시작하기,Start a conversation
 selectNetwork,네트워크를 선택하여 공유,Select network to share
-new_chat,새 대화,New
 input_placeholder,메시지 입력...,Enter message...
 header_title_ranchat,미니랜챗,Random chat
 header_title_group,그룹채팅,Group chat

@@ -16,6 +16,7 @@ import { GlobalActService, isDarkMode } from '../global-act.service';
 import clipboard from 'clipboardy';
 import { P5ToastService } from '../p5-toast.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
+import { IndexedDBService } from '../indexed-db.service';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -38,6 +39,7 @@ export class MinimalChatPage implements OnInit {
     private global: GlobalActService,
     private mClipboard: Clipboard,
     private p5toast: P5ToastService,
+    private indexed: IndexedDBService,
   ) { }
 
   uuid = this.device.uuid;
@@ -123,6 +125,7 @@ export class MinimalChatPage implements OnInit {
         this.addresses = results;
       });
     }
+    if (this.client.p5canvas) this.client.p5canvas.remove();
     this.local_server.check_addresses();
     this.header_title = this.lang.text['MinimalChat']['header_title_ranchat'];
     let get_address = this.params.get('address');
@@ -173,15 +176,6 @@ export class MinimalChatPage implements OnInit {
         type: ILocalNotificationActionType.INPUT,
         title: this.lang.text['MinimalChat']['Noti_Reply'],
       }];
-      // 사설 서버 주소입력에 따른 분기 설정구간
-      if (get_address) { // 사설 서버인 경우
-      } else { // 일반 랜덤채팅인 경우
-        this.reply_act.push({
-          id: `reconn${this.target}`,
-          title: this.lang.text['MinimalChat']['new_chat'],
-          launch: false,
-        });
-      }
       this.client.userInput[this.target].logs.length = 0;
       let joinMessage = { color: isDarkMode ? 'bbb' : '444', text: this.client.status[this.target] == 'custom' ? this.lang.text['MinimalChat']['joinChat_group'] : this.lang.text['MinimalChat']['joinChat_ran'] };
       this.client.userInput[this.target].logs.push(joinMessage);
@@ -322,14 +316,6 @@ export class MinimalChatPage implements OnInit {
                   },
                 },
               },
-              // actions_ln: [{
-              //   id: `reconn${this.target}`,
-              //   title: this.lang.text['MinimalChat']['new_chat']
-              // }, {
-              //   id: `exit${this.target}`,
-              //   title: this.lang.text['MinimalChat']['exit_chat'],
-              //   launch: false,
-              // }],
               autoCancel_ln: true,
               smallIcon_ln: 'simplechat',
               iconColor_ln: this.iconColor,
@@ -341,6 +327,7 @@ export class MinimalChatPage implements OnInit {
             break;
         }
       }
+      this.auto_scroll_down();
     }
     this.client.funcs[this.target].onclose = (_v: any) => {
       this.statusBar.settings[this.target] = 'missing';
@@ -373,6 +360,7 @@ export class MinimalChatPage implements OnInit {
         smallIcon_ln: 'simplechat',
         iconColor_ln: this.iconColor,
       }, this.Header, this.open_this);
+      this.client.disconnect(this.target);
     }
     this.client.funcs[this.target].onopen = (_v: any) => {
       this.statusBar.settings[this.target] = 'online';
@@ -416,6 +404,7 @@ export class MinimalChatPage implements OnInit {
           smallIcon_ln: 'simplechat',
           iconColor_ln: this.iconColor,
         }, this.Header, this.open_this);
+        this.client.disconnect(this.target);
       }
     }
   }
@@ -496,6 +485,10 @@ export class MinimalChatPage implements OnInit {
   /** 모바일 키보드 높이 맞추기용 */
   focus_on_input(force?: number) {
     this.minimalchat_input.setFocus();
+    this.auto_scroll_down(force);
+  }
+
+  auto_scroll_down(force?: number) {
     setTimeout(() => {
       let scrollHeight = this.minimal_chat_log.scrollHeight;
       if (scrollHeight < this.minimal_chat_log.scrollTop + this.minimal_chat_log.clientHeight + 120) {
@@ -541,6 +534,7 @@ export class MinimalChatPage implements OnInit {
     this.noti.RemoveListener(`exit${this.target}`);
     this.noti.ClearNoti(this.lnId);
     this.client.disconnect(this.target);
+    this.indexed.GetFileListFromDB('tmp_files/dedi_chat', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     if (this.params.get('address') == 'ws://127.0.0.1')
       this.local_server.stop();
     this.modalCtrl.dismiss();
@@ -551,5 +545,6 @@ export class MinimalChatPage implements OnInit {
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', 'assets/icon/favicon.png');
     this.noti.Current = undefined;
+    if (this.client.IsConnected) this.client.CreateRejoinButton();
   }
 }

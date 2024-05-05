@@ -4157,6 +4157,12 @@ export class NakamaService {
               name: this.users.self['display_name'],
             },
           }).then(v => {
+            // 이전 페이지의 단축키 보관했다가 재등록시키기
+            let CacheShortCut = this.global.p5key['KeyShortCut'];
+            this.global.p5key['KeyShortCut'] = {};
+            v.onDidDismiss().then(() => {
+              this.global.p5key['KeyShortCut'] = CacheShortCut;
+            });
             v.present();
           });
           break;
