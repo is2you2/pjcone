@@ -12,7 +12,7 @@ import { StatusManageService } from '../status-manage.service';
 import { LanguageSettingService } from '../language-setting.service';
 import { LocalGroupServerService } from '../local-group-server.service';
 import { isPlatform } from '../app.component';
-import { FileInfo, GlobalActService, isDarkMode } from '../global-act.service';
+import { FILE_BINARY_LIMIT, FileInfo, GlobalActService, isDarkMode } from '../global-act.service';
 import clipboard from 'clipboardy';
 import { P5ToastService } from '../p5-toast.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
@@ -216,7 +216,67 @@ export class MinimalChatPage implements OnInit {
               let FileAttach = { color: color, file: data, target: target };
               this.client.userInput['dedicated_groupchat'].logs.push(FileAttach);
               this.client.userInput['dedicated_groupchat'].last_message = FileAttach;
+              if (!data.info.url) { // 분할 파일인 경우 누적 준비하기
+                let FileInfo: FileInfo = data.info;
+                this.indexed.checkIfFileExist(FileInfo.path, b => {
+                  if (!b) {
+                    if (!this.client.DownloadPartManager[data.uid])
+                      this.client.DownloadPartManager[data.uid] = {};
+                    if (!this.client.DownloadPartManager[data.uid][data.temp_id])
+                      this.client.DownloadPartManager[data.uid][data.temp_id] = FileAttach;
+                    FileAttach['Progress'] = FileInfo.partsize;
+                  }
+                });
+              }
               break;
+            case 'part': // 분할 파일 정보 수신
+              this.indexed.checkIfFileExist(data.path, b => {
+                if (!b) { // 파일이 없다면 파트파일 받기
+                  try {
+                    this.client.DownloadPartManager[data.uid][data.temp_id]['Progress']--;
+                  } catch (e) { }
+                  this.indexed.saveBase64ToUserPath(',' + data.part, `${data.path}_${data.index}`);
+                }
+              });
+              return; // 알림 생성하지 않음
+            case 'EOF': // 파일 수신 마무리하기
+              this.indexed.checkIfFileExist(data.path, b => {
+                if (!b) { // 파일이 없다면 파트를 모아서 파일 만들기
+                  new Promise(async (done, err) => {
+                    let GatheringInt8Array = [];
+                    let ByteSize = 0;
+                    for (let i = 0, j = data.partsize; i < j; i++) {
+                      try {
+                        let part = await this.indexed.GetFileInfoFromDB(`${data.path}_${i}`);
+                        ByteSize += part.contents.length;
+                        GatheringInt8Array[i] = part;
+                      } catch (e) {
+                        console.log('파일 병합하기 오류: ', e);
+                        break;
+                      }
+                    }
+                    try {
+                      let SaveForm: Int8Array = new Int8Array(ByteSize);
+                      let offset = 0;
+                      for (let i = 0, j = GatheringInt8Array.length; i < j; i++) {
+                        SaveForm.set(GatheringInt8Array[i].contents, offset);
+                        offset += GatheringInt8Array[i].contents.length;
+                      }
+                      await this.indexed.saveInt8ArrayToUserPath(SaveForm, data.path);
+                      for (let i = 0, j = data['partsize']; i < j; i++)
+                        this.indexed.removeFileFromUserPath(`${data.path}_${i}`)
+                      await this.indexed.removeFileFromUserPath(`${data.path}.history`)
+                    } catch (e) {
+                      console.log('파일 최종 저장하기 오류: ', e);
+                      err();
+                    }
+                    done(undefined);
+                  });
+                  delete this.client.DownloadPartManager[data.uid][data.temp_id]['Progress'];
+                  delete this.client.DownloadPartManager[data.uid][data.temp_id];
+                }
+              });
+              return; // 알림 생성하지 않음
           }
         }
         let alert_this: any = 'certified';
@@ -450,11 +510,12 @@ export class MinimalChatPage implements OnInit {
       display_name: this.MyUserName,
       various: 'loaded',
     };
+    let TempId = `${Date.now()}`;
     let json = {
       type: 'file',
       info: FileInfo,
       uid: this.uuid,
-      timestamp: `${Date.now()}`,
+      temp_id: TempId,
       name: this.MyUserName,
     }
     try { // FFS 발송 시도
@@ -463,14 +524,39 @@ export class MinimalChatPage implements OnInit {
       else {
         FileInfo.url = url;
         this.client.FFS_Urls.push(url);
+        delete FileInfo.blob;
+        this.client.send('dedicated_groupchat', JSON.stringify(json));
+        this.focus_on_input();
       }
     } catch (e) { // 분할 전송처리
-      console.log('파일 시도 오류: ', e);
+      FileInfo.path = `tmp_files/dedi_chat/${TempId}.${FileInfo.file_ext}`;
+      await this.indexed.saveBlobToUserPath(FileInfo.blob, FileInfo.path);
+      let ReqInfo = await this.indexed.GetFileInfoFromDB(FileInfo.path);
+      FileInfo.partsize = Math.ceil(FileInfo.size / FILE_BINARY_LIMIT);
+      delete FileInfo.blob;
+      this.client.send('dedicated_groupchat', JSON.stringify(json));
+      this.focus_on_input();
+      for (let i = 0; i < FileInfo.partsize; i++) {
+        new Promise((done) => setTimeout(done, 500));
+        let part = this.global.req_file_part_base64(ReqInfo, i, FileInfo.path);
+        let json = {
+          type: 'part',
+          path: FileInfo.path,
+          index: i,
+          part: part,
+          temp_id: TempId,
+        }
+        this.client.send('dedicated_groupchat', JSON.stringify(json));
+      }
+      new Promise((done) => setTimeout(done, 500));
+      let EOF = {
+        type: 'EOF',
+        path: FileInfo.path,
+        partsize: FileInfo.partsize,
+        temp_id: TempId,
+      }
+      this.client.send('dedicated_groupchat', JSON.stringify(EOF));
     }
-    delete FileInfo.blob;
-    this.client.send('dedicated_groupchat', JSON.stringify(json));
-    this.focus_on_input();
-    // 분할 전송 시도
   }
 
   /** 파일 뷰어로 해당 파일 열기 */
@@ -574,6 +660,7 @@ export class MinimalChatPage implements OnInit {
       this.global.remove_files_from_storage_with_key(this.client.FFS_Urls[i], 'minimal_chat');
     this.client.FFS_Urls.length = 0;
     this.client.userInput.dedicated_groupchat.logs.length = 0;
+    this.client.DownloadPartManager = {};
     if (this.params.get('address') == 'ws://127.0.0.1')
       this.local_server.stop();
     this.modalCtrl.dismiss();

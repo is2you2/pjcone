@@ -91,6 +91,10 @@ export class MiniranchatClientService {
 
   /** FFS를 사용하는 경우 전송된 파일들을 전부 기억해두었다가 접속을 끊을 때 전부 삭제요청 보내기 */
   FFS_Urls = [];
+  /** 분할 파일 받기시 진행도 표시를 위해 준비됨  
+   * DownloadPartManager[uuid][temp_id] = counter;
+   */
+  DownloadPartManager = {};
   /** 재접속을 위한 빠른 버튼 보여주기 */
   p5canvas: p5;
   cacheAddress = '';
