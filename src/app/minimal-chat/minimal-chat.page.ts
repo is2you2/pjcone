@@ -73,7 +73,9 @@ export class MinimalChatPage implements OnInit {
     }
   }
 
-  /** 주인장이 공유할 IP주소를 선택합니다 */
+  /** 주인장이 공유할 IP주소를 선택합니다  
+   * 자체 서버가 있다면 그 주소를, 아니라면 비보안 주소를 생성합니다
+   */
   async SelectOtherAddress(ev: any) {
     let address_text: string = ev.detail.value;
     let extract = address_text.substring(address_text.indexOf('(') + 1, address_text.indexOf(')'));
@@ -93,7 +95,7 @@ export class MinimalChatPage implements OnInit {
   }
 
   /** 그룹채팅인지 랜덤채팅인지 분류 */
-  target: 'dedicated_groupchat' | 'community_ranchat' = 'community_ranchat';
+  target = 'dedicated_groupchat';
 
   BackButtonPressed = false;
   InitBrowserBackButtonOverride() {

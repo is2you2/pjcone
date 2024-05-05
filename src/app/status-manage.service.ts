@@ -40,7 +40,6 @@ export class StatusManageService {
     groupServer: 'offline',
     /** 사설서버 전반적 동향 */
     dedicatedServer: 'offline',
-    community_ranchat: 'offline',
     dedicated_groupchat: 'offline'
   };
   /** 설정에 준비된 공식 지원 툴, 직접 작성하여 관리 */

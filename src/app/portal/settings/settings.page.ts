@@ -206,9 +206,9 @@ export class SettingsPage implements OnInit, OnDestroy {
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;
       if (this.will_enter) return;
-      if (this.statusBar.settings[_address ? 'dedicated_groupchat' : 'community_ranchat'] != 'online'
-        && this.statusBar.settings[_address ? 'dedicated_groupchat' : 'community_ranchat'] != 'certified')
-        this.statusBar.settings[_address ? 'dedicated_groupchat' : 'community_ranchat'] = 'pending';
+      if (this.statusBar.settings['dedicated_groupchat'] != 'online'
+        && this.statusBar.settings['dedicated_groupchat'] != 'certified')
+        this.statusBar.settings['dedicated_groupchat'] = 'pending';
       this.will_enter = true;
       setTimeout(() => {
         this.will_enter = false;

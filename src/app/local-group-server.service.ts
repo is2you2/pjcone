@@ -56,26 +56,28 @@ export class LocalGroupServerService {
           });
         },
         'onMessage': (conn, msg) => {
+          let json = msg;
           try {
-            let json = JSON.parse(msg);
+            json = JSON.parse(msg);
             if (json['type'] == 'join') {
               this.users[conn.uuid]['uid'] = json['uid'];
               this.users[conn.uuid]['name'] = json['name'];
             }
+            json['uid'] = conn.uuid;
+            json = JSON.stringify(json);
           } catch (e) {
             console.error(`json 변환 오류_${msg}: ${e}`);
           }
 
           Object.keys(this.users).forEach(user => {
-            this.send_to(user, msg);
+            this.send_to(user, json);
           });
         },
         'onClose': (conn, _code, _reason, _wasClean) => {
-          let catch_uid = this.users[conn.uuid]['uid']
           let catch_name = this.users[conn.uuid]['name'];
           delete this.users[conn.uuid];
           let count = {
-            uid: catch_uid,
+            uid: conn.uuid,
             name: catch_name,
             type: 'leave',
             count: Object.keys(this.users).length,
