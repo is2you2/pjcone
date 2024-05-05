@@ -123,10 +123,8 @@ export class AddPostPage implements OnInit, OnDestroy {
       if (navParams && navParams.data)
         this.OriginalInfo = JSON.parse(JSON.stringify(this.userInput));
     });
-    if (isPlatform == 'DesktopPWA')
-      setTimeout(() => {
-        this.CreateDrop();
-      }, 0);
+    // 드랍이기도 하나 보이스 관리를 겸하므로 플랫폼 무관 생성
+    this.CreateDrop();
     this.nakama.StatusBarChangedCallback = () => {
       this.LoadListServer();
       this.index = 0;
@@ -402,12 +400,12 @@ export class AddPostPage implements OnInit, OnDestroy {
           let req = await VoiceRecorder.hasAudioRecordingPermission();
           if (req.value) { // 권한 있음
             this.extended_buttons[4].icon = 'stop-circle-outline';
-            await VoiceRecorder.startRecording();
             this.p5toast.show({
               text: this.lang.text['ChatRoom']['StartVRecord'],
             });
             this.p5canvas['StartVoiceTimer']();
             this.extended_buttons[5].isHide = false;
+            await VoiceRecorder.startRecording();
           } else { // 권한이 없다면 권한 요청 및 UI 복구
             this.useVoiceRecording = false;
             this.extended_buttons[4].icon = 'mic-circle-outline';
@@ -433,23 +431,24 @@ export class AddPostPage implements OnInit, OnDestroy {
     }];
 
   async StopAndSaveVoiceRecording() {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
+    loading.present();
     try {
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
-      loading.present();
       let data = await VoiceRecorder.stopRecording();
       let blob = this.global.Base64ToBlob(`${data.value.mimeType},${data.value.recordDataBase64}`);
       blob['name'] = `${this.lang.text['ChatRoom']['VoiceRecord']}.${data.value.mimeType.split('/').pop().split(';')[0]}`;
       blob['type_override'] = data.value.mimeType;
       await this.selected_blobFile_callback_act(blob);
-      this.extended_buttons[4].icon = 'mic-circle-outline';
-      this.extended_buttons[4].name = this.lang.text['ChatRoom']['Voice'];
-      this.checkVoiceLinker();
       loading.dismiss();
     } catch (e) {
       this.p5toast.show({
         text: `${this.lang.text['AddPost']['FailedToSaveVoice']}:${e}`,
       });
+      loading.dismiss();
     }
+    this.extended_buttons[4].icon = 'mic-circle-outline';
+    this.extended_buttons[4].name = this.lang.text['ChatRoom']['Voice'];
+    this.checkVoiceLinker();
   }
 
   /** 게시물 내용에 음성 시간 링크가 있는지 확인 */
