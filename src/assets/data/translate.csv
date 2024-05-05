@@ -278,7 +278,6 @@ Noti_Greeting,인사,Greeting
 failed_to_join,채팅 참가에 실패했습니다.,Failed to join chat
 cannot_join,채팅에 참가할 수 없습니다.,Failed to join
 waiting_someone,새로운 상대를 기다립니다..,Waiting for a new opponent
-cannot_start,시작할 수 없어요..,Can not start..
 leave_chat_group,그룹채팅에서 나옵니다.,You leave group chat
 ## GroupServer,,
 JoinedServerList,참여중인 서버 목록,List of participating servers
