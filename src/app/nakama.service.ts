@@ -17,7 +17,6 @@ import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.serv
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
-import { VoidDrawPage } from './portal/subscribes/chat-room/void-draw/void-draw.page';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -4242,7 +4241,7 @@ export class NakamaService {
           json['mainImage']['thumbnail'] = FileURL;
           setTimeout(() => {
             URL.revokeObjectURL(FileURL);
-          }, 100);
+          }, 5000);
         }
       }
       this.posts_orig[isOfficial][target][user_id][id] = json;
