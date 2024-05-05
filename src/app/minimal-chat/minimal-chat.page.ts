@@ -140,7 +140,7 @@ export class MinimalChatPage implements OnInit {
       this.isLocalAddress = get_address == 'ws://127.0.0.1';
       // 서버 주인 외의 사람이 진입한 경우 공유를 용이하게 QRCode를 즉시 게시
       if (!this.isLocalAddress) {
-        this.SelectedAddress = `${location.protocol}//${location.host}/?group_dedi=ws://${get_address}`;
+        this.SelectedAddress = `http://pjcone.ddns.net/?group_dedi=ws://${get_address}`;
         this.QRCodeSRC = this.global.readasQRCodeFromString(this.SelectedAddress);
       }
     }
@@ -148,7 +148,7 @@ export class MinimalChatPage implements OnInit {
     this.noti.RemoveListener(`reconn${this.target}`);
     this.noti.RemoveListener(`exit${this.target}`);
     this.noti.ClearNoti(this.lnId);
-    this.title.setTitle(get_address ? this.lang.text['MinimalChat']['WebTitle_group'] : this.lang.text['MinimalChat']['WebTitle_ran']);
+    this.title.setTitle(this.lang.text['MinimalChat']['WebTitle_group']);
     this.noti.Current = this.Header;
     this.minimal_chat_log = document.getElementById('minimal_chat_div');
     this.minimal_chat_log.onscroll = (_ev: any) => {
@@ -178,7 +178,7 @@ export class MinimalChatPage implements OnInit {
         title: this.lang.text['MinimalChat']['Noti_Reply'],
       }];
       this.client.userInput[this.target].logs.length = 0;
-      let joinMessage = { color: isDarkMode ? 'bbb' : '444', text: this.client.status[this.target] == 'custom' ? this.lang.text['MinimalChat']['joinChat_group'] : this.lang.text['MinimalChat']['joinChat_ran'] };
+      let joinMessage = { color: isDarkMode ? 'bbb' : '444', text: this.lang.text['MinimalChat']['joinChat_group'] };
       this.client.userInput[this.target].logs.push(joinMessage);
       this.client.userInput[this.target].last_message = joinMessage;
       this.client.initialize(this.target, get_address);
@@ -187,21 +187,29 @@ export class MinimalChatPage implements OnInit {
       try {
         let data = JSON.parse(v);
         let isMe = this.uuid == data['uid'];
-        let target = isMe ? (name || this.lang.text['MinimalChat']['name_me']) : (data['name'] || (this.client.status[this.target] == 'custom' ? this.lang.text['MinimalChat']['name_stranger_group'] : this.lang.text['MinimalChat']['name_stranger_ran']));
+        let target = isMe ? (name || this.lang.text['MinimalChat']['name_me']) : (data['name'] || this.lang.text['MinimalChat']['name_stranger_group']);
         let color = data['uid'] ? (data['uid'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6) : isDarkMode ? '888888' : '444444';
         if (this.client.p5canvas && this.client.p5canvas['OnDediMessage']) this.client.p5canvas['OnDediMessage'](color);
-        if (data['msg']) {
-          let getMessage = { color: color, text: data['msg'], target: target };
+        if (data['msg']) { // 채널 메시지
+          let sep: string[] = data['msg'].split(' ');
+          let msg_arr = [];
+          for (let i = 0, j = sep.length; i < j; i++) {
+            if (sep[i].indexOf('http://') == 0 || sep[i].indexOf('https://') == 0) {
+              msg_arr.push({ text: ' ' });
+              msg_arr.push({ href: true, text: sep[i] });
+            } else msg_arr.push({ text: ' ' + sep[i] });
+          }
+          let getMessage = { color: color, text: msg_arr, target: target };
           this.client.userInput[this.target].logs.push(getMessage);
           this.client.userInput[this.target].last_message = getMessage;
         }
         else if (data['type']) {
-          if (data['type'] == 'join') {
-            let UserJoin = { color: color, text: this.lang.text['MinimalChat']['user_join_comment'], target: target };
+          if (data['type'] == 'join') { // 진입 / 퇴장
+            let UserJoin = { color: color, text: [{ text: this.lang.text['MinimalChat']['user_join_comment'] }], target: target };
             this.client.userInput[this.target].logs.push(UserJoin);
             this.client.userInput[this.target].last_message = UserJoin;
           } else {
-            let UserLeave = { color: color, text: this.lang.text['MinimalChat']['user_out_comment'], target: target };
+            let UserLeave = { color: color, text: [{ text: this.lang.text['MinimalChat']['user_out_comment'] }], target: target };
             this.client.userInput[this.target].logs.push(UserLeave);
             this.client.userInput[this.target].last_message = UserLeave;
           }
@@ -525,7 +533,7 @@ export class MinimalChatPage implements OnInit {
       setTimeout(() => {
         this.statusBar.settings[this.target] = 'offline';
       }, 1500);
-      let LeaveMsg = { color: isDarkMode ? 'ffa' : '884', text: this.client.status[this.target] == 'custom' ? this.lang.text['MinimalChat']['leave_chat_group'] : this.lang.text['MinimalChat']['leave_chat_ran'] };
+      let LeaveMsg = { color: isDarkMode ? 'ffa' : '884', text: this.lang.text['MinimalChat']['leave_chat_group'] };
       this.client.userInput[this.target].logs.push(LeaveMsg);
       this.client.userInput[this.target].last_message = LeaveMsg;
       let scrollHeight = this.minimal_chat_log.scrollHeight;

@@ -29,9 +29,13 @@ SPDX-License-Identifier: MIT -->
               (click)="copy_qr_address()" alt="Loading">
           </div>
           <p *ngFor="let msg of client.userInput[target].logs">
-            <font *ngIf="!msg.target" color="#{{msg.color}}">{{msg.text}}</font>
+            <font *ngIf="!msg.target" color="#{{msg.color}}">{{' ' + msg.text}}</font>
             <font *ngIf="msg.target" class="default_text">
-              <font color="#{{msg.color}}"><b *ngIf="msg.target">{{msg.target}}:</b></font> {{' ' + msg.text}}
+              <font color="#{{msg.color}}"><b *ngIf="msg.target">{{msg.target}}:</b></font>
+              <span *ngFor="let text of msg.text">
+                <span *ngIf="!text.href">{{text.text}}</span>
+                <a *ngIf="text.href" [href]="text.text" target="_system">{{text.text}}</a>
+              </span>
             </font>
           </p>
         </div>
