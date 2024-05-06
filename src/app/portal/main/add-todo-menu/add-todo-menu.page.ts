@@ -956,7 +956,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   toggle_custom_color() {
     if (this.userInput.custom_color)
       this.userInput.custom_color = undefined;
-    else this.userInput.custom_color = '#000000';
+    else {
+      this.userInput.custom_color = '#ff0000';
+      let color = document.getElementById('TodoCustomColorInput') as HTMLInputElement;
+      color.click();
+    }
   }
 
   open_content_viewer(index: number) {
