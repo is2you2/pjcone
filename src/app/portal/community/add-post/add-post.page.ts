@@ -169,10 +169,12 @@ export class AddPostPage implements OnInit, OnDestroy {
             this.extended_buttons[4].name = millis_to_timeDisplay(p.millis() - VoiceStartTime);
         }
         let millis_to_timeDisplay = (m: number) => {
-          let second = p.floor(m / 1000) % 60;
-          let minite = p.floor(second / 60) % 60;
-          let hours = p.floor(minite / 60);
-          let result = hours ? `${hours}:${minite}:${p.nf(second, 2)}` : `${minite}:${p.nf(second, 2)}`;
+          let second_calc = m / 1000;
+          let second = p.floor(second_calc) % 60;
+          let minite_calc = second_calc / 60;
+          let minite = p.floor(minite_calc) % 60;
+          let hour = p.floor(minite_calc / 60);
+          let result = hour ? `${hour}:${minite}:${p.nf(second, 2)}` : `${minite}:${p.nf(second, 2)}`;
           return result;
         }
         p.mouseMoved = (ev: any) => {
