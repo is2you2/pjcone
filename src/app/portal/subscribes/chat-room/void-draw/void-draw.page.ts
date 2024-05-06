@@ -288,8 +288,14 @@ export class VoidDrawPage implements OnInit {
         RedoCell.style.cursor = 'pointer';
         RedoCell.onclick = () => { this.p5voidDraw['history_act'](1); }
         let ColorCell = bottom_row.insertCell(2); // 선 색상 변경
-        // ColorCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="color-palette"></ion-icon>`;
+        ColorCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="color-palette"></ion-icon>`;
+        p5ColorPicker.style('width: 0px; height: 0px; opacity: 0;');
         p5ColorPicker.parent(ColorCell);
+        p5ColorPicker.elt.oninput = () => {
+          let color = p5ColorPicker['color']().levels;
+          let color_hex = `#${p.hex(color[0], 2)}${p.hex(color[1], 2)}${p.hex(color[2], 2)}`;
+          ColorCell.childNodes[0].style.color = color_hex;
+        }
         ColorCell.style.textAlign = 'center';
         ColorCell.style.cursor = 'pointer';
         ColorCell.onclick = () => { p5ColorPicker.elt.click() }
@@ -566,8 +572,10 @@ export class VoidDrawPage implements OnInit {
               pos.add(ActualCanvasSizeHalf);
               let _pos = { x: pos.x, y: pos.y };
               if (CurrentDraw) {
-                CurrentDraw['pos'].push(_pos);
-                CurrentDraw['pos'].push(_pos);
+                try {
+                  CurrentDraw['pos'].push(_pos);
+                  CurrentDraw['pos'].push(_pos);
+                } catch (e) { }
               }
               ReleaseAllAct();
             }
