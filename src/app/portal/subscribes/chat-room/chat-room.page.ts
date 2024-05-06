@@ -894,8 +894,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       await this.new_attach({ detail: { value: 'link' } }, FileInfo);
     } else {
       let blob = await this.indexed.loadBlobFromUserPath(FileInfo.path, FileInfo.type);
-      let file = new File([blob], FileInfo.filename || FileInfo.name);
-      this.selected_blobFile_callback_act(file, FileInfo.content_related_creator, 'shared', FileInfo.path);
+      blob['name'] = FileInfo.filename || FileInfo.name;
+      this.selected_blobFile_callback_act(blob, FileInfo.content_related_creator, 'shared', FileInfo.path);
     }
   }
 
