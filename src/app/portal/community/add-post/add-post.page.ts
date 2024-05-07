@@ -204,6 +204,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     delete this.global.p5key['KeyShortCut']['BottomTab'];
   }
 
+  ContentTextArea: HTMLTextAreaElement;
   /** 게시물 제목 작성칸 */
   TitleInput: HTMLInputElement;
   /** 기존 게시물 편집 여부 */
@@ -223,13 +224,13 @@ export class AddPostPage implements OnInit, OnDestroy {
         this.ChangeMainPostImage({ target: { files: [stack[0].file] } });
       return false;
     }
-    let ContentTextArea = document.getElementById('add_post_content') as HTMLTextAreaElement;
+    this.ContentTextArea = document.getElementById('add_post_content') as HTMLTextAreaElement;
     setTimeout(() => {
       if (!this.userInput.title)
         this.TitleInput.focus();
-      else ContentTextArea.focus();
+      else this.ContentTextArea.focus();
     }, 200);
-    ContentTextArea.onpaste = (ev: any) => {
+    this.ContentTextArea.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
         if (clipboardItem.type.startsWith('image/'))
@@ -422,6 +423,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         if (this.userInput.content)
           this.userInput.content += `\n{"i":"n","t":"${this.extended_buttons[4].name}"}\n`;
         else this.userInput.content = `{"i":"n","t":"${this.extended_buttons[4].name}"}\n`;
+        this.ContentTextArea.focus();
       }
     }, { // 6
       icon: 'cloud-done-outline',
