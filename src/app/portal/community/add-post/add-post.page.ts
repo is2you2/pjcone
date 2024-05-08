@@ -84,7 +84,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   OriginalServerInfo: string;
 
   ngOnInit() {
-    this.useFirstCustomCDN = Boolean(localStorage.getItem('useFFSCDN'));
+    this.useFirstCustomCDN = Number(localStorage.getItem('useFFSCDN')) || 0;
     this.toggle_custom_attach(this.useFirstCustomCDN);
     this.route.queryParams.subscribe(async _p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
@@ -429,7 +429,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       }
     }, { // 6
       icon: 'cloud-done-outline',
-      name: this.lang.text['ChatRoom']['UseCloud'],
+      name: this.lang.text['ChatRoom']['Detour'],
       act: () => {
         this.toggle_custom_attach();
       }
@@ -790,14 +790,26 @@ export class AddPostPage implements OnInit, OnDestroy {
     }
   }
 
-  /** 사용자 지정 우선 서버 사용 여부 */
-  useFirstCustomCDN = true;
-  async toggle_custom_attach(force?: boolean) {
-    this.useFirstCustomCDN = force ?? !this.useFirstCustomCDN;
-    this.extended_buttons[6].icon = this.useFirstCustomCDN ? 'cloud-done-outline' : 'cloud-offline-outline';
-    if (this.useFirstCustomCDN)
-      localStorage.setItem('useFFSCDN', `${this.useFirstCustomCDN}`);
-    else localStorage.removeItem('useFFSCDN');
+  /** 사용자 지정 우선 서버 사용 여부  
+   * 0: 기본값  
+   * 1: FFS 우선  
+   * 2: SQL 강제
+   */
+  useFirstCustomCDN = 0;
+  async toggle_custom_attach(force?: number) {
+    this.useFirstCustomCDN = force ?? (this.useFirstCustomCDN + 1) % 3;
+    switch (this.useFirstCustomCDN) {
+      case 0: // 기본값, cdn 서버 우선, 실패시 SQL
+        this.extended_buttons[6].icon = 'cloud-offline-outline';
+        break;
+      case 1: // FFS 서버 우선, 실패시 cdn, SQL 순
+        this.extended_buttons[6].icon = 'cloud-done-outline';
+        break;
+      case 2: // SQL 강제
+        this.extended_buttons[6].icon = 'server-outline';
+        break;
+    }
+    localStorage.setItem('useFFSCDN', `${this.useFirstCustomCDN}`);
   }
 
   /** 게시물 등록하기 버튼을 눌러 데이터 변경하기가 이루어졌는지 여부 */
@@ -928,7 +940,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.attachments[i],
               this.nakama.servers[this.isOfficial][this.target].session.user_id,
-              protocol, address, this.useFirstCustomCDN);
+              protocol, address, this.useFirstCustomCDN == 1);
             let isURL = Boolean(savedAddress);
             if (!isURL) throw '링크 만들기 실패';
             delete this.userInput.attachments[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
