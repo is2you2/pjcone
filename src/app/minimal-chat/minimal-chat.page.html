@@ -35,7 +35,8 @@ SPDX-License-Identifier: MIT -->
               <span *ngIf="msg.text">
                 <span *ngFor="let text of msg.text">
                   <span *ngIf="!text.href">{{text.text}}</span>
-                  <a *ngIf="text.href" [href]="text.text" target="_system">{{text.text}}</a>
+                  <a *ngIf="text.href" [href]="text.text" target="_system" onclick="return false;"
+                    (click)="open_url_link(text.text)">{{text.text}}</a>
                 </span>
               </span>
               <span *ngIf="msg.file">

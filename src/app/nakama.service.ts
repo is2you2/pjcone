@@ -107,6 +107,7 @@ export class NakamaService {
   showServer = false;
 
   async initialize() {
+    this.global.AddressToQRCodeAct = this.AddressToQRCodeAct;
     // 기등록 알림 id 검토
     this.noti.GetNotificationIds((list) => {
       this.registered_id = list;

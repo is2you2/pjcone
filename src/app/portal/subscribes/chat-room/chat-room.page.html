@@ -89,8 +89,8 @@ SPDX-License-Identifier: MIT -->
                                 <span *ngIf="!part.href" class="text_span"
                                   [style]="'font-size: ' + (part.size || 16) + 'px'" (click)="SetOtherAct()">
                                   {{part.text}} </span>
-                                <a *ngIf="part.href" [href]="part.text" target="_system"
-                                  (click)="open_url_link()">{{part.text}}</a>
+                                <a *ngIf="part.href" [href]="part.text" target="_system" onclick="return false;"
+                                  (click)="open_url_link(part.text)">{{part.text}}</a>
                               </span>
                             </span>
                           </div>
@@ -160,8 +160,8 @@ SPDX-License-Identifier: MIT -->
                                 <span *ngIf="!part.href" class="text_span"
                                   [style]="'font-size: ' + (part.size || 16) + 'px'" (click)="SetOtherAct()">
                                   {{part.text}} </span>
-                                <a *ngIf="part.href" [href]="part.text" target="_system"
-                                  (click)="open_url_link()">{{part.text}}</a>
+                                <a *ngIf="part.href" [href]="part.text" target="_system" onclick="return false;"
+                                  (click)="open_url_link(part.text)">{{part.text}}</a>
                               </span>
                             </span>
                           </div>
@@ -212,7 +212,7 @@ SPDX-License-Identifier: MIT -->
                           [style]="'font-size: ' + (part.size || 16) + 'px'" (click)="SetOtherAct()">
                           {{part.text}} </span>
                         <a *ngIf="part.href" class="text_span" [href]="part.text" class="comp_local_content"
-                          target="_system" (click)="open_url_link()">{{part.text}}</a>
+                          onclick="return false;" target="_system" (click)="open_url_link(part.text)">{{part.text}}</a>
                       </span>
                     </span>
                   </div>
@@ -256,7 +256,8 @@ SPDX-License-Identifier: MIT -->
               <span *ngFor="let line of last_message_viewer.message">
                 <span *ngFor="let part of line">
                   <span class="text_span" *ngIf="!part.href" (click)="SetOtherAct()"> {{part.text}} </span>
-                  <a *ngIf="part.href" [href]="part.text" target="_system" (click)="open_url_link()">{{part.text}}</a>
+                  <a *ngIf="part.href" [href]="part.text" target="_system" onclick="return false;"
+                    (click)="open_url_link(part.text)">{{part.text}}</a>
                 </span>
               </span>
             </td>

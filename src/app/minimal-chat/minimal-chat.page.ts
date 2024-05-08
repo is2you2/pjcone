@@ -108,6 +108,22 @@ export class MinimalChatPage implements OnInit {
       this.modalCtrl.dismiss();
     };
   }
+
+  async open_url_link(url: string) {
+    // 근데 주소가 메인 주소라면 QR행동으로 처리하기
+    if (url.indexOf('https://is2you2.github.io/pjcone_pwa/?') == 0 || url.indexOf('http://pjcone.ddns.net/?') == 0) {
+      let init = this.global.CatchGETs(url) || {};
+      this.global.initialize();
+      try {
+        await this.global.AddressToQRCodeAct(init);
+      } catch (e) {
+        this.p5toast.show({
+          text: `${this.lang.text['ChatRoom']['QRLinkFailed']}: ${e}`,
+        });
+      }
+    } else window.open(url, '_system')
+  }
+
   ngOnInit() {
     this.InitBrowserBackButtonOverride();
     this.isMobileApp = isPlatform == 'Android' || isPlatform == 'iOS';

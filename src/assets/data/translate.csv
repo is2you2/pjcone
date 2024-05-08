@@ -176,6 +176,7 @@ StartVRecord,녹음을 시작합니다,Start recording
 VoiceRecord,인앱 음성 녹음,In-app voice record
 voidDraw,그림판,Paint
 UseCloud,FFS사용,useFFS
+UseSQL,SQL사용,useSQL
 Camera,카메라,Camera
 Voice,녹음하기,Mic.
 ShareInfo,정보공유,Share
@@ -184,6 +185,7 @@ EmbedFiles,파일들,Files
 ReadText,읽어주기,TTS
 LogOut,연결끊기,Disconn.
 RemoveHistory,기록삭제,Remove
+QRLinkFailed,정보 오류,Information error
 input_placeholder,메시지 입력...,Enter message...
 ManageChat,메시지 관리,Manage message
 EditChat,편집,Edit
