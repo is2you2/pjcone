@@ -53,8 +53,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   ) { }
 
   ngOnDestroy(): void {
-    if (this.p5canvas)
-      this.p5canvas.remove();
+    if (this.p5canvas) this.p5canvas.remove();
     delete this.nakama.StatusBarChangedCallback;
     if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
   }
@@ -409,8 +408,8 @@ export class AddPostPage implements OnInit, OnDestroy {
               text: this.lang.text['ChatRoom']['StartVRecord'],
             });
             this.p5canvas['StartVoiceTimer']();
-            this.extended_buttons[5].isHide = false;
             await VoiceRecorder.startRecording();
+            this.CreateFloatingVoiceTimeHistoryAddButton();
           } else { // 권한이 없다면 권한 요청 및 UI 복구
             this.useVoiceRecording = false;
             this.extended_buttons[4].icon = 'mic-circle-outline';
@@ -419,16 +418,6 @@ export class AddPostPage implements OnInit, OnDestroy {
         } else await this.StopAndSaveVoiceRecording();
       }
     }, { // 5
-      name: this.lang.text['AddPost']['RecordVoiceTime'],
-      isHide: true,
-      icon: 'timer-outline',
-      act: () => {
-        if (this.userInput.content)
-          this.userInput.content += `\n{"i":"n","t":"${this.extended_buttons[4].name}"}\n`;
-        else this.userInput.content = `{"i":"n","t":"${this.extended_buttons[4].name}"}\n`;
-        this.ContentTextArea.focus();
-      }
-    }, { // 6
       icon: 'cloud-done-outline',
       name: this.lang.text['ChatRoom']['Detour'],
       act: () => {
@@ -436,7 +425,43 @@ export class AddPostPage implements OnInit, OnDestroy {
       }
     }];
 
+  /** 녹음중인 음성의 시간을 기록함 */
+  AddVoiceTimeHistory() {
+    if (this.userInput.content)
+      this.userInput.content += `\n{"i":"n","t":"${this.extended_buttons[4].name}"}\n`;
+    else this.userInput.content = `{"i":"n","t":"${this.extended_buttons[4].name}"}\n`;
+    this.ContentTextArea.focus();
+  }
+
+  /** 음성 녹음이 진행되는 경우 시간 기록을 편하게 할 수 있는 버튼 생성 */
+  p5floatingButton: p5;
+  /** 페이지는 벗어났으나 계속 녹음을 유지중일 때 floating 버튼을 사용 */
+  CreateFloatingVoiceTimeHistoryAddButton() {
+    if (this.p5floatingButton) this.p5floatingButton.remove();
+    this.p5floatingButton = new p5((p: p5) => {
+      p.noCanvas();
+      p.setup = () => {
+        let float_button = p.createDiv(`<ion-icon style="width: 36px; height: 36px" name="timer-outline"></ion-icon>`);
+        float_button.style("position: absolute; right: 0; bottom: 56px; z-index: 1");
+        float_button.style("width: 64px; height: 64px");
+        float_button.style("text-align: center; align-content: center");
+        float_button.style("cursor: pointer");
+        float_button.style("margin: 16px");
+        float_button.style("padding-top: 6px");
+        float_button.style("background-color: #8888");
+        float_button.style("border-radius: 24px");
+        float_button.elt.onclick = () => {
+          this.AddVoiceTimeHistory();
+          this.p5toast.show({
+            text: `${this.lang.text['AddPost']['RecordVoiceTime']}: ${this.extended_buttons[4].name}`,
+          });
+        };
+      }
+    });
+  }
+
   async StopAndSaveVoiceRecording() {
+    if (this.p5floatingButton) this.p5floatingButton.remove();
     let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
     loading.present();
     try {
@@ -459,7 +484,6 @@ export class AddPostPage implements OnInit, OnDestroy {
 
   /** 게시물 내용에 음성 시간 링크가 있는지 확인 */
   checkVoiceLinker() {
-    this.extended_buttons[5].isHide = true;
     this.p5canvas['StopVoiceTimer']();
     let content_as_line = this.userInput.content.split('\n');
     for (let i = 0, j = content_as_line.length; i < j; i++)
@@ -802,10 +826,10 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.useFirstCustomCDN = force ?? (this.useFirstCustomCDN + 1) % 3;
     switch (this.useFirstCustomCDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
-        this.extended_buttons[6].icon = 'cloud-offline-outline';
+        this.extended_buttons[5].icon = 'cloud-offline-outline';
         break;
       case 1: // FFS 서버 우선, 실패시 cdn, SQL 순
-        this.extended_buttons[6].icon = 'cloud-done-outline';
+        this.extended_buttons[5].icon = 'cloud-done-outline';
         break;
       case 2: // SQL 강제
         this.extended_buttons[6].icon = 'server-outline';
