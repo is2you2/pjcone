@@ -849,12 +849,15 @@ export class AddPostPage implements OnInit, OnDestroy {
     switch (this.useFirstCustomCDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
         this.extended_buttons[5].icon = 'cloud-offline-outline';
+        this.extended_buttons[5].name = this.lang.text['ChatRoom']['Detour'];
         break;
       case 1: // FFS 서버 우선, 실패시 cdn, SQL 순
         this.extended_buttons[5].icon = 'cloud-done-outline';
+        this.extended_buttons[5].name = this.lang.text['ChatRoom']['useFSS'];
         break;
       case 2: // SQL 강제
-        this.extended_buttons[6].icon = 'server-outline';
+        this.extended_buttons[5].icon = 'server-outline';
+        this.extended_buttons[5].name = this.lang.text['ChatRoom']['forceSQL'];
         break;
     }
     localStorage.setItem('useFFSCDN', `${this.useFirstCustomCDN}`);
