@@ -1,6 +1,3 @@
-// SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
-// SPDX-License-Identifier: MIT
-
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonToggle, ModalController } from '@ionic/angular';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';

@@ -1,6 +1,3 @@
-// SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
-// SPDX-License-Identifier: MIT
-
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AlertController, IonSelect, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';

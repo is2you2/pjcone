@@ -1,6 +1,3 @@
-## SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
-## SPDX-License-Identifier: MIT
-
 extends Node
 # MiniRanchat 서버 병합
 

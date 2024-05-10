@@ -1,6 +1,3 @@
-## SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
-## SPDX-License-Identifier: MIT
-
 extends Node
 # 폴더를 올려 내부 파일 리스트를 새로고침하여 리스트 파일을 출력합니다
 

@@ -1,6 +1,3 @@
-// SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
-// SPDX-License-Identifier: MIT
-
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChannelMessage } from '@heroiclabs/nakama-js';
 import { AlertController, IonicSafeString, LoadingController, ModalController, NavController } from '@ionic/angular';

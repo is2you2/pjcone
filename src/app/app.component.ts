@@ -1,6 +1,3 @@
-// SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
-// SPDX-License-Identifier: MIT
-
 import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';

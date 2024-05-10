@@ -1,6 +1,3 @@
-// SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
-// SPDX-License-Identifier: MIT
-
 import { Injectable } from '@angular/core';
 import { LanguageSettingService } from './language-setting.service';
 import { P5ToastService } from './p5-toast.service';

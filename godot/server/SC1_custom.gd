@@ -1,6 +1,3 @@
-## SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
-## SPDX-License-Identifier: MIT
-
 extends Node
 # 웹 소켓으로 DB 운용
 

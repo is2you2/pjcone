@@ -1,6 +1,3 @@
-// SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
-// SPDX-License-Identifier: MIT
-
 import { Injectable } from '@angular/core';
 
 /** 리스트 판넬에 표시되는 상태들 */

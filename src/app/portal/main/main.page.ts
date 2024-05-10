@@ -1,6 +1,3 @@
-// SPDX-FileCopyrightText: © 2023 그림또따 <is2you246@gmail.com>
-// SPDX-License-Identifier: MIT
-
 import { Component, OnInit } from '@angular/core';
 import { GlobalActService, isDarkMode } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';

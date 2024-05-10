@@ -1,6 +1,3 @@
-// SPDX-FileCopyrightText: © 2024 그림또따 <is2you246@gmail.com>
-// SPDX-License-Identifier: MIT
-
 import { Component, OnInit } from '@angular/core';
 import { ModalController, NavController } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
