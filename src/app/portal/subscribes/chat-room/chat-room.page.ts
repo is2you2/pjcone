@@ -517,7 +517,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
    */
   useFirstCustomCDN = 0;
   async toggle_custom_attach(force?: number) {
-    this.useFirstCustomCDN = force ?? (this.useFirstCustomCDN + 1) % 3;
+    let ModulerSize = this.info['redirect']['type'] == 0 ? 2 : 3
+    this.useFirstCustomCDN = force ?? (this.useFirstCustomCDN + 1) % ModulerSize;
     switch (this.useFirstCustomCDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
         this.extended_buttons[7].icon = 'cloud-offline-outline';
@@ -693,8 +694,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.InitBrowserBackButtonOverride();
     this.useSpeaker = Boolean(localStorage.getItem('useChannelSpeaker'));
     this.toggle_speakermode(this.useSpeaker);
-    this.useFirstCustomCDN = Number(localStorage.getItem('useFFSCDN')) || 0;
-    this.toggle_custom_attach(this.useFirstCustomCDN);
     this.ChatLogs = document.getElementById('chatroom_div');
     this.ChatLogs.onscroll = (_ev: any) => {
       if (this.ChatLogs.scrollHeight - (this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) < 1) {
@@ -730,6 +729,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.nakama.StatusBarChangedCallback = async () => {
       await this.SetExtensionButtons();
     }
+    this.useFirstCustomCDN = Number(localStorage.getItem('useFFSCDN')) || 0;
+    this.toggle_custom_attach(this.useFirstCustomCDN);
   }
 
   ionViewWillEnter() {
@@ -1107,7 +1108,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         break;
       case 0: // 로컬 채널형 기록
         this.extended_buttons[0].isHide = true;
-        this.extended_buttons[7].isHide = true;
         this.extended_buttons[8].isHide = true;
         this.extended_buttons[10].isHide = true;
         break;
