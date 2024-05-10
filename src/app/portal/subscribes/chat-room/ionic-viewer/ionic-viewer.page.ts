@@ -744,24 +744,64 @@ export class IonicViewerPage implements OnInit {
           p.setup = () => {
             p.noCanvas();
             p.noLoop();
-            let textArea = p.createElement('textarea');
-            textArea.elt.disabled = true;
-            textArea.elt.className = 'infobox';
-            textArea.elt.setAttribute('style', 'height: 100%; display: block;');
-            textArea.elt.textContent = '';
-            this.canvasDiv.appendChild(textArea.elt);
-            p['TextArea'] = textArea.elt;
-            if (this.FileInfo['is_new']) {
-              this.open_text_editor(textArea.elt);
-            } else p.loadStrings(this.FileURL, v => {
-              textArea.elt.textContent = v.join('\n');
-              this.open_text_reader(p);
-              this.ContentOnLoad = true;
-              this.ContentFailedLoad = false;
-            }, _e => {
-              this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
-              this.ContentOnLoad = true;
-            });
+            if (this.FileInfo.file_ext == 'json') { // json 뷰어 별도
+              let div = p.createDiv();
+              div.elt.className = 'infobox';
+              div.style('height: 100%; display: block');
+              div.elt.src = this.FileInfo.thumbnail;
+              div.parent(this.canvasDiv);
+              p.loadStrings(this.FileURL, v => {
+                let json = JSON.parse(v);
+                let result: string;
+                // 코드 참조됨: https://stackoverflow.com/questions/4810841/pretty-print-json-using-javascript
+                json = JSON.stringify(json, undefined, 2);
+                json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                result = json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
+                  var cls = 'var(--syntax-text-coding-number)';
+                  if (/^"/.test(match)) {
+                    if (/:$/.test(match))
+                      cls = 'var(--syntax-text-coding-json-key)';
+                    else cls = 'var(--syntax-text-coding-spechar)';
+                  } else if (/true|false/.test(match)) cls = 'var(--syntax-text-coding-basic)';
+                  else if (/null/.test(match)) cls = 'var(--syntax-text-coding-equalmark)';
+                  return '<span style="color: ' + cls + '">' + match + '</span>';
+                });
+                let sep_as_line = result.split('\n');
+                for (let i = 0, j = sep_as_line.length; i < j; i++) {
+                  let sep_as_space = sep_as_line[i].split(' ');
+                  for (let k = 0, l = sep_as_space.length; k < l; k++)
+                    if (sep_as_space[k] == '')
+                      sep_as_space[k] = '<span>&nbsp</span>'
+                  sep_as_line[i] = sep_as_space.join('\n');
+                  sep_as_line[i] += '<br>';
+                }
+                div.elt.innerHTML = sep_as_line.join('\n');
+                this.ContentOnLoad = true;
+                this.ContentFailedLoad = false;
+              }, _e => {
+                this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
+                this.ContentOnLoad = true;
+              });
+            } else { // 일반 텍스트 파일
+              let textArea = p.createElement('textarea');
+              textArea.elt.disabled = true;
+              textArea.elt.className = 'infobox';
+              textArea.elt.setAttribute('style', 'height: 100%; display: block;');
+              textArea.elt.textContent = '';
+              this.canvasDiv.appendChild(textArea.elt);
+              p['TextArea'] = textArea.elt;
+              if (this.FileInfo['is_new']) {
+                this.open_text_editor(textArea.elt);
+              } else p.loadStrings(this.FileURL, v => {
+                textArea.elt.textContent = v.join('\n');
+                this.open_text_reader(p);
+                this.ContentOnLoad = true;
+                this.ContentFailedLoad = false;
+              }, _e => {
+                this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
+                this.ContentOnLoad = true;
+              });
+            }
           }
           p.windowResized = () => {
             let target_height = window.innerHeight - 45 - 56;
@@ -979,7 +1019,8 @@ export class IonicViewerPage implements OnInit {
     ];
     /** 명령어 */
     const COMMAND = [
-      'SELECT', 'UPDATE', 'DELETE', 'INSERT INTO', 'CREATE DATABASE', 'ALTER DATABASE', 'CREATE TABLE', 'ALTER TABLE', 'DROP TABLE', 'CREATE INDEX', 'DROP INDEX',
+      'SELECT', 'UPDATE', 'DELETE', 'INSERT INTO', 'CREATE DATABASE', 'ALTER DATABASE',
+      'CREATE TABLE', 'ALTER TABLE', 'DROP TABLE', 'CREATE INDEX', 'DROP INDEX',
       'ECHO', 'FROM', 'WHERE', 'AND', 'OR', 'NOT',
       'ALTER', 'ADD',
       'echo', '<?php', '?>',
