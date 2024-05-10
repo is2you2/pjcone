@@ -128,7 +128,7 @@ export class CommunityPage implements OnInit {
 
   /** 아이디로 서버 포스트 불러오기 */
   async load_server_post_with_id(post_id: string, isOfficial: string, target: string, user_id: string, is_me: boolean): Promise<boolean> {
-    try {
+    try { // 서버에 직접 요청하여 읽기 시도
       let info = {
         path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/info.json`,
         type: 'application/json',
@@ -141,9 +141,13 @@ export class CommunityPage implements OnInit {
       let blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
       this.indexed.saveBlobToUserPath(blob, info.path);
       json['server'] = {
-        name: this.nakama.servers[isOfficial][target].info.name,
         isOfficial: isOfficial,
         target: target,
+      }
+      try { // 서버 정보가 없는 경우가 있더라구
+        json['server']['name'] = this.nakama.servers[isOfficial][target].info.name;
+      } catch (e) {
+        json['server']['name'] = this.lang.text['Nakama']['DeletedServer'];
       }
       if (json['mainImage']) {
         if (json['mainImage']['url']) {
