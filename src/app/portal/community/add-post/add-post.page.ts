@@ -711,6 +711,28 @@ export class AddPostPage implements OnInit, OnDestroy {
               text: `${this.lang.text['AddPost']['RemoveAttach']}: ${this.userInput.attachments[i].filename}`,
             });
             this.userInput.attachments.splice(i, 1);
+            // 첨부파일 링크 텍스트를 삭제하고, 재정렬시킴
+            let sep_as_line = this.userInput.content.split('\n');
+            for (let k = sep_as_line.length - 1; k >= 0; k--) {
+              // 첨부파일인지 체크
+              let is_attach = false;
+              let content_len = sep_as_line[k].length - 1;
+              let index = 0;
+              try {
+                index = Number(sep_as_line[k].substring(1, content_len));
+                is_attach = sep_as_line[k].charAt(0) == '[' && sep_as_line[k].charAt(content_len) == ']' && !isNaN(index);
+              } catch (e) { }
+              if (is_attach) {
+                if (i == index) { // 삭제된 파일에 해당하는 줄은 삭제
+                  if (sep_as_line[k + 1] == '') try {
+                    sep_as_line.splice(k + 1, 1);
+                  } catch (e) { }
+                  sep_as_line.splice(k, 1);
+                } else if (i < index) // 해당 파일보다 큰 순번은 숫자를 줄여 정렬처리
+                  sep_as_line[k] = `[${index - 1}]`;
+              }
+            }
+            this.userInput.content = sep_as_line.join('\n');
             this.MakeAttachHaveContextMenu();
             return false;
           }
