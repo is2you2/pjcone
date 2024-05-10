@@ -56,6 +56,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     if (this.p5canvas)
       this.p5canvas.remove();
     delete this.nakama.StatusBarChangedCallback;
+    if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
   }
 
   servers: ServerInfo[] = [];
@@ -678,17 +679,18 @@ export class AddPostPage implements OnInit, OnDestroy {
 
   MakeAttachHaveContextMenu() {
     setTimeout(() => {
-      for (let i = this.userInput.attachments.length - 1; i >= 0; i--) {
-        let FileItem = document.getElementById(`PostAttach_${i}`);
-        FileItem.oncontextmenu = () => {
-          this.p5toast.show({
-            text: `${this.lang.text['AddPost']['RemoveAttach']}: ${this.userInput.attachments[i].filename}`,
-          });
-          this.userInput.attachments.splice(i, 1);
-          this.MakeAttachHaveContextMenu();
-          return false;
-        }
-      }
+      for (let i = this.userInput.attachments.length - 1; i >= 0; i--)
+        try {
+          let FileItem = document.getElementById(`PostAttach_${i}`);
+          FileItem.oncontextmenu = () => {
+            this.p5toast.show({
+              text: `${this.lang.text['AddPost']['RemoveAttach']}: ${this.userInput.attachments[i].filename}`,
+            });
+            this.userInput.attachments.splice(i, 1);
+            this.MakeAttachHaveContextMenu();
+            return false;
+          }
+        } catch (e) { }
     }, 0);
   }
 
@@ -826,8 +828,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       return;
     }
     // 음성 녹음중이라면 녹음을 마무리하여 파일로 저장한 후 게시물 저장처리 진행
-    if (this.useVoiceRecording)
-      await this.StopAndSaveVoiceRecording();
+    if (this.useVoiceRecording) await this.StopAndSaveVoiceRecording();
     /** 로컬 서버인지 여부 */
     let is_local = Boolean(this.userInput.server['local']);
     this.isApplyPostData = true;

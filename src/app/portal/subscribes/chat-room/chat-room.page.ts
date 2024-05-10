@@ -20,7 +20,6 @@ import { GroupDetailPage } from '../../settings/group-detail/group-detail.page';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GroupServerPage } from '../../settings/group-server/group-server.page';
-import { QrSharePage } from '../../settings/qr-share/qr-share.page';
 import { QuickShareReviewPage } from './quick-share-review/quick-share-review.page';
 import { WebrtcService } from 'src/app/webrtc.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -394,6 +393,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   ionViewDidEnter() {
     this.is_modal = false;
+    VoiceRecorder.getCurrentStatus().then(v => {
+      if (v.status == 'RECORDING') {
+        // 게시물 생성기에서 음성녹음중인 상태로 들어오면 음성녹음을 할 수 없음
+        this.extended_buttons[6].isHide = true;
+      }
+    });
     this.global.p5key['KeyShortCut']['Escape'] = () => {
       this.navCtrl.pop();
     }
@@ -2328,7 +2333,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.p5canvas.remove()
     this.nakama.OnTransferMessage = {};
     try {
-      await VoiceRecorder.stopRecording();
+      if (this.useVoiceRecording) await VoiceRecorder.stopRecording();
     } catch (e) { }
     delete this.nakama.StatusBarChangedCallback;
   }
