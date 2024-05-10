@@ -146,6 +146,16 @@ export class GlobalActService {
           case 'Digit8':
           case 'Digit9':
           case 'Digit0':
+          case 'Numpad1': // 넘패드 숫자도 동일하게 처리
+          case 'Numpad2':
+          case 'Numpad3':
+          case 'Numpad4':
+          case 'Numpad5':
+          case 'Numpad6':
+          case 'Numpad7':
+          case 'Numpad8':
+          case 'Numpad9':
+          case 'Numpad0':
             if (p['KeyShortCut']['Digit']) {
               let exact_index = (Number(ev['code'].slice(-1)) - 1 + 10) % 10;
               p['KeyShortCut']['Digit'](exact_index);
@@ -176,6 +186,7 @@ export class GlobalActService {
               p['KeyShortCut']['FKeyAct']();
             break;
           case 'Enter': // 발송 등
+          case 'NumpadEnter':
             if (p['KeyShortCut']['EnterAct'])
               p['KeyShortCut']['EnterAct']();
             break;
