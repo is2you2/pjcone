@@ -838,7 +838,7 @@ export class NakamaService {
           this.users.self['img'] = image.objects[0].value['img'];
           this.indexed.saveTextFileToUserPath(JSON.stringify(this.users.self['img']), 'servers/self/profile.img');
         }
-      }
+      } else this.socket_reactive['profile']('');
     } catch (e) { }
     // 통신 소켓 연결하기
     let socket = await this.connect_to(_is_official, _target);
