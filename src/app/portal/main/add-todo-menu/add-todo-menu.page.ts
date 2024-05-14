@@ -1137,7 +1137,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.userInput.attach[i].blob = blob;
         delete this.userInput.attach[i]['exist'];
       }
-      this.isButtonClicked = true;
       await this.nakama.deleteTodoFromStorage(true, received_json);
       this.isModify = false;
     }
@@ -1389,6 +1388,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         } else this.p5toast.show({
           text: this.lang.text['TodoDetail']['CanAddToServer'],
         });
+        this.isButtonClicked = false;
         return;
       }
     }
