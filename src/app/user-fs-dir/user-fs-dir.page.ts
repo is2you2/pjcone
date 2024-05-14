@@ -494,7 +494,10 @@ export class UserFsDirPage implements OnInit {
     this.FileSel.value = undefined;
   }
 
+  lock_modal_open = false;
   async OpenFile(info: FileDir) {
+    if (this.lock_modal_open) return;
+    this.lock_modal_open = true;
     if (!this.CheckIfAccessable(info.path)) return;
     document.removeEventListener('ionBackButton', this.EventListenerAct);
     let createRelevances = [];
@@ -525,6 +528,7 @@ export class UserFsDirPage implements OnInit {
       delete this.global.p5key['KeyShortCut']['Escape'];
       delete this.global.p5key['KeyShortCut']['Digit'];
       v.onDidDismiss().then(v => {
+        this.lock_modal_open = false;
         if (v.data) { // 파일 편집하기를 누른 경우
           switch (v.data.type) {
             case 'image':

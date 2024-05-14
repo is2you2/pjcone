@@ -2162,6 +2162,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         cssClass: 'fullscreen',
       }).then(v => {
         v.onDidDismiss().then((v) => {
+          this.lock_modal_open = false;
           this.ionViewDidEnter();
           if (v.data) { // 파일 편집하기를 누른 경우
             switch (v.data.type) {
@@ -2213,7 +2214,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.noti.Current = 'IonicViewerPage';
         this.is_modal = true;
         v.present();
-        this.lock_modal_open = false;
       });
     }
   }

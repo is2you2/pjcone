@@ -960,7 +960,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
   }
 
+  lock_modal_open = false;
   open_content_viewer(index: number) {
+    if (this.lock_modal_open) return;
+    this.lock_modal_open = true;
     let createRelevances = [];
     for (let i = 0, j = this.userInput.attach.length; i < j; i++)
       createRelevances.push({ content: this.userInput.attach[i] });
@@ -976,6 +979,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }).then(v => {
       this.removeShortCut();
       v.onDidDismiss().then((v) => {
+        this.lock_modal_open = false;
         this.AddShortCut();
         if (v.data) { // 파일 편집하기를 누른 경우
           switch (v.data.type) {
