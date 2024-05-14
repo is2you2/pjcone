@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AlertController, IonModal, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import * as p5 from "p5";
@@ -20,7 +20,7 @@ import * as domtoimage from "dom-to-image";
   templateUrl: './ionic-viewer.page.html',
   styleUrls: ['./ionic-viewer.page.scss'],
 })
-export class IonicViewerPage implements OnInit {
+export class IonicViewerPage implements OnInit, OnDestroy {
 
   constructor(
     public modalCtrl: ModalController,
@@ -36,6 +36,9 @@ export class IonicViewerPage implements OnInit {
     private mClipboard: Clipboard,
     private noti: LocalNotiService,
   ) { }
+  ngOnDestroy(): void {
+    if (this.p5viewerkey) this.p5viewerkey.remove();
+  }
 
   blob: Blob;
   FileInfo: FileInfo;
@@ -120,6 +123,7 @@ export class IonicViewerPage implements OnInit {
         break;
     }
     this.showEdit = !Boolean(this.navParams.get('noEdit'));
+    this.ChangeContentWithKeyInput();
   }
 
   canvasDiv: HTMLElement;
@@ -164,7 +168,6 @@ export class IonicViewerPage implements OnInit {
         this.p5canvas = new p5((p: p5) => {
           p.setup = () => { p.noCanvas() }
         });
-        this.ChangeContentWithKeyInput();
       }
     }
   }
@@ -903,14 +906,16 @@ export class IonicViewerPage implements OnInit {
         this.ContentOnLoad = true;
         break;
     }
-    this.ChangeContentWithKeyInput();
   }
 
+  /** 단축키 행동용 p5 개체 분리 */
+  p5viewerkey: p5;
   /** PC에서 키를 눌러 컨텐츠 전환 */
   ChangeContentWithKeyInput() {
-    if (this.p5canvas) {
-      this.p5canvas.keyPressed = (ev) => {
+    this.p5viewerkey = new p5((p: p5) => {
+      p.keyPressed = (ev) => {
         if (this.isTextEditMode) return;
+        if (this.FileInfo.viewer == 'godot') return;
         switch (ev['code']) {
           case 'KeyA': // 왼쪽 이동
           case 'ArrowLeft':
@@ -927,7 +932,7 @@ export class IonicViewerPage implements OnInit {
             break;
         }
       }
-    }
+    });
   }
 
   @ViewChild('ShowContentInfoIonic') ShowContentInfoIonic: IonModal;
