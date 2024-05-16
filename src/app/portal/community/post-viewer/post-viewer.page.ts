@@ -115,8 +115,12 @@ export class PostViewerPage implements OnInit, OnDestroy {
       this.PostInfo['mainImage']['MainThumbnail'] = FileURL;
     }
     this.create_content();
-    this.isOwner = this.PostInfo['creator_id'] == 'me'
-      || this.PostInfo['creator_id'] == this.nakama.servers[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']].session.user_id;
+    try {
+      this.isOwner = this.PostInfo['creator_id'] == 'me'
+        || this.PostInfo['creator_id'] == this.nakama.servers[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']].session.user_id;
+    } catch (e) {
+      this.isOwner = false;
+    }
     this.HavePosts = this.nakama.posts.length > 1;
     this.ChangeContentWithKeyInput();
   }
