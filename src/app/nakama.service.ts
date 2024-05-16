@@ -913,7 +913,13 @@ export class NakamaService {
             await this.modify_remote_info_as_local(todo.objects[0].value, _is_official, _target);
           else try { // 로컬에 있는 같은 id의 할 일 삭제
             this.RemoteTodoCounter[_is_official][_target].splice(i, 1);
-            let data = await this.indexed.loadTextFromUserPath(`todo/${key}/info.todo`)
+            let path: string;
+            try {
+              path = `todo/${key}_${_is_official}_${_target}/info.todo`;
+            } catch (e) {
+              path = `todo/${key}/info.todo`;
+            }
+            let data = await this.indexed.loadTextFromUserPath(path);
             let json = JSON.parse(data);
             this.deleteTodoFromStorage(true, json);
           } catch (e) { }
@@ -942,7 +948,7 @@ export class NakamaService {
             }]
           });
           if (!check.objects.length) { // 원격에서 삭제된 할 일임
-            let list = await this.indexed.GetFileListFromDB(`todo/${json.id}`);
+            let list = await this.indexed.GetFileListFromDB(`todo/${json.id}_${_is_official}_${_target}`);
             list.forEach(path => this.indexed.removeFileFromUserPath(path));
             if (json.noti_id)
               if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
@@ -1048,7 +1054,7 @@ export class NakamaService {
     todo_info['remote']['type'] = `${_is_official}/${_target}`;
     this.set_todo_notification(todo_info);
     if (this.global.p5todo && this.global.p5todo['add_todo']) this.global.p5todo['add_todo'](JSON.stringify(todo_info));
-    let v = await this.indexed.loadTextFromUserPath(`todo/${todo_info['id']}/info.todo`);
+    let v = await this.indexed.loadTextFromUserPath(`todo/${todo_info['id']}_${_is_official}_${_target}/info.todo`);
     if (v) {
       let json = JSON.parse(v);
       // 온라인 할 일이지만 로컬에서 수정 처리가 되어있을 때, 동시에 원격 할 일이 최신 정보는 아님
@@ -1065,7 +1071,7 @@ export class NakamaService {
         }
         // 로컬에서 내용이 변경된 경우 서버에 로컬 내용을 올림
         delete json.modified;
-        await this.indexed.saveTextFileToUserPath(JSON.stringify(json), `todo/${json['id']}/info.todo`);
+        await this.indexed.saveTextFileToUserPath(JSON.stringify(json), `todo/${json['id']}_${_is_official}_${_target}/info.todo`);
         await this.servers[json.remote.isOfficial][json.remote.target].client.writeStorageObjects(
           this.servers[json.remote.isOfficial][json.remote.target].session, [{
             collection: 'server_todo',
@@ -1078,8 +1084,8 @@ export class NakamaService {
               .socket.sendMatchState(this.self_match[json.remote.isOfficial][json.remote.target].match_id, MatchOpCode.MANAGE_TODO,
                 encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
           });
-      } else this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
-    } else this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}/info.todo`);
+      } else this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}_${_is_official}_${_target}/info.todo`);
+    } else this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}_${_is_official}_${_target}/info.todo`);
   }
 
   /** 이 일을 완료했습니다 */
@@ -1101,7 +1107,13 @@ export class NakamaService {
         if (!slient) loading.dismiss();
       } catch (e) { // 원격 동기화 실패시 로컬에 별도 저장처리
         targetInfo.modified = true;
-        await this.indexed.saveTextFileToUserPath(JSON.stringify(targetInfo), `todo/${targetInfo['id']}/info.todo`);
+        let path: string;
+        try {
+          path = `todo/${targetInfo['id']}_${targetInfo['remote']['isOfficial']}_${targetInfo['remote']['target']}/info.todo`;
+        } catch (e) {
+          path = `todo/${targetInfo['id']}/info.todo`;
+        }
+        await this.indexed.saveTextFileToUserPath(JSON.stringify(targetInfo), path);
         if (!slient) loading.dismiss();
         this.navCtrl.pop();
         return;
@@ -1214,7 +1226,13 @@ export class NakamaService {
       } catch (e) { // 서버 행동 실패
         targetInfo.modified = true;
         targetInfo.removed = true;
-        await this.indexed.saveTextFileToUserPath(JSON.stringify(targetInfo), `todo/${targetInfo['id']}/info.todo`);
+        let path: string;
+        try {
+          path = `todo/${targetInfo['id']}_${targetInfo['remote']['isOfficial']}_${targetInfo['remote']['target']}/info.todo`;
+        } catch (e) {
+          path = `todo/${targetInfo['id']}/info.todo`;
+        }
+        await this.indexed.saveTextFileToUserPath(JSON.stringify(targetInfo), path);
         if (!slient) loading.dismiss();
         return;
       }
@@ -2505,7 +2523,13 @@ export class NakamaService {
                 if (v.objects.length) {
                   try { // 수정인 경우 기존 알림을 삭제
                     let json = v.objects[0].value as any;
-                    let data = await this.indexed.loadTextFromUserPath(`todo/${json.id}/info.todo`);
+                    let data: string;
+                    try {
+                      data = await this.indexed.loadTextFromUserPath(`todo/${json.id}_${_is_official}_${_target}/info.todo`);
+                      if (!data) throw 'empty';
+                    } catch (e) {
+                      data = await this.indexed.loadTextFromUserPath(`todo/${json.id}/info.todo`);
+                    }
                     let get_json = JSON.parse(data);
                     this.removeRegisteredId(get_json.noti_id);
                     this.noti.ClearNoti(get_json.noti_id);
@@ -2521,7 +2545,7 @@ export class NakamaService {
               });
               break;
             case 'done': // 완료
-              this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
+              this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, async (e, v) => {
                 if (e && v) {
                   let todo_info = JSON.parse(v);
                   todo_info.done = true;
@@ -2537,11 +2561,30 @@ export class NakamaService {
                     this.noti.ClearNoti(todo_info.noti_id);
                     this.SyncTodoCounter(_is_official, _target);
                   });
+                } else {
+                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
+                    if (e && v) {
+                      let todo_info = JSON.parse(v);
+                      todo_info.done = true;
+                      await this.modify_remote_info_as_local(todo_info, _is_official, _target);
+                      this.indexed.GetFileListFromDB(`todo/${sep[1]}`, (v) => {
+                        v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+                        if (todo_info.noti_id)
+                          if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+                            clearTimeout(this.web_noti_id[todo_info.noti_id]);
+                            delete this.web_noti_id[todo_info.noti_id];
+                          }
+                        this.removeRegisteredId(todo_info.noti_id);
+                        this.noti.ClearNoti(todo_info.noti_id);
+                        this.SyncTodoCounter(_is_official, _target);
+                      });
+                    }
+                  });
                 }
               });
               break;
             case 'delete': // 삭제
-              this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
+              this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, (e, v) => {
                 if (e && v) {
                   let todo_info = JSON.parse(v);
                   this.indexed.GetFileListFromDB(`todo/${sep[1]}`, (v) => {
@@ -2557,6 +2600,25 @@ export class NakamaService {
                       this.global.p5todo['remove_todo'](JSON.stringify(todo_info));
                   });
                   this.SyncTodoCounter(_is_official, _target);
+                } else {
+                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
+                    if (e && v) {
+                      let todo_info = JSON.parse(v);
+                      this.indexed.GetFileListFromDB(`todo/${sep[1]}`, (v) => {
+                        v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+                        if (todo_info.noti_id)
+                          if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+                            clearTimeout(this.web_noti_id[todo_info.noti_id]);
+                            delete this.web_noti_id[todo_info.noti_id];
+                          }
+                        this.removeRegisteredId(todo_info.noti_id);
+                        this.noti.ClearNoti(todo_info.noti_id);
+                        if (this.global.p5todo && this.global.p5todo['remove_todo'])
+                          this.global.p5todo['remove_todo'](JSON.stringify(todo_info));
+                      });
+                      this.SyncTodoCounter(_is_official, _target);
+                    }
+                  });
                 }
               });
               break;
@@ -2569,7 +2631,7 @@ export class NakamaService {
                 text: `${userAct}: ${this.users[_is_official][_target][sep[2]]['display_name']}`,
               });
               // 로컬 자료를 변경해야함
-              this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
+              this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, async (e, v) => {
                 if (e && v) {
                   let todo_info = JSON.parse(v);
                   for (let i = 0, j = todo_info.workers.length; i < j; i++)
@@ -2580,6 +2642,20 @@ export class NakamaService {
                     }
                   await this.modify_remote_info_as_local(todo_info, _is_official, _target);
                   this.SyncTodoCounter(_is_official, _target);
+                } else {
+                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
+                    if (e && v) {
+                      let todo_info = JSON.parse(v);
+                      for (let i = 0, j = todo_info.workers.length; i < j; i++)
+                        if ((todo_info.workers[i].user_id || todo_info.workers[i].id) == sep[2]) {
+                          todo_info.workers[i]['isDelete'] = sep[3] == 'true';
+                          todo_info.workers[i]['timestamp'] = Number(sep[4]);
+                          break;
+                        }
+                      await this.modify_remote_info_as_local(todo_info, _is_official, _target);
+                      this.SyncTodoCounter(_is_official, _target);
+                    }
+                  });
                 }
               });
               break;

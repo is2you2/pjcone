@@ -253,7 +253,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   async checkHasSameFileAndRename(this_file: FileInfo) {
     let has_same_named_file = false;
     has_same_named_file = await this.indexed.checkIfFileExist(this_file.path);
-    if (this.userInput.id && !has_same_named_file) has_same_named_file = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}/${this_file.filename}`);
+    if (this.userInput.id && !has_same_named_file)
+      try {
+        has_same_named_file = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/${this_file.filename}`);
+      } catch (e) {
+        has_same_named_file = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}/${this_file.filename}`);
+      }
     if (has_same_named_file) { // 동명의 파일 등록시 파일 이름 변형
       this_file.filename = `${this_file.filename.substring(0, this_file.filename.lastIndexOf('.'))}_.${this_file.file_ext}`;
       this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
@@ -383,7 +388,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.file_sel_id = `${this.userInput.id || 'new_todo_id'}_${new Date().getTime()}`;
     // 첨부 이미지가 있음
     // 이 할 일이 썸네일을 가지고 있는지 검토
-    let has_thumbnail = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}/thumbnail.png`);
+    let has_thumbnail = false;
+    try {
+      has_thumbnail = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/thumbnail.png`);
+    } catch (e) {
+      has_thumbnail = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}/thumbnail.png`);
+    }
     if (this.userInput.attach.length)
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
         try {
@@ -411,7 +421,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                         p.pixelDensity(1);
                         p.image(v, -(v.width - 128) / 2, -(v.height - 128) / 2);
                         let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
-                        this.indexed.saveBase64ToUserPath(base64, `todo/${this.userInput.id}/thumbnail.png`, (_) => {
+                        let path: string;
+                        try {
+                          path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/thumbnail.png`;
+                        } catch (e) {
+                          path = `todo/${this.userInput.id}/thumbnail.png`;
+                        }
+                        this.indexed.saveBase64ToUserPath(base64, path, (_) => {
                           if (this.global.p5todo && this.global.p5todo['add_todo'])
                             this.global.p5todo['add_todo'](JSON.stringify(this.userInput));
                           done();
@@ -1208,7 +1224,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
       if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
-        await this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/thumbnail.png`);
+        let path: string;
+        try {
+          path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/thumbnail.png`;
+        } catch (e) {
+          path = `todo/${this.userInput.id}/thumbnail.png`;
+        }
+        await this.indexed.removeFileFromUserPath(path);
         for (let i = 0, j = received_json.attach.length; i < j; i++) {
           for (let k = 0, l = this.userInput.attach.length; k < l; k++) {
             if (this.userInput.attach[k]['path'] == received_json.attach[i]['path']) {
@@ -1236,7 +1258,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         if (!this.userInput.attach[i]['exist'] || (!header_image && this.userInput.attach[i]['viewer'] == 'image')) {
           if (!has_alternative_thumbnail)
             blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
-          this.userInput.attach[i]['path'] = `todo/${this.userInput.id}/${this.userInput.attach[i]['filename']}`;
+          try {
+            this.userInput.attach[i]['path'] = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/${this.userInput.attach[i]['filename']}`;
+          } catch (e) {
+            this.userInput.attach[i]['path'] = `todo/${this.userInput.id}/${this.userInput.attach[i]['filename']}`;
+          }
           await this.indexed.saveBlobToUserPath(blob, this.userInput.attach[i]['path']);
         } else delete this.userInput.attach[i]['exist'];
         if (!header_image && (this.userInput.attach[i]['viewer'] == 'image' || has_alternative_thumbnail)) {
@@ -1259,7 +1285,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 p.pixelDensity(1);
                 p.image(v, -(v.width - 128) / 2, -(v.height - 128) / 2);
                 let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
-                this.indexed.saveBase64ToUserPath(base64, `todo/${this.userInput.id}/thumbnail.png`, (_) => {
+                let path: string;
+                try {
+                  path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/thumbnail.png`;
+                } catch (e) {
+                  path = `todo/${this.userInput.id}/thumbnail.png`;
+                }
+                this.indexed.saveBase64ToUserPath(base64, path, (_) => {
                   done();
                 });
                 URL.revokeObjectURL(header_image);
@@ -1278,7 +1310,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
     if (!has_attach && attach_changed) { // 첨부된게 전혀 없다면 모든 이미지 삭제
       if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
-        await this.indexed.removeFileFromUserPath(`todo/${this.userInput.id}/thumbnail.png`);
+        let path: string;
+        try {
+          path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/thumbnail.png`;
+        } catch (e) {
+          path = `todo/${this.userInput.id}/thumbnail.png`;
+        }
+        await this.indexed.removeFileFromUserPath(path);
         if (received_json['attach'])
           for (let i = 0, j = received_json.attach.length; i < j; i++)
             await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
@@ -1387,7 +1425,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           this.userInput['modified'] = true;
           if (this.global.p5todo && this.global.p5todo['add_todo'])
             this.global.p5todo['add_todo'](JSON.stringify(this.userInput));
-          await this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`);
+          let path: string;
+          try {
+            path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/info.todo`;
+          } catch (e) {
+            path = `todo/${this.userInput.id}/info.todo`;
+          }
+          await this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), path);
           this.navCtrl.pop();
         } else this.p5toast.show({
           text: this.lang.text['TodoDetail']['CanAddToServer'],
@@ -1398,7 +1442,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
     if (this.global.p5todo && this.global.p5todo['add_todo'])
       this.global.p5todo['add_todo'](JSON.stringify(this.userInput));
-    await this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), `todo/${this.userInput.id}/info.todo`);
+    let path: string;
+    try {
+      path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/info.todo`;
+    } catch (e) {
+      path = `todo/${this.userInput.id}/info.todo`;
+    }
+    await this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), path);
     this.navCtrl.pop();
   }
 
