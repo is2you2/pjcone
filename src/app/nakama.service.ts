@@ -830,6 +830,7 @@ export class NakamaService {
       });
       if (image.objects.length) {
         if (this.socket_reactive['profile']) {
+          this.users.self['img'] = image.objects[0].value['img'];
           this.socket_reactive['profile'](image.objects[0].value['img']);
         } else {
           this.users.self['img'] = image.objects[0].value['img'];
