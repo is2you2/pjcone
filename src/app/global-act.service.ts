@@ -690,15 +690,7 @@ export class GlobalActService {
       headers.append('Access-Control-Allow-Origin', '*');
       headers.append('Access-Control-Allow-Method', '*');
       headers.append('Access-Control-Allow-Headers', '*');
-      const cont = new AbortController();
-      const id = setTimeout(() => {
-        this.p5toast.show({
-          text: this.lang.text['GlobalAct']['UploadFailed'],
-        });
-        cont.abort();
-      }, 6000);
-      await fetch(`${protocol}//${address}:9001/${filename}`, { method: "POST", headers: headers, body: formData, signal: cont.signal });
-      clearTimeout(id);
+      await fetch(`${protocol}//${address}:9001/${filename}`, { method: "POST", headers: headers, body: formData });
       let res = await fetch(CatchedAddress);
       if (res.ok) Catched = true;
     } catch (e) {
@@ -720,15 +712,7 @@ export class GlobalActService {
     headers.append('Access-Control-Allow-Origin', '*');
     headers.append('Access-Control-Allow-Method', '*');
     headers.append('Access-Control-Allow-Headers', '*');
-    const cont = new AbortController();
-    const id = setTimeout(() => {
-      this.p5toast.show({
-        text: this.lang.text['GlobalAct']['UploadFailed'],
-      });
-      cont.abort();
-    }, 6000);
-    await fetch(`${target_address}:9001/remove/${target_file_name}`, { method: "POST", headers: headers, signal: cont.signal });
-    clearTimeout(id);
+    await fetch(`${target_address}:9001/remove/${target_file_name}`, { method: "POST", headers: headers });
   }
 
   /** 해당 키워드가 포함된 모든 파일 삭제 요청 (cdn 기반 파일)  
@@ -743,15 +727,7 @@ export class GlobalActService {
     headers.append('Access-Control-Allow-Origin', '*');
     headers.append('Access-Control-Allow-Method', '*');
     headers.append('Access-Control-Allow-Headers', '*');
-    const cont = new AbortController();
-    const id = setTimeout(() => {
-      this.p5toast.show({
-        text: this.lang.text['GlobalAct']['UploadFailed'],
-      });
-      cont.abort();
-    }, 6000);
-    await fetch(`${target_address}:9001/remove_key/${target_id}`, { method: "POST", headers: headers, signal: cont.signal });
-    clearTimeout(id);
+    await fetch(`${target_address}:9001/remove_key/${target_id}`, { method: "POST", headers: headers });
   }
 
   /** 사용자 지정 서버에 업로드 시도 */
@@ -779,15 +755,7 @@ export class GlobalActService {
       headers.append('Access-Control-Allow-Origin', '*');
       headers.append('Access-Control-Allow-Method', '*');
       headers.append('Access-Control-Allow-Headers', '*');
-      const cont = new AbortController();
-      const id = setTimeout(() => {
-        this.p5toast.show({
-          text: this.lang.text['GlobalAct']['FFSFailed'],
-        });
-        cont.abort();
-      }, 1500);
-      await fetch(`${protocol}//${address[0]}:9001/${filename}`, { method: "POST", headers: headers, body: formData, signal: cont.signal });
-      clearTimeout(id);
+      await fetch(`${protocol}//${address[0]}:9001/${filename}`, { method: "POST", headers: headers, body: formData });
       let res = await fetch(CatchedAddress);
       if (!loading) innerLoading.dismiss();
       if (res.ok) return CatchedAddress;
