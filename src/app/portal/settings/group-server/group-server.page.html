@@ -29,8 +29,7 @@
               <p *ngIf="server.isOfficial != 'official'">{{server.useSSL ? lang.text['GroupServer']['useSSL'] :
                 lang.text['GroupServer']['NotuseSSL']}}</p>
             </ion-label>
-            <ion-button *ngIf="server.isOfficial != 'official'"
-              (click)="remove_server(server.isOfficial, server.target)">
+            <ion-button (click)="remove_server(server.isOfficial, server.target)">
               {{statusBar.groupServer[server.isOfficial][server.target] == 'online' ?
               lang.text['GroupServer']['RemoveAccount']
               : lang.text['GroupServer']['RemoveUnofficial']}}
