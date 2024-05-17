@@ -2401,7 +2401,7 @@ export class NakamaService {
     this.set_group_statusBar('offline', _is_official, _target);
     delete this.statusBar.groupServer[_is_official][_target];
     // 동일 주소 WebRTC 서버 일괄 삭제
-    this.RemoveWebRTCServer(this.servers[_is_official][_target].info.address);
+    await this.RemoveWebRTCServer(this.servers[_is_official][_target].info.address);
     delete this.servers[_is_official][_target];
     this.save_groups_with_less_info();
     this.indexed.saveTextFileToUserPath(JSON.stringify(this.statusBar.groupServer), 'servers/list.json');

@@ -690,7 +690,14 @@ export class GlobalActService {
       headers.append('Access-Control-Allow-Origin', '*');
       headers.append('Access-Control-Allow-Method', '*');
       headers.append('Access-Control-Allow-Headers', '*');
+      let progress = setInterval(async () => {
+        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", headers: headers });
+        let currentSize = Number(await res.text());
+        let progressPercent = Math.floor(currentSize / file.size * 100);
+        loading.message = `${file.filename}: ${progressPercent}%`;
+      }, 700);
       await fetch(`${protocol}//${address}:9001/${filename}`, { method: "POST", headers: headers, body: formData });
+      clearInterval(progress);
       let res = await fetch(CatchedAddress);
       if (res.ok) Catched = true;
     } catch (e) {
@@ -755,7 +762,14 @@ export class GlobalActService {
       headers.append('Access-Control-Allow-Origin', '*');
       headers.append('Access-Control-Allow-Method', '*');
       headers.append('Access-Control-Allow-Headers', '*');
+      let progress = setInterval(async () => {
+        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", headers: headers });
+        let currentSize = Number(await res.text());
+        let progressPercent = Math.floor(currentSize / file.size * 100);
+        loading.message = `${file.filename}: ${progressPercent}%`;
+      }, 700);
       await fetch(`${protocol}//${address[0]}:9001/${filename}`, { method: "POST", headers: headers, body: formData });
+      clearInterval(progress);
       let res = await fetch(CatchedAddress);
       if (!loading) innerLoading.dismiss();
       if (res.ok) return CatchedAddress;
