@@ -969,11 +969,11 @@ export class AddPostPage implements OnInit, OnDestroy {
     if (attach_len) {
       loading.message = this.lang.text['AddPost']['SyncAttaches'];
       for (let i = attach_len - 1; i >= 0; i--) {
-        try {
+        try { // FFS 업로드 시도
+          if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
           loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`;
           let CatchedAddress: string;
-          if (this.useFirstCustomCDN)
-            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name']);
+          CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name']);
           if (CatchedAddress) {
             delete this.userInput.attachments[i]['path'];
             delete this.userInput.attachments[i]['partsize'];
@@ -985,6 +985,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         }
         if (!is_local) {
           try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
+            if (this.useFirstCustomCDN == 2) throw 'SQL 강제';
             let address = this.nakama.servers[this.isOfficial][this.target].info.address;
             let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.attachments[i],
