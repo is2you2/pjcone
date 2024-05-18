@@ -3078,24 +3078,26 @@ export class NakamaService {
                 index = k;
                 break;
               }
-            if (this.posts[index]['server']['local'] ||
-              this.posts[index]['creator_id'] == this.servers[this.posts[index]['server']['isOfficial']][this.posts[index]['server']['target']].session.user_id)
-              this.alertCtrl.create({
-                header: this.posts[index]['title'],
-                message: this.posts[index]['content'],
-                buttons: [{
-                  text: this.lang.text['ChatRoom']['EditChat'],
-                  handler: () => {
-                    this.EditPost(this.posts[index]);
-                  }
-                }, {
-                  text: this.lang.text['TodoDetail']['remove'],
-                  handler: () => {
-                    this.RemovePost(this.posts[index]);
-                  },
-                  cssClass: 'redfont',
-                }],
-              }).then(v => v.present());
+            try {
+              if (this.posts[index]['server']['local'] ||
+                this.posts[index]['creator_id'] == this.servers[this.posts[index]['server']['isOfficial']][this.posts[index]['server']['target']].session.user_id)
+                this.alertCtrl.create({
+                  header: this.posts[index]['title'],
+                  message: this.posts[index]['content'],
+                  buttons: [{
+                    text: this.lang.text['ChatRoom']['EditChat'],
+                    handler: () => {
+                      this.EditPost(this.posts[index]);
+                    }
+                  }, {
+                    text: this.lang.text['TodoDetail']['remove'],
+                    handler: () => {
+                      this.RemovePost(this.posts[index]);
+                    },
+                    cssClass: 'redfont',
+                  }],
+                }).then(v => v.present());
+            } catch (e) { } // 온라인 상태가 아님
             return false;
           }
       }
