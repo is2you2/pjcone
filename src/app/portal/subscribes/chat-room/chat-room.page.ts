@@ -1452,8 +1452,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   break;
                 }
               if (catch_index === undefined) throw '메시지를 찾을 수 없음';
-              if (!this.ViewableMessage[catch_index]['is_me'])
-                this.CopyMessageText(this.ViewableMessage[catch_index]);
+              this.CopyMessageText(this.ViewableMessage[catch_index]);
               this.message_detail(this.ViewableMessage[catch_index], catch_index);
             } catch (e) {
               console.log('메시지 상세보기 실패: ', e);
