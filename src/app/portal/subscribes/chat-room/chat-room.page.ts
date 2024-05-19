@@ -1031,8 +1031,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     break;
                   }
                 if (catch_index === undefined) throw '메시지를 찾을 수 없음';
-                if (!this.ViewableMessage[catch_index]['is_me'])
-                  this.CopyMessageText(this.ViewableMessage[catch_index]);
+                this.CopyMessageText(this.ViewableMessage[catch_index]);
                 this.message_detail(c, catch_index);
               } catch (e) {
                 console.log('메시지 상세보기 실패: ', e);
@@ -1123,18 +1122,46 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 선택한 메시지 복사 */
   async CopyMessageText(msg: any) {
-    let text = this.deserialize_text(msg);
-    try {
-      await this.mClipboard.copy(text);
-    } catch (e) {
+    let text: any = this.deserialize_text(msg);
+    let isImageTarget = false;
+    if (!text) { // 텍스트가 없다면 첨부파일을 대상으로 하기
+      try { // 로컬이면 로컬 파일 blob 생성하기
+        let path = msg.content.path;
+        let blob = await this.indexed.loadBlobFromUserPath(path, msg.content.type);
+        text = blob;
+        isImageTarget = true;
+      } catch (e) { // 로컬에 저장된 파일이 아니라면 url 이라고 가정함
+        // 다운로드가 안된 파일이라면 복사가 안되는걸 무시함
+        if (msg.content.url) {
+          text = msg.content.url;
+          isImageTarget = Boolean(text);
+        }
+      }
+    }
+    try { // 개체 복사하기 시도
+      if (!isImageTarget) throw '텍스트 복사로 즉시 이동';
+      let data = {};
+      data[msg.content.type] = text;
+      await navigator.clipboard.write([
+        new ClipboardItem(data)
+      ]);
+      if (isPlatform == 'DesktopPWA')
+        this.p5toast.show({
+          text: `${this.lang.text['GlobalAct']['PCCopyImage']}: ${msg.content.filename}`,
+        });
+    } catch (e) { // 개체가 아니라면 텍스트 복사하기 시도
       try {
-        await clipboard.write(text);
-        if (isPlatform == 'DesktopPWA')
-          this.p5toast.show({
-            text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${text}`,
-          });
+        await this.mClipboard.copy(text);
       } catch (e) {
-        console.log('클립보드 복사 실패: ', e);
+        try {
+          await clipboard.write(text);
+          if (isPlatform == 'DesktopPWA')
+            this.p5toast.show({
+              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${text}`,
+            });
+        } catch (e) {
+          console.log('클립보드 복사 실패: ', e);
+        }
       }
     }
   }
