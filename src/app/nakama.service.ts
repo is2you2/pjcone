@@ -3903,7 +3903,9 @@ export class NakamaService {
           }
           done(undefined);
         });
-        this.noti.ClearNoti(8);
+        setTimeout(() => {
+          this.noti.ClearNoti(8);
+        }, 1000);
       }
       _msg.content['path'] = path;
       let url: string;
