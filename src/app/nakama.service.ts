@@ -3110,6 +3110,7 @@ export class NakamaService {
   EditPost(info: any) {
     if (this.CommunityGoToEditPost)
       this.CommunityGoToEditPost(info);
+    if (this.socket_reactive['try_load_post']) this.socket_reactive['try_load_post']();
   }
 
   /** 게시물 폴더 삭제 */
@@ -3155,6 +3156,7 @@ export class NakamaService {
     if (loading) loading.dismiss();
     delete this.posts_orig[info['server']['isOfficial']][info['server']['target']][info['creator_id']][info['id']];
     this.rearrange_posts();
+    if (this.socket_reactive['try_load_post']) this.socket_reactive['try_load_post']();
   }
 
   /** WebRTC 통화 채널에 참가하기 */

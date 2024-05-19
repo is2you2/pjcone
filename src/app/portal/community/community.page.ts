@@ -55,6 +55,13 @@ export class CommunityPage implements OnInit {
     if (this.ContentDiv && this.ContentScroll)
       if (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 1)
         this.load_post_cycles();
+    this.nakama.socket_reactive['try_load_post'] = () => {
+      setTimeout(() => {
+        if (this.ContentDiv && this.ContentScroll)
+          if (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 1)
+            this.load_post_cycles();
+      }, 0);
+    }
   }
 
   ContentScroll: HTMLDivElement;
@@ -277,6 +284,7 @@ export class CommunityPage implements OnInit {
   ionViewWillLeave() {
     delete this.global.p5key['KeyShortCut']['Digit'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
+    delete this.nakama.socket_reactive['try_load_post'];
     this.nakama.is_post_lock = false;
   }
 }
