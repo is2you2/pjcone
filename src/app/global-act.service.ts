@@ -593,7 +593,7 @@ export class GlobalActService {
       case 'ts': // Typescript
       case 'js': // Javascrupt
       case 'cc': // C++
-      case 'php': // C++
+      case 'php':
       case 'h': // 헤더파일
       case 'cpp': // C++
       case 'rs': // rust
@@ -611,6 +611,7 @@ export class GlobalActService {
       case 'css':
       case 'pl': // Perl
       case 'scss':
+      case 'json': // 코드는 아니지만 구문 강조가 있으면 좋음
         info['viewer'] = 'code';
         break;
       // 마크다운
@@ -623,7 +624,6 @@ export class GlobalActService {
       case 'txt':
       case 'yml':
       case 'gitignore':
-      case 'json':
         info['viewer'] = 'text';
         break;
       default: // 뷰어 제한 파일 (파일 오프너 활용됨)

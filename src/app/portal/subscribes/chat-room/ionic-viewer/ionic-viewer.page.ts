@@ -1072,7 +1072,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               break;
             }
           if (isColored) continue;
-          if (isColored) continue;
           for (let m = 0, n = OPERATOR.length; m < n; m++)
             if (sep_by_whitespace[k] == OPERATOR[m]) {
               let word = p.createSpan(text + '&nbsp');

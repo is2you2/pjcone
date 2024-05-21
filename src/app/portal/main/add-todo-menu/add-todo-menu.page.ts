@@ -762,7 +762,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         let hour = ("0" + newDate.getHours()).slice(-2);
         let minute = ("0" + newDate.getMinutes()).slice(-2);
         let second = ("0" + newDate.getSeconds()).slice(-2);
-        let new_textfile_name = `texteditor_${year}-${month}-${date}_${hour}-${minute}-${second}.txt`
+        let new_textfile_name = `texteditor_${year}-${month}-${date}_${hour}-${minute}-${second}.txt`;
         this.modalCtrl.create({
           component: IonicViewerPage,
           componentProps: {
