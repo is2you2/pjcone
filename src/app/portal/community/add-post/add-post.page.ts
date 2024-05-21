@@ -514,7 +514,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   }
 
   /** 파일이 선택되고 나면 */
-  async selected_blobFile_callback_act(blob: any, contentRelated: ContentCreatorInfo[] = [], various = 'loaded', path?: string) {
+  async selected_blobFile_callback_act(blob: any, contentRelated: ContentCreatorInfo[] = [], various = 'loaded', path?: string, index?: number) {
     let file = {} as PostAttachment;
     file['filename'] = blob.name;
     file['file_ext'] = blob.name.split('.').pop() || blob.type || this.lang.text['ChatRoom']['unknown_ext'];
@@ -537,8 +537,10 @@ export class AddPostPage implements OnInit, OnDestroy {
     file.blob = blob;
     file.path = `tmp_files/post/${file.filename}_${this.userInput.attachments.length}.${file.file_ext}`;
     this.create_selected_thumbnail(file);
-    this.AddAttachTextForm();
-    this.userInput.attachments.push(file);
+    if (index === undefined) {
+      this.AddAttachTextForm();
+      this.userInput.attachments.push(file);
+    } else this.userInput.attachments[index] = file;
     this.MakeAttachHaveContextMenu();
     this.indexed.saveBlobToUserPath(file.blob, file.path);
   }
@@ -824,7 +826,7 @@ export class AddPostPage implements OnInit, OnDestroy {
                 });
                 return;
               case 'text':
-                this.selected_blobFile_callback_act(v.data.blob, v.data.contentRelated, 'textedit');
+                this.selected_blobFile_callback_act(v.data.blob, v.data.contentRelated, 'textedit', undefined, index);
                 break;
             }
           }
