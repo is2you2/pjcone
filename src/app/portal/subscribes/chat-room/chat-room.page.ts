@@ -200,7 +200,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           v.onDidDismiss().then(() => {
             this.ionViewDidEnter();
           });
-          this.is_modal = true;
           this.removeShortCutKey();
           v.present();
         });
@@ -270,6 +269,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.userInput.file = this_file;
             }
           });
+          v.onDidDismiss().then(() => {
+            this.ionViewDidEnter();
+          });
+          this.removeShortCutKey();
           v.present();
         });
       }
@@ -449,16 +452,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   useVoiceRecording = false;
 
-  /** 다른 modal 페이지로 넘어갔는지 여부 */
-  is_modal = false;
-  /** 페이지 넘어간지 여부를 검토 후 단축키 추가하기 */
-  add_shortcut() {
-    if (!this.is_modal)
-      this.ionViewDidEnter();
-  }
-
   ionViewDidEnter() {
-    this.is_modal = false;
     VoiceRecorder.getCurrentStatus().then(v => {
       if (v.status == 'RECORDING') {
         // 게시물 생성기에서 음성녹음중인 상태로 들어오면 음성녹음을 할 수 없음
@@ -2130,7 +2124,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.ionViewDidEnter();
       });
       this.removeShortCutKey();
-      this.is_modal = true;
       v.present()
     });
   }
@@ -2293,7 +2286,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   v.onWillDismiss().then(async v => {
                     if (v.data) await this.voidDraw_fileAct_callback(v, related_creators);
                   });
-                  this.is_modal = true;
                   this.removeShortCutKey();
                   v.present();
                 });
@@ -2310,7 +2302,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         });
         this.removeShortCutKey();
         this.noti.Current = 'IonicViewerPage';
-        this.is_modal = true;
         v.present();
       });
     }

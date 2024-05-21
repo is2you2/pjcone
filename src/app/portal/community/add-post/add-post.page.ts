@@ -399,6 +399,10 @@ export class AddPostPage implements OnInit, OnDestroy {
               this.userInput.attachments.push(this_file);
             }
           });
+          v.onDidDismiss().then(() => {
+            this.AddShortcut();
+          });
+          delete this.global.p5key['KeyShortCut']['Escape'];
           v.present();
         });
       }

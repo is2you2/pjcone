@@ -778,6 +778,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             no_edit: true,
           },
         }).then(v => {
+          this.removeShortCut();
           v.onWillDismiss().then(v => {
             if (v.data) {
               let this_file: FileInfo = {};
@@ -798,6 +799,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               this.userInput.attach.push(this_file);
               this.auto_scroll_down();
             }
+          });
+          v.onDidDismiss().then(() => {
+            this.AddShortCut();
           });
           v.present();
         });
