@@ -3954,104 +3954,104 @@ export class NakamaService {
     }
   }
 
-  /** 로컬에 있는 파일을 불러오기, 로컬에 없다면 원격에서 요청하여 생성 후 불러오기
+  /** 원격에서 파일 불러오기, 원격에 없다면 로컬에서 파일 불러오기
    * @param info { path, type }
    * @returns value { from: 검토 위치, value: Blob }
    */
   async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid = '', _key_force = '', show_noti = true) {
     try {
+      let file_info = await this.servers[_is_official][_target].client.readStorageObjects(
+        this.servers[_is_official][_target].session, {
+        object_ids: [{
+          collection: _collection,
+          key: _key_force || info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
+          user_id: _userid || this.servers[_is_official][_target].session.user_id,
+        }],
+      });
+      let info_json: FileInfo = file_info.objects[0].value;
+      let isSuccessful = true;
+      for (let i = 0; i < info_json.partsize; i++) {
+        try {
+          let part = await this.servers[_is_official][_target].client.readStorageObjects(
+            this.servers[_is_official][_target].session, {
+            object_ids: [{
+              collection: _collection,
+              key: _key_force ? `${_key_force}_${i}` : (info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`),
+              user_id: _userid || this.servers[_is_official][_target].session.user_id,
+            }],
+          });
+          this.global.save_file_part(info.path, i, part.objects[0].value['data']);
+        } catch (e) {
+          console.log('ReadStorage_From_channel: ', e);
+          isSuccessful = false;
+          this.p5toast.show({
+            text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
+          });
+          break;
+        }
+      }
+      if (isSuccessful) {
+        if (info['url']) { // 링크
+          info['thumbnail'] = info['url'];
+        } else { // 서버에 업로드된 파일
+          info['text'] = [this.lang.text['ChatRoom']['SavingFile']];
+          if (show_noti)
+            this.p5toast.show({
+              text: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
+            });
+          if (isPlatform == 'Android' || isPlatform == 'iOS')
+            this.noti.noti.schedule({
+              id: 8,
+              title: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
+              progressBar: { indeterminate: true },
+              sound: null,
+              smallIcon: 'res://diychat',
+              color: 'b0b0b0',
+            });
+          let GatheringInt8Array = [];
+          let ByteSize = 0;
+          await new Promise(async (done, err) => {
+            for (let i = 0, j = info_json['partsize']; i < j; i++)
+              try {
+                let part = await this.indexed.GetFileInfoFromDB(`${info.path}_part/${i}.part`);
+                ByteSize += part.contents.length;
+                GatheringInt8Array[i] = part;
+              } catch (e) {
+                console.log('파일 병합하기 오류: ', e);
+                break;
+              }
+            try {
+              let SaveForm: Int8Array = new Int8Array(ByteSize);
+              let offset = 0;
+              for (let i = 0, j = GatheringInt8Array.length; i < j; i++) {
+                SaveForm.set(GatheringInt8Array[i].contents, offset);
+                offset += GatheringInt8Array[i].contents.length;
+              }
+              await this.indexed.saveInt8ArrayToUserPath(SaveForm, info.path);
+              for (let i = 0, j = info_json['partsize']; i < j; i++)
+                this.indexed.removeFileFromUserPath(`${info.path}_part/${i}.part`)
+              await this.indexed.removeFileFromUserPath(`${info.path}_part`)
+            } catch (e) {
+              console.log('파일 최종 저장하기 오류: ', e);
+              err();
+            }
+            done(undefined);
+          });
+          setTimeout(() => {
+            this.noti.ClearNoti(8);
+          }, 1000);
+          this.indexed.removeFileFromUserPath(`${info.path}.history`);
+        }
+      }
       return {
-        from: 'local',
-        value: await this.indexed.loadBlobFromUserPath(info.path, info.type || '')
+        from: 'remote',
+        value: await this.indexed.loadBlobFromUserPath(info.path, info_json.type || '')
       };
     } catch (e) {
       try {
-        let file_info = await this.servers[_is_official][_target].client.readStorageObjects(
-          this.servers[_is_official][_target].session, {
-          object_ids: [{
-            collection: _collection,
-            key: _key_force || info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
-            user_id: _userid || this.servers[_is_official][_target].session.user_id,
-          }],
-        });
-        let info_json: FileInfo = file_info.objects[0].value;
-        let isSuccessful = true;
-        for (let i = 0; i < info_json.partsize; i++) {
-          try {
-            let part = await this.servers[_is_official][_target].client.readStorageObjects(
-              this.servers[_is_official][_target].session, {
-              object_ids: [{
-                collection: _collection,
-                key: _key_force ? `${_key_force}_${i}` : (info.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120) + `_${i}`),
-                user_id: _userid || this.servers[_is_official][_target].session.user_id,
-              }],
-            });
-            this.global.save_file_part(info.path, i, part.objects[0].value['data']);
-          } catch (e) {
-            console.log('ReadStorage_From_channel: ', e);
-            isSuccessful = false;
-            this.p5toast.show({
-              text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
-            });
-            break;
-          }
-        }
-        if (isSuccessful) {
-          if (info['url']) { // 링크
-            info['thumbnail'] = info['url'];
-          } else { // 서버에 업로드된 파일
-            info['text'] = [this.lang.text['ChatRoom']['SavingFile']];
-            if (show_noti)
-              this.p5toast.show({
-                text: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
-              });
-            if (isPlatform == 'Android' || isPlatform == 'iOS')
-              this.noti.noti.schedule({
-                id: 8,
-                title: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
-                progressBar: { indeterminate: true },
-                sound: null,
-                smallIcon: 'res://diychat',
-                color: 'b0b0b0',
-              });
-            let GatheringInt8Array = [];
-            let ByteSize = 0;
-            await new Promise(async (done, err) => {
-              for (let i = 0, j = info_json['partsize']; i < j; i++)
-                try {
-                  let part = await this.indexed.GetFileInfoFromDB(`${info.path}_part/${i}.part`);
-                  ByteSize += part.contents.length;
-                  GatheringInt8Array[i] = part;
-                } catch (e) {
-                  console.log('파일 병합하기 오류: ', e);
-                  break;
-                }
-              try {
-                let SaveForm: Int8Array = new Int8Array(ByteSize);
-                let offset = 0;
-                for (let i = 0, j = GatheringInt8Array.length; i < j; i++) {
-                  SaveForm.set(GatheringInt8Array[i].contents, offset);
-                  offset += GatheringInt8Array[i].contents.length;
-                }
-                await this.indexed.saveInt8ArrayToUserPath(SaveForm, info.path);
-                for (let i = 0, j = info_json['partsize']; i < j; i++)
-                  this.indexed.removeFileFromUserPath(`${info.path}_part/${i}.part`)
-                await this.indexed.removeFileFromUserPath(`${info.path}_part`)
-              } catch (e) {
-                console.log('파일 최종 저장하기 오류: ', e);
-                err();
-              }
-              done(undefined);
-            });
-            setTimeout(() => {
-              this.noti.ClearNoti(8);
-            }, 1000);
-            this.indexed.removeFileFromUserPath(`${info.path}.history`);
-          }
-        }
         return {
-          from: 'remote',
-          value: await this.indexed.loadBlobFromUserPath(info.path, info_json.type || '')
+          from: 'local',
+          value: await this.indexed.loadBlobFromUserPath(info.path, info.type || '')
         };
       } catch (e) {
         return {
