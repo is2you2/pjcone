@@ -166,7 +166,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         }
         p.draw = () => {
           if (this.useVoiceRecording)
-            this.extended_buttons[4].name = millis_to_timeDisplay(p.millis() - VoiceStartTime);
+            this.extended_buttons[5].name = millis_to_timeDisplay(p.millis() - VoiceStartTime);
         }
         let millis_to_timeDisplay = (m: number) => {
           let second_calc = m / 1000;
@@ -348,7 +348,61 @@ export class AddPostPage implements OnInit, OnDestroy {
           v.present();
         });
       }
-    }, { // 3
+    },
+    { // 3
+      icon: 'reader-outline',
+      name: this.lang.text['ChatRoom']['newText'],
+      act: async () => {
+        let props = {
+          info: {
+            content: {
+              is_new: undefined,
+              type: 'text/plain',
+              viewer: 'text',
+              filename: undefined,
+              path: undefined,
+            },
+          },
+          no_edit: undefined,
+        };
+        let newDate = new Date();
+        let year = newDate.getUTCFullYear();
+        let month = ("0" + (newDate.getMonth() + 1)).slice(-2);
+        let date = ("0" + newDate.getDate()).slice(-2);
+        let hour = ("0" + newDate.getHours()).slice(-2);
+        let minute = ("0" + newDate.getMinutes()).slice(-2);
+        let second = ("0" + newDate.getSeconds()).slice(-2);
+        props.info.content.is_new = 'text';
+        props.info.content.filename = `texteditor_${year}-${month}-${date}_${hour}-${minute}-${second}.txt`;
+        props.no_edit = true;
+        this.modalCtrl.create({
+          component: IonicViewerPage,
+          componentProps: props,
+        }).then(v => {
+          v.onWillDismiss().then(v => {
+            if (v.data) {
+              let this_file: FileInfo = {};
+              this_file.content_creator = {
+                timestamp: new Date().getTime(),
+                display_name: this.nakama.users.self['display_name'],
+                various: 'textedit',
+              };
+              this_file.content_related_creator = [];
+              this_file.content_related_creator.push(this_file.content_creator);
+              this_file.blob = v.data.blob;
+              this_file.path = v.data.path;
+              this_file.size = v.data.blob['size'];
+              this_file.filename = v.data.blob.name || props.info.content.filename;
+              this_file.file_ext = this_file.filename.split('.').pop();
+              this_file.type = 'text/plain';
+              this_file.viewer = 'text';
+              this.userInput.attachments.push(this_file);
+            }
+          });
+          v.present();
+        });
+      }
+    }, { // 4
       icon: 'camera-outline',
       name: this.lang.text['ChatRoom']['Camera'],
       act: async () => {
@@ -392,7 +446,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           loading.dismiss();
         } catch (e) { }
       }
-    }, { // 4
+    }, { // 5
       icon: 'mic-circle-outline',
       name: this.lang.text['ChatRoom']['Voice'],
       act: async () => {
@@ -401,7 +455,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         if (this.useVoiceRecording) { // 녹음 시작
           let req = await VoiceRecorder.hasAudioRecordingPermission();
           if (req.value) { // 권한 있음
-            this.extended_buttons[4].icon = 'stop-circle-outline';
+            this.extended_buttons[5].icon = 'stop-circle-outline';
             this.p5toast.show({
               text: this.lang.text['ChatRoom']['StartVRecord'],
             });
@@ -410,12 +464,12 @@ export class AddPostPage implements OnInit, OnDestroy {
             this.CreateFloatingVoiceTimeHistoryAddButton();
           } else { // 권한이 없다면 권한 요청 및 UI 복구
             this.useVoiceRecording = false;
-            this.extended_buttons[4].icon = 'mic-circle-outline';
+            this.extended_buttons[5].icon = 'mic-circle-outline';
             await VoiceRecorder.requestAudioRecordingPermission();
           }
         } else await this.StopAndSaveVoiceRecording();
       }
-    }, { // 5
+    }, { // 6
       icon: 'cloud-done-outline',
       name: this.lang.text['ChatRoom']['Detour'],
       act: () => {
@@ -426,8 +480,8 @@ export class AddPostPage implements OnInit, OnDestroy {
   /** 녹음중인 음성의 시간을 기록함 */
   AddVoiceTimeHistory() {
     if (this.userInput.content)
-      this.userInput.content += `\n{"i":"n","t":"${this.extended_buttons[4].name}"}\n`;
-    else this.userInput.content = `{"i":"n","t":"${this.extended_buttons[4].name}"}\n`;
+      this.userInput.content += `\n{"i":"n","t":"${this.extended_buttons[5].name}"}\n`;
+    else this.userInput.content = `{"i":"n","t":"${this.extended_buttons[5].name}"}\n`;
     this.ContentTextArea.focus();
   }
 
@@ -451,7 +505,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         float_button.elt.onclick = () => {
           this.AddVoiceTimeHistory();
           this.p5toast.show({
-            text: `${this.lang.text['AddPost']['RecordVoiceTime']}: ${this.extended_buttons[4].name}`,
+            text: `${this.lang.text['AddPost']['RecordVoiceTime']}: ${this.extended_buttons[5].name}`,
           });
         };
       }
@@ -475,8 +529,8 @@ export class AddPostPage implements OnInit, OnDestroy {
       });
       loading.dismiss();
     }
-    this.extended_buttons[4].icon = 'mic-circle-outline';
-    this.extended_buttons[4].name = this.lang.text['ChatRoom']['Voice'];
+    this.extended_buttons[5].icon = 'mic-circle-outline';
+    this.extended_buttons[5].name = this.lang.text['ChatRoom']['Voice'];
     this.checkVoiceLinker();
   }
 
@@ -849,16 +903,16 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.useFirstCustomCDN = force ?? (this.useFirstCustomCDN + 1) % ModulerSize;
     switch (this.useFirstCustomCDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
-        this.extended_buttons[5].icon = 'cloud-offline-outline';
-        this.extended_buttons[5].name = this.lang.text['ChatRoom']['Detour'];
+        this.extended_buttons[6].icon = 'cloud-offline-outline';
+        this.extended_buttons[6].name = this.lang.text['ChatRoom']['Detour'];
         break;
       case 1: // FFS 서버 우선, 실패시 cdn, SQL 순
-        this.extended_buttons[5].icon = 'cloud-done-outline';
-        this.extended_buttons[5].name = this.lang.text['ChatRoom']['useFSS'];
+        this.extended_buttons[6].icon = 'cloud-done-outline';
+        this.extended_buttons[6].name = this.lang.text['ChatRoom']['useFSS'];
         break;
       case 2: // SQL 강제
-        this.extended_buttons[5].icon = 'server-outline';
-        this.extended_buttons[5].name = this.lang.text['ChatRoom']['forceSQL'];
+        this.extended_buttons[6].icon = 'server-outline';
+        this.extended_buttons[6].name = this.lang.text['ChatRoom']['forceSQL'];
         break;
     }
     localStorage.setItem('useFFSCDN', `${this.useFirstCustomCDN}`);
