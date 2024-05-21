@@ -774,7 +774,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 filename: new_textfile_name,
               },
             },
-            targetDB: this.indexed.ionicDB,
             no_edit: true,
           },
         }).then(v => {

@@ -384,7 +384,7 @@ export class UserFsDirPage implements OnInit {
     this.is_ready = true;
   }
 
-  async ModulateIndexedFile(_list: string[], targetDB = this.indexed.ionicDB) {
+  async ModulateIndexedFile(_list: string[]) {
     for (let i = 0, j = _list.length; i < j; i++) {
       if (this.StopIndexing) return;
       let message = `${this.lang.text['UserFsDir']['LoadingExplorer']}: ${_list.length - i}`;
@@ -403,7 +403,6 @@ export class UserFsDirPage implements OnInit {
           path: _list[i],
           mode: info['mode'],
           timestamp: info['timestamp'],
-          db: targetDB,
         };
         _info.name = _info.path.substring(_info.path.lastIndexOf('/') + 1);
         _info.dir = _list[i].substring(0, _list[i].lastIndexOf('/'));
@@ -415,7 +414,7 @@ export class UserFsDirPage implements OnInit {
               this.indexed.loadBlobFromUserPath(_info.path, '', blob => {
                 let TmpURL = URL.createObjectURL(blob);
                 _info.thumbnail = this.sanitizer.bypassSecurityTrustUrl(TmpURL);
-              }, targetDB);
+              });
             try { // 사용자 이름 재지정
               let sep = _info.path.split('/');
               if (sep.length != 5 || sep[3] != 'groups') throw '그룹 이미지 파일이 아님';
@@ -444,7 +443,7 @@ export class UserFsDirPage implements OnInit {
             console.log('예상하지 못한 파일 모드: ', _info);
             break;
         }
-      }, targetDB);
+      });
     }
     setTimeout(() => {
       this.noti.ClearNoti(5);
