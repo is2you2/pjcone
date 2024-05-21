@@ -1733,6 +1733,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.scroll_down_logs();
     }, 0);
     try {
+      setTimeout(() => {
+        this.userInput.text = '';
+        this.ResizeTextArea();
+      }, 0);
       let v = await this.nakama.servers[this.isOfficial][this.target].socket
         .writeChatMessage(this.info['id'], result);
       /** 업로드가 진행중인 메시지 개체 */
@@ -1755,8 +1759,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
       delete this.userInput.quickShare;
       delete this.userInput.file;
-      this.userInput.text = '';
-      this.ResizeTextArea();
       this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
       if (isLongText) {
         result['msg'] = isLongText;
