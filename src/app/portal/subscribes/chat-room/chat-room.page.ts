@@ -264,6 +264,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this_file.path = v.data.path;
               this_file.size = v.data.blob['size'];
               this_file.filename = v.data.blob.name || props.info.content.filename;
+              this_file.file_ext = this_file.filename.split('.').pop();
               this_file.type = 'text/plain';
               this_file.viewer = 'text';
               this.userInput.file = this_file;
@@ -1656,9 +1657,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (!isURL && !this.info['local'] && this.useFirstCustomCDN != 2) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
         let address = this.nakama.servers[this.isOfficial][this.target].info.address;
         let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
+        let targetname = `${this.info['group_id'] ||
+          (this.info['user_id_one'] == this.nakama.servers[this.isOfficial][this.target].session.user_id ? this.info['user_id_two'] : this.info['user_id_one'])
+          }_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
         let savedAddress = await this.global.upload_file_to_storage(this.userInput.file,
-          `${this.info['group_id']}_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`,
-          protocol, address, this.useFirstCustomCDN == 1);
+          targetname, protocol, address, this.useFirstCustomCDN == 1);
         isURL = Boolean(savedAddress);
         if (!isURL) throw '링크 만들기 실패';
         delete result['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제

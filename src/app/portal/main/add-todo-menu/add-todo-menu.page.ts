@@ -792,6 +792,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               this_file.path = v.data.path;
               this_file.size = v.data.blob['size'];
               this_file.filename = v.data.blob.name || new_textfile_name;
+              this_file.file_ext = this_file.filename.split('.').pop();
               this_file.type = 'text/plain';
               this_file.viewer = 'text';
               this.userInput.attach.push(this_file);

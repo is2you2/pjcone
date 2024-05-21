@@ -538,7 +538,7 @@ export class GlobalActService {
         else throw "자동지정되지 않은 타입";
       }
     } catch (e) { // 자동지정 타입이 없는 경우
-      console.log('불확실한 타입 지정: ', e);
+      console.log('불확실한 타입 지정: ', e, '/ type: ', msg_content['type']);
     }
   }
 
