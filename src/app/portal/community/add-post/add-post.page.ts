@@ -887,156 +887,163 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.isSaveClicked = true;
     let isOfficial = this.userInput.server['isOfficial'];
     let target = this.userInput.server['target'];
-    // 게시물 아이디 구성하기
-    if (!this.isModify || this.isServerChanged) { // 새 게시물 작성시에만 생성
-      if (this.isServerChanged && this.OriginalInfo) // 기존 서버의 게시물 정보 삭제
-        await this.nakama.RemovePost(this.OriginalInfo);
-      // 기존 게시물 순번 검토 후 새 게시물 번호 받아오기
-      if (is_local) {
-        let counter = Number(await this.indexed.loadTextFromUserPath('servers/local/target/posts/me/counter.txt')) || 0;
-        this.userInput.id = `LocalPost_${counter}`;
+    try {
+      // 게시물 아이디 구성하기
+      if (!this.isModify || this.isServerChanged) { // 새 게시물 작성시에만 생성
+        if (this.isServerChanged && this.OriginalInfo) // 기존 서버의 게시물 정보 삭제
+          await this.nakama.RemovePost(this.OriginalInfo);
+        // 기존 게시물 순번 검토 후 새 게시물 번호 받아오기
+        if (is_local) {
+          let counter = Number(await this.indexed.loadTextFromUserPath('servers/local/target/posts/me/counter.txt')) || 0;
+          this.userInput.id = `LocalPost_${counter}`;
+          try {
+            await this.indexed.saveTextFileToUserPath(`${counter + 1}`, 'servers/local/target/posts/me/counter.txt');
+          } catch (e) {
+            this.p5toast.show({
+              text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
+            });
+            console.log(e);
+          }
+        } else { // 서버 게시물인 경우
+          try {
+            let v = await this.nakama.servers[isOfficial][target].client.readStorageObjects(
+              this.nakama.servers[isOfficial][target].session, {
+              object_ids: [{
+                collection: 'server_post',
+                key: 'Counter',
+                user_id: this.nakama.servers[isOfficial][target].session.user_id,
+              }],
+            });
+            let CurrentCounter = 0;
+            // 받은 정보로 아이디 구성
+            if (v.objects.length) CurrentCounter = v.objects[0].value['counter'];
+            this.userInput.id = `ServerPost_${CurrentCounter}`;
+            // 카운터 업데이트
+            await this.nakama.servers[isOfficial][target].client.writeStorageObjects(
+              this.nakama.servers[isOfficial][target].session, [{
+                collection: 'server_post',
+                key: 'Counter',
+                permission_write: 1,
+                permission_read: 2,
+                value: { counter: CurrentCounter + 1 },
+              }]);
+          } catch (e) {
+            this.p5toast.show({
+              text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
+            });
+            console.log(e);
+          }
+        } // 편집된 게시물이라면 전부다 지우고 다시 등록
+      } else await this.nakama.RemovePost(this.userInput);
+      // 게시물 날짜 업데이트
+      if (this.isModify)
+        this.userInput.modify_time = new Date().getTime();
+      else { // 생성 시간이 없다면 최초 생성으로 간주
+        this.userInput.create_time = new Date().getTime();
+        this.userInput.modify_time = this.userInput.create_time;
+      }
+      // 썸네일 정보 삭제
+      for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
+        delete this.userInput.attachments[i].thumbnail;
+      // 대표 이미지 저장
+      if (this.userInput.mainImage) {
+        loading.message = this.lang.text['AddPost']['SyncMainImage'];
         try {
-          await this.indexed.saveTextFileToUserPath(`${counter + 1}`, 'servers/local/target/posts/me/counter.txt');
+          this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/mainImage.png`;
+          await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
         } catch (e) {
           this.p5toast.show({
             text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
           });
           console.log(e);
         }
-      } else { // 서버 게시물인 경우
-        try {
-          let v = await this.nakama.servers[isOfficial][target].client.readStorageObjects(
-            this.nakama.servers[isOfficial][target].session, {
-            object_ids: [{
-              collection: 'server_post',
-              key: 'Counter',
-              user_id: this.nakama.servers[isOfficial][target].session.user_id,
-            }],
-          });
-          let CurrentCounter = 0;
-          // 받은 정보로 아이디 구성
-          if (v.objects.length) CurrentCounter = v.objects[0].value['counter'];
-          this.userInput.id = `ServerPost_${CurrentCounter}`;
-          // 카운터 업데이트
-          await this.nakama.servers[isOfficial][target].client.writeStorageObjects(
-            this.nakama.servers[isOfficial][target].session, [{
-              collection: 'server_post',
-              key: 'Counter',
-              permission_write: 1,
-              permission_read: 2,
-              value: { counter: CurrentCounter + 1 },
-            }]);
-        } catch (e) {
-          this.p5toast.show({
-            text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
-          });
-          console.log(e);
+        let blob = this.userInput.mainImage.blob;
+        if (!is_local) // 원격인 경우 서버에도 저장하기
+          await this.nakama.sync_save_file(this.userInput.mainImage, isOfficial, target, 'server_post', `${this.userInput.id}_mainImage`);
+        this.userInput.mainImage.blob = blob;
+        let FileURL = URL.createObjectURL(blob);
+        this.userInput.mainImage.thumbnail = FileURL;
+        setTimeout(() => {
+          URL.revokeObjectURL(blob);
+        }, 100);
+      }
+      // 첨부파일들 전부 저장
+      let attach_len = this.userInput.attachments.length;
+      if (attach_len) {
+        loading.message = this.lang.text['AddPost']['SyncAttaches'];
+        for (let i = attach_len - 1; i >= 0; i--) {
+          try { // FFS 업로드 시도
+            if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
+            loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`;
+            let CatchedAddress: string;
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name']);
+            if (CatchedAddress) {
+              delete this.userInput.attachments[i]['path'];
+              delete this.userInput.attachments[i]['partsize'];
+              this.userInput.attachments[i]['url'] = CatchedAddress;
+            } else throw '업로드 실패';
+          } catch (e) {
+            this.userInput.attachments[i].path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`;
+            await this.indexed.saveBlobToUserPath(this.userInput.attachments[i].blob, this.userInput.attachments[i].path);
+          }
+          if (!is_local) {
+            try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
+              if (this.useFirstCustomCDN == 2) throw 'SQL 강제';
+              let address = this.nakama.servers[this.isOfficial][this.target].info.address;
+              let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
+              let savedAddress = await this.global.upload_file_to_storage(this.userInput.attachments[i],
+                this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                protocol, address, this.useFirstCustomCDN == 1);
+              let isURL = Boolean(savedAddress);
+              if (!isURL) throw '링크 만들기 실패';
+              delete this.userInput.attachments[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
+              this.userInput.attachments[i]['url'] = savedAddress;
+            } catch (e) {
+              await this.nakama.sync_save_file(this.userInput.attachments[i], isOfficial, target, 'server_post', `${this.userInput.id}_attach_${i}`);
+            }
+          }
         }
-      } // 편집된 게시물이라면 전부다 지우고 다시 등록
-    } else await this.nakama.RemovePost(this.userInput);
-    // 게시물 날짜 업데이트
-    if (this.isModify)
-      this.userInput.modify_time = new Date().getTime();
-    else { // 생성 시간이 없다면 최초 생성으로 간주
-      this.userInput.create_time = new Date().getTime();
-      this.userInput.modify_time = this.userInput.create_time;
-    }
-    // 썸네일 정보 삭제
-    for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
-      delete this.userInput.attachments[i].thumbnail;
-    // 대표 이미지 저장
-    if (this.userInput.mainImage) {
-      loading.message = this.lang.text['AddPost']['SyncMainImage'];
+      }
+      let make_copy_info = JSON.parse(JSON.stringify(this.userInput))
+      if (make_copy_info.mainImage)
+        delete make_copy_info.mainImage.blob;
+      for (let i = make_copy_info.attachments.length - 1; i >= 0; i--)
+        delete make_copy_info.attachments[i].blob;
+      delete make_copy_info.server;
       try {
-        this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/mainImage.png`;
-        await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
+        if (!this.nakama.posts_orig[isOfficial][target])
+          this.nakama.posts_orig[isOfficial][target] = {};
+        if (!this.nakama.posts_orig[isOfficial][target][this.userInput.creator_id])
+          this.nakama.posts_orig[isOfficial][target][this.userInput.creator_id] = {};
+        this.nakama.posts_orig[isOfficial][target][this.userInput.creator_id][this.userInput.id] = this.userInput;
+        // 게시물 정보 저장하기
       } catch (e) {
         this.p5toast.show({
           text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
         });
         console.log(e);
       }
-      let blob = this.userInput.mainImage.blob;
-      if (!is_local) // 원격인 경우 서버에도 저장하기
-        await this.nakama.sync_save_file(this.userInput.mainImage, isOfficial, target, 'server_post', `${this.userInput.id}_mainImage`);
-      this.userInput.mainImage.blob = blob;
-      let FileURL = URL.createObjectURL(blob);
-      this.userInput.mainImage.thumbnail = FileURL;
-      setTimeout(() => {
-        URL.revokeObjectURL(blob);
-      }, 100);
-    }
-    // 첨부파일들 전부 저장
-    let attach_len = this.userInput.attachments.length;
-    if (attach_len) {
-      loading.message = this.lang.text['AddPost']['SyncAttaches'];
-      for (let i = attach_len - 1; i >= 0; i--) {
-        try { // FFS 업로드 시도
-          if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
-          loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`;
-          let CatchedAddress: string;
-          CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name']);
-          if (CatchedAddress) {
-            delete this.userInput.attachments[i]['path'];
-            delete this.userInput.attachments[i]['partsize'];
-            this.userInput.attachments[i]['url'] = CatchedAddress;
-          } else throw '업로드 실패';
-        } catch (e) {
-          this.userInput.attachments[i].path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`;
-          await this.indexed.saveBlobToUserPath(this.userInput.attachments[i].blob, this.userInput.attachments[i].path);
-        }
-        if (!is_local) {
-          try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
-            if (this.useFirstCustomCDN == 2) throw 'SQL 강제';
-            let address = this.nakama.servers[this.isOfficial][this.target].info.address;
-            let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
-            let savedAddress = await this.global.upload_file_to_storage(this.userInput.attachments[i],
-              this.nakama.servers[this.isOfficial][this.target].session.user_id,
-              protocol, address, this.useFirstCustomCDN == 1);
-            let isURL = Boolean(savedAddress);
-            if (!isURL) throw '링크 만들기 실패';
-            delete this.userInput.attachments[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
-            this.userInput.attachments[i]['url'] = savedAddress;
-          } catch (e) {
-            await this.nakama.sync_save_file(this.userInput.attachments[i], isOfficial, target, 'server_post', `${this.userInput.id}_attach_${i}`);
-          }
-        }
+      let json_str = JSON.stringify(make_copy_info);
+      await this.indexed.saveTextFileToUserPath(json_str, `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/info.json`);
+      if (!is_local) { // 서버에 정보 등록
+        let blob = new Blob([json_str], { type: 'application/json' });
+        let file: FileInfo = {};
+        file.filename = 'info.json';
+        file.blob = blob;
+        file.size = blob.size;
+        file.type = 'application/json';
+        file.file_ext = 'txt';
+        file.typeheader = 'text';
+        file.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/info.json`;
+        await this.nakama.sync_save_file(file, isOfficial, target, 'server_post', this.userInput.id);
       }
-    }
-    let make_copy_info = JSON.parse(JSON.stringify(this.userInput))
-    if (make_copy_info.mainImage)
-      delete make_copy_info.mainImage.blob;
-    for (let i = make_copy_info.attachments.length - 1; i >= 0; i--)
-      delete make_copy_info.attachments[i].blob;
-    delete make_copy_info.server;
-    try {
-      if (!this.nakama.posts_orig[isOfficial][target])
-        this.nakama.posts_orig[isOfficial][target] = {};
-      if (!this.nakama.posts_orig[isOfficial][target][this.userInput.creator_id])
-        this.nakama.posts_orig[isOfficial][target][this.userInput.creator_id] = {};
-      this.nakama.posts_orig[isOfficial][target][this.userInput.creator_id][this.userInput.id] = this.userInput;
-      // 게시물 정보 저장하기
+      this.nakama.rearrange_posts();
     } catch (e) {
       this.p5toast.show({
         text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
       });
-      console.log(e);
+      console.log('게시물 저장 처리 오류: ', e);
     }
-    let json_str = JSON.stringify(make_copy_info);
-    await this.indexed.saveTextFileToUserPath(json_str, `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/info.json`);
-    if (!is_local) { // 서버에 정보 등록
-      let blob = new Blob([json_str], { type: 'application/json' });
-      let file: FileInfo = {};
-      file.filename = 'info.json';
-      file.blob = blob;
-      file.size = blob.size;
-      file.type = 'application/json';
-      file.file_ext = 'txt';
-      file.typeheader = 'text';
-      file.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/info.json`;
-      await this.nakama.sync_save_file(file, isOfficial, target, 'server_post', this.userInput.id);
-    }
-    this.nakama.rearrange_posts();
     loading.dismiss();
     this.navCtrl.navigateBack('portal/community');
   }
