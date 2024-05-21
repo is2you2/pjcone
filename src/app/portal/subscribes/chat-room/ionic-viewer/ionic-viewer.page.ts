@@ -947,7 +947,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   isTextEditMode = false;
   open_text_editor(_textarea = this.p5canvas['TextArea']) {
-    this.p5canvas['SyntaxHighlightReader'].style.display = 'none';
+    if (this.p5canvas && this.p5canvas['SyntaxHighlightReader'])
+      this.p5canvas['SyntaxHighlightReader'].style.display = 'none';
     _textarea.style.display = 'block';
     _textarea.disabled = false;
     setTimeout(() => {

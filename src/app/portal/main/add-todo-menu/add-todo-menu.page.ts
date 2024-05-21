@@ -754,6 +754,53 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.AddShortCut();
         this.auto_scroll_down(100);
         break;
+      case 'text':
+        let newDate = new Date();
+        let year = newDate.getUTCFullYear();
+        let month = ("0" + (newDate.getMonth() + 1)).slice(-2);
+        let date = ("0" + newDate.getDate()).slice(-2);
+        let hour = ("0" + newDate.getHours()).slice(-2);
+        let minute = ("0" + newDate.getMinutes()).slice(-2);
+        let second = ("0" + newDate.getSeconds()).slice(-2);
+        let new_textfile_name = `texteditor_${year}-${month}-${date}_${hour}-${minute}-${second}.txt`
+        this.modalCtrl.create({
+          component: IonicViewerPage,
+          componentProps: {
+            info: {
+              content: {
+                is_new: 'text',
+                type: 'text/plain',
+                viewer: 'text',
+                filename: new_textfile_name,
+              },
+            },
+            targetDB: this.indexed.ionicDB,
+            no_edit: true,
+          },
+        }).then(v => {
+          v.onWillDismiss().then(v => {
+            if (v.data) {
+              let this_file: FileInfo = {};
+              this_file.content_creator = {
+                timestamp: new Date().getTime(),
+                display_name: this.nakama.users.self['display_name'],
+                various: 'textedit',
+              };
+              this_file.content_related_creator = [];
+              this_file.content_related_creator.push(this_file.content_creator);
+              this_file.blob = v.data.blob;
+              this_file.path = v.data.path;
+              this_file.size = v.data.blob['size'];
+              this_file.filename = v.data.blob.name || new_textfile_name;
+              this_file.type = 'text/plain';
+              this_file.viewer = 'text';
+              this.userInput.attach.push(this_file);
+              this.auto_scroll_down();
+            }
+          });
+          v.present();
+        });
+        break;
       case 'image':
         this.modalCtrl.create({
           component: VoidDrawPage,

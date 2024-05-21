@@ -35,6 +35,7 @@ limit,기한,Deadline
 description,상세 내용,Description
 description_placeholder,할 일 상세 내용,Todo details
 new_draw,새 그림,New painting
+new_text,새 텍스트,New text
 user_fs,인앱 탐색기,Inapp explorer
 add_attach,가져오기,Load
 load_failed,파일 가져오기에 실패하였습니다,Failed to load file
