@@ -45,11 +45,14 @@ export class PostViewerPage implements OnInit, OnDestroy {
    */
   PlayableElements = [];
 
+  /** 파일 뷰어로 넘어간 경우 게시물 전환 단축키 막기 */
+  blockShortcut = false;
   /** PC에서 키를 눌러 컨텐츠 전환 */
   ChangeContentWithKeyInput() {
     if (this.p5canvas) {
       // 단축키 행동
       this.p5canvas.keyPressed = (ev) => {
+        if (this.blockShortcut) return;
         switch (ev['code']) {
           case 'KeyA': // 왼쪽 이동
           case 'ArrowLeft':
@@ -267,8 +270,10 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       cssClass: 'fullscreen',
                     }).then(v => {
                       v.onDidDismiss().then(v => {
+                        this.blockShortcut = false;
                         if (v.data && v.data['share']) this.modalCtrl.dismiss();
                       });
+                      this.blockShortcut = true;
                       v.present();
                     });
                   }
@@ -410,7 +415,13 @@ export class PostViewerPage implements OnInit, OnDestroy {
                         noEdit: true,
                       },
                       cssClass: 'fullscreen',
-                    }).then(v => v.present());
+                    }).then(v => {
+                      v.onDidDismiss().then(() => {
+                        this.blockShortcut = false;
+                      });
+                      this.blockShortcut = true;
+                      v.present();
+                    });
                   }
                 }
                   break;
