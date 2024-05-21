@@ -668,9 +668,11 @@ export class GlobalActService {
    * @param address 해당 서버 주소
    * @returns 등록된 주소 반환
    */
-  async upload_file_to_storage(file: any, user_id: string, protocol: string, address: string, useCustomServer: boolean): Promise<string> {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['Settings']['TryToFallbackFS'] });
-    loading.present();
+  async upload_file_to_storage(file: any, user_id: string, protocol: string, address: string, useCustomServer: boolean, loading?: HTMLIonLoadingElement): Promise<string> {
+    let innerLoading: HTMLIonLoadingElement;
+    if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['Settings']['TryToFallbackFS'] });
+    else innerLoading = loading;
+    innerLoading.present();
     let formData = new FormData();
     let upload_time = new Date().getTime();
     let only_filename = file.filename.split('.')[0];
@@ -680,8 +682,8 @@ export class GlobalActService {
     let Catched = false;
     let CatchedAddress: string;
     if (useCustomServer)
-      CatchedAddress = await this.try_upload_to_user_custom_fs(file, user_id, formData, loading);
-    loading.message = this.lang.text['GlobalAct']['CheckCdnServer'];
+      CatchedAddress = await this.try_upload_to_user_custom_fs(file, user_id, formData, innerLoading);
+    innerLoading.message = this.lang.text['GlobalAct']['CheckCdnServer'];
     try { // 사설 연계 서버에 업로드 시도
       if (CatchedAddress) {
         Catched = true;
@@ -696,17 +698,17 @@ export class GlobalActService {
         let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", headers: headers });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
-        loading.message = `${file.filename}: ${progressPercent}%`;
+        innerLoading.message = `${file.filename}: ${progressPercent}%`;
       }, 700);
       await fetch(`${protocol}//${address}:9001/${filename}`, { method: "POST", headers: headers, body: formData });
       clearInterval(progress);
       let res = await fetch(CatchedAddress);
       if (res.ok) Catched = true;
     } catch (e) {
-      loading.message = this.lang.text['GlobalAct']['CancelingUpload'];
+      innerLoading.message = this.lang.text['GlobalAct']['CancelingUpload'];
       console.warn('cdn 파일 업로드 단계 실패:', e);
     }
-    loading.dismiss();
+    innerLoading.dismiss();
     return Catched ? CatchedAddress : undefined;
   }
 
