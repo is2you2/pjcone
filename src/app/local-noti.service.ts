@@ -320,11 +320,13 @@ export class LocalNotiService {
 
   /** 알림 제거하기 */
   ClearNoti(id: any) {
-    if (isPlatform == 'DesktopPWA') {
-      if (this.WebNoties[id])
-        this.WebNoties[id].close();
-    } else if (isPlatform != 'MobilePWA')
-      this.noti.clear(id);
+    setTimeout(() => {
+      if (isPlatform == 'DesktopPWA') {
+        if (this.WebNoties[id])
+          this.WebNoties[id].close();
+      } else if (isPlatform != 'MobilePWA')
+        this.noti.clear(id);
+    }, 1000);
   }
 
   /** 알림 행동 등록시 기록 */

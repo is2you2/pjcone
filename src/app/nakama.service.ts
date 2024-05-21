@@ -2418,9 +2418,7 @@ export class NakamaService {
       }
       this.indexed.saveTextFileToUserPath(lines.join('\n'), 'servers/list_detail.csv');
     }
-    setTimeout(() => {
-      this.noti.ClearNoti(9);
-    }, 100);
+    this.noti.ClearNoti(9);
     loading.dismiss();
   }
 
@@ -3903,9 +3901,7 @@ export class NakamaService {
           }
           done(undefined);
         });
-        setTimeout(() => {
-          this.noti.ClearNoti(8);
-        }, 1000);
+        this.noti.ClearNoti(8);
       }
       _msg.content['path'] = path;
       let url: string;
@@ -4037,9 +4033,7 @@ export class NakamaService {
             }
             done(undefined);
           });
-          setTimeout(() => {
-            this.noti.ClearNoti(8);
-          }, 1000);
+          this.noti.ClearNoti(8);
           this.indexed.removeFileFromUserPath(`${info.path}.history`);
         }
       }

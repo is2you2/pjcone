@@ -252,9 +252,7 @@ export class UserFsDirPage implements OnInit {
           });
           await this.importSelected(ev.target.files[i]);
         }
-        setTimeout(() => {
-          this.noti.ClearNoti(4);
-        }, 1000);
+        this.noti.ClearNoti(4);
         loading.dismiss();
       } else {
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
@@ -377,9 +375,7 @@ export class UserFsDirPage implements OnInit {
       if (a.path < b.path) return -1;
       return 0;
     });
-    setTimeout(() => {
-      this.noti.ClearNoti(5);
-    }, 1000);
+    this.noti.ClearNoti(5);
     this.initLoadingElement.dismiss();
     this.is_ready = true;
   }
@@ -445,9 +441,7 @@ export class UserFsDirPage implements OnInit {
         }
       });
     }
-    setTimeout(() => {
-      this.noti.ClearNoti(5);
-    }, 1000);
+    this.noti.ClearNoti(5);
   }
 
   // 아래 SetDisplay~Name 함수들은 사람이 읽기 좋은 파일 구조를 보여주기 위해 구성됨
@@ -776,9 +770,7 @@ export class UserFsDirPage implements OnInit {
               this.FileList.splice(i, 1);
           this.MoveToUpDir();
           loading.dismiss();
-          setTimeout(() => {
-            this.noti.ClearNoti(4);
-          }, 1000);
+          this.noti.ClearNoti(4);
         },
         cssClass: 'redfont',
       }],
