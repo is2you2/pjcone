@@ -79,7 +79,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
           }
         }
       }
-      const SWIPE_SIZE = 50;
+      const SWIPE_SIZE = 150;
       this.p5canvas.touchEnded = (ev: any) => {
         if ('changedTouches' in ev) {
           let lastPos: p5.Vector;
