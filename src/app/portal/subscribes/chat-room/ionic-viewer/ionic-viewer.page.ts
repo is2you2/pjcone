@@ -148,7 +148,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.ContentOnLoad = true;
       this.ionViewDidEnter();
     } else {
-      let path = this.FileInfo['path'] ||
+      let path = this.FileInfo['alt_path'] || this.FileInfo['path'] ||
         `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
       this.image_info['path'] = path;
       this.NeedDownloadFile = await this.indexed.checkIfFileExist(`${path}.history`);
@@ -359,7 +359,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.FileURL = this.FileInfo.url;
     } else if (!this.FileInfo['is_new']) {
       try {
-        this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type']);
+        this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type']);
         this.FileURL = URL.createObjectURL(this.blob);
       } catch (e) {
         this.ContentOnLoad = true;
@@ -836,7 +836,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         let ThumbnailURL: string;
         let GetViewId = this.MessageInfo.message_id;
         try {
-          let thumbnail = await this.indexed.loadBlobFromUserPath((this.FileInfo['path'] || this.navParams.get('path'))
+          let thumbnail = await this.indexed.loadBlobFromUserPath((this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.get('path'))
             + '_thumbnail.png', '');
           ThumbnailURL = URL.createObjectURL(thumbnail);
         } catch (e) { }
@@ -846,7 +846,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             if (this.indexed.godotDB) {
               try {
                 let blob = await this.indexed.loadBlobFromUserPath(
-                  this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
+                  this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
                 await this.indexed.GetGodotIndexedDB();
                 await this.indexed.saveBlobToUserPath(blob, 'tmp_files/duplicate/viewer.pck', undefined, this.indexed.godotDB);
                 createDuplicate = true;
@@ -856,7 +856,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             }
             await this.global.CreateGodotIFrame('content_viewer_canvas', {
               path: 'tmp_files/duplicate/viewer.pck',
-              alt_path: this.FileInfo['path'] || this.navParams.get('path'),
+              alt_path: this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.get('path'),
               url: this.FileInfo.url,
               background: ThumbnailURL,
               // modify_image
@@ -876,13 +876,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             if (!createDuplicate) {
               try { // 내부에 파일이 있는지 검토
                 let blob = await this.indexed.loadBlobFromUserPath(
-                  this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
+                  this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
                 await this.indexed.GetGodotIndexedDB();
                 await this.indexed.saveBlobToUserPath(blob, 'tmp_files/duplicate/viewer.pck', undefined, this.indexed.godotDB);
               } catch (e) { }
               await this.global.CreateGodotIFrame('content_viewer_canvas', {
                 path: 'tmp_files/duplicate/viewer.pck',
-                alt_path: this.FileInfo['path'] || this.navParams.get('path'),
+                alt_path: this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.get('path'),
                 url: this.FileInfo.url,
                 background: ThumbnailURL,
                 // modify_image
@@ -1204,7 +1204,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         loading.present();
         try {
           let blob: Blob;
-          this.image_info['path'] = this.FileInfo.path || this.navParams.get('path');
+          this.image_info['path'] = this.FileInfo.alt_path || this.FileInfo.path || this.navParams.get('path');
           if (this.FileInfo['url']) {
             this.image_info['path'] = 'tmp_files/modify_image.png';
             blob = await fetch(this.FileInfo['url']).then(r => r.blob());
@@ -1322,8 +1322,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let res = await fetch(this.FileInfo.url);
           let blob = await res.blob();
           if (res.ok) {
-            await this.indexed.saveBlobToUserPath(blob, this.FileInfo.path);
-            this.indexed.DownloadFileFromUserPath(this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
+            await this.indexed.saveBlobToUserPath(blob, this.FileInfo.alt_path || this.FileInfo.path);
+            this.indexed.DownloadFileFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
           } else throw '제대로 다운받아지지 않음';
         } catch (e) {
           console.log('다운받기 실패: ', e);
@@ -1331,7 +1331,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`
           });
         }
-      } else this.indexed.DownloadFileFromUserPath(this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
+      } else this.indexed.DownloadFileFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
     else this.alertCtrl.create({
       header: this.lang.text['ContentViewer']['Filename'],
       inputs: [{
@@ -1347,7 +1347,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               let res = await fetch(this.FileInfo.url);
               let blob = await res.blob();
               if (res.ok) {
-                await this.indexed.saveBlobToUserPath(blob, this.FileInfo.path);
+                await this.indexed.saveBlobToUserPath(blob, this.FileInfo.alt_path || this.FileInfo.path);
                 this.DownloadFileAct(input);
               } else throw '제대로 다운받아지지 않음';
             } catch (e) {
@@ -1367,7 +1367,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
     let filename = input['filename'] ? input['filename'].replace(/:|\?|\/|\\|<|>/g, '') : (this.FileInfo['filename'] || this.FileInfo['name']);
-    let blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path, this.FileInfo['type']);
+    let blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type']);
     if (this.forceWrite && !input['filename'])
       this.file.writeExistingFile(this.file.externalDataDirectory, filename, blob)
         .then(_v => {
@@ -1436,7 +1436,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   RemoveFile() {
     this.alertCtrl.create({
       header: this.lang.text['ContentViewer']['RemoveFile'],
-      message: this.FileInfo.path,
+      message: this.FileInfo.alt_path || this.FileInfo.path,
       buttons: [{
         text: this.lang.text['TodoDetail']['remove'],
         handler: () => {
@@ -1451,7 +1451,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     URL.revokeObjectURL(this.FileURL);
     delete this.FileInfo.thumbnail;
     delete this.FileInfo['text'];
-    await this.indexed.removeFileFromUserPath(this.FileInfo.path);
+    await this.indexed.removeFileFromUserPath(this.FileInfo.alt_path || this.FileInfo.path);
     this.RelevanceIndex -= 1;
     this.ChangeToAnother(1);
   }
@@ -1493,7 +1493,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             width - margin_ratio * 2, height - margin_ratio * 2);
           let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
           try {
-            await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`);
+            await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.alt_path || this.FileInfo.path}_thumbnail.png`);
             this.FileInfo.thumbnail = base64;
             this.global.modulate_thumbnail(this.FileInfo, '');
             if (this.p5canvas) this.p5canvas.remove();
@@ -1551,7 +1551,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   margin_ratio, margin_ratio,
                   width - margin_ratio * 2, height - margin_ratio * 2);
                 let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
-                await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.path}_thumbnail.png`);
+                await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.alt_path || this.FileInfo.path}_thumbnail.png`);
                 this.FileInfo.thumbnail = base64;
                 this.global.modulate_thumbnail(this.FileInfo, '');
                 p.remove();

@@ -401,6 +401,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           if (this.userInput.remote) {
             let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
             loading.present();
+            this.userInput.attach[i].alt_path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/${this.userInput.attach[i].filename}`;
             blob = (await this.nakama.sync_load_file(this.userInput.attach[i],
               this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id)).value;
             if (!has_thumbnail) {
@@ -1034,7 +1035,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       component: IonicViewerPage,
       componentProps: {
         info: { content: this.userInput.attach[index] },
-        path: this.userInput.attach[index]['path'],
+        path: this.userInput.attach[index]['alt_path'] || this.userInput.attach[index]['path'],
         relevance: createRelevances,
         noEdit: !this.isModifiable,
       },
@@ -1064,7 +1065,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               this.modalCtrl.create({
                 component: VoidDrawPage,
                 componentProps: {
-                  path: v.data.path || this.userInput.attach[v.data.index]['path'],
+                  path: v.data.path || this.userInput.attach[v.data.index]['alt_path'] || this.userInput.attach[v.data.index]['path'],
                   width: v.data.width,
                   height: v.data.height,
                   text: v.data.text,

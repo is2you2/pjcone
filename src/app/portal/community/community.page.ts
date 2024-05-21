@@ -158,7 +158,8 @@ export class CommunityPage implements OnInit {
           json['mainImage']['thumbnail'] = json['mainImage']['url'];
         } else { // URL 주소가 아니라면 이미지 직접 불러오기
           let info = {
-            path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/mainImage.png`,
+            path: json['mainImage']['path'],
+            alt_path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/mainImage.png`,
             type: 'image/png',
           }
           let blob = (await this.nakama.sync_load_file(info, isOfficial, target, 'server_post', user_id, `${post_id}_mainImage`, false)).value;
@@ -167,7 +168,7 @@ export class CommunityPage implements OnInit {
           json['mainImage']['thumbnail'] = FileURL;
           setTimeout(() => {
             URL.revokeObjectURL(FileURL);
-          }, 100);
+          }, 5000);
         }
       }
       if (!this.nakama.posts_orig[isOfficial][target])

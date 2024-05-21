@@ -3950,8 +3950,9 @@ export class NakamaService {
     }
   }
 
-  /** 원격에서 파일 불러오기, 원격에 없다면 로컬에서 파일 불러오기
-   * @param info { path, type }
+  /** 원격에서 파일 불러오기, 원격에 없다면 로컬에서 파일 불러오기  
+   * 파일 정보에 alt_path를 기입하여 로컬 상황에 맞는 경로가 구성되어야 함
+   * @param info { path, alt_path, type }
    * @returns value { from: 검토 위치, value: Blob }
    */
   async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid = '', _key_force = '', show_noti = true) {
@@ -3976,7 +3977,7 @@ export class NakamaService {
               user_id: _userid || this.servers[_is_official][_target].session.user_id,
             }],
           });
-          this.global.save_file_part(info.path, i, part.objects[0].value['data']);
+          this.global.save_file_part(info.alt_path || info.path, i, part.objects[0].value['data']);
         } catch (e) {
           console.log('ReadStorage_From_channel: ', e);
           isSuccessful = false;
@@ -4009,7 +4010,7 @@ export class NakamaService {
           await new Promise(async (done, err) => {
             for (let i = 0, j = info_json['partsize']; i < j; i++)
               try {
-                let part = await this.indexed.GetFileInfoFromDB(`${info.path}_part/${i}.part`);
+                let part = await this.indexed.GetFileInfoFromDB(`${info.alt_path || info.path}_part/${i}.part`);
                 ByteSize += part.contents.length;
                 GatheringInt8Array[i] = part;
               } catch (e) {
@@ -4023,10 +4024,10 @@ export class NakamaService {
                 SaveForm.set(GatheringInt8Array[i].contents, offset);
                 offset += GatheringInt8Array[i].contents.length;
               }
-              await this.indexed.saveInt8ArrayToUserPath(SaveForm, info.path);
+              await this.indexed.saveInt8ArrayToUserPath(SaveForm, info.alt_path || info.path);
               for (let i = 0, j = info_json['partsize']; i < j; i++)
-                this.indexed.removeFileFromUserPath(`${info.path}_part/${i}.part`)
-              await this.indexed.removeFileFromUserPath(`${info.path}_part`)
+                this.indexed.removeFileFromUserPath(`${info.alt_path || info.path}_part/${i}.part`)
+              await this.indexed.removeFileFromUserPath(`${info.alt_path || info.path}_part`)
             } catch (e) {
               console.log('파일 최종 저장하기 오류: ', e);
               err();
@@ -4034,18 +4035,18 @@ export class NakamaService {
             done(undefined);
           });
           this.noti.ClearNoti(8);
-          this.indexed.removeFileFromUserPath(`${info.path}.history`);
+          this.indexed.removeFileFromUserPath(`${info.alt_path || info.path}.history`);
         }
       }
       return {
         from: 'remote',
-        value: await this.indexed.loadBlobFromUserPath(info.path, info_json.type || '')
+        value: await this.indexed.loadBlobFromUserPath(info.alt_path || info.path, info_json.type || '')
       };
     } catch (e) {
       try {
         return {
           from: 'local',
-          value: await this.indexed.loadBlobFromUserPath(info.path, info.type || '')
+          value: await this.indexed.loadBlobFromUserPath(info.alt_path || info.path, info.type || '')
         };
       } catch (e) {
         return {

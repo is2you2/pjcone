@@ -219,6 +219,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
           }
         else for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++) {
           try {
+            this.PostInfo['attachments'][i].alt_path = `servers/${this.PostInfo['server']['isOfficial']}/${this.PostInfo['server']['target']}/posts/${this.PostInfo.creator_id}/${this.PostInfo.id}/[${i}]${this.PostInfo['attachments'][i].filename}`;
             let blob = await this.nakama.sync_load_file(
               this.PostInfo['attachments'][i], this.PostInfo['server']['isOfficial'], this.PostInfo['server']['target'], 'server_post',
               this.PostInfo['creator_id'], `${this.PostInfo['id']}_attach_${i}`, false);

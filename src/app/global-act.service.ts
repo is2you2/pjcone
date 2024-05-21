@@ -50,6 +50,8 @@ export interface FileInfo {
   /** 파일 분할 크기 */
   partsize?: number;
   path?: string;
+  /** sync_load 행동시 로컬에 맞는 경로 구성, 우선순위가 높은 경로 */
+  alt_path?: string;
   base64?: any;
   blob?: any;
   /** 간소화 썸네일 (ObjectURL) */
