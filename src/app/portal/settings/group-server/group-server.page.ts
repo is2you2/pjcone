@@ -641,6 +641,8 @@ export class GroupServerPage implements OnInit, OnDestroy {
     } else {
       this.nakama.logout_all_server();
       delete this.nakama.users.self['password'];
+      this.nakama.groups['official'] = {};
+      this.nakama.groups['unofficial'] = {};
       this.nakama.save_groups_with_less_info();
       this.nakama.channels_orig['official'] = {};
       this.nakama.channels_orig['unofficial'] = {};
