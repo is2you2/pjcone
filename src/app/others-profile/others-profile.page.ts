@@ -80,6 +80,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
       let UserColorGradient: p5.Element;
       let user_rgb_color = '0, 0, 0';
       let userColorLerp = 0;
+      let imgDiv: p5.Element;
       p.setup = () => {
         let user_color = p.color(`#${(this.info['user']['id'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6)}`);
         user_rgb_color = `${p.red(user_color)}, ${p.green(user_color)}, ${p.blue(user_color)}`;
@@ -90,7 +91,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         UserColorGradient.parent(this.OtherCanvasDiv);
         p.noCanvas();
         p.pixelDensity(1);
-        let imgDiv = p.createDiv();
+        imgDiv = p.createDiv();
         const IMAGE_SIZE = '156px';
         // 사용자 이미지
         imgDiv.style('width', IMAGE_SIZE);
@@ -139,6 +140,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         trashed_image.hide();
         trashed_image.parent(imgDiv);
         p['ChangeImageSmooth'] = (url: string) => {
+          imgDiv.style('background-image', 'url(assets/data/avatar.svg)');
           if (!url) {
             trashed_image.elt.src = selected_image.elt.src;
             trashed_image.show();
@@ -209,6 +211,8 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         trashed_image.style('filter', `grayscale(${p.lerp(0.9, 0, this.lerpVal)}) contrast(${p.lerp(1.4, 1, this.lerpVal)})`);
         UserColorGradient.style('background-image', `linear-gradient(to top, rgba(${user_rgb_color}, ${p.min(1, userColorLerp) / 2}), rgba(${user_rgb_color}, 0))`);
         if (FadeOutTrashedLerp <= 0 && (this.lerpVal >= 1 || this.lerpVal <= 0) && userColorLerp >= 1) {
+          // 이미지가 있다면 배경 지우기
+          if (this.info['user'].img) imgDiv.style('background-image', '');
           this.p5canvas['OnlineLamp'].style('background-color', this.info['user']['online'] ? this.statusBar.colors['online'] : this.statusBar.colors['offline']);
           p.noLoop();
         }

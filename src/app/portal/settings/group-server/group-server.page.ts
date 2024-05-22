@@ -91,6 +91,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
       let user_rgb_color = '0, 0, 0';
       let userColorLerp = 0;
       let hasColorLerp = Boolean(this.session_uid);
+      let imgDiv: p5.Element;
       p.setup = () => {
         if (hasColorLerp) {
           let user_color = p.color(`#${(this.session_uid.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6)}`);
@@ -103,7 +104,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
         }
         p.noCanvas();
         p.pixelDensity(1);
-        let imgDiv = p.createDiv();
+        imgDiv = p.createDiv();
         const IMAGE_SIZE = '156px';
         // 사용자 이미지
         imgDiv.style('width', IMAGE_SIZE);
@@ -160,6 +161,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
         trashed_image.hide();
         trashed_image.parent(imgDiv);
         p['ChangeImageSmooth'] = (url: string) => {
+          imgDiv.style('background-image', 'url(assets/data/avatar.svg)');
           if (!url) {
             trashed_image.elt.src = selected_image.elt.src;
             trashed_image.show();
@@ -332,6 +334,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
         if (hasColorLerp)
           UserColorGradient.style('background-image', `linear-gradient(to top, rgba(${user_rgb_color}, ${p.min(1, userColorLerp) / 2}), rgba(${user_rgb_color}, 0))`);
         if (FadeOutTrashedLerp <= 0 && (this.lerpVal >= 1 || this.lerpVal <= 0) && (!hasColorLerp || userColorLerp >= 1)) {
+          if (this.nakama.users.self['img']) imgDiv.style('background-image', '');
           this.OnlineToggle = this.lerpVal >= 1;
           if (this.OnlineToggle) {
             this.p5canvas['InputForm'].hide();
