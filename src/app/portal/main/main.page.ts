@@ -293,7 +293,13 @@ export class MainPage implements OnInit {
               ImageMask[importance].updatePixels();
             }
           }
-          indexed.loadBlobFromUserPath(`todo/${this.json.id}/thumbnail.png`, '')
+          let thumbnail_path: string;
+          try {
+            thumbnail_path = `todo/${this.json.id}_${this.json.remote.isOfficial}_${this.json.remote.target}/thumbnail.png`;
+          } catch (e) {
+            thumbnail_path = `todo/${this.json.id}/thumbnail.png`;
+          }
+          indexed.loadBlobFromUserPath(thumbnail_path, '')
             .then(blob => {
               let FileURL = URL.createObjectURL(blob);
               p.loadImage(FileURL, v => {
