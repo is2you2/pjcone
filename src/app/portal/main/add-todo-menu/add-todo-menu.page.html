@@ -167,6 +167,8 @@
                 <ion-select-option value="load">{{lang.text['TodoDetail']['add_attach']}}</ion-select-option>
               </ion-select>
             </ion-item>
+            <ion-label (click)="toggle_custom_attach()" slot="end">{{DisplayDBSelectedName}}</ion-label>
+            <ion-icon (click)="toggle_custom_attach()" slot="end" [name]="DisplayDBSelector"></ion-icon>
           </ion-item>
           <input hidden type="file" [id]="file_sel_id" accept="*" multiple (change)="inputImageSelected($event)">
         </div>

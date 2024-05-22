@@ -112,6 +112,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   BackButtonPressed = false;
   ngOnInit() {
+    this.useFirstCustomCDN = Number(localStorage.getItem('useFFSCDN')) || 0;
+    this.toggle_custom_attach(this.useFirstCustomCDN);
     window.history.pushState(null, null, window.location.href);
     window.onpopstate = () => {
       if (this.BackButtonPressed) return;
@@ -401,12 +403,17 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           if (this.userInput.remote) {
             let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
             loading.present();
-            this.userInput.attach[i].alt_path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/${this.userInput.attach[i].filename}`;
-            blob = (await this.nakama.sync_load_file(this.userInput.attach[i],
-              this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id)).value;
-            if (!has_thumbnail) {
+            if (this.userInput.attach[i].url) {
+              this.userInput.attach[i].thumbnail = this.userInput.attach[i].url;
+            } else {
+              this.userInput.attach[i].alt_path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/${this.userInput.attach[i].filename}`;
+              blob = (await this.nakama.sync_load_file(this.userInput.attach[i],
+                this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id)).value;
+            }
+            if (!has_thumbnail) { // 썸네일 이미지가 없다면 만들기
               if (this.userInput.attach[i].viewer == 'image') {
-                let header_image = URL.createObjectURL(blob);
+                let header_image = this.userInput.attach[i].url;
+                if (blob) header_image = URL.createObjectURL(blob);
                 await new Promise((done: any) => {
                   new p5((p: p5) => {
                     p.setup = () => {
@@ -433,12 +440,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                             this.global.p5todo['add_todo'](JSON.stringify(this.userInput));
                           done();
                         });
-                        URL.revokeObjectURL(header_image);
+                        if (blob) URL.revokeObjectURL(header_image);
                         p.remove();
                       }, e => {
                         console.error('Todo-등록된 이미지 불러오기 실패: ', e);
                         done();
-                        URL.revokeObjectURL(header_image);
+                        if (blob) URL.revokeObjectURL(header_image);
                         p.remove();
                       });
                     }
@@ -712,6 +719,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   @ViewChild('NewAttach') NewAttach: IonSelect;
   /** 새 파일 타입 정하기 */
   open_select_new() {
+    if (this.isCDNToggleClicked) return;
     delete this.global.p5key['KeyShortCut']['Escape'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
     let NumberShortCutAct = [
@@ -953,6 +961,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           }
         });
     }
+    this.toggle_custom_attach(this.useFirstCustomCDN);
   }
 
   /** 전체 토글 기록용 */
@@ -1173,6 +1182,39 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   doneTodo() {
     this.isButtonClicked = true;
     this.nakama.doneTodo(this.userInput);
+  }
+
+  /** 사용자 지정 우선 서버 사용 여부  
+   * 0: 기본값  
+   * 1: FFS 우선  
+   * 2: SQL 강제
+   */
+  useFirstCustomCDN = 0;
+  DisplayDBSelectedName: string;
+  DisplayDBSelector: string;
+  isCDNToggleClicked = false;
+  async toggle_custom_attach(force?: number) {
+    this.isCDNToggleClicked = true;
+    let ModulerSize = this.userInput.remote ? 3 : 2;
+    this.useFirstCustomCDN = (force ?? (this.useFirstCustomCDN + 1)) % ModulerSize;
+    switch (this.useFirstCustomCDN) {
+      case 0: // 기본값, cdn 서버 우선, 실패시 SQL
+        this.DisplayDBSelector = 'cloud-offline-outline';
+        this.DisplayDBSelectedName = this.lang.text['ChatRoom']['Detour'];
+        break;
+      case 1: // FFS 서버 우선, 실패시 cdn, SQL 순
+        this.DisplayDBSelector = 'cloud-done-outline';
+        this.DisplayDBSelectedName = this.lang.text['ChatRoom']['useFSS'];
+        break;
+      case 2: // SQL 강제
+        this.DisplayDBSelector = 'server-outline';
+        this.DisplayDBSelectedName = this.lang.text['ChatRoom']['forceSQL'];
+        break;
+    }
+    localStorage.setItem('useFFSCDN', `${this.useFirstCustomCDN}`);
+    setTimeout(() => {
+      this.isCDNToggleClicked = false;
+    }, 0);
   }
 
   isButtonClicked = false;
@@ -1403,6 +1445,46 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           delete file['exist'];
           delete file['base64'];
         });
+        // 파일 올리기 우선
+        if (has_attach && attach_changed)
+          if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
+            for (let i = 0, j = received_json.attach.length; i < j; i++) {
+              for (let k = 0, l = this.userInput.attach.length; k < l; k++) {
+                if (this.userInput.attach[k]['path'] == received_json.attach[i]['path']) {
+                  received_json.attach[i]['exist'] = true;
+                  received_json.attach[i]['index'] = k;
+                  break;
+                }
+              } // 수정 전에 있던 이미지가 유지되는 경우 삭제하지 않음, 그 외 삭제
+              if (!received_json.attach[i]['exist'] ||
+                (received_json.attach[i]['exist'] && !this.userInput.attach[received_json.attach[i]['index']]))
+                if (received_json.attach[i]['url']) {
+                  await this.global.remove_file_from_storage(received_json.attach[i]['url']);
+                } else await this.nakama.sync_remove_file(received_json.attach[i]['path'],
+                  this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
+            }
+          }
+        for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
+          if (this.useFirstCustomCDN != 2) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
+            let address = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info.address;
+            let protocol = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info.useSSL ? 'https:' : 'http:';
+            let targetname = `${this.userInput.id}_${this.nakama.users.self['display_name']}`;
+            try { // 원격인 경우를 위해 재구성 시도
+              targetname = `${this.userInput.id}_${this.userInput.remote.creator_id}`;
+            } catch (e) { }
+            let savedAddress = await this.global.upload_file_to_storage(this.userInput.attach[i],
+              targetname, protocol, address, this.useFirstCustomCDN == 1);
+            let isURL = Boolean(savedAddress);
+            if (!isURL) throw '링크 만들기 실패';
+            delete this.userInput.attach[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
+            this.userInput.attach[i]['url'] = savedAddress;
+          } catch (e) {
+            console.log('cdn 업로드 처리 실패: ', e);
+          }
+          if (!this.userInput.attach[i].url)
+            await this.nakama.sync_save_file(this.userInput.attach[i],
+              this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
+        }
         if (this.userInput.workers) {
           let task_number = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(
             this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session,
@@ -1443,26 +1525,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               .socket.sendMatchState(this.nakama.self_match[this.userInput.remote.isOfficial][this.userInput.remote.target].match_id, MatchOpCode.MANAGE_TODO,
                 encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
           });
-        if (has_attach && attach_changed)
-          if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
-            for (let i = 0, j = received_json.attach.length; i < j; i++) {
-              for (let k = 0, l = this.userInput.attach.length; k < l; k++) {
-                if (this.userInput.attach[k]['path'] == received_json.attach[i]['path']) {
-                  received_json.attach[i]['exist'] = true;
-                  received_json.attach[i]['index'] = k;
-                  break;
-                }
-              } // 수정 전에 있던 이미지가 유지되는 경우 삭제하지 않음, 그 외 삭제
-              if (!received_json.attach[i]['exist'] ||
-                (received_json.attach[i]['exist'] && !this.userInput.attach[received_json.attach[i]['index']]))
-                await this.nakama.sync_remove_file(received_json.attach[i]['path'],
-                  this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
-            }
-          }
-        for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
-          await this.nakama.sync_save_file(this.userInput.attach[i],
-            this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
-        }
         if (!this.isModify)
           await this.nakama.updateRemoteCounter(this.userInput.remote.isOfficial, this.userInput.remote.target);
         loading.dismiss();
@@ -1495,7 +1557,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (this.global.p5todo && this.global.p5todo['add_todo'])
       this.global.p5todo['add_todo'](JSON.stringify(this.userInput));
     let path: string;
-    try {
+    try { // 로컬 상황에 맞는 경로 생성
       path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/info.todo`;
     } catch (e) {
       path = `todo/${this.userInput.id}/info.todo`;

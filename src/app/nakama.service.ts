@@ -922,7 +922,7 @@ export class NakamaService {
             }
             let data = await this.indexed.loadTextFromUserPath(path);
             let json = JSON.parse(data);
-            this.deleteTodoFromStorage(true, json);
+            this.deleteTodoFromStorage(true, json, true);
           } catch (e) { }
         } catch (e) {
           console.log('서버 해야할 일 불러오기 오류: ', e);
@@ -1148,7 +1148,9 @@ export class NakamaService {
             }],
           });
           for (let i = 0, j = targetInfo.attach.length; i < j; i++)
-            await this.sync_remove_file(targetInfo.attach[i].path, isOfficial, target, 'todo_attach');
+            if (targetInfo.attach[i].url) {
+              await this.global.remove_file_from_storage(targetInfo.attach[i].url);
+            } else await this.sync_remove_file(targetInfo.attach[i].path, isOfficial, target, 'todo_attach');
           if (isDelete) {
             await this.servers[isOfficial][target]
               .socket.sendMatchState(this.self_match[isOfficial][target].match_id, MatchOpCode.MANAGE_TODO,

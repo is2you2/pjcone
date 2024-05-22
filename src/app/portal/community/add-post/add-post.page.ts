@@ -904,7 +904,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   useFirstCustomCDN = 0;
   async toggle_custom_attach(force?: number) {
     let ModulerSize = this.userInput.creator_id == 'me' ? 2 : 3
-    this.useFirstCustomCDN = force ?? (this.useFirstCustomCDN + 1) % ModulerSize;
+    this.useFirstCustomCDN = (force ?? (this.useFirstCustomCDN + 1)) % ModulerSize;
     switch (this.useFirstCustomCDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
         this.extended_buttons[6].icon = 'cloud-offline-outline';
