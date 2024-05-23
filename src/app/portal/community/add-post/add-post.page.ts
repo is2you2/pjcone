@@ -1033,6 +1033,8 @@ export class AddPostPage implements OnInit, OnDestroy {
             delete this.userInput.mainImage['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
             this.userInput.mainImage['url'] = savedAddress;
           } catch (e) {
+            if (e == 'SQL 강제' && this.userInput.mainImage.url)
+              this.userInput.mainImage.blob = await (await fetch(this.userInput.mainImage.url)).blob();
             await this.nakama.sync_save_file(this.userInput.mainImage, isOfficial, target, 'server_post', `${this.userInput.id}_mainImage`);
           }
         }
@@ -1069,6 +1071,8 @@ export class AddPostPage implements OnInit, OnDestroy {
               delete this.userInput.attachments[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
               this.userInput.attachments[i]['url'] = savedAddress;
             } catch (e) {
+              if (e == 'SQL 강제' && this.userInput.attachments[i].url)
+                this.userInput.attachments[i].blob = await (await fetch(this.userInput.attachments[i].url)).blob();
               await this.nakama.sync_save_file(this.userInput.attachments[i], isOfficial, target, 'server_post', `${this.userInput.id}_attach_${i}`);
             }
           }

@@ -112,8 +112,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   BackButtonPressed = false;
   ngOnInit() {
-    this.useFirstCustomCDN = Number(localStorage.getItem('useFFSCDN')) || 0;
-    this.toggle_custom_attach(this.useFirstCustomCDN);
     window.history.pushState(null, null, window.location.href);
     window.onpopstate = () => {
       if (this.BackButtonPressed) return;
@@ -534,6 +532,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.selected_blobFile_callback_act(stack[i].file);
       return false;
     }
+    this.useFirstCustomCDN = Number(localStorage.getItem('useFFSCDN')) || 0;
+    this.toggle_custom_attach(this.useFirstCustomCDN);
   }
 
   /** 사용가능한 저장소 리스트 생성 */
@@ -1472,7 +1472,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             }
           }
         for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
-          if (this.useFirstCustomCDN != 2) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
+          try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
+            if (this.useFirstCustomCDN == 2) throw 'ForceSQL';
             let address = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info.address;
             let protocol = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info.useSSL ? 'https:' : 'http:';
             let targetname = `${this.userInput.id}_${this.nakama.users.self['display_name']}`;
@@ -1487,6 +1488,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             this.userInput.attach[i]['url'] = savedAddress;
           } catch (e) {
             console.log('cdn 업로드 처리 실패: ', e);
+            // url 파일을 SQL 처리하려는 경우 직접 다운받아서 사용하기
+            if (e == 'ForceSQL' && this.userInput.attach[i].url)
+              this.userInput.attach[i].blob = await (await fetch(this.userInput.attach[i].url)).blob();
           }
           if (!this.userInput.attach[i].url)
             await this.nakama.sync_save_file(this.userInput.attach[i],
