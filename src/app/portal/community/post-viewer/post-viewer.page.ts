@@ -214,8 +214,10 @@ export class PostViewerPage implements OnInit, OnDestroy {
         // 첨부파일 불러오기
         if (this.PostInfo['server']['local'])
           for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++) {
-            let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][i]['path'], this.PostInfo['attachments'][i]['type']);
-            this.PostInfo['attachments'][i]['blob'] = blob;
+            try {
+              let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][i]['path'], this.PostInfo['attachments'][i]['type']);
+              this.PostInfo['attachments'][i]['blob'] = blob;
+            } catch (e) { }
           }
         else for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++) {
           try {
