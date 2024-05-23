@@ -486,6 +486,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.userInputTextArea.focus();
         }, 0);
     }
+    this.noti.Current = this.info['cnoti_id'];
   }
 
   /** 첨부 파일 타입 정하기 */
