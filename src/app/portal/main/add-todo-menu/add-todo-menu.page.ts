@@ -287,6 +287,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               let FileURL = URL.createObjectURL(this.userInput.attach[catch_index].blob);
               new p5((p: p5) => {
                 p.setup = () => {
+                  p.noCanvas();
                   p.loadImage(FileURL, v => {
                     let related_creators: ContentCreatorInfo[] = [];
                     if (this.userInput.attach[catch_index]['content_related_creator'])

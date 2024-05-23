@@ -495,8 +495,8 @@ export class AddPostPage implements OnInit, OnDestroy {
   CreateFloatingVoiceTimeHistoryAddButton() {
     if (this.p5floatingButton) this.p5floatingButton.remove();
     this.p5floatingButton = new p5((p: p5) => {
-      p.noCanvas();
       p.setup = () => {
+        p.noCanvas();
         let float_button = p.createDiv(`<ion-icon style="width: 36px; height: 36px" name="timer-outline"></ion-icon>`);
         float_button.style("position: absolute; right: 0; bottom: 56px; z-index: 1");
         float_button.style("width: 64px; height: 64px");
