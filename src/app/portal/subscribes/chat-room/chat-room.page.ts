@@ -2180,6 +2180,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 파일이 포함된 메시지 구조화, 자동 썸네일 작업 */
   ModulateFileEmbedMessage(msg: any) {
+    if (msg.content.url) // URL 이 있다면 냅다 적용시켜보기
+      this.global.modulate_thumbnail(msg.content, '');
     let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
     msg.content['path'] = path;
     try {
