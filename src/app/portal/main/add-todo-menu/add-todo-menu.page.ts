@@ -1503,10 +1503,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             // url 파일을 SQL 처리하려는 경우 직접 다운받아서 사용하기
             if (e == 'ForceSQL' && this.userInput.attach[i].url)
               this.userInput.attach[i].blob = await (await fetch(this.userInput.attach[i].url)).blob();
-          }
-          if (!this.userInput.attach[i].url)
             await this.nakama.sync_save_file(this.userInput.attach[i],
               this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
+          }
         }
         if (this.userInput.workers) {
           let task_number = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(

@@ -756,6 +756,7 @@ export class GlobalActService {
     }
     let CatchedAddress: string;
     let fallback = localStorage.getItem('fallback_fs');
+    let progress: any;
     try { // 사용자 지정 서버 업로드 시도 우선
       if (!fallback) throw '사용자 지정 서버 없음';
       let address = fallback.split(':');
@@ -766,7 +767,7 @@ export class GlobalActService {
       headers.append('Access-Control-Allow-Origin', '*');
       headers.append('Access-Control-Allow-Method', '*');
       headers.append('Access-Control-Allow-Headers', '*');
-      let progress = setInterval(async () => {
+      progress = setInterval(async () => {
         let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", headers: headers });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
@@ -778,6 +779,7 @@ export class GlobalActService {
       if (!loading) innerLoading.dismiss();
       if (res.ok) return CatchedAddress;
     } catch (e) {
+      clearInterval(progress);
       if (!loading) innerLoading.dismiss();
       return undefined;
     }

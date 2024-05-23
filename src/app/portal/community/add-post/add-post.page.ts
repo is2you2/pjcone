@@ -992,7 +992,12 @@ export class AddPostPage implements OnInit, OnDestroy {
             console.log(e);
           }
         } // 편집된 게시물이라면 전부다 지우고 다시 등록
-      } else await this.nakama.RemovePost(this.userInput);
+      } else {
+        for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
+          if (this.userInput.attachments[i].url && !this.userInput.attachments[i].blob)
+            this.userInput.attachments[i].blob = await (await fetch(this.userInput.attachments[i].url)).blob();
+        await this.nakama.RemovePost(this.userInput);
+      }
       // 게시물 날짜 업데이트
       if (this.isModify)
         this.userInput.modify_time = new Date().getTime();
@@ -1033,7 +1038,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             delete this.userInput.mainImage['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
             this.userInput.mainImage['url'] = savedAddress;
           } catch (e) {
-            if (e == 'SQL 강제' && this.userInput.mainImage.url)
+            if (e == 'SQL 강제' && this.userInput.mainImage.url && !this.userInput.mainImage.blob)
               this.userInput.mainImage.blob = await (await fetch(this.userInput.mainImage.url)).blob();
             await this.nakama.sync_save_file(this.userInput.mainImage, isOfficial, target, 'server_post', `${this.userInput.id}_mainImage`);
           }
@@ -1071,7 +1076,7 @@ export class AddPostPage implements OnInit, OnDestroy {
               delete this.userInput.attachments[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
               this.userInput.attachments[i]['url'] = savedAddress;
             } catch (e) {
-              if (e == 'SQL 강제' && this.userInput.attachments[i].url)
+              if (e == 'SQL 강제' && this.userInput.attachments[i].url && !this.userInput.attachments[i].blob)
                 this.userInput.attachments[i].blob = await (await fetch(this.userInput.attachments[i].url)).blob();
               await this.nakama.sync_save_file(this.userInput.attachments[i], isOfficial, target, 'server_post', `${this.userInput.id}_attach_${i}`);
             }
@@ -1116,7 +1121,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.p5toast.show({
         text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
       });
-      console.log('게시물 저장 처리 오류: ', e);
+      console.warn('게시물 저장 처리 오류: ', e);
     }
     loading.dismiss();
     this.navCtrl.navigateBack('portal/community');

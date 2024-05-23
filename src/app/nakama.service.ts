@@ -3988,59 +3988,59 @@ export class NakamaService {
           this.p5toast.show({
             text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
           });
+          if (info['url']) // 링크
+            info['thumbnail'] = info['url'];
           break;
         }
       }
       if (isSuccessful) {
-        if (info['url']) { // 링크
-          info['thumbnail'] = info['url'];
-        } else { // 서버에 업로드된 파일
-          info['text'] = [this.lang.text['ChatRoom']['SavingFile']];
-          if (show_noti)
-            this.p5toast.show({
-              text: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
-            });
-          if (isPlatform == 'Android' || isPlatform == 'iOS')
-            this.noti.noti.schedule({
-              id: 8,
-              title: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
-              progressBar: { indeterminate: true },
-              sound: null,
-              smallIcon: 'res://diychat',
-              color: 'b0b0b0',
-            });
-          let GatheringInt8Array = [];
-          let ByteSize = 0;
-          await new Promise(async (done, err) => {
-            for (let i = 0, j = info_json['partsize']; i < j; i++)
-              try {
-                let part = await this.indexed.GetFileInfoFromDB(`${info.alt_path || info.path}_part/${i}.part`);
-                ByteSize += part.contents.length;
-                GatheringInt8Array[i] = part;
-              } catch (e) {
-                console.log('파일 병합하기 오류: ', e);
-                break;
-              }
-            try {
-              let SaveForm: Int8Array = new Int8Array(ByteSize);
-              let offset = 0;
-              for (let i = 0, j = GatheringInt8Array.length; i < j; i++) {
-                SaveForm.set(GatheringInt8Array[i].contents, offset);
-                offset += GatheringInt8Array[i].contents.length;
-              }
-              await this.indexed.saveInt8ArrayToUserPath(SaveForm, info.alt_path || info.path);
-              for (let i = 0, j = info_json['partsize']; i < j; i++)
-                this.indexed.removeFileFromUserPath(`${info.alt_path || info.path}_part/${i}.part`)
-              await this.indexed.removeFileFromUserPath(`${info.alt_path || info.path}_part`)
-            } catch (e) {
-              console.log('파일 최종 저장하기 오류: ', e);
-              err();
-            }
-            done(undefined);
+        delete info['url'];
+        // 서버에 업로드된 파일
+        info['text'] = [this.lang.text['ChatRoom']['SavingFile']];
+        if (show_noti)
+          this.p5toast.show({
+            text: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
           });
-          this.noti.ClearNoti(8);
-          this.indexed.removeFileFromUserPath(`${info.alt_path || info.path}.history`);
-        }
+        if (isPlatform == 'Android' || isPlatform == 'iOS')
+          this.noti.noti.schedule({
+            id: 8,
+            title: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
+            progressBar: { indeterminate: true },
+            sound: null,
+            smallIcon: 'res://diychat',
+            color: 'b0b0b0',
+          });
+        let GatheringInt8Array = [];
+        let ByteSize = 0;
+        await new Promise(async (done, err) => {
+          for (let i = 0, j = info_json['partsize']; i < j; i++)
+            try {
+              let part = await this.indexed.GetFileInfoFromDB(`${info.alt_path || info.path}_part/${i}.part`);
+              ByteSize += part.contents.length;
+              GatheringInt8Array[i] = part;
+            } catch (e) {
+              console.log('파일 병합하기 오류: ', e);
+              break;
+            }
+          try {
+            let SaveForm: Int8Array = new Int8Array(ByteSize);
+            let offset = 0;
+            for (let i = 0, j = GatheringInt8Array.length; i < j; i++) {
+              SaveForm.set(GatheringInt8Array[i].contents, offset);
+              offset += GatheringInt8Array[i].contents.length;
+            }
+            await this.indexed.saveInt8ArrayToUserPath(SaveForm, info.alt_path || info.path);
+            for (let i = 0, j = info_json['partsize']; i < j; i++)
+              this.indexed.removeFileFromUserPath(`${info.alt_path || info.path}_part/${i}.part`)
+            await this.indexed.removeFileFromUserPath(`${info.alt_path || info.path}_part`)
+          } catch (e) {
+            console.log('파일 최종 저장하기 오류: ', e);
+            err();
+          }
+          done(undefined);
+        });
+        this.noti.ClearNoti(8);
+        this.indexed.removeFileFromUserPath(`${info.alt_path || info.path}.history`);
       }
       return {
         from: 'remote',
