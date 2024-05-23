@@ -1133,6 +1133,8 @@ export class NakamaService {
       loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
     }
+    for (let i = 0, j = targetInfo.attach.length; i < j; i++) // 로컬 FFS 사용을 대비하여 중복 처리
+      if (targetInfo.attach[i].url) await this.global.remove_file_from_storage(targetInfo.attach[i].url);
     if (targetInfo.remote) {
       try { // 원격 할 일인 경우 원격 저장소에서 삭제
         if (!this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target])

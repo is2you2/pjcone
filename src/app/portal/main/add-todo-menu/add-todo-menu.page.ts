@@ -1356,12 +1356,24 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         if (!this.userInput.attach[i]['exist'] || (!header_image && this.userInput.attach[i]['viewer'] == 'image')) {
           if (!has_alternative_thumbnail)
             blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
-          try {
-            this.userInput.attach[i]['path'] = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/${this.userInput.attach[i]['filename']}`;
+          try { // FFS 업로드 시도
+            if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
+            loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: ${this.userInput.attach[i].filename}`;
+            let CatchedAddress: string;
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attach[i], this.nakama.users.self['display_name'], undefined, loading);
+            if (CatchedAddress) {
+              delete this.userInput.attach[i]['path'];
+              delete this.userInput.attach[i]['partsize'];
+              this.userInput.attach[i]['url'] = CatchedAddress;
+            } else throw '업로드 실패';
           } catch (e) {
-            this.userInput.attach[i]['path'] = `todo/${this.userInput.id}/${this.userInput.attach[i]['filename']}`;
+            try {
+              this.userInput.attach[i]['path'] = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/${this.userInput.attach[i]['filename']}`;
+            } catch (e) {
+              this.userInput.attach[i]['path'] = `todo/${this.userInput.id}/${this.userInput.attach[i]['filename']}`;
+            }
+            await this.indexed.saveBlobToUserPath(blob, this.userInput.attach[i]['path']);
           }
-          await this.indexed.saveBlobToUserPath(blob, this.userInput.attach[i]['path']);
         } else delete this.userInput.attach[i]['exist'];
         if (!header_image && (this.userInput.attach[i]['viewer'] == 'image' || has_alternative_thumbnail)) {
           header_image = URL.createObjectURL(blob);
