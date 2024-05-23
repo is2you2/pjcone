@@ -1335,8 +1335,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             }
           } // 수정 전에 있던 이미지가 유지되는 경우 삭제하지 않음, 그 외 삭제
           if (!received_json.attach[i]['exist'] ||
-            (received_json.attach[i]['exist'] && !this.userInput.attach[received_json.attach[i]['index']]))
-            await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
+            (received_json.attach[i]['exist'] && !this.userInput.attach[received_json.attach[i]['index']])) {
+            if (await this.indexed.removeFileFromUserPath(received_json.attach[i]['url']))
+              await this.global.remove_file_from_storage(received_json.attach[i]['url']);
+            else await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
+          }
         }
       }
       let header_image: string; // 대표 이미지로 선정된 경로
@@ -1413,8 +1416,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         }
         await this.indexed.removeFileFromUserPath(path);
         if (received_json['attach'])
-          for (let i = 0, j = received_json.attach.length; i < j; i++)
-            await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
+          for (let i = 0, j = received_json.attach.length; i < j; i++) {
+            if (received_json.attach[i]['url'])
+              await this.global.remove_file_from_storage(received_json.attach[i]['url']);
+            else await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
+          }
       }
     }
     this.userInput.attach.forEach(attach => {
