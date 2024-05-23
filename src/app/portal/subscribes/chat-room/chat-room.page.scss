@@ -201,12 +201,15 @@
 }
 
 .thumnails {
-    width: 100%;
+    width: -webkit-fill-available;
     height: fit-content;
     position: relative;
     transform: translateY(-100%);
     background: var(--chatroom-last-msg-viewer-bg);
     padding: 8px;
+    border-radius: 16px;
+    margin: 0px 8px;
+    bottom: 4px;
 }
 
 .thumnail_parts {
