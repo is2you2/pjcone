@@ -675,7 +675,7 @@ export class GlobalActService {
     innerLoading.present();
     let formData = new FormData();
     let upload_time = new Date().getTime();
-    let only_filename = file.filename.split('.')[0];
+    let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
     let filename = `${user_id}_${only_filename}_${upload_time}.${file.file_ext}`;
     let _file = new File([file.blob], filename);
     formData.append("files", _file);
@@ -747,7 +747,7 @@ export class GlobalActService {
     if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['Settings']['TryToFallbackFS'] });
     else innerLoading = loading;
     let upload_time = new Date().getTime();
-    let only_filename = file.filename.split('.')[0];
+    let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
     let filename = `${user_id}_${only_filename}_${upload_time}.${file.file_ext}`;
     if (!formData) { // 채널 채팅 등에서 넘어와서 정보가 없는 경우 생성처리
       formData = new FormData();
