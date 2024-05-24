@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { LoadingController, ModalController, NavController } from '@ionic/angular';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
-import { NakamaService, ServerInfo } from 'src/app/nakama.service';
+import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -1128,6 +1128,17 @@ export class AddPostPage implements OnInit, OnDestroy {
       });
       console.warn('게시물 저장 처리 오류: ', e);
     }
+    try {
+      await this.nakama.servers[this.isOfficial][this.target].client.rpc(
+        this.nakama.servers[this.isOfficial][this.target].session,
+        'send_noti_all_fn', {
+        noti_id: MatchOpCode.MANAGE_POST,
+        type: 'add',
+        user_id: this.userInput.creator_id,
+        post_id: this.userInput.id,
+        persistent: false,
+      });
+    } catch (e) { }
     loading.dismiss();
     this.navCtrl.navigateBack('portal/community');
   }

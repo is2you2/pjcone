@@ -3165,7 +3165,6 @@ export class NakamaService {
 
   /** 게시물 폴더 삭제 */
   async RemovePost(info: any, slient = false) {
-    console.log('게시물 삭제 재귀 검토: ', info);
     let loading: HTMLIonLoadingElement;
     let isOfficial = info['server']['isOfficial'];
     let target = info['server']['target'];
@@ -3217,8 +3216,6 @@ export class NakamaService {
         noti_id: MatchOpCode.MANAGE_POST,
         type: 'remove',
         user_id: info['creator_id'],
-        isOfficial: isOfficial,
-        target: target,
         post_id: info['id'],
         persistent: false,
       });
@@ -3644,7 +3641,13 @@ export class NakamaService {
       case MatchOpCode.MANAGE_POST: {
         switch (v.content['type']) {
           case 'add':
-            console.log('게시물이 생성되었다네');
+            try { // 알려진 사용자 정보만을 수집함
+              if (!this.users[_is_official][_target][v.content['user_id']]
+                && v.content['user_id'] != this.servers[_is_official][_target].session.user_id) throw '모르는 사람';
+              await this.load_server_post_with_id(v.content['post_id'],
+                _is_official, _target, v.content['user_id'], v.content['user_id'] == this.servers[_is_official][_target].session.user_id);
+              this.rearrange_posts();
+            } catch (e) { }
             break;
           case 'remove':
             let tempInfo = {
@@ -3652,8 +3655,8 @@ export class NakamaService {
               creator_id: v.content['user_id'],
               attachments: [],
               server: {
-                isOfficial: v.content['isOfficial'],
-                target: v.content['target'],
+                isOfficial: _is_official,
+                target: _target,
               }
             }
             this.RemovePost(tempInfo, true);
@@ -4189,7 +4192,8 @@ export class NakamaService {
       } catch (e) {
         return {
           from: 'failed',
-          value: null
+          value: null,
+          error: e,
         };
       }
     }
@@ -4470,6 +4474,78 @@ export class NakamaService {
     local: { target: { me: 0 } },
     official: {},
     unofficial: {},
+  }
+
+  /** 아이디로 서버 포스트 불러오기 */
+  async load_server_post_with_id(post_id: string, isOfficial: string, target: string, user_id: string, is_me: boolean): Promise<boolean> {
+    try { // 서버에 직접 요청하여 읽기 시도
+      let info = {
+        path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/info.json`,
+        type: 'application/json',
+      }
+      let res = await this.sync_load_file(info, isOfficial, target, 'server_post', user_id, post_id, false);
+      let text = await res.value.text();
+      let json = JSON.parse(text);
+      // 내 게시물인지 여부를 로컬에 추가로 저장
+      if (is_me) json['is_me'] = true;
+      let blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
+      this.indexed.saveBlobToUserPath(blob, info.path);
+      json['server'] = {
+        isOfficial: isOfficial,
+        target: target,
+      }
+      try { // 서버 정보가 없는 경우가 있더라구
+        json['server']['name'] = this.servers[isOfficial][target].info.name;
+      } catch (e) {
+        json['server']['name'] = this.lang.text['Nakama']['DeletedServer'];
+      }
+      if (json['mainImage']) {
+        if (json['mainImage']['url']) {
+          json['mainImage']['thumbnail'] = json['mainImage']['url'];
+        } else { // URL 주소가 아니라면 이미지 직접 불러오기
+          let info = {
+            path: json['mainImage']['path'],
+            alt_path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/mainImage.png`,
+            type: 'image/png',
+          }
+          let blob = (await this.sync_load_file(info, isOfficial, target, 'server_post', user_id, `${post_id}_mainImage`, false)).value;
+          json['mainImage']['blob'] = blob;
+          let FileURL = URL.createObjectURL(blob);
+          json['mainImage']['thumbnail'] = FileURL;
+          setTimeout(() => {
+            URL.revokeObjectURL(FileURL);
+          }, 5000);
+        }
+      }
+      if (!this.posts_orig[isOfficial][target])
+        this.posts_orig[isOfficial][target] = {};
+      if (!this.posts_orig[isOfficial][target][user_id])
+        this.posts_orig[isOfficial][target][user_id] = {};
+      this.posts_orig[isOfficial][target][user_id][post_id] = json;
+      // 로컬에서 불러왔다면 원격에 남은 정보인지 검토
+      if (res.from == 'local') {
+        try {
+          let RemoteExist = await this.servers[isOfficial][target].client.readStorageObjects(
+            this.servers[isOfficial][target].session, {
+            object_ids: [{
+              collection: 'server_post',
+              key: post_id,
+              user_id: user_id,
+            }],
+          });
+          if (!RemoteExist.objects.length)
+            throw 'Not RemoteExist';
+        } catch (e) {
+          if (e == 'Not RemoteExist') throw 'RemoveSelf';
+        }
+      }
+      return true;
+    } catch (e) {
+      // 서버에서 삭제된 게시물이라면 로컬에서도 자료를 삭제
+      if (e == 'RemoveSelf')
+        this.RemovePost(this.posts_orig[isOfficial][target][user_id][post_id], true);
+      return false;
+    }
   }
 
   /** 게시물 갯수 불러오기 (첫 실행시) */

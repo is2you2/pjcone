@@ -124,82 +124,10 @@ export class CommunityPage implements OnInit {
     if (index < 0) return;
     let loaded = await this.nakama.load_local_post_with_id(`LocalPost_${index}`, isOfficial, target, user_id);
     if (!loaded && user_id != 'me') try { // 로컬에서 불러오기를 실패했다면 서버에서 불러오기를 시도 (서버 게시물만)
-      loaded = await this.load_server_post_with_id(`ServerPost_${index}`, isOfficial, target, user_id, is_me);
+      loaded = await this.nakama.load_server_post_with_id(`ServerPost_${index}`, isOfficial, target, user_id, is_me);
     } catch (e) { }
     this.nakama.post_counter[isOfficial][target][user_id]--;
     if (!loaded) await this.load_post_step_by_step(this.nakama.post_counter[isOfficial][target][user_id], isOfficial, target, user_id, is_me);
-  }
-
-  /** 아이디로 서버 포스트 불러오기 */
-  async load_server_post_with_id(post_id: string, isOfficial: string, target: string, user_id: string, is_me: boolean): Promise<boolean> {
-    try { // 서버에 직접 요청하여 읽기 시도
-      let info = {
-        path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/info.json`,
-        type: 'application/json',
-      }
-      let res = await this.nakama.sync_load_file(info, isOfficial, target, 'server_post', user_id, post_id, false);
-      let text = await res.value.text();
-      let json = JSON.parse(text);
-      // 내 게시물인지 여부를 로컬에 추가로 저장
-      if (is_me) json['is_me'] = true;
-      let blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
-      this.indexed.saveBlobToUserPath(blob, info.path);
-      json['server'] = {
-        isOfficial: isOfficial,
-        target: target,
-      }
-      try { // 서버 정보가 없는 경우가 있더라구
-        json['server']['name'] = this.nakama.servers[isOfficial][target].info.name;
-      } catch (e) {
-        json['server']['name'] = this.lang.text['Nakama']['DeletedServer'];
-      }
-      if (json['mainImage']) {
-        if (json['mainImage']['url']) {
-          json['mainImage']['thumbnail'] = json['mainImage']['url'];
-        } else { // URL 주소가 아니라면 이미지 직접 불러오기
-          let info = {
-            path: json['mainImage']['path'],
-            alt_path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/mainImage.png`,
-            type: 'image/png',
-          }
-          let blob = (await this.nakama.sync_load_file(info, isOfficial, target, 'server_post', user_id, `${post_id}_mainImage`, false)).value;
-          json['mainImage']['blob'] = blob;
-          let FileURL = URL.createObjectURL(blob);
-          json['mainImage']['thumbnail'] = FileURL;
-          setTimeout(() => {
-            URL.revokeObjectURL(FileURL);
-          }, 5000);
-        }
-      }
-      if (!this.nakama.posts_orig[isOfficial][target])
-        this.nakama.posts_orig[isOfficial][target] = {};
-      if (!this.nakama.posts_orig[isOfficial][target][user_id])
-        this.nakama.posts_orig[isOfficial][target][user_id] = {};
-      this.nakama.posts_orig[isOfficial][target][user_id][post_id] = json;
-      // 로컬에서 불러왔다면 원격에 남은 정보인지 검토
-      if (res.from == 'local') {
-        try {
-          let RemoteExist = await this.nakama.servers[isOfficial][target].client.readStorageObjects(
-            this.nakama.servers[isOfficial][target].session, {
-            object_ids: [{
-              collection: 'server_post',
-              key: post_id,
-              user_id: user_id,
-            }],
-          });
-          if (!RemoteExist.objects.length)
-            throw 'Not RemoteExist';
-        } catch (e) {
-          if (e == 'Not RemoteExist') throw 'RemoveSelf';
-        }
-      }
-      return true;
-    } catch (e) {
-      // 서버에서 삭제된 게시물이라면 로컬에서도 자료를 삭제
-      if (e == 'RemoveSelf')
-        this.nakama.RemovePost(this.nakama.posts_orig[isOfficial][target][user_id][post_id], true);
-      return false;
-    }
   }
 
   /** 사용자 정보를 열람하는 경우 카드 열람 무시 */
