@@ -48,7 +48,7 @@ export enum MatchOpCode {
   MANAGE_TODO = 10,
   /** 프로필 정보/이미지 수정 */
   EDIT_PROFILE = 11,
-  /** 게시물 생성/수정/삭제 */
+  /** 게시물 생성/삭제 */
   MANAGE_POST = 12,
   /** 새로운 채널에 참여됨 */
   ADD_CHANNEL = 14,
@@ -3165,9 +3165,12 @@ export class NakamaService {
 
   /** 게시물 폴더 삭제 */
   async RemovePost(info: any, slient = false) {
+    console.log('게시물 삭제 재귀 검토: ', info);
     let loading: HTMLIonLoadingElement;
+    let isOfficial = info['server']['isOfficial'];
+    let target = info['server']['target'];
     if (!slient) loading = await this.loadingCtrl.create({ message: this.lang.text['PostViewer']['RemovePost'] });
-    let list = await this.indexed.GetFileListFromDB(`servers/${info['server']['isOfficial']}/${info['server']['target']}/posts/${info['creator_id']}/${info['id']}`);
+    let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/posts/${info['creator_id']}/${info['id']}`);
     if (loading) loading.present();
     for (let i = 0, j = list.length; i < j; i++) {
       if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`;
@@ -3182,7 +3185,7 @@ export class NakamaService {
         } else {
           try {
             if (!info.server.local)
-              await this.sync_remove_file(`${info['id']}_attach_${i}`, info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}_attach_${i}`);
+              await this.sync_remove_file(`${info['id']}_attach_${i}`, isOfficial, target, 'server_post', '', `${info['id']}_attach_${i}`);
           } catch (e) { }
         }
       } catch (e) { }
@@ -3194,19 +3197,32 @@ export class NakamaService {
         } else {
           try {
             if (!info.server.local)
-              await this.sync_remove_file(`${info['id']}_mainImage`, info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}_mainImage`);
+              await this.sync_remove_file(`${info['id']}_mainImage`, isOfficial, target, 'server_post', '', `${info['id']}_mainImage`);
           } catch (e) { }
         }
       } catch (e) { }
     // 게시물 정보 삭제하기
     try {
       if (!info.server.local)
-        await this.sync_remove_file(info['id'], info['server']['isOfficial'], info['server']['target'], 'server_post', '', `${info['id']}`);
+        await this.sync_remove_file(info['id'], isOfficial, target, 'server_post', '', `${info['id']}`);
     } catch (e) { }
     if (loading) loading.dismiss();
-    delete this.posts_orig[info['server']['isOfficial']][info['server']['target']][info['creator_id']][info['id']];
+    delete this.posts_orig[isOfficial][target][info['creator_id']][info['id']];
     this.rearrange_posts();
     if (this.socket_reactive['try_load_post']) this.socket_reactive['try_load_post']();
+    if (!slient) try {
+      await this.servers[isOfficial][target].client.rpc(
+        this.servers[isOfficial][target].session,
+        'send_noti_all_fn', {
+        noti_id: MatchOpCode.MANAGE_POST,
+        type: 'remove',
+        user_id: info['creator_id'],
+        isOfficial: isOfficial,
+        target: target,
+        post_id: info['id'],
+        persistent: false,
+      });
+    } catch (e) { }
   }
 
   /** WebRTC 통화 채널에 참가하기 */
@@ -3624,6 +3640,26 @@ export class NakamaService {
         } catch (e) {
           console.error('다른 사용자 프로필 이미지 변경 오류: ', e);
         }
+        return;
+      case MatchOpCode.MANAGE_POST: {
+        switch (v.content['type']) {
+          case 'add':
+            console.log('게시물이 생성되었다네');
+            break;
+          case 'remove':
+            let tempInfo = {
+              id: v.content['post_id'],
+              creator_id: v.content['user_id'],
+              attachments: [],
+              server: {
+                isOfficial: v.content['isOfficial'],
+                target: v.content['target'],
+              }
+            }
+            this.RemovePost(tempInfo, true);
+            break;
+        }
+      }
         return;
       case MatchOpCode.GROUP_DATA_CHANGED:
       case MatchOpCode.GROUP_IMAGE_CHANGED:
@@ -4189,9 +4225,7 @@ export class NakamaService {
           key: force_path || info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120),
         }],
       });
-    } catch (e) {
-      console.log('SyncRemoveFailed: ', e);
-    }
+    } catch (e) { }
   }
 
   async AddressToQRCodeAct(init: any, NeedReturn = false) {
