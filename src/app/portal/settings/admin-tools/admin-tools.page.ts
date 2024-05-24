@@ -52,6 +52,7 @@ export class AdminToolsPage implements OnInit {
   notification = {
     uri: '',
     msg: '',
+    noti_id: 1,
     persistent: true,
   }
 
@@ -103,6 +104,9 @@ export class AdminToolsPage implements OnInit {
         this.is_sending = false;
       }).catch(e => {
         console.log('send_noti_to_server: ', e);
+        this.p5toast.show({
+          text: `${this.lang.text['AdminTools']['SendFailed']}: ${e}`,
+        })
         this.is_sending = false;
       });
   }
