@@ -1024,6 +1024,11 @@ export class AddPostPage implements OnInit, OnDestroy {
         } catch (e) {
           this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/${this.userInput.mainImage.filename}`;
           await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
+          let FileURL = URL.createObjectURL(this.userInput.mainImage.blob);
+          this.userInput.mainImage.thumbnail = FileURL;
+          setTimeout(() => {
+            URL.revokeObjectURL(FileURL);
+          }, 5000);
         }
         if (!is_local) {
           try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
