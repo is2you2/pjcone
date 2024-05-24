@@ -3642,11 +3642,14 @@ export class NakamaService {
         switch (v.content['type']) {
           case 'add':
             try { // 알려진 사용자 정보만을 수집함
-              if (!this.users[_is_official][_target][v.content['user_id']]
-                && v.content['user_id'] != this.servers[_is_official][_target].session.user_id) throw '모르는 사람';
-              await this.load_server_post_with_id(v.content['post_id'],
-                _is_official, _target, v.content['user_id'], v.content['user_id'] == this.servers[_is_official][_target].session.user_id);
+              let is_me = v.content['user_id'] == this.servers[_is_official][_target].session.user_id;
+              if (!this.users[_is_official][_target][v.content['user_id']] && !is_me) throw '모르는 사람';
+              let post = await this.load_server_post_with_id(v.content['post_id'],
+                _is_official, _target, v.content['user_id'], is_me);
               this.rearrange_posts();
+              if (!is_me) this.p5toast.show({
+                text: `${this.lang.text['AddPost']['Title']}: ${post.title}`,
+              });
             } catch (e) { }
             break;
           case 'remove':
@@ -4477,7 +4480,7 @@ export class NakamaService {
   }
 
   /** 아이디로 서버 포스트 불러오기 */
-  async load_server_post_with_id(post_id: string, isOfficial: string, target: string, user_id: string, is_me: boolean): Promise<boolean> {
+  async load_server_post_with_id(post_id: string, isOfficial: string, target: string, user_id: string, is_me: boolean): Promise<any> {
     try { // 서버에 직접 요청하여 읽기 시도
       let info = {
         path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/info.json`,
@@ -4539,7 +4542,7 @@ export class NakamaService {
           if (e == 'Not RemoteExist') throw 'RemoveSelf';
         }
       }
-      return true;
+      return json;
     } catch (e) {
       // 서버에서 삭제된 게시물이라면 로컬에서도 자료를 삭제
       if (e == 'RemoveSelf')
