@@ -993,6 +993,8 @@ export class AddPostPage implements OnInit, OnDestroy {
           }
         } // 편집된 게시물이라면 전부다 지우고 다시 등록
       } else {
+        if (this.userInput.mainImage && this.userInput.mainImage.url && !this.userInput.mainImage.blob)
+          this.userInput.mainImage.blob = await (await fetch(this.userInput.mainImage.url)).blob();
         for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
           if (this.userInput.attachments[i].url && !this.userInput.attachments[i].blob)
             this.userInput.attachments[i].blob = await (await fetch(this.userInput.attachments[i].url)).blob();
@@ -1011,25 +1013,6 @@ export class AddPostPage implements OnInit, OnDestroy {
       // 대표 이미지 저장
       if (this.userInput.mainImage) {
         loading.message = this.lang.text['AddPost']['SyncMainImage'];
-        try { // FFS 업로드 시도
-          if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
-          loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: ${this.userInput.mainImage.filename}`;
-          let CatchedAddress: string;
-          CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, this.nakama.users.self['display_name'], undefined, loading);
-          if (CatchedAddress) {
-            delete this.userInput.mainImage['path'];
-            delete this.userInput.mainImage['partsize'];
-            this.userInput.mainImage['url'] = CatchedAddress;
-          } else throw '업로드 실패';
-        } catch (e) {
-          this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/${this.userInput.mainImage.filename}`;
-          await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
-          let FileURL = URL.createObjectURL(this.userInput.mainImage.blob);
-          this.userInput.mainImage.thumbnail = FileURL;
-          setTimeout(() => {
-            URL.revokeObjectURL(FileURL);
-          }, 5000);
-        }
         if (!is_local) {
           try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
             if (this.useFirstCustomCDN == 2) throw 'SQL 강제';
@@ -1043,8 +1026,13 @@ export class AddPostPage implements OnInit, OnDestroy {
             delete this.userInput.mainImage['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
             this.userInput.mainImage['url'] = savedAddress;
           } catch (e) {
-            if (e == 'SQL 강제' && this.userInput.mainImage.url && !this.userInput.mainImage.blob)
-              this.userInput.mainImage.blob = await (await fetch(this.userInput.mainImage.url)).blob();
+            this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/${this.userInput.mainImage.filename}`;
+            await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
+            let FileURL = URL.createObjectURL(this.userInput.mainImage.blob);
+            this.userInput.mainImage.thumbnail = FileURL;
+            setTimeout(() => {
+              URL.revokeObjectURL(FileURL);
+            }, 5000);
             await this.nakama.sync_save_file(this.userInput.mainImage, isOfficial, target, 'server_post', `${this.userInput.id}_mainImage`);
           }
         }
