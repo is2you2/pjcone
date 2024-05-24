@@ -510,7 +510,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
 
   p5canvas: p5;
 
-  /** 모든 서버에 프로필 변경됨 고지 및 동기화 */
+  /** 모든 서버에 프로필 이미지 변경됨을 고지 */
   async sync_to_all_server() {
     let servers = this.nakama.get_all_online_server();
     this.nakama.save_self_profile();
@@ -551,17 +551,18 @@ export class GroupServerPage implements OnInit, OnDestroy {
           console.error('inputImageSelected_err: ', e);
         }
       }
-      let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
-      if (all_channels) {
-        all_channels.forEach((channelId: any) => {
-          if (this.announce_update_profile)
-            servers[i].socket.writeChatMessage(channelId, {
-              user_update: 'modify_img',
-              noti_form: `: ${this.nakama.users.self['display_name']}`,
-            });
+      try { // 현재 온라인인 사람들에게만 일시적으로 전달됨
+        await servers[i].client.rpc(
+          servers[i].session,
+          'send_noti_all_fn', {
+          user_id: servers[i].session.user_id,
+          noti_id: MatchOpCode.USER_PROFILE_IMAGE_CHANGED,
+          persistent: false,
         });
-        this.announce_update_profile = false;
+      } catch (e) {
+        console.log('서버에 알리기 실패: ', e);
       }
+      this.announce_update_profile = false;
     }
   }
 

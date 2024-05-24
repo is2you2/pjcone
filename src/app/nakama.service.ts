@@ -42,11 +42,14 @@ interface NakamaGroup {
   socket?: Socket;
 }
 
+/** 주로 셀프 매칭에 동기화할 때 사용하나 다른 곳에도 사용하고 있는 중 */
 export enum MatchOpCode {
   /** 해야할 일 생성/수정/삭제/완료 */
   MANAGE_TODO = 10,
   /** 프로필 정보/이미지 수정 */
   EDIT_PROFILE = 11,
+  /** 게시물 생성/수정/삭제 */
+  MANAGE_POST = 12,
   /** 새로운 채널에 참여됨 */
   ADD_CHANNEL = 14,
   /** WebRTC 시작 요청 */
@@ -63,6 +66,14 @@ export enum MatchOpCode {
   WEBRTC_RECEIVED_CALL_SELF = 25,
   /** 통화 종료함 */
   WEBRTC_HANGUP = 30,
+  /** 사용자 프로필 변경됨 */
+  USER_PROFILE_CHANGED = 100,
+  /** 사용자 프로필 사진 변경됨 */
+  USER_PROFILE_IMAGE_CHANGED = 101,
+  /** 그룹 정보 변경됨 */
+  GROUP_DATA_CHANGED = 200,
+  /** 그룹 사진 변경됨 */
+  GROUP_IMAGE_CHANGED = 201,
 }
 
 @Injectable({
@@ -3387,12 +3398,23 @@ export class NakamaService {
           }
           );
           if (user_img.objects.length) {
-            this.load_other_user(c.sender_id, _is_official, _target)['img'] = user_img.objects[0].value['img'].replace(/"|\\|=/g, '');
-            this.indexed.saveTextFileToUserPath(this.users[_is_official][_target][c.sender_id]['img'],
-              `servers/${_is_official}/${_target}/users/${c.sender_id}/profile.img`);
+            try { // 내 정보일 수도 있으니 try-catch 로 묶음
+              if (this.servers[_is_official][_target].session.user_id == c.sender_id) throw 'me';
+              this.load_other_user(c.sender_id, _is_official, _target)['img'] = user_img.objects[0].value['img'].replace(/"|\\|=/g, '');
+              this.indexed.saveTextFileToUserPath(this.users[_is_official][_target][c.sender_id]['img'],
+                `servers/${_is_official}/${_target}/users/${c.sender_id}/profile.img`);
+            } catch (e) { // 내 정보라면
+              this.users.self['img'] = user_img.objects[0].value['img'].replace(/"|\\|=/g, '');
+              await this.indexed.saveTextFileToUserPath(this.users.self['img'], 'servers/self/profile.img');
+            }
           } else {
-            delete this.users[_is_official][_target][c.sender_id]['img'];
-            this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${c.sender_id}/profile.img`)
+            try {
+              if (this.servers[_is_official][_target].session.user_id == c.sender_id) throw 'me';
+              delete this.users[_is_official][_target][c.sender_id]['img'];
+              this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${c.sender_id}/profile.img`)
+            } catch (e) {
+              delete this.users.self['img'];
+            }
           }
         } catch (e) {
           console.error('다른 사용자 프로필 이미지 변경 오류: ', e);
@@ -3512,6 +3534,11 @@ export class NakamaService {
         break;
       default:
         console.log('예상하지 못한 알림 구분: ', this_noti.code);
+        try {
+          await this.servers[_is_official][_target].client.deleteNotifications(
+            this.servers[_is_official][_target].session, [this_noti.id]);
+        } catch (e) { }
+        this.update_notifications(_is_official, _target);
         break;
     }
   }
@@ -3525,10 +3552,44 @@ export class NakamaService {
       case 404: // 관리자에 의해 사용자 강제 탈퇴되어 서버를 삭제당함
         this.remove_server(_is_official, _target);
         break;
-      case 100: // 사용자 프로필 변경됨
-      case 101: // 사용자 프로필 사진 변경됨
-      case 200: // 그룹 정보 변경됨
-      case 201: // 그룹 사진 변경됨
+      case MatchOpCode.USER_PROFILE_CHANGED:
+        break;
+      case MatchOpCode.USER_PROFILE_IMAGE_CHANGED:
+        try { // 서버로부터 해당 사용자 이미지 업데이트
+          if (!this.users[_is_official][_target][v.content['user_id']]) throw '모르는 사람';
+          let user_img = await this.servers[_is_official][_target].client.readStorageObjects(
+            this.servers[_is_official][_target].session, {
+            object_ids: [{
+              collection: 'user_public',
+              key: 'profile_image',
+              user_id: v.content['user_id'],
+            }]
+          });
+          if (user_img.objects.length) {
+            try { // 내 정보일 수도 있으니 try-catch 로 묶음
+              if (this.servers[_is_official][_target].session.user_id == v.content['user_id']) throw 'me';
+              this.load_other_user(v.content['user_id'], _is_official, _target)['img'] = user_img.objects[0].value['img'].replace(/"|\\|=/g, '');
+              this.indexed.saveTextFileToUserPath(this.users[_is_official][_target][v.content['user_id']]['img'],
+                `servers/${_is_official}/${_target}/users/${v.content['user_id']}/profile.img`);
+            } catch (e) { // 내 정보라면
+              this.users.self['img'] = user_img.objects[0].value['img'].replace(/"|\\|=/g, '');
+              await this.indexed.saveTextFileToUserPath(this.users.self['img'], 'servers/self/profile.img');
+            }
+          } else {
+            try {
+              if (this.servers[_is_official][_target].session.user_id == v.content['user_id']) throw 'me';
+              delete this.users[_is_official][_target][v.content['user_id']]['img'];
+              this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/users/${v.content['user_id']}/profile.img`)
+            } catch (e) {
+              delete this.users.self['img'];
+            }
+          }
+        } catch (e) {
+          console.error('다른 사용자 프로필 이미지 변경 오류: ', e);
+        }
+        return;
+      case MatchOpCode.GROUP_DATA_CHANGED:
+      case MatchOpCode.GROUP_IMAGE_CHANGED:
         break;
       case 1: // 전체 알림 메시지 수신
         v['request'] = `${this.lang.text['Nakama']['ServerNoti']}: ${decodeURIComponent(v.content['msg'])}`;
