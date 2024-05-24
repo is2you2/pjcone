@@ -1834,6 +1834,7 @@ export class NakamaService {
                   break;
                 } // 온라인 그룹이 아니라면 1:1 채널과 같게 처리
               case 2: // 1:1 채널
+                // 온라인 상태의 1:1 채널이라면
                 if (this.channels[index]['status'] == 'online' || this.channels[index]['status'] == 'pending') {
                   this.alertCtrl.create({
                     header: targetHeader,
@@ -1841,7 +1842,7 @@ export class NakamaService {
                     buttons: [{
                       text: this.lang.text['ChatRoom']['LogOut'],
                       handler: async () => {
-                        try {
+                        try { // 채널 차단 처리
                           await this.servers[isOfficial][target].socket.leaveChat(this.channels[index].id);
                           this.channels_orig[isOfficial][target][this.channels[index].id]['status'] = 'missing';
                         } catch (e) {
@@ -1852,7 +1853,7 @@ export class NakamaService {
                       cssClass: 'redfont',
                     }]
                   }).then(v => v.present());
-                } else this.alertCtrl.create({
+                } else this.alertCtrl.create({ // 손상 처리된 채널이라면 (그룹, 1:1이 같은 처리를 따름)
                   header: targetHeader,
                   message: this.lang.text['ChatRoom']['RemoveChannelLogs'],
                   buttons: [{
@@ -1860,9 +1861,30 @@ export class NakamaService {
                     handler: async () => {
                       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
                       loading.present();
-                      this.remove_group_list(this.channels_orig[isOfficial][target][this.channels[index].id]['info'], isOfficial, target, true);
+                      await this.remove_group_list(this.channels_orig[isOfficial][target][this.channels[index].id]['info'], isOfficial, target, true);
                       delete this.channels_orig[isOfficial][target][this.channels[index].id];
                       this.remove_channel_files(isOfficial, target, this.channels[index].id);
+                      // 해당 채널과 관련된 파일 일괄 삭제 (cdn / ffs)
+                      try { // FFS 요청 우선
+                        let fallback = localStorage.getItem('fallback_fs');
+                        if (!fallback) throw '사용자 지정 서버 없음';
+                        let address = fallback.split(':');
+                        let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
+                        let protocol = checkProtocol ? 'https:' : 'http:';
+                        let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
+                        // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
+                        let target_key = `${this.channels[index].id}_${this.users.self['display_name']}`;
+                        try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
+                          target_key = `${this.channels[index]['info'].id}_${this.servers[isOfficial][target].session.user_id}`
+                        } catch (e) { }
+                        this.global.remove_files_from_storage_with_key(target_address, target_key);
+                      } catch (e) { }
+                      try { // cdn 삭제 요청, 로컬 채널은 주소 만들다가 알아서 튕김
+                        let protocol = this.channels[index]['info'].server.useSSL ? 'https:' : 'http:';
+                        let address = this.channels[index]['info'].server.address;
+                        let target_address = `${[protocol]}//${address}:9002/`;
+                        this.global.remove_files_from_storage_with_key(target_address, `${this.channels[index]['info'].id}_${this.servers[isOfficial][target].session.user_id}`);
+                      } catch (e) { }
                       let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${this.channels[index].id}`);
                       for (let i = 0, j = list.length; i < j; i++) {
                         loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
@@ -1885,12 +1907,27 @@ export class NakamaService {
                       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
                       loading.present();
                       delete this.channels_orig[isOfficial][target][this.channels[index].id];
-                      try {
+                      try { // 그룹 이미지 삭제
                         await this.indexed.removeFileFromUserPath(`servers/${isOfficial}/${target}/groups/${this.channels[index].id}.img`);
                       } catch (e) {
                         console.log('그룹 이미지 삭제 오류: ', e);
                       }
                       this.save_groups_with_less_info();
+                      // 해당 채널과 관련된 파일 일괄 삭제 (cdn)
+                      try { // FFS 요청 우선
+                        let fallback = localStorage.getItem('fallback_fs');
+                        if (!fallback) throw '사용자 지정 서버 없음';
+                        let address = fallback.split(':');
+                        let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
+                        let protocol = checkProtocol ? 'https:' : 'http:';
+                        let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
+                        // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
+                        let target_key = `${this.channels[index].id}_${this.users.self['display_name']}`;
+                        try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
+                          target_key = `${this.channels[index]['info'].id}_${this.servers[isOfficial][target].session.user_id}`
+                        } catch (e) { }
+                        this.global.remove_files_from_storage_with_key(target_address, target_key);
+                      } catch (e) { }
                       let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${this.channels[index].id}`);
                       for (let i = 0, j = list.length; i < j; i++) {
                         loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
