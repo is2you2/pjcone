@@ -1163,7 +1163,7 @@ export class GlobalActService {
           }
           if (loading) loading.dismiss();
           setTimeout(() => {
-            // LogDiv.elt.remove();
+            LogDiv.elt.remove();
           }, 8000);
           OnLoaded();
         };
