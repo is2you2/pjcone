@@ -238,9 +238,11 @@
 }
 
 .read_last_here {
+    border-radius: 16px;
+    padding: 4px 8px;
+    width: fit-content;
     text-align: center;
     font-size: 12px;
-    display: inherit;
     background: var(--chatroom-you-read-here-backgruond);
     margin: 4px 0px;
     color: var(--chatroom-you-read-here-text);

@@ -98,8 +98,10 @@
                     </td>
                   </tr>
                 </table>
-                <div *ngIf="msg['isLastRead']" class="read_last_here">
-                  {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
+                <div style="width: 100%; text-align: -webkit-center;">
+                  <div *ngIf="msg['isLastRead']" class="read_last_here">
+                    {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
+                </div>
               </div>
               <div *ngIf="msg['is_me'] && !msg.content['noti']" class="my_message_right">
                 <!-- 날짜 표시 -->
@@ -175,8 +177,10 @@
                     </td>
                   </tr>
                 </table>
-                <div *ngIf="msg['isLastRead']" class="read_last_here" (click)="SetOtherAct()">
-                  {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
+                <div style="width: 100%; text-align: -webkit-center;">
+                  <div *ngIf="msg['isLastRead']" class="read_last_here" (click)="SetOtherAct()">
+                    {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
+                </div>
               </div>
               <div *ngIf="msg.content['noti']" class="notice_form" (click)="SetOtherAct()">
                 <div class="notice"> {{msg.content['noti']}} </div>
