@@ -3647,9 +3647,12 @@ export class NakamaService {
               let post = await this.load_server_post_with_id(v.content['post_id'],
                 _is_official, _target, v.content['user_id'], is_me);
               this.rearrange_posts();
-              if (!is_me) this.p5toast.show({
-                text: `${this.lang.text['AddPost']['Title']}: ${post.title}`,
-              });
+              if (!is_me) { // 내 것이 아니라면 새 게시물이 업로드됨을 알림
+                this.p5toast.show({
+                  text: `${this.lang.text['AddPost']['Title']}: ${post.title}`,
+                });
+                this.has_new_post = true;
+              }
             } catch (e) { }
             break;
           case 'remove':
