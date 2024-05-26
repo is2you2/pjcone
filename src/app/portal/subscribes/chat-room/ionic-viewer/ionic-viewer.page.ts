@@ -124,6 +124,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     }
     this.showEdit = !Boolean(this.navParams.get('noEdit'));
     this.ChangeContentWithKeyInput();
+    this.isPWA = isPlatform != 'Android' && isPlatform != 'iOS';
   }
 
   canvasDiv: HTMLElement;
@@ -1315,6 +1316,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 덮어쓰기 전단계 */
   forceWrite = false;
+  isPWA = false;
   async download_file() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       if (this.FileInfo['url']) {
