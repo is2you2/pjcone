@@ -117,6 +117,19 @@ export class AddPostPage implements OnInit, OnDestroy {
           }
           this.MainPostImage = FileURL;
         }
+        for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
+          if (this.userInput.attachments[i].viewer == 'image') {
+            if (this.userInput.attachments[i].url)
+              this.userInput.attachments[i].thumbnail = this.userInput.attachments[i].url;
+            else {
+              let blob = await this.indexed.loadBlobFromUserPath(this.userInput.attachments[i].path, this.userInput.attachments[i].file_ext);
+              let FileURL = URL.createObjectURL(blob);
+              this.userInput.attachments[i].thumbnail = FileURL;
+              setTimeout(() => {
+                URL.revokeObjectURL(FileURL);
+              }, 1000);
+            }
+          }
       }
       this.select_server(this.index);
       if (navParams && navParams.data)
