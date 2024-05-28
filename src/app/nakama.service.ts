@@ -4454,17 +4454,19 @@ export class NakamaService {
         local: true,
       }
       if (json['mainImage']) {
-        if (json['mainImage']['url']) {
-          json['mainImage']['thumbnail'] = json['mainImage']['url'];
-        } else { // URL 주소가 아니라면 이미지 직접 불러오기
-          let blob = await this.indexed.loadBlobFromUserPath(json['mainImage']['path'], json['mainImage']['type']);
-          json['mainImage']['blob'] = blob;
-          let FileURL = URL.createObjectURL(blob);
-          json['mainImage']['thumbnail'] = FileURL;
-          setTimeout(() => {
-            URL.revokeObjectURL(FileURL);
-          }, 5000);
-        }
+        try {
+          if (json['mainImage']['url']) {
+            json['mainImage']['thumbnail'] = json['mainImage']['url'];
+          } else { // URL 주소가 아니라면 이미지 직접 불러오기
+            let blob = await this.indexed.loadBlobFromUserPath(json['mainImage']['path'], json['mainImage']['type']);
+            json['mainImage']['blob'] = blob;
+            let FileURL = URL.createObjectURL(blob);
+            json['mainImage']['thumbnail'] = FileURL;
+            setTimeout(() => {
+              URL.revokeObjectURL(FileURL);
+            }, 5000);
+          }
+        } catch (e) { }
       }
       this.posts_orig[isOfficial][target][user_id][id] = json;
       return true;

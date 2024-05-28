@@ -108,14 +108,16 @@ export class PostViewerPage implements OnInit, OnDestroy {
   /** 진입 정보를 어떻게 활용할 것인가 */
   initialize() {
     if (this.PostInfo['mainImage']) {
-      let FileURL = this.PostInfo['mainImage']['url'];
-      if (!FileURL) {
-        FileURL = URL.createObjectURL(this.PostInfo['mainImage']['blob']);
-        setTimeout(() => {
-          URL.revokeObjectURL(FileURL);
-        }, 100);
-      }
-      this.PostInfo['mainImage']['MainThumbnail'] = FileURL;
+      try {
+        let FileURL = this.PostInfo['mainImage']['url'];
+        if (!FileURL) {
+          FileURL = URL.createObjectURL(this.PostInfo['mainImage']['blob']);
+          setTimeout(() => {
+            URL.revokeObjectURL(FileURL);
+          }, 100);
+        }
+        this.PostInfo['mainImage']['MainThumbnail'] = FileURL;
+      } catch (e) { }
     }
     this.create_content();
     try {

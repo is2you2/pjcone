@@ -1026,6 +1026,20 @@ export class AddPostPage implements OnInit, OnDestroy {
       // 대표 이미지 저장
       if (this.userInput.mainImage) {
         loading.message = this.lang.text['AddPost']['SyncMainImage'];
+        this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/MainImage.${this.userInput.mainImage.file_ext}`;
+        try { // FFS 업로드 시도
+          if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
+          loading.message = `${this.lang.text['AddPost']['SyncMainImage']}: ${this.userInput.mainImage.filename}`;
+          let CatchedAddress: string;
+          CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, this.nakama.users.self['display_name'], undefined, loading);
+          if (CatchedAddress) {
+            delete this.userInput.mainImage['path'];
+            delete this.userInput.mainImage['partsize'];
+            this.userInput.mainImage['url'] = CatchedAddress;
+          } else throw '업로드 실패';
+        } catch (e) {
+          await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
+        }
         if (!is_local) {
           try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
             if (this.useFirstCustomCDN == 2) throw 'SQL 강제';
@@ -1039,7 +1053,6 @@ export class AddPostPage implements OnInit, OnDestroy {
             delete this.userInput.mainImage['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
             this.userInput.mainImage['url'] = savedAddress;
           } catch (e) {
-            this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/${this.userInput.mainImage.filename}`;
             await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
             let FileURL = URL.createObjectURL(this.userInput.mainImage.blob);
             this.userInput.mainImage.thumbnail = FileURL;
@@ -1110,7 +1123,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       }
       let json_str = JSON.stringify(make_copy_info);
       await this.indexed.saveTextFileToUserPath(json_str, `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/info.json`);
-      if (!is_local) { // 서버에 정보 등록
+      if (!is_local) { // 서버라면 추가로 서버에 정보 등록
         let blob = new Blob([json_str], { type: 'application/json' });
         let file: FileInfo = {};
         file.filename = 'info.json';
