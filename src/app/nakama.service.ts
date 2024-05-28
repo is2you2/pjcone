@@ -2569,6 +2569,8 @@ export class NakamaService {
           if (this.servers[_is_official][_target].session.user_id != info.user_id) {
             delete this.load_other_user(info.user_id, _is_official, _target)['online'];
             others.push(info.user_id);
+            if (this.socket_reactive['WEBRTC_CHECK_ONLINE'])
+              this.socket_reactive['WEBRTC_CHECK_ONLINE'](info.user_id);
           }
         });
         others.forEach(_userId => this.load_other_user(_userId, _is_official, _target));
