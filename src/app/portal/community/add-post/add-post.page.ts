@@ -54,6 +54,12 @@ export class AddPostPage implements OnInit, OnDestroy {
     if (this.p5canvas) this.p5canvas.remove();
     delete this.nakama.StatusBarChangedCallback;
     if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
+    try {
+      if (this.MainPostImage)
+        setTimeout(() => {
+          URL.revokeObjectURL(this.MainPostImage);
+        }, 1000);
+    } catch (e) { }
   }
 
   servers: ServerInfo[] = [];
@@ -111,9 +117,6 @@ export class AddPostPage implements OnInit, OnDestroy {
           let FileURL = this.userInput.mainImage['url'];
           if (!FileURL) {
             FileURL = URL.createObjectURL(this.userInput.mainImage.blob);
-            setTimeout(() => {
-              URL.revokeObjectURL(FileURL);
-            }, 100);
           }
           this.MainPostImage = FileURL;
         }
@@ -316,6 +319,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         if (!this.MainPostImage)
           document.getElementById('PostMainImage_sel').click();
         else {
+          URL.revokeObjectURL(this.MainPostImage);
           this.MainPostImage = undefined;
           this.userInput.mainImage = undefined;
           let input = document.getElementById('PostMainImage_sel') as HTMLInputElement;
@@ -579,9 +583,6 @@ export class AddPostPage implements OnInit, OnDestroy {
     let FileURL = URL.createObjectURL(blob);
     this.indexed.saveBlobToUserPath(blob, file.path);
     this.MainPostImage = FileURL;
-    setTimeout(() => {
-      URL.revokeObjectURL(FileURL);
-    }, 100);
   }
 
   /** 파일이 선택되고 나면 */
@@ -1027,6 +1028,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       if (this.userInput.mainImage) {
         loading.message = this.lang.text['AddPost']['SyncMainImage'];
         this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/MainImage.${this.userInput.mainImage.file_ext}`;
+        this.userInput.mainImage.thumbnail = this.MainPostImage;
         try { // FFS 업로드 시도
           if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
           loading.message = `${this.lang.text['AddPost']['SyncMainImage']}: ${this.userInput.mainImage.filename}`;
@@ -1053,12 +1055,6 @@ export class AddPostPage implements OnInit, OnDestroy {
             delete this.userInput.mainImage['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
             this.userInput.mainImage['url'] = savedAddress;
           } catch (e) {
-            await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
-            let FileURL = URL.createObjectURL(this.userInput.mainImage.blob);
-            this.userInput.mainImage.thumbnail = FileURL;
-            setTimeout(() => {
-              URL.revokeObjectURL(FileURL);
-            }, 5000);
             await this.nakama.sync_save_file(this.userInput.mainImage, isOfficial, target, 'server_post', `${this.userInput.id}_mainImage`);
           }
         }
