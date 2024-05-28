@@ -1198,6 +1198,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.isCDNToggleClicked = true;
     let ModulerSize = this.userInput.remote ? 3 : 2;
     this.useFirstCustomCDN = (force ?? (this.useFirstCustomCDN + 1)) % ModulerSize;
+    if (isPlatform == 'Android') this.useFirstCustomCDN = 2;
     switch (this.useFirstCustomCDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
         this.DisplayDBSelector = 'cloud-offline-outline';

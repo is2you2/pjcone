@@ -16,6 +16,7 @@ import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as p5 from 'p5';
+import { isPlatform } from 'src/app/app.component';
 
 /** 첨부파일 리스트 양식  
  * [{ 주소(또는 경로), 자료 형식(url | data) }, ...]
@@ -919,6 +920,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   async toggle_custom_attach(force?: number) {
     let ModulerSize = this.userInput.creator_id == 'me' ? 2 : 3
     this.useFirstCustomCDN = (force ?? (this.useFirstCustomCDN + 1)) % ModulerSize;
+    if (isPlatform == 'Android') this.useFirstCustomCDN = 2;
     switch (this.useFirstCustomCDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
         this.extended_buttons[6].icon = 'cloud-offline-outline';
