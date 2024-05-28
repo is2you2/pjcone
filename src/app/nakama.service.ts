@@ -2173,9 +2173,7 @@ export class NakamaService {
         try {
           let target_address = `${info.server.useSSL ? 'https' : 'http'}://${info.server.address}`;
           await this.global.remove_files_from_storage_with_key(target_address, info['id']);
-        } catch (e) {
-          console.log('파일 일괄 삭제 요청 실패: ', e);
-        }
+        } catch (e) { }
         let v = await this.servers[_is_official][_target].client.deleteGroup(
           this.servers[_is_official][_target].session, info['id']);
         if (!v) console.log('그룹 삭제 오류 검토 필요');
@@ -2193,8 +2191,23 @@ export class NakamaService {
           throw "No group image found";
         }
       } else throw "not a group creator";
-    } catch (e) { }
-    try {
+    } catch (e) {
+      try { // FFS 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
+        let fallback = localStorage.getItem('fallback_fs');
+        if (!fallback) throw '사용자 지정 서버 없음';
+        let address = fallback.split(':');
+        let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
+        let protocol = checkProtocol ? 'https:' : 'http:';
+        let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
+        // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
+        await this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`);
+      } catch (e) { }
+      try { // cdn 파일 중 내 파일들 삭제
+        let target_address = `${info.server.useSSL ? 'https' : 'http'}://${info.server.address}`;
+        await this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`);
+      } catch (e) { }
+    }
+    try { // 그룹 이미지 삭제
       if (_remove_history)
         await this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
     } catch (e) { }
@@ -2377,14 +2390,22 @@ export class NakamaService {
     try { // 나카마 서버에서 계정 삭제
       let my_uid = this.servers[_is_official][_target].session.user_id;
       let target_address = `${server_info.useSSL ? 'https' : 'http'}://${server_info.address}`;
+      try { // cdn 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
+        await this.global.remove_files_from_storage_with_key(target_address, my_uid);
+      } catch (e) { }
+      try { // FFS 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
+        let fallback = localStorage.getItem('fallback_fs');
+        if (!fallback) throw '사용자 지정 서버 없음';
+        let address = fallback.split(':');
+        let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
+        let protocol = checkProtocol ? 'https:' : 'http:';
+        let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
+        // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
+        await this.global.remove_files_from_storage_with_key(target_address, my_uid);
+      } catch (e) { }
       this.servers[_is_official][_target].client.rpc(
         this.servers[_is_official][_target].session,
         'remove_account_fn', { user_id: my_uid }).catch(e => { }); // 계정 삭제시 오래 걸리므로 무시처리
-      try { // cdn 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
-        await this.global.remove_files_from_storage_with_key(target_address, my_uid);
-      } catch (e) {
-        console.log('파일 일괄 삭제 요청 실패: ', e);
-      }
     } catch (e) { }
     // 로그인 상태일 경우 로그오프처리
     loading.message = this.lang.text['Nakama']['LogoutAccount'];
