@@ -602,7 +602,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   async toggle_custom_attach(force?: number) {
     let ModulerSize = this.info['redirect']['type'] == 0 ? 2 : 3;
     this.useFirstCustomCDN = (force ?? (this.useFirstCustomCDN + 1)) % ModulerSize;
-    if (isPlatform == 'Android') this.useFirstCustomCDN = 2;
+    if (isPlatform == 'Android') {
+      this.useFirstCustomCDN = 2;
+      this.extended_buttons[8].isHide = true;
+    }
     switch (this.useFirstCustomCDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
         this.extended_buttons[8].icon = 'cloud-offline-outline';
