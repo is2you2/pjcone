@@ -924,25 +924,27 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           });
         break;
       case 'pdf':
-        this.showEdit = false;
-        this.p5canvas = new p5((p: p5) => {
-          p.setup = () => {
-            p.noCanvas();
-            p.noLoop();
-            let iframe = p.createElement('iframe');
-            iframe.attribute('src', this.FileURL);
-            iframe.attribute("frameborder", "0");
-            iframe.attribute('class', 'full_screen');
-            iframe.attribute('allow', 'fullscreen; encrypted-media');
-            iframe.attribute('scrolling', 'no');
-            iframe.attribute('withCredentials', 'true');
-            iframe.attribute('type', 'application/pdf');
-            iframe.parent(this.canvasDiv);
-            this.ContentOnLoad = true;
-            this.ContentFailedLoad = false;
-          }
-        });
-        break;
+        if (isPlatform != 'Android') {
+          this.showEdit = false;
+          this.p5canvas = new p5((p: p5) => {
+            p.setup = () => {
+              p.noCanvas();
+              p.noLoop();
+              let iframe = p.createElement('iframe');
+              iframe.attribute('src', this.FileURL);
+              iframe.attribute("frameborder", "0");
+              iframe.attribute('class', 'full_screen');
+              iframe.attribute('allow', 'fullscreen; encrypted-media');
+              iframe.attribute('scrolling', 'no');
+              iframe.attribute('withCredentials', 'true');
+              iframe.attribute('type', 'application/pdf');
+              iframe.parent(this.canvasDiv);
+              this.ContentOnLoad = true;
+              this.ContentFailedLoad = false;
+            }
+          });
+          break;
+        }
       default:
         console.log('정의되지 않은 파일 정보: ', this.FileInfo['viewer']);
       case 'disabled': // 사용 불가
