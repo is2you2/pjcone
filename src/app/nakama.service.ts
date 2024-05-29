@@ -9,7 +9,6 @@ import { LocalNotiService } from './local-noti.service';
 import { AlertController, IonicSafeString, LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 import { LanguageSettingService } from './language-setting.service';
-import { AdMob, AdMobRewardItem, RewardAdOptions, RewardAdPluginEvents } from '@capacitor-community/admob';
 import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
@@ -408,31 +407,15 @@ export class NakamaService {
   /** 광고 시청 후 개발자 테스트 서버에 참여하기 */
   async WatchAdsAndGetDevServerInfo(force = false) {
     if ((!this.isRewardAdsUsed) || force) {
-      const options: RewardAdOptions = {
-        adId: 'ca-app-pub-6577630868247944/4325703911',
-      };
       /** 광고 정보 불러오기 */
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
       try { // 파일이 있으면 보여주고, 없다면 보여주지 않음
         let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/admob.txt`);
         if (!res.ok) throw "준비된 광고가 없습니다";
-        await AdMob.prepareRewardVideoAd(options);
         loading.dismiss();
-        await AdMob.showRewardVideoAd();
-        if (isPlatform == 'Android') {
-          this.bgmode.disable();
-          AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
-            this.bgmode.enable();
-          });
-          AdMob.addListener(RewardAdPluginEvents.Rewarded, async (reward: AdMobRewardItem) => {
-            if (reward.amount != 0)
-              await this.AccessToOfficialTestServer();
-          });
-        } else { // 브라우저식 웹 광고 구성 필요
-          console.log('브라우저식 보상형 광고 준비중');
-          await this.AccessToOfficialTestServer();
-        }
+        console.log('브라우저식 보상형 광고 준비중');
+        await this.AccessToOfficialTestServer();
       } catch (e) { // 파일이 없는 경우 동작
         console.log(e);
         await this.AccessToOfficialTestServer();

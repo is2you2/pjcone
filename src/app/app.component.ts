@@ -7,7 +7,6 @@ import { IndexedDBService } from './indexed-db.service';
 import { LocalNotiService } from './local-noti.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { NakamaService } from './nakama.service';
-import { AdMob } from "@capacitor-community/admob";
 import { LanguageSettingService } from './language-setting.service';
 import { GlobalActService } from './global-act.service';
 import { LocalNotifications } from "@capacitor/local-notifications";
@@ -69,7 +68,6 @@ export class AppComponent {
       nakama.check_if_online();
       lang.isFirstTime = false;
     }
-    this.init_admob();
     // 모바일 기기 특정 설정
     if (isPlatform == 'Android' || isPlatform == 'iOS') {
       App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
@@ -201,7 +199,6 @@ export class AppComponent {
             };
             throw 'ChatRoomPage props 재정비';
           }
-          this.nakama.go_to_chatroom_without_admob_act(props.info);
           break;
         case 'MinimalChatPage':
           if (!this.lang.text['MinimalChat']['leave_chat_group']) throw 'MinimalChatPage 번역 준비중';
@@ -222,14 +219,5 @@ export class AppComponent {
         this.waiting_open_page(ev, page, props);
       }, 200);
     }
-  }
-
-  init_admob() {
-    this.platform.ready().then(() => {
-      AdMob.initialize({
-        testingDevices: ['1bc3817e4873fd6f'],
-        initializeForTesting: true,
-      });
-    });
   }
 }
