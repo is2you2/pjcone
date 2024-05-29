@@ -931,9 +931,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             p.noLoop();
             let iframe = p.createElement('iframe');
             iframe.attribute('src', this.FileURL);
+            iframe.attribute("frameborder", "0");
+            iframe.attribute('class', 'full_screen');
+            iframe.attribute('allow', 'fullscreen; encrypted-media');
+            iframe.attribute('scrolling', 'no');
+            iframe.attribute('withCredentials', 'true');
             iframe.attribute('type', 'application/pdf');
-            iframe.style('width', '100%');
-            iframe.style('height', '100%');
             iframe.parent(this.canvasDiv);
             this.ContentOnLoad = true;
             this.ContentFailedLoad = false;
