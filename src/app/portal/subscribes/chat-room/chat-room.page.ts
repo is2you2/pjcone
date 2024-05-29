@@ -509,6 +509,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }, 0);
     }
     this.noti.Current = this.info['cnoti_id'];
+    this.useFirstCustomCDN = Number(localStorage.getItem('useFFSCDN')) || 0;
+    this.toggle_custom_attach(this.useFirstCustomCDN);
   }
 
   /** 첨부 파일 타입 정하기 */
@@ -816,8 +818,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.nakama.StatusBarChangedCallback = async () => {
       await this.SetExtensionButtons();
     }
-    this.useFirstCustomCDN = Number(localStorage.getItem('useFFSCDN')) || 0;
-    this.toggle_custom_attach(this.useFirstCustomCDN);
   }
 
   ionViewWillEnter() {
