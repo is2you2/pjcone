@@ -1057,6 +1057,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.noti.Current = this.info['cnoti_id'];
     if (this.info['cnoti_id'])
       this.noti.ClearNoti(this.info['cnoti_id']);
+    // PWA: 윈도우 창을 다시 보게 될 때 알림 삭제
+    window.onfocus = () => {
+      if (this.info['cnoti_id'])
+        this.noti.ClearNoti(this.info['cnoti_id']);
+    }
     this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
@@ -2437,6 +2442,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
     this.noti.Current = undefined;
     this.removeShortCutKey();
+    window.onfocus = undefined;
   }
 
   removeShortCutKey() {
