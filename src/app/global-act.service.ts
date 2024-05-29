@@ -628,6 +628,9 @@ export class GlobalActService {
       case 'gitignore':
         info['viewer'] = 'text';
         break;
+      case 'pdf':
+        info['viewer'] = 'pdf';
+        break;
       default: // 뷰어 제한 파일 (파일 오프너 활용됨)
         info['viewer'] = 'disabled';
         break;

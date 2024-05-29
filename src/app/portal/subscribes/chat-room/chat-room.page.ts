@@ -2132,7 +2132,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             setTimeout(() => {
               this.scroll_down_logs();
             }, 400);
-        }
+        } else this.p5toast.show({
+          text: this.lang.text['ChatRoom']['cannot_open_file'],
+        });
       }
     }
     this.isOtherAct = false;

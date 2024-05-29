@@ -42,7 +42,7 @@
               <ion-content>
                 <ion-list>
                   <ion-item button
-                    *ngIf="!NeedDownloadFile && (FileInfo['viewer'] == 'text' || FileInfo['viewer'] == 'code') && showEdit"
+                    *ngIf="!NeedDownloadFile && showEditText && showEdit"
                     (click)="open_text_editor()">
                     <ion-label>{{lang.text['ContentViewer']['EditText']}}</ion-label>
                   </ion-item>

@@ -66,7 +66,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   OpenInChannelChat = false;
   isChannelOnline = true;
   fromLocalChannel = false;
+  /** 이미지 편집이 가능하다면 해당 메뉴를 보여주기 */
   showEdit = true;
+  showEditText = false;
 
   EventListenerAct = (ev: any) => {
     ev.detail.register(120, (_processNextHandler: any) => { });
@@ -741,6 +743,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         break;
       case 'code':
       case 'text': // 텍스트 파일
+        this.showEditText = true;
         this.p5canvas = new p5((p: p5) => {
           p.setup = () => {
             p.noCanvas();
@@ -919,6 +922,23 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           }, () => {
             this.ContentFailedLoad = true;
           });
+        break;
+      case 'pdf':
+        this.showEdit = false;
+        this.p5canvas = new p5((p: p5) => {
+          p.setup = () => {
+            p.noCanvas();
+            p.noLoop();
+            let iframe = p.createElement('iframe');
+            iframe.attribute('src', this.FileURL);
+            iframe.attribute('type', 'application/pdf');
+            iframe.style('width', '100%');
+            iframe.style('height', '100%');
+            iframe.parent(this.canvasDiv);
+            this.ContentOnLoad = true;
+            this.ContentFailedLoad = false;
+          }
+        });
         break;
       default:
         console.log('정의되지 않은 파일 정보: ', this.FileInfo['viewer']);
@@ -1308,6 +1328,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       case 'godot':
         this.global.godot_window['modify_image']();
         break;
+      case 'pdf':
       default:
         console.log('편집 불가 파일 정보: ', this.FileInfo);
         break;
