@@ -26,7 +26,7 @@ window['p5'] = p5;
 })
 export class AppComponent {
   constructor(
-    private platform: Platform,
+    platform: Platform,
     router: Router,
     ngZone: NgZone,
     noti: LocalNotiService,
