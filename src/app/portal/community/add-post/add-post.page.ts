@@ -147,6 +147,16 @@ export class AddPostPage implements OnInit, OnDestroy {
     };
   }
 
+  BackButtonPressed = false;
+  InitBrowserBackButtonOverride() {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.navCtrl.back();
+    };
+  }
+
   LoadListServer() {
     this.servers = this.nakama.get_all_server_info(true, true);
     /** 이 기기에 저장에 사용하는 정보 */
@@ -260,6 +270,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       return false;
     }
     this.isModify = Boolean(this.userInput.id);
+    this.InitBrowserBackButtonOverride();
   }
 
   go_to_profile() {

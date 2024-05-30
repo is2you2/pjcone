@@ -36,6 +36,15 @@ export class PostViewerPage implements OnInit, OnDestroy {
     this.CurrentIndex = this.navParam.get('index');
     this.initialize();
   }
+  BackButtonPressed = false;
+  ionViewWillEnter() {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => {
+      if (this.BackButtonPressed) return;
+      this.BackButtonPressed = true;
+      this.modalCtrl.dismiss();
+    };
+  }
   /** 블렌더 파일 불러오기에 사용된 개체들 */
   blenderViewers: p5[] = [];
   /** 동영상, 음성 파일은 URL을 기록하고 있기 */
