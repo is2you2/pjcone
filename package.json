@@ -55,6 +55,7 @@
     "cordova-plugin-local-notification-12": "github:powowbox/cordova-plugin-local-notification-12",
     "cordova-plugin-websocket-server": "^1.6.0",
     "dom-to-image": "^2.6.0",
+    "highlight.js": "^11.9.0",
     "ionicons": "^7.0.0",
     "jetifier": "^2.0.0",
     "p5": "^1.9.2",

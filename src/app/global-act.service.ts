@@ -590,10 +590,10 @@ export class GlobalActService {
         } else info['viewer'] = 'disabled';
         break;
       // 코드류
-      case 'cs': // C#
       case 'c': // C
+      case 'cs': // C#
       case 'ts': // Typescript
-      case 'js': // Javascrupt
+      case 'js': // Javascript
       case 'cc': // C++
       case 'php':
       case 'h': // 헤더파일
@@ -610,21 +610,22 @@ export class GlobalActService {
       case 'pas': // 파스칼
       case 'asp': // MS WebScript
       case 'html':
+      case 'xml':
       case 'css':
-      case 'pl': // Perl
       case 'scss':
+      case 'pl': // Perl
+      case 'md': // 마크다운
+      case 'prop': // 설정 파일
+      case 'properties': // 설정 파일
       case 'json': // 코드는 아니지만 구문 강조가 있으면 좋음
+      case 'yml':
         info['viewer'] = 'code';
         break;
-      // 마크다운
-      case 'md':
       // 텍스트류
       case 'csv': // Table
-      case 'prop': // 설정 파일
       case 'conf': // 설정 파일
       case 'log':
       case 'txt':
-      case 'yml':
       case 'gitignore':
         info['viewer'] = 'text';
         break;

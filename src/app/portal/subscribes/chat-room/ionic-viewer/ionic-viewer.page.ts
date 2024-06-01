@@ -14,6 +14,22 @@ import clipboard from 'clipboardy';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { IonPopover } from '@ionic/angular/common';
 import * as domtoimage from "dom-to-image";
+import hljs from "highlight.js";
+import c from 'highlight.js/lib/languages/c';
+import csharp from 'highlight.js/lib/languages/csharp';
+import cpp from 'highlight.js/lib/languages/cpp';
+import javascript from 'highlight.js/lib/languages/javascript';
+import typescript from 'highlight.js/lib/languages/typescript';
+import yaml from 'highlight.js/lib/languages/yaml';
+import php from 'highlight.js/lib/languages/php';
+import css from 'highlight.js/lib/languages/css';
+import scss from 'highlight.js/lib/languages/scss';
+import json from 'highlight.js/lib/languages/json';
+import rust from 'highlight.js/lib/languages/rust';
+import java from 'highlight.js/lib/languages/java';
+import perl from 'highlight.js/lib/languages/perl';
+import basic from 'highlight.js/lib/languages/basic';
+import properties from 'highlight.js/lib/languages/properties';
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -754,34 +770,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               div.style('height: 100%; display: block');
               div.elt.src = this.FileInfo.thumbnail;
               div.parent(this.canvasDiv);
-              p.loadStrings(this.FileURL, v => {
-                try { // json 양식으로 인식이 안된다면 일반 텍스트로 읽기
-                  let json = JSON.parse(v);
-                  let result: string;
-                  // 코드 참조됨: https://stackoverflow.com/questions/4810841/pretty-print-json-using-javascript
-                  json = JSON.stringify(json, undefined, 2);
-                  json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                  result = json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
-                    var cls = 'var(--syntax-text-coding-number)';
-                    if (/^"/.test(match)) {
-                      if (/:$/.test(match))
-                        cls = 'var(--syntax-text-coding-json-key)';
-                      else cls = 'var(--syntax-text-coding-spechar)';
-                    } else if (/true|false/.test(match)) cls = 'var(--syntax-text-coding-basic)';
-                    else if (/null/.test(match)) cls = 'var(--syntax-text-coding-equalmark)';
-                    return '<span style="color: ' + cls + '">' + match + '</span>';
-                  });
-                  let sep_as_line = result.split('\n');
-                  for (let i = 0, j = sep_as_line.length; i < j; i++) {
-                    let sep_as_space = sep_as_line[i].split(' ');
-                    for (let k = 0, l = sep_as_space.length; k < l; k++)
-                      if (sep_as_space[k] == '')
-                        sep_as_space[k] = '<span>&nbsp</span>'
-                    sep_as_line[i] = sep_as_space.join('\n');
-                    sep_as_line[i] += '<br>';
-                  }
-                  div.elt.innerHTML = sep_as_line.join('\n');
-                } catch (e) { // json 양식이 아니라면 텍스트처럼 읽기
                   div.remove();
                   let textArea = p.createElement('textarea');
                   textArea.elt.disabled = true;
@@ -801,13 +789,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                     this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
                     this.ContentOnLoad = true;
                   });
-                }
                 this.ContentOnLoad = true;
                 this.ContentFailedLoad = false;
-              }, _e => {
-                this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
-                this.ContentOnLoad = true;
-              });
             } else { // 일반 텍스트 파일
               let textArea = p.createElement('textarea');
               textArea.elt.disabled = true;
@@ -1016,158 +999,45 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     }
     // 구문 강조처리용 구성 변환
     let getText = p['TextArea'].textContent;
-    let text_as_line: string[] = getText.split('\n');
-    /** 간단한 하이라이트 코드 구성 (정확히 일치하면 색상처리) */
-    const SIMPLE_HIGHLIGHT_CODE = [
-      // 구성
-      'void', 'static', 'import', 'export', 'interface', 'include', '#include', 'using',
-      'from', 'as', 'public', 'protected', 'private', 'use', 'package', 'local', 'async', 'await',
-      'program', 'namespace', 'begin', 'end', 'puts',
-      'Private', 'Protected', 'Public', 'Sub', 'End',
-      // 변수 ,종류
-      'var', 'let', 'enum',
-      'String', 'char',
-      'Integer', 'Float', 'Boolean', 'Array', 'NULL', 'Resource',
-      'strings', 'integer', 'complex',
-      'byte', 'ubyte', 'int', 'uint', 'short', 'ushort', 'long', 'ulong',
-      'bvec2', 'bvec3', 'bvec4', 'ivec2', 'ivec3', 'ivec4',
-      'uvec2', 'uvec3', 'uvec4', 'mat2', 'mat3', 'mat4',
-      'Vector', 'Vector2', 'Vector3',
-      'PVector', 'PImage', 'PGraphics',
-      'float', 'double', 'number',
-      'color',
-      'bool', 'boolean',
-      'Arary', 'Object', 'Table', 'TableRow', 'HashMap',
-      'JSONObject', 'JSONArray', 'ArrayList',
-      'IntDict', 'IntList', 'FloatDict', 'FloatList', 'StringDict', 'StringList',
-      'null', 'undefined', 'data',
-      // 함수 구분
-      'function', 'func', 'fn', 'def', 'fun',
-      // 클래스 구분
-      'class', 'extends', 'implements', 'object', 'override', 'partial',
-    ]
-    /** 고정수 표현 */
-    const FIXED_VALUE = [
-      'final', 'const',
-    ]
-    /** 연산자 색상 */
-    const OPERATOR = [
-      'for', 'match', 'switch', 'if', 'else', 'elif', 'return', 'continue', 'pass', 'throw',
-      'loop', 'while', 'in', 'try', 'catch', 'and', 'or', 'do', 'then', 'yield',
-    ];
-    const COMPARISON_OP = [
-      '!=', '>=', '<=', '==', '<', '>',
-    ];
-    /** 이게 존재하는 줄은 전부 주석색 */
-    const ANNOTATION = [
-      '#', '##', '<!--', '-->', '/**', '*/', '//',
-    ];
-    /** 값 대입 표시 */
-    const EQUAL_MARK = ['='];
-    /** 문법 */
-    const SPECIAL_CHARACTER = [
-      '{', '}', '<<', '>>', ':', '(', ')', '[', ']', '>>>', '->', '<-', '=>', '<=',
-    ];
-    /** 명령어 */
-    const COMMAND = [
-      'SELECT', 'UPDATE', 'DELETE', 'INSERT INTO', 'CREATE DATABASE', 'ALTER DATABASE',
-      'CREATE TABLE', 'ALTER TABLE', 'DROP TABLE', 'CREATE INDEX', 'DROP INDEX',
-      'ECHO', 'FROM', 'WHERE', 'AND', 'OR', 'NOT',
-      'ALTER', 'ADD',
-      'echo', '<?php', '?>',
-    ]
-    for (let i = 0, j = text_as_line.length; i < j; i++) {
-      // div 안에서 띄어쓰기 단위로 정보를 표현함
-      let line = p.createDiv();
-      let sep_by_whitespace = text_as_line[i].split(' ');
-      let isCommentLine = false;
-      for (let k = 0, l = sep_by_whitespace.length; k < l; k++) {
-        let text = this.HTMLEncode(sep_by_whitespace[k]);
-        let isColored = false;
-        // 특성 색상으로 강조 표시
-        for (let m = 0, n = ANNOTATION.length; m < n; m++)
-          if (sep_by_whitespace[k] == ANNOTATION[m]) {
-            isCommentLine = true;
-            break;
-          }
-        if (!isCommentLine) {
-          for (let m = 0, n = EQUAL_MARK.length; m < n; m++)
-            if (sep_by_whitespace[k] == EQUAL_MARK[m]) {
-              let word = p.createSpan(text + '&nbsp');
-              word.style('color', 'var(--syntax-text-coding-equalmark)');
-              word.style('white-space', 'break-spaces');
-              word.parent(line);
-              isColored = true;
-              break;
-            }
-          if (isColored) continue;
-          for (let m = 0, n = FIXED_VALUE.length; m < n; m++)
-            if (sep_by_whitespace[k] == FIXED_VALUE[m]) {
-              let word = p.createSpan(text + '&nbsp');
-              word.style('color', 'var(--syntax-text-coding-final)');
-              word.style('white-space', 'break-spaces');
-              word.parent(line);
-              isColored = true;
-              break;
-            }
-          for (let m = 0, n = COMPARISON_OP.length; m < n; m++)
-            if (sep_by_whitespace[k] == COMPARISON_OP[m]) {
-              let word = p.createSpan(text + '&nbsp');
-              word.style('color', 'var(--syntax-text-coding-comparion-op)');
-              word.style('white-space', 'break-spaces');
-              word.parent(line);
-              isColored = true;
-              break;
-            }
-          if (isColored) continue;
-          for (let m = 0, n = OPERATOR.length; m < n; m++)
-            if (sep_by_whitespace[k] == OPERATOR[m]) {
-              let word = p.createSpan(text + '&nbsp');
-              word.style('color', 'var(--syntax-text-coding-operator)');
-              word.style('white-space', 'break-spaces');
-              word.parent(line);
-              isColored = true;
-              break;
-            }
-          if (isColored) continue;
-          for (let m = 0, n = SPECIAL_CHARACTER.length; m < n; m++)
-            if (sep_by_whitespace[k] == SPECIAL_CHARACTER[m]) {
-              let word = p.createSpan(text + '&nbsp');
-              word.style('color', 'var(--syntax-text-coding-spechar)');
-              word.style('white-space', 'break-spaces');
-              word.parent(line);
-              isColored = true;
-              break;
-            }
-          if (isColored) continue;
-          for (let m = 0, n = COMMAND.length; m < n; m++)
-            if (sep_by_whitespace[k] == COMMAND[m]) {
-              let word = p.createSpan(text + '&nbsp');
-              word.style('color', 'var(--syntax-text-coding-command)');
-              word.style('white-space', 'break-spaces');
-              word.parent(line);
-              isColored = true;
-              break;
-            }
-          if (isColored) continue;
-          for (let m = 0, n = SIMPLE_HIGHLIGHT_CODE.length; m < n; m++)
-            if (sep_by_whitespace[k] == SIMPLE_HIGHLIGHT_CODE[m]) {
-              let word = p.createSpan(text + '&nbsp');
-              word.style('color', 'var(--syntax-text-coding-basic)');
-              word.style('white-space', 'break-spaces');
-              word.parent(line);
-              isColored = true;
-              break;
-            }
-          if (isColored) continue;
-        }
-        // 일반 평문
-        let word = p.createSpan(text + '&nbsp');
-        if (isCommentLine)
-          word.style('color', 'var(--syntax-text-coding-comments)');
-        word.style('white-space', 'break-spaces');
-        word.parent(line);
-      }
+    let ValuePair = {
+      c: c,
+      cs: csharp,
+      js: javascript,
+      ts: typescript,
+      cc: cpp,
+      cpp: cpp,
+      php: php,
+      yml: yaml,
+      css: css,
+      scss: scss,
+      json: json,
+      rs: rust,
+      java: java,
+      ino: java,
+      pde: java,
+      pl: perl,
+      py: perl,
+      gd: perl,
+      bas: basic,
+      prop: properties,
+      properties: properties,
+    }
+    if (this.FileInfo.file_ext == 'json') {
+      let json = JSON.parse(getText);
+      getText = JSON.stringify(json, undefined, 2);
+    }
+    try {
+      if (!ValuePair[this.FileInfo.file_ext]) throw '등록되지 않은 언어';
+      hljs.registerLanguage(this.FileInfo.file_ext, ValuePair[this.FileInfo.file_ext]);
+      const highlightedCode = hljs.highlight(getText, { language: this.FileInfo.file_ext });
+      hljs.unregisterLanguage(this.FileInfo.file_ext);
+      let highlighted = highlightedCode.value;
+      let line = p.createDiv(highlighted);
+      line.style('white-space', 'pre-wrap');
+      line.parent(p['SyntaxHighlightReader']);
+    } catch (e) {
+      let line = p.createDiv(getText);
+      line.style('white-space', 'pre-wrap');
       line.parent(p['SyntaxHighlightReader']);
     }
     p['TextArea'].style.display = 'none';

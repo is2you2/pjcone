@@ -215,3 +215,44 @@ button.alert-button.redfont {
     color: #888;
     padding-left: 4px;
 }
+
+// import
+.hljs-keyword,
+.hljs-doctag,
+.hljs-subst,
+.hljs-literal,
+.hljs-built_in {
+    color: var(--syntax-text-coding-basic);
+}
+
+.hljs-string {
+    color: var(--syntax-text-coding-string);
+}
+
+.hljs-variable,
+.hljs-function,
+.hljs-property,
+.hljs-params,
+.hljs-title {}
+
+.hljs-attr {
+    color: var(--syntax-text-coding-json-key)
+}
+
+.hljs-comment {
+    color: var(--syntax-text-coding-comments);
+}
+
+.hljs-number {
+    color: var(--syntax-text-coding-number);
+}
+
+// @Injectable 같은 것
+.hljs-meta,
+.hljs-punctuation {
+    color: var(--syntax-text-coding-spechar);
+}
+
+.hljs-regexp {
+    color: var(--syntax-text-coding-command);
+}
