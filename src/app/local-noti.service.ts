@@ -158,7 +158,9 @@ export class LocalNotiService {
   }
 
   settings = {
-    /** 조용한 알림 */
+    /** 조용한 알림 (slient)  
+     * 원래 slient 옵션에 대응하는데 그냥 이 옵션의 아이콘 이름이 같으면 알림 토글처리
+     */
     silent: {
       icon_mono: true,
       diychat: true,
@@ -201,6 +203,7 @@ export class LocalNotiService {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
       // 창을 바라보는 중이라면 무시됨, 바라보는 중이면서 같은 화면이면 무시됨
       if (document.hasFocus() && this.Current == header) return;
+      if (!this.settings.silent[opt.icon || opt.smallIcon_ln || header || 'icon_mono']) return;
       if (opt.triggerWhen_ln) return; // 웹에는 예약 기능이 없음
       /** 기본 알림 옵션 (교체될 수 있음) */
       const input: NotificationOptions = {
@@ -249,6 +252,7 @@ export class LocalNotiService {
     } else { // 모바일 로컬 푸쉬
       // 포어그라운드면서 해당 화면이면 동작 안함
       if (!this.bgmode.isActive() && this.Current == header) return;
+      if (!this.settings.silent[opt.icon || opt.smallIcon_ln || header || 'icon_mono']) return;
       let input: ILocalNotification = {};
       input['id'] = opt.id;
       input['title'] = opt.title;
