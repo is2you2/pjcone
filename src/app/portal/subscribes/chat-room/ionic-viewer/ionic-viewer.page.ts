@@ -770,27 +770,27 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               div.style('height: 100%; display: block');
               div.elt.src = this.FileInfo.thumbnail;
               div.parent(this.canvasDiv);
-                  div.remove();
-                  let textArea = p.createElement('textarea');
-                  textArea.elt.disabled = true;
-                  textArea.elt.className = 'infobox';
-                  textArea.elt.setAttribute('style', 'height: 100%; display: block;');
-                  textArea.elt.textContent = '';
-                  this.canvasDiv.appendChild(textArea.elt);
-                  p['TextArea'] = textArea.elt;
-                  if (this.FileInfo['is_new']) {
-                    this.open_text_editor(textArea.elt);
-                  } else p.loadStrings(this.FileURL, v => {
-                    textArea.elt.textContent = v.join('\n');
-                    this.open_text_reader(p);
-                    this.ContentOnLoad = true;
-                    this.ContentFailedLoad = false;
-                  }, _e => {
-                    this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
-                    this.ContentOnLoad = true;
-                  });
+              div.remove();
+              let textArea = p.createElement('textarea');
+              textArea.elt.disabled = true;
+              textArea.elt.className = 'infobox';
+              textArea.elt.setAttribute('style', 'height: 100%; display: block;');
+              textArea.elt.textContent = '';
+              this.canvasDiv.appendChild(textArea.elt);
+              p['TextArea'] = textArea.elt;
+              if (this.FileInfo['is_new']) {
+                this.open_text_editor(textArea.elt);
+              } else p.loadStrings(this.FileURL, v => {
+                textArea.elt.textContent = v.join('\n');
+                this.open_text_reader(p);
                 this.ContentOnLoad = true;
                 this.ContentFailedLoad = false;
+              }, _e => {
+                this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
+                this.ContentOnLoad = true;
+              });
+              this.ContentOnLoad = true;
+              this.ContentFailedLoad = false;
             } else { // 일반 텍스트 파일
               let textArea = p.createElement('textarea');
               textArea.elt.disabled = true;
@@ -1025,6 +1025,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     if (this.FileInfo.file_ext == 'json') {
       let json = JSON.parse(getText);
       getText = JSON.stringify(json, undefined, 2);
+      p['TextArea'].textContent = getText;
     }
     try {
       if (!ValuePair[this.FileInfo.file_ext]) throw '등록되지 않은 언어';
