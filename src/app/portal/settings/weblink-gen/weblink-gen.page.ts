@@ -33,6 +33,7 @@ export class WeblinkGenPage implements OnInit {
     group_dedi: undefined,
     open_prv_channel: '',
     open_channel: false,
+    rtcserver: [],
   }
 
   servers: ServerInfo[] = [];
@@ -56,6 +57,7 @@ export class WeblinkGenPage implements OnInit {
       this.targetBaseURL = `${SERVER_PATH_ROOT}pjcone_pwa/`;
     else this.targetBaseURL = `${location.protocol}//${location.host}${window['sub_path']}`
     this.result_address = this.targetBaseURL;
+    this.update_qrcode();
     this.InitBrowserBackButtonOverride();
     this.servers = this.nakama.get_all_server_info();
     this.groups = this.nakama.rearrange_group_list();
@@ -74,12 +76,17 @@ export class WeblinkGenPage implements OnInit {
   }
 
   SelectGroupServer(ev: any) {
-    this.userInput.servers = ev.detail.value;
+    this.userInput.servers = ev.detail.value || [];
     this.information_changed();
   }
 
   SelectGroupChannel(ev: any) {
-    this.userInput.groups = ev.detail.value;
+    this.userInput.groups = ev.detail.value || [];
+    this.information_changed();
+  }
+
+  SelectRTCServer(ev: any) {
+    this.userInput.rtcserver = ev.detail.value || [];
     this.information_changed();
   }
 
@@ -90,6 +97,7 @@ export class WeblinkGenPage implements OnInit {
     this.information_changed();
   }
 
+  QRCodeSRC: any;
   result_address: string;
   information_changed() {
     this.result_address = this.userInput.root || this.targetBaseURL;
@@ -104,6 +112,12 @@ export class WeblinkGenPage implements OnInit {
       this.result_address += count ? '&' : '?';
       this.result_address += 'group=';
       this.result_address += `${this.userInput.groups[i]['name']},${this.userInput.groups[i]['id']}`;
+      count++;
+    }
+    for (let i = 0, j = this.userInput.rtcserver.length; i < j; i++) {
+      this.result_address += count ? '&' : '?';
+      this.result_address += 'rtcserver=';
+      this.result_address += `[${this.userInput.rtcserver[i].urls}],${this.userInput.rtcserver[i].username},${this.userInput.rtcserver[i].credential}`;
       count++;
     }
     if (this.userInput.open_prv_channel) {
@@ -122,6 +136,11 @@ export class WeblinkGenPage implements OnInit {
       this.result_address += `${this.userInput.groups[0]['id']},${this.userInput.groups[0]['server']['isOfficial']},${this.userInput.groups[0]['server']['target']}`;
       count++;
     }
+    this.update_qrcode();
+  }
+
+  update_qrcode(_ev?: any) {
+    this.QRCodeSRC = this.global.readasQRCodeFromString(this.result_address);
   }
 
   copy_result_address() {

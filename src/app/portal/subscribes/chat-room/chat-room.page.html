@@ -56,9 +56,6 @@
                         <!-- 시간 표시 -->
                         <span class="time_form message_span_form" (click)="SetOtherAct()">{{msg['msgTime']}}</span>
                       </div>
-                      <div *ngIf="msg.content['quickShare']" class="quickShare_form" (click)="quickShare_act(msg)">
-                        {{lang.text['ChatRoom']['QuickShare']}}
-                      </div>
                       <!-- 음성채팅인 경우 -->
                       <div *ngIf="msg.content['match']" class="quickShare_form" (click)="JoinWebRTCMatch(msg)">
                         {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
@@ -123,11 +120,6 @@
                           </b>
                         </span>
                       </div>
-                      <div *ngIf="msg.content['quickShare']" class="my_file_message_form" (click)="quickShare_act(msg)">
-                        <div class="quickShare_form">
-                          {{lang.text['ChatRoom']['QuickShare']}}
-                        </div>
-                      </div>
                       <!-- 음성채팅인 경우 -->
                       <div *ngIf="msg.content['match']" class="my_file_message_form" (click)="JoinWebRTCMatch(msg)">
                         <div class="quickShare_form">
@@ -187,11 +179,6 @@
               </div>
             </div>
             <div *ngFor="let msg of sending_msg" class="my_message_right my_sending_msg">
-              <div *ngIf="msg.content['quickShare']" class="my_file_message_form" (click)="quickShare_act(msg)">
-                <div class="quickShare_form">
-                  {{lang.text['ChatRoom']['QuickShare']}}
-                </div>
-              </div>
               <div *ngIf="msg.content['filename']" class="my_file_message_form">
                 <div *ngIf="!msg.content['thumbnail']" class="file_button"
                   [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
@@ -223,11 +210,6 @@
           </div>
         </div>
         <table class="thumnails">
-          <tr class="thumnail_parts" *ngIf="userInput.quickShare" (click)="cancel_qrshare()">
-            <td style="padding: 8px; text-align: center;">
-              <span>{{lang.text['Settings']['quickQRshare']}}</span>
-            </td>
-          </tr>
           <tr *ngIf="userInput.file" class="thumnail_parts" style="cursor: pointer;">
             <td>
               <div *ngIf="userInput.file" (click)="removeAttach()">

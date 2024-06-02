@@ -10,15 +10,11 @@ const routes: Routes = [
   },
   {
     path: 'ionic-viewer',
-    loadChildren: () => import('./ionic-viewer/ionic-viewer.module').then( m => m.IonicViewerPageModule)
+    loadChildren: () => import('./ionic-viewer/ionic-viewer.module').then(m => m.IonicViewerPageModule)
   },
   {
     path: 'void-draw',
-    loadChildren: () => import('./void-draw/void-draw.module').then( m => m.VoidDrawPageModule)
-  },
-  {
-    path: 'quick-share-review',
-    loadChildren: () => import('./quick-share-review/quick-share-review.module').then( m => m.QuickShareReviewPageModule)
+    loadChildren: () => import('./void-draw/void-draw.module').then(m => m.VoidDrawPageModule)
   }
 ];
 
@@ -26,4 +22,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class ChatRoomPageRoutingModule {}
+export class ChatRoomPageRoutingModule { }

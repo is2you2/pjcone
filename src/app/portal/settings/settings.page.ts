@@ -8,7 +8,6 @@ import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 import { LocalNotiService } from '../../local-noti.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { WebrtcManageIoDevPage } from 'src/app/webrtc-manage-io-dev/webrtc-manage-io-dev.page';
-import { QrSharePage } from './qr-share/qr-share.page';
 import { LocalGroupServerService } from 'src/app/local-group-server.service';
 
 @Component({
@@ -141,7 +140,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.Devkit.value = undefined;
     } else { // 열기
       this.Devkit.value = 'Devkit';
-      this.LinkButton.splice(5, 0,
+      this.LinkButton.splice(4, 0,
         () => this.go_to_page('weblink-gen'),
         () => this.focus_to_fallback_fs_input(),
         () => this.go_to_webrtc_manager()
@@ -165,7 +164,6 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.nakama.showServer = !this.nakama.showServer;
       this.toggle_ShowServer()
     });
-    this.LinkButton.push(() => this.go_to_qr_share());
     this.LinkButton.push(() => this.open_inapp_explorer());
     this.LinkButton.push(() => this.ToggleAccordion());
     if (this.Devkit.value) {
@@ -249,21 +247,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     if (this.lang.lang == 'ko')
       window.open('https://is2you2.github.io/posts/how-to-use-pjcone-server/', '_system');
     else window.open('https://is2you2.github.io/posts/how-to-use-pjcone-server-en/', '_system');
-  }
-
-  go_to_qr_share() {
-    this.modalCtrl.create({
-      component: QrSharePage,
-      componentProps: {
-        NoReturn: true,
-      }
-    }).then(v => {
-      this.RemoveKeyShortCut();
-      v.onDidDismiss().then(() => {
-        this.ionViewDidEnter();
-      });
-      v.present()
-    });
   }
 
   go_to_webrtc_manager() {

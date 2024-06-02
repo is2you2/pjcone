@@ -33,10 +33,6 @@ const routes: Routes = [
     loadChildren: () => import('./creator/creator.module').then( m => m.CreatorPageModule)
   },
   {
-    path: 'qr-share',
-    loadChildren: () => import('./qr-share/qr-share.module').then( m => m.QrSharePageModule)
-  },
-  {
     path: 'noti-alert',
     loadChildren: () => import('./noti-alert/noti-alert.module').then( m => m.NotiAlertPageModule)
   },

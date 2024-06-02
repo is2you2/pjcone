@@ -11,8 +11,10 @@
   <ion-item-divider>
     <ion-label>{{lang.text['WebLinkGen']['subtitle']}}</ion-label>
   </ion-item-divider>
-  <div (click)="copy_result_address()">
-    <textarea class="infobox" [(ngModel)]="result_address"></textarea>
+  <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" (click)="copy_result_address()"
+    style="width: 100%; height: auto; cursor: copy;" alt="QRCodeSRC">
+  <div>
+    <textarea class="infobox" (keyup)="update_qrcode($event)" [(ngModel)]="result_address"></textarea>
   </div>
   <ion-item-divider>
     <ion-label>{{lang.text['WebLinkGen']['CustomInfo']}}</ion-label>
@@ -32,6 +34,13 @@
       [placeholder]="lang.text['QuickQRShare']['EmptyData']">
       <ion-select-option *ngFor="let ginfo of groups" [value]="ginfo">{{ginfo['name'] + ' (' +
         ginfo['server']['name'] + ')'}}</ion-select-option>
+    </ion-select>
+  </ion-item>
+  <ion-item>
+    <ion-select [label]="lang.text['WebRTCDevManager']['Title']" (ionChange)="SelectRTCServer($event)" multiple="true"
+      [placeholder]="lang.text['QuickQRShare']['EmptyData']">
+      <ion-select-option *ngFor="let server of rtcServer" [value]="server">
+        {{ server.urls[0] }}</ion-select-option>
     </ion-select>
   </ion-item>
   <ion-item-divider>

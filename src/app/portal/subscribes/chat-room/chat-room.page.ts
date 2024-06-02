@@ -17,7 +17,6 @@ import { GroupDetailPage } from '../../settings/group-detail/group-detail.page';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GroupServerPage } from '../../settings/group-server/group-server.page';
-import { QuickShareReviewPage } from './quick-share-review/quick-share-review.page';
 import { WebrtcService } from 'src/app/webrtc.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import clipboard from "clipboardy";
@@ -671,12 +670,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }, 100);
   }
 
-  /** 빠른 공유 정보 삭제 */
-  cancel_qrshare() {
-    delete this.userInput.quickShare;
-    this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
-  }
-
   /** 파일 첨부하기 */
   async inputFileSelected(ev: any) {
     if (ev.target.files.length) {
@@ -1037,7 +1030,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   users_image = {};
   async init_chatroom() {
     this.userInput.text = '';
-    delete this.userInput.quickShare;
     delete this.userInput.file;
     this.ResizeTextArea();
     this.nakama.OnTransferMessage = {};
@@ -1330,7 +1322,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 사용자 입력 */
   userInput = {
     file: undefined as FileInfo,
-    quickShare: undefined as Array<any>,
     text: '',
   }
   inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
@@ -1642,7 +1633,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   async send(with_key = false) {
     if (with_key && (isPlatform == 'Android' || isPlatform == 'iOS')) return;
     if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-    if (!this.userInput.text.trim() && !this.userInput['file'] && !this.userInput['quickShare']) {
+    if (!this.userInput.text.trim() && !this.userInput['file']) {
       setTimeout(() => {
         this.userInput.text = '';
         this.ResizeTextArea();
@@ -1707,8 +1698,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         return;
       }
     }
-    if (this.userInput.quickShare)
-      result['quickShare'] = this.userInput.quickShare;
     result['local_comp'] = Math.random();
     let tmp = { content: JSON.parse(JSON.stringify(result)) };
     this.nakama.content_to_hyperlink(tmp);
@@ -1730,7 +1719,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           await this.indexed.saveBlobToUserPath(this.userInput.file.blob, path);
         }
       }
-      delete this.userInput.quickShare;
       delete this.userInput.file;
       if (isLongText) {
         tmp['msg'] = isLongText;
@@ -1783,7 +1771,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           });
         }
       }
-      delete this.userInput.quickShare;
       delete this.userInput.file;
       this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
       if (isLongText) {
@@ -1883,7 +1870,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this_file.type = 'text/plain';
     this_file.typeheader = 'text';
     delete result['msg'];
-    delete this.userInput.quickShare;
     delete this.userInput.file;
     this.userInput.text = '';
     this.ResizeTextArea();
@@ -2143,23 +2129,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     }
     this.isOtherAct = false;
-  }
-
-  /** QR행동처럼 처리하기 */
-  async quickShare_act(_msg: any) {
-    this.SetOtherAct();
-    this.modalCtrl.create({
-      component: QuickShareReviewPage,
-      componentProps: {
-        data: _msg.content['quickShare']
-      },
-    }).then(v => {
-      v.onDidDismiss().then(() => {
-        this.ionViewDidEnter();
-      });
-      this.removeShortCutKey();
-      v.present()
-    });
   }
 
   JoinWebRTCMatch(msg: any) {
