@@ -30,6 +30,7 @@ import java from 'highlight.js/lib/languages/java';
 import perl from 'highlight.js/lib/languages/perl';
 import basic from 'highlight.js/lib/languages/basic';
 import properties from 'highlight.js/lib/languages/properties';
+import xml from 'highlight.js/lib/languages/xml';
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -1018,6 +1019,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       pl: perl,
       py: perl,
       gd: perl,
+      xml: xml,
+      html: xml,
       bas: basic,
       prop: properties,
       properties: properties,
