@@ -72,6 +72,8 @@ export class CommunityPage implements OnInit {
   async load_post_cycles() {
     if (this.is_loadable)
       await this.load_posts();
+    if (this.is_loadable) // 한번에 두번씩 시도함
+      await this.load_posts();
     setTimeout(() => {
       if (!this.ContentDiv) this.ContentDiv = document.getElementById('CommunityMainContent') as HTMLDivElement;
       if (!this.ContentScroll) {
