@@ -107,6 +107,9 @@ export class GlobalActService {
     private loadingCtrl: LoadingController,
   ) {
     isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+      isDarkMode = event.matches ? true : false;
+    });
   }
 
   /** nakama.AddressToQRCodeAct()  
@@ -203,17 +206,6 @@ export class GlobalActService {
         }
       }
     });
-  }
-
-  /** 다크모드 여부 업데이트 */
-  UpdateIsDarkMode(update: boolean) {
-    isDarkMode = update;
-  }
-
-  /** 다크모드 여부를 현재 기준으로 검토하여 가져옴 */
-  GetExactDarkMode() {
-    isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return isDarkMode;
   }
 
   /** 브라우저에서 딥 링크마냥 행동하기

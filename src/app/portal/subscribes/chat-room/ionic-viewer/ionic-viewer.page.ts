@@ -1143,7 +1143,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             path: this.image_info['path'],
             msg: this.MessageInfo,
             index: this.RelevanceIndex - 1,
-            isDarkMode: this.global.GetExactDarkMode(),
           });
         } catch (e) {
           this.p5toast.show({
@@ -1196,7 +1195,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               ...this.image_info,
               msg: this.MessageInfo,
               index: this.RelevanceIndex - 1,
-              isDarkMode: this.global.GetExactDarkMode(),
             });
           } catch (e) {
             console.log('파일 저장 오류: ', e);

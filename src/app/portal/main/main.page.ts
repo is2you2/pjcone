@@ -741,9 +741,6 @@ export class MainPage implements OnInit {
   }
 
   ionViewDidEnter() {
-    let CurrentDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (isDarkMode != CurrentDarkMode)
-      this.global.UpdateIsDarkMode(CurrentDarkMode);
     let p5todo_canvas = document.getElementById('p5todo');
     if (!p5todo_canvas)
       this.CreateTodoManager();

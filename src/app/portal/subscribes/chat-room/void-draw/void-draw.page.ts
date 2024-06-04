@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import * as p5 from 'p5';
 import { isPlatform } from 'src/app/app.component';
-import { GlobalActService } from 'src/app/global-act.service';
+import { GlobalActService, isDarkMode } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -227,7 +227,7 @@ export class VoidDrawPage implements OnInit {
           updateActualCanvas();
           ImageCanvas.resizeCanvas(CropSize.x, CropSize.y);
           ImageCanvas.push();
-          ImageCanvas.background(this.navParams.data['isDarkMode'] ? 26 : 255);
+          ImageCanvas.background(isDarkMode ? 26 : 255);
           ImageCanvas.translate(CropPosition);
           if (p['BaseImage'])
             ImageCanvas.image(p['BaseImage'], 0, 0);
@@ -327,7 +327,7 @@ export class VoidDrawPage implements OnInit {
         ImageCanvas.pixelDensity(PIXEL_DENSITY);
         ImageCanvas.noLoop();
         ImageCanvas.noFill();
-        ImageCanvas.background(this.navParams.data['isDarkMode'] ? 26 : 255);
+        ImageCanvas.background(isDarkMode ? 26 : 255);
         p['ImageCanvas'] = ImageCanvas;
         // 사용자 그리기 판넬 생성
         if (initData['path']) { // 배경 이미지 파일이 포함됨
