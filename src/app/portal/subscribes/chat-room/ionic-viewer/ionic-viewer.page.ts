@@ -149,7 +149,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   canvasDiv: HTMLElement;
   async reinit_content_data(msg: any) {
     this.NewTextFileName = '';
-    this.NeedDownloadFile = true;
+    this.NeedDownloadFile = false;
     this.ContentOnLoad = false;
     this.ContentFailedLoad = true;
     this.isTextEditMode = false;
@@ -388,6 +388,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       }
     }
     this.forceWrite = false;
+    await new Promise((done) => setTimeout(done, 0));
     this.canvasDiv = document.getElementById('content_viewer_canvas');
     if (this.canvasDiv.oncontextmenu == null) {
       this.canvasDiv.oncontextmenu = () => {
