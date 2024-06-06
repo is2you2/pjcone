@@ -143,7 +143,7 @@
             <ion-item>
               <ion-label text-wrap>{{attach.filename}}</ion-label>
               <ion-button *ngIf="isModifiable" (click)="remove_attach(i)">
-                {{lang.text['TodoDetail']['remove']}}
+                {{lang.text['ChatRoom']['Delete']}}
               </ion-button>
             </ion-item>
             <div *ngIf="attach['viewer']" (click)="open_content_viewer(i)">

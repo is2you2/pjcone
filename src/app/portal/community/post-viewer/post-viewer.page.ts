@@ -506,7 +506,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
       header: this.lang.text['PostViewer']['RemovePost'],
       message: this.lang.text['ChatRoom']['CannotUndone'],
       buttons: [{
-        text: this.lang.text['TodoDetail']['remove'],
+        text: this.lang.text['ChatRoom']['Delete'],
         cssClass: 'redfont',
         handler: async () => {
           await this.nakama.RemovePost(this.PostInfo);

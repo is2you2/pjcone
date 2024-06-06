@@ -3148,7 +3148,7 @@ export class NakamaService {
                       this.EditPost(this.posts[index]);
                     }
                   }, {
-                    text: this.lang.text['TodoDetail']['remove'],
+                    text: this.lang.text['ChatRoom']['Delete'],
                     handler: () => {
                       this.RemovePost(this.posts[index]);
                     },
