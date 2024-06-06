@@ -2281,6 +2281,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     path: v.data.path || _path,
                     width: v.data.width,
                     height: v.data.height,
+                    isDarkMode: v.data.isDarkMode,
                   },
                   cssClass: 'fullscreen',
                 }).then(v => {

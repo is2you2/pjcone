@@ -6,7 +6,7 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
+import { ContentCreatorInfo, FileInfo, GlobalActService, isDarkMode } from 'src/app/global-act.service';
 import { ShareContentToOtherPage } from 'src/app/share-content-to-other/share-content-to-other.page';
 import { NakamaService } from 'src/app/nakama.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
@@ -1183,6 +1183,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             path: this.image_info['path'],
             msg: this.MessageInfo,
             index: this.RelevanceIndex - 1,
+            isDarkMode: isDarkMode,
           });
         } catch (e) {
           this.p5toast.show({
@@ -1235,6 +1236,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               ...this.image_info,
               msg: this.MessageInfo,
               index: this.RelevanceIndex - 1,
+              isDarkMode: isDarkMode,
             });
           } catch (e) {
             console.log('파일 저장 오류: ', e);

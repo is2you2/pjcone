@@ -532,6 +532,7 @@ export class UserFsDirPage implements OnInit {
                   width: v.data.width,
                   height: v.data.height,
                   text: v.data.text,
+                  isDarkMode: v.data.isDarkMode,
                 },
                 cssClass: 'fullscreen',
               }).then(v => {
