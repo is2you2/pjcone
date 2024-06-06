@@ -1280,7 +1280,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.userInput.noti_id = this.nakama.get_noti_id();
     this.nakama.set_todo_notification(this.userInput);
     let attach_changed = false;
-    if (this.userInput.workers) { // 작업자 지정처리
+    if (!this.isModify && this.userInput.workers) { // 작업자 지정처리
       this.userInput.workers.length = 0;
       let keys = Object.keys(this.AvailableWorker);
       let check_duplicate = [];
