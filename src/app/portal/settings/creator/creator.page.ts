@@ -21,6 +21,7 @@ export class CreatorPage implements OnInit {
   info = {
     name: undefined,
   };
+  contributors = [];
   special_thanks_to = [];
 
   isMobileApp = false;
@@ -47,6 +48,18 @@ export class CreatorPage implements OnInit {
           p.remove();
         }, e => {
           console.error('번역가 정보 불러오기 실패: ', e);
+          p.remove();
+        });
+      }
+    });
+    new p5((p: p5) => {
+      p.setup = () => {
+        p.noCanvas();
+        p.loadJSON(`assets/data/infos/contributors.json`, v => {
+          this.contributors = v;
+          p.remove();
+        }, e => {
+          console.error('기여자들 정보 불러오기 실패: ', e);
           p.remove();
         });
       }
