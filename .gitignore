@@ -41,3 +41,5 @@ Godot_v*
 *.xlsx
 # 보안을 위해 제외
 *.keystore
+certbot/*
+docker/*
