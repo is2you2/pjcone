@@ -817,10 +817,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.userInput.file = navParams.file;
       if (this.userInput.file) this.create_thumbnail_imported(navParams.file);
     });
-    if (isPlatform == 'DesktopPWA')
-      setTimeout(() => {
-        this.CreateDrop();
-      }, 0);
+    setTimeout(() => {
+      this.CreateDrop();
+    }, 0);
     this.isMobile = isPlatform == 'Android' || isPlatform == 'iOS';
     this.nakama.StatusBarChangedCallback = async () => {
       await this.SetExtensionButtons();
@@ -941,11 +940,21 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       const MESSAGE_QOUTE_SIZE = 50;
       let CurrentChatMovedSize = 0;
       p.mouseDragged = (ev: any) => {
+        ChatMsgDragAct(ev.clientX);
+      }
+      p.touchMoved = (ev: any) => {
+        try {
+          ChatMsgDragAct(ev.touches[0].clientX);
+        } catch (e) { }
+      }
+      let ChatMsgDragAct = (clientX: number) => {
         if (this.MsgClickedStartPos && this.TargetMessageObject) {
-          CurrentChatMovedSize = this.MsgClickedStartPos - ev.clientX;
-          this.TargetMessageObject.style.paddingRight = `${CurrentChatMovedSize}px`;
+          CurrentChatMovedSize = this.MsgClickedStartPos - clientX;
+          if (this.IsQouteMyMessage)
+            this.TargetMessageObject.style.paddingRight = `${CurrentChatMovedSize}px`;
+          else this.TargetMessageObject.style.marginLeft = `${-CurrentChatMovedSize}px`;
           if (MESSAGE_QOUTE_SIZE < CurrentChatMovedSize) {
-            this.TargetMessageObject.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .2)';
+            this.TargetMessageObject.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
           } else this.TargetMessageObject.style.backgroundColor = null;
         }
       }
@@ -954,6 +963,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         return (str.length > maxlength) ? str.slice(0, maxlength - 1) + '…' : str;
       }
       p.mouseReleased = () => {
+        ReleaseChatMsgAct();
+      }
+      p.touchEnded = () => {
+        ReleaseChatMsgAct();
+      }
+      let ReleaseChatMsgAct = () => {
         if (this.MsgClickedStartPos && this.TargetMessageObject) {
           if (MESSAGE_QOUTE_SIZE < CurrentChatMovedSize) {
             try {
@@ -996,10 +1011,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
           this.TargetMessageObject.style.backgroundColor = null;
           this.TargetMessageObject.style.paddingRight = null;
+          this.TargetMessageObject.style.marginLeft = null;
           CurrentChatMovedSize = 0;
         }
         this.MsgClickedStartPos = undefined;
         this.TargetMessageObject = undefined;
+        this.IsQouteMyMessage = undefined;
       }
     });
   }
@@ -1036,7 +1053,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (targetChat) {
       targetChat.scrollIntoView({ block: 'center', behavior: 'smooth' });
       setTimeout(() => {
-        targetChat.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .2)';
+        targetChat.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
       }, 100);
       setTimeout(() => {
         targetChat.style.backgroundColor = null;
@@ -1239,11 +1256,23 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         setTimeout(() => {
           let CurrentMsg = document.getElementById(c.message_id);
           if (CurrentMsg) {
-            if (CurrentMsg.onmousedown == null)
-              CurrentMsg.onmousedown = (ev: any) => {
-                this.MsgClickedStartPos = ev.clientX;
-                this.TargetMessageObject = CurrentMsg;
-              }
+            if (isPlatform == 'DesktopPWA') {
+              if (CurrentMsg.onmousedown == null)
+                CurrentMsg.onmousedown = (ev: any) => {
+                  this.IsQouteMyMessage = c.is_me;
+                  this.MsgClickedStartPos = ev.clientX;
+                  this.TargetMessageObject = CurrentMsg;
+                }
+            } else {
+              if (CurrentMsg.ontouchstart == null)
+                CurrentMsg.ontouchstart = (ev: any) => {
+                  try {
+                    this.IsQouteMyMessage = c.is_me;
+                    this.MsgClickedStartPos = ev.touches[0].clientX;
+                    this.TargetMessageObject = CurrentMsg;
+                  } catch (e) { }
+                }
+            }
             if (CurrentMsg.oncontextmenu == null)
               CurrentMsg.oncontextmenu = () => {
                 try {
@@ -1711,16 +1740,29 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 마우스 클릭 시작점 */
   MsgClickedStartPos: number;
   TargetMessageObject: HTMLElement;
+  IsQouteMyMessage: boolean;
   MakeViewableMessagesHaveContextMenuAct() {
     setTimeout(() => {
       for (let i = 0, j = this.ViewableMessage.length; i < j; i++) {
         let CurrentMsg = document.getElementById(this.ViewableMessage[i].message_id);
         if (CurrentMsg) {
-          if (CurrentMsg.onmousedown == null)
-            CurrentMsg.onmousedown = (ev: any) => {
-              this.MsgClickedStartPos = ev.clientX;
-              this.TargetMessageObject = CurrentMsg;
-            }
+          if (isPlatform == 'DesktopPWA') {
+            if (CurrentMsg.onmousedown == null)
+              CurrentMsg.onmousedown = (ev: any) => {
+                this.IsQouteMyMessage = this.ViewableMessage[i].is_me;
+                this.MsgClickedStartPos = ev.clientX;
+                this.TargetMessageObject = CurrentMsg;
+              }
+          } else {
+            if (CurrentMsg.ontouchstart == null)
+              CurrentMsg.ontouchstart = (ev: any) => {
+                try {
+                  this.IsQouteMyMessage = this.ViewableMessage[i].is_me;
+                  this.MsgClickedStartPos = ev.touches[0].clientX;
+                  this.TargetMessageObject = CurrentMsg;
+                } catch (e) { }
+              }
+          }
           if (CurrentMsg.oncontextmenu == null)
             CurrentMsg.oncontextmenu = () => {
               try {
