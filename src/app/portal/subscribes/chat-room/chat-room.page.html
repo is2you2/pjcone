@@ -61,9 +61,11 @@
                         {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
                       </div>
                       <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background"
-                        (click)="FindQoute(msg.content['qoute'].id)">
+                        (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
                         <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg']}}</div>
-                        <div *ngIf="msg.content['qoute'].url" class="qouteImage">{{msg.content['qoute'].url}}</div>
+                        <div *ngIf="msg.content['qoute'].url">
+                          <img [src]="msg.content['qoute'].url" class="qouteImage" alt="">
+                        </div>
                         <div *ngIf="msg.content['qoute'].text" class="qouteDiv">{{msg.content['qoute'].text}}</div>
                       </div>
                       <div *ngIf="msg.content['filename']" class="file_message_form">
@@ -133,9 +135,11 @@
                         </div>
                       </div>
                       <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background"
-                        (click)="FindQoute(msg.content['qoute'].id)">
+                        (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
                         <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg']}}</div>
-                        <div *ngIf="msg.content['qoute'].url" class="qouteImage">{{msg.content['qoute'].url}}</div>
+                        <div *ngIf="msg.content['qoute'].url">
+                          <img [src]="msg.content['qoute'].url" class="qouteImage" alt="">
+                        </div>
                         <div *ngIf="msg.content['qoute'].text" class="qouteDiv">{{msg.content['qoute'].text}}</div>
                       </div>
                       <div *ngIf="msg.content['filename']" class="my_file_message_form">
@@ -192,9 +196,11 @@
             </div>
             <div *ngFor="let msg of sending_msg" class="my_message_right my_sending_msg">
               <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background"
-                (click)="FindQoute(msg.content['qoute'].id)">
+                (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
                 <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg']}}</div>
-                <div *ngIf="msg.content['qoute'].url" class="qouteImage">{{msg.content['qoute'].url}}</div>
+                <div *ngIf="msg.content['qoute'].url">
+                  <img [src]="msg.content['qoute'].url" class="qouteImage" alt="">
+                </div>
                 <div *ngIf="msg.content['qoute'].text" class="qouteDiv">{{msg.content['qoute'].text}}</div>
               </div>
               <div *ngIf="msg.content['filename']" class="my_file_message_form">
@@ -230,8 +236,8 @@
         <table class="thumnails">
           <tr *ngIf="userInput['qoute']" class="qoute_text" (click)="RemoveQoute()">
             <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg']}}</div>
-            <div *ngIf="userInput['qoute'].url" class="qouteImage">
-              <img src="userInput['qoute'].url" alt="">
+            <div *ngIf="userInput['qoute'].url">
+              <img [src]="userInput['qoute'].url" class="qouteImage" style="max-height: 84px;" alt="">
             </div>
             <div *ngIf="userInput['qoute'].text" class="qouteDiv">{{userInput['qoute'].text}}</div>
           </tr>

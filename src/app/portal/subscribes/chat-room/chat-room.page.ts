@@ -43,10 +43,14 @@ export interface ExtendButtonForm {
 interface QouteMessage {
   /** 해당 메시지가 이미지를 포함한 경우 이미지 보이게 처리 */
   url?: string;
+  /** 해당 메시지에 이미지가 파일 이름으로 포함됨 */
+  path?: string;
   /** 텍스트 메시지 앞부분을 발췌하여 보여주기 */
   text?: string;
   /** 해당 메시지 아이디 */
   id?: string;
+  /** 해당 메시지가 생성된 시간 기록 */
+  timestamp: string;
 }
 
 @Component({
@@ -962,9 +966,29 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               if (catch_index === undefined) throw '메시지를 찾을 수 없음';
               let target_msg = this.ViewableMessage[catch_index];
               let text = this.deserialize_text(target_msg);
-              this.userInput.qoute = {};
+              this.userInput.qoute = {
+                timestamp: target_msg.create_time,
+              };
               if (text) this.userInput.qoute.text = truncate(text, 10);
-              if (target_msg.content.url) this.userInput.qoute.url = target_msg.content.url;
+              if (target_msg.content.viewer == 'image') {
+                if (target_msg.content.url)
+                  this.userInput.qoute.url = target_msg.content.url;
+                else if (target_msg.content.path) {
+                  this.userInput.qoute.path = target_msg.content.path.split('/').pop();
+                  if (!this.userInput.qoute.url) {
+                    let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/${this.userInput.qoute.path}`;
+                    this.indexed.checkIfFileExist(path, b => {
+                      if (b) this.indexed.loadBlobFromUserPath(path, '', blob => {
+                        let FileURL = URL.createObjectURL(blob);
+                        this.userInput.qoute['url'] = FileURL;
+                        setTimeout(() => {
+                          URL.revokeObjectURL(FileURL);
+                        }, 100);
+                      });
+                    });
+                  }
+                }
+              }
               this.userInput.qoute.id = target_msg.message_id;
             } catch (e) {
               console.log('메시지 상세보기 실패: ', e);
@@ -982,7 +1006,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   BlockAutoScrollDown = false;
   /** 해당 메시지 찾기 */
-  async FindQoute(id: string) {
+  async FindQoute(id: string, timestamp: string) {
     let targetChat: HTMLElement;
     for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
       if (id == this.ViewableMessage[i].message_id) {
@@ -993,14 +1017,20 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
     if (!targetChat) { // 메시지가 안보이면 이전 메시지에서 찾기
-      while (!targetChat && this.pullable) {
+      let whileBreaker = false;
+      while (!targetChat && this.pullable && !whileBreaker) {
         await this.pull_msg_history();
         await new Promise((done) => setTimeout(done, 200));
-        for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
+        for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
+          if (new Date(this.ViewableMessage[i].create_time).getTime() < new Date(timestamp).getTime()) {
+            whileBreaker = true;
+            break; // 해당 시간대에 기록이 없으면 중단
+          }
           if (id == this.ViewableMessage[i].message_id) {
             targetChat = document.getElementById(id);
             break;
           }
+        }
       }
     }
     if (targetChat) {
@@ -1197,6 +1227,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               break;
             }
         }
+        // 인용 메시지가 경로로 구성된 이미지 파일을 따르는 경우
+        if (c.content.qoute && c.content.qoute.path) this.OpenQouteThumbnail(c);
         if (this.ViewMsgIndex + this.ViewCount == this.messages.length - 1)
           this.ViewMsgIndex++;
         this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
@@ -1265,6 +1297,20 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       let scrollHeight = this.ChatLogs.scrollHeight;
       this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
     }, 500);
+  }
+
+  /** 메시지에 인용이 포함되어있다면 인용 썸네일 생성 시도 */
+  OpenQouteThumbnail(c: any) {
+    let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/${c.content.qoute.path}`;
+    this.indexed.checkIfFileExist(path, b => {
+      if (b) this.indexed.loadBlobFromUserPath(path, '', blob => {
+        let FileURL = URL.createObjectURL(blob);
+        c.content.qoute['url'] = FileURL;
+        setTimeout(() => {
+          URL.revokeObjectURL(FileURL);
+        }, 100);
+      });
+    });
   }
 
   /** 확장버튼 설정 초기화 */
@@ -1464,6 +1510,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             } catch (e) { }
             this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
             this.modulate_chatmsg(i, ShowMeAgainCount + 1);
+            if (this.ViewableMessage[i].content.qoute && this.ViewableMessage[i].content.qoute.path) this.OpenQouteThumbnail(this.ViewableMessage[i]);
           }
           this.modulate_chatmsg(0, this.ViewableMessage.length);
           this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
@@ -1513,6 +1560,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.global.modulate_thumbnail(this.ViewableMessage[i].content, '');
           }
           this.modulate_chatmsg(i, j + 1);
+          if (this.ViewableMessage[i].content.qoute && this.ViewableMessage[i].content.qoute.path) this.OpenQouteThumbnail(this.ViewableMessage[i]);
         }
         this.modulate_chatmsg(0, this.ViewableMessage.length);
         this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
@@ -1542,6 +1590,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         } catch (e) { }
         this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
         this.modulate_chatmsg(i, this.ViewableMessage.length);
+        if (this.ViewableMessage[i].content.qoute && this.ViewableMessage[i].content.qoute.path) this.OpenQouteThumbnail(this.ViewableMessage[i]);
       }
       this.pullable = true;
     }
@@ -1596,6 +1645,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         } catch (e) { }
         this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
         this.modulate_chatmsg(i, ShowMeAgainCount + 1);
+        if (this.ViewableMessage[i].content.qoute && this.ViewableMessage[i].content.qoute.path) this.OpenQouteThumbnail(this.ViewableMessage[i]);
       }
       this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
       this.pullable = this.ViewMsgIndex != 0 || Boolean(this.LocalHistoryList.length);
@@ -1646,6 +1696,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             } catch (e) { }
             this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
             this.modulate_chatmsg(i, ShowMeAgainCount);
+            if (this.ViewableMessage[i].content.qoute && this.ViewableMessage[i].content.qoute.path) this.OpenQouteThumbnail(this.ViewableMessage[i]);
           }
           this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
         } else await this.LoadLocalChatHistory();
@@ -1770,8 +1821,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     let FileAttach = false;
     let isURL = false;
     let isLongText = '';
-    if (this.userInput.qoute) // 메시지 인용시
+    if (this.userInput.qoute) { // 메시지 인용시
+      if (this.userInput.qoute.path) delete this.userInput.qoute.url;
       result['qoute'] = this.userInput.qoute;
+    }
     if (this.userInput.file) { // 파일 첨부시
       result['filename'] = this.userInput.file.filename;
       result['file_ext'] = this.userInput.file.file_ext;
