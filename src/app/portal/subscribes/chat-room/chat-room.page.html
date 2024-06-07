@@ -60,6 +60,12 @@
                       <div *ngIf="msg.content['match']" class="quickShare_form" (click)="JoinWebRTCMatch(msg)">
                         {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
                       </div>
+                      <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background"
+                        (click)="FindQoute(msg.content['qoute'].id)">
+                        <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg']}}</div>
+                        <div *ngIf="msg.content['qoute'].url" class="qouteImage">{{msg.content['qoute'].url}}</div>
+                        <div *ngIf="msg.content['qoute'].text" class="qouteDiv">{{msg.content['qoute'].text}}</div>
+                      </div>
                       <div *ngIf="msg.content['filename']" class="file_message_form">
                         <div *ngIf="!msg.content['thumbnail']" class="file_button" (click)="file_detail(msg)"
                           [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
@@ -126,6 +132,12 @@
                           {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
                         </div>
                       </div>
+                      <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background"
+                        (click)="FindQoute(msg.content['qoute'].id)">
+                        <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg']}}</div>
+                        <div *ngIf="msg.content['qoute'].url" class="qouteImage">{{msg.content['qoute'].url}}</div>
+                        <div *ngIf="msg.content['qoute'].text" class="qouteDiv">{{msg.content['qoute'].text}}</div>
+                      </div>
                       <div *ngIf="msg.content['filename']" class="my_file_message_form">
                         <div *ngIf="!msg.content['thumbnail']" class="file_button" (click)="file_detail(msg)"
                           [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
@@ -179,6 +191,12 @@
               </div>
             </div>
             <div *ngFor="let msg of sending_msg" class="my_message_right my_sending_msg">
+              <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background"
+                (click)="FindQoute(msg.content['qoute'].id)">
+                <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg']}}</div>
+                <div *ngIf="msg.content['qoute'].url" class="qouteImage">{{msg.content['qoute'].url}}</div>
+                <div *ngIf="msg.content['qoute'].text" class="qouteDiv">{{msg.content['qoute'].text}}</div>
+              </div>
               <div *ngIf="msg.content['filename']" class="my_file_message_form">
                 <div *ngIf="!msg.content['thumbnail']" class="file_button"
                   [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
@@ -210,6 +228,13 @@
           </div>
         </div>
         <table class="thumnails">
+          <tr *ngIf="userInput['qoute']" class="qoute_text" (click)="RemoveQoute()">
+            <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg']}}</div>
+            <div *ngIf="userInput['qoute'].url" class="qouteImage">
+              <img src="userInput['qoute'].url" alt="">
+            </div>
+            <div *ngIf="userInput['qoute'].text" class="qouteDiv">{{userInput['qoute'].text}}</div>
+          </tr>
           <tr *ngIf="userInput.file" class="thumnail_parts" style="cursor: pointer;">
             <td>
               <div *ngIf="userInput.file" (click)="removeAttach()">

@@ -112,6 +112,27 @@
     background-color: var(--chatroom-you-read-here-backgruond);
 }
 
+.qoute_text {
+    text-align: initial;
+    margin: 4px 0px 0px 0px;
+}
+
+.qoute_background {
+    background-color: rgba(var(--ion-color-primary-rgb), .5);
+    border-radius: 16px;
+}
+
+.qouteImage {
+    max-width: 96px;
+    max-height: 32px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.qouteDiv {
+    padding: 8px;
+}
+
 .message_content_form {
     display: inline-flex;
     margin: 4px 0px 0px 0px;
