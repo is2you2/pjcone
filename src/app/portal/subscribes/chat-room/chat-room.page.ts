@@ -922,6 +922,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }
           }, 400);
         });
+        this.p5canvas['ChatMsgDragAct'] = ChatMsgDragAct;
       }
       let StartAct: any;
       let isMultipleSend = false;
@@ -1262,6 +1263,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   this.IsQouteMyMessage = c.is_me;
                   this.MsgClickedStartPos = ev.clientX;
                   this.TargetMessageObject = CurrentMsg;
+                  if (ev.which == 2) { // 가운데 버튼이면 즉시 인용처리
+                    this.MsgClickedStartPos = ev.clientX + 60;
+                    this.p5canvas['ChatMsgDragAct'](ev.clientX);
+                  }
                 }
             } else {
               if (CurrentMsg.ontouchstart == null)
@@ -1752,6 +1757,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 this.IsQouteMyMessage = this.ViewableMessage[i].is_me;
                 this.MsgClickedStartPos = ev.clientX;
                 this.TargetMessageObject = CurrentMsg;
+                if (ev.which == 2) { // 가운데 버튼이면 즉시 인용처리
+                  this.MsgClickedStartPos = ev.clientX + 60;
+                  this.p5canvas['ChatMsgDragAct'](ev.clientX);
+                }
               }
           } else {
             if (CurrentMsg.ontouchstart == null)
