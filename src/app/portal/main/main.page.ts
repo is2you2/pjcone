@@ -315,18 +315,20 @@ export class MainPage implements OnInit {
                 }
               }
               p.pop();
-              if (this.CurrentFilterValue && color) {
-                let minColor = (360 + this.CurrentFilterValue[0]) % 360;
-                let maxColor = (360 + this.CurrentFilterValue[1]) % 360;
-                let colorHue = p.hue(color);
-                if (minColor < maxColor) { // 일반적인 경우
-                  let biggerThan = minColor < colorHue;
-                  let lessThan = colorHue < maxColor;
-                  Todos[TodoKeys[i]].isHidden = !(biggerThan && lessThan);
-                } else { // 자주~빨강 각도처리
-                  let biggerThan = maxColor < colorHue;
-                  let lessThan = colorHue < minColor;
-                  Todos[TodoKeys[i]].isHidden = biggerThan && lessThan;
+              if (this.CurrentFilterValue) {
+                if (color) {
+                  let minColor = (360 + this.CurrentFilterValue[0]) % 360;
+                  let maxColor = (360 + this.CurrentFilterValue[1]) % 360;
+                  let colorHue = p.hue(color);
+                  if (minColor < maxColor) { // 일반적인 경우
+                    let biggerThan = minColor < colorHue;
+                    let lessThan = colorHue < maxColor;
+                    Todos[TodoKeys[i]].isHidden = !(biggerThan && lessThan);
+                  } else { // 자주~빨강 각도처리
+                    let biggerThan = maxColor < colorHue;
+                    let lessThan = colorHue < minColor;
+                    Todos[TodoKeys[i]].isHidden = biggerThan && lessThan;
+                  }
                 }
               } else FilteringTodos(TodoFilterCategory.None);
             }
