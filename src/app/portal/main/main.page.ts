@@ -290,7 +290,9 @@ export class MainPage implements OnInit {
           case TodoFilterCategory.Importance:
             if (this.CurrentFilterValue)
               for (let i = 0, j = TodoKeys.length; i < j; i++)
-                Todos[TodoKeys[i]].isHidden = Todos[TodoKeys[i]].json['importance'] != this.CurrentFilterValue;
+                if (Todos[TodoKeys[i]].json.id == 'AddButton') {
+                  Todos[TodoKeys[i]].isHidden = false;
+                } else Todos[TodoKeys[i]].isHidden = Todos[TodoKeys[i]].json['importance'] != this.CurrentFilterValue;
             else FilteringTodos(TodoFilterCategory.None);
             break;
           case TodoFilterCategory.Color:
