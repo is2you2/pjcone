@@ -675,7 +675,10 @@ export class UserFsDirPage implements OnInit {
   async importThisFolder(entry: any, loading: HTMLIonLoadingElement) {
     let path = entry.nativeURL.substring(0, entry.nativeURL.length - 1);
     let last_sep = path.lastIndexOf('/');
-    let RecursiveEntry: any[] = await this.file.listDir(path.substring(0, last_sep) + '/', path.substring(last_sep + 1));
+    let RecursiveEntry: any[] = [];
+    try {
+      RecursiveEntry = await this.file.listDir(path.substring(0, last_sep) + '/', path.substring(last_sep + 1))
+    } catch (e) { }
     for (let i = 0, j = RecursiveEntry.length; i < j; i++) {
       if (this.StopIndexing) {
         loading.dismiss();
