@@ -952,10 +952,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (this.MsgClickedStartPos && this.TargetMessageObject) {
           CurrentChatMovedSize = this.MsgClickedStartPos - clientX;
           if (this.IsQouteMyMessage)
-            this.TargetMessageObject.style.paddingRight = `${CurrentChatMovedSize}px`;
+            this.TargetMessageObject.style.marginRight = `${CurrentChatMovedSize}px`;
           else this.TargetMessageObject.style.marginLeft = `${-CurrentChatMovedSize}px`;
           if (MESSAGE_QOUTE_SIZE < CurrentChatMovedSize) {
             this.TargetMessageObject.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
+          } else if (-MESSAGE_QOUTE_SIZE > CurrentChatMovedSize) {
+            this.TargetMessageObject.style.backgroundColor = 'rgba(var(--ion-color-tertiary-rgb), .5)';
           } else this.TargetMessageObject.style.backgroundColor = null;
         }
       }
@@ -1009,9 +1011,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             } catch (e) {
               console.log('메시지 상세보기 실패: ', e);
             }
+          } else if (-MESSAGE_QOUTE_SIZE > CurrentChatMovedSize) {
+            let catch_index: number;
+            for (let k = 0, l = this.ViewableMessage.length; k < l; k++)
+              if (this.TargetMessageObject.id == this.ViewableMessage[k].message_id) {
+                catch_index = k;
+                break;
+              }
+            if (catch_index === undefined) throw '메시지를 찾을 수 없음';
+            let target_msg = this.ViewableMessage[catch_index];
+            this.CopyMessageText(target_msg);
           }
           this.TargetMessageObject.style.backgroundColor = null;
-          this.TargetMessageObject.style.paddingRight = null;
+          this.TargetMessageObject.style.marginRight = null;
           this.TargetMessageObject.style.marginLeft = null;
           CurrentChatMovedSize = 0;
         }
@@ -1288,7 +1300,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                       break;
                     }
                   if (catch_index === undefined) throw '메시지를 찾을 수 없음';
-                  this.CopyMessageText(this.ViewableMessage[catch_index]);
+                  if (isPlatform == 'DesktopPWA')
+                    this.CopyMessageText(this.ViewableMessage[catch_index]);
                   this.message_detail(c, catch_index);
                 } catch (e) {
                   console.log('메시지 상세보기 실패: ', e);
@@ -1782,7 +1795,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     break;
                   }
                 if (catch_index === undefined) throw '메시지를 찾을 수 없음';
-                this.CopyMessageText(this.ViewableMessage[catch_index]);
+                if (isPlatform == 'DesktopPWA')
+                  this.CopyMessageText(this.ViewableMessage[catch_index]);
                 this.message_detail(this.ViewableMessage[catch_index], catch_index);
               } catch (e) {
                 console.log('메시지 상세보기 실패: ', e);
