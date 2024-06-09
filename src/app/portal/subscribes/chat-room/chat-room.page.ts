@@ -922,7 +922,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }
           }, 400);
         });
-        this.p5canvas['ChatMsgDragAct'] = ChatMsgDragAct;
+        p['ChatMsgDragAct'] = ChatMsgDragAct;
       }
       let StartAct: any;
       let isMultipleSend = false;
@@ -951,9 +951,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       let ChatMsgDragAct = (clientX: number) => {
         if (this.MsgClickedStartPos && this.TargetMessageObject) {
           CurrentChatMovedSize = this.MsgClickedStartPos - clientX;
-          if (this.IsQouteMyMessage)
-            this.TargetMessageObject.style.marginRight = `${CurrentChatMovedSize}px`;
-          else this.TargetMessageObject.style.marginLeft = `${-CurrentChatMovedSize}px`;
+          if (this.IsQouteMyMessage) {
+            if (CurrentChatMovedSize > 0)
+              this.TargetMessageObject.style.paddingRight = `${CurrentChatMovedSize}px`;
+            else this.TargetMessageObject.style.marginRight = `${CurrentChatMovedSize}px`;
+          } else this.TargetMessageObject.style.marginLeft = `${-CurrentChatMovedSize}px`;
           if (MESSAGE_QOUTE_SIZE < CurrentChatMovedSize) {
             this.TargetMessageObject.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
           } else if (-MESSAGE_QOUTE_SIZE > CurrentChatMovedSize) {
@@ -1023,6 +1025,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.CopyMessageText(target_msg);
           }
           this.TargetMessageObject.style.backgroundColor = null;
+          this.TargetMessageObject.style.paddingRight = null;
           this.TargetMessageObject.style.marginRight = null;
           this.TargetMessageObject.style.marginLeft = null;
           CurrentChatMovedSize = 0;
@@ -1276,7 +1279,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   this.MsgClickedStartPos = ev.clientX;
                   this.TargetMessageObject = CurrentMsg;
                   if (ev.which == 2) { // 가운데 버튼이면 즉시 인용처리
-                    this.MsgClickedStartPos = ev.clientX + 60;
+                  this.MsgClickedStartPos = ev.clientX + 90;
                     this.p5canvas['ChatMsgDragAct'](ev.clientX);
                   }
                 }
@@ -1771,7 +1774,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 this.MsgClickedStartPos = ev.clientX;
                 this.TargetMessageObject = CurrentMsg;
                 if (ev.which == 2) { // 가운데 버튼이면 즉시 인용처리
-                  this.MsgClickedStartPos = ev.clientX + 60;
+                this.MsgClickedStartPos = ev.clientX + 90;
                   this.p5canvas['ChatMsgDragAct'](ev.clientX);
                 }
               }
