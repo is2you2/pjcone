@@ -906,10 +906,18 @@ export class MainPage implements OnInit {
   }
 
   try_add_shortcut() {
-    if (this.global.p5key && this.global.p5key['KeyShortCut'])
+    if (this.global.p5key && this.global.p5key['KeyShortCut']) {
       this.global.p5key['KeyShortCut']['AddAct'] = () => {
         this.nakama.open_add_todo_page();
       }
+      this.global.p5key['KeyShortCut']['Backquote'] = () => {
+        this.SwitchTargetFilter();
+      }
+      this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+        if (this.AllCategories[this.TargetFilterName].length > index)
+          this.ChangeFilterValue(this.AllCategories[this.TargetFilterName][index].value);
+      };
+    }
     else setTimeout(() => {
       this.try_add_shortcut();
     }, 100);
