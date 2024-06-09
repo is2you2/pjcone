@@ -21,5 +21,13 @@
       </div>
     </div>
   </div>
-  <div class="full_screen" id="todo"></div>
+  <div class="full_screen" id="todo">
+    <div style="position: absolute; top: 16px; left: 16px;">
+      <button class="FilterSwitchButton" (click)="SwitchTargetFilter()">{{TargetFilterDisplayName}}</button>
+      <button *ngFor="let kind of AllCategories[TargetFilterName]" class="FilterSwitchButton"
+        [style]="'background-color: ' + (kind.color || '#8888')" (click)="ChangeFilterValue(kind.value)">
+        {{kind.name}}
+      </button>
+    </div>
+  </div>
 </ion-content>

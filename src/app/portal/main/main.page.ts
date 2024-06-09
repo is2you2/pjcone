@@ -8,6 +8,16 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import * as p5 from 'p5';
 import { AlertController } from '@ionic/angular';
 
+/** 할 일 필터 카테고리 */
+enum TodoFilterCategory {
+  /** 필터 없음: 전부 보여주기 */
+  None = 0,
+  /** 중요도에 따라 필터링 */
+  Importance = 1,
+  /** 색상에 따라 필터링 */
+  Color = 2,
+}
+
 @Component({
   selector: 'app-main',
   templateUrl: './main.page.html',
@@ -38,6 +48,39 @@ export class MainPage implements OnInit {
     if (this.isPlayingCanvas.loop)
       this.global.p5todo.loop();
     else this.global.p5todo.noLoop();
+  }
+  /** 화면에 보여지는 이름 정보 */
+  TargetFilterDisplayName = this.lang.text['Main']['FilterCat_0'];
+  /** 할 일 필터 카테고리 */
+  TargetFilterName = 0;
+  /** 할 일 필터 카테고리 일체  
+   * AllCategories[TargetFilterName] = [ value, ... ]
+   */
+  AllCategories = {}
+  /** 필터 종류 변경하기 */
+  SwitchTargetFilter(force?: number) {
+    this.TargetFilterName = force ?? ((this.TargetFilterName + 1) % 3);
+    switch (this.TargetFilterName) {
+      case TodoFilterCategory.None:
+        this.TargetFilterDisplayName = this.lang.text['Main']['FilterCat_0'];
+        break;
+      case TodoFilterCategory.Importance:
+        this.TargetFilterDisplayName = this.lang.text['TodoDetail']['Importance'];
+        break;
+      case TodoFilterCategory.Color:
+        this.TargetFilterDisplayName = this.lang.text['TodoDetail']['CustomColor'];
+        break;
+    }
+    this.CurrentFilterValue = undefined;
+    if (this.global.p5todo && this.global.p5todo['FilteringTodos'])
+      this.global.p5todo['FilteringTodos'](TodoFilterCategory.None);
+  }
+  CurrentFilterValue = undefined;
+  /** 해당 필터 카테고리의 값을 변경 */
+  ChangeFilterValue(value: any) {
+    this.CurrentFilterValue = value;
+    // 모든 할 일 개체를 돌아다니며 표현 여부 변경
+    this.global.p5todo['FilteringTodos']();
   }
   /** 모든 할 일을 완료한 경우 */
   isEmptyTodo = false;
@@ -190,6 +233,102 @@ export class MainPage implements OnInit {
           this.isEmptyTodo = !Boolean(Object.keys(TodoKeys).length);
         }
         await p['ListUpdate']();
+        // 필터 카테고리 정보 생성하기
+        this.SwitchTargetFilter(this.TargetFilterName);
+        // 필터 종류에 따라 데이터를 수집하여 준비함
+        this.AllCategories[TodoFilterCategory.None] = [];
+        this.AllCategories[TodoFilterCategory.Importance] = [{
+          name: this.lang.text['TodoDetail']['Importance_0'],
+          color: '#58a19288',
+          value: '0',
+        }, {
+          name: this.lang.text['TodoDetail']['Importance_1'],
+          color: '#ddbb4188',
+          value: '1',
+        }, {
+          name: this.lang.text['TodoDetail']['Importance_2'],
+          color: '#b9543788',
+          value: '2',
+        }];
+        this.AllCategories[TodoFilterCategory.Color] = [{
+          name: this.lang.text['Main']['ColorFilterRed'],
+          color: '#ff000088',
+          value: [-30, 30],
+        }, {
+          name: this.lang.text['Main']['ColorFilterYellow'],
+          color: '#ffff0088',
+          value: [30, 90],
+        }, {
+          name: this.lang.text['Main']['ColorFilterGreen'],
+          color: '#00ff0088',
+          value: [90, 150],
+        }, {
+          name: this.lang.text['Main']['ColorFilterCyan'],
+          color: '#00ffff88',
+          value: [150, 210],
+        }, {
+          name: this.lang.text['Main']['ColorFilterBlue'],
+          color: '#0000ff88',
+          value: [210, 270],
+        }, {
+          name: this.lang.text['Main']['ColorFilterMagenta'],
+          color: '#ff00ff88',
+          value: [270, 330],
+        }];
+        p['FilteringTodos'] = FilteringTodos;
+      }
+      /** 할 일 객체를 순회하며 표시를 필터링함 */
+      let FilteringTodos = (force?: any) => {
+        let ActWith = force ?? this.TargetFilterName;
+        switch (ActWith) {
+          case TodoFilterCategory.None:
+            for (let i = 0, j = TodoKeys.length; i < j; i++)
+              Todos[TodoKeys[i]].isHidden = false;
+            break;
+          case TodoFilterCategory.Importance:
+            if (this.CurrentFilterValue)
+              for (let i = 0, j = TodoKeys.length; i < j; i++)
+                Todos[TodoKeys[i]].isHidden = Todos[TodoKeys[i]].json['importance'] != this.CurrentFilterValue;
+            break;
+          case TodoFilterCategory.Color:
+            for (let i = 0, j = TodoKeys.length; i < j; i++) {
+              let color: p5.Color;
+              p.push();
+              p.colorMode(p.HSB);
+              try { // 사용자 지정 색상이 있는지 테스트
+                color = p.color(Todos[TodoKeys[i]].json['custom_color']);
+              } catch (e) { }
+              if (!color) {
+                switch (Todos[TodoKeys[i]].json.importance) {
+                  case '0': // 중요도 낮음
+                    color = p.color('#58a192');
+                    break;
+                  case '1': // 중요도 보통
+                    color = p.color('#ddbb41');
+                    break;
+                  case '2': // 중요도 높음
+                    color = p.color('#b95437');
+                    break;
+                }
+              }
+              p.pop();
+              if (this.CurrentFilterValue && color) {
+                let minColor = (360 + this.CurrentFilterValue[0]) % 360;
+                let maxColor = (360 + this.CurrentFilterValue[1]) % 360;
+                let colorHue = p.hue(color);
+                if (minColor < maxColor) { // 일반적인 경우
+                  let biggerThan = minColor < colorHue;
+                  let lessThan = colorHue < maxColor;
+                  Todos[TodoKeys[i]].isHidden = !(biggerThan && lessThan);
+                } else { // 자주~빨강 각도처리
+                  let biggerThan = maxColor < colorHue;
+                  let lessThan = colorHue < minColor;
+                  Todos[TodoKeys[i]].isHidden = biggerThan && lessThan;
+                }
+              }
+            }
+            break;
+        }
       }
       /** 카메라 초기화 (3손가락 행동) */
       let ViewInit = () => {
@@ -328,6 +467,8 @@ export class MainPage implements OnInit {
         ProgressWeight = 8;
         /** 진행도 */
         LerpProgress = 0;
+        /** 필터에 의해 가려지는지 여부 */
+        isHidden = false;
         /** 실시간 보여주기 */
         display() {
           // 가장 배경에 있는 원
@@ -345,40 +486,48 @@ export class MainPage implements OnInit {
             this.json.limit,
             0, 1, true);
           if (this.isAddButton || (this.json.written > this.json.limit)) this.LerpProgress = 1;
-          if (this.json.remote)
-            p.fill((StatusBar.colors[StatusBar.groupServer[this.json.remote.isOfficial][this.json.remote.target] || 'offline'])
+          if (this.isHidden) {
+            p.fill(128, 40);
+          } else {
+            if (this.json.remote)
+              p.fill((StatusBar.colors[StatusBar.groupServer[this.json.remote.isOfficial][this.json.remote.target] || 'offline'])
+                + p.hex(p.floor(p.lerp(34, 96, this.LerpProgress)), 2));
+            else p.fill((this.json.custom_color || this.defaultColor.toString('#rrggbb'))
               + p.hex(p.floor(p.lerp(34, 96, this.LerpProgress)), 2));
-          else p.fill((this.json.custom_color || this.defaultColor.toString('#rrggbb'))
-            + p.hex(p.floor(p.lerp(34, 96, this.LerpProgress)), 2));
+          }
           p.ellipse(0, 0, this.EllipseSize, this.EllipseSize);
           // 썸네일 이미지 표기
-          if (this.ThumbnailImage)
+          if (!this.isHidden && this.ThumbnailImage)
             p.image(this.ThumbnailImage, 0, 0, this.EllipseSize, this.EllipseSize);
           // 진행도 표기
           p.push();
-          p.noFill();
-          if (this.isAddButton) { // 추가 버튼은 진행도가 없고 + 가 보여짐
-            p.push();
-            p.noStroke();
-            p.fill(255);
-            p.rect(0, 0, this.json.shortSide, this.json.longSide);
-            p.rect(0, 0, this.json.longSide, this.json.shortSide);
-            p.pop();
-          } else {
-            p.stroke((this.json.custom_color || this.defaultColor));
-            p.strokeWeight(this.ProgressWeight);
+          if (!this.isHidden) {
+            p.noFill();
+            if (this.isAddButton) { // 추가 버튼은 진행도가 없고 + 가 보여짐
+              p.push();
+              p.noStroke();
+              p.fill(255);
+              p.rect(0, 0, this.json.shortSide, this.json.longSide);
+              p.rect(0, 0, this.json.longSide, this.json.shortSide);
+              p.pop();
+            } else {
+              p.stroke((this.json.custom_color || this.defaultColor));
+              p.strokeWeight(this.ProgressWeight);
+            }
+            p.rotate(-p.PI / 2);
+            let ProgressCircleSize = this.EllipseSize - this.ProgressWeight;
+            if (this.LerpProgress < 1)
+              p.arc(0, 0, ProgressCircleSize, ProgressCircleSize, 0, this.LerpProgress * p.TWO_PI);
+            else p.circle(0, 0, ProgressCircleSize);
           }
-          p.rotate(-p.PI / 2);
-          let ProgressCircleSize = this.EllipseSize - this.ProgressWeight;
-          if (this.LerpProgress < 1)
-            p.arc(0, 0, ProgressCircleSize, ProgressCircleSize, 0, this.LerpProgress * p.TWO_PI);
-          else p.circle(0, 0, ProgressCircleSize);
           p.pop();
           // 타이틀 일부 표기
-          let TextBox = this.EllipseSize * .9;
-          this.TextColor = p.color(isDarkMode ? 255 : 0, (this.LerpProgress == 0 ? 128 : 255));
-          p.fill(this.TextColor);
-          p.text(this.json.title, 0, 0, TextBox, TextBox);
+          if (!this.isHidden) {
+            let TextBox = this.EllipseSize * .9;
+            this.TextColor = p.color(isDarkMode ? 255 : 0, (this.LerpProgress == 0 ? 128 : 255));
+            p.fill(this.TextColor);
+            p.text(this.json.title, 0, 0, TextBox, TextBox);
+          }
           p.pop();
         }
         /** 시작시 적용되는 색상 */
