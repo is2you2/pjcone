@@ -938,7 +938,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }
       /** 이 길이보다 길다면 메시지 인용으로 인식합니다 */
-      const MESSAGE_QOUTE_SIZE = 50;
+      const MESSAGE_QOUTE_SIZE = 80;
       let CurrentChatMovedSize = 0;
       p.mouseDragged = (ev: any) => {
         ChatMsgDragAct(ev.clientX);
