@@ -78,7 +78,9 @@ export class MainPage implements OnInit {
   CurrentFilterValue = undefined;
   /** 해당 필터 카테고리의 값을 변경 */
   ChangeFilterValue(value: any) {
-    this.CurrentFilterValue = value;
+    if (this.CurrentFilterValue == value)
+      this.CurrentFilterValue = undefined;
+    else this.CurrentFilterValue = value;
     // 모든 할 일 개체를 돌아다니며 표현 여부 변경
     this.global.p5todo['FilteringTodos']();
   }
@@ -289,6 +291,7 @@ export class MainPage implements OnInit {
             if (this.CurrentFilterValue)
               for (let i = 0, j = TodoKeys.length; i < j; i++)
                 Todos[TodoKeys[i]].isHidden = Todos[TodoKeys[i]].json['importance'] != this.CurrentFilterValue;
+            else FilteringTodos(TodoFilterCategory.None);
             break;
           case TodoFilterCategory.Color:
             for (let i = 0, j = TodoKeys.length; i < j; i++) {
@@ -325,7 +328,7 @@ export class MainPage implements OnInit {
                   let lessThan = colorHue < minColor;
                   Todos[TodoKeys[i]].isHidden = biggerThan && lessThan;
                 }
-              }
+              } else FilteringTodos(TodoFilterCategory.None);
             }
             break;
         }
