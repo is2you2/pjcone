@@ -334,6 +334,7 @@ export class MainPage implements OnInit {
             }
             break;
         }
+        p.redraw();
       }
       /** 카메라 초기화 (3손가락 행동) */
       let ViewInit = () => {
