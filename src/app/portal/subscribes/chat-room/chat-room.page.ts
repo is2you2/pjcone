@@ -1276,7 +1276,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   this.MsgClickedStartPos = ev.clientX;
                   this.TargetMessageObject = CurrentMsg;
                   if (ev.which == 2) { // 가운데 버튼이면 즉시 인용처리
-                  this.MsgClickedStartPos = ev.clientX + 90;
+                    this.MsgClickedStartPos = ev.clientX + 90;
                     this.p5canvas['ChatMsgDragAct'](ev.clientX);
                   }
                 }
@@ -1401,8 +1401,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.extended_buttons[12].isHide = false;
       if (this.info['redirect']['type'] == 3)
         this.extended_buttons[0].isHide = false;
-    }
-    this.extended_buttons[10].isHide = isNativefier || this.info['status'] == 'missing';
+    } else this.extended_buttons[10].isHide = isNativefier || this.info['status'] == 'missing';
+    this.extended_buttons[2].isHide = false;
   }
 
   /** 선택한 메시지 복사 */
@@ -1771,7 +1771,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 this.MsgClickedStartPos = ev.clientX;
                 this.TargetMessageObject = CurrentMsg;
                 if (ev.which == 2) { // 가운데 버튼이면 즉시 인용처리
-                this.MsgClickedStartPos = ev.clientX + 90;
+                  this.MsgClickedStartPos = ev.clientX + 90;
                   this.p5canvas['ChatMsgDragAct'](ev.clientX);
                 }
               }
