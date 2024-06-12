@@ -1549,6 +1549,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.noti.ClearNoti(6);
   }
 
+  /** 파일이 URL로 구성되어있는 경우 URL 주소를 복사함 */
+  CopyURL() {
+    if (this.FileInfo.url)
+      this.copy_url(this.FileInfo.url)
+  }
+
   copy_url(data: string) {
     this.mClipboard.copy(data)
       .catch(_e => {
