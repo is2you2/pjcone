@@ -1,40 +1,51 @@
-// 서비스 워커 설치 및 캐싱
+const CACHE_NAME = 'my-pwa-cache-v1';
+
 self.addEventListener('install', event => {
-    event.waitUntil(
-        caches.open('app-cache').then(cache => {
-            return cache.addAll([
-                '/',
-                '/*',
-            ]);
-        })
-    );
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(function (cache) {
+        // 경로 업데이트 필수
+        return cache.addAll([
+          '/pjcone_pwa/index.html',
+        ]);
+      })
+  );
 });
 
-// 네트워크 요청 가로채기 및 캐싱된 리소스 반환
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.filter(cacheName => {
+          return cacheName !== CACHE_NAME;
+        }).map(cacheName => {
+          return caches.delete(cacheName);
+        })
+      );
+    })
+  );
+});
+
 self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request).then(response => {
-            return response || fetch(event.request);
-        })
-    );
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        if (response) {
+          return response;
+        }
+        return fetch(event.request)
+          .then(response => {
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+            return response;
+          });
+      })
+  );
 });
-
-// 오프라인 상황에서의 동작 정의
-// self.addEventListener('fetch', event => {
-//     event.respondWith(
-//         caches.match(event.request).then(response => {
-//             return response || fetch(event.request).catch(() => {
-//                 return caches.match('/offline.html'); // 오프라인 메시지 페이지 반환
-//             });
-//         })
-//     );
-// });
-
-// Push 알림 처리
-// self.addEventListener('push', event => {
-//     const title = 'Push 알림';
-//     const options = {
-//         body: event.data.text()
-//     };
-//     event.waitUntil(self.registration.showNotification(title, options));
-// });

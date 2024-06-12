@@ -43,3 +43,4 @@ Godot_v*
 *.keystore
 certbot/*
 docker/*
+list.txt

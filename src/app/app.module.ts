@@ -20,7 +20,7 @@ import { Clipboard } from "@awesome-cordova-plugins/clipboard/ngx";
     innerHTMLTemplatesEnabled: true,
     experimentalCloseWatcher: true,
     hardwareBackButton: true,
-  }), AppRoutingModule, ServiceWorkerModule.register('ngsw-worker.js', {
+  }), AppRoutingModule, ServiceWorkerModule.register('assets/sw.js', {
     enabled: environment.production,
     // Register the ServiceWorker as soon as the application is stable
     // or after 30 seconds (whichever comes first).
