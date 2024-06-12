@@ -1410,17 +1410,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     let text: any = this.deserialize_text(msg);
     let isImageTarget = false;
     if (!text) { // 텍스트가 없다면 첨부파일을 대상으로 하기
-      try { // 로컬이면 로컬 파일 blob 생성하기
-        let path = msg.content.path;
-        let blob = await this.indexed.loadBlobFromUserPath(path, msg.content.type);
-        text = blob;
-        isImageTarget = true;
-      } catch (e) { // 로컬에 저장된 파일이 아니라면 url 이라고 가정함
-        // 다운로드가 안된 파일이라면 복사가 안되는걸 무시함
-        if (msg.content.url) {
-          text = msg.content.url;
-          isImageTarget = Boolean(text);
-        }
+      // 링크가 있다면 링크를 복사
+      if (msg.content.url) {
+        text = msg.content.url;
+        isImageTarget = Boolean(text);
+      } else { // 링크가 아니라면 파일 복사
+        try {
+          let path = msg.content.path;
+          let blob = await this.indexed.loadBlobFromUserPath(path, msg.content.type);
+          text = blob;
+          isImageTarget = true;
+        } catch (e) { }
       }
     }
     try { // 개체 복사하기 시도

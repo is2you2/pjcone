@@ -148,6 +148,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   canvasDiv: HTMLElement;
   async reinit_content_data(msg: any) {
+    this.CurrentFileSize = undefined;
     this.NewTextFileName = '';
     this.NeedDownloadFile = false;
     this.ContentOnLoad = false;
@@ -263,6 +264,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.reinit_content_data(target);
   }
 
+  /** 용량 표시 */
   // https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
   formatBytes(bytes: number, decimals = 2): string {
     if (!+bytes) return '0 Bytes'
@@ -278,8 +280,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   CreateContentInfo() {
     try { // 파일 정보 검토
-      if (!this.FileInfo['url'])
-        this.CurrentFileSize = this.formatBytes(this.FileInfo.size || this.FileInfo['filesize'] || this.blob.size);
       this.content_creator = this.FileInfo['content_creator'] || { timestamp: this.FileInfo['timestamp'] } as any;
       this.content_creator.timeDisplay = new Date(this.content_creator.timestamp).toLocaleString();
       this.content_related_creator = this.FileInfo['content_related_creator'] || [];
@@ -370,21 +370,49 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     } else this.reinit_content_data(this.MessageInfo);
   }
 
+  /** URL 링크인 경우 파일을 로컬에 다운받기 */
+  async DownloadFileFromURL() {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['TodoDetail'] });
+    loading.present();
+    try {
+      let res = await fetch(this.FileInfo.url);
+      if (res.ok) {
+        let blob = await res.blob();
+        await this.indexed.saveBlobToUserPath(blob, this.FileInfo.path);
+        this.CurrentFileSize = this.formatBytes(this.FileInfo.size || this.FileInfo['filesize'] || this.blob.size);
+        this.p5toast.show({
+          text: `${this.lang.text['ChatRoom']['FileSaved']}: ${this.FileInfo.filename}`,
+        });
+      } else throw res.statusText;
+    } catch (e) {
+      this.p5toast.show({
+        text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
+      });
+    }
+    loading.dismiss();
+  }
   /** 비디오/오디오 콘텐츠가 종료되면 끝에서 다음 콘텐츠로 자동 넘김 */
   AutoPlayNext = false;
   @ViewChild('FileMenu') FileMenu: IonPopover;
-
   async ionViewDidEnter() {
-    if (this.FileInfo.url) {
-      this.FileURL = this.FileInfo.url;
-    } else if (!this.FileInfo['is_new']) {
+    try {
+      if (this.FileInfo.url) {
+        let res = await fetch(this.FileInfo.url);
+        if (!res.ok) throw 'URL 링크 깨짐';
+        this.FileURL = this.FileInfo.url;
+      } else throw 'URL 없음'
+      // 로컬에 파일이 준비되어있다면 파일 크기를 표시
+      this.indexed.checkIfFileExist(this.FileInfo.alt_path || this.FileInfo.path || this.navParams.get('path'), b => {
+        if (b) this.CurrentFileSize = this.formatBytes(this.FileInfo.size || this.FileInfo['filesize'] || this.blob.size);
+      });
+    } catch (e) { // 링크가 없거나 깨졌다면 로컬에서 불러오기 시도
       try {
         this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type']);
         this.FileURL = URL.createObjectURL(this.blob);
+        this.CurrentFileSize = this.formatBytes(this.FileInfo.size || this.FileInfo['filesize'] || this.blob.size);
       } catch (e) {
         this.ContentOnLoad = true;
-        this.ContentFailedLoad = true;
-        console.log(e);
+        this.ContentFailedLoad = Boolean(!this.FileURL);
       }
     }
     this.forceWrite = false;

@@ -484,9 +484,13 @@ export class GlobalActService {
     } catch (e) { }
     switch (msg_content['viewer']) {
       case 'image':
-        if (msg_content['url'])
-          msg_content['thumbnail'] = msg_content['url'];
-        else msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(ObjectURL);
+        try {
+          let res = await fetch(msg_content['url']);
+          if (res.ok) msg_content['thumbnail'] = msg_content['url'];
+          else throw 'Not ok';
+        } catch (e) {
+          if (ObjectURL) msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(ObjectURL);
+        }
         break;
       case 'text':
         if (msg_content['url']) {
