@@ -1247,7 +1247,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
         let is_local = c['sender_id'] == 'local';
         if (c.content['filename']) this.ModulateFileEmbedMessage(c);
-        this.info['last_read_id'] = this.info['last_comment_id'];
+        this.info['last_read_id'] = c.message_id;
         if (!is_local) this.check_if_send_msg(c);
         if (!(c.code == 1 || c.code == 2)) this.messages.push(c);
         if (c.code == 2) { // 메시지 삭제하기 동작
