@@ -1239,7 +1239,13 @@ export class NakamaService {
       }
     }
     // 로컬에 저장된 파일 전부 삭제
-    let list = await this.indexed.GetFileListFromDB(`todo/${targetInfo.id}`);
+    let path: string;
+    try {
+      path = `todo/${targetInfo['id']}_${targetInfo['remote']['isOfficial']}_${targetInfo['remote']['target']}`;
+    } catch (e) {
+      path = `todo/${targetInfo['id']}`;
+    }
+    let list = await this.indexed.GetFileListFromDB(path);
     list.forEach(_path => this.indexed.removeFileFromUserPath(_path));
     // 해당 할 일의 알림 삭제
     if (targetInfo.noti_id)
@@ -2609,7 +2615,7 @@ export class NakamaService {
                   let todo_info = JSON.parse(v);
                   todo_info.done = true;
                   await this.modify_remote_info_as_local(todo_info, _is_official, _target);
-                  this.indexed.GetFileListFromDB(`todo/${sep[1]}`, (v) => {
+                  this.indexed.GetFileListFromDB(`todo/${sep[1]}_${_is_official}_${_target}`, (v) => {
                     v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
                     if (todo_info.noti_id)
                       if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
@@ -2621,12 +2627,12 @@ export class NakamaService {
                     this.SyncTodoCounter(_is_official, _target);
                   });
                 } else {
-                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
+                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, async (e, v) => {
                     if (e && v) {
                       let todo_info = JSON.parse(v);
                       todo_info.done = true;
                       await this.modify_remote_info_as_local(todo_info, _is_official, _target);
-                      this.indexed.GetFileListFromDB(`todo/${sep[1]}`, (v) => {
+                      this.indexed.GetFileListFromDB(`todo/${sep[1]}_${_is_official}_${_target}`, (v) => {
                         v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
                         if (todo_info.noti_id)
                           if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
@@ -2646,7 +2652,7 @@ export class NakamaService {
               this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, (e, v) => {
                 if (e && v) {
                   let todo_info = JSON.parse(v);
-                  this.indexed.GetFileListFromDB(`todo/${sep[1]}`, (v) => {
+                  this.indexed.GetFileListFromDB(`todo/${sep[1]}_${_is_official}_${_target}`, (v) => {
                     v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
                     if (todo_info.noti_id)
                       if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
@@ -2660,10 +2666,10 @@ export class NakamaService {
                   });
                   this.SyncTodoCounter(_is_official, _target);
                 } else {
-                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
+                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, (e, v) => {
                     if (e && v) {
                       let todo_info = JSON.parse(v);
-                      this.indexed.GetFileListFromDB(`todo/${sep[1]}`, (v) => {
+                      this.indexed.GetFileListFromDB(`todo/${sep[1]}_${_is_official}_${_target}`, (v) => {
                         v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
                         if (todo_info.noti_id)
                           if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
@@ -2702,7 +2708,7 @@ export class NakamaService {
                   await this.modify_remote_info_as_local(todo_info, _is_official, _target);
                   this.SyncTodoCounter(_is_official, _target);
                 } else {
-                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
+                  this.indexed.loadTextFromUserPath(`todo/todo/${sep[1]}_${_is_official}_${_target}/info.todo`, async (e, v) => {
                     if (e && v) {
                       let todo_info = JSON.parse(v);
                       for (let i = 0, j = todo_info.workers.length; i < j; i++)
