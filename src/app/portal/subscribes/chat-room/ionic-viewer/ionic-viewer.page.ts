@@ -1420,7 +1420,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   async RemoveFileAct() {
     URL.revokeObjectURL(this.FileURL);
-    delete this.FileInfo.thumbnail;
+    if (!this.FileInfo.url) delete this.FileInfo.thumbnail;
     delete this.FileInfo['text'];
     await this.indexed.removeFileFromUserPath(this.FileInfo.alt_path || this.FileInfo.path);
     this.RelevanceIndex -= 1;
