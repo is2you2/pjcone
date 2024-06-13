@@ -485,6 +485,7 @@ export class GlobalActService {
     switch (msg_content['viewer']) {
       case 'image':
         try {
+          if (!msg_content['url']) throw 'No URL';
           let res = await fetch(msg_content['url']);
           if (res.ok) msg_content['thumbnail'] = msg_content['url'];
           else throw 'Not ok';
