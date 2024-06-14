@@ -2615,7 +2615,7 @@ export class NakamaService {
                   let todo_info = JSON.parse(v);
                   todo_info.done = true;
                   await this.modify_remote_info_as_local(todo_info, _is_official, _target);
-                  this.indexed.GetFileListFromDB(`todo/${sep[1]}_${_is_official}_${_target}`, (v) => {
+                  this.indexed.GetFileListFromDB(`todo/${todo_info.id}`, (v) => {
                     v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
                     if (todo_info.noti_id)
                       if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
@@ -2627,12 +2627,12 @@ export class NakamaService {
                     this.SyncTodoCounter(_is_official, _target);
                   });
                 } else {
-                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, async (e, v) => {
+                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
                     if (e && v) {
                       let todo_info = JSON.parse(v);
                       todo_info.done = true;
                       await this.modify_remote_info_as_local(todo_info, _is_official, _target);
-                      this.indexed.GetFileListFromDB(`todo/${sep[1]}_${_is_official}_${_target}`, (v) => {
+                      this.indexed.GetFileListFromDB(`todo/${todo_info.id}`, (v) => {
                         v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
                         if (todo_info.noti_id)
                           if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
@@ -2652,7 +2652,7 @@ export class NakamaService {
               this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, (e, v) => {
                 if (e && v) {
                   let todo_info = JSON.parse(v);
-                  this.indexed.GetFileListFromDB(`todo/${sep[1]}_${_is_official}_${_target}`, (v) => {
+                  this.indexed.GetFileListFromDB(`todo/${todo_info.id}`, (v) => {
                     v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
                     if (todo_info.noti_id)
                       if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
@@ -2666,10 +2666,10 @@ export class NakamaService {
                   });
                   this.SyncTodoCounter(_is_official, _target);
                 } else {
-                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, (e, v) => {
+                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
                     if (e && v) {
                       let todo_info = JSON.parse(v);
-                      this.indexed.GetFileListFromDB(`todo/${sep[1]}_${_is_official}_${_target}`, (v) => {
+                      this.indexed.GetFileListFromDB(`todo/${todo_info.id}`, (v) => {
                         v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
                         if (todo_info.noti_id)
                           if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
@@ -2708,7 +2708,7 @@ export class NakamaService {
                   await this.modify_remote_info_as_local(todo_info, _is_official, _target);
                   this.SyncTodoCounter(_is_official, _target);
                 } else {
-                  this.indexed.loadTextFromUserPath(`todo/todo/${sep[1]}_${_is_official}_${_target}/info.todo`, async (e, v) => {
+                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
                     if (e && v) {
                       let todo_info = JSON.parse(v);
                       for (let i = 0, j = todo_info.workers.length; i < j; i++)
