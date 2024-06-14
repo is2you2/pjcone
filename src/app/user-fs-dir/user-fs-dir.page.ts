@@ -357,24 +357,30 @@ export class UserFsDirPage implements OnInit {
         await this.ModulateIndexedFile(target_list);
       } else { // 인앱 파일 고르기
         let _ionic_list = await this.indexed.GetFileListFromDB('/files/');
-        let _todo_list = await this.indexed.GetFileListFromDB('/todo/');
-        _ionic_list.push.apply(_ionic_list, _todo_list);
         await this.ModulateIndexedFile(_ionic_list);
       }
     } else {
       let _ionic_list = await this.indexed.GetFileListFromDB('/')
       await this.ModulateIndexedFile(_ionic_list);
     }
-    this.FileList.sort((a, b) => {
-      if (a.path > b.path) return 1;
-      if (a.path < b.path) return -1;
-      return 0;
-    });
-    this.DirList.sort((a, b) => {
-      if (a.path > b.path) return 1;
-      if (a.path < b.path) return -1;
-      return 0;
-    });
+    if (this.is_file_selector) {
+      this.FileList.sort((a, b) => {
+        if (a.timestamp < b.timestamp) return 1;
+        if (a.timestamp > b.timestamp) return -1;
+        return 0;
+      });
+    } else {
+      this.FileList.sort((a, b) => {
+        if (a.path > b.path) return 1;
+        if (a.path < b.path) return -1;
+        return 0;
+      });
+      this.DirList.sort((a, b) => {
+        if (a.path > b.path) return 1;
+        if (a.path < b.path) return -1;
+        return 0;
+      });
+    }
     this.noti.ClearNoti(5);
     this.initLoadingElement.dismiss();
     this.is_ready = true;
