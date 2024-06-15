@@ -296,7 +296,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
     let target_server = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target];
     try { // 그룹 채널로 시도
       await target_server.client.joinGroup(target_server.session, this.userInput.id);
-      await this.nakama.get_group_list_from_server(this.servers[this.index].isOfficial, this.servers[this.index].target);
+      this.nakama.get_group_list_from_server(this.servers[this.index].isOfficial, this.servers[this.index].target);
       SuccJoinedChat = true;
     } catch (e) {
       try { // 1:1 채널로 재시도

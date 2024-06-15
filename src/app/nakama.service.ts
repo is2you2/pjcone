@@ -865,8 +865,8 @@ export class NakamaService {
     await this.SyncTodoCounter(_is_official, _target);
     this.load_server_todo(_is_official, _target);
     await this.RemoteTodoSelfCheck(_is_official, _target);
-    await this.get_group_list_from_server(_is_official, _target);
-    await this.redirect_channel(_is_official, _target);
+    this.redirect_channel(_is_official, _target);
+    this.get_group_list_from_server(_is_official, _target);
     await this.load_posts_counter();
     if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
     if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
@@ -1651,45 +1651,45 @@ export class NakamaService {
   /** 세션 재접속 시 기존 정보를 이용하여 채팅방에 다시 로그인함  
    * 개인 채팅에 대해서만 검토
    */
-  async redirect_channel(_is_official: string, _target: string) {
+  redirect_channel(_is_official: string, _target: string) {
     if (this.channels_orig[_is_official][_target]) {
       let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
       for (let i = 0, j = channel_ids.length; i < j; i++)
         if (this.channels_orig[_is_official][_target][channel_ids[i]]['status'] != 'missing') {
-          try {
-            await this.servers[_is_official][_target].socket.joinChat(
-              this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['id'],
-              this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type'],
-              this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['persistence'],
-              false
-            );
+          this.servers[_is_official][_target].socket.joinChat(
+            this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['id'],
+            this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type'],
+            this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['persistence'],
+            false
+          ).then(_ => {
             if (!this.channels_orig[_is_official][_target][channel_ids[i]]['cnoti_id'])
               this.channels_orig[_is_official][_target][channel_ids[i]]['cnoti_id'] = this.get_noti_id();
             this.channels_orig[_is_official][_target][channel_ids[i]]['color'] = (this.channels_orig[_is_official][_target][channel_ids[i]]['info']['id'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
             switch (this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type']) {
               case 2: // 1:1 채팅
-                try {
-                  let user = await this.servers[_is_official][_target].client.readStorageObjects(
-                    this.servers[_is_official][_target].session, {
-                    object_ids: [{
-                      collection: 'user_public',
-                      key: 'profile_image',
-                      user_id: this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['id'],
-                    }]
-                  });
+                this.servers[_is_official][_target].client.readStorageObjects(
+                  this.servers[_is_official][_target].session, {
+                  object_ids: [{
+                    collection: 'user_public',
+                    key: 'profile_image',
+                    user_id: this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['id'],
+                  }]
+                }).then(user => {
                   let targetUser =
                     this.load_other_user(this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['id'], _is_official, _target);
                   if (user.objects.length) {
                     targetUser['img'] = user.objects[0].value['img'];
                   } else targetUser['img'] = undefined;
                   this.save_other_user(targetUser, _is_official, _target);
-                } catch (e) { }
+                });
               case 3: // 그룹 채팅
                 if (!this.channels_orig[_is_official][_target][channel_ids[i]]['update']) {
-                  let c_msg = await this.servers[_is_official][_target].client.listChannelMessages(
-                    this.servers[_is_official][_target].session, channel_ids[i], 1, false);
-                  if (c_msg.messages.length)
-                    this.update_from_channel_msg(c_msg.messages[0], _is_official, _target);
+                  this.servers[_is_official][_target].client.listChannelMessages(
+                    this.servers[_is_official][_target].session, channel_ids[i], 1, false)
+                    .then(c_msg => {
+                      if (c_msg.messages.length)
+                        this.update_from_channel_msg(c_msg.messages[0], _is_official, _target);
+                    });
                 }
                 this.count_channel_online_member(this.channels_orig[_is_official][_target][channel_ids[i]], _is_official, _target);
                 break;
@@ -1697,9 +1697,9 @@ export class NakamaService {
                 console.log('예상하지 못한 리다이렉션 타입: ', this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type']);
                 break;
             }
-          } catch (e) {
+          }).catch(_e => {
             this.channels_orig[_is_official][_target][channel_ids[i]]['status'] = 'missing';
-          }
+          });
         }
       this.rearrange_channels();
     }
@@ -2037,6 +2037,7 @@ export class NakamaService {
                 });
                 if (gimg.objects.length)
                   pending_group['img'] = gimg.objects[0].value['img'];
+                else delete pending_group['img'];
               } catch (e) {
                 console.error('그룹 이미지 확인 오류: ', e);
               }
@@ -2221,64 +2222,65 @@ export class NakamaService {
   }
 
   /** 연결된 서버에서 자신이 참여한 그룹을 리모트에서 가져오기  
-   * ***돌려주는 값이 없는 nakama.initialize 단계 함수, 다른 용도로는 사용하지 말 것**  
+   * 새로 생기는 채널이 있을 때 사용  
    * 그룹 채팅 채널 접속 및 그룹 사용자 검토도 이곳에서 시도함
    */
-  async get_group_list_from_server(_is_official: string, _target: string) {
+  get_group_list_from_server(_is_official: string, _target: string) {
     if (!this.groups[_is_official]) this.groups[_is_official] = {};
     if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
-    try {
-      let userGroups = await this.servers[_is_official][_target].client.listUserGroups(
-        this.servers[_is_official][_target].session,
-        this.servers[_is_official][_target].session.user_id);
-      for (let i = 0, j = userGroups.user_groups.length; i < j; i++) {
-        if (!this.groups[_is_official][_target][userGroups.user_groups[i].group.id]) {
-          this.groups[_is_official][_target][userGroups.user_groups[i].group.id] = {};
-          try { // 로컬에 없던 그룹은 이미지 확인
-            let gimg = await this.servers[_is_official][_target].client.readStorageObjects(
+    this.servers[_is_official][_target].client.listUserGroups(
+      this.servers[_is_official][_target].session,
+      this.servers[_is_official][_target].session.user_id)
+      .then(targetGroup => {
+        for (let i = 0, j = targetGroup.user_groups.length; i < j; i++) {
+          // 로컬에 저장된적 없는 새 그룹이라면
+          if (!this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]) {
+            this.groups[_is_official][_target][targetGroup.user_groups[i].group.id] = {};
+            // 로컬에 없던 그룹은 이미지 확인
+            this.servers[_is_official][_target].client.readStorageObjects(
               this.servers[_is_official][_target].session, {
               object_ids: [{
                 collection: 'group_public',
-                key: `group_${userGroups.user_groups[i].group.id}`,
-                user_id: userGroups.user_groups[i].group.creator_id,
+                key: `group_${targetGroup.user_groups[i].group.id}`,
+                user_id: targetGroup.user_groups[i].group.creator_id,
               }],
+            }).then(gimg => {
+              if (gimg.objects.length) {
+                this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['img'] = gimg.objects[0].value['img'];
+                this.indexed.saveTextFileToUserPath(gimg.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${targetGroup.user_groups[i].group.id}.img`);
+              } else {
+                delete this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['img'];
+                this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${targetGroup.user_groups[i].group.id}.img`);
+              }
+            }).catch(e => {
+              console.error('그룹 이미지 가져오기 오류: ', e);
             });
-            if (gimg.objects.length) {
-              this.groups[_is_official][_target][userGroups.user_groups[i].group.id]['img'] = gimg.objects[0].value['img'];
-              this.indexed.saveTextFileToUserPath(gimg.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${userGroups.user_groups[i].group.id}.img`);
-            }
-          } catch (e) {
-            console.error('그룹 이미지 가져오기 오류: ', e);
+            this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]
+              = { ...this.groups[_is_official][_target][targetGroup.user_groups[i].group.id], ...targetGroup.user_groups[i].group };
+            this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] = 'online';
+            this.servers[_is_official][_target].client.listGroupUsers(
+              this.servers[_is_official][_target].session, targetGroup.user_groups[i].group.id
+            ).then(_guser => {
+              for (let k = 0, l = _guser.group_users.length; k < l; k++) {
+                if (_guser.group_users[k].user.id == this.servers[_is_official][_target].session.user_id)
+                  _guser.group_users[k].user['is_me'] = true;
+                else {
+                  _guser.group_users[k].user['img'] = null;
+                  this.save_other_user(_guser.group_users[k].user, _is_official, _target);
+                }
+                _guser.group_users[k].user = this.load_other_user(_guser.group_users[k].user.id, _is_official, _target);
+                this.add_group_user_without_duplicate(_guser.group_users[k], targetGroup.user_groups[i].group.id, _is_official, _target);
+              }
+            }).catch(e => {
+              console.error('그룹 사용자 가져오기 오류: ', e);
+            });
+            this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target);
           }
         }
-        this.groups[_is_official][_target][userGroups.user_groups[i].group.id]
-          = { ...this.groups[_is_official][_target][userGroups.user_groups[i].group.id], ...userGroups.user_groups[i].group };
-        this.groups[_is_official][_target][userGroups.user_groups[i].group.id]['status'] = 'online';
-        try {
-          let _guser = await this.servers[_is_official][_target].client.listGroupUsers(
-            this.servers[_is_official][_target].session, userGroups.user_groups[i].group.id
-          );
-          for (let k = 0, l = _guser.group_users.length; k < l; k++) {
-            if (_guser.group_users[k].user.id == this.servers[_is_official][_target].session.user_id)
-              _guser.group_users[k].user['is_me'] = true;
-            else {
-              _guser.group_users[k].user['img'] = null;
-              this.save_other_user(_guser.group_users[k].user, _is_official, _target);
-            }
-            _guser.group_users[k].user = this.load_other_user(_guser.group_users[k].user.id, _is_official, _target);
-            this.add_group_user_without_duplicate(_guser.group_users[k], userGroups.user_groups[i].group.id, _is_official, _target);
-          }
-        } catch (e) {
-          console.error('그룹 사용자 가져오기 오류: ', e);
-        }
-        try {
-          await this.join_chat_with_modulation(userGroups.user_groups[i].group.id, 3, _is_official, _target);
-        } catch (e) { }
-      }
-      this.save_groups_with_less_info();
-    } catch (e) {
-      console.error('사용자 그룹 가져오기 오류: ', e);
-    }
+        this.save_groups_with_less_info();
+      }).catch(e => {
+        console.error('사용자 그룹 가져오기 오류: ', e);
+      });
   }
 
   /** 그룹을 재배열화한 후에 */
