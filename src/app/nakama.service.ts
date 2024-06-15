@@ -792,6 +792,7 @@ export class NakamaService {
   self_match = {};
   /** 로그인 및 회원가입 직후 행동들 */
   async after_login(_is_official: any, _target: string, _useSSL: boolean) {
+    console.log('진입 자체는 빨라');
     // 그룹 서버 연결 상태 업데이트
     this.set_group_statusBar('pending', _is_official, _target);
     // 통신 소켓 생성
@@ -862,7 +863,7 @@ export class NakamaService {
       }
     } catch (e) { }
     await this.SyncTodoCounter(_is_official, _target);
-    await this.load_server_todo(_is_official, _target);
+    this.load_server_todo(_is_official, _target);
     await this.RemoteTodoSelfCheck(_is_official, _target);
     await this.get_group_list_from_server(_is_official, _target);
     await this.redirect_channel(_is_official, _target);
@@ -881,6 +882,7 @@ export class NakamaService {
       }
     this.AfterLoginAct.length = 0;
     this.AfterLoginActDone = true;
+    console.log('마무리까지 오래걸려');
   }
 
   /** 원격 할 일 카운터  
@@ -888,22 +890,21 @@ export class NakamaService {
    */
   RemoteTodoCounter = {};
   /** 서버에 저장시킨 해야할 일 목록 불러오기 */
-  async load_server_todo(_is_official: string, _target: string) {
+  load_server_todo(_is_official: string, _target: string) {
     try {
       let count = this.RemoteTodoCounter[_is_official][_target];
       if (!this.RemoteTodoCounter[_is_official])
         this.RemoteTodoCounter[_is_official] = {};
       for (let i = count.length - 1; i >= 0; i--) {
-        try {
-          let key = `RemoteTodo_${count[i]}`;
-          let todo = await this.servers[_is_official][_target].client.readStorageObjects(
-            this.servers[_is_official][_target].session, {
-            object_ids: [{
-              collection: 'server_todo',
-              key: key,
-              user_id: this.servers[_is_official][_target].session.user_id,
-            }]
-          });
+        let key = `RemoteTodo_${count[i]}`;
+        this.servers[_is_official][_target].client.readStorageObjects(
+          this.servers[_is_official][_target].session, {
+          object_ids: [{
+            collection: 'server_todo',
+            key: key,
+            user_id: this.servers[_is_official][_target].session.user_id,
+          }]
+        }).then(async todo => {
           if (todo.objects.length)
             await this.modify_remote_info_as_local(todo.objects[0].value, _is_official, _target);
           else try { // 로컬에 있는 같은 id의 할 일 삭제
@@ -918,9 +919,9 @@ export class NakamaService {
             let json = JSON.parse(data);
             this.deleteTodoFromStorage(true, json, true);
           } catch (e) { }
-        } catch (e) {
+        }).catch(e => {
           console.log('서버 해야할 일 불러오기 오류: ', e);
-        }
+        });
       }
     } catch (e) { }
   }
