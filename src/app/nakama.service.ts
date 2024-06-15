@@ -859,8 +859,16 @@ export class NakamaService {
           );
         }
       });
-      this.redirect_channel(_is_official, _target);
-      this.get_group_list_from_server(_is_official, _target);
+      // 알고 있는 사용자 정보를 토대로 온라인 여부 검토
+      let keys = Object.keys(this.users[_is_official][_target]);
+      this.servers[_is_official][_target].client.getUsers(
+        this.servers[_is_official][_target].session, keys)
+        .then(v => {
+          for (let i = 0, j = v.users.length; i < j; i++)
+            this.save_other_user(v.users[i], _is_official, _target)
+          this.redirect_channel(_is_official, _target);
+          this.get_group_list_from_server(_is_official, _target);
+        });
     });
     await this.SyncTodoCounter(_is_official, _target);
     this.load_server_todo(_is_official, _target);
