@@ -792,7 +792,6 @@ export class NakamaService {
   self_match = {};
   /** 로그인 및 회원가입 직후 행동들 */
   async after_login(_is_official: any, _target: string, _useSSL: boolean) {
-    console.log('진입 자체는 빨라');
     // 그룹 서버 연결 상태 업데이트
     this.set_group_statusBar('pending', _is_official, _target);
     // 통신 소켓 생성
@@ -860,16 +859,16 @@ export class NakamaService {
           );
         }
       });
+      this.redirect_channel(_is_official, _target);
+      this.get_group_list_from_server(_is_official, _target);
     });
     await this.SyncTodoCounter(_is_official, _target);
     this.load_server_todo(_is_official, _target);
-    await this.RemoteTodoSelfCheck(_is_official, _target);
-    this.redirect_channel(_is_official, _target);
-    this.get_group_list_from_server(_is_official, _target);
-    await this.load_posts_counter();
+    this.RemoteTodoSelfCheck(_is_official, _target);
+    this.load_posts_counter();
     if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
     if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
-    await this.update_notifications(_is_official, _target);
+    this.update_notifications(_is_official, _target);
     this.rearrange_channels();
     this.rearrange_group_list();
     this.set_group_statusBar('online', _is_official, _target);
@@ -881,7 +880,6 @@ export class NakamaService {
       }
     this.AfterLoginAct.length = 0;
     this.AfterLoginActDone = true;
-    console.log('마무리까지 오래걸려');
   }
 
   /** 원격 할 일 카운터  
@@ -926,37 +924,39 @@ export class NakamaService {
   }
 
   /** 로컬에 있는 해야할 일들은 스스로가 원격에 남아있는지 검토하고, 없으면 스스로를 삭제한다 */
-  async RemoteTodoSelfCheck(_is_official: string, _target: string) {
-    let list = await this.indexed.GetFileListFromDB('todo/RemoteTodo_');
-    for (let i = 0, j = list.length; i < j; i++) {
-      if (list[i].indexOf('info.todo') >= 0) {
-        let todo = await this.indexed.loadTextFromUserPath(list[i]);
-        let json = JSON.parse(todo);
-        // 이 서버에 대한 검토만을 진행할 예정
-        if (json.remote.isOfficial == _is_official && json.remote.target == _target) {
-          let check = await this.servers[_is_official][_target].client.readStorageObjects(
-            this.servers[_is_official][_target].session, {
-            object_ids: [{
-              collection: 'server_todo',
-              key: json.id,
-              user_id: this.servers[_is_official][_target].session.user_id,
-            }]
-          });
-          if (!check.objects.length) { // 원격에서 삭제된 할 일임
-            let list = await this.indexed.GetFileListFromDB(`todo/${json.id}_${_is_official}_${_target}`);
-            list.forEach(path => this.indexed.removeFileFromUserPath(path));
-            if (json.noti_id)
-              if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-                clearTimeout(this.web_noti_id[json.noti_id]);
-                delete this.web_noti_id[json.noti_id];
+  RemoteTodoSelfCheck(_is_official: string, _target: string) {
+    this.indexed.GetFileListFromDB('todo/RemoteTodo_')
+      .then(async list => {
+        for (let i = 0, j = list.length; i < j; i++) {
+          if (list[i].indexOf('info.todo') >= 0) {
+            let todo = await this.indexed.loadTextFromUserPath(list[i]);
+            let json = JSON.parse(todo);
+            // 이 서버에 대한 검토만을 진행할 예정
+            if (json.remote.isOfficial == _is_official && json.remote.target == _target) {
+              let check = await this.servers[_is_official][_target].client.readStorageObjects(
+                this.servers[_is_official][_target].session, {
+                object_ids: [{
+                  collection: 'server_todo',
+                  key: json.id,
+                  user_id: this.servers[_is_official][_target].session.user_id,
+                }]
+              });
+              if (!check.objects.length) { // 원격에서 삭제된 할 일임
+                let list = await this.indexed.GetFileListFromDB(`todo/${json.id}_${_is_official}_${_target}`);
+                list.forEach(path => this.indexed.removeFileFromUserPath(path));
+                if (json.noti_id)
+                  if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+                    clearTimeout(this.web_noti_id[json.noti_id]);
+                    delete this.web_noti_id[json.noti_id];
+                  }
+                this.noti.ClearNoti(json.id);
+                if (this.global.p5todo && this.global.p5todo['remove_todo'])
+                  this.global.p5todo['remove_todo'](todo);
               }
-            this.noti.ClearNoti(json.id);
-            if (this.global.p5todo && this.global.p5todo['remove_todo'])
-              this.global.p5todo['remove_todo'](todo);
+            }
           }
         }
-      }
-    }
+      });
   }
 
   /** 원격 할 일 카운터 불러오기 */
@@ -1660,7 +1660,7 @@ export class NakamaService {
             this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type'],
             this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['persistence'],
             false
-          ).then(_ => {
+          ).then(_v => {
             if (!this.channels_orig[_is_official][_target][channel_ids[i]]['cnoti_id'])
               this.channels_orig[_is_official][_target][channel_ids[i]]['cnoti_id'] = this.get_noti_id();
             this.channels_orig[_is_official][_target][channel_ids[i]]['color'] = (this.channels_orig[_is_official][_target][channel_ids[i]]['info']['id'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
@@ -2540,9 +2540,8 @@ export class NakamaService {
   /** 소켓 서버에 연결 */
   connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', callback: Function) {
     this.servers[_is_official][_target].socket.connect(
-      this.servers[_is_official][_target].session, true).then(_ => {
+      this.servers[_is_official][_target].session, true).then(_v => {
         let socket = this.servers[_is_official][_target].socket;
-        callback(socket);
         let keys = Object.keys(this.on_socket_connected);
         keys.forEach(key => this.on_socket_connected[key]());
         // 실시간으로 알림을 받은 경우
@@ -2830,6 +2829,7 @@ export class NakamaService {
         socket.ondisconnect = (_e) => {
           this.OnSocketDisconnect(_is_official, _target);
         }
+        callback(socket);
       });
   }
 
