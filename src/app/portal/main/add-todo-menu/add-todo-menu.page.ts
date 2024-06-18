@@ -1032,9 +1032,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (this.userInput.custom_color)
       this.userInput.custom_color = undefined;
     else {
-      this.userInput.custom_color = '#ff0000';
       let color = document.getElementById('TodoCustomColorInput') as HTMLInputElement;
       color.click();
+      this.userInput.custom_color = '#ff0000';
     }
   }
 
