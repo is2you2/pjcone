@@ -98,7 +98,6 @@ export class AddPostPage implements OnInit, OnDestroy {
         InitAct = Boolean(navParams.act);
         if (navParams.data) this.userInput = navParams.data;
       }
-      this.MakeAttachHaveContextMenu();
       if (!InitAct) return;
       this.LoadListServer();
       if (this.servers.length > 1) this.index = 1;
@@ -475,7 +474,6 @@ export class AddPostPage implements OnInit, OnDestroy {
             });
           this.AddAttachTextForm();
           this.userInput.attachments.push(file);
-          this.MakeAttachHaveContextMenu();
           loading.dismiss();
         } catch (e) { }
       }
@@ -625,7 +623,6 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.AddAttachTextForm();
       this.userInput.attachments.push(file);
     } else this.userInput.attachments[index] = file;
-    this.MakeAttachHaveContextMenu();
     this.indexed.saveBlobToUserPath(file.blob, file.path);
   }
 
@@ -700,7 +697,6 @@ export class AddPostPage implements OnInit, OnDestroy {
       await this.indexed.saveBase64ToUserPath(v.data['img'], file.path, (raw) => {
         file.blob = new Blob([raw], { type: file['type'] });
       });
-      this.MakeAttachHaveContextMenu();
     } catch (e) {
       console.error('godot-이미지 편집 사용 불가: ', e);
     }
@@ -775,7 +771,6 @@ export class AddPostPage implements OnInit, OnDestroy {
           this_file.typeheader = override.typeheader || this_file.viewer;
           this.global.modulate_thumbnail(this_file, this_file.url);
           this.userInput.attachments.push(this_file);
-          this.MakeAttachHaveContextMenu();
         } catch (e) {
           if (e == 'done')
             throw e;
@@ -785,43 +780,35 @@ export class AddPostPage implements OnInit, OnDestroy {
     }
   }
 
-  MakeAttachHaveContextMenu() {
-    setTimeout(() => {
-      for (let i = this.userInput.attachments.length - 1; i >= 0; i--)
-        try {
-          let FileItem = document.getElementById(`PostAttach_${i}`);
-          FileItem.oncontextmenu = () => {
-            this.p5toast.show({
-              text: `${this.lang.text['AddPost']['RemoveAttach']}: ${this.userInput.attachments[i].filename}`,
-            });
-            this.userInput.attachments.splice(i, 1);
-            // 첨부파일 링크 텍스트를 삭제하고, 재정렬시킴
-            let sep_as_line = this.userInput.content.split('\n');
-            for (let k = sep_as_line.length - 1; k >= 0; k--) {
-              // 첨부파일인지 체크
-              let is_attach = false;
-              let content_len = sep_as_line[k].length - 1;
-              let index = 0;
-              try {
-                index = Number(sep_as_line[k].substring(1, content_len));
-                is_attach = sep_as_line[k].charAt(0) == '[' && sep_as_line[k].charAt(content_len) == ']' && !isNaN(index);
-              } catch (e) { }
-              if (is_attach) {
-                if (i == index) { // 삭제된 파일에 해당하는 줄은 삭제
-                  if (sep_as_line[k + 1] == '') try {
-                    sep_as_line.splice(k + 1, 1);
-                  } catch (e) { }
-                  sep_as_line.splice(k, 1);
-                } else if (i < index) // 해당 파일보다 큰 순번은 숫자를 줄여 정렬처리
-                  sep_as_line[k] = `[${index - 1}]`;
-              }
-            }
-            this.userInput.content = sep_as_line.join('\n');
-            this.MakeAttachHaveContextMenu();
-            return false;
-          }
-        } catch (e) { }
-    }, 0);
+  /** 첨부파일 우클릭하여 삭제 */
+  PostAttachContextMenu(i: number) {
+    this.p5toast.show({
+      text: `${this.lang.text['AddPost']['RemoveAttach']}: ${this.userInput.attachments[i].filename}`,
+    });
+    this.userInput.attachments.splice(i, 1);
+    // 첨부파일 링크 텍스트를 삭제하고, 재정렬시킴
+    let sep_as_line = this.userInput.content.split('\n');
+    for (let k = sep_as_line.length - 1; k >= 0; k--) {
+      // 첨부파일인지 체크
+      let is_attach = false;
+      let content_len = sep_as_line[k].length - 1;
+      let index = 0;
+      try {
+        index = Number(sep_as_line[k].substring(1, content_len));
+        is_attach = sep_as_line[k].charAt(0) == '[' && sep_as_line[k].charAt(content_len) == ']' && !isNaN(index);
+      } catch (e) { }
+      if (is_attach) {
+        if (i == index) { // 삭제된 파일에 해당하는 줄은 삭제
+          if (sep_as_line[k + 1] == '') try {
+            sep_as_line.splice(k + 1, 1);
+          } catch (e) { }
+          sep_as_line.splice(k, 1);
+        } else if (i < index) // 해당 파일보다 큰 순번은 숫자를 줄여 정렬처리
+          sep_as_line[k] = `[${index - 1}]`;
+      }
+    }
+    this.userInput.content = sep_as_line.join('\n');
+    return false;
   }
 
   /** 파일 첨부하기 */

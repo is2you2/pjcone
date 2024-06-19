@@ -494,7 +494,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
       }
       this.nakama.save_self_profile();
     }
-    this.nakama.MakeChannelHaveContextMenuAct();
   }
 
   ngOnDestroy(): void {

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController, NavController } from '@ionic/angular';
+import { AlertController, ModalController, NavController } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
@@ -24,6 +24,7 @@ export class CommunityPage implements OnInit {
     private navCtrl: NavController,
     private indexed: IndexedDBService,
     private modalCtrl: ModalController,
+    private alertCtrl: AlertController,
   ) { }
 
   ngOnInit() {
@@ -86,6 +87,37 @@ export class CommunityPage implements OnInit {
       if (this.is_loadable && (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 1))
         this.load_post_cycles();
     }, 100);
+  }
+
+  /** 포스트 우클릭시 행동 */
+  PostContextMenu(post_info: any) {
+    let index: number;
+    for (let k = 0, l = this.nakama.posts.length; k < l; k++)
+      if (this.nakama.posts[k]['id'] == post_info.id) {
+        index = k;
+        break;
+      }
+    try {
+      if (this.nakama.posts[index]['server']['local'] ||
+        this.nakama.posts[index]['creator_id'] == this.nakama.servers[this.nakama.posts[index]['server']['isOfficial']][this.nakama.posts[index]['server']['target']].session.user_id)
+        this.alertCtrl.create({
+          header: this.nakama.posts[index]['title'],
+          message: this.nakama.posts[index]['content'],
+          buttons: [{
+            text: this.lang.text['ChatRoom']['EditChat'],
+            handler: () => {
+              this.nakama.EditPost(this.nakama.posts[index]);
+            }
+          }, {
+            text: this.lang.text['ChatRoom']['Delete'],
+            handler: () => {
+              this.nakama.RemovePost(this.nakama.posts[index]);
+            },
+            cssClass: 'redfont',
+          }],
+        }).then(v => v.present());
+    } catch (e) { } // 온라인 상태가 아님
+    return false;
   }
 
   try_add_shortcut() {

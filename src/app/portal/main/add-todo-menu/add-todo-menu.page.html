@@ -147,7 +147,7 @@
               </ion-button>
             </ion-item>
             <div *ngIf="attach['viewer']" (click)="open_content_viewer(i)">
-              <img *ngIf="attach['thumbnail']" [id]="'TodoAttach_' + i" class="image_thumbnail"
+              <img *ngIf="attach['thumbnail']" (contextmenu)="AttachmentContextMenu(attach, i)" class="image_thumbnail"
                 [src]="attach['thumbnail']" [alt]="attach['filename']">
               <ion-item button *ngIf="!attach['thumbnail']">
                 <ion-label color="medium">{{lang.text['TodoDetail']['open_content_viewer']}}</ion-label>
@@ -167,8 +167,10 @@
                 <ion-select-option value="load">{{lang.text['TodoDetail']['add_attach']}}</ion-select-option>
               </ion-select>
             </ion-item>
-            <ion-label *ngIf="isCDNToggleAvailable" (click)="toggle_custom_attach()" slot="end">{{DisplayDBSelectedName}}</ion-label>
-            <ion-icon *ngIf="isCDNToggleAvailable" (click)="toggle_custom_attach()" slot="end" [name]="DisplayDBSelector"></ion-icon>
+            <ion-label *ngIf="isCDNToggleAvailable" (click)="toggle_custom_attach()"
+              slot="end">{{DisplayDBSelectedName}}</ion-label>
+            <ion-icon *ngIf="isCDNToggleAvailable" (click)="toggle_custom_attach()" slot="end"
+              [name]="DisplayDBSelector"></ion-icon>
           </ion-item>
           <input hidden type="file" [id]="file_sel_id" accept="*" multiple (change)="inputImageSelected($event)">
         </div>

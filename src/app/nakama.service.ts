@@ -1789,161 +1789,8 @@ export class NakamaService {
       }
     });
     this.channels = result;
-    this.MakeChannelHaveContextMenuAct();
     this.save_channels_with_less_info();
     return result;
-  }
-
-  /** 구독 페이지에서 우클릭시 채널 종류에 따른 정보 보여주기 */
-  MakeChannelHaveContextMenuAct() {
-    setTimeout(() => {
-      for (let i = 0, j = this.channels.length; i < j; i++) {
-        let TargetChannel = document.getElementById(`${this.channels[i]['server'].isOfficial}_${this.channels[i]['server'].target}_${this.channels[i]['id']}`);
-        if (TargetChannel && TargetChannel.oncontextmenu == null)
-          TargetChannel.oncontextmenu = () => {
-            let index: number;
-            for (let k = 0, l = this.channels.length; k < l; k++)
-              if (`${this.channels[k]['server'].isOfficial}_${this.channels[k]['server'].target}_${this.channels[k].id}` == TargetChannel.id) {
-                index = k;
-                break;
-              }
-            let isOfficial = this.channels[index]['server'].isOfficial;
-            let target = this.channels[index]['server'].target;
-            let targetHeader = this.channels[index]['info'].name || this.channels[index]['info'].display_name;
-            if (this.channels[index]['redirect'].type == 2) // 1:1 대화인 경우
-              targetHeader = targetHeader || this.lang.text['Profile']['noname_user'];
-            else targetHeader = targetHeader || this.lang.text['ChatRoom']['noname_chatroom'];
-            switch (this.channels[index]['redirect'].type) {
-              case 3: // 그룹 채널
-                if (this.channels[index]['status'] == 'online' || this.channels[index]['status'] == 'pending') {
-                  this.modalCtrl.create({
-                    component: GroupDetailPage,
-                    componentProps: {
-                      info: this.groups[isOfficial][target][this.channels[index]['group_id']],
-                      server: { isOfficial: isOfficial, target: target },
-                    },
-                  }).then(v => {
-                    let cache_func = this.global.p5key['KeyShortCut'];
-                    this.global.p5key['KeyShortCut'] = {};
-                    v.onDidDismiss().then(() => {
-                      this.global.p5key['KeyShortCut'] = cache_func;
-                    });
-                    v.present();
-                  });
-                  break;
-                } // 온라인 그룹이 아니라면 1:1 채널과 같게 처리
-              case 2: // 1:1 채널
-                // 온라인 상태의 1:1 채널이라면
-                if (this.channels[index]['status'] == 'online' || this.channels[index]['status'] == 'pending') {
-                  this.alertCtrl.create({
-                    header: targetHeader,
-                    message: this.lang.text['ChatRoom']['UnlinkChannel'],
-                    buttons: [{
-                      text: this.lang.text['ChatRoom']['LogOut'],
-                      handler: async () => {
-                        try { // 채널 차단 처리
-                          await this.servers[isOfficial][target].socket.leaveChat(this.channels[index].id);
-                          this.channels_orig[isOfficial][target][this.channels[index].id]['status'] = 'missing';
-                        } catch (e) {
-                          console.error('채널에서 나오기 실패: ', e);
-                        }
-                        this.rearrange_channels();
-                      },
-                      cssClass: 'redfont',
-                    }]
-                  }).then(v => v.present());
-                } else this.alertCtrl.create({ // 손상 처리된 채널이라면 (그룹, 1:1이 같은 처리를 따름)
-                  header: targetHeader,
-                  message: this.lang.text['ChatRoom']['RemoveChannelLogs'],
-                  buttons: [{
-                    text: this.lang.text['ChatRoom']['Delete'],
-                    handler: async () => {
-                      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-                      loading.present();
-                      await this.remove_group_list(this.channels_orig[isOfficial][target][this.channels[index].id]['info'], isOfficial, target, true);
-                      delete this.channels_orig[isOfficial][target][this.channels[index].id];
-                      this.remove_channel_files(isOfficial, target, this.channels[index].id);
-                      // 해당 채널과 관련된 파일 일괄 삭제 (cdn / ffs)
-                      try { // FFS 요청 우선
-                        let fallback = localStorage.getItem('fallback_fs');
-                        if (!fallback) throw '사용자 지정 서버 없음';
-                        let address = fallback.split(':');
-                        let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
-                        let protocol = checkProtocol ? 'https:' : 'http:';
-                        let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
-                        // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-                        let target_key = `${this.channels[index].id}_${this.users.self['display_name']}`;
-                        try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
-                          target_key = `${this.channels[index]['info'].id}_${this.servers[isOfficial][target].session.user_id}`
-                        } catch (e) { }
-                        this.global.remove_files_from_storage_with_key(target_address, target_key);
-                      } catch (e) { }
-                      try { // cdn 삭제 요청, 로컬 채널은 주소 만들다가 알아서 튕김
-                        let protocol = this.channels[index]['info'].server.useSSL ? 'https:' : 'http:';
-                        let address = this.channels[index]['info'].server.address;
-                        let target_address = `${[protocol]}//${address}:9002/`;
-                        this.global.remove_files_from_storage_with_key(target_address, `${this.channels[index]['info'].id}_${this.servers[isOfficial][target].session.user_id}`);
-                      } catch (e) { }
-                      let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${this.channels[index].id}`);
-                      for (let i = 0, j = list.length; i < j; i++) {
-                        loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
-                        await this.indexed.removeFileFromUserPath(list[i]);
-                      }
-                      loading.dismiss();
-                      this.rearrange_channels();
-                    },
-                    cssClass: 'redfont',
-                  }]
-                }).then(v => v.present());
-                break;
-              case 0: // 로컬 채널
-                this.alertCtrl.create({
-                  header: targetHeader,
-                  message: this.lang.text['ChatRoom']['RemoveChannelLogs'],
-                  buttons: [{
-                    text: this.lang.text['ChatRoom']['Delete'],
-                    handler: async () => {
-                      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-                      loading.present();
-                      delete this.channels_orig[isOfficial][target][this.channels[index].id];
-                      try { // 그룹 이미지 삭제
-                        await this.indexed.removeFileFromUserPath(`servers/${isOfficial}/${target}/groups/${this.channels[index].id}.img`);
-                      } catch (e) {
-                        console.log('그룹 이미지 삭제 오류: ', e);
-                      }
-                      this.save_groups_with_less_info();
-                      // 해당 채널과 관련된 파일 일괄 삭제 (cdn)
-                      try { // FFS 요청 우선
-                        let fallback = localStorage.getItem('fallback_fs');
-                        if (!fallback) throw '사용자 지정 서버 없음';
-                        let address = fallback.split(':');
-                        let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
-                        let protocol = checkProtocol ? 'https:' : 'http:';
-                        let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
-                        // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-                        let target_key = `${this.channels[index].id}_${this.users.self['display_name']}`;
-                        try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
-                          target_key = `${this.channels[index]['info'].id}_${this.servers[isOfficial][target].session.user_id}`
-                        } catch (e) { }
-                        this.global.remove_files_from_storage_with_key(target_address, target_key);
-                      } catch (e) { }
-                      let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${this.channels[index].id}`);
-                      for (let i = 0, j = list.length; i < j; i++) {
-                        loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
-                        await this.indexed.removeFileFromUserPath(list[i]);
-                      }
-                      loading.dismiss();
-                      this.rearrange_channels();
-                    },
-                    cssClass: 'redfont',
-                  }]
-                }).then(v => v.present());
-                break;
-            }
-            return false;
-          }
-      }
-    }, 100);
   }
 
   /** 채널별로 정보를 분리 저장한 후 초기 로드시 병합시키는 구성 필요함 */
@@ -2159,7 +2006,6 @@ export class NakamaService {
     this.indexed.saveTextFileToUserPath(JSON.stringify(copied_group), 'servers/groups.json', () => {
       _CallBack();
     });
-    this.MakeChannelHaveContextMenuAct();
   }
 
   /** 그룹 리스트 로컬/리모트에서 삭제하기 (방장일 경우)  
@@ -3137,46 +2983,6 @@ export class NakamaService {
         return -1;
       return 0;
     });
-    this.MakeContextMenuOnPost();
-  }
-
-  /** 게시물 우클릭 행동 추가 */
-  MakeContextMenuOnPost() {
-    setTimeout(() => {
-      for (let i = 0, j = this.posts.length; i < j; i++) {
-        let TargetPost = document.getElementById(this.posts[i]['id']);
-        if (TargetPost && TargetPost.oncontextmenu == null)
-          TargetPost.oncontextmenu = () => {
-            let index: number;
-            for (let k = 0, l = this.posts.length; k < l; k++)
-              if (this.posts[k]['id'] == TargetPost.id) {
-                index = k;
-                break;
-              }
-            try {
-              if (this.posts[index]['server']['local'] ||
-                this.posts[index]['creator_id'] == this.servers[this.posts[index]['server']['isOfficial']][this.posts[index]['server']['target']].session.user_id)
-                this.alertCtrl.create({
-                  header: this.posts[index]['title'],
-                  message: this.posts[index]['content'],
-                  buttons: [{
-                    text: this.lang.text['ChatRoom']['EditChat'],
-                    handler: () => {
-                      this.EditPost(this.posts[index]);
-                    }
-                  }, {
-                    text: this.lang.text['ChatRoom']['Delete'],
-                    handler: () => {
-                      this.RemovePost(this.posts[index]);
-                    },
-                    cssClass: 'redfont',
-                  }],
-                }).then(v => v.present());
-            } catch (e) { } // 온라인 상태가 아님
-            return false;
-          }
-      }
-    }, 100);
   }
 
   /** 커뮤니티 탭에서 게시물 편집 열기 */

@@ -246,7 +246,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       saving_file.dismiss();
     }
     this.auto_scroll_down();
-    this.MakeContextMenuOnThumbnail();
   }
 
   /** 이름이 같은 파일인 경우 이름을 자동으로 변경 */
@@ -266,76 +265,54 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
   }
 
-  MakeContextMenuOnThumbnail() {
-    setTimeout(() => {
-      for (let i = this.userInput.attach.length - 1; i >= 0; i--) {
-        if (this.userInput.attach[i].viewer != 'image') continue;
-        let targetFilePath = this.userInput.attach[i].path;
-        let attach = document.getElementById(`TodoAttach_${i}`);
-        if (attach && attach.oncontextmenu == null) {
-          try {
-            let catch_index: number;
-            for (let k = 0, l = this.userInput.attach.length; k < l; k++)
-              if (targetFilePath == this.userInput.attach[k].path) {
-                catch_index = k;
+  /** 첨부파일 우클릭시 */
+  AttachmentContextMenu(_FileInfo: FileInfo, index: number) {
+    let FileURL = URL.createObjectURL(_FileInfo.blob);
+    new p5((p: p5) => {
+      p.setup = () => {
+        p.noCanvas();
+        p.loadImage(FileURL, v => {
+          let related_creators: ContentCreatorInfo[] = [];
+          if (_FileInfo['content_related_creator'])
+            related_creators = [..._FileInfo['content_related_creator']];
+          if (_FileInfo['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
+            let is_already_exist = false;
+            for (let i = 0, j = related_creators.length; i < j; i++)
+              if (related_creators[i].user_id !== undefined && _FileInfo['content_creator']['user_id'] !== undefined
+                && related_creators[i].user_id == _FileInfo['content_creator']['user_id']) {
+                is_already_exist = true;
                 break;
               }
-            if (catch_index === undefined) throw '메시지를 찾을 수 없음';
-            attach.oncontextmenu = () => {
-              let FileURL = URL.createObjectURL(this.userInput.attach[catch_index].blob);
-              new p5((p: p5) => {
-                p.setup = () => {
-                  p.noCanvas();
-                  p.loadImage(FileURL, v => {
-                    let related_creators: ContentCreatorInfo[] = [];
-                    if (this.userInput.attach[catch_index]['content_related_creator'])
-                      related_creators = [...this.userInput.attach[catch_index]['content_related_creator']];
-                    if (this.userInput.attach[catch_index]['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
-                      let is_already_exist = false;
-                      for (let i = 0, j = related_creators.length; i < j; i++)
-                        if (related_creators[i].user_id !== undefined && this.userInput.attach[catch_index]['content_creator']['user_id'] !== undefined
-                          && related_creators[i].user_id == this.userInput.attach[catch_index]['content_creator']['user_id']) {
-                          is_already_exist = true;
-                          break;
-                        }
-                      if (!is_already_exist) related_creators.push(this.userInput.attach[catch_index]['content_creator']);
-                    }
-                    this.modalCtrl.create({
-                      component: VoidDrawPage,
-                      componentProps: {
-                        path: this.userInput.attach[catch_index].path,
-                        width: v.width,
-                        height: v.height,
-                      },
-                      cssClass: 'fullscreen',
-                    }).then(v => {
-                      this.removeShortCut();
-                      v.onDidDismiss().then(_w => {
-                        this.AddShortCut();
-                      });
-                      v.onWillDismiss().then(async v => {
-                        if (v.data) this.voidDraw_fileAct_callback(v, related_creators, catch_index, true);
-                      });
-                      v.present();
-                    });
-                    URL.revokeObjectURL(FileURL);
-                    p.remove();
-                  }, e => {
-                    console.log('빠른 편집기 이동 실패: ', e);
-                    URL.revokeObjectURL(FileURL);
-                    p.remove();
-                  });
-                }
-              });
-              return false;
-            }
-          } catch (e) {
-            console.log('이미지 즉시 편집 단축기능 실패: ', e);
+            if (!is_already_exist) related_creators.push(_FileInfo['content_creator']);
           }
-          return false;
-        }
+          this.modalCtrl.create({
+            component: VoidDrawPage,
+            componentProps: {
+              path: _FileInfo.path,
+              width: v.width,
+              height: v.height,
+            },
+            cssClass: 'fullscreen',
+          }).then(v => {
+            this.removeShortCut();
+            v.onDidDismiss().then(_w => {
+              this.AddShortCut();
+            });
+            v.onWillDismiss().then(async v => {
+              if (v.data) this.voidDraw_fileAct_callback(v, related_creators, index, true);
+            });
+            v.present();
+          });
+          URL.revokeObjectURL(FileURL);
+          p.remove();
+        }, e => {
+          console.log('빠른 편집기 이동 실패: ', e);
+          URL.revokeObjectURL(FileURL);
+          p.remove();
+        });
       }
-    }, 0);
+    });
+    return false;
   }
 
   /** 하단에 보여지는 버튼 */
@@ -1177,7 +1154,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       v.data['loadingCtrl'].dismiss();
     });
     this.auto_scroll_down(100);
-    this.MakeContextMenuOnThumbnail();
   }
 
   doneTodo() {

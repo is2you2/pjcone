@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
-import { ModalController, NavController } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
@@ -10,6 +10,7 @@ import { AddGroupPage } from '../settings/add-group/add-group.page';
 import { QRelsePage } from './qrelse/qrelse.page';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
+import { GroupDetailPage } from '../settings/group-detail/group-detail.page';
 
 @Component({
   selector: 'app-subscribes',
@@ -27,6 +28,8 @@ export class SubscribesPage implements OnInit {
     private global: GlobalActService,
     private navCtrl: NavController,
     private indexed: IndexedDBService,
+    private alertCtrl: AlertController,
+    private loadingCtrl: LoadingController,
   ) { }
 
   ngOnInit() {
@@ -138,6 +141,144 @@ export class SubscribesPage implements OnInit {
       this.global.p5key['KeyShortCut']['AddAct'] = () => {
         this.add_new_group();
       };
+  }
+
+  /** 채널 우클릭 행동 */
+  ChannelContextMenu(channel: any) {
+    let isOfficial = channel['server'].isOfficial;
+    let target = channel['server'].target;
+    let targetHeader = channel['info'].name || channel['info'].display_name;
+    if (channel['redirect'].type == 2) // 1:1 대화인 경우
+      targetHeader = targetHeader || this.lang.text['Profile']['noname_user'];
+    else targetHeader = targetHeader || this.lang.text['ChatRoom']['noname_chatroom'];
+    switch (channel['redirect'].type) {
+      case 3: // 그룹 채널
+        if (channel['status'] == 'online' || channel['status'] == 'pending') {
+          this.modalCtrl.create({
+            component: GroupDetailPage,
+            componentProps: {
+              info: this.nakama.groups[isOfficial][target][channel['group_id']],
+              server: { isOfficial: isOfficial, target: target },
+            },
+          }).then(v => {
+            let cache_func = this.global.p5key['KeyShortCut'];
+            this.global.p5key['KeyShortCut'] = {};
+            v.onDidDismiss().then(() => {
+              this.global.p5key['KeyShortCut'] = cache_func;
+            });
+            v.present();
+          });
+          break;
+        } // 온라인 그룹이 아니라면 1:1 채널과 같게 처리
+      case 2: // 1:1 채널
+        // 온라인 상태의 1:1 채널이라면
+        if (channel['status'] == 'online' || channel['status'] == 'pending') {
+          this.alertCtrl.create({
+            header: targetHeader,
+            message: this.lang.text['ChatRoom']['UnlinkChannel'],
+            buttons: [{
+              text: this.lang.text['ChatRoom']['LogOut'],
+              handler: async () => {
+                try { // 채널 차단 처리
+                  await this.nakama.servers[isOfficial][target].socket.leaveChat(channel.id);
+                  this.nakama.channels_orig[isOfficial][target][channel.id]['status'] = 'missing';
+                } catch (e) {
+                  console.error('채널에서 나오기 실패: ', e);
+                }
+                this.nakama.rearrange_channels();
+              },
+              cssClass: 'redfont',
+            }]
+          }).then(v => v.present());
+        } else this.alertCtrl.create({ // 손상 처리된 채널이라면 (그룹, 1:1이 같은 처리를 따름)
+          header: targetHeader,
+          message: this.lang.text['ChatRoom']['RemoveChannelLogs'],
+          buttons: [{
+            text: this.lang.text['ChatRoom']['Delete'],
+            handler: async () => {
+              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+              loading.present();
+              await this.nakama.remove_group_list(this.nakama.channels_orig[isOfficial][target][channel.id]['info'], isOfficial, target, true);
+              delete this.nakama.channels_orig[isOfficial][target][channel.id];
+              this.nakama.remove_channel_files(isOfficial, target, channel.id);
+              // 해당 채널과 관련된 파일 일괄 삭제 (cdn / ffs)
+              try { // FFS 요청 우선
+                let fallback = localStorage.getItem('fallback_fs');
+                if (!fallback) throw '사용자 지정 서버 없음';
+                let address = fallback.split(':');
+                let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
+                let protocol = checkProtocol ? 'https:' : 'http:';
+                let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
+                // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
+                let target_key = `${channel.id}_${this.nakama.users.self['display_name']}`;
+                try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
+                  target_key = `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`
+                } catch (e) { }
+                this.global.remove_files_from_storage_with_key(target_address, target_key);
+              } catch (e) { }
+              try { // cdn 삭제 요청, 로컬 채널은 주소 만들다가 알아서 튕김
+                let protocol = channel['info'].server.useSSL ? 'https:' : 'http:';
+                let address = channel['info'].server.address;
+                let target_address = `${[protocol]}//${address}:9002/`;
+                this.global.remove_files_from_storage_with_key(target_address, `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`);
+              } catch (e) { }
+              let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${channel.id}`);
+              for (let i = 0, j = list.length; i < j; i++) {
+                loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
+                await this.indexed.removeFileFromUserPath(list[i]);
+              }
+              loading.dismiss();
+              this.nakama.rearrange_channels();
+            },
+            cssClass: 'redfont',
+          }]
+        }).then(v => v.present());
+        break;
+      case 0: // 로컬 채널
+        this.alertCtrl.create({
+          header: targetHeader,
+          message: this.lang.text['ChatRoom']['RemoveChannelLogs'],
+          buttons: [{
+            text: this.lang.text['ChatRoom']['Delete'],
+            handler: async () => {
+              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+              loading.present();
+              delete this.nakama.channels_orig[isOfficial][target][channel.id];
+              try { // 그룹 이미지 삭제
+                await this.indexed.removeFileFromUserPath(`servers/${isOfficial}/${target}/groups/${channel.id}.img`);
+              } catch (e) {
+                console.log('그룹 이미지 삭제 오류: ', e);
+              }
+              this.nakama.save_groups_with_less_info();
+              // 해당 채널과 관련된 파일 일괄 삭제 (cdn)
+              try { // FFS 요청 우선
+                let fallback = localStorage.getItem('fallback_fs');
+                if (!fallback) throw '사용자 지정 서버 없음';
+                let address = fallback.split(':');
+                let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
+                let protocol = checkProtocol ? 'https:' : 'http:';
+                let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
+                // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
+                let target_key = `${channel.id}_${this.nakama.users.self['display_name']}`;
+                try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
+                  target_key = `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`
+                } catch (e) { }
+                this.global.remove_files_from_storage_with_key(target_address, target_key);
+              } catch (e) { }
+              let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${channel.id}`);
+              for (let i = 0, j = list.length; i < j; i++) {
+                loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
+                await this.indexed.removeFileFromUserPath(list[i]);
+              }
+              loading.dismiss();
+              this.nakama.rearrange_channels();
+            },
+            cssClass: 'redfont',
+          }]
+        }).then(v => v.present());
+        break;
+    }
+    return false;
   }
 
   ionViewWillEnter() {

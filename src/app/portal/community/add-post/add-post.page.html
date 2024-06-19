@@ -67,8 +67,8 @@
       </div>
     </div>
   </div>
-  <ion-item button *ngFor="let attach of userInput.attachments; let i = index" [id]="'PostAttach_' + i"
-    [disabled]="isSaveClicked" (click)="open_viewer(attach, i)">
+  <ion-item button *ngFor="let attach of userInput.attachments; let i = index" [disabled]="isSaveClicked"
+    (click)="open_viewer(attach, i)" (contextmenu)="PostAttachContextMenu(i)">
     <ion-label>{{'['+ i + '] ' + attach.filename}}</ion-label>
     <div class="additional_form bg_img_form">
       <img class="profile_img" [src]="attach.thumbnail">
