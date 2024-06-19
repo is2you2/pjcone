@@ -88,7 +88,8 @@
             </div>
           </div>
         </div>
-        <div class="full_screen" id="content_viewer_canvas" style="max-width: 100vw; position: relative;"> </div>
+        <div class="full_screen" id="content_viewer_canvas" style="max-width: 100vw; position: relative;"
+          (contextmenu)="canvasDivContextMenu()"> </div>
       </td>
       <td *ngIf="NeedDownloadFile">
         <ion-grid>

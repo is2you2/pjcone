@@ -1266,68 +1266,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.modulate_chatmsg(this.ViewableMessage.length - 1, this.ViewableMessage.length);
         this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
         if (this.useSpeaker) this.SpeechReceivedMessage(c);
-        setTimeout(() => {
-          let CurrentMsg = document.getElementById(c.message_id);
-          if (CurrentMsg) {
-            if (isPlatform == 'DesktopPWA') {
-              if (CurrentMsg.onmousedown == null)
-                CurrentMsg.onmousedown = (ev: any) => {
-                  this.IsQouteMyMessage = c.is_me;
-                  this.MsgClickedStartPos = ev.clientX;
-                  this.TargetMessageObject = CurrentMsg;
-                  if (ev.which == 2) { // 가운데 버튼이면 즉시 인용처리
-                    this.MsgClickedStartPos = ev.clientX + 90;
-                    this.p5canvas['ChatMsgDragAct'](ev.clientX);
-                  }
-                }
-            } else {
-              if (CurrentMsg.ontouchstart == null)
-                CurrentMsg.ontouchstart = (ev: any) => {
-                  try {
-                    this.IsQouteMyMessage = c.is_me;
-                    this.MsgClickedStartPos = ev.touches[0].clientX;
-                    this.TargetMessageObject = CurrentMsg;
-                  } catch (e) { }
-                }
-            }
-            if (CurrentMsg.oncontextmenu == null)
-              CurrentMsg.oncontextmenu = () => {
-                try {
-                  let catch_index: number;
-                  for (let i = 0, j = this.ViewableMessage.length; i < j; i++)
-                    if (CurrentMsg.id == this.ViewableMessage[i].message_id) {
-                      catch_index = i;
-                      break;
-                    }
-                  if (catch_index === undefined) throw '메시지를 찾을 수 없음';
-                  if (isPlatform == 'DesktopPWA')
-                    this.CopyMessageText(this.ViewableMessage[catch_index]);
-                  this.message_detail(c, catch_index);
-                } catch (e) {
-                  console.log('메시지 상세보기 실패: ', e);
-                }
-                return false;
-              }
-          }
-          this.info['is_new'] = false;
-          this.nakama.has_new_channel_msg = false;
-          if (this.NeedScrollDown() && !this.ShowRecentMsg) {
-            this.init_last_message_viewer();
-            this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
-          } else if (c.code != 2) {
-            if (this.info['local'])
-              this.last_message_viewer['is_me'] = true;
-            else this.last_message_viewer['is_me'] = c.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id;
-            this.last_message_viewer['user_id'] = c.sender_id;
-            let message_copied = JSON.parse(JSON.stringify(c.content['msg']))
-            if (c.content['filename']) // 파일이 첨부된 경우
-              if (message_copied.length) { // 최신 메시지 보기에 (첨부파일) 메시지를 임의로 추가
-                message_copied[0][0]['text'] = `(${this.lang.text['ChatRoom']['attachments']}) ${message_copied[0][0]['text']}`;
-              } else message_copied = [[{ text: `(${this.lang.text['ChatRoom']['attachments']})` }]];
-            this.last_message_viewer['message'] = message_copied;
-            this.last_message_viewer['color'] = c.color;
-          }
-        }, 100);
         // 수신된 메시지를 실시간 고도 패키지에 연결해주기
         if (this.global.godot_window && this.global.godot_window['received_msg']) {
           let regen_msg = {
@@ -1641,7 +1579,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
       this.pullable = true;
     }
-    this.MakeViewableMessagesHaveContextMenuAct();
   }
 
   useSpeaker = false;
@@ -1698,7 +1635,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.pullable = this.ViewMsgIndex != 0 || Boolean(this.LocalHistoryList.length);
       if (this.pullable && this.ViewableMessage.length && this.ViewableMessage.length < this.RefreshCount)
         await this.LoadLocalChatHistory();
-      this.MakeViewableMessagesHaveContextMenuAct();
       return;
     }
     if (!this.isHistoryLoaded) { // 기록 리스트 잡아두기
@@ -1752,60 +1688,50 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (this.pullable && this.ViewableMessage.length < this.RefreshCount)
         this.LoadLocalChatHistory();
     }
-    this.MakeViewableMessagesHaveContextMenuAct();
   }
 
   /** 마우스 클릭 시작점 */
   MsgClickedStartPos: number;
   TargetMessageObject: HTMLElement;
   IsQouteMyMessage: boolean;
-  MakeViewableMessagesHaveContextMenuAct() {
-    setTimeout(() => {
-      for (let i = 0, j = this.ViewableMessage.length; i < j; i++) {
-        let CurrentMsg = document.getElementById(this.ViewableMessage[i].message_id);
-        if (CurrentMsg) {
-          if (isPlatform == 'DesktopPWA') {
-            if (CurrentMsg.onmousedown == null)
-              CurrentMsg.onmousedown = (ev: any) => {
-                this.IsQouteMyMessage = this.ViewableMessage[i].is_me;
-                this.MsgClickedStartPos = ev.clientX;
-                this.TargetMessageObject = CurrentMsg;
-                if (ev.which == 2) { // 가운데 버튼이면 즉시 인용처리
-                  this.MsgClickedStartPos = ev.clientX + 90;
-                  this.p5canvas['ChatMsgDragAct'](ev.clientX);
-                }
-              }
-          } else {
-            if (CurrentMsg.ontouchstart == null)
-              CurrentMsg.ontouchstart = (ev: any) => {
-                try {
-                  this.IsQouteMyMessage = this.ViewableMessage[i].is_me;
-                  this.MsgClickedStartPos = ev.touches[0].clientX;
-                  this.TargetMessageObject = CurrentMsg;
-                } catch (e) { }
-              }
-          }
-          if (CurrentMsg.oncontextmenu == null)
-            CurrentMsg.oncontextmenu = () => {
-              try {
-                let catch_index: number;
-                for (let k = 0, l = this.ViewableMessage.length; k < l; k++)
-                  if (CurrentMsg.id == this.ViewableMessage[k].message_id) {
-                    catch_index = k;
-                    break;
-                  }
-                if (catch_index === undefined) throw '메시지를 찾을 수 없음';
-                if (isPlatform == 'DesktopPWA')
-                  this.CopyMessageText(this.ViewableMessage[catch_index]);
-                this.message_detail(this.ViewableMessage[catch_index], catch_index);
-              } catch (e) {
-                console.log('메시지 상세보기 실패: ', e);
-              }
-              return false;
-            }
+
+  /** 메시지를 누를 때 */
+  ChatBalloonMouseDown(ev: any, msg: any) {
+    if (ev.which == 2) { // 가운데 버튼이면 즉시 인용처리
+      this.IsQouteMyMessage = msg.is_me;
+      this.MsgClickedStartPos = ev.clientX;
+      this.TargetMessageObject = document.getElementById(msg.message_id);
+      this.MsgClickedStartPos = ev.clientX + 90;
+      this.p5canvas['ChatMsgDragAct'](ev.clientX);
+    }
+  }
+
+  /** 메시지를 터치할 때 */
+  ChatBalloonOnTouchStart(ev: any, msg: any) {
+    try {
+      this.IsQouteMyMessage = msg.is_me;
+      this.MsgClickedStartPos = ev.touches[0].clientX;
+      this.TargetMessageObject = document.getElementById(msg.message_id);
+    } catch (e) { }
+  }
+
+  /** 말풍선 우클릭 행동 */
+  ChatBalloonContextMenu(msg: any) {
+    try {
+      let catch_index: number;
+      for (let i = 0, j = this.ViewableMessage.length; i < j; i++)
+        if (msg.message_id == this.ViewableMessage[i].message_id) {
+          catch_index = i;
+          break;
         }
-      }
-    }, 100);
+      if (catch_index === undefined) throw '메시지를 찾을 수 없음';
+      if (isPlatform == 'DesktopPWA')
+        this.CopyMessageText(this.ViewableMessage[catch_index]);
+      this.message_detail(msg, catch_index);
+    } catch (e) {
+      console.log('메시지 상세보기 실패: ', e);
+    }
+    return false;
   }
 
   /** 추가 매뉴 숨김여부 */

@@ -146,6 +146,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.isPWA = isPlatform != 'Android' && isPlatform != 'iOS';
   }
 
+  /** 콘텐츠를 우클릭시 메뉴 발현 */
+  canvasDivContextMenu() {
+    if (this.FileInfo.viewer != 'blender')
+      this.FileMenu.present();
+    return false;
+  }
+
   canvasDiv: HTMLElement;
   async reinit_content_data(msg: any) {
     this.CurrentFileSize = undefined;
@@ -418,13 +425,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.forceWrite = false;
     await new Promise((done) => setTimeout(done, 0));
     this.canvasDiv = document.getElementById('content_viewer_canvas');
-    if (this.canvasDiv.oncontextmenu == null) {
-      this.canvasDiv.oncontextmenu = () => {
-        if (this.FileInfo.viewer != 'blender')
-          this.FileMenu.present();
-        return false;
-      }
-    }
     if (this.canvasDiv) this.canvasDiv.style.backgroundImage = '';
     document.removeEventListener('ionBackButton', this.EventListenerAct);
     if (this.p5canvas) this.p5canvas.remove();

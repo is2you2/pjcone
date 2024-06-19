@@ -314,7 +314,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                         this.AddShortCut();
                       });
                       v.onWillDismiss().then(async v => {
-                        this.voidDraw_fileAct_callback(v, related_creators, catch_index, true);
+                        if (v.data) this.voidDraw_fileAct_callback(v, related_creators, catch_index, true);
                       });
                       v.present();
                     });
