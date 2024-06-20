@@ -100,7 +100,6 @@ export class AddPostPage implements OnInit, OnDestroy {
       }
       if (!InitAct) return;
       this.LoadListServer();
-      if (this.servers.length > 1) this.index = 1;
       /** 편집하기로 들어왔다면 */
       if (navParams && navParams.data) {
         // 로컬이라면 첫번째 서버로 설정
