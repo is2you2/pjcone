@@ -6,7 +6,7 @@ self.addEventListener('install', event => {
       .then(function (cache) {
         // 경로 업데이트 필수
         return cache.addAll([
-          '/pjcone_pwa/index.html',
+          '/index.html',
         ]);
       })
   );
