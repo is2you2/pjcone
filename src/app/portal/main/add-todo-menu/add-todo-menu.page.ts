@@ -375,7 +375,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (this.userInput.attach.length)
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
         try {
-          let blob: Blob;
           if (this.userInput.remote) {
             let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
             loading.present();
@@ -383,13 +382,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               this.userInput.attach[i].thumbnail = this.userInput.attach[i].url;
             } else {
               this.userInput.attach[i].alt_path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/${this.userInput.attach[i].filename}`;
-              blob = (await this.nakama.sync_load_file(this.userInput.attach[i],
+              this.userInput.attach[i].blob = (await this.nakama.sync_load_file(this.userInput.attach[i],
                 this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id)).value;
             }
             if (!has_thumbnail) { // 썸네일 이미지가 없다면 만들기
               if (this.userInput.attach[i].viewer == 'image') {
                 let header_image = this.userInput.attach[i].url;
-                if (blob) header_image = URL.createObjectURL(blob);
+                if (this.userInput.attach[i].blob) header_image = URL.createObjectURL(this.userInput.attach[i].blob);
                 await new Promise((done: any) => {
                   new p5((p: p5) => {
                     p.setup = () => {
@@ -416,12 +415,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                             this.global.p5todo['add_todo'](JSON.stringify(this.userInput));
                           done();
                         });
-                        if (blob) URL.revokeObjectURL(header_image);
+                        if (this.userInput.attach[i].blob) URL.revokeObjectURL(header_image);
                         p.remove();
                       }, e => {
                         console.error('Todo-등록된 이미지 불러오기 실패: ', e);
                         done();
-                        if (blob) URL.revokeObjectURL(header_image);
+                        if (this.userInput.attach[i].blob) URL.revokeObjectURL(header_image);
                         p.remove();
                       });
                     }
@@ -431,10 +430,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             }
             loading.dismiss();
           } else if (this.userInput.attach[i].viewer == 'image' || this.userInput.attach[i].viewer == 'text')
-            blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
+            this.userInput.attach[i].blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
           else throw '번외 썸네일 필요';
-          if (!blob) continue;
-          let url = URL.createObjectURL(blob);
+          if (!this.userInput.attach[i].blob) continue;
+          let url = URL.createObjectURL(this.userInput.attach[i].blob);
           this.global.modulate_thumbnail(this.userInput.attach[i], url);
         } catch (e) {
           this.global.modulate_thumbnail(this.userInput.attach[i], '');
