@@ -34,43 +34,43 @@ export class WebrtcService {
     this.nakama.WebRTCService = this;
   }
 
-  p5canvas: p5;
+  private p5canvas: p5;
 
-  localMedia: any;
-  localStream: any;
-  PeerConnection: any;
+  private localMedia: any;
+  private localStream: any;
+  private PeerConnection: any;
 
-  remoteMedia: any;
+  private remoteMedia: any;
 
   /** 통화 시작 시간 */
   startTime: number;
 
-  TypeIn: 'video' | 'audio' | 'data';
+  private TypeIn: 'video' | 'audio' | 'data';
   /** WebRTC 자체 사용 여부  
    * p5 컨트롤러 개체를 다루기 위해 필요함
    */
-  OnUse = false;
+  private OnUse = false;
   /** 통화요청 가능 여부, 통화요청을 할 수 있고, 통화 끊기는 할 수 없음 */
   isCallable = false;
   /** 통화중 여부, 통화중일 땐 통화요청 할 수 없고, 통화 끊기를 할 수 있음 */
-  isConnected = false;
+  private isConnected = false;
   /** 응답에 반응하여 진입 후 통화 연결되기 전 */
-  JoinInited = false;
+  private JoinInited = false;
 
   // Nakama 서버에서 통화가 사용된 채널에 로그를 남기며, 통화 요청 신호로 간주됨
   // 채널 채팅 내 통화 기록을 누르면 그 당시 생성된 매치id에 연결을 시도하고 없으면 통화가 종료된 것으로 간주
   // 채팅 로그에는 match_id 만 공유한다
-  isOfficial: string;
-  target: string;
+  private isOfficial: string;
+  private target: string;
   channel_id: string;
-  user_id: string;
+  private user_id: string;
   /** 현재 연결된 매치 */
   CurrentMatch: Match;
-  LocalOffer: any;
+  private LocalOffer: any;
   LocalAnswer: any;
-  ReceivedOfferPart = '';
-  ReceivedAnswerPart = '';
-  IceCandidates = [];
+  private ReceivedOfferPart = '';
+  private ReceivedAnswerPart = '';
+  private IceCandidates = [];
 
   /** 기존 내용 삭제 및 WebRTC 기반 구축  
    * 마이크 권한을 확보하고 연결하기
@@ -530,7 +530,7 @@ export class WebrtcService {
       this.PeerConnection.addEventListener('addstream', (ev: any) => {
         this.remoteMedia.srcObject = ev.stream;
       });
-    }
+    } else this.createDataChannel('voidDraw');
     this.PeerConnection.addEventListener('datachannel', (event: any) => {
       this.dataChannel[event.channel.label] = event.channel;
       this.createDataChannelListener(event.channel.label);
