@@ -1,11 +1,14 @@
-import { Component, OnInit } from '@angular/core';
-import { AlertController, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { Component, OnInit, ViewChild, viewChild } from '@angular/core';
+import { AlertController, IonSelect, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import * as p5 from 'p5';
 import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
+import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import { ToolServerService } from 'src/app/tool-server.service';
+import { WebrtcService } from 'src/app/webrtc.service';
 
 @Component({
   selector: 'app-void-draw',
@@ -22,7 +25,10 @@ export class VoidDrawPage implements OnInit {
     public global: GlobalActService,
     private navParams: NavParams,
     private indexed: IndexedDBService,
+    private nakama: NakamaService,
     private p5toast: P5ToastService,
+    private toolServer: ToolServerService,
+    private webrtc: WebrtcService,
   ) { }
 
   BackButtonPressed = false;
@@ -40,7 +46,16 @@ export class VoidDrawPage implements OnInit {
   mainLoading: HTMLIonLoadingElement;
 
   EventListenerAct = (ev: any) => {
-    ev.detail.register(130, (_processNextHandler: any) => { });
+    ev.detail.register(130, (_processNextHandler: any) => {
+      if (this.isDrawServerConnected) {
+        this.ReadyToShareAct = false;
+        this.RemoteLoadingCtrl.dismiss();
+        this.toolServer.stop('RemoteDraw');
+        this.isDrawServerConnected = false;
+        this.p5voidDraw['SetDrawable'](true);
+        this.webrtc.close_webrtc();
+      }
+    });
   }
 
   isMobile = false;
@@ -57,6 +72,8 @@ export class VoidDrawPage implements OnInit {
   }
 
   AddShortCut() {
+    if (this.p5voidDraw && this.p5voidDraw['SetDrawable'])
+      this.p5voidDraw['SetDrawable'](true);
     delete this.global.p5key['KeyShortCut']['Digit'];
     this.global.p5key['KeyShortCut']['HistoryAct'] = (key: string) => {
       switch (key) {
@@ -77,9 +94,7 @@ export class VoidDrawPage implements OnInit {
       }
     }
     this.global.p5key['KeyShortCut']['AddAct'] = () => {
-      this.p5toast.show({
-        text: this.lang.text['voidDraw']['Preparing'], // 번역도 삭제
-      }); // 기능 준비되면 p5toast 개체 삭제 (상단에서도)
+      this.ClickRemoteAddButton();
     }
     this.global.p5key['KeyShortCut']['SKeyAct'] = () => {
       this.open_crop_tool();
@@ -90,6 +105,16 @@ export class VoidDrawPage implements OnInit {
       } else this.dismiss_draw();
     }
     this.global.p5key['KeyShortCut']['FKeyAct'] = () => {
+    }
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      if (this.isDrawServerConnected) {
+        this.ReadyToShareAct = false;
+        this.RemoteLoadingCtrl.dismiss();
+        this.toolServer.stop('RemoteDraw');
+        this.isDrawServerConnected = false;
+        this.p5voidDraw['SetDrawable'](true);
+        this.webrtc.close_webrtc();
+      }
     }
   }
 
@@ -109,6 +134,7 @@ export class VoidDrawPage implements OnInit {
     }, millis))
   }
   isCropMode = false;
+  @ViewChild('RemoteDraw') RemoteDraw: IonSelect;
   create_p5voidDraw(initData: any) {
     let targetDiv = document.getElementById('voidDraw');
     this.isCropMode = false;
@@ -236,6 +262,7 @@ export class VoidDrawPage implements OnInit {
           this.isCropMode = false;
           p['SetCanvasViewportInit']();
         }
+        p['SetDrawable'] = SetDrawable;
         /** 상하단 메뉴 생성 */
         TopMenu = p.createElement('table');
         TopMenu.style('position: absolute; top: 0px;');
@@ -244,14 +271,13 @@ export class VoidDrawPage implements OnInit {
         TopMenu.parent(targetDiv);
         let top_row = TopMenu.elt.insertRow(0); // 상단 메뉴
         let AddTextCell = top_row.insertCell(0); // 추가
-        AddTextCell.innerHTML = `<ion-icon id="AddTextIcon" style="width: 27px; height: 27px" name="text"></ion-icon>`;
-        document.getElementById('AddTextIcon').style.fill = 'var(--ion-color-medium)'; // 동작 준비가 완료되면 이 줄 지우기
+        if (isPlatform == 'MobilePWA') // 모바일 웹은 지원하지 않음
+          AddTextCell.innerHTML = `<ion-icon id="RemoteIcon" style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
+        else AddTextCell.innerHTML = `<ion-icon id="RemoteIcon" style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
         AddTextCell.style.textAlign = 'center';
         AddTextCell.style.cursor = 'pointer';
         AddTextCell.onclick = () => {
-          this.p5toast.show({
-            text: this.lang.text['voidDraw']['Preparing'], // 번역도 삭제
-          }); // 기능 준비되면 p5toast 개체 삭제 (상단에서도)
+          this.ClickRemoteAddButton();
         } // 동작 준비중 // A 단축키 기능 재연결과 new_image() 삭제
         let CropCell = top_row.insertCell(1); // Crop
         CropCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="crop"></ion-icon>`;
@@ -598,6 +624,10 @@ export class VoidDrawPage implements OnInit {
       let isTouching = false;
       /** 그리기 가능 여부, 메뉴 생성시 그리기 불가처리를 위해 존재함 */
       let Drawable = true;
+      /** 그리기 막기 */
+      let SetDrawable = (tog: boolean) => {
+        Drawable = tog;
+      }
       const HEADER_HEIGHT = 56;
       p.touchStarted = (ev: any) => {
         if (!Drawable) return;
@@ -712,6 +742,203 @@ export class VoidDrawPage implements OnInit {
     });
   }
 
+  /** 원격 추가 버튼 눌릴 때 */
+  ClickRemoteAddButton() {
+    if (this.isDrawServerConnected) return;
+    // 웹 페이지에서는 모바일로 연결할 수 있도록 인터페이스 준비
+    this.ServerList = this.nakama.get_all_online_server();
+    if (this.ServerList.length) {
+      this.p5voidDraw['SetDrawable'](false);
+      this.RemoteDraw.open();
+    } else this.RemoteBridgeServerSelected({ detail: { value: 'local' } });
+  }
+
+  /** 중계서버 사용 가능한 서버 */
+  ServerList = [];
+  /** 로컬 웹소켓 서버 생성 여부 검토 */
+  isDrawServerConnected = false;
+  /** 취소할 수 있는 구성을 위해 기억함 */
+  RemoteLoadingCtrl: HTMLIonLoadingElement;
+  /** 서버 연결 보조용 웹소켓 삭제를 위해 기억함 */
+  IceWebRTCWsClient: WebSocket;
+  /** WebRTC 구성이 완료되었고 행동을 공유할 준비가 끝남 */
+  ReadyToShareAct = false;
+  /** 서버가 있는 경우 서버를 선택 */
+  async RemoteBridgeServerSelected(ev: any) {
+    let target = ev.detail.value;
+    switch (target) {
+      case 'local': // 웹이면 내부망을 가정하고 즉시 ip 주소 입력기를 준비함
+        if (this.isDrawServerConnected) return;
+        if (isPlatform == 'DesktopPWA') {
+          let is_ws_on = undefined;
+          this.alertCtrl.create({
+            header: this.lang.text['voidDraw']['LocalAddrInput'],
+            inputs: [{
+              type: 'text',
+              placeholder: '0.0.0.0',
+            }],
+            buttons: [{
+              text: this.lang.text['voidDraw']['Confirm'],
+              handler: (ev: any) => {
+                this.p5voidDraw['SetDrawable'](false);
+                if (ev[0]) {
+                  is_ws_on = true;
+                  this.loadingCtrl.create({ message: `${this.lang.text['voidDraw']['WaitingConnection']}: ${ev[0]}` })
+                    .then(v => {
+                      this.RemoteLoadingCtrl = v;
+                      this.RemoteLoadingCtrl.present();
+                      this.IceWebRTCWsClient = new WebSocket(`ws://${ev[0]}:12012/`);
+                      this.isDrawServerConnected = true;
+                      this.IceWebRTCWsClient.onopen = () => {
+                        this.p5toast.show({
+                          text: `${this.lang.text['voidDraw']['Connected']}: ${ev[0]}`,
+                        });
+                        this.IceWebRTCWsClient.send(JSON.stringify({
+                          type: 'size',
+                          width: this.p5voidDraw['ActualCanvas'].width,
+                          height: this.p5voidDraw['ActualCanvas'].height,
+                          imgWidth: this.p5voidDraw['ImageCanvas'].width,
+                          imgHeight: this.p5voidDraw['ImageCanvas'].height,
+                        }));
+                        this.p5voidDraw['SetDrawable'](true);
+                      }
+                      this.IceWebRTCWsClient.onmessage = (ev: any) => {
+                        let json = JSON.parse(ev['data']);
+                        switch (json.type) {
+                          case 'init':
+                            this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Init'];
+                            this.webrtc.initialize('data').then(() => {
+                              this.IceWebRTCWsClient.send(JSON.stringify({
+                                type: 'socket_react',
+                                act: 'WEBRTC_INIT_REQ_SIGNAL',
+                              }));
+                            });
+                            break;
+                          case 'socket_react': // nakama.socket_react
+                            switch (json['act']) {
+                              case 'WEBRTC_REPLY_INIT_SIGNAL':
+                                this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Reply'];
+                                this.nakama.socket_reactive[json['act']](json['data_str']);
+                                if (json['data_str'] == 'EOL') {
+                                  this.webrtc.CreateAnswer(this.IceWebRTCWsClient);
+                                  this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Ice'];
+                                }
+                                break;
+                              case 'WEBRTC_ICE_CANDIDATES':
+                                this.nakama.socket_reactive[json['act']](json['data_str'], this.IceWebRTCWsClient);
+                                v.dismiss();
+                                this.IceWebRTCWsClient.send(JSON.stringify({
+                                  type: 'init_end',
+                                }));
+                                this.ReadyToShareAct = true;
+                                break;
+                            }
+                            break;
+                          default:
+                            console.log('지정되지 않은 정보: ', json);
+                            break;
+                        }
+                      }
+                      this.IceWebRTCWsClient.onclose = () => {
+                        this.ReadyToShareAct = false;
+                        v.dismiss();
+                        this.isDrawServerConnected = false;
+                        this.p5toast.show({
+                          text: this.lang.text['TodoDetail']['Disconnected'],
+                        });
+                        this.AddShortCut();
+                      }
+                    });
+                } else this.p5toast.show({
+                  text: this.lang.text['voidDraw']['InputAddress'],
+                });
+              }
+            }]
+          }).then(v => {
+            v.onDidDismiss().then(() => {
+              if (!is_ws_on) this.AddShortCut();
+            });
+            this.RemoveShortCut();
+            v.present();
+          });
+        } else { // 앱에서는 서버 열기 구성
+          this.RemoteLoadingCtrl = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['WaitingConnection'] });
+          this.RemoteLoadingCtrl.present();
+          this.p5voidDraw['SetDrawable'](false);
+          this.toolServer.initialize('RemoteDraw', 12012,
+            () => { // OnStart
+              this.isDrawServerConnected = true;
+            }, (conn: any) => { // OnConnect
+              this.p5toast.show({
+                text: `${this.lang.text['voidDraw']['Connected']}: ${conn.remoteAddr}`,
+              });
+            }, (conn: any, json: any) => { // OnMessage
+              switch (json.type) {
+                case 'size': // 상대방 캔버스 크기 정보를 기반으로 새 캔버스 생성
+                  this.create_new_canvas({
+                    width: json.width,
+                    height: json.height,
+                  });
+                  this.p5voidDraw['redraw']();
+                  // 그림판이 준비되었다면 WebRTC 구성을 시도
+                  this.webrtc.initialize('data').then(() => {
+                    this.webrtc.CreateOfffer();
+                    this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Init'];
+                    this.toolServer.send_to('RemoteDraw', this.toolServer.list['RemoteDraw'].users[0], JSON.stringify({
+                      type: 'init',
+                    }));
+                  });
+                  break;
+                case 'socket_react': // nakama.socket_react
+                  switch (json['act']) {
+                    case 'WEBRTC_INIT_REQ_SIGNAL':
+                      this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Reply'];
+                      this.nakama.socket_reactive[json['act']]({
+                        server: this.toolServer,
+                        target: 'RemoteDraw',
+                        user: this.toolServer.list['RemoteDraw'].users[0],
+                      });
+                      break;
+                    case 'WEBRTC_RECEIVE_ANSWER':
+                      this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Ice'];
+                      this.nakama.socket_reactive[json['act']](json['data_str'], {
+                        server: this.toolServer,
+                        target: 'RemoteDraw',
+                        user: this.toolServer.list['RemoteDraw'].users[0],
+                      });
+                      this.ReadyToShareAct = true;
+                      break;
+                  }
+                  break;
+                case 'init_end':
+                  this.RemoteLoadingCtrl.dismiss();
+                  break;
+                default:
+                  console.log('정보 지정되지 않음:', json);
+                  break;
+              }
+            }, (conn: any) => { // OnDisconnect
+              this.toolServer.stop('RemoteDraw');
+              this.isDrawServerConnected = false;
+              this.p5voidDraw['SetDrawable'](true);
+              this.p5toast.show({
+                text: this.lang.text['TodoDetail']['Disconnected'],
+              });
+              this.ReadyToShareAct = false;
+            });
+        }
+        break;
+      default: // 서버 중계를 가정하고 selfmatch를 활용하여 정보 발송
+        console.log('서버에서: ', target);
+        this.loadingCtrl.create({ message: this.lang.text['voidDraw']['WaitingConnection'] })
+          .then(v => {
+            this.RemoteLoadingCtrl = v;
+            v.present();
+          });
+        break;
+    }
+  }
+
   new_image() {
     const DEFAULT_SIZE = 432;
     this.alertCtrl.create({
@@ -757,17 +984,36 @@ export class VoidDrawPage implements OnInit {
     }
   }
 
+  /** 항목이 취소되었을 때 그리기 복구 */
+  ionSelectCancel() {
+    if (this.p5voidDraw && this.p5voidDraw['SetDrawable'])
+      this.p5voidDraw['SetDrawable'](true);
+  }
+
   RemoveShortCut() {
+    if (this.p5voidDraw && this.p5voidDraw['SetDrawable'])
+      this.p5voidDraw['SetDrawable'](false);
     delete this.global.p5key['KeyShortCut']['HistoryAct'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
     delete this.global.p5key['KeyShortCut']['DeleteAct'];
     delete this.global.p5key['KeyShortCut']['SKeyAct'];
     delete this.global.p5key['KeyShortCut']['FKeyAct'];
+    delete this.global.p5key['KeyShortCut']['Escape'];
   }
 
   ionViewWillLeave() {
     this.RemoveShortCut();
     if (this.p5voidDraw) this.p5voidDraw.remove();
+    this.toolServer.stop('RemoteDraw');
+    if (this.IceWebRTCWsClient) {
+      this.IceWebRTCWsClient.close();
+
+      this.RemoteLoadingCtrl.dismiss();
+      this.toolServer.stop('RemoteDraw');
+      this.isDrawServerConnected = false;
+
+      this.webrtc.close_webrtc();
+    }
   }
 
   WithoutSave = true;

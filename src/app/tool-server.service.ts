@@ -106,7 +106,7 @@ export class ToolServerService {
   }
 
   /** 서버가 종료되었을 때 공통행동(알림바 업데이트) */
-  onServerClose(target: string) {
+  private onServerClose(target: string) {
     delete this.list[target]['users'];
     this.statusBar.tools[target] = 'missing';
     setTimeout(() => {

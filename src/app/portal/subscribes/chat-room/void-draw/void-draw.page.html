@@ -8,6 +8,13 @@
 </ion-header>
 
 <ion-content oncontextmenu="return false;">
+  <div hidden>
+    <ion-select #RemoteDraw [label]="lang.text['voidDraw']['ConnectToAddress']" value="local"
+      (ionChange)="RemoteBridgeServerSelected($event)" (ionCancel)="ionSelectCancel()">
+      <ion-select-option value="local">{{lang.text['voidDraw']['InternalConn']}}</ion-select-option>
+      <ion-select-option *ngFor="let server of ServerList" [value]="server">{{server.info.name}}</ion-select-option>
+    </ion-select>
+  </div>
   <div id="voidDraw" class="full_screen" style="display: flex; overflow: hidden; background-color: black;">
   </div>
 </ion-content>

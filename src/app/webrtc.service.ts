@@ -101,7 +101,7 @@ export class WebrtcService {
       window.open(out_link, '_system');
       throw this.lang.text['WebRTCDevManager']['SecurityError'];
     }
-    await VoiceRecorder.requestAudioRecordingPermission();
+    if (type != 'data') await VoiceRecorder.requestAudioRecordingPermission();
     if (this.OnUse) {
       this.p5toast.show({
         text: this.lang.text['WebRTCDevManager']['AlreadyCalling'],
@@ -114,14 +114,30 @@ export class WebrtcService {
     this.nakama.socket_reactive['WEBRTC_CHECK_ONLINE'] = (_user_id: string) => {
       if (this.user_id == _user_id) this.close_webrtc();
     }
-    this.nakama.socket_reactive['WEBRTC_INIT_REQ_SIGNAL'] = async () => {
+    this.nakama.socket_reactive['WEBRTC_INIT_REQ_SIGNAL'] = async (_target?: any) => {
       let data_str = JSON.stringify(this.LocalOffer);
       let part = data_str.match(/(.{1,64})/g);
-      for (let i = 0, j = part.length; i < j; i++)
+      if (!_target) {
+        for (let i = 0, j = part.length; i < j; i++)
+          await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+            this.CurrentMatch.match_id, MatchOpCode.WEBRTC_REPLY_INIT_SIGNAL, encodeURIComponent(part[i]));
         await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
-          this.CurrentMatch.match_id, MatchOpCode.WEBRTC_REPLY_INIT_SIGNAL, encodeURIComponent(part[i]));
-      await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
-        this.CurrentMatch.match_id, MatchOpCode.WEBRTC_REPLY_INIT_SIGNAL, encodeURIComponent('EOL'));
+          this.CurrentMatch.match_id, MatchOpCode.WEBRTC_REPLY_INIT_SIGNAL, encodeURIComponent('EOL'));
+      } else {
+        for (let i = 0, j = part.length; i < j; i++) {
+          _target['server'].send_to(_target['target'], _target['user'], JSON.stringify({
+            type: 'socket_react',
+            act: 'WEBRTC_REPLY_INIT_SIGNAL',
+            data_str: part[i],
+          }));
+          await new Promise((done) => setTimeout(done, 70));
+        }
+        _target['server'].send_to(_target['target'], _target['user'], JSON.stringify({
+          type: 'socket_react',
+          act: 'WEBRTC_REPLY_INIT_SIGNAL',
+          data_str: 'EOL',
+        }));
+      }
     }
     this.nakama.socket_reactive['WEBRTC_REPLY_INIT_SIGNAL'] = (data_str: string) => {
       if (data_str == 'EOL') { // 수신 완료
@@ -129,14 +145,14 @@ export class WebrtcService {
         this.ReceivedOfferPart = '';
       } else this.ReceivedOfferPart += data_str;
     }
-    this.nakama.socket_reactive['WEBRTC_RECEIVE_ANSWER'] = (data_str: string) => {
+    this.nakama.socket_reactive['WEBRTC_RECEIVE_ANSWER'] = (data_str: string, _target?: any) => {
       if (data_str == 'EOL') { // 수신 완료
-        this.ReceiveRemoteAnswer(JSON.parse(this.ReceivedAnswerPart));
+        this.ReceiveRemoteAnswer(JSON.parse(this.ReceivedAnswerPart), _target);
         this.ReceivedAnswerPart = '';
       } else this.ReceivedAnswerPart += data_str;
     }
-    this.nakama.socket_reactive['WEBRTC_ICE_CANDIDATES'] = (data_str: string) => {
-      this.ReceiveIceCandidate(JSON.parse(data_str));
+    this.nakama.socket_reactive['WEBRTC_ICE_CANDIDATES'] = (data_str: string, _target?: any) => {
+      this.ReceiveIceCandidate(JSON.parse(data_str), _target);
     }
     this.nakama.socket_reactive['WEBRTC_NEGOCIATENEEDED'] = (data_str: string) => {
       if (data_str == 'EOL') { // 수신 완료
@@ -221,7 +237,7 @@ export class WebrtcService {
           text: `${this.lang.text['WebRTCDevManager']['InitErr']}: ${e}`,
         });
       }
-    }
+    } else this.isCallable = true;
     await this.createCall();
     if (this.p5canvas)
       this.p5canvas['call_button'].elt.disabled = false;
@@ -481,11 +497,13 @@ export class WebrtcService {
       servers.iceServers = JSON.parse(list);
     } catch (e) { }
     // Create peer connections and add behavior.
-    if (this.TypeIn != 'data' && (!servers || !servers.iceServers || !servers.iceServers.length)) {
-      this.p5toast.show({
-        text: this.lang.text['WebRTCDevManager']['NoRegServer'],
-      });
-      servers = undefined;
+    if (this.TypeIn != 'data') {
+      if (!servers || !servers.iceServers || !servers.iceServers.length) {
+        this.p5toast.show({
+          text: this.lang.text['WebRTCDevManager']['NoRegServer'],
+        });
+        servers = undefined;
+      }
     }
     this.PeerConnection = new RTCPeerConnection(servers);
 
@@ -526,14 +544,17 @@ export class WebrtcService {
         }).then((ev: any) => this.createdOffer(ev))
           .catch((e: any) => this.setSessionDescriptionError(e));
 
-        if (this.TypeIn != 'data') {
-          let data_str = JSON.stringify(this.LocalOffer);
-          let part = data_str.match(/(.{1,64})/g);
+        let data_str = JSON.stringify(this.LocalOffer);
+        let part = data_str.match(/(.{1,64})/g);
+        if (this.isOfficial && this.target) {
+          console.log('서버정보 있음');
           for (let i = 0, j = part.length; i < j; i++)
             await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
               this.CurrentMatch.match_id, MatchOpCode.WEBRTC_NEGOCIATENEEDED, encodeURIComponent(part[i]));
           await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
             this.CurrentMatch.match_id, MatchOpCode.WEBRTC_NEGOCIATENEEDED, encodeURIComponent('EOL'));
+        } else {
+          console.log('서버정보 없음: 누구 통해서 보냄?');
         }
       }
     })
@@ -589,13 +610,23 @@ export class WebrtcService {
   /** iceCandidate를 수신받으면 잠시 후에 답변발송을 함 */
   ReplyIceCandidate: any;
   /** ice candidate 공유 받음 */
-  ReceiveIceCandidate(newIceCandidate: any) {
+  ReceiveIceCandidate(newIceCandidate: any, _target?: any) {
     if (this.ReplyIceCandidate) clearTimeout(this.ReplyIceCandidate);
     this.ReplyIceCandidate = setTimeout(async () => {
-      if (this.TypeIn != 'data')
+      if (!_target) {
         for (let i = 0, j = this.IceCandidates.length; i < j; i++)
           await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
             this.CurrentMatch.match_id, MatchOpCode.WEBRTC_ICE_CANDIDATES, encodeURIComponent(JSON.stringify(this.IceCandidates[i])));
+      } else {
+        for (let i = 0, j = this.IceCandidates.length; i < j; i++) {
+          _target.send(JSON.stringify({
+            type: 'socket_react',
+            act: 'WEBRTC_ICE_CANDIDATES',
+            data_str: JSON.stringify(this.IceCandidates[i]),
+          }));
+          await new Promise((done) => setTimeout(done, 70));
+        }
+      }
       this.IceCandidates.length = 0;
     }, 800);
     this.PeerConnection.addIceCandidate(newIceCandidate)
@@ -625,9 +656,9 @@ export class WebrtcService {
   }
 
   /** 응답해주기 */
-  CreateAnswer() {
+  CreateAnswer(_target?: any) {
     this.PeerConnection.createAnswer()
-      .then((desc: any) => this.createdAnswer(desc))
+      .then((desc: any) => this.createdAnswer(desc, _target))
       .catch((e: any) => this.setSessionDescriptionError(e));
   }
 
@@ -642,7 +673,7 @@ export class WebrtcService {
   }
 
   // Logs answer to offer creation and sets peer connection session descriptions.
-  private async createdAnswer(description: any) {
+  private async createdAnswer(description: any, _target?: any) {
     if (this.p5canvas)
       this.p5canvas['call_button'].hide();
     this.LocalAnswer = description;
@@ -652,32 +683,56 @@ export class WebrtcService {
         this.setLocalDescriptionSuccess(this.PeerConnection);
       }).catch((e: any) => this.setSessionDescriptionError(e));
 
-    if (this.TypeIn != 'data') {
-      let data_str = JSON.stringify(description);
-      let part = data_str.match(/(.{1,64})/g);
+    let data_str = JSON.stringify(description);
+    let part = data_str.match(/(.{1,64})/g);
+    if (!_target) {
       for (let i = 0, j = part.length; i < j; i++)
         await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
           this.CurrentMatch.match_id, MatchOpCode.WEBRTC_RECEIVE_ANSWER, encodeURIComponent(part[i]));
       await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
         this.CurrentMatch.match_id, MatchOpCode.WEBRTC_RECEIVE_ANSWER, encodeURIComponent('EOL'));
+      await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
+        this.nakama.self_match[this.isOfficial][this.target].match_id, MatchOpCode.WEBRTC_RECEIVED_CALL_SELF, encodeURIComponent(''));
+    } else {
+      for (let i = 0, j = part.length; i < j; i++) {
+        _target.send(JSON.stringify({
+          type: 'socket_react',
+          act: 'WEBRTC_RECEIVE_ANSWER',
+          data_str: part[i],
+        }));
+        await new Promise((done) => setTimeout(done, 70));
+      }
+      _target.send(JSON.stringify({
+        type: 'socket_react',
+        act: 'WEBRTC_RECEIVE_ANSWER',
+        data_str: 'EOL',
+      }));
     }
     // 스스로에게 통화 수신됨을 알림 (self_match)
-    await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
-      this.nakama.self_match[this.isOfficial][this.target].match_id, MatchOpCode.WEBRTC_RECEIVED_CALL_SELF, encodeURIComponent(''));
     this.JoinInited = true;
   }
 
   /** 상대방으로부터 답변을 받음 */
-  async ReceiveRemoteAnswer(description: any) {
+  async ReceiveRemoteAnswer(description: any, _target?: any) {
     this.PeerConnection.setRemoteDescription(description)
       .then(() => {
         this.setRemoteDescriptionSuccess(this.PeerConnection);
       }).catch((e: any) => this.setSessionDescriptionError(e));
     // 방 생성자가 ice candidate 를 공유함
-    if (this.TypeIn != 'data') {
+    if (!_target) {
       for (let i = 0, j = this.IceCandidates.length; i < j; i++)
         await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
           this.CurrentMatch.match_id, MatchOpCode.WEBRTC_ICE_CANDIDATES, encodeURIComponent(JSON.stringify(this.IceCandidates[i])));
+      this.IceCandidates.length = 0;
+    } else {
+      for (let i = 0, j = this.IceCandidates.length; i < j; i++) {
+        _target['server'].send_to(_target['target'], _target['user'], JSON.stringify({
+          type: 'socket_react',
+          act: 'WEBRTC_ICE_CANDIDATES',
+          data_str: JSON.stringify(this.IceCandidates[i]),
+        }));
+        await new Promise((done) => setTimeout(done, 70));
+      }
       this.IceCandidates.length = 0;
     }
   }
