@@ -210,7 +210,7 @@ export class VoidDrawPage implements OnInit {
             }
           });
         }
-        p['history_act'] = (direction: number) => {
+        p['history_act'] = (direction: number, fromRemote = false) => {
           HistoryPointer = p.min(p.max(0, HistoryPointer + direction), p['DrawingStack'].length);
           switch (direction) {
             case 1: // Redo
@@ -230,6 +230,12 @@ export class VoidDrawPage implements OnInit {
               } else updateActualCanvas();
               break;
           }
+          if (!fromRemote && this.ReadyToShareAct)
+            this.webrtc.dataChannel['voidDraw'].send(JSON.stringify({
+              type: 'same',
+              act: 'history_act',
+              data: direction,
+            }));
         }
         p['open_crop_tool'] = () => {
           if (this.isCropMode) { // 취소 행동으로 간주
@@ -1098,6 +1104,13 @@ export class VoidDrawPage implements OnInit {
               break;
             case 'end':
               this.p5voidDraw['RemoteDrawingEnd'](json['data']);
+              break;
+          }
+          break;
+        case 'same':
+          switch (json['act']) {
+            case 'history_act':
+              this.p5voidDraw['history_act'](json['data'], true);
               break;
           }
           break;
