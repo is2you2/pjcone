@@ -72,6 +72,9 @@ export class WebrtcService {
   private ReceivedAnswerPart = '';
   private IceCandidates = [];
 
+  /** 초기화 회신 반응 행동 */
+  InitReplyCallback: Function;
+
   /** 기존 내용 삭제 및 WebRTC 기반 구축  
    * 마이크 권한을 확보하고 연결하기
    * @param type 영상통화 / 음성통화
@@ -130,7 +133,7 @@ export class WebrtcService {
             act: 'WEBRTC_REPLY_INIT_SIGNAL',
             data_str: part[i],
           }));
-          await new Promise((done) => setTimeout(done, 70));
+          await new Promise((done) => setTimeout(done, 40));
         }
         _target['server'].send_to(_target['target'], _target['user'], JSON.stringify({
           type: 'socket_react',
@@ -143,6 +146,7 @@ export class WebrtcService {
       if (data_str == 'EOL') { // 수신 완료
         this.createRemoteOfferFromAnswer(JSON.parse(this.ReceivedOfferPart));
         this.ReceivedOfferPart = '';
+        if (this.InitReplyCallback) this.InitReplyCallback();
       } else this.ReceivedOfferPart += data_str;
     }
     this.nakama.socket_reactive['WEBRTC_RECEIVE_ANSWER'] = (data_str: string, _target?: any) => {
@@ -516,8 +520,7 @@ export class WebrtcService {
             await this.close_webrtc();
             break;
           case 'connected':
-            if (this.p5canvas)
-              clearTimeout(this.p5canvas['waiting_act']);
+            if (this.p5canvas) clearTimeout(this.p5canvas['waiting_act']);
             break;
           default:
             console.log('연결 상태 변경됨: ', ev.target.connectionState);
@@ -590,7 +593,7 @@ export class WebrtcService {
   }
 
   /** 전화 요청 생성 */
-  CreateOfffer() {
+  CreateOffer() {
     if (this.p5canvas)
       this.p5canvas['call_button'].hide();
 
@@ -624,7 +627,7 @@ export class WebrtcService {
             act: 'WEBRTC_ICE_CANDIDATES',
             data_str: JSON.stringify(this.IceCandidates[i]),
           }));
-          await new Promise((done) => setTimeout(done, 70));
+          await new Promise((done) => setTimeout(done, 40));
         }
       }
       this.IceCandidates.length = 0;
@@ -700,7 +703,7 @@ export class WebrtcService {
           act: 'WEBRTC_RECEIVE_ANSWER',
           data_str: part[i],
         }));
-        await new Promise((done) => setTimeout(done, 70));
+        await new Promise((done) => setTimeout(done, 40));
       }
       _target.send(JSON.stringify({
         type: 'socket_react',
@@ -723,7 +726,6 @@ export class WebrtcService {
       for (let i = 0, j = this.IceCandidates.length; i < j; i++)
         await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
           this.CurrentMatch.match_id, MatchOpCode.WEBRTC_ICE_CANDIDATES, encodeURIComponent(JSON.stringify(this.IceCandidates[i])));
-      this.IceCandidates.length = 0;
     } else {
       for (let i = 0, j = this.IceCandidates.length; i < j; i++) {
         _target['server'].send_to(_target['target'], _target['user'], JSON.stringify({
@@ -731,10 +733,10 @@ export class WebrtcService {
           act: 'WEBRTC_ICE_CANDIDATES',
           data_str: JSON.stringify(this.IceCandidates[i]),
         }));
-        await new Promise((done) => setTimeout(done, 70));
+        await new Promise((done) => setTimeout(done, 40));
       }
-      this.IceCandidates.length = 0;
     }
+    this.IceCandidates.length = 0;
   }
 
   private setSessionDescriptionError(error: any) {
@@ -747,7 +749,7 @@ export class WebrtcService {
   }
 
   /** 통화 종료하기 */
-  async HangUpCall(leaveMatch: boolean) {
+  private async HangUpCall(leaveMatch: boolean) {
     if (this.p5canvas)
       this.p5canvas['hangup']();
     this.isCallable = true;
@@ -756,7 +758,7 @@ export class WebrtcService {
       this.PeerConnection.close();
     this.PeerConnection = undefined;
     try {
-      if (leaveMatch) {
+      if (leaveMatch && this.CurrentMatch.match_id != this.nakama.self_match[this.isOfficial][this.target].match_id) {
         await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
           this.CurrentMatch.match_id, MatchOpCode.WEBRTC_HANGUP, '');
         await this.nakama.servers[this.isOfficial][this.target].socket.leaveMatch(this.CurrentMatch.match_id);
@@ -766,6 +768,7 @@ export class WebrtcService {
 
   /** webrtc 관련 개체 전부 삭제 */
   async close_webrtc(LeaveMatch = true) {
+    this.InitReplyCallback = undefined;
     await this.HangUpCall(LeaveMatch);
     if (this.localMedia) this.localMedia.remove();
     if (this.remoteMedia) this.remoteMedia.remove();

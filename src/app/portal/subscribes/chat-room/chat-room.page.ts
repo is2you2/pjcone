@@ -373,7 +373,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           await this.nakama.servers[this.isOfficial][this.target].socket
             .writeChatMessage(this.info['id'], { match: this.webrtc.CurrentMatch.match_id });
           this.scroll_down_logs();
-          this.webrtc.CreateOfffer();
+          this.webrtc.CreateOffer();
         } catch (e) {
           this.p5toast.show({
             text: `${this.lang.text['ChatRoom']['JoinMatchFailed']}: ${e}`,
