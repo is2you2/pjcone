@@ -1020,7 +1020,7 @@ export class VoidDrawPage implements OnInit {
         let _target = target.info.target;
         this.webrtc.CurrentMatch = this.nakama.self_match[_is_official][_target];
         this.isDrawServerCreated = true;
-        if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') { // 서버에 요청하기
+        if (isPlatform == 'DesktopPWA') { // 서버에 요청하기, PC-모바일 구도
           let crop_pos = this.p5voidDraw['getCropPos']();
           await this.nakama.servers[_is_official][_target].socket
             .sendMatchState(this.nakama.self_match[_is_official][_target].match_id, MatchOpCode.VOIDDRAW_INIT,
