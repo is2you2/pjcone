@@ -938,33 +938,35 @@ export class NakamaService {
     this.indexed.GetFileListFromDB('todo/RemoteTodo_')
       .then(async list => {
         for (let i = 0, j = list.length; i < j; i++) {
-          if (list[i].indexOf('info.todo') >= 0) {
-            let todo = await this.indexed.loadTextFromUserPath(list[i]);
-            let json = JSON.parse(todo);
-            // 이 서버에 대한 검토만을 진행할 예정
-            if (json.remote.isOfficial == _is_official && json.remote.target == _target) {
-              let check = await this.servers[_is_official][_target].client.readStorageObjects(
-                this.servers[_is_official][_target].session, {
-                object_ids: [{
-                  collection: 'server_todo',
-                  key: json.id,
-                  user_id: this.servers[_is_official][_target].session.user_id,
-                }]
-              });
-              if (!check.objects.length) { // 원격에서 삭제된 할 일임
-                let list = await this.indexed.GetFileListFromDB(`todo/${json.id}_${_is_official}_${_target}`);
-                list.forEach(path => this.indexed.removeFileFromUserPath(path));
-                if (json.noti_id)
-                  if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-                    clearTimeout(this.web_noti_id[json.noti_id]);
-                    delete this.web_noti_id[json.noti_id];
-                  }
-                this.noti.ClearNoti(json.id);
-                if (this.global.p5todo && this.global.p5todo['remove_todo'])
-                  this.global.p5todo['remove_todo'](todo);
+          try {
+            if (list[i].indexOf('info.todo') >= 0) {
+              let todo = await this.indexed.loadTextFromUserPath(list[i]);
+              let json = JSON.parse(todo);
+              // 이 서버에 대한 검토만을 진행할 예정
+              if (json.remote.isOfficial == _is_official && json.remote.target == _target) {
+                let check = await this.servers[_is_official][_target].client.readStorageObjects(
+                  this.servers[_is_official][_target].session, {
+                  object_ids: [{
+                    collection: 'server_todo',
+                    key: json.id,
+                    user_id: this.servers[_is_official][_target].session.user_id,
+                  }]
+                });
+                if (!check.objects.length) { // 원격에서 삭제된 할 일임
+                  let list = await this.indexed.GetFileListFromDB(`todo/${json.id}_${_is_official}_${_target}`);
+                  list.forEach(path => this.indexed.removeFileFromUserPath(path));
+                  if (json.noti_id)
+                    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+                      clearTimeout(this.web_noti_id[json.noti_id]);
+                      delete this.web_noti_id[json.noti_id];
+                    }
+                  this.noti.ClearNoti(json.id);
+                  if (this.global.p5todo && this.global.p5todo['remove_todo'])
+                    this.global.p5todo['remove_todo'](todo);
+                }
               }
             }
-          }
+          } catch (e) { }
         }
       });
   }
@@ -1244,6 +1246,10 @@ export class NakamaService {
           path = `todo/${targetInfo['id']}/info.todo`;
         }
         await this.indexed.saveTextFileToUserPath(JSON.stringify(targetInfo), path);
+        this.removeRegisteredId(targetInfo.noti_id);
+        this.noti.ClearNoti(targetInfo.noti_id);
+        if (isDelete && this.global.p5todo)
+          this.global.p5todo['remove_todo'](JSON.stringify(targetInfo));
         if (!slient) loading.dismiss();
         return;
       }

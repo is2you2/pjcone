@@ -186,6 +186,7 @@ export class MainPage implements OnInit {
         // 할 일 추가시 행동
         p['add_todo'] = (data: string) => {
           let json = JSON.parse(data);
+          if (json.removed) return; // 삭제 예약된 할 일은 추가하지 않음
           if (json.done) { // 완료 행동
             for (let i = 0, j = TodoKeys.length; i < j; i++)
               if (Todos[TodoKeys[i]].json.id == json.id) {
