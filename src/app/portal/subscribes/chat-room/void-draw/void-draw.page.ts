@@ -927,6 +927,10 @@ export class VoidDrawPage implements OnInit {
                             break;
                         }
                       }
+                      this.IceWebRTCWsClient.onerror = (e) => {
+                        console.log('그림판 기능 공유 연결 오류: ', e);
+                        this.IceWebRTCWsClient.close();
+                      }
                       this.IceWebRTCWsClient.onclose = () => {
                         this.webrtc.close_webrtc(false);
                       }
