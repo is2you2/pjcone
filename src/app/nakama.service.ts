@@ -33,7 +33,7 @@ export interface ServerInfo {
 }
 
 /** 서버마다 구성 */
-interface NakamaGroup {
+export interface NakamaGroup {
   /** 서버 정보 */
   info?: ServerInfo;
   client?: Client;
@@ -2405,6 +2405,18 @@ export class NakamaService {
           this.act_on_notification(v, _is_official, _target);
           this.rearrange_notifications();
         }
+        socket.onmatchpresence = (m) => {
+          if (m.joins !== undefined) { // 참여 검토
+            m.joins.forEach(_info => {
+              // if (this.servers[_is_official][_target].session.user_id == info.user_id) // self-match
+            });
+          } else if (m.leaves !== undefined) { // 떠남 검토
+            m.leaves.forEach(info => {
+              if (this.servers[_is_official][_target].session.user_id == info.user_id) // self-match
+                this.WebRTCService.close_webrtc(false, true);
+            });
+          }
+        }
         socket.onchannelpresence = (p) => {
           if (p.joins !== undefined) { // 참여 검토
             p.joins.forEach(info => {
@@ -2419,7 +2431,7 @@ export class NakamaService {
                 delete this.load_other_user(info.user_id, _is_official, _target)['online'];
                 others.push(info.user_id);
                 if (this.socket_reactive['WEBRTC_CHECK_ONLINE'])
-                  this.socket_reactive['WEBRTC_CHECK_ONLINE'](info.user_id);
+                  this.socket_reactive['WEBRTC_CHECK_ONLINE'](info);
               }
             });
             others.forEach(_userId => this.load_other_user(_userId, _is_official, _target));

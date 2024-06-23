@@ -104,11 +104,11 @@ export class VoidDrawPage implements OnInit {
     this.global.p5key['KeyShortCut']['FKeyAct'] = () => {
     }
     this.global.p5key['KeyShortCut']['Escape'] = () => {
-      if (this.isDrawServerConnected) {
+      if (this.isDrawServerCreated) {
         this.ReadyToShareAct = false;
         this.RemoteLoadingCtrl.dismiss();
         this.toolServer.stop('RemoteDraw');
-        this.isDrawServerConnected = false;
+        this.isDrawServerCreated = false;
         this.p5voidDraw['SetDrawable'](true);
         this.webrtc.close_webrtc(false);
       }
@@ -228,7 +228,7 @@ export class VoidDrawPage implements OnInit {
               break;
           }
           if (!fromRemote && this.ReadyToShareAct)
-            this.webrtc.dataChannel['voidDraw'].send(JSON.stringify({
+            this.webrtc.dataChannel.send(JSON.stringify({
               type: 'same',
               act: 'history_act',
               data: direction,
@@ -599,7 +599,7 @@ export class VoidDrawPage implements OnInit {
         CurrentDraw['pos'].push(_pos);
         CurrentDraw['pos'].push(_pos);
         if (this.ReadyToShareAct)
-          this.webrtc.dataChannel['voidDraw'].send(JSON.stringify({
+          this.webrtc.dataChannel.send(JSON.stringify({
             type: 'draw',
             act: 'start',
             data: CurrentDraw,
@@ -624,7 +624,7 @@ export class VoidDrawPage implements OnInit {
               if (CurrentDraw && CurrentDraw['pos'])
                 CurrentDraw['pos'].push(_pos);
               if (this.ReadyToShareAct)
-                this.webrtc.dataChannel['voidDraw'].send(JSON.stringify({
+                this.webrtc.dataChannel.send(JSON.stringify({
                   type: 'draw',
                   act: 'moved',
                   data: _pos,
@@ -667,7 +667,7 @@ export class VoidDrawPage implements OnInit {
                   CurrentDraw['pos'].push(_pos);
                   CurrentDraw['pos'].push(_pos);
                   if (this.ReadyToShareAct)
-                    this.webrtc.dataChannel['voidDraw'].send(JSON.stringify({
+                    this.webrtc.dataChannel.send(JSON.stringify({
                       type: 'draw',
                       act: 'end',
                       data: _pos,
@@ -752,7 +752,7 @@ export class VoidDrawPage implements OnInit {
               if (CurrentDraw && CurrentDraw['pos'])
                 CurrentDraw['pos'].push(_pos);
               if (this.ReadyToShareAct)
-                this.webrtc.dataChannel['voidDraw'].send(JSON.stringify({
+                this.webrtc.dataChannel.send(JSON.stringify({
                   type: 'draw',
                   act: 'moved',
                   data: _pos,
@@ -790,7 +790,7 @@ export class VoidDrawPage implements OnInit {
                 CurrentDraw['pos'].push(_pos);
                 CurrentDraw['pos'].push(_pos);
                 if (this.ReadyToShareAct)
-                  this.webrtc.dataChannel['voidDraw'].send(JSON.stringify({
+                  this.webrtc.dataChannel.send(JSON.stringify({
                     type: 'draw',
                     act: 'end',
                     data: _pos,
@@ -830,7 +830,7 @@ export class VoidDrawPage implements OnInit {
 
   /** 원격 추가 버튼 눌릴 때 */
   ClickRemoteAddButton() {
-    if (this.isDrawServerConnected) return;
+    if (this.isDrawServerCreated) return;
     // 웹 페이지에서는 모바일로 연결할 수 있도록 인터페이스 준비
     this.ServerList = this.nakama.get_all_online_server();
     if (this.ServerList.length) {
@@ -842,7 +842,7 @@ export class VoidDrawPage implements OnInit {
   /** 중계서버 사용 가능한 서버 */
   ServerList = [];
   /** 로컬 웹소켓 서버 생성 여부 검토 */
-  isDrawServerConnected = false;
+  isDrawServerCreated = false;
   /** 취소할 수 있는 구성을 위해 기억함 */
   RemoteLoadingCtrl: HTMLIonLoadingElement;
   /** 서버 연결 보조용 웹소켓 삭제를 위해 기억함 */
@@ -851,7 +851,7 @@ export class VoidDrawPage implements OnInit {
   ReadyToShareAct = false;
   /** 서버가 있는 경우 서버를 선택 */
   async RemoteBridgeServerSelected(ev: any) {
-    if (this.isDrawServerConnected) return;
+    if (this.isDrawServerCreated) return;
     let target = ev.detail.value;
     switch (target) {
       case 'local': // 웹이면 내부망을 가정하고 즉시 ip 주소 입력기를 준비함
@@ -874,7 +874,8 @@ export class VoidDrawPage implements OnInit {
                       this.RemoteLoadingCtrl = v;
                       this.RemoteLoadingCtrl.present();
                       this.IceWebRTCWsClient = new WebSocket(`ws://${ev[0]}:12012/`);
-                      this.isDrawServerConnected = true;
+                      this.AddShortCut();
+                      this.isDrawServerCreated = true;
                       this.IceWebRTCWsClient.onopen = () => {
                         this.p5toast.show({
                           text: `${this.lang.text['voidDraw']['Connected']}: ${ev[0]}`,
@@ -918,7 +919,6 @@ export class VoidDrawPage implements OnInit {
                                 this.IceWebRTCWsClient.send(JSON.stringify({
                                   type: 'init_end',
                                 }));
-                                this.AddShortCut();
                                 break;
                             }
                             break;
@@ -949,7 +949,7 @@ export class VoidDrawPage implements OnInit {
           this.p5voidDraw['SetDrawable'](false);
           this.toolServer.initialize('RemoteDraw', 12012,
             () => { // OnStart
-              this.isDrawServerConnected = true;
+              this.isDrawServerCreated = true;
               this.CreateOnOpenActSimple();
             }, (conn: any) => { // OnConnect
               this.p5toast.show({
@@ -1015,6 +1015,7 @@ export class VoidDrawPage implements OnInit {
         let _is_official = target.info.isOfficial;
         let _target = target.info.target;
         this.webrtc.CurrentMatch = this.nakama.self_match[_is_official][_target];
+        this.isDrawServerCreated = true;
         if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') { // 서버에 요청하기
           let crop_pos = this.p5voidDraw['getCropPos']();
           await this.nakama.servers[_is_official][_target].socket
@@ -1065,11 +1066,11 @@ export class VoidDrawPage implements OnInit {
   RemoteBackgroundImage = '';
   /** PWA에서 모바일에 요청하는 것 */
   CreateOnOpenAct() {
-    this.webrtc.dataChannelOpenAct['voidDraw'] = () => {
+    this.webrtc.dataChannelOpenAct = () => {
       this.ReadyToShareAct = true;
       this.RemoteLoadingCtrl.dismiss();
       // 그리기 선 공유
-      this.webrtc.dataChannel['voidDraw'].send(JSON.stringify({
+      this.webrtc.dataChannel.send(JSON.stringify({
         type: 'drawline',
         data: this.p5voidDraw['DrawingStack'],
       }));
@@ -1078,12 +1079,12 @@ export class VoidDrawPage implements OnInit {
           let base64 = await this.global.GetBase64ThroughFileReader(blob);
           let part = base64.match(/(.{1,64})/g);
           for (let i = 0, j = part.length; i < j; i++)
-            await this.webrtc.dataChannel['voidDraw'].send(JSON.stringify({
+            await this.webrtc.dataChannel.send(JSON.stringify({
               type: 'background',
               act: 'part',
               data: part[i],
             }));
-          await this.webrtc.dataChannel['voidDraw'].send(JSON.stringify({
+          await this.webrtc.dataChannel.send(JSON.stringify({
             type: 'background',
             act: 'EOF',
           }));
@@ -1092,14 +1093,14 @@ export class VoidDrawPage implements OnInit {
   }
   /** 모바일쪽에서 완료 처리 검토용 */
   CreateOnOpenActSimple() {
-    this.webrtc.dataChannelOpenAct['voidDraw'] = () => {
+    this.webrtc.dataChannelOpenAct = () => {
       this.ReadyToShareAct = true;
       this.RemoteLoadingCtrl.dismiss();
     }
   }
   /** WebRTC 데이터 수신 행동 만들기 */
   CreateOnMessageLink() {
-    this.webrtc.dataChannelOnMsgAct['voidDraw'] = (msg: any) => {
+    this.webrtc.dataChannelOnMsgAct = (msg: any) => {
       let json = JSON.parse(msg);
       switch (json.type) {
         case 'drawline': // 그림판에 있던 선 동기화
@@ -1152,12 +1153,10 @@ export class VoidDrawPage implements OnInit {
           break;
       }
     }
-    this.webrtc.dataChannelOnCloseAct['voidDraw'] = () => {
+    this.webrtc.dataChannelOnCloseAct = () => {
       this.ReadyToShareAct = false;
-      this.isDrawServerConnected = false;
+      this.isDrawServerCreated = false;
       this.RemoteLoadingCtrl.dismiss();
-      if (!this.WillLeaveHere)
-        this.AddShortCut();
       this.p5voidDraw['SetDrawable'](true);
       this.p5toast.show({
         text: this.lang.text['TodoDetail']['Disconnected'],
@@ -1187,7 +1186,7 @@ export class VoidDrawPage implements OnInit {
 
   /** 항목이 취소되었을 때 그리기 복구 */
   ionSelectCancel() {
-    if (this.p5voidDraw && this.p5voidDraw['SetDrawable'] && !this.isDrawServerConnected)
+    if (this.p5voidDraw && this.p5voidDraw['SetDrawable'] && !this.isDrawServerCreated)
       this.p5voidDraw['SetDrawable'](true);
   }
 
@@ -1210,7 +1209,7 @@ export class VoidDrawPage implements OnInit {
     this.toolServer.stop('RemoteDraw');
     if (this.IceWebRTCWsClient)
       this.IceWebRTCWsClient.close();
-    this.isDrawServerConnected = false;
+    this.isDrawServerCreated = false;
     this.ReadyToShareAct = false;
     this.toolServer.stop('RemoteDraw');
     this.RemoteLoadingCtrl.dismiss();

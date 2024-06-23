@@ -84,7 +84,7 @@ export class WebrtcService {
    */
   async initialize(type: 'video' | 'audio' | 'data',
     media_const?: MediaStreamConstraints, nakama?: any, LeaveMatch?: boolean) {
-    if (window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0) {
+    if (type != 'data' && window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0) {
       // 보안 연결 필수, 웹 페이지로 현재 정보와 함께 던져주기
       let servers = this.nakama.get_all_online_server();
       let out_link = 'https://is2you2.github.io/pjcone_pwa/';
@@ -114,8 +114,8 @@ export class WebrtcService {
     await this.close_webrtc(LeaveMatch);
     this.TypeIn = type;
     // 통화중인 상대방이 오프라인으로 전환되면 통화 끝내기
-    this.nakama.socket_reactive['WEBRTC_CHECK_ONLINE'] = (_user_id: string) => {
-      if (this.user_id == _user_id) this.close_webrtc();
+    this.nakama.socket_reactive['WEBRTC_CHECK_ONLINE'] = (_user: any) => {
+      if (this.user_id == _user.user_id) this.close_webrtc();
     }
     this.nakama.socket_reactive['WEBRTC_INIT_REQ_SIGNAL'] = async (_target?: any) => {
       let data_str = JSON.stringify(this.LocalOffer);
@@ -533,10 +533,10 @@ export class WebrtcService {
       this.PeerConnection.addEventListener('addstream', (ev: any) => {
         this.remoteMedia.srcObject = ev.stream;
       });
-    } else this.createDataChannel('voidDraw');
+    } else this.createDataChannel();
     this.PeerConnection.addEventListener('datachannel', (event: any) => {
-      this.dataChannel[event.channel.label] = event.channel;
-      this.createDataChannelListener(event.channel.label);
+      this.dataChannel = event.channel;
+      this.createDataChannelListener();
     });
     this.PeerConnection.addEventListener('negotiationneeded', async (_ev: any) => {
       // 스트림 설정 변경시 재협상 필요, sdp 재교환해야함
@@ -550,7 +550,6 @@ export class WebrtcService {
         let data_str = JSON.stringify(this.LocalOffer);
         let part = data_str.match(/(.{1,64})/g);
         if (this.isOfficial && this.target) {
-          console.log('서버정보 있음');
           for (let i = 0, j = part.length; i < j; i++)
             await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
               this.CurrentMatch.match_id, MatchOpCode.WEBRTC_NEGOCIATENEEDED, encodeURIComponent(part[i]));
@@ -563,30 +562,33 @@ export class WebrtcService {
     })
   }
 
-  dataChannel = {};
-  dataChannelOpenAct = {};
-  dataChannelOnMsgAct = {};
-  dataChannelOnCloseAct = {};
-  createDataChannel(label: string, option?: RTCDataChannelInit) {
-    this.dataChannel[label] = this.PeerConnection.createDataChannel(label, option);
-    this.createDataChannelListener(label);
+  dataChannel: any;
+  dataChannelOpenAct: Function;
+  dataChannelOnMsgAct: Function;
+  dataChannelOnCloseAct: Function;
+  createDataChannel(option?: RTCDataChannelInit) {
+    this.dataChannel = this.PeerConnection.createDataChannel(option);
+    this.createDataChannelListener();
   }
 
-  createDataChannelListener(label: string) {
-    this.dataChannel[label].addEventListener('open', (_ev: any) => {
-      if (this.dataChannelOpenAct[label]) this.dataChannelOpenAct[label]();
+  createDataChannelListener() {
+    this.dataChannel.addEventListener('open', (_ev: any) => {
+      if (this.dataChannelOpenAct) this.dataChannelOpenAct();
     });
-    this.dataChannel[label].addEventListener('close', (_ev: any) => {
-      if (this.dataChannelOnCloseAct[label]) this.dataChannelOnCloseAct[label]();
+    this.dataChannel.addEventListener('close', (_ev: any) => {
+      if (this.dataChannelOnCloseAct) this.dataChannelOnCloseAct();
+      this.dataChannelOpenAct = undefined;
+      this.dataChannelOnMsgAct = undefined;
+      this.dataChannelOnCloseAct = undefined;
     });
-    this.dataChannel[label].addEventListener('message', (event: any) => {
-      if (this.dataChannelOnMsgAct[label]) this.dataChannelOnMsgAct[label](event.data);
+    this.dataChannel.addEventListener('message', (event: any) => {
+      if (this.dataChannelOnMsgAct) this.dataChannelOnMsgAct(event.data);
     });
   }
 
-  send(label: string, msg: string) {
+  send(msg: string) {
     try {
-      this.dataChannel[label].send(msg);
+      this.dataChannel.send(msg);
     } catch (e) {
       console.log('WebRTC 메시지 발송 실패: ', e);
     }
@@ -767,7 +769,8 @@ export class WebrtcService {
   }
 
   /** webrtc 관련 개체 전부 삭제 */
-  async close_webrtc(LeaveMatch = true) {
+  async close_webrtc(LeaveMatch = true, checkIfData = false) {
+    if (checkIfData && this.TypeIn != 'data') return;
     this.InitReplyCallback = undefined;
     await this.HangUpCall(LeaveMatch);
     if (this.localMedia) this.localMedia.remove();
@@ -782,9 +785,10 @@ export class WebrtcService {
     this.localMedia = undefined;
     this.localStream = undefined;
     this.remoteMedia = undefined;
-    this.dataChannelOpenAct = {};
-    this.dataChannelOnCloseAct = {};
-    this.dataChannelOnMsgAct = {};
+    this.isOfficial = undefined;
+    this.target = undefined;
+    this.user_id = undefined;
+    this.channel_id = undefined;
     this.dataChannel = {};
     this.ReceivedOfferPart = '';
     this.ReceivedAnswerPart = '';
