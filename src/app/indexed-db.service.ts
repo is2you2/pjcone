@@ -18,7 +18,10 @@ export class IndexedDBService {
   godotDB: IDBDatabase;
 
   initialize(_CallBack = () => { }) {
-    if (this.ionicDB) return;
+    if (this.ionicDB) {
+      _CallBack();
+      return;
+    }
     let req = indexedDB.open('/ionicfs', 10);
     req.onsuccess = (e) => {
       let db = e.target['result'];
