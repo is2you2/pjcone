@@ -115,7 +115,9 @@ export class WebrtcService {
     this.TypeIn = type;
     // 통화중인 상대방이 오프라인으로 전환되면 통화 끝내기
     this.nakama.socket_reactive['WEBRTC_CHECK_ONLINE'] = (_user: any) => {
-      if (this.user_id == _user.user_id) this.close_webrtc();
+      if (this.user_id == _user.user_id)
+        if (!this.nakama.load_other_user(this.user_id, this.isOfficial, this.target)['online'])
+          this.close_webrtc();
     }
     this.nakama.socket_reactive['WEBRTC_INIT_REQ_SIGNAL'] = async (_target?: any) => {
       let data_str = JSON.stringify(this.LocalOffer);
@@ -165,7 +167,7 @@ export class WebrtcService {
         this.CreateAnswer();
       } else this.ReceivedOfferPart += data_str;
     }
-    this.nakama.socket_reactive['WEBRTC_RECEIVED_CALL_SELF'] = (data_str: string) => {
+    this.nakama.socket_reactive['WEBRTC_RECEIVED_CALL_SELF'] = () => {
       this.close_webrtc(false);
     }
     if (nakama) {

@@ -2419,7 +2419,8 @@ export class NakamaService {
           } else if (m.leaves !== undefined) { // 떠남 검토
             m.leaves.forEach(info => {
               if (this.servers[_is_official][_target].session.user_id == info.user_id) // self-match
-                this.WebRTCService.close_webrtc(false, true);
+                if (this.WebRTCService && this.WebRTCService.TypeIn == 'data')
+                  this.WebRTCService.close_webrtc(false, true);
             });
           }
         }
@@ -2434,14 +2435,22 @@ export class NakamaService {
             let others = [];
             p.leaves.forEach(info => {
               if (this.servers[_is_official][_target].session.user_id != info.user_id) {
-                delete this.load_other_user(info.user_id, _is_official, _target)['online'];
-                others.push(info.user_id);
-                if (this.socket_reactive['WEBRTC_CHECK_ONLINE'])
-                  this.socket_reactive['WEBRTC_CHECK_ONLINE'](info);
+                this.servers[_is_official][_target].client.getUsers(
+                  this.servers[_is_official][_target].session, [info.user_id])
+                  .then(user => {
+                    let keys = Object.keys(user.users[0]);
+                    delete this.load_other_user(info.user_id, _is_official, _target)['online'];
+                    keys.forEach(key => {
+                      this.users[_is_official][_target][info.user_id][key] = user.users[0][key];
+                    });
+                    others.push(info.user_id);
+                    others.forEach(_userId => this.load_other_user(_userId, _is_official, _target));
+                    this.count_channel_online_member(p, _is_official, _target);
+                    if (this.socket_reactive['WEBRTC_CHECK_ONLINE'])
+                      this.socket_reactive['WEBRTC_CHECK_ONLINE'](info);
+                  });
               }
             });
-            others.forEach(_userId => this.load_other_user(_userId, _is_official, _target));
-            this.count_channel_online_member(p, _is_official, _target);
           }
           if (this.socket_reactive['others-online'])
             this.socket_reactive['others-online']();
@@ -2672,7 +2681,7 @@ export class NakamaService {
                 this.socket_reactive['WEBRTC_NEGOCIATENEEDED'](m['data_str']);
             }
               break;
-            // 여러 기기를 이용할 경우 한 기기에서 통화를 받음
+            // 여러 기기를 이용할 경우 한 기기에서 통화를 받음, 다른 기기 통화 끊기
             case MatchOpCode.WEBRTC_RECEIVED_CALL_SELF: {
               if ((this.WebRTCService && this.WebRTCService.TypeIn != 'data') && this.socket_reactive['WEBRTC_RECEIVED_CALL_SELF'])
                 this.socket_reactive['WEBRTC_RECEIVED_CALL_SELF']();
