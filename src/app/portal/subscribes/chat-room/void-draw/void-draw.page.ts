@@ -254,6 +254,7 @@ export class VoidDrawPage implements OnInit {
             CropModePosition.y = 0;
             p.redraw();
           }
+          p['change_checkmark']();
         }
         p['apply_crop'] = () => {
           if (this.isMobile)
@@ -271,6 +272,7 @@ export class VoidDrawPage implements OnInit {
           ImageCanvas.pop();
           ImageCanvas.redraw();
           this.isCropMode = false;
+          p['change_checkmark']();
           p['SetCanvasViewportInit']();
         }
         p['SetDrawable'] = SetDrawable;
@@ -300,6 +302,11 @@ export class VoidDrawPage implements OnInit {
         ApplyCell.style.textAlign = 'center';
         ApplyCell.style.cursor = 'pointer';
         ApplyCell.onclick = () => { this.dismiss_draw() }
+        p['change_checkmark'] = () => {
+          if (this.isCropMode) {
+            ApplyCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="cut-sharp"></ion-icon>`;
+          } else ApplyCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="checkmark"></ion-icon>`;
+        }
 
         BottomMenu = p.createElement('table');
         BottomMenu.style('position: absolute; bottom: 0px;');
