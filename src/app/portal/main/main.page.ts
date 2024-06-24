@@ -50,7 +50,7 @@ export class MainPage implements OnInit {
     else this.global.p5todo.noLoop();
   }
   /** 화면에 보여지는 이름 정보 */
-  TargetFilterDisplayName = this.lang.text['Main']['FilterCat_0'];
+  TargetFilterDisplayName = 'FilterCat_0';
   /** 할 일 필터 카테고리 */
   TargetFilterName = 0;
   /** 할 일 필터 카테고리 일체  
@@ -62,13 +62,13 @@ export class MainPage implements OnInit {
     this.TargetFilterName = force ?? ((this.TargetFilterName + 1) % 3);
     switch (this.TargetFilterName) {
       case TodoFilterCategory.None:
-        this.TargetFilterDisplayName = this.lang.text['Main']['FilterCat_0'];
+        this.TargetFilterDisplayName = 'FilterCat_0';
         break;
       case TodoFilterCategory.Importance:
-        this.TargetFilterDisplayName = this.lang.text['TodoDetail']['Importance'];
+        this.TargetFilterDisplayName = 'Importance';
         break;
       case TodoFilterCategory.Color:
-        this.TargetFilterDisplayName = this.lang.text['TodoDetail']['CustomColor'];
+        this.TargetFilterDisplayName = 'CustomColor';
         break;
     }
     this.CurrentFilterValue = undefined;
@@ -241,40 +241,40 @@ export class MainPage implements OnInit {
         // 필터 종류에 따라 데이터를 수집하여 준비함
         this.AllCategories[TodoFilterCategory.None] = [];
         this.AllCategories[TodoFilterCategory.Importance] = [{
-          name: this.lang.text['TodoDetail']['Importance_0'],
+          name: 'Importance_0',
           color: '#58a19288',
           value: '0',
         }, {
-          name: this.lang.text['TodoDetail']['Importance_1'],
+          name: 'Importance_1',
           color: '#ddbb4188',
           value: '1',
         }, {
-          name: this.lang.text['TodoDetail']['Importance_2'],
+          name: 'Importance_2',
           color: '#b9543788',
           value: '2',
         }];
         this.AllCategories[TodoFilterCategory.Color] = [{
-          name: this.lang.text['Main']['ColorFilterRed'],
+          name: 'ColorFilterRed',
           color: '#ff000088',
           value: [-30, 30],
         }, {
-          name: this.lang.text['Main']['ColorFilterYellow'],
+          name: 'ColorFilterYellow',
           color: '#ffff0088',
           value: [30, 90],
         }, {
-          name: this.lang.text['Main']['ColorFilterGreen'],
+          name: 'ColorFilterGreen',
           color: '#00ff0088',
           value: [90, 150],
         }, {
-          name: this.lang.text['Main']['ColorFilterCyan'],
+          name: 'ColorFilterCyan',
           color: '#00ffff88',
           value: [150, 210],
         }, {
-          name: this.lang.text['Main']['ColorFilterBlue'],
+          name: 'ColorFilterBlue',
           color: '#0000ff88',
           value: [210, 270],
         }, {
-          name: this.lang.text['Main']['ColorFilterMagenta'],
+          name: 'ColorFilterMagenta',
           color: '#ff00ff88',
           value: [270, 330],
         }];
