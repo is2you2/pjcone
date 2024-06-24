@@ -314,7 +314,7 @@ export class SubscribesPage implements OnInit {
     try {
       if (!perm.granted || this.StartScan) throw '시작 불가상태';
       this.StartScan = true;
-      document.querySelector('body').classList.add('scanner-active');
+      document.querySelector('body').setAttribute('style', '--background: transparent; --ion-background-color: transparent;');
       await BarcodeScanner.hideBackground();
       const result = await BarcodeScanner.startScan();
       if (result.hasContent) {
@@ -342,7 +342,7 @@ export class SubscribesPage implements OnInit {
 
   StopScan() {
     this.StartScan = false;
-    document.querySelector('body').classList.remove('scanner-active');
+    document.querySelector('body').removeAttribute('style');
     BarcodeScanner.showBackground();
     BarcodeScanner.stopScan();
   }
