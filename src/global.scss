@@ -250,3 +250,7 @@ button.alert-button.redfont {
 .hljs-regexp {
     color: var(--syntax-text-coding-command);
 }
+
+.transparent-modal {
+    --background: rgba(0, 0, 0, 0);
+}

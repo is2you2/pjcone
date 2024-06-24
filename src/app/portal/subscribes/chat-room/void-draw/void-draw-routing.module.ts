@@ -7,6 +7,10 @@ const routes: Routes = [
   {
     path: '',
     component: VoidDrawPage
+  },
+  {
+    path: 'link-qr',
+    loadChildren: () => import('./link-qr/link-qr.module').then( m => m.LinkQrPageModule)
   }
 ];
 

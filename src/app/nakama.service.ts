@@ -13,6 +13,7 @@ import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.serv
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
+import { VoidDrawPage } from './portal/subscribes/chat-room/void-draw/void-draw.page';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -4188,6 +4189,13 @@ export class NakamaService {
         });
       }
     }
+    if (init['voidDraw']) {
+      if (window.location.protocol == 'http:') // 보안 연결이 아닐 때에만 동작
+        json.push({
+          type: 'voidDraw',
+          address: init['voidDraw'][0],
+        })
+    }
     if (NeedReturn) return json;
     else await this.act_from_QRInfo(json);
   }
@@ -4298,6 +4306,14 @@ export class NakamaService {
           } catch (e) { }
           ServerInfos.push(json[i].value);
           await this.indexed.saveTextFileToUserPath(JSON.stringify(ServerInfos), 'servers/webrtc_server.json');
+          break;
+        case 'voidDraw':
+          this.modalCtrl.create({
+            component: VoidDrawPage,
+            componentProps: {
+              remote: json[i].address,
+            }
+          }).then(v => v.present());
           break;
         default: // 동작 미정 알림(debug)
           throw "지정된 틀 아님";

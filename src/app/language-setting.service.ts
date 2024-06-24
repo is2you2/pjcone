@@ -23,6 +23,7 @@ export class LanguageSettingService {
     Settings: {},
     Community: {},
     MinimalChat: {},
+    voidDraw: {},
   };
 
   constructor() {
