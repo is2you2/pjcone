@@ -333,7 +333,7 @@ export class MainPage implements OnInit {
                     Todos[TodoKeys[i]].isHidden = biggerThan && lessThan;
                   }
                 }
-              } else FilteringTodos(TodoFilterCategory.None);
+              } else Todos[TodoKeys[i]].isHidden = false;
             }
             break;
         }
