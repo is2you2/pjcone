@@ -1289,19 +1289,26 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   async download_file() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       if (this.FileInfo['url']) {
+        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
         try {
-          let res = await fetch(this.FileInfo.url);
-          let blob = await res.blob();
-          if (res.ok) {
-            await this.indexed.saveBlobToUserPath(blob, this.FileInfo.alt_path || this.FileInfo.path);
-            this.indexed.DownloadFileFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
-          } else throw '제대로 다운받아지지 않음';
+          loading.present();
+          let file_exist = await this.indexed.checkIfFileExist(this.FileInfo.path);
+          if (file_exist) this.indexed.DownloadFileFromUserPath(this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
+          else {
+            let res = await fetch(this.FileInfo.url);
+            let blob = await res.blob();
+            if (res.ok) {
+              await this.indexed.saveBlobToUserPath(blob, this.FileInfo.alt_path || this.FileInfo.path);
+              this.indexed.DownloadFileFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
+            } else throw '제대로 다운받아지지 않음';
+          }
         } catch (e) {
           console.log('다운받기 실패: ', e);
           this.p5toast.show({
             text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`
           });
         }
+        loading.dismiss();
       } else this.indexed.DownloadFileFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
     else this.alertCtrl.create({
       header: this.lang.text['ContentViewer']['Filename'],
