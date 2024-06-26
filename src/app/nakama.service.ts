@@ -3827,7 +3827,7 @@ export class NakamaService {
       delete this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id];
       this.global.remove_req_file_info(msg, path);
       this.p5toast.show({
-        text: `${this.lang.text['ChatRoom']['SendFile']}: ${_msg.content.filename}`,
+        text: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SendFile']}: ${_msg.content.filename}`,
       });
     }, 100);
   }
@@ -3877,7 +3877,7 @@ export class NakamaService {
         delete msg.content['transfer_index'];
         delete this.OnTransfer[_is_official][_target][_msg.channel_id][_msg.message_id]['index'];
         this.p5toast.show({
-          text: `${this.lang.text['ChatRoom']['SavingFile']}: ${_msg.content.filename}`,
+          text: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SavingFile']}: ${_msg.content.filename}`,
         });
         if (isPlatform == 'Android' || isPlatform == 'iOS')
           this.noti.noti.schedule({
@@ -4012,7 +4012,7 @@ export class NakamaService {
         info['text'] = [this.lang.text['ChatRoom']['SavingFile']];
         if (show_noti)
           this.p5toast.show({
-            text: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
+            text: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
           });
         if (isPlatform == 'Android' || isPlatform == 'iOS')
           this.noti.noti.schedule({
