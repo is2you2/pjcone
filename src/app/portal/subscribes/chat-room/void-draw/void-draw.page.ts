@@ -943,6 +943,7 @@ export class VoidDrawPage implements OnInit {
                 case 'socket_react': // nakama.socket_react
                   switch (json['act']) {
                     case 'WEBRTC_INIT_REQ_SIGNAL':
+                      this.p5voidDraw['SetDrawable'](false);
                       this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Reply'];
                       this.nakama.socket_reactive[json['act']]({
                         server: this.toolServer,
@@ -991,6 +992,7 @@ export class VoidDrawPage implements OnInit {
                 cropX: crop_pos.x,
                 cropY: crop_pos.y,
               })));
+          this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Init'];
           await this.webrtc.initialize('data', undefined, {
             isOfficial: _is_official,
             target: _target,
@@ -1052,6 +1054,7 @@ export class VoidDrawPage implements OnInit {
           let json = JSON.parse(ev['data']);
           switch (json.type) {
             case 'init':
+              this.p5voidDraw['SetDrawable'](false);
               this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Init'];
               this.webrtc.initialize('data').then(() => {
                 this.IceWebRTCWsClient.send(JSON.stringify({
@@ -1075,6 +1078,7 @@ export class VoidDrawPage implements OnInit {
                 case 'WEBRTC_ICE_CANDIDATES':
                   this.nakama.socket_reactive[json['act']](json['data_str'], this.IceWebRTCWsClient);
                   v.dismiss();
+                  this.p5voidDraw['SetDrawable'](true);
                   this.IceWebRTCWsClient.send(JSON.stringify({
                     type: 'init_end',
                   }));
