@@ -288,7 +288,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           this.modalCtrl.create({
             component: VoidDrawPage,
             componentProps: {
-              path: _FileInfo.path,
+              path: _FileInfo.alt_path || _FileInfo.path,
               width: v.width,
               height: v.height,
             },
