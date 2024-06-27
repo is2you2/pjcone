@@ -477,8 +477,7 @@ export class UserFsDirPage implements OnInit {
     try {
       info.name = `${this.nakama.groups[sep[1]][sep[2]][sep[4].split('.').shift()]['name']}.img`;
     } catch (e) {
-      console.error('SetDisplayGroupImageName error: ', e);
-
+      console.log('SetDisplayGroupImageName error: ', e);
     }
   }
 

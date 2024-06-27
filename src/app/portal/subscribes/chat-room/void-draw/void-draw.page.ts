@@ -48,7 +48,8 @@ export class VoidDrawPage implements OnInit {
 
   EventListenerAct = (ev: any) => {
     ev.detail.register(130, (_processNextHandler: any) => {
-      this.CancelRemoteAct();
+      if (this.isDrawServerCreated)
+        this.CancelRemoteAct();
     });
   }
 
