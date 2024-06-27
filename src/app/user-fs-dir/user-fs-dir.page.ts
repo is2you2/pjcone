@@ -542,10 +542,12 @@ export class UserFsDirPage implements OnInit {
                 cssClass: 'fullscreen',
               }).then(v => {
                 v.onWillDismiss().then(async v => {
-                  let blob = this.global.Base64ToBlob(v.data['img'], 'image/png');
-                  blob['name'] = v.data['name'];
-                  await this.importSelected(blob);
-                  v.data['loadingCtrl'].dismiss();
+                  if (v.data) {
+                    let blob = this.global.Base64ToBlob(v.data['img'], 'image/png');
+                    blob['name'] = v.data['name'];
+                    await this.importSelected(blob);
+                    v.data['loadingCtrl'].dismiss();
+                  }
                   document.addEventListener('ionBackButton', this.EventListenerAct);
                   this.ionViewDidEnter();
                 });
