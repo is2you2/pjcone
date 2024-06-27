@@ -1199,11 +1199,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
         loading.present();
         try {
-          this.p5canvas['SyntaxHighlightReader'].style.height = 'fit-content';
-          let blob = await domtoimage.toBlob(this.p5canvas['SyntaxHighlightReader']);
           this.image_info['width'] = this.p5canvas['SyntaxHighlightReader'].clientWidth;
           this.image_info['height'] = this.p5canvas['SyntaxHighlightReader'].clientHeight;
           this.image_info['path'] = 'tmp_files/modify_image.png';
+          this.image_info['scrollHeight'] = this.p5canvas['SyntaxHighlightReader'].scrollTop;
+          this.p5canvas['SyntaxHighlightReader'].style.height = 'fit-content';
+          let blob = await domtoimage.toBlob(this.p5canvas['SyntaxHighlightReader']);
           await this.indexed.saveBlobToUserPath(blob, this.image_info['path']);
           this.modalCtrl.dismiss({
             type: 'image',

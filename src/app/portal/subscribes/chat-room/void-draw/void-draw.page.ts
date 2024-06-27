@@ -402,6 +402,8 @@ export class VoidDrawPage implements OnInit {
         p['RemoteDrawing'] = RemoteDrawing;
         p['RemoteDrawingEnd'] = RemoteDrawingEnd;
         p['updateRemoteCurve'] = updateRemoteCurve;
+        if (this.navParams.data.scrollHeight)
+          setCropPos(0, -this.navParams.data.scrollHeight);
       }
       /** Viewport 행동을 위한 변수들 */
       let CamPosition = p.createVector();

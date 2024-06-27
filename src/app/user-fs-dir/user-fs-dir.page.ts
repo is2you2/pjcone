@@ -538,6 +538,7 @@ export class UserFsDirPage implements OnInit {
                   height: v.data.height,
                   text: v.data.text,
                   isDarkMode: v.data.isDarkMode,
+                  scrollHeight: v.data.scrollHeight,
                 },
                 cssClass: 'fullscreen',
               }).then(v => {
@@ -555,7 +556,6 @@ export class UserFsDirPage implements OnInit {
               });
               return;
             case 'text':
-              console.log(v);
               this.importSelected(v.data['blob']);
               break;
           }
