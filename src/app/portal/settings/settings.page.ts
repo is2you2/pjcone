@@ -106,15 +106,17 @@ export class SettingsPage implements OnInit, OnDestroy {
     else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
     this.check_if_admin();
     this.FallbackServerAddress = localStorage.getItem('fallback_fs');
-    this.Fallback_FS_input_element = document.getElementById('fallback_fs_input').childNodes[1].childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
-    this.Fallback_FS_input_element.onfocus = () => {
-      delete this.global.p5key['KeyShortCut']['Digit'];
+    if (this.cant_dedicated) {
+      this.Fallback_FS_input_element = document.getElementById('fallback_fs_input').childNodes[1].childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
+      this.Fallback_FS_input_element.onfocus = () => {
+        delete this.global.p5key['KeyShortCut']['Digit'];
+      }
+      this.WillLeave = false;
+      this.Fallback_FS_input_element.addEventListener('focusout', () => {
+        if (!this.WillLeave)
+          this.ionViewDidEnter();
+      });
     }
-    this.WillLeave = false;
-    this.Fallback_FS_input_element.addEventListener('focusout', () => {
-      if (!this.WillLeave)
-        this.ionViewDidEnter();
-    });
   }
 
   Fallback_FS_input_element: HTMLInputElement;
@@ -140,9 +142,14 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.Devkit.value = undefined;
     } else { // 열기
       this.Devkit.value = 'Devkit';
-      this.LinkButton.splice(4, 0,
+      if (this.cant_dedicated)
+        this.LinkButton.splice(4, 0,
+          () => this.go_to_page('weblink-gen'),
+          () => this.focus_to_fallback_fs_input(),
+          () => this.go_to_webrtc_manager()
+        );
+      else this.LinkButton.splice(4, 0,
         () => this.go_to_page('weblink-gen'),
-        () => this.focus_to_fallback_fs_input(),
         () => this.go_to_webrtc_manager()
       );
       if (!this.cant_dedicated && this.can_use_http) {
@@ -168,7 +175,8 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.LinkButton.push(() => this.ToggleAccordion());
     if (this.Devkit.value) {
       this.LinkButton.push(() => this.go_to_page('weblink-gen'));
-      this.LinkButton.push(() => this.focus_to_fallback_fs_input());
+      if (this.cant_dedicated)
+        this.LinkButton.push(() => this.focus_to_fallback_fs_input());
       this.LinkButton.push(() => this.go_to_webrtc_manager());
       if (!this.cant_dedicated && this.can_use_http)
         this.LinkButton.push(() => this.start_minimalserver());
