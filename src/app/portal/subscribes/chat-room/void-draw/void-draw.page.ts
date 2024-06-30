@@ -417,7 +417,7 @@ export class VoidDrawPage implements OnInit {
         p['RemoteDrawingEnd'] = RemoteDrawingEnd;
         p['updateRemoteCurve'] = updateRemoteCurve;
         p['CancelCurrentDraw'] = () => {
-          CurrentDraw = undefined;
+          RemoteDraw = undefined;
           p.redraw();
         }
         if (this.navParams.data.scrollHeight)
