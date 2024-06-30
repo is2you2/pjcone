@@ -402,6 +402,9 @@ export class VoidDrawPage implements OnInit {
         p['RemoteDrawing'] = RemoteDrawing;
         p['RemoteDrawingEnd'] = RemoteDrawingEnd;
         p['updateRemoteCurve'] = updateRemoteCurve;
+        p['CancelCurrentDraw'] = () => {
+          CurrentDraw = undefined;
+        }
         if (this.navParams.data.scrollHeight)
           setCropPos(0, -this.navParams.data.scrollHeight);
       }
@@ -744,6 +747,11 @@ export class VoidDrawPage implements OnInit {
             TempStartCamPosition = CamPosition.copy();
             ScaleStartRatio = CamScale;
             CurrentDraw = undefined;
+            if (this.ReadyToShareAct)
+              this.webrtc.dataChannel.send(JSON.stringify({
+                type: 'draw',
+                act: 'cancel',
+              }));
             break;
           default: // 3개 또는 그 이상은 행동 초기화
             isTouching = false;
@@ -1179,6 +1187,9 @@ export class VoidDrawPage implements OnInit {
               break;
             case 'moved':
               this.p5voidDraw['RemoteDrawing'](json['data']);
+              break;
+            case 'cancel': // 두 손가락 탭시 그리던 선을 무시하고 스케일링처리하기
+              this.p5voidDraw['CancelCurrentDraw']();
               break;
             case 'end':
               this.p5voidDraw['RemoteDrawingEnd'](json['data']);
