@@ -257,12 +257,12 @@ export class VoidDrawPage implements OnInit {
           }
           p['change_checkmark']();
         }
-        p['apply_crop'] = () => {
-          if (this.isMobile)
+        p['apply_crop'] = (is_host = true) => {
+          if (is_host && this.isMobile)
             CropModePosition.div(CamScale);
           ActualCanvas.resizeCanvas(CropSize.x, CropSize.y);
           ActualCanvasSizeHalf = p.createVector(ActualCanvas.width / 2, ActualCanvas.height / 2);
-          CropPosition.sub(CropModePosition);
+          if (is_host) CropPosition.sub(CropModePosition);
           updateActualCanvas();
           ImageCanvas.resizeCanvas(CropSize.x, CropSize.y);
           ImageCanvas.push();
@@ -275,6 +275,18 @@ export class VoidDrawPage implements OnInit {
           this.isCropMode = false;
           p['change_checkmark']();
           p['SetCanvasViewportInit']();
+          if (is_host && this.ReadyToShareAct) {
+            let crop_pos = this.p5voidDraw['getCropPos']();
+            let crop_size = this.p5voidDraw['getCropSize']();
+            this.webrtc.dataChannel.send(JSON.stringify({
+              type: 'draw',
+              act: 'crop',
+              cropPX: crop_pos.x,
+              cropPY: crop_pos.y,
+              cropSX: crop_size.x,
+              cropSY: crop_size.y,
+            }));
+          }
         }
         p['SetDrawable'] = SetDrawable;
         /** 상하단 메뉴 생성 */
@@ -398,12 +410,15 @@ export class VoidDrawPage implements OnInit {
           strokeWeight = strokeWeight / CamScale;
         p['getCropPos'] = getCropPos;
         p['setCropPos'] = setCropPos;
+        p['getCropSize'] = getCropSize;
+        p['setCropSize'] = setCropSize;
         p['RemoteDrawStart'] = RemoteDrawStart;
         p['RemoteDrawing'] = RemoteDrawing;
         p['RemoteDrawingEnd'] = RemoteDrawingEnd;
         p['updateRemoteCurve'] = updateRemoteCurve;
         p['CancelCurrentDraw'] = () => {
           CurrentDraw = undefined;
+          p.redraw();
         }
         if (this.navParams.data.scrollHeight)
           setCropPos(0, -this.navParams.data.scrollHeight);
@@ -421,11 +436,22 @@ export class VoidDrawPage implements OnInit {
       let getCropPos = () => {
         return CropPosition;
       }
+      let getCropSize = () => {
+        return CropSize;
+      }
       let setCropPos = (x: number, y: number) => {
         CropPosition.x = x;
         CropPosition.y = y;
         ActualCanvas.translate(x, y);
         ImageCanvas.translate(x, y);
+        p.redraw();
+      }
+      let setCropSize = (x: number, y: number) => {
+        CropSize.x = x;
+        CropSize.y = y;
+        ActualCanvas.translate(x, y);
+        ImageCanvas.translate(x, y);
+        p.redraw();
       }
       p.draw = () => {
         p.clear(255, 255, 255, 255);
@@ -1190,6 +1216,12 @@ export class VoidDrawPage implements OnInit {
               break;
             case 'cancel': // 두 손가락 탭시 그리던 선을 무시하고 스케일링처리하기
               this.p5voidDraw['CancelCurrentDraw']();
+              break;
+            case 'crop': // 이미지 자르기 공유
+              this.p5voidDraw['setCropPos'](json.cropPX, json.cropPY);
+              this.p5voidDraw['setCropSize'](json.cropSX, json.cropSY);
+              this.isCropMode = true;
+              this.p5voidDraw['apply_crop'](false);
               break;
             case 'end':
               this.p5voidDraw['RemoteDrawingEnd'](json['data']);
