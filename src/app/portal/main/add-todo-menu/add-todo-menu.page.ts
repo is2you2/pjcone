@@ -267,7 +267,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   /** 첨부파일 우클릭시 */
   AttachmentContextMenu(_FileInfo: FileInfo, index: number) {
-    let FileURL = URL.createObjectURL(_FileInfo.blob);
+    let FileURL = _FileInfo.url ?? URL.createObjectURL(_FileInfo.blob);
     new p5((p: p5) => {
       p.setup = () => {
         p.noCanvas();
@@ -303,11 +303,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             });
             v.present();
           });
-          URL.revokeObjectURL(FileURL);
+          if (!_FileInfo.url)
+            URL.revokeObjectURL(FileURL);
           p.remove();
         }, e => {
           console.log('빠른 편집기 이동 실패: ', e);
-          URL.revokeObjectURL(FileURL);
+          if (!_FileInfo.url)
+            URL.revokeObjectURL(FileURL);
           p.remove();
         });
       }
