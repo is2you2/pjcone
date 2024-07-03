@@ -197,9 +197,10 @@ export class AppComponent {
             props = {
               info: this.nakama.channels_orig[_is_official][_target][_cid]
             };
-            throw 'ChatRoomPage props 재정비';
+            this.nakama.go_to_chatroom_without_admob_act(props.info);
+            break;
           }
-          break;
+          throw 'ChatRoomPage props 재정비';
         case 'MinimalChatPage':
           if (!this.lang.text['MinimalChat']['leave_chat_group']) throw 'MinimalChatPage 번역 준비중';
           modal.present();
