@@ -431,7 +431,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           } else if (this.userInput.attach[i].viewer == 'image' || this.userInput.attach[i].viewer == 'text')
             this.userInput.attach[i].blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
           else throw '번외 썸네일 필요';
-          if (!this.userInput.attach[i].blob) continue;
+          if (!this.userInput.attach[i].blob) {
+            loading.dismiss();
+            continue;
+          }
           let url = URL.createObjectURL(this.userInput.attach[i].blob);
           this.global.modulate_thumbnail(this.userInput.attach[i], url);
         } catch (e) {
