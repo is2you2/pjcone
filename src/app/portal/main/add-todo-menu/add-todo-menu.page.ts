@@ -377,9 +377,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (this.userInput.attach.length)
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+        loading.present();
         try {
           if (this.userInput.remote) {
-            loading.present();
             if (this.userInput.attach[i].url) {
               this.userInput.attach[i].thumbnail = this.userInput.attach[i].url;
             } else {
@@ -943,7 +943,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           }
         });
     }
-    this.toggle_custom_attach(this.useFirstCustomCDN);
   }
 
   /** 전체 토글 기록용 */
