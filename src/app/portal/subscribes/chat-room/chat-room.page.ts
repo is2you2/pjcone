@@ -2104,6 +2104,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 let working_msg = JSON.parse(JSON.stringify(msg));
                 working_msg.content['msg'] = edited;
                 working_msg.content['edited'] = true;
+                if (msg.content['thumbnail'])
+                  working_msg.content['thumbnail'] = msg.content['thumbnail'];
                 working_msg['update_time'] = new Date().toISOString();
                 if (!this.info['local']) { // 서버와 연결된 경우
                   try {
