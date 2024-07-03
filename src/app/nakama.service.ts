@@ -1158,10 +1158,11 @@ export class NakamaService {
               key: targetInfo.id,
             }],
           });
-          for (let i = 0, j = targetInfo.attach.length; i < j; i++)
-            if (targetInfo.attach[i].url) {
-              await this.global.remove_file_from_storage(targetInfo.attach[i].url);
-            } else await this.sync_remove_file(targetInfo.attach[i].path, isOfficial, target, 'todo_attach');
+          if (targetInfo.attach)
+            for (let i = 0, j = targetInfo.attach.length; i < j; i++)
+              if (targetInfo.attach[i].url) {
+                await this.global.remove_file_from_storage(targetInfo.attach[i].url);
+              } else await this.sync_remove_file(targetInfo.attach[i].path, isOfficial, target, 'todo_attach');
           if (isDelete) {
             await this.servers[isOfficial][target]
               .socket.sendMatchState(this.self_match[isOfficial][target].match_id, MatchOpCode.MANAGE_TODO,

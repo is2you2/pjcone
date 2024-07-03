@@ -1513,7 +1513,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
                   .socket.leaveMatch(match.objects[0].value['match_id']);
               }
-            } catch (e) { }
+            } catch (e) {
+              console.log(e);
+            }
           }
         } else await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
           this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [{
