@@ -297,20 +297,11 @@ export class SubscribesPage implements OnInit {
     this.navCtrl.navigateForward(`portal/settings/${_page}`);
   }
 
-  EventListenerAct = (ev: any) => {
-    ev.detail.register(110, (processNextHandler: any) => {
-      processNextHandler();
-      this.StopScan();
-      document.removeEventListener('ionBackButton', this.EventListenerAct);
-    });
-  }
-
   StartScan = false;
   // 웹에 있는 QRCode는 무조건 json[]로 구성되어있어야함
   async scanQRCode() {
     let perm = await BarcodeScanner.checkPermission({ force: true });
     const complete = '온전한 동작 후 종료';
-    document.addEventListener('ionBackButton', this.EventListenerAct);
     try {
       if (!perm.granted || this.StartScan) throw '시작 불가상태';
       this.StartScan = true;
@@ -337,7 +328,6 @@ export class SubscribesPage implements OnInit {
         });
       this.StopScan();
     }
-    document.removeEventListener('ionBackButton', this.EventListenerAct);
   }
 
   StopScan() {

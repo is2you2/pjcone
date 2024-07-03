@@ -46,17 +46,9 @@ export class VoidDrawPage implements OnInit {
   }
   mainLoading: HTMLIonLoadingElement;
 
-  EventListenerAct = (ev: any) => {
-    ev.detail.register(130, (_processNextHandler: any) => {
-      if (this.isDrawServerCreated)
-        this.CancelRemoteAct();
-    });
-  }
-
   isMobile = false;
   async ionViewDidEnter() {
     this.AddShortCut();
-    document.addEventListener('ionBackButton', this.EventListenerAct);
     this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
     this.isMobile = isPlatform != 'DesktopPWA';
     this.create_new_canvas({
@@ -1299,7 +1291,6 @@ export class VoidDrawPage implements OnInit {
 
   WithoutSave = true;
   ionViewDidLeave() {
-    document.removeEventListener('ionBackButton', this.EventListenerAct);
     if (this.WithoutSave)
       this.mainLoading.remove();
   }

@@ -301,18 +301,6 @@ export class UserFsDirPage implements OnInit {
   }
 
   StopIndexing = false;
-  EventListenerAct = (ev: any) => {
-    ev.detail.register(110, (processNextHandler: any) => {
-      if (this.is_ready) {
-        if (this.CurrentDir == '') {
-          processNextHandler();
-        } else this.MoveToUpDir();
-      } else {
-        this.initLoadingElement.dismiss();
-        this.is_ready = true;
-      }
-    });
-  }
 
   ionViewWillEnter() {
     this.HideThumbnail = localStorage.getItem('user-fs-thumbnail') == '1';
@@ -321,7 +309,6 @@ export class UserFsDirPage implements OnInit {
     this.LoadAllIndexedFiles();
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
-    document.addEventListener('ionBackButton', this.EventListenerAct);
   }
 
   async dismiss_page(file?: FileDir) {
@@ -497,7 +484,6 @@ export class UserFsDirPage implements OnInit {
     if (this.lock_modal_open) return;
     this.lock_modal_open = true;
     if (!this.CheckIfAccessable(info.path)) return;
-    document.removeEventListener('ionBackButton', this.EventListenerAct);
     let createRelevances = [];
     if (this.is_file_selector) {
       if (this.navParams.data['path'])
@@ -549,7 +535,6 @@ export class UserFsDirPage implements OnInit {
                     await this.importSelected(blob);
                     v.data['loadingCtrl'].dismiss();
                   }
-                  document.addEventListener('ionBackButton', this.EventListenerAct);
                   this.ionViewDidEnter();
                 });
                 v.present();
@@ -560,7 +545,6 @@ export class UserFsDirPage implements OnInit {
               break;
           }
         } else {
-          document.addEventListener('ionBackButton', this.EventListenerAct);
           this.ionViewDidEnter();
         }
       });
@@ -832,7 +816,6 @@ export class UserFsDirPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    document.removeEventListener('ionBackButton', this.EventListenerAct);
     delete this.global.p5key['KeyShortCut']['Escape'];
     delete this.global.p5key['KeyShortCut']['Digit'];
   }

@@ -87,10 +87,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   showEdit = true;
   showEditText = false;
 
-  EventListenerAct = (ev: any) => {
-    ev.detail.register(120, (_processNextHandler: any) => { });
-  }
-
   BackButtonPressed = false;
   InitBrowserBackButtonOverride() {
     window.history.replaceState(null, null, window.location.href);
@@ -426,7 +422,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     await new Promise((done) => setTimeout(done, 0));
     this.canvasDiv = document.getElementById('content_viewer_canvas');
     if (this.canvasDiv) this.canvasDiv.style.backgroundImage = '';
-    document.removeEventListener('ionBackButton', this.EventListenerAct);
     if (this.p5canvas) this.p5canvas.remove();
     // 경우에 따라 로딩하는 캔버스를 구분
     switch (this.FileInfo['viewer']) {
@@ -889,7 +884,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         });
         break;
       case 'godot':
-        document.addEventListener('ionBackButton', this.EventListenerAct);
         let ThumbnailURL: string;
         let GetViewId = this.MessageInfo.message_id;
         try {
@@ -1436,7 +1430,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   async ionViewWillLeave() {
-    document.removeEventListener('ionBackButton', this.EventListenerAct);
     switch (this.FileInfo.viewer) {
       case 'video':
         try {
