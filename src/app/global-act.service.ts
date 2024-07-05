@@ -691,17 +691,13 @@ export class GlobalActService {
         throw '사용자 지정서버에서 이미 성공함'
       };
       CatchedAddress = `${protocol}//${address}:9002/cdn/${filename}`;
-      let headers = new Headers();
-      headers.append('Access-Control-Allow-Origin', '*');
-      headers.append('Access-Control-Allow-Method', '*');
-      headers.append('Access-Control-Allow-Headers', '*');
       let progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", headers: headers });
+        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST" });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
         innerLoading.message = `${file.filename}: ${progressPercent}%`;
       }, 700);
-      await fetch(`${protocol}//${address}:9001/${filename}`, { method: "POST", headers: headers, body: formData });
+      await fetch(`${protocol}//${address}:9001/${filename}`, { method: "POST", body: formData });
       clearInterval(progress);
       let res = await fetch(CatchedAddress);
       if (res.ok) Catched = true;
@@ -720,11 +716,7 @@ export class GlobalActService {
     let target_address = sep.shift();
     let lastIndex = target_address.lastIndexOf(':');
     if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
-    let headers = new Headers();
-    headers.append('Access-Control-Allow-Origin', '*');
-    headers.append('Access-Control-Allow-Method', '*');
-    headers.append('Access-Control-Allow-Headers', '*');
-    await fetch(`${target_address}:9001/remove/${target_file_name}`, { method: "POST", headers: headers });
+    await fetch(`${target_address}:9001/remove/${target_file_name}`, { method: "POST" });
   }
 
   /** 해당 키워드가 포함된 모든 파일 삭제 요청 (cdn 기반 파일)  
@@ -735,11 +727,7 @@ export class GlobalActService {
   async remove_files_from_storage_with_key(target_address: string, target_id: string) {
     let lastIndex = target_address.lastIndexOf(':');
     if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
-    let headers = new Headers();
-    headers.append('Access-Control-Allow-Origin', '*');
-    headers.append('Access-Control-Allow-Method', '*');
-    headers.append('Access-Control-Allow-Headers', '*');
-    await fetch(`${target_address}:9001/remove_key/${target_id}`, { method: "POST", headers: headers });
+    await fetch(`${target_address}:9001/remove_key/${target_id}`, { method: "POST" });
   }
 
   /** 사용자 지정 서버에 업로드 시도 */
@@ -764,17 +752,13 @@ export class GlobalActService {
       let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
       let protocol = checkProtocol ? 'https:' : 'http:';
       CatchedAddress = `${protocol}//${address[0]}:${address[1] || 9002}/cdn/${filename}`;
-      let headers = new Headers();
-      headers.append('Access-Control-Allow-Origin', '*');
-      headers.append('Access-Control-Allow-Method', '*');
-      headers.append('Access-Control-Allow-Headers', '*');
       progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", headers: headers });
+        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST" });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
         loading.message = `${file.filename}: ${progressPercent}%`;
       }, 700);
-      await fetch(`${protocol}//${address[0]}:9001/${filename}`, { method: "POST", headers: headers, body: formData });
+      await fetch(`${protocol}//${address[0]}:9001/${filename}`, { method: "POST", body: formData });
       clearInterval(progress);
       let res = await fetch(CatchedAddress);
       if (!loading) innerLoading.dismiss();
