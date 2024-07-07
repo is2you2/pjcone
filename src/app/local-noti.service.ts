@@ -107,7 +107,7 @@ interface TotalNotiForm {
   /** Web.Noti: 미확인 */
   renotify_wn?: boolean;
   /** Web.Noti: 미확인 */
-  actions_wn?: NotificationAction[];
+  actions_wn?: any[];
   /** Web.Noti: 미확인 */
   data_wn?: any;
   /** Web.Noti: 미확인 */
@@ -206,7 +206,7 @@ export class LocalNotiService {
       if (!this.settings.silent[opt.icon || opt.smallIcon_ln || header || 'icon_mono']) return;
       if (opt.triggerWhen_ln) return; // 웹에는 예약 기능이 없음
       /** 기본 알림 옵션 (교체될 수 있음) */
-      const input: NotificationOptions = {
+      const input: any = {
         badge: `${opt.badge}`,
         body: opt.body,
         icon: `assets/icon/${opt.icon || opt.smallIcon_ln || header || 'favicon'}.png`,

@@ -23,7 +23,7 @@ import clipboard from "clipboardy";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { SpeechRecognition } from "@capacitor-community/speech-recognition";
-import { VoiceRecorder } from "capacitor-voice-recorder";
+import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
 
 export interface ExtendButtonForm {
   /** 버튼 숨기기 */

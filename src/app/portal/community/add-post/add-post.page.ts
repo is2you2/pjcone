@@ -10,7 +10,7 @@ import { ExtendButtonForm } from '../../subscribes/chat-room/chat-room.page';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { VoidDrawPage } from '../../subscribes/chat-room/void-draw/void-draw.page';
 import { DomSanitizer } from '@angular/platform-browser';
-import { VoiceRecorder } from "capacitor-voice-recorder";
+import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
 import clipboard from "clipboardy";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';

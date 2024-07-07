@@ -15,7 +15,7 @@ import { MatchOpCode, NakamaService } from './nakama.service';
 import { Match } from '@heroiclabs/nakama-js';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IndexedDBService } from './indexed-db.service';
-import { VoiceRecorder } from "capacitor-voice-recorder";
+import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
 import { isDarkMode } from './global-act.service';
 
 @Injectable({
