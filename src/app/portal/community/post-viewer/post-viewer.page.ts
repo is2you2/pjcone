@@ -8,6 +8,10 @@ import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { NakamaService } from 'src/app/nakama.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
+import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
+import clipboard from 'clipboardy';
+import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
+import { P5ToastService } from 'src/app/p5-toast.service';
 
 @Component({
   selector: 'app-post-viewer',
@@ -24,6 +28,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
     public nakama: NakamaService,
     private alertCtrl: AlertController,
     private global: GlobalActService,
+    private mClipboard: Clipboard,
+    private p5toast: P5ToastService,
   ) { }
 
   PostInfo: any;
@@ -164,7 +170,42 @@ export class PostViewerPage implements OnInit, OnDestroy {
       p.setup = async () => {
         p.noCanvas();
         // 제목
-        let title = p.createDiv(this.PostInfo['title']);
+        let title = p.createDiv(`${this.PostInfo['OutSource'] ? '<ion-icon id="title_link" slot="start" name="link-outline"></ion-icon> ' : ''}${this.PostInfo['title']}`);
+        if (this.PostInfo['OutSource']) {
+          let link = document.getElementById('title_link');
+          link.onclick = async () => {
+            let is_https = this.PostInfo['OutSource'].indexOf('https:') == 0;
+            let targetAddress = '';
+            if (is_https) // 보안 연결인 경우 홈페이지 우회
+              targetAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?postViewer=${this.PostInfo['OutSource']}`;
+            else { // 비보안 연결인 경우 연결 검토 후 우회
+              let address_text: string = this.PostInfo['OutSource'];
+              let extract = address_text.substring(0, address_text.indexOf(':8080'));
+              try { // 사용자 지정 서버 업로드 시도 우선
+                let HasLocalPage = `${extract}:8080/www`;
+                const cont = new AbortController();
+                const id = setTimeout(() => {
+                  cont.abort();
+                }, 500);
+                let res = await fetch(HasLocalPage, { signal: cont.signal });
+                clearTimeout(id);
+                console.log(res);
+                if (res.ok) targetAddress = `${extract}:8080/www/?postViewer=${this.PostInfo['OutSource']}`;
+              } catch (e) {
+                targetAddress = `http://pjcone.ddns.net/?postViewer=${this.PostInfo['OutSource']}`;
+              }
+            }
+            this.mClipboard.copy(targetAddress)
+              .catch(_e => {
+                clipboard.write(targetAddress).then(() => {
+                  if (isPlatform == 'DesktopPWA')
+                    this.p5toast.show({
+                      text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${targetAddress}`,
+                    });
+                }).catch(_e => { });
+              });
+          }
+        }
         title.style('font-size', '32px');
         title.style('font-weight', 'bold');
         title.parent(contentDiv);
