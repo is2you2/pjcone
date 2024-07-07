@@ -205,6 +205,12 @@ export class CommunityPage implements OnInit {
     }, 0);
   }
 
+  BottomTabShortcut: any;
+  /** 하단 탭 단축키 캐싱 */
+  catchBottomTabShortCut() {
+    this.BottomTabShortcut = this.global.p5key['KeyShortCut']['BottomTab'];
+    delete this.global.p5key['KeyShortCut']['BottomTab'];
+  }
   /** 게시글 읽기 */
   open_post(info: any, index: number) {
     if (this.isOpenProfile) return;
@@ -218,6 +224,10 @@ export class CommunityPage implements OnInit {
     }).then(v => {
       delete this.global.p5key['KeyShortCut']['Digit'];
       delete this.global.p5key['KeyShortCut']['AddAct'];
+      this.catchBottomTabShortCut();
+      v.onWillDismiss().then(() => {
+        this.global.p5key['KeyShortCut']['BottomTab'] = this.BottomTabShortcut;
+      });
       v.onDidDismiss().then(v => {
         if (!v.data) this.AddShortcut();
       });
