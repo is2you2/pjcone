@@ -24,6 +24,7 @@ export class LanguageSettingService {
     Community: {},
     MinimalChat: {},
     voidDraw: {},
+    PostViewer: {},
   };
 
   constructor() {

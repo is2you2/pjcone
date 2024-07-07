@@ -135,7 +135,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
     } catch (e) {
       this.isOwner = false;
     }
-    this.HavePosts = this.nakama.posts.length > 1;
+    this.HavePosts = this.nakama.posts.length > 1 && this.CurrentIndex >= 0;
     this.ChangeContentWithKeyInput();
   }
 

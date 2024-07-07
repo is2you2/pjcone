@@ -938,7 +938,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.useFirstCustomCDN = 2;
       this.extended_buttons[6].isHide = true;
     }
-    this.extended_buttons[7].isHide = !((this.userInput.creator_id != 'me' && this.useFirstCustomCDN != 2) || this.useFirstCustomCDN == 1) || !this.userInput.OutSource;
+    this.extended_buttons[7].isHide = !((this.userInput.creator_id != 'me' && this.useFirstCustomCDN != 2) || this.useFirstCustomCDN == 1) && !this.userInput.OutSource;
     switch (this.useFirstCustomCDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
         this.extended_buttons[6].icon = 'cloud-offline-outline';
@@ -1063,41 +1063,6 @@ export class AddPostPage implements OnInit, OnDestroy {
       // 썸네일 정보 삭제
       for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
         delete this.userInput.attachments[i].thumbnail;
-      // 외부링크 사용시 게시물 정보 업로드
-      if (this.UseOutLink) {
-        let blob = new Blob([JSON.stringify(this.userInput)], { type: 'text/plain' });
-        let file: FileInfo = {
-          blob: blob,
-          filename: `${this.userInput.id}.json`,
-          file_ext: 'json',
-          size: blob.size,
-        }
-        try { // 대상 서버에 업로드 시도
-          let address = this.nakama.servers[this.isOfficial][this.target].info.address;
-          let user_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
-          let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
-          loading.message = `${this.lang.text['AddPost']['SyncPostInfo']}`;
-          let outlink = await this.global.upload_file_to_storage(file, user_id, protocol, address, this.useFirstCustomCDN == 1);
-          if (outlink) {
-            this.userInput.OutSource = outlink;
-          } else throw '업로드 실패';
-        } catch (e) { // 지정된 서버 주소로 업로드를 실패했다면 FFS 등록 주소를 따라 업로드 시도
-          try { // 대상 서버에 업로드 시도
-            let user_id = this.nakama.users.self['display_name'];
-            loading.message = `${this.lang.text['AddPost']['SyncPostInfo']}`;
-            let outlink = await this.global.try_upload_to_user_custom_fs(file, user_id);
-            if (outlink) {
-              this.userInput.OutSource = outlink;
-            } else throw '업로드 실패';
-          } catch (e) { // 둘 다 실패했다면 실패한거임
-            this.userInput.OutSource = undefined;
-            this.UseOutLink = false;
-            this.p5toast.show({
-              text: `${this.lang.text['AddPost']['OutLinkFailed']}: ${e}`,
-            });
-          }
-        }
-      } else this.userInput.OutSource = undefined;
       // 대표 이미지 저장
       if (this.userInput.mainImage) {
         loading.message = this.lang.text['AddPost']['SyncMainImage'];
@@ -1172,6 +1137,41 @@ export class AddPostPage implements OnInit, OnDestroy {
           }
         }
       }
+      // 외부링크 사용시 게시물 정보 업로드
+      if (this.UseOutLink) {
+        let blob = new Blob([JSON.stringify(this.userInput)], { type: 'text/plain' });
+        let file: FileInfo = {
+          blob: blob,
+          filename: `${this.userInput.id}.json`,
+          file_ext: 'json',
+          size: blob.size,
+        }
+        try { // 대상 서버에 업로드 시도
+          let address = this.nakama.servers[this.isOfficial][this.target].info.address;
+          let user_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
+          let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
+          loading.message = `${this.lang.text['AddPost']['SyncPostInfo']}`;
+          let outlink = await this.global.upload_file_to_storage(file, user_id, protocol, address, this.useFirstCustomCDN == 1);
+          if (outlink) {
+            this.userInput.OutSource = outlink;
+          } else throw '업로드 실패';
+        } catch (e) { // 지정된 서버 주소로 업로드를 실패했다면 FFS 등록 주소를 따라 업로드 시도
+          try { // 대상 서버에 업로드 시도
+            let user_id = this.nakama.users.self['display_name'];
+            loading.message = `${this.lang.text['AddPost']['SyncPostInfo']}`;
+            let outlink = await this.global.try_upload_to_user_custom_fs(file, user_id);
+            if (outlink) {
+              this.userInput.OutSource = outlink;
+            } else throw '업로드 실패';
+          } catch (e) { // 둘 다 실패했다면 실패한거임
+            this.userInput.OutSource = undefined;
+            this.UseOutLink = false;
+            this.p5toast.show({
+              text: `${this.lang.text['AddPost']['OutLinkFailed']}: ${e}`,
+            });
+          }
+        }
+      } else this.userInput.OutSource = undefined;
       let make_copy_info = JSON.parse(JSON.stringify(this.userInput))
       if (make_copy_info.mainImage)
         delete make_copy_info.mainImage.blob;

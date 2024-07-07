@@ -14,6 +14,7 @@ import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { VoidDrawPage } from './portal/subscribes/chat-room/void-draw/void-draw.page';
+import { PostViewerPage } from './portal/community/post-viewer/post-viewer.page';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -4197,7 +4198,13 @@ export class NakamaService {
         json.push({
           type: 'voidDraw',
           address: init['voidDraw'][0],
-        })
+        });
+    }
+    if (init['postViewer']) {
+      json.push({
+        type: 'postViewer',
+        address: init['postViewer'][0],
+      });
     }
     if (NeedReturn) return json;
     else await this.act_from_QRInfo(json);
@@ -4247,8 +4254,7 @@ export class NakamaService {
           break;
         case 'group_dedi': // 그룹사설 채팅 접근
           for (let i = 0, j = 20; i < j; i++) {
-            if (this.lang.text['MinimalChat']['leave_chat_group'])
-              break;
+            if (this.lang.text['MinimalChat']['leave_chat_group']) break;
             await new Promise((done) => setTimeout(done, 1000));
           }
           await this.modalCtrl.create({
@@ -4301,12 +4307,12 @@ export class NakamaService {
           break;
         case 'rtcserver':
           let ServerInfos = [];
-          try {
-            if (!this.lang.text['WebRTCDevManager']['NoRegServer']) // 번역 준비 검토
-              throw '번역 준비 안됨';
-            let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
-            ServerInfos = JSON.parse(list);
-          } catch (e) { }
+          for (let i = 0, j = 20; i < j; i++) {
+            if (this.lang.text['WebRTCDevManager']['NoRegServer']) break;
+            await new Promise((done) => setTimeout(done, 1000));
+          }
+          let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
+          ServerInfos = JSON.parse(list);
           ServerInfos.push(json[i].value);
           await this.indexed.saveTextFileToUserPath(JSON.stringify(ServerInfos), 'servers/webrtc_server.json');
           break;
@@ -4317,6 +4323,26 @@ export class NakamaService {
               remote: json[i].address,
             }
           }).then(v => v.present());
+          break;
+        case 'postViewer':
+          for (let i = 0, j = 20; i < j; i++) {
+            if (this.lang.text['PostViewer']['OpenFromViewer']) break;
+            await new Promise((done) => setTimeout(done, 1000));
+          }
+          let res = await fetch(json[i].address);
+          if (res.ok) {
+            let text = await res.text();
+            let post_info = JSON.parse(text);
+            this.modalCtrl.create({
+              component: PostViewerPage,
+              componentProps: {
+                data: post_info,
+                index: -1,
+              }
+            }).then(v => v.present());
+          } else this.p5toast.show({
+            text: `${this.lang.text['AddPost']['NoPostOutLink']}: ${res.statusText}`,
+          });
           break;
         default: // 동작 미정 알림(debug)
           throw "지정된 틀 아님";
