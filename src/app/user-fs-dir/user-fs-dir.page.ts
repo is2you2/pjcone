@@ -231,25 +231,25 @@ export class UserFsDirPage implements OnInit {
       if (is_multiple_files) {
         let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['MultipleSave'] });
         loading.present();
-        this.noti.noti.schedule({
-          id: 4,
-          title: this.lang.text['UserFsDir']['MultipleSave'],
-          progressBar: { indeterminate: true },
-          sound: null,
-          smallIcon: 'res://diychat',
-          color: 'b0b0b0',
-        });
+        // this.noti.noti.schedule({
+        //   id: 4,
+        //   title: this.lang.text['UserFsDir']['MultipleSave'],
+        //   progressBar: { indeterminate: true },
+        //   sound: null,
+        //   smallIcon: 'res://diychat',
+        //   color: 'b0b0b0',
+        // });
         for (let i = 0, j = ev.target.files.length; i < j; i++) {
           if (this.StopIndexing) break;
           loading.message = `${this.lang.text['UserFsDir']['MultipleSave']}: ${j - i}`;
-          this.noti.noti.schedule({
-            id: 4,
-            title: this.lang.text['UserFsDir']['MultipleSave'],
-            progressBar: { value: i, maxValue: j },
-            sound: null,
-            smallIcon: 'res://diychat',
-            color: 'b0b0b0',
-          });
+          // this.noti.noti.schedule({
+          //   id: 4,
+          //   title: this.lang.text['UserFsDir']['MultipleSave'],
+          //   progressBar: { value: i, maxValue: j },
+          //   sound: null,
+          //   smallIcon: 'res://diychat',
+          //   color: 'b0b0b0',
+          // });
           await this.importSelected(ev.target.files[i]);
         }
         this.noti.ClearNoti(4);
@@ -329,15 +329,15 @@ export class UserFsDirPage implements OnInit {
     this.initLoadingElement.present();
     this.DirList.length = 0;
     this.FileList.length = 0;
-    if (isPlatform == 'Android' || isPlatform == 'iOS')
-      this.noti.noti.schedule({
-        id: 5,
-        title: this.lang.text['UserFsDir']['LoadingExplorer'],
-        progressBar: { indeterminate: true },
-        sound: null,
-        smallIcon: 'res://icon_mono',
-        color: 'b0b0b0',
-      });
+    // if (isPlatform == 'Android' || isPlatform == 'iOS')
+    //   this.noti.noti.schedule({
+    //     id: 5,
+    //     title: this.lang.text['UserFsDir']['LoadingExplorer'],
+    //     progressBar: { indeterminate: true },
+    //     sound: null,
+    //     smallIcon: 'res://icon_mono',
+    //     color: 'b0b0b0',
+    //   });
     if (this.is_file_selector) {
       if (this.navParams.get('path')) { // 특정 경로 파일 보기
         let target_list = await this.indexed.GetFileListFromDB(this.navParams.get('path'));
@@ -377,15 +377,15 @@ export class UserFsDirPage implements OnInit {
     for (let i = 0, j = _list.length; i < j; i++) {
       if (this.StopIndexing) return;
       let message = `${this.lang.text['UserFsDir']['LoadingExplorer']}: ${_list.length - i}`;
-      if (isPlatform == 'Android' || isPlatform == 'iOS')
-        this.noti.noti.schedule({
-          id: 5,
-          title: message,
-          progressBar: { value: i, maxValue: _list.length },
-          sound: null,
-          smallIcon: 'res://icon_mono',
-          color: 'b0b0b0',
-        });
+      // if (isPlatform == 'Android' || isPlatform == 'iOS')
+      //   this.noti.noti.schedule({
+      //     id: 5,
+      //     title: message,
+      //     progressBar: { value: i, maxValue: _list.length },
+      //     sound: null,
+      //     smallIcon: 'res://icon_mono',
+      //     color: 'b0b0b0',
+      //   });
       this.initLoadingElement.message = message;
       await this.indexed.GetFileInfoFromDB(_list[i], (info) => {
         let _info: FileDir = {
@@ -730,30 +730,30 @@ export class UserFsDirPage implements OnInit {
         handler: async () => {
           let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['DeleteFile'] });
           loading.present();
-          if (isPlatform == 'Android' || isPlatform == 'iOS')
-            this.noti.noti.schedule({
-              id: 4,
-              title: this.lang.text['UserFsDir']['DeleteFile'],
-              progressBar: { indeterminate: true },
-              sound: null,
-              smallIcon: 'res://icon_mono',
-              color: 'b0b0b0',
-            });
+          // if (isPlatform == 'Android' || isPlatform == 'iOS')
+          //   this.noti.noti.schedule({
+          //     id: 4,
+          //     title: this.lang.text['UserFsDir']['DeleteFile'],
+          //     progressBar: { indeterminate: true },
+          //     sound: null,
+          //     smallIcon: 'res://icon_mono',
+          //     color: 'b0b0b0',
+          //   });
           let list = await this.indexed.GetFileListFromDB(this.CurrentDir);
           for (let i = 0, j = list.length; i < j; i++) {
             if (this.StopIndexing) {
               loading.dismiss();
               return;
             }
-            if (isPlatform == 'Android' || isPlatform == 'iOS')
-              this.noti.noti.schedule({
-                id: 4,
-                title: `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`,
-                progressBar: { value: i, maxValue: j },
-                sound: null,
-                smallIcon: 'res://icon_mono',
-                color: 'b0b0b0',
-              });
+            // if (isPlatform == 'Android' || isPlatform == 'iOS')
+            //   this.noti.noti.schedule({
+            //     id: 4,
+            //     title: `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`,
+            //     progressBar: { value: i, maxValue: j },
+            //     sound: null,
+            //     smallIcon: 'res://icon_mono',
+            //     color: 'b0b0b0',
+            //   });
             loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`;
             await this.indexed.removeFileFromUserPath(list[i]);
           }

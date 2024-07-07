@@ -250,6 +250,7 @@ export class LocalNotiService {
         } catch (e) { }
       }
     } else { // 모바일 로컬 푸쉬
+      return;
       // 포어그라운드면서 해당 화면이면 동작 안함
       if (!this.bgmode.isActive() && this.Current == header) return;
       if (!this.settings.silent[opt.icon || opt.smallIcon_ln || header || 'icon_mono']) return;
@@ -316,6 +317,7 @@ export class LocalNotiService {
   GetNotificationIds(_CallBack = (_list: number[]) => { }) {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
     } else {
+      return;
       this.noti.getScheduledIds().then((ids) => {
         _CallBack(ids);
       });
@@ -328,8 +330,10 @@ export class LocalNotiService {
       if (isPlatform == 'DesktopPWA') {
         if (this.WebNoties[id])
           this.WebNoties[id].close();
-      } else if (isPlatform != 'MobilePWA')
+      } else if (isPlatform != 'MobilePWA') {
+        return;
         this.noti.clear(id);
+      }
     }, 1000);
   }
 
@@ -341,6 +345,7 @@ export class LocalNotiService {
   SetListener(ev: string, subscribe: Function = (v: any, eopts: any) => console.warn(`${ev}: ${v}/${eopts}`)) {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
     } else {
+      return;
       this.listeners[ev] = (v: any, eopts: any) => {
         subscribe(v, eopts);
       }
@@ -354,6 +359,7 @@ export class LocalNotiService {
   RemoveListener(ev: string) {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
     } else {
+      return;
       cordova.plugins.notification.local.un(ev, this.listeners[ev]);
       delete this.listeners[ev];
     }

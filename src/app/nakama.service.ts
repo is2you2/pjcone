@@ -2302,15 +2302,15 @@ export class NakamaService {
       await this.indexed.saveFileToUserPath(file, targetPath);
       await this.indexed.removeFileFromUserPath(list[i]);
       loading.message = `${this.lang.text['Nakama']['MissingChannelFiles']}: ${list[i]}`;
-      if (isPlatform == 'Android' || isPlatform == 'iOS')
-        this.noti.noti.schedule({
-          id: 9,
-          title: `${this.lang.text['Nakama']['MissingChannelFiles']}: ${j - i}`,
-          progressBar: { value: i, maxValue: j },
-          sound: null,
-          smallIcon: 'res://icon_mono',
-          color: 'b0b0b0',
-        });
+      // if (isPlatform == 'Android' || isPlatform == 'iOS')
+      //   this.noti.noti.schedule({
+      //     id: 9,
+      //     title: `${this.lang.text['Nakama']['MissingChannelFiles']}: ${j - i}`,
+      //     progressBar: { value: i, maxValue: j },
+      //     sound: null,
+      //     smallIcon: 'res://icon_mono',
+      //     color: 'b0b0b0',
+      //   });
     }
     // 예하 그룹들 손상처리
     loading.message = this.lang.text['Nakama']['MissingGroups'];
@@ -3883,15 +3883,15 @@ export class NakamaService {
         this.p5toast.show({
           text: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SavingFile']}: ${_msg.content.filename}`,
         });
-        if (isPlatform == 'Android' || isPlatform == 'iOS')
-          this.noti.noti.schedule({
-            id: 8,
-            title: `${this.lang.text['ChatRoom']['SavingFile']}: ${msg.content.filename}`,
-            progressBar: { indeterminate: true },
-            sound: null,
-            smallIcon: 'res://diychat',
-            color: 'b0b0b0',
-          });
+        // if (isPlatform == 'Android' || isPlatform == 'iOS')
+        //   this.noti.noti.schedule({
+        //     id: 8,
+        //     title: `${this.lang.text['ChatRoom']['SavingFile']}: ${msg.content.filename}`,
+        //     progressBar: { indeterminate: true },
+        //     sound: null,
+        //     smallIcon: 'res://diychat',
+        //     color: 'b0b0b0',
+        //   });
         let GatheringInt8Array = [];
         let ByteSize = 0;
         await new Promise(async (done) => {
@@ -4018,15 +4018,15 @@ export class NakamaService {
           this.p5toast.show({
             text: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
           });
-        if (isPlatform == 'Android' || isPlatform == 'iOS')
-          this.noti.noti.schedule({
-            id: 8,
-            title: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
-            progressBar: { indeterminate: true },
-            sound: null,
-            smallIcon: 'res://diychat',
-            color: 'b0b0b0',
-          });
+        // if (isPlatform == 'Android' || isPlatform == 'iOS')
+        //   this.noti.noti.schedule({
+        //     id: 8,
+        //     title: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
+        //     progressBar: { indeterminate: true },
+        //     sound: null,
+        //     smallIcon: 'res://diychat',
+        //     color: 'b0b0b0',
+        //   });
         let GatheringInt8Array = [];
         let ByteSize = 0;
         await new Promise(async (done, err) => {
