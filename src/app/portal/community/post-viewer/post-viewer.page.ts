@@ -443,7 +443,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
             } else { // 일반 문자열
               try { // 일반 문자열이 json 구성을 띈 기능 정보인 경우, 콘텐츠 시간 링크로 간주
                 let json = JSON.parse(content[i]);
-                let TimeLink = p.createDiv(`[${json['i']}] ${this.PostInfo['attachments'][json['i']]['filename']} (${json['t']})`);
+                let targetText = `[${json['i']}] ${this.PostInfo['attachments'][json['i']]['filename']} (${json['t']})`;
+                let TimeLink = p.createDiv(targetText);
                 TimeLink.style('background-color', '#8888');
                 TimeLink.style('width', 'fit-content');
                 TimeLink.style('height', 'fit-content');
