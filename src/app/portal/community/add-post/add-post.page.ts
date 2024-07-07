@@ -962,6 +962,23 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.isSaveClicked = true;
     let isOfficial = this.userInput.server['isOfficial'];
     let target = this.userInput.server['target'];
+    if (this.isModify || this.isServerChanged) { // 편집된 게시물이라면 첨부파일을 전부다 지우고 다시 등록
+      if (this.userInput.mainImage && this.userInput.mainImage.url && !this.userInput.mainImage.blob) {
+        try {
+          let res = await fetch(this.userInput.mainImage.url);
+          if (res.ok) this.userInput.mainImage.blob = await res.blob();
+        } catch (e) { }
+        this.userInput.mainImage.blob = await (await fetch(this.userInput.mainImage.url)).blob();
+      }
+      for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
+        if (this.userInput.attachments[i].url && !this.userInput.attachments[i].blob) {
+          try {
+            let res = await fetch(this.userInput.attachments[i].url);
+            if (res.ok) this.userInput.attachments[i].blob = await res.blob();
+          } catch (e) { }
+        }
+      await this.nakama.RemovePost(this.userInput);
+    }
     try {
       // 게시물 아이디 구성하기
       if (!this.isModify || this.isServerChanged) { // 새 게시물 작성시에만 생성
@@ -1008,14 +1025,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             });
             console.log(e);
           }
-        } // 편집된 게시물이라면 전부다 지우고 다시 등록
-      } else {
-        if (this.userInput.mainImage && this.userInput.mainImage.url && !this.userInput.mainImage.blob)
-          this.userInput.mainImage.blob = await (await fetch(this.userInput.mainImage.url)).blob();
-        for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
-          if (this.userInput.attachments[i].url && !this.userInput.attachments[i].blob)
-            this.userInput.attachments[i].blob = await (await fetch(this.userInput.attachments[i].url)).blob();
-        await this.nakama.RemovePost(this.userInput);
+        }
       }
       // 게시물 날짜 업데이트
       if (this.isModify)
