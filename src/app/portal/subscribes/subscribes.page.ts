@@ -305,7 +305,7 @@ export class SubscribesPage implements OnInit {
     // try {
     //   if (!perm.granted || this.StartScan) throw '시작 불가상태';
     //   this.StartScan = true;
-    //   document.querySelector('body').setAttribute('style', '--background: transparent; --ion-background-color: transparent;');
+    //   document.querySelector('body').setAttribute('style', 'visibility: hidden; --background: transparent; --ion-background-color: transparent;');
     //   await BarcodeScanner.hideBackground();
     //   const result = await BarcodeScanner.startScan();
     //   if (result.hasContent) {
