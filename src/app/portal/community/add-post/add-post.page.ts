@@ -78,6 +78,12 @@ export class AddPostPage implements OnInit, OnDestroy {
     /** 대표 이미지 설정 */
     mainImage: undefined as PostAttachment,
     attachments: [] as PostAttachment[],
+    /** 게시물의 완벽한 외부 노출  
+     * 게시물 링크 정보를 포함하면 빠른 진입으로 이 게시물을 볼 수 있게 된다  
+     * 서버를 사용하는 경우 또는 FFS를 사용하는 경우에만 가능  
+     * 이 자리에 외부노출 주소가 포함되게 됨 (UserInput에 해당하는 json 파일을 업로드한 URL)
+    */
+    OutSource: undefined,
     isNSFW: false,
   }
   index = 0;
@@ -132,6 +138,8 @@ export class AddPostPage implements OnInit, OnDestroy {
               }, 1000);
             }
           }
+        this.UseOutLink = this.userInput.OutSource;
+        this.toggle_open_link(this.UseOutLink);
       }
       this.select_server(this.index);
       if (navParams && navParams.data)
@@ -301,9 +309,11 @@ export class AddPostPage implements OnInit, OnDestroy {
     try { // 변경된 서버 user_id 를 적용함
       this.userInput.creator_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
       this.userInput.UserColor = (this.userInput.creator_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
+      this.extended_buttons[7].isHide = this.useFirstCustomCDN == 2;
     } catch (e) { // 그게 아니라면 로컬입니다
       this.userInput.creator_id = 'me';
       this.userInput.UserColor = '888888';
+      this.extended_buttons[7].isHide = this.useFirstCustomCDN != 1;
     }
   }
 
@@ -504,6 +514,12 @@ export class AddPostPage implements OnInit, OnDestroy {
       name: this.lang.text['ChatRoom']['Detour'],
       act: () => {
         this.toggle_custom_attach();
+      }
+    }, { // 7
+      icon: 'eye-off-outline',
+      name: this.lang.text['AddPost']['UseOutLink'],
+      act: () => {
+        this.toggle_open_link();
       }
     }];
 
@@ -916,12 +932,13 @@ export class AddPostPage implements OnInit, OnDestroy {
    */
   useFirstCustomCDN = 0;
   async toggle_custom_attach(force?: number) {
-    let ModulerSize = this.userInput.creator_id == 'me' ? 2 : 3
+    let ModulerSize = this.userInput.creator_id == 'me' ? 2 : 3;
     this.useFirstCustomCDN = (force ?? (this.useFirstCustomCDN + 1)) % ModulerSize;
     if (isPlatform == 'Android') {
       this.useFirstCustomCDN = 2;
       this.extended_buttons[6].isHide = true;
     }
+    this.extended_buttons[7].isHide = !((this.userInput.creator_id != 'me' && this.useFirstCustomCDN != 2) || this.useFirstCustomCDN == 1) || !this.userInput.OutSource;
     switch (this.useFirstCustomCDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
         this.extended_buttons[6].icon = 'cloud-offline-outline';
@@ -937,6 +954,15 @@ export class AddPostPage implements OnInit, OnDestroy {
         break;
     }
     localStorage.setItem('useFFSCDN', `${this.useFirstCustomCDN}`);
+  }
+
+  UseOutLink = false;
+  /** 외부 완전 공개 여부를 검토 */
+  async toggle_open_link(force?: boolean) {
+    this.UseOutLink = force ?? !this.UseOutLink;
+    if (this.UseOutLink)
+      this.extended_buttons[7].icon = 'eye-outline';
+    else this.extended_buttons[7].icon = 'eye-off-outline';
   }
 
   /** 게시물 등록하기 버튼을 눌러 데이터 변경하기가 이루어졌는지 여부 */
@@ -1037,6 +1063,41 @@ export class AddPostPage implements OnInit, OnDestroy {
       // 썸네일 정보 삭제
       for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
         delete this.userInput.attachments[i].thumbnail;
+      // 외부링크 사용시 게시물 정보 업로드
+      if (this.UseOutLink) {
+        let blob = new Blob([JSON.stringify(this.userInput)], { type: 'text/plain' });
+        let file: FileInfo = {
+          blob: blob,
+          filename: `${this.userInput.id}.json`,
+          file_ext: 'json',
+          size: blob.size,
+        }
+        try { // 대상 서버에 업로드 시도
+          let address = this.nakama.servers[this.isOfficial][this.target].info.address;
+          let user_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
+          let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
+          loading.message = `${this.lang.text['AddPost']['SyncPostInfo']}`;
+          let outlink = await this.global.upload_file_to_storage(file, user_id, protocol, address, this.useFirstCustomCDN == 1);
+          if (outlink) {
+            this.userInput.OutSource = outlink;
+          } else throw '업로드 실패';
+        } catch (e) { // 지정된 서버 주소로 업로드를 실패했다면 FFS 등록 주소를 따라 업로드 시도
+          try { // 대상 서버에 업로드 시도
+            let user_id = this.nakama.users.self['display_name'];
+            loading.message = `${this.lang.text['AddPost']['SyncPostInfo']}`;
+            let outlink = await this.global.try_upload_to_user_custom_fs(file, user_id);
+            if (outlink) {
+              this.userInput.OutSource = outlink;
+            } else throw '업로드 실패';
+          } catch (e) { // 둘 다 실패했다면 실패한거임
+            this.userInput.OutSource = undefined;
+            this.UseOutLink = false;
+            this.p5toast.show({
+              text: `${this.lang.text['AddPost']['OutLinkFailed']}: ${e}`,
+            });
+          }
+        }
+      } else this.userInput.OutSource = undefined;
       // 대표 이미지 저장
       if (this.userInput.mainImage) {
         loading.message = this.lang.text['AddPost']['SyncMainImage'];

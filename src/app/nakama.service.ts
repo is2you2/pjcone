@@ -3046,8 +3046,10 @@ export class NakamaService {
       if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`;
       await this.indexed.removeFileFromUserPath(list[i]);
     }
+    // 외부링크 처리된 게시물 정보 삭제
+    if (info['OutSource']) await this.global.remove_file_from_storage(info['OutSource']);
     // 첨부파일 삭제
-    for (let i = 0, j = info['attachments'].length; i < j; i++)
+    if (info['attachments']) for (let i = 0, j = info['attachments'].length; i < j; i++)
       try {
         if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
         if (info['attachments'][i].url) {
