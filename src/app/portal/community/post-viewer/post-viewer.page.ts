@@ -154,7 +154,6 @@ export class PostViewerPage implements OnInit, OnDestroy {
     this.CurrentIndex = tmp_calced;
     this.PostInfo = this.nakama.posts[this.CurrentIndex - 1];
     this.initialize();
-    this.ContentChanging = false;
   }
 
   p5canvas: p5;
@@ -493,6 +492,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
           for (let i = 0, j = AfterAllAct.length; i < j; i++)
             AfterAllAct[i]();
         }
+        this.ContentChanging = false;
       }
     });
   }
