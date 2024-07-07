@@ -44,7 +44,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
     window.onpopstate = () => {
       if (this.BackButtonPressed) return;
       this.BackButtonPressed = true;
-      this.navCtrl.back();
+      this.go_back();
     };
 
     this.servers = this.nakama.get_all_server_info(true);
@@ -704,6 +704,8 @@ export class GroupServerPage implements OnInit, OnDestroy {
   async go_back() {
     try {
       await this.modalCtrl.dismiss();
-    } catch (e) { }
+    } catch (e) {
+      this.navCtrl.back();
+    }
   }
 }
