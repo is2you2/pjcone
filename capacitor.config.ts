@@ -5,6 +5,9 @@ const config: CapacitorConfig = {
   appName: 'Project: Cone',
   webDir: 'www',
   bundledWebRuntime: false,
+  server: {
+    androidScheme: 'http',
+  },
   cordova: {
     accessOrigins: ['*', 'http://*', 'https://*'],
     preferences: {
