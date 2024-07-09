@@ -433,6 +433,7 @@ export class AddPostPage implements OnInit, OnDestroy {
               this_file.file_ext = this_file.filename.split('.').pop();
               this_file.type = 'text/plain';
               this_file.viewer = 'text';
+              this.AddAttachTextForm();
               this.userInput.attachments.push(this_file);
             }
           });
