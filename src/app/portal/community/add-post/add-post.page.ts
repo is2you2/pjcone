@@ -1138,6 +1138,11 @@ export class AddPostPage implements OnInit, OnDestroy {
           }
         }
       }
+      /** 바깥 공유가 되어있다면 일단 삭제처리 */
+      if (this.userInput.OutSource) {
+        await this.global.remove_file_from_storage(this.userInput.OutSource);
+        this.userInput.OutSource = undefined;
+      }
       // 외부링크 사용시 게시물 정보 업로드
       if (this.UseOutLink) {
         let blob = new Blob([JSON.stringify(this.userInput)], { type: 'text/plain' });
@@ -1172,7 +1177,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             });
           }
         }
-      } else this.userInput.OutSource = undefined;
+      }
       let make_copy_info = JSON.parse(JSON.stringify(this.userInput))
       if (make_copy_info.mainImage)
         delete make_copy_info.mainImage.blob;
