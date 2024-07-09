@@ -336,10 +336,12 @@ export class SubscribesPage implements OnInit {
   }
 
   StopScan() {
-    this.StartScan = false;
-    document.querySelector('body')?.removeAttribute('style');
-    BarcodeScanner.removeAllListeners();
-    BarcodeScanner.stopScan();
+    if (isPlatform == 'Android' || isPlatform == 'iOS') {
+      this.StartScan = false;
+      document.querySelector('body')?.removeAttribute('style');
+      BarcodeScanner.removeAllListeners();
+      BarcodeScanner.stopScan();
+    }
   }
 
   lock_chatroom = false;

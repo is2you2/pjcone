@@ -3072,7 +3072,9 @@ export class NakamaService {
         await this.sync_remove_file(info['id'], isOfficial, target, 'server_post', '', `${info['id']}`);
     } catch (e) { }
     if (loading) loading.dismiss();
-    delete this.posts_orig[isOfficial][target][info['creator_id']][info['id']];
+    try {
+      delete this.posts_orig[isOfficial][target][info['creator_id']][info['id']];
+    } catch (e) { }
     this.rearrange_posts();
     if (this.socket_reactive['try_load_post']) this.socket_reactive['try_load_post']();
     if (!slient) try {
