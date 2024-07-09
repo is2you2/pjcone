@@ -1,6 +1,5 @@
 import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
-import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { AlertController, IonicSafeString, ModalController, Platform } from '@ionic/angular';
 import { IndexedDBService } from './indexed-db.service';
@@ -30,7 +29,6 @@ export class AppComponent {
     router: Router,
     ngZone: NgZone,
     noti: LocalNotiService,
-    bgmode: BackgroundMode,
     private nakama: NakamaService,
     indexed: IndexedDBService,
     private modalCtrl: ModalController,
@@ -169,7 +167,6 @@ export class AppComponent {
         }
       }
     });
-    bgmode.enable();
     nakama.on_socket_connected['connection_check'] = () => {
       nakama.check_if_online();
     }

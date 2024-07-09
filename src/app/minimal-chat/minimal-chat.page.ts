@@ -1,7 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Device } from '@awesome-cordova-plugins/device/ngx';
-import { ILocalNotificationAction, ILocalNotificationActionType } from '@awesome-cordova-plugins/local-notifications/ngx';
 import { IonInput, ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
@@ -58,8 +57,6 @@ export class MinimalChatPage implements OnInit {
   QRCodeSRC: any;
   /** 내 사용자 이름 */
   MyUserName: string;
-
-  reply_act: ILocalNotificationAction[];
 
   /** 이 창 열기(알림 상호작용) */
   open_this = (ev: any) => {
@@ -183,11 +180,11 @@ export class MinimalChatPage implements OnInit {
         this.noti.ClearNoti(v['id']);
         this.quit_chat();
       });
-      this.reply_act = [{
-        id: `send${'dedicated_groupchat'}`,
-        type: ILocalNotificationActionType.INPUT,
-        title: this.lang.text['MinimalChat']['Noti_Reply'],
-      }];
+      // this.reply_act = [{
+      //   id: `send${'dedicated_groupchat'}`,
+      //   type: ILocalNotificationActionType.INPUT,
+      //   title: this.lang.text['MinimalChat']['Noti_Reply'],
+      // }];
       this.client.userInput['dedicated_groupchat'].logs.length = 0;
       let joinMessage = { color: isDarkMode ? 'bbb' : '444', text: this.lang.text['MinimalChat']['joinChat_group'] };
       this.client.userInput['dedicated_groupchat'].logs.push(joinMessage);

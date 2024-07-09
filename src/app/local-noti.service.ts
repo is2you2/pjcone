@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { isPlatform } from './app.component';
-import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
-import { ILocalNotification, ILocalNotificationAction, ILocalNotificationProgressBar, ILocalNotificationTrigger, LocalNotifications } from '@awesome-cordova-plugins/local-notifications/ngx';
+import { LocalNotificationSchema, LocalNotifications, PendingLocalNotificationSchema, Schedule } from "@capacitor/local-notifications";
 import { IndexedDBService } from './indexed-db.service';
 
 declare var cordova: any;
@@ -9,7 +8,7 @@ declare var cordova: any;
 /** 웹에서도, 앱에서도 동작하는 요소로 구성된 알림폼 재구성  
  * 실험을 거쳐 차례로 병합해가기
  */
-interface TotalNotiForm {
+export interface TotalNotiForm {
   /** 알림 아이디  
    * 웹에서도 알림 취소로 활용할 수 있음
    */
@@ -21,22 +20,6 @@ interface TotalNotiForm {
    * ~~2. largeBody와 같이 쓰는 경우: 접혀있을 때만 보인다.~~
    */
   body?: string;
-  /** 하단 행동 추가용 (예를 들어 답장, 읽기 등) */
-  actions_ln?: ILocalNotificationAction[];
-  /** 알림 중요도. -2 ~ 2 */
-  priority_ln?: number;
-  /** 안드로이드 전용.  
-   * 잠금화면에서 보이기 여부
-   */
-  lockscreen_ln?: boolean;
-  /** 앱을 클릭하여 포어그라운드로 넘어갈지 여부 */
-  launch_ln?: boolean;
-  /** 미확인  
-   * ANDROID ONLY If and how the notification shall show the when date. Possbile values: boolean: true equals 'clock', false disable a watch/counter 'clock': Show the when date in the content view 'chronometer': Show a stopwatch
-   */
-  clock_ln?: boolean;
-  /** 진행바 표기 */
-  progressBar_ln?: boolean | ILocalNotificationProgressBar;
   /** 알림 펼치면 있는 아이콘, 칼라임  
    * 모바일은 안드로이드 전용. 우측에 대형을 들어가는 아이콘
    */
@@ -45,39 +28,19 @@ interface TotalNotiForm {
    * res/drawable 폴더에 포함되어 있는 이름. 안드로이드 전용
    */
   smallIcon_ln?: string;
-  /** 안드로이드 전용. 알림에 화면이 켜지는지 여부  
-   * 기본적으로 켜지게 되어있으나 false로 끌 수 있음
-  */
-  wakeup_ln?: boolean;
-  /** 안드로이드 전용. 테스트 안됨  
-   * ANDROID ONLY Define the blinking of the LED on the device. If set to true, the LED will blink in the default color with timings for on and off set to 1000 ms. If set to a string, the LED will blink in this ARGB value with timings for on and off set to 1000 ms. If set to an array, the value of the key 0 will be used as the color, the value of the key 1 will be used as the 'on' timing, the value of the key 2 will be used as the 'off' timing
-   */
-  led_ln?: string | boolean | any[] | {
-    color: string;
-    on: number;
-    off: number;
-  }
-  /** 안드로이드 전용, 테스트 안됨  
-   * ANDROID ONLY Set the token for the media session
-   */
-  mediaSesion_ln?: string;
   /** 언제 발동할까요? */
-  triggerWhen_ln?: ILocalNotificationTrigger;
-  /** 안드로이드 전용. 테스트 안됨  
-   * 이 알림이 나타내는 항목 수
-   */
-  number_ln?: number;
+  triggerWhen_ln?: Schedule;
   /** 알림 아이콘의 색상. 안드로이드 전용  
    * '#' 없이 hex 코드만 (ex. ff0000)
    */
   iconColor_ln?: string;
   /** 안드로이드 전용. 그룹알림시 그룹 이름. 테스트 안됨  
+   * 
    * Used to group multiple notifications.
    *
-   * Calls `setGroup()` on
-   * [`NotificationCompat.Builder`](https://developer.android.com/reference/androidx/core/app/NotificationCompat.Builder)
-   * with the provided value.
-   * @since 1.0.0
+   * Calls setGroup() on NotificationCompat.Builder with the provided value.
+   *
+   * Only available for Android.
    */
   group_ln?: string;
   /** 안드로이드 전용, 그룹 요약 사용여부 */
@@ -92,16 +55,10 @@ interface TotalNotiForm {
    * 앱을 진입할 때 알림이 삭제됩니다  
    */
   autoCancel_ln?: boolean;
-  /** 소리 설정 */
-  sound_ln?: string;
-  /** 안드로이드 전용. 알아서 꺼지기 시간(단위/밀리초) */
-  timeoutAfter_ln?: number | false;
   /** 알림에 저장될 추가 데이터, Json 형태로 저장됩니다 */
   extra_ln?: any;
-  /** Web.Noti: 미확인  
-   * Mobile: 알림에 같이 보여지는 뱃지 숫자
-   */
-  badge?: number;
+  /** Web.Noti: 미확인 */
+  badge_wm?: number;
   /** 이미지 첨부, 가로폭에 맞추어 보여짐 */
   image?: string;
   /** Web.Noti: 미확인 */
@@ -118,8 +75,6 @@ interface TotalNotiForm {
   requireInteraction_wn?: boolean;
   /** Web.Noti: 미확인 */
   tag_wn?: string;
-  /** 기본 진동 모드 여부 */
-  vibrate_ln?: boolean;
 }
 
 /** 로컬 알림 */
@@ -129,8 +84,6 @@ interface TotalNotiForm {
 export class LocalNotiService {
 
   constructor(
-    public noti: LocalNotifications,
-    private bgmode: BackgroundMode,
     private indexed: IndexedDBService,
   ) { }
 
@@ -207,7 +160,7 @@ export class LocalNotiService {
       if (opt.triggerWhen_ln) return; // 웹에는 예약 기능이 없음
       /** 기본 알림 옵션 (교체될 수 있음) */
       const input: any = {
-        badge: `${opt.badge}`,
+        badge: `${opt.badge_wm}`,
         body: opt.body,
         icon: `assets/icon/${opt.icon || opt.smallIcon_ln || header || 'favicon'}.png`,
         image: opt.image,
@@ -250,76 +203,42 @@ export class LocalNotiService {
         } catch (e) { }
       }
     } else { // 모바일 로컬 푸쉬
-      return;
-      // 포어그라운드면서 해당 화면이면 동작 안함
-      if (!this.bgmode.isActive() && this.Current == header) return;
+      if (this.Current == header) return;
       if (!this.settings.silent[opt.icon || opt.smallIcon_ln || header || 'icon_mono']) return;
-      let input: ILocalNotification = {};
-      input['id'] = opt.id;
-      input['title'] = opt.title;
-      if (opt.body)
-        input['text'] = opt.body;
-      if (opt.actions_ln)
-        input['actions'] = opt.actions_ln;
-      if (opt.autoCancel_ln)
-        input['autoClear'] = opt.autoCancel_ln;
-      if (opt.launch_ln)
-        input['launch'] = opt.launch_ln;
-      if (opt.badge)
-        input['badge'] = opt.badge;
+      let input: LocalNotificationSchema = {
+        id: opt.id,
+        title: opt.title,
+        body: opt.body,
+        schedule: opt.triggerWhen_ln,
+        iconColor: `#${opt.iconColor_ln || 'ffd94e'}`,
+        extra: opt.extra_ln,
+        autoCancel: opt.autoCancel_ln,
+        largeIcon: opt.icon,
+        smallIcon: opt.smallIcon_ln || header || 'icon_mono',
+        group: opt.group_ln,
+        groupSummary: opt.groupSummary_ln,
+        summaryText: opt.groupSummaryText_ln,
+        ongoing: opt.ongoing_ln,
+      };
       if (opt.image)
-        input['attachments'] = [opt.image];
-      if (opt.clock_ln)
-        input['clock'] = opt.clock_ln;
-      if (opt.iconColor_ln)
-        input['color'] = opt.iconColor_ln || 'ffd94e';
-      if (opt.extra_ln)
-        input['data'] = opt.extra_ln;
-      if (opt.group_ln)
-        input['group'] = opt.group_ln;
-      if (opt.groupSummary_ln)
-        input['groupSummary'] = opt.groupSummary_ln;
-      if (opt.groupSummaryText_ln)
-        input['summary'] = opt.groupSummaryText_ln;
-      if (opt.led_ln)
-        input['led'] = opt.led_ln;
-      if (opt.lockscreen_ln)
-        input['lockscreen'] = opt.lockscreen_ln;
-      if (opt.mediaSesion_ln)
-        input['mediaSession'] = opt.mediaSesion_ln;
-      if (opt.number_ln)
-        input['number'] = opt.number_ln;
-      if (opt.progressBar_ln)
-        input['progressBar'] = opt.progressBar_ln;
-      if (opt.priority_ln)
-        input['priority'] = opt.priority_ln;
-      input['silent'] = !this.settings.silent[opt.smallIcon_ln] || false;
-      if (opt.timeoutAfter_ln)
-        input['timeoutAfter'] = opt.timeoutAfter_ln;
-      if (opt.wakeup_ln)
-        input['wakeup'] = opt.wakeup_ln;
-      if (opt.ongoing_ln)
-        input['sticky'] = opt.ongoing_ln;
-      if (opt.triggerWhen_ln)
-        input['trigger'] = opt.triggerWhen_ln;
-      if (opt.vibrate_ln)
-        input['vibrate'] = opt.vibrate_ln;
-      if (opt.icon)
-        input['icon'] = opt.icon;
-      input['smallIcon'] = `res://${opt.smallIcon_ln || header || 'icon_mono'}`;
-      input['sound'] = `res://${opt.sound_ln || 'platform_default'}`;
-      input['foreground'] = true;
-      this.noti.schedule(input);
+        input['attachments'] = [{
+          id: '0',
+          url: opt.image,
+        }];
+      let keys = Object.keys(input);
+      for (let i = 0, j = keys.length; i < j; i++)
+        if (input[keys[i]] === undefined)
+          delete input[keys[i]];
+      LocalNotifications.schedule({ notifications: [input] });
     }
   }
 
   /** 기등록 id 불러오기 (Android: 예약된 알림) */
-  GetNotificationIds(_CallBack = (_list: number[]) => { }) {
+  GetNotificationIds(_CallBack = (_list: PendingLocalNotificationSchema[]) => { }) {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
     } else {
-      return;
-      this.noti.getScheduledIds().then((ids) => {
-        _CallBack(ids);
+      LocalNotifications.getPending().then((ids) => {
+        _CallBack(ids.notifications);
       });
     }
   }
@@ -331,8 +250,7 @@ export class LocalNotiService {
         if (this.WebNoties[id])
           this.WebNoties[id].close();
       } else if (isPlatform != 'MobilePWA') {
-        return;
-        this.noti.clear(id);
+        LocalNotifications.cancel({ notifications: [{ id: id }] });
       }
     }, 1000);
   }
@@ -345,6 +263,7 @@ export class LocalNotiService {
   SetListener(ev: string, subscribe: Function = (v: any, eopts: any) => console.warn(`${ev}: ${v}/${eopts}`)) {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
     } else {
+      console.log('알림 행동 생성 요청 받음: SetListener: ', ev);
       return;
       this.listeners[ev] = (v: any, eopts: any) => {
         subscribe(v, eopts);
@@ -359,6 +278,7 @@ export class LocalNotiService {
   RemoveListener(ev: string) {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
     } else {
+      console.log('알림 행동 지우기 요청 받음: RemoveListener: ', ev);
       return;
       cordova.plugins.notification.local.un(ev, this.listeners[ev]);
       delete this.listeners[ev];

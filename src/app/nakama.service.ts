@@ -5,14 +5,13 @@ import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 import * as p5 from 'p5';
-import { LocalNotiService } from './local-noti.service';
+import { LocalNotiService, TotalNotiForm } from './local-noti.service';
 import { AlertController, IonicSafeString, LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 import { LanguageSettingService } from './language-setting.service';
 import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
-import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { VoidDrawPage } from './portal/subscribes/chat-room/void-draw/void-draw.page';
 import { PostViewerPage } from './portal/community/post-viewer/post-viewer.page';
 
@@ -93,7 +92,6 @@ export class NakamaService {
     private alertCtrl: AlertController,
     private lang: LanguageSettingService,
     private global: GlobalActService,
-    private bgmode: BackgroundMode,
     private navCtrl: NavController,
     private ngZone: NgZone,
     private loadingCtrl: LoadingController,
@@ -121,7 +119,10 @@ export class NakamaService {
     this.global.AddressToQRCodeAct = this.AddressToQRCodeAct;
     // 기등록 알림 id 검토
     this.noti.GetNotificationIds((list) => {
-      this.registered_id = list;
+      let id_array = [];
+      for (let i = 0, j = list.length; i < j; i++)
+        id_array.push(list[i].id);
+      this.registered_id = id_array;
     });
     await this.set_all_todo_notification();
     let profile = await this.indexed.loadTextFromUserPath('servers/self/profile.json');
@@ -295,7 +296,7 @@ export class NakamaService {
             break;
         }
         if (noti_info['custom_color'])
-          color = noti_info['custom_color'];
+          color = noti_info['custom_color'].replace('#', '');
         this.noti.PushLocal({
           id: noti_info.noti_id,
           title: noti_info.title,
@@ -2302,15 +2303,6 @@ export class NakamaService {
       await this.indexed.saveFileToUserPath(file, targetPath);
       await this.indexed.removeFileFromUserPath(list[i]);
       loading.message = `${this.lang.text['Nakama']['MissingChannelFiles']}: ${list[i]}`;
-      // if (isPlatform == 'Android' || isPlatform == 'iOS')
-      //   this.noti.noti.schedule({
-      //     id: 9,
-      //     title: `${this.lang.text['Nakama']['MissingChannelFiles']}: ${j - i}`,
-      //     progressBar: { value: i, maxValue: j },
-      //     sound: null,
-      //     smallIcon: 'res://icon_mono',
-      //     color: 'b0b0b0',
-      //   });
     }
     // 예하 그룹들 손상처리
     loading.message = this.lang.text['Nakama']['MissingGroups'];
@@ -2356,31 +2348,31 @@ export class NakamaService {
   check_if_online() {
     let as_admin = this.get_all_server_info(true, true);
     if (as_admin.length) {
-      this.bgmode.setDefaults({
-        title: this.lang.text['GlobalAct']['OnlineMode'],
-        text: this.lang.text['GlobalAct']['OnlineMode_text'],
-        icon: 'icon_mono',
-        color: 'ffd94e', // 모자 밑단 노란색
-      });
-      this.bgmode.configure({
-        title: this.lang.text['GlobalAct']['OnlineMode'],
-        text: this.lang.text['GlobalAct']['OnlineMode_text'],
-        icon: 'icon_mono',
-        color: 'ffd94e', // 모자 밑단 노란색
-      });
-    } else {
-      this.bgmode.setDefaults({
-        title: this.lang.text['GlobalAct']['OfflineMode'],
-        text: this.lang.text['GlobalAct']['OfflineMode_text'],
-        icon: 'icon_mono',
-        color: 'ffd94e', // 모자 밑단 노란색
-      });
-      this.bgmode.configure({
-        title: this.lang.text['GlobalAct']['OfflineMode'],
-        text: this.lang.text['GlobalAct']['OfflineMode_text'],
-        icon: 'icon_mono',
-        color: 'ffd94e', // 모자 밑단 노란색
-      });
+      //   this.bgmode.setDefaults({
+      //     title: this.lang.text['GlobalAct']['OnlineMode'],
+      //     text: this.lang.text['GlobalAct']['OnlineMode_text'],
+      //     icon: 'icon_mono',
+      //     color: 'ffd94e', // 모자 밑단 노란색
+      //   });
+      //   this.bgmode.configure({
+      //     title: this.lang.text['GlobalAct']['OnlineMode'],
+      //     text: this.lang.text['GlobalAct']['OnlineMode_text'],
+      //     icon: 'icon_mono',
+      //     color: 'ffd94e', // 모자 밑단 노란색
+      //   });
+      // } else {
+      //   this.bgmode.setDefaults({
+      //     title: this.lang.text['GlobalAct']['OfflineMode'],
+      //     text: this.lang.text['GlobalAct']['OfflineMode_text'],
+      //     icon: 'icon_mono',
+      //     color: 'ffd94e', // 모자 밑단 노란색
+      //   });
+      //   this.bgmode.configure({
+      //     title: this.lang.text['GlobalAct']['OfflineMode'],
+      //     text: this.lang.text['GlobalAct']['OfflineMode_text'],
+      //     icon: 'icon_mono',
+      //     color: 'ffd94e', // 모자 밑단 노란색
+      //   });
     }
   }
 
@@ -2885,7 +2877,7 @@ export class NakamaService {
     let is_new = msg.message_id != this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_id'];
     let c = this.modulation_channel_message(msg, _is_official, _target);
     if (!is_me && is_new) {
-      let PushInfo = {
+      let PushInfo: TotalNotiForm = {
         id: this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'],
         title: this.channels_orig[_is_official][_target][msg.channel_id]['info']['name']
           || this.channels_orig[_is_official][_target][msg.channel_id]['info']['display_name']
@@ -3883,15 +3875,6 @@ export class NakamaService {
         this.p5toast.show({
           text: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SavingFile']}: ${_msg.content.filename}`,
         });
-        // if (isPlatform == 'Android' || isPlatform == 'iOS')
-        //   this.noti.noti.schedule({
-        //     id: 8,
-        //     title: `${this.lang.text['ChatRoom']['SavingFile']}: ${msg.content.filename}`,
-        //     progressBar: { indeterminate: true },
-        //     sound: null,
-        //     smallIcon: 'res://diychat',
-        //     color: 'b0b0b0',
-        //   });
         let GatheringInt8Array = [];
         let ByteSize = 0;
         await new Promise(async (done) => {
@@ -4018,15 +4001,6 @@ export class NakamaService {
           this.p5toast.show({
             text: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
           });
-        // if (isPlatform == 'Android' || isPlatform == 'iOS')
-        //   this.noti.noti.schedule({
-        //     id: 8,
-        //     title: `${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
-        //     progressBar: { indeterminate: true },
-        //     sound: null,
-        //     smallIcon: 'res://diychat',
-        //     color: 'b0b0b0',
-        //   });
         let GatheringInt8Array = [];
         let ByteSize = 0;
         await new Promise(async (done, err) => {

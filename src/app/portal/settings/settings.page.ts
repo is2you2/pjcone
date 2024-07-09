@@ -5,7 +5,6 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
-import { LocalNotiService } from '../../local-noti.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { WebrtcManageIoDevPage } from 'src/app/webrtc-manage-io-dev/webrtc-manage-io-dev.page';
 import { LocalGroupServerService } from 'src/app/local-group-server.service';
@@ -23,7 +22,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     public statusBar: StatusManageService,
     public nakama: NakamaService,
     public lang: LanguageSettingService,
-    public noti: LocalNotiService,
     private global: GlobalActService,
     public server: LocalGroupServerService,
   ) { }

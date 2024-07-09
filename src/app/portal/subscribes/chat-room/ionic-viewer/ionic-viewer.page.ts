@@ -197,15 +197,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   async DownloadInOrder() {
-    // if (isPlatform == 'Android' || isPlatform == 'iOS')
-    //   this.noti.noti.schedule({
-    //     id: 6,
-    //     title: this.lang.text['ContentViewer']['DownloadThisFile'],
-    //     progressBar: { indeterminate: true },
-    //     sound: null,
-    //     smallIcon: 'res://diychat',
-    //     color: 'b0b0b0',
-    //   });
     for (let i = 0, j = this.Relevances.length; i < j; i++) { // 전체 다운로드시 개체 미리 생성하기
       if (!this.nakama.OnTransfer[this.isOfficial]) this.nakama.OnTransfer[this.isOfficial] = {};
       if (!this.nakama.OnTransfer[this.isOfficial][this.target]) this.nakama.OnTransfer[this.isOfficial][this.target] = {};
@@ -214,15 +205,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id][this.Relevances[i].message_id] = {};
     }
     for (let i = 0, j = this.Relevances.length; i < j; i++) {
-      // if (isPlatform == 'Android' || isPlatform == 'iOS')
-      //   this.noti.noti.schedule({
-      //     id: 6,
-      //     title: `${this.lang.text['ContentViewer']['DownloadThisFile']}: ${j - i}`,
-      //     progressBar: { value: i, maxValue: j },
-      //     sound: null,
-      //     smallIcon: 'res://diychat',
-      //     color: 'b0b0b0',
-      //   });
       let path = `servers/${this.isOfficial}/${this.target}/channels/${this.Relevances[i].channel_id}/files/msg_${this.Relevances[i].message_id}.${this.Relevances[i].content['file_ext']}`;
       let FileExist = await this.indexed.checkIfFileExist(path);
       if (!FileExist) try {
