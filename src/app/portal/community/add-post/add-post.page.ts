@@ -138,7 +138,7 @@ export class AddPostPage implements OnInit, OnDestroy {
               }, 1000);
             }
           }
-        this.UseOutLink = this.userInput.OutSource;
+        this.UseOutLink = Boolean(this.userInput.OutSource);
         this.toggle_open_link(this.UseOutLink);
       }
       this.select_server(this.index);
