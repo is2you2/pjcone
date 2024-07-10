@@ -674,22 +674,19 @@ export class GlobalActService {
     if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['Settings']['TryToFallbackFS'] });
     else innerLoading = loading;
     innerLoading.present();
-    let formData = new FormData();
-    let upload_time = new Date().getTime();
-    let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
-    let filename = `${user_id}_${only_filename}_${upload_time}.${file.file_ext}`;
-    let _file = new File([file.blob], filename);
-    formData.append("files", _file);
     let Catched = false;
     let CatchedAddress: string;
     if (useCustomServer)
-      CatchedAddress = await this.try_upload_to_user_custom_fs(file, user_id, formData, innerLoading);
+      CatchedAddress = await this.try_upload_to_user_custom_fs(file, user_id, innerLoading);
     innerLoading.message = this.lang.text['GlobalAct']['CheckCdnServer'];
     try { // 사설 연계 서버에 업로드 시도
       if (CatchedAddress) {
         Catched = true;
         throw '사용자 지정서버에서 이미 성공함'
       };
+      let upload_time = new Date().getTime();
+      let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
+      let filename = `${user_id}_${only_filename}_${upload_time}.${file.file_ext}`;
       CatchedAddress = `${protocol}//${address}:9002/cdn/${filename}`;
       let progress = setInterval(async () => {
         let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST" });
@@ -697,6 +694,9 @@ export class GlobalActService {
         let progressPercent = Math.floor(currentSize / file.size * 100);
         innerLoading.message = `${file.filename}: ${progressPercent}%`;
       }, 700);
+      let formData = new FormData();
+      let _file = new File([file.blob], filename);
+      formData.append("files", _file);
       await fetch(`${protocol}//${address}:9001/${filename}`, { method: "POST", body: formData });
       clearInterval(progress);
       let res = await fetch(CatchedAddress);
@@ -731,18 +731,16 @@ export class GlobalActService {
   }
 
   /** 사용자 지정 서버에 업로드 시도 */
-  async try_upload_to_user_custom_fs(file: any, user_id: string, formData?: FormData, loading?: HTMLIonLoadingElement) {
+  async try_upload_to_user_custom_fs(file: any, user_id: string, loading?: HTMLIonLoadingElement) {
     let innerLoading: HTMLIonLoadingElement;
     if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['Settings']['TryToFallbackFS'] });
     else innerLoading = loading;
     let upload_time = new Date().getTime();
     let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
     let filename = `${user_id}_${only_filename}_${upload_time}.${file.file_ext}`;
-    if (!formData) { // 채널 채팅 등에서 넘어와서 정보가 없는 경우 생성처리
-      formData = new FormData();
-      let _file = new File([file.blob], filename);
-      formData.append("files", _file);
-    }
+    let formData = new FormData();
+    let _file = new File([file.blob], filename);
+    formData.append("files", _file);
     let CatchedAddress: string;
     let fallback = localStorage.getItem('fallback_fs');
     let progress: any;

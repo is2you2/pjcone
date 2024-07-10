@@ -1344,7 +1344,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
             loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: ${this.userInput.attach[i].filename}`;
             let CatchedAddress: string;
-            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attach[i], this.nakama.users.self['display_name'], undefined, loading);
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attach[i], this.nakama.users.self['display_name'], loading);
             if (CatchedAddress) {
               delete this.userInput.attach[i]['path'];
               delete this.userInput.attach[i]['partsize'];

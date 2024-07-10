@@ -1069,20 +1069,21 @@ export class AddPostPage implements OnInit, OnDestroy {
         loading.message = this.lang.text['AddPost']['SyncMainImage'];
         this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/MainImage.${this.userInput.mainImage.file_ext}`;
         this.userInput.mainImage.thumbnail = this.MainPostImage;
-        try { // FFS 업로드 시도
-          if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
-          loading.message = `${this.lang.text['AddPost']['SyncMainImage']}: ${this.userInput.mainImage.filename}`;
-          let CatchedAddress: string;
-          CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, this.nakama.users.self['display_name'], undefined, loading);
-          if (CatchedAddress) {
-            delete this.userInput.mainImage['path'];
-            delete this.userInput.mainImage['partsize'];
-            this.userInput.mainImage['url'] = CatchedAddress;
-          } else throw '업로드 실패';
-        } catch (e) {
-          await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
-        }
-        if (!is_local) {
+        if (is_local) {
+          try { // FFS 업로드 시도
+            if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
+            loading.message = `${this.lang.text['AddPost']['SyncMainImage']}: ${this.userInput.mainImage.filename}`;
+            let CatchedAddress: string;
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, this.nakama.users.self['display_name'], loading);
+            if (CatchedAddress) {
+              delete this.userInput.mainImage['path'];
+              delete this.userInput.mainImage['partsize'];
+              this.userInput.mainImage['url'] = CatchedAddress;
+            } else throw '업로드 실패';
+          } catch (e) {
+            await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
+          }
+        } else {
           try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
             if (this.useFirstCustomCDN == 2) throw 'SQL 강제';
             let address = this.nakama.servers[this.isOfficial][this.target].info.address;
@@ -1104,21 +1105,22 @@ export class AddPostPage implements OnInit, OnDestroy {
       if (attach_len) {
         loading.message = this.lang.text['AddPost']['SyncAttaches'];
         for (let i = attach_len - 1; i >= 0; i--) {
-          try { // FFS 업로드 시도
-            if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
-            loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`;
-            let CatchedAddress: string;
-            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name'], undefined, loading);
-            if (CatchedAddress) {
-              delete this.userInput.attachments[i]['path'];
-              delete this.userInput.attachments[i]['partsize'];
-              this.userInput.attachments[i]['url'] = CatchedAddress;
-            } else throw '업로드 실패';
-          } catch (e) {
-            this.userInput.attachments[i].path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`;
-            await this.indexed.saveBlobToUserPath(this.userInput.attachments[i].blob, this.userInput.attachments[i].path);
-          }
-          if (!is_local) {
+          if (is_local) {
+            try { // FFS 업로드 시도
+              if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
+              loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`;
+              let CatchedAddress: string;
+              CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name'], loading);
+              if (CatchedAddress) {
+                delete this.userInput.attachments[i]['path'];
+                delete this.userInput.attachments[i]['partsize'];
+                this.userInput.attachments[i]['url'] = CatchedAddress;
+              } else throw '업로드 실패';
+            } catch (e) {
+              this.userInput.attachments[i].path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`;
+              await this.indexed.saveBlobToUserPath(this.userInput.attachments[i].blob, this.userInput.attachments[i].path);
+            }
+          } else {
             try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
               if (this.useFirstCustomCDN == 2) throw 'SQL 강제';
               let address = this.nakama.servers[this.isOfficial][this.target].info.address;
@@ -1162,7 +1164,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             this.userInput.OutSource = outlink;
           } else throw '업로드 실패';
         } catch (e) { // 지정된 서버 주소로 업로드를 실패했다면 FFS 등록 주소를 따라 업로드 시도
-          try { // 대상 서버에 업로드 시도
+          try { // FFS에 업로드 시도
             let user_id = this.nakama.users.self['display_name'];
             loading.message = `${this.lang.text['AddPost']['SyncPostInfo']}`;
             let outlink = await this.global.try_upload_to_user_custom_fs(file, user_id);
