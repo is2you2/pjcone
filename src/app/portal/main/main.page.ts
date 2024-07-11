@@ -145,6 +145,7 @@ export class MainPage implements OnInit {
                   }
                 }],
               }).then(v => {
+                ReleaseGrabbedElement();
                 v.onDidDismiss().then(() => {
                   BlockInput = false;
                 });
@@ -873,14 +874,18 @@ export class MainPage implements OnInit {
           }
         }
       }
-      /** 모든 입력을 제거했을 때 공통 행동 */
-      let ReleaseAllAct = () => {
+      /** 붙잡은 개체 놔주기 */
+      let ReleaseGrabbedElement = () => {
         if (GrabbedElement) {
           GrabbedElement.isGrabbed = false;
           GrabbedElement.Velocity = VECTOR_ZERO.copy();
           GrabbedElement.Accel = VECTOR_ZERO.copy();
           GrabbedElement = undefined;
         }
+      }
+      /** 모든 입력을 제거했을 때 공통 행동 */
+      let ReleaseAllAct = () => {
+        ReleaseGrabbedElement();
         MovementStartPosition = undefined;
         try {
           let dist = TempStartCamPosition.dist(CamPosition);
