@@ -1113,6 +1113,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   async SaveText() {
     // 채널 채팅에서는 별도 파일첨부로 처리
     let blob = new Blob([this.p5canvas['TextArea'].value], { type: this.FileInfo.type });
+    if (this.NewTextFileName.indexOf('.') < 0) this.NewTextFileName += '.txt';
     blob['name'] = this.NewTextFileName || this.FileInfo.filename || this.FileInfo.name;
     if (this.OpenInChannelChat) { // 채널 채팅에서 열람
       this.modalCtrl.dismiss({
