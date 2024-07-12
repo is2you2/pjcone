@@ -289,9 +289,7 @@ export class VoidDrawPage implements OnInit {
         TopMenu.parent(targetDiv);
         let top_row = TopMenu.elt.insertRow(0); // 상단 메뉴
         let AddTextCell = top_row.insertCell(0); // 추가
-        if (isPlatform == 'MobilePWA') // 모바일 웹은 지원하지 않음
-          AddTextCell.innerHTML = `<ion-icon id="RemoteIcon" style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
-        else AddTextCell.innerHTML = `<ion-icon id="RemoteIcon" style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
+        AddTextCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
         AddTextCell.style.textAlign = 'center';
         AddTextCell.style.cursor = 'pointer';
         AddTextCell.onclick = () => {
