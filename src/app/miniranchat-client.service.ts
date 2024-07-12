@@ -65,6 +65,7 @@ export class MiniranchatClientService {
     }
     this.client.onerror = (e) => {
       console.error('MiniranchatClientService 오류 발생: ', e);
+      this.disconnect();
     }
     this.client.onmessage = (ev) => {
       if (typeof ev.data == 'string')
@@ -146,5 +147,6 @@ export class MiniranchatClientService {
     this.uuid = undefined;
     if (this.p5canvas) this.p5canvas.remove();
     this.client = undefined;
+    this.status = 'idle';
   }
 }

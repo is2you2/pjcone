@@ -133,9 +133,7 @@ export class MinimalChatPage implements OnInit {
         break;
       default: // 다른 원격 서버
         let info = ev.detail.value.info;
-        let protocol = info.useSSL ? 'wss:' : 'ws:';
-        let address = info.address;
-        this.UserInputCustomAddress = `${protocol}//${address}`;
+        this.UserInputCustomAddress = info.address;
         this.NeedInputCustomAddress = false;
         break;
     }
@@ -179,7 +177,8 @@ export class MinimalChatPage implements OnInit {
       this.client.userInput.logs.push(joinMessage);
       this.client.userInput.last_message = joinMessage;
       let checkProtocol = this.UserInputCustomAddress.replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
-      this.client.initialize(`${checkProtocol ? 'wss:' : 'ws:'}//${this.UserInputCustomAddress}`);
+      let target_address = `${checkProtocol ? 'wss:' : 'ws:'}//${this.UserInputCustomAddress}`;
+      this.client.initialize(target_address);
     }
     this.client.funcs.onmessage = (v: string) => {
       try {

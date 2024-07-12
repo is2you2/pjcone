@@ -76,25 +76,14 @@ app.use('/remove_key/', (req, res) => {
 });
 
 
-const options = {
-    key: fs.readFileSync('/usr/local/apache2/conf/private.key'),
-    cert: fs.readFileSync('/usr/local/apache2/conf/public.crt'),
-};
-
-https.createServer(options, app).listen(9001, "0.0.0.0", () => {
-    console.log("Working on port 9001");
+app.listen(9001, "0.0.0.0", () => {
+    console.log("Working on port 9001: No Secure");
 });
 
-// app.listen(9001, "0.0.0.0", () => {
-//     console.log("Working on port 9001: No Secure");
-// });
-
-const secure_server = https.createServer(options);
-const wss = new ws.Server({ secure_server });
-
-// const wss = new ws.Server({ port: 12013 }, () => {
-//     console.log("Working on port 12013: No Secure");
-// });
+// 이 아래부터는 사설 그룹채팅 서버 구성
+const wss = new ws.Server({ port: 12013 }, () => {
+    console.log("Working on port 12013: No Secure");
+});
 
 
 /** 사설 그룹채팅 클라이언트 맵
@@ -150,8 +139,4 @@ wss.on('connection', (ws) => {
         for (let i = 0, j = keys.length; i < j; i++)
             dedi_client[keys[i]]['ws'].send(msg);
     });
-});
-
-secure_server.listen(12013, () => {
-    console.log("Working on port 12013");
 });
