@@ -5,7 +5,7 @@ import clipboard from 'clipboardy';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
-import { LocalGroupServerService } from 'src/app/local-group-server.service';
+import { ToolServerService } from 'src/app/tool-server.service';
 
 @Component({
   selector: 'app-link-qr',
@@ -19,7 +19,7 @@ export class LinkQrPage implements OnInit {
     private mClipboard: Clipboard,
     private p5toast: P5ToastService,
     public lang: LanguageSettingService,
-    private local_server: LocalGroupServerService,
+    private toolServer: ToolServerService,
   ) { }
 
   QRCodeSRC: any;
@@ -27,21 +27,7 @@ export class LinkQrPage implements OnInit {
   SelectedAddress: string;
 
   ngOnInit() {
-    this.local_server.funcs.onCheck = (v: any) => {
-      let keys = Object.keys(v);
-      let results: any[] = [];
-      keys.forEach(key => {
-        if (v[key]['ipv4Addresses'].length)
-          v[key]['ipv4Addresses'].forEach((_address: any) => {
-            results.push({
-              address: _address,
-              key: key,
-            });
-          });
-        this.addresses = results;
-      });
-    }
-    this.local_server.check_addresses();
+    this.addresses = this.toolServer.addresses;
   }
 
   SelectTargetNetwork() {

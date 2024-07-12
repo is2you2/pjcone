@@ -5,7 +5,7 @@
     </ion-buttons>
     <ion-title>{{header_title}}</ion-title>
     <div style="margin: 8px 16px;" slot="end">{{lang.text['MinimalChat']['concurrent_users']}}:
-      {{client.ConnectedNow.dedicated_groupchat}}</div>
+      {{client.ConnectedNow}}</div>
   </ion-toolbar>
 </ion-header>
 
@@ -14,18 +14,26 @@
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
         <div id="minimal_chat_div" class="main" style="max-width: 100vw;">
-          <div *ngIf="isCustomDedicated && (!isLocalAddress || isMobileApp)">
-            <ion-item-divider *ngIf="isLocalAddress">
-              <ion-select [label]="lang.text['MinimalChat']['shareAddress']" *ngIf="isLocalAddress && isMobileApp"
-                (ionChange)="SelectOtherAddress($event)" [placeholder]="lang.text['MinimalChat']['selectNetwork']">
-                <ion-select-option *ngFor="let info of addresses;">{{info.key + ' (' + info.address + ')'}}
-                </ion-select-option>
-              </ion-select>
-            </ion-item-divider>
-            <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;"
-              (click)="copy_qr_address()" alt="Loading">
+          <div *ngIf="client.status == 'idle'">
+            <ion-select [label]="lang.text['MinimalChat']['shareAddress']" (ionChange)="SelectAddressTarget($event)"
+              [placeholder]="lang.text['MinimalChat']['selectNetwork']">
+              <ion-select-option value="local">{{lang.text['voidDraw']['InternalConn']}}</ion-select-option>
+              <ion-select-option *ngFor="let server of ServerList"
+                [value]="server">{{server.info.name}}</ion-select-option>
+            </ion-select>
+            <ion-item *ngIf="NeedInputCustomAddress">
+              <ion-input [label]="lang.text['voidDraw']['InputAddress']" [(ngModel)]="UserInputCustomAddress"
+                class="ion-text-right" placeholder="0.0.0.0"></ion-input>
+            </ion-item>
+            <ion-item *ngIf="UserInputCustomAddress" button (click)="init_joinChat()">
+              <ion-label class="ion-text-center">{{lang.text['voidDraw']['ConnectToAddress']}}</ion-label>
+            </ion-item>
           </div>
-          <p *ngFor="let msg of client.userInput.dedicated_groupchat.logs">
+          <div *ngIf="QRCodeSRC">
+            <img [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;" (click)="copy_qr_address()"
+              alt="Loading">
+          </div>
+          <p *ngFor="let msg of client.userInput.logs">
             <font *ngIf="!msg.target" color="#{{msg.color}}">{{' ' + msg.text}}</font>
             <font *ngIf="msg.target" class="default_text">
               <font color="#{{msg.color}}"><b *ngIf="msg.target">{{msg.target}}:</b></font>
@@ -63,7 +71,7 @@
       <td style="width: 100%;">
         <ion-input #minimalchat_input id="minimalchat_input" type="text"
           [placeholder]="lang.text['MinimalChat']['input_placeholder']" (ionFocus)="focus_on_input(120)"
-          (keyup.enter)="send()" [(ngModel)]="client.userInput.dedicated_groupchat.text">
+          (keyup.enter)="send()" [(ngModel)]="client.userInput.text">
         </ion-input>
       </td>
       <td>

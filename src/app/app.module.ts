@@ -6,7 +6,6 @@ import { IonicModule, IonicRouteStrategy, NavParams } from '@ionic/angular';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-import { Device } from '@awesome-cordova-plugins/device/ngx';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { File } from "@awesome-cordova-plugins/file/ngx";
@@ -25,7 +24,6 @@ import { Clipboard } from "@awesome-cordova-plugins/clipboard/ngx";
     registrationStrategy: 'registerWhenStable:30000'
   })],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    Device,
     File,
     NavParams,
     Clipboard,

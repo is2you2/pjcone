@@ -112,10 +112,6 @@ export class GlobalActService {
     });
   }
 
-  /** nakama.AddressToQRCodeAct()  
-   * 클래스간 재귀 구성을 피하기 위해 우회됨
-   */
-  AddressToQRCodeAct: Function;
   /** 해야할 일 캔버스 */
   p5todo: p5;
 

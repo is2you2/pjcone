@@ -15,75 +15,73 @@ export class MiniranchatClientService {
 
   constructor(
     private modalCtrl: ModalController,
-    private nakama: NakamaService,
+    public nakama: NakamaService,
     private global: GlobalActService,
   ) { }
 
-  client: { [id: string]: WebSocket } = {};
+  client: WebSocket;
+  /** pid */
+  uuid: string;
 
   // 'idle' | 'linked' | 'unlinked' | 'custom'
-  status = {
-    'dedicated_groupchat': 'idle',
-  }
+  status = 'idle';
 
   /** 사용자 입력과 관련된 것들 */
   userInput = {
-    'dedicated_groupchat': {
-      /** 채팅, 로그 등 대화창에 표기되는 모든 것 */
-      logs: [],
-      /** 작성 텍스트 */
-      text: '',
-      /** 마지막 메시지 썸네일 구성 */
-      last_message: {},
-    },
+    /** 채팅, 로그 등 대화창에 표기되는 모든 것 */
+    logs: [],
+    /** 작성 텍스트 */
+    text: '',
+    /** 마지막 메시지 썸네일 구성 */
+    last_message: {},
   }
 
   /** 지금 연결된 사람 수 */
-  ConnectedNow = {
-    'dedicated_groupchat': 0,
-  }
+  ConnectedNow = 0;
 
   /** 상호작용 함수들 */
   funcs = {
-    'dedicated_groupchat': {
-      onopen: (v: any) => console.warn('OnOpen 설정 안됨: ', v),
-      onclose: (v: any) => console.warn('OnClose 설정 안됨: ', v),
-      onmessage: (v: any) => console.warn('OnMessage 설정 안됨: ', v),
-    },
+    onopen: (v: any) => console.warn('OnOpen 설정 안됨: ', v),
+    onclose: (v: any) => console.warn('OnClose 설정 안됨: ', v),
+    onmessage: (v: any) => console.warn('OnMessage 설정 안됨: ', v),
   };
 
   /**
    * 클라이언트 연결 시도
    * @param _Address 기본값: 메인 소켓 서버, 사설 서버 주소로 변경 가능
    */
-  initialize(_target?: string, _Address?: string) {
-    const PORT: number = 12011;
+  initialize(_Address?: string) {
+    const PORT: number = 12013;
     this.cacheAddress = _Address;
-    this.client[_target] = new WebSocket(`${_Address}:${PORT}`);
-    this.client[_target].onopen = (ev) => {
-      this.funcs[_target].onopen(ev);
+    this.client = new WebSocket(`${_Address}:${PORT}`);
+    this.client.onopen = (ev) => {
+      this.funcs.onopen(ev);
       this.IsConnected = true;
     }
-    this.client[_target].onclose = (ev) => {
-      this.funcs[_target].onclose(ev);
+    this.client.onclose = (ev) => {
+      this.funcs.onclose(ev);
       this.IsConnected = false;
+      this.status = 'idle';
     }
-    this.client[_target].onerror = (e) => {
+    this.client.onerror = (e) => {
       console.error('MiniranchatClientService 오류 발생: ', e);
     }
-    this.client[_target].onmessage = (ev) => {
+    this.client.onmessage = (ev) => {
       if (typeof ev.data == 'string')
-        this.funcs[_target].onmessage(ev.data);
+        this.funcs.onmessage(ev.data);
       else
         ev.data.text().then((v: any) => {
-          this.funcs[_target].onmessage(v);
+          this.funcs.onmessage(v);
         });
     }
   }
 
-  send(_target: string, msg: string) {
-    if (this.client) this.client[_target].send(msg);
-    else console.warn('client 연결되어있지 않음: 메시지 발송 취소: ', msg);
+  send(msg: string) {
+    if (this.client && this.client.readyState == this.client.OPEN) this.client.send(msg);
+    else {
+      console.warn('client 연결되어있지 않음: 메시지 발송 취소: ', msg);
+      this.disconnect();
+    }
   }
 
   /** FFS를 사용하는 경우 전송된 파일들을 전부 기억해두었다가 접속을 끊을 때 전부 삭제요청 보내기 */
@@ -141,9 +139,12 @@ export class MiniranchatClientService {
   IsConnected = false;
 
   /** 클라이언트 끊기 */
-  disconnect(_target: string, code = 1000, reason = 'user_close') {
-    if (this.client) this.client[_target].close(code, reason);
+  disconnect(code = 1000, reason = 'user_close') {
+    if (this.client) this.client.close(code, reason);
     this.IsConnected = false;
+    this.cacheAddress = '';
+    this.uuid = undefined;
     if (this.p5canvas) this.p5canvas.remove();
+    this.client = undefined;
   }
 }

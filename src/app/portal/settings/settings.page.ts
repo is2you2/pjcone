@@ -7,7 +7,6 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 import { GlobalActService } from 'src/app/global-act.service';
 import { WebrtcManageIoDevPage } from 'src/app/webrtc-manage-io-dev/webrtc-manage-io-dev.page';
-import { LocalGroupServerService } from 'src/app/local-group-server.service';
 
 @Component({
   selector: 'app-settings',
@@ -23,7 +22,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     public nakama: NakamaService,
     public lang: LanguageSettingService,
     private global: GlobalActService,
-    public server: LocalGroupServerService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
@@ -67,27 +65,31 @@ export class SettingsPage implements OnInit, OnDestroy {
         this.as_admin.splice(i, 1);
   }
 
-  /** 최소한의 기능을 가진 채팅 서버 만들기 */
-  start_minimalserver() {
-    if (this.statusBar.dedicated.official['groupchat'] == 'offline') {
-      this.statusBar.settings['dedicatedServer'] = 'pending';
-      this.statusBar.dedicated.official['groupchat'] = 'pending';
-      this.server.funcs.onStart = () => {
-        this.statusBar.settings['dedicatedServer'] = 'online';
-        this.statusBar.dedicated.official['groupchat'] = 'online';
-        this.start_minimalchat('ws://127.0.0.1');
-      }
-      this.server.funcs.onFailed = () => {
-        this.statusBar.settings['dedicatedServer'] = 'missing';
-        this.statusBar.dedicated.official['groupchat'] = 'missing';
-        setTimeout(() => {
-          this.statusBar.settings['dedicatedServer'] = 'offline';
-          this.statusBar.dedicated.official['groupchat'] = 'offline';
-        }, 1500);
-      }
-      this.server.initialize();
-    } else {
-      this.start_minimalchat('ws://127.0.0.1');
+  /** 익명성 그룹 채널에 참가하기 */
+  JoinSmallTalk() {
+    if (!this.lock_modal_open) {
+      this.lock_modal_open = true;
+      if (this.will_enter) return;
+      if (this.statusBar.settings['dedicated_groupchat'] != 'online'
+        && this.statusBar.settings['dedicated_groupchat'] != 'certified')
+        this.statusBar.settings['dedicated_groupchat'] = 'pending';
+      this.will_enter = true;
+      setTimeout(() => {
+        this.will_enter = false;
+      }, 500);
+      this.modalCtrl.create({
+        component: MinimalChatPage,
+        componentProps: {
+          name: this.nakama.users.self['display_name'],
+        },
+      }).then(async v => {
+        this.RemoveKeyShortCut();
+        v.onDidDismiss().then(() => {
+          this.ionViewDidEnter();
+        });
+        await v.present();
+        this.lock_modal_open = false;
+      });
     }
   }
 
@@ -144,17 +146,16 @@ export class SettingsPage implements OnInit, OnDestroy {
         this.LinkButton.splice(4, 0,
           () => this.go_to_page('weblink-gen'),
           () => this.focus_to_fallback_fs_input(),
-          () => this.go_to_webrtc_manager()
+          () => this.go_to_webrtc_manager(),
+          () => this.JoinSmallTalk(),
+          () => this.download_serverfile(),
         );
       else this.LinkButton.splice(4, 0,
         () => this.go_to_page('weblink-gen'),
-        () => this.go_to_webrtc_manager()
+        () => this.go_to_webrtc_manager(),
+        () => this.JoinSmallTalk(),
+        () => this.download_serverfile(),
       );
-      if (!this.cant_dedicated && this.can_use_http) {
-        this.LinkButton.splice(7, 0,
-          () => this.start_minimalserver(),
-          () => this.download_serverfile());
-      } else this.LinkButton.splice(7, 0, () => this.download_serverfile());
     }
   }
 
@@ -176,8 +177,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       if (this.cant_dedicated)
         this.LinkButton.push(() => this.focus_to_fallback_fs_input());
       this.LinkButton.push(() => this.go_to_webrtc_manager());
-      if (!this.cant_dedicated && this.can_use_http)
-        this.LinkButton.push(() => this.start_minimalserver());
+      this.LinkButton.push(() => this.JoinSmallTalk());
       this.LinkButton.push(() => this.download_serverfile());
     }
     if (this.as_admin.length)
@@ -202,30 +202,6 @@ export class SettingsPage implements OnInit, OnDestroy {
   chat_address: string;
   /** 페이지 이동 제한 (중복 행동 방지용) */
   lock_modal_open = false;
-  /** 최소한의 기능을 가진 채팅 시작하기 */
-  start_minimalchat(_address?: string) {
-    if (!this.lock_modal_open) {
-      this.lock_modal_open = true;
-      if (this.will_enter) return;
-      if (this.statusBar.settings['dedicated_groupchat'] != 'online'
-        && this.statusBar.settings['dedicated_groupchat'] != 'certified')
-        this.statusBar.settings['dedicated_groupchat'] = 'pending';
-      this.will_enter = true;
-      setTimeout(() => {
-        this.will_enter = false;
-      }, 500);
-      this.modalCtrl.create({
-        component: MinimalChatPage,
-        componentProps: {
-          address: _address,
-          name: this.nakama.users.self['display_name'],
-        },
-      }).then(async v => {
-        await v.present();
-        this.lock_modal_open = false;
-      });
-    }
-  }
 
   open_inapp_explorer() {
     this.navCtrl.navigateForward('user-fs-dir', {

@@ -50,13 +50,6 @@ export class StatusManageService {
     },
     unofficial: {},
   }
-  /** 설정-사설서버 관리 목록 */
-  dedicated: { [id: string]: PanelStatus } = {
-    official: {
-      groupchat: 'offline',
-    },
-    unofficial: {},
-  };
 
   constructor() {
     setInterval(() => { }, 350); // services 개체 실시간 업데이트 유도용

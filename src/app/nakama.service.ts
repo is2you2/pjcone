@@ -116,7 +116,6 @@ export class NakamaService {
   showServer = false;
 
   async initialize() {
-    this.global.AddressToQRCodeAct = this.AddressToQRCodeAct;
     // 기등록 알림 id 검토
     this.noti.GetNotificationIds((list) => {
       let id_array = [];
@@ -4128,13 +4127,12 @@ export class NakamaService {
       }
     }
     if (init['group_dedi']) { // 그룹 사설 채팅 진입, 1개만 받음
-      if (window.location.protocol == 'http:') // 보안 연결이 아닐 때에만 동작
-        json.push({
-          type: 'group_dedi',
-          value: {
-            address: `ws://${init['group_dedi'][0]}`,
-          },
-        })
+      json.push({
+        type: 'group_dedi',
+        value: {
+          address: init['group_dedi'][0],
+        },
+      })
     }
     if (init['open_prv_channel']) {
       let sep = init['open_prv_channel'][0].split(',');
