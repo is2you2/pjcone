@@ -647,6 +647,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     if (this.userInput.content)
       this.userInput.content += `\n[${this.userInput.attachments.length}]\n`;
     else this.userInput.content = `[${this.userInput.attachments.length}]\n`;
+    this.ContentTextArea.focus();
   }
 
   /** 선택한 파일의 썸네일 만들기 */
