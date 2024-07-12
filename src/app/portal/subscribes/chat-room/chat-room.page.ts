@@ -1989,6 +1989,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
       this.ResizeTextArea();
       this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
+      this.scroll_down_logs();
     }, 0);
   }
 
