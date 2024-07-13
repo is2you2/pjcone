@@ -33,7 +33,7 @@
               <ion-label class="ion-text-center">{{lang.text['voidDraw']['ConnectToAddress']}}</ion-label>
             </ion-item>
           </div>
-          <div *ngIf="QRCodeSRC">
+          <div *ngIf="QRCodeSRC && client.status != 'idle'">
             <img [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;" (click)="copy_qr_address()"
               alt="Loading">
             <ion-item button (click)="copy_qr_address(client.JoinedChannel)">
