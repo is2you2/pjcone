@@ -133,7 +133,7 @@ export class MinimalChatPage implements OnInit {
     if (checkIfNoSecure)
       header_address = 'http://pjcone.ddns.net/';
     else header_address = `${SERVER_PATH_ROOT}pjcone_pwa/`;
-    this.QRCodeTargetString = `${header_address}?group_dedi=${this.client.cacheAddress.split('://')[1]}`;
+    this.QRCodeTargetString = `${header_address}?group_dedi=${this.client.cacheAddress.split('://')[1]},${this.client.JoinedChannel}`;
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeTargetString);
   }
 
@@ -202,7 +202,9 @@ export class MinimalChatPage implements OnInit {
     this.client.funcs.onmessage = (v: string) => {
       try {
         let data = JSON.parse(v);
+        if (!this.client.JoinedChannel) this.client.JoinedChannel = data['channel'];
         if (!this.client.uuid) this.client.uuid = data['uid'];
+        this.CreateQRCode();
         let isMe = this.client.uuid == data['uid'];
         let target = isMe ? (this.MyUserName || this.lang.text['MinimalChat']['name_me']) : (data['name'] || this.lang.text['MinimalChat']['name_stranger_group']);
         let color = data['uid'] ? (data['uid'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6) : isDarkMode ? '888888' : '444444';
@@ -415,13 +417,14 @@ export class MinimalChatPage implements OnInit {
         iconColor_ln: this.iconColor,
       }, this.Header, this.open_this);
       if (this.client.p5canvas && this.client.p5canvas['OnDediMessage']) this.client.p5canvas['OnDediMessage']('ff0000');
+      this.client.disconnect();
     }
     this.client.funcs.onopen = (_v: any) => {
       this.statusBar.settings['dedicated_groupchat'] = 'online';
-      this.CreateQRCode();
       let count = {
         name: this.MyUserName,
         type: 'join',
+        channel: this.params.get('channel'),
       }
       this.client.send(JSON.stringify(count));
       this.client.funcs.onclose = (_v: any) => {

@@ -22,6 +22,8 @@ export class MiniranchatClientService {
   client: WebSocket;
   /** pid */
   uuid: string;
+  /** 참여된 채널 */
+  JoinedChannel: string;
 
   // 'idle' | 'linked' | 'unlinked' | 'custom'
   status = 'idle';

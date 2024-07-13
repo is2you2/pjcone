@@ -4127,10 +4127,12 @@ export class NakamaService {
       }
     }
     if (init['group_dedi']) { // 그룹 사설 채팅 진입, 1개만 받음
+      let sep = init['group_dedi'][0].split(',');
       json.push({
         type: 'group_dedi',
         value: {
-          address: init['group_dedi'][0],
+          address: sep[0],
+          channel: sep[1],
         },
       })
     }
@@ -4235,6 +4237,7 @@ export class NakamaService {
             component: MinimalChatPage,
             componentProps: {
               address: json[i].value.address,
+              channel: json[i].value.channel,
               name: this.users.self['display_name'],
             },
           }).then(v => {
