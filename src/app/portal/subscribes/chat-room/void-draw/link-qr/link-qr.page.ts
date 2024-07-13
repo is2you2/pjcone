@@ -42,7 +42,7 @@ export class LinkQrPage implements OnInit {
     let address_text: string = ev.detail.value;
     let extract = address_text.substring(address_text.indexOf('(') + 1, address_text.indexOf(')'));
     try { // 사용자 지정 서버 업로드 시도 우선
-      let HasLocalPage = `${location.protocol}//${extract}:8080`;
+      let HasLocalPage = `${location.protocol}//${extract}:8080/`;
       const cont = new AbortController();
       const id = setTimeout(() => {
         cont.abort();

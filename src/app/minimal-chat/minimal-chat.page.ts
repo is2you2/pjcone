@@ -130,12 +130,13 @@ export class MinimalChatPage implements OnInit {
   QRCodeTargetString: string;
   /** QR코드 이미지 생성 */
   async CreateQRCode() {
+    this.QRCodeSRC = 'loading';
     let checkIfNoSecure = this.client.cacheAddress.indexOf('ws:') == 0;
     let header_address: string;
     if (checkIfNoSecure) {
       try { // 사용자 지정 서버 업로드 시도 우선
         let extract = 'http://' + this.client.cacheAddress.split('://')[1];
-        let HasLocalPage = `${extract}:8080/www`;
+        let HasLocalPage = `${extract}:8080/www/`;
         const cont = new AbortController();
         const id = setTimeout(() => {
           cont.abort();
@@ -147,7 +148,7 @@ export class MinimalChatPage implements OnInit {
         header_address = 'http://pjcone.ddns.net/';
       }
     } else header_address = `${SERVER_PATH_ROOT}pjcone_pwa/`;
-    this.QRCodeTargetString = `${header_address}?group_dedi=${this.client.cacheAddress.split('://')[1]},${this.client.JoinedChannel}`;
+    this.QRCodeTargetString = `${header_address}?group_dedi=${this.client.cacheAddress.split('://')[1]},${this.client.JoinedChannel || 'public'}`;
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeTargetString);
   }
 
@@ -218,7 +219,7 @@ export class MinimalChatPage implements OnInit {
         let data = JSON.parse(v);
         if (!this.client.JoinedChannel) this.client.JoinedChannel = data['channel'];
         if (!this.client.uuid) this.client.uuid = data['uid'];
-        this.CreateQRCode();
+        if (!this.QRCodeSRC) this.CreateQRCode();
         let isMe = this.client.uuid == data['uid'];
         let target = isMe ? (this.MyUserName || this.lang.text['MinimalChat']['name_me']) : (data['name'] || this.lang.text['MinimalChat']['name_stranger_group']);
         let color = data['uid'] ? (data['uid'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6) : isDarkMode ? '888888' : '444444';

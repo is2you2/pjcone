@@ -182,7 +182,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
               let address_text: string = this.PostInfo['OutSource'];
               let extract = address_text.substring(0, address_text.indexOf(':8080'));
               try { // 사용자 지정 서버 업로드 시도 우선
-                let HasLocalPage = `${extract}:8080/www`;
+                let HasLocalPage = `${extract}:8080/www/`;
                 const cont = new AbortController();
                 const id = setTimeout(() => {
                   cont.abort();
