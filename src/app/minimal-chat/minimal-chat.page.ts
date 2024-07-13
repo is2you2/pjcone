@@ -140,7 +140,7 @@ export class MinimalChatPage implements OnInit {
   ServerList: any[];
   NeedInputCustomAddress = false;
   /** 사용자가 직접 서버 주소를 입력 */
-  UserInputCustomAddress = '';
+  UserInputCustomAddress = undefined;
   /** 연결 대상 선택 */
   SelectAddressTarget(ev: any) {
     this.header_title = this.lang.text['MinimalChat']['header_title_group'];
@@ -424,7 +424,7 @@ export class MinimalChatPage implements OnInit {
       let count = {
         name: this.MyUserName,
         type: 'join',
-        channel: this.params.get('channel'),
+        channel: this.params.get('channel') || this.client.JoinedChannel || 'public',
       }
       this.client.send(JSON.stringify(count));
       this.client.funcs.onclose = (_v: any) => {
@@ -465,13 +465,13 @@ export class MinimalChatPage implements OnInit {
   }
 
   /** 보여지는 QRCode 정보 복사 */
-  copy_qr_address() {
-    this.mClipboard.copy(this.QRCodeTargetString)
+  copy_qr_address(target_string = this.QRCodeTargetString) {
+    this.mClipboard.copy(target_string)
       .catch(_e => {
-        clipboard.write(this.QRCodeTargetString).then(() => {
+        clipboard.write(target_string).then(() => {
           if (isPlatform == 'DesktopPWA')
             this.p5toast.show({
-              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.QRCodeTargetString}`,
+              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${target_string}`,
             });
         }).catch(_e => { });
       });

@@ -146,6 +146,7 @@ export class MiniranchatClientService {
     this.uuid = undefined;
     if (this.p5canvas) this.p5canvas.remove();
     this.client = undefined;
+    this.JoinedChannel = undefined;
     this.status = 'idle';
   }
 }

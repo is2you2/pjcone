@@ -25,6 +25,10 @@
               <ion-input [label]="lang.text['voidDraw']['InputAddress']" [(ngModel)]="UserInputCustomAddress"
                 class="ion-text-right" placeholder="0.0.0.0"></ion-input>
             </ion-item>
+            <ion-item *ngIf="UserInputCustomAddress">
+              <ion-input [label]="lang.text['voidDraw']['ChannelIdAddress']" [(ngModel)]="client.JoinedChannel"
+                class="ion-text-right" placeholder="public"></ion-input>
+            </ion-item>
             <ion-item *ngIf="UserInputCustomAddress" button (click)="init_joinChat()">
               <ion-label class="ion-text-center">{{lang.text['voidDraw']['ConnectToAddress']}}</ion-label>
             </ion-item>
@@ -32,6 +36,9 @@
           <div *ngIf="QRCodeSRC">
             <img [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;" (click)="copy_qr_address()"
               alt="Loading">
+            <ion-item button (click)="copy_qr_address(client.JoinedChannel)">
+              <ion-label disabled class="ion-text-center" color="medium">{{client.JoinedChannel}}</ion-label>
+            </ion-item>
           </div>
           <p *ngFor="let msg of client.userInput.logs">
             <font *ngIf="!msg.target" color="#{{msg.color}}">{{' ' + msg.text}}</font>
