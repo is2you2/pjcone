@@ -117,11 +117,11 @@ export class MinimalChatPage implements OnInit {
       this.SendAttachAct({ target: { files: [stack[0].file] } });
       return false;
     }
-    this.minimalchat_input.setFocus();
+    this.focus_on_input();
     this.global.p5key['KeyShortCut']['EnterAct'] = () => {
       if (document.activeElement != document.getElementById('minimalchat_input'))
         setTimeout(() => {
-          this.minimalchat_input.setFocus();
+          this.focus_on_input();
         }, 0);
     }
   }
