@@ -69,7 +69,8 @@
                           <img [src]="msg.content['qoute'].url" class="qouteImage"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt="">
                         </div>
-                        <div *ngIf="msg.content['qoute'].text" class="qouteDiv qouteOnChatBalloon">{{msg.content['qoute'].text}}</div>
+                        <div *ngIf="msg.content['qoute'].text" class="qouteDiv qouteOnChatBalloon qouteBalloonBottom">
+                          {{msg.content['qoute'].text}}</div>
                       </div>
                       <div *ngIf="msg.content['filename']" class="file_message_form">
                         <div *ngIf="!msg.content['thumbnail']" class="file_button" (click)="file_detail(msg)"
@@ -144,7 +145,8 @@
                           <img [src]="msg.content['qoute'].url" class="qouteImage"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt="">
                         </div>
-                        <div *ngIf="msg.content['qoute'].text" class="qouteDiv qouteOnChatBalloon">{{msg.content['qoute'].text}}</div>
+                        <div *ngIf="msg.content['qoute'].text" class="qouteDiv qouteOnChatBalloon qouteBalloonBottom">
+                          {{msg.content['qoute'].text}}</div>
                       </div>
                       <div *ngIf="msg.content['filename']" class="my_file_message_form">
                         <div *ngIf="!msg.content['thumbnail']" class="file_button" (click)="file_detail(msg)"
@@ -206,7 +208,8 @@
                   <img [src]="msg.content['qoute'].url" class="qouteImage"
                     [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt="">
                 </div>
-                <div *ngIf="msg.content['qoute'].text" class="qouteDiv qouteOnChatBalloon">{{msg.content['qoute'].text}}</div>
+                <div *ngIf="msg.content['qoute'].text" class="qouteDiv qouteOnChatBalloon qouteBalloonBottom">
+                  {{msg.content['qoute'].text}}</div>
               </div>
               <div *ngIf="msg.content['filename']" class="my_file_message_form">
                 <div *ngIf="!msg.content['thumbnail']" class="file_button"

@@ -130,12 +130,16 @@
 }
 
 .qouteDiv {
-    padding: 8px;
+    padding: 8px 12px;
     max-width: 95vw;
 }
 
 .qouteOnChatBalloon {
     max-width: 65vw;
+}
+
+.qouteBalloonBottom {
+    padding-top: 0px;
 }
 
 .message_content_form {
