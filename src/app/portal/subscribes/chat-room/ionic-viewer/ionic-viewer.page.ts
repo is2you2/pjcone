@@ -118,7 +118,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       case 'text':
         break;
       default:
-        this.Relevances = this.navParams.get('relevance');
+        this.Relevances = this.navParams.get('relevance') || [];
         if (this.Relevances) {
           for (let i = 0, j = this.Relevances.length; i < j; i++)
             if (this.Relevances[i]['message_id'] && this.MessageInfo['message_id']) {

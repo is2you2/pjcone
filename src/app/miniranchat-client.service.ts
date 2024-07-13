@@ -79,10 +79,7 @@ export class MiniranchatClientService {
 
   send(msg: string) {
     if (this.client && this.client.readyState == this.client.OPEN) this.client.send(msg);
-    else {
-      console.warn('client 연결되어있지 않음: 메시지 발송 취소: ', msg);
-      this.disconnect();
-    }
+    else this.disconnect();
   }
 
   /** FFS를 사용하는 경우 전송된 파일들을 전부 기억해두었다가 접속을 끊을 때 전부 삭제요청 보내기 */

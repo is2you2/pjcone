@@ -105,6 +105,25 @@ export class MinimalChatPage implements OnInit {
     }
   }
 
+  ionViewWillEnter() {
+    document.getElementById('minimalchat_input').onpaste = (ev: any) => {
+      let stack = [];
+      for (const clipboardItem of ev.clipboardData.files)
+        if (clipboardItem.type.startsWith('image/'))
+          stack.push({ file: clipboardItem });
+      if (stack.length != 1) return;
+      this.SendAttachAct({ target: { files: [stack[0].file] } });
+      return false;
+    }
+    this.minimalchat_input.setFocus();
+    this.global.p5key['KeyShortCut']['EnterAct'] = () => {
+      if (document.activeElement != document.getElementById('minimalchat_input'))
+        setTimeout(() => {
+          this.minimalchat_input.setFocus();
+        }, 0);
+    }
+  }
+
   QRCodeSRC: any;
   QRCodeTargetString: string;
   /** QR코드 이미지 생성 */
@@ -627,5 +646,6 @@ export class MinimalChatPage implements OnInit {
     favicon.setAttribute('href', 'assets/icon/favicon.png');
     this.noti.Current = undefined;
     if (this.client.IsConnected) this.client.CreateRejoinButton();
+    delete this.global.p5key['KeyShortCut']['EnterAct'];
   }
 }
