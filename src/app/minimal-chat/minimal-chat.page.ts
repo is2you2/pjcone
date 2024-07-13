@@ -6,12 +6,13 @@ import { MiniranchatClientService } from '../miniranchat-client.service';
 import { StatusManageService } from '../status-manage.service';
 import { LanguageSettingService } from '../language-setting.service';
 import { SERVER_PATH_ROOT, isPlatform } from '../app.component';
-import { FILE_BINARY_LIMIT, FileInfo, GlobalActService, isDarkMode } from '../global-act.service';
+import { ContentCreatorInfo, FILE_BINARY_LIMIT, FileInfo, GlobalActService, isDarkMode } from '../global-act.service';
 import clipboard from 'clipboardy';
 import { P5ToastService } from '../p5-toast.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IndexedDBService } from '../indexed-db.service';
 import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ionic-viewer.page';
+import { VoidDrawPage } from '../portal/subscribes/chat-room/void-draw/void-draw.page';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -560,12 +561,55 @@ export class MinimalChatPage implements OnInit {
       componentProps: {
         info: { content: FileInfo },
         path: FileInfo.path,
-        noEdit: true,
+        noTextEdit: true,
       },
       cssClass: 'fullscreen',
     }).then(v => {
       v.onDidDismiss().then(v => {
-        if (v.data && v.data['share']) this.modalCtrl.dismiss();
+        if (v.data) {
+          switch (v.data.type) {
+            case 'image':
+              let related_creators: ContentCreatorInfo[] = [];
+              if (v.data.msg.content['content_related_creator'])
+                related_creators = [...v.data.msg.content['content_related_creator']];
+              if (v.data.msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
+                let is_already_exist = false;
+                for (let i = 0, j = related_creators.length; i < j; i++)
+                  if (related_creators[i].user_id == v.data.msg.content['content_creator']['user_id']) {
+                    is_already_exist = true;
+                    break;
+                  }
+                if (!is_already_exist) related_creators.push(v.data.msg.content['content_creator']);
+              }
+              this.modalCtrl.create({
+                component: VoidDrawPage,
+                componentProps: {
+                  path: v.data.path || FileInfo.path,
+                  width: v.data.width,
+                  height: v.data.height,
+                  isDarkMode: v.data.isDarkMode,
+                  scrollHeight: v.data.scrollHeight,
+                },
+                cssClass: 'fullscreen',
+              }).then(v => {
+                v.onWillDismiss().then(async v => {
+                  if (v.data) {
+                    v.data['loadingCtrl'].dismiss();
+                    let base64 = v.data['img'];
+                    let path = `tmp_files/dedi_chat/${v.data['name']}`;
+                    this.indexed.saveBase64ToUserPath(base64, path);
+                    let blob = this.global.Base64ToBlob(base64, 'image/png');
+                    blob['name'] = v.data['name'];
+                    this.SendAttachAct({ target: { files: [blob] } });
+                  }
+                });
+                v.present();
+              });
+              return;
+          }
+          if (v.data['share']) // 다른 채널에 공유하기면 페이지 벗어나기
+            this.modalCtrl.dismiss();
+        }
       });
       v.present();
     });

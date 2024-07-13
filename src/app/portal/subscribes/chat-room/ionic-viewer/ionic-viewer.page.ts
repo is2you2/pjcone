@@ -766,7 +766,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         break;
       case 'code':
       case 'text': // 텍스트 파일
-        this.showEditText = true;
+        this.showEditText = !Boolean(this.navParams.get('noTextEdit'));
         this.p5canvas = new p5((p: p5) => {
           p.setup = () => {
             p.noCanvas();
