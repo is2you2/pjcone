@@ -64,12 +64,12 @@
                       </div>
                       <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background"
                         (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
-                        <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg']}}</div>
+                        <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg']}}</div>
                         <div *ngIf="msg.content['qoute'].url">
                           <img [src]="msg.content['qoute'].url" class="qouteImage"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt="">
                         </div>
-                        <div *ngIf="msg.content['qoute'].text" class="qouteDiv">{{msg.content['qoute'].text}}</div>
+                        <div *ngIf="msg.content['qoute'].text" class="qouteDiv qouteOnChatBalloon">{{msg.content['qoute'].text}}</div>
                       </div>
                       <div *ngIf="msg.content['filename']" class="file_message_form">
                         <div *ngIf="!msg.content['thumbnail']" class="file_button" (click)="file_detail(msg)"
@@ -139,12 +139,12 @@
                       </div>
                       <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background"
                         (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
-                        <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg']}}</div>
+                        <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg']}}</div>
                         <div *ngIf="msg.content['qoute'].url">
                           <img [src]="msg.content['qoute'].url" class="qouteImage"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt="">
                         </div>
-                        <div *ngIf="msg.content['qoute'].text" class="qouteDiv">{{msg.content['qoute'].text}}</div>
+                        <div *ngIf="msg.content['qoute'].text" class="qouteDiv qouteOnChatBalloon">{{msg.content['qoute'].text}}</div>
                       </div>
                       <div *ngIf="msg.content['filename']" class="my_file_message_form">
                         <div *ngIf="!msg.content['thumbnail']" class="file_button" (click)="file_detail(msg)"
@@ -201,12 +201,12 @@
             <div *ngFor="let msg of sending_msg" class="my_message_right my_sending_msg">
               <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background"
                 (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
-                <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg']}}</div>
+                <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg']}}</div>
                 <div *ngIf="msg.content['qoute'].url">
                   <img [src]="msg.content['qoute'].url" class="qouteImage"
                     [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt="">
                 </div>
-                <div *ngIf="msg.content['qoute'].text" class="qouteDiv">{{msg.content['qoute'].text}}</div>
+                <div *ngIf="msg.content['qoute'].text" class="qouteDiv qouteOnChatBalloon">{{msg.content['qoute'].text}}</div>
               </div>
               <div *ngIf="msg.content['filename']" class="my_file_message_form">
                 <div *ngIf="!msg.content['thumbnail']" class="file_button"
@@ -250,7 +250,7 @@
           <tr *ngIf="userInput.file" class="thumnail_parts" style="cursor: pointer;">
             <td>
               <div *ngIf="userInput.file" (click)="removeAttach()">
-                <div style="text-align: center; margin: 4px; max-width: 100vw;"> {{userInput.file['filename']}}
+                <div style="text-align: center; margin: 4px; max-width: 95vw;"> {{userInput.file['filename']}}
                 </div>
                 <div *ngIf="userInput.file['thumbnail']">
                   <img id="ChatroomSelectedImage" *ngIf="userInput.file['typeheader'] == 'image'"

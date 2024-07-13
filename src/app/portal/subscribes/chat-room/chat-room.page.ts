@@ -970,7 +970,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.userInput.qoute = {
                 timestamp: target_msg.create_time,
               };
-              if (text) this.userInput.qoute.text = truncate(text, 10);
+              if (text) this.userInput.qoute.text = text;
               if (target_msg.content.viewer == 'image') {
                 if (target_msg.content.url)
                   this.userInput.qoute.url = target_msg.content.url;
