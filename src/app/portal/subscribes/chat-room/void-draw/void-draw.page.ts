@@ -432,14 +432,12 @@ export class VoidDrawPage implements OnInit {
       let setCropPos = (x: number, y: number) => {
         CropPosition.x = x;
         CropPosition.y = y;
-        ActualCanvas.translate(x, y);
         ImageCanvas.translate(x, y);
         p.redraw();
       }
       let setCropSize = (x: number, y: number) => {
         CropSize.x = x;
         CropSize.y = y;
-        ActualCanvas.translate(x, y);
         ImageCanvas.translate(x, y);
         p.redraw();
       }
