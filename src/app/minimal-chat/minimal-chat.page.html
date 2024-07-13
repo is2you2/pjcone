@@ -14,8 +14,8 @@
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
         <div id="minimal_chat_div" class="main" style="max-width: 100vw;">
-          <div *ngIf="client.status == 'idle'">
-            <ion-select *ngIf="ServerList.length" [label]="lang.text['MinimalChat']['SelectServer']"
+          <div *ngIf="client.status == 'idle'" style="padding-top: 8px;">
+            <ion-select *ngIf="ServerList.length" [label]="lang.text['AddGroup']['SelectServer']"
               (ionChange)="SelectAddressTarget($event)" value="local" style="padding-left: 16px;">
               <ion-select-option value="local">{{lang.text['voidDraw']['InternalConn']}}</ion-select-option>
               <ion-select-option *ngFor="let server of ServerList"

@@ -265,7 +265,6 @@ ReachLightLimit,빛은 최대 5개까지 등록됩니다,Up to 5 lights can be r
 MayGimbalLock,짐벌락 현상으로 각도가 다르게 표현될 수 있음,The angle may be expressed differently due to gimbal lock phenomenon
 ## MinimalChat,,
 concurrent_users,동시접속자,Concurrent users
-SelectServer,서버 선택,Select server
 shareAddress,주소 선택,Select address
 selectNetwork,네트워크를 선택하여 공유,Select network to share
 input_placeholder,메시지 입력...,Enter message...
