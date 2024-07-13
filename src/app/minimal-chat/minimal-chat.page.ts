@@ -129,12 +129,24 @@ export class MinimalChatPage implements OnInit {
   QRCodeSRC: any;
   QRCodeTargetString: string;
   /** QR코드 이미지 생성 */
-  CreateQRCode() {
+  async CreateQRCode() {
     let checkIfNoSecure = this.client.cacheAddress.indexOf('ws:') == 0;
     let header_address: string;
-    if (checkIfNoSecure)
-      header_address = 'http://pjcone.ddns.net/';
-    else header_address = `${SERVER_PATH_ROOT}pjcone_pwa/`;
+    if (checkIfNoSecure) {
+      try { // 사용자 지정 서버 업로드 시도 우선
+        let extract = 'http://' + this.client.cacheAddress.split('://')[1];
+        let HasLocalPage = `${extract}:8080/www`;
+        const cont = new AbortController();
+        const id = setTimeout(() => {
+          cont.abort();
+        }, 500);
+        let res = await fetch(HasLocalPage, { signal: cont.signal });
+        clearTimeout(id);
+        if (res.ok) header_address = `${extract}:8080/www/`;
+      } catch (e) {
+        header_address = 'http://pjcone.ddns.net/';
+      }
+    } else header_address = `${SERVER_PATH_ROOT}pjcone_pwa/`;
     this.QRCodeTargetString = `${header_address}?group_dedi=${this.client.cacheAddress.split('://')[1]},${this.client.JoinedChannel}`;
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeTargetString);
   }
