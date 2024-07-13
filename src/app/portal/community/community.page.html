@@ -34,7 +34,6 @@
             {{post['content']}}
           </ion-card-content>
         </ion-card>
-        <div *ngIf="is_auto_load_end && is_loadable" style="width:100%; height: 72px;"></div>
       </div>
       <div *ngIf="!nakama.posts.length">
         <div class="disconnect_info" (click)="add_post()">
