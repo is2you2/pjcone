@@ -98,6 +98,7 @@ export class MinimalChatPage implements OnInit {
         this.scroll_down();
     }
     this.ServerList = this.client.nakama.get_all_online_server();
+    this.SelectAddressTarget({ detail: { value: 'local' } });
     if (this.client.cacheAddress) this.CreateQRCode();
     // QRCode 빠른 진입으로 들어온 경우 주소를 이미 가지고 있음
     if (this.params.get('address')) {
