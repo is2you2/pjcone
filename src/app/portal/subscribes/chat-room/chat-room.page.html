@@ -88,7 +88,7 @@
                           {{msg.content['transfer_index']['index']}}</div>
                       </div>
                       <div *ngIf="msg.content['msg']" class="message_content_form">
-                        <div class="msg_balloon" [style]="'background-color: #' + msg.color + '88'">
+                        <div class="msg_balloon qouteOnChatBalloon" [style]="'background-color: #' + msg.color + '88'">
                           <div *ngFor="let line of msg.content['msg']; let i = index" class="msg_inside_balloon">
                             <span>
                               <span *ngFor="let part of line">
@@ -166,7 +166,7 @@
                       <div *ngIf="msg.content['msg']" class="message_content_form my_file_message_form">
                         <div *ngIf="msg.content['edited']" class="edited_form">
                           {{'(' + lang.text['ChatRoom']['MsgEdited'] + ')'}}</div>
-                        <div class="msg_balloon" [style]="'background-color: #' + msg.color + '88'">
+                        <div class="msg_balloon qouteOnChatBalloon" [style]="'background-color: #' + msg.color + '88'">
                           <div *ngFor="let line of msg.content['msg']" class="msg_inside_balloon">
                             <span>
                               <span *ngFor="let part of line">
@@ -224,7 +224,7 @@
                 </div>
               </div>
               <div *ngIf="msg.content['msg']" class="message_content_form my_file_message_form">
-                <div class="msg_balloon" style="background-color: #8888">
+                <div class="msg_balloon qouteOnChatBalloon" style="background-color: #8888">
                   <div *ngFor="let line of msg.content['msg']" class="msg_inside_balloon">
                     <span>
                       <span *ngFor="let part of line">
