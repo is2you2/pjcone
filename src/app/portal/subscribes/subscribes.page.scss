@@ -48,12 +48,26 @@
 
 .md .qr_code_scan {
     position: absolute;
-    right: 116px;
+    right: 164px;
     top: 16px;
     cursor: pointer;
 }
 
 .ios .qr_code_scan {
+    position: absolute;
+    right: 164px;
+    top: 10px;
+    cursor: pointer;
+}
+
+.md .dedi_chat {
+    position: absolute;
+    right: 116px;
+    top: 16px;
+    cursor: pointer;
+}
+
+.ios .dedi_chat {
     position: absolute;
     right: 116px;
     top: 10px;

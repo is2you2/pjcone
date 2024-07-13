@@ -11,6 +11,7 @@ import { QRelsePage } from './qrelse/qrelse.page';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { GroupDetailPage } from '../settings/group-detail/group-detail.page';
+import { MinimalChatPage } from 'src/app/minimal-chat/minimal-chat.page';
 
 @Component({
   selector: 'app-subscribes',
@@ -332,6 +333,40 @@ export class SubscribesPage implements OnInit {
           text: this.lang.text['Subscribes']['CameraPermissionDenied'],
         });
       this.StopScan();
+    }
+  }
+
+  /** 채팅방 이중진입 방지용 */
+  will_enter = false;
+  /** 사설 서버 주소, 없으면 공식서버 랜덤채팅 */
+  chat_address: string;
+  /** 페이지 이동 제한 (중복 행동 방지용) */
+  lock_modal_open = false;
+  /** 익명성 그룹 채널에 참가하기 */
+  JoinSmallTalk() {
+    if (!this.lock_modal_open) {
+      this.lock_modal_open = true;
+      if (this.will_enter) return;
+      if (this.statusBar.settings['dedicated_groupchat'] != 'online'
+        && this.statusBar.settings['dedicated_groupchat'] != 'certified')
+        this.statusBar.settings['dedicated_groupchat'] = 'pending';
+      this.will_enter = true;
+      setTimeout(() => {
+        this.will_enter = false;
+      }, 500);
+      this.modalCtrl.create({
+        component: MinimalChatPage,
+        componentProps: {
+          name: this.nakama.users.self['display_name'],
+        },
+      }).then(async v => {
+        this.ionViewWillLeave();
+        v.onDidDismiss().then(() => {
+          this.try_add_shortcut();
+        });
+        await v.present();
+        this.lock_modal_open = false;
+      });
     }
   }
 

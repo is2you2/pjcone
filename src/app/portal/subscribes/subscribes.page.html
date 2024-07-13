@@ -4,6 +4,9 @@
     <div *ngIf="!cant_dedicated" class="qr_code_scan" (click)="scanQRCode()">
       <ion-icon style="width: 24px; height: 24px;" name="scan-circle-outline"></ion-icon>
     </div>
+    <div (click)="JoinSmallTalk()" class="dedi_chat">
+      <ion-icon button style="width: 24px; height: 24px; " name="chatbubbles-outline"></ion-icon>
+    </div>
     <div (click)="add_new_group()" class="add_group">
       <ion-icon button style="width: 24px; height: 24px; " name="add-circle-outline"></ion-icon>
     </div>

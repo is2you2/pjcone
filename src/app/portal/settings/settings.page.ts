@@ -4,7 +4,6 @@ import { isNativefier, isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
-import { MinimalChatPage } from '../../minimal-chat/minimal-chat.page';
 import { GlobalActService } from 'src/app/global-act.service';
 import { WebrtcManageIoDevPage } from 'src/app/webrtc-manage-io-dev/webrtc-manage-io-dev.page';
 
@@ -65,34 +64,6 @@ export class SettingsPage implements OnInit, OnDestroy {
         this.as_admin.splice(i, 1);
   }
 
-  /** 익명성 그룹 채널에 참가하기 */
-  JoinSmallTalk() {
-    if (!this.lock_modal_open) {
-      this.lock_modal_open = true;
-      if (this.will_enter) return;
-      if (this.statusBar.settings['dedicated_groupchat'] != 'online'
-        && this.statusBar.settings['dedicated_groupchat'] != 'certified')
-        this.statusBar.settings['dedicated_groupchat'] = 'pending';
-      this.will_enter = true;
-      setTimeout(() => {
-        this.will_enter = false;
-      }, 500);
-      this.modalCtrl.create({
-        component: MinimalChatPage,
-        componentProps: {
-          name: this.nakama.users.self['display_name'],
-        },
-      }).then(async v => {
-        this.RemoveKeyShortCut();
-        v.onDidDismiss().then(() => {
-          this.ionViewDidEnter();
-        });
-        await v.present();
-        this.lock_modal_open = false;
-      });
-    }
-  }
-
   FallbackServerAddress = '';
   @ViewChild('Devkit') Devkit: IonAccordionGroup;
 
@@ -147,13 +118,11 @@ export class SettingsPage implements OnInit, OnDestroy {
           () => this.go_to_page('weblink-gen'),
           () => this.focus_to_fallback_fs_input(),
           () => this.go_to_webrtc_manager(),
-          () => this.JoinSmallTalk(),
           () => this.download_serverfile(),
         );
       else this.LinkButton.splice(4, 0,
         () => this.go_to_page('weblink-gen'),
         () => this.go_to_webrtc_manager(),
-        () => this.JoinSmallTalk(),
         () => this.download_serverfile(),
       );
     }
@@ -177,7 +146,6 @@ export class SettingsPage implements OnInit, OnDestroy {
       if (this.cant_dedicated)
         this.LinkButton.push(() => this.focus_to_fallback_fs_input());
       this.LinkButton.push(() => this.go_to_webrtc_manager());
-      this.LinkButton.push(() => this.JoinSmallTalk());
       this.LinkButton.push(() => this.download_serverfile());
     }
     if (this.as_admin.length)
@@ -196,12 +164,6 @@ export class SettingsPage implements OnInit, OnDestroy {
         this.LinkButton[index]();
     }
   }
-  /** 채팅방 이중진입 방지용 */
-  will_enter = false;
-  /** 사설 서버 주소, 없으면 공식서버 랜덤채팅 */
-  chat_address: string;
-  /** 페이지 이동 제한 (중복 행동 방지용) */
-  lock_modal_open = false;
 
   open_inapp_explorer() {
     this.navCtrl.navigateForward('user-fs-dir', {
