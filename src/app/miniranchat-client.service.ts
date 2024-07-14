@@ -4,6 +4,8 @@ import * as p5 from 'p5';
 import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { NakamaService } from './nakama.service';
 import { GlobalActService } from './global-act.service';
+import { P5ToastService } from './p5-toast.service';
+import { LanguageSettingService } from './language-setting.service';
 
 /** 기존 MiniRanchat과 서버를 공유하는 랜챗 클라이언트  
  * 해당 프로젝트의 동작 방식 역시 모방되어있다.
@@ -17,6 +19,8 @@ export class MiniranchatClientService {
     private modalCtrl: ModalController,
     public nakama: NakamaService,
     private global: GlobalActService,
+    private p5toast: P5ToastService,
+    private lang: LanguageSettingService,
   ) { }
 
   client: WebSocket;
@@ -55,6 +59,14 @@ export class MiniranchatClientService {
   initialize(_Address?: string) {
     const PORT: number = 12013;
     this.cacheAddress = _Address;
+    // https 홈페이지에서 비보안 연결 시도시 시작 끊기
+    if (location.protocol == 'https:' && _Address.indexOf('ws://') == 0) {
+      this.p5toast.show({
+        text: this.lang.text['MinimalChat']['cannot_join'],
+      });
+      this.disconnect();
+      return;
+    }
     this.client = new WebSocket(`${_Address}:${PORT}`);
     this.client.onopen = (ev) => {
       this.funcs.onopen(ev);
