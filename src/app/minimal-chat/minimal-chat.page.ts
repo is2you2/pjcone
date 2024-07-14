@@ -207,7 +207,7 @@ export class MinimalChatPage implements OnInit {
       //   title: this.lang.text['MinimalChat']['Noti_Reply'],
       // }];
       this.client.userInput.logs.length = 0;
-      let joinMessage = { color: isDarkMode ? 'bbb' : '444', text: this.lang.text['MinimalChat']['joinChat_group'] };
+      let joinMessage = { color: isDarkMode ? 'bbb' : '444', text: this.lang.text['MinimalChat']['joinChat_group'], isSystem: true };
       this.client.userInput.logs.push(joinMessage);
       this.client.userInput.last_message = joinMessage;
       let checkProtocol = this.UserInputCustomAddress.replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
@@ -233,23 +233,23 @@ export class MinimalChatPage implements OnInit {
               msg_arr.push({ href: true, text: sep[i] });
             } else msg_arr.push({ text: ' ' + sep[i] });
           }
-          let getMessage = { color: color, text: msg_arr, target: target };
+          let getMessage = { color: color, text: msg_arr, target: target, isMe: isMe };
           this.client.userInput.logs.push(getMessage);
           this.client.userInput.last_message = getMessage;
         } else if (data['type']) {
           switch (data['type']) {
             case 'join': // 사용자 진입
-              let UserJoin = { color: color, text: [{ text: ' ' + this.lang.text['MinimalChat']['user_join_comment'] }], target: target };
+              let UserJoin = { color: color, text: [{ text: ' ' + this.lang.text['MinimalChat']['user_join_comment'] }], target: target, isSystem: true };
               this.client.userInput.logs.push(UserJoin);
               this.client.userInput.last_message = UserJoin;
               break;
             case 'leave': // 사용자 퇴장
-              let UserLeave = { color: color, text: [{ text: ' ' + this.lang.text['MinimalChat']['user_out_comment'] }], target: target };
+              let UserLeave = { color: color, text: [{ text: ' ' + this.lang.text['MinimalChat']['user_out_comment'] }], target: target, isSystem: true };
               this.client.userInput.logs.push(UserLeave);
               this.client.userInput.last_message = UserLeave;
               break;
             case 'file': // 파일 정보 전송 (url)
-              let FileAttach = { color: color, file: data, target: target };
+              let FileAttach = { color: color, file: data, target: target, isMe: isMe };
               this.client.userInput.logs.push(FileAttach);
               this.client.userInput.last_message = FileAttach;
               if (!data.info.url) { // 분할 파일인 경우 누적 준비하기
@@ -366,38 +366,7 @@ export class MinimalChatPage implements OnInit {
           if (this.statusBar.settings['dedicated_groupchat'] == alert_this)
             this.statusBar.settings['dedicated_groupchat'] = 'online';
         }, 250);
-      } catch (e) {
-        switch (v) {
-          case 'PARTNER_OUT':
-            this.statusBar.settings['dedicated_groupchat'] = 'pending';
-            setTimeout(() => {
-              if (this.statusBar.settings['dedicated_groupchat'] == 'pending')
-                this.statusBar.settings['dedicated_groupchat'] = 'online';
-            }, 250);
-            let UserLeave = { color: isDarkMode ? 'b88' : '844', text: this.lang.text['MinimalChat']['leave_someone'] };
-            this.client.userInput.logs.push(UserLeave);
-            this.client.userInput.last_message = UserLeave;
-            this.noti.PushLocal({
-              id: this.lnId,
-              title: this.lang.text['MinimalChat']['leave_someone'],
-              group_ln: 'simplechat',
-              extra_ln: {
-                page: {
-                  component: 'MinimalChatPage',
-                  componentProps: {
-                    address: this.params.get('address'),
-                    name: this.params.get('name'),
-                    noti_id: this.Header,
-                  },
-                },
-              },
-              autoCancel_ln: true,
-              smallIcon_ln: 'simplechat',
-              iconColor_ln: this.iconColor,
-            }, this.Header, this.open_this);
-            break;
-        }
-      }
+      } catch (e) { }
       this.auto_scroll_down();
     }
     this.client.funcs.onclose = (_v: any) => {
@@ -405,7 +374,7 @@ export class MinimalChatPage implements OnInit {
       setTimeout(() => {
         this.statusBar.settings['dedicated_groupchat'] = 'offline';
       }, 1500);
-      let failedJoin = { color: 'faa', text: this.lang.text['MinimalChat']['failed_to_join'] };
+      let failedJoin = { color: 'faa', text: this.lang.text['MinimalChat']['failed_to_join'], isSystem: true };
       this.client.userInput.logs.push(failedJoin);
       this.client.userInput.last_message = failedJoin;
       this.noti.PushLocal({
@@ -448,7 +417,7 @@ export class MinimalChatPage implements OnInit {
           this.statusBar.settings['dedicated_groupchat'] = 'offline';
         }, 1500);
         let text = this.lang.text['MinimalChat']['cannot_join'];
-        let GotMessage = { color: 'faa', text: text };
+        let GotMessage = { color: 'faa', text: text, isSystem: true };
         this.client.userInput.logs.push(GotMessage);
         this.client.userInput.last_message = GotMessage;
         this.noti.PushLocal({
@@ -681,7 +650,7 @@ export class MinimalChatPage implements OnInit {
       setTimeout(() => {
         this.statusBar.settings['dedicated_groupchat'] = 'offline';
       }, 1500);
-      let LeaveMsg = { color: isDarkMode ? 'ffa' : '884', text: this.lang.text['MinimalChat']['leave_chat_group'] };
+      let LeaveMsg = { color: isDarkMode ? 'ffa' : '884', text: this.lang.text['MinimalChat']['leave_chat_group'], isSystem: true };
       this.client.userInput.logs.push(LeaveMsg);
       this.client.userInput.last_message = LeaveMsg;
       let scrollHeight = this.minimal_chat_log.scrollHeight;
@@ -691,6 +660,7 @@ export class MinimalChatPage implements OnInit {
     this.noti.RemoveListener(`reconn${'dedicated_groupchat'}`);
     this.noti.RemoveListener(`exit${'dedicated_groupchat'}`);
     this.noti.ClearNoti(this.lnId);
+    if (this.client.status == 'idle') this.modalCtrl.dismiss();
     this.client.disconnect();
     // 첨부했던 파일들 삭제
     this.indexed.GetFileListFromDB('tmp_files/dedi_chat', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
@@ -698,7 +668,6 @@ export class MinimalChatPage implements OnInit {
       this.global.remove_files_from_storage_with_key(this.client.FFS_Urls[i], 'minimal_chat');
     this.client.FFS_Urls.length = 0;
     this.client.DownloadPartManager = {};
-    this.modalCtrl.dismiss();
   }
 
   ionViewWillLeave() {
