@@ -50,15 +50,23 @@ export class MinimalChatPage implements OnInit {
 
   /** 이 창 열기(알림 상호작용) */
   open_this = (ev: any) => {
-    // 알림 아이디가 같으면 진입 허용
-    if (ev['id'] == this.lnId) {
-      this.modalCtrl.create({
-        component: MinimalChatPage,
-        componentProps: {
-          name: this.params.get('name'),
-        },
-      }).then(v => v.present());
-    }
+    if (this.noti.Current == this.Header)
+      window.focus();
+    else this.modalCtrl.create({
+      component: MinimalChatPage,
+      componentProps: {
+        address: this.params.get('address'),
+        channel: this.params.get('channel'),
+        name: this.params.get('name'),
+      },
+    }).then(v => {
+      let CacheShortCut = this.global.p5key['KeyShortCut'];
+      this.global.p5key['KeyShortCut'] = {};
+      v.onDidDismiss().then(() => {
+        this.global.p5key['KeyShortCut'] = CacheShortCut;
+      });
+      v.present();
+    });
   }
 
   BackButtonPressed = false;
