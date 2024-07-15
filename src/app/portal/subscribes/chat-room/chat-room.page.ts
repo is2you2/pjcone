@@ -934,9 +934,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           CurrentChatMovedSize = this.MsgClickedStartPos - clientX;
           if (this.IsQouteMyMessage) {
             if (CurrentChatMovedSize > 0)
-              this.TargetMessageObject.style.paddingRight = `${CurrentChatMovedSize}px`;
-            else this.TargetMessageObject.style.marginRight = `${CurrentChatMovedSize}px`;
-          } else this.TargetMessageObject.style.marginLeft = `${-CurrentChatMovedSize}px`;
+              this.TargetMessageObject.style.paddingRight = `${CurrentChatMovedSize / 2}px`;
+            else this.TargetMessageObject.style.marginRight = `${CurrentChatMovedSize / 2}px`;
+          } else this.TargetMessageObject.style.marginLeft = `${-CurrentChatMovedSize / 2}px`;
           if (MESSAGE_QOUTE_SIZE < CurrentChatMovedSize) {
             this.TargetMessageObject.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
           } else if (-MESSAGE_QOUTE_SIZE > CurrentChatMovedSize) {
