@@ -44,7 +44,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
     window.onpopstate = () => {
       if (this.BackButtonPressed) return;
       this.BackButtonPressed = true;
-      this.navCtrl.back();
       this.go_back();
     };
 
@@ -602,7 +601,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
   ionViewDidEnter() {
     this.can_auto_modified = true;
     this.global.p5key['KeyShortCut']['Escape'] = () => {
-      this.navCtrl.pop();
+      this.go_back();
     }
   }
   /** 이메일 변경시 오프라인 처리 */
@@ -702,9 +701,9 @@ export class GroupServerPage implements OnInit, OnDestroy {
   }
 
   /** 채널 채팅에서 넘어온 경우 modal 페이지임 */
-  async go_back() {
-    try {
-      await this.modalCtrl.dismiss();
-    } catch (e) { }
+  go_back() {
+    if (this.navParams.data.modal)
+      this.modalCtrl.dismiss();
+    else this.navCtrl.back();
   }
 }
