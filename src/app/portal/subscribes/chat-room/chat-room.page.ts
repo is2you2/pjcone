@@ -970,7 +970,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.userInput.qoute = {
                 timestamp: target_msg.create_time,
               };
-              if (text) this.userInput.qoute.text = text;
+              if (text) this.userInput.qoute.text = truncate(text, 80);
               if (target_msg.content.viewer == 'image') {
                 if (target_msg.content.url)
                   this.userInput.qoute.url = target_msg.content.url;
@@ -1811,7 +1811,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         result['url'] = this.userInput.file.url;
         isURL = true;
       }
-      if (result['msg'].length > 700) { // 메시지가 충분히 깁니다
+      if (result['msg'].length > 600) { // 메시지가 충분히 깁니다
         isLongText = result['msg'];
         delete result['msg'];
       } else result['msg'] = result['msg'];
@@ -1839,7 +1839,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         delete result['content_related_creator'][i]['various_display'];
       }
     } else { // 파일은 없지만 메시지가 충분히 깁니다
-      if (result['msg'].length > 700) {
+      if (result['msg'].length > 600) {
         this.LongTextMessageAsFile(result);
         return;
       }
