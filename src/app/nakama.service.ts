@@ -2903,7 +2903,7 @@ export class NakamaService {
         autoCancel_ln: true,
         iconColor_ln: '271e38',
       }
-      if (c.content['url'] && c.content['type'].indexOf('image/') == 0)
+      if (c.content['url'] && c.content['type'] && c.content['type'].indexOf('image/') == 0)
         PushInfo['image'] = c.content['url'];
       this.noti.PushLocal(PushInfo, this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'], (ev: any) => {
         // 알림 아이디가 같으면 진입 허용

@@ -20,20 +20,24 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(multer({
-    dest: './cdn/',
-
-    rename: function (fieldname, filename) {
-        return filename;
+// Multer 설정
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './cdn/');
     },
-    onFileUploadStart: function (file) {
-        console.log(file.originalname + ' is starting ...')
-    },
-    onFileUploadComplete: function (file) {
-        console.log(file.fieldname + ' uploaded to ' + file.path)
-        done = true;
+    filename: function (req, file, cb) {
+        cb(null, decodeURI(req.url.substring(1)));
     }
-}));
+});
+
+const upload = multer({ storage: storage });
+
+// 파일 업로드를 처리할 라우트 설정
+app.use('/cdn/', upload.single('files'), function (req, res) {
+    // req.file은 업로드된 파일의 정보를 가지고 있음
+    // 여기에서 필요한 작업을 수행하고 응답을 보낼 수 있음
+    res.send('file_server');
+});
 
 /** 파일 크기 요청 */
 app.use('/filesize/', (req, res) => {

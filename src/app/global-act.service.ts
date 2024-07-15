@@ -693,7 +693,7 @@ export class GlobalActService {
       let formData = new FormData();
       let _file = new File([file.blob], filename);
       formData.append("files", _file);
-      await fetch(`${protocol}//${address}:9001/${filename}`, { method: "POST", body: formData });
+      await fetch(`${protocol}//${address}:9001/cdn/${filename}`, { method: "POST", body: formData });
       clearInterval(progress);
       let res = await fetch(CatchedAddress);
       if (res.ok) Catched = true;
@@ -752,7 +752,7 @@ export class GlobalActService {
         let progressPercent = Math.floor(currentSize / file.size * 100);
         loading.message = `${file.filename}: ${progressPercent}%`;
       }, 700);
-      await fetch(`${protocol}//${address[0]}:9001/${filename}`, { method: "POST", body: formData });
+      await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
       clearInterval(progress);
       let res = await fetch(CatchedAddress);
       if (!loading) innerLoading.dismiss();
