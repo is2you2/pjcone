@@ -10,29 +10,32 @@
 </ion-header>
 
 <ion-content>
+  <ion-item>
+    <ion-input [label]="lang.text['Profile']['name_placeholder']" class="ion-text-right"
+      [placeholder]="lang.text['Profile']['noname_user']" [(ngModel)]="MyUserName"></ion-input>
+  </ion-item>
+  <div *ngIf="client.status == 'idle'">
+    <ion-select *ngIf="ServerList.length" [label]="lang.text['AddGroup']['SelectServer']"
+      (ionChange)="SelectAddressTarget($event)" value="local" style="padding-left: 16px;">
+      <ion-select-option value="local">{{lang.text['voidDraw']['InternalConn']}}</ion-select-option>
+      <ion-select-option *ngFor="let server of ServerList" [value]="server">{{server.info.name}}</ion-select-option>
+    </ion-select>
+    <ion-item *ngIf="NeedInputCustomAddress">
+      <ion-input [label]="lang.text['voidDraw']['InputAddress']" [(ngModel)]="UserInputCustomAddress"
+        class="ion-text-right" placeholder="0.0.0.0"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input [label]="lang.text['voidDraw']['ChannelIdAddress']" [(ngModel)]="client.JoinedChannel"
+        class="ion-text-right" placeholder="public"></ion-input>
+    </ion-item>
+    <ion-item button (click)="init_joinChat()">
+      <ion-label class="ion-text-center">{{lang.text['voidDraw']['ConnectToAddress']}}</ion-label>
+    </ion-item>
+  </div>
   <table id="main_table" style="width: 100%; height: 100%;">
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
         <div id="minimal_chat_div" class="main" style="max-width: 100vw;">
-          <div *ngIf="client.status == 'idle'">
-            <ion-select *ngIf="ServerList.length" [label]="lang.text['AddGroup']['SelectServer']"
-              (ionChange)="SelectAddressTarget($event)" value="local" style="padding-left: 16px;">
-              <ion-select-option value="local">{{lang.text['voidDraw']['InternalConn']}}</ion-select-option>
-              <ion-select-option *ngFor="let server of ServerList"
-                [value]="server">{{server.info.name}}</ion-select-option>
-            </ion-select>
-            <ion-item *ngIf="NeedInputCustomAddress">
-              <ion-input [label]="lang.text['voidDraw']['InputAddress']" [(ngModel)]="UserInputCustomAddress"
-                class="ion-text-right" placeholder="0.0.0.0"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input [label]="lang.text['voidDraw']['ChannelIdAddress']" [(ngModel)]="client.JoinedChannel"
-                class="ion-text-right" placeholder="public"></ion-input>
-            </ion-item>
-            <ion-item button (click)="init_joinChat()">
-              <ion-label class="ion-text-center">{{lang.text['voidDraw']['ConnectToAddress']}}</ion-label>
-            </ion-item>
-          </div>
           <div *ngIf="QRCodeSRC && client.status != 'idle'">
             <img [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;" (click)="copy_qr_address()"
               alt="Loading">
