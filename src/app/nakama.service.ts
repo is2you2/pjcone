@@ -2875,51 +2875,18 @@ export class NakamaService {
     let is_me = msg.sender_id == this.servers[_is_official][_target].session.user_id;
     let is_new = msg.message_id != this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_id'];
     let c = this.modulation_channel_message(msg, _is_official, _target);
-    if (!is_me && is_new) {
-      let PushInfo: TotalNotiForm = {
-        id: this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'],
-        title: this.channels_orig[_is_official][_target][msg.channel_id]['info']['name']
-          || this.channels_orig[_is_official][_target][msg.channel_id]['info']['display_name']
-          || this.channels_orig[_is_official][_target][msg.channel_id]['title']
-          || this.lang.text['Subscribes']['noTitiedChat'],
-        body: c.content['msg'] || c.content['noti']
-          || (c.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined)
-          || `(${this.lang.text['ChatRoom']['attachments']})`,
-        extra_ln: {
-          page: {
-            component: 'ChatRoomPage',
-            componentProps: {
-              info: {
-                id: msg.channel_id,
-                isOfficial: _is_official,
-                target: _target,
-                noti_id: this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'],
-              }
-            },
-          },
-        },
-        group_ln: 'diychat',
-        smallIcon_ln: 'diychat',
-        autoCancel_ln: true,
-        iconColor_ln: '271e38',
-      }
-      if (c.content['url'] && c.content['type'] && c.content['type'].indexOf('image/') == 0)
-        PushInfo['image'] = c.content['url'];
-      this.noti.PushLocal(PushInfo, this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'], (ev: any) => {
-        // 알림 아이디가 같으면 진입 허용
-        if (ev && ev['id'] == this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']) {
-          this.go_to_chatroom_without_admob_act(this.channels_orig[_is_official][_target][msg.channel_id]);
-        } else this.go_to_chatroom_without_admob_act(this.channels_orig[_is_official][_target][msg.channel_id]);
-      });
-    }
-    if (is_me) this.noti.ClearNoti(this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']);
+    let is_systemMsg = false;
     switch (c.code) {
       case 0: // 사용자가 작성한 일반적인 메시지
-        if (c.content['gupdate']) // 그룹 정보 업데이트
+        if (c.content['gupdate']) { // 그룹 정보 업데이트
           this.update_group_info(c, _is_official, _target);
-        if (c.content['user_update']) // 그룹 사용자 정보 변경
+          is_systemMsg = true;
+        }
+        if (c.content['user_update']) { // 그룹 사용자 정보 변경
           this.update_group_user_info(c, _is_official, _target);
-        if (is_new) {
+          is_systemMsg = true;
+        }
+        if (is_new && !is_systemMsg) {
           this.channels_orig[_is_official][_target][msg.channel_id]['is_new'] = !is_me;
           if (!this.subscribe_lock)
             this.has_new_channel_msg = !is_me;
@@ -2962,18 +2929,60 @@ export class NakamaService {
         console.log('예상하지 못한 채널 메시지 코드: ', c);
         break;
     }
+    if (!is_me && is_new && !is_systemMsg) {
+      let PushInfo: TotalNotiForm = {
+        id: this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'],
+        title: this.channels_orig[_is_official][_target][msg.channel_id]['info']['name']
+          || this.channels_orig[_is_official][_target][msg.channel_id]['info']['display_name']
+          || this.channels_orig[_is_official][_target][msg.channel_id]['title']
+          || this.lang.text['Subscribes']['noTitiedChat'],
+        body: c.content['msg'] || c.content['noti']
+          || (c.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined)
+          || `(${this.lang.text['ChatRoom']['attachments']})`,
+        extra_ln: {
+          page: {
+            component: 'ChatRoomPage',
+            componentProps: {
+              info: {
+                id: msg.channel_id,
+                isOfficial: _is_official,
+                target: _target,
+                noti_id: this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'],
+              }
+            },
+          },
+        },
+        group_ln: 'diychat',
+        smallIcon_ln: 'diychat',
+        autoCancel_ln: true,
+        iconColor_ln: '271e38',
+      }
+      if (c.content['url'] && c.content['type'] && c.content['type'].indexOf('image/') == 0)
+        PushInfo['image'] = c.content['url'];
+      this.noti.PushLocal(PushInfo, this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'], (ev: any) => {
+        // 알림 아이디가 같으면 진입 허용
+        if (ev && ev['id'] == this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']) {
+          this.go_to_chatroom_without_admob_act(this.channels_orig[_is_official][_target][msg.channel_id]);
+        } else this.go_to_chatroom_without_admob_act(this.channels_orig[_is_official][_target][msg.channel_id]);
+      });
+    }
+    if (is_me) this.noti.ClearNoti(this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']);
     this.ModulateTimeDate(c);
     this.check_sender_and_show_name(c, _is_official, _target);
     let original_msg = msg.content['msg'];
     this.content_to_hyperlink(c);
     if (!isNewChannel && this.channels_orig[_is_official][_target][c.channel_id]['update'])
       this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
-    this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_time'] = msg.update_time;
-    this.channels_orig[_is_official][_target][c.channel_id]['last_comment_id'] = c.message_id;
+    if (!is_systemMsg) {
+      this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_time'] = msg.update_time;
+      this.channels_orig[_is_official][_target][c.channel_id]['last_comment_id'] = c.message_id;
+    }
     this.saveListedMessage([c], this.channels_orig[_is_official][_target][c.channel_id], _is_official, _target);
-    let hasFile = c.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
-    if (c.code != 2) this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile +
-      (original_msg || c.content['noti'] || (c.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined) || '');
+    if (!is_systemMsg) {
+      let hasFile = c.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
+      if (c.code != 2) this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile +
+        (original_msg || c.content['noti'] || (c.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined) || '');
+    }
     this.rearrange_channels();
   }
 
