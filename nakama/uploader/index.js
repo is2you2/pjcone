@@ -13,14 +13,6 @@ const { v4: uuidv4 } = require('uuid');
 // multer 활용 페이지 구성
 app.use(cors());
 
-app.use(function (req, res, next) {
-    res.setTimeout(600000, function () {
-        console.log('Request has timed out.');
-        res.send(408);
-    });
-    next();
-});
-
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "*");
