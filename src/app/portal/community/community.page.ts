@@ -4,7 +4,6 @@ import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
-import { IndexedDBService } from 'src/app/indexed-db.service';
 import { GroupServerPage } from '../settings/group-server/group-server.page';
 import { PostViewerPage } from './post-viewer/post-viewer.page';
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
@@ -22,7 +21,6 @@ export class CommunityPage implements OnInit {
     public lang: LanguageSettingService,
     private global: GlobalActService,
     private navCtrl: NavController,
-    private indexed: IndexedDBService,
     private modalCtrl: ModalController,
     private alertCtrl: AlertController,
   ) { }
@@ -30,6 +28,7 @@ export class CommunityPage implements OnInit {
   ngOnInit() {
     this.nakama.is_post_lock = true;
     this.nakama.CommunityGoToEditPost = this.add_post;
+    console.log(this.nakama.posts);
   }
 
   add_post(info?: any) {
