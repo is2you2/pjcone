@@ -308,9 +308,7 @@ export class NakamaService {
           },
           extra_ln: {
             type: 'AddTodoMenuPage',
-            componentProps: {
-              data: JSON.stringify(noti_info),
-            },
+            data: JSON.stringify(noti_info),
           },
         });
       }

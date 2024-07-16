@@ -147,7 +147,7 @@ export class MiniranchatClientService {
                 // this.nakama.go_to_chatroom_without_admob_act();
                 break;
               case 'AddTodoMenuPage': // 해야할 일
-                // this.nakama.open_add_todo_page();
+                this.nakama.open_add_todo_page(ev['notification']['extra']['data']);
                 break;
               case 'NakamaReqContTitle': // 그룹 진입 알림 요청
                 let this_server = this.nakama.servers[ev['notification']['extra'].isOfficial][ev['notification']['extra'].Target];
