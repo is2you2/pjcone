@@ -38,15 +38,17 @@ export class GroupServerPage implements OnInit, OnDestroy {
   session_uid = '';
 
   BackButtonPressed = false;
-  gsCanvasDiv: HTMLElement;
-  ngOnInit() {
+  InitBrowserBackButtonOverride() {
     window.history.pushState(null, null, window.location.href);
     window.onpopstate = () => {
       if (this.BackButtonPressed) return;
       this.BackButtonPressed = true;
-      this.go_back();
+      this.navCtrl.back();
     };
+  }
 
+  gsCanvasDiv: HTMLElement;
+  ngOnInit() {
     this.servers = this.nakama.get_all_server_info(true);
 
     this.file_sel_id = `self_profile_${new Date().getTime()}`;
@@ -76,6 +78,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
   ShowServerList = false;
   isClickDisplayNameEdit = false;
   ionViewWillEnter() {
+    this.InitBrowserBackButtonOverride();
     this.gsCanvasDiv = document.getElementById('GroupServerCanvasDiv');
     this.OnlineToggle = this.nakama.users.self['online'];
     this.p5canvas = new p5((p: p5) => {
@@ -601,7 +604,9 @@ export class GroupServerPage implements OnInit, OnDestroy {
   ionViewDidEnter() {
     this.can_auto_modified = true;
     this.global.p5key['KeyShortCut']['Escape'] = () => {
-      this.go_back();
+      if (this.navParams.data.modal)
+        this.modalCtrl.dismiss();
+      else this.navCtrl.back();
     }
   }
   /** 이메일 변경시 오프라인 처리 */
@@ -704,6 +709,5 @@ export class GroupServerPage implements OnInit, OnDestroy {
   go_back() {
     if (this.navParams.data.modal)
       this.modalCtrl.dismiss();
-    else this.navCtrl.back();
   }
 }
