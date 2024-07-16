@@ -11,7 +11,7 @@ import { QRelsePage } from './qrelse/qrelse.page';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { GroupDetailPage } from '../settings/group-detail/group-detail.page';
-import { MinimalChatPage } from 'src/app/minimal-chat/minimal-chat.page';
+import { MiniranchatClientService } from 'src/app/miniranchat-client.service';
 
 @Component({
   selector: 'app-subscribes',
@@ -31,6 +31,7 @@ export class SubscribesPage implements OnInit {
     private indexed: IndexedDBService,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
+    private client: MiniranchatClientService,
   ) { }
 
   ngOnInit() {
@@ -336,32 +337,12 @@ export class SubscribesPage implements OnInit {
     }
   }
 
-  /** 페이지 이동 제한 (중복 행동 방지용) */
-  lock_modal_open = false;
   /** 익명성 그룹 채널에 참가하기 */
   JoinSmallTalk() {
-    if (!this.lock_modal_open) {
-      this.lock_modal_open = true;
-      if (this.statusBar.settings['dedicated_groupchat'] != 'online'
-        && this.statusBar.settings['dedicated_groupchat'] != 'certified')
-        this.statusBar.settings['dedicated_groupchat'] = 'pending';
-
-      this.modalCtrl.create({
-        component: MinimalChatPage,
-        componentProps: {
-          name: this.nakama.users.self['display_name'],
-        },
-      }).then(async v => {
-        // 이전 페이지의 단축키 보관했다가 재등록시키기
-        let CacheShortCut = this.global.p5key['KeyShortCut'];
-        this.global.p5key['KeyShortCut'] = {};
-        v.onDidDismiss().then(() => {
-          this.global.p5key['KeyShortCut'] = CacheShortCut;
-        });
-        await v.present();
-        this.lock_modal_open = false;
-      });
-    }
+    if (this.statusBar.settings['dedicated_groupchat'] != 'online'
+      && this.statusBar.settings['dedicated_groupchat'] != 'certified')
+      this.statusBar.settings['dedicated_groupchat'] = 'pending';
+    this.client.RejoinGroupChat();
   }
 
   StopScan() {

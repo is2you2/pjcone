@@ -307,11 +307,9 @@ export class NakamaService {
             at: new Date(targetTime),
           },
           extra_ln: {
-            page: {
-              component: 'AddTodoMenuPage',
-              componentProps: {
-                data: JSON.stringify(noti_info),
-              },
+            type: 'AddTodoMenuPage',
+            componentProps: {
+              data: JSON.stringify(noti_info),
             },
           },
         });
@@ -2940,16 +2938,14 @@ export class NakamaService {
           || (c.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined)
           || `(${this.lang.text['ChatRoom']['attachments']})`,
         extra_ln: {
-          page: {
-            component: 'ChatRoomPage',
-            componentProps: {
-              info: {
-                id: msg.channel_id,
-                isOfficial: _is_official,
-                target: _target,
-                noti_id: this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'],
-              }
-            },
+          type: 'ChatRoomPage',
+          componentProps: {
+            info: {
+              id: msg.channel_id,
+              isOfficial: _is_official,
+              target: _target,
+              noti_id: this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'],
+            }
           },
         },
         group_ln: 'diychat',
@@ -3385,7 +3381,6 @@ export class NakamaService {
       case -3: // 상대방이 친구 요청 수락
       case -4: // 상대방이 그룹 참가 수락
       case -6: // 친구가 다른 게임에 참여
-        this.noti.RemoveListener(`check${this_noti.code}`);
         this.noti.ClearNoti(this_noti.code);
         try {
           let noti = await this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
@@ -3411,7 +3406,6 @@ export class NakamaService {
                   try {
                     let user = await this_server.client.addGroupUsers(this_server.session, this_noti['content']['group_id'], [other_user.users[0].id]);
                     if (!user) console.log('밴인 경우인 것 같음, 확인 필요');
-                    this.noti.RemoveListener(`check${this_noti.code}`);
                     this.noti.ClearNoti(this_noti.code);
                     try {
                       let noti = await this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
@@ -3630,12 +3624,6 @@ export class NakamaService {
           this.socket_reactive['group_detail'].update_from_notification(v);
         this.groups[_is_official][_target][v.content['group_id']]['status'] = 'online';
         v['request'] = `${v.code}-${v.subject}`;
-        this.noti.RemoveListener(`check${v.code}`);
-        this.noti.SetListener(`check${v.code}`, (_v: any) => {
-          this.noti.ClearNoti(_v['id']);
-          this.noti.RemoveListener(`check${v.code}`);
-          this.check_notifications(v, _is_official, _target);
-        });
         try {
           let img = await this.servers[_is_official][_target].client.readStorageObjects(
             this.servers[_is_official][_target].session, {
@@ -3669,10 +3657,6 @@ export class NakamaService {
           title: `${this.groups[_is_official][_target][v.content['group_id']]['name']}: ${this.lang.text['Nakama']['LocalNotiTitle']}`,
           body: v.subject,
           group_ln: 'diychat',
-          // actions_ln: [{
-          //   id: `check${v.code}`,
-          //   title: this.lang.text['Nakama']['LocalNotiOK'],
-          // }],
           icon: this.groups[_is_official][_target][v.content['group_id']['img']],
           smallIcon_ln: 'diychat',
           autoCancel_ln: true,
@@ -3699,43 +3683,20 @@ export class NakamaService {
         // 이미 보는 화면이라면 업데이트하기
         if (this.socket_reactive['group_detail'] && this.socket_reactive['group_detail'].info.id == v.content['group_id'])
           this.socket_reactive['group_detail'].update_from_notification(v);
-        this.noti.RemoveListener(`check${v.code}`);
-        this.noti.SetListener(`check${v.code}`, (_v: any) => {
-          this.noti.ClearNoti(_v['id']);
-          this.noti.RemoveListener(`check${v.code}`);
-          if (this.socket_reactive['group_detail']) return;
-          this.modalCtrl.create({
-            component: GroupDetailPage,
-            componentProps: {
-              info: this.groups[_is_official][_target][v.content['group_id']],
-              server: this.servers[_is_official][_target].info,
-            },
-          }).then(v => v.present());
-        });
         this.noti.PushLocal({
           id: v.code,
           title: `${this.groups[_is_official][_target][v.content['group_id']]['name']}: ${this.lang.text['Nakama']['ReqContTitle']}`,
           group_ln: 'diychat',
-          // actions_ln: [{
-          //   id: `check${v.code}`,
-          //   title: this.lang.text['Nakama']['LocalNotiCheck'],
-          // }],
           icon: this.groups[_is_official][_target][v.content['group_id']]['img'],
           extra_ln: {
-            page: {
-              component: 'NakamaReqContTitle',
-              componentProps: {
-                data: {
-                  noti_id: v.id,
-                  serverName: this.servers[_is_official][_target].info.name,
-                  userName: this.load_other_user(v.sender_id, _is_official, _target)['display_name'],
-                  group_id: v.content['group_id'],
-                  user_id: v.sender_id,
-                  isOfficial: _is_official,
-                  Target: _target,
-                },
-              },
-            },
+            type: 'NakamaReqContTitle',
+            noti_id: v.id,
+            serverName: this.servers[_is_official][_target].info.name,
+            userName: this.load_other_user(v.sender_id, _is_official, _target)['display_name'],
+            group_id: v.content['group_id'],
+            user_id: v.sender_id,
+            isOfficial: _is_official,
+            Target: _target,
           },
           smallIcon_ln: 'diychat',
           autoCancel_ln: true,

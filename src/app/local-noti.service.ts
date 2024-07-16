@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core';
 import { isPlatform } from './app.component';
 import { LocalNotificationSchema, LocalNotifications, PendingLocalNotificationSchema, Schedule } from "@capacitor/local-notifications";
 import { IndexedDBService } from './indexed-db.service';
-
-declare var cordova: any;
+import { LanguageSettingService } from './language-setting.service';
 
 /** 웹에서도, 앱에서도 동작하는 요소로 구성된 알림폼 재구성  
  * 실험을 거쳐 차례로 병합해가기
@@ -63,8 +62,9 @@ export interface TotalNotiForm {
   image?: string;
   /** Web.Noti: 미확인 */
   renotify_wn?: boolean;
-  /** Web.Noti: 미확인 */
-  actions_wn?: any[];
+  /** Android: 알림 액션 id (string) / 하나만 받으므로 [0]만 사용  
+   *  Web.Noti: 미확인 */
+  actions?: any[];
   /** Web.Noti: 미확인 */
   data_wn?: any;
   /** Web.Noti: 미확인 */
@@ -85,6 +85,7 @@ export class LocalNotiService {
 
   constructor(
     private indexed: IndexedDBService,
+    private lang: LanguageSettingService,
   ) { }
 
   /** settings에 해당하는 값을 변경한 후 저장함 */
@@ -147,6 +148,30 @@ export class LocalNotiService {
     // 사설 그룹 채팅 알림은 즉시 무시하기
     this.ClearNoti(11);
   }
+  /** 알림 액션 추가하기 */
+  RegisterNofiticationActionType() {
+    // 모바일 알림 행동에 대한 것으로 웹은 무시함
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') return;
+    LocalNotifications.registerActionTypes({
+      types: [{
+        // 그룹 채널용 답장보내기
+        id: 'group_dedi',
+        actions: [{
+          id: 'reply',
+          title: this.lang.text['MinimalChat']['Noti_Reply'],
+          input: true,
+        }],
+      }, {
+        // 채널 채팅용 답장보내기
+        id: 'chatroom_reply',
+        actions: [{
+          id: 'reply',
+          title: this.lang.text['MinimalChat']['Noti_Reply'],
+          input: true,
+        }],
+      }]
+    });
+  }
   /**
    * 로컬 푸쉬 알림을 동작시킵니다
    * @param header 지금 바라보고 있는 화면의 이름
@@ -167,7 +192,7 @@ export class LocalNotiService {
         lang: opt.lang_wn,
         silent: !this.settings.silent[opt.icon || opt.smallIcon_ln] || false,
         tag: opt.tag_wn,
-        actions: opt.actions_wn,
+        actions: opt.actions,
         data: opt.data_wn,
         renotify: opt.renotify_wn,
         requireInteraction: opt.requireInteraction_wn,
@@ -219,6 +244,7 @@ export class LocalNotiService {
         groupSummary: opt.groupSummary_ln,
         summaryText: opt.groupSummaryText_ln,
         ongoing: opt.ongoing_ln,
+        actionTypeId: opt.actions?.shift(),
       };
       if (opt.image)
         input['attachments'] = [{
@@ -245,43 +271,11 @@ export class LocalNotiService {
 
   /** 알림 제거하기 */
   ClearNoti(id: any) {
-    setTimeout(() => {
-      if (isPlatform == 'DesktopPWA') {
-        if (this.WebNoties[id])
-          this.WebNoties[id].close();
-      } else if (isPlatform != 'MobilePWA') {
-        LocalNotifications.cancel({ notifications: [{ id: id }] });
-      }
-    }, 1000);
-  }
-
-  /** 알림 행동 등록시 기록 */
-  listeners = {};
-  /** 알림 행동 받기  
-   * eventName — The name of the event. Available events: schedule(예약됨), trigger(발생됨), click(눌렀을 때), update, clear, clearall, cancel, cancelall. Custom event names are possible for actions 
-   */
-  SetListener(ev: string, subscribe: Function = (v: any, eopts: any) => console.warn(`${ev}: ${v}/${eopts}`)) {
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-    } else {
-      console.log('알림 행동 생성 요청 받음: SetListener: ', ev);
-      return;
-      this.listeners[ev] = (v: any, eopts: any) => {
-        subscribe(v, eopts);
-      }
-      cordova.plugins.notification.local.on(ev, this.listeners[ev]);
-    }
-  }
-
-  /** 알림 행동 지우기  
-   * eventName — The name of the event. Available events: schedule(예약됨), trigger(발생됨), click(눌렀을 때), update, clear, clearall, cancel, cancelall. Custom event names are possible for actions 
-   */
-  RemoveListener(ev: string) {
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-    } else {
-      console.log('알림 행동 지우기 요청 받음: RemoveListener: ', ev);
-      return;
-      cordova.plugins.notification.local.un(ev, this.listeners[ev]);
-      delete this.listeners[ev];
+    if (isPlatform == 'DesktopPWA') {
+      if (this.WebNoties[id])
+        this.WebNoties[id].close();
+    } else if (isPlatform != 'MobilePWA') {
+      LocalNotifications.cancel({ notifications: [{ id: id }] });
     }
   }
 }

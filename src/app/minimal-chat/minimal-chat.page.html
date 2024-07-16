@@ -12,7 +12,7 @@
 <ion-content>
   <ion-item>
     <ion-input [label]="lang.text['Profile']['name_placeholder']" class="ion-text-right"
-      [placeholder]="lang.text['Profile']['noname_user']" [(ngModel)]="MyUserName"></ion-input>
+      [placeholder]="lang.text['Profile']['noname_user']" [(ngModel)]="client.MyUserName"></ion-input>
   </ion-item>
   <div *ngIf="client.status == 'idle'">
     <ion-select *ngIf="ServerList.length" [label]="lang.text['AddGroup']['SelectServer']"

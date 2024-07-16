@@ -39,32 +39,36 @@ export class LanguageSettingService {
 
   isFirstTime = true;
   /** 설정된 언어로 다시 불러오기 */
-  load_selected_lang() {
-    new p5((p: p5) => {
-      p.setup = () => {
-        p.noCanvas();
-        p.loadTable(`assets/data/translate.csv`, 'csv', 'header',
-          (v: p5.Table) => {
-            // 지원하지 않는 언어라면 기본값으로 Fallback
-            if (!v.columns.includes(this.lang))
-              this.lang = 'en';
-            localStorage.setItem('lang', this.lang);
-            let tmpTitle: string;
-            for (let i = 0, j = v.rows.length; i < j; i++) {
-              if (v.rows[i]['obj']['#'].charAt(0) == '#') {
-                tmpTitle = v.rows[i]['obj']['#'].substring(3);
-                if (!this.text[tmpTitle])
-                  this.text[tmpTitle] = {};
-              } else this.text[tmpTitle][v.rows[i]['obj']['#']] = v.rows[i]['obj'][this.lang];
-            }
-            if (this.isFirstTime)
-              this.Callback_nakama();
-            p.remove();
-          }, e => {
-            console.error('내부 문서 읽기 실패: ', e);
-            p.remove();
-          });
-      }
+  async load_selected_lang() {
+    return await new Promise((done, err) => {
+      new p5((p: p5) => {
+        p.setup = () => {
+          p.noCanvas();
+          p.loadTable(`assets/data/translate.csv`, 'csv', 'header',
+            (v: p5.Table) => {
+              // 지원하지 않는 언어라면 기본값으로 Fallback
+              if (!v.columns.includes(this.lang))
+                this.lang = 'en';
+              localStorage.setItem('lang', this.lang);
+              let tmpTitle: string;
+              for (let i = 0, j = v.rows.length; i < j; i++) {
+                if (v.rows[i]['obj']['#'].charAt(0) == '#') {
+                  tmpTitle = v.rows[i]['obj']['#'].substring(3);
+                  if (!this.text[tmpTitle])
+                    this.text[tmpTitle] = {};
+                } else this.text[tmpTitle][v.rows[i]['obj']['#']] = v.rows[i]['obj'][this.lang];
+              }
+              if (this.isFirstTime)
+                this.Callback_nakama();
+              done(undefined);
+              p.remove();
+            }, e => {
+              console.error('내부 문서 읽기 실패: ', e);
+              err(e);
+              p.remove();
+            });
+        }
+      });
     });
   }
   /** nakama 스크립트 상호참조를 우회하여 번역처리 */

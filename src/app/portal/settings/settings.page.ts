@@ -6,6 +6,7 @@ import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { WebrtcManageIoDevPage } from 'src/app/webrtc-manage-io-dev/webrtc-manage-io-dev.page';
+import { LocalNotiService } from 'src/app/local-noti.service';
 
 @Component({
   selector: 'app-settings',
@@ -21,6 +22,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     public nakama: NakamaService,
     public lang: LanguageSettingService,
     private global: GlobalActService,
+    private noti: LocalNotiService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
@@ -176,9 +178,10 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.LangSel.open();
   }
   /** 언어 변경됨 */
-  LanguageChanged(ev: any) {
+  async LanguageChanged(ev: any) {
     this.lang.lang = ev.detail.value;
-    this.lang.load_selected_lang();
+    await this.lang.load_selected_lang();
+    this.noti.RegisterNofiticationActionType();
   }
 
   go_to_page(_page: string) {

@@ -1,10 +1,9 @@
 import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
-import { AlertController, IonicSafeString, ModalController, Platform } from '@ionic/angular';
+import { Platform } from '@ionic/angular';
 import { IndexedDBService } from './indexed-db.service';
 import { LocalNotiService } from './local-noti.service';
-import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { NakamaService } from './nakama.service';
 import { LanguageSettingService } from './language-setting.service';
 import { GlobalActService } from './global-act.service';
@@ -16,6 +15,7 @@ export var isNativefier = false;
 /** 이미지 등 자료 링크용(웹 사이트 host) */
 export const SERVER_PATH_ROOT: string = 'https://is2you2.github.io/';
 import * as p5 from 'p5';
+import { MiniranchatClientService } from './miniranchat-client.service';
 window['p5'] = p5;
 
 @Component({
@@ -29,11 +29,10 @@ export class AppComponent {
     router: Router,
     ngZone: NgZone,
     noti: LocalNotiService,
-    private nakama: NakamaService,
+    nakama: NakamaService,
     indexed: IndexedDBService,
-    private modalCtrl: ModalController,
-    alertCtrl: AlertController,
-    private lang: LanguageSettingService,
+    client: MiniranchatClientService,
+    lang: LanguageSettingService,
     global: GlobalActService,
   ) {
     if (platform.is('desktop'))
@@ -65,6 +64,8 @@ export class AppComponent {
       nakama.initialize();
       nakama.check_if_online();
       lang.isFirstTime = false;
+      client.RegisterNotificationReact();
+      noti.RegisterNofiticationActionType();
     }
     // 모바일 기기 특정 설정
     if (isPlatform == 'Android' || isPlatform == 'iOS') {
@@ -81,141 +82,11 @@ export class AppComponent {
         });
       });
     }
-    noti.SetListener('click', (ev: any) => {
-      try { // 페이지 연결 행동이 필요한 알림
-        let page: any;
-        let props: any = ev.data.page.componentProps;
-        let noti_id: string;
-        switch (ev.data.page.component) {
-          case 'ChatRoomPage':
-            noti_id = props['info']['noti_id'];
-            break;
-          case 'MinimalChatPage':
-            page = MinimalChatPage;
-            noti_id = props['noti_id'];
-            break;
-          case 'AddTodoMenuPage':
-            props = {
-              data: props['data'],
-            };
-            noti_id = JSON.parse(props['data'])['id'];
-            break;
-          case 'NakamaReqContTitle': // 그룹 진입 요청 알림
-            let this_server = nakama.servers[props.data.isOfficial][props.data.Target];
-            let msg = '';
-            msg += `${lang.text['Nakama']['ReqContServer']}: ${props.data.serverName}<br>`;
-            msg += `${lang.text['Nakama']['ReqContUserName']}: ${props.data.userName}`;
-            alertCtrl.create({
-              header: lang.text['Nakama']['ReqContTitle'],
-              message: msg,
-              buttons: [{
-                text: lang.text['Nakama']['ReqContAccept'],
-                handler: () => {
-                  this_server.client.addGroupUsers(this_server.session, props.data.group_id, [props.data.user_id])
-                    .then(v => {
-                      if (!v) console.warn('밴인 경우인 것 같음, 확인 필요');
-                      this_server.client.deleteNotifications(this_server.session, [props.data.noti_id])
-                        .then(b => {
-                          if (b) nakama.update_notifications(props.data.isOfficial, props.data.Target);
-                          else console.warn('알림 지우기 실패: ', b);
-                        });
-                    });
-                }
-              }, {
-                text: lang.text['Nakama']['ReqContReject'],
-                handler: () => {
-                  this_server.client.kickGroupUsers(this_server.session, props.data.group_id, [props.data.user_id])
-                    .then(async b => {
-                      if (!b) console.warn('그룹 참여 거절을 kick한 경우 오류');
-                      await this_server.client.deleteNotifications(this_server.session, [props.data.noti_id]);
-                      nakama.update_notifications(props.data.isOfficial, props.data.Target);
-                    })
-                },
-                cssClass: 'redfont',
-              }],
-            }).then(v => v.present());
-            return;
-          case 'AllUserNotification':
-            break;
-          default:
-            console.warn('준비된 페이지가 아님: ', ev.data.page.component);
-            break;
-        }
-        if (noti_id == noti.Current) return;
-        this.waiting_open_page(ev, page, props);
-      } catch (e) { // 페이지 연결이 없는 알림
-        switch (ev.data.type) {
-          case 'AllUserNotification':
-            let image_form = `<img *ngIf="${ev.data.image}" src="${ev.data.image}" alt="noti_image" style="border-radius: 8px">`;
-            let text_form = `<div>${ev.data.body}</div>`;
-            let result_form = ev.data.image ? image_form + text_form : text_form;
-            alertCtrl.create({
-              header: ev.data.title,
-              message: new IonicSafeString(result_form),
-              buttons: [{
-                text: lang.text['Nakama']['LocalNotiOK'],
-                handler: () => {
-                  nakama.servers[ev.data.isOfficial][ev.data.target].client.deleteNotifications(
-                    nakama.servers[ev.data.isOfficial][ev.data.target].session, [ev.data.noti_id]);
-                }
-              }]
-            }).then(v => v.present());
-            break;
-          default:
-            console.log('준비된 알림 행동 없음: ', ev.data);
-            break;
-        }
-      }
-    });
     nakama.on_socket_connected['connection_check'] = () => {
       nakama.check_if_online();
     }
     nakama.on_socket_disconnected['connection_check'] = () => {
       nakama.check_if_online();
-    }
-  }
-
-  /** 앱이 꺼진 상태에서 알림 클릭시 바로 동작하지 않기 때문에 페이지 열기 가능할 때까지 기다림  
-   * 당장은 방법이 없어보이나, 함수를 일단 분리해둠
-   */
-  async waiting_open_page(ev: any, page: any, props: any) {
-    try {
-      let modal = await this.modalCtrl.create({
-        component: page,
-        componentProps: props,
-      });
-      switch (ev.data.page.component) {
-        case 'ChatRoomPage':
-          if (!this.lang.text['ChatRoom']['YouReadHereLast']) throw 'ChatRoomPage 번역 준비중';
-          if (props.info.noti_id) {
-            let _cid = props['info']['id'];
-            let _is_official = props['info']['isOfficial'];
-            let _target = props['info']['target'];
-            props = {
-              info: this.nakama.channels_orig[_is_official][_target][_cid]
-            };
-            this.nakama.go_to_chatroom_without_admob_act(props.info);
-            break;
-          }
-          throw 'ChatRoomPage props 재정비';
-        case 'MinimalChatPage':
-          if (!this.lang.text['MinimalChat']['leave_chat_group']) throw 'MinimalChatPage 번역 준비중';
-          modal.present();
-          break;
-        case 'AddTodoMenuPage':
-          if (!this.lang.text['TodoDetail']['ToggleWorkers']) throw 'AddTodoMenuPage 번역 준비중';
-          this.nakama.open_add_todo_page(props['data']);
-          break;
-        default:
-          console.warn('준비된 페이지 행동 없음: ', ev.data.page.component);
-          modal.present();
-          break;
-      }
-    } catch (e) {
-      console.log('retry open notification clicked because... : ', e);
-      setTimeout(() => {
-        this.waiting_open_page(ev, page, props);
-      }, 200);
     }
   }
 }

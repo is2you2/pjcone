@@ -1196,7 +1196,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (this.info['cnoti_id'])
         this.noti.ClearNoti(this.info['cnoti_id']);
     }
-    this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
     this.info = this.nakama.channels_orig[this.isOfficial][this.target][this.info.id];
@@ -2456,7 +2455,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.noti.Current = this.info['cnoti_id'];
           if (this.info['cnoti_id'])
             this.noti.ClearNoti(this.info['cnoti_id']);
-          this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
         });
         this.removeShortCutKey();
         this.noti.Current = 'IonicViewerPage';
@@ -2524,7 +2522,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.noti.Current = this.info['cnoti_id'];
             if (this.info['cnoti_id'])
               this.noti.ClearNoti(this.info['cnoti_id']);
-            this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
           });
           this.removeShortCutKey();
           this.noti.Current = 'GroupServerPage';
@@ -2546,7 +2543,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.noti.Current = this.info['cnoti_id'];
             if (this.info['cnoti_id'])
               this.noti.ClearNoti(this.info['cnoti_id']);
-            this.noti.RemoveListener(`openchat${this.info['cnoti_id']}`);
           });
           this.noti.Current = 'OthersProfilePage';
           this.removeShortCutKey();
