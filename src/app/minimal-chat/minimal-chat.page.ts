@@ -300,7 +300,6 @@ export class MinimalChatPage implements OnInit {
               componentProps: {
                 address: this.params.get('address'),
                 name: this.params.get('name'),
-                noti_id: this.Header,
               },
             },
             actions: ['group_dedi'],
@@ -321,7 +320,6 @@ export class MinimalChatPage implements OnInit {
               componentProps: {
                 address: this.params.get('address'),
                 name: this.params.get('name'),
-                noti_id: this.Header,
               },
             },
             actions: ['group_dedi'],
@@ -355,7 +353,6 @@ export class MinimalChatPage implements OnInit {
           componentProps: {
             address: this.params.get('address'),
             name: this.params.get('name'),
-            noti_id: this.Header,
           },
         },
         autoCancel_ln: true,
@@ -391,7 +388,6 @@ export class MinimalChatPage implements OnInit {
             componentProps: {
               address: this.params.get('address'),
               name: this.params.get('name'),
-              noti_id: this.Header,
             },
           },
           actions: ['group_dedi'],

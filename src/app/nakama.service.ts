@@ -2937,14 +2937,9 @@ export class NakamaService {
           || `(${this.lang.text['ChatRoom']['attachments']})`,
         extra_ln: {
           type: 'ChatRoomPage',
-          componentProps: {
-            info: {
-              id: msg.channel_id,
-              isOfficial: _is_official,
-              target: _target,
-              noti_id: this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'],
-            }
-          },
+          id: msg.channel_id,
+          isOfficial: _is_official,
+          target: _target,
         },
         group_ln: 'diychat',
         smallIcon_ln: 'diychat',
@@ -3557,7 +3552,6 @@ export class NakamaService {
             image: decode_image,
             isOfficial: _is_official,
             target: _target,
-            noti_id: v.id,
           },
           smallIcon_ln: 'diychat',
           group_ln: 'all_user_noti',
@@ -3688,7 +3682,6 @@ export class NakamaService {
           icon: this.groups[_is_official][_target][v.content['group_id']]['img'],
           extra_ln: {
             type: 'NakamaReqContTitle',
-            noti_id: v.id,
             serverName: this.servers[_is_official][_target].info.name,
             userName: this.load_other_user(v.sender_id, _is_official, _target)['display_name'],
             group_id: v.content['group_id'],

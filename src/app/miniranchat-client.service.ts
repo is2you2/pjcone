@@ -102,24 +102,8 @@ export class MiniranchatClientService {
   RegisterNotificationReact() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') return;
     LocalNotifications.addListener('localNotificationActionPerformed', (ev: any) => {
-      console.log('##### 액션 눌림: ', ev['actionId'], '/', ev['inputValue'], '/', ev['notification']);
-      {
-        let keys = Object.keys(ev['notification']);
-        console.log('notification: {');
-        for (let i = 0, j = keys.length; i < j; i++)
-          console.log(keys[i], ': ', ev['notification'][keys[i]]);
-        console.log('}');
-      }
-      {
-        let keys = Object.keys(ev['notification']['extra']);
-        console.log('extra: {');
-        for (let i = 0, j = keys.length; i < j; i++)
-          console.log(keys[i], ': ', ev['notification']['extra'][keys[i]]);
-        console.log('}');
-      }
       try {
         let ActType = ev['notification']['extra']['type'];
-        console.log('행동강령: ', ActType);
         switch (ev['actionId']) {
           case 'tap': // 알림을 탭함, 해당 알림에 해당하는 페이지를 열기
             switch (ActType) {
@@ -144,7 +128,10 @@ export class MiniranchatClientService {
                 this.RejoinGroupChat();
                 break;
               case 'ChatRoomPage': // 채널 채팅
-                // this.nakama.go_to_chatroom_without_admob_act();
+                let _cid = ev['notification']['extra']['id'];
+                let _is_official = ev['notification']['extra']['isOfficial'];
+                let _target = ev['notification']['extra']['target'];
+                this.nakama.go_to_chatroom_without_admob_act(this.nakama.channels_orig[_is_official][_target][_cid]);
                 break;
               case 'AddTodoMenuPage': // 해야할 일
                 this.nakama.open_add_todo_page(ev['notification']['extra']['data']);
