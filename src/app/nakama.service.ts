@@ -1771,6 +1771,9 @@ export class NakamaService {
               console.error('예상하지 않은 대화형식: ', this.channels_orig[_is_official][_target][_cid]);
               break;
           }
+          // 새로 생긴 채널에 현재 시간을 기입하여 가장 최상단으로 올라오도록 구성
+          if (!this.channels_orig[_is_official][_target][_cid]['last_comment_time'])
+            this.channels_orig[_is_official][_target][_cid]['last_comment_time'] = Date.now();
           result.push(this.channels_orig[_is_official][_target][_cid]);
         });
       });
