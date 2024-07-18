@@ -5,6 +5,9 @@
       <ion-icon *ngIf="!isPlayingCanvas.loop" button style="width: 24px; height: 24px;" name="play-circle"></ion-icon>
       <ion-icon *ngIf="isPlayingCanvas.loop" button style="width: 24px; height: 24px;" name="pause-circle"></ion-icon>
     </div>
+    <div (click)="nakama.open_add_todo_page()" class="add_button">
+      <ion-icon button style="width: 24px; height: 24px; " name="add-circle-outline"></ion-icon>
+    </div>
     <div class="header_online_circle"
       [style]="'background-color: ' + statusBar.colors[statusBar.settings.groupServer] + '; cursor: pointer;'"
       (click)="toggle_session()">
@@ -23,7 +26,8 @@
   </div>
   <div class="full_screen" id="todo">
     <div style="position: absolute; top: 16px; left: 16px;">
-      <button class="FilterSwitchButton" (click)="SwitchTargetFilter()">{{lang.text['TodoDetail'][TargetFilterDisplayName]}}</button>
+      <button class="FilterSwitchButton"
+        (click)="SwitchTargetFilter()">{{lang.text['TodoDetail'][TargetFilterDisplayName]}}</button>
       <button *ngFor="let kind of AllCategories[TargetFilterName]" class="FilterSwitchButton"
         [style]="'background-color: ' + (kind.color || '#8888')" (click)="ChangeFilterValue(kind.value)">
         {{lang.text['TodoDetail'][kind.name]}}
