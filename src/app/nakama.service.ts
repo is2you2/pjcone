@@ -4378,7 +4378,7 @@ export class NakamaService {
         }
       }
       try { // 사용자 이름 덮어쓰기 시도
-        json['creator_name'] = this.load_other_user(user_id, isOfficial, target)['display_name'];
+        json['creator_name'] = this.load_other_user(user_id, isOfficial, target)['display_name'] || json['creator_name'];
       } catch (e) { }
       if (!this.posts_orig[isOfficial][target])
         this.posts_orig[isOfficial][target] = {};
