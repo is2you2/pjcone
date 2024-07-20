@@ -148,7 +148,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (isPlatform == 'DesktopPWA')
       setTimeout(() => {
         this.CreateDrop();
-      }, 0);
+      }, 100);
     if (this.userInput.workers) {
       for (let i = 0, j = this.userInput.workers.length; i < j; i++)
         if (this.userInput.workers[i].timestamp) {

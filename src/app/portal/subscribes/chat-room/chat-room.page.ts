@@ -803,7 +803,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     });
     setTimeout(() => {
       this.CreateDrop();
-    }, 0);
+    }, 100);
     this.isMobile = isPlatform == 'Android' || isPlatform == 'iOS';
     this.nakama.StatusBarChangedCallback = async () => {
       await this.SetExtensionButtons();

@@ -94,7 +94,7 @@ export class UserFsDirPage implements OnInit {
     if (isPlatform == 'DesktopPWA')
       setTimeout(() => {
         this.CreateDrop();
-      }, 0);
+      }, 100);
     this.CanImportFolder = isPlatform != 'MobilePWA';
   }
 

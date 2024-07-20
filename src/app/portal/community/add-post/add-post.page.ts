@@ -146,7 +146,9 @@ export class AddPostPage implements OnInit, OnDestroy {
         this.OriginalInfo = JSON.parse(JSON.stringify(this.userInput));
     });
     // 드랍이기도 하나 보이스 관리를 겸하므로 플랫폼 무관 생성
-    this.CreateDrop();
+    setTimeout(() => {
+      this.CreateDrop();
+    }, 100);
     this.nakama.StatusBarChangedCallback = () => {
       this.LoadListServer();
       this.index = 0;

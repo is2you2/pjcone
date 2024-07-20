@@ -1,6 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { IonInput, ModalController, NavParams } from '@ionic/angular';
+import { AlertController, IonInput, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
 import { StatusManageService } from '../status-manage.service';
@@ -13,6 +13,7 @@ import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IndexedDBService } from '../indexed-db.service';
 import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { VoidDrawPage } from '../portal/subscribes/chat-room/void-draw/void-draw.page';
+import * as p5 from 'p5';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -20,7 +21,7 @@ import { VoidDrawPage } from '../portal/subscribes/chat-room/void-draw/void-draw
   templateUrl: './minimal-chat.page.html',
   styleUrls: ['./minimal-chat.page.scss'],
 })
-export class MinimalChatPage implements OnInit {
+export class MinimalChatPage implements OnInit, OnDestroy {
 
   constructor(
     public client: MiniranchatClientService,
@@ -34,6 +35,8 @@ export class MinimalChatPage implements OnInit {
     private mClipboard: Clipboard,
     private p5toast: P5ToastService,
     private indexed: IndexedDBService,
+    private loadingCtrl: LoadingController,
+    private alertCtrl: AlertController,
   ) { }
   header_title: string;
   /** 페이지 구분자는 페이지에 사용될 아이콘 이름을 따라가도록 */
@@ -97,6 +100,9 @@ export class MinimalChatPage implements OnInit {
       this.UserInputCustomAddress = this.params.get('address');
       this.init_joinChat();
     }
+    setTimeout(() => {
+      this.CreateDrop();
+    }, 100);
   }
 
   ionViewWillEnter() {
@@ -116,6 +122,75 @@ export class MinimalChatPage implements OnInit {
           this.focus_on_input();
         }, 0);
     }
+  }
+
+  p5canvas: p5;
+  CreateDrop() {
+    let parent = document.getElementById('p5Drop_chatroom');
+    this.p5canvas = new p5((p: p5) => {
+      p.setup = () => {
+        let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
+        canvas.parent(parent);
+        p.pixelDensity(.1);
+        canvas.drop((file: any) => {
+          let _Millis = p.millis();
+          if (LastDropAt < _Millis - 400) { // 새로운 파일로 인식
+            isMultipleSend = false;
+            Drops.length = 0;
+            Drops.push(file);
+          } else { // 여러 파일 입력으로 인식
+            isMultipleSend = true;
+            Drops.push(file);
+          }
+          LastDropAt = _Millis;
+          clearTimeout(StartAct);
+          StartAct = setTimeout(async () => {
+            if (!isMultipleSend) {
+              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+              loading.present();
+              this.SendAttachAct({ target: { files: [file.file] } });
+              loading.dismiss();
+            } else { // 여러 파일 발송 여부 검토 후, 아니라고 하면 첫 파일만
+              this.alertCtrl.create({
+                header: this.lang.text['ChatRoom']['MultipleSend'],
+                message: `${this.lang.text['ChatRoom']['CountFile']}: ${Drops.length}`,
+                buttons: [{
+                  text: this.lang.text['ChatRoom']['Send'],
+                  handler: () => {
+                    for (let i = 0, j = Drops.length; i < j; i++)
+                      this.SendAttachAct({ target: { files: [Drops[i].file] } });
+                  }
+                }]
+              }).then(v => {
+                // 이전 페이지의 단축키 보관했다가 재등록시키기
+                let CacheShortCut = this.global.p5key['KeyShortCut'];
+                this.global.p5key['KeyShortCut'] = {};
+                this.global.p5key['KeyShortCut']['Escape'] = () => {
+                  v.dismiss();
+                }
+                v.onDidDismiss().then(() => {
+                  this.global.p5key['KeyShortCut'] = CacheShortCut;
+                });
+                v.present();
+              });
+            }
+          }, 400);
+        });
+      }
+      let StartAct: any;
+      let isMultipleSend = false;
+      let LastDropAt = 0;
+      let Drops = [];
+      p.mouseMoved = (ev: any) => {
+        if (ev['dataTransfer']) {
+          parent.style.pointerEvents = 'all';
+          parent.style.backgroundColor = '#0008';
+        } else {
+          parent.style.pointerEvents = 'none';
+          parent.style.backgroundColor = 'transparent';
+        }
+      }
+    });
   }
 
   QRCodeSRC: any;
@@ -626,5 +701,9 @@ export class MinimalChatPage implements OnInit {
     this.noti.Current = undefined;
     if (this.client.IsConnected) this.client.CreateRejoinButton();
     delete this.global.p5key['KeyShortCut']['EnterAct'];
+  }
+  ngOnDestroy(): void {
+    if (this.p5canvas)
+      this.p5canvas.remove()
   }
 }
