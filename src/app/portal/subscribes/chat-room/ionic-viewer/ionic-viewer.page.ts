@@ -159,9 +159,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 콘텐츠를 우클릭시 메뉴 발현 */
   canvasDivContextMenu() {
-    if (this.FileInfo.viewer != 'blender')
+    if (this.FileInfo.viewer != 'blender' && this.FileInfo.viewer != 'text' && this.FileInfo.viewer != 'code') {
       this.FileMenu.present();
-    return false;
+      return false;
+    }
   }
 
   canvasDiv: HTMLElement;
@@ -1009,7 +1010,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   ChangeContentWithKeyInput() {
     this.p5viewerkey = new p5((p: p5) => {
       p.keyPressed = (ev) => {
-        if (this.isTextEditMode) return;
+        if (this.isTextEditMode || this.isHTMLViewer) return;
         if (this.FileInfo.viewer == 'godot') return;
         switch (ev['code']) {
           case 'KeyA': // 왼쪽 이동
