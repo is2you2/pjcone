@@ -4,6 +4,10 @@
     <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
       <ion-back-button defaultHref=""></ion-back-button>
     </ion-buttons>
+    <ion-icon *ngIf="isHTML && isHTMLViewer && !isTextEditMode" class="relevance_change" style="padding-right: 16px;"
+      slot="end" name="pause-circle" (click)="ToggleHTMLViewer()"></ion-icon>
+    <ion-icon *ngIf="isHTML && !isHTMLViewer && !isTextEditMode" class="relevance_change" style="padding-right: 16px;"
+      slot="end" name="play-circle" (click)="ToggleHTMLViewer()"></ion-icon>
     <ion-icon *ngIf="HaveRelevances && (FileInfo.viewer == 'video' || FileInfo.viewer == 'audio') && AutoPlayNext"
       class="relevance_change" style="padding-right: 16px;" slot="end" name="pause-circle"
       (click)="AutoPlayNext = !AutoPlayNext"></ion-icon>

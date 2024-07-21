@@ -86,6 +86,21 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   /** 이미지 편집이 가능하다면 해당 메뉴를 보여주기 */
   showEdit = true;
   showEditText = false;
+  /** HTML이라면 보기 방식을 변경할 수 있음, 변경 가능한지 여부 */
+  isHTML = false;
+  /** HTML 직접보기로 보는지 여부 */
+  isHTMLViewer = false;
+
+  /** HTML 직접보기 전환 */
+  ToggleHTMLViewer() {
+    this.isHTMLViewer = !this.isHTMLViewer;
+    if (this.isHTMLViewer) {
+      let text_viewer = document.getElementById('ionic_viewer_text_content');
+      let content = text_viewer.innerText;
+      text_viewer.innerText = undefined;
+      text_viewer.innerHTML = content;
+    } else this.ChangeToAnother(0);
+  }
 
   BackButtonPressed = false;
   InitBrowserBackButtonOverride() {
@@ -157,6 +172,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.ContentOnLoad = false;
     this.ContentFailedLoad = true;
     this.isTextEditMode = false;
+    this.isHTML = false;
+    this.isHTMLViewer = false;
     this.MessageInfo = msg;
     this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
@@ -767,6 +784,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       case 'code':
       case 'text': // 텍스트 파일
         this.showEditText = !Boolean(this.navParams.get('noTextEdit'));
+        this.isHTML = this.FileInfo.file_ext?.toLowerCase() == 'html';
         this.p5canvas = new p5((p: p5) => {
           p.setup = () => {
             p.noCanvas();
@@ -1082,10 +1100,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       hljs.unregisterLanguage(this.FileInfo.file_ext);
       let highlighted = highlightedCode.value;
       let line = p.createDiv(highlighted);
+      line.id('ionic_viewer_text_content');
       line.style('white-space', 'pre-wrap');
       line.parent(p['SyntaxHighlightReader']);
     } catch (e) {
       let line = p.createDiv(getText);
+      line.id('ionic_viewer_text_content');
       line.style('white-space', 'pre-wrap');
       line.parent(p['SyntaxHighlightReader']);
     }
