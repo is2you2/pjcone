@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { IonModal, ModalController, NavController, NavParams } from '@ionic/angular';
+import { AlertController, IonModal, ModalController, NavController, NavParams } from '@ionic/angular';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -29,6 +29,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
     private navCtrl: NavController,
     private navParams: NavParams,
     private modalCtrl: ModalController,
+    private alertCtrl: AlertController,
   ) { }
 
   info: string;
@@ -442,13 +443,23 @@ export class GroupServerPage implements OnInit, OnDestroy {
   isOverrideButtonPressed = false;
   async remove_server(_is_official: string, _target: string) {
     this.isOverrideButtonPressed = true;
-    // 그룹서버 리스트 정리
-    try {
-      await this.nakama.remove_server(_is_official, _target);
-    } catch (e) {
-      console.log('서버 삭제 오류: ', e);
-    }
-    this.servers = this.nakama.get_all_server_info(true);
+    this.alertCtrl.create({
+      header: this.lang.text['GroupServer']['RemoveAccountReally'],
+      message: this.lang.text['ChatRoom']['CannotUndone'],
+      buttons: [{
+        text: this.lang.text['UserFsDir']['OK'],
+        cssClass: 'redfont',
+        handler: async () => {
+          try {
+            await this.nakama.remove_server(_is_official, _target);
+          } catch (e) {
+            console.log('서버 삭제 오류: ', e);
+          }
+          // 그룹서버 리스트 정리
+          this.servers = this.nakama.get_all_server_info(true);
+        }
+      }]
+    }).then(v => v.present());
   }
 
   /** 프로필이 변경됨 알림이 필요한지 여부 */
