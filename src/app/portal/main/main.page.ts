@@ -708,7 +708,8 @@ export class MainPage implements OnInit {
       /** 시작점 캐시 */
       let TempStartCamPosition: p5.Vector;
       p.mousePressed = (ev: any) => {
-        if (BlockInput) return;
+        let exact_target = ev.target == document.getElementById('p5todo');
+        if (BlockInput || !exact_target) return;
         isClickable = true;
         switch (ev['which']) {
           case 1: // 왼쪽
@@ -731,7 +732,8 @@ export class MainPage implements OnInit {
         }
       }
       p.mouseDragged = (ev: any) => {
-        if (BlockInput) return;
+        let exact_target = ev.target == document.getElementById('p5todo');
+        if (BlockInput || !exact_target) return;
         if (!this.isPlayingCanvas.loop) p.redraw();
         switch (ev['which']) {
           case 1: // 왼쪽
@@ -749,7 +751,8 @@ export class MainPage implements OnInit {
         }
       }
       p.mouseReleased = (ev: any) => {
-        if (BlockInput) return;
+        let exact_target = ev.target == document.getElementById('p5todo');
+        if (BlockInput || !exact_target) return;
         switch (ev['which']) {
           case 1: // 왼쪽
             MouseAct = undefined;
@@ -766,7 +769,8 @@ export class MainPage implements OnInit {
         return mousePosition;
       }
       p.mouseWheel = (ev: any) => {
-        if (BlockInput) return;
+        let exact_target = ev.target == document.getElementById('p5todo');
+        if (BlockInput || !exact_target) return;
         if (!this.isPlayingCanvas.loop) p.redraw();
         PrepareZoomAct(MappingPosition());
         let delta = ev['deltaY'];
@@ -785,7 +789,8 @@ export class MainPage implements OnInit {
       let isTouching = false;
       const HEADER_HEIGHT = 56;
       p.touchStarted = (ev: any) => {
-        if (BlockInput) return;
+        let exact_target = ev.target == document.getElementById('p5todo');
+        if (BlockInput || !exact_target) return;
         isClickable = true;
         touches = ev['touches'];
         isTouching = true;
@@ -814,7 +819,8 @@ export class MainPage implements OnInit {
         }
       }
       p.touchMoved = (ev: any) => {
-        if (BlockInput) return;
+        let exact_target = ev.target == document.getElementById('p5todo');
+        if (BlockInput || !exact_target) return;
         if (!this.isPlayingCanvas.loop) p.redraw();
         touches = ev['touches'];
         switch (touches.length) {
@@ -848,7 +854,8 @@ export class MainPage implements OnInit {
         return false;
       }
       p.touchEnded = (ev: any) => {
-        if (BlockInput) return;
+        let exact_target = ev.target == document.getElementById('p5todo');
+        if (BlockInput || !exact_target) return;
         touches = ev['touches'];
         switch (touches.length) {
           case 0: // 행동 종료
