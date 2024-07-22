@@ -99,10 +99,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       let content = text_viewer.innerText;
       var regex = /<script\b[^>]*>([\s\S]*?)<\/script>/g;
       var match: any;
-      while ((match = regex.exec(content)) !== null) {
-        var scriptContent = match[1];
-        eval(scriptContent);
-      }
+      setTimeout(() => {
+        while ((match = regex.exec(content)) !== null) {
+          var scriptContent = match[1];
+          eval(scriptContent);
+        }
+      }, 500);
       text_viewer.innerText = undefined;
       text_viewer.innerHTML = content;
     } else this.ChangeToAnother(0);
