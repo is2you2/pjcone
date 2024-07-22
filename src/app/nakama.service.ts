@@ -475,17 +475,15 @@ export class NakamaService {
       this.set_group_statusBar('offline', _is_official, _target);
       this.statusBar.groupServer[_is_official][_target] = 'offline';
       this.catch_group_server_header('offline');
-      if (this.servers[_is_official][_target].session) {
-        try {
-          await this.servers[_is_official][_target].client.sessionLogout(
-            this.servers[_is_official][_target].session,
-            this.servers[_is_official][_target].session.token,
-            this.servers[_is_official][_target].session.refresh_token);
-        } catch (e) { }
-        if (this.noti_origin[_is_official] && this.noti_origin[_is_official][_target])
-          delete this.noti_origin[_is_official][_target];
-        this.rearrange_notifications();
-      }
+      try {
+        await this.servers[_is_official][_target].client.sessionLogout(
+          this.servers[_is_official][_target].session,
+          this.servers[_is_official][_target].session.token,
+          this.servers[_is_official][_target].session.refresh_token);
+      } catch (e) { }
+      if (this.noti_origin[_is_official] && this.noti_origin[_is_official][_target])
+        delete this.noti_origin[_is_official][_target];
+      this.rearrange_notifications();
       if (this.channels_orig[_is_official] && this.channels_orig[_is_official][_target]) {
         let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
         channel_ids.forEach(_cid => {
@@ -2294,10 +2292,10 @@ export class NakamaService {
     } catch (e) { }
     this.rearrange_channels();
     // 관련 파일들 전부 이관
-    let list = await this.indexed.GetFileListFromDB(`servers/unofficial/${_target}`);
+    let list = await this.indexed.GetFileListFromDB(`servers/${_is_official}/${_target}`);
     for (let i = 0, j = list.length; i < j; i++) {
       let file = await this.indexed.GetFileInfoFromDB(list[i]);
-      let targetPath = list[i].replace('/official/', '/deleted/').replace('/unofficial/', '/deleted/');
+      let targetPath = list[i].replace('/official/', '/deleted/').replace(`/${_is_official}/`, '/deleted/');
       await this.indexed.saveFileToUserPath(file, targetPath);
       await this.indexed.removeFileFromUserPath(list[i]);
       loading.message = `${this.lang.text['Nakama']['MissingChannelFiles']}: ${list[i]}`;
