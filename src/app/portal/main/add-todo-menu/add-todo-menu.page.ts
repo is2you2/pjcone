@@ -383,9 +383,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             if (this.userInput.attach[i].url) {
               this.userInput.attach[i].thumbnail = this.userInput.attach[i].url;
             } else {
-              this.userInput.attach[i].alt_path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/${this.userInput.attach[i].filename}`;
-              this.userInput.attach[i].blob = (await this.nakama.sync_load_file(this.userInput.attach[i],
-                this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id)).value;
+              try {
+                this.userInput.attach[i].alt_path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/${this.userInput.attach[i].filename}`;
+                this.userInput.attach[i].blob = (await this.nakama.sync_load_file(this.userInput.attach[i],
+                  this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id)).value;
+              } catch (e) { }
             }
             if (!has_thumbnail) { // 썸네일 이미지가 없다면 만들기
               if (this.userInput.attach[i].viewer == 'image') {
@@ -421,9 +423,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                         p.remove();
                       }, e => {
                         console.error('Todo-등록된 이미지 불러오기 실패: ', e);
-                        done();
                         if (this.userInput.attach[i].blob) URL.revokeObjectURL(header_image);
                         p.remove();
+                        done();
                       });
                     }
                   });
@@ -1228,13 +1230,15 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (this.isStoreAtChanged && this.isModify) {
       // 첨부파일 복제 후 재등록
       for (let i = 0, j = received_json.attach.length; i < j; i++) {
-        let filename = received_json.attach[i].filename;
-        let blob = await this.indexed.loadBlobFromUserPath(received_json.attach[i].path, received_json.attach[i].type);
-        let tmp_path = `tmp_files/todo/${filename}`;
-        await this.indexed.saveBlobToUserPath(blob, tmp_path);
-        this.userInput.attach[i].path = tmp_path;
-        this.userInput.attach[i].blob = blob;
-        delete this.userInput.attach[i]['exist'];
+        try {
+          let filename = received_json.attach[i].filename;
+          let blob = await this.indexed.loadBlobFromUserPath(received_json.attach[i].path, received_json.attach[i].type);
+          let tmp_path = `tmp_files/todo/${filename}`;
+          await this.indexed.saveBlobToUserPath(blob, tmp_path);
+          this.userInput.attach[i].path = tmp_path;
+          this.userInput.attach[i].blob = blob;
+          delete this.userInput.attach[i]['exist'];
+        } catch (e) { }
       }
       await this.nakama.deleteTodoFromStorage(true, received_json);
       this.isModify = false;
@@ -1242,10 +1246,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (!this.userInput.id || !this.isModify) { // 할 일 구분자 생성 (내 기록은 날짜시간, 서버는 서버-시간 (isOfficial/target/DateTime),
       if (!this.userInput.remote) // local
         this.userInput.id = new Date(this.userInput.create_at).toISOString().replace(/[:|.|\/]/g, '_');
-      else {
+      else try {
         let counter = await this.nakama.getRemoteTodoCounter(this.userInput.remote.isOfficial, this.userInput.remote.target);
         this.userInput.id = `RemoteTodo_${counter}`;
-      }
+      } catch (e) { }
     }
     // 알림 예약 생성
     if (this.userInput.noti_id) {  // 알림 아이디가 있다면 삭제 후 재배정
@@ -1303,28 +1307,30 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
       if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
-        let path: string;
         try {
-          path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/thumbnail.png`;
-        } catch (e) {
-          path = `todo/${this.userInput.id}/thumbnail.png`;
-        }
-        await this.indexed.removeFileFromUserPath(path);
-        for (let i = 0, j = received_json.attach.length; i < j; i++) {
-          for (let k = 0, l = this.userInput.attach.length; k < l; k++) {
-            if (this.userInput.attach[k]['path'] == received_json.attach[i]['path']) {
-              received_json.attach[i]['exist'] = true;
-              received_json.attach[i]['index'] = k;
-              break;
-            }
-          } // 수정 전에 있던 이미지가 유지되는 경우 삭제하지 않음, 그 외 삭제
-          if (!received_json.attach[i]['exist'] ||
-            (received_json.attach[i]['exist'] && !this.userInput.attach[received_json.attach[i]['index']])) {
-            if (received_json.attach[i]['url'])
-              await this.global.remove_file_from_storage(received_json.attach[i]['url']);
-            else await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
+          let path: string;
+          try {
+            path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/thumbnail.png`;
+          } catch (e) {
+            path = `todo/${this.userInput.id}/thumbnail.png`;
           }
-        }
+          await this.indexed.removeFileFromUserPath(path);
+          for (let i = 0, j = received_json.attach.length; i < j; i++) {
+            for (let k = 0, l = this.userInput.attach.length; k < l; k++) {
+              if (this.userInput.attach[k]['path'] == received_json.attach[i]['path']) {
+                received_json.attach[i]['exist'] = true;
+                received_json.attach[i]['index'] = k;
+                break;
+              }
+            } // 수정 전에 있던 이미지가 유지되는 경우 삭제하지 않음, 그 외 삭제
+            if (!received_json.attach[i]['exist'] ||
+              (received_json.attach[i]['exist'] && !this.userInput.attach[received_json.attach[i]['index']])) {
+              if (received_json.attach[i]['url'])
+                await this.global.remove_file_from_storage(received_json.attach[i]['url']);
+              else await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
+            }
+          }
+        } catch (e) { }
       }
       let header_image: string; // 대표 이미지로 선정된 경로
       // 모든 파일을 새로 등록/재등록
@@ -1338,8 +1344,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           has_alternative_thumbnail = true;
         } catch (e) { }
         if (!this.userInput.attach[i]['exist'] || (!header_image && this.userInput.attach[i]['viewer'] == 'image')) {
-          if (!has_alternative_thumbnail)
-            blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
+          try {
+            if (!has_alternative_thumbnail)
+              blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
+          } catch (e) { }
           try { // FFS 업로드 시도
             if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
             loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: ${this.userInput.attach[i].filename}`;
@@ -1356,12 +1364,15 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             } catch (e) {
               this.userInput.attach[i]['path'] = `todo/${this.userInput.id}/${this.userInput.attach[i]['filename']}`;
             }
-            await this.indexed.saveBlobToUserPath(blob, this.userInput.attach[i]['path']);
+            try {
+              await this.indexed.saveBlobToUserPath(blob, this.userInput.attach[i]['path']);
+            } catch (e) { }
           }
         } else delete this.userInput.attach[i]['exist'];
-        if (!header_image && (this.userInput.attach[i]['viewer'] == 'image' || has_alternative_thumbnail)) {
-          header_image = URL.createObjectURL(blob);
-        }
+        if (!header_image && (this.userInput.attach[i]['viewer'] == 'image' || has_alternative_thumbnail))
+          try {
+            header_image = URL.createObjectURL(blob);
+          } catch (e) { }
       }
       if (header_image) { // 대표 이미지가 있다면
         await new Promise((done: any) => {
@@ -1463,8 +1474,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 (received_json.attach[i]['exist'] && !this.userInput.attach[received_json.attach[i]['index']]))
                 if (received_json.attach[i]['url']) {
                   await this.global.remove_file_from_storage(received_json.attach[i]['url']);
-                } else await this.nakama.sync_remove_file(received_json.attach[i]['path'],
-                  this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
+                } else try {
+                  await this.nakama.sync_remove_file(received_json.attach[i]['path'],
+                    this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
+                } catch (e) { }
             }
           }
         for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
@@ -1487,8 +1500,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             // url 파일을 SQL 처리하려는 경우 직접 다운받아서 사용하기
             if (e == 'ForceSQL' && this.userInput.attach[i].url)
               this.userInput.attach[i].blob = await (await fetch(this.userInput.attach[i].url)).blob();
-            await this.nakama.sync_save_file(this.userInput.attach[i],
-              this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
+            try {
+              await this.nakama.sync_save_file(this.userInput.attach[i],
+                this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
+            } catch (e) { }
           }
         }
         if (this.userInput.workers) {
