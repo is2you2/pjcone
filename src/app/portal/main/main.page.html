@@ -25,7 +25,7 @@
     </div>
   </div>
   <div class="full_screen" id="todo">
-    <div style="position: absolute; top: 16px; left: 16px;">
+    <div *ngIf="!isEmptyTodo" style="position: absolute; top: 16px; left: 16px;">
       <button class="FilterSwitchButton"
         (click)="SwitchTargetFilter()">{{lang.text['TodoDetail'][TargetFilterDisplayName]}}</button>
       <button *ngFor="let kind of AllCategories[TargetFilterName]" class="FilterSwitchButton"
