@@ -388,12 +388,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       if (res.ok) {
         let blob = await res.blob();
         await this.indexed.saveBlobToUserPath(blob, this.FileInfo.path);
-        this.CurrentFileSize = this.formatBytes(this.FileInfo.size || this.FileInfo['filesize'] || this.blob.size);
+        this.CurrentFileSize = this.formatBytes(this.FileInfo['size'] || this.FileInfo['filesize'] || blob.size);
         this.p5toast.show({
           text: `${this.lang.text['ChatRoom']['FileSaved']}: ${this.FileInfo.filename}`,
         });
       } else throw res.statusText;
     } catch (e) {
+      console.log('다운받기 실패: ', e);
       this.p5toast.show({
         text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
       });
