@@ -17,8 +17,10 @@
       <div *ngIf="nakama.posts.length" style="display: ruby-text" class="CardContainerDiv">
         <ion-card *ngFor="let post of nakama.posts; let i = index" button class="card_style"
           (click)="open_post(post, i)" (contextmenu)="PostContextMenu(post)">
-          <img *ngIf="post['mainImage']" class="thumbnail_image" [src]="post['mainImage']['thumbnail']"
-            [style]="post['isNSFW'] ? 'filter: blur(16px);' : ''" alt="">
+          <div class="thumbnail_image">
+            <img *ngIf="post['mainImage']" [src]="post['mainImage']['thumbnail']"
+              [style]="post['isNSFW'] ? 'filter: blur(16px);' : ''" alt="">
+          </div>
           <ion-card-header>
             <ion-card-subtitle class="cardCreator">
               <span [style]="'color: #' + post['UserColor']" (click)="open_profile(post)"> {{post['creator_name']}}
