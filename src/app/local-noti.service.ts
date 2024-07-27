@@ -192,7 +192,7 @@ export class LocalNotiService {
         lang: opt.lang_wn,
         silent: !this.settings.silent[opt.icon || opt.smallIcon_ln] || false,
         tag: opt.tag_wn,
-        actions: opt.actions,
+        // actions: opt.actions,
         data: opt.data_wn,
         renotify: opt.renotify_wn,
         requireInteraction: opt.requireInteraction_wn,
