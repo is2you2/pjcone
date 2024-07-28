@@ -1,5 +1,6 @@
 const CACHE_NAME = 'my-pwa-cache-v1';
 // 경로 업데이트 필수
+// runtime.js 는 경로에서 무시하기
 const URLs = [
   '/index.html',
 ]
@@ -8,7 +9,11 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        return cache.addAll(URLs);
+        return Promise.all(
+          URLs.map(url => {
+            cache.add(url);
+          })
+        );
       })
   );
 });
@@ -33,16 +38,4 @@ self.addEventListener('fetch', event => {
       return caches.match(event.request);
     })
   );
-});
-
-// 오프라인 상태에서 동작 설정
-self.addEventListener('offline', (event) => {
-  console.log('You are now offline.');
-  // 오프라인 상태에 대한 UI/UX 처리 추가
-});
-
-// 온라인 상태에서 동작 설정
-self.addEventListener('online', (event) => {
-  console.log('You are now online.');
-  // 동기화 로직 실행 등 추가 작업
 });
