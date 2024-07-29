@@ -30,15 +30,6 @@
               <ion-label color="medium" class="ion-text-right">{{ userInput.display_creator }}</ion-label>
             </ion-item>
           </div>
-          <ion-grid *ngIf="isModify" fixed>
-            <ion-row>
-              <ion-col col-33>
-                <ion-item button color="success" [disabled]="isButtonClicked" (click)="doneTodo()">
-                  <ion-label class="ion-text-center">{{lang.text['TodoDetail']['TodoComplete']}}</ion-label>
-                </ion-item>
-              </ion-col>
-            </ion-row>
-          </ion-grid>
           <ion-item>
             <ion-input id="titleInput" [label]="lang.text['TodoDetail']['DisplayName']" [(ngModel)]="userInput.title"
               class="ion-text-right" [placeholder]="lang.text['TodoDetail']['DisplayName_placeholder']"></ion-input>
@@ -173,6 +164,15 @@
               [name]="DisplayDBSelector"></ion-icon>
           </ion-item>
           <input hidden type="file" [id]="file_sel_id" accept="*" multiple (change)="inputImageSelected($event)">
+          <ion-grid *ngIf="isModify" fixed>
+            <ion-row>
+              <ion-col col-33>
+                <ion-item button color="success" [disabled]="isButtonClicked" (click)="doneTodo()">
+                  <ion-label class="ion-text-center">{{lang.text['TodoDetail']['TodoComplete']}}</ion-label>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
         </div>
       </td>
     </tr>
