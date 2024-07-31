@@ -170,7 +170,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
       p.setup = async () => {
         p.noCanvas();
         // 제목
-        let title = p.createDiv(`${this.PostInfo['OutSource'] ? '<ion-icon id="title_link" slot="start" name="link-outline"></ion-icon> ' : ''}${this.PostInfo['title']}`);
+        let title = p.createDiv(`${this.PostInfo['OutSource'] ? '<ion-icon id="title_link" style="cursor: pointer;" slot="start" name="link-outline"></ion-icon> ' : ''}${this.PostInfo['title']}`);
         if (this.PostInfo['OutSource']) {
           let link = document.getElementById('title_link');
           link.onclick = async () => {
