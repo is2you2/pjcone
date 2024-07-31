@@ -410,17 +410,8 @@ export class NakamaService {
       /** 광고 정보 불러오기 */
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
-      try { // 파일이 있으면 보여주고, 없다면 보여주지 않음
-        let res = await fetch(`${SERVER_PATH_ROOT}pjcone_ads/admob.txt`);
-        if (!res.ok) throw "준비된 광고가 없습니다";
-        loading.dismiss();
-        console.log('브라우저식 보상형 광고 준비중');
-        await this.AccessToOfficialTestServer();
-      } catch (e) { // 파일이 없는 경우 동작
-        console.log(e);
-        await this.AccessToOfficialTestServer();
-        loading.dismiss();
-      }
+      await this.AccessToOfficialTestServer();
+      loading.dismiss();
       return true;
     }
     return false;
