@@ -88,13 +88,7 @@ export class CommunityPage implements OnInit {
   }
 
   /** 포스트 우클릭시 행동 */
-  PostContextMenu(post_info: any) {
-    let index: number;
-    for (let k = 0, l = this.nakama.posts.length; k < l; k++)
-      if (this.nakama.posts[k]['id'] == post_info.id) {
-        index = k;
-        break;
-      }
+  PostContextMenu(index: number) {
     try {
       if (this.nakama.posts[index]['server']['local'] ||
         this.nakama.posts[index]['creator_id'] == this.nakama.servers[this.nakama.posts[index]['server']['isOfficial']][this.nakama.posts[index]['server']['target']].session.user_id)

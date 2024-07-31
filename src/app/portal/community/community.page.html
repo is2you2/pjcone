@@ -16,7 +16,7 @@
     <div id="CommunityMainContent">
       <div *ngIf="nakama.posts.length" style="display: ruby-text" class="CardContainerDiv">
         <ion-card *ngFor="let post of nakama.posts; let i = index" button class="card_style"
-          (click)="open_post(post, i)" (contextmenu)="PostContextMenu(post)">
+          (click)="open_post(post, i)" (contextmenu)="PostContextMenu(i)">
           <div class="thumbnail_image">
             <img *ngIf="post['mainImage']" [src]="post['mainImage']['thumbnail']"
               [style]="post['isNSFW'] ? 'filter: blur(16px);' : ''" alt="">
