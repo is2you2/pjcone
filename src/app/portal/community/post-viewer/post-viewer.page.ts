@@ -232,9 +232,10 @@ export class PostViewerPage implements OnInit, OnDestroy {
             this.modalCtrl.create({
               component: GroupServerPage,
             }).then(v => v.present());
-          } else { // 서버 사용자 검토
-            let isOfficial = this.PostInfo['server']['isOfficial'];
-            let target = this.PostInfo['server']['target'];
+          } else try {// 서버 사용자 검토
+            let getTargetServer = this.nakama.get_server_info_from_address(this.PostInfo['server']['address']);
+            let isOfficial = getTargetServer.isOfficial;
+            let target = getTargetServer.target;
             let targetUid = this.PostInfo['creator_id'];
             if (targetUid == this.nakama.servers[isOfficial][target].session.user_id) {
               this.modalCtrl.create({
@@ -258,6 +259,10 @@ export class PostViewerPage implements OnInit, OnDestroy {
                 }
               }).then(v => v.present());
             }
+          } catch (e) {
+            this.p5toast.show({
+              text: `${this.lang.text['PostViewer']['CannotOpenProfile']}: ${e}`,
+            });
           }
         }
         creator.parent(creatorForm);

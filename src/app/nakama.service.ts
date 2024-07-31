@@ -504,6 +504,18 @@ export class NakamaService {
     return result;
   }
 
+  /** 등록된 서버에서 서버 주소로 필터링하기 */
+  get_server_info_from_address(address: string): ServerInfo {
+    let servers = this.get_all_server_info(true, true);
+    let result: ServerInfo;
+    for (let i = 0, j = servers.length; i < j; i++)
+      if (servers[i].address == address) {
+        result = servers[i];
+        break;
+      }
+    return result;
+  }
+
   /** 모든 서버 정보 받아오기
    * @param with_official 공식 서버 포함하여 카운트 여부
    * @param online_only 온라인 여부를 사용할지
