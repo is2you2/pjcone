@@ -232,6 +232,10 @@ debug@4.3.5 [license(s): MIT]
 ├── license files: MIT
 └── readme files: MIT
 
+devtalk@0.0.1 [license(s): Apache, BSD, Eclipse Public License, GPL, ISC, LGPL, MIT, MPL, Public Domain]
+├── license files: Apache, BSD, Eclipse Public License, GPL, ISC, LGPL, MIT, MPL, Public Domain
+└── readme files: MIT
+
 dir-glob@3.0.1 [license(s): MIT]
 ├── package.json:  MIT
 └── license files: MIT
@@ -394,10 +398,6 @@ path-type@4.0.0 [license(s): MIT]
 picomatch@2.3.1 [license(s): MIT]
 ├── package.json:  MIT
 └── license files: MIT
-
-project_cone@0.0.1 [license(s): Apache, BSD, Eclipse Public License, GPL, ISC, LGPL, MIT, MPL, Public Domain]
-├── license files: Apache, BSD, Eclipse Public License, GPL, ISC, LGPL, MIT, MPL, Public Domain
-└── readme files: MIT
 
 qrcode-svg@1.1.0 [license(s): MIT]
 ├── package.json:  MIT
