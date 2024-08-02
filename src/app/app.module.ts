@@ -19,7 +19,7 @@ import { Clipboard } from "@awesome-cordova-plugins/clipboard/ngx";
     hardwareBackButton: true,
   }), AppRoutingModule, ServiceWorkerModule.register('ngsw-worker.js', {
     enabled: environment.production,
-    registrationStrategy: 'registerWhenStable:5000'
+    registrationStrategy: 'registerImmediately'
   })],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     File,

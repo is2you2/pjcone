@@ -1,6 +1,6 @@
 {
-  "name": "개발톡",
-  "short_name": "개발톡",
+  "name": "DevTalk",
+  "short_name": "DevTalk",
   "theme_color": "#ffffff",
   "background_color": "#fff",
   "scope": "/devtalk_pwa/",
