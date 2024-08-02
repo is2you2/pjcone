@@ -52,7 +52,7 @@ export class ServerDetailPage implements OnInit {
     if (!this.dedicated_info.useSSL)
       delete filtered.useSSL;
     this.QRCodeSRC = this.global.readasQRCodeFromString(
-      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${filtered.name || ''},${filtered.address || ''},${filtered.useSSL ? 'true' : ''},${filtered.port || 7350},${filtered.key || ''}`);
+      `${SERVER_PATH_ROOT}devtalk_pwa/?server=${filtered.name || ''},${filtered.address || ''},${filtered.useSSL ? 'true' : ''},${filtered.port || 7350},${filtered.key || ''}`);
     // 이미 target값이 등록되었는지 검토
     this.isTargetAlreadyExist = Boolean(this.statusBar.groupServer['unofficial'][this.dedicated_info.target]);
   }
@@ -68,7 +68,7 @@ export class ServerDetailPage implements OnInit {
   /** 시작 진입 주소 생성 */
   copy_startup_address() {
     let startup_address =
-      `https://is2you2.github.io/pjcone_pwa/?server=${this.dedicated_info['name'] || ''},${this.dedicated_info['address'] || ''},${this.dedicated_info.useSSL || ''},${this.dedicated_info.port || ''},${this.dedicated_info.key || ''}&open_profile=true`;
+      `https://is2you2.github.io/devtalk_pwa/?server=${this.dedicated_info['name'] || ''},${this.dedicated_info['address'] || ''},${this.dedicated_info.useSSL || ''},${this.dedicated_info.port || ''},${this.dedicated_info.key || ''}&open_profile=true`;
     this.mClipboard.copy(startup_address)
       .catch(_e => {
         clipboard.write(startup_address).then(() => {

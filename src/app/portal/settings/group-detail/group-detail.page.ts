@@ -60,7 +60,7 @@ export class GroupDetailPage implements OnInit {
     this.info_orig = JSON.parse(JSON.stringify(this.navParams.get('info')));
     this.nakama.socket_reactive['group_detail'] = this;
     this.QRCodeSRC = this.global.readasQRCodeFromString(
-      `${SERVER_PATH_ROOT}pjcone_pwa/?group=${this.info.name},${this.info.id}`);
+      `${SERVER_PATH_ROOT}devtalk_pwa/?group=${this.info.name},${this.info.id}`);
     if (!this.info.server) this.info.server = this.navParams.get('server');
     this.isOfficial = this.info.server['isOfficial'];
     this.target = this.info.server['target'];
@@ -419,7 +419,7 @@ export class GroupDetailPage implements OnInit {
 
   /** 시작 진입 주소 생성 */
   copy_startup_address() {
-    let startup_address = encodeURI(`https://is2you2.github.io/pjcone_pwa/?group=${this.info['name']},${this.info['id']}`);
+    let startup_address = encodeURI(`https://is2you2.github.io/devtalk_pwa/?group=${this.info['name']},${this.info['id']}`);
     this.mClipboard.copy(startup_address)
       .catch(_e => {
         clipboard.write(startup_address).then(() => {

@@ -239,7 +239,7 @@ export class SubscribesPage implements OnInit {
         'barcodeScanned',
         async result => {
           try { // 양식에 맞게 끝까지 동작한다면 우리 데이터가 맞다
-            if (result.barcode.displayValue.trim().indexOf(`${SERVER_PATH_ROOT}pjcone_pwa/?`) != 0)
+            if (result.barcode.displayValue.trim().indexOf(`${SERVER_PATH_ROOT}devtalk_pwa/?`) != 0)
               throw '주소 시작이 다름';
             await this.nakama.AddressToQRCodeAct(this.global.CatchGETs(result.barcode.displayValue.trim()));
           } catch (e) { // 양식에 맞춰 행동할 수 없다면 모르는 데이터다

@@ -1956,7 +1956,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 하이퍼링크 열기 행동 후 포커스 빼기 */
   async open_url_link(url: string) {
     // 근데 주소가 메인 주소라면 QR행동으로 처리하기
-    if (url.indexOf('https://is2you2.github.io/pjcone_pwa/?') == 0 || url.indexOf('http://pjcone.ddns.net/?') == 0) {
+    if (url.indexOf('https://is2you2.github.io/devtalk_pwa/?') == 0 || url.indexOf('http://pjcone.ddns.net/?') == 0) {
       let init = this.global.CatchGETs(url) || {};
       this.global.initialize();
       try {

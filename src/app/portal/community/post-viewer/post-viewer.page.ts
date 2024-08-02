@@ -177,7 +177,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
             let is_https = this.PostInfo['OutSource'].indexOf('https:') == 0;
             let targetAddress = '';
             if (is_https) // 보안 연결인 경우 홈페이지 우회
-              targetAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?postViewer=${this.PostInfo['OutSource']}`;
+              targetAddress = `${SERVER_PATH_ROOT}devtalk_pwa/?postViewer=${this.PostInfo['OutSource']}`;
             else { // 비보안 연결인 경우 연결 검토 후 우회
               let address_text: string = this.PostInfo['OutSource'];
               let extract = address_text.substring(0, address_text.indexOf(':8080'));

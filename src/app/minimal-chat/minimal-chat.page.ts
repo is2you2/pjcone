@@ -68,7 +68,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
 
   async open_url_link(url: string) {
     // 근데 주소가 메인 주소라면 QR행동으로 처리하기
-    if (url.indexOf('https://is2you2.github.io/pjcone_pwa/?') == 0 || url.indexOf('http://pjcone.ddns.net/?') == 0) {
+    if (url.indexOf('https://is2you2.github.io/devtalk_pwa/?') == 0 || url.indexOf('http://pjcone.ddns.net/?') == 0) {
       let init = this.global.CatchGETs(url) || {};
       this.global.initialize();
       try {
@@ -214,7 +214,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       } catch (e) {
         header_address = 'http://pjcone.ddns.net/';
       }
-    } else header_address = `${SERVER_PATH_ROOT}pjcone_pwa/`;
+    } else header_address = `${SERVER_PATH_ROOT}devtalk_pwa/`;
     this.QRCodeTargetString = `${header_address}?group_dedi=${this.client.cacheAddress.split('://')[1]},${this.client.JoinedChannel || 'public'}`;
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeTargetString);
   }
