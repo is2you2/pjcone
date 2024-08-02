@@ -33,7 +33,7 @@ export class IndexedDBService {
       }
     }
     req.onupgradeneeded = (e) => {
-      var database: IDBDatabase = e.target['result'];
+      let database: IDBDatabase = e.target['result'];
       database.createObjectStore('FILE_DATA');
     };
     req.onerror = (_e) => {

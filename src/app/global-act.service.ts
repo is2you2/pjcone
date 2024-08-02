@@ -445,9 +445,9 @@ export class GlobalActService {
 
   /** 파일의 부분 base64 정보 받기 */
   req_file_part_base64(file_info: any, index: number, path: string): string {
-    var binary = '';
-    var bytes = new Uint8Array(file_info.contents.slice(index * FILE_BINARY_LIMIT, (index + 1) * FILE_BINARY_LIMIT));
-    for (var i = 0, j = bytes.byteLength; i < j; i++)
+    let binary = '';
+    let bytes = new Uint8Array(file_info.contents.slice(index * FILE_BINARY_LIMIT, (index + 1) * FILE_BINARY_LIMIT));
+    for (let i = 0, j = bytes.byteLength; i < j; i++)
       binary += String.fromCharCode(bytes[i]);
     let base64 = btoa(binary);
     this.indexed.saveTextFileToUserPath(JSON.stringify({ type: 'upload', index: index }), `${path}.history`);

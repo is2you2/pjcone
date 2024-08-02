@@ -99,10 +99,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       let content = text_viewer.innerText;
       text_viewer.innerText = undefined;
       text_viewer.innerHTML = content;
-      var regex = /<script\b[^>]*>([\s\S]*?)<\/script>/g;
-      var match: any;
+      let regex = /<script\b[^>]*>([\s\S]*?)<\/script>/g;
+      let match: any;
       while ((match = regex.exec(content)) !== null) {
-        var scriptContent = match[1];
+        let scriptContent = match[1];
         eval(scriptContent);
       }
     } else this.ChangeToAnother(0);
@@ -618,7 +618,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         break;
       case 'audio': // 오디오
         this.p5canvas = new p5((p: p5) => {
-          var mediaObject: p5.MediaElement;
+          let mediaObject: p5.MediaElement;
           p.setup = () => {
             p.noCanvas();
             p.noLoop();
@@ -693,7 +693,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         break;
       case 'video': // 비디오
         this.p5canvas = new p5((p: p5) => {
-          var mediaObject: p5.MediaElement;
+          let mediaObject: p5.MediaElement;
           p.setup = async () => {
             p.noCanvas();
             p.noLoop();
@@ -1126,7 +1126,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     str = [...str];
     let i = str.length, aRet = [];
     while (i--) {
-      var iC = str[i].codePointAt(0);
+      let iC = str[i].codePointAt(0);
       if (iC < 65 || iC > 127 || (iC > 90 && iC < 97)) {
         aRet[i] = '&#' + iC + ';';
       } else {
