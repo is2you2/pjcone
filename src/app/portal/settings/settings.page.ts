@@ -190,10 +190,16 @@ export class SettingsPage implements OnInit, OnDestroy {
     });
   }
 
-  async download_serverfile() {
+  /** 지금은 안내서로 연결해줍니다 */
+  download_serverfile() {
     if (this.lang.lang == 'ko')
       window.open('https://is2you2.github.io/posts/how-to-use-pjcone-server/', '_system');
     else window.open('https://is2you2.github.io/posts/how-to-use-pjcone-server-en/', '_system');
+  }
+
+  /** 모바일 앱에서는 웹으로 연결을 제시함 */
+  open_pwa() {
+    window.open('https://is2you2.github.io/pjcone_pwa/', '_system');
   }
 
   go_to_webrtc_manager() {
