@@ -9,7 +9,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "webtest": "http-server -p 4000 -c-1 www/ -a 0.0.0.0"
   },
   "private": true,
   "dependencies": {
@@ -21,7 +22,7 @@
     "@angular/platform-browser": "^18.0.0",
     "@angular/platform-browser-dynamic": "^18.0.0",
     "@angular/router": "^18.0.0",
-    "@angular/service-worker": "^18.0.6",
+    "@angular/service-worker": "^18.0.0",
     "@awesome-cordova-plugins/badge": "^6.4.0",
     "@awesome-cordova-plugins/clipboard": "^6.4.0",
     "@awesome-cordova-plugins/file": "^6.4.0",

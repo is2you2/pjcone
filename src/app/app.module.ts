@@ -17,11 +17,9 @@ import { Clipboard } from "@awesome-cordova-plugins/clipboard/ngx";
     innerHTMLTemplatesEnabled: true,
     experimentalCloseWatcher: true,
     hardwareBackButton: true,
-  }), AppRoutingModule, ServiceWorkerModule.register('assets/sw.js', {
+  }), AppRoutingModule, ServiceWorkerModule.register('ngsw-worker.js', {
     enabled: environment.production,
-    // Register the ServiceWorker as soon as the application is stable
-    // or after 30 seconds (whichever comes first).
-    registrationStrategy: 'registerWhenStable:30000'
+    registrationStrategy: 'registerWhenStable:5000'
   })],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     File,
