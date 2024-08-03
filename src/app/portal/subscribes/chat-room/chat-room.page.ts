@@ -811,7 +811,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ionViewWillEnter() {
-    this.ChatContDiv = document.getElementById('chatroom_div');
+    this.ChatContDiv = document.getElementById('chatroom_content_div');
     document.getElementById(this.ChannelUserInputId).onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
