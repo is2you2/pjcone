@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { AlertController, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -223,59 +222,12 @@ export class SubscribesPage implements OnInit {
     this.navCtrl.navigateForward(`portal/settings/${_page}`);
   }
 
-  StartScan = false;
-  // 웹에 있는 QRCode는 무조건 json[]로 구성되어있어야함
-  async scanQRCode() {
-    let perm = await BarcodeScanner.checkPermissions();
-    const complete = '온전한 동작 후 종료';
-    try {
-      if (perm.camera != 'granted' || this.StartScan) throw '시작 불가상태';
-      this.StartScan = true;
-      document.querySelector('body').setAttribute('style', 'visibility: hidden; --background: transparent; --ion-background-color: transparent;');
-      window.onpopstate = () => {
-        this.StopScan();
-      };
-      await BarcodeScanner.addListener(
-        'barcodeScanned',
-        async result => {
-          try { // 양식에 맞게 끝까지 동작한다면 우리 데이터가 맞다
-            if (result.barcode.displayValue.trim().indexOf(`${SERVER_PATH_ROOT}devtalk_pwa/?`) != 0)
-              throw '주소 시작이 다름';
-            await this.nakama.AddressToQRCodeAct(this.global.CatchGETs(result.barcode.displayValue.trim()));
-          } catch (e) { // 양식에 맞춰 행동할 수 없다면 모르는 데이터다
-            this.modalCtrl.create({
-              component: QRelsePage,
-              componentProps: { result: result.barcode },
-            }).then(v => v.present());
-          }
-          this.StopScan();
-        },
-      );
-      await BarcodeScanner.startScan();
-    } catch (e) {
-      if (e != complete)
-        this.p5toast.show({
-          text: this.lang.text['Subscribes']['CameraPermissionDenied'],
-        });
-      this.StopScan();
-    }
-  }
-
   /** 익명성 그룹 채널에 참가하기 */
   JoinSmallTalk() {
     if (this.statusBar.settings['dedicated_groupchat'] != 'online'
       && this.statusBar.settings['dedicated_groupchat'] != 'certified')
       this.statusBar.settings['dedicated_groupchat'] = 'pending';
     this.client.RejoinGroupChat();
-  }
-
-  StopScan() {
-    if (isPlatform == 'Android' || isPlatform == 'iOS') {
-      this.StartScan = false;
-      document.querySelector('body')?.removeAttribute('style');
-      BarcodeScanner.removeAllListeners();
-      BarcodeScanner.stopScan();
-    }
   }
 
   lock_chatroom = false;
@@ -318,6 +270,5 @@ export class SubscribesPage implements OnInit {
     delete this.global.p5key['KeyShortCut']['Backquote'];
     delete this.global.p5key['KeyShortCut']['Digit'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
-    this.StopScan();
   }
 }
