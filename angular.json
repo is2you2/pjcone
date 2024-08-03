@@ -37,7 +37,6 @@
             ],
             "scripts": [],
             "serviceWorker": true,
-            "baseHref": "/devtalk_pwa/",
             "ngswConfigPath": "ngsw-config.json"
           },
           "configurations": {
