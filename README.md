@@ -43,6 +43,9 @@ p5.filter(필터 이름, 정도, [WebGL 사용여부: boolean]);
 
 안드로이드 앱을 빌드하는 경우 할 일 알림을 온전히 받을 수 있으나 파일 공유 등의 기능이 제대로 동작하지 않는 상태입니다.
 
+## Angular Offline PWA 구성
+angular.json 파일의 40번째 줄에 BaseHref 인자를 추가하기 ("/devtalk_pwa/" 처럼 앞뒤로 "/" 표시 필요함)
+
 ## 플러그인 설치/삭제 후
 - npx cap sync
 - 라이선스 파일에 변경 사항을 업데이트: https://www.npmjs.com/package/nlf
