@@ -137,11 +137,6 @@ icon_mono,기본 앱 알림,Default
 diychat,Nakama 채널,Nakama channel
 simplechat,광장,Square
 engineppt,엔진PPT,EnginePPT
-## QRElse,,
-Title,사용할 수 없는 구성,Configuration not available
-info,QR코드 또는 바코드를 인식하였으나 이 앱에서 사용하는 구성이 아닙니다,A QR code or barcode was recognized. but this is not the configuration used by this app.
-format,종류,Format
-contents,내용,Contents
 ## Profile,,
 noname_user,이름 없는 사용자,Unnamed user
 name_placeholder,사용자 이름,Username

@@ -11,10 +11,6 @@ const routes: Routes = [
   {
     path: 'chat-room',
     loadChildren: () => import('./chat-room/chat-room.module').then( m => m.ChatRoomPageModule)
-  },
-  {
-    path: 'qrelse',
-    loadChildren: () => import('./qrelse/qrelse.module').then( m => m.QRelsePageModule)
   }
 ];
 

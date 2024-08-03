@@ -1,12 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, LoadingController, ModalController, NavController } from '@ionic/angular';
-import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
+import { isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
-import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { AddGroupPage } from '../settings/add-group/add-group.page';
-import { QRelsePage } from './qrelse/qrelse.page';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { GroupDetailPage } from '../settings/group-detail/group-detail.page';
@@ -21,7 +19,6 @@ export class SubscribesPage implements OnInit {
 
   constructor(
     private modalCtrl: ModalController,
-    private p5toast: P5ToastService,
     public nakama: NakamaService,
     public statusBar: StatusManageService,
     public lang: LanguageSettingService,
