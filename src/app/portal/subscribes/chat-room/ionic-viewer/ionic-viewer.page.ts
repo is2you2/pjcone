@@ -1294,8 +1294,11 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   forceWrite = false;
   isPWA = false;
   async download_file() {
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
-      if (this.FileInfo['url']) {
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+      let hasFile = await this.indexed.checkIfFileExist(this.FileInfo.alt_path || this.FileInfo.path);
+      if (hasFile) {
+        this.indexed.DownloadFileFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
+      } else if (this.FileInfo['url']) {
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
         loading.present();
         try {
@@ -1314,8 +1317,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           });
         }
         loading.dismiss();
-      } else this.indexed.DownloadFileFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
-    else this.alertCtrl.create({
+      }
+    } else this.alertCtrl.create({
       header: this.lang.text['ContentViewer']['Filename'],
       inputs: [{
         name: 'filename',
