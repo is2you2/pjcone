@@ -1249,6 +1249,26 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.modulate_chatmsg(this.ViewableMessage.length - 1, this.ViewableMessage.length);
         this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
         if (this.useSpeaker) this.SpeechReceivedMessage(c);
+        setTimeout(() => {
+          this.info['is_new'] = false;
+          this.nakama.has_new_channel_msg = false;
+          if (this.NeedScrollDown() && !this.ShowRecentMsg) {
+            this.init_last_message_viewer();
+            this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
+          } else if (c.code != 2) {
+            if (this.info['local'])
+              this.last_message_viewer['is_me'] = true;
+            else this.last_message_viewer['is_me'] = c.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id;
+            this.last_message_viewer['user_id'] = c.sender_id;
+            let message_copied = JSON.parse(JSON.stringify(c.content['msg']))
+            if (c.content['filename']) // 파일이 첨부된 경우
+              if (message_copied.length) { // 최신 메시지 보기에 (첨부파일) 메시지를 임의로 추가
+                message_copied[0][0]['text'] = `(${this.lang.text['ChatRoom']['attachments']}) ${message_copied[0][0]['text']}`;
+              } else message_copied = [[{ text: `(${this.lang.text['ChatRoom']['attachments']})` }]];
+            this.last_message_viewer['message'] = message_copied;
+            this.last_message_viewer['color'] = c.color;
+          }
+        }, 100);
         // 수신된 메시지를 실시간 고도 패키지에 연결해주기
         if (this.global.godot_window && this.global.godot_window['received_msg']) {
           let regen_msg = {
@@ -1889,9 +1909,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       return;
     } // 아래, 온라인 행동
     this.sending_msg.push(tmp);
-    setTimeout(() => {
-      this.scroll_down_logs();
-    }, 0);
+    if (this.NeedScrollDown())
+      setTimeout(() => {
+        this.scroll_down_logs();
+      }, 100);
     try {
       setTimeout(() => {
         this.userInput.text = '';
@@ -1988,7 +2009,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
       this.ResizeTextArea();
       this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
-      this.scroll_down_logs();
+      if (this.NeedScrollDown())
+        this.scroll_down_logs();
     }, 0);
   }
 
