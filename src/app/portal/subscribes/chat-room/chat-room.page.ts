@@ -522,7 +522,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }, 0);
     }
     this.noti.Current = this.info['cnoti_id'];
-    this.useFirstCustomCDN = Number(localStorage.getItem('useFFSCDN')) || 0;
+    this.useFirstCustomCDN = this.info['CDN'] || Number(localStorage.getItem('useFFSCDN')) || 0;
     this.toggle_custom_attach(this.useFirstCustomCDN);
   }
 
@@ -635,7 +635,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.extended_buttons[8].name = this.lang.text['ChatRoom']['forceSQL'];
         break;
     }
-    localStorage.setItem('useFFSCDN', `${this.useFirstCustomCDN}`);
+    this.info['CDN'] = this.useFirstCustomCDN;
+    this.nakama.save_channels_with_less_info();
   }
 
   async toggle_speakermode(force?: boolean) {
