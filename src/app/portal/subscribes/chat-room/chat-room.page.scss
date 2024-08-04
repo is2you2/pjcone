@@ -76,6 +76,8 @@
     margin-top: 4px;
     max-width: 192px;
     max-height: 192px;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .file_thumbnail {
@@ -83,7 +85,6 @@
     max-height: 192px;
     width: auto;
     height: auto;
-    border-radius: 8px;
     cursor: pointer;
     overflow: hidden;
 }
