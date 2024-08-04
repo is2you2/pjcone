@@ -190,9 +190,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                 let res = await fetch(HasLocalPage, { signal: cont.signal });
                 clearTimeout(id);
                 if (res.ok) targetAddress = `${extract}:8080/www/?postViewer=${this.PostInfo['OutSource']}`;
-              } catch (e) {
-                targetAddress = `http://pjcone.ddns.net/?postViewer=${this.PostInfo['OutSource']}`;
-              }
+              } catch (e) { }
             }
             this.mClipboard.copy(targetAddress)
               .catch(_e => {

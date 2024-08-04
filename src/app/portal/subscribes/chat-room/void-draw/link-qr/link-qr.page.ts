@@ -50,9 +50,7 @@ export class LinkQrPage implements OnInit {
       let res = await fetch(HasLocalPage, { signal: cont.signal });
       clearTimeout(id);
       if (res.ok) this.SelectedAddress = `${location.protocol}//${extract}:8080/www/?voidDraw=${extract}`;
-    } catch (e) {
-      this.SelectedAddress = `http://pjcone.ddns.net/?voidDraw=${extract}`;
-    }
+    } catch (e) { }
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.SelectedAddress);
   }
 
