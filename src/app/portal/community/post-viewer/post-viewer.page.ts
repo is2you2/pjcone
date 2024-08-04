@@ -190,7 +190,9 @@ export class PostViewerPage implements OnInit, OnDestroy {
                 let res = await fetch(HasLocalPage, { signal: cont.signal });
                 clearTimeout(id);
                 if (res.ok) targetAddress = `${extract}:8080/www/?postViewer=${this.PostInfo['OutSource']}`;
-              } catch (e) { }
+              } catch (e) {
+                targetAddress = `http://localhost:8080/www/?postViewer=${this.PostInfo['OutSource']}`;
+              }
             }
             this.mClipboard.copy(targetAddress)
               .catch(_e => {

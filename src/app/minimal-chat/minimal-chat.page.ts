@@ -211,7 +211,9 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         let res = await fetch(HasLocalPage, { signal: cont.signal });
         clearTimeout(id);
         if (res.ok) header_address = `${extract}:8080/www/`;
-      } catch (e) { }
+      } catch (e) {
+        header_address = 'http://localhost:8080/www/';
+      }
     } else header_address = `${SERVER_PATH_ROOT}devtalk_pwa/`;
     this.QRCodeTargetString = `${header_address}?group_dedi=${this.client.cacheAddress.split('://')[1]},${this.client.JoinedChannel || 'public'}`;
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeTargetString);
