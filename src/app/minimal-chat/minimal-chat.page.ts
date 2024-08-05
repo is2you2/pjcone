@@ -95,9 +95,10 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     }
     this.ServerList = this.client.nakama.get_all_online_server();
     setTimeout(() => {
-      if (this.MinimalChatServer)
+      if (this.MinimalChatServer) {
         this.MinimalChatServer.value = this.ServerList[0] || 'local';
-      else this.NeedInputCustomAddress = true;
+        this.SelectAddressTarget({ detail: { value: this.MinimalChatServer.value } });
+      } else this.NeedInputCustomAddress = true;
     }, 0);
     if (this.client.cacheAddress) this.CreateQRCode();
     // QRCode 빠른 진입으로 들어온 경우 주소를 이미 가지고 있음
