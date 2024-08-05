@@ -22,9 +22,9 @@
     <ion-toggle [(ngModel)]="noti.settings.silent.diychat"
       class="ignore_toggles">{{lang.text['NotificationSettings']['diychat']}}</ion-toggle>
   </ion-item>
-  <ion-item disabled button (click)="toggle_silent_set('todo')">
+  <ion-item button (click)="toggle_silent_set('todo')">
     <img class="img_icon_size" src="assets/icon/todo.png" alt="">
-    <ion-toggle disabled [(ngModel)]="noti.settings.silent.todo"
+    <ion-toggle [(ngModel)]="noti.settings.silent.todo"
       class="ignore_toggles">{{lang.text['Main']['Title']}}</ion-toggle>
   </ion-item>
   <ion-item button (click)="toggle_silent_set('simplechat')">

@@ -11,7 +11,7 @@
   <ion-item-divider>
     <ion-label>{{lang.text['Settings']['env_info']}}</ion-label>
   </ion-item-divider>
-  <ion-item button (click)="go_to_page('noti-alert')">
+  <ion-item button [disabled]="isMobilePWA" (click)="go_to_page('noti-alert')">
     <ion-label>{{lang.text['Settings']['NotificationSetting']}}</ion-label>
   </ion-item>
   <ion-item button (ionChange)="toggle_ShowServer()">
