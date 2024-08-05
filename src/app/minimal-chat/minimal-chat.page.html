@@ -18,7 +18,7 @@
         [placeholder]="lang.text['Profile']['noname_user']" [(ngModel)]="client.MyUserName"></ion-input>
     </ion-item>
     <div *ngIf="client.status == 'idle'" style="flex: 0 1 auto;">
-      <ion-select *ngIf="ServerList.length" [label]="lang.text['AddGroup']['SelectServer']"
+      <ion-select *ngIf="ServerList.length" #MinimalChatServer [label]="lang.text['AddGroup']['SelectServer']"
         (ionChange)="SelectAddressTarget($event)" value="local" style="padding-left: 16px;">
         <ion-select-option value="local">{{lang.text['voidDraw']['InternalConn']}}</ion-select-option>
         <ion-select-option *ngFor="let server of ServerList" [value]="server">{{server.info.name}}</ion-select-option>

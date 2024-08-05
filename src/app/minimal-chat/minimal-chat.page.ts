@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { AlertController, IonInput, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { AlertController, IonInput, IonSelect, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
 import { StatusManageService } from '../status-manage.service';
@@ -81,6 +81,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     } else window.open(url, '_system')
   }
 
+  @ViewChild('MinimalChatServer') MinimalChatServer: IonSelect;
   ngOnInit() {
     this.InitBrowserBackButtonOverride();
     this.isMobileApp = isPlatform == 'Android' || isPlatform == 'iOS';
@@ -93,7 +94,11 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         this.scroll_down();
     }
     this.ServerList = this.client.nakama.get_all_online_server();
-    this.SelectAddressTarget({ detail: { value: 'local' } });
+    setTimeout(() => {
+      if (this.MinimalChatServer)
+        this.MinimalChatServer.value = this.ServerList[0] || 'local';
+      else this.NeedInputCustomAddress = true;
+    }, 0);
     if (this.client.cacheAddress) this.CreateQRCode();
     // QRCode 빠른 진입으로 들어온 경우 주소를 이미 가지고 있음
     if (this.params.get('address')) {
