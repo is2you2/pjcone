@@ -121,7 +121,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       this.SendAttachAct({ target: { files: [stack[0].file] } });
       return false;
     }
-    this.focus_on_input();
+    if (this.client.IsConnected) this.focus_on_input();
     this.global.p5key['KeyShortCut']['EnterAct'] = () => {
       if (document.activeElement != document.getElementById('minimalchat_input'))
         setTimeout(() => {
