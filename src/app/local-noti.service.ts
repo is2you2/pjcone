@@ -3,6 +3,7 @@ import { isPlatform } from './app.component';
 import { LocalNotificationSchema, LocalNotifications, PendingLocalNotificationSchema, Schedule } from "@capacitor/local-notifications";
 import { IndexedDBService } from './indexed-db.service';
 import { LanguageSettingService } from './language-setting.service';
+import * as p5 from 'p5';
 
 /** 웹에서도, 앱에서도 동작하는 요소로 구성된 알림폼 재구성  
  * 실험을 거쳐 차례로 병합해가기
@@ -209,23 +210,12 @@ export class LocalNotiService {
           window.focus();
           this.WebNoties[opt.id].close();
         };
-      } else if (window['swReg'] && window['swReg'].active) {
-        if (this.WebNoties[opt.id]) {
-          try {
-            this.WebNoties[opt.id].close();
-          } catch (e) { }
-          delete this.WebNoties[opt.id];
-        }
-        try {
-          this.WebNoties[opt.id] = window['swReg'].showNotification(opt.title, { ...input });
-        } catch (e) { }
-        try {
-          this.WebNoties[opt.id].onclick = () => {
-            _action_wm();
-            window.focus();
-            this.WebNoties[opt.id].close();
-          };
-        } catch (e) { }
+      } else { // 모바일 웹에서는 소리만 발생시킴
+        let osc: p5.Oscillator = new p5.Oscillator(380, 'sine');
+        if (osc) osc.stop(.1);
+        osc.start();
+        osc.amp(1, .07);
+        osc.amp(0, .15);
       }
     } else { // 모바일 로컬 푸쉬
       if (this.Current == header) return;
