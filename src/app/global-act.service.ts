@@ -162,8 +162,9 @@ export class GlobalActService {
           // 메인 하단 탭
           case 'KeyQ': // 채널
           case 'KeyW': // 할 일
-          case 'KeyE': // 사설 SNS or 설정
-          case 'KeyR': // 설정
+          case 'KeyE': // 오락
+          case 'KeyR': // 사설 SNS or 설정
+          case 'KeyT': // 설정
             if (p['KeyShortCut']['BottomTab'])
               p['KeyShortCut']['BottomTab'](ev['code'].slice(-1));
             break;

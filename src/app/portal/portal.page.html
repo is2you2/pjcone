@@ -8,6 +8,9 @@
         <ion-icon [name]="SubscribesIcon"></ion-icon>
         <ion-badge *ngIf="nakama.has_new_channel_msg" color="danger" mode="md"></ion-badge>
       </ion-tab-button>
+      <ion-tab-button [disabled]="!indexed.ionicDB" (click)="arcade_tab_selected()" tab="arcade">
+        <ion-icon [name]="ArcadeIcon"></ion-icon>
+      </ion-tab-button>
       <ion-tab-button [disabled]="!indexed.ionicDB" (click)="community_tab_selected()" tab="community">
         <ion-icon [name]="CommunityIcon"></ion-icon>
         <ion-badge *ngIf="nakama.has_new_post" color="danger" mode="md"></ion-badge>

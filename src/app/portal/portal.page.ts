@@ -51,10 +51,14 @@ export class PortalPage implements OnInit {
             this.ionTabs.select('subscribes');
             break;
           case 'E': // 상황에 따라, 커뮤니티 또는 설정
+            this.arcade_tab_selected();
+            this.ionTabs.select('arcade');
+            break;
+          case 'R':
             this.community_tab_selected();
             this.ionTabs.select('community');
             break;
-          case 'R':
+          case 'T':
             this.setting_button();
             break;
         }
@@ -70,6 +74,7 @@ export class PortalPage implements OnInit {
     this.SubscribesIcon = 'chatbubbles';
     this.TodoIcon = 'checkbox-outline';
     this.CommunityIcon = 'newspaper-outline';
+    this.ArcadeIcon = 'game-controller-outline';
   }
 
   /** 하단 탭을 눌러 설정페이지로 이동 */
@@ -81,6 +86,7 @@ export class PortalPage implements OnInit {
 
   SubscribesIcon = 'chatbubbles';
   TodoIcon = 'checkbox-outline';
+  ArcadeIcon = 'game-controller-outline';
   CommunityIcon = 'newspaper-outline';
 
   /** 구 버전 함수 이름이 계승됨, 할 일이 눌렸을 때 */
@@ -88,12 +94,21 @@ export class PortalPage implements OnInit {
     this.SubscribesIcon = 'chatbubbles-outline';
     this.TodoIcon = 'checkbox';
     this.CommunityIcon = 'newspaper-outline';
+    this.ArcadeIcon = 'game-controller-outline';
+  }
+
+  arcade_tab_selected() {
+    this.SubscribesIcon = 'chatbubbles-outline';
+    this.TodoIcon = 'checkbox-outline';
+    this.ArcadeIcon = 'game-controller';
+    this.CommunityIcon = 'newspaper-outline';
   }
 
   community_tab_selected() {
     this.SubscribesIcon = 'chatbubbles-outline';
     this.TodoIcon = 'checkbox-outline';
     this.CommunityIcon = 'newspaper';
+    this.ArcadeIcon = 'game-controller-outline';
   }
 
   CacheKeyShortCut: any;
