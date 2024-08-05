@@ -26,7 +26,6 @@ export class SettingsPage implements OnInit, OnDestroy {
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
-  isMobilePWA = false;
   can_use_http = false;
   is_nativefier = isNativefier;
 
@@ -43,7 +42,6 @@ export class SettingsPage implements OnInit, OnDestroy {
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
-    this.isMobilePWA = isPlatform == 'MobilePWA';
     this.check_if_admin();
     this.nakama.on_socket_disconnected['settings_admin_check'] = () => {
       this.check_if_admin();
