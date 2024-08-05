@@ -1,6 +1,10 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>{{lang.text['Arcade']['Title']}}</ion-title>
+    <div class="header_online_circle"
+      [style]="'background-color: ' + statusBar.colors[statusBar.settings.groupServer] + '; cursor: pointer;'"
+      (click)="nakama.toggle_all_session(true)">
+    </div>
   </ion-toolbar>
 </ion-header>
 

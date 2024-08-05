@@ -16,6 +16,7 @@ export class LanguageSettingService {
     Front: {},
     Portal: {},
     Main: {},
+    Arcade: {},
     Subscribes: {},
     ChatRoom: {},
     Profile: {},

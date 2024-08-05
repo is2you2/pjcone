@@ -71,7 +71,7 @@ export class PortalPage implements OnInit {
   /** 하단 탭을 눌러 알림 확인함 처리 */
   subscribe_button() {
     this.nakama.has_new_channel_msg = false;
-    this.SubscribesIcon = 'chatbubbles';
+    this.SubscribesIcon = 'chatbubble';
     this.TodoIcon = 'checkbox-outline';
     this.CommunityIcon = 'newspaper-outline';
     this.ArcadeIcon = 'game-controller-outline';
@@ -84,28 +84,28 @@ export class PortalPage implements OnInit {
     });
   }
 
-  SubscribesIcon = 'chatbubbles';
+  SubscribesIcon = 'chatbubble';
   TodoIcon = 'checkbox-outline';
   ArcadeIcon = 'game-controller-outline';
   CommunityIcon = 'newspaper-outline';
 
   /** 구 버전 함수 이름이 계승됨, 할 일이 눌렸을 때 */
   bottom_tab_selected() {
-    this.SubscribesIcon = 'chatbubbles-outline';
+    this.SubscribesIcon = 'chatbubble-outline';
     this.TodoIcon = 'checkbox';
     this.CommunityIcon = 'newspaper-outline';
     this.ArcadeIcon = 'game-controller-outline';
   }
 
   arcade_tab_selected() {
-    this.SubscribesIcon = 'chatbubbles-outline';
+    this.SubscribesIcon = 'chatbubble-outline';
     this.TodoIcon = 'checkbox-outline';
     this.ArcadeIcon = 'game-controller';
     this.CommunityIcon = 'newspaper-outline';
   }
 
   community_tab_selected() {
-    this.SubscribesIcon = 'chatbubbles-outline';
+    this.SubscribesIcon = 'chatbubble-outline';
     this.TodoIcon = 'checkbox-outline';
     this.CommunityIcon = 'newspaper';
     this.ArcadeIcon = 'game-controller-outline';
