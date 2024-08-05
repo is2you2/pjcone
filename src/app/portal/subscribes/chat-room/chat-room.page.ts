@@ -777,7 +777,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.toggle_speakermode(this.useSpeaker);
     this.ChatLogs = document.getElementById('chatroom_div');
     this.ChatLogs.onscroll = (_ev: any) => {
-      if (this.ChatLogs.scrollHeight - (this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) < 150) {
+      if (this.ChatLogs.scrollHeight - (this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) < 1500) {
         // 스크롤을 제일 하단으로 내리면 사라짐
         if (!this.ShowGoToBottom)
           if (!this.ShowRecentMsg)
