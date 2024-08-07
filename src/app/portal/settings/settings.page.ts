@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { IonAccordionGroup, iosTransitionAnimation, LoadingController, ModalController, NavController } from '@ionic/angular';
+import { IonAccordionGroup, IonSelect, iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
 import { isNativefier, isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
@@ -90,6 +90,7 @@ export class SettingsPage implements OnInit, OnDestroy {
           this.ionViewDidEnter();
       });
     }
+    this.StartPageValue = localStorage.getItem('StartPage');
   }
 
   Fallback_FS_input_element: HTMLInputElement;
@@ -110,19 +111,21 @@ export class SettingsPage implements OnInit, OnDestroy {
   LinkButton = [];
   ToggleAccordion() {
     if (this.Devkit.value) { // 닫기
-      let count_menu = (!this.cant_dedicated && this.can_use_http) ? 5 : 4;
+      let count_menu = (!this.cant_dedicated && this.can_use_http) ? 6 : 5;
       this.LinkButton.splice(5, count_menu);
       this.Devkit.value = undefined;
     } else { // 열기
       this.Devkit.value = 'Devkit';
       if (this.cant_dedicated)
         this.LinkButton.splice(4, 0,
+          () => this.open_inapp_explorer(),
           () => this.go_to_page('weblink-gen'),
           () => this.focus_to_fallback_fs_input(),
           () => this.go_to_webrtc_manager(),
           () => this.download_serverfile(),
         );
       else this.LinkButton.splice(4, 0,
+        () => this.open_inapp_explorer(),
         () => this.go_to_page('weblink-gen'),
         () => this.go_to_webrtc_manager(),
         () => this.download_serverfile(),
@@ -141,9 +144,10 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.nakama.showServer = !this.nakama.showServer;
       this.toggle_ShowServer()
     });
-    this.LinkButton.push(() => this.open_inapp_explorer());
+    this.LinkButton.push(() => this.StartPageClicked());
     this.LinkButton.push(() => this.ToggleAccordion());
     if (this.Devkit.value) {
+      this.LinkButton.push(() => this.open_inapp_explorer());
       this.LinkButton.push(() => this.go_to_page('weblink-gen'));
       if (this.cant_dedicated)
         this.LinkButton.push(() => this.focus_to_fallback_fs_input());
@@ -157,8 +161,6 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.LinkButton.push(() => this.go_to_page('translator'));
     this.LinkButton.push(() => this.LangClicked());
     this.LinkButton.push(() => this.go_to_page('licenses'));
-    if (this.cant_dedicated)
-      this.LinkButton.push(() => this.open_playstore());
     // 환경에 맞춰 단축키 구성
     this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
       // 설정 메뉴 정렬처리
@@ -171,6 +173,17 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.navCtrl.navigateForward('user-fs-dir', {
       animation: iosTransitionAnimation,
     });
+  }
+
+  @ViewChild('StartPageSel') StartPageSel: IonSelect;
+  /** 시작 페이지 설정된 값을 보여주기 위함 */
+  StartPageValue: string;
+  StartPageClicked() {
+    this.StartPageSel.open();
+  }
+  StartPageChanged(ev: any) {
+    let value = ev.detail.value;
+    localStorage.setItem('StartPage', `${value}`);
   }
 
   @ViewChild('LangSel') LangSel: any;
@@ -212,10 +225,6 @@ export class SettingsPage implements OnInit, OnDestroy {
       });
       v.present()
     });
-  }
-
-  open_playstore() {
-    window.open('https://play.google.com/store/apps/details?id=org.pjcone.portal', '_system');
   }
 
   RemoveKeyShortCut() {

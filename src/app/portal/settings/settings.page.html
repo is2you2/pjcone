@@ -18,8 +18,15 @@
     <ion-toggle style="pointer-events: none;"
       [(ngModel)]="nakama.showServer">{{lang.text['Settings']['ShowChnServer']}}</ion-toggle>
   </ion-item>
-  <ion-item button (click)="open_inapp_explorer()">
-    <ion-label>{{lang.text['Settings']['InAppExplorer']}}</ion-label>
+  <ion-item button (click)="StartPageClicked()">
+    <ion-select [label]="lang.text['Settings']['StartPageSet']" #StartPageSel style="pointer-events: none;"
+      [value]="StartPageValue" [placeholder]="lang.text['Settings']['joinDedi_placeholder']"
+      (ionChange)="StartPageChanged($event)">
+      <ion-select-option value="0">{{lang.text['Main']['Title']}}</ion-select-option>
+      <ion-select-option value="1">{{lang.text['Subscribes']['Title']}}</ion-select-option>
+      <ion-select-option value="2">{{lang.text['Arcade']['Title']}}</ion-select-option>
+      <ion-select-option value="3">{{lang.text['Community']['Title']}}</ion-select-option>
+    </ion-select>
   </ion-item>
   <ion-accordion-group #Devkit>
     <ion-accordion value="Devkit">
@@ -27,6 +34,9 @@
         <ion-label>{{lang.text['Settings']['DevKit']}}</ion-label>
       </ion-item>
       <div slot="content">
+        <ion-item button (click)="open_inapp_explorer()">
+          <ion-label>{{lang.text['Settings']['InAppExplorer']}}</ion-label>
+        </ion-item>
         <ion-item button (click)="go_to_page('weblink-gen')">
           <ion-label>{{lang.text['Settings']['WebLinkGen']}}</ion-label>
         </ion-item>

@@ -24,7 +24,29 @@ export class PortalPage implements OnInit {
     public statusBar: StatusManageService,
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() {
+    setTimeout(() => {
+      let StartPage = localStorage.getItem('StartPage') || 0;
+      switch (StartPage) {
+        case '0':
+          this.bottom_tab_selected();
+          this.ionTabs.select('main');
+          break;
+        case '1':
+          this.subscribe_button();
+          this.ionTabs.select('subscribes');
+          break;
+        case '2':
+          this.arcade_tab_selected();
+          this.ionTabs.select('arcade');
+          break;
+        case '3':
+          this.community_tab_selected();
+          this.ionTabs.select('community');
+          break;
+      }
+    }, 0);
+  }
 
   ionViewDidEnter() {
     if (this.CacheKeyShortCut)
@@ -32,9 +54,8 @@ export class PortalPage implements OnInit {
     this.try_add_shortcut();
     if (this.global.p5todo && this.global.p5todo['PlayCanvas'] && this.TodoIcon == 'checkbox')
       this.global.p5todo['PlayCanvas']();
-    if (this.nakama.AfterLoginAct.length) { // 빠른 진입 행동 보완
+    if (this.nakama.AfterLoginAct.length) // 빠른 진입 행동 보완
       this.navCtrl.navigateForward('portal/settings/group-server');
-    }
   }
 
   /** 포털 화면 단축키 구성 */
@@ -84,8 +105,8 @@ export class PortalPage implements OnInit {
     });
   }
 
-  SubscribesIcon = 'chatbubble';
-  TodoIcon = 'checkbox-outline';
+  TodoIcon = 'checkbox';
+  SubscribesIcon = 'chatbubble-outline';
   ArcadeIcon = 'game-controller-outline';
   CommunityIcon = 'newspaper-outline';
 

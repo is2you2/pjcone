@@ -937,8 +937,9 @@ export class MainPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    if (this.global.p5todo)
+    if (this.global.p5todo && this.global.p5todo['StopCanvas'])
       this.global.p5todo['StopCanvas']();
-    delete this.global.p5key['KeyShortCut']['AddAct'];
+    if (this.global.p5key && this.global.p5key['KeyShortCut'])
+      delete this.global.p5key['KeyShortCut']['AddAct'];
   }
 }
