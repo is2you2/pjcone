@@ -1740,34 +1740,38 @@ export class NakamaService {
           } catch (e) {
             this.channels_orig[_is_official][_target][_cid]['server']['name'] = this.lang.text['Nakama']['DeletedServer'];
           }
-          switch (this.channels_orig[_is_official][_target][_cid]['redirect']['type']) {
-            case 1: // 방 대화
-              break;
-            case 2: // 1:1 대화
-              this.channels_orig[_is_official][_target][_cid]['info'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
-              this.channels_orig[_is_official][_target][_cid]['title'] = this.channels_orig[_is_official][_target][_cid]['info']['display_name'];
-              break;
-            case 3: // 그룹 대화
-              if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing') {
-                if (this.groups[_is_official][_target] && this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]) { // 유효한 그룹인 경우
-                  this.channels_orig[_is_official][_target][_cid]['info'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']];
-                  this.channels_orig[_is_official][_target][_cid]['title'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]['name'];
-                  if (this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]['status'] == 'missing')
-                    this.channels_orig[_is_official][_target][_cid]['status'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]['status'];
-                } else this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
-              }
-              break;
-            case 0: // 로컬 대화 기록, 채널로부터 복사하기
-              if (!this.channels_orig[_is_official][_target][_cid]['info']) this.channels_orig[_is_official][_target][_cid]['info'] = {};
-              this.channels_orig[_is_official][_target][_cid]['info']['name'] = this.channels_orig[_is_official][_target][_cid]['title'];
-              if (!this.channels_orig[_is_official][_target][_cid]['info']['img'])
-                this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${_cid}.img`, (e, v) => {
-                  if (e && v) this.channels_orig[_is_official][_target][_cid]['info']['img'] = v;
-                });
-              break;
-            default:
-              console.error('예상하지 않은 대화형식: ', this.channels_orig[_is_official][_target][_cid]);
-              break;
+          try {
+            switch (this.channels_orig[_is_official][_target][_cid]['redirect']['type']) {
+              case 1: // 방 대화
+                break;
+              case 2: // 1:1 대화
+                this.channels_orig[_is_official][_target][_cid]['info'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
+                this.channels_orig[_is_official][_target][_cid]['title'] = this.channels_orig[_is_official][_target][_cid]['info']['display_name'];
+                break;
+              case 3: // 그룹 대화
+                if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing') {
+                  if (this.groups[_is_official][_target] && this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]) { // 유효한 그룹인 경우
+                    this.channels_orig[_is_official][_target][_cid]['info'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']];
+                    this.channels_orig[_is_official][_target][_cid]['title'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]['name'];
+                    if (this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]['status'] == 'missing')
+                      this.channels_orig[_is_official][_target][_cid]['status'] = this.groups[_is_official][_target][this.channels_orig[_is_official][_target][_cid]['redirect']['id']]['status'];
+                  } else this.channels_orig[_is_official][_target][_cid]['status'] = 'missing';
+                }
+                break;
+              case 0: // 로컬 대화 기록, 채널로부터 복사하기
+                if (!this.channels_orig[_is_official][_target][_cid]['info']) this.channels_orig[_is_official][_target][_cid]['info'] = {};
+                this.channels_orig[_is_official][_target][_cid]['info']['name'] = this.channels_orig[_is_official][_target][_cid]['title'];
+                if (!this.channels_orig[_is_official][_target][_cid]['info']['img'])
+                  this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${_cid}.img`, (e, v) => {
+                    if (e && v) this.channels_orig[_is_official][_target][_cid]['info']['img'] = v;
+                  });
+                break;
+              default:
+                console.error('예상하지 않은 대화형식: ', this.channels_orig[_is_official][_target][_cid]);
+                break;
+            }
+          } catch (e) {
+            console.log('뭐라디: ', e);
           }
           // 새로 생긴 채널에 현재 시간을 기입하여 가장 최상단으로 올라오도록 구성
           if (!this.channels_orig[_is_official][_target][_cid]['last_comment_time'])

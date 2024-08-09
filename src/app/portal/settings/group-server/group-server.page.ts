@@ -60,7 +60,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
       });
     }
     this.nakama.socket_reactive['profile'] = (img_url: string) => {
-      this.p5canvas['ChangeImageSmooth'](img_url);
+      if (this.p5canvas) this.p5canvas['ChangeImageSmooth'](img_url);
     }
 
     if (this.navParams.data['target']) {
