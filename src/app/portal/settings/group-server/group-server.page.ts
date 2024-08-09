@@ -651,7 +651,9 @@ export class GroupServerPage implements OnInit, OnDestroy {
           throw '비밀번호 공백';
         }
         this.nakama.save_self_profile();
-        await this.nakama.init_all_sessions();
+        let count_server = await this.nakama.init_all_sessions();
+        if (!count_server && this.nakama.AfterLoginAct.length)
+          await this.nakama.WatchAdsAndGetDevServerInfo();
         this.original_profile = JSON.parse(JSON.stringify(this.nakama.users.self));
       } catch (e) {
         this.nakama.users.self['online'] = false;

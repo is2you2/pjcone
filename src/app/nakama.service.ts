@@ -828,7 +828,7 @@ export class NakamaService {
       } else this.socket_reactive['profile']('');
     });
     // 통신 소켓 연결하기
-    this.connect_to(_is_official, _target, (socket: Socket) => {
+    this.connect_to(_is_official, _target, async (socket: Socket) => {
       this.servers[_is_official][_target].client.readStorageObjects(
         this.servers[_is_official][_target].session, {
         object_ids: [{
@@ -865,6 +865,14 @@ export class NakamaService {
           this.redirect_channel(_is_official, _target);
           this.get_group_list_from_server(_is_official, _target);
         });
+      for (let i = 0, j = this.AfterLoginAct.length; i < j; i++)
+        try {
+          await this.AfterLoginAct[i]();
+        } catch (e) {
+          console.error('진입 동작 오류: ', e);
+        }
+      this.AfterLoginAct.length = 0;
+      this.AfterLoginActDone = true;
     });
     await this.SyncTodoCounter(_is_official, _target);
     this.load_server_todo(_is_official, _target);
@@ -876,14 +884,6 @@ export class NakamaService {
     this.rearrange_channels();
     this.rearrange_group_list();
     this.set_group_statusBar('online', _is_official, _target);
-    for (let i = 0, j = this.AfterLoginAct.length; i < j; i++)
-      try {
-        await this.AfterLoginAct[i]();
-      } catch (e) {
-        console.error('진입 동작 오류: ', e);
-      }
-    this.AfterLoginAct.length = 0;
-    this.AfterLoginActDone = true;
   }
 
   /** 원격 할 일 카운터  
@@ -1580,8 +1580,10 @@ export class NakamaService {
           break;
       }
       this.rearrange_channels();
-      this.servers[_is_official][_target].socket.sendMatchState(this.self_match[_is_official][_target].match_id, MatchOpCode.ADD_CHANNEL,
-        encodeURIComponent(''));
+      try {
+        this.servers[_is_official][_target].socket.sendMatchState(this.self_match[_is_official][_target].match_id, MatchOpCode.ADD_CHANNEL,
+          encodeURIComponent(''));
+      } catch (e) { }
     }
   }
 
@@ -4148,7 +4150,6 @@ export class NakamaService {
 
   async act_from_QRInfo(json: any) {
     /** QRCode에 서버 정보가 포함되어 있습니까 */
-    let hasServerInQRInfo = false;
     for (let i = 0, j = json.length; i < j; i++)
       switch (json[i].type) {
         case 'open_profile': // 프로필 페이지 열기 유도
@@ -4169,9 +4170,6 @@ export class NakamaService {
                 data: json[i].value,
               },
             }).then(v => {
-              v.onWillDismiss().then(() => {
-                hasServerInQRInfo = true;
-              });
               v.present();
             });
           } else {
@@ -4215,8 +4213,6 @@ export class NakamaService {
           if (this.AfterLoginActDone)
             await this.try_add_group(json[i]);
           else this.AfterLoginAct.push(async () => {
-            if (!hasServerInQRInfo)
-              await this.WatchAdsAndGetDevServerInfo();
             await this.try_add_group(json[i])
           });
           break;
@@ -4225,8 +4221,6 @@ export class NakamaService {
             let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           } else this.AfterLoginAct.push(async () => {
-            if (!hasServerInQRInfo)
-              await this.WatchAdsAndGetDevServerInfo();
             let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           });
@@ -4236,8 +4230,6 @@ export class NakamaService {
             let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           } else this.AfterLoginAct.push(async () => {
-            if (!hasServerInQRInfo)
-              await this.WatchAdsAndGetDevServerInfo();
             let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], true);
             this.go_to_chatroom_without_admob_act(c);
           });
