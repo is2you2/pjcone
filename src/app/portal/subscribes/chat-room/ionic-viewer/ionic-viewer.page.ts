@@ -387,7 +387,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       let res = await fetch(this.FileInfo.url);
       if (res.ok) {
         let blob = await res.blob();
-        await this.indexed.saveBlobToUserPath(blob, this.FileInfo.path);
+        await this.indexed.saveBlobToUserPath(blob, this.FileInfo.alt_path || this.FileInfo.path);
         this.CurrentFileSize = this.formatBytes(this.FileInfo['size'] || this.FileInfo['filesize'] || blob.size);
         this.p5toast.show({
           text: `${this.lang.text['ChatRoom']['FileSaved']}: ${this.FileInfo.filename}`,
@@ -405,6 +405,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   AutoPlayNext = false;
   @ViewChild('FileMenu') FileMenu: IonPopover;
   async ionViewDidEnter() {
+    console.log(this.FileInfo);
     try { // 로컬에서 파일 찾기 우선 작업
       this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type']);
       this.FileURL = URL.createObjectURL(this.blob);
