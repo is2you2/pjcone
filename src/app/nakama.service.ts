@@ -3343,9 +3343,9 @@ export class NakamaService {
       case -2: // 친구 요청 받음
         break;
       case 1: // 전체 알림 수신
-        let image_form = `<img src="${this_noti.content['url']}" alt="noti_image" style="border-radius: 2px">`;
+        let image_form = `<img src="${decodeURIComponent(this_noti.content['uri'])}" alt="noti_image" style="border-radius: 2px">`;
         let text_form = `<div>${decodeURIComponent(this_noti.content['msg'])}</div>`;
-        let result_form = this_noti.content['url'] ? image_form + text_form : text_form;
+        let result_form = this_noti.content['uri'] ? image_form + text_form : text_form;
         this.alertCtrl.create({ // 전체 알림 알람 내용보기
           header: this.servers[_is_official][_target].info.name,
           message: new IonicSafeString(result_form),
