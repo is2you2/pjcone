@@ -1041,9 +1041,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   @ViewChild('ShowContentInfoIonic') ShowContentInfoIonic: IonModal;
 
   open_bottom_modal() {
-    this.ShowContentInfoIonic.onDidDismiss().then(_v => {
-      this.useP5Navigator = true;
-    });
     this.useP5Navigator = false;
     this.ShowContentInfoIonic.present();
   }
