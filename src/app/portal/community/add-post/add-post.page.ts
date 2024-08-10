@@ -761,6 +761,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             }
           }
           try { // 정상적인 주소인지 검토
+            if (pasted_url.indexOf('http:') != 0 && pasted_url.indexOf('https:') != 0) throw '올바른 웹 주소가 아님';
             if (file && override.filename === undefined) throw '이미 파일이 첨부됨, 토글만 시도';
             let res = await fetch(pasted_url);
             if (!res.ok) throw 'URL 구조가 정상이 아님';
