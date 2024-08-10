@@ -405,7 +405,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   AutoPlayNext = false;
   @ViewChild('FileMenu') FileMenu: IonPopover;
   async ionViewDidEnter() {
-    console.log(this.FileInfo);
     try { // 로컬에서 파일 찾기 우선 작업
       this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type']);
       this.FileURL = URL.createObjectURL(this.blob);
