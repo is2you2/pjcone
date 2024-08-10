@@ -53,7 +53,7 @@ export class AdminToolsPage implements OnInit {
     uri: '',
     msg: '',
     noti_id: 1,
-    persistent: true,
+    persistent: false,
   }
 
   BackButtonPressed = false;
