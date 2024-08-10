@@ -1,15 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { LanguageSettingService } from '../language-setting.service';
 import { ModalController, NavParams } from '@ionic/angular';
 import { StatusManageService } from '../status-manage.service';
 import { NakamaService } from '../nakama.service';
+import { GlobalActService } from '../global-act.service';
 
 @Component({
   selector: 'app-share-content-to-other',
   templateUrl: './share-content-to-other.page.html',
   styleUrls: ['./share-content-to-other.page.scss'],
 })
-export class ShareContentToOtherPage implements OnInit {
+export class ShareContentToOtherPage implements OnInit, OnDestroy {
 
   constructor(
     public lang: LanguageSettingService,
@@ -17,7 +18,12 @@ export class ShareContentToOtherPage implements OnInit {
     public modalCtrl: ModalController,
     public statusBar: StatusManageService,
     public nakama: NakamaService,
+    private global: GlobalActService,
   ) { }
+
+  ngOnDestroy(): void {
+    delete this.global.p5key['KeyShortCut']['Digit'];
+  }
 
   channels: any[];
 
@@ -34,6 +40,10 @@ export class ShareContentToOtherPage implements OnInit {
   ngOnInit() {
     this.InitBrowserBackButtonOverride();
     this.channels = this.navParams.get('channels');
+    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+      if (this.nakama.channels.length > index)
+        this.go_to_chatroom(this.nakama.channels[index]);
+    };
   }
 
   go_to_chatroom(channel: any) {
