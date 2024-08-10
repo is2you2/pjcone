@@ -276,7 +276,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   /** 용량 표시 */
   // https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
   formatBytes(bytes: number, decimals = 2): string {
-    if (!+bytes) return '0 Bytes'
+    if (!+bytes) return;
 
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;
@@ -405,22 +405,18 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   AutoPlayNext = false;
   @ViewChild('FileMenu') FileMenu: IonPopover;
   async ionViewDidEnter() {
-    try {
-      if (this.FileInfo.url) {
-        let res = await fetch(this.FileInfo.url);
-        if (!res.ok) throw 'URL 링크 깨짐';
-        this.FileURL = this.FileInfo.url;
-      } else throw 'URL 없음'
-      // 로컬에 파일이 준비되어있다면 파일 크기를 표시
-      this.indexed.checkIfFileExist(this.FileInfo.alt_path || this.FileInfo.path || this.navParams.get('path'), b => {
-        if (b) this.CurrentFileSize = this.formatBytes(this.FileInfo.size || this.FileInfo['filesize'] || this.blob.size);
-      });
-    } catch (e) { // 링크가 없거나 깨졌다면 로컬에서 불러오기 시도
-      try {
-        this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type']);
-        this.FileURL = URL.createObjectURL(this.blob);
-        this.CurrentFileSize = this.formatBytes(this.FileInfo.size || this.FileInfo['filesize'] || this.blob.size);
-      } catch (e) {
+    try { // 로컬에서 파일 찾기 우선 작업
+      this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type']);
+      this.FileURL = URL.createObjectURL(this.blob);
+      this.CurrentFileSize = this.formatBytes(this.FileInfo.size || this.FileInfo['filesize'] || this.blob?.size);
+    } catch (e) {
+      try { // 로컬에 파일이 없다면 URL 주소 정보를 검토하여 작업
+        if (this.FileInfo.url) {
+          let res = await fetch(this.FileInfo.url);
+          if (!res.ok) throw 'URL 링크 깨짐';
+          this.FileURL = this.FileInfo.url;
+        } else throw 'URL 없음'
+      } catch (e) { // 링크가 없거나 깨졌다면 로컬에서 불러오기 시도
         this.ContentOnLoad = true;
         this.ContentFailedLoad = Boolean(!this.FileURL);
       }
@@ -1415,6 +1411,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         text: this.lang.text['ChatRoom']['Delete'],
         handler: () => {
           this.RemoveFileAct();
+          this.p5toast.show({
+            text: `${this.lang.text['ContentViewer']['RemoveFile']}: ${this.FileInfo.alt_path || this.FileInfo.path}`,
+          });
         },
         cssClass: 'redfont',
       }]

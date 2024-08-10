@@ -1363,8 +1363,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             let CatchedAddress: string;
             CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attach[i], this.nakama.users.self['display_name'], loading);
             if (CatchedAddress) {
-              delete this.userInput.attach[i]['path'];
               delete this.userInput.attach[i]['partsize'];
+              delete this.userInput.attach[i]['size'];
               this.userInput.attach[i]['url'] = CatchedAddress;
             } else throw '업로드 실패';
           } catch (e) {
@@ -1504,6 +1504,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               targetname, protocol, address, this.useFirstCustomCDN == 1);
             let isURL = Boolean(savedAddress);
             if (!isURL) throw '링크 만들기 실패';
+            delete this.userInput.attach[i]['size'];
             delete this.userInput.attach[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
             this.userInput.attach[i]['url'] = savedAddress;
           } catch (e) {
