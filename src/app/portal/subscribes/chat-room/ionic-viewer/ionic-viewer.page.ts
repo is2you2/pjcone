@@ -401,10 +401,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     }
     loading.dismiss();
   }
+  /** 파일 읽기 멈추기 위한 컨트롤러 */
+  cont: AbortController;
   /** 비디오/오디오 콘텐츠가 종료되면 끝에서 다음 콘텐츠로 자동 넘김 */
   AutoPlayNext = false;
   @ViewChild('FileMenu') FileMenu: IonPopover;
   async ionViewDidEnter() {
+    if (this.cont) this.cont.abort();
+    this.cont = new AbortController();
     try { // 로컬에서 파일 찾기 우선 작업
       this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type']);
       this.FileURL = URL.createObjectURL(this.blob);
@@ -412,7 +416,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     } catch (e) {
       try { // 로컬에 파일이 없다면 URL 주소 정보를 검토하여 작업
         if (this.FileInfo.url) {
-          let res = await fetch(this.FileInfo.url);
+          let res = await fetch(this.FileInfo.url, { signal: this.cont.signal });
           if (!res.ok) throw 'URL 링크 깨짐';
           this.FileURL = this.FileInfo.url;
         } else throw 'URL 없음'
@@ -1175,7 +1179,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           this.image_info['path'] = this.FileInfo.alt_path || this.FileInfo.path || this.navParams.get('path');
           if (this.FileInfo['url']) {
             this.image_info['path'] = 'tmp_files/modify_image.png';
-            blob = await fetch(this.FileInfo['url']).then(r => r.blob());
+            blob = await fetch(this.FileInfo['url'], { signal: this.cont.signal }).then(r => r.blob(),);
             await this.indexed.saveBlobToUserPath(blob, this.image_info['path']);
           }
           this.modalCtrl.dismiss({
@@ -1323,7 +1327,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         handler: async (input) => {
           if (this.FileInfo['url']) {
             try {
-              let res = await fetch(this.FileInfo.url);
+              let res = await fetch(this.FileInfo.url, { signal: this.cont.signal });
               let blob = await res.blob();
               if (res.ok) {
                 await this.indexed.saveBlobToUserPath(blob, this.FileInfo.alt_path || this.FileInfo.path);
@@ -1547,6 +1551,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   ionViewDidLeave() {
+    this.cont.abort();
     this.noti.ClearNoti(6);
   }
 
