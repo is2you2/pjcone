@@ -1168,8 +1168,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     is_me: undefined,
   };
 
-  /** 사용자 이미지 재정렬 users_image[id] = img; */
-  users_image = {};
   async init_chatroom() {
     this.userInput.text = '';
     delete this.userInput.file;
@@ -1200,14 +1198,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
     this.info = this.nakama.channels_orig[this.isOfficial][this.target][this.info.id];
-    this.users_image = {};
-    try { // 그룹 채널에서 사용자 이미지 분류
-      for (let i = 0, j = this.info['info'].users.length; i < j; i++)
-        this.users_image[this.info['info'].users[i].user.id] = this.info['info'].users[i].user.img;
-    } catch (e) { }
-    try { // 1:1 채팅에서 상대방 이미지 분류
-      this.users_image[this.info['info']['id']] = this.info['info']['img'];
-    } catch (e) { }
     this.LoadChannelBackgroundImage();
     this.nakama.opened_page_info['channel'] = {
       isOfficial: this.isOfficial,

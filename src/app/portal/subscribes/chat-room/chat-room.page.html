@@ -40,7 +40,8 @@
                     <td class="avatar_form">
                       <div *ngIf="msg['showInfo'] && msg['showInfo']['sender']" class="avatar_image"
                         (click)="user_detail(msg)">
-                        <img class="avatar_image" [src]="users_image[msg.sender_id] || 'assets/data/avatar.svg'"
+                        <img class="avatar_image"
+                          [src]="nakama.users[isOfficial][target][msg.sender_id].img || 'assets/data/avatar.svg'"
                           alt="img"
                           [style]="nakama.users[isOfficial][target][msg.sender_id]['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'">
                       </div>
