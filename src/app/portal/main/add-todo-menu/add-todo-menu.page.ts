@@ -1230,7 +1230,16 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (this.isStoreAtChanged && this.isModify) {
       // 첨부파일 복제 후 재등록
       for (let i = 0, j = received_json.attach.length; i < j; i++) {
-        try {
+        if (received_json.attach[i].url) {
+          let filename = received_json.attach[i].filename;
+          let res = await fetch(received_json.attach[i].url);
+          let blob = await res.blob();
+          let tmp_path = `tmp_files/todo/${filename}`;
+          await this.indexed.saveBlobToUserPath(blob, tmp_path);
+          this.userInput.attach[i].path = tmp_path;
+          this.userInput.attach[i].blob = blob;
+          delete this.userInput.attach[i]['exist'];
+        } else try {
           let filename = received_json.attach[i].filename;
           let blob = await this.indexed.loadBlobFromUserPath(received_json.attach[i].path, received_json.attach[i].type);
           let tmp_path = `tmp_files/todo/${filename}`;
@@ -1483,6 +1492,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
           try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
             if (this.useFirstCustomCDN == 2) throw 'ForceSQL';
+            if (!this.userInput.attach[i].blob.size && this.userInput.attach[i].url)
+              this.userInput.attach[i].blob = await (await fetch(this.userInput.attach[i].url)).blob();
             let address = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info.address;
             let protocol = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info.useSSL ? 'https:' : 'http:';
             let targetname = `${this.userInput.id}_${this.nakama.users.self['display_name']}`;
