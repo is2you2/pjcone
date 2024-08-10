@@ -53,18 +53,15 @@ export class SubscribesPage implements OnInit {
 
   /** 단축키 생성 */
   AddShortcut() {
-    if (this.global.p5key && this.global.p5key['KeyShortCut']) {
-      this.global.p5key['KeyShortCut']['Backquote'] = () => {
-        this.go_to_page('group-server');
-      }
-      this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-        if (this.nakama.channels.length > index)
-          this.go_to_chatroom(this.nakama.channels[index]);
-        else this.add_new_group();
-      };
+    this.global.p5key['KeyShortCut']['Backquote'] = () => {
+      this.go_to_page('group-server');
     }
-    if (this.global.p5key && this.global.p5key['KeyShortCut']
-      && !this.global.p5key['KeyShortCut']['AddAct'])
+    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+      if (this.nakama.channels.length > index)
+        this.go_to_chatroom(this.nakama.channels[index]);
+      else this.add_new_group();
+    };
+    if (!this.global.p5key['KeyShortCut']['AddAct'])
       this.global.p5key['KeyShortCut']['AddAct'] = () => {
         this.add_new_group();
       };
