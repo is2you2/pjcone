@@ -2130,8 +2130,8 @@ export class NakamaService {
             }).catch(e => {
               console.error('그룹 사용자 가져오기 오류: ', e);
             });
-            this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target);
           }
+          this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target);
         }
         this.save_groups_with_less_info();
       }).catch(e => {
