@@ -1051,7 +1051,6 @@ export class VoidDrawPage implements OnInit {
             this.CreateOnOpenActSimple();
             this.CreateOnMessageLink();
             this.webrtc.CreateOffer();
-            this.p5voidDraw['SetDrawable'](true);
           });
         }
         break;
