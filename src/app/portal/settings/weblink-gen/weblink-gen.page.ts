@@ -60,7 +60,7 @@ export class WeblinkGenPage implements OnInit {
     this.update_qrcode();
     this.InitBrowserBackButtonOverride();
     this.servers = this.nakama.get_all_server_info();
-    this.groups = this.nakama.rearrange_group_list();
+    this.groups = this.nakama.rearrange_group_list(false);
     this.indexed.loadTextFromUserPath('servers/webrtc_server.json', (e, v) => {
       if (e && v) this.rtcServer = JSON.parse(v);
     });

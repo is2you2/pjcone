@@ -2148,10 +2148,8 @@ export class NakamaService {
       });
   }
 
-  /** 그룹을 재배열화한 후에 */
-  after_rearrange_group = {};
   /** 모든 그룹 리스트를 배열로 돌려주기 */
-  rearrange_group_list() {
+  rearrange_group_list(with_deleted = true) {
     let result: Group[] = [];
     let isOfficial = Object.keys(this.groups);
     isOfficial.forEach(_is_official => {
@@ -2161,19 +2159,18 @@ export class NakamaService {
         groupId.forEach(_gid => {
           try {
             this.groups[_is_official][_target][_gid]['server'] = this.servers[_is_official][_target].info;
+            result.push(this.groups[_is_official][_target][_gid]);
           } catch (e) {
             this.groups[_is_official][_target][_gid]['server'] = {
               name: this.lang.text['Nakama']['DeletedServer'],
               isOfficial: _is_official,
               target: _target,
             }
+            if (with_deleted) result.push(this.groups[_is_official][_target][_gid]);
           }
-          result.push(this.groups[_is_official][_target][_gid]);
         });
       });
     });
-    let keys = Object.keys(this.after_rearrange_group);
-    keys.forEach(key => this.after_rearrange_group[key](result));
     return result;
   }
 
