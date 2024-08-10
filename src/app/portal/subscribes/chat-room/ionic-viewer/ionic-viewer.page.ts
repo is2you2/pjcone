@@ -1440,8 +1440,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let size = this.p5canvas['VideoMedia'].size();
           let width: number, height: number;
           if (size.width > size.height) {
-            width = 192;
             height = size.height / size.width * 192;
+            width = 192;
           } else {
             width = size.width / size.height * 192;
             height = 192;
@@ -1499,8 +1499,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               p.loadImage(base64, async v => {
                 let width: number, height: number;
                 if (v.width > v.height) {
-                  width = 192;
                   height = v.height / v.width * 192;
+                  width = 192;
                 } else {
                   width = v.width / v.height * 192;
                   height = 192;
