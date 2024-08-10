@@ -74,7 +74,7 @@ export class SubscribesPage implements OnInit {
   ChannelContextMenu(channel: any) {
     let isOfficial = channel['server'].isOfficial;
     let target = channel['server'].target;
-    let targetHeader = channel['info'].name || channel['info'].display_name;
+    let targetHeader = channel['title'];
     if (channel['redirect'].type == 2) // 1:1 대화인 경우
       targetHeader = targetHeader || this.lang.text['Profile']['noname_user'];
     else targetHeader = targetHeader || this.lang.text['ChatRoom']['noname_chatroom'];
