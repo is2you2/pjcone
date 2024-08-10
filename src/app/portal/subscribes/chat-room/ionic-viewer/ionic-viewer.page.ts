@@ -1386,15 +1386,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       });
   }
 
-  /** 칩 선택시 내용을 상세히 알려줌 (p5toast) */
-  toast_info(worker: any) {
-    if (!worker['various_display'])
-      this.set_various_display(worker);
-    this.p5toast.show({
-      text: worker['various_display'],
-    });
-  }
-
   ShareContent() {
     let channels = this.nakama.rearrange_channels();
     for (let i = channels.length - 1; i >= 0; i--) {
