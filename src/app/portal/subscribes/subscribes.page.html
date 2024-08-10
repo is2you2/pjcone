@@ -51,7 +51,7 @@
         <img class="channel_image"
           [src]="channel['info'] && channel['info']['img'] || ((channel['local'] || (channel['info'] && channel['info']['max_count'] == 1)) ? 'assets/data/local.svg' : 'assets/data/channel.svg')"
           alt="ch_img"
-          [style]="(channel['status'] == 'online' || (channel['redirect']['type'] == 3 && channel['status'] == 'pending')) ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'">
+          [style]="(channel['status'] == 'online' || (channel['redirect'] && channel['redirect']['type'] == 3 && channel['status'] == 'pending')) ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'">
         <div *ngIf="!channel['local']" class="status_circle"
           [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']">
         </div>

@@ -828,7 +828,7 @@ export class NakamaService {
       } else this.socket_reactive['profile']('');
     });
     // 통신 소켓 연결하기
-    this.connect_to(_is_official, _target, async (socket: Socket) => {
+    this.connect_to(_is_official, _target, (socket: Socket) => {
       this.servers[_is_official][_target].client.readStorageObjects(
         this.servers[_is_official][_target].session, {
         object_ids: [{
@@ -854,6 +854,14 @@ export class NakamaService {
             }],
           );
         }
+        for (let i = 0, j = this.AfterLoginAct.length; i < j; i++)
+          try {
+            await this.AfterLoginAct[i]();
+          } catch (e) {
+            console.error('진입 동작 오류: ', e);
+          }
+        this.AfterLoginAct.length = 0;
+        this.AfterLoginActDone = true;
       });
       // 알고 있는 사용자 정보를 토대로 온라인 여부 검토
       let keys = Object.keys(this.users[_is_official][_target] || {});
@@ -865,14 +873,6 @@ export class NakamaService {
           this.redirect_channel(_is_official, _target);
           this.get_group_list_from_server(_is_official, _target);
         });
-      for (let i = 0, j = this.AfterLoginAct.length; i < j; i++)
-        try {
-          await this.AfterLoginAct[i]();
-        } catch (e) {
-          console.error('진입 동작 오류: ', e);
-        }
-      this.AfterLoginAct.length = 0;
-      this.AfterLoginActDone = true;
     });
     await this.SyncTodoCounter(_is_official, _target);
     this.load_server_todo(_is_official, _target);
@@ -1933,28 +1933,21 @@ export class NakamaService {
         } catch (e) {
           switch (e.status) {
             case 400: // 그룹에 이미 있는데 그룹추가 시도함
-              let v = await servers[i].client.listGroups(servers[i].session, decodeURIComponent(_info['name']))
-              for (let i = 0, j = v.groups.length; i < j; i++)
-                if (v.groups[i].id == _info['id']) {
-                  try {
-                    let pending_group = v.groups[i];
-                    let _list = await this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listGroupUsers(
-                      this.servers[servers[i].info.isOfficial][servers[i].info.target].session, v.groups[i].id
-                    );
-                    pending_group['users'] = _list.group_users;
-                    _list.group_users.forEach(_guser => {
-                      if (_guser.user.id == this.servers[servers[i].info.isOfficial][servers[i].info.target].session.user_id)
-                        _guser['is_me'] = true;
-                      else this.save_other_user(_guser.user, servers[i].info.isOfficial, servers[i].info.target);
-                    });
-                    this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
-                  } catch (e) {
-                    console.error('그룹 정보 중복 정보: ', e);
-                  }
-                  break;
-                }
+              console.log('이미 그룹에 가입되어 있음: 400');
+              let c = await this.join_chat_with_modulation(_info.id, 3, servers[i].info.isOfficial, servers[i].info.target);
+              try {
+                let channel = await this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listChannelMessages(
+                  this.servers[servers[i].info.isOfficial][servers[i].info.target].session, c.id, 1, false);
+                if (channel.messages.length)
+                  this.update_from_channel_msg(channel.messages[0], servers[i].info.isOfficial, servers[i].info.target);
+                this.go_to_chatroom_without_admob_act(c);
+              } catch (e) {
+                console.error('채널 정보 추가 오류: ', e);
+              }
+              done();
               break;
             case 404: // 이 서버에는 없는 그룹
+              console.log('이 서버에 없는 그룹: 404');
               break;
             default:
               console.error('그룹 추가 오류: ', e);

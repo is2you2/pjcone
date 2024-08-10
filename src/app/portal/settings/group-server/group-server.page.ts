@@ -545,7 +545,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
             avatar_url: v.acks[0].version,
           });
         } catch (e) {
-          console.error('inputImageSelected_err: ', e);
+          console.log('inputImageSelected_err: ', e);
         }
       } else {
         try {
