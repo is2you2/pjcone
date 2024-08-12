@@ -995,6 +995,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 }
               }
               this.userInput.qoute.id = target_msg.message_id;
+              setTimeout(() => {
+                this.userInputTextArea.focus();
+              }, 0);
             } catch (e) {
               console.log('메시지 상세보기 실패: ', e);
             }
