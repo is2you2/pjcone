@@ -122,7 +122,7 @@ export class SubscribesPage implements OnInit {
             handler: async () => {
               let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
               loading.present();
-              await this.nakama.remove_group_list(this.nakama.channels_orig[isOfficial][target][channel.id]['info'], isOfficial, target, true);
+              await this.nakama.remove_group_list(this.nakama.groups[isOfficial][target][channel['group_id']], isOfficial, target, true);
               delete this.nakama.channels_orig[isOfficial][target][channel.id];
               this.nakama.remove_channel_files(isOfficial, target, channel.id);
               // 해당 채널과 관련된 파일 일괄 삭제 (cdn / ffs)

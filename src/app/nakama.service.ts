@@ -2045,6 +2045,11 @@ export class NakamaService {
         }
       } else throw "not a group creator";
     } catch (e) {
+      // 그룹 정보 삭제
+      try {
+        delete this.groups[_is_official][_target][info['id']];
+        this.save_groups_with_less_info();
+      } catch (e) { }
       try { // FFS 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
         let fallback = localStorage.getItem('fallback_fs');
         if (!fallback) throw '사용자 지정 서버 없음';
