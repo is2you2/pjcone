@@ -110,6 +110,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   MainDiv: HTMLElement;
   isMobile = false;
 
+  /** 파일 읽기 멈추기 위한 컨트롤러 */
+  cont: AbortController;
+
   BackButtonPressed = false;
   ngOnInit() {
     window.history.pushState(null, null, window.location.href);
@@ -334,6 +337,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 저장소 변경이 가능한지 검토 (원격이면서 작성자가 남이 아닌지 검토) */
   isStoreAtChangable = true;
   async ionViewWillEnter() {
+    if (this.cont) this.cont.abort();
+    this.cont = new AbortController();
     this.LoadStorageList();
     let received_json: any;
     if (this.received_data) { // 이미 있는 데이터 조회
@@ -440,9 +445,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             continue;
           }
           let url = URL.createObjectURL(this.userInput.attach[i].blob);
-          this.global.modulate_thumbnail(this.userInput.attach[i], url);
+          this.global.modulate_thumbnail(this.userInput.attach[i], url, this.cont);
         } catch (e) {
-          this.global.modulate_thumbnail(this.userInput.attach[i], '');
+          this.global.modulate_thumbnail(this.userInput.attach[i], '', this.cont);
         }
         loading.dismiss();
         this.userInput.attach[i]['exist'] = true;
@@ -1232,7 +1237,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       for (let i = 0, j = received_json.attach.length; i < j; i++) {
         if (received_json.attach[i].url) {
           let filename = received_json.attach[i].filename;
-          let res = await fetch(received_json.attach[i].url);
+          let res = await fetch(received_json.attach[i].url, { signal: this.cont.signal });
           let blob = await res.blob();
           let tmp_path = `tmp_files/todo/${filename}`;
           await this.indexed.saveBlobToUserPath(blob, tmp_path);
@@ -1361,7 +1366,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
             loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: ${this.userInput.attach[i].filename}`;
             let CatchedAddress: string;
-            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attach[i], this.nakama.users.self['display_name'], loading);
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attach[i], this.nakama.users.self['display_name'], loading, this.cont);
             if (CatchedAddress) {
               delete this.userInput.attach[i]['partsize'];
               delete this.userInput.attach[i]['size'];
@@ -1493,7 +1498,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
             if (this.useFirstCustomCDN == 2) throw 'ForceSQL';
             if (!this.userInput.attach[i].blob.size && this.userInput.attach[i].url)
-              this.userInput.attach[i].blob = await (await fetch(this.userInput.attach[i].url)).blob();
+              this.userInput.attach[i].blob = await (await fetch(this.userInput.attach[i].url, { signal: this.cont.signal })).blob();
             let address = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info.address;
             let protocol = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info.useSSL ? 'https:' : 'http:';
             let targetname = `${this.userInput.id}_${this.nakama.users.self['display_name']}`;
@@ -1501,7 +1506,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               targetname = `${this.userInput.id}_${this.userInput.remote.creator_id}`;
             } catch (e) { }
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.attach[i],
-              targetname, protocol, address, this.useFirstCustomCDN == 1);
+              targetname, protocol, address, this.useFirstCustomCDN == 1, undefined, this.cont);
             let isURL = Boolean(savedAddress);
             if (!isURL) throw '링크 만들기 실패';
             delete this.userInput.attach[i]['size'];
@@ -1511,7 +1516,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             console.log('cdn 업로드 처리 실패: ', e);
             // url 파일을 SQL 처리하려는 경우 직접 다운받아서 사용하기
             if (e == 'ForceSQL' && this.userInput.attach[i].url)
-              this.userInput.attach[i].blob = await (await fetch(this.userInput.attach[i].url)).blob();
+              this.userInput.attach[i].blob = await (await fetch(this.userInput.attach[i].url, { signal: this.cont.signal })).blob();
             try {
               await this.nakama.sync_save_file(this.userInput.attach[i],
                 this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
@@ -1642,6 +1647,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.cont.abort();
     this.nakama.AddTodoLinkAct = undefined;
     this.nakama.AddTodoManageUpdateAct = undefined;
     if (this.p5canvas)

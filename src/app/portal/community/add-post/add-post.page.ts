@@ -93,8 +93,11 @@ export class AddPostPage implements OnInit, OnDestroy {
   OriginalInfo: any;
   /** 서버 정보 비교를 위한 문자열 구성 */
   OriginalServerInfo: string;
+  /** 파일 읽기 멈추기 위한 컨트롤러 */
+  cont: AbortController;
 
   ngOnInit() {
+    this.cont = new AbortController();
     this.useFirstCustomCDN = Number(localStorage.getItem('useFFSCDN')) || 0;
     this.toggle_custom_attach(this.useFirstCustomCDN);
     this.route.queryParams.subscribe(async _p => {
@@ -658,7 +661,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.global.set_viewer_category_from_ext(file);
     if (file.url) {
       try {
-        let res = await fetch(file.url);
+        let res = await fetch(file.url, { signal: this.cont.signal });
         if (res.ok) file.thumbnail = file.url;
       } catch (e) { }
       file.typeheader = file.viewer;
@@ -763,7 +766,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           try { // 정상적인 주소인지 검토
             if (pasted_url.indexOf('http:') != 0 && pasted_url.indexOf('https:') != 0) throw '올바른 웹 주소가 아님';
             if (file && override.filename === undefined) throw '이미 파일이 첨부됨, 토글만 시도';
-            let res = await fetch(pasted_url);
+            let res = await fetch(pasted_url, { signal: this.cont.signal });
             if (!res.ok) throw 'URL 구조가 정상이 아님';
           } catch (e) {
             throw e;
@@ -790,7 +793,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           this.global.set_viewer_category_from_ext(this_file);
           this_file.type = override.type || '';
           this_file.typeheader = override.typeheader || this_file.viewer;
-          this.global.modulate_thumbnail(this_file, this_file.url);
+          this.global.modulate_thumbnail(this_file, this_file.url, this.cont);
           this.userInput.attachments.push(this_file);
         } catch (e) {
           if (e == 'done')
@@ -997,15 +1000,15 @@ export class AddPostPage implements OnInit, OnDestroy {
     if (this.isModify || this.isServerChanged) { // 편집된 게시물이라면 첨부파일을 전부다 지우고 다시 등록
       if (this.userInput.mainImage && this.userInput.mainImage.url && !this.userInput.mainImage.blob) {
         try {
-          let res = await fetch(this.userInput.mainImage.url);
+          let res = await fetch(this.userInput.mainImage.url, { signal: this.cont.signal });
           if (res.ok) this.userInput.mainImage.blob = await res.blob();
         } catch (e) { }
-        this.userInput.mainImage.blob = await (await fetch(this.userInput.mainImage.url)).blob();
+        this.userInput.mainImage.blob = await (await fetch(this.userInput.mainImage.url, { signal: this.cont.signal })).blob();
       }
       for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
         if (this.userInput.attachments[i].url && !this.userInput.attachments[i].blob) {
           try {
-            let res = await fetch(this.userInput.attachments[i].url);
+            let res = await fetch(this.userInput.attachments[i].url, { signal: this.cont.signal });
             if (res.ok) this.userInput.attachments[i].blob = await res.blob();
           } catch (e) { }
         }
@@ -1079,7 +1082,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
             loading.message = `${this.lang.text['AddPost']['SyncMainImage']}: ${this.userInput.mainImage.filename}`;
             let CatchedAddress: string;
-            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, this.nakama.users.self['display_name'], loading);
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, this.nakama.users.self['display_name'], loading, this.cont);
             if (CatchedAddress) {
               delete this.userInput.mainImage['path'];
               delete this.userInput.mainImage['partsize'];
@@ -1095,7 +1098,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.mainImage,
               this.nakama.servers[this.isOfficial][this.target].session.user_id,
-              protocol, address, this.useFirstCustomCDN == 1, loading);
+              protocol, address, this.useFirstCustomCDN == 1, loading, this.cont);
             let isURL = Boolean(savedAddress);
             if (!isURL) throw '링크 만들기 실패';
             delete this.userInput.mainImage['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
@@ -1115,7 +1118,7 @@ export class AddPostPage implements OnInit, OnDestroy {
               if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
               loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`;
               let CatchedAddress: string;
-              CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name'], loading);
+              CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name'], loading, this.cont);
               if (CatchedAddress) {
                 delete this.userInput.attachments[i]['path'];
                 delete this.userInput.attachments[i]['partsize'];
@@ -1132,14 +1135,14 @@ export class AddPostPage implements OnInit, OnDestroy {
               let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
               let savedAddress = await this.global.upload_file_to_storage(this.userInput.attachments[i],
                 this.nakama.servers[this.isOfficial][this.target].session.user_id,
-                protocol, address, this.useFirstCustomCDN == 1, loading);
+                protocol, address, this.useFirstCustomCDN == 1, loading, this.cont);
               let isURL = Boolean(savedAddress);
               if (!isURL) throw '링크 만들기 실패';
               delete this.userInput.attachments[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
               this.userInput.attachments[i]['url'] = savedAddress;
             } catch (e) {
               if (e == 'SQL 강제' && this.userInput.attachments[i].url && !this.userInput.attachments[i].blob)
-                this.userInput.attachments[i].blob = await (await fetch(this.userInput.attachments[i].url)).blob();
+                this.userInput.attachments[i].blob = await (await fetch(this.userInput.attachments[i].url, { signal: this.cont.signal })).blob();
               await this.nakama.sync_save_file(this.userInput.attachments[i], isOfficial, target, 'server_post', `${this.userInput.id}_attach_${i}`);
             }
           }
@@ -1164,7 +1167,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           let user_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
           let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
           loading.message = `${this.lang.text['AddPost']['SyncPostInfo']}`;
-          let outlink = await this.global.upload_file_to_storage(file, user_id, protocol, address, this.useFirstCustomCDN == 1);
+          let outlink = await this.global.upload_file_to_storage(file, user_id, protocol, address, this.useFirstCustomCDN == 1, undefined, this.cont);
           if (outlink) {
             this.userInput.OutSource = outlink;
           } else throw '업로드 실패';
@@ -1172,7 +1175,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           try { // FFS에 업로드 시도
             let user_id = this.nakama.users.self['display_name'];
             loading.message = `${this.lang.text['AddPost']['SyncPostInfo']}`;
-            let outlink = await this.global.try_upload_to_user_custom_fs(file, user_id);
+            let outlink = await this.global.try_upload_to_user_custom_fs(file, user_id, undefined, this.cont);
             if (outlink) {
               this.userInput.OutSource = outlink;
             } else throw '업로드 실패';
@@ -1241,6 +1244,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   }
 
   ionViewWillLeave() {
+    this.cont.abort();
     delete this.global.p5key['KeyShortCut']['Escape'];
     this.global.p5key['KeyShortCut']['BottomTab'] = this.BottomTabShortcut;
     this.indexed.GetFileListFromDB('tmp_files/post').then(list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));

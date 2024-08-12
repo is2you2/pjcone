@@ -37,6 +37,10 @@ export class PostViewerPage implements OnInit, OnDestroy {
   HavePosts = false;
   /** 불러와진 모든 포스트 기준 현재 게시물 번호 */
   CurrentIndex = 1;
+
+  /** 파일 읽기 멈추기 위한 컨트롤러 */
+  cont: AbortController;
+
   ngOnInit() {
     this.PostInfo = this.navParam.get('data');
     this.CurrentIndex = this.navParam.get('index');
@@ -122,6 +126,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
 
   /** 진입 정보를 어떻게 활용할 것인가 */
   initialize() {
+    if (this.cont) this.cont.abort();
+    this.cont = new AbortController();
     if (this.PostInfo['mainImage']) {
       try {
         let FileURL = this.PostInfo['mainImage']['url'];
@@ -563,6 +569,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.cont.abort();
     for (let i = 0, j = this.FileURLs.length; i < j; i++)
       URL.revokeObjectURL(this.FileURLs[i]);
     for (let i = 0, j = this.blenderViewers.length; i < j; i++)

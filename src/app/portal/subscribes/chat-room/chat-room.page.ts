@@ -83,6 +83,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   info: any = {};
   isOfficial: string;
   target: string;
+  /** 파일 읽기 멈추기 위한 컨트롤러 */
+  cont: AbortController;
 
   /** 마지막에 읽은 메시지를 찾았는지 */
   foundLastRead = false;
@@ -182,7 +184,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             case 'image':
               try {
                 if (this.userInput.file.url)
-                  this.userInput.file.blob = await fetch(this.userInput.file.url).then(r => r.blob());
+                  this.userInput.file.blob = await fetch(this.userInput.file.url, { signal: this.cont.signal }).then(r => r.blob());
                 let tmp_work_path = `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`;
                 await this.indexed.saveBlobToUserPath(this.userInput.file.blob, tmp_work_path);
                 let thumbnail_image = document.getElementById('ChatroomSelectedImage');
@@ -566,7 +568,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           try { // 정상적인 주소인지 검토
             if (pasted_url.indexOf('http:') != 0 && pasted_url.indexOf('https:') != 0) throw '올바른 웹 주소가 아님';
             if (this.userInput.file && override.filename === undefined) throw '이미 파일이 첨부됨, 토글만 시도';
-            let res = await fetch(pasted_url);
+            let res = await fetch(pasted_url, { signal: this.cont.signal });
             if (!res.ok) throw 'URL 구조가 정상이 아님';
           } catch (e) {
             throw e;
@@ -593,7 +595,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.global.set_viewer_category_from_ext(this_file);
           this_file.type = override.type || '';
           this_file.typeheader = override.typeheader || this_file.viewer;
-          this.global.modulate_thumbnail(this_file, this_file.url);
+          this.global.modulate_thumbnail(this_file, this_file.url, this.cont);
           if (this.NeedScrollDown())
             setTimeout(() => {
               this.scroll_down_logs();
@@ -1127,7 +1129,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.global.set_viewer_category_from_ext(this.userInput.file);
     if (this.userInput.file.url) {
       try {
-        let res = await fetch(this.userInput.file.url);
+        let res = await fetch(this.userInput.file.url, { signal: this.cont.signal });
         if (res.ok) this.userInput.file.thumbnail = this.userInput.file.url;
       } catch (e) { }
       this.userInput.file.typeheader = this.userInput.file.viewer;
@@ -1170,6 +1172,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   };
 
   async init_chatroom() {
+    if (this.cont) this.cont.abort();
+    this.cont = new AbortController();
     this.userInput.text = '';
     delete this.userInput.file;
     delete this.userInput.qoute;
@@ -1423,14 +1427,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     } catch (e) {
       this.temporary_open_thumbnail[msg.message_id] = () => {
         if (msg.content.url) {
-          this.global.modulate_thumbnail(msg.content, '');
+          this.global.modulate_thumbnail(msg.content, '', this.cont);
         } else {
           this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
             msg.content['type'],
             v => {
               msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
               let url = URL.createObjectURL(v);
-              this.global.modulate_thumbnail(msg.content, url);
+              this.global.modulate_thumbnail(msg.content, url, this.cont);
               if (this.NeedScrollDown())
                 setTimeout(() => {
                   this.scroll_down_logs();
@@ -1488,7 +1492,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
               FileURL = URL.createObjectURL(blob);
             } catch (e) { }
-            this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+            this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
             this.modulate_chatmsg(i, ShowMeAgainCount + 1);
             if (this.ViewableMessage[i].content.qoute && this.ViewableMessage[i].content.qoute.path) this.OpenQouteThumbnail(this.ViewableMessage[i]);
           }
@@ -1533,7 +1537,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.indexed.checkIfFileExist(this.ViewableMessage[i].content['path'], b => {
               if (b) this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext, (blob) => {
                 FileURL = URL.createObjectURL(blob);
-                this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+                this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
               });
             })
           } catch (e) {
@@ -1568,7 +1572,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
           FileURL = URL.createObjectURL(blob);
         } catch (e) { }
-        this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+        this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
         this.modulate_chatmsg(i, this.ViewableMessage.length);
         if (this.ViewableMessage[i].content.qoute && this.ViewableMessage[i].content.qoute.path) this.OpenQouteThumbnail(this.ViewableMessage[i]);
       }
@@ -1622,7 +1626,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
           FileURL = URL.createObjectURL(blob);
         } catch (e) { }
-        this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+        this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
         this.modulate_chatmsg(i, ShowMeAgainCount + 1);
         if (this.ViewableMessage[i].content.qoute && this.ViewableMessage[i].content.qoute.path) this.OpenQouteThumbnail(this.ViewableMessage[i]);
       }
@@ -1672,7 +1676,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
               FileURL = URL.createObjectURL(blob);
             } catch (e) { }
-            this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL);
+            this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
             this.modulate_chatmsg(i, ShowMeAgainCount);
             if (this.ViewableMessage[i].content.qoute && this.ViewableMessage[i].content.qoute.path) this.OpenQouteThumbnail(this.ViewableMessage[i]);
           }
@@ -1835,7 +1839,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           (this.info['user_id_one'] == this.nakama.servers[this.isOfficial][this.target].session.user_id ? this.info['user_id_two'] : this.info['user_id_one'])
           }_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
         let savedAddress = await this.global.upload_file_to_storage(this.userInput.file,
-          targetname, protocol, address, this.useFirstCustomCDN == 1);
+          targetname, protocol, address, this.useFirstCustomCDN == 1, undefined, this.cont);
         isURL = Boolean(savedAddress);
         if (!isURL) throw '링크 만들기 실패';
         delete result['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
@@ -1865,7 +1869,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         try {
           let CatchedAddress: string;
           if (this.useFirstCustomCDN == 1)
-            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.file, `${this.info.id}_${this.nakama.users.self['display_name']}`);
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.file, `${this.info.id}_${this.nakama.users.self['display_name']}`, undefined, this.cont);
           if (CatchedAddress) {
             delete tmp.content['path'];
             delete tmp.content['partsize'];
@@ -2273,7 +2277,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           v => {
             msg.content['path'] = path;
             let url = URL.createObjectURL(v);
-            this.global.modulate_thumbnail(msg.content, url);
+            this.global.modulate_thumbnail(msg.content, url, this.cont);
             if (this.NeedScrollDown())
               setTimeout(() => {
                 this.scroll_down_logs();
@@ -2348,7 +2352,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 파일이 포함된 메시지 구조화, 자동 썸네일 작업 */
   ModulateFileEmbedMessage(msg: any) {
     if (msg.content.url) // URL 이 있다면 냅다 적용시켜보기
-      this.global.modulate_thumbnail(msg.content, '');
+      this.global.modulate_thumbnail(msg.content, '', this.cont);
     let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
     msg.content['path'] = path;
     try {
@@ -2378,7 +2382,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           v => {
             msg.content['path'] = path;
             let url = URL.createObjectURL(v);
-            this.global.modulate_thumbnail(msg.content, url);
+            this.global.modulate_thumbnail(msg.content, url, this.cont);
             if (this.NeedScrollDown())
               setTimeout(() => {
                 this.scroll_down_logs();
@@ -2388,7 +2392,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         try {
           let blob = await this.indexed.loadBlobFromUserPath(`${msg.content['path']}_thumbnail.png`, 'image/png');
           let FileURL = URL.createObjectURL(blob);
-          this.global.modulate_thumbnail(msg.content, FileURL);
+          this.global.modulate_thumbnail(msg.content, FileURL, this.cont);
         } catch (e) { }
       }
     });
@@ -2585,6 +2589,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   async ngOnDestroy(): Promise<void> {
+    this.cont.abort();
     delete this.nakama.opened_page_info['channel'];
     this.nakama.ChatroomLinkAct = undefined;
     if (this.p5canvas)

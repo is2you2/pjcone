@@ -54,6 +54,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     private noti: LocalNotiService,
   ) { }
   ngOnDestroy(): void {
+    this.cont.abort();
     if (this.p5viewerkey) this.p5viewerkey.remove();
   }
 
@@ -384,7 +385,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['TodoDetail'] });
     loading.present();
     try {
-      let res = await fetch(this.FileInfo.url);
+      let res = await fetch(this.FileInfo.url, { signal: this.cont.signal });
       if (res.ok) {
         let blob = await res.blob();
         await this.indexed.saveBlobToUserPath(blob, this.FileInfo.alt_path || this.FileInfo.path);
@@ -976,7 +977,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             this.ContentFailedLoad = false;
           }, () => {
             this.ContentFailedLoad = true;
-          });
+          }, this.cont);
         break;
       case 'pdf':
         if (isPlatform != 'Android') {
@@ -1471,7 +1472,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           try {
             await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.alt_path || this.FileInfo.path}_thumbnail.png`);
             this.FileInfo.thumbnail = base64;
-            this.global.modulate_thumbnail(this.FileInfo, '');
+            this.global.modulate_thumbnail(this.FileInfo, '', this.cont);
             if (this.p5canvas) this.p5canvas.remove();
           } catch (e) {
             console.log('썸네일 저장 오류: ', e);
@@ -1529,7 +1530,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
                 await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.alt_path || this.FileInfo.path}_thumbnail.png`);
                 this.FileInfo.thumbnail = base64;
-                this.global.modulate_thumbnail(this.FileInfo, '');
+                this.global.modulate_thumbnail(this.FileInfo, '', this.cont);
                 p.remove();
                 if (this.p5canvas) this.p5canvas.remove();
               }, e => {
@@ -1551,7 +1552,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   ionViewDidLeave() {
-    this.cont.abort();
     this.noti.ClearNoti(6);
   }
 

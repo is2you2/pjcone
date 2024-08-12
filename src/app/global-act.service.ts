@@ -468,7 +468,7 @@ export class GlobalActService {
   }
 
   /** 메시지에 썸네일 콘텐츠를 생성 */
-  async modulate_thumbnail(msg_content: FileInfo, ObjectURL: string) {
+  async modulate_thumbnail(msg_content: FileInfo, ObjectURL: string, cont?: AbortController) {
     try { // 대안 썸네일이 있다면 보여주고 끝내기
       let blob = await this.indexed.loadBlobFromUserPath(`${msg_content['path']}_thumbnail.png`, 'image/png');
       let FileURL = URL.createObjectURL(blob);
@@ -483,7 +483,7 @@ export class GlobalActService {
       case 'image':
         try {
           if (!msg_content['url']) throw 'No URL';
-          let res = await fetch(msg_content['url']);
+          let res = await fetch(msg_content['url'], { signal: cont?.signal });
           if (res.ok) msg_content['thumbnail'] = msg_content['url'];
           else throw 'Not ok';
         } catch (e) {
@@ -492,7 +492,7 @@ export class GlobalActService {
         break;
       case 'text':
         if (msg_content['url']) {
-          let text = await fetch(msg_content['url']).then(r => r.text());
+          let text = await fetch(msg_content['url'], { signal: cont?.signal }).then(r => r.text());
           msg_content['text'] = text.split('\n');
         } else new p5((p: p5) => {
           p.setup = () => {
@@ -666,7 +666,7 @@ export class GlobalActService {
    * @param address 해당 서버 주소
    * @returns 등록된 주소 반환
    */
-  async upload_file_to_storage(file: any, user_id: string, protocol: string, address: string, useCustomServer: boolean, loading?: HTMLIonLoadingElement): Promise<string> {
+  async upload_file_to_storage(file: any, user_id: string, protocol: string, address: string, useCustomServer: boolean, loading?: HTMLIonLoadingElement, cont?: AbortController): Promise<string> {
     let innerLoading: HTMLIonLoadingElement;
     if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['Settings']['TryToFallbackFS'] });
     else innerLoading = loading;
@@ -674,7 +674,7 @@ export class GlobalActService {
     let Catched = false;
     let CatchedAddress: string;
     if (useCustomServer)
-      CatchedAddress = await this.try_upload_to_user_custom_fs(file, user_id, innerLoading);
+      CatchedAddress = await this.try_upload_to_user_custom_fs(file, user_id, innerLoading, cont);
     innerLoading.message = this.lang.text['GlobalAct']['CheckCdnServer'];
     try { // 사설 연계 서버에 업로드 시도
       if (CatchedAddress) {
@@ -686,7 +686,7 @@ export class GlobalActService {
       let filename = `${user_id}_${only_filename}_${upload_time}.${file.file_ext}`;
       CatchedAddress = `${protocol}//${address}:9002/cdn/${filename}`;
       let progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST" });
+        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { signal: cont?.signal, method: "POST" });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
         innerLoading.message = `${file.filename}: ${progressPercent}%`;
@@ -694,9 +694,9 @@ export class GlobalActService {
       let formData = new FormData();
       let _file = new File([file.blob], filename);
       formData.append("files", _file);
-      await fetch(`${protocol}//${address}:9001/cdn/${filename}`, { method: "POST", body: formData });
+      await fetch(`${protocol}//${address}:9001/cdn/${filename}`, { method: "POST", body: formData, signal: cont?.signal });
       clearInterval(progress);
-      let res = await fetch(CatchedAddress);
+      let res = await fetch(CatchedAddress, { signal: cont?.signal });
       if (res.ok) Catched = true;
     } catch (e) {
       innerLoading.message = this.lang.text['GlobalAct']['CancelingUpload'];
@@ -707,13 +707,13 @@ export class GlobalActService {
   }
 
   /** 해당 주소의 파일 삭제 요청 (cdn 기반 파일) */
-  async remove_file_from_storage(url: string) {
+  async remove_file_from_storage(url: string, cont?: AbortController) {
     let sep = url.split('/cdn/');
     let target_file_name = sep.pop();
     let target_address = sep.shift();
     let lastIndex = target_address.lastIndexOf(':');
     if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
-    await fetch(`${target_address}:9001/remove/${target_file_name}`, { method: "POST" });
+    await fetch(`${target_address}:9001/remove/${target_file_name}`, { method: "POST", signal: cont?.signal });
   }
 
   /** 해당 키워드가 포함된 모든 파일 삭제 요청 (cdn 기반 파일)  
@@ -721,14 +721,14 @@ export class GlobalActService {
    * @param target_address 해당 서버 주소 (protocol://address 까지) (FFS는 포함되지 않음)
    * @param target_id 인덱스 키 값
    */
-  async remove_files_from_storage_with_key(target_address: string, target_id: string) {
+  async remove_files_from_storage_with_key(target_address: string, target_id: string, cont?: AbortController) {
     let lastIndex = target_address.lastIndexOf(':');
     if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
-    await fetch(`${target_address}:9001/remove_key/${target_id}`, { method: "POST" });
+    await fetch(`${target_address}:9001/remove_key/${target_id}`, { method: "POST", signal: cont?.signal });
   }
 
   /** 사용자 지정 서버에 업로드 시도 */
-  async try_upload_to_user_custom_fs(file: any, user_id: string, loading?: HTMLIonLoadingElement) {
+  async try_upload_to_user_custom_fs(file: any, user_id: string, loading?: HTMLIonLoadingElement, cont?: AbortController) {
     let innerLoading: HTMLIonLoadingElement;
     if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['Settings']['TryToFallbackFS'] });
     else innerLoading = loading;
@@ -748,14 +748,14 @@ export class GlobalActService {
       let protocol = checkProtocol ? 'https:' : 'http:';
       CatchedAddress = `${protocol}//${address[0]}:${address[1] || 9002}/cdn/${filename}`;
       progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST" });
+        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", signal: cont?.signal });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
         loading.message = `${file.filename}: ${progressPercent}%`;
       }, 700);
-      await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
+      await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData, signal: cont?.signal });
       clearInterval(progress);
-      let res = await fetch(CatchedAddress);
+      let res = await fetch(CatchedAddress, { signal: cont?.signal });
       if (!loading) innerLoading.dismiss();
       if (res.ok) return CatchedAddress;
     } catch (e) {
@@ -766,7 +766,7 @@ export class GlobalActService {
   }
 
   /** blender 파일 읽기 후 특정 개체에 넣기 */
-  load_blender_file(canvasDiv: HTMLElement, FileInfo: FileInfo, loading: HTMLIonLoadingElement, OnLoaded: Function, OnFailedToLoad: Function): p5 {
+  load_blender_file(canvasDiv: HTMLElement, FileInfo: FileInfo, loading: HTMLIonLoadingElement, OnLoaded: Function, OnFailedToLoad: Function, cont?: AbortController): p5 {
     return new p5((p: p5) => {
       /** 수집된 광원 */
       let lights = [];
@@ -790,7 +790,7 @@ export class GlobalActService {
           blob = await this.indexed.loadBlobFromUserPath(FileInfo.path, FileInfo.type || '');
         } catch (e) {
           try {
-            let from_url = await fetch(FileInfo.url);
+            let from_url = await fetch(FileInfo.url, { signal: cont?.signal });
             blob = await from_url.blob();
           } catch (e) {
             console.log('뷰어에서 파일 불러오기 실패: ', e);
