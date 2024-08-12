@@ -1082,7 +1082,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
             loading.message = `${this.lang.text['AddPost']['SyncMainImage']}: ${this.userInput.mainImage.filename}`;
             let CatchedAddress: string;
-            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, this.nakama.users.self['display_name'], loading, this.cont);
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, this.nakama.users.self['display_name'], loading);
             if (CatchedAddress) {
               delete this.userInput.mainImage['path'];
               delete this.userInput.mainImage['partsize'];
@@ -1098,7 +1098,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.mainImage,
               this.nakama.servers[this.isOfficial][this.target].session.user_id,
-              protocol, address, this.useFirstCustomCDN == 1, loading, this.cont);
+              protocol, address, this.useFirstCustomCDN == 1, loading);
             let isURL = Boolean(savedAddress);
             if (!isURL) throw '링크 만들기 실패';
             delete this.userInput.mainImage['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
@@ -1118,7 +1118,7 @@ export class AddPostPage implements OnInit, OnDestroy {
               if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
               loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`;
               let CatchedAddress: string;
-              CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name'], loading, this.cont);
+              CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name'], loading);
               if (CatchedAddress) {
                 delete this.userInput.attachments[i]['path'];
                 delete this.userInput.attachments[i]['partsize'];
@@ -1135,7 +1135,7 @@ export class AddPostPage implements OnInit, OnDestroy {
               let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
               let savedAddress = await this.global.upload_file_to_storage(this.userInput.attachments[i],
                 this.nakama.servers[this.isOfficial][this.target].session.user_id,
-                protocol, address, this.useFirstCustomCDN == 1, loading, this.cont);
+                protocol, address, this.useFirstCustomCDN == 1, loading);
               let isURL = Boolean(savedAddress);
               if (!isURL) throw '링크 만들기 실패';
               delete this.userInput.attachments[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
@@ -1167,7 +1167,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           let user_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
           let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
           loading.message = `${this.lang.text['AddPost']['SyncPostInfo']}`;
-          let outlink = await this.global.upload_file_to_storage(file, user_id, protocol, address, this.useFirstCustomCDN == 1, undefined, this.cont);
+          let outlink = await this.global.upload_file_to_storage(file, user_id, protocol, address, this.useFirstCustomCDN == 1);
           if (outlink) {
             this.userInput.OutSource = outlink;
           } else throw '업로드 실패';
@@ -1175,7 +1175,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           try { // FFS에 업로드 시도
             let user_id = this.nakama.users.self['display_name'];
             loading.message = `${this.lang.text['AddPost']['SyncPostInfo']}`;
-            let outlink = await this.global.try_upload_to_user_custom_fs(file, user_id, undefined, this.cont);
+            let outlink = await this.global.try_upload_to_user_custom_fs(file, user_id);
             if (outlink) {
               this.userInput.OutSource = outlink;
             } else throw '업로드 실패';

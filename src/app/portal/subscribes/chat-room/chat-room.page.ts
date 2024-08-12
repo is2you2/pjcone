@@ -1839,7 +1839,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           (this.info['user_id_one'] == this.nakama.servers[this.isOfficial][this.target].session.user_id ? this.info['user_id_two'] : this.info['user_id_one'])
           }_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
         let savedAddress = await this.global.upload_file_to_storage(this.userInput.file,
-          targetname, protocol, address, this.useFirstCustomCDN == 1, undefined, this.cont);
+          targetname, protocol, address, this.useFirstCustomCDN == 1);
         isURL = Boolean(savedAddress);
         if (!isURL) throw '링크 만들기 실패';
         delete result['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
@@ -1869,7 +1869,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         try {
           let CatchedAddress: string;
           if (this.useFirstCustomCDN == 1)
-            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.file, `${this.info.id}_${this.nakama.users.self['display_name']}`, undefined, this.cont);
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.file, `${this.info.id}_${this.nakama.users.self['display_name']}`);
           if (CatchedAddress) {
             delete tmp.content['path'];
             delete tmp.content['partsize'];
