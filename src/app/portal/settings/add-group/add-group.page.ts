@@ -50,6 +50,27 @@ export class AddGroupPage implements OnInit, OnDestroy {
       this.LoadListServer();
       this.index = 0;
     };
+    this.CheckIfCopiedChannelID();
+  }
+
+  /** 진입시 채널 아이디를 복사해둔 상태라면 즉시 해당 아이디로 가입하기 시도 */
+  async CheckIfCopiedChannelID() {
+    let copied: string;
+    try {
+      copied = await clipboard.read();
+    } catch (e) {
+      try {
+        copied = await this.mClipboard.paste();
+      } catch (e) {
+        return;
+      }
+    }
+    const uuidPattern = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    let result = uuidPattern.test(copied);
+    if (result) {
+      this.userInput.id = copied;
+      this.JoinWithSpecificId();
+    }
   }
 
   /** 선택할 수 있는 서버 리스트 만들기 */
