@@ -111,6 +111,15 @@ wss.on('connection', (ws) => {
             let json = JSON.parse(msg);
             let channel_id = json['channel'] || joined_channel[clientId];
             switch (json['type']) {
+                case 'init': // 사용자에게 새 채널 id를 구성하여 전달
+                    let new_channel_id = uuidv4();
+                    let init = {
+                        type: 'init',
+                        id: new_channel_id,
+                    }
+                    dedi_client[new_channel_id] = {};
+                    ws.send(JSON.stringify(init));
+                    return;
                 case 'join': // 새로운 사용자 참여
                     if (!json['channel']) // 참여 예정 채널이 없다면 새 채널 만들기
                         channel_id = clientId;
@@ -139,7 +148,8 @@ wss.on('connection', (ws) => {
                     dedi_client[channel_id][keys[i]]['ws'].send(json);
             }
         } catch (e) {
-            console.error(`json 변환 오류_${msg}: ${e}`);
+            console.error(`json 변환 오류 msg: ${msg}`);
+            console.warn(e);
         }
         // 클라이언트에게 메시지 전송
         ws.send('서버에서 받은 메시지: ' + msg);
