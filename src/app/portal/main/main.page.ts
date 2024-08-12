@@ -16,6 +16,8 @@ enum TodoFilterCategory {
   Importance = 1,
   /** 색상에 따라 필터링 */
   Color = 2,
+  /** 생성자에 따라 필터링 */
+  Creator = 3,
 }
 
 @Component({
@@ -59,7 +61,7 @@ export class MainPage implements OnInit {
   AllCategories = {}
   /** 필터 종류 변경하기 */
   SwitchTargetFilter(force?: number) {
-    this.TargetFilterName = force ?? ((this.TargetFilterName + 1) % 3);
+    this.TargetFilterName = force ?? ((this.TargetFilterName + 1) % 4);
     switch (this.TargetFilterName) {
       case TodoFilterCategory.None:
         this.TargetFilterDisplayName = 'FilterCat_0';
@@ -69,6 +71,9 @@ export class MainPage implements OnInit {
         break;
       case TodoFilterCategory.Color:
         this.TargetFilterDisplayName = 'CustomColor';
+        break;
+      case TodoFilterCategory.Creator:
+        this.TargetFilterDisplayName = 'FilterByCreator';
         break;
     }
     this.CurrentFilterValue = undefined;
@@ -279,6 +284,23 @@ export class MainPage implements OnInit {
           color: '#ff00ff88',
           value: [270, 330],
         }];
+        this.AllCategories[TodoFilterCategory.Creator] = [{
+          name: 'CreatorLocal',
+          color: '#bbbbbb88',
+          value: 'local',
+        }, {
+          name: 'CreatorMe',
+          color: '#00ff0088',
+          value: 'server',
+        }, {
+          name: 'Requested',
+          color: '#6789ab88',
+          value: 'worker',
+        }, {
+          name: 'CreatorOther',
+          color: '#ba987688',
+          value: 'other',
+        }];
         p['FilteringTodos'] = FilteringTodos;
       }
       /** 할 일 객체를 순회하며 표시를 필터링함 */
@@ -336,6 +358,27 @@ export class MainPage implements OnInit {
                 }
               } else Todos[TodoKeys[i]].isHidden = false;
             }
+            break;
+          case TodoFilterCategory.Creator:
+            if (this.CurrentFilterValue)
+              for (let i = 0, j = TodoKeys.length; i < j; i++)
+                if (Todos[TodoKeys[i]].json.id == 'AddButton') {
+                  Todos[TodoKeys[i]].isHidden = false;
+                } else switch (this.CurrentFilterValue) {
+                  case 'local': // 내가 만든 할 일
+                    Todos[TodoKeys[i]].isHidden = Todos[TodoKeys[i]].json['storeAt'] != this.CurrentFilterValue;
+                    break;
+                  case 'server': // 내가 만든 할 일
+                    Todos[TodoKeys[i]].isHidden = Todos[TodoKeys[i]].json['remote'] === undefined;
+                    break;
+                  case 'worker': // 내가 다른 사람에게 요청함
+                    Todos[TodoKeys[i]].isHidden = !(Todos[TodoKeys[i]].json['workers'] !== undefined && Todos[TodoKeys[i]].json['is_me']);
+                    break;
+                  case 'other': // 다른 사람이 나에게 요청함
+                    Todos[TodoKeys[i]].isHidden = Todos[TodoKeys[i]].json['is_me'] || Todos[TodoKeys[i]].json['storeAt'] == 'local';
+                    break;
+                }
+            else FilteringTodos(TodoFilterCategory.None);
             break;
         }
         p.redraw();

@@ -1049,11 +1049,15 @@ export class NakamaService {
 
   /** 원격 정보를 로컬에 맞게 수정, 그 후 로컬에 다시 저장하기 */
   async modify_remote_info_as_local(todo_info: any, _is_official: string, _target: string) {
+    // 원격 정보를 로컬에 맞춤
     todo_info['remote']['name'] = this.servers[_is_official][_target].info.name;
     todo_info['remote']['isOfficial'] = _is_official;
     todo_info['remote']['target'] = _target;
     todo_info['remote']['type'] = `${_is_official}/${_target}`;
     this.set_todo_notification(todo_info);
+    try { // 해당 서버 기준 내가 작성한 것인지를 기록
+      todo_info['is_me'] = todo_info['remote']['creator_id'] == this.servers[_is_official][_target].session.user_id;
+    } catch (error) { }
     if (this.global.p5todo && this.global.p5todo['add_todo']) this.global.p5todo['add_todo'](JSON.stringify(todo_info));
     let v = await this.indexed.loadTextFromUserPath(`todo/${todo_info['id']}_${_is_official}_${_target}/info.todo`);
     if (v) {
