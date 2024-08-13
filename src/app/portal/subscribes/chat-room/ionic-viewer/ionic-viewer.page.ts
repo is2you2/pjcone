@@ -56,6 +56,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.cont.abort();
     if (this.p5viewerkey) this.p5viewerkey.remove();
+    if (this.p5canvas) this.p5canvas.remove();
   }
 
   blob: Blob;
