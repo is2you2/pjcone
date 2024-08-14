@@ -12,11 +12,13 @@
 <ion-content scrollY="false">
   <div id="p5Drop_chatroom" style="position: absolute; width: 100%; height: 100%; display: flex; pointer-events: none;">
   </div>
-  <ion-item style="flex: 0 1 auto;">
-    <ion-input [label]="lang.text['Profile']['name_placeholder']" class="ion-text-right"
-      [placeholder]="lang.text['Profile']['noname_user']" [(ngModel)]="client.MyUserName"></ion-input>
-  </ion-item>
   <div style="display: flex; flex-direction: column; height: 100%;">
+    <div style="flex: 0 1 auto;">
+      <ion-item>
+        <ion-input [label]="lang.text['Profile']['name_placeholder']" class="ion-text-right"
+          [placeholder]="lang.text['Profile']['noname_user']" [(ngModel)]="client.MyUserName"></ion-input>
+      </ion-item>
+    </div>
     <div *ngIf="client.status == 'idle'" style="flex: 0 1 auto;">
       <ion-select *ngIf="ServerList.length" #MinimalChatServer [label]="lang.text['AddGroup']['SelectServer']"
         (ionChange)="SelectAddressTarget($event)" value="local" style="padding-left: 16px;">
