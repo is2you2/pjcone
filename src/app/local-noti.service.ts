@@ -3,7 +3,6 @@ import { isPlatform } from './app.component';
 import { LocalNotificationSchema, LocalNotifications, PendingLocalNotificationSchema, Schedule } from "@capacitor/local-notifications";
 import { IndexedDBService } from './indexed-db.service';
 import { LanguageSettingService } from './language-setting.service';
-import * as p5 from 'p5';
 
 /** 웹에서도, 앱에서도 동작하는 요소로 구성된 알림폼 재구성  
  * 실험을 거쳐 차례로 병합해가기
@@ -74,8 +73,6 @@ export interface TotalNotiForm {
   lang_wn?: string;
   /** Web.Noti: 미확인 */
   requireInteraction_wn?: boolean;
-  /** Web.Noti: 미확인 */
-  tag_wn?: string;
 }
 
 /** 로컬 알림 */
@@ -131,7 +128,10 @@ export class LocalNotiService {
   /** 웹에서 앱 아이디를 따라 알림 관리  
    * { id: Notification }
    */
-  WebNoties = {} as { [id: string]: any };
+  WebNoties = {} as { [id: string]: Notification };
+
+  /** 모바일 웹 로컬 푸쉬를 위해 서비스워커를 기억함 */
+  MobileSWReg: ServiceWorkerRegistration;
 
   /** 권한 요청 처리 */
   async initialize() {
@@ -148,6 +148,18 @@ export class LocalNotiService {
     } // 안드로이드라면 app.component.ts 에서 권한 처리
     // 사설 그룹 채팅 알림은 즉시 무시하기
     this.ClearNoti(11);
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(registration => {
+          console.log('Service Worker registration:', registration);
+          this.MobileSWReg = registration;
+        });
+      }).catch(error => {
+        console.error('Error getting service worker registrations:', error);
+      });
+    } else {
+      console.log('Service Worker is not supported in this browser.');
+    }
   }
   /** 알림 액션 추가하기 */
   RegisterNofiticationActionType() {
@@ -178,7 +190,7 @@ export class LocalNotiService {
    * @param header 지금 바라보고 있는 화면의 이름
    * @param _action_wm 클릭시 행동 (Web.Noti)
    */
-  PushLocal(opt: TotalNotiForm, header: string = 'favicon', _action_wm: Function = () => { }) {
+  async PushLocal(opt: TotalNotiForm, header: string = 'favicon', _action_wm: Function = () => { }) {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
       // 창을 바라보는 중이라면 무시됨, 바라보는 중이면서 같은 화면이면 무시됨
       if (document.hasFocus() && this.Current == header) return;
@@ -186,13 +198,13 @@ export class LocalNotiService {
       if (opt.triggerWhen_ln) return; // 웹에는 예약 기능이 없음
       /** 기본 알림 옵션 (교체될 수 있음) */
       const input: any = {
-        badge: `${opt.badge_wm}`,
+        badge: opt.badge_wm,
         body: opt.body,
         icon: `assets/icon/${opt.icon || opt.smallIcon_ln || header || 'favicon'}.png`,
         image: opt.image,
         lang: opt.lang_wn,
         silent: !this.settings.silent[opt.icon || opt.smallIcon_ln] || false,
-        tag: opt.tag_wn,
+        tag: `${opt.id}`,
         // actions: opt.actions,
         data: opt.data_wn,
         renotify: opt.renotify_wn,
@@ -211,11 +223,26 @@ export class LocalNotiService {
           this.WebNoties[opt.id].close();
         };
       } else { // 모바일 웹에서는 소리만 발생시킴
-        let osc: p5.Oscillator = new p5.Oscillator(380, 'sine');
-        if (osc) osc.stop(.1);
-        osc.start();
-        osc.amp(1, .07);
-        osc.amp(0, .15);
+        if (this.MobileSWReg && this.MobileSWReg.active) {
+          if (this.WebNoties[opt.id]) {
+            try {
+              this.WebNoties[opt.id].close();
+            } catch (e) { }
+            delete this.WebNoties[opt.id];
+          }
+          await this.MobileSWReg.showNotification(opt.title, { ...input });
+          let getNoties = await this.MobileSWReg.getNotifications();
+          for (let i = 0, j = getNoties.length; i < j; i++)
+            if (getNoties[i].tag == `${opt.id}`) {
+              this.WebNoties[opt.id] = getNoties[i];
+              break;
+            }
+          this.WebNoties[opt.id].onclick = () => {
+            _action_wm();
+            window.focus();
+            this.WebNoties[opt.id].close();
+          };
+        }
       }
     } else { // 모바일 로컬 푸쉬
       if (this.Current == header) return;
@@ -261,11 +288,8 @@ export class LocalNotiService {
 
   /** 알림 제거하기 */
   ClearNoti(id: any) {
-    if (isPlatform == 'DesktopPWA') {
-      if (this.WebNoties[id])
-        this.WebNoties[id].close();
-    } else if (isPlatform != 'MobilePWA') {
-      LocalNotifications.cancel({ notifications: [{ id: id }] });
-    }
+    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
+      if (this.WebNoties[id]) this.WebNoties[id].close();
+    } else LocalNotifications.cancel({ notifications: [{ id: id }] });
   }
 }

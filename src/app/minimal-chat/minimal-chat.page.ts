@@ -50,7 +50,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   isMobileApp = false;
 
   /** 이 창 열기(알림 상호작용) */
-  open_this = (ev: any) => {
+  open_this = (_ev: any) => {
     if (this.noti.Current == this.Header)
       window.focus();
     else this.client.RejoinGroupChat();
