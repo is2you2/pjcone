@@ -2797,6 +2797,18 @@ export class NakamaService {
     });
   }
 
+  /** 인용된 메시지의 사용자 구성하기 */
+  CatchQouteMsgUserName(msg: any, _is_official: string, _target: string) {
+    if (msg.content['qoute']) {
+      try {
+        if (msg.content['qoute']['user_id'] == 'local') throw '로컬 메시지';
+        msg.content['qoute']['username'] = this.users[_is_official][_target][msg.content['qoute']['user_id']]['display_name'];
+      } catch (e) {
+        msg.content['qoute']['username'] = this.users.self['display_name'];
+      }
+    }
+  }
+
   /** 메시지 수신 시각을 수신자에게 맞춤 */
   ModulateTimeDate(msg: any) {
     let currentTime = new Date(msg.create_time);

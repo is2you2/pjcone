@@ -1545,6 +1545,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           } else this.foundLastRead = true;
           this.nakama.translate_updates(msg);
           if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
+          this.nakama.CatchQouteMsgUserName(msg, this.isOfficial, this.target);
           this.nakama.ModulateTimeDate(msg);
           this.nakama.content_to_hyperlink(msg);
           if (msg.code != 2) this.messages.unshift(msg);
@@ -1682,6 +1683,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           for (let i = json.length - 1; i >= 0; i--) {
             this.nakama.translate_updates(json[i]);
             json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
+            this.nakama.CatchQouteMsgUserName(json[i], this.isOfficial, this.target);
             this.nakama.ModulateTimeDate(json[i]);
             json[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${json[i].message_id}.${json[i].content['file_ext']}`;
             if (json[i]['code'] != 2) {
@@ -2014,6 +2016,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 원격 발송 없이 로컬에 저장하기 */
   SendLocalMessage(msg: any) {
     let MsgText = this.deserialize_text(msg);
+    this.nakama.CatchQouteMsgUserName(msg, this.isOfficial, this.target);
     this.nakama.ModulateTimeDate(msg);
     this.nakama.channels_orig[this.isOfficial][this.target][msg.channel_id]['last_comment_time'] = msg.update_time;
     this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment_id'] = msg.message_id;

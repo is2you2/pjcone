@@ -66,7 +66,8 @@
                       </div>
                       <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background"
                         (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
-                        <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' + msg.content['qoute']['display_name']}}</div>
+                        <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' +
+                          (msg.content['qoute']['username'] || msg.content['qoute']['display_name'])}}</div>
                         <div *ngIf="msg.content['qoute'].url" class="imageForm">
                           <img [src]="msg.content['qoute'].url" class="qouteImage"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt="">
@@ -144,7 +145,8 @@
                       </div>
                       <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background"
                         (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
-                        <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' + msg.content['qoute']['display_name']}}</div>
+                        <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' +
+                          (msg.content['qoute']['username'] || msg.content['qoute']['display_name'])}}</div>
                         <div *ngIf="msg.content['qoute'].url" class="imageForm">
                           <img [src]="msg.content['qoute'].url" class="qouteImage"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt="">
@@ -209,7 +211,8 @@
             <div *ngFor="let msg of sending_msg" class="my_message_right my_sending_msg">
               <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background"
                 (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
-                <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' + msg.content['qoute']['display_name']}}</div>
+                <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' +
+                  (msg.content['qoute']['username'] || msg.content['qoute']['display_name'])}}</div>
                 <div *ngIf="msg.content['qoute'].url" class="imageForm">
                   <img [src]="msg.content['qoute'].url" class="qouteImage"
                     [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt="">
@@ -249,7 +252,9 @@
         </div>
         <table class="thumnails">
           <tr *ngIf="userInput['qoute']" class="qoute_text" (click)="RemoveQoute()">
-            <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg'] + ': ' + userInput['qoute']['display_name']}}</div>
+            <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg'] + ': ' + (userInput['qoute']['username'] ||
+              userInput['qoute']['display_name'])}}
+            </div>
             <div *ngIf="userInput['qoute'].url" class="imageForm">
               <img [src]="userInput['qoute'].url" class="qouteImage"
                 [style]="'max-height: 84px;' + (info['HideAutoThumbnail'] ? 'filter: blur(6px);' : '')" alt="">
