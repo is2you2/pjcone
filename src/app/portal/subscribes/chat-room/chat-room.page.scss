@@ -84,6 +84,7 @@
     width: auto;
     height: auto;
     cursor: pointer;
+    display: block;
 }
 
 .file_info {
@@ -122,10 +123,12 @@
 .qouteImage {
     width: 100%;
     object-fit: cover;
+    display: block;
 }
 
 .qouteImageHeight {
-    height: 32px;
+    max-height: 32px;
+    display: block;
 }
 
 .qouteDiv {

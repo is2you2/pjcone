@@ -255,9 +255,10 @@
             <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg'] + ': ' + (userInput['qoute']['username'] ||
               userInput['qoute']['display_name'])}}
             </div>
-            <div *ngIf="userInput['qoute'].url" class="imageForm borderRadiusDefault qouteImageHeight" style="height: 84px;">
+            <div *ngIf="userInput['qoute'].url" class="imageForm borderRadiusDefault qouteImageHeight"
+              style="max-height: 84px;">
               <img [src]="userInput['qoute'].url" class="qouteImage qouteImageHeight"
-                [style]="'height: 84px;' + (info['HideAutoThumbnail'] ? 'filter: blur(6px);' : '')" alt="">
+                [style]="'max-height: 84px;' + (info['HideAutoThumbnail'] ? 'filter: blur(6px);' : '')" alt="">
             </div>
             <div *ngIf="userInput['qoute'].text" class="qouteDiv">{{userInput['qoute'].text}}</div>
           </tr>
