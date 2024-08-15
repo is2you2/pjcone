@@ -251,7 +251,7 @@
             </div>
             <div *ngIf="userInput['qoute'].text" class="qouteDiv">{{userInput['qoute'].text}}</div>
           </tr>
-          <tr *ngIf="userInput.file" class="thumnail_parts" style="cursor: pointer;">
+          <tr *ngIf="userInput.file" class="thumbnail_parts" style="cursor: pointer;">
             <td>
               <div *ngIf="userInput.file" (click)="removeAttach()">
                 <div style="text-align: center; margin: 4px; max-width: 95vw;"> {{userInput.file['filename']}}
@@ -260,7 +260,7 @@
                   <img id="ChatroomSelectedImage" *ngIf="userInput.file['typeheader'] == 'image'"
                     class="image_thumbnail" [src]="userInput.file['thumbnail']" [alt]="userInput.file['name']">
                 </div>
-                <div *ngIf="userInput.file['typeheader'] == 'text'" style="display: grid;" class="thumnail_parts">
+                <div *ngIf="userInput.file['typeheader'] == 'text'" style="display: grid;" class="thumbnail_parts">
                   <span *ngFor="let line of userInput.file['thumbnail']">
                     {{line}}
                   </span>
@@ -268,10 +268,10 @@
               </div>
             </td>
           </tr>
-          <tr class="thumnail_parts" *ngIf="ShowGoToBottom && !last_message_viewer.user_id" (click)="init_chatroom()">
+          <tr class="thumbnail_parts" *ngIf="ShowGoToBottom && !last_message_viewer.user_id" (click)="init_chatroom()">
             <td style="text-align: center; padding: 4px 0px;">{{lang.text['ChatRoom']['GoToRecent']}}</td>
           </tr>
-          <tr class="thumnail_parts" *ngIf="last_message_viewer.user_id" (click)="init_chatroom()">
+          <tr class="thumbnail_parts" *ngIf="last_message_viewer.user_id" (click)="init_chatroom()">
             <td class="bottom_thumbnail">
               <span [style]="'margin-right: 8px; color: #' + last_message_viewer.color">
                 <b>{{(last_message_viewer.is_me ? nakama.users.self['display_name'] :
