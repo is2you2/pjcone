@@ -346,6 +346,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       received_json = JSON.parse(this.received_data);
       this.userInput = { ...this.userInput, ...received_json };
       this.isModify = true;
+      if (this.isModify) {
+        if (this.userInput.noti_id)
+          this.noti.ClearNoti(this.userInput.noti_id);
+      }
       // 기록된 저장소로 설정
       if (this.userInput.storeAt == 'local')
         this.StoreAt.value = 'local';
@@ -1653,5 +1657,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (this.p5canvas)
       this.p5canvas.remove();
     delete this.nakama.StatusBarChangedCallback;
+    window.onfocus = undefined;
   }
 }

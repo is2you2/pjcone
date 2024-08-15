@@ -83,6 +83,9 @@ export class MinimalChatPage implements OnInit, OnDestroy {
 
   @ViewChild('MinimalChatServer') MinimalChatServer: IonSelect;
   ngOnInit() {
+    window.onfocus = () => {
+      if (this.lnId) this.noti.ClearNoti(this.lnId);
+    }
     this.InitBrowserBackButtonOverride();
     this.isMobileApp = isPlatform == 'Android' || isPlatform == 'iOS';
     if (this.client.p5canvas) this.client.p5canvas.remove();
@@ -709,6 +712,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     delete this.global.p5key['KeyShortCut']['EnterAct'];
   }
   ngOnDestroy(): void {
+    window.onfocus = undefined;
     if (this.p5canvas)
       this.p5canvas.remove()
   }
