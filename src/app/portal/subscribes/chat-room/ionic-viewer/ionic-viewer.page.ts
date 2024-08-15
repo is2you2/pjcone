@@ -1154,7 +1154,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     var jsstringcolor = "var(--syntax-text-coding-string)";
     var jsnumbercolor = 'var(--syntax-text-coding-number)';
     var jspropertycolor = "var(--syntax-text-coding-final)";
-    elmntObj.style.fontFamily = "Consolas,'Courier New', monospace";
     if (!lang) { lang = "html"; }
     if (lang == "html") { elmntTxt = htmlMode(elmntTxt); }
     if (lang == "css") { elmntTxt = cssMode(elmntTxt); }
