@@ -76,7 +76,6 @@
     margin-top: 4px;
     max-width: 192px;
     max-height: 192px;
-    border-radius: 8px;
 }
 
 .file_thumbnail {
@@ -122,9 +121,11 @@
 
 .qouteImage {
     width: 100%;
-    max-height: 32px;
     object-fit: cover;
-    border-radius: 8px;
+}
+
+.qouteImageHeight {
+    height: 32px;
 }
 
 .qouteDiv {
@@ -194,7 +195,6 @@
     // 테스트용 배경색
     background-color: grey;
     margin-top: 4px;
-    border-radius: 8px;
     cursor: pointer;
 }
 
@@ -216,7 +216,7 @@
     padding: 8px;
 }
 
-.thumnails {
+.thumbnails {
     width: -webkit-fill-available;
     height: fit-content;
     position: relative;
@@ -250,7 +250,6 @@
     font-size: 12px;
     display: inline;
     background: #444;
-    border-radius: 8px;
     padding: 4px 8px;
     color: white;
 }
@@ -296,8 +295,13 @@
     background-color: var(--chatroom-input-background);
 }
 
+// 이미지 바깥이 둥글게 짤리게 하기 위해 구성됨
 .imageForm {
     overflow: hidden;
+}
+
+.borderRadiusDefault {
+    border-radius: 8px;
 }
 
 ion-button {

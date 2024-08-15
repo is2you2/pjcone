@@ -64,26 +64,26 @@
                         (click)="JoinWebRTCMatch(msg)">
                         {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
                       </div>
-                      <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background"
+                      <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background imageForm"
                         (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
                         <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' +
                           (msg.content['qoute']['username'] || msg.content['qoute']['display_name'])}}</div>
-                        <div *ngIf="msg.content['qoute'].url" class="imageForm">
-                          <img [src]="msg.content['qoute'].url" class="qouteImage"
+                        <div *ngIf="msg.content['qoute'].url" class="imageForm borderRadiusDefault qouteImageHeight">
+                          <img [src]="msg.content['qoute'].url" class="qouteImage qouteImageHeight"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt="">
                         </div>
                         <div *ngIf="msg.content['qoute'].text" class="qouteDiv qouteOnChatBalloon qouteBalloonBottom">
                           {{msg.content['qoute'].text}}</div>
                       </div>
                       <div *ngIf="msg.content['filename']" class="file_message_form">
-                        <div *ngIf="!msg.content['thumbnail']" class="file_button imageForm" (click)="file_detail(msg)"
-                          [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
+                        <div *ngIf="!msg.content['thumbnail']" class="file_button imageForm borderRadiusDefault"
+                          (click)="file_detail(msg)" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
                           <p class="file_info"> {{msg.content['filename']}} </p>
                           <div *ngIf="msg.content['text']" class="text_seperator"></div>
                           <span *ngFor="let line of msg.content['text']" class="file_info file_text_thumbnail"> {{line}}
                           </span>
                         </div>
-                        <div *ngIf="msg.content['thumbnail']" class="file_name_form imageForm"
+                        <div *ngIf="msg.content['thumbnail']" class="file_name_form imageForm borderRadiusDefault"
                           (click)="file_detail(msg)">
                           <img class="file_thumbnail imageForm"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
@@ -143,26 +143,26 @@
                           {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
                         </div>
                       </div>
-                      <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background"
+                      <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background imageForm"
                         (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
                         <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' +
                           (msg.content['qoute']['username'] || msg.content['qoute']['display_name'])}}</div>
-                        <div *ngIf="msg.content['qoute'].url" class="imageForm">
-                          <img [src]="msg.content['qoute'].url" class="qouteImage"
+                        <div *ngIf="msg.content['qoute'].url" class="imageForm borderRadiusDefault qouteImageHeight">
+                          <img [src]="msg.content['qoute'].url" class="qouteImage qouteImageHeight"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt="">
                         </div>
                         <div *ngIf="msg.content['qoute'].text" class="qouteDiv qouteOnChatBalloon qouteBalloonBottom">
                           {{msg.content['qoute'].text}}</div>
                       </div>
                       <div *ngIf="msg.content['filename']" class="my_file_message_form">
-                        <div *ngIf="!msg.content['thumbnail']" class="file_button imageForm" (click)="file_detail(msg)"
-                          [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
+                        <div *ngIf="!msg.content['thumbnail']" class="file_button imageForm borderRadiusDefault"
+                          (click)="file_detail(msg)" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
                           <p class="file_info"> {{msg.content['filename']}} </p>
                           <div *ngIf="msg.content['text']" class="text_seperator"></div>
                           <span *ngFor="let line of msg.content['text']" class="file_info file_text_thumbnail"> {{line}}
                           </span>
                         </div>
-                        <div *ngIf="msg.content['thumbnail']" class="file_name_form imageForm"
+                        <div *ngIf="msg.content['thumbnail']" class="file_name_form imageForm borderRadiusDefault"
                           (click)="file_detail(msg)">
                           <img class="file_thumbnail imageForm"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
@@ -205,29 +205,29 @@
                 </div>
               </div>
               <div *ngIf="msg.content['noti']" class="notice_form" (click)="SetOtherAct()">
-                <div class="notice"> {{msg.content['noti']}} </div>
+                <div class="notice borderRadiusDefault"> {{msg.content['noti']}} </div>
               </div>
             </div>
             <div *ngFor="let msg of sending_msg" class="my_message_right my_sending_msg">
-              <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background"
+              <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background imageForm"
                 (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
                 <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' +
                   (msg.content['qoute']['username'] || msg.content['qoute']['display_name'])}}</div>
-                <div *ngIf="msg.content['qoute'].url" class="imageForm">
-                  <img [src]="msg.content['qoute'].url" class="qouteImage"
+                <div *ngIf="msg.content['qoute'].url" class="imageForm borderRadiusDefault qouteImageHeight">
+                  <img [src]="msg.content['qoute'].url" class="qouteImage qouteImageHeight"
                     [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt="">
                 </div>
                 <div *ngIf="msg.content['qoute'].text" class="qouteDiv qouteOnChatBalloon qouteBalloonBottom">
                   {{msg.content['qoute'].text}}</div>
               </div>
               <div *ngIf="msg.content['filename']" class="my_file_message_form">
-                <div *ngIf="!msg.content['thumbnail']" class="file_button imageForm"
+                <div *ngIf="!msg.content['thumbnail']" class="file_button imageForm borderRadiusDefault"
                   [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
                   <p class="file_info"> {{msg.content['filename']}} </p>
                   <div *ngIf="msg.content['text']" class="text_seperator"></div>
                   <span *ngFor="let line of msg.content['text']" class="file_info file_text_thumbnail"> {{line}} </span>
                 </div>
-                <div *ngIf="msg.content['thumbnail']" class="file_name_form imageForm">
+                <div *ngIf="msg.content['thumbnail']" class="file_name_form imageForm borderRadiusDefault">
                   <img class="file_thumbnail imageForm" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
                     [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
                 </div>
@@ -250,14 +250,14 @@
             </div>
           </div>
         </div>
-        <table class="thumnails">
+        <table class="thumbnails imageForm">
           <tr *ngIf="userInput['qoute']" class="qoute_text" (click)="RemoveQoute()">
             <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg'] + ': ' + (userInput['qoute']['username'] ||
               userInput['qoute']['display_name'])}}
             </div>
-            <div *ngIf="userInput['qoute'].url" class="imageForm">
-              <img [src]="userInput['qoute'].url" class="qouteImage"
-                [style]="'max-height: 84px;' + (info['HideAutoThumbnail'] ? 'filter: blur(6px);' : '')" alt="">
+            <div *ngIf="userInput['qoute'].url" class="imageForm borderRadiusDefault qouteImageHeight" style="height: 84px;">
+              <img [src]="userInput['qoute'].url" class="qouteImage qouteImageHeight"
+                [style]="'height: 84px;' + (info['HideAutoThumbnail'] ? 'filter: blur(6px);' : '')" alt="">
             </div>
             <div *ngIf="userInput['qoute'].text" class="qouteDiv">{{userInput['qoute'].text}}</div>
           </tr>
