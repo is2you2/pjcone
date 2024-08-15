@@ -2107,7 +2107,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             buttons: [{
               text: this.lang.text['ChatRoom']['EditChat'],
               handler: async (ev) => {
-                let edited = ev[0] || MsgText;
+                let edited = ev[0] || (msg.content['path'] ? '' : MsgText);
                 let edit_well = false;
                 let working_msg = JSON.parse(JSON.stringify(msg));
                 working_msg.content['msg'] = edited;
