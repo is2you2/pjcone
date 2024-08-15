@@ -525,6 +525,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId))
         setTimeout(() => {
           if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+          this.make_ext_hidden();
           this.userInputTextArea.focus();
         }, 0);
     }
@@ -1001,6 +1002,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               }
               this.userInput.qoute.id = target_msg.message_id;
               setTimeout(() => {
+                this.make_ext_hidden();
                 this.userInputTextArea.focus();
               }, 0);
             } catch (e) {
@@ -1804,8 +1806,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.block_send = true;
     // 입력칸 높이를 일시적으로 고정시킴
     this.userInputTextArea.style.maxHeight = `${this.userInputTextArea.offsetHeight}px`;
-    this.userInputTextArea.focus();
     setTimeout(() => { // iOS 보정용
+      this.make_ext_hidden();
       this.userInputTextArea.focus();
     }, 0);
     this.isHidden = true;
@@ -1986,7 +1988,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           text: `${this.lang.text['ChatRoom']['QRLinkFailed']}: ${e}`,
         });
       }
-    } else window.open(url, '_system')
+    } else window.open(url, '_system');
+    this.make_ext_hidden();
     this.userInputTextArea.focus();
     this.SetOtherAct();
   }
