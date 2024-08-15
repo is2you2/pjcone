@@ -677,6 +677,7 @@ export class GlobalActService {
       CatchedAddress = await this.try_upload_to_user_custom_fs(file, user_id, innerLoading);
     innerLoading.message = this.lang.text['GlobalAct']['CheckCdnServer'];
     let progress: any;
+    let cont = new AbortController();
     try { // 사설 연계 서버에 업로드 시도
       if (CatchedAddress) {
         Catched = true;
@@ -687,7 +688,7 @@ export class GlobalActService {
       let filename = `${user_id}_${only_filename}_${upload_time}.${file.file_ext}`;
       CatchedAddress = `${protocol}//${address}:9002/cdn/${filename}`;
       progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST" });
+        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", signal: cont.signal });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
         innerLoading.message = `${file.filename}: ${progressPercent}%`;
@@ -697,10 +698,12 @@ export class GlobalActService {
       formData.append("files", _file);
       await fetch(`${protocol}//${address}:9001/cdn/${filename}`, { method: "POST", body: formData });
       clearInterval(progress);
+      cont.abort();
       let res = await fetch(CatchedAddress);
       if (res.ok) Catched = true;
     } catch (e) {
       clearInterval(progress);
+      cont.abort();
       innerLoading.message = this.lang.text['GlobalAct']['CancelingUpload'];
       console.warn('cdn 파일 업로드 단계 실패:', e);
     }
@@ -743,6 +746,7 @@ export class GlobalActService {
     let CatchedAddress: string;
     let fallback = localStorage.getItem('fallback_fs');
     let progress: any;
+    let cont = new AbortController();
     try { // 사용자 지정 서버 업로드 시도 우선
       if (!fallback) throw '사용자 지정 서버 없음';
       let address = fallback.split(':');
@@ -750,18 +754,20 @@ export class GlobalActService {
       let protocol = checkProtocol ? 'https:' : 'http:';
       CatchedAddress = `${protocol}//${address[0]}:${address[1] || 9002}/cdn/${filename}`;
       progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST" });
+        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", signal: cont.signal });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
         loading.message = `${file.filename}: ${progressPercent}%`;
       }, 700);
       await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
       clearInterval(progress);
+      cont.abort();
       let res = await fetch(CatchedAddress);
       if (!loading) innerLoading.dismiss();
       if (res.ok) return CatchedAddress;
     } catch (e) {
       clearInterval(progress);
+      cont.abort();
       if (!loading) innerLoading.dismiss();
       return undefined;
     }
