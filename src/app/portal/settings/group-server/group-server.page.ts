@@ -415,11 +415,19 @@ export class GroupServerPage implements OnInit, OnDestroy {
     }
     this.add_custom_tog = true;
 
-    let AddrPort = (this.dedicated_info.address || '192.168.0.1').split(':');
-    this.dedicated_info.address = AddrPort[0];
-    this.dedicated_info.port = Number(AddrPort[1]) || 7350;
+    let split_fullAddress = this.dedicated_info.address.split('://');
+    let address = split_fullAddress.pop().split(':');
+    let protocol = split_fullAddress.pop();
+    if (protocol) {
+      protocol += ':';
+    } else {
+      let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
+      protocol = checkProtocol ? 'https:' : 'http:';
+    }
+    this.dedicated_info.address = address[0];
+    this.dedicated_info.port = Number(address[1]) || 7350;
     this.dedicated_info.useSSL = (window.location.protocol == 'https:') && !isNativefier;
-    this.dedicated_info.useSSL = this.dedicated_info.useSSL || Boolean(this.dedicated_info.address.replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, ''));
+    this.dedicated_info.useSSL = this.dedicated_info.useSSL || Boolean(protocol == 'https:');
     this.dedicated_info.key = this.dedicated_info.key || 'defaultkey';
 
     this.nakama.add_group_server(this.dedicated_info, () => {

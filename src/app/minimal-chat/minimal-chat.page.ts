@@ -266,8 +266,16 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       let joinMessage = { color: isDarkMode ? 'bbb' : '444', text: this.lang.text['MinimalChat']['joinChat_group'], isSystem: true };
       this.client.userInput.logs.push(joinMessage);
       this.client.userInput.last_message = joinMessage;
-      let checkProtocol = this.UserInputCustomAddress.replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
-      let target_address = `${checkProtocol ? 'wss:' : 'ws:'}//${this.UserInputCustomAddress}`;
+      let split_fullAddress = this.UserInputCustomAddress.split('://');
+      let address = split_fullAddress.pop().split(':');
+      let protocol = split_fullAddress.pop();
+      if (protocol) {
+        protocol += ':';
+      } else {
+        let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
+        protocol = checkProtocol ? 'wss:' : 'ws:';
+      }
+      let target_address = `${protocol}//${address[0]}`;
       this.client.initialize(target_address);
     }
     this.client.funcs.onmessage = (v: string) => {
