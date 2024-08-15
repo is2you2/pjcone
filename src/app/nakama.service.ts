@@ -250,6 +250,7 @@ export class NakamaService {
             id: noti_info.noti_id,
             title: noti_info.title,
             body: noti_info.description,
+            icon: 'todo',
           }, undefined, (_ev: any) => {
             this.open_add_todo_page(JSON.stringify(noti_info));
           });
