@@ -49,6 +49,10 @@ interface QouteMessage {
   text?: string;
   /** 해당 메시지 아이디 */
   id?: string;
+  /** 메시지를 발송한 사람의 정보 */
+  user_id?: string;
+  /** 당시 사용하던 사용자 이름 */
+  display_name?: string;
   /** 해당 메시지가 생성된 시간 기록 */
   timestamp: string;
 }
@@ -965,7 +969,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       p.touchEnded = () => {
         ReleaseChatMsgAct();
       }
-      let ReleaseChatMsgAct = () => {
+      let ReleaseChatMsgAct = async () => {
         if (this.MsgClickedStartPos && this.TargetMessageObject) {
           if (MESSAGE_QOUTE_SIZE < CurrentChatMovedSize) {
             try {
@@ -1002,6 +1006,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 }
               }
               this.userInput.qoute.id = target_msg.message_id;
+              this.userInput.qoute.display_name = target_msg.user_display_name;
+              this.userInput.qoute.user_id = target_msg['sender_id'];
               setTimeout(() => {
                 this.make_ext_hidden();
                 this.userInputTextArea.focus();
@@ -1010,15 +1016,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               console.log('메시지 상세보기 실패: ', e);
             }
           } else if (-MESSAGE_QOUTE_SIZE > CurrentChatMovedSize) {
-            let catch_index: number;
-            for (let k = 0, l = this.ViewableMessage.length; k < l; k++)
-              if (this.TargetMessageObject.id == this.ViewableMessage[k].message_id) {
-                catch_index = k;
-                break;
-              }
-            if (catch_index === undefined) throw '메시지를 찾을 수 없음';
-            let target_msg = this.ViewableMessage[catch_index];
-            this.CopyMessageText(target_msg);
+            try {
+              let catch_index: number;
+              for (let k = 0, l = this.ViewableMessage.length; k < l; k++)
+                if (this.TargetMessageObject.id == this.ViewableMessage[k].message_id) {
+                  catch_index = k;
+                  break;
+                }
+              if (catch_index === undefined) throw '메시지를 찾을 수 없음';
+              let target_msg = this.ViewableMessage[catch_index];
+              await this.CopyMessageText(target_msg);
+            } catch (e) {
+              console.log('메시지 복사 실패: ', e);
+            }
           }
           this.TargetMessageObject.style.backgroundColor = null;
           this.TargetMessageObject.style.paddingRight = null;
@@ -1824,7 +1834,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     let isURL = false;
     let isLongText = '';
     if (this.userInput.qoute) { // 메시지 인용시
-      if (this.userInput.qoute.path) delete this.userInput.qoute.url;
+      delete this.userInput.qoute.url;
       result['qoute'] = this.userInput.qoute;
     }
     if (this.userInput.file) { // 파일 첨부시
