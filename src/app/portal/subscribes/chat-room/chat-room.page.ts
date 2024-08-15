@@ -490,11 +490,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   useVoiceRecording = false;
 
   ionViewDidEnter() {
-    // PWA: 윈도우 창을 다시 보게 될 때 알림 삭제
-    window.onfocus = () => {
-      if (this.info['cnoti_id'])
-        this.noti.ClearNoti(this.info['cnoti_id']);
-    }
     VoiceRecorder.getCurrentStatus().then(v => {
       if (v.status == 'RECORDING') {
         // 게시물 생성기에서 음성녹음중인 상태로 들어오면 음성녹음을 할 수 없음
@@ -1205,6 +1200,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.noti.Current = this.info['cnoti_id'];
     if (this.info['cnoti_id'])
       this.noti.ClearNoti(this.info['cnoti_id']);
+    // PWA: 윈도우 창을 다시 보게 될 때 알림 삭제
+    window.onfocus = () => {
+      if (this.info['cnoti_id'])
+        this.noti.ClearNoti(this.info['cnoti_id']);
+    }
     this.isOfficial = this.info['server']['isOfficial'];
     this.target = this.info['server']['target'];
     this.info = this.nakama.channels_orig[this.isOfficial][this.target][this.info.id];
