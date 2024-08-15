@@ -52,12 +52,12 @@ export class CommunityPage implements OnInit {
     this.is_auto_load_end = true;
     // 스크롤이 내려가있다면 새로고침 처리(화면 변화 대응용)
     if (this.ContentDiv && this.ContentScroll)
-      if (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 180)
+      if (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 450)
         this.load_post_cycles();
     this.nakama.socket_reactive['try_load_post'] = () => {
       setTimeout(() => {
         if (this.ContentDiv && this.ContentScroll)
-          if (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 180)
+          if (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 450)
             this.load_post_cycles();
       }, 0);
     }
@@ -78,11 +78,11 @@ export class CommunityPage implements OnInit {
       if (!this.ContentScroll) {
         this.ContentScroll = document.getElementById('CommunityScrollDiv') as HTMLDivElement;
         this.ContentScroll.onscroll = (_ev: any) => {
-          if (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 180)
+          if (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 450)
             this.load_post_cycles();
         }
       }
-      if (this.is_loadable && (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 180))
+      if (this.is_loadable && (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 450))
         this.load_post_cycles();
     }, 100);
   }
