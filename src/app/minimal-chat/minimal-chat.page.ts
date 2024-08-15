@@ -692,6 +692,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       let scrollHeight = this.minimal_chat_log.scrollHeight;
       this.minimal_chat_log.scrollTo({ top: scrollHeight, behavior: 'smooth' });
     }
+    this.UserInputCustomAddress = '';
     this.noti.ClearNoti(this.lnId);
     if (this.client.status == 'idle') this.modalCtrl.dismiss();
     this.client.disconnect();
