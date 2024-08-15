@@ -749,9 +749,15 @@ export class GlobalActService {
     let cont = new AbortController();
     try { // 사용자 지정 서버 업로드 시도 우선
       if (!fallback) throw '사용자 지정 서버 없음';
-      let address = fallback.split(':');
-      let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
-      let protocol = checkProtocol ? 'https:' : 'http:';
+      let split_fullAddress = fallback.split('://');
+      let address = split_fullAddress.pop().split(':');
+      let protocol = split_fullAddress.pop();
+      if (protocol) {
+        protocol += ':';
+      } else {
+        let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
+        protocol = checkProtocol ? 'https:' : 'http:';
+      }
       CatchedAddress = `${protocol}//${address[0]}:${address[1] || 9002}/cdn/${filename}`;
       progress = setInterval(async () => {
         let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", signal: cont.signal });
