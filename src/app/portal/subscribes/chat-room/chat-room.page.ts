@@ -1148,10 +1148,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       URL.revokeObjectURL(FileURL);
     }, 0);
     this.userInput.file['thumbnail'] = undefined;
-    switch (this.userInput.file['typeheader']) {
+    switch (this.userInput.file['viewer']) {
       case 'image': // 이미지인 경우 사용자에게 보여주기
         this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
         break;
+      case 'code':
       case 'text':
         new p5((p: p5) => {
           p.setup = () => {

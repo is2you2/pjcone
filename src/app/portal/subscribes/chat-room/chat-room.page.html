@@ -257,10 +257,11 @@
                 <div style="text-align: center; margin: 4px; max-width: 95vw;"> {{userInput.file['filename']}}
                 </div>
                 <div *ngIf="userInput.file['thumbnail']">
-                  <img id="ChatroomSelectedImage" *ngIf="userInput.file['typeheader'] == 'image'"
-                    class="image_thumbnail" [src]="userInput.file['thumbnail']" [alt]="userInput.file['name']">
+                  <img id="ChatroomSelectedImage" *ngIf="userInput.file['viewer'] == 'image'" class="image_thumbnail"
+                    [src]="userInput.file['thumbnail']" [alt]="userInput.file['name']">
                 </div>
-                <div *ngIf="userInput.file['typeheader'] == 'text'" style="display: grid;" class="thumbnail_parts">
+                <div *ngIf="userInput.file['viewer'] == 'code' || userInput.file['viewer'] == 'text'"
+                  style="display: grid;" class="thumbnail_parts">
                   <span *ngFor="let line of userInput.file['thumbnail']">
                     {{line}}
                   </span>
