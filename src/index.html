@@ -18,6 +18,20 @@
     // 예하 경로에 의한 경로찾기 오류 완화용
     let base = document.getElementById('site_base');
     var sub_path = base.getAttribute('href');
+    var swReg;
+    // 웹 알림의 행동을 미리 기록해두었다가 서비스 워커로부터 신호를 받으면 함수 행동 후 해당 함수 삭제
+    var swRegListenerCallback = {};
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register(`${sub_path}assets/sw.js`)
+        .then((reg) => {
+          console.log('Service Worker Registered');
+          swReg = reg;
+          reg.update();
+        }).catch(e => {
+          console.error('Service Worker Register failed: ', e);
+        });
+    }
   </script>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#000000">

@@ -58,19 +58,12 @@ export interface TotalNotiForm {
   extra_ln?: any;
   /** 이미지 첨부, 가로폭에 맞추어 보여짐 */
   image?: string;
-  /** Web.Noti: 미확인 */
-  renotify_wn?: boolean;
-  /** Android: 알림 액션 id (string) / 하나만 받으므로 [0]만 사용  
-   *  Web.Noti: 미확인 */
-  actions?: any[];
-  /** Web.Noti: 미확인 */
-  data_wn?: any;
-  /** Web.Noti: 미확인 */
-  dir_wn?: NotificationDirection;
-  /** Web.Noti: 미확인 */
-  lang_wn?: string;
-  /** Web.Noti: 미확인 */
-  requireInteraction_wn?: boolean;
+  /** Android: 알림 액션 id (string) / 하나만 받으므로 [0]만 사용 */
+  actions_ln?: any[];
+  /** 웹 알림 내 알림 행동 */
+  actions_wm?: any[];
+  /** 알림 내장 데이터 */
+  data_wm?: any;
 }
 
 /** 로컬 알림 */
@@ -133,27 +126,14 @@ export class LocalNotiService {
 
   /** 권한 요청 처리 */
   async initialize() {
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-      if (!("Notification" in window)) {
-        console.error('Notification 미지원 브라우저입니다');
-      }
-      Notification.requestPermission().then(v => {
-        if (v != 'granted')
-          console.log('알림 거절', v);
-      }, e => {
-        console.error('지원하지 않는 브라우저:', e);
-      });
-    } // 안드로이드라면 app.component.ts 에서 권한 처리
     // 사설 그룹 채팅 알림은 즉시 무시하기
     this.ClearNoti(11);
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        registrations.forEach(registration => {
-          console.log('Service Worker registration:', registration);
-          this.MobileSWReg = registration;
-        });
-      }).catch(error => {
-        console.error('Error getting service worker registrations:', error);
+      this.MobileSWReg = window['swReg'];
+      navigator.serviceWorker.addEventListener('message', ev => {
+        if (window['swRegListenerCallback'][ev.data.data])
+          window['swRegListenerCallback'][ev.data.data]();
+        delete window['swRegListenerCallback'][ev.data.data];
       });
     } else {
       console.log('Service Worker is not supported in this browser.');
@@ -200,48 +180,37 @@ export class LocalNotiService {
         body: opt.body,
         icon: `assets/icon/${opt.icon || opt.smallIcon_ln || header || 'favicon'}.png`,
         image: opt.image,
-        lang: opt.lang_wn,
         silent: !this.settings.silent[opt.icon || opt.smallIcon_ln] || false,
         tag: `${opt.id}`,
-        // actions: opt.actions,
-        data: opt.data_wn,
-        renotify: opt.renotify_wn,
-        requireInteraction: opt.requireInteraction_wn,
-        dir: opt.dir_wn,
+        actions: opt.actions_wm,
+        data: opt.data_wm,
+        requireInteraction: Boolean(opt.actions_wm),
       }
-      if (isPlatform == 'DesktopPWA') {
+      try {
         if (this.WebNoties[opt.id]) {
-          this.WebNoties[opt.id].close();
+          try {
+            this.WebNoties[opt.id].close();
+          } catch (e) { }
           delete this.WebNoties[opt.id];
         }
-        this.WebNoties[opt.id] = new Notification(opt.title, { ...input });
+        await this.MobileSWReg.showNotification(opt.title, { ...input });
+        let getNoties = await this.MobileSWReg.getNotifications();
+        for (let i = 0, j = getNoties.length; i < j; i++)
+          if (getNoties[i].tag == `${opt.id}`) {
+            this.WebNoties[opt.id] = getNoties[i];
+            break;
+          }
+        window['swRegListenerCallback'][opt.id] = () => {
+          _action_wm();
+          window.focus();
+          this.WebNoties[opt.id].close();
+        }
         this.WebNoties[opt.id].onclick = () => {
           _action_wm();
           window.focus();
           this.WebNoties[opt.id].close();
         };
-      } else { // 모바일 웹에서는 소리만 발생시킴
-        if (this.MobileSWReg && this.MobileSWReg.active) {
-          if (this.WebNoties[opt.id]) {
-            try {
-              this.WebNoties[opt.id].close();
-            } catch (e) { }
-            delete this.WebNoties[opt.id];
-          }
-          await this.MobileSWReg.showNotification(opt.title, { ...input });
-          let getNoties = await this.MobileSWReg.getNotifications();
-          for (let i = 0, j = getNoties.length; i < j; i++)
-            if (getNoties[i].tag == `${opt.id}`) {
-              this.WebNoties[opt.id] = getNoties[i];
-              break;
-            }
-          this.WebNoties[opt.id].onclick = () => {
-            _action_wm();
-            window.focus();
-            this.WebNoties[opt.id].close();
-          };
-        }
-      }
+      } catch (e) { }
     } else { // 모바일 로컬 푸쉬
       if (this.Current == header) return;
       if (!this.settings.silent[opt.icon || opt.smallIcon_ln || header || 'icon_mono']) return;
@@ -259,7 +228,7 @@ export class LocalNotiService {
         groupSummary: opt.groupSummary_ln,
         summaryText: opt.groupSummaryText_ln,
         ongoing: opt.ongoing_ln,
-        actionTypeId: opt.actions?.shift(),
+        actionTypeId: opt.actions_ln?.shift(),
       };
       if (opt.image)
         input['attachments'] = [{

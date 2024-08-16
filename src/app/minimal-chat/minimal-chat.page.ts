@@ -278,6 +278,11 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       let target_address = `${protocol}//${address[0]}`;
       this.client.initialize(target_address);
     }
+    const PWA_Action = [{
+      title: this.lang.text['MinimalChat']['Noti_Reply'],
+      action: 'sq_reply',
+      type: 'text',
+    }];
     this.client.funcs.onmessage = (v: string) => {
       try {
         let data = JSON.parse(v);
@@ -394,7 +399,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                 name: this.params.get('name'),
               },
             },
-            actions: ['group_dedi'],
+            actions_ln: ['group_dedi'],
+            actions_wm: PWA_Action,
             smallIcon_ln: 'simplechat',
             iconColor_ln: this.iconColor,
             autoCancel_ln: true,
@@ -414,7 +420,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                 name: this.params.get('name'),
               },
             },
-            actions: ['group_dedi'],
+            actions_ln: ['group_dedi'],
+            actions_wm: PWA_Action,
             smallIcon_ln: 'simplechat',
             iconColor_ln: this.iconColor,
             autoCancel_ln: true,
@@ -482,7 +489,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
               name: this.params.get('name'),
             },
           },
-          actions: ['group_dedi'],
+          actions_ln: ['group_dedi'],
+          actions_wm: PWA_Action,
           autoCancel_ln: true,
           smallIcon_ln: 'simplechat',
           iconColor_ln: this.iconColor,
