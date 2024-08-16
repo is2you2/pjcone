@@ -100,6 +100,7 @@ export class MiniranchatClientService {
 
   /** 알림 클릭시 모바일앱 행동요령 등록 */
   RegisterNotificationReact() {
+    this.noti.Sq_client = this;
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') return;
     LocalNotifications.addListener('localNotificationActionPerformed', (ev: any) => {
       try {

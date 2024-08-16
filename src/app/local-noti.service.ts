@@ -123,7 +123,8 @@ export class LocalNotiService {
 
   /** 모바일 웹 로컬 푸쉬를 위해 서비스워커를 기억함 */
   MobileSWReg: ServiceWorkerRegistration;
-
+  /** 광장 채널 채팅 클라이언트, 순환 코드 참조 우회용 */
+  Sq_client: any;
   /** 권한 요청 처리 */
   async initialize() {
     // 사설 그룹 채팅 알림은 즉시 무시하기
@@ -134,6 +135,19 @@ export class LocalNotiService {
         if (window['swRegListenerCallback'][ev.data.data])
           window['swRegListenerCallback'][ev.data.data]();
         delete window['swRegListenerCallback'][ev.data.data];
+        // 인라인 텍스트 입력이 있는 경우
+        if (ev.data.reply) {
+          switch (ev.data.data) {
+            case '12': // 광장 채널 답장하기
+              let data = {
+                msg: ev.data.reply,
+              }
+              if (!data.msg.trim()) return;
+              data['name'] = this.Sq_client.MyUserName;
+              this.Sq_client.send(JSON.stringify(data));
+              break;
+          }
+        }
       });
     } else {
       console.log('Service Worker is not supported in this browser.');
