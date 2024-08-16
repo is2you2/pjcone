@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { NavController } from '@ionic/angular';
-import clipboard from 'clipboardy';
-import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
+import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -146,12 +145,7 @@ export class WeblinkGenPage implements OnInit {
   copy_result_address() {
     this.mClipboard.copy(this.result_address)
       .catch(_e => {
-        clipboard.write(this.result_address).then(() => {
-          if (isPlatform == 'DesktopPWA')
-            this.p5toast.show({
-              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.result_address}`,
-            });
-        }).catch(_e => { });
+        this.global.WriteValueToClipboard('text/plain', this.result_address);
       });
   }
 
@@ -162,7 +156,12 @@ export class WeblinkGenPage implements OnInit {
       .then(v => this.userInput.open_prv_channel = v)
       .catch(async _e => {
         try {
-          this.userInput.open_prv_channel = await clipboard.read()
+          let clipboard = await this.global.GetValueFromClipboard();
+          switch (clipboard.type) {
+            case 'text/plain':
+              this.userInput.open_prv_channel = clipboard.value;
+              break;
+          }
         } catch (e) { }
       });
     this.information_changed();

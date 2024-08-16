@@ -7,8 +7,7 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
-import clipboard from "clipboardy";
-import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
+import { SERVER_PATH_ROOT } from 'src/app/app.component';
 
 @Component({
   selector: 'app-server-detail',
@@ -71,12 +70,7 @@ export class ServerDetailPage implements OnInit {
       `https://is2you2.github.io/devtalk_pwa/?server=${this.dedicated_info['name'] || ''},${this.dedicated_info['address'] || ''},${this.dedicated_info.useSSL || ''},${this.dedicated_info.port || ''},${this.dedicated_info.key || ''}&open_profile=true`;
     this.mClipboard.copy(startup_address)
       .catch(_e => {
-        clipboard.write(startup_address).then(() => {
-          if (isPlatform == 'DesktopPWA')
-            this.p5toast.show({
-              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${startup_address}`,
-            });
-        }).catch(_e => { });
+        this.global.WriteValueToClipboard('text/plain', startup_address);
       });
   }
 

@@ -1,7 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
-import clipboard from 'clipboardy';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -60,12 +58,7 @@ export class LinkQrPage implements OnInit {
   copy_address() {
     this.mClipboard.copy(this.SelectedAddress)
       .catch(_e => {
-        clipboard.write(this.SelectedAddress).then(() => {
-          if (isPlatform == 'DesktopPWA')
-            this.p5toast.show({
-              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.SelectedAddress}`,
-            });
-        }).catch(_e => { });
+        this.global.WriteValueToClipboard('text/plain', this.SelectedAddress);
       });
   }
 }

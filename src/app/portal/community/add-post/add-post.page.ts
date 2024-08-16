@@ -11,7 +11,6 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { VoidDrawPage } from '../../subscribes/chat-room/void-draw/void-draw.page';
 import { DomSanitizer } from '@angular/platform-browser';
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
-import clipboard from "clipboardy";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -743,7 +742,15 @@ export class AddPostPage implements OnInit, OnDestroy {
               pasted_url = await this.mClipboard.paste();
             } catch (e) {
               try {
-                pasted_url = await clipboard.read();
+                let pasted = await this.global.GetValueFromClipboard();
+                switch (pasted.type) {
+                  case 'text/plain':
+                    pasted_url = pasted.value;
+                    break;
+                  case 'image/png':
+                    this.inputFileSelected({ target: { files: [pasted.value] } });
+                    return;
+                }
               } catch (e) {
                 throw e;
               }

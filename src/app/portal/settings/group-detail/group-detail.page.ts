@@ -10,8 +10,7 @@ import { GlobalActService } from 'src/app/global-act.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { GroupServerPage } from '../group-server/group-server.page';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
-import clipboard from "clipboardy";
-import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
+import { SERVER_PATH_ROOT } from 'src/app/app.component';
 
 
 @Component({
@@ -163,8 +162,15 @@ export class GroupDetailPage implements OnInit {
           this.indexed.removeFileFromUserPath(`servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
         });
       } else try {
-        let v = await clipboard.read();
-        await this.check_if_clipboard_available(v);
+        let clipboard = await this.global.GetValueFromClipboard();
+        switch (clipboard.type) {
+          case 'text/plain':
+            await this.check_if_clipboard_available(clipboard.value);
+            break;
+          case 'image/png':
+            this.inputImageSelected({ target: { files: [clipboard.value] } });
+            return;
+        }
       } catch (e) {
         try {
           let v = await this.mClipboard.paste();
@@ -414,12 +420,7 @@ export class GroupDetailPage implements OnInit {
   copy_id() {
     this.mClipboard.copy(this.info.id)
       .catch(_e => {
-        clipboard.write(this.info.id).then(() => {
-          if (isPlatform == 'DesktopPWA')
-            this.p5toast.show({
-              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.info.id}`,
-            });
-        }).catch(_e => { });
+        this.global.WriteValueToClipboard('text/plain', this.info.id);
       });
   }
 
@@ -428,12 +429,7 @@ export class GroupDetailPage implements OnInit {
     let startup_address = encodeURI(`https://is2you2.github.io/devtalk_pwa/?group=${this.info['name']},${this.info['id']}`);
     this.mClipboard.copy(startup_address)
       .catch(_e => {
-        clipboard.write(startup_address).then(() => {
-          if (isPlatform == 'DesktopPWA')
-            this.p5toast.show({
-              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${startup_address}`,
-            });
-        }).catch(_e => { });
+        this.global.WriteValueToClipboard('text/plain', startup_address);
       });
   }
 

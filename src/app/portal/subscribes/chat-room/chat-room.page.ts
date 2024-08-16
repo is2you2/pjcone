@@ -19,7 +19,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { WebrtcService } from 'src/app/webrtc.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import clipboard from "clipboardy";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { SpeechRecognition } from "@capacitor-community/speech-recognition";
@@ -153,8 +152,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             text: this.lang.text['ChatRoom']['LocalImageRemoved'],
           });
         } else try {
-          let v = await clipboard.read();
-          await this.check_if_clipboard_available(v);
+          let fromClipboard = await this.global.GetValueFromClipboard();
+          switch (fromClipboard.type) {
+            case 'image/png':
+              this.LocalChannelImageChanged({ target: { files: [fromClipboard.value] } });
+              break;
+            case 'text/plain':
+              await this.check_if_clipboard_available(fromClipboard.value);
+              break;
+          }
         } catch (e) {
           try {
             let v = await this.mClipboard.paste();
@@ -598,10 +604,18 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let pasted_url = override.url;
           if (!this.userInput.file && pasted_url === undefined)
             try {
-              pasted_url = await this.mClipboard.paste();
+              let clipboard = await this.global.GetValueFromClipboard();
+              switch (clipboard.type) {
+                case 'text/plain':
+                  pasted_url = clipboard.value;
+                  break;
+                case 'image/png':
+                  this.inputFileSelected({ target: { files: [clipboard.value] } });
+                  return;
+              }
             } catch (e) {
               try {
-                pasted_url = await clipboard.read();
+                pasted_url = await this.mClipboard.paste();
               } catch (e) {
                 throw e;
               }
@@ -1433,25 +1447,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
     try { // 개체 복사하기 시도
       if (!isImageTarget) throw '텍스트 복사로 즉시 이동';
-      let data = {};
-      data[msg.content.type] = text;
-      await navigator.clipboard.write([
-        new ClipboardItem(data)
-      ]);
-      if (isPlatform == 'DesktopPWA')
-        this.p5toast.show({
-          text: `${this.lang.text['GlobalAct']['PCCopyImage']}: ${msg.content.filename}`,
-        });
+      await this.global.WriteValueToClipboard('image/png', text, msg.content.filename);
     } catch (e) { // 개체가 아니라면 텍스트 복사하기 시도
       try {
         await this.mClipboard.copy(text);
       } catch (e) {
         try {
-          await clipboard.write(text);
-          if (isPlatform == 'DesktopPWA')
-            this.p5toast.show({
-              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${text}`,
-            });
+          await this.global.WriteValueToClipboard('text/plain', text);
         } catch (e) {
           console.log('클립보드 복사 실패: ', e);
         }

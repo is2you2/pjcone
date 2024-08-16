@@ -10,7 +10,6 @@ import { ContentCreatorInfo, FileInfo, GlobalActService, isDarkMode } from 'src/
 import { ShareContentToOtherPage } from 'src/app/share-content-to-other/share-content-to-other.page';
 import { NakamaService } from 'src/app/nakama.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
-import clipboard from 'clipboardy';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { IonPopover } from '@ionic/angular/common';
 import * as domtoimage from "dom-to-image";
@@ -1963,12 +1962,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   copy_url(data: string) {
     this.mClipboard.copy(data)
       .catch(_e => {
-        clipboard.write(data).then(() => {
-          if (isPlatform == 'DesktopPWA')
-            this.p5toast.show({
-              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${data}`,
-            });
-        }).catch(e => { });
+        this.global.WriteValueToClipboard('text/plain', data);
       });
   }
 }

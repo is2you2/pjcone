@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonToggle, ModalController } from '@ionic/angular';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import clipboard from "clipboardy";
 import { StatusManageService } from 'src/app/status-manage.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { GlobalActService } from 'src/app/global-act.service';
@@ -57,7 +56,12 @@ export class AddGroupPage implements OnInit, OnDestroy {
   async CheckIfCopiedChannelID() {
     let copied: string;
     try {
-      copied = await clipboard.read();
+      let clipboard = await this.global.GetValueFromClipboard();
+      switch (clipboard.type) {
+        case 'text/plain':
+          copied = clipboard.value;
+          break;
+      }
     } catch (e) {
       try {
         copied = await this.mClipboard.paste();
@@ -350,8 +354,15 @@ export class AddGroupPage implements OnInit, OnDestroy {
   async buttonClickLinkInputFile() {
     if (this.userInput.img) this.userInput.img = undefined;
     else try {
-      let v = await clipboard.read();
-      await this.check_if_clipboard_available(v);
+      let clipboard = await this.global.GetValueFromClipboard();
+      switch (clipboard.type) {
+        case 'text/plain':
+          await this.check_if_clipboard_available(clipboard.value);
+          break;
+        case 'image/png':
+          this.inputImageSelected({ target: { files: [clipboard.value] } })
+          return;
+      }
     } catch (e) {
       try {
         let v = await this.mClipboard.paste();

@@ -6,6 +6,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import * as p5 from "p5";
 import { IndexedDBService } from './indexed-db.service';
 import { LoadingController } from '@ionic/angular';
+import { isPlatform } from './app.component';
 
 export var isDarkMode = false;
 /** 파일 입출 크기 제한 */
@@ -1208,5 +1209,64 @@ export class GlobalActService {
         }, 50);
       }
     });
+  }
+
+  /** 클립보드에 기록된 정보 불러오기 (이미지/텍스트)
+   * @returns 이미지 또는 텍스트
+   */
+  async GetValueFromClipboard() {
+    const clipboardItems = await navigator.clipboard.read();
+    let result = {
+      type: undefined as 'image/png' | 'text/plain' | 'error',
+      value: undefined as any,
+    };
+    try {
+      for (let item of clipboardItems) {
+        for (let type of item.types) {
+          let value = await item.getType(type);
+          if (type == 'image/png') {
+            result.type = type;
+            let file = new File([value], 'image.png');
+            result.value = file;
+            break;
+          }
+          if (type == 'text/plain') {
+            result.type = type;
+            result.value = await value.text();
+            break;
+          }
+        }
+      }
+      return result;
+    } catch (e) {
+      console.error('클립보드에서 불러오기 오류: ', e);
+      result.type = 'error';
+      result.value = e;
+      throw result;
+    }
+  }
+
+  /** 클립보드에 내용 복사하기
+   * @param type 종류
+   * @param value 복사하려는 값 (Blob / String)
+   * @param filename 이미지인 경우 파일 이름 명시
+   */
+  async WriteValueToClipboard(type: 'text/plain' | 'image/png', value: any, filename?: string) {
+    try {
+      let data = {};
+      let _value = value;
+      if (type == 'text/plain')
+        _value = new Blob([value], { type: type });
+      data[type] = _value;
+      await navigator.clipboard.write([
+        new ClipboardItem(data)
+      ]);
+      if (isPlatform == 'DesktopPWA')
+        this.p5toast.show({
+          text: `${this.lang.text['GlobalAct']['PCCopyImage']}: ${filename || value}`,
+        });
+    } catch (e) {
+      console.error('클립보드에 복사하기 오류: ', e);
+    }
   }
 }

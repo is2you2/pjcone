@@ -9,8 +9,7 @@ import { NakamaService } from 'src/app/nakama.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
-import clipboard from 'clipboardy';
-import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
+import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { P5ToastService } from 'src/app/p5-toast.service';
 
 @Component({
@@ -202,12 +201,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
             }
             this.mClipboard.copy(targetAddress)
               .catch(_e => {
-                clipboard.write(targetAddress).then(() => {
-                  if (isPlatform == 'DesktopPWA')
-                    this.p5toast.show({
-                      text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${targetAddress}`,
-                    });
-                }).catch(_e => { });
+                this.global.WriteValueToClipboard('text/plain', targetAddress);
               });
           }
         }

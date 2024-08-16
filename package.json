@@ -43,7 +43,6 @@
     "@ionic/pwa-elements": "^3.3.0",
     "@langx/capacitor-voice-recorder": "^6.0.7",
     "@types/p5": "^1.7.6",
-    "clipboardy": "^4.0.0",
     "cordova-clipboard": "^1.3.0",
     "cordova-plugin-badge": "^0.8.9",
     "cordova-plugin-file": "^8.0.0",

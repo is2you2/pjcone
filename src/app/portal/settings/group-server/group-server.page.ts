@@ -5,7 +5,6 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
-import clipboard from "clipboardy";
 import { isNativefier, isPlatform } from 'src/app/app.component';
 import * as p5 from 'p5';
 import { GlobalActService } from 'src/app/global-act.service';
@@ -594,8 +593,15 @@ export class GroupServerPage implements OnInit, OnDestroy {
     if (this.nakama.users.self['img']) {
       this.p5canvas['ChangeImageSmooth']();
     } else try {
-      let v = await clipboard.read();
-      await this.check_if_clipboard_available(v);
+      let clipboard = await this.global.GetValueFromClipboard();
+      switch (clipboard.type) {
+        case 'text/plain':
+          await this.check_if_clipboard_available(clipboard.value);
+          break;
+        case 'image/png':
+          this.inputImageSelected({ target: { files: [clipboard.value] } })
+          return;
+      }
     } catch (e) {
       try {
         let v = await this.mClipboard.paste();
@@ -717,12 +723,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
   copy_id() {
     this.mClipboard.copy(this.session_uid)
       .catch(_e => {
-        clipboard.write(this.session_uid).then(() => {
-          if (isPlatform == 'DesktopPWA')
-            this.p5toast.show({
-              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.session_uid}`,
-            });
-        }).catch(_e => { });
+        this.global.WriteValueToClipboard('text/plain', this.session_uid);
       });
   }
 

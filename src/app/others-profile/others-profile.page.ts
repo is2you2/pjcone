@@ -6,8 +6,7 @@ import { NakamaService } from '../nakama.service';
 import { P5ToastService } from '../p5-toast.service';
 import { StatusManageService } from "../status-manage.service";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
-import clipboard from "clipboardy";
-import { isPlatform } from '../app.component';
+import { GlobalActService } from '../global-act.service';
 
 @Component({
   selector: 'app-others-profile',
@@ -24,6 +23,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
     private p5toast: P5ToastService,
     public lang: LanguageSettingService,
     private mClipboard: Clipboard,
+    private global: GlobalActService,
   ) { }
 
   /** 다른 사용자의 정보 */
@@ -342,12 +342,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
   copy_id() {
     this.mClipboard.copy(this.info['user'].id)
       .catch(_e => {
-        clipboard.write(this.info['user'].id).then(() => {
-          if (isPlatform == 'DesktopPWA')
-            this.p5toast.show({
-              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${this.info['user'].id}`,
-            });
-        }).catch(_e => { });
+        this.global.WriteValueToClipboard('text/plain', this.info['user'].id);
       });
   }
 

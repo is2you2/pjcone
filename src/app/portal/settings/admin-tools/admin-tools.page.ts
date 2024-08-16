@@ -4,11 +4,9 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
-import clipboard from "clipboardy";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { GlobalActService } from 'src/app/global-act.service';
-import { isPlatform } from 'src/app/app.component';
 
 
 @Component({
@@ -381,12 +379,7 @@ export class AdminToolsPage implements OnInit {
   copy_id(id: string) {
     this.mClipboard.copy(id)
       .catch(_e => {
-        clipboard.write(id).then(() => {
-          if (isPlatform == 'DesktopPWA')
-            this.p5toast.show({
-              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${id}`,
-            });
-        }).catch(_e => { });
+        this.global.WriteValueToClipboard('text/plain', id);
       });
   }
 

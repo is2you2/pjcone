@@ -7,7 +7,6 @@ import { StatusManageService } from '../status-manage.service';
 import { LanguageSettingService } from '../language-setting.service';
 import { SERVER_PATH_ROOT, isPlatform } from '../app.component';
 import { ContentCreatorInfo, FILE_BINARY_LIMIT, FileInfo, GlobalActService, isDarkMode } from '../global-act.service';
-import clipboard from 'clipboardy';
 import { P5ToastService } from '../p5-toast.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IndexedDBService } from '../indexed-db.service';
@@ -504,12 +503,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   copy_qr_address(target_string = this.QRCodeTargetString) {
     this.mClipboard.copy(target_string)
       .catch(_e => {
-        clipboard.write(target_string).then(() => {
-          if (isPlatform == 'DesktopPWA')
-            this.p5toast.show({
-              text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${target_string}`,
-            });
-        }).catch(_e => { });
+        this.global.WriteValueToClipboard('text/plain', target_string);
       });
   }
 
