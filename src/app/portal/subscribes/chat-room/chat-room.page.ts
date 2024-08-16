@@ -145,14 +145,24 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       icon: 'hammer-outline',
       name: this.lang.text['ChatRoom']['ExtSoloImage'],
       isHide: true,
-      act: () => {
+      act: async () => {
         if (this.info['info']['img']) {
           delete this.info['info']['img'];
           this.indexed.removeFileFromUserPath(`servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
           this.p5toast.show({
             text: this.lang.text['ChatRoom']['LocalImageRemoved'],
           });
-        } else document.getElementById('local_channel').click();
+        } else try {
+          let v = await clipboard.read();
+          await this.check_if_clipboard_available(v);
+        } catch (e) {
+          try {
+            let v = await this.mClipboard.paste();
+            await this.check_if_clipboard_available(v);
+          } catch (e) {
+            document.getElementById('local_channel').click();
+          }
+        }
       }
     }, { // 2
       icon: 'image-outline',
@@ -496,6 +506,41 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         });
       }
     },];
+
+  async check_if_clipboard_available(v: string) {
+    try {
+      if (v.indexOf('http') == 0) {
+        await new Promise((done, err) => {
+          let img = document.createElement('img');
+          img.src = v;
+          img.onload = () => {
+            this.info['info']['img'] = v;
+            img.remove();
+            done(undefined);
+          }
+          img.onerror = () => {
+            img.remove();
+            err();
+          }
+        });
+      } else throw 'URL 주소가 아님';
+    } catch (e) {
+      try {
+        if (v.indexOf('data:image') == 0) {
+          this.nakama.limit_image_size(v, (rv) => {
+            this.info['info']['img'] = rv['canvas'].toDataURL();
+            this.indexed.saveTextFileToUserPath(this.info['info']['img'],
+              `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
+            this.p5toast.show({
+              text: this.lang.text['ChatRoom']['LocalImageChanged'],
+            });
+          });
+        } else throw 'DataURL 주소가 아님';
+      } catch (e) {
+        throw '사용불가 이미지';
+      }
+    }
+  }
 
   useVoiceRecording = false;
 
