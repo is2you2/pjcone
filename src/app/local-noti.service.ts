@@ -56,8 +56,6 @@ export interface TotalNotiForm {
   autoCancel_ln?: boolean;
   /** 알림에 저장될 추가 데이터, Json 형태로 저장됩니다 */
   extra_ln?: any;
-  /** Web.Noti: 미확인 */
-  badge_wm?: number;
   /** 이미지 첨부, 가로폭에 맞추어 보여짐 */
   image?: string;
   /** Web.Noti: 미확인 */
@@ -198,7 +196,7 @@ export class LocalNotiService {
       if (opt.triggerWhen_ln) return; // 웹에는 예약 기능이 없음
       /** 기본 알림 옵션 (교체될 수 있음) */
       const input: any = {
-        badge: opt.badge_wm,
+        badge: `assets/badge/${opt.icon || opt.smallIcon_ln || header || 'favicon'}.png`,
         body: opt.body,
         icon: `assets/icon/${opt.icon || opt.smallIcon_ln || header || 'favicon'}.png`,
         image: opt.image,
