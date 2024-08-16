@@ -193,7 +193,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
     this.userInput['status'] = 'online';
 
     this.userInput.lang_tag = this.userInput.lang_tag || navigator.language.split('-')[0] || this.lang.lang;
-    this.userInput.max_count = this.userInput.max_count || 2;
+    this.userInput.max_count = this.userInput.max_count || 1;
     try {
       let v = await client.createGroup(session, {
         name: this.userInput.name,

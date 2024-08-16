@@ -58,8 +58,8 @@
     <textarea id="group_desc" class="infobox" [disabled]="isSaveClicked || userInput.id != ''"
       [(ngModel)]="userInput.description" [placeholder]="lang.text['AddGroup']['GroupDetail_placeholder']"></textarea>
     <ion-item [disabled]="isSaveClicked || userInput.id != ''">
-      <ion-input [label]="lang.text['AddGroup']['MemberMaxLimit']" type="number" class="ion-text-right" min="2"
-        [(ngModel)]="userInput.max_count" placeholder="2"></ion-input>
+      <ion-input [label]="lang.text['AddGroup']['MemberMaxLimit']" type="number" class="ion-text-right" min="1"
+        [(ngModel)]="userInput.max_count" placeholder="1"></ion-input>
     </ion-item>
     <ion-item [disabled]="isSaveClicked || userInput.id != ''" #AddGroupPublic button>
       <ion-toggle style="pointer-events: none;" [(ngModel)]="userInput.open" (ionChange)="isPublicToggle()">
