@@ -165,7 +165,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   /** 콘텐츠를 우클릭시 메뉴 발현 */
   canvasDivContextMenu() {
     if (this.FileInfo.viewer != 'blender' && this.FileInfo.viewer != 'text' && this.FileInfo.viewer != 'code') {
-      this.FileMenu.present();
+      this.OpenFileMenu();
       return false;
     }
   }
@@ -989,6 +989,20 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       p.keyPressed = (ev) => {
         if (this.isTextEditMode || this.isHTMLViewer) return;
         if (this.FileInfo.viewer == 'godot') return;
+        const FileMenu: Function[] = [];
+        if (!this.NeedDownloadFile && this.showEditText && this.showEdit)
+          FileMenu.push(() => this.open_text_editor());
+        if (!this.NeedDownloadFile && this.FileInfo['viewer'] != 'audio' && this.showEdit)
+          FileMenu.push(() => this.modify_image());
+        if (!this.NeedDownloadFile)
+          FileMenu.push(() => this.ShareContent());
+        if (!this.NeedDownloadFile && this.isPWA)
+          FileMenu.push(() => this.download_file());
+        FileMenu.push(() => this.open_bottom_modal());
+        if (this.CurrentFileSize && this.FileInfo['url'])
+          FileMenu.push(() => this.RemoveFile());
+        if (!this.CurrentFileSize)
+          FileMenu.push(() => this.DownloadFileFromURL());
         switch (ev['code']) {
           case 'KeyA': // 왼쪽 이동
           case 'ArrowLeft':
@@ -1003,9 +1017,41 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           case 'ArrowRight':
             this.ChangeToAnother(1);
             break;
+          case 'KeyF': // 메뉴 열기 (우클릭)
+            this.OpenFileMenu();
+            break;
+          // 메뉴가 열려있지 않더라도 메뉴 내용을 행동함
+          case 'Digit1':
+          case 'Digit2':
+          case 'Digit3':
+          case 'Digit4':
+          case 'Digit5':
+          case 'Digit6':
+          case 'Digit7':
+          case 'Digit8':
+          case 'Digit9':
+          case 'Digit0':
+            if (this.isFileMenuOpened) {
+              let GetNumber = Number(ev['code'].split('Digit')[1]);
+              let index = (GetNumber + 9) % 10;
+              if (index < FileMenu.length)
+                FileMenu[index]();
+              this.FileMenu.dismiss();
+            }
+            break;
         }
       }
     });
+  }
+
+  /** 파일 메뉴가 열렸는지 검토 */
+  isFileMenuOpened = false;
+  OpenFileMenu() {
+    this.isFileMenuOpened = true;
+    this.FileMenu.onWillDismiss().then(() => {
+      this.isFileMenuOpened = false;
+    });
+    this.FileMenu.present();
   }
 
   @ViewChild('ShowContentInfoIonic') ShowContentInfoIonic: IonModal;
@@ -1322,7 +1368,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         rest = rest.substr(s + 10);
       }
       let result = done + rest;
-      if (result.substr(result.length - 1, 1) == ";" && result.substr(result.length - 6, 6) != "&nbsp;" && result.substr(result.length - 4, 4) != "&lt;" && result.substr(result.length - 4, 4) != "&gt;" && result.substr(result.length - 5, 5) != "&amp;") {
+      if (result.substring(result.length - 1, 1) == ";" && result.substring(result.length - 6, 6) != "&nbsp;" && result.substring(result.length - 4, 4) != "&lt;" && result.substring(result.length - 4, 4) != "&gt;" && result.substring(result.length - 5, 5) != "&amp;") {
         result = result.substring(0, result.length - 1) + "<span style=color:" + cssdelimitercolor + ">;</span>";
       }
       return "<span style=color:" + csspropertyvaluecolor + ">" + result + "</span>";
