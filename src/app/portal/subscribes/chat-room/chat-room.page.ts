@@ -987,9 +987,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               };
               if (text) this.userInput.qoute.text = truncate(text, 80);
               if (target_msg.content.viewer == 'image') {
-                if (target_msg.content.url)
+                if (target_msg.content.url) {
                   this.userInput.qoute.url = target_msg.content.url;
-                else if (target_msg.content.path) {
+                  this.userInput.qoute.path = target_msg.content.url;
+                } else if (target_msg.content.path) {
                   this.userInput.qoute.path = target_msg.content.path.split('/').pop();
                   if (!this.userInput.qoute.url) {
                     let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/${this.userInput.qoute.path}`;
@@ -1260,7 +1261,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }
         }
         // 인용 메시지가 경로로 구성된 이미지 파일을 따르는 경우
-        if (c.content.qoute && c.content.qoute.path) this.OpenQouteThumbnail(c);
+        if (c.content.qoute) this.OpenQouteThumbnail(c);
         if (this.ViewMsgIndex + this.ViewCount == this.messages.length - 1)
           this.ViewMsgIndex++;
         this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
@@ -1317,6 +1318,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           URL.revokeObjectURL(FileURL);
         }, 100);
       });
+      else if (c.content.qoute.path.indexOf('http') == 0)
+        c.content.qoute['url'] = c.content.qoute.path;
     });
   }
 
