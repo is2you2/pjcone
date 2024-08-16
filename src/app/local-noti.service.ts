@@ -205,11 +205,6 @@ export class LocalNotiService {
           window.focus();
           this.WebNoties[opt.id].close();
         }
-        this.WebNoties[opt.id].onclick = () => {
-          _action_wm();
-          window.focus();
-          this.WebNoties[opt.id].close();
-        };
       } catch (e) { }
     } else { // 모바일 로컬 푸쉬
       if (this.Current == header) return;
