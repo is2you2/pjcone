@@ -132,9 +132,6 @@ export class LocalNotiService {
     if ('serviceWorker' in navigator) {
       this.MobileSWReg = window['swReg'];
       navigator.serviceWorker.addEventListener('message', ev => {
-        if (window['swRegListenerCallback'][ev.data.data])
-          window['swRegListenerCallback'][ev.data.data]();
-        delete window['swRegListenerCallback'][ev.data.data];
         // 인라인 텍스트 입력이 있는 경우
         if (ev.data.reply) {
           switch (ev.data.data) {
@@ -147,6 +144,10 @@ export class LocalNotiService {
               this.Sq_client.send(JSON.stringify(data));
               break;
           }
+        } else {
+          if (window['swRegListenerCallback'][ev.data.data])
+            window['swRegListenerCallback'][ev.data.data]();
+          delete window['swRegListenerCallback'][ev.data.data];
         }
       });
     } else {
