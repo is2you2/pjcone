@@ -54,6 +54,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.cont.abort();
     if (this.p5viewerkey) this.p5viewerkey.remove();
     if (this.p5canvas) this.p5canvas.remove();
+    if (this.VideoMediaObject) {
+      this.VideoMediaObject.elt.src = '';
+      this.VideoMediaObject.elt.load();
+    }
   }
 
   blob: Blob;
@@ -400,6 +404,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     }
     loading.dismiss();
   }
+  /** p5.video 가 생성된 경우 여기에 기록 */
+  VideoMediaObject: any;
   /** 파일 읽기 멈추기 위한 컨트롤러 */
   cont: AbortController;
   /** 비디오/오디오 콘텐츠가 종료되면 끝에서 다음 콘텐츠로 자동 넘김 */
@@ -627,9 +633,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 if (this.AutoPlayNext)
                   this.ChangeToAnother(1);
               }
-              setTimeout(() => {
+              ResizeAudio();
+              mediaObject['elt'].hidden = false;
+              mediaObject['elt'].onloadedmetadata = () => {
                 ResizeAudio();
                 mediaObject['elt'].hidden = false;
+              }
+              setTimeout(() => {
               }, 50);
               mediaObject.showControls();
               mediaObject.play();
@@ -704,23 +714,26 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               } else this.global.PIPLinkedVideoElement = mediaObject['elt'];
               if (this.canvasDiv)
                 this.canvasDiv.appendChild(mediaObject['elt']);
-              mediaObject['elt'].onended = () => {
-                if (this.AutoPlayNext)
-                  this.ChangeToAnother(1);
-              }
-              setTimeout(() => {
+              this.image_info['width'] = mediaObject['elt']['videoWidth'];
+              this.image_info['height'] = mediaObject['elt']['videoHeight'];
+              ResizeVideo();
+              mediaObject['elt'].hidden = false;
+              mediaObject['elt'].onloadedmetadata = () => {
                 this.image_info['width'] = mediaObject['elt']['videoWidth'];
                 this.image_info['height'] = mediaObject['elt']['videoHeight'];
                 ResizeVideo();
                 mediaObject['elt'].hidden = false;
-              }, 50);
+              }
+              mediaObject['elt'].onended = () => {
+                if (this.AutoPlayNext)
+                  this.ChangeToAnother(1);
+              }
               mediaObject.showControls();
               mediaObject.play();
               this.ContentOnLoad = true;
               this.ContentFailedLoad = false;
             });
-            mediaObject['elt'].hidden = true;
-            p['VideoMedia'] = mediaObject;
+            this.VideoMediaObject = mediaObject;
           }
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let ResizeVideo = () => {
@@ -1616,10 +1629,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
           loading.present();
           this.p5canvas.pixelDensity(1);
-          this.p5canvas['VideoMedia'].pause();
-          this.p5canvas['VideoMedia']['size'](this.image_info['width'], this.image_info['height']);
+          this.VideoMediaObject.pause();
+          this.VideoMediaObject['size'](this.image_info['width'], this.image_info['height']);
           let canvas = this.p5canvas.createCanvas(this.image_info['width'], this.image_info['height']);
-          this.p5canvas.image(this.p5canvas['VideoMedia'], 0, 0, this.p5canvas.width, this.p5canvas.height);
+          this.p5canvas.image(this.VideoMediaObject, 0, 0, this.p5canvas.width, this.p5canvas.height);
           let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
           try {
             loading.dismiss();
@@ -1824,7 +1837,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     switch (this.FileInfo.viewer) {
       case 'video':
         try {
-          let size = this.p5canvas['VideoMedia'].size();
+          let size = this.VideoMediaObject.size();
           let width: number, height: number;
           if (size.width > size.height) {
             height = size.height / size.width * 192;
@@ -1836,7 +1849,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let canvas = this.p5canvas.createCanvas(width, height);
           this.p5canvas.pixelDensity(1);
           this.p5canvas.imageMode(this.p5canvas.CORNER);
-          this.p5canvas.image(this.p5canvas['VideoMedia'], 0, 0, width, height);
+          this.p5canvas.image(this.VideoMediaObject, 0, 0, width, height);
           this.p5canvas.fill(255, 128);
           this.p5canvas.rect(0, 0, width, height);
           this.p5canvas.textWrap(this.p5canvas.CHAR);
