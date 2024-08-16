@@ -199,7 +199,12 @@ export class MainPage implements OnInit {
                 Todos[TodoKeys[i]].makeDone();
                 return
               }
-          } else Todos[json.id] = new TodoElement(json);
+          } else {
+            if (Todos[json.id]) {
+              Todos[json.id].json = json;
+              Todos[json.id].initialize();
+            } else Todos[json.id] = new TodoElement(json);
+          }
           if (!p['isPlayingCanvas'].loop) {
             AddedElement = Todos[json.id];
             p.loop();
@@ -445,6 +450,9 @@ export class MainPage implements OnInit {
             return;
           }
           this.position = StartPosGen;
+          this.initialize();
+        }
+        initialize() {
           if (!this.json.custom_color) {
             switch (this.json.importance) {
               case '0': // 중요도 낮음
