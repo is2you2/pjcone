@@ -245,15 +245,33 @@ export class NakamaService {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') { // 웹은 예약 발송이 없으므로 지금부터 수를 세야함
       let ScheduleAt = new Date(targetTime).getTime() - new Date().getTime();
       if (ScheduleAt > 0 && ScheduleAt < 2000000000) { // settimeout 최댓값이 있는 것 같다
-        let schedule = setTimeout(() => {
-          this.noti.PushLocal({
+        let schedule = setTimeout(async () => {
+          let catch_image_attach: string;
+          for (let attach of noti_info['attach']) {
+            if (attach['viewer'] == 'image') {
+              if (attach['url']) {
+                catch_image_attach = attach['url'];
+              } else {
+                let blob = await this.indexed.loadBlobFromUserPath(attach['path'], attach['type']);
+                catch_image_attach = URL.createObjectURL(blob);
+              }
+              break;
+            }
+          }
+          await this.noti.PushLocal({
             id: noti_info.noti_id,
             title: noti_info.title,
             body: noti_info.description,
+            image: catch_image_attach,
             icon: 'todo',
           }, undefined, (_ev: any) => {
             this.open_add_todo_page(JSON.stringify(noti_info));
           });
+          setTimeout(() => {
+            try {
+              URL.revokeObjectURL(catch_image_attach);
+            } catch (e) { }
+          }, 1000);
         }, ScheduleAt);
         this.web_noti_id[noti_info.noti_id] = schedule;
       }
