@@ -491,6 +491,7 @@ export class GlobalActService {
         } else info['viewer'] = 'disabled';
         break;
       // 코드류
+      case 'sh': // Shell
       case 'c': // C
       case 'cs': // C#
       case 'ts': // Typescript
@@ -1157,7 +1158,7 @@ export class GlobalActService {
    * @param value 복사하려는 값 (Blob / String)
    * @param filename 이미지인 경우 파일 이름 명시
    */
-  async WriteValueToClipboard(type: 'text/plain' | 'image/png', value: any, filename?: string) {
+  async WriteValueToClipboard(type: string, value: any, filename?: string) {
     try {
       let data = {};
       let _value = value;
@@ -1172,7 +1173,7 @@ export class GlobalActService {
           text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${filename || value}`,
         });
     } catch (e) {
-      console.error('클립보드에 복사하기 오류: ', e);
+      console.log('클립보드에 복사하기 오류: ', e);
     }
   }
 }

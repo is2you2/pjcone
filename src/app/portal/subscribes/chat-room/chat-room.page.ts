@@ -1446,7 +1446,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
     try { // 개체 복사하기 시도
       if (!isImageTarget) throw '텍스트 복사로 즉시 이동';
-      await this.global.WriteValueToClipboard('image/png', text, msg.content.filename);
+      await this.global.WriteValueToClipboard(text.type, text, msg.content.filename);
     } catch (e) { // 개체가 아니라면 텍스트 복사하기 시도
       try {
         await this.mClipboard.copy(text);
