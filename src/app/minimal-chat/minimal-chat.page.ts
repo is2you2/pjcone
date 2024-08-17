@@ -67,7 +67,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
 
   async open_url_link(url: string) {
     // 근데 주소가 메인 주소라면 QR행동으로 처리하기
-    if (url.indexOf('https://is2you2.github.io/devtalk_pwa/?') == 0) {
+    if (url.indexOf('https://is2you2.github.io/godotchat_pwa/?') == 0) {
       let init = this.global.CatchGETs(url) || {};
       this.global.initialize();
       try {
@@ -221,7 +221,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       } catch (e) {
         header_address = 'http://localhost:8080/www/';
       }
-    } else header_address = `${SERVER_PATH_ROOT}devtalk_pwa/`;
+    } else header_address = `${SERVER_PATH_ROOT}godotchat_pwa/`;
     this.QRCodeTargetString = `${header_address}?group_dedi=${this.client.cacheAddress.split('://')[1]},${this.client.JoinedChannel || 'public'}`;
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeTargetString);
   }

@@ -53,7 +53,7 @@ export class WeblinkGenPage implements OnInit {
   targetBaseURL: string;
   ngOnInit() {
     if (location.host.indexOf('localhost') == 0)
-      this.targetBaseURL = `${SERVER_PATH_ROOT}devtalk_pwa/`;
+      this.targetBaseURL = `${SERVER_PATH_ROOT}godotchat_pwa/`;
     else this.targetBaseURL = `${location.protocol}//${location.host}${window['sub_path']}`
     this.result_address = this.targetBaseURL;
     this.update_qrcode();

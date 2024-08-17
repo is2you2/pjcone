@@ -212,7 +212,7 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   /** 모바일 앱에서는 웹으로 연결을 제시함 */
   open_pwa() {
-    window.open('https://is2you2.github.io/devtalk_pwa/', '_system');
+    window.open('https://is2you2.github.io/godotchat_pwa/', '_system');
   }
 
   go_to_webrtc_manager() {
