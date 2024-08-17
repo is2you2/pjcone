@@ -11,7 +11,7 @@
   <ion-list-header>
     <ion-label>Ionic frameworks modules</ion-label>
   </ion-list-header>
-  <textarea class="infobox" style="height: 240px;" disabled [(ngModel)]="licenses['modules']"></textarea>
+  <textarea class="infobox" disabled [(ngModel)]="licenses['modules']"></textarea>
   <ion-list-header>
     <ion-label>Godot engine 4.3</ion-label>
     <ion-button (click)="open_link('https://godotengine.org/')">{{lang.text['Licenses']['open_link']}}</ion-button>
@@ -21,17 +21,9 @@
   </ion-item-divider>
   <textarea class="infobox" disabled [(ngModel)]="licenses['godot']['engine']"></textarea>
   <ion-item-divider>
-    <ion-label>FreeType</ion-label>
+    <ion-label>Third-party</ion-label>
   </ion-item-divider>
-  <textarea class="infobox" disabled [(ngModel)]="licenses['godot']['freetype']"></textarea>
-  <ion-item-divider>
-    <ion-label>E Net</ion-label>
-  </ion-item-divider>
-  <textarea class="infobox" disabled [(ngModel)]="licenses['godot']['enet']"></textarea>
-  <ion-item-divider>
-    <ion-label>mbed TLS</ion-label>
-  </ion-item-divider>
-  <textarea class="infobox" disabled [(ngModel)]="licenses['godot']['mbedtls']"></textarea>
+  <textarea class="infobox" disabled [(ngModel)]="licenses['godot']['thirdparty']"></textarea>
   <ion-list-header>
     <ion-label>JS.BLEND</ion-label>
     <ion-button

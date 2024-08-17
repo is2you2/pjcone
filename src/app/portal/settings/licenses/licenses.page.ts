@@ -42,9 +42,7 @@ export class LicensesPage implements OnInit, OnDestroy {
   licenses = {
     godot: {
       engine: '',
-      enet: '',
-      freetype: '',
-      mbedtls: '',
+      thirdparty: '',
     },
     jsblend: '',
     modules: '',
@@ -58,14 +56,8 @@ export class LicensesPage implements OnInit, OnDestroy {
         p.loadStrings('assets/data/docs/godot/godot.txt', (v: string[]) => {
           this.licenses.godot.engine = v.join('\n');
         });
-        p.loadStrings('assets/data/docs/godot/FreeType.txt', (v: string[]) => {
-          this.licenses.godot.freetype = v.join('\n');
-        });
-        p.loadStrings('assets/data/docs/godot/enet.txt', (v: string[]) => {
-          this.licenses.godot.enet = v.join('\n');
-        });
-        p.loadStrings('assets/data/docs/godot/mbedtls.txt', (v: string[]) => {
-          this.licenses.godot.mbedtls = v.join('\n');
+        p.loadStrings('assets/data/docs/godot/thirdparty.txt', (v: string[]) => {
+          this.licenses.godot.thirdparty = v.join('\n');
         });
         p.loadStrings('assets/data/docs/js.blend.txt', (v: string[]) => {
           this.licenses.jsblend = v.join('\n');
