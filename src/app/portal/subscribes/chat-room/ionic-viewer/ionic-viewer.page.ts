@@ -1805,20 +1805,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   RemoveFile() {
-    this.alertCtrl.create({
-      header: this.lang.text['ContentViewer']['RemoveFile'],
-      message: this.FileInfo.alt_path || this.FileInfo.path,
-      buttons: [{
-        text: this.lang.text['ChatRoom']['Delete'],
-        handler: () => {
-          this.RemoveFileAct();
-          this.p5toast.show({
-            text: `${this.lang.text['ContentViewer']['RemoveFile']}: ${this.FileInfo.alt_path || this.FileInfo.path}`,
-          });
-        },
-        cssClass: 'redfont',
-      }]
-    }).then(v => v.present());
+    this.RemoveFileAct();
+    this.p5toast.show({
+      text: `${this.lang.text['ContentViewer']['RemoveFile']}: ${this.FileInfo.alt_path || this.FileInfo.path}`,
+    });
   }
 
   async RemoveFileAct() {
