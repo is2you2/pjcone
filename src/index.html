@@ -27,7 +27,6 @@
         .then((reg) => {
           console.log('Service Worker Registered');
           swReg = reg;
-          reg.update();
         }).catch(e => {
           console.error('Service Worker Register failed: ', e);
         });
