@@ -57,7 +57,6 @@ func load_package_debug(files:PackedStringArray):
 		printerr('Godot: 패키지를 불러오지 못함: ', target)
 		$CenterContainer/ColorRect/Label.text = 'Cannot load file: %s' % target
 	else: # 정상적으로 불러와짐
-		$CenterContainer.queue_free()
 		print('Godot-debug: 패키지 타겟: ', target)
 		load_next_scene('res://main.tscn')
 	get_viewport().files_dropped.disconnect(load_package_debug)
@@ -70,7 +69,6 @@ func load_pck(try_left:= 5):
 			printerr('Godot: 패키지를 불러오지 못함: ', 'user://%s' % window['path'])
 			$CenterContainer/ColorRect/Label.text = 'Cannot load file: %s' % 'user://%s' % window['path']
 		else: # 패키지를 가지고 있는 경우
-			$CenterContainer.queue_free()
 			load_next_scene('res://main.tscn')
 			if get_tree().is_connected("files_dropped", Callable(self, 'load_package_debug')):
 				get_tree().disconnect("files_dropped", Callable(self, 'load_package_debug'))
@@ -96,8 +94,13 @@ func load_next_scene(path:String, targetNode:Node = self):
 		window.update_load(1, 1)
 	await get_tree().create_timer(.4).timeout
 	var _resource:= ResourceLoader.load_threaded_get(path)
-	var _inst = _resource.instantiate()
-	targetNode.add_child(_inst)
+	print('check: ',_resource)
+	if _resource == null:
+		$CenterContainer/ColorRect/Label.text = 'Missing main.tscn file'
+	else:
+		$CenterContainer.queue_free()
+		var _inst = _resource.instantiate()
+		targetNode.add_child(_inst)
 
 
 func modify_image(args):
