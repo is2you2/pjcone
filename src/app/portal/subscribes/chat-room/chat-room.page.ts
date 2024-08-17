@@ -586,7 +586,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }, 0);
     }
     this.noti.Current = this.info['cnoti_id'];
-    this.useFirstCustomCDN = this.info['CDN'] || Number(localStorage.getItem('useFFSCDN')) || 0;
+    this.useFirstCustomCDN = this.info['CDN'] || 0;
     this.toggle_custom_attach(this.useFirstCustomCDN);
   }
 
