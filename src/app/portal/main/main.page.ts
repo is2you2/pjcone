@@ -39,7 +39,7 @@ export class MainPage implements OnInit {
   ngOnInit() { }
 
   toggle_session() {
-    this.nakama.toggle_all_session(true);
+    this.nakama.toggle_all_session();
     this.global.p5todo.redraw();
   }
 

@@ -380,7 +380,7 @@ export class NakamaService {
    */
   isRewardAdsUsed = false;
   /** 모든 세션을 토글 */
-  async toggle_all_session(lampAct = false) {
+  async toggle_all_session() {
     if (this.TogglingSession) return;
     this.TogglingSession = true;
     if (this.statusBar.settings.groupServer == 'online') {
@@ -415,24 +415,28 @@ export class NakamaService {
 
   /** 공식 테스트 서버 접근 권한 생성 */
   async AccessToOfficialTestServer() {
-    let res = await fetch(`${SERVER_PATH_ROOT}assets/data/WSAddress.txt`);
-    let address = (await res.text()).split('\n')[0];
-    await this.add_group_server({
-      isOfficial: 'official',
-      address: address,
-      name: this.lang.text['Nakama']['DevTestServer'],
-      target: 'DevTestServer',
-      useSSL: true,
-    });
-    this.isRewardAdsUsed = true;
-    // official 로그인 처리
-    let Targets = Object.keys(this.servers['official']);
-    for (let i = 0, j = Targets.length; i < j; i++)
-      await this.init_session(this.servers['official'][Targets[i]].info);
-    if (this.statusBar.settings.groupServer == 'online')
-      this.p5toast.show({
-        text: this.lang.text['Nakama']['AccessTestServer'],
+    try {
+      let res = await fetch(`${SERVER_PATH_ROOT}assets/data/WSAddress.txt`);
+      let address = (await res.text()).split('\n')[0];
+      await this.add_group_server({
+        isOfficial: 'official',
+        address: address,
+        name: this.lang.text['Nakama']['DevTestServer'],
+        target: 'DevTestServer',
+        useSSL: true,
       });
+      this.isRewardAdsUsed = true;
+      // official 로그인 처리
+      let Targets = Object.keys(this.servers['official']);
+      for (let i = 0, j = Targets.length; i < j; i++)
+        await this.init_session(this.servers['official'][Targets[i]].info);
+      if (this.statusBar.settings.groupServer == 'online')
+        this.p5toast.show({
+          text: this.lang.text['Nakama']['AccessTestServer'],
+        });
+    } catch (e) {
+      console.log('주소받기 실패: ', e);
+    }
   }
 
   /** 서버 연결하기 */
