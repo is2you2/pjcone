@@ -387,7 +387,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                     if (this.indexed.godotDB) {
                       try {
                         await this.indexed.GetGodotIndexedDB();
-                        await this.indexed.saveBlobToUserPath(this.PostInfo['attachments'][index]['blob'], `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`, undefined, this.indexed.godotDB);
+                        await this.indexed.saveBlobToUserPath(this.PostInfo['attachments'][index]['blob'], `godot/app_userdata/Client/tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`, undefined, this.indexed.godotDB);
                         createDuplicate = true;
                       } catch (e) {
                         console.log('내부 파일 없음: ', e);
@@ -396,18 +396,18 @@ export class PostViewerPage implements OnInit, OnDestroy {
                     await this.global.CreateGodotIFrame(targetFrameId, {
                       path: `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`,
                       url: this.PostInfo['attachments'][index].url,
-                    }, 'start_load_pck', true);
+                    }, 'start_load_pck');
                     if (!createDuplicate) {
                       try { // 내부에 파일이 있는지 검토
                         let blob = await this.indexed.loadBlobFromUserPath(
                           this.PostInfo['attachments'][index]['path'], '', undefined, this.indexed.ionicDB);
                         await this.indexed.GetGodotIndexedDB();
-                        await this.indexed.saveBlobToUserPath(blob, `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`, undefined, this.indexed.godotDB);
+                        await this.indexed.saveBlobToUserPath(blob, `godot/app_userdata/Client/tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`, undefined, this.indexed.godotDB);
                       } catch (e) { }
                       await this.global.CreateGodotIFrame(targetFrameId, {
                         path: `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`,
                         url: this.PostInfo['attachments'][index].url,
-                      }, 'start_load_pck', true);
+                      }, 'start_load_pck');
                     }
                     if (this.PostInfo['attachments'][index].url)
                       this.global.godot_window['download_url']();

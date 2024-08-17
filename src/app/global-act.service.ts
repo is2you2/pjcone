@@ -260,7 +260,7 @@ export class GlobalActService {
    * @param [without_splash=false] 스플래시를 끄는 경우 사용(게시물 내 로딩시)
    * @returns iframe 개체 돌려주기
    */
-  CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys, waiting_key = '', without_splash = false): Promise<any> {
+  CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys, waiting_key = ''): Promise<any> {
     let ready_to_show = false;
     return new Promise(async (done: any) => {
       let refresh_it_loading = async () => {
@@ -336,100 +336,6 @@ export class GlobalActService {
       let _keys = Object.keys(keys);
       _keys.forEach(key => this.godot_window[key] = keys[key]);
       this.godot = _godot;
-      if (!without_splash)
-        this.godot_splash = new p5((p: p5) => {
-          let icon: p5.Image;
-          let background: p5.Image;
-          let loading_size = 8;
-          let loading_corner = 2;
-          let loading_dist = 6;
-          let backgroundWidth: number;
-          let backgroundHeight: number;
-          p.setup = () => {
-            let canvas = p.createCanvas(frame.clientWidth, frame.clientHeight);
-            canvas.parent(frame);
-            canvas.style('position: fixed;');
-            p.imageMode(p.CENTER);
-            p.rectMode(p.CENTER);
-            p.noStroke();
-            p['CurrentLoaded'] = 0;
-            p['LoadLength'] = 1;
-            this.godot_window['update_load'] = (current: number, length: number) => {
-              p['CurrentLoaded'] = current;
-              p['LoadLength'] = length;
-            }
-            p.loadImage('assets/icon/favicon.png', v => {
-              icon = v;
-            });
-            p.pixelDensity(1);
-            if (keys.background)
-              p.loadImage(keys.background, v => {
-                background = v;
-                if (v.width > v.height) {
-                  backgroundHeight = p.height;
-                  backgroundWidth = v.width / v.height * p.height;
-                } else {
-                  backgroundWidth = p.width;
-                  backgroundHeight = v.height / v.width * p.width;
-                }
-              });
-          }
-          let FadeLerp = 2;
-          let loadingRot = 0;
-          let splash_bg_color = isDarkMode ? 80 : 200;
-          let loading_box = isDarkMode ? 200 : 80;
-          let loading_bar = isDarkMode ? 40 : 160;
-          p.draw = () => {
-            p.clear(255, 255, 255, 255);
-            let CurrentFade = p.constrain(255 * FadeLerp, 0, 255);
-            p.background(splash_bg_color,);
-            p.tint(255, CurrentFade);
-            if (background) p.image(background, p.width / 2, p.height / 2, backgroundWidth, backgroundHeight);
-            if (icon) p.image(icon, p.width / 2, p.height / 2);
-            p.push();
-            p.translate(p.width / 2, p.height / 2 + 80);
-            loadingRot += .07;
-            p.rotate(loadingRot);
-            p.fill(loading_box, p.constrain(255 * FadeLerp, 0, 255));
-            p.push();
-            p.translate(-loading_dist, -loading_dist);
-            p.rotate(-loadingRot * 2);
-            p.rect(0, 0, loading_size, loading_size, loading_corner);
-            p.pop();
-            p.push();
-            p.translate(loading_dist, -loading_dist);
-            p.rotate(-loadingRot * 2);
-            p.rect(0, 0, loading_size, loading_size, loading_corner);
-            p.pop();
-            p.push();
-            p.translate(-loading_dist, loading_dist);
-            p.rotate(-loadingRot * 2);
-            p.rect(0, 0, loading_size, loading_size, loading_corner);
-            p.pop();
-            p.push();
-            p.translate(loading_dist, loading_dist);
-            p.rotate(-loadingRot * 2);
-            p.rect(0, 0, loading_size, loading_size, loading_corner);
-            p.pop();
-            p.pop();
-            p.push();
-            p.translate(p.width / 2, p.height / 2 + 120);
-            p.stroke(loading_bar, CurrentFade);
-            p.strokeWeight(3);
-            p.line(-30, 0, 30, 0);
-            p.stroke(loading_box, CurrentFade);
-            p.line(-30, 0, p.lerp(-30, 30, p['CurrentLoaded'] / p['LoadLength']), 0);
-            p.pop();
-            if (ready_to_show) {
-              FadeLerp -= .04;
-              if (FadeLerp <= 0)
-                p.remove();
-            }
-          }
-          p.windowResized = () => {
-            p.resizeCanvas(frame.clientWidth, frame.clientHeight);
-          }
-        });
       await refresh_it_loading();
     });
   }

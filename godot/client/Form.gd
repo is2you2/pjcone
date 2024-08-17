@@ -15,7 +15,7 @@ var download_url_func = JavaScriptBridge.create_callback(download_url)
 # 앱 시작과 동시에 동작하려는 pck 정보를 받아옴
 func _ready():
 	get_viewport().files_dropped.connect(load_package_debug)
-	if OS.has_feature('JavaScript'):
+	if OS.has_feature('web'):
 		window = JavaScriptBridge.get_interface('window')
 		window.quit_godot = quit_godot_func
 		# ionic에게 IndexedDB가 생성되었음을 알림
@@ -30,10 +30,10 @@ func download_url(args):
 	var dir:= DirAccess.open('user://')
 	if not dir.dir_exists('user://tmp_files/') or not dir.dir_exists('user://tmp_files/duplicate'):
 		dir.make_dir_recursive('user://tmp_files/duplicate/')
-	var file:= FileAccess.open('user://tmp_files/duplicate/viewer.%s' % window.ext, FileAccess.WRITE)
+	var file:= FileAccess.open('user://tmp_files/duplicate/viewer.pck', FileAccess.WRITE)
 	file.close()
 	var http_req:= HTTPRequest.new()
-	http_req.download_file = 'user://tmp_files/duplicate/viewer.%s' % window.ext
+	http_req.download_file = 'user://tmp_files/duplicate/viewer.pck'
 	add_child(http_req)
 	http_req.connect("request_completed", Callable(self, 'download_complete'))
 	http_req.request(window.url)
@@ -43,22 +43,7 @@ func download_complete(result, res_code, header, body):
 
 # 로컬 파일로 즉시 시작
 func start_load_pck(args):
-	match(window['ext']):
-		'pck':
-			load_pck()
-		'blend':
-			pass
-		'obj':
-			pass
-		'stl':
-			pass
-		'glb':
-			pass
-		'gltf':
-			# 파일읽기 준비중 알림
-			$CenterContainer/Label.text = 'Preparing open file ext:\n%s' % window['ext']
-		_: # 예외처리
-			$CenterContainer/Label.text = 'Cannot open file:\n%s' % ('user://%s' % window['path'])
+	load_pck()
 
 # pck 투척시 테스트를 위해 바로 받아보기
 func load_package_debug(files:PackedStringArray):
@@ -70,6 +55,7 @@ func load_package_debug(files:PackedStringArray):
 	var is_loaded:= ProjectSettings.load_resource_pack(target, false)
 	if not is_loaded: # 불러오기 실패
 		printerr('Godot: 패키지를 불러오지 못함: ', target)
+		$CenterContainer/ColorRect/Label.text = 'Cannot load file: %s' % target
 	else: # 정상적으로 불러와짐
 		$CenterContainer.queue_free()
 		print('Godot-debug: 패키지 타겟: ', target)
@@ -78,12 +64,11 @@ func load_package_debug(files:PackedStringArray):
 
 
 func load_pck(try_left:= 5):
-	var dir:=DirAccess.open('user://')
-	if dir.file_exists('user://%s' % window['path']):
+	if FileAccess.file_exists('user://%s' % window['path']):
 		var is_loaded:= ProjectSettings.load_resource_pack('user://%s' % window['path'])
 		if not is_loaded: # 없으면 다운받기
 			printerr('Godot: 패키지를 불러오지 못함: ', 'user://%s' % window['path'])
-			$CenterContainer/ColorRect/Label.text = 'Cannot open file: %s' % 'user://%s' % window['path']
+			$CenterContainer/ColorRect/Label.text = 'Cannot load file: %s' % 'user://%s' % window['path']
 		else: # 패키지를 가지고 있는 경우
 			$CenterContainer.queue_free()
 			load_next_scene('res://ContentViewer.tscn')
@@ -95,7 +80,7 @@ func load_pck(try_left:= 5):
 			load_pck(try_left - 1)
 		else:
 			printerr('Godot: 패키지를 불러오지 못함: ', 'user://%s' % window['path'])
-			$CenterContainer/ColorRect/Label.text = 'Cannot open file: %s' % 'user://%s' % window['path']
+			$CenterContainer/ColorRect/Label.text = 'Cannot find file: %s' % 'user://%s' % window['path']
 
 # 천천히 불러오기
 func load_next_scene(path:String, targetNode:Node = self):
@@ -118,7 +103,6 @@ func load_next_scene(path:String, targetNode:Node = self):
 func modify_image(args):
 	var viewport:SubViewport = get_viewport()
 	var img:= viewport.get_texture().get_image()
-	img.flip_y()
 	var buf:= img.save_png_to_buffer()
 	window.receive_image(Marshalls.raw_to_base64(buf), img.get_width(), img.get_height())
 
@@ -129,7 +113,6 @@ func create_thumbnail(args):
 	if not thumbnail_exist:
 		var viewport:Viewport = get_viewport()
 		var img:= viewport.get_texture().get_image()
-		img.flip_y()
 		var width:= img.get_width()
 		var height:= img.get_height()
 		if width < height:
