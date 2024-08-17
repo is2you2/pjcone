@@ -1169,7 +1169,7 @@ export class GlobalActService {
       ]);
       if (isPlatform == 'DesktopPWA')
         this.p5toast.show({
-          text: `${this.lang.text['GlobalAct']['PCCopyImage']}: ${filename || value}`,
+          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${filename || value}`,
         });
     } catch (e) {
       console.error('클립보드에 복사하기 오류: ', e);
