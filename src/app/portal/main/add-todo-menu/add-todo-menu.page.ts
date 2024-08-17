@@ -185,6 +185,34 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 연결끊긴 할 일을 삭제하고, 로컬로 저장함 */
+  ChangeDisconnectStatus() {
+    // 이 할 일이 오프라인임을 검토
+    if (this.userInput.display_creator == this.lang.text['TodoDetail']['Disconnected']) {
+      this.alertCtrl.create({
+        header: this.lang.text['TodoDetail']['MoveToLocal'],
+        message: this.lang.text['TodoDetail']['RemoveFromRemote'],
+        buttons: [{
+          text: this.lang.text['Nakama']['LocalNotiOK'],
+          cssClass: 'redfont',
+          handler: async () => {
+            // 이 할 일 삭제 행동 모방
+            this.isButtonClicked = true;
+            await this.nakama.deleteTodoFromStorage(true, JSON.parse(JSON.stringify(this.userInput)));
+            // 이 할 일을 로컬에 저장하기
+            this.StoreAtSelChanged({ detail: { value: 'local' } });
+            this.isModify = false;
+            this.userInput.id = undefined;
+            this.userInput.noti_id = undefined;
+            this.userInput.create_at = undefined;
+            delete this.userInput['modified'];
+            this.saveData();
+          }
+        }]
+      }).then(v => v.present());
+    }
+  }
+
   p5canvas: p5;
   CreateDrop() {
     let parent = document.getElementById('p5Drop_todo');
