@@ -714,7 +714,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   }
 
   ionViewWillLeave() {
-    this.title.setTitle('개발톡');
+    this.title.setTitle('GodotChat');
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', 'assets/icon/favicon.png');
     this.noti.Current = undefined;

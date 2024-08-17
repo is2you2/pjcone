@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'org.pjcone.portal',
-  appName: '개발톡',
+  appName: 'GodotChat',
   webDir: 'www',
   bundledWebRuntime: false,
   server: {

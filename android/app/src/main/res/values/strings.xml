@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">DevTalk</string>
-    <string name="title_activity_main">DevTalk</string>
+    <string name="app_name">GodotChat</string>
+    <string name="title_activity_main">GodotChat</string>
     <string name="package_name">org.pjcone.portal</string>
     <string name="custom_url_scheme">org.pjcone.portal</string>
 </resources>
