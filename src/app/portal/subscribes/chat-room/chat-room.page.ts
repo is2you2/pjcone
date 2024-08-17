@@ -1432,30 +1432,24 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     let isImageTarget = false;
     if (!text) { // 텍스트가 없다면 첨부파일을 대상으로 하기
       // 링크가 있다면 링크를 복사
-      if (msg.content.url) {
+      try { // 로컬에 파일이 있다면 복사 시도
+        let path = msg.content.path;
+        let blob = await this.indexed.loadBlobFromUserPath(path, msg.content.type);
+        text = blob;
+        await this.global.WriteValueToClipboard(text.type, text, msg.content.filename);
+        return;
+      } catch (e) { // 주소인 경우 주소로 시도
         text = msg.content.url;
         isImageTarget = Boolean(text);
-      } else { // 링크가 아니라면 파일 복사
-        try {
-          let path = msg.content.path;
-          let blob = await this.indexed.loadBlobFromUserPath(path, msg.content.type);
-          text = blob;
-          isImageTarget = true;
-        } catch (e) { }
       }
     }
-    try { // 개체 복사하기 시도
-      if (!isImageTarget) throw '텍스트 복사로 즉시 이동';
-      await this.global.WriteValueToClipboard(text.type, text, msg.content.filename);
-    } catch (e) { // 개체가 아니라면 텍스트 복사하기 시도
+    try {
+      await this.mClipboard.copy(text);
+    } catch (e) {
       try {
-        await this.mClipboard.copy(text);
+        await this.global.WriteValueToClipboard('text/plain', text);
       } catch (e) {
-        try {
-          await this.global.WriteValueToClipboard('text/plain', text);
-        } catch (e) {
-          console.log('클립보드 복사 실패: ', e);
-        }
+        console.log('클립보드 복사 실패: ', e);
       }
     }
   }
