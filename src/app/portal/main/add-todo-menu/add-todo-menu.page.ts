@@ -517,8 +517,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     desc_input.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
-        if (clipboardItem.type.startsWith('image/'))
-          stack.push({ file: clipboardItem });
+        stack.push({ file: clipboardItem });
       if (!stack.length) return;
       for (let i = 0, j = stack.length; i < j; i++)
         this.selected_blobFile_callback_act(stack[i].file);

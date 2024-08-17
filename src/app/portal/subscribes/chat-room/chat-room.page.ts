@@ -889,8 +889,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     document.getElementById(this.ChannelUserInputId).onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
-        if (clipboardItem.type.startsWith('image/'))
-          stack.push({ file: clipboardItem });
+        stack.push({ file: clipboardItem });
       if (!stack.length) return;
       if (stack.length == 1)
         this.selected_blobFile_callback_act(stack[0].file);

@@ -117,8 +117,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     document.getElementById('minimalchat_input').onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
-        if (clipboardItem.type.startsWith('image/'))
-          stack.push({ file: clipboardItem });
+        stack.push({ file: clipboardItem });
       if (stack.length != 1) return;
       this.SendAttachAct({ target: { files: [stack[0].file] } });
       return false;

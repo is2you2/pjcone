@@ -255,8 +255,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.TitleInput.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
-        if (clipboardItem.type.startsWith('image/png'))
-          stack.push({ file: clipboardItem });
+        stack.push({ file: clipboardItem });
       if (!stack.length) return;
       if (stack.length == 1)
         this.ChangeMainPostImage({ target: { files: [stack[0].file] } });
@@ -271,8 +270,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.ContentTextArea.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
-        if (clipboardItem.type.startsWith('image/'))
-          stack.push({ file: clipboardItem });
+        stack.push({ file: clipboardItem });
       if (!stack.length) return;
       if (stack.length == 1)
         this.selected_blobFile_callback_act(stack[0].file);
