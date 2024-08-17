@@ -59,7 +59,7 @@ func load_package_debug(files:PackedStringArray):
 	else: # 정상적으로 불러와짐
 		$CenterContainer.queue_free()
 		print('Godot-debug: 패키지 타겟: ', target)
-		load_next_scene('res://ContentViewer.tscn')
+		load_next_scene('res://main.tscn')
 	get_viewport().files_dropped.disconnect(load_package_debug)
 
 
@@ -71,7 +71,7 @@ func load_pck(try_left:= 5):
 			$CenterContainer/ColorRect/Label.text = 'Cannot load file: %s' % 'user://%s' % window['path']
 		else: # 패키지를 가지고 있는 경우
 			$CenterContainer.queue_free()
-			load_next_scene('res://ContentViewer.tscn')
+			load_next_scene('res://main.tscn')
 			if get_tree().is_connected("files_dropped", Callable(self, 'load_package_debug')):
 				get_tree().disconnect("files_dropped", Callable(self, 'load_package_debug'))
 	else:
