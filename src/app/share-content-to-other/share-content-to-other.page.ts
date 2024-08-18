@@ -30,12 +30,16 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
 
   BackButtonPressed = false;
   InitBrowserBackButtonOverride() {
-    window.history.replaceState(null, null, window.location.href);
-    window.onpopstate = () => {
-      if (this.BackButtonPressed) return;
-      this.BackButtonPressed = true;
-      this.modalCtrl.dismiss();
-    };
+    try {
+      window.history.replaceState(null, null, window.location.href);
+      window.onpopstate = () => {
+        if (this.BackButtonPressed) return;
+        this.BackButtonPressed = true;
+        this.modalCtrl.dismiss();
+      };
+    } catch (e) {
+      console.log('탐색 기록 변경시 오류 발생: ', e);
+    }
   }
   ngOnInit() {
     this.InitBrowserBackButtonOverride();
