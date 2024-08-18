@@ -85,4 +85,13 @@
   <ion-item *ngIf="!cant_dedicated" button (click)="open_pwa()">
     <ion-label>{{lang.text['Settings']['OpenPlayStore']}}</ion-label>
   </ion-item>
+  <div hidden>
+    <ion-item-divider>
+      <ion-label>{{lang.text['Settings']['Sponsorship']}}</ion-label>
+    </ion-item-divider>
+    <ion-item button (click)="open_paypal()">
+      <ion-icon slot="start" name="logo-paypal"></ion-icon>
+      <ion-label>PayPal</ion-label>
+    </ion-item>
+  </div>
 </ion-content>

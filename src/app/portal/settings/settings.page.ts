@@ -219,6 +219,12 @@ export class SettingsPage implements OnInit, OnDestroy {
     window.open('https://is2you2.github.io/godotchat_pwa/', '_system');
   }
 
+  /** 페이팔 페이지 열기 */
+  open_paypal() {
+    // window.open('', '_system');
+    console.log('페이지 준비중입니다');
+  }
+
   go_to_webrtc_manager() {
     this.modalCtrl.create({
       component: WebrtcManageIoDevPage,
