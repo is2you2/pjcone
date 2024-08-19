@@ -156,17 +156,15 @@
           </div>
           <ion-item *ngIf="isModifiable" button (click)="open_select_new()">
             <ion-label>{{lang.text['TodoDetail']['attachments']}}</ion-label>
-            <ion-item style="display: none;">
-              <ion-select [label]="lang.text['TodoDetail']['new_attach']" #NewAttach interface="action-sheet"
-                (ionChange)="new_attach($event)" (ionDismiss)="AddShortCut()"
-                [cancelText]="lang.text['GlobalAct']['CancelText']">
-                <ion-select-option value="camera">{{lang.text['GlobalAct']['FromCamera']}}</ion-select-option>
-                <ion-select-option value="image">{{lang.text['TodoDetail']['new_draw']}}</ion-select-option>
-                <ion-select-option value="text">{{lang.text['TodoDetail']['new_text']}}</ion-select-option>
-                <ion-select-option value="inapp">{{lang.text['TodoDetail']['user_fs']}}</ion-select-option>
-                <ion-select-option value="load">{{lang.text['TodoDetail']['add_attach']}}</ion-select-option>
-              </ion-select>
-            </ion-item>
+            <ion-select style="display: none;" [label]="lang.text['TodoDetail']['new_attach']" #NewAttach
+              interface="action-sheet" (ionChange)="new_attach($event)" (ionDismiss)="AddShortCut()"
+              [cancelText]="lang.text['GlobalAct']['CancelText']">
+              <ion-select-option value="camera">{{lang.text['GlobalAct']['FromCamera']}}</ion-select-option>
+              <ion-select-option value="image">{{lang.text['TodoDetail']['new_draw']}}</ion-select-option>
+              <ion-select-option value="text">{{lang.text['TodoDetail']['new_text']}}</ion-select-option>
+              <ion-select-option value="inapp">{{lang.text['TodoDetail']['user_fs']}}</ion-select-option>
+              <ion-select-option value="load">{{lang.text['TodoDetail']['add_attach']}}</ion-select-option>
+            </ion-select>
             <ion-label *ngIf="isCDNToggleAvailable" (click)="toggle_custom_attach()"
               slot="end">{{DisplayDBSelectedName}}</ion-label>
             <ion-icon *ngIf="isCDNToggleAvailable" (click)="toggle_custom_attach()" slot="end"

@@ -13,6 +13,7 @@ import { IndexedDBService } from '../indexed-db.service';
 import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { VoidDrawPage } from '../portal/subscribes/chat-room/void-draw/void-draw.page';
 import * as p5 from 'p5';
+import { UserFsDirPage } from '../user-fs-dir/user-fs-dir.page';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -127,11 +128,123 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       return false;
     }
     if (this.client.IsConnected) this.focus_on_input();
+    this.AddShortCut();
+  }
+
+  AddShortCut() {
     this.global.p5key['KeyShortCut']['EnterAct'] = () => {
       if (document.activeElement != document.getElementById('minimalchat_input'))
         setTimeout(() => {
           this.focus_on_input();
         }, 0);
+    }
+  }
+
+  @ViewChild('SQNewAttach') SQNewAttach: IonSelect;
+  /** 새 파일 타입 정하기 */
+  open_select_new() {
+    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5key['KeyShortCut']['AddAct'];
+    let NumberShortCutAct = [
+      'camera', 'image', 'text', 'load'
+    ];
+    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+      delete this.global.p5key['KeyShortCut']['Digit'];
+      if (NumberShortCutAct.length > index)
+        this.new_attach({ detail: { value: NumberShortCutAct[index] } });
+    }
+    if (this.SQNewAttach) this.SQNewAttach.open();
+  }
+
+  /** 새 파일 만들기 */
+  async new_attach(ev: any) {
+    switch (ev.detail.value) {
+      case 'camera':
+        try {
+          let result = await this.global.from_camera('tmp_files/todo/', { display_name: this.client.MyUserName });
+          result.content_creator.display_name = this.client.MyUserName;
+          result.content_related_creator[0].display_name = this.client.MyUserName;
+          this.TrySendingAttach(result);
+        } catch (e) {
+          console.log('촬영 실패: ', e);
+          this.p5toast.show({
+            text: `${this.lang.text['GlobalAct']['ErrorFromCamera']}: ${e}`,
+          });
+        }
+        this.AddShortCut();
+        this.auto_scroll_down(100);
+        break;
+      case 'text':
+        let new_textfile_name = this.global.TextEditorNewFileName();
+        this.modalCtrl.create({
+          component: IonicViewerPage,
+          componentProps: {
+            info: {
+              content: {
+                is_new: 'text',
+                type: 'text/plain',
+                viewer: 'text',
+                filename: new_textfile_name,
+              },
+            },
+            no_edit: true,
+          },
+        }).then(v => {
+          this.global.StoreShortCutAct();
+          v.onWillDismiss().then(v => {
+            if (v.data) {
+              let result = this.global.TextEditorAfterAct(v.data, { display_name: this.client.MyUserName });
+              this.TrySendingAttach(result);
+              this.auto_scroll_down();
+            }
+          });
+          v.onDidDismiss().then(() => {
+            this.global.RestoreShortCutAct();
+          });
+          v.present();
+        });
+        break;
+      case 'image':
+        this.modalCtrl.create({
+          component: VoidDrawPage,
+          cssClass: 'fullscreen',
+        }).then(v => {
+          this.global.StoreShortCutAct();
+          v.onWillDismiss().then(async v => {
+            if (v.data) {
+              let result = await this.global.voidDraw_fileAct_callback(v, 'tmp_files/square/', { display_name: this.client.MyUserName });
+              this.TrySendingAttach(result);
+            }
+          });
+          v.onDidDismiss().then(() => {
+            this.global.RestoreShortCutAct();
+          });
+          v.present();
+        });
+        break;
+      case 'inapp': // 인앱 탐색기에서 가져오기
+        this.modalCtrl.create({
+          component: UserFsDirPage,
+        }).then(v => {
+          this.global.StoreShortCutAct();
+          v.onWillDismiss().then(async v => {
+            if (v.data) {
+              let file = this.global.selected_blobFile_callback_act(v.data, 'tmp_files/sqaure/', {
+                display_name: this.client.MyUserName,
+              });
+              // this.TrySendingAttach(file);
+            }
+          });
+          v.onDidDismiss().then(() => {
+            this.global.RestoreShortCutAct();
+          });
+          v.present();
+        });
+        break;
+      case 'load': // 불러오기 행동 병합
+        this.SelectAttach();
+        this.AddShortCut();
+        break;
     }
   }
 
@@ -173,14 +286,12 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                   }
                 }]
               }).then(v => {
-                // 이전 페이지의 단축키 보관했다가 재등록시키기
-                let CacheShortCut = this.global.p5key['KeyShortCut'];
-                this.global.p5key['KeyShortCut'] = {};
+                this.global.StoreShortCutAct();
                 this.global.p5key['KeyShortCut']['Escape'] = () => {
                   v.dismiss();
                 }
                 v.onDidDismiss().then(() => {
-                  this.global.p5key['KeyShortCut'] = CacheShortCut;
+                  this.global.RestoreShortCutAct();
                 });
                 v.present();
               });
@@ -538,6 +649,12 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       display_name: this.client.MyUserName,
       various: 'loaded',
     };
+    this.TrySendingAttach(FileInfo);
+  }
+
+  /** 첨부파일을 발송하기 */
+  async TrySendingAttach(FileInfo: FileInfo) {
+    console.log('받는 정보 검토: ', FileInfo);
     let TempId = `${Date.now()}`;
     let json = {
       type: 'file',
@@ -556,7 +673,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         this.focus_on_input();
       }
     } catch (e) { // 분할 전송처리
-      FileInfo.path = `tmp_files/dedi_chat/${TempId}.${FileInfo.file_ext}`;
+      FileInfo.path = `tmp_files/sqaure/${TempId}.${FileInfo.file_ext}`;
       await this.indexed.saveBlobToUserPath(FileInfo.blob, FileInfo.path);
       let ReqInfo = await this.indexed.GetFileInfoFromDB(FileInfo.path);
       FileInfo.partsize = Math.ceil(FileInfo.size / FILE_BINARY_LIMIT);
@@ -628,7 +745,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                   if (v.data) {
                     v.data['loadingCtrl'].dismiss();
                     let base64 = v.data['img'];
-                    let path = `tmp_files/dedi_chat/${v.data['name']}`;
+                    let path = `tmp_files/sqaure/${v.data['name']}`;
                     this.indexed.saveBase64ToUserPath(base64, path);
                     let blob = this.global.Base64ToBlob(base64, 'image/png');
                     blob['name'] = v.data['name'];
@@ -710,7 +827,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     if (this.client.status == 'idle') this.modalCtrl.dismiss();
     this.client.disconnect();
     // 첨부했던 파일들 삭제
-    this.indexed.GetFileListFromDB('tmp_files/dedi_chat', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
+    this.indexed.GetFileListFromDB('tmp_files/sqaure', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     for (let i = 0, j = this.client.FFS_Urls.length; i < j; i++)
       this.global.remove_files_from_storage_with_key(this.client.FFS_Urls[i], 'minimal_chat');
     this.client.FFS_Urls.length = 0;

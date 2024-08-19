@@ -88,11 +88,20 @@
         </ion-input>
       </td>
       <td>
-        <ion-button expand="block" fill="clear" (click)="SelectAttach()">
+        <ion-button expand="block" fill="clear" (click)="open_select_new()">
           <ion-icon name="document-attach-outline"></ion-icon>
         </ion-button>
         <input hidden type="file" id="minimal_chat_file" accept="*" (change)="SendAttachAct($event)">
       </td>
+      <ion-select style="display: none;" [label]="lang.text['TodoDetail']['new_attach']" #SQNewAttach
+        interface="action-sheet" (ionChange)="new_attach($event)" (ionDismiss)="AddShortCut()"
+        [cancelText]="lang.text['GlobalAct']['CancelText']">
+        <ion-select-option value="camera">{{lang.text['GlobalAct']['FromCamera']}}</ion-select-option>
+        <ion-select-option value="image">{{lang.text['TodoDetail']['new_draw']}}</ion-select-option>
+        <ion-select-option value="text">{{lang.text['TodoDetail']['new_text']}}</ion-select-option>
+        <!-- <ion-select-option value="inapp">{{lang.text['TodoDetail']['user_fs']}}</ion-select-option> -->
+        <ion-select-option value="load">{{lang.text['TodoDetail']['add_attach']}}</ion-select-option>
+      </ion-select>
       <td>
         <ion-button (click)="send()" expand="block" fill="clear">
           <ion-icon name="send"></ion-icon>

@@ -14,7 +14,6 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { VoidDrawPage } from './void-draw/void-draw.page';
 import { ContentCreatorInfo, FILE_BINARY_LIMIT, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { GroupDetailPage } from '../../settings/group-detail/group-detail.page';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { WebrtcService } from 'src/app/webrtc.service';
@@ -269,15 +268,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               break;
           }
         } else { // 새 텍스트 파일
-          let newDate = new Date();
-          let year = newDate.getUTCFullYear();
-          let month = ("0" + (newDate.getMonth() + 1)).slice(-2);
-          let date = ("0" + newDate.getDate()).slice(-2);
-          let hour = ("0" + newDate.getHours()).slice(-2);
-          let minute = ("0" + newDate.getMinutes()).slice(-2);
-          let second = ("0" + newDate.getSeconds()).slice(-2);
           props.info.content.is_new = 'text';
-          props.info.content.filename = `texteditor_${year}-${month}-${date}_${hour}-${minute}-${second}.txt`;
+          props.info.content.filename = this.global.TextEditorNewFileName();
           props.no_edit = true;
         }
         this.modalCtrl.create({
@@ -286,21 +278,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }).then(v => {
           v.onWillDismiss().then(v => {
             if (v.data) {
-              let this_file: FileInfo = {};
-              this_file.content_creator = {
-                timestamp: new Date().getTime(),
+              let this_file: FileInfo = this.global.TextEditorAfterAct(v.data, {
                 display_name: this.nakama.users.self['display_name'],
-                various: 'textedit',
-              };
-              this_file.content_related_creator = [];
-              this_file.content_related_creator.push(this_file.content_creator);
-              this_file.blob = v.data.blob;
-              this_file.path = v.data.path;
-              this_file.size = v.data.blob['size'];
-              this_file.filename = v.data.blob.name || props.info.content.filename;
-              this_file.file_ext = this_file.filename.split('.').pop();
-              this_file.type = 'text/plain';
-              this_file.viewer = 'text';
+              });
               this.userInput.file = this_file;
             }
           });
@@ -316,40 +296,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       icon: 'camera-outline',
       name: this.lang.text['ChatRoom']['Camera'],
       act: async () => {
+        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+        loading.present();
         try {
-          const image = await Camera.getPhoto({
-            quality: 90,
-            resultType: CameraResultType.Base64,
-            source: CameraSource.Camera,
+          let image = await this.global.from_camera('tmp_files/chatroom/', {
+            user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            display_name: this.nakama.users.self['display_name'],
           });
-          let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-          loading.present();
-          if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-          this.userInput.file = {};
-          let time = new Date();
-          this.userInput.file.filename = `Camera_${time.toLocaleString().replace(/:/g, '_')}.${image.format}`;
-          this.userInput.file.file_ext = image.format;
-          this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl('data:image/jpeg;base64,' + image.base64String);
-          this.userInput.file.type = `image/${image.format}`;
-          this.userInput.file.typeheader = 'image';
-          this.userInput.file.content_related_creator = [{
-            user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-            timestamp: new Date().getTime(),
-            display_name: this.nakama.users.self['display_name'],
-            various: 'camera',
-          }];
-          this.userInput.file.content_creator = {
-            user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-            timestamp: new Date().getTime(),
-            display_name: this.nakama.users.self['display_name'],
-            various: 'camera',
-          };
-          await this.indexed.saveBase64ToUserPath('data:image/jpeg;base64,' + image.base64String,
-            `tmp_files/chatroom/${this.userInput.file.filename}`, (raw) => {
-              this.userInput.file.blob = new Blob([raw], { type: this.userInput.file['type'] })
-            });
-          loading.dismiss();
+          this.userInput.file = image;
         } catch (e) { }
+        loading.dismiss();
       }
     }, { // 7
       icon: 'mic-circle-outline',
@@ -747,15 +703,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 채널 배경화면 변경 */
   ChangeBackgroundImage(ev: any) {
-    let main_table = document.getElementById('main_table');
-    let imageFile = ev.target.files[0];
-    let FileURL = URL.createObjectURL(imageFile);
-    main_table.style.backgroundImage = `url('${FileURL}')`;
-    this.indexed.saveBlobToUserPath(imageFile, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/backgroundImage.png`);
-    this.HasBackgroundImage = true;
-    setTimeout(() => {
-      URL.revokeObjectURL(FileURL);
-    }, 100);
+    try {
+      let main_table = document.getElementById('main_table');
+      let imageFile = ev.target.files[0];
+      let FileURL = URL.createObjectURL(imageFile);
+      main_table.style.backgroundImage = `url('${FileURL}')`;
+      this.indexed.saveBlobToUserPath(imageFile, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/backgroundImage.png`);
+      this.HasBackgroundImage = true;
+      setTimeout(() => {
+        URL.revokeObjectURL(FileURL);
+      }, 100);
+    } catch (e) { }
   }
 
   /** 파일 첨부하기 */
@@ -2556,42 +2514,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   async voidDraw_fileAct_callback(v: any, related_creators?: any) {
-    try {
-      this.userInput.file = {};
-      this.userInput.file.filename = v.data['name'];
-      this.userInput.file.file_ext = 'png';
-      this.userInput.file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
-      this.userInput.file.type = 'image/png';
-      this.userInput.file.typeheader = 'image';
-      if (related_creators) {
-        this.userInput.file.content_related_creator = related_creators;
-        this.userInput.file.content_creator = {
-          user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-          timestamp: new Date().getTime(),
-          display_name: this.nakama.users.self['display_name'],
-          various: 'voidDraw',
-        };
-      } else {
-        this.userInput.file.content_related_creator = [{
-          user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-          timestamp: new Date().getTime(),
-          display_name: this.nakama.users.self['display_name'],
-          various: 'voidDraw',
-        }];
-        this.userInput.file.content_creator = {
-          user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-          timestamp: new Date().getTime(),
-          display_name: this.nakama.users.self['display_name'],
-          various: 'voidDraw',
-        };
-      }
-      await this.indexed.saveBase64ToUserPath(v.data['img'], `tmp_files/chatroom/${this.userInput.file.filename}`, (raw) => {
-        this.userInput.file.blob = new Blob([raw], { type: this.userInput.file['type'] });
-      });
-      this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
-    } catch (e) {
-      console.error('godot-이미지 편집 사용 불가: ', e);
-    }
+    this.userInput.file = await this.global.voidDraw_fileAct_callback(v, 'tmp_files/chatroom/', {
+      user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
+      display_name: this.nakama.users.self['display_name'],
+    }, related_creators);
+    this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
+    this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
     v.data['loadingCtrl'].dismiss();
   }
 

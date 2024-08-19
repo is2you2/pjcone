@@ -96,7 +96,9 @@ export class NakamaService {
     private ngZone: NgZone,
     private loadingCtrl: LoadingController,
     private nav: NavController,
-  ) { }
+  ) {
+    global.CallbackNakama = this;
+  }
 
   /** 공용 프로필 정보 (Profile 페이지에서 주로 사용) */
   profile = {
@@ -4247,11 +4249,9 @@ export class NakamaService {
               name: this.users.self['display_name'],
             },
           }).then(v => {
-            // 이전 페이지의 단축키 보관했다가 재등록시키기
-            let CacheShortCut = this.global.p5key['KeyShortCut'];
-            this.global.p5key['KeyShortCut'] = {};
+            this.global.StoreShortCutAct();
             v.onDidDismiss().then(() => {
-              this.global.p5key['KeyShortCut'] = CacheShortCut;
+              this.global.RestoreShortCutAct();
             });
             v.present();
           });

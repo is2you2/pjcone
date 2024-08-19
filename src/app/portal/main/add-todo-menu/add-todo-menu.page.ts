@@ -12,11 +12,10 @@ import { isPlatform } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { VoidDrawPage } from '../../subscribes/chat-room/void-draw/void-draw.page';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SpeechRecognition } from "@capacitor-community/speech-recognition";
-import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
+import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 
 /** 서버에서 생성한 경우 */
 interface RemoteInfo {
@@ -240,25 +239,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   async selected_blobFile_callback_act(blob: any) {
     let saving_file = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     saving_file.present();
-    let this_file: FileInfo = {};
-    this_file['filename'] = blob['name'];
-    this_file['file_ext'] = blob['name'].substring(blob['name'].lastIndexOf('.') + 1);
-    this_file['size'] = blob['size'];
-    this_file['type'] = blob['type'];
-    this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
-    this_file['blob'] = blob;
-    this_file['content_related_creator'] = [{
-      timestamp: new Date().getTime(),
+    let this_file: FileInfo = this.global.selected_blobFile_callback_act(blob, 'tmp_files/todo/', {
       display_name: this.nakama.users.self['display_name'],
-      various: 'loaded',
-    }];
-    this_file['content_creator'] = {
-      timestamp: new Date().getTime(),
-      display_name: this.nakama.users.self['display_name'],
-      various: 'loaded',
-    };
+    });
     await this.checkHasSameFileAndRename(this_file);
-    this.global.set_viewer_category(this_file);
     let FileURL = URL.createObjectURL(blob);
     if (this_file['viewer'] == 'image')
       this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
@@ -296,7 +280,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
   }
 
-  /** 첨부파일 우클릭시 */
+  /** 첨부파일 우클릭시 빠른 이미지 편집 */
   AttachmentContextMenu(_FileInfo: FileInfo, index: number) {
     let FileURL = _FileInfo.url ?? URL.createObjectURL(_FileInfo.blob);
     new p5((p: p5) => {
@@ -330,7 +314,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               this.AddShortCut();
             });
             v.onWillDismiss().then(async v => {
-              if (v.data) this.voidDraw_fileAct_callback(v, related_creators, index, true);
+              if (v.data) this.voidDraw_fileAct_callback(v, related_creators, index);
             });
             v.present();
           });
@@ -699,43 +683,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     });
   }
 
-  async from_camera() {
-    try {
-      const image = await Camera.getPhoto({
-        quality: 90,
-        resultType: CameraResultType.Base64,
-        source: CameraSource.Camera,
-      });
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      loading.present();
-      let this_file: FileInfo = {};
-      let time = new Date();
-      this_file.filename = `Camera_${time.toLocaleString().replace(/[:|.|\/]/g, '_')}.${image.format}`;
-      this_file.file_ext = image.format;
-      this_file.base64 = 'data:image/jpeg;base64,' + image.base64String;
-      this_file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(this_file.base64);
-      this_file.type = `image/${image.format}`;
-      this_file.typeheader = 'image';
-      this_file.content_related_creator = [{
-        timestamp: new Date().getTime(),
-        display_name: this.nakama.users.self['display_name'],
-        various: 'camera',
-      }];
-      this_file.content_creator = {
-        timestamp: new Date().getTime(),
-        display_name: this.nakama.users.self['display_name'],
-        various: 'camera',
-      };
-      this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
-      this_file['viewer'] = 'image';
-      let raw = await this.indexed.saveBase64ToUserPath(this_file.base64, this_file['path']);
-      this_file.blob = new Blob([raw], { type: this_file['type'] });
-      this_file.size = this_file.blob.size;
-      loading.dismiss();
-      this.userInput.attach.push(this_file);
-    } catch (e) { }
-  }
-
   @ViewChild('NewAttach') NewAttach: IonSelect;
   /** 새 파일 타입 정하기 */
   open_select_new() {
@@ -743,7 +690,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     delete this.global.p5key['KeyShortCut']['Escape'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
     let NumberShortCutAct = [
-      'camera', 'image', 'inapp', 'load'
+      'camera', 'image', 'text', 'inapp', 'load'
     ];
     this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
       if (this.checkIfInputFocus()) return;
@@ -779,19 +726,23 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   async new_attach(ev: any) {
     switch (ev.detail.value) {
       case 'camera':
-        await this.from_camera();
+        try {
+          let result = await this.global.from_camera('tmp_files/todo/', {
+            display_name: this.nakama.users.self['display_name'],
+          });
+          result.thumbnail = this.sanitizer.bypassSecurityTrustUrl(result.base64);
+          this.userInput.attach.push(result);
+        } catch (e) {
+          console.log('촬영 실패: ', e);
+          this.p5toast.show({
+            text: `${this.lang.text['GlobalAct']['ErrorFromCamera']}: ${e}`,
+          });
+        }
         this.AddShortCut();
         this.auto_scroll_down(100);
         break;
       case 'text':
-        let newDate = new Date();
-        let year = newDate.getUTCFullYear();
-        let month = ("0" + (newDate.getMonth() + 1)).slice(-2);
-        let date = ("0" + newDate.getDate()).slice(-2);
-        let hour = ("0" + newDate.getHours()).slice(-2);
-        let minute = ("0" + newDate.getMinutes()).slice(-2);
-        let second = ("0" + newDate.getSeconds()).slice(-2);
-        let new_textfile_name = `texteditor_${year}-${month}-${date}_${hour}-${minute}-${second}.txt`;
+        let new_textfile_name = this.global.TextEditorNewFileName();
         this.modalCtrl.create({
           component: IonicViewerPage,
           componentProps: {
@@ -809,21 +760,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           this.removeShortCut();
           v.onWillDismiss().then(v => {
             if (v.data) {
-              let this_file: FileInfo = {};
-              this_file.content_creator = {
-                timestamp: new Date().getTime(),
+              let this_file: FileInfo = this.global.TextEditorAfterAct(v.data, {
                 display_name: this.nakama.users.self['display_name'],
-                various: 'textedit',
-              };
-              this_file.content_related_creator = [];
-              this_file.content_related_creator.push(this_file.content_creator);
-              this_file.blob = v.data.blob;
-              this_file.path = v.data.path;
-              this_file.size = v.data.blob['size'];
-              this_file.filename = v.data.blob.name || new_textfile_name;
-              this_file.file_ext = this_file.filename.split('.').pop();
-              this_file.type = 'text/plain';
-              this_file.viewer = 'text';
+              });
               this.userInput.attach.push(this_file);
               this.auto_scroll_down();
             }
@@ -1109,10 +1048,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                   if (w.data) {
                     switch (v.data.msg.content.viewer) {
                       case 'image':
-                        this.voidDraw_fileAct_callback(w, related_creators, v.data.index, true);
+                        this.voidDraw_fileAct_callback(w, related_creators, v.data.index);
                         break;
                       default:
-                        this.voidDraw_fileAct_callback(w, related_creators, v.data.index);
+                        this.voidDraw_fileAct_callback(w, related_creators);
                         break;
                     }
                   }
@@ -1150,50 +1089,17 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }, timeout);
   }
 
-  voidDraw_fileAct_callback(v: any, related_creators?: any, index?: number, overwrite = false) {
-    let this_file: FileInfo;
+  async voidDraw_fileAct_callback(v: any, related_creators?: any, index?: number) {
+    let this_file: FileInfo = await this.global.voidDraw_fileAct_callback(v, 'tmp_files/todo/', {
+      display_name: this.nakama.users.self['display_name'],
+    }, related_creators);
     try {
-      if (overwrite) {
-        this_file = {};
+      if (index !== undefined) {
         this.userInput.attach[index] = this_file;
       } else throw 'not overwrite';
     } catch (e) {
-      this_file = {};
       this.userInput.attach.push(this_file);
     }
-    this_file['filename'] = v.data['name'];
-    this_file['file_ext'] = 'png';
-    this_file['type'] = 'image/png';
-    this_file['viewer'] = 'image';
-    if (related_creators) {
-      this_file['content_related_creator'] = related_creators;
-      this_file['content_creator'] = {
-        timestamp: new Date().getTime(),
-        display_name: this.nakama.users.self['display_name'],
-        various: 'voidDraw',
-      };
-    } else {
-      this_file['content_related_creator'] = [{
-        timestamp: new Date().getTime(),
-        display_name: this.nakama.users.self['display_name'],
-        various: 'voidDraw',
-      }];
-      this_file['content_creator'] = {
-        timestamp: new Date().getTime(),
-        display_name: this.nakama.users.self['display_name'],
-        various: 'voidDraw',
-      };
-    }
-    this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
-    this_file['path'] = `tmp_files/todo/${this_file['filename']}`;
-    this.indexed.saveBase64ToUserPath(v.data['img'], 'tmp_files/todo/attach.jpeg', (raw) => {
-      let blob = new Blob([raw], { type: this_file['type'] })
-      this_file.blob = new File([blob], v.data['name']);
-      this_file.size = this_file.blob.size;
-    });
-    this.indexed.saveBase64ToUserPath(v.data['img'], this_file['path'], (_) => {
-      v.data['loadingCtrl'].dismiss();
-    });
     this.auto_scroll_down(100);
   }
 

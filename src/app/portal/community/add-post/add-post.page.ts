@@ -7,7 +7,6 @@ import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { ExtendButtonForm } from '../../subscribes/chat-room/chat-room.page';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { VoidDrawPage } from '../../subscribes/chat-room/void-draw/void-draw.page';
 import { DomSanitizer } from '@angular/platform-browser';
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
@@ -16,18 +15,6 @@ import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-v
 import { ActivatedRoute, Router } from '@angular/router';
 import * as p5 from 'p5';
 import { isPlatform } from 'src/app/app.component';
-
-/** 첨부파일 리스트 양식  
- * [{ 주소(또는 경로), 자료 형식(url | data) }, ...]
- */
-interface PostAttachment extends FileInfo {
-  /** 데이터 구성요소
-   * - url: 외부 링크 정보, url 텍스트가 작성됨
-   * - part: nakama_parted 정보, 데이터 경로(collection-key)가 작성됨 (path)
-   * - blob: 파일이 첨부됨, 게시물 작성 중일 때 사용되며 게시하는 과정에서 url 또는 part 로 변환됨
-   */
-  datatype?: 'url' | 'part' | 'blob';
-}
 
 @Component({
   selector: 'app-add-post',
@@ -73,10 +60,10 @@ export class AddPostPage implements OnInit, OnDestroy {
     UserColor: undefined,
     create_time: undefined,
     modify_time: undefined,
-    server: undefined,
+    server: undefined as ServerInfo,
     /** 대표 이미지 설정 */
-    mainImage: undefined as PostAttachment,
-    attachments: [] as PostAttachment[],
+    mainImage: undefined as FileInfo,
+    attachments: [] as FileInfo[],
     /** 게시물의 완벽한 외부 노출  
      * 게시물 링크 정보를 포함하면 빠른 진입으로 이 게시물을 볼 수 있게 된다  
      * 서버를 사용하는 경우 또는 FFS를 사용하는 경우에만 가능  
@@ -409,15 +396,8 @@ export class AddPostPage implements OnInit, OnDestroy {
           },
           no_edit: undefined,
         };
-        let newDate = new Date();
-        let year = newDate.getUTCFullYear();
-        let month = ("0" + (newDate.getMonth() + 1)).slice(-2);
-        let date = ("0" + newDate.getDate()).slice(-2);
-        let hour = ("0" + newDate.getHours()).slice(-2);
-        let minute = ("0" + newDate.getMinutes()).slice(-2);
-        let second = ("0" + newDate.getSeconds()).slice(-2);
         props.info.content.is_new = 'text';
-        props.info.content.filename = `texteditor_${year}-${month}-${date}_${hour}-${minute}-${second}.txt`;
+        props.info.content.filename = this.global.TextEditorNewFileName();
         props.no_edit = true;
         this.modalCtrl.create({
           component: IonicViewerPage,
@@ -425,21 +405,9 @@ export class AddPostPage implements OnInit, OnDestroy {
         }).then(v => {
           v.onWillDismiss().then(v => {
             if (v.data) {
-              let this_file: FileInfo = {};
-              this_file.content_creator = {
-                timestamp: new Date().getTime(),
+              let this_file: FileInfo = this.global.TextEditorAfterAct(v.data, {
                 display_name: this.nakama.users.self['display_name'],
-                various: 'textedit',
-              };
-              this_file.content_related_creator = [];
-              this_file.content_related_creator.push(this_file.content_creator);
-              this_file.blob = v.data.blob;
-              this_file.path = v.data.path;
-              this_file.size = v.data.blob['size'];
-              this_file.filename = v.data.blob.name || props.info.content.filename;
-              this_file.file_ext = this_file.filename.split('.').pop();
-              this_file.type = 'text/plain';
-              this_file.viewer = 'text';
+              });
               this.AddAttachTextForm();
               this.userInput.attachments.push(this_file);
             }
@@ -457,42 +425,18 @@ export class AddPostPage implements OnInit, OnDestroy {
       act: async () => {
         if (this.isSaveClicked) return;
         try {
-          const image = await Camera.getPhoto({
-            quality: 90,
-            resultType: CameraResultType.Base64,
-            source: CameraSource.Camera,
+          let result = await this.global.from_camera('tmp_files/post/', {
+            user_id: this.isOfficial == 'local' ? undefined : this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            display_name: this.nakama.users.self['display_name']
           });
-          let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-          loading.present();
-          let file = {} as PostAttachment;
-          let time = new Date();
-          file.filename = `Camera_${time.toLocaleString().replace(/:/g, '_')}.${image.format}`;
-          file.file_ext = image.format;
-          file.thumbnail = this.sanitizer.bypassSecurityTrustUrl('data:image/jpeg;base64,' + image.base64String);
-          file.type = `image/${image.format}`;
-          file.typeheader = 'image';
-          file.content_related_creator = [{
-            user_id: this.servers[this.index].isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-            timestamp: new Date().getTime(),
-            display_name: this.nakama.users.self['display_name'],
-            various: 'camera',
-          }];
-          file.content_creator = {
-            user_id: this.servers[this.index].isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-            timestamp: new Date().getTime(),
-            display_name: this.nakama.users.self['display_name'],
-            various: 'camera',
-          };
-          file.viewer = 'image';
-          file.path = `tmp_files/post/${file.filename}`;
-          await this.indexed.saveBase64ToUserPath('data:image/jpeg;base64,' + image.base64String,
-            file.path, (raw) => {
-              file.blob = new Blob([raw], { type: file['type'] })
-            });
           this.AddAttachTextForm();
-          this.userInput.attachments.push(file);
-          loading.dismiss();
-        } catch (e) { }
+          this.userInput.attachments.push(result);
+        } catch (e) {
+          console.log('촬영 실패: ', e);
+          this.p5toast.show({
+            text: `${this.lang.text['GlobalAct']['ErrorFromCamera']}: ${e}`,
+          });
+        }
       }
     }, { // 5
       icon: 'mic-circle-outline',
@@ -605,7 +549,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   /** 채널 배경화면 변경 (from PostMainImage_sel) */
   ChangeMainPostImage(ev: any) {
     let blob = ev.target.files[0];
-    let file = {} as PostAttachment;
+    let file = {} as FileInfo;
     file['filename'] = blob.name;
     file['file_ext'] = blob.name.split('.').pop() || blob.type || this.lang.text['ChatRoom']['unknown_ext'];
     file['size'] = blob.size;
@@ -619,28 +563,11 @@ export class AddPostPage implements OnInit, OnDestroy {
   }
 
   /** 파일이 선택되고 나면 */
-  async selected_blobFile_callback_act(blob: any, contentRelated: ContentCreatorInfo[] = [], various = 'loaded', path?: string, index?: number) {
-    let file = {} as PostAttachment;
-    file['filename'] = blob.name;
-    file['file_ext'] = blob.name.split('.').pop() || blob.type || this.lang.text['ChatRoom']['unknown_ext'];
-    file['size'] = blob.size;
-    file['type'] = blob.type || blob.type_override;
-    if (path) file.path = path;
-    file['content_related_creator'] = [
-      ...contentRelated, {
-        user_id: this.servers[this.index].isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-        timestamp: new Date().getTime(),
-        display_name: this.nakama.users.self['display_name'],
-        various: various as any,
-      }];
-    file['content_creator'] = {
-      user_id: this.servers[this.index].isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-      timestamp: new Date().getTime(),
+  async selected_blobFile_callback_act(blob: any, contentRelated: ContentCreatorInfo[] = [], various = 'loaded', index?: number) {
+    let file = this.global.selected_blobFile_callback_act(blob, 'tmp_files/post/', {
+      user_id: this.isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
       display_name: this.nakama.users.self['display_name'],
-      various: various as any,
-    };
-    file.blob = blob;
-    file.path = `tmp_files/post/${file.filename}_${this.userInput.attachments.length}.${file.file_ext}`;
+    }, various, contentRelated);
     this.create_selected_thumbnail(file);
     if (index === undefined) {
       this.AddAttachTextForm();
@@ -658,7 +585,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   }
 
   /** 선택한 파일의 썸네일 만들기 */
-  async create_selected_thumbnail(file: PostAttachment) {
+  async create_selected_thumbnail(file: FileInfo) {
     this.global.set_viewer_category_from_ext(file);
     if (file.url) {
       try {
@@ -684,46 +611,14 @@ export class AddPostPage implements OnInit, OnDestroy {
   }
 
   async voidDraw_fileAct_callback(v: any, related_creators?: any, index?: number) {
-    let file = {} as PostAttachment;
+    let file = await this.global.voidDraw_fileAct_callback(v, 'tmp_files/post/', {
+      user_id: this.isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
+      display_name: this.nakama.users.self['display_name'],
+    }, related_creators);
+    file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
     if (index !== undefined)
       this.userInput.attachments[index] = file;
     else this.userInput.attachments.push(file);
-    try {
-      file.filename = v.data['name'];
-      file.file_ext = 'png';
-      file.thumbnail = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
-      file.type = 'image/png';
-      file.typeheader = 'image';
-      if (related_creators) {
-        file.content_related_creator = related_creators;
-        file.content_creator = {
-          user_id: this.servers[this.index].isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-          timestamp: new Date().getTime(),
-          display_name: this.nakama.users.self['display_name'],
-          various: 'voidDraw',
-        };
-      } else {
-        file.content_related_creator = [{
-          user_id: this.servers[this.index].isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-          timestamp: new Date().getTime(),
-          display_name: this.nakama.users.self['display_name'],
-          various: 'voidDraw',
-        }];
-        file.content_creator = {
-          user_id: this.servers[this.index].isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-          timestamp: new Date().getTime(),
-          display_name: this.nakama.users.self['display_name'],
-          various: 'voidDraw',
-        };
-      }
-      file.path = `tmp_files/post/${file.filename}`;
-      file.viewer = 'image';
-      await this.indexed.saveBase64ToUserPath(v.data['img'], file.path, (raw) => {
-        file.blob = new Blob([raw], { type: file['type'] });
-      });
-    } catch (e) {
-      console.error('godot-이미지 편집 사용 불가: ', e);
-    }
     v.data['loadingCtrl'].dismiss();
   }
 
@@ -780,18 +675,18 @@ export class AddPostPage implements OnInit, OnDestroy {
           } catch (e) {
             throw e;
           }
-          let this_file: PostAttachment = {};
+          let this_file: FileInfo = {};
           this_file.url = pasted_url;
           this_file['content_related_creator'] = [];
           if (override && override.content_related_creator) this_file['content_related_creator'] = [...override.content_related_creator]
           this_file['content_related_creator'].push({
-            user_id: this.servers[this.index].isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            user_id: this.isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
             timestamp: new Date().getTime(),
             display_name: this.nakama.users.self['display_name'],
             various: override.url ? 'shared' : 'link',
           });
           this_file['content_creator'] = {
-            user_id: this.servers[this.index].isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
+            user_id: this.isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
             timestamp: new Date().getTime(),
             display_name: this.nakama.users.self['display_name'],
             various: override.url ? 'shared' : 'link',
@@ -872,7 +767,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   }
 
   lock_modal_open = false;
-  open_viewer(info: PostAttachment, index: number) {
+  open_viewer(info: FileInfo, index: number) {
     let attaches = [];
     for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
       attaches.push({ content: this.userInput.attachments[i] });
@@ -888,7 +783,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           isOfficial: this.isOfficial,
           target: this.target,
           relevance: attaches,
-          local: this.servers[this.index].isOfficial == 'local',
+          local: this.isOfficial == 'local',
         },
         cssClass: 'fullscreen',
       }).then(v => {
@@ -931,7 +826,7 @@ export class AddPostPage implements OnInit, OnDestroy {
                 });
                 return;
               case 'text':
-                this.selected_blobFile_callback_act(v.data.blob, v.data.contentRelated, 'textedit', undefined, index);
+                this.selected_blobFile_callback_act(v.data.blob, v.data.contentRelated, 'textedit', index);
                 break;
             }
           }

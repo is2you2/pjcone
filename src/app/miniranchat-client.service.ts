@@ -242,11 +242,9 @@ export class MiniranchatClientService {
         name: this.MyUserName || this.nakama.users.self['display_name'],
       },
     }).then(v => {
-      // 이전 페이지의 단축키 보관했다가 재등록시키기
-      let CacheShortCut = this.global.p5key['KeyShortCut'];
-      this.global.p5key['KeyShortCut'] = {};
+      this.global.StoreShortCutAct();
       v.onDidDismiss().then(() => {
-        this.global.p5key['KeyShortCut'] = CacheShortCut;
+        this.global.RestoreShortCutAct();
       });
       v.present();
     });

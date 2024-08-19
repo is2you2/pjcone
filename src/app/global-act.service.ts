@@ -7,6 +7,7 @@ import * as p5 from "p5";
 import { IndexedDBService } from './indexed-db.service';
 import { LoadingController } from '@ionic/angular';
 import { isPlatform } from './app.component';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 
 export var isDarkMode = false;
 /** 파일 입출 크기 제한 */
@@ -92,6 +93,14 @@ interface GodotFrameKeys {
   received_msg?: Function;
   /** 고도엔진과 상호작용하기 위한 값들, 고도엔진에서 JavaScript.get_interface('window')[id]로 접근 */
   [id: string]: any;
+}
+
+/** 첨부파일 행동시 사용되는 사용자 정보 */
+interface AttachUserInfo {
+  /** 사용자 uid (서버 사용시) */
+  user_id?: string;
+  /** 기본으로 표시되는 사용자 이름 */
+  display_name: string;
 }
 
 /** 어느 페이지에든 행동할 가능성이 있는 공용 함수 모음 */
@@ -1116,6 +1125,165 @@ export class GlobalActService {
         }, 50);
       }
     });
+  }
+
+  /** 마지막에 등록된 단축키 캐싱 */
+  private CacheShortCut: any;
+  /** 마지막에 등록된 단축키 저장하기 */
+  StoreShortCutAct() {
+    this.CacheShortCut = this.p5key['KeyShortCut'];
+    this.p5key['KeyShortCut'] = {};
+  }
+
+  /** 마지막에 등록된 단축키 다시 사용하기 */
+  RestoreShortCutAct() {
+    this.p5key['KeyShortCut'] = this.CacheShortCut;
+    this.CacheShortCut = undefined;
+  }
+
+  /** 나카마 서비스 받아오기 */
+  CallbackNakama: any;
+  /** 카메라로 찍은 후 사진 정보 돌려주기
+   * @param path 이름은 여기서 지정되고 직전 폴더까지 구성
+   */
+  async from_camera(path: string, userInfo: AttachUserInfo) {
+    let result: FileInfo = {};
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    try {
+      const image = await Camera.getPhoto({
+        quality: 90,
+        resultType: CameraResultType.Base64,
+        source: CameraSource.Camera,
+      });
+      loading.present();
+      let time = new Date();
+      result.filename = `Camera_${time.toLocaleString().replace(/[:|.|\/]/g, '_')}.${image.format}`;
+      result.file_ext = image.format;
+      result.base64 = 'data:image/jpeg;base64,' + image.base64String;
+      result.thumbnail = this.sanitizer.bypassSecurityTrustUrl(result.base64);
+      result.type = `image/${image.format}`;
+      result.typeheader = 'image';
+      result.content_related_creator = [{
+        user_id: userInfo.user_id,
+        timestamp: new Date().getTime(),
+        display_name: userInfo.display_name,
+        various: 'camera',
+      }];
+      result.content_creator = {
+        user_id: userInfo.user_id,
+        timestamp: new Date().getTime(),
+        display_name: userInfo.display_name,
+        various: 'camera',
+      };
+      result['path'] = `${path}${result['filename']}`;
+      result['viewer'] = 'image';
+      let raw = await this.indexed.saveBase64ToUserPath(result.base64, result['path']);
+      result.blob = new Blob([raw], { type: result['type'] });
+      result.size = result.blob.size;
+    } catch (e) {
+      console.log('카메라 행동 실패: ', e);
+    }
+    loading.dismiss();
+    return result;
+  }
+
+  /** Blob 파일 구조화시키기 기본틀 */
+  selected_blobFile_callback_act(blob: any, path: string, userInfo: AttachUserInfo, various: string = 'loaded', contentRelated: ContentCreatorInfo[] = []): FileInfo {
+    let this_file: FileInfo = {};
+    this_file['filename'] = blob['name'];
+    this_file['file_ext'] = blob.name.split('.').pop() || blob.type || this.lang.text['ChatRoom']['unknown_ext'];
+    this_file['size'] = blob['size'];
+    this_file['type'] = blob.type || blob.type_override;
+    this_file['path'] = `${path}${this_file['filename']}`;
+    this_file['blob'] = blob;
+    this_file['content_related_creator'] = [
+      ...contentRelated, {
+        user_id: userInfo.user_id,
+        timestamp: new Date().getTime(),
+        display_name: userInfo.display_name,
+        various: various as any,
+      }];
+    this_file['content_creator'] = {
+      user_id: userInfo.user_id,
+      timestamp: new Date().getTime(),
+      display_name: userInfo.display_name,
+      various: various as any,
+    };
+    this.set_viewer_category(this_file);
+    return this_file;
+  }
+
+  /** 그림판 결과물 정보 후처리 작업 */
+  async voidDraw_fileAct_callback(v: any, path: string, userInfo: AttachUserInfo, related_creators?: any) {
+    let this_file: FileInfo = {};
+    this_file['filename'] = v.data['name'];
+    this_file['file_ext'] = 'png';
+    this_file['type'] = 'image/png';
+    this_file['viewer'] = 'image';
+    if (related_creators) {
+      this_file['content_related_creator'] = related_creators;
+      this_file['content_creator'] = {
+        user_id: userInfo.user_id,
+        timestamp: new Date().getTime(),
+        display_name: userInfo.display_name,
+        various: 'voidDraw',
+      };
+    } else {
+      this_file['content_related_creator'] = [{
+        user_id: userInfo.user_id,
+        timestamp: new Date().getTime(),
+        display_name: userInfo.display_name,
+        various: 'voidDraw',
+      }];
+      this_file['content_creator'] = {
+        timestamp: new Date().getTime(),
+        display_name: this.CallbackNakama.users.self['display_name'],
+        various: 'voidDraw',
+      };
+    }
+    this_file['typeheader'] = 'image';
+    this_file['path'] = `${path}${this_file['filename']}`;
+    this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
+    let raw = await this.indexed.saveBase64ToUserPath(v.data['img'], this_file.path);
+    let blob = new Blob([raw], { type: this_file['type'] })
+    this_file.blob = new File([blob], v.data['name']);
+    this_file.size = this_file.blob.size;
+    v.data['loadingCtrl'].dismiss();
+    return this_file;
+  }
+
+  /** 새 텍스트 파일을 생성할 때 사용하는 이름 */
+  TextEditorNewFileName(): string {
+    let newDate = new Date();
+    let year = newDate.getUTCFullYear();
+    let month = ("0" + (newDate.getMonth() + 1)).slice(-2);
+    let date = ("0" + newDate.getDate()).slice(-2);
+    let hour = ("0" + newDate.getHours()).slice(-2);
+    let minute = ("0" + newDate.getMinutes()).slice(-2);
+    let second = ("0" + newDate.getSeconds()).slice(-2);
+    return `texteditor_${year}-${month}-${date}_${hour}-${minute}-${second}.txt`;
+  }
+
+  /** 텍스트 파일 편집 후 후처리 */
+  TextEditorAfterAct(data: any, userInfo: AttachUserInfo) {
+    let this_file: FileInfo = {};
+    this_file.content_creator = {
+      user_id: userInfo.user_id,
+      timestamp: new Date().getTime(),
+      display_name: userInfo.display_name,
+      various: 'textedit',
+    };
+    this_file.content_related_creator = [];
+    this_file.content_related_creator.push(this_file.content_creator);
+    this_file.blob = data.blob;
+    this_file.path = data.path;
+    this_file.size = data.blob['size'];
+    this_file.filename = data.blob.name || this.TextEditorNewFileName();
+    this_file.file_ext = this_file.filename.split('.').pop();
+    this_file.type = 'text/plain';
+    this_file.typeheader = 'text';
+    this_file.viewer = 'text';
+    return this_file;
   }
 
   /** 클립보드에 기록된 정보 불러오기 (이미지/텍스트)
