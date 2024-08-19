@@ -282,6 +282,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 display_name: this.nakama.users.self['display_name'],
               });
               this.userInput.file = this_file;
+              this.create_thumbnail_imported(this_file);
             }
           });
           v.onDidDismiss().then(() => {
