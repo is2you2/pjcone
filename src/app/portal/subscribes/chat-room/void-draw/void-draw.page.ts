@@ -349,6 +349,10 @@ export class VoidDrawPage implements OnInit {
           let color_hex = `#${p.hex(color[0], 2)}${p.hex(color[1], 2)}${p.hex(color[2], 2)}`;
           ColorCell.childNodes[0].style.color = color_hex;
         }
+        if (initData['path']) {
+          p5ColorPicker.value('#ff0000');
+          p5ColorPicker.elt.oninput();
+        }
         ColorCell.style.textAlign = 'center';
         ColorCell.style.cursor = 'pointer';
         ColorCell.onclick = () => { p5ColorPicker.elt.click() }
