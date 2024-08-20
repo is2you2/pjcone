@@ -403,7 +403,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         let data = JSON.parse(v);
         if (!this.client.JoinedChannel) this.client.JoinedChannel = data['channel'];
         if (!this.client.uuid) this.client.uuid = data['uid'];
-        if (!this.QRCodeSRC) this.CreateQRCode();
         let isMe = this.client.uuid == data['uid'];
         let target = isMe ? (this.client.MyUserName || this.lang.text['MinimalChat']['name_me']) : (data['name'] || this.lang.text['MinimalChat']['name_stranger_group']);
         let color = data['uid'] ? (data['uid'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6) : isDarkMode ? '888888' : '444444';
@@ -577,6 +576,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       this.client.disconnect();
     }
     this.client.funcs.onopen = (_v: any) => {
+      this.CreateQRCode();
       this.statusBar.settings['dedicated_groupchat'] = 'online';
       let count = {
         name: this.client.MyUserName,
