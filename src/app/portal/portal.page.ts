@@ -24,9 +24,7 @@ export class PortalPage implements OnInit {
     public statusBar: StatusManageService,
   ) { }
 
-  ngOnInit() { }
-
-  ionViewDidEnter() {
+  ngOnInit() {
     setTimeout(() => {
       let StartPage = localStorage.getItem('StartPage') || 0;
       switch (StartPage) {
@@ -47,7 +45,10 @@ export class PortalPage implements OnInit {
           this.ionTabs.select('community');
           break;
       }
-    }, 0);
+    }, 100);
+  }
+
+  ionViewDidEnter() {
     if (this.CacheKeyShortCut)
       this.global.p5key['KeyShortCut'] = this.CacheKeyShortCut;
     this.try_add_shortcut();
