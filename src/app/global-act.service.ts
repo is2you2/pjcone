@@ -1347,6 +1347,9 @@ export class GlobalActService {
         });
     } catch (e) {
       console.log('클립보드에 복사하기 오류: ', e);
+      this.p5toast.show({
+        text: `${this.lang.text['GlobalAct']['ClipboardFailed']}: ${e}`
+      });
       throw e;
     }
   }

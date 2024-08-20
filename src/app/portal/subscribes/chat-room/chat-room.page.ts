@@ -1392,7 +1392,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 선택한 메시지 복사 */
   async CopyMessageText(msg: any) {
     let text: any = this.deserialize_text(msg);
-    let isImageTarget = false;
     if (!text) { // 텍스트가 없다면 첨부파일을 대상으로 하기
       // 링크가 있다면 링크를 복사
       try { // 로컬에 파일이 있다면 복사 시도
@@ -1403,7 +1402,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         return;
       } catch (e) { // 주소인 경우 주소로 시도
         text = msg.content.url;
-        isImageTarget = Boolean(text);
       }
     }
     try {
