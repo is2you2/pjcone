@@ -26,7 +26,7 @@ export class PortalPage implements OnInit {
 
   ngOnInit() { }
 
-  ionViewWillEnter() {
+  ionViewDidEnter() {
     setTimeout(() => {
       let StartPage = localStorage.getItem('StartPage') || 0;
       switch (StartPage) {
@@ -48,9 +48,6 @@ export class PortalPage implements OnInit {
           break;
       }
     }, 0);
-  }
-
-  ionViewDidEnter() {
     if (this.CacheKeyShortCut)
       this.global.p5key['KeyShortCut'] = this.CacheKeyShortCut;
     this.try_add_shortcut();
