@@ -613,11 +613,13 @@ export class GlobalActService {
       let formData = new FormData();
       let _file = new File([file.blob], filename);
       formData.append("files", _file);
-      await fetch(`${protocol}//${address}:9001/cdn/${filename}`, { method: "POST", body: formData });
+      let up_res = await fetch(`${protocol}//${address}:9001/cdn/${filename}`, { method: "POST", body: formData });
+      if (!up_res.ok) throw '업로드 단계에서 실패';
       clearInterval(progress);
       cont.abort();
       let res = await fetch(CatchedAddress);
       if (res.ok) Catched = true;
+      else throw '요청 실패';
     } catch (e) {
       clearInterval(progress);
       cont.abort();
@@ -682,12 +684,14 @@ export class GlobalActService {
         let progressPercent = Math.floor(currentSize / file.size * 100);
         loading.message = `${file.filename}: ${progressPercent}%`;
       }, 700);
-      await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
+      let up_res = await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
+      if(!up_res.ok) throw '업로드 단계에서 실패';
       clearInterval(progress);
       cont.abort();
       let res = await fetch(CatchedAddress);
       if (!loading) innerLoading.dismiss();
       if (res.ok) return CatchedAddress;
+      else throw '요청 실패';
     } catch (e) {
       clearInterval(progress);
       cont.abort();

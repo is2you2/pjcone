@@ -246,6 +246,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         this.AddShortCut();
         break;
     }
+    this.SQNewAttach.value = '';
   }
 
   p5canvas: p5;
@@ -333,6 +334,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         let res = await fetch(HasLocalPage, { signal: cont.signal });
         clearTimeout(id);
         if (res.ok) header_address = `${extract}:8080/www/`;
+        else throw '주소 없음';
       } catch (e) {
         header_address = 'http://localhost:8080/www/';
       }
@@ -654,7 +656,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
 
   /** 첨부파일을 발송하기 */
   async TrySendingAttach(FileInfo: FileInfo) {
-    console.log('받는 정보 검토: ', FileInfo);
     let TempId = `${Date.now()}`;
     let json = {
       type: 'file',
@@ -663,7 +664,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       name: this.client.MyUserName,
     }
     try { // FFS 발송 시도
-      let url = await this.global.try_upload_to_user_custom_fs(FileInfo, 'minimal_chat');
+      let url = await this.global.try_upload_to_user_custom_fs(FileInfo, `minimal_chat_${this.client.MyUserName}`);
       if (!url) throw '분할 전송 시도 필요';
       else {
         FileInfo.url = url;

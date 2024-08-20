@@ -48,6 +48,7 @@ export class LinkQrPage implements OnInit {
       let res = await fetch(HasLocalPage, { signal: cont.signal });
       clearTimeout(id);
       if (res.ok) this.SelectedAddress = `${location.protocol}//${extract}:8080/www/?voidDraw=${extract}`;
+      else throw '주소 없음';
     } catch (e) {
       this.SelectedAddress = `http://localhost:8080/www/?voidDraw=${extract}`
     }

@@ -195,6 +195,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                 let res = await fetch(HasLocalPage, { signal: cont.signal });
                 clearTimeout(id);
                 if (res.ok) targetAddress = `${extract}:8080/www/?postViewer=${this.PostInfo['OutSource']}`;
+                else throw '주소 없음';
               } catch (e) {
                 targetAddress = `http://localhost:8080/www/?postViewer=${this.PostInfo['OutSource']}`;
               }
