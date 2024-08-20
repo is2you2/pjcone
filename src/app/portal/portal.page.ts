@@ -24,7 +24,9 @@ export class PortalPage implements OnInit {
     public statusBar: StatusManageService,
   ) { }
 
-  ngOnInit() {
+  ngOnInit() { }
+
+  ionViewWillEnter() {
     setTimeout(() => {
       let StartPage = localStorage.getItem('StartPage') || 0;
       switch (StartPage) {
