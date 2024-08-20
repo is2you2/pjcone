@@ -685,7 +685,7 @@ export class GlobalActService {
         loading.message = `${file.filename}: ${progressPercent}%`;
       }, 700);
       let up_res = await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
-      if(!up_res.ok) throw '업로드 단계에서 실패';
+      if (!up_res.ok) throw '업로드 단계에서 실패';
       clearInterval(progress);
       cont.abort();
       let res = await fetch(CatchedAddress);
@@ -1186,6 +1186,7 @@ export class GlobalActService {
       result.size = result.blob.size;
     } catch (e) {
       console.log('카메라 행동 실패: ', e);
+      result = undefined;
     }
     loading.dismiss();
     return result;
