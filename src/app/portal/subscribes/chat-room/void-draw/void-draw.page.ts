@@ -517,6 +517,15 @@ export class VoidDrawPage implements OnInit {
         p.pop();
       }
       p['DrawingStack'] = [];
+      /** 모든 그리기 선 삭제하기 */
+      let ClearCurrentDraw = () => {
+        CurrentDraw = {};
+        p['DrawingStack'].length = 0;
+        HistoryPointer = 0;
+        updateActualCanvas();
+        p.redraw();
+      }
+      p['ClearCurrentDraw'] = ClearCurrentDraw;
       /** 선을 어디까지 그리는지, 히스토리 행동용 */
       let HistoryPointer = 0;
       /** 전체 그리기, 동작 취소 등 전체 업데이트가 필요할 때 사용 */
@@ -953,7 +962,7 @@ export class VoidDrawPage implements OnInit {
           this.toolServer.initialize('RemoteDraw', 12012,
             () => { // OnStart
               this.isDrawServerCreated = true;
-              this.CreateOnOpenActSimple();
+              this.CreateOnOpenAct(true);
             }, (conn: any) => { // OnConnect
               this.p5toast.show({
                 text: `${this.lang.text['voidDraw']['Connected']}: ${conn.remoteAddr}`,
@@ -972,7 +981,7 @@ export class VoidDrawPage implements OnInit {
                   this.RemoteLoadingCtrl.present();
                   // 그림판이 준비되었다면 WebRTC 구성을 시도
                   this.webrtc.initialize('data').then(() => {
-                    this.CreateOnOpenActSimple();
+                    this.CreateOnOpenAct(true);
                     this.CreateOnMessageLink();
                     this.webrtc.CreateOffer();
                     this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Init'];
@@ -1022,31 +1031,26 @@ export class VoidDrawPage implements OnInit {
         let _target = target.info.target;
         this.webrtc.CurrentMatch = this.nakama.self_match[_is_official][_target];
         this.isDrawServerCreated = true;
-        if (isPlatform == 'DesktopPWA') { // 서버에 요청하기, PC-모바일 구도
-          let crop_pos = this.p5voidDraw['getCropPos']();
-          await this.nakama.servers[_is_official][_target].socket
-            .sendMatchState(this.nakama.self_match[_is_official][_target].match_id, MatchOpCode.VOIDDRAW_INIT,
-              encodeURIComponent(JSON.stringify({
-                type: 'size',
-                width: this.p5voidDraw['ActualCanvas'].width,
-                height: this.p5voidDraw['ActualCanvas'].height,
-                cropX: crop_pos.x,
-                cropY: crop_pos.y,
-              })));
-          this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Init'];
-          await this.webrtc.initialize('data', undefined, {
-            isOfficial: _is_official,
-            target: _target,
-          });
-          this.CreateOnOpenAct();
+        this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Init'];
+        this.webrtc.initialize('data', undefined, {
+          isOfficial: _is_official,
+          target: _target,
+        }).then(async () => {
           this.CreateOnMessageLink();
-          await this.nakama.servers[_is_official][_target].socket.sendMatchState(this.nakama.self_match[_is_official][_target].match_id, MatchOpCode.WEBRTC_INIT_REQ_SIGNAL,
-            encodeURIComponent(''));
-          this.webrtc.InitReplyCallback = () => {
-            this.webrtc.CreateAnswer();
-            this.p5voidDraw['SetDrawable'](true);
-          }
-        } else { // 모바일 행동
+          this.CreateOnOpenAct(false, async () => {
+            let crop_pos = this.p5voidDraw['getCropPos']();
+            this.nakama.VoidDrawInitCallBack = undefined;
+            await this.nakama.servers[_is_official][_target].socket
+              .sendMatchState(this.nakama.self_match[_is_official][_target].match_id, MatchOpCode.VOIDDRAW_INIT,
+                encodeURIComponent(JSON.stringify({
+                  type: 'size',
+                  width: this.p5voidDraw['ActualCanvas'].width,
+                  height: this.p5voidDraw['ActualCanvas'].height,
+                  cropX: crop_pos.x,
+                  cropY: crop_pos.y,
+                })));
+          });
+          this.webrtc.CreateOffer();
           this.nakama.VoidDrawInitCallBack = (json: any) => {
             this.create_new_canvas({
               width: json.width,
@@ -1055,15 +1059,14 @@ export class VoidDrawPage implements OnInit {
             this.p5voidDraw['setCropPos'](json.cropX, json.cropY);
             this.p5voidDraw['redraw']();
           }
-          this.webrtc.initialize('data', undefined, {
-            isOfficial: _is_official,
-            target: _target,
-          }).then(() => {
-            this.CreateOnOpenActSimple();
-            this.CreateOnMessageLink();
-            this.webrtc.CreateOffer();
-          });
-        }
+          this.webrtc.InitReplyCallback = async () => {
+            // 배경이미지 공유하지 않도록 재설정
+            this.CreateOnOpenAct(true);
+            this.webrtc.CreateAnswer();
+          }
+          await this.nakama.servers[_is_official][_target].socket.sendMatchState(this.nakama.self_match[_is_official][_target].match_id, MatchOpCode.WEBRTC_INIT_REQ_SIGNAL,
+            encodeURIComponent(''));
+        });
         break;
     }
   }
@@ -1144,38 +1147,31 @@ export class VoidDrawPage implements OnInit {
 
   /** 상대 기기 배경 이미지 (base64 누적) */
   RemoteBackgroundImage = '';
-  /** PWA에서 모바일에 요청하는 것 */
-  CreateOnOpenAct() {
-    this.webrtc.dataChannelOpenAct = () => {
+  /** WEBRTC 시작시 행동 등록 */
+  CreateOnOpenAct(doSimple = false, AlternativeAct = async () => { }) {
+    this.webrtc.dataChannelOpenAct = async () => {
+      this.p5voidDraw['SetDrawable'](true);
       this.ReadyToShareAct = true;
       this.RemoteLoadingCtrl.dismiss();
-      // 그리기 선 공유
-      this.webrtc.dataChannel.send(JSON.stringify({
-        type: 'drawline',
-        data: this.p5voidDraw['DrawingStack'],
-      }));
-      if (this.navParams.data.path) // 배경이미지 공유
-        this.indexed.loadBlobFromUserPath(this.navParams.data.path, '', async blob => {
-          let base64 = await this.global.GetBase64ThroughFileReader(blob);
-          let part = base64.match(/(.{1,64})/g);
-          for (let i = 0, j = part.length; i < j; i++)
-            await this.webrtc.dataChannel.send(JSON.stringify({
-              type: 'background',
-              act: 'part',
-              data: part[i],
-            }));
+      if (doSimple) return;
+      if (AlternativeAct) await AlternativeAct();
+      // 그리기 선 전부 삭제하기
+      this.p5voidDraw['ClearCurrentDraw']();
+      if (this.navParams.data.path) { // 배경이미지 공유
+        let blob = await this.indexed.loadBlobFromUserPath(this.navParams.data.path, '');
+        let base64 = await this.global.GetBase64ThroughFileReader(blob);
+        let part = base64.match(/(.{1,64})/g);
+        for (let i = 0, j = part.length; i < j; i++)
           await this.webrtc.dataChannel.send(JSON.stringify({
             type: 'background',
-            act: 'EOF',
+            act: 'part',
+            data: part[i],
           }));
-        })
-    }
-  }
-  /** 모바일쪽에서 완료 처리 검토용 */
-  CreateOnOpenActSimple() {
-    this.webrtc.dataChannelOpenAct = () => {
-      this.ReadyToShareAct = true;
-      this.RemoteLoadingCtrl.dismiss();
+        await this.webrtc.dataChannel.send(JSON.stringify({
+          type: 'background',
+          act: 'EOF',
+        }));
+      }
     }
   }
   /** WebRTC 데이터 수신 행동 만들기 */

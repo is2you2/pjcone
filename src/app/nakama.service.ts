@@ -2718,8 +2718,10 @@ export class NakamaService {
               break;
             case MatchOpCode.WEBRTC_HANGUP: {
               let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
-              if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.WebRTCService)
+              if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.WebRTCService) {
                 await this.WebRTCService.close_webrtc();
+                this.VoidDrawInitCallBack = undefined;
+              }
             }
               break;
             case MatchOpCode.VOIDDRAW_INIT: {

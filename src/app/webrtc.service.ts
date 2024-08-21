@@ -791,6 +791,8 @@ export class WebrtcService {
     this.target = undefined;
     this.user_id = undefined;
     this.channel_id = undefined;
+    this.LocalOffer = undefined;
+    this.LocalAnswer = undefined;
     this.dataChannel = {};
     this.ReceivedOfferPart = '';
     this.ReceivedAnswerPart = '';
