@@ -3414,7 +3414,7 @@ export class NakamaService {
                 await this.servers[_is_official][_target].client.deleteNotifications(
                   this.servers[_is_official][_target].session, [this_noti.id]);
               } catch (e) { }
-              this.noti.ClearNoti(this_noti.id);
+              this.noti.ClearNoti(this_noti.code);
               this.update_notifications(_is_official, _target);
             }
           }]
@@ -3621,7 +3621,8 @@ export class NakamaService {
                   await this.servers[_is_official][_target].client.deleteNotifications(
                     this.servers[_is_official][_target].session, [v.id]);
                 } catch (e) { }
-                this.rearrange_notifications();
+                this.noti.ClearNoti(v.code);
+                this.update_notifications(_is_official, _target);
               }
             }]
           }).then(v => v.present());
