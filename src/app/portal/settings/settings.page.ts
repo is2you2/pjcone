@@ -210,18 +210,18 @@ export class SettingsPage implements OnInit, OnDestroy {
   /** 지금은 안내서로 연결해줍니다 */
   download_serverfile() {
     if (this.lang.lang == 'ko')
-      window.open('https://is2you2.github.io/posts/how-to-use-pjcone-server/', '_system');
-    else window.open('https://is2you2.github.io/posts/how-to-use-pjcone-server-en/', '_system');
+      window.open('https://is2you2.github.io/posts/how-to-use-pjcone-server/', '_blank');
+    else window.open('https://is2you2.github.io/posts/how-to-use-pjcone-server-en/', '_blank');
   }
 
   /** 모바일 앱에서는 웹으로 연결을 제시함 */
   open_pwa() {
-    window.open('https://is2you2.github.io/godotchat_pwa/', '_system');
+    window.open('https://is2you2.github.io/godotchat_pwa/', '_blank');
   }
 
   /** 페이팔 페이지 열기 */
   open_paypal() {
-    // window.open('', '_system');
+    // window.open('', '_blank');
     console.log('페이지 준비중입니다');
   }
 
@@ -230,7 +230,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     try {
       let GetwithoutPort = this.FallbackServerAddress.split(':');
       if (GetwithoutPort.length > 2) GetwithoutPort.pop();
-      window.open(GetwithoutPort.join(':') + ':9001', '_system');
+      window.open(GetwithoutPort.join(':') + ':9001', '_blank');
     } catch (e) { }
   }
 

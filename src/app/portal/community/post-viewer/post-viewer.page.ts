@@ -523,7 +523,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   // 웹 주소라면 하이퍼링크 처리
                   if (sep[k].indexOf('http:') == 0 || sep[k].indexOf('https:') == 0) {
                     let link = p.createA(sep[k], sep[k]);
-                    link.attribute('target', '_system');
+                    link.attribute('target', '_blank');
                     link.parent(line);
                     let word = p.createSpan('&nbsp');
                     word.parent(line);

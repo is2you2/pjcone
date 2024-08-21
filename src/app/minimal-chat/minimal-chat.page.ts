@@ -82,7 +82,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
           text: `${this.lang.text['ChatRoom']['QRLinkFailed']}: ${e}`,
         });
       }
-    } else window.open(url, '_system')
+    } else window.open(url, '_blank')
   }
 
   @ViewChild('MinimalChatServer') MinimalChatServer: IonSelect;

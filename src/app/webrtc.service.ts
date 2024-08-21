@@ -101,7 +101,7 @@ export class WebrtcService {
       try {
         await this.mClipboard.copy(out_link);
       } catch (error) { }
-      window.open(out_link, '_system');
+      window.open(out_link, '_blank');
       throw this.lang.text['WebRTCDevManager']['SecurityError'];
     }
     if (type != 'data') await VoiceRecorder.requestAudioRecordingPermission();

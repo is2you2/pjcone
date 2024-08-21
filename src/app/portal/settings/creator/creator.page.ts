@@ -90,12 +90,12 @@ export class CreatorPage implements OnInit {
 
   /** 도움주신분들 제공링크 따라가기 */
   go_to_helper_page(url: string) {
-    window.open(url, '_system');
+    window.open(url, '_blank');
   }
 
   /** 제작자 이미지를 눌러 홈페이지 이동 */
   go_to_creator_page() {
-    window.open('https://is2you2.github.io/', '_system');
+    window.open('https://is2you2.github.io/', '_blank');
   }
 
   /** 개발자에게 커피를 사주세요 */

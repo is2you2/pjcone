@@ -2012,7 +2012,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           text: `${this.lang.text['ChatRoom']['QRLinkFailed']}: ${e}`,
         });
       }
-    } else window.open(url, '_system');
+    } else window.open(url, '_blank');
     this.make_ext_hidden();
     this.userInputTextArea.focus();
     this.SetOtherAct();

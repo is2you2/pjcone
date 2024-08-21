@@ -89,7 +89,7 @@ export class MiniranchatClientService {
       // 혹시라도 자체 서명 사이트에 접근중이라면 허용처리를 할 수 있게 사이트 연결
       if (_Address.indexOf('wss://') == 0) {
         let GetwithoutProtocol = _Address.split('://');
-        window.open(`https://${GetwithoutProtocol.pop()}:9001`, '_system');
+        window.open(`https://${GetwithoutProtocol.pop()}:9001`, '_blank');
       }
       this.disconnect();
     }
