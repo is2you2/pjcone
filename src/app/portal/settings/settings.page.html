@@ -43,7 +43,9 @@
         <ion-item *ngIf="cant_dedicated" button id="fallback_fs_input">
           <ion-icon class="icon_margin" name="cloud-done-outline"></ion-icon>
           <ion-input [label]="lang.text['Settings']['FallbackFS']" class="ion-text-right"
-            [(ngModel)]="FallbackServerAddress" placeholder="(https://)0.0.0.0(:0)" (ionInput)="fallback_fs_input()"></ion-input>
+            [(ngModel)]="FallbackServerAddress" placeholder="(https://)0.0.0.0(:0)"
+            (ionInput)="fallback_fs_input()"></ion-input>
+          <ion-icon slot="end" name="open-outline" (click)="open_custom_site()"></ion-icon>
         </ion-item>
         <ion-item button (click)="go_to_webrtc_manager()">
           <ion-label>{{lang.text['WebRTCDevManager']['Title']}}</ion-label>
@@ -90,7 +92,7 @@
       <ion-label>{{lang.text['Settings']['Sponsorship']}}</ion-label>
     </ion-item-divider>
     <ion-item button (click)="open_paypal()">
-      <ion-icon slot="start" name="logo-paypal"></ion-icon>
+      <ion-icon class="icon_margin" name="logo-paypal"></ion-icon>
       <ion-label>PayPal</ion-label>
     </ion-item>
   </div>
