@@ -227,9 +227,11 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   /** FFS 등 지정된 사이트의 연결을 빠르게 허용할 수 있도록 구성 */
   open_custom_site() {
-    let GetwithoutPort = this.FallbackServerAddress.split(':');
-    if (GetwithoutPort.length > 2) GetwithoutPort.pop();
-    window.open(GetwithoutPort.join(':') + ':9001', '_system');
+    try {
+      let GetwithoutPort = this.FallbackServerAddress.split(':');
+      if (GetwithoutPort.length > 2) GetwithoutPort.pop();
+      window.open(GetwithoutPort.join(':') + ':9001', '_system');
+    } catch (e) { }
   }
 
   go_to_webrtc_manager() {
