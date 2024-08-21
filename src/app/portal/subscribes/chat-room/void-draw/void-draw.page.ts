@@ -903,6 +903,8 @@ export class VoidDrawPage implements OnInit {
   IceWebRTCWsClient: WebSocket;
   /** WebRTC 구성이 완료되었고 행동을 공유할 준비가 끝남 */
   ReadyToShareAct = false;
+  /** 사용자가 입력한 사설 서버 주소를 기억함 */
+  InputCustomAddress: string;
   /** 서버가 있는 경우 서버를 선택 */
   async RemoteBridgeServerSelected(ev: any) {
     if (this.isDrawServerCreated) return;
@@ -923,6 +925,7 @@ export class VoidDrawPage implements OnInit {
             text: this.lang.text['voidDraw']['Confirm'],
             handler: (ev: any) => {
               if (ev[0]) {
+                this.InputCustomAddress = ev[0];
                 this.p5voidDraw['SetDrawable'](false);
                 is_ws_on = true;
                 this.isDrawServerCreated = true;
@@ -1165,6 +1168,12 @@ export class VoidDrawPage implements OnInit {
     }
     this.IceWebRTCWsClient.onerror = (e) => {
       console.log('그림판 기능 공유 연결 오류: ', e);
+      // 혹시라도 자체 서명 사이트에 접근중이라면 허용처리를 할 수 있게 사이트 연결
+      if (this.InputCustomAddress.indexOf('wss://') == 0) {
+        let GetwithoutProtocol = this.InputCustomAddress.split('://');
+        window.open(`https://${GetwithoutProtocol.pop()}:9001`, '_system');
+        this.InputCustomAddress = undefined;
+      }
       this.IceWebRTCWsClient.close();
       this.p5toast.show({
         text: `${this.lang.text['TodoDetail']['Disconnected']}: ${e}`,
