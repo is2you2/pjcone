@@ -26,14 +26,15 @@ export class LinkQrPage implements OnInit {
   async ionViewWillEnter() {
     let extract = this.navParams.data.address;
     try { // 사용자 지정 서버 업로드 시도 우선
-      let HasLocalPage = `${location.protocol}//${extract}:8080/`;
+      let only_address = extract.split('://').pop();
+      let HasLocalPage = `${location.protocol}//${only_address}:8080/`;
       const cont = new AbortController();
       const id = setTimeout(() => {
         cont.abort();
       }, 500);
       let res = await fetch(HasLocalPage, { signal: cont.signal });
       clearTimeout(id);
-      if (res.ok) this.SelectedAddress = `${location.protocol}//${extract}:8080/www/?voidDraw=${extract}`;
+      if (res.ok) this.SelectedAddress = `${location.protocol}//${only_address}:8080/www/?voidDraw=${extract},${this.navParams.data.channel}`;
       else throw '주소 없음';
     } catch (e) {
       this.SelectedAddress = `http://localhost:8080/www/?voidDraw=${extract},${this.navParams.data.channel}`

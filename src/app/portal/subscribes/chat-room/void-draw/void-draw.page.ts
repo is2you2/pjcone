@@ -1057,7 +1057,7 @@ export class VoidDrawPage implements OnInit {
           modal = await this.modalCtrl.create({
             component: LinkQrPage,
             componentProps: {
-              address: address[0],
+              address: _address,
               channel: json.id,
             },
             cssClass: 'transparent-modal',

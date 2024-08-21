@@ -339,7 +339,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         header_address = 'http://localhost:8080/www/';
       }
     } else header_address = `${SERVER_PATH_ROOT}godotchat_pwa/`;
-    this.QRCodeTargetString = `${header_address}?group_dedi=${this.client.cacheAddress.split('://')[1]},${this.client.JoinedChannel || 'public'}`;
+    this.QRCodeTargetString = `${header_address}?group_dedi=${this.client.cacheAddress},${this.client.JoinedChannel || 'public'}`;
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeTargetString);
   }
 
