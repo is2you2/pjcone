@@ -72,8 +72,6 @@ export class VoidDrawPage implements OnInit {
   }
 
   AddShortCut() {
-    if (this.p5voidDraw && this.p5voidDraw['SetDrawable'])
-      this.p5voidDraw['SetDrawable'](true);
     delete this.global.p5key['KeyShortCut']['Digit'];
     this.global.p5key['KeyShortCut']['HistoryAct'] = (key: string) => {
       switch (key) {
@@ -917,6 +915,9 @@ export class VoidDrawPage implements OnInit {
             inputs: [{
               type: 'text',
               placeholder: '0.0.0.0',
+            }, {
+              type: 'text',
+              placeholder: this.lang.text['voidDraw']['ChannelId'],
             }],
             buttons: [{
               text: this.lang.text['voidDraw']['Confirm'],
@@ -932,7 +933,9 @@ export class VoidDrawPage implements OnInit {
             }]
           }).then(v => {
             v.onDidDismiss().then(() => {
-              if (!is_ws_on && !this.WillLeaveHere) this.AddShortCut();
+              if (!is_ws_on && !this.WillLeaveHere) {
+                this.AddShortCut();
+              }
             });
             this.RemoveShortCut();
             v.present();

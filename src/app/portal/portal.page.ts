@@ -45,7 +45,7 @@ export class PortalPage implements OnInit {
           this.ionTabs.select('community');
           break;
       }
-    }, 100);
+    }, 150);
   }
 
   ionViewDidEnter() {

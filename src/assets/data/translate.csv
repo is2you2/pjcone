@@ -456,6 +456,7 @@ height,세로,Height
 weight,선 두께,Stroke weight
 changeWeight,두께 변경,Change weight
 apply,적용,Apply
+ChannelId,채널 이름,Channel name
 default_size,기본,default
 InputAddress,주소 입력,Input address
 ChannelIdAddress,채널id 입력,Input channel id
