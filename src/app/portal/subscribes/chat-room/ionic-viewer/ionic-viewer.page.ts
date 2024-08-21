@@ -395,9 +395,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         let blob = await res.blob();
         await this.indexed.saveBlobToUserPath(blob, this.FileInfo.alt_path || this.FileInfo.path);
         this.CurrentFileSize = this.formatBytes(this.FileInfo['size'] || this.FileInfo['filesize'] || blob.size);
-        this.p5toast.show({
-          text: `${this.lang.text['ChatRoom']['FileSaved']}: ${this.FileInfo.filename}`,
-        });
       } else throw res.statusText;
     } catch (e) {
       console.log('다운받기 실패: ', e);
@@ -1555,9 +1552,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       if (!this.FileInfo.path) this.FileInfo.path = tmp_path;
       await this.indexed.saveBlobToUserPath(blob, tmp_path);
       loading.dismiss();
-      this.p5toast.show({
-        text: this.lang.text['ContentViewer']['fileSaved'],
-      });
       this.modalCtrl.dismiss({
         type: 'text',
         blob: blob,
@@ -1764,9 +1758,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     else this.file.writeFile(this.file.externalDataDirectory, filename, blob)
       .then(_v => {
         loading.dismiss();
-        this.p5toast.show({
-          text: this.lang.text['ContentViewer']['fileSaved'],
-        });
       }).catch(e => {
         loading.dismiss();
         switch (e.code) {

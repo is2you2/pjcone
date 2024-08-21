@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { GlobalActService } from 'src/app/global-act.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
-import { P5ToastService } from 'src/app/p5-toast.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
-import { ToolServerService } from 'src/app/tool-server.service';
+import { NavParams } from '@ionic/angular';
 
 @Component({
   selector: 'app-link-qr',
@@ -15,30 +14,17 @@ export class LinkQrPage implements OnInit {
   constructor(
     private global: GlobalActService,
     private mClipboard: Clipboard,
-    private p5toast: P5ToastService,
+    public navParams: NavParams,
     public lang: LanguageSettingService,
-    private toolServer: ToolServerService,
   ) { }
 
   QRCodeSRC: any;
-  addresses: any[];
   SelectedAddress: string;
 
-  ngOnInit() {
-    this.addresses = this.toolServer.addresses;
-  }
+  ngOnInit() { }
 
-  SelectTargetNetwork() {
-    this.SelectedAddress = '192.168.6.44';
-    this.QRCodeSRC = this.global.readasQRCodeFromString(``);
-  }
-
-  /** 주인장이 공유할 IP주소를 선택합니다  
-   * 자체 서버가 있다면 그 주소를, 아니라면 비보안 주소를 생성합니다
-   */
-  async SelectOtherAddress(ev: any) {
-    let address_text: string = ev.detail.value;
-    let extract = address_text.substring(address_text.indexOf('(') + 1, address_text.indexOf(')'));
+  async ionViewWillEnter() {
+    let extract = this.navParams.data.address;
     try { // 사용자 지정 서버 업로드 시도 우선
       let HasLocalPage = `${location.protocol}//${extract}:8080/`;
       const cont = new AbortController();
@@ -50,16 +36,16 @@ export class LinkQrPage implements OnInit {
       if (res.ok) this.SelectedAddress = `${location.protocol}//${extract}:8080/www/?voidDraw=${extract}`;
       else throw '주소 없음';
     } catch (e) {
-      this.SelectedAddress = `http://localhost:8080/www/?voidDraw=${extract}`
+      this.SelectedAddress = `http://localhost:8080/www/?voidDraw=${extract},${this.navParams.data.channel}`
     }
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.SelectedAddress);
   }
 
   /** 보여지는 QRCode 정보 복사 */
-  copy_address() {
-    this.mClipboard.copy(this.SelectedAddress)
+  copy_address(text: string) {
+    this.mClipboard.copy(text)
       .catch(_e => {
-        this.global.WriteValueToClipboard('text/plain', this.SelectedAddress);
+        this.global.WriteValueToClipboard('text/plain', text);
       });
   }
 }

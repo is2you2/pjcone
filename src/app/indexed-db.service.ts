@@ -351,9 +351,6 @@ export class IndexedDBService {
         document.body.removeChild(link);
         link.remove();
         URL.revokeObjectURL(url);
-        this.p5toast.show({
-          text: this.lang.text['ContentViewer']['fileSaved'],
-        });
       } catch (e) {
         console.error('DownloadFileFromUserPath: ', e);
         this.p5toast.show({

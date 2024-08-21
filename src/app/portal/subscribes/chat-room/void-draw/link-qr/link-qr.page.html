@@ -1,14 +1,12 @@
 <ion-content>
   <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
     <div
-      style="width: 400px; height: 500px; background-color: var(--chatroom-background); text-align: center; padding: 16px">
-      <ion-select [label]="lang.text['MinimalChat']['shareAddress']" (ionChange)="SelectOtherAddress($event)"
-        [placeholder]="lang.text['MinimalChat']['selectNetwork']">
-        <ion-select-option *ngFor="let info of addresses;">{{info.key + ' (' + info.address + ')'}}
-        </ion-select-option>
-      </ion-select>
-      <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;" (click)="copy_address()"
-        alt="QuickLink">
+      style="width: 400px; height: 455px; background-color: var(--chatroom-background); text-align: center; padding: 16px">
+      <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;"
+        (click)="copy_address(SelectedAddress)" alt="QuickLink">
+      <ion-item button (click)="copy_address(navParams.data.channel)">
+        <ion-label class="ion-text-center">{{navParams.data.channel}}</ion-label>
+      </ion-item>
     </div>
   </div>
 </ion-content>

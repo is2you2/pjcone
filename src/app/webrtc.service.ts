@@ -130,15 +130,17 @@ export class WebrtcService {
           this.CurrentMatch.match_id, MatchOpCode.WEBRTC_REPLY_INIT_SIGNAL, encodeURIComponent('EOL'));
       } else {
         for (let i = 0, j = part.length; i < j; i++) {
-          _target['server'].send_to(_target['target'], _target['user'], JSON.stringify({
+          _target['client'].send(JSON.stringify({
             type: 'socket_react',
+            channel: _target['channel'],
             act: 'WEBRTC_REPLY_INIT_SIGNAL',
             data_str: part[i],
           }));
           await new Promise((done) => setTimeout(done, 40));
         }
-        _target['server'].send_to(_target['target'], _target['user'], JSON.stringify({
+        _target['client'].send(JSON.stringify({
           type: 'socket_react',
+          channel: _target['channel'],
           act: 'WEBRTC_REPLY_INIT_SIGNAL',
           data_str: 'EOL',
         }));
@@ -626,9 +628,10 @@ export class WebrtcService {
             this.CurrentMatch.match_id, MatchOpCode.WEBRTC_ICE_CANDIDATES, encodeURIComponent(JSON.stringify(this.IceCandidates[i])));
       } else {
         for (let i = 0, j = this.IceCandidates.length; i < j; i++) {
-          _target.send(JSON.stringify({
+          _target['client'].send(JSON.stringify({
             type: 'socket_react',
             act: 'WEBRTC_ICE_CANDIDATES',
+            channel: _target['channel'],
             data_str: JSON.stringify(this.IceCandidates[i]),
           }));
           await new Promise((done) => setTimeout(done, 40));
@@ -702,16 +705,18 @@ export class WebrtcService {
         this.nakama.self_match[this.isOfficial][this.target].match_id, MatchOpCode.WEBRTC_RECEIVED_CALL_SELF, encodeURIComponent(''));
     } else {
       for (let i = 0, j = part.length; i < j; i++) {
-        _target.send(JSON.stringify({
+        _target.client.send(JSON.stringify({
           type: 'socket_react',
           act: 'WEBRTC_RECEIVE_ANSWER',
+          channel: _target.channel,
           data_str: part[i],
         }));
         await new Promise((done) => setTimeout(done, 40));
       }
-      _target.send(JSON.stringify({
+      _target.client.send(JSON.stringify({
         type: 'socket_react',
         act: 'WEBRTC_RECEIVE_ANSWER',
+        channel: _target.channel,
         data_str: 'EOL',
       }));
     }
@@ -732,8 +737,9 @@ export class WebrtcService {
           this.CurrentMatch.match_id, MatchOpCode.WEBRTC_ICE_CANDIDATES, encodeURIComponent(JSON.stringify(this.IceCandidates[i])));
     } else {
       for (let i = 0, j = this.IceCandidates.length; i < j; i++) {
-        _target['server'].send_to(_target['target'], _target['user'], JSON.stringify({
+        _target['client'].send(JSON.stringify({
           type: 'socket_react',
+          channel: _target['channel'],
           act: 'WEBRTC_ICE_CANDIDATES',
           data_str: JSON.stringify(this.IceCandidates[i]),
         }));
