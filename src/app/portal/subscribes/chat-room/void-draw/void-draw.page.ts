@@ -1169,7 +1169,7 @@ export class VoidDrawPage implements OnInit {
     this.IceWebRTCWsClient.onerror = (e) => {
       console.log('그림판 기능 공유 연결 오류: ', e);
       // 혹시라도 자체 서명 사이트에 접근중이라면 허용처리를 할 수 있게 사이트 연결
-      if (this.InputCustomAddress.indexOf('wss://') == 0) {
+      if (this.InputCustomAddress.indexOf('wss://') == 0 && (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')) {
         let GetwithoutProtocol = this.InputCustomAddress.split('://');
         window.open(`https://${GetwithoutProtocol.pop()}:9001`, '_blank');
         this.InputCustomAddress = undefined;

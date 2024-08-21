@@ -230,7 +230,8 @@ export class SettingsPage implements OnInit, OnDestroy {
     try {
       let GetwithoutPort = this.FallbackServerAddress.split(':');
       if (GetwithoutPort.length > 2) GetwithoutPort.pop();
-      window.open(GetwithoutPort.join(':') + ':9001', '_blank');
+      if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
+        window.open(GetwithoutPort.join(':') + ':9001', '_blank');
     } catch (e) { }
   }
 
