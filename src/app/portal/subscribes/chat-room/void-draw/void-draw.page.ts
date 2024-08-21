@@ -1029,6 +1029,7 @@ export class VoidDrawPage implements OnInit {
           type: 'init',
         }));
     }
+    /** 웹소켓 서버에서의 내 아이디 기록 */
     let uuid: string;
     this.IceWebRTCWsClient.onmessage = async (ev: any) => {
       let channel_id: string;
@@ -1070,10 +1071,6 @@ export class VoidDrawPage implements OnInit {
                 this.nakama.VoidDrawInitCallBack = undefined;
               });
               this.webrtc.CreateOffer();
-              this.webrtc.InitReplyCallback = async () => {
-                // 배경이미지 공유하지 않도록 재설정
-                this.CreateOnOpenAct(true);
-              }
               new Promise((done) => setTimeout(done, 40));
               this.IceWebRTCWsClient.send(JSON.stringify({
                 type: 'socket_react',
