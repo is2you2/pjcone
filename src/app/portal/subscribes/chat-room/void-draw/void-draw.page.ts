@@ -914,7 +914,7 @@ export class VoidDrawPage implements OnInit {
           header: this.lang.text['voidDraw']['LocalAddrInput'],
           inputs: [{
             type: 'text',
-            placeholder: '0.0.0.0',
+            placeholder: '(wss://)0.0.0.0',
           }, {
             type: 'text',
             placeholder: this.lang.text['voidDraw']['CreateChannel'],
@@ -1002,14 +1002,23 @@ export class VoidDrawPage implements OnInit {
   }
 
   /** 누구든 이 코드를 사용하면 지정 주소로 진입하여 공유 그림판을 사용할 수 있음 */
-  CreateRemoteLocalClient(address: string, channel_id?: string) {
+  CreateRemoteLocalClient(_address: string, channel_id?: string) {
+    let split_fullAddress = _address.split('://');
+    let address = split_fullAddress.pop().split(':');
+    let protocol = split_fullAddress.pop();
+    if (protocol) {
+      protocol += ':';
+    } else {
+      let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
+      protocol = checkProtocol ? 'wss:' : 'ws:';
+    }
+    this.IceWebRTCWsClient = new WebSocket(`${protocol}//${address[0]}:12013/`);
     let modal: HTMLIonModalElement;
-    this.IceWebRTCWsClient = new WebSocket(`ws://${address}:12013/`);
     this.AddShortCut();
     this.isDrawServerCreated = true;
     this.IceWebRTCWsClient.onopen = async () => {
       this.p5toast.show({
-        text: `${this.lang.text['voidDraw']['Connected']}: ${address}`,
+        text: `${this.lang.text['voidDraw']['Connected']}: ${address[0]}`,
       });
       if (channel_id) { // 준비된 채널로 진입
         this.IceWebRTCWsClient.send(JSON.stringify({
@@ -1045,7 +1054,7 @@ export class VoidDrawPage implements OnInit {
           modal = await this.modalCtrl.create({
             component: LinkQrPage,
             componentProps: {
-              address: address,
+              address: address[0],
               channel: json.id,
             },
             cssClass: 'transparent-modal',
