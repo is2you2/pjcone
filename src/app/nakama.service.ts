@@ -4185,11 +4185,14 @@ export class NakamaService {
       }
     }
     if (init['voidDraw']) {
-      if (window.location.protocol == 'http:') // 보안 연결이 아닐 때에만 동작
+      if (window.location.protocol == 'http:') { // 보안 연결이 아닐 때에만 동작
+        let sep = init['voidDraw'][0].split(',');
         json.push({
           type: 'voidDraw',
-          address: init['voidDraw'][0],
+          address: sep[0],
+          channel: sep[1],
         });
+      }
     }
     if (init['postViewer']) {
       json.push({
@@ -4300,7 +4303,10 @@ export class NakamaService {
           this.modalCtrl.create({
             component: VoidDrawPage,
             componentProps: {
-              remote: json[i].address,
+              remote: {
+                address: json[i].address,
+                channel: json[i].channel,
+              }
             }
           }).then(v => v.present());
           break;
