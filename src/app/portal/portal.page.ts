@@ -24,8 +24,19 @@ export class PortalPage implements OnInit {
     public statusBar: StatusManageService,
   ) { }
 
-  ngOnInit() {
-    setTimeout(() => {
+  ngOnInit() { }
+
+  OnInit = true;
+
+  ionViewDidEnter() {
+    if (this.CacheKeyShortCut)
+      this.global.p5key['KeyShortCut'] = this.CacheKeyShortCut;
+    this.try_add_shortcut();
+    if (this.global.p5todo && this.global.p5todo['PlayCanvas'] && this.TodoIcon == 'checkbox')
+      this.global.p5todo['PlayCanvas']();
+    if (this.nakama.AfterLoginAct.length) // 빠른 진입 행동 보완
+      this.navCtrl.navigateForward('portal/settings/group-server');
+    if (this.OnInit) {
       let StartPage = localStorage.getItem('StartPage') || 0;
       switch (StartPage) {
         case '0':
@@ -45,17 +56,8 @@ export class PortalPage implements OnInit {
           this.ionTabs.select('community');
           break;
       }
-    }, 150);
-  }
-
-  ionViewDidEnter() {
-    if (this.CacheKeyShortCut)
-      this.global.p5key['KeyShortCut'] = this.CacheKeyShortCut;
-    this.try_add_shortcut();
-    if (this.global.p5todo && this.global.p5todo['PlayCanvas'] && this.TodoIcon == 'checkbox')
-      this.global.p5todo['PlayCanvas']();
-    if (this.nakama.AfterLoginAct.length) // 빠른 진입 행동 보완
-      this.navCtrl.navigateForward('portal/settings/group-server');
+      this.OnInit = false;
+    }
   }
 
   /** 포털 화면 단축키 구성 */
