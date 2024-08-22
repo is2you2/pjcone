@@ -520,26 +520,69 @@ export class MinimalChatPage implements OnInit, OnDestroy {
             autoCancel_ln: true,
           }, this.Header, this.open_this);
         else if (data['type']) {
-          let isJoin = data['type'] == 'join';
-          if (!isJoin) alert_this = 'pending';
-          this.noti.PushLocal({
-            id: this.lnId,
-            title: isJoin ? this.lang.text['MinimalChat']['user_join'] : this.lang.text['MinimalChat']['user_out'],
-            body: target + ` | ${isJoin ? this.lang.text['MinimalChat']['user_join_comment'] : this.lang.text['MinimalChat']['user_out_comment']}`,
-            group_ln: 'simplechat',
-            extra_ln: {
-              type: 'MinimalChatPage',
-              componentProps: {
-                address: this.params.get('address'),
-                name: this.params.get('name'),
-              },
-            },
-            actions_ln: ['group_dedi'],
-            actions_wm: PWA_Action,
-            smallIcon_ln: 'simplechat',
-            iconColor_ln: this.iconColor,
-            autoCancel_ln: true,
-          }, this.Header, this.open_this);
+          switch (data['type']) {
+            case 'join': { // 사용자 들어옴
+              this.noti.PushLocal({
+                id: this.lnId,
+                title: this.lang.text['MinimalChat']['user_join'],
+                body: target + ` | ${this.lang.text['MinimalChat']['user_join_comment']}`,
+                group_ln: 'simplechat',
+                extra_ln: {
+                  type: 'MinimalChatPage',
+                  componentProps: {
+                    address: this.params.get('address'),
+                    name: this.params.get('name'),
+                  },
+                },
+                actions_ln: ['group_dedi'],
+                actions_wm: PWA_Action,
+                smallIcon_ln: 'simplechat',
+                iconColor_ln: this.iconColor,
+                autoCancel_ln: true,
+              }, this.Header, this.open_this);
+            } break;
+            case 'leave': { // 사용자 나감
+              alert_this = 'pending';
+              this.noti.PushLocal({
+                id: this.lnId,
+                title: this.lang.text['MinimalChat']['user_out'],
+                body: target + ` | ${this.lang.text['MinimalChat']['user_out_comment']}`,
+                group_ln: 'simplechat',
+                extra_ln: {
+                  type: 'MinimalChatPage',
+                  componentProps: {
+                    address: this.params.get('address'),
+                    name: this.params.get('name'),
+                  },
+                },
+                actions_ln: ['group_dedi'],
+                actions_wm: PWA_Action,
+                smallIcon_ln: 'simplechat',
+                iconColor_ln: this.iconColor,
+                autoCancel_ln: true,
+              }, this.Header, this.open_this);
+            } break;
+            case 'file': { // 파일 전송을 시작함
+              this.noti.PushLocal({
+                id: this.lnId,
+                title: target,
+                body: this.lang.text['MinimalChat']['user_send_attach'],
+                group_ln: 'simplechat',
+                extra_ln: {
+                  type: 'MinimalChatPage',
+                  componentProps: {
+                    address: this.params.get('address'),
+                    name: this.params.get('name'),
+                  },
+                },
+                actions_ln: ['group_dedi'],
+                actions_wm: PWA_Action,
+                smallIcon_ln: 'simplechat',
+                iconColor_ln: this.iconColor,
+                autoCancel_ln: true,
+              }, this.Header, this.open_this);
+            } break;
+          }
         }
         this.statusBar.settings['dedicated_groupchat'] = alert_this;
         setTimeout(() => {
