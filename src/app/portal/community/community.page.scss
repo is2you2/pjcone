@@ -20,9 +20,15 @@
     padding-top: 20px;
 }
 
+.CardContainerDivShared {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 16px;
+    padding: 16px;
+}
+
 .card_style {
     width: 90%;
-    max-width: 400px;
     margin-top: 0;
 }
 
