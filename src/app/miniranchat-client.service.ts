@@ -244,7 +244,7 @@ export class MiniranchatClientService {
       component: MinimalChatPage,
       componentProps: {
         address: this.cacheAddress,
-        name: this.MyUserName || this.nakama.users.self['display_name'],
+        name: this.MyUserName ?? this.nakama.users.self['display_name'],
       },
     }).then(v => {
       this.global.StoreShortCutAct();
