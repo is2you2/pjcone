@@ -230,26 +230,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     }
   }
 
-  async DownloadInOrder() {
-    for (let i = 0, j = this.Relevances.length; i < j; i++) { // 전체 다운로드시 개체 미리 생성하기
-      if (!this.nakama.OnTransfer[this.isOfficial]) this.nakama.OnTransfer[this.isOfficial] = {};
-      if (!this.nakama.OnTransfer[this.isOfficial][this.target]) this.nakama.OnTransfer[this.isOfficial][this.target] = {};
-      if (!this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id]) this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id] = {};
-      if (!this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id][this.Relevances[i].message_id])
-        this.nakama.OnTransfer[this.isOfficial][this.target][this.Relevances[i].channel_id][this.Relevances[i].message_id] = {};
-    }
-    for (let i = 0, j = this.Relevances.length; i < j; i++) {
-      let path = `servers/${this.isOfficial}/${this.target}/channels/${this.Relevances[i].channel_id}/files/msg_${this.Relevances[i].message_id}.${this.Relevances[i].content['file_ext']}`;
-      let FileExist = await this.indexed.checkIfFileExist(path);
-      if (!FileExist) try {
-        await this.DownloadCurrentFile(i);
-      } catch (e) {
-        console.log(e);
-      }
-    }
-    this.noti.ClearNoti(6);
-  }
-
   /** 터치 상호작용 보완용 */
   ContentChanging = false;
   ChangeToAnother(direction: number) {

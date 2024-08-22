@@ -487,7 +487,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                   });
                   delete this.client.DownloadPartManager[data.uid][data.temp_id]['Progress'];
                   delete this.client.DownloadPartManager[data.uid][data.temp_id];
-                }
+                } else this.indexed.removeFileFromUserPath(`${data.path}.history`);
               });
               return; // 알림 생성하지 않음
           }
@@ -743,11 +743,18 @@ export class MinimalChatPage implements OnInit, OnDestroy {
 
   /** 파일 뷰어로 해당 파일 열기 */
   open_file_viewer(FileInfo: any) {
+    let attaches = [];
+    for (let i = 0, j = this.client.userInput.logs.length; i < j; i++)
+      try {
+        if (this.client.userInput.logs[i].file.info.filename)
+          attaches.push({ content: this.client.userInput.logs[i].file.info });
+      } catch (e) { }
     this.modalCtrl.create({
       component: IonicViewerPage,
       componentProps: {
         info: { content: FileInfo },
         path: FileInfo.path,
+        relevance: attaches,
         noTextEdit: true,
       },
       cssClass: 'fullscreen',
