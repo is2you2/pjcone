@@ -105,7 +105,9 @@ export class AddGroupPage implements OnInit, OnDestroy {
       name_html.focus();
     }, 200);
     this.p5canvas = new p5((p: p5) => {
-      p.keyPressed = (ev) => {
+      p.keyPressed = async (ev) => {
+        let getTop = await this.modalCtrl.getTop();
+        if (ev['target'] != getTop) return;
         switch (ev['code']) {
           case 'Enter':
             if (document.activeElement.id != 'group_desc')

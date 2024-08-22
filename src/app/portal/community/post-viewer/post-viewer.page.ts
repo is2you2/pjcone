@@ -69,7 +69,9 @@ export class PostViewerPage implements OnInit, OnDestroy {
   ChangeContentWithKeyInput() {
     if (this.p5canvas) {
       // 단축키 행동
-      this.p5canvas.keyPressed = (ev) => {
+      this.p5canvas.keyPressed = async (ev) => {
+        let getTop = await this.modalCtrl.getTop();
+        if (ev['target'] != getTop) return;
         if (this.blockShortcut) return;
         switch (ev['code']) {
           case 'KeyA': // 왼쪽 이동

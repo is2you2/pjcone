@@ -981,7 +981,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   /** PC에서 키를 눌러 컨텐츠 전환 */
   ChangeContentWithKeyInput() {
     this.p5viewerkey = new p5((p: p5) => {
-      p.keyPressed = (ev) => {
+      p.keyPressed = async (ev) => {
+        let getTop = await this.modalCtrl.getTop();
+        if (ev['target'] != getTop) return;
         if (this.isTextEditMode || this.isHTMLViewer) return;
         if (this.FileInfo.viewer == 'godot') return;
         const FileMenu: Function[] = [];
