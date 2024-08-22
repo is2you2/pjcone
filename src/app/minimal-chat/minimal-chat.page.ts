@@ -437,31 +437,25 @@ export class MinimalChatPage implements OnInit, OnDestroy {
               this.client.userInput.last_message = FileAttach;
               if (!data.info.url) { // 분할 파일인 경우 누적 준비하기
                 let FileInfo: FileInfo = data.info;
-                this.indexed.checkIfFileExist(FileInfo.path, b => {
-                  if (!b) {
-                    if (!this.client.DownloadPartManager[data.uid])
-                      this.client.DownloadPartManager[data.uid] = {};
-                    if (!this.client.DownloadPartManager[data.uid][data.temp_id])
-                      this.client.DownloadPartManager[data.uid][data.temp_id] = FileAttach;
-                    FileAttach['Progress'] = FileInfo.partsize;
-                  }
-                });
+                if (!this.client.DownloadPartManager[data.uid])
+                  this.client.DownloadPartManager[data.uid] = {};
+                if (!this.client.DownloadPartManager[data.uid][data.temp_id])
+                  this.client.DownloadPartManager[data.uid][data.temp_id] = FileAttach;
+                FileAttach['Progress'] = FileInfo.partsize;
               }
               break;
             case 'part': // 분할 파일 정보 수신
+              this.client.DownloadPartManager[data.uid][data.temp_id]['Progress']--;
               this.indexed.checkIfFileExist(data.path, b => {
                 if (!b) { // 파일이 없다면 파트파일 받기
-                  try {
-                    this.client.DownloadPartManager[data.uid][data.temp_id]['Progress']--;
-                  } catch (e) { }
                   this.indexed.saveBase64ToUserPath(',' + data.part, `${data.path}_${data.index}`);
                 }
               });
               return; // 알림 생성하지 않음
             case 'EOF': // 파일 수신 마무리하기
-              this.indexed.checkIfFileExist(data.path, b => {
+              this.indexed.checkIfFileExist(data.path, async b => {
                 if (!b) { // 파일이 없다면 파트를 모아서 파일 만들기
-                  new Promise(async (done, err) => {
+                  await new Promise(async (done, err) => {
                     let GatheringInt8Array = [];
                     let ByteSize = 0;
                     for (let i = 0, j = data.partsize; i < j; i++) {
@@ -725,7 +719,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       this.client.send(JSON.stringify(json));
       this.focus_on_input();
       for (let i = 0; i < FileInfo.partsize; i++) {
-        new Promise((done) => setTimeout(done, 500));
+        await new Promise((done) => setTimeout(done, 40));
         let part = this.global.req_file_part_base64(ReqInfo, i, FileInfo.path);
         let json = {
           type: 'part',
@@ -736,7 +730,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         }
         this.client.send(JSON.stringify(json));
       }
-      new Promise((done) => setTimeout(done, 500));
+      await new Promise((done) => setTimeout(done, 40));
       let EOF = {
         type: 'EOF',
         path: FileInfo.path,
