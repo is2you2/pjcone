@@ -45,7 +45,7 @@
           <ion-input [label]="lang.text['Settings']['FallbackFS']" class="ion-text-right"
             [(ngModel)]="FallbackServerAddress" placeholder="(https://)0.0.0.0(:0)"
             (ionInput)="fallback_fs_input()"></ion-input>
-          <ion-icon slot="end" name="open-outline" (click)="open_custom_site()"></ion-icon>
+          <ion-icon slot="end" name="open-outline" (click)="global.open_custom_site(FallbackServerAddress)"></ion-icon>
         </ion-item>
         <ion-item button (click)="go_to_webrtc_manager()">
           <ion-label>{{lang.text['WebRTCDevManager']['Title']}}</ion-label>

@@ -21,7 +21,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     public statusBar: StatusManageService,
     public nakama: NakamaService,
     public lang: LanguageSettingService,
-    private global: GlobalActService,
+    public global: GlobalActService,
     private noti: LocalNotiService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
@@ -223,16 +223,6 @@ export class SettingsPage implements OnInit, OnDestroy {
   open_paypal() {
     // window.open('', '_blank');
     console.log('페이지 준비중입니다');
-  }
-
-  /** FFS 등 지정된 사이트의 연결을 빠르게 허용할 수 있도록 구성 */
-  open_custom_site() {
-    try {
-      let GetwithoutPort = this.FallbackServerAddress.split(':');
-      if (GetwithoutPort.length > 2) GetwithoutPort.pop();
-      if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
-        window.open(GetwithoutPort.join(':') + ':9001', '_blank');
-    } catch (e) { }
   }
 
   go_to_webrtc_manager() {

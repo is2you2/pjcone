@@ -31,7 +31,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     private params: NavParams,
     private statusBar: StatusManageService,
     public lang: LanguageSettingService,
-    private global: GlobalActService,
+    public global: GlobalActService,
     private mClipboard: Clipboard,
     private p5toast: P5ToastService,
     private indexed: IndexedDBService,
@@ -83,16 +83,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         });
       }
     } else window.open(url, '_blank')
-  }
-
-  /** FFS 등 지정된 사이트의 연결을 빠르게 허용할 수 있도록 구성 */
-  open_custom_site() {
-    try {
-      let GetwithoutPort = this.client.FallbackOverrideAddress.split(':');
-      if (GetwithoutPort.length > 2) GetwithoutPort.pop();
-      if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
-        window.open(GetwithoutPort.join(':') + ':9001', '_blank');
-    } catch (e) { }
   }
 
   @ViewChild('MinimalChatServer') MinimalChatServer: IonSelect;

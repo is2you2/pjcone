@@ -1292,6 +1292,21 @@ export class GlobalActService {
     return this_file;
   }
 
+  /** FFS 등 지정된 사이트의 연결을 빠르게 허용할 수 있도록 구성 */
+  open_custom_site(targetAddress: string) {
+    try {
+      let GetwithoutPort = targetAddress.split(':');
+      if (GetwithoutPort.length > 2) GetwithoutPort.pop();
+      if (GetwithoutPort.length == 1) {
+        let checkProtocol = targetAddress.replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
+        GetwithoutPort[0] = '//' + GetwithoutPort[0];
+        GetwithoutPort.unshift(checkProtocol ? 'https' : 'http');
+      }
+      if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
+        window.open(GetwithoutPort.join(':') + ':9001', '_blank');
+    } catch (e) { }
+  }
+
   /** 클립보드에 기록된 정보 불러오기 (이미지/텍스트)
    * @returns 이미지 또는 텍스트
    */
