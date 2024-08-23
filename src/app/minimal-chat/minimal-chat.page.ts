@@ -701,7 +701,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       name: this.client.MyUserName,
     }
     try { // FFS 발송 시도
-      let url = await this.global.try_upload_to_user_custom_fs(FileInfo, `minimal_chat_${this.client.MyUserName}`);
+      let url = await this.global.try_upload_to_user_custom_fs(FileInfo, `square_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`);
       if (!url) throw '분할 전송 시도 필요';
       else {
         FileInfo.url = url;
@@ -870,11 +870,11 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     this.UserInputCustomAddress = '';
     this.noti.ClearNoti(this.lnId);
     if (this.client.status == 'idle') this.modalCtrl.dismiss();
-    this.client.disconnect();
     // 첨부했던 파일들 삭제
     this.indexed.GetFileListFromDB('tmp_files/sqaure', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     for (let i = 0, j = this.client.FFS_Urls.length; i < j; i++)
-      this.global.remove_files_from_storage_with_key(this.client.FFS_Urls[i], 'minimal_chat');
+      this.global.remove_files_from_storage_with_key(this.client.FFS_Urls[i], `square_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`);
+    this.client.disconnect();
     this.client.FFS_Urls.length = 0;
     this.client.DownloadPartManager = {};
   }
