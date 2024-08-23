@@ -85,6 +85,16 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     } else window.open(url, '_blank')
   }
 
+  /** FFS 등 지정된 사이트의 연결을 빠르게 허용할 수 있도록 구성 */
+  open_custom_site() {
+    try {
+      let GetwithoutPort = this.client.FallbackOverrideAddress.split(':');
+      if (GetwithoutPort.length > 2) GetwithoutPort.pop();
+      if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
+        window.open(GetwithoutPort.join(':') + ':9001', '_blank');
+    } catch (e) { }
+  }
+
   @ViewChild('MinimalChatServer') MinimalChatServer: IonSelect;
   ngOnInit() {
     window.onfocus = () => {
@@ -701,7 +711,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       name: this.client.MyUserName,
     }
     try { // FFS 발송 시도
-      let url = await this.global.try_upload_to_user_custom_fs(FileInfo, `square_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`);
+      let url = await this.global.try_upload_to_user_custom_fs(FileInfo, `square_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`,
+        undefined, this.client.FallbackOverrideAddress);
       if (!url) throw '분할 전송 시도 필요';
       else {
         FileInfo.url = url;

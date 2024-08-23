@@ -652,7 +652,7 @@ export class GlobalActService {
   }
 
   /** 사용자 지정 서버에 업로드 시도 */
-  async try_upload_to_user_custom_fs(file: any, user_id: string, loading?: HTMLIonLoadingElement) {
+  async try_upload_to_user_custom_fs(file: any, user_id: string, loading?: HTMLIonLoadingElement, override_ffs_str?: string) {
     let innerLoading: HTMLIonLoadingElement;
     if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['Settings']['TryToFallbackFS'] });
     else innerLoading = loading;
@@ -663,12 +663,13 @@ export class GlobalActService {
     let _file = new File([file.blob], filename);
     formData.append("files", _file);
     let CatchedAddress: string;
-    let fallback = localStorage.getItem('fallback_fs');
+    if (!override_ffs_str)
+      override_ffs_str = localStorage.getItem('fallback_fs');
     let progress: any;
     let cont = new AbortController();
     try { // 사용자 지정 서버 업로드 시도 우선
-      if (!fallback) throw '사용자 지정 서버 없음';
-      let split_fullAddress = fallback.split('://');
+      if (!override_ffs_str) throw '사용자 지정 서버 없음';
+      let split_fullAddress = override_ffs_str.split('://');
       let address = split_fullAddress.pop().split(':');
       let protocol = split_fullAddress.pop();
       if (protocol) {

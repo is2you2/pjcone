@@ -204,6 +204,8 @@ export class MiniranchatClientService {
     else this.disconnect();
   }
 
+  /** 광장 채널에서 전용으로 사용할 FFS 서버 덮어쓰기 주소 */
+  FallbackOverrideAddress: string;
   /** FFS를 사용하는 경우 전송된 파일들을 전부 기억해두었다가 접속을 끊을 때 전부 삭제요청 보내기 */
   FFS_Urls = [];
   /** 분할 파일 받기시 진행도 표시를 위해 준비됨  
