@@ -232,6 +232,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
           v.present();
         });
         break;
+      // 인앱탐색기 현재 사용하지 않음
       case 'inapp': // 인앱 탐색기에서 가져오기
         this.modalCtrl.create({
           component: UserFsDirPage,

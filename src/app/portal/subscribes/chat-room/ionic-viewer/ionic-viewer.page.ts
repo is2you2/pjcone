@@ -160,10 +160,16 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 break;
               }
             } else {
-              if (this.Relevances[i].content['path'] == this.MessageInfo.content['path']) {
-                this.RelevanceIndex = i + 1;
-                break;
-              }
+              if (this.Relevances[i].content['path'])
+                if (this.Relevances[i].content['path'] == this.MessageInfo.content['path']) {
+                  this.RelevanceIndex = i + 1;
+                  break;
+                }
+              if (this.Relevances[i].content['url'])
+                if (this.Relevances[i].content['url'] == this.MessageInfo.content['url']) {
+                  this.RelevanceIndex = i + 1;
+                  break;
+                }
             }
           this.HaveRelevances = Boolean(this.Relevances.length > 1);
         } else this.HaveRelevances = false;
