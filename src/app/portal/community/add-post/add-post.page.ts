@@ -216,8 +216,6 @@ export class AddPostPage implements OnInit, OnDestroy {
           }
         }
         p.keyPressed = async (ev) => {
-          let getTop = await this.modalCtrl.getTop();
-          if (ev['target'] != getTop) return;
           switch (ev['code']) {
             case 'Enter':
               if (document.activeElement.id == 'exact_post_title_id')

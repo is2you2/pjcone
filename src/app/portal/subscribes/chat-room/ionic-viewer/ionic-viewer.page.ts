@@ -398,6 +398,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   AutoPlayNext = false;
   @ViewChild('FileMenu') FileMenu: IonPopover;
   async ionViewDidEnter() {
+    this.modalCtrl.getTop().then(self => {
+      this.ModalSelf = self;
+    });
     if (this.cont) this.cont.abort();
     this.cont = new AbortController();
     try { // 로컬에서 파일 찾기 우선 작업
@@ -989,6 +992,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 이 modal 페이지 (this) */
+  ModalSelf: HTMLIonModalElement;
   /** 단축키 행동용 p5 개체 분리 */
   p5viewerkey: p5;
   /** PC에서 키를 눌러 컨텐츠 전환 */
@@ -996,7 +1001,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.p5viewerkey = new p5((p: p5) => {
       p.keyPressed = async (ev) => {
         let getTop = await this.modalCtrl.getTop();
-        if (ev['target'] != getTop) return;
+        if (this.ModalSelf != getTop) return;
         if (this.isTextEditMode || this.isHTMLViewer) return;
         if (this.FileInfo.viewer == 'godot') return;
         const FileMenu: Function[] = [];

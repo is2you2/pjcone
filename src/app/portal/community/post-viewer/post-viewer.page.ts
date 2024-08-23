@@ -63,6 +63,14 @@ export class PostViewerPage implements OnInit, OnDestroy {
    */
   PlayableElements = [];
 
+  ionViewDidEnter() {
+    this.modalCtrl.getTop().then(self => {
+      this.ModalSelf = self;
+    });
+  }
+
+  /** 이 modal 페이지 (this) */
+  ModalSelf: HTMLIonModalElement;
   /** 파일 뷰어로 넘어간 경우 게시물 전환 단축키 막기 */
   blockShortcut = false;
   /** PC에서 키를 눌러 컨텐츠 전환 */
@@ -71,7 +79,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
       // 단축키 행동
       this.p5canvas.keyPressed = async (ev) => {
         let getTop = await this.modalCtrl.getTop();
-        if (ev['target'] != getTop) return;
+        if (this.ModalSelf != getTop) return;
         if (this.blockShortcut) return;
         switch (ev['code']) {
           case 'KeyA': // 왼쪽 이동

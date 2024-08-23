@@ -97,6 +97,14 @@ export class AddGroupPage implements OnInit, OnDestroy {
     this.ChangeContentWithKeyInput();
   }
 
+  ionViewDidEnter() {
+    this.modalCtrl.getTop().then(self => {
+      this.ModalSelf = self;
+    });
+  }
+
+  /** 이 modal 페이지 (this) */
+  ModalSelf: HTMLIonModalElement;
   p5canvas: p5;
   ChangeContentWithKeyInput() {
     let group_name = document.getElementById('group_name');
@@ -107,7 +115,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
     this.p5canvas = new p5((p: p5) => {
       p.keyPressed = async (ev) => {
         let getTop = await this.modalCtrl.getTop();
-        if (ev['target'] != getTop) return;
+        if (this.ModalSelf != getTop) return;
         switch (ev['code']) {
           case 'Enter':
             if (document.activeElement.id != 'group_desc')
