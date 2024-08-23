@@ -53,10 +53,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.cont.abort();
     if (this.p5viewerkey) this.p5viewerkey.remove();
     if (this.p5canvas) this.p5canvas.remove();
-    if (this.VideoMediaObject && this.VideoMediaObject.elt != document.pictureInPictureElement) {
-      this.VideoMediaObject.elt.src = '';
-      this.VideoMediaObject.elt.load();
-      this.VideoMediaObject.remove();
+    if (this.VideoMediaObject) {
+      if (this.VideoMediaObject.elt != document.pictureInPictureElement) {
+        this.VideoMediaObject.elt.src = '';
+        this.VideoMediaObject.elt.load();
+        this.VideoMediaObject.remove();
+      }
       this.VideoMediaObject = undefined;
     }
     if (!document.pictureInPictureElement)
@@ -695,7 +697,18 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 mediaObject.elt.remove();
                 mediaObject.elt = this.global.PIPLinkedVideoElement;
                 mediaObject.elt.setAttribute('src', this.FileURL);
-              } else this.global.PIPLinkedVideoElement = mediaObject['elt'];
+              } else {
+                this.global.PIPLinkedVideoElement = mediaObject['elt'];
+                this.global.PIPLinkedVideoElement.onleavepictureinpicture = () => {
+                  // 페이지를 나간 상태라면 PIP 종료와 동시에 비디오 삭제
+                  if (!this.VideoMediaObject) {
+                    this.global.PIPLinkedVideoElement.src = '';
+                    this.global.PIPLinkedVideoElement.load();
+                    this.global.PIPLinkedVideoElement.remove();
+                    this.global.PIPLinkedVideoElement = undefined;
+                  }
+                }
+              }
               if (this.canvasDiv)
                 this.canvasDiv.appendChild(mediaObject['elt']);
               this.image_info['width'] = mediaObject['elt']['videoWidth'];
