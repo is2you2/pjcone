@@ -53,14 +53,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.cont.abort();
     if (this.p5viewerkey) this.p5viewerkey.remove();
     if (this.p5canvas) this.p5canvas.remove();
-    if (this.VideoMediaObject) {
+    if (this.VideoMediaObject && this.VideoMediaObject.elt != document.pictureInPictureElement) {
       this.VideoMediaObject.elt.src = '';
       this.VideoMediaObject.elt.load();
-      this.VideoMediaObject.elt.parentNode.removeChild(this.VideoMediaObject.elt);
       this.VideoMediaObject.remove();
       this.VideoMediaObject = undefined;
-      this.global.PIPLinkedVideoElement = undefined;
     }
+    if (!document.pictureInPictureElement)
+      this.global.PIPLinkedVideoElement = undefined;
   }
 
   blob: Blob;
