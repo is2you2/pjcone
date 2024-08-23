@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { AlertController, IonicSafeString, ModalController } from '@ionic/angular';
+import { AlertController, IonicSafeString, NavController, mdTransitionAnimation } from '@ionic/angular';
 import * as p5 from 'p5';
-import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { NakamaService } from './nakama.service';
 import { GlobalActService } from './global-act.service';
 import { P5ToastService } from './p5-toast.service';
@@ -19,7 +18,7 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 export class MiniranchatClientService {
 
   constructor(
-    private modalCtrl: ModalController,
+    private navCtrl: NavController,
     public nakama: NakamaService,
     private global: GlobalActService,
     private p5toast: P5ToastService,
@@ -242,18 +241,12 @@ export class MiniranchatClientService {
   }
 
   RejoinGroupChat() {
-    this.modalCtrl.create({
-      component: MinimalChatPage,
-      componentProps: {
+    this.navCtrl.navigateForward('minimal-chat', {
+      animation: mdTransitionAnimation,
+      state: {
         address: this.cacheAddress,
         name: this.MyUserName ?? this.nakama.users.self['display_name'],
       },
-    }).then(v => {
-      this.global.StoreShortCutAct();
-      v.onDidDismiss().then(() => {
-        this.global.RestoreShortCutAct();
-      });
-      v.present();
     });
   }
 

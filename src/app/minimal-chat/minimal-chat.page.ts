@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { AlertController, IonInput, IonSelect, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { AlertController, IonInput, IonSelect, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
 import { StatusManageService } from '../status-manage.service';
@@ -14,6 +14,7 @@ import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ion
 import { VoidDrawPage } from '../portal/subscribes/chat-room/void-draw/void-draw.page';
 import * as p5 from 'p5';
 import { UserFsDirPage } from '../user-fs-dir/user-fs-dir.page';
+import { ActivatedRoute, Router } from '@angular/router';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -25,10 +26,12 @@ export class MinimalChatPage implements OnInit, OnDestroy {
 
   constructor(
     public client: MiniranchatClientService,
-    public modalCtrl: ModalController,
     private noti: LocalNotiService,
     private title: Title,
-    private params: NavParams,
+    private modalCtrl: ModalController,
+    public navCtrl: NavController,
+    private route: ActivatedRoute,
+    private router: Router,
     private statusBar: StatusManageService,
     public lang: LanguageSettingService,
     public global: GlobalActService,
@@ -63,7 +66,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
         this.BackButtonPressed = true;
-        this.modalCtrl.dismiss();
+        this.navCtrl.pop();
       };
     } catch (e) {
       console.log('탐색 기록 변경시 오류 발생: ', e);
@@ -87,14 +90,25 @@ export class MinimalChatPage implements OnInit, OnDestroy {
 
   @ViewChild('MinimalChatServer') MinimalChatServer: IonSelect;
   ngOnInit() {
+    this.route.queryParams.subscribe(async _p => {
+      const navParams = this.router.getCurrentNavigation().extras.state;
+      await new Promise(res => setTimeout(res, 100)); // init 지연
+      if (navParams) {
+        this.client.MyUserName = navParams.name;
+        this.client.JoinedChannel = navParams.channel;
+        // QRCode 빠른 진입으로 들어온 경우 주소를 이미 가지고 있음
+        if (navParams.address) {
+          this.UserInputCustomAddress = navParams.address;
+          this.init_joinChat();
+        }
+      }
+    });
     window.onfocus = () => {
       if (this.lnId) this.noti.ClearNoti(this.lnId);
     }
     this.InitBrowserBackButtonOverride();
     this.isMobileApp = isPlatform == 'Android' || isPlatform == 'iOS';
-    if (this.client.p5canvas) this.client.p5canvas.remove();
     this.header_title = this.lang.text['MinimalChat']['header_title_group'];
-    this.client.MyUserName = this.params.get('name');
     this.minimal_chat_log = document.getElementById('minimal_chat_div');
     this.minimal_chat_log.onscroll = (_ev: any) => {
       if (this.minimal_chat_log.scrollHeight == this.minimal_chat_log.scrollTop + this.minimal_chat_log.clientHeight)
@@ -108,17 +122,13 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       } else this.NeedInputCustomAddress = true;
     }, 0);
     if (this.client.cacheAddress) this.CreateQRCode();
-    // QRCode 빠른 진입으로 들어온 경우 주소를 이미 가지고 있음
-    if (this.params.get('address')) {
-      this.UserInputCustomAddress = this.params.get('address');
-      this.init_joinChat();
-    }
     setTimeout(() => {
       this.CreateDrop();
     }, 100);
   }
 
   ionViewWillEnter() {
+    if (this.client.p5canvas) this.client.p5canvas.remove();
     document.getElementById('minimalchat_input').onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
@@ -138,13 +148,15 @@ export class MinimalChatPage implements OnInit, OnDestroy {
           this.focus_on_input();
         }, 0);
     }
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
   }
 
   @ViewChild('SQNewAttach') SQNewAttach: IonSelect;
   /** 새 파일 타입 정하기 */
   open_select_new() {
     delete this.global.p5key['KeyShortCut']['Escape'];
-    delete this.global.p5key['KeyShortCut']['AddAct'];
     let NumberShortCutAct = [
       'camera', 'image', 'text', 'load'
     ];
@@ -504,8 +516,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
             extra_ln: {
               type: 'MinimalChatPage',
               componentProps: {
-                address: this.params.get('address'),
-                name: this.params.get('name'),
+                address: this.UserInputCustomAddress,
+                name: this.client.MyUserName,
               },
             },
             actions_ln: ['group_dedi'],
@@ -525,8 +537,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                 extra_ln: {
                   type: 'MinimalChatPage',
                   componentProps: {
-                    address: this.params.get('address'),
-                    name: this.params.get('name'),
+                    address: this.UserInputCustomAddress,
+                    name: this.client.MyUserName,
                   },
                 },
                 actions_ln: ['group_dedi'],
@@ -546,8 +558,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                 extra_ln: {
                   type: 'MinimalChatPage',
                   componentProps: {
-                    address: this.params.get('address'),
-                    name: this.params.get('name'),
+                    address: this.UserInputCustomAddress,
+                    name: this.client.MyUserName,
                   },
                 },
                 actions_ln: ['group_dedi'],
@@ -566,8 +578,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                 extra_ln: {
                   type: 'MinimalChatPage',
                   componentProps: {
-                    address: this.params.get('address'),
-                    name: this.params.get('name'),
+                    address: this.UserInputCustomAddress,
+                    name: this.client.MyUserName,
                   },
                 },
                 actions_ln: ['group_dedi'],
@@ -602,8 +614,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         extra_ln: {
           type: 'MinimalChatPage',
           componentProps: {
-            address: this.params.get('address'),
-            name: this.params.get('name'),
+            address: this.UserInputCustomAddress,
+            name: this.client.MyUserName,
           },
         },
         autoCancel_ln: true,
@@ -619,7 +631,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       let count = {
         name: this.client.MyUserName,
         type: 'join',
-        channel: this.params.get('channel') || this.client.JoinedChannel || 'public',
+        channel: this.client.JoinedChannel || 'public',
       }
       this.client.send(JSON.stringify(count));
       this.client.funcs.onclose = (_v: any) => {
@@ -638,8 +650,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
           extra_ln: {
             type: 'MinimalChatPage',
             componentProps: {
-              address: this.params.get('address'),
-              name: this.params.get('name'),
+              address: this.UserInputCustomAddress,
+              name: this.client.MyUserName,
             },
           },
           actions_ln: ['group_dedi'],
@@ -803,8 +815,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
               });
               return;
           }
-          if (v.data['share']) // 다른 채널에 공유하기면 페이지 벗어나기
-            this.modalCtrl.dismiss();
         }
       });
       v.present();
@@ -871,7 +881,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     }
     this.UserInputCustomAddress = '';
     this.noti.ClearNoti(this.lnId);
-    if (this.client.status == 'idle') this.modalCtrl.dismiss();
+    if (this.client.status == 'idle') this.navCtrl.pop();
     // 첨부했던 파일들 삭제
     this.indexed.GetFileListFromDB('tmp_files/sqaure', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     for (let i = 0, j = this.client.FFS_Urls.length; i < j; i++)
@@ -888,6 +898,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     this.noti.Current = undefined;
     if (this.client.IsConnected) this.client.CreateRejoinButton();
     delete this.global.p5key['KeyShortCut']['EnterAct'];
+    delete this.global.p5key['KeyShortCut']['Escape'];
   }
   ngOnDestroy(): void {
     window.onfocus = undefined;

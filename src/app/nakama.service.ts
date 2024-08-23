@@ -4247,19 +4247,13 @@ export class NakamaService {
             if (this.lang.text['MinimalChat']['leave_chat_group']) break;
             await new Promise((done) => setTimeout(done, 1000));
           }
-          await this.modalCtrl.create({
-            component: MinimalChatPage,
-            componentProps: {
+          this.navCtrl.navigateForward('minimal-chat', {
+            animation: mdTransitionAnimation,
+            state: {
               address: json[i].value.address,
               channel: json[i].value.channel,
               name: this.users.self['display_name'],
             },
-          }).then(v => {
-            this.global.StoreShortCutAct();
-            v.onDidDismiss().then(() => {
-              this.global.RestoreShortCutAct();
-            });
-            v.present();
           });
           break;
         case 'group': // 그룹 자동 등록 시도
