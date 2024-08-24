@@ -218,7 +218,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         p.keyPressed = async (ev) => {
           switch (ev['code']) {
             case 'Enter':
-              if (document.activeElement.id == 'exact_post_title_id')
+              if (document.activeElement.id == 'exact_post_title_id' || ev['ctrlKey'])
                 this.postData();
               break;
           }
