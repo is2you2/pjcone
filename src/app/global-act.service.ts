@@ -195,11 +195,6 @@ export class GlobalActService {
             if (p['KeyShortCut']['FKeyAct'])
               p['KeyShortCut']['FKeyAct']();
             break;
-          case 'Enter': // 발송 등
-          case 'NumpadEnter':
-            if (p['KeyShortCut']['EnterAct'])
-              p['KeyShortCut']['EnterAct'](ev);
-            break;
           case 'Escape': // 페이지 돌아가기 (navCtrl.pop()) / modal은 기본적으로 동작함
             if (p['KeyShortCut']['Escape'])
               p['KeyShortCut']['Escape']();
@@ -210,6 +205,12 @@ export class GlobalActService {
           case 'KeyV':
             if (p['KeyShortCut']['HistoryAct'])
               p['KeyShortCut']['HistoryAct'](ev['code'].slice(-1));
+            break;
+        }
+        switch (ev['key']) {
+          case 'Enter': // 발송 등
+            if (p['KeyShortCut']['EnterAct'])
+              p['KeyShortCut']['EnterAct'](ev);
             break;
         }
       }
