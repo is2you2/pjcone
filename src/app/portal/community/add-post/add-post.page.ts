@@ -218,6 +218,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         p.keyPressed = async (ev) => {
           switch (ev['code']) {
             case 'Enter':
+            case 'NumpadEnter':
               if (document.activeElement.id == 'exact_post_title_id')
                 setTimeout(() => {
                   this.ContentTextArea.focus();
