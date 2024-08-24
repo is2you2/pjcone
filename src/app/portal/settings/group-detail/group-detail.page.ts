@@ -318,16 +318,11 @@ export class GroupDetailPage implements OnInit {
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;
       if (userInfo['is_me']) {
-        this.modalCtrl.create({
-          component: GroupServerPage,
-          componentProps: {
-            isOfficial: this.info['server']['isOfficial'],
-            target: this.info['server']['target'],
-          }
-        }).then(v => {
-          v.present();
-          this.lock_modal_open = false;
+        this.nakama.open_profile_page({
+          isOfficial: this.info['server']['isOfficial'],
+          target: this.info['server']['target'],
         });
+        this.lock_modal_open = false;
       } else {
         this.modalCtrl.create({
           component: OthersProfilePage,

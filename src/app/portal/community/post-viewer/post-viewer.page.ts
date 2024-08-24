@@ -1,10 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { AlertController, ModalController, NavController } from '@ionic/angular';
 import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
-import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { NakamaService } from 'src/app/nakama.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
@@ -242,22 +241,16 @@ export class PostViewerPage implements OnInit, OnDestroy {
         creator.style('cursor', 'pointer');
         creator.elt.onclick = () => {
           if (this.PostInfo['creator_id'] == 'me') {
-            this.modalCtrl.create({
-              component: GroupServerPage,
-            }).then(v => v.present());
+            this.nakama.open_profile_page();
           } else try {// 서버 사용자 검토
-            let getTargetServer = this.nakama.get_server_info_from_address(this.PostInfo['server']['address']);
-            let isOfficial = getTargetServer.isOfficial;
-            let target = getTargetServer.target;
+            let isOfficial = this.PostInfo['server']['isOfficial'];
+            let target = this.PostInfo['server']['target'];
             let targetUid = this.PostInfo['creator_id'];
             if (targetUid == this.nakama.servers[isOfficial][target].session.user_id) {
-              this.modalCtrl.create({
-                component: GroupServerPage,
-                componentProps: {
-                  isOfficial: isOfficial,
-                  target: target,
-                }
-              }).then(v => v.present());
+              this.nakama.open_profile_page({
+                isOfficial: isOfficial,
+                target: target,
+              });
             } else {
               this.modalCtrl.create({
                 component: OthersProfilePage,

@@ -368,6 +368,36 @@ export class NakamaService {
     });
   }
 
+  /** 프로필 페이지 열기  
+   * 서버 기반 페이지 열기시...
+   * @param _state { isOfficial: string, target: string }
+   */
+  open_profile_page(_state?: any) {
+    this.ngZone.run(() => {
+      this.global.RemoveAllModals(() => {
+        this.navCtrl.navigateForward('group-server', {
+          animation: mdTransitionAnimation,
+          state: _state,
+        });
+      });
+    });
+  }
+
+  /** 게시글 읽기 */
+  open_post(info: any, index: number) {
+    this.ngZone.run(() => {
+      this.global.RemoveAllModals(() => {
+        this.navCtrl.navigateForward('post-viewer', {
+          animation: mdTransitionAnimation,
+          state: {
+            data: info,
+            index: index + 1,
+          },
+        });
+      });
+    });
+  }
+
   /** 모든 pending 세션 켜기 */
   async init_all_sessions() {
     let Targets = Object.keys(this.servers['official']);
@@ -524,18 +554,6 @@ export class NakamaService {
       if (this.statusBar.groupServer['unofficial'][_target] == 'online')
         result.push(this.servers['unofficial'][_target]);
     });
-    return result;
-  }
-
-  /** 등록된 서버에서 서버 주소로 필터링하기 */
-  get_server_info_from_address(address: string): ServerInfo {
-    let servers = this.get_all_server_info(true, true);
-    let result: ServerInfo;
-    for (let i = 0, j = servers.length; i < j; i++)
-      if (servers[i].address == address) {
-        result = servers[i];
-        break;
-      }
     return result;
   }
 

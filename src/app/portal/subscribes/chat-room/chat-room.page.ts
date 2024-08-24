@@ -560,6 +560,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }, 0);
     }
     this.noti.Current = this.info['cnoti_id'];
+    if (this.info['cnoti_id'])
+      this.noti.ClearNoti(this.info['cnoti_id']);
+    this.isOtherAct = false;
     this.useFirstCustomCDN = this.info['CDN'] || 0;
     this.toggle_custom_attach(this.useFirstCustomCDN);
   }
@@ -1256,9 +1259,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.init_last_message_viewer();
     this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
     this.ChannelUserInputId = `chatroom_input_${this.info.id}_${new Date().getTime()}`;
-    this.noti.Current = this.info['cnoti_id'];
-    if (this.info['cnoti_id'])
-      this.noti.ClearNoti(this.info['cnoti_id']);
     // PWA: 윈도우 창을 다시 보게 될 때 알림 삭제
     window.onfocus = () => {
       if (this.info['cnoti_id'])
@@ -2546,27 +2546,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (!this.lock_modal_open) {
       this.isOtherAct = true;
       this.lock_modal_open = true;
-      if (msg['is_me']) // 내 정보
-        this.modalCtrl.create({
-          component: GroupServerPage,
-          componentProps: {
-            isOfficial: this.info['server']['isOfficial'],
-            target: this.info['server']['target'],
-          }
-        }).then(v => {
-          v.onDidDismiss().then((_v) => {
-            this.isOtherAct = false;
-            this.ionViewDidEnter();
-            this.noti.Current = this.info['cnoti_id'];
-            if (this.info['cnoti_id'])
-              this.noti.ClearNoti(this.info['cnoti_id']);
-          });
-          this.removeShortCutKey();
-          this.noti.Current = 'GroupServerPage';
-          v.present();
-          this.lock_modal_open = false;
+      if (msg['is_me']) { // 내 정보
+        this.nakama.open_profile_page({
+          isOfficial: this.info['server']['isOfficial'],
+          target: this.info['server']['target'],
         });
-      else { // 다른 사용자 정보
+        this.noti.Current = 'GroupServerPage';
+        this.lock_modal_open = false;
+      } else { // 다른 사용자 정보
         this.modalCtrl.create({
           component: OthersProfilePage,
           componentProps: {

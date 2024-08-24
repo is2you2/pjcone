@@ -19,6 +19,10 @@ const routes: Routes = [
     loadChildren: () => import('./user-fs-dir/user-fs-dir.module').then(m => m.UserFsDirPageModule)
   },
   {
+    path: 'group-server',
+    loadChildren: () => import('./portal/settings/group-server/group-server.module').then(m => m.GroupServerPageModule)
+  },
+  {
     path: 'add-todo-menu',
     loadChildren: () => import('./portal/main/add-todo-menu/add-todo-menu.module').then(m => m.AddTodoMenuPageModule)
   },

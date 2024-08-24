@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { AlertController, IonModal, ModalController, NavController, NavParams } from '@ionic/angular';
+import { AlertController, IonModal, NavController } from '@ionic/angular';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -9,6 +9,7 @@ import { isNativefier, isPlatform } from 'src/app/app.component';
 import * as p5 from 'p5';
 import { GlobalActService } from 'src/app/global-act.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-group-server',
@@ -26,9 +27,9 @@ export class GroupServerPage implements OnInit, OnDestroy {
     public global: GlobalActService,
     private mClipboard: Clipboard,
     private navCtrl: NavController,
-    private navParams: NavParams,
-    private modalCtrl: ModalController,
     private alertCtrl: AlertController,
+    private route: ActivatedRoute,
+    private router: Router,
   ) { }
 
   info: string;
@@ -65,14 +66,17 @@ export class GroupServerPage implements OnInit, OnDestroy {
     this.nakama.socket_reactive['profile'] = (img_url: string) => {
       if (this.p5canvas) this.p5canvas['ChangeImageSmooth'](img_url);
     }
-
-    if (this.navParams.data['target']) {
-      let isOfficial = this.navParams.get('isOfficial');
-      let target = this.navParams.get('target');
-      try {
-        this.session_uid = this.nakama.servers[isOfficial][target].session.user_id;
-      } catch (e) { } // 로컬 채널은 uid 설정 무시
-    }
+    this.route.queryParams.subscribe(_p => {
+      const navParams = this.router.getCurrentNavigation().extras.state;
+      if (navParams) {
+        let isOfficial = navParams.isOfficial;
+        let target = navParams.target;
+        try {
+          this.session_uid = this.nakama.servers[isOfficial][target].session.user_id;
+        } catch (e) { } // 로컬 채널은 uid 설정 무시
+      }
+      this.initialize();
+    });
   }
 
   /** 모바일 PWA 여부를 검토하여 하단 modal 시작 높이를 조정 */
@@ -81,7 +85,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
   OnlineToggle = false;
   ShowServerList = false;
   isClickDisplayNameEdit = false;
-  ionViewWillEnter() {
+  initialize() {
     this.InitBrowserBackButtonOverride();
     this.gsCanvasDiv = document.getElementById('GroupServerCanvasDiv');
     this.OnlineToggle = this.nakama.users.self['online'];
@@ -633,9 +637,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
   ionViewDidEnter() {
     this.can_auto_modified = true;
     this.global.p5key['KeyShortCut']['Escape'] = () => {
-      if (this.navParams.data.modal)
-        this.modalCtrl.dismiss();
-      else this.navCtrl.back();
+      this.navCtrl.pop();
     }
   }
   /** 이메일 변경시 오프라인 처리 */
@@ -729,11 +731,5 @@ export class GroupServerPage implements OnInit, OnDestroy {
       .catch(_e => {
         this.global.WriteValueToClipboard('text/plain', this.session_uid);
       });
-  }
-
-  /** 채널 채팅에서 넘어온 경우 modal 페이지임 */
-  go_back() {
-    if (this.navParams.data.modal)
-      this.modalCtrl.dismiss();
   }
 }

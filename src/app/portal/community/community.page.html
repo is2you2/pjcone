@@ -16,14 +16,14 @@
     <div id="CommunityMainContent">
       <div *ngIf="nakama.posts.length" class="CardContainerDiv CardContainerDivShared">
         <ion-card *ngFor="let post of nakama.posts; let i = index" button class="card_style"
-          (click)="open_post(post, i)" (contextmenu)="PostContextMenu(i)">
+          (click)="nakama.open_post(post, i)" (contextmenu)="PostContextMenu(i)">
           <div class="thumbnail_image">
             <img *ngIf="post['mainImage']" [src]="post['mainImage']['thumbnail']"
               [style]="post['isNSFW'] ? 'filter: blur(16px);' : ''" alt="">
           </div>
           <ion-card-header>
             <ion-card-subtitle class="cardCreator">
-              <span [style]="'color: #' + post['UserColor']" (click)="open_profile(post)"> {{post['creator_name']}}
+              <span [style]="'color: #' + post['UserColor']"> {{post['creator_name']}}
               </span>
               <span *ngIf="nakama.showServer" style="color: #888; font-weight: normal;">
                 {{'(' + (post['server'] ? (post['server']['name'] || post['server']['target']) :

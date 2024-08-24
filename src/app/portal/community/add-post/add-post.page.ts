@@ -1,9 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { LoadingController, ModalController, NavController } from '@ionic/angular';
+import { LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
-import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { ExtendButtonForm } from '../../subscribes/chat-room/chat-room.page';
@@ -278,13 +277,10 @@ export class AddPostPage implements OnInit, OnDestroy {
   }
 
   go_to_profile() {
-    this.modalCtrl.create({
-      component: GroupServerPage,
-      componentProps: {
-        isOfficial: this.isOfficial,
-        target: this.target,
-      }
-    }).then(v => v.present());
+    this.nakama.open_profile_page({
+      isOfficial: this.isOfficial,
+      target: this.target,
+    });
   }
 
   /** 서버 선택지 열림 여부 */

@@ -1,11 +1,9 @@
-import { Component, NgZone, OnInit } from '@angular/core';
-import { AlertController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
+import { Component, OnInit } from '@angular/core';
+import { AlertController, NavController } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
-import { GroupServerPage } from '../settings/group-server/group-server.page';
-import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 
 @Component({
   selector: 'app-community',
@@ -20,9 +18,7 @@ export class CommunityPage implements OnInit {
     public lang: LanguageSettingService,
     private global: GlobalActService,
     private navCtrl: NavController,
-    private modalCtrl: ModalController,
     private alertCtrl: AlertController,
-    private ngZone: NgZone,
   ) { }
 
   ngOnInit() {
@@ -158,47 +154,6 @@ export class CommunityPage implements OnInit {
     if (!loaded) await this.load_post_step_by_step(this.nakama.post_counter[isOfficial][target][user_id], isOfficial, target, user_id, is_me);
   }
 
-  /** 사용자 정보를 열람하는 경우 카드 열람 무시 */
-  isOpenProfile = false;
-  /** 작성자 정보 열기 */
-  open_profile(info: any) {
-    this.isOpenProfile = true;
-    if (info['creator_id'] == 'me') { // 로컬 정보인 경우
-      this.modalCtrl.create({
-        component: GroupServerPage,
-      }).then(v => v.present());
-    } else { // 서버인 경우
-      let isOfficial = info['server']['isOfficial'];
-      let target = info['server']['target'];
-      let targetUid = info['creator_id'];
-      if (info['is_me']) {
-        this.modalCtrl.create({
-          component: GroupServerPage,
-          componentProps: {
-            isOfficial: isOfficial,
-            target: target,
-          }
-        }).then(v => v.present());
-      } else {
-        this.modalCtrl.create({
-          component: OthersProfilePage,
-          componentProps: {
-            info: { user: this.nakama.load_other_user(targetUid, isOfficial, target) },
-            group: {
-              server: {
-                isOfficial: isOfficial,
-                target: target,
-              },
-            },
-          }
-        }).then(v => v.present());
-      }
-    }
-    setTimeout(() => {
-      this.isOpenProfile = false;
-    }, 0);
-  }
-
   /** 하단 탭 단축키 캐싱된 정보 */
   BottomTabShortcut: any;
   /** 하단 탭 단축키 캐싱 */
@@ -206,34 +161,13 @@ export class CommunityPage implements OnInit {
     this.BottomTabShortcut = this.global.p5key['KeyShortCut']['BottomTab'];
     delete this.global.p5key['KeyShortCut']['BottomTab'];
   }
-  /** 게시글 읽기 */
-  open_post(info: any, index: number) {
-    if (this.isOpenProfile) return;
-    delete this.global.p5key['KeyShortCut']['Digit'];
-    delete this.global.p5key['KeyShortCut']['AddAct'];
-    this.isOpenProfile = true;
-    this.ngZone.run(() => {
-      this.global.RemoveAllModals(() => {
-        this.navCtrl.navigateForward('post-viewer', {
-          animation: mdTransitionAnimation,
-          state: {
-            data: info,
-            index: index + 1,
-          },
-        });
-      });
-    });
-    setTimeout(() => {
-      this.isOpenProfile = false;
-    }, 0);
-  }
 
   /** 단축키 생성 */
   AddShortcut() {
     if (this.global.p5key && this.global.p5key['KeyShortCut']) {
       this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
         if (this.nakama.posts.length > index)
-          this.open_post(this.nakama.posts[index], index);
+          this.nakama.open_post(this.nakama.posts[index], index);
         else this.add_post();
       };
     }
