@@ -422,7 +422,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
     }
     this.add_custom_tog = true;
 
-    let split_fullAddress = this.dedicated_info.address.split('://');
+    let split_fullAddress = (this.dedicated_info.address || '192.168.0.1').split('://');
     let address = split_fullAddress.pop().split(':');
     let protocol = split_fullAddress.pop();
     if (protocol) {
