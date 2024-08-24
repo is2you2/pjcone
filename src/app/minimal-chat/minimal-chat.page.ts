@@ -95,7 +95,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       await new Promise(res => setTimeout(res, 100)); // init 지연
       if (navParams) {
         this.client.MyUserName = navParams.name;
-        this.client.JoinedChannel = navParams.channel;
+        this.client.JoinedChannel = navParams.channel || this.client.JoinedChannel;
         // QRCode 빠른 진입으로 들어온 경우 주소를 이미 가지고 있음
         if (navParams.address) {
           this.UserInputCustomAddress = navParams.address;
