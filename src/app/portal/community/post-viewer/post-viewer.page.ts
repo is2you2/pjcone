@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { AlertController, ModalController, NavParams } from '@ionic/angular';
+import { AlertController, ModalController, NavController } from '@ionic/angular';
 import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -11,6 +11,7 @@ import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-post-viewer',
@@ -20,8 +21,8 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 export class PostViewerPage implements OnInit, OnDestroy {
 
   constructor(
-    public modalCtrl: ModalController,
-    private navParam: NavParams,
+    private modalCtrl: ModalController,
+    private navCtrl: NavController,
     public lang: LanguageSettingService,
     private indexed: IndexedDBService,
     public nakama: NakamaService,
@@ -29,9 +30,11 @@ export class PostViewerPage implements OnInit, OnDestroy {
     private global: GlobalActService,
     private mClipboard: Clipboard,
     private p5toast: P5ToastService,
+    private route: ActivatedRoute,
+    private router: Router,
   ) { }
 
-  PostInfo: any;
+  PostInfo: any = {};
   isOwner = false;
   HavePosts = false;
   /** 불러와진 모든 포스트 기준 현재 게시물 번호 */
@@ -41,17 +44,24 @@ export class PostViewerPage implements OnInit, OnDestroy {
   cont: AbortController;
 
   ngOnInit() {
-    this.PostInfo = this.navParam.get('data');
-    this.CurrentIndex = this.navParam.get('index');
-    this.initialize();
+    this.route.queryParams.subscribe(_p => {
+      const navParams = this.router.getCurrentNavigation().extras.state;
+      this.PostInfo = navParams.data;
+      this.CurrentIndex = navParams.index;
+      this.initialize();
+    });
   }
   BackButtonPressed = false;
   ionViewWillEnter() {
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
+    this.IsFocusOnHere = true;
     window.history.pushState(null, null, window.location.href);
     window.onpopstate = () => {
       if (this.BackButtonPressed) return;
       this.BackButtonPressed = true;
-      this.modalCtrl.dismiss();
+      this.navCtrl.pop();
     };
   }
   /** 블렌더 파일 불러오기에 사용된 개체들 */
@@ -62,15 +72,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
    * 특정 재생기가 동작하면 다른 재생기들은 전부 멈추게 구성함
    */
   PlayableElements = [];
-
-  ionViewDidEnter() {
-    this.modalCtrl.getTop().then(self => {
-      this.ModalSelf = self;
-    });
-  }
-
-  /** 이 modal 페이지 (this) */
-  ModalSelf: HTMLIonModalElement;
+  /** 이 페이지를 보고 있는지 */
+  IsFocusOnHere = true;
   /** 파일 뷰어로 넘어간 경우 게시물 전환 단축키 막기 */
   blockShortcut = false;
   /** PC에서 키를 눌러 컨텐츠 전환 */
@@ -78,8 +81,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
     if (this.p5canvas) {
       // 단축키 행동
       this.p5canvas.keyPressed = async (ev) => {
-        let getTop = await this.modalCtrl.getTop();
-        if (this.ModalSelf != getTop) return;
+        if (!this.IsFocusOnHere) return;
         if (this.blockShortcut) return;
         switch (ev['code']) {
           case 'KeyA': // 왼쪽 이동
@@ -340,7 +342,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                     }).then(v => {
                       v.onDidDismiss().then(v => {
                         this.blockShortcut = false;
-                        if (v.data && v.data['share']) this.modalCtrl.dismiss();
+                        if (v.data && v.data['share']) this.navCtrl.pop();
                       });
                       this.blockShortcut = true;
                       v.present();
@@ -554,8 +556,13 @@ export class PostViewerPage implements OnInit, OnDestroy {
   }
 
   EditPost() {
-    this.modalCtrl.dismiss({ edit: true });
     this.nakama.EditPost(this.PostInfo);
+    this.navCtrl.pop();
+  }
+
+  ionViewWillLeave() {
+    delete this.global.p5key['KeyShortCut']['Escape'];
+    this.IsFocusOnHere = false;
   }
 
   RemovePost() {
@@ -567,7 +574,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
         cssClass: 'redfont',
         handler: async () => {
           await this.nakama.RemovePost(this.PostInfo);
-          this.modalCtrl.dismiss();
+          this.navCtrl.pop();
         }
       }],
     }).then(v => v.present());

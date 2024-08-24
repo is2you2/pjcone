@@ -1,11 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { AlertController, ModalController, NavController } from '@ionic/angular';
+import { Component, NgZone, OnInit } from '@angular/core';
+import { AlertController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { GroupServerPage } from '../settings/group-server/group-server.page';
-import { PostViewerPage } from './post-viewer/post-viewer.page';
 import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 
 @Component({
@@ -23,6 +22,7 @@ export class CommunityPage implements OnInit {
     private navCtrl: NavController,
     private modalCtrl: ModalController,
     private alertCtrl: AlertController,
+    private ngZone: NgZone,
   ) { }
 
   ngOnInit() {
@@ -199,6 +199,7 @@ export class CommunityPage implements OnInit {
     }, 0);
   }
 
+  /** 하단 탭 단축키 캐싱된 정보 */
   BottomTabShortcut: any;
   /** 하단 탭 단축키 캐싱 */
   catchBottomTabShortCut() {
@@ -208,24 +209,19 @@ export class CommunityPage implements OnInit {
   /** 게시글 읽기 */
   open_post(info: any, index: number) {
     if (this.isOpenProfile) return;
+    delete this.global.p5key['KeyShortCut']['Digit'];
+    delete this.global.p5key['KeyShortCut']['AddAct'];
     this.isOpenProfile = true;
-    this.modalCtrl.create({
-      component: PostViewerPage,
-      componentProps: {
-        data: info,
-        index: index + 1,
-      }
-    }).then(v => {
-      delete this.global.p5key['KeyShortCut']['Digit'];
-      delete this.global.p5key['KeyShortCut']['AddAct'];
-      this.catchBottomTabShortCut();
-      v.onWillDismiss().then(() => {
-        this.global.p5key['KeyShortCut']['BottomTab'] = this.BottomTabShortcut;
+    this.ngZone.run(() => {
+      this.global.RemoveAllModals(() => {
+        this.navCtrl.navigateForward('portal/community/post-viewer', {
+          animation: mdTransitionAnimation,
+          state: {
+            data: info,
+            index: index + 1,
+          },
+        });
       });
-      v.onDidDismiss().then(v => {
-        if (!v.data) this.AddShortcut();
-      });
-      v.present();
     });
     setTimeout(() => {
       this.isOpenProfile = false;
@@ -246,6 +242,10 @@ export class CommunityPage implements OnInit {
       this.global.p5key['KeyShortCut']['AddAct'] = () => {
         this.add_post();
       };
+    if (this.BottomTabShortcut) {
+      this.global.p5key['KeyShortCut']['BottomTab'] = this.BottomTabShortcut;
+      this.BottomTabShortcut = undefined;
+    }
   }
 
   ionViewWillLeave() {
