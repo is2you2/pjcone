@@ -835,8 +835,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (navParams) this.info = navParams.info;
       await new Promise(res => setTimeout(res, 100)); // init 지연
       await this.init_chatroom();
-      this.userInput.file = navParams.file;
-      if (this.userInput.file) this.create_thumbnail_imported(navParams.file);
+      if (this.userInput.file) {
+        this.userInput.file = navParams.file;
+        this.create_thumbnail_imported(navParams.file);
+      }
     });
     setTimeout(() => {
       this.CreateDrop();
