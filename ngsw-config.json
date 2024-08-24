@@ -11,7 +11,9 @@
           "/manifest.webmanifest",
           "/*.css",
           "/*.js",
-          "/**/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2|csv|txt|json|html|pck|wasm)"
+          "/**/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2|csv|txt|json)",
+          "/assets/html/**/*.*",
+          "/assets/js.blend/**/*.*"
         ]
       }
     }
