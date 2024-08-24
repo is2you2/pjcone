@@ -172,10 +172,27 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }, { // 2
       icon: 'image-outline',
       name: this.lang.text['ChatRoom']['BackgroundImage'],
-      act: () => {
-        if (this.HasBackgroundImage)
+      act: async () => {
+        if (this.HasBackgroundImage) {
           this.RemoveChannelBackgroundImage();
-        else document.getElementById('backgroundImage_sel').click();
+        } else try {
+          let fromClipboard = await this.global.GetValueFromClipboard();
+          switch (fromClipboard.type) {
+            case 'image/png':
+              this.ChangeBackgroundImage({ target: { files: [fromClipboard.value] } });
+              break;
+            case 'text/plain':
+              await this.check_if_clipboard_available(fromClipboard.value);
+              break;
+          }
+        } catch (e) {
+          try {
+            let v = await this.mClipboard.paste();
+            await this.check_if_clipboard_available(v);
+          } catch (e) {
+            document.getElementById('backgroundImage_sel').click();
+          }
+        }
       }
     }, { // 3
       icon: 'document-attach-outline',

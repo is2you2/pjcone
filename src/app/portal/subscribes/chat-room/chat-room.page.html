@@ -334,7 +334,8 @@
     </tr>
     <tr id="ext_menu" [hidden]="isHidden">
       <td>
-        <div style="height: 240px; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; text-align: center;">
+        <div
+          style="height: 240px; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; text-align: center; background-color: var(--chatroom-background);">
           <input hidden type="file" id="local_channel" accept="image/*" (change)="LocalChannelImageChanged($event)">
           <input hidden type="file" id="backgroundImage_sel" accept="image/png"
             (change)="ChangeBackgroundImage($event)">
