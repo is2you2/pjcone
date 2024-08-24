@@ -12,7 +12,6 @@ import { LanguageSettingService } from './language-setting.service';
 import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { VoidDrawPage } from './portal/subscribes/chat-room/void-draw/void-draw.page';
-import { PostViewerPage } from './portal/community/post-viewer/post-viewer.page';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -4335,13 +4334,7 @@ export class NakamaService {
           if (res.ok) {
             let text = await res.text();
             let post_info = JSON.parse(text);
-            this.modalCtrl.create({
-              component: PostViewerPage,
-              componentProps: {
-                data: post_info,
-                index: -1,
-              }
-            }).then(v => v.present());
+            this.open_post(post_info, -2);
           } else this.p5toast.show({
             text: `${this.lang.text['AddPost']['NoPostOutLink']}: ${res.statusText}`,
           });

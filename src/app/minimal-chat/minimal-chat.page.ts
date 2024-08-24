@@ -234,26 +234,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
           v.present();
         });
         break;
-      // 인앱탐색기 현재 사용하지 않음
-      case 'inapp': // 인앱 탐색기에서 가져오기
-        this.modalCtrl.create({
-          component: UserFsDirPage,
-        }).then(v => {
-          this.global.StoreShortCutAct();
-          v.onWillDismiss().then(async v => {
-            if (v.data) {
-              let file = this.global.selected_blobFile_callback_act(v.data, 'tmp_files/sqaure/', {
-                display_name: this.client.MyUserName,
-              });
-              // this.TrySendingAttach(file);
-            }
-          });
-          v.onDidDismiss().then(() => {
-            this.global.RestoreShortCutAct();
-          });
-          v.present();
-        });
-        break;
       case 'load': // 불러오기 행동 병합
         this.SelectAttach();
         this.AddShortCut();
