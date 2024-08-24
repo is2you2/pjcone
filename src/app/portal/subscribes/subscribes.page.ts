@@ -225,7 +225,9 @@ export class SubscribesPage implements OnInit {
   }
 
   go_to_page(_page: string) {
-    this.navCtrl.navigateForward(`portal/settings/${_page}`);
+    this.global.RemoveAllModals(() => {
+      this.navCtrl.navigateForward(`portal/settings/${_page}`);
+    });
   }
 
   /** 익명성 그룹 채널에 참가하기 */

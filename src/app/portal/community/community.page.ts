@@ -31,11 +31,13 @@ export class CommunityPage implements OnInit {
   }
 
   add_post(info?: any) {
-    this.navCtrl.navigateForward('portal/community/add-post', {
-      state: {
-        data: info,
-        act: true,
-      },
+    this.global.RemoveAllModals(() => {
+      this.navCtrl.navigateForward('portal/community/add-post', {
+        state: {
+          data: info,
+          act: true,
+        },
+      });
     });
   }
 

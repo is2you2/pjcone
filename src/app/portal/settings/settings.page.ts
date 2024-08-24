@@ -174,8 +174,10 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   open_inapp_explorer() {
-    this.navCtrl.navigateForward('user-fs-dir', {
-      animation: iosTransitionAnimation,
+    this.global.RemoveAllModals(() => {
+      this.navCtrl.navigateForward('user-fs-dir', {
+        animation: iosTransitionAnimation,
+      });
     });
   }
 
@@ -202,8 +204,10 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   go_to_page(_page: string) {
-    this.navCtrl.navigateForward(`portal/settings/${_page}`, {
-      animation: iosTransitionAnimation,
+    this.global.RemoveAllModals(() => {
+      this.navCtrl.navigateForward(`portal/settings/${_page}`, {
+        animation: iosTransitionAnimation,
+      });
     });
   }
 

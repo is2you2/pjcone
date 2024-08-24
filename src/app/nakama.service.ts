@@ -10,7 +10,6 @@ import { AlertController, IonicSafeString, LoadingController, ModalController, N
 import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 import { LanguageSettingService } from './language-setting.service';
 import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
-import { MinimalChatPage } from './minimal-chat/minimal-chat.page';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { VoidDrawPage } from './portal/subscribes/chat-room/void-draw/void-draw.page';
 import { PostViewerPage } from './portal/community/post-viewer/post-viewer.page';
@@ -231,11 +230,13 @@ export class NakamaService {
     if (this.AddTodoLinkAct)
       this.AddTodoLinkAct(info);
     else this.ngZone.run(() => {
-      this.navCtrl.navigateForward('add-todo-menu', {
-        animation: mdTransitionAnimation,
-        state: {
-          data: info,
-        },
+      this.global.RemoveAllModals(() => {
+        this.navCtrl.navigateForward('add-todo-menu', {
+          animation: mdTransitionAnimation,
+          state: {
+            data: info,
+          },
+        });
       });
     });
   }
@@ -355,12 +356,14 @@ export class NakamaService {
     if (this.ChatroomLinkAct)
       this.ChatroomLinkAct(_info, _file);
     else this.ngZone.run(() => {
-      this.navCtrl.navigateForward('chat-room', {
-        animation: mdTransitionAnimation,
-        state: {
-          info: _info,
-          file: _file,
-        },
+      this.global.RemoveAllModals(() => {
+        this.navCtrl.navigateForward('chat-room', {
+          animation: mdTransitionAnimation,
+          state: {
+            info: _info,
+            file: _file,
+          },
+        });
       });
     });
   }
@@ -4247,6 +4250,7 @@ export class NakamaService {
             if (this.lang.text['MinimalChat']['leave_chat_group']) break;
             await new Promise((done) => setTimeout(done, 1000));
           }
+          await this.global.RemoveAllModals();
           this.navCtrl.navigateForward('minimal-chat', {
             animation: mdTransitionAnimation,
             state: {

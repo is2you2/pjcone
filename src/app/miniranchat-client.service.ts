@@ -1,13 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { AlertController, IonicSafeString, NavController, mdTransitionAnimation } from '@ionic/angular';
 import * as p5 from 'p5';
 import { NakamaService } from './nakama.service';
-import { GlobalActService } from './global-act.service';
 import { P5ToastService } from './p5-toast.service';
 import { LanguageSettingService } from './language-setting.service';
 import { LocalNotiService } from './local-noti.service';
 import { isPlatform } from './app.component';
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { GlobalActService } from './global-act.service';
 
 /** 기존 MiniRanchat과 서버를 공유하는 랜챗 클라이언트  
  * 해당 프로젝트의 동작 방식 역시 모방되어있다.
@@ -20,11 +20,12 @@ export class MiniranchatClientService {
   constructor(
     private navCtrl: NavController,
     public nakama: NakamaService,
-    private global: GlobalActService,
     private p5toast: P5ToastService,
     private lang: LanguageSettingService,
     private noti: LocalNotiService,
     private alertCtrl: AlertController,
+    private global: GlobalActService,
+    private ngZone: NgZone,
   ) { }
 
   client: WebSocket;
@@ -241,12 +242,16 @@ export class MiniranchatClientService {
   }
 
   RejoinGroupChat() {
-    this.navCtrl.navigateForward('minimal-chat', {
-      animation: mdTransitionAnimation,
-      state: {
-        address: this.cacheAddress,
-        name: this.MyUserName ?? this.nakama.users.self['display_name'],
-      },
+    this.ngZone.run(() => {
+      this.global.RemoveAllModals(() => {
+        this.navCtrl.navigateForward('minimal-chat', {
+          animation: mdTransitionAnimation,
+          state: {
+            address: this.cacheAddress,
+            name: this.MyUserName ?? this.nakama.users.self['display_name'],
+          },
+        });
+      });
     });
   }
 

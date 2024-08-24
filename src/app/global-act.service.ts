@@ -5,7 +5,7 @@ import * as QRCode from "qrcode-svg";
 import { DomSanitizer } from '@angular/platform-browser';
 import * as p5 from "p5";
 import { IndexedDBService } from './indexed-db.service';
-import { LoadingController } from '@ionic/angular';
+import { LoadingController, ModalController } from '@ionic/angular';
 import { isPlatform } from './app.component';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 
@@ -110,6 +110,7 @@ interface AttachUserInfo {
 export class GlobalActService {
 
   constructor(
+    private modalCtrl: ModalController,
     private p5toast: P5ToastService,
     private lang: LanguageSettingService,
     private sanitizer: DomSanitizer,
@@ -213,6 +214,16 @@ export class GlobalActService {
         }
       }
     });
+  }
+
+  /** 모달이 켜진 상태에서 페이지 전환은 오류가 생기므로 모든 모달 제거하기를 진행함 */
+  async RemoveAllModals(Callback: Function = () => { }) {
+    let topModal: any = 'init';
+    while (topModal) {
+      topModal = await this.modalCtrl.getTop();
+      if (topModal) await topModal.dismiss();
+    }
+    if (Callback) Callback();
   }
 
   /** 브라우저에서 딥 링크마냥 행동하기

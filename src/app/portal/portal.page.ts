@@ -20,7 +20,7 @@ export class PortalPage implements OnInit {
     public nakama: NakamaService,
     private global: GlobalActService,
     public indexed: IndexedDBService,
-    private _webrtc: WebrtcService,
+    private _webrtc: WebrtcService, // constructor 단계 수행을 위해 로드만 함
     public statusBar: StatusManageService,
   ) { }
 
@@ -35,7 +35,9 @@ export class PortalPage implements OnInit {
     if (this.global.p5todo && this.global.p5todo['PlayCanvas'] && this.TodoIcon == 'checkbox')
       this.global.p5todo['PlayCanvas']();
     if (this.nakama.AfterLoginAct.length) // 빠른 진입 행동 보완
-      this.navCtrl.navigateForward('portal/settings/group-server');
+      this.global.RemoveAllModals(() => {
+        this.navCtrl.navigateForward('portal/settings/group-server');
+      });
     if (this.OnInit) {
       let StartPage = localStorage.getItem('StartPage') || 0;
       switch (StartPage) {
@@ -102,8 +104,10 @@ export class PortalPage implements OnInit {
 
   /** 하단 탭을 눌러 설정페이지로 이동 */
   setting_button() {
-    this.navCtrl.navigateForward('portal/settings', {
-      animation: iosTransitionAnimation,
+    this.global.RemoveAllModals(() => {
+      this.navCtrl.navigateForward('portal/settings', {
+        animation: iosTransitionAnimation,
+      });
     });
   }
 
