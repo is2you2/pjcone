@@ -1339,7 +1339,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           URL.revokeObjectURL(FileURL);
         }, 100);
       });
-      else if (c.content.qoute.path.indexOf('http') == 0)
+      else if (c.content.qoute.path && c.content.qoute.path.indexOf('http') == 0)
         c.content.qoute['url'] = c.content.qoute.path;
     });
   }
