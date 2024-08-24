@@ -525,8 +525,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           this.userInput.workers[i]['displayTime'] = new Date(this.userInput.workers[i].timestamp).toLocaleString();
       }
     }
-    let desc_input = document.getElementById('descInput') as HTMLInputElement;
-    desc_input.onpaste = (ev: any) => {
+    this.desc_input = document.getElementById('descInput') as HTMLInputElement;
+    this.desc_input.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
         stack.push({ file: clipboardItem });
@@ -582,6 +582,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           this.open_select_new();
         }
         this.global.p5key['KeyShortCut']['EnterAct'] = (ev: any) => {
+          if (document.activeElement == this.titleIonInput)
+            setTimeout(() => {
+              this.desc_input.focus();
+            }, 0);
           if (ev['ctrlKey']) this.saveData();
         }
       }, 0);
@@ -705,6 +709,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
   /** 할 일 제목 입력칸 */
   titleIonInput: any;
+  /** 할 일 내용 입력칸 */
+  desc_input: HTMLInputElement;
+
   input_ele_ids = [];
   /** 현재 단축키를 쓸 수 있는 상황인지 검토하는 함수  
    * @returns Title, desc에 포커싱 여부
@@ -712,7 +719,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   checkIfInputFocus(): boolean {
     if (!this.input_ele_ids.length) {
       this.input_ele_ids.push(this.titleIonInput);
-      this.input_ele_ids.push(document.getElementById('descInput'));
+      this.input_ele_ids.push(this.desc_input);
     }
     let result = false;
     for (let i = 0, j = this.input_ele_ids.length; i < j; i++) {
