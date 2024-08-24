@@ -581,6 +581,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           if (this.checkIfInputFocus()) return;
           this.open_select_new();
         }
+        this.global.p5key['KeyShortCut']['EnterAct'] = (ev: any) => {
+          if (ev['ctrlKey']) this.saveData();
+        }
       }, 0);
     this.NewAttach.value = '';
   }
@@ -1575,6 +1578,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   WillLeavePage = false;
   async ionViewWillLeave() {
     this.WillLeavePage = true;
+    delete this.global.p5key['KeyShortCut']['EnterAct'];
     delete this.global.p5key['KeyShortCut']['Escape'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
     delete this.global.p5key['KeyShortCut']['Digit'];

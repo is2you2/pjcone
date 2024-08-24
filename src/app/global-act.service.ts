@@ -142,7 +142,7 @@ export class GlobalActService {
         switch (ev['code']) {
           case 'Backquote':
             if (p['KeyShortCut']['Backquote'])
-              p['KeyShortCut']['Backquote']();
+              p['KeyShortCut']['Backquote'](ev);
             break;
           // 메뉴 나열순
           case 'Digit1': // 보여지는 리스트 메뉴 최상단부터 아래로
@@ -198,7 +198,7 @@ export class GlobalActService {
           case 'Enter': // 발송 등
           case 'NumpadEnter':
             if (p['KeyShortCut']['EnterAct'])
-              p['KeyShortCut']['EnterAct']();
+              p['KeyShortCut']['EnterAct'](ev);
             break;
           case 'Escape': // 페이지 돌아가기 (navCtrl.pop()) / modal은 기본적으로 동작함
             if (p['KeyShortCut']['Escape'])
