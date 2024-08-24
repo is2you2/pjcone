@@ -29,7 +29,7 @@
         <ion-list-header id="FileHeader" style="max-width: 100vw;">
           <ion-label *ngIf="!isTextEditMode" text-wrap style="overflow-x: auto;">{{FileInfo.filename ||
             FileInfo.name}}</ion-label>
-          <ion-input *ngIf="isTextEditMode" type="text" [(ngModel)]="NewTextFileName"
+          <ion-input *ngIf="isTextEditMode" id="TextEditorFileName" type="text" [(ngModel)]="NewTextFileName"
             [placeholder]="FileInfo.filename || FileInfo.name" text-warp
             style="overflow-x: auto; overflow-y: hidden;"></ion-input>
           <ion-button *ngIf="isTextEditMode" (click)="close_text_edit()">

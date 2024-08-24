@@ -1006,7 +1006,18 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       p.keyPressed = async (ev) => {
         let getTop = await this.modalCtrl.getTop();
         if (this.ModalSelf != getTop) return;
-        if (this.isTextEditMode || this.isHTMLViewer) return;
+        if (this.isHTMLViewer) return;
+        if (this.isTextEditMode) {
+          switch (ev['code']) {
+            case 'Enter': // 텍스트 편집기 저장하기
+            case 'NumpadEnter':
+              let TextFileName = document.getElementById('TextEditorFileName');
+              let inputElement = TextFileName.childNodes[1].childNodes[1].childNodes[1];
+              if (document.activeElement == inputElement) this.SaveText();
+              break;
+          }
+          return;
+        }
         if (this.FileInfo.viewer == 'godot') return;
         const FileMenu: Function[] = [];
         if (!this.NeedDownloadFile && this.showEditText && this.showEdit)
@@ -1079,7 +1090,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.useP5Navigator = false;
     this.ShowContentInfoIonic.present();
   }
-
+  /** 텍스트 편집기 상태인지 여부 */
   isTextEditMode = false;
   open_text_editor(_textarea = this.p5canvas['TextArea']) {
     if (this.p5canvas && this.p5canvas['SyntaxHighlightReader'])
