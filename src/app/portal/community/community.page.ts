@@ -214,7 +214,7 @@ export class CommunityPage implements OnInit {
     this.isOpenProfile = true;
     this.ngZone.run(() => {
       this.global.RemoveAllModals(() => {
-        this.navCtrl.navigateForward('portal/community/post-viewer', {
+        this.navCtrl.navigateForward('post-viewer', {
           animation: mdTransitionAnimation,
           state: {
             data: info,

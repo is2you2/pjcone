@@ -27,6 +27,10 @@ const routes: Routes = [
     loadChildren: () => import('./portal/subscribes/chat-room/chat-room.module').then(m => m.ChatRoomPageModule)
   },
   {
+    path: 'post-viewer',
+    loadChildren: () => import('./portal/community/post-viewer/post-viewer.module').then(m => m.PostViewerPageModule)
+  },
+  {
     path: 'share-content-to-other',
     loadChildren: () => import('./share-content-to-other/share-content-to-other.module').then(m => m.ShareContentToOtherPageModule)
   },
