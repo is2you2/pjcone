@@ -1008,9 +1008,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         if (this.ModalSelf != getTop) return;
         if (this.isHTMLViewer) return;
         if (this.isTextEditMode) {
-          switch (ev['code']) {
+          switch (ev['key']) {
             case 'Enter': // 텍스트 편집기 저장하기
-            case 'NumpadEnter':
               let TextFileName = document.getElementById('TextEditorFileName');
               let inputElement = TextFileName.childNodes[1].childNodes[1].childNodes[1];
               if (document.activeElement == inputElement) this.SaveText();

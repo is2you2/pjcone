@@ -116,7 +116,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
       p.keyPressed = async (ev) => {
         let getTop = await this.modalCtrl.getTop();
         if (this.ModalSelf != getTop) return;
-        switch (ev['code']) {
+        switch (ev['key']) {
           case 'Enter':
             if (document.activeElement.id != 'group_desc')
               this.save();
