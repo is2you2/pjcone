@@ -7,7 +7,6 @@ import { IndexedDBService } from '../indexed-db.service';
 import { LanguageSettingService } from '../language-setting.service';
 import { P5ToastService } from '../p5-toast.service';
 import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ionic-viewer.page';
-import { File } from '@awesome-cordova-plugins/file/ngx';
 import { Filesystem } from '@capacitor/filesystem';
 import { LocalNotiService } from '../local-noti.service';
 import { NakamaService } from '../nakama.service';
@@ -47,8 +46,6 @@ export class UserFsDirPage implements OnInit {
   FileList: FileDir[] = [];
   cant_dedicated = false;
 
-  InAppBrowser = true;
-
   @ViewChild('FileSel') FileSel: IonAccordionGroup;
 
   constructor(
@@ -60,7 +57,6 @@ export class UserFsDirPage implements OnInit {
     private p5toast: P5ToastService,
     private alertCtrl: AlertController,
     private sanitizer: DomSanitizer,
-    private file: File,
     private navCtrl: NavController,
     private noti: LocalNotiService,
     private navParams: NavParams,
@@ -539,140 +535,9 @@ export class UserFsDirPage implements OnInit {
     this.indexed.DownloadFileFromUserPath(info.path, '', info.name);
   }
 
-  ExportDirectoryRecursive() {
-    this.alertCtrl.create({
-      header: this.lang.text['UserFsDir']['ExportDirTitle'],
-      message: this.lang.text['UserFsDir']['ExportDirMsg'],
-      buttons: [{
-        text: this.lang.text['UserFsDir']['ExportConfirm'],
-        handler: () => {
-          this.ExportDirectoryRecursiveAct();
-        }
-      }]
-    }).then(v => {
-      this.global.p5key['KeyShortCut']['Escape'] = () => {
-        v.dismiss();
-      }
-      v.onDidDismiss().then(() => {
-        this.ionViewDidEnter();
-      });
-      v.present();
-    });
-  }
-
-  async ExportDirectoryRecursiveAct() {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['ExportDirTitle'] });
-    loading.present();
-    let list = await this.indexed.GetFileListFromDB(this.CurrentDir);
-    for (let i = 0, j = list.length; i < j; i++) {
-      if (this.StopIndexing) {
-        loading.dismiss();
-        return;
-      }
-      let FileInfo = await this.indexed.GetFileInfoFromDB(list[i]);
-      let blob = await this.indexed.loadBlobFromUserPath(list[i], '');
-      let last_sep = list[i].lastIndexOf('/');
-      let only_path = list[i].substring(0, last_sep);
-      let filename = list[i].substring(last_sep + 1);
-      if (!this.isCreateFolderRecursive) {
-        this.isCreateFolderRecursive = true;
-        await this.CreateFolderRecursive(only_path);
-      }
-      try {
-        if (FileInfo.mode == 16893) {
-          await this.file.createDir(this.file.externalDataDirectory + only_path, filename, true);
-          loading.message = `${this.lang.text['UserFsDir']['ExportDirTitle']}: ${filename}`
-          throw '이거 폴더임';
-        };
-        if (this.CheckIfAccessable(list[i])) {
-          loading.message = `${this.lang.text['UserFsDir']['ExportDirTitle']}: ${filename}`
-          await this.file.writeFile(this.file.externalDataDirectory + only_path + '/', filename, blob, {
-            replace: true,
-          });
-        } else throw '열람 불가 파일 제외';
-      } catch (e) {
-        console.error(list[i], ': 파일 저장 실패: ', e);
-      }
-    }
-    this.isCreateFolderRecursive = false;
-    loading.dismiss();
-  }
-
-  isCreateFolderRecursive = false;
-  async CreateFolderRecursive(folder_path: string) {
-    let sep = folder_path.lastIndexOf('/') + 1;
-    let forward_folder = folder_path.substring(0, sep);
-    let folder_name = folder_path.substring(sep);
-    if (forward_folder) await this.CreateFolderRecursive(folder_path.substring(0, sep - 1));
-    try {
-      await this.file.createDir(this.file.externalDataDirectory + forward_folder, folder_name, true);
-    } catch (e) { }
-  }
-
-  ExternalFolder = [];
-  async BrowseExternalFiles() {
-    this.ExternalFolder.length = 0;
-    this.InAppBrowser = false;
-    this.ExternalFolder = await this.file.listDir(this.file.externalApplicationStorageDirectory, 'files');
-    this.ExternalFolder.sort();
-    this.ExternalFolder.sort((a, _b) => {
-      if (a.isDirectory) return -1;
-      else return 1;
-    });
-  }
-
-  async importFolderMiddleAct(entry: any) {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['Import'] });
-    loading.present();
-    await this.importThisFolder(entry, loading);
-    this.InAppBrowser = true;
-    loading.dismiss();
-    this.p5toast.show({
-      text: this.lang.text['UserFsDir']['NeedResetToApply'],
-    });
-  }
-
-  /** 이 폴더와 파일 재귀 임포팅 */
-  async importThisFolder(entry: any, loading: HTMLIonLoadingElement) {
-    let path = entry.nativeURL.substring(0, entry.nativeURL.length - 1);
-    let last_sep = path.lastIndexOf('/');
-    let RecursiveEntry: any[] = [];
-    try {
-      RecursiveEntry = await this.file.listDir(path.substring(0, last_sep) + '/', path.substring(last_sep + 1))
-    } catch (e) { }
-    for (let i = 0, j = RecursiveEntry.length; i < j; i++) {
-      if (this.StopIndexing) {
-        loading.dismiss();
-        return;
-      }
-      if (RecursiveEntry[i].isDirectory)
-        await this.importThisFolder(RecursiveEntry[i], loading);
-      else {
-        let target_path = RecursiveEntry[i].nativeURL.split('org.pjcone.portal/files/')[1];
-        try {
-          loading.message = `${this.lang.text['UserFsDir']['Import']}: ${RecursiveEntry[i].name}`
-          const data = await Filesystem.readFile({
-            path: RecursiveEntry[i].nativeURL,
-          });
-          let base64 = (data.data as any).replace(/"|\\|=/g, '');
-          await this.indexed.saveBase64ToUserPath(',' + base64, decodeURIComponent(target_path));
-        } catch (e) {
-          console.log('불러오기 실패: ', e);
-          this.p5toast.show({
-            text: `${this.lang.text['UserFsDir']['ImportFailed']}: ${e}`,
-          });
-        }
-      }
-    }
-  }
-
   SelectImportFolder() {
-    if (this.cant_dedicated) {
       let input = document.getElementById('folder_sel_id');
       input.click();
-    } else {
-      this.BrowseExternalFiles();
-    }
   }
   async inputImageSelected(ev: any) {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });

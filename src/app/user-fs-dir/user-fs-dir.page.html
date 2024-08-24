@@ -15,9 +15,9 @@
   <div id="p5Drop_userfs" style="position: absolute; width: 100%; height: 100%; display: flex; pointer-events: none;">
     <input hidden type="file" id="import_file" accept="*" multiple (change)="inputFileSelected($event)">
   </div>
-  <ion-list *ngIf="InAppBrowser">
+  <ion-list>
     <div *ngIf="CurrentDir == '' && !is_file_selector && CanImportFolder">
-      <ion-item button (click)="SelectImportFolder()">
+      <ion-item *ngIf="cant_dedicated" button (click)="SelectImportFolder()">
         <ion-icon slot="start" name="arrow-down-circle"></ion-icon>
         <ion-label> {{lang.text['UserFsDir']['ImportFolder']}} </ion-label>
       </ion-item>
@@ -27,9 +27,6 @@
       <ion-item button>
         <ion-icon slot="start" name="folder"></ion-icon>
         <ion-label>.</ion-label>
-        <ion-button *ngIf="!cant_dedicated" class="folder_button" (click)="ExportDirectoryRecursive()">
-          {{lang.text['UserFsDir']['ExportDir']}}
-        </ion-button>
         <ion-button class="folder_button" (click)="CreateNewFolder()">
           {{lang.text['UserFsDir']['NewFolder']}}
         </ion-button>
@@ -92,21 +89,5 @@
         </ion-accordion>
       </div>
     </ion-accordion-group>
-  </ion-list>
-  <ion-list *ngIf="!InAppBrowser">
-    <ion-item button (click)="InAppBrowser = true">
-      <ion-icon slot="start" name="folder"></ion-icon>
-      <ion-label color="medium">/sdcard/Android/data/org.pjcone.portal/files</ion-label>
-    </ion-item>
-    <div *ngFor="let folder of ExternalFolder">
-      <ion-item *ngIf="folder.isDirectory" button (click)="importFolderMiddleAct(folder)">
-        <ion-icon slot="start" name="folder"></ion-icon>
-        <ion-label>{{folder.name}}</ion-label>
-      </ion-item>
-      <ion-item *ngIf="folder.isFile" button disabled>
-        <ion-icon slot="start" name="document"></ion-icon>
-        <ion-label>{{folder.name}}</ion-label>
-      </ion-item>
-    </div>
   </ion-list>
 </ion-content>

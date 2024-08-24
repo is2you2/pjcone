@@ -8,7 +8,6 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
-import { File } from "@awesome-cordova-plugins/file/ngx";
 import { Clipboard } from "@awesome-cordova-plugins/clipboard/ngx";
 
 @NgModule({
@@ -22,7 +21,6 @@ import { Clipboard } from "@awesome-cordova-plugins/clipboard/ngx";
     registrationStrategy: 'registerImmediately'
   })],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    File,
     NavParams,
     Clipboard,
   ],

@@ -4,7 +4,6 @@ import { isPlatform } from 'src/app/app.component';
 import * as p5 from "p5";
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
-import { File } from '@awesome-cordova-plugins/file/ngx';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { ContentCreatorInfo, FileInfo, GlobalActService, isDarkMode } from 'src/app/global-act.service';
 import { ShareContentToOtherPage } from 'src/app/share-content-to-other/share-content-to-other.page';
@@ -40,7 +39,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     private navParams: NavParams,
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
-    private file: File,
     private p5toast: P5ToastService,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
@@ -1720,69 +1718,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         }
         loading.dismiss();
       }
-    } else this.alertCtrl.create({
-      header: this.lang.text['ContentViewer']['Filename'],
-      inputs: [{
-        name: 'filename',
-        placeholder: this.FileInfo['filename'] || this.FileInfo['name'],
-        type: 'text',
-      }],
-      buttons: [{
-        text: this.lang.text['ContentViewer']['saveFile'],
-        handler: async (input) => {
-          if (this.FileInfo['url']) {
-            try {
-              let res = await fetch(this.FileInfo.url, { signal: this.cont.signal });
-              let blob = await res.blob();
-              if (res.ok) {
-                await this.indexed.saveBlobToUserPath(blob, this.FileInfo.alt_path || this.FileInfo.path);
-                this.DownloadFileAct(input);
-              } else throw '제대로 다운받아지지 않음';
-            } catch (e) {
-              console.log('다운받기 실패: ', e);
-              this.p5toast.show({
-                text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`
-              });
-            }
-          } else this.DownloadFileAct(input);
-        }
-      }]
-    }).then(v => v.present());
-  }
-
-  /** 모바일용, 저장소에 저장하기 */
-  async DownloadFileAct(input: any) {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-    loading.present();
-    let filename = input['filename'] ? input['filename'].replace(/:|\?|\/|\\|<|>/g, '') : (this.FileInfo['filename'] || this.FileInfo['name']);
-    let blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type']);
-    if (this.forceWrite && !input['filename'])
-      this.file.writeExistingFile(this.file.externalDataDirectory, filename, blob)
-        .then(_v => {
-          this.forceWrite = false;
-          loading.dismiss();
-          this.p5toast.show({
-            text: `${this.lang.text['ContentViewer']['OverWriteFile']}: ${filename}`,
-          });
-        });
-    else this.file.writeFile(this.file.externalDataDirectory, filename, blob)
-      .then(_v => {
-        loading.dismiss();
-      }).catch(e => {
-        loading.dismiss();
-        switch (e.code) {
-          case 12:
-            this.p5toast.show({
-              text: this.lang.text['ContentViewer']['AlreadyExist'],
-            });
-            this.forceWrite = true;
-            this.download_file();
-            break;
-          default:
-            console.log('준비되지 않은 오류 반환: ', e);
-            break;
-        }
-      });
+    }
   }
 
   ShareContent() {
