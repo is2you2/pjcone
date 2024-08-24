@@ -38,7 +38,7 @@
           <ion-button *ngIf="isTextEditMode" (click)="SaveText()">
             <ion-icon name="save-outline"></ion-icon>
           </ion-button>
-          <ion-button *ngIf="!isTextEditMode" id="menu_trigger">
+          <ion-button *ngIf="!isTextEditMode" id="menu_trigger" (click)="OpenFileMenu()">
             <ion-icon name="ellipsis-vertical"></ion-icon>
           </ion-button>
           <ion-popover *ngIf="!isTextEditMode" #FileMenu trigger="menu_trigger" dismissOnSelect>
