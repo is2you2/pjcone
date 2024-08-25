@@ -349,6 +349,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 저장소 변경이 가능한지 검토 (원격이면서 작성자가 남이 아닌지 검토) */
   isStoreAtChangable = true;
   async ionViewWillEnter() {
+    this.WillLeavePage = false;
+    this.AddShortCut();
     if (this.cont) this.cont.abort();
     this.cont = new AbortController();
     this.LoadStorageList();
@@ -566,7 +568,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   ionViewDidEnter() {
     this.show_count_timer();
-    this.AddShortCut();
   }
 
   AddShortCut() {
@@ -1586,9 +1587,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   async ionViewWillLeave() {
     this.WillLeavePage = true;
     delete this.global.p5key['KeyShortCut']['EnterAct'];
-    delete this.global.p5key['KeyShortCut']['Escape'];
-    delete this.global.p5key['KeyShortCut']['AddAct'];
-    delete this.global.p5key['KeyShortCut']['Digit'];
+    this.removeShortCut();
     this.noti.Current = '';
     if (this.p5timer)
       this.p5timer.remove();
