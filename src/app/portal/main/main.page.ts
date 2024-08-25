@@ -788,16 +788,18 @@ export class MainPage implements OnInit {
         if (!this.isPlayingCanvas.loop) p.redraw();
         switch (ev['which']) {
           case 1: // 왼쪽
-            MouseAct = p.createVector(p.mouseX, p.mouseY);
-            let dist = 0;
-            if (!GrabbedElement) {
-              CamPosition = TempStartCamPosition.copy().add(MouseAct.sub(MovementStartPosition).div(CamScale));
-              dist = TempStartCamPosition.dist(CamPosition);
-            } else {
-              GrabbedElement.position = MappingPosition();
-              dist = MovementStartPosition.dist(MappingPosition());
-            }
-            if (dist > 15) isClickable = false;
+            try {
+              MouseAct = p.createVector(p.mouseX, p.mouseY);
+              let dist = 0;
+              if (!GrabbedElement) {
+                CamPosition = TempStartCamPosition.copy().add(MouseAct.sub(MovementStartPosition).div(CamScale));
+                dist = TempStartCamPosition.dist(CamPosition);
+              } else {
+                GrabbedElement.position = MappingPosition();
+                dist = MovementStartPosition.dist(MappingPosition());
+              }
+              if (dist > 15) isClickable = false;
+            } catch (e) { }
             break;
         }
       }
