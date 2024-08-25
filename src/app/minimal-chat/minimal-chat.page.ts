@@ -138,7 +138,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       return false;
     }
     if (this.client.IsConnected) this.focus_on_input();
-    this.AddShortCut();
   }
 
   AddShortCut() {
@@ -753,6 +752,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       },
       cssClass: 'fullscreen',
     }).then(v => {
+      this.global.StoreShortCutAct();
       v.onDidDismiss().then(v => {
         if (v.data) {
           switch (v.data.type) {
@@ -796,6 +796,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
               return;
           }
         }
+        this.global.RestoreShortCutAct();
       });
       v.present();
     });
@@ -804,6 +805,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   @ViewChild('minimalchat_input') minimalchat_input: IonInput;
 
   ionViewDidEnter() {
+    this.AddShortCut();
     setTimeout(() => {
       this.scroll_down();
     }, 0);
