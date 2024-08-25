@@ -250,7 +250,7 @@
             </div>
           </div>
         </div>
-        <table class="thumbnails imageForm">
+        <table class="thumbnails imageForm" style="cursor: pointer;">
           <tr *ngIf="userInput['qoute']" class="qoute_text" (click)="RemoveQoute()">
             <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg'] + ': ' + (userInput['qoute']['username'] ||
               userInput['qoute']['display_name'])}}
