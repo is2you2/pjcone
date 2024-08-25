@@ -33,7 +33,7 @@
   <ion-item-divider>
     <ion-label>{{lang.text['Subscribes']['myProfile']}}</ion-label>
   </ion-item-divider>
-  <ion-item button (click)="go_to_page('group-server')">
+  <ion-item button (click)="nakama.open_profile_page()">
     <div class="additional_form bg_img_form">
       <img class="profile_img"
         [style]="nakama.users.self['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'"

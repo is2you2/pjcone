@@ -7,7 +7,6 @@ import { StatusManageService } from './status-manage.service';
 import * as p5 from 'p5';
 import { LocalNotiService, TotalNotiForm } from './local-noti.service';
 import { AlertController, IonicSafeString, LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
-import { GroupDetailPage } from './portal/settings/group-detail/group-detail.page';
 import { LanguageSettingService } from './language-setting.service';
 import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
@@ -235,6 +234,18 @@ export class NakamaService {
           state: {
             data: info,
           },
+        });
+      });
+    });
+  }
+
+  /** 그룹 상세 정보 페이지 열기 */
+  open_group_detail(_state: any) {
+    this.ngZone.run(() => {
+      this.global.RemoveAllModals(() => {
+        this.navCtrl.navigateForward('group-detail', {
+          animation: mdTransitionAnimation,
+          state: _state,
         });
       });
     });
@@ -765,7 +776,7 @@ export class NakamaService {
           this.p5toast.show({
             text: this.lang.text['Nakama']['NeedLoginInfo'],
           });
-          this.nav.navigateForward('portal/settings/group-server');
+          this.open_profile_page();
           this.users.self['online'] = false;
           delete this.users.self['password'];
           this.set_group_statusBar('offline', info.isOfficial, info.target);
@@ -3768,10 +3779,7 @@ export class NakamaService {
           iconColor_ln: '271e38',
         }, undefined, (_ev: any) => {
           if (this.socket_reactive['group_detail'].info.id == v.content['group_id']) return;
-          this.modalCtrl.create({
-            component: GroupDetailPage,
-            componentProps: { info: this.groups[_is_official][_target][v.content['group_id']] },
-          }).then(v => v.present());
+          this.open_group_detail({ info: this.groups[_is_official][_target][v.content['group_id']] });
         });
         break;
       case -6: // 친구가 다른 게임에 참여
@@ -4229,7 +4237,7 @@ export class NakamaService {
     for (let i = 0, j = json.length; i < j; i++)
       switch (json[i].type) {
         case 'open_profile': // 프로필 페이지 열기 유도
-          this.nav.navigateForward('portal/settings/group-server');
+          this.open_profile_page();
           break;
         case 'tmp_user': // 빠른 임시 진입을 위해 사용자 정보를 임의로 기입
           break;

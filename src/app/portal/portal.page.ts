@@ -36,7 +36,7 @@ export class PortalPage implements OnInit {
       this.global.p5todo['PlayCanvas']();
     if (this.nakama.AfterLoginAct.length) // 빠른 진입 행동 보완
       this.global.RemoveAllModals(() => {
-        this.navCtrl.navigateForward('portal/settings/group-server');
+        this.nakama.open_profile_page();
       });
     if (this.OnInit) {
       let StartPage = localStorage.getItem('StartPage') || 0;

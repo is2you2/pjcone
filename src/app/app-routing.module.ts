@@ -46,6 +46,10 @@ const routes: Routes = [
     path: 'portal',
     loadChildren: () => import('./portal/portal.module').then(m => m.PortalPageModule)
   },
+  {
+    path: 'group-detail',
+    loadChildren: () => import('./portal/settings/group-detail/group-detail.module').then(m => m.GroupDetailPageModule)
+  }
 ];
 
 @NgModule({

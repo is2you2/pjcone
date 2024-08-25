@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController, NavParams } from '@ionic/angular';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -8,9 +7,10 @@ import { Notification } from '@heroiclabs/nakama-js';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { GroupServerPage } from '../group-server/group-server.page';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ModalController, NavController } from '@ionic/angular';
 
 
 @Component({
@@ -21,15 +21,17 @@ import { SERVER_PATH_ROOT } from 'src/app/app.component';
 export class GroupDetailPage implements OnInit {
 
   constructor(
-    private navParams: NavParams,
     public nakama: NakamaService,
-    public modalCtrl: ModalController,
     public statusBar: StatusManageService,
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
     private global: GlobalActService,
     private p5toast: P5ToastService,
     private mClipboard: Clipboard,
+    private route: ActivatedRoute,
+    private router: Router,
+    private navCtrl: NavController,
+    private modalCtrl: ModalController,
   ) { }
 
   QRCodeSRC: any;
@@ -50,63 +52,76 @@ export class GroupDetailPage implements OnInit {
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
         this.BackButtonPressed = true;
-        this.modalCtrl.dismiss();
+        this.navCtrl.pop();
       };
     } catch (e) {
       console.log('탐색 기록 변경시 오류 발생: ', e);
     }
   }
   async ngOnInit() {
-    this.InitBrowserBackButtonOverride();
-    this.info = this.navParams.get('info');
-    this.file_sel_id = `group_detail_${this.info.id}_${new Date().getTime()}}`;
-    this.info_orig = JSON.parse(JSON.stringify(this.navParams.get('info')));
-    this.nakama.socket_reactive['group_detail'] = this;
-    this.QRCodeSRC = this.global.readasQRCodeFromString(
-      `${SERVER_PATH_ROOT}godotchat_pwa/?group=${this.info.name},${this.info.id}`);
-    if (!this.info.server) this.info.server = this.navParams.get('server');
-    this.isOfficial = this.info.server['isOfficial'];
-    this.target = this.info.server['target'];
-    try {
-      this.has_admin = this.info['creator_id'] == this.nakama.servers[this.isOfficial][this.target].session.user_id;
-    } catch (e) {
-      console.log('check is admin failed: ', e);
-      this.has_admin = false;
-    }
-    // 사용자 정보가 있다면 로컬 정보 불러오기 처리
-    if (this.info['users'] && this.info['users'].length) {
-      for (let i = 0, j = this.info['users'].length; i < j; i++)
-        if (this.info['users'][i].is_me) { // 정보상 나라면
-          this.info['users'][i]['user'] = this.nakama.users.self;
-          this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
-            if (e && v) this.nakama.users.self['img'] = v.replace(/"|\\|=/g, '');
-          });
-        } else if (this.info['users'][i]['user']['id']) { // 다른 사람들의 프로필 이미지
-          this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], this.isOfficial, this.target);
-        } else this.info['users'].splice(i, 1);
-    }
-    // 그룹 이미지 업데이트
-    try {
-      this.nakama.servers[this.isOfficial][this.target].client.readStorageObjects(
-        this.nakama.servers[this.isOfficial][this.target].session, {
-        object_ids: [{
-          collection: 'group_public',
-          key: `group_${this.info.id}`,
-          user_id: this.info.creator_id,
-        }]
-      }).then(v => {
-        if (v.objects.length) {
-          this.nakama.groups[this.isOfficial][this.target][this.info.id]['img'] = v.objects[0].value['img'].replace(/"|=|\\/g, '');
-          this.indexed.saveTextFileToUserPath(v.objects[0].value['img'], `servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
-        } else {
-          if (this.info['status']) {
-            delete this.nakama.groups[this.isOfficial][this.target][this.info.id]['img'];
-            this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
-          }
+    this.route.queryParams.subscribe(_p => {
+      try {
+        const navParams = this.router.getCurrentNavigation().extras.state;
+        this.InitBrowserBackButtonOverride();
+        this.info = navParams.info;
+        this.file_sel_id = `group_detail_${this.info.id}_${new Date().getTime()}}`;
+        this.info_orig = JSON.parse(JSON.stringify(navParams.info));
+        this.nakama.socket_reactive['group_detail'] = this;
+        this.QRCodeSRC = this.global.readasQRCodeFromString(
+          `${SERVER_PATH_ROOT}godotchat_pwa/?group=${this.info.name},${this.info.id}`);
+        if (!this.info.server) this.info.server = navParams.server;
+        this.isOfficial = this.info.server['isOfficial'];
+        this.target = this.info.server['target'];
+        try {
+          this.has_admin = this.info['creator_id'] == this.nakama.servers[this.isOfficial][this.target].session.user_id;
+        } catch (e) {
+          console.log('check is admin failed: ', e);
+          this.has_admin = false;
         }
-      });
-    } catch (e) {
-      console.log(e);
+        // 사용자 정보가 있다면 로컬 정보 불러오기 처리
+        if (this.info['users'] && this.info['users'].length) {
+          for (let i = 0, j = this.info['users'].length; i < j; i++)
+            if (this.info['users'][i].is_me) { // 정보상 나라면
+              this.info['users'][i]['user'] = this.nakama.users.self;
+              this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
+                if (e && v) this.nakama.users.self['img'] = v.replace(/"|\\|=/g, '');
+              });
+            } else if (this.info['users'][i]['user']['id']) { // 다른 사람들의 프로필 이미지
+              this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], this.isOfficial, this.target);
+            } else this.info['users'].splice(i, 1);
+        }
+        // 그룹 이미지 업데이트
+        try {
+          this.nakama.servers[this.isOfficial][this.target].client.readStorageObjects(
+            this.nakama.servers[this.isOfficial][this.target].session, {
+            object_ids: [{
+              collection: 'group_public',
+              key: `group_${this.info.id}`,
+              user_id: this.info.creator_id,
+            }]
+          }).then(v => {
+            if (v.objects.length) {
+              this.nakama.groups[this.isOfficial][this.target][this.info.id]['img'] = v.objects[0].value['img'].replace(/"|=|\\/g, '');
+              this.indexed.saveTextFileToUserPath(v.objects[0].value['img'], `servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
+            } else {
+              if (this.info['status']) {
+                delete this.nakama.groups[this.isOfficial][this.target][this.info.id]['img'];
+                this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
+              }
+            }
+          });
+        } catch (e) {
+          console.log(e);
+        }
+      } catch (e) {
+        console.log('그룹 상세 페이지 진입 오류: ', e);
+      }
+    });
+  }
+
+  ionViewDidEnter() {
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
     }
   }
 
@@ -242,7 +257,7 @@ export class GroupDetailPage implements OnInit {
   }
 
   /** 그룹 삭제 (방장 권한) */
-  remove_group() {
+  async remove_group() {
     this.need_edit = false;
     try {
       if (this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']]) { // 서버가 아직 있다면
@@ -278,8 +293,8 @@ export class GroupDetailPage implements OnInit {
           throw this.lang.text['GroupDetail']['YouAreNotCreator'];
         }
       } else { // 서버 기록이 먼저 삭제된 경우
-        this.nakama.remove_group_list(this.info, this.info['server']['isOfficial'], this.info['server']['target']);
-        this.modalCtrl.dismiss({ remove: true });
+        await this.nakama.remove_group_list(this.info, this.info['server']['isOfficial'], this.info['server']['target']);
+        this.navCtrl.pop();
       }
     } catch (e) {
       console.log('remove_group: ', e);
@@ -290,10 +305,10 @@ export class GroupDetailPage implements OnInit {
   }
 
   /** 삭제 알림 그 후에 */
-  after_remove_group() {
+  async after_remove_group() {
     this.leave_channel();
-    this.nakama.remove_group_list(this.info, this.info['server']['isOfficial'], this.info['server']['target']);
-    this.modalCtrl.dismiss({ remove: true });
+    await this.nakama.remove_group_list(this.info, this.info['server']['isOfficial'], this.info['server']['target']);
+    this.navCtrl.pop();
   }
 
   /** 그룹 편집사항이 있는지, 그래서 편집해야하는지 여부 검토 */
@@ -351,7 +366,7 @@ export class GroupDetailPage implements OnInit {
                     break;
                   }
               if (v.data['dismiss'])
-                this.modalCtrl.dismiss();
+                this.navCtrl.pop();
             }
           });
           v.present();
@@ -369,11 +384,11 @@ export class GroupDetailPage implements OnInit {
       this.after_leave_group(() => {
         this.leave_channel();
         this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']]['status'] = 'missing';
-        this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss({ leave: true }));
+        this.nakama.save_groups_with_less_info(() => this.navCtrl.pop());
       });
     else if (this.info['status'] == 'pending') this.after_leave_group(() => {
       this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']]['status'] = 'missing';
-      this.nakama.save_groups_with_less_info(() => this.modalCtrl.dismiss({ leave: true }));
+      this.nakama.save_groups_with_less_info(() => this.navCtrl.pop());
     });
   }
 
@@ -437,5 +452,6 @@ export class GroupDetailPage implements OnInit {
     this.need_edit = this.info['description'] != this.info_orig['description'];
     if (this.need_edit)
       this.edit_group();
+    delete this.global.p5key['KeyShortCut']['Escape'];
   }
 }

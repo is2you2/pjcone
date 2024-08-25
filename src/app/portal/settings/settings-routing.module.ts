@@ -13,16 +13,8 @@ const routes: Routes = [
     loadChildren: () => import('./licenses/licenses.module').then( m => m.LicensesPageModule)
   },
   {
-    path: 'group-server',
-    loadChildren: () => import('./group-server/group-server.module').then( m => m.GroupServerPageModule)
-  },
-  {
     path: 'add-group',
     loadChildren: () => import('./add-group/add-group.module').then( m => m.AddGroupPageModule)
-  },
-  {
-    path: 'group-detail',
-    loadChildren: () => import('./group-detail/group-detail.module').then( m => m.GroupDetailPageModule)
   },
   {
     path: 'translator',

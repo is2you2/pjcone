@@ -7,7 +7,6 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { AddGroupPage } from '../settings/add-group/add-group.page';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
-import { GroupDetailPage } from '../settings/group-detail/group-detail.page';
 import { MiniranchatClientService } from 'src/app/miniranchat-client.service';
 
 @Component({
@@ -54,7 +53,7 @@ export class SubscribesPage implements OnInit {
   /** 단축키 생성 */
   AddShortcut() {
     this.global.p5key['KeyShortCut']['Backquote'] = () => {
-      this.go_to_page('group-server');
+      this.nakama.open_profile_page();
     }
     this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
       if (this.nakama.channels.length > index)
@@ -78,19 +77,9 @@ export class SubscribesPage implements OnInit {
     switch (channel['redirect'].type) {
       case 3: // 그룹 채널
         if (channel['status'] == 'online' || channel['status'] == 'pending') {
-          this.modalCtrl.create({
-            component: GroupDetailPage,
-            componentProps: {
-              info: this.nakama.groups[isOfficial][target][channel['group_id']],
-              server: { isOfficial: isOfficial, target: target },
-            },
-          }).then(v => {
-            let cache_func = this.global.p5key['KeyShortCut'];
-            this.global.p5key['KeyShortCut'] = {};
-            v.onDidDismiss().then(() => {
-              this.global.p5key['KeyShortCut'] = cache_func;
-            });
-            v.present();
+          this.nakama.open_group_detail({
+            info: this.nakama.groups[isOfficial][target][channel['group_id']],
+            server: { isOfficial: isOfficial, target: target },
           });
           break;
         } // 온라인 그룹이 아니라면 1:1 채널과 같게 처리

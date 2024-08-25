@@ -13,9 +13,7 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { VoidDrawPage } from './void-draw/void-draw.page';
 import { ContentCreatorInfo, FILE_BINARY_LIMIT, FileInfo, GlobalActService } from 'src/app/global-act.service';
-import { GroupDetailPage } from '../../settings/group-detail/group-detail.page';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GroupServerPage } from '../../settings/group-server/group-server.page';
 import { WebrtcService } from 'src/app/webrtc.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
@@ -107,28 +105,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (!this.lock_modal_open) {
             try {
               this.lock_modal_open = true;
-              this.modalCtrl.create({
-                component: GroupDetailPage,
-                componentProps: {
-                  info: this.nakama.groups[this.isOfficial][this.target][this.info['group_id']],
-                  server: { isOfficial: this.isOfficial, target: this.target },
-                },
-              }).then(v => {
-                v.onWillDismiss().then(data => {
-                  if (data.data) { // 그룹 탈퇴/삭제시
-                    this.extended_buttons.forEach(button => {
-                      button.isHide = true;
-                    });
-                    this.extended_buttons[0].isHide = false;
-                    this.extended_buttons[12].isHide = false;
-                  }
-                });
-                v.onDidDismiss().then(() => {
-                  this.ionViewDidEnter();
-                });
-                this.removeShortCutKey();
-                v.present();
-                this.lock_modal_open = false;
+              this.nakama.open_group_detail({
+                info: this.nakama.groups[this.isOfficial][this.target][this.info['group_id']],
+                server: { isOfficial: this.isOfficial, target: this.target },
               });
             } catch (e) {
               this.lock_modal_open = false;
