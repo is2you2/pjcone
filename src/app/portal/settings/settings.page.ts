@@ -95,6 +95,9 @@ export class SettingsPage implements OnInit, OnDestroy {
       });
     }
     this.StartPageValue = localStorage.getItem('StartPage');
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
   }
 
   Fallback_FS_input_element: HTMLInputElement;
@@ -139,9 +142,6 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   /** AddKeyShortcut() 으로 사용할 수 있음 */
   ionViewDidEnter() {
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
-      this.navCtrl.pop();
-    }
     this.LinkButton.length = 0;
     this.LinkButton.push(() => this.go_to_page('noti-alert'));
     this.LinkButton.push(() => {
