@@ -255,12 +255,21 @@
             <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg'] + ': ' + (userInput['qoute']['username'] ||
               userInput['qoute']['display_name'])}}
             </div>
+            <div *ngIf="userInput['qoute'].text" class="qouteDiv">{{userInput['qoute'].text}}</div>
             <div *ngIf="userInput['qoute'].url" class="imageForm borderRadiusDefault qouteImageHeight"
               style="max-height: 84px;">
               <img [src]="userInput['qoute'].url" class="qouteImage qouteImageHeight"
                 [style]="'max-height: 84px;' + (info['HideAutoThumbnail'] ? 'filter: blur(6px);' : '')" alt="">
             </div>
-            <div *ngIf="userInput['qoute'].text" class="qouteDiv">{{userInput['qoute'].text}}</div>
+          </tr>
+          <tr *ngIf="IsMsgEditMode" class="qoute_text" (click)="IsMsgEditMode = undefined">
+            <div class="qouteDiv">{{lang.text['ChatRoom']['EditChat'] + ': ' + IsMsgEditMode['msg_string']}}
+            </div>
+            <div *ngIf="IsMsgEditMode.thumbnail" class="imageForm borderRadiusDefault qouteImageHeight"
+              style="max-height: 84px;">
+              <img [src]="IsMsgEditMode.thumbnail" class="qouteImage qouteImageHeight"
+                [style]="'max-height: 84px;' + (info['HideAutoThumbnail'] ? 'filter: blur(6px);' : '')" alt="">
+            </div>
           </tr>
           <tr *ngIf="userInput.file" class="thumbnail_parts" style="cursor: pointer;">
             <td>

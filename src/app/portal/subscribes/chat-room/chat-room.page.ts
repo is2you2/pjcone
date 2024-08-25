@@ -273,6 +273,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 display_name: this.nakama.users.self['display_name'],
               });
               this.userInput.file = this_file;
+              this.CancelEditText();
               this.create_thumbnail_imported(this_file);
             }
           });
@@ -296,6 +297,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             display_name: this.nakama.users.self['display_name'],
           });
           this.userInput.file = image;
+          this.CancelEditText();
         } catch (e) { }
         loading.dismiss();
       }
@@ -622,6 +624,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.scroll_down_logs();
             }, 100);
           this.userInput.file = this_file;
+          this.CancelEditText();
           this.inputPlaceholder = `(${this.lang.text['ChatRoom']['FileLink']}: ${this.userInput.file.filename})`;
         } catch (e) {
           if (e == 'done')
@@ -822,6 +825,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.info = c;
       await this.init_chatroom();
       this.userInput.file = _fileinfo;
+      this.CancelEditText();
       if (this.userInput.file) this.create_thumbnail_imported(_fileinfo);
     }
     this.route.queryParams.subscribe(async _p => {
@@ -832,6 +836,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         await this.init_chatroom();
         if (this.userInput.file) {
           this.userInput.file = navParams.file;
+          this.CancelEditText();
           this.create_thumbnail_imported(navParams.file);
         }
       } catch (e) {
@@ -1030,6 +1035,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.userInput.qoute.id = target_msg.message_id;
               this.userInput.qoute.display_name = target_msg.user_display_name;
               this.userInput.qoute.user_id = target_msg['sender_id'];
+              this.CancelEditText();
               setTimeout(() => {
                 this.make_ext_hidden();
                 this.userInputTextArea.focus();
@@ -1262,6 +1268,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           for (let i = 0, j = this.messages.length; i < j; i++)
             if (this.messages[i].message_id == c['message_id']) {
               this.messages[i].content = c.content;
+              this.global.modulate_thumbnail(this.messages[i].content, this.messages[i].content.url, this.cont);
               break;
             }
           return;
@@ -1816,12 +1823,51 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   async send(with_key = false) {
     if (with_key && (isPlatform == 'Android' || isPlatform == 'iOS')) return;
     if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-    if (!this.userInput.text.trim() && !this.userInput['file']) {
-      setTimeout(() => {
-        this.userInput.text = '';
-        this.ResizeTextArea();
-      }, 0);
-      return;
+    if (!this.userInput.text.trim() && !this.userInput['file'])
+      if (this.IsMsgEditMode === undefined || !this.IsMsgEditMode.content.filename) {
+        setTimeout(() => {
+          this.userInput.text = '';
+          this.ResizeTextArea();
+        }, 0);
+        return;
+      }
+    // 메시지 편집모드인 경우 이번 발송은 편집처럼 진행
+    try {
+      if (this.userInput.text.length > 600) // 메시지가 충분히 깁니다
+        throw '메시지가 충분히 깁니다';
+      if (this.IsMsgEditMode !== undefined) {
+        let edit_well = false;
+        this.IsMsgEditMode.content['msg'] = this.userInput.text;
+        this.IsMsgEditMode.content['edited'] = true;
+        if (this.IsMsgEditMode.content['thumbnail'])
+          this.IsMsgEditMode.content['thumbnail'] = this.IsMsgEditMode['thumbnail'];
+        this.IsMsgEditMode['update_time'] = new Date().toISOString();
+        delete this.IsMsgEditMode['msg_string'];
+        delete this.IsMsgEditMode['thumbnail'];
+        if (!this.info['local']) { // 서버와 연결된 경우
+          try {
+            await this.nakama.servers[this.isOfficial][this.target].socket.updateChatMessage(this.info['id'], this.IsMsgEditMode.message_id, this.IsMsgEditMode.content);
+            edit_well = true;
+          } catch (e) {
+            console.log('메시지 편집 요청 오류: ', e);
+          }
+        } else edit_well = true;
+        if (!edit_well) return;
+        if (this.info['local']) {
+          this.IsMsgEditMode['code'] = 1;
+          this.nakama.content_to_hyperlink(this.IsMsgEditMode);
+          this.IsMsgEditMode['update_time'] = Date.now();
+          this.SendLocalMessage(this.IsMsgEditMode);
+        }
+        this.CancelEditText();
+        setTimeout(() => {
+          this.userInput.text = '';
+          this.ResizeTextArea();
+        }, 0);
+        return;
+      }
+    } catch (e) {
+      this.CancelEditText();
     }
     if (this.block_send) return;
     this.block_send = true;
@@ -2070,6 +2116,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.ResizeTextArea();
     this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
     this.userInput.file = this_file;
+    this.CancelEditText();
     this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
     this.create_selected_thumbnail();
     this.p5toast.show({
@@ -2087,6 +2134,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }, 0);
   }
 
+  /** 메시지 편집 모드 여부 검토 */
+  IsMsgEditMode: any;
   /** 메시지 정보 상세 */
   async message_detail(msg: any, index: number) {
     if (this.isOtherAct) return; // 다른 행동과 중첩 방지
@@ -2119,56 +2168,25 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       buttons: [{
         text: this.lang.text['ChatRoom']['EditChat'],
         handler: () => {
-          this.alertCtrl.create({
-            header: this.lang.text['ChatRoom']['EditChat'],
-            inputs: [{
-              type: 'textarea',
-              value: orig_msg,
-              placeholder: MsgText,
-            }],
-            buttons: [{
-              text: this.lang.text['ChatRoom']['EditChat'],
-              handler: async (ev) => {
-                let edited = ev[0] || (msg.content['path'] ? '' : MsgText);
-                let edit_well = false;
-                let working_msg = JSON.parse(JSON.stringify(msg));
-                working_msg.content['msg'] = edited;
-                working_msg.content['edited'] = true;
-                if (msg.content['thumbnail'])
-                  working_msg.content['thumbnail'] = msg.content['thumbnail'];
-                working_msg['update_time'] = new Date().toISOString();
-                if (!this.info['local']) { // 서버와 연결된 경우
-                  try {
-                    await this.nakama.servers[this.isOfficial][this.target].socket.updateChatMessage(this.info['id'], msg.message_id, working_msg.content);
-                    edit_well = true;
-                  } catch (e) {
-                    console.log('메시지 편집 요청 오류: ', e);
-                  }
-                } else edit_well = true;
-                if (!edit_well) return;
-                working_msg['code'] = 1;
-                if (this.info['local']) {
-                  this.nakama.content_to_hyperlink(working_msg);
-                  working_msg['update_time'] = Date.now();
-                  this.SendLocalMessage(working_msg);
-                }
-              }
-            }],
-          }).then(v => {
-            v.onWillDismiss().then(() => {
-              this.ionViewDidEnter();
+          this.userInput.qoute = undefined;
+          let copied = JSON.parse(JSON.stringify(msg));
+          copied['msg_string'] = MsgText;
+          this.IsMsgEditMode = copied;
+          // 파일이 첨부된 메시지라면 썸네일 보여주기
+          if (copied.content.path)
+            this.indexed.loadBlobFromUserPath(copied.content.path, '', blob => {
+              let FileURL = URL.createObjectURL(blob);
+              copied['thumbnail'] = FileURL;
             });
-            this.removeShortCutKey();
-            this.global.p5key['KeyShortCut']['Escape'] = () => {
-              v.dismiss();
-            }
-            v.present();
-          });
-        }
+          this.userInput.text = orig_msg;
+          this.make_ext_hidden();
+          this.userInputTextArea.focus();
+        },
       }, {
         text: this.lang.text['UserFsDir']['Delete'],
         cssClass: 'redfont',
         handler: async () => {
+          this.CancelEditText();
           if (!this.info['local']) { // 서버와 연결된 채널인 경우
             try {
               await this.nakama.servers[this.isOfficial][this.target].socket.removeChatMessage(this.info['id'], msg.message_id);
@@ -2243,6 +2261,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       });
       v.present();
     });
+  }
+
+  /** 메시지 편집을 취소할 경우 */
+  CancelEditText() {
+    try {
+      let FileURL = this.IsMsgEditMode['thumbnail'];
+      this.IsMsgEditMode = undefined;
+      setTimeout(() => {
+        URL.revokeObjectURL(FileURL);
+      }, 100);
+    } catch (e) { }
   }
 
   /** 메시지 평문화 */
@@ -2514,6 +2543,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
       display_name: this.nakama.users.self['display_name'],
     }, related_creators);
+    this.CancelEditText();
     this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
     this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
     v.data['loadingCtrl'].dismiss();
