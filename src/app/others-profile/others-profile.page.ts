@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ModalController, NavParams } from '@ionic/angular';
+import { NavController } from '@ionic/angular';
 import * as p5 from "p5";
 import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
@@ -7,6 +7,7 @@ import { P5ToastService } from '../p5-toast.service';
 import { StatusManageService } from "../status-manage.service";
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { GlobalActService } from '../global-act.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-others-profile',
@@ -16,14 +17,15 @@ import { GlobalActService } from '../global-act.service';
 export class OthersProfilePage implements OnInit, OnDestroy {
 
   constructor(
-    public modalCtrl: ModalController,
-    private navParams: NavParams,
     private nakama: NakamaService,
     public statusBar: StatusManageService,
     private p5toast: P5ToastService,
     public lang: LanguageSettingService,
     private mClipboard: Clipboard,
     private global: GlobalActService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private navCtrl: NavController,
   ) { }
 
   /** 다른 사용자의 정보 */
@@ -47,27 +49,34 @@ export class OthersProfilePage implements OnInit, OnDestroy {
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
         this.BackButtonPressed = true;
-        this.modalCtrl.dismiss();
+        this.navCtrl.pop();
       };
     } catch (e) {
       console.log('탐색 기록 변경시 오류 발생: ', e);
     }
   }
   async ngOnInit() {
-    this.InitBrowserBackButtonOverride();
-    this.info = this.navParams.get('info');
-    this.has_admin = this.navParams.get('has_admin');
-    this.group_info = this.navParams.get('group');
-    this.isOfficial = this.group_info['server']['isOfficial'];
-    this.target = this.group_info['server']['target'];
-    this.nakama.load_other_user(this.info['user']['id'], this.isOfficial, this.target);
-    this.nakama.socket_reactive['others-profile'] = (img_url: string) => {
-      this.p5canvas['ChangeImageSmooth'](img_url);
-    };
-    this.nakama.socket_reactive['others-online'] = () => {
-      this.p5canvas.loop();
-    };
-    this.catch_user_noties();
+    this.route.queryParams.subscribe(_p => {
+      try {
+        const navParams = this.router.getCurrentNavigation().extras.state;
+        this.InitBrowserBackButtonOverride();
+        this.info = navParams.info;
+        this.has_admin = navParams.has_admin;
+        this.group_info = navParams.group;
+        this.isOfficial = this.group_info['server']['isOfficial'];
+        this.target = this.group_info['server']['target'];
+        this.nakama.load_other_user(this.info['user']['id'], this.isOfficial, this.target);
+        this.nakama.socket_reactive['others-profile'] = (img_url: string) => {
+          this.p5canvas['ChangeImageSmooth'](img_url);
+        };
+        this.nakama.socket_reactive['others-online'] = () => {
+          this.p5canvas.loop();
+        };
+        this.catch_user_noties();
+      } catch (e) {
+        console.log('다른 사람의 프로필 열기 실패: ', e);
+      }
+    });
   }
 
   OtherCanvasDiv: any;
@@ -227,6 +236,12 @@ export class OthersProfilePage implements OnInit, OnDestroy {
     });
   }
 
+  ionViewDidEnter() {
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    };
+  }
+
   isOfficial: string;
   target: string;
   /** 이 사용자와 관련된 알림 검토 (그룹 리액션 검토용) */
@@ -241,7 +256,6 @@ export class OthersProfilePage implements OnInit, OnDestroy {
     }
   }
 
-  onDismissData = {};
   /** 알림에 의해 생성된 버튼들의 반응 */
   notification_react(code: number) {
     switch (code) {
@@ -268,10 +282,6 @@ export class OthersProfilePage implements OnInit, OnDestroy {
             if (!v) console.warn('알림 부정 검토 필요');
             delete this.additional_buttons[code.toString()];
             this.nakama.update_notifications(this.isOfficial, this.target);
-            this.onDismissData = {
-              id: this.info['user']['id'],
-              act: 'accept_join',
-            };
             this.info['status'] = 'online';
             this.p5canvas.loop();
           });
@@ -292,7 +302,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         let c = await this.nakama.join_chat_with_modulation(this.info['user']['id'], 2, this.isOfficial, this.target, true);
         this.nakama.go_to_chatroom_without_admob_act(c);
         this.lock_create_chat = false;
-        this.modalCtrl.dismiss({ dismiss: true });
+        this.navCtrl.pop();
       } catch (e) {
         this.lock_create_chat = false;
         console.error(e);
@@ -336,10 +346,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
       this.p5toast.show({
         text: `${this.lang.text['OtherProfile']['kicked_from_group']}: ${this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']}`,
       });
-      this.modalCtrl.dismiss({
-        id: this.info['user']['id'],
-        act: 'kick',
-      });
+      this.navCtrl.pop();
     });
   }
 
@@ -348,6 +355,10 @@ export class OthersProfilePage implements OnInit, OnDestroy {
       .catch(_e => {
         this.global.WriteValueToClipboard('text/plain', this.info['user'].id);
       });
+  }
+
+  ionViewWillLeave() {
+    delete this.global.p5key['KeyShortCut']['Escape'];
   }
 
   ngOnDestroy(): void {

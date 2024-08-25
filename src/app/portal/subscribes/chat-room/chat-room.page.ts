@@ -4,7 +4,6 @@ import { AlertController, IonicSafeString, LoadingController, ModalController, N
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 import * as p5 from "p5";
-import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { isNativefier, isPlatform } from 'src/app/app.component';
@@ -102,19 +101,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (this.info['redirect']['type'] != 3) {
           this.extended_buttons[0].isHide = true;
         } else {
-          if (!this.lock_modal_open) {
-            try {
-              this.lock_modal_open = true;
-              this.nakama.open_group_detail({
-                info: this.nakama.groups[this.isOfficial][this.target][this.info['group_id']],
-                server: { isOfficial: this.isOfficial, target: this.target },
-              });
-            } catch (e) {
-              this.lock_modal_open = false;
-              this.p5toast.show({
-                text: this.lang.text['ChatRoom']['AlreadyRemoved'],
-              });
-            }
+          try {
+            this.nakama.open_group_detail({
+              info: this.nakama.groups[this.isOfficial][this.target][this.info['group_id']],
+              server: { isOfficial: this.isOfficial, target: this.target },
+            });
+          } catch (e) {
+            this.p5toast.show({
+              text: this.lang.text['ChatRoom']['AlreadyRemoved'],
+            });
           }
         }
       }
@@ -830,13 +825,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (this.userInput.file) this.create_thumbnail_imported(_fileinfo);
     }
     this.route.queryParams.subscribe(async _p => {
-      const navParams = this.router.getCurrentNavigation().extras.state;
-      if (navParams) this.info = navParams.info;
-      await new Promise(res => setTimeout(res, 100)); // init 지연
-      await this.init_chatroom();
-      if (this.userInput.file) {
-        this.userInput.file = navParams.file;
-        this.create_thumbnail_imported(navParams.file);
+      try {
+        const navParams = this.router.getCurrentNavigation().extras.state;
+        if (navParams) this.info = navParams.info;
+        await new Promise(res => setTimeout(res, 100)); // init 지연
+        await this.init_chatroom();
+        if (this.userInput.file) {
+          this.userInput.file = navParams.file;
+          this.create_thumbnail_imported(navParams.file);
+        }
+      } catch (e) {
+        console.log('채널 정보 받지 못함: ', e);
       }
     });
     setTimeout(() => {
@@ -2533,26 +2532,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.noti.Current = 'GroupServerPage';
         this.lock_modal_open = false;
       } else { // 다른 사용자 정보
-        this.modalCtrl.create({
-          component: OthersProfilePage,
-          componentProps: {
-            info: { user: this.nakama.load_other_user(msg.sender_id, this.isOfficial, this.target) },
-            group: this.info,
-            has_admin: false,
-          },
-        }).then(v => {
-          v.onDidDismiss().then((_v) => {
-            this.ionViewDidEnter();
-            this.isOtherAct = false;
-            this.noti.Current = this.info['cnoti_id'];
-            if (this.info['cnoti_id'])
-              this.noti.ClearNoti(this.info['cnoti_id']);
-          });
-          this.noti.Current = 'OthersProfilePage';
-          this.removeShortCutKey();
-          v.present();
-          this.lock_modal_open = false;
+        let _user = this.nakama.load_other_user(msg.sender_id, this.isOfficial, this.target);
+        let copied = JSON.parse(JSON.stringify(this.info));
+        delete copied['update'];
+        this.nakama.open_others_profile({
+          info: { user: _user },
+          group: copied,
+          has_admin: false,
         });
+        this.lock_modal_open = false;
+        this.noti.Current = 'OthersProfilePage';
       }
     }
   }

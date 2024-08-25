@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
-import { OthersProfilePage } from 'src/app/others-profile/others-profile.page';
 import { Notification } from '@heroiclabs/nakama-js';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { GlobalActService } from 'src/app/global-act.service';
@@ -10,7 +9,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ModalController, NavController } from '@ionic/angular';
+import { NavController } from '@ionic/angular';
 
 
 @Component({
@@ -31,7 +30,6 @@ export class GroupDetailPage implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private navCtrl: NavController,
-    private modalCtrl: ModalController,
   ) { }
 
   QRCodeSRC: any;
@@ -339,39 +337,12 @@ export class GroupDetailPage implements OnInit {
         });
         this.lock_modal_open = false;
       } else {
-        this.modalCtrl.create({
-          component: OthersProfilePage,
-          componentProps: {
-            info: userInfo,
-            group: this.info,
-            has_admin: this.has_admin,
-          }
-        }).then(v => {
-          v.onDidDismiss().then(v => {
-            if (v.data) {
-              if (v.data['id'])
-                for (let i = 0, j = this.info['users'].length; i < j; i++)
-                  if (this.info['users'][i]['user']['id'] == v.data['id']) {
-                    switch (v.data['act']) {
-                      case 'accept_join': // 그룹 참가 수락
-                        this.info['users'][i].status = 'online';
-                        break;
-                      case 'kick': // 추방
-                        this.info['users'].splice(i, 1);
-                        break;
-                      default:
-                        console.warn('예상하지 못한 상대방 정보: ', v);
-                        break;
-                    }
-                    break;
-                  }
-              if (v.data['dismiss'])
-                this.navCtrl.pop();
-            }
-          });
-          v.present();
-          this.lock_modal_open = false;
+        this.nakama.open_others_profile({
+          info: userInfo,
+          group: this.info,
+          has_admin: this.has_admin,
         });
+        this.lock_modal_open = false;
       }
     }
   }

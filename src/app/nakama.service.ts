@@ -92,7 +92,6 @@ export class NakamaService {
     private navCtrl: NavController,
     private ngZone: NgZone,
     private loadingCtrl: LoadingController,
-    private nav: NavController,
   ) {
     global.CallbackNakama = this;
   }
@@ -244,6 +243,18 @@ export class NakamaService {
     this.ngZone.run(() => {
       this.global.RemoveAllModals(() => {
         this.navCtrl.navigateForward('group-detail', {
+          animation: mdTransitionAnimation,
+          state: _state,
+        });
+      });
+    });
+  }
+
+  /** 다른 사람의 프로필 정보 열기 */
+  open_others_profile(_state: any) {
+    this.ngZone.run(() => {
+      this.global.RemoveAllModals(() => {
+        this.navCtrl.navigateForward('others-profile', {
           animation: mdTransitionAnimation,
           state: _state,
         });
