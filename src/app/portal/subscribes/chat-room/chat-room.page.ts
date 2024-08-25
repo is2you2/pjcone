@@ -507,34 +507,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.extended_buttons[7].isHide = true;
       }
     });
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
-      this.navCtrl.pop();
-    }
-    this.global.p5key['KeyShortCut']['BottomTab'] = (key: string) => {
-      if (document.activeElement != document.getElementById(this.ChannelUserInputId))
-        switch (key) {
-          case 'E':
-            this.open_ext_with_delay();
-            break;
-        }
-    }
-    let ExtTarget = [];
-    for (let i = 0, j = this.extended_buttons.length; i < j; i++) {
-      if (!this.extended_buttons[i].isHide)
-        ExtTarget.push(this.extended_buttons[i]);
-    }
-    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-      if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && ExtTarget.length > index)
-        ExtTarget[index]['act']();
-    }
-    this.global.p5key['KeyShortCut']['EnterAct'] = () => {
-      if (document.activeElement != document.getElementById(this.ChannelUserInputId))
-        setTimeout(() => {
-          if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-          this.make_ext_hidden();
-          this.userInputTextArea.focus();
-        }, 0);
-    }
     this.noti.Current = this.info['cnoti_id'];
     if (this.info['cnoti_id'])
       this.noti.ClearNoti(this.info['cnoti_id']);
@@ -880,6 +852,34 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         v.present();
       });
       return false;
+    }
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
+    this.global.p5key['KeyShortCut']['BottomTab'] = (key: string) => {
+      if (document.activeElement != document.getElementById(this.ChannelUserInputId))
+        switch (key) {
+          case 'E':
+            this.open_ext_with_delay();
+            break;
+        }
+    }
+    let ExtTarget = [];
+    for (let i = 0, j = this.extended_buttons.length; i < j; i++) {
+      if (!this.extended_buttons[i].isHide)
+        ExtTarget.push(this.extended_buttons[i]);
+    }
+    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+      if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && ExtTarget.length > index)
+        ExtTarget[index]['act']();
+    }
+    this.global.p5key['KeyShortCut']['EnterAct'] = () => {
+      if (document.activeElement != document.getElementById(this.ChannelUserInputId))
+        setTimeout(() => {
+          if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+          this.make_ext_hidden();
+          this.userInputTextArea.focus();
+        }, 0);
     }
   }
 
