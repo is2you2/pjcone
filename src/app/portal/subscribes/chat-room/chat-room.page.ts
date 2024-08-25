@@ -223,7 +223,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             if (v.data) await this.voidDraw_fileAct_callback(v, content_related_creator);
           });
           v.onDidDismiss().then(() => {
-            this.ionViewDidEnter();
+            this.AddShortCut();
+            this.init_noties();
           });
           this.removeShortCutKey();
           v.present();
@@ -278,7 +279,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }
           });
           v.onDidDismiss().then(() => {
-            this.ionViewDidEnter();
+            this.AddShortCut();
+            this.init_noties();
           });
           this.removeShortCutKey();
           v.present();
@@ -376,7 +378,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         } else {
           this.extended_buttons[11].isHide = true;
         }
-        this.ionViewDidEnter();
+        this.AddShortCut();
+        this.init_noties();
       }
     }, { // 12
       isHide: true,
@@ -507,12 +510,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.extended_buttons[7].isHide = true;
       }
     });
-    this.noti.Current = this.info['cnoti_id'];
-    if (this.info['cnoti_id'])
-      this.noti.ClearNoti(this.info['cnoti_id']);
-    this.isOtherAct = false;
-    this.useFirstCustomCDN = this.info['CDN'] || 0;
-    this.toggle_custom_attach(this.useFirstCustomCDN);
+    this.init_noties();
   }
 
   /** 첨부 파일 타입 정하기 */
@@ -853,6 +851,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       });
       return false;
     }
+    this.AddShortCut();
+  }
+
+  AddShortCut() {
     this.global.p5key['KeyShortCut']['Escape'] = () => {
       this.navCtrl.pop();
     }
@@ -881,6 +883,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.userInputTextArea.focus();
         }, 0);
     }
+  }
+
+  init_noties() {
+    this.noti.Current = this.info['cnoti_id'];
+    if (this.info['cnoti_id'])
+      this.noti.ClearNoti(this.info['cnoti_id']);
+    this.isOtherAct = false;
+    this.useFirstCustomCDN = this.info['CDN'] || 0;
+    this.toggle_custom_attach(this.useFirstCustomCDN);
   }
 
   async GetSpeechToText() {
@@ -2487,7 +2498,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }).then(v => {
         v.onDidDismiss().then((v) => {
           this.lock_modal_open = false;
-          this.ionViewDidEnter();
+          this.AddShortCut();
+          this.init_noties();
           if (v.data) { // 파일 편집하기를 누른 경우
             switch (v.data.type) {
               case 'image':
@@ -2515,7 +2527,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   cssClass: 'fullscreen',
                 }).then(v => {
                   v.onDidDismiss().then(() => {
-                    this.ionViewDidEnter();
+                    this.AddShortCut();
+                    this.init_noties();
                   });
                   v.onWillDismiss().then(async v => {
                     if (v.data) await this.voidDraw_fileAct_callback(v, related_creators);
