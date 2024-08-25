@@ -4,7 +4,7 @@
     <div (click)="JoinSmallTalk()" class="dedi_chat">
       <ion-icon button style="width: 24px; height: 24px; " name="chatbubbles-outline"></ion-icon>
     </div>
-    <div (click)="add_new_group()" class="add_group">
+    <div (click)="nakama.add_new_group()" class="add_group">
       <ion-icon button style="width: 24px; height: 24px; " name="add-circle-outline"></ion-icon>
     </div>
     <div class="header_online_circle"
@@ -81,7 +81,7 @@
     </ion-item>
   </div>
   <div *ngIf="!nakama.channels.length">
-    <div class="disconnect_info" (click)="add_new_group()">
+    <div class="disconnect_info" (click)="nakama.add_new_group()">
       <ion-icon style="width: 60px; height: 60px;" color="medium" name="chatbubble-ellipses-outline"></ion-icon>
       <div>
         <ion-label color="medium">{{lang.text['Subscribes']['NoChat']}}</ion-label>

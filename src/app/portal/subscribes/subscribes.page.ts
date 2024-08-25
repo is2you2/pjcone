@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, LoadingController, ModalController, NavController } from '@ionic/angular';
+import { AlertController, LoadingController, NavController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
-import { AddGroupPage } from '../settings/add-group/add-group.page';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { MiniranchatClientService } from 'src/app/miniranchat-client.service';
@@ -17,7 +16,6 @@ import { MiniranchatClientService } from 'src/app/miniranchat-client.service';
 export class SubscribesPage implements OnInit {
 
   constructor(
-    private modalCtrl: ModalController,
     public nakama: NakamaService,
     public statusBar: StatusManageService,
     public lang: LanguageSettingService,
@@ -58,11 +56,11 @@ export class SubscribesPage implements OnInit {
     this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
       if (this.nakama.channels.length > index)
         this.go_to_chatroom(this.nakama.channels[index]);
-      else this.add_new_group();
+      else this.nakama.add_new_group();
     };
     if (!this.global.p5key['KeyShortCut']['AddAct'])
       this.global.p5key['KeyShortCut']['AddAct'] = () => {
-        this.add_new_group();
+        this.nakama.add_new_group();
       };
   }
 
@@ -245,21 +243,6 @@ export class SubscribesPage implements OnInit {
     let _is_official = server_info['isOfficial'];
     let _target = server_info['target'];
     this.nakama.check_notifications(this.nakama.notifications_rearrange[i], _is_official, _target);
-  }
-
-  /** 새 그룹 추가하기 */
-  add_new_group() {
-    this.modalCtrl.create({
-      component: AddGroupPage,
-    }).then(v => {
-      let cache_func = this.global.p5key['KeyShortCut'];
-      this.global.p5key['KeyShortCut'] = {};
-      v.onDidDismiss().then(() => {
-        this.global.p5key['KeyShortCut'] = cache_func;
-        this.try_add_shortcut();
-      });
-      v.present();
-    });
   }
 
   ionViewWillLeave() {

@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { IonToggle, ModalController } from '@ionic/angular';
+import { IonToggle, NavController } from '@ionic/angular';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
@@ -17,7 +17,6 @@ import * as p5 from 'p5';
 export class AddGroupPage implements OnInit, OnDestroy {
 
   constructor(
-    public modalCtrl: ModalController,
     private p5toast: P5ToastService,
     private nakama: NakamaService,
     private statusBar: StatusManageService,
@@ -25,6 +24,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
     private global: GlobalActService,
     private mClipboard: Clipboard,
     private indexed: IndexedDBService,
+    private navCtrl: NavController,
   ) { }
 
   BackButtonPressed = false;
@@ -34,7 +34,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
         this.BackButtonPressed = true;
-        this.modalCtrl.dismiss();
+        this.navCtrl.pop();
       };
     } catch (e) {
       console.log('탐색 기록 변경시 오류 발생: ', e);
@@ -94,17 +94,14 @@ export class AddGroupPage implements OnInit, OnDestroy {
   }
 
   ionViewWillEnter() {
+    this.IsFocusOnThisPage = true;
     this.ChangeContentWithKeyInput();
+    this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.navCtrl.pop();
+    }
   }
 
-  ionViewDidEnter() {
-    this.modalCtrl.getTop().then(self => {
-      this.ModalSelf = self;
-    });
-  }
-
-  /** 이 modal 페이지 (this) */
-  ModalSelf: HTMLIonModalElement;
+  IsFocusOnThisPage = true;
   p5canvas: p5;
   ChangeContentWithKeyInput() {
     let group_name = document.getElementById('group_name');
@@ -114,14 +111,13 @@ export class AddGroupPage implements OnInit, OnDestroy {
     }, 200);
     this.p5canvas = new p5((p: p5) => {
       p.keyPressed = async (ev) => {
-        let getTop = await this.modalCtrl.getTop();
-        if (this.ModalSelf != getTop) return;
-        switch (ev['key']) {
-          case 'Enter':
-            if (document.activeElement.id != 'group_desc')
-              this.save();
-            break;
-        }
+        if (this.IsFocusOnThisPage)
+          switch (ev['key']) {
+            case 'Enter':
+              if (document.activeElement.id != 'group_desc')
+                this.save();
+              break;
+          }
       }
     });
   }
@@ -248,7 +244,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
         console.log('그룹 생성자를 매니저로 승격 오류: ', e);
       }
       setTimeout(() => {
-        this.modalCtrl.dismiss();
+        this.navCtrl.pop();
       }, 500);
     } catch (e) {
       console.error('그룹 생성 실패: ', e);
@@ -312,7 +308,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
       this.indexed.saveTextFileToUserPath(this.userInput.img, `servers/local/target/groups/${generated_id}.img`);
     this.nakama.rearrange_channels();
     setTimeout(() => {
-      this.modalCtrl.dismiss();
+      this.navCtrl.pop();
     }, 500);
   }
 
@@ -353,9 +349,14 @@ export class AddGroupPage implements OnInit, OnDestroy {
         text: this.lang.text['AddGroup']['join_group_succ'],
       });
       setTimeout(() => {
-        this.modalCtrl.dismiss();
+        this.navCtrl.pop();
       }, 500);
     }
+  }
+
+  ionViewWillLeave() {
+    this.IsFocusOnThisPage = false;
+    delete this.global.p5key['KeyShortCut']['Escape'];
   }
 
   ngOnDestroy(): void {

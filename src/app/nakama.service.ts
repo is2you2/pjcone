@@ -389,6 +389,17 @@ export class NakamaService {
     });
   }
 
+  /** 새 채널 만들기 / 새 그룹 추가하기 */
+  add_new_group() {
+    this.ngZone.run(() => {
+      this.global.RemoveAllModals(() => {
+        this.navCtrl.navigateForward('add-group', {
+          animation: mdTransitionAnimation,
+        });
+      });
+    });
+  }
+
   /** 프로필 페이지 열기  
    * 서버 기반 페이지 열기시...
    * @param _state { isOfficial: string, target: string }

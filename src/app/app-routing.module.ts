@@ -49,6 +49,10 @@ const routes: Routes = [
   {
     path: 'group-detail',
     loadChildren: () => import('./portal/settings/group-detail/group-detail.module').then(m => m.GroupDetailPageModule)
+  },
+  {
+    path: 'add-group',
+    loadChildren: () => import('./portal/settings/add-group/add-group.module').then(m => m.AddGroupPageModule)
   }
 ];
 

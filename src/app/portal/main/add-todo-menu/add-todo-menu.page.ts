@@ -350,7 +350,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   isStoreAtChangable = true;
   async ionViewWillEnter() {
     this.WillLeavePage = false;
-    this.AddShortCut();
     if (this.cont) this.cont.abort();
     this.cont = new AbortController();
     this.LoadStorageList();
@@ -568,6 +567,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   ionViewDidEnter() {
     this.show_count_timer();
+    this.AddShortCut();
   }
 
   AddShortCut() {
