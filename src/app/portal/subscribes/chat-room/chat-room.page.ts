@@ -2179,6 +2179,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               copied['thumbnail'] = FileURL;
             });
           this.userInput.text = orig_msg;
+          setTimeout(() => {
+            this.ResizeTextArea();
+            this.userInputTextArea.style.height = this.userInputTextArea.scrollHeight + 'px';
+          }, 0);
           this.make_ext_hidden();
           this.userInputTextArea.focus();
         },
