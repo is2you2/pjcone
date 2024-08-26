@@ -511,6 +511,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     });
     this.init_noties();
+    this.AddShortCut();
   }
 
   /** 첨부 파일 타입 정하기 */
@@ -851,7 +852,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       });
       return false;
     }
-    this.AddShortCut();
   }
 
   AddShortCut() {
