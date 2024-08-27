@@ -288,7 +288,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
         if (!this.nakama.users.self['email'])
           setTimeout(() => {
             EmailInput.elt.focus();
-          }, 100);
+          }, 150);
         let PasswordInput = p.createInput();
         PasswordInput.style('margin-top', '10px');
         PasswordInput.style('align-self', 'center');
