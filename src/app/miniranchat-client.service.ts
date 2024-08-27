@@ -256,7 +256,7 @@ export class MiniranchatClientService {
           animation: mdTransitionAnimation,
           state: {
             address: this.cacheAddress,
-            name: this.MyUserName ?? this.nakama.users.self['display_name'],
+            name: this.MyUserName,
           },
         });
       });
