@@ -105,10 +105,14 @@ export class MiniranchatClientService {
 
   /** 이벤트 리스너 직접 삭제처리 */
   RemoveListeners() {
-    this.client.onopen = null;
-    this.client.onclose = null;
-    this.client.onerror = null;
-    this.client.onmessage = null;
+    if (this.FFSClient)
+      this.FFSClient.onopen = null;
+    if (this.client) {
+      this.client.onopen = null;
+      this.client.onclose = null;
+      this.client.onerror = null;
+      this.client.onmessage = null;
+    }
   }
 
   /** 알림 클릭시 모바일앱 행동요령 등록 */
@@ -268,14 +272,22 @@ export class MiniranchatClientService {
    */
   IsConnected = false;
 
+  /** FFS 우선처리 서버에 연결하여  */
+  FFSClient: WebSocket;
+  /** pid */
+  FFSuuid: string;
+  /** 참여된 채널 */
+  FFSJoinedChannel: string;
   /** 클라이언트 끊기 */
   disconnect(code = 1000, reason = 'user_close') {
+    if (this.FFSClient) this.FFSClient.close(code, reason);
     if (this.client) this.client.close(code, reason);
     this.IsConnected = false;
     this.cacheAddress = '';
     this.uuid = undefined;
     if (this.p5canvas) this.p5canvas.remove();
     this.RemoveListeners();
+    this.FFSClient = undefined;
     this.client = undefined;
     this.JoinedChannel = undefined;
     this.status = 'idle';

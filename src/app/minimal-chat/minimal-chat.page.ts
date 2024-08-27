@@ -397,7 +397,12 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       try {
         let data = JSON.parse(v);
         if (!this.client.JoinedChannel) this.client.JoinedChannel = data['channel'];
-        if (!this.client.uuid) this.client.uuid = data['uid'];
+        if (!this.client.uuid) {
+          this.client.uuid = data['uid'];
+          // FFS 우선처리 주소가 등록되어있다면 이곳으로 클라이언트 연결처리
+          if (this.client.FallbackOverrideAddress && this.client.uuid)
+            this.FFSOverrideConnect();
+        }
         let isMe = this.client.uuid == data['uid'];
         let target = isMe ? (this.client.MyUserName || this.lang.text['MinimalChat']['name_me']) : (data['name'] || this.lang.text['MinimalChat']['name_stranger_group']);
         let color = data['uid'] ? (data['uid'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6) : isDarkMode ? '888888' : '444444';
@@ -644,6 +649,21 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         }, this.Header, this.open_this);
         if (this.client.p5canvas && this.client.p5canvas['OnDediMessage']) this.client.p5canvas['OnDediMessage']('ff0000');
       }
+    }
+  }
+
+  /** FFS 우선처리 서버가 동작하는 경우 주소 확인 과정에서 해당 서버에 연결처리 */
+  FFSOverrideConnect() {
+    let sep = this.client.FallbackOverrideAddress.split('://');
+    let address_without_protocol = sep.pop();
+    this.client.FFSClient = new WebSocket(`${sep.pop() ? 'wss:' : 'ws:'}//${address_without_protocol}:12013`);
+    this.client.FFSClient.onopen = () => {
+      this.client.FFSClient.send(JSON.stringify({
+        type: 'override',
+        clientId: this.client.uuid,
+        channel: this.client.JoinedChannel,
+        name: this.client.MyUserName,
+      }));
     }
   }
 
