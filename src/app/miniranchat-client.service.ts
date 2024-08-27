@@ -103,6 +103,14 @@ export class MiniranchatClientService {
     }
   }
 
+  /** 이벤트 리스너 직접 삭제처리 */
+  RemoveListeners() {
+    this.client.onopen = null;
+    this.client.onclose = null;
+    this.client.onerror = null;
+    this.client.onmessage = null;
+  }
+
   /** 알림 클릭시 모바일앱 행동요령 등록 */
   RegisterNotificationReact() {
     this.noti.Sq_client = this;
@@ -267,6 +275,7 @@ export class MiniranchatClientService {
     this.cacheAddress = '';
     this.uuid = undefined;
     if (this.p5canvas) this.p5canvas.remove();
+    this.RemoveListeners();
     this.client = undefined;
     this.JoinedChannel = undefined;
     this.status = 'idle';

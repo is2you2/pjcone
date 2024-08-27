@@ -82,6 +82,7 @@ export class UserFsDirPage implements OnInit {
       window.history.pushState(null, null, window.location.href);
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
+        window.onpopstate = null;
         this.BackButtonPressed = true;
         this.navCtrl.back();
       };
@@ -536,8 +537,8 @@ export class UserFsDirPage implements OnInit {
   }
 
   SelectImportFolder() {
-      let input = document.getElementById('folder_sel_id');
-      input.click();
+    let input = document.getElementById('folder_sel_id');
+    input.click();
   }
   async inputImageSelected(ev: any) {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });

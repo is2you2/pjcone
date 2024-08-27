@@ -474,10 +474,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           img.src = v;
           img.onload = () => {
             this.info['info']['img'] = v;
+            img.onload = null;
+            img.onerror = null;
             img.remove();
             done(undefined);
           }
           img.onerror = () => {
+            img.onload = null;
+            img.onerror = null;
             img.remove();
             err();
           }
@@ -766,6 +770,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       window.history.pushState(null, null, window.location.href);
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
+        window.onpopstate = null;
         this.BackButtonPressed = true;
         this.navCtrl.back();
       };
@@ -823,7 +828,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   ionViewWillEnter() {
     this.ChatContDiv = document.getElementById('chatroom_content_div');
-    document.getElementById(this.ChannelUserInputId).onpaste = (ev: any) => {
+    if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+    this.userInputTextArea.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
         stack.push({ file: clipboardItem });
@@ -2598,7 +2604,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
     this.noti.Current = undefined;
     this.removeShortCutKey();
-    window.onfocus = undefined;
+    window.onfocus = null;
+    this.userInputTextArea.onpaste = null;
   }
 
   removeShortCutKey() {
@@ -2609,6 +2616,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   async ngOnDestroy(): Promise<void> {
+    this.ChatLogs.onscroll = null;
     this.cont.abort();
     delete this.nakama.opened_page_info['channel'];
     this.nakama.ChatroomLinkAct = undefined;

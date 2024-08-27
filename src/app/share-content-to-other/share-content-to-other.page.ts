@@ -34,6 +34,7 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
       window.history.replaceState(null, null, window.location.href);
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
+        window.onpopstate = null;
         this.BackButtonPressed = true;
         this.modalCtrl.dismiss();
       };

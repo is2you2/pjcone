@@ -2801,6 +2801,12 @@ export class NakamaService {
           }
         }
         socket.ondisconnect = (_e) => {
+          socket.onnotification = null;
+          socket.onmatchpresence = null;
+          socket.onchannelpresence = null;
+          socket.onmatchdata = null;
+          socket.onchannelmessage = null;
+          socket.ondisconnect = null;
           this.OnSocketDisconnect(_is_official, _target);
         }
         callback(socket);

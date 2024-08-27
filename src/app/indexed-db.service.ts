@@ -54,10 +54,14 @@ export class IndexedDBService {
       let req = indexedDB.open('/userfs', 21);
       req.onsuccess = (_ev) => {
         this.godotDB = req.result;
+        req.onsuccess = null;
+        req.onerror = null;
         done(undefined);
       }
       req.onerror = (e) => {
         console.error('IndexedDB initialized failed: ', e);
+        req.onsuccess = null;
+        req.onerror = null;
         error(e);
       }
     });
@@ -77,9 +81,13 @@ export class IndexedDBService {
         if (ev.type != 'success')
           console.error('저장 실패: ', path);
         this.createRecursiveDirectory(dir, targetDB);
+        put.onsuccess = null;
+        put.onerror = null;
       }
       put.onerror = (e) => {
         console.error('IndexedDB createRecursiveDirectory failed: ', e);
+        put.onsuccess = null;
+        put.onerror = null;
       }
     });
   }
@@ -95,10 +103,14 @@ export class IndexedDBService {
         put.onsuccess = (ev) => {
           if (ev.type != 'success')
             console.error('저장 실패: ', path);
+          put.onsuccess = null;
+          put.onerror = null;
           done(undefined);
         }
         put.onerror = (e) => {
           console.error('IndexedDB createRecursiveDirectory failed: ', e);
+          put.onsuccess = null;
+          put.onerror = null;
           err(e);
         }
       });
@@ -122,9 +134,13 @@ export class IndexedDBService {
         if (ev.type != 'success')
           console.error('저장 실패: ', path);
         _CallBack(ev);
+        put.onsuccess = null;
+        put.onerror = null;
         done(ev);
       }
       put.onerror = (e) => {
+        put.onsuccess = null;
+        put.onerror = null;
         error(e);
       }
     });
@@ -151,10 +167,14 @@ export class IndexedDBService {
       put.onsuccess = (ev) => {
         if (ev.type != 'success')
           console.error('저장 실패: ', path);
+        put.onsuccess = null;
+        put.onerror = null;
         _CallBack(int8Array);
         done(int8Array);
       }
       put.onerror = (e) => {
+        put.onsuccess = null;
+        put.onerror = null;
         error(e);
       }
     });
@@ -176,9 +196,13 @@ export class IndexedDBService {
       put.onsuccess = (ev) => {
         if (ev.type != 'success')
           console.error('저장 실패: ', path);
+        put.onsuccess = null;
+        put.onerror = null;
         done();
       }
       put.onerror = (e) => {
+        put.onsuccess = null;
+        put.onerror = null;
         error(e);
       }
     });
@@ -207,10 +231,14 @@ export class IndexedDBService {
       put.onsuccess = (ev) => {
         if (ev.type != 'success')
           console.error('저장 실패: ', path);
+        put.onsuccess = null;
+        put.onerror = null;
         _CallBack(int8Array);
         done(int8Array);
       }
       put.onerror = (e) => {
+        put.onsuccess = null;
+        put.onerror = null;
         error(e);
       }
     });
@@ -228,10 +256,14 @@ export class IndexedDBService {
       put.onsuccess = (ev) => {
         if (ev.type != 'success')
           console.error('저장 실패: ', path);
+        put.onsuccess = null;
+        put.onerror = null;
         _CallBack(ev);
         done(ev);
       }
       put.onerror = (e) => {
+        put.onsuccess = null;
+        put.onerror = null;
         error(e);
       }
     });
@@ -243,10 +275,14 @@ export class IndexedDBService {
       let data = targetDB.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').count(`/userfs/${path}`);
       data.onsuccess = (ev) => {
         let cursor = ev.target['result'];
+        data.onsuccess = null;
+        data.onerror = null;
         _CallBack(cursor);
         done(cursor);
       }
       data.onerror = (e) => {
+        data.onsuccess = null;
+        data.onerror = null;
         error(e);
       }
     });
@@ -263,10 +299,14 @@ export class IndexedDBService {
             keys.splice(i, 1);
           else keys[i] = keys[i].substring(8);
         }
+        data.onsuccess = null;
+        data.onerror = null;
         _CallBack(keys);
         done(keys);
       }
       data.onerror = (e) => {
+        data.onsuccess = null;
+        data.onerror = null;
         error(e);
       }
     });
@@ -278,10 +318,14 @@ export class IndexedDBService {
     return new Promise((done, error) => {
       data.onsuccess = (ev) => {
         const result = ev.target['result'];
+        data.onsuccess = null;
+        data.onerror = null;
         _CallBack(result);
         done(result);
       }
       data.onerror = (e) => {
+        data.onsuccess = null;
+        data.onerror = null;
         error(e);
       }
     });
@@ -297,15 +341,21 @@ export class IndexedDBService {
       data.onsuccess = (ev) => {
         if (ev.target['result']) {
           let result = new TextDecoder().decode(ev.target['result']['contents']);
+          data.onsuccess = null;
+          data.onerror = null;
           _CallBack(true, result);
           done(result);
         } else {
+          data.onsuccess = null;
+          data.onerror = null;
           _CallBack(false, `No file: , ${path}`);
           done(undefined);
         }
       }
       data.onerror = (e) => {
         console.error('IndexedDB loadTextFromUserPath failed: ', e);
+        data.onsuccess = null;
+        data.onerror = null;
         done(undefined);
       }
     });
@@ -321,13 +371,19 @@ export class IndexedDBService {
       data.onsuccess = (ev) => {
         try {
           let blob = new Blob([ev.target['result']['contents']], { type: mime });
+          data.onsuccess = null;
+          data.onerror = null;
           _CallBack(blob);
           done(blob);
         } catch (e) {
+          data.onsuccess = null;
+          data.onerror = null;
           error(e);
         }
       }
       data.onerror = (e) => {
+        data.onsuccess = null;
+        data.onerror = null;
         error(e);
       }
     });
@@ -357,9 +413,13 @@ export class IndexedDBService {
           text: `${this.lang.text['IndexedDB']['FailedToDownloadFile']}: ${e}`,
         });
       }
+      data.onsuccess = null;
+      data.onerror = null;
     }
     data.onerror = (e) => {
       console.error('IndexedDB DownloadFileFromUserPath failed: ', e);
+      data.onsuccess = null;
+      data.onerror = null;
     }
   }
 
@@ -367,10 +427,14 @@ export class IndexedDBService {
     let data = targetDB.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').delete(`/userfs/${path}`);
     return new Promise((done, error) => {
       data.onsuccess = (ev) => {
+        data.onsuccess = null;
+        data.onerror = null;
         _CallBack(ev);
         done(ev);
       }
       data.onerror = (e) => {
+        data.onsuccess = null;
+        data.onerror = null;
         error(e);
       }
     });

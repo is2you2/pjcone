@@ -44,6 +44,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
       window.history.pushState(null, null, window.location.href);
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
+        window.onpopstate = null;
         this.BackButtonPressed = true;
         this.navCtrl.back();
       };
@@ -702,10 +703,14 @@ export class GroupServerPage implements OnInit, OnDestroy {
           img.src = v;
           img.onload = () => {
             this.p5canvas['ChangeImageSmooth'](v);
+            img.onload = null;
+            img.onerror = null;
             img.remove();
             done(undefined);
           }
           img.onerror = () => {
+            img.onload = null;
+            img.onerror = null;
             img.remove();
             err();
           }

@@ -32,6 +32,7 @@ export class CreatorPage implements OnInit {
       window.history.pushState(null, null, window.location.href);
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
+        window.onpopstate = null;
         this.BackButtonPressed = true;
         this.navCtrl.back();
       };

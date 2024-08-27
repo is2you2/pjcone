@@ -37,6 +37,8 @@ export class AddPostPage implements OnInit, OnDestroy {
   ) { }
 
   ngOnDestroy(): void {
+    this.TitleInput.onpaste = null;
+    this.ContentTextArea.onpaste = null;
     if (this.p5canvas) this.p5canvas.remove();
     delete this.nakama.StatusBarChangedCallback;
     if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
@@ -151,6 +153,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
         this.BackButtonPressed = true;
+        window.onpopstate = null;
         this.navCtrl.back();
       };
     } catch (e) {

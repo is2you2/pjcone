@@ -66,6 +66,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
         this.BackButtonPressed = true;
+        window.onpopstate = null;
         this.navCtrl.pop();
       };
     } catch (e) {
@@ -127,9 +128,12 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     }, 100);
   }
 
+  /** 하단 입력칸 */
+  DomMinimalChatInput: HTMLElement;
   ionViewWillEnter() {
+    this.DomMinimalChatInput = document.getElementById('minimalchat_input');
     if (this.client.p5canvas) this.client.p5canvas.remove();
-    document.getElementById('minimalchat_input').onpaste = (ev: any) => {
+    this.DomMinimalChatInput.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
         stack.push({ file: clipboardItem });
@@ -142,7 +146,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
 
   AddShortCut() {
     this.global.p5key['KeyShortCut']['EnterAct'] = () => {
-      if (document.activeElement != document.getElementById('minimalchat_input'))
+      if (document.activeElement != this.DomMinimalChatInput)
         setTimeout(() => {
           this.focus_on_input();
         }, 0);
@@ -884,6 +888,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   }
   ngOnDestroy(): void {
     window.onfocus = undefined;
+    this.minimal_chat_log.onscroll = null;
+    this.DomMinimalChatInput.onpaste = null;
     if (this.p5canvas)
       this.p5canvas.remove()
   }

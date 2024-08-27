@@ -59,8 +59,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       }
       this.VideoMediaObject = undefined;
     }
-    if (!document.pictureInPictureElement)
+    if (!document.pictureInPictureElement) {
+      if (this.global.PIPLinkedVideoElement) {
+        this.global.PIPLinkedVideoElement.onloadedmetadata = null;
+        this.global.PIPLinkedVideoElement.onended = null;
+        this.global.PIPLinkedVideoElement.onleavepictureinpicture = null;
+      }
       this.global.PIPLinkedVideoElement = undefined;
+    }
   }
 
   blob: Blob;
@@ -120,6 +126,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       window.history.replaceState(null, null, window.location.href);
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
+        window.onpopstate = null;
         this.BackButtonPressed = true;
         this.modalCtrl.dismiss();
       };
@@ -707,6 +714,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               } else {
                 this.global.PIPLinkedVideoElement = mediaObject['elt'];
                 this.global.PIPLinkedVideoElement.onleavepictureinpicture = () => {
+                  this.global.PIPLinkedVideoElement.onloadedmetadata = null;
+                  this.global.PIPLinkedVideoElement.onended = null;
+                  this.global.PIPLinkedVideoElement.onleavepictureinpicture = null;
                   // 페이지를 나간 상태라면 PIP 종료와 동시에 비디오 삭제
                   if (!this.VideoMediaObject) {
                     this.global.PIPLinkedVideoElement.src = '';

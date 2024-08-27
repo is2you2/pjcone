@@ -37,6 +37,7 @@ export class VoidDrawPage implements OnInit {
       window.onpopstate = () => {
         if (this.isDrawServerCreated) {
           this.CancelRemoteAct();
+          window.onpopstate = null;
           this.InitBrowserBackButtonOverride();
           return;
         }
@@ -1183,6 +1184,10 @@ export class VoidDrawPage implements OnInit {
       if (modal) modal.dismiss();
       this.isDrawServerCreated = false;
       this.webrtc.close_webrtc(false);
+      this.IceWebRTCWsClient.onopen = null;
+      this.IceWebRTCWsClient.onclose = null;
+      this.IceWebRTCWsClient.onmessage = null;
+      this.IceWebRTCWsClient.onerror = null;
     }
   }
 

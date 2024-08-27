@@ -117,6 +117,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     window.history.pushState(null, null, window.location.href);
     window.onpopstate = () => {
       if (this.BackButtonPressed) return;
+      window.onpopstate = null;
       this.BackButtonPressed = true;
       this.navCtrl.back();
     };
@@ -1594,6 +1595,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.desc_input.onpaste = null;
     this.cont.abort();
     this.nakama.AddTodoLinkAct = undefined;
     this.nakama.AddTodoManageUpdateAct = undefined;

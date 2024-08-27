@@ -565,9 +565,13 @@ export class GlobalActService {
       let reader: any = new FileReader();
       reader = reader._realReader ?? reader;
       reader.onload = (ev: any) => {
+        reader.onload = null;
+        reader.onerror = null;
         done(ev.target.result.replace(/"|\\|=/g, ''));
       }
       reader.onerror = (ev: any) => {
+        reader.onload = null;
+        reader.onerror = null;
         error(ev);
       }
       reader.readAsDataURL(file);
@@ -1092,6 +1096,7 @@ export class GlobalActService {
             LogDiv.elt.remove();
           }, 8000);
           OnLoaded();
+          jsBlend.elt.onload = null;
         };
         p.camera(0, 0, -(p.height / 2) / p.tan(p.PI * 30.0 / 180.0), 0, 0, 0, 0, 1, 0);
       }

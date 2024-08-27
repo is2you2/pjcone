@@ -49,6 +49,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
         this.BackButtonPressed = true;
+        window.onpopstate = null;
         this.navCtrl.pop();
       };
     } catch (e) {

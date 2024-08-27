@@ -35,6 +35,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       window.history.pushState(null, null, window.location.href);
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
+        window.onpopstate = null;
         this.BackButtonPressed = true;
         this.navCtrl.back();
       };
@@ -253,6 +254,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.Fallback_FS_input_element.onfocus = null;
     delete this.nakama.on_socket_disconnected['settings_admin_check'];
   }
 }

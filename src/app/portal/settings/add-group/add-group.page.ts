@@ -33,6 +33,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
       window.history.replaceState(null, null, window.location.href);
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
+        window.onpopstate = null;
         this.BackButtonPressed = true;
         this.navCtrl.pop();
       };
@@ -157,9 +158,13 @@ export class AddGroupPage implements OnInit, OnDestroy {
           img.src = v;
           img.onload = () => {
             this.userInput.img = v;
+            img.onload = null;
+            img.onerror = null;
             done(undefined);
           }
           img.onerror = () => {
+            img.onload = null;
+            img.onerror = null;
             img.remove();
             err();
           }

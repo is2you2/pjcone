@@ -49,6 +49,7 @@ export class GroupDetailPage implements OnInit {
       window.history.replaceState(null, null, window.location.href);
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
+        window.onpopstate = null;
         this.BackButtonPressed = true;
         this.navCtrl.pop();
       };
@@ -231,10 +232,14 @@ export class GroupDetailPage implements OnInit {
           img.onload = () => {
             this.info.img = v;
             this.announce_update_group_image(v);
+            img.onload = null;
+            img.onerror = null;
             img.remove();
             done(undefined);
           }
           img.onerror = () => {
+            img.onload = null;
+            img.onerror = null;
             img.remove();
             err();
           }
