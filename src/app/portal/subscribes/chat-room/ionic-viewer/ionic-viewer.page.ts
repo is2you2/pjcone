@@ -1053,6 +1053,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           case 'KeyF': // 메뉴 열기 (우클릭)
             this.OpenFileMenu();
             break;
+          case 'KeyI': // 파일 정보 보기
+            if (ev['ctrlKey'])
+              this.open_bottom_modal();
+            break;
           // 메뉴가 열려있지 않더라도 메뉴 내용을 행동함
           case 'Digit1':
           case 'Digit2':
