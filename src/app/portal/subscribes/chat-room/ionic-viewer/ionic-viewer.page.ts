@@ -1094,6 +1094,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   @ViewChild('ShowContentInfoIonic') ShowContentInfoIonic: IonModal;
 
   open_bottom_modal() {
+    this.FileMenu.dismiss();
     this.useP5Navigator = false;
     this.ShowContentInfoIonic.present();
   }
@@ -1740,6 +1741,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   ShareContent() {
+    this.FileMenu.dismiss();
     let channels = this.nakama.rearrange_channels();
     for (let i = channels.length - 1; i >= 0; i--) {
       if (channels[i]['status'] == 'missing' || channels[i]['status'] == 'offline')
