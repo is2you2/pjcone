@@ -415,7 +415,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     if (this.cont) this.cont.abort();
     this.cont = new AbortController();
     try { // 로컬에서 파일 찾기 우선 작업
-      this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path || this.navParams.get('path'), this.FileInfo['type']);
+      this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type']);
       this.FileURL = URL.createObjectURL(this.blob);
       this.CurrentFileSize = this.formatBytes(this.FileInfo.size || this.FileInfo['filesize'] || this.blob?.size);
     } catch (e) {
