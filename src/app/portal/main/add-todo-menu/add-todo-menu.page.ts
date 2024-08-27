@@ -1595,6 +1595,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.route.queryParams['unsubscribe']();
     this.desc_input.onpaste = null;
     this.cont.abort();
     this.nakama.AddTodoLinkAct = undefined;

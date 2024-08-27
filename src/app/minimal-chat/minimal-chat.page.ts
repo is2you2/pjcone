@@ -13,7 +13,6 @@ import { IndexedDBService } from '../indexed-db.service';
 import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { VoidDrawPage } from '../portal/subscribes/chat-room/void-draw/void-draw.page';
 import * as p5 from 'p5';
-import { UserFsDirPage } from '../user-fs-dir/user-fs-dir.page';
 import { ActivatedRoute, Router } from '@angular/router';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
@@ -887,6 +886,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     delete this.global.p5key['KeyShortCut']['Escape'];
   }
   ngOnDestroy(): void {
+    this.route.queryParams['unsubscribe']();
     window.onfocus = undefined;
     this.minimal_chat_log.onscroll = null;
     this.DomMinimalChatInput.onpaste = null;

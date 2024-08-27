@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -17,7 +17,7 @@ import { NavController } from '@ionic/angular';
   templateUrl: './group-detail.page.html',
   styleUrls: ['./group-detail.page.scss'],
 })
-export class GroupDetailPage implements OnInit {
+export class GroupDetailPage implements OnInit, OnDestroy {
 
   constructor(
     public nakama: NakamaService,
@@ -31,6 +31,9 @@ export class GroupDetailPage implements OnInit {
     private router: Router,
     private navCtrl: NavController,
   ) { }
+  ngOnDestroy(): void {
+    this.route.queryParams['unsubscribe']();
+  }
 
   QRCodeSRC: any;
   /** 그룹 정보 */

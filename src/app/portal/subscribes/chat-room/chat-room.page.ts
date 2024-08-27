@@ -2616,6 +2616,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   async ngOnDestroy(): Promise<void> {
+    this.route.queryParams['unsubscribe']();
     this.ChatLogs.onscroll = null;
     this.cont.abort();
     delete this.nakama.opened_page_info['channel'];

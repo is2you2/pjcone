@@ -529,6 +529,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.route.queryParams['unsubscribe']();
     this.p5canvas.remove();
   }
 

@@ -37,6 +37,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   ) { }
 
   ngOnDestroy(): void {
+    this.route.queryParams['unsubscribe']();
     this.TitleInput.onpaste = null;
     this.ContentTextArea.onpaste = null;
     if (this.p5canvas) this.p5canvas.remove();

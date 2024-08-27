@@ -363,6 +363,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.route.queryParams['unsubscribe']();
     delete this.nakama.socket_reactive['others-profile'];
     delete this.nakama.socket_reactive['others-online'];
     this.p5canvas.remove();
