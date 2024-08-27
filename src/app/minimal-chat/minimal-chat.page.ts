@@ -716,6 +716,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       name: this.client.MyUserName,
     }
     try { // FFS 발송 시도
+      if (!this.client.FallbackOverrideAddress) throw 'FFS 우선처리 지정되지 않음';
       let url = await this.global.try_upload_to_user_custom_fs(FileInfo, `square_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`,
         undefined, this.client.FallbackOverrideAddress);
       if (!url) throw '분할 전송 시도 필요';
