@@ -1038,9 +1038,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             this.ChangeToAnother(-1);
             break;
           case 'KeyS': // 파일 저장
-            if (this.NeedDownloadFile)
-              this.DownloadCurrentFile();
-            else this.download_file();
+            if (ev['shiftKey']) {
+              this.ShareContent();
+            } else {
+              if (this.NeedDownloadFile)
+                this.DownloadCurrentFile();
+              else this.download_file();
+            }
             break;
           case 'KeyD': // 오른쪽 이동
           case 'ArrowRight':

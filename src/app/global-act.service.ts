@@ -282,7 +282,6 @@ export class GlobalActService {
    * @returns iframe 개체 돌려주기
    */
   CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys, waiting_key = ''): Promise<any> {
-    let ready_to_show = false;
     return new Promise(async (done: any) => {
       let refresh_it_loading = async () => {
         try {
@@ -290,7 +289,6 @@ export class GlobalActService {
             throw 'No godot';
           if (waiting_key && !this.godot_window[waiting_key])
             throw 'No act ready';
-          ready_to_show = true;
           await this.indexed.GetGodotIndexedDB();
           done();
         } catch (e) {
