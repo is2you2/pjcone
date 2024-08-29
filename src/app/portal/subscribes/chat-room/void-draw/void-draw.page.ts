@@ -34,6 +34,7 @@ export class VoidDrawPage implements OnInit {
   InitBrowserBackButtonOverride() {
     try {
       window.history.replaceState(null, null, window.location.href);
+      if (window.onpopstate) window.onpopstate = null;
       window.onpopstate = () => {
         if (this.isDrawServerCreated) {
           this.CancelRemoteAct();

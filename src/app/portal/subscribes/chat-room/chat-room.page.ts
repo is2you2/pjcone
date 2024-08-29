@@ -768,6 +768,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   InitBrowserBackButtonOverride() {
     try {
       window.history.pushState(null, null, window.location.href);
+      if (window.onpopstate) window.onpopstate = null;
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
         window.onpopstate = null;

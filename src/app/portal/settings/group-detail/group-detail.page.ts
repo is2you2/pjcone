@@ -50,6 +50,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   InitBrowserBackButtonOverride() {
     try {
       window.history.replaceState(null, null, window.location.href);
+      if (window.onpopstate) window.onpopstate = null;
       window.onpopstate = () => {
         if (this.BackButtonPressed) return;
         window.onpopstate = null;
