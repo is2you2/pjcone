@@ -1729,8 +1729,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       if (hasFile) {
         this.indexed.DownloadFileFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
       } else if (this.FileInfo['url']) {
-        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-        loading.present();
         try {
           let link = document.createElement("a");
           link.target = '_blank';
@@ -1746,7 +1744,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`
           });
         }
-        loading.dismiss();
       }
     }
   }
