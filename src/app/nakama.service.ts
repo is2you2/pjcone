@@ -1748,7 +1748,7 @@ export class NakamaService {
   redirect_channel(_is_official: string, _target: string) {
     if (this.channels_orig[_is_official][_target]) {
       let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
-      for (let i = 0, j = channel_ids.length; i < j; i++)
+      for (let i = 0, j = channel_ids.length; i < j; i++)      try {
         if (this.channels_orig[_is_official][_target][channel_ids[i]]['status'] != 'missing') {
           this.servers[_is_official][_target].socket.joinChat(
             this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['id'],
@@ -1795,6 +1795,9 @@ export class NakamaService {
             this.channels_orig[_is_official][_target][channel_ids[i]]['status'] = 'missing';
           });
         }
+      } catch (e) {
+        // redirect 정보가 누락된 경우 행동 무시
+      }
       this.rearrange_channels();
     }
   }
