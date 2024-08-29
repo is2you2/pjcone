@@ -707,11 +707,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               }
               this.noti.ClearNoti(7);
               loading.dismiss();
-              setTimeout(() => {
-                this.scroll_down_logs();
-                let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
-                input.value = '';
-              }, 300);
             }
           }]
         });
@@ -719,6 +714,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           alert.dismiss();
         }
         alert.onDidDismiss().then(() => {
+          setTimeout(() => {
+            this.scroll_down_logs();
+            let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
+            input.value = '';
+          }, 300);
           this.global.p5key['KeyShortCut']['Escape'] = () => {
             this.navCtrl.pop();
           }
