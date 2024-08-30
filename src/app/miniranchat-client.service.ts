@@ -254,6 +254,7 @@ export class MiniranchatClientService {
   }
 
   RejoinGroupChat() {
+    this.userInput.text = '';
     this.ngZone.run(() => {
       this.global.RemoveAllModals(() => {
         this.navCtrl.navigateForward('minimal-chat', {
