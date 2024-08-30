@@ -103,13 +103,15 @@ export class AddGroupPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 생성하려는 그룹의 이름 */
+  GroupNameInput: HTMLInputElement;
   IsFocusOnThisPage = true;
   p5canvas: p5;
   ChangeContentWithKeyInput() {
     let group_name = document.getElementById('group_name');
-    let name_html = group_name.childNodes[1].childNodes[1].childNodes[1] as HTMLElement;
+    this.GroupNameInput = group_name.childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
     setTimeout(() => {
-      name_html.focus();
+      this.GroupNameInput.focus();
     }, 200);
     this.p5canvas = new p5((p: p5) => {
       p.keyPressed = async (ev) => {
@@ -149,6 +151,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
     if (this.servers[i]['local'])
       this.userInput.id = '';
     this.isExpanded = false;
+    if (this.GroupNameInput) this.GroupNameInput.focus();
   }
 
   async check_if_clipboard_available(v: string) {

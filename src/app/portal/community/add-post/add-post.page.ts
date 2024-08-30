@@ -314,6 +314,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.userInput.UserColor = '888888';
       this.extended_buttons[7].isHide = this.useFirstCustomCDN != 1;
     }
+    if (this.TitleInput) this.TitleInput.focus();
   }
 
   /** 단축키 생성 */

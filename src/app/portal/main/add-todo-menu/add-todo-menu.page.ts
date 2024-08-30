@@ -932,6 +932,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           }
         });
     }
+    setTimeout(() => {
+      if (this.titleIonInput) this.titleIonInput.focus();
+    }, 200);
   }
 
   /** 전체 토글 기록용 */
