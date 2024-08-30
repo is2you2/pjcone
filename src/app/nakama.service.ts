@@ -4312,7 +4312,6 @@ export class NakamaService {
             state: {
               address: json[i].value.address,
               channel: json[i].value.channel,
-              name: this.users.self['display_name'],
             },
           });
           break;
