@@ -64,7 +64,7 @@
                   <ion-item button *ngIf="CurrentFileSize && FileInfo['url']" (click)="RemoveFile()">
                     <ion-label>{{lang.text['ContentViewer']['RemoveFile']}}</ion-label>
                   </ion-item>
-                  <ion-item button *ngIf="!CurrentFileSize" (click)="DownloadFileFromURL()">
+                  <ion-item button *ngIf="!CurrentFileSize && FileInfo['path']" (click)="DownloadFileFromURL()">
                     <ion-label>{{lang.text['ContentViewer']['DownloadToLocal']}}</ion-label>
                   </ion-item>
                 </ion-list>
