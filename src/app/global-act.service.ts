@@ -132,6 +132,8 @@ export class GlobalActService {
   /** 페이지별 단축키 관리자 */
   p5key: p5;
   initialize() {
+    if (!this.p5toast.HTMLEncode)
+      this.p5toast.HTMLEncode = this.HTMLEncode;
     this.p5key = new p5((p: p5) => {
       p.setup = () => {
         p.noCanvas();
@@ -1383,5 +1385,20 @@ export class GlobalActService {
       });
       throw e;
     }
+  }
+
+  /** HTML 내 특수 문자 허용 */
+  HTMLEncode(str: any) {
+    str = [...str];
+    let i = str.length, aRet = [];
+    while (i--) {
+      let iC = str[i].codePointAt(0);
+      if (iC < 65 || iC > 127 || (iC > 90 && iC < 97)) {
+        aRet[i] = '&#' + iC + ';';
+      } else {
+        aRet[i] = str[i];
+      }
+    }
+    return aRet.join('');
   }
 }

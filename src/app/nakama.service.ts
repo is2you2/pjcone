@@ -3466,7 +3466,7 @@ export class NakamaService {
         break;
       case 1: // 전체 알림 수신
         let image_form = `<img src="${decodeURIComponent(this_noti.content['uri'])}" alt="noti_image" style="border-radius: 2px">`;
-        let text_form = `<div>${decodeURIComponent(this_noti.content['msg'])}</div>`;
+        let text_form = `<div>${decodeURIComponent(this.global.HTMLEncode(this_noti.content['msg']))}</div>`;
         let result_form = this_noti.content['uri'] ? image_form + text_form : text_form;
         this.alertCtrl.create({ // 전체 알림 알람 내용보기
           header: this.servers[_is_official][_target].info.name,
@@ -3673,7 +3673,7 @@ export class NakamaService {
           iconColor_ln: 'b95437',
         }, 'global_noti_all', (_ev: any) => {
           let image_form = `<img src="${decode_image}" alt="noti_image" style="border-radius: 2px">`;
-          let text_form = `<div>${decode_body}</div>`;
+          let text_form = `<div>${this.global.HTMLEncode(decode_body)}</div>`;
           let result_form = decode_image ? image_form + text_form : text_form;
           this.alertCtrl.create({ // 전체 알림 알람 내용보기
             header: this.servers[_is_official][_target].info.name,

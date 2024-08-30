@@ -127,7 +127,7 @@ export class MiniranchatClientService {
             switch (ActType) {
               case 'AllUserNotification': // 서버 전체 공지
                 let image_form = `<img *ngIf="${ev['notification']['extra'].image}" src="${ev['notification']['extra'].image}" alt="noti_image" style="border-radius: 8px">`;
-                let text_form = `<div>${ev['notification']['extra'].body}</div>`;
+                let text_form = `<div>${this.global.HTMLEncode(ev['notification']['extra'].body)}</div>`;
                 let result_form = ev['notification']['extra'].image ? image_form + text_form : text_form;
                 this.alertCtrl.create({
                   header: ev['notification']['extra'].title,

@@ -1203,7 +1203,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         } return;
         case 'html':
         case 'xml':
-          getText = this.HTMLEncode(getText);
+          getText = this.global.HTMLEncode(getText);
           line = p.createDiv(getText);
           this.w3CodeColor(line.elt);
           break;
@@ -1552,21 +1552,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       }
       return [-1, -1, func];
     }
-  }
-
-  /** HTML 내 특수 문자 허용 */
-  HTMLEncode(str: any) {
-    str = [...str];
-    let i = str.length, aRet = [];
-    while (i--) {
-      let iC = str[i].codePointAt(0);
-      if (iC < 65 || iC > 127 || (iC > 90 && iC < 97)) {
-        aRet[i] = '&#' + iC + ';';
-      } else {
-        aRet[i] = str[i];
-      }
-    }
-    return aRet.join('');
   }
 
   NewTextFileName = '';

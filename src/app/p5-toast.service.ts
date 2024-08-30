@@ -109,7 +109,7 @@ export class P5ToastService {
           if (!this.AlertNow)
             this.AlertNow = this.alert.shift();
 
-          content.html(this.AlertNow.text);
+          content.html(this.HTMLEncode(this.AlertNow.text));
           update_border();
           this.status = Status.DivFadeIn;
         }
@@ -122,7 +122,7 @@ export class P5ToastService {
                 divLerp = 1;
                 borderLerp = 1;
                 this.status = Status.BorderAlert;
-                content.html(this.AlertNow.text);
+                content.html(this.HTMLEncode(this.AlertNow.text));
               }
               break;
             case Status.BorderAlert:
@@ -143,7 +143,7 @@ export class P5ToastService {
                 if (this.alert.length) {
                   this.stack.push(this.AlertNow);
                   this.AlertNow = this.alert.shift();
-                  content.html(this.AlertNow.text);
+                  content.html(this.HTMLEncode(this.AlertNow.text));
                   this.status = Status.DivFadeIn;
                 } else this.status = Status.FadeOut;
               }
@@ -189,4 +189,9 @@ export class P5ToastService {
   hide() {
     this.status = Status.FadeOut;
   }
+
+  /** HTML 내 특수 문자 허용
+   * globalact 에서 관리해주나 순환성 문제로 직접 사용
+   */
+  HTMLEncode: Function;
 }
