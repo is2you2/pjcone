@@ -27,11 +27,13 @@
       </ion-item>
     </div>
     <div *ngIf="client.status == 'idle'" style="flex: 0 1 auto;">
-      <ion-select *ngIf="ServerList.length" #MinimalChatServer [label]="lang.text['AddGroup']['SelectServer']"
-        (ionChange)="SelectAddressTarget($event)" value="local" style="padding-left: 16px;">
-        <ion-select-option value="local">{{lang.text['voidDraw']['InternalConn']}}</ion-select-option>
-        <ion-select-option *ngFor="let server of ServerList" [value]="server">{{server.info.name}}</ion-select-option>
-      </ion-select>
+      <ion-item *ngIf="ServerList.length">
+        <ion-select #MinimalChatServer [label]="lang.text['AddGroup']['SelectServer']"
+          (ionChange)="SelectAddressTarget($event)" value="local" style="pointer-events: none;">
+          <ion-select-option value="local">{{lang.text['voidDraw']['InternalConn']}}</ion-select-option>
+          <ion-select-option *ngFor="let server of ServerList" [value]="server">{{server.info.name}}</ion-select-option>
+        </ion-select>
+      </ion-item>
       <ion-item *ngIf="NeedInputCustomAddress">
         <ion-input [label]="lang.text['voidDraw']['InputAddress']" [(ngModel)]="UserInputCustomAddress"
           class="ion-text-right" placeholder="(wss://)0.0.0.0"></ion-input>
