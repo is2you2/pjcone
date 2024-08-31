@@ -933,7 +933,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         });
     }
     setTimeout(() => {
-      if (this.titleIonInput) this.titleIonInput.focus();
+      if (!this.isModify && this.titleIonInput) this.titleIonInput.focus();
     }, 200);
   }
 
