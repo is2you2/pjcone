@@ -420,9 +420,9 @@ export class AdminToolsPage implements OnInit {
     try {
       let server_info = this.nakama.servers[this.isOfficial][this.target].info;
       let target_address = `${server_info.useSSL ? 'https' : 'http'}://${server_info.address}`;
-      this.nakama.servers[this.isOfficial][this.target].client.rpc(
+      await this.nakama.servers[this.isOfficial][this.target].client.rpc(
         this.nakama.servers[this.isOfficial][this.target].session,
-        'remove_account_fn', { user_id: user.user_id || user.id }).catch(e => { });
+        'remove_account_fn', { user_id: user.user_id || user.id });
       try { // FFS 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
         let fallback = localStorage.getItem('fallback_fs');
         if (!fallback) throw '사용자 지정 서버 없음';
