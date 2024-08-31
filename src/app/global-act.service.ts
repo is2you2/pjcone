@@ -699,7 +699,7 @@ export class GlobalActService {
         let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", signal: cont.signal });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
-        loading.message = `${file.filename}: ${progressPercent || 0}%`;
+        if (loading) loading.message = `${file.filename}: ${progressPercent || 0}%`;
       }, 700);
       let up_res = await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
       if (!up_res.ok) throw '업로드 단계에서 실패';
