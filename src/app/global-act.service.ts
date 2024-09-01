@@ -1324,6 +1324,11 @@ export class GlobalActService {
     } catch (e) { }
   }
 
+  /** 웹 사이트 주소 열기 */
+  open_link(_link: string) {
+    if (_link) window.open(_link, '_blank');
+  }
+
   /** 클립보드에 기록된 정보 불러오기 (이미지/텍스트)
    * @returns 이미지 또는 텍스트
    */

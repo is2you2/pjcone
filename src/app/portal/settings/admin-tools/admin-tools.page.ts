@@ -24,7 +24,7 @@ export class AdminToolsPage implements OnInit {
     public statusBar: StatusManageService,
     private mClipboard: Clipboard,
     private indexed: IndexedDBService,
-    private global: GlobalActService,
+    public global: GlobalActService,
     private navCtrl: NavController,
     private loadingCtrl: LoadingController,
   ) { }
@@ -53,6 +53,9 @@ export class AdminToolsPage implements OnInit {
     noti_id: 1,
     persistent: false,
   }
+
+  /** 서버에서 관리하는 아케이드 리스트 주소 */
+  ArcadeListURL = '';
 
   BackButtonPressed = false;
   InitBrowserBackButtonOverride() {

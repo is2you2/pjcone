@@ -8,7 +8,7 @@
 </ion-header>
 
 <ion-content>
-  <div class="profile_img_form" style="cursor: pointer;" (click)="go_to_creator_page()">
+  <div class="profile_img_form" style="cursor: pointer;" (click)="global.open_link('https://is2you2.github.io/')">
     <img class="profile_img" src="assets/data/creator_img.jpg" alt="CreatorImg">
     <div class="fore-gradient"></div>
     <div class="username">{{info.name}}</div>
@@ -22,7 +22,7 @@
       <ion-label>{{lang.text['CreatorInfo']['contributors']}}</ion-label>
     </ion-item-divider>
     <div class="infobox content_size thanks_bg">
-      <ion-chip *ngFor="let user of contributors; let i = index" (click)="go_to_helper_page(user.url)"
+      <ion-chip *ngFor="let user of contributors; let i = index" (click)="global.open_link(user.url)"
         [style]="user.mvp ? 'filter: drop-shadow(0px 0px 12px var(--ion-color-dark))' : ''">
         <ion-avatar *ngIf="user.avatar">
           <img [src]="user.avatar" />
@@ -36,7 +36,7 @@
     <ion-label>{{lang.text['CreatorInfo']['thanks_to']}}</ion-label>
   </ion-item-divider>
   <div class="infobox content_size thanks_bg">
-    <ion-chip *ngFor="let user of special_thanks_to; let i = index" (click)="go_to_helper_page(user.url)"
+    <ion-chip *ngFor="let user of special_thanks_to; let i = index" (click)="global.open_link(user.url)"
       [style]="user.mvp ? 'filter: drop-shadow(0px 0px 12px var(--ion-color-dark))' : ''">
       <ion-avatar *ngIf="user.avatar">
         <img [src]="user.avatar" />

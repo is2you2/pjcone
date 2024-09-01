@@ -1173,7 +1173,7 @@ export class VoidDrawPage implements OnInit {
       // 혹시라도 자체 서명 사이트에 접근중이라면 허용처리를 할 수 있게 사이트 연결
       if (this.InputCustomAddress.indexOf('wss://') == 0 && (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')) {
         let GetwithoutProtocol = this.InputCustomAddress.split('://');
-        window.open(`https://${GetwithoutProtocol.pop()}:9001`, '_blank');
+        this.global.open_link(`https://${GetwithoutProtocol.pop()}:9001`);
         this.InputCustomAddress = undefined;
       }
       this.IceWebRTCWsClient.close();

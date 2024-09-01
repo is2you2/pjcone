@@ -14,7 +14,8 @@
   <textarea class="infobox" disabled [(ngModel)]="licenses['modules']"></textarea>
   <ion-list-header>
     <ion-label>Godot engine 4.3</ion-label>
-    <ion-button (click)="open_link('https://godotengine.org/')">{{lang.text['Licenses']['open_link']}}</ion-button>
+    <ion-button
+      (click)="global.open_link('https://godotengine.org/')">{{lang.text['Licenses']['open_link']}}</ion-button>
   </ion-list-header>
   <ion-item-divider>
     <ion-label>Godot engine</ion-label>
@@ -27,7 +28,7 @@
   <ion-list-header>
     <ion-label>JS.BLEND</ion-label>
     <ion-button
-      (click)="open_link('https://github.com/acweathersby/js.blend')">{{lang.text['Licenses']['open_link']}}</ion-button>
+      (click)="global.open_link('https://github.com/acweathersby/js.blend')">{{lang.text['Licenses']['open_link']}}</ion-button>
   </ion-list-header>
   <textarea class="infobox" disabled [(ngModel)]="licenses['jsblend']"></textarea>
 </ion-content>

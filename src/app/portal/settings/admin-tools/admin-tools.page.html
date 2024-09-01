@@ -24,6 +24,14 @@
     </ion-accordion>
   </ion-accordion-group>
   <ion-item-divider>
+    <ion-label>{{lang.text['AdminTools']['ArcadeSet']}}</ion-label>
+  </ion-item-divider>
+  <ion-item button>
+    <ion-input [label]="lang.text['AdminTools']['ArcadeListURL']" class="ion-text-end"
+      [placeholder]="lang.text['AdminTools']['ArcadeURLPlaceholder']" [(ngModel)]="ArcadeListURL"></ion-input>
+    <ion-icon slot="end" name="open-outline" (click)="global.open_link(ArcadeListURL)"></ion-icon>
+  </ion-item>
+  <ion-item-divider>
     <ion-label>{{lang.text['AdminTools']['GlobalNoti']}}</ion-label>
   </ion-item-divider>
   <ion-item>

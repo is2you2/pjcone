@@ -33,11 +33,6 @@ export class SubscribesPage implements OnInit {
     });
   }
 
-  /** 웹 사이트 주소 열기 */
-  open_link(_link: string) {
-    window.open(_link, '_blank')
-  }
-
   cant_dedicated = false;
 
   try_add_shortcut() {

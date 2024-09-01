@@ -14,7 +14,7 @@ export class LicensesPage implements OnInit, OnDestroy {
 
   constructor(
     public lang: LanguageSettingService,
-    private global: GlobalActService,
+    public global: GlobalActService,
     private navCtrl: NavController,
   ) { }
 
@@ -85,10 +85,5 @@ export class LicensesPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.p5canvas.remove();
-  }
-
-  /** 웹 사이트 주소 열기 */
-  open_link(_link: string) {
-    window.open(_link, '_blank');
   }
 }

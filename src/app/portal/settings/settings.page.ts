@@ -220,11 +220,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     else window.open('https://is2you2.github.io/posts/how-to-use-pjcone-server-en/', '_blank');
   }
 
-  /** 모바일 앱에서는 웹으로 연결을 제시함 */
-  open_pwa() {
-    window.open('https://is2you2.github.io/godotchat_pwa/', '_blank');
-  }
-
   /** 페이팔 페이지 열기 */
   open_paypal() {
     // window.open('', '_blank');
