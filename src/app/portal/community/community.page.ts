@@ -70,17 +70,21 @@ export class CommunityPage implements OnInit {
     if (this.is_loadable)
       await this.load_posts();
     setTimeout(() => {
-      if (!this.ContentDiv) this.ContentDiv = document.getElementById('CommunityMainContent') as HTMLDivElement;
-      if (!this.ContentScroll) {
-        this.ContentScroll = document.getElementById('CommunityScrollDiv') as HTMLDivElement;
-        if (!this.ContentScroll.onscroll)
-          this.ContentScroll.onscroll = (_ev: any) => {
-            if (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 450)
-              this.load_post_cycles();
-          }
+      try {
+        if (!this.ContentDiv) this.ContentDiv = document.getElementById('CommunityMainContent') as HTMLDivElement;
+        if (!this.ContentScroll) {
+          this.ContentScroll = document.getElementById('CommunityScrollDiv') as HTMLDivElement;
+          if (!this.ContentScroll.onscroll)
+            this.ContentScroll.onscroll = (_ev: any) => {
+              if (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 450)
+                this.load_post_cycles();
+            }
+        }
+        if (this.is_loadable && (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 450))
+          this.load_post_cycles();
+      } catch (e) {
+        console.log('게시물 스크롤 행동 생성 오류: ', e);
       }
-      if (this.is_loadable && (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 450))
-        this.load_post_cycles();
     }, 100);
   }
 
@@ -185,7 +189,7 @@ export class CommunityPage implements OnInit {
     delete this.global.p5key['KeyShortCut']['Digit'];
     delete this.global.p5key['KeyShortCut']['AddAct'];
     delete this.nakama.socket_reactive['try_load_post'];
-    this.ContentScroll.onscroll = null;
+    if (this.ContentScroll) this.ContentScroll.onscroll = null;
     this.nakama.is_post_lock = false;
   }
 }
