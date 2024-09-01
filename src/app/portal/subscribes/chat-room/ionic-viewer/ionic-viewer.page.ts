@@ -1117,6 +1117,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     _textarea.disabled = false;
     setTimeout(() => {
       this.isTextEditMode = true;
+      this.isHTMLViewer = false;
       _textarea.focus();
     }, 500);
   }
