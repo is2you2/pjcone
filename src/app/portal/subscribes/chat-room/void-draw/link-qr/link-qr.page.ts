@@ -30,7 +30,7 @@ export class LinkQrPage implements OnInit {
       let sep = extract.split('://');
       let only_address = sep.pop();
       let protocol = sep.pop() == 'wss' || this.global.checkProtocolFromAddress(only_address);
-      let HasLocalPage = `${protocol ? 'https:' : 'http:'}://${only_address}:${protocol ? 8443 : 8080}/`;
+      let HasLocalPage = `${protocol ? 'https:' : 'http:'}//${only_address}:${protocol ? 8443 : 8080}/`;
       const cont = new AbortController();
       const id = setTimeout(() => {
         cont.abort();
