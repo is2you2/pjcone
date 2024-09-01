@@ -19,20 +19,29 @@ export class ArcadePage implements OnInit {
   /** 아케이드 정보 수집 */
   ArcadeList = [];
 
-  ngOnInit() {
+  ngOnInit() { }
+
+  async ionViewWillEnter() {
     let servers = this.nakama.get_all_online_server();
+    let TmpList = [];
     for (let i = 0, j = servers.length; i < j; i++) {
-      servers[i].client.readStorageObjects(
-        servers[i].session, {
-        object_ids: [{
-          collection: 'arcade',
-          key: 'url',
-        }]
-      }).then(v => {
+      try {
+        let v = await servers[i].client.readStorageObjects(
+          servers[i].session, {
+          object_ids: [{
+            collection: 'arcade',
+            key: 'url',
+          }]
+        });
         if (v.objects.length) {
-          console.log('아케이드 주소 수집됨: ', v.objects[0].value['data']);
+          let TargetURL = v.objects[0].value['data'];
+          let res = await fetch(TargetURL);
+          console.log('읽어보기 경과: ', res);
         }
-      });
+      } catch (e) {
+        console.log('리스트 불러오기 실패: ', e);
+      }
     }
+    this.ArcadeList = TmpList;
   }
 }
