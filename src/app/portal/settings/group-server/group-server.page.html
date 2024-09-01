@@ -60,7 +60,8 @@
         </ion-item>
         <ion-item button [disabled]="add_custom_tog">
           <ion-input [label]="lang.text['GroupServer']['Address']" class="ion-text-right"
-            [(ngModel)]="dedicated_info.address" placeholder="192.168.0.1"></ion-input>
+            [(ngModel)]="dedicated_info.address" placeholder="(https://)192.168.0.1"></ion-input>
+          <ion-icon slot="end" name="open-outline" (click)="global.open_custom_site(dedicated_info.address)"></ion-icon>
         </ion-item>
         <ion-item button [disabled]="add_custom_tog">
           <ion-input [label]="lang.text['GroupServer']['Key']" [(ngModel)]="dedicated_info.key" class="ion-text-right"
