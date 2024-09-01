@@ -1813,10 +1813,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.alt_path || this.FileInfo.path}_thumbnail.png`);
             this.FileInfo.thumbnail = base64;
             this.global.modulate_thumbnail(this.FileInfo, '', this.cont);
-            if (this.p5canvas) this.p5canvas.remove();
           } catch (e) {
             console.log('썸네일 저장 오류: ', e);
           }
+          if (this.p5canvas) this.p5canvas.remove();
         } catch (e) {
           console.log('비디오 썸네일 생성 취소: ', e);
         }
@@ -1827,10 +1827,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           this.global.godot_window['create_thumbnail'](this.FileInfo);
           let list = await this.indexed.GetFileListFromDB('tmp_files', undefined, this.indexed.godotDB);
           list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB))
-          if (this.p5canvas) this.p5canvas.remove();
         } catch (e) {
           console.log('godot 썸네일 저장 오류: ', e);
         }
+        if (this.p5canvas) this.p5canvas.remove();
         break;
       case 'blender':
         let base64 = this.p5canvas['canvas']['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
