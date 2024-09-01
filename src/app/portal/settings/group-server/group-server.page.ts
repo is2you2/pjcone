@@ -431,10 +431,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
     let protocol = split_fullAddress.pop();
     if (protocol) {
       protocol += ':';
-    } else {
-      let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
-      protocol = checkProtocol ? 'https:' : 'http:';
-    }
+    } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
     this.dedicated_info.address = address[0];
     this.dedicated_info.port = Number(address[1]) || 7350;
     this.dedicated_info.useSSL = (window.location.protocol == 'https:') && !isNativefier;

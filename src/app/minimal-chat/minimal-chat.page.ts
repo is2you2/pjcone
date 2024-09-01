@@ -317,24 +317,22 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   /** QR코드 이미지 생성 */
   async CreateQRCode() {
     this.QRCodeSRC = 'loading';
-    let checkIfNoSecure = this.client.cacheAddress.indexOf('ws:') == 0;
+    let NoSecure = this.client.cacheAddress.indexOf('ws:') == 0;
     let header_address: string;
-    if (checkIfNoSecure) {
-      try { // 사용자 지정 서버 업로드 시도 우선
-        let extract = 'http://' + this.client.cacheAddress.split('://')[1];
-        let HasLocalPage = `${extract}:8080/www/`;
-        const cont = new AbortController();
-        const id = setTimeout(() => {
-          cont.abort();
-        }, 500);
-        let res = await fetch(HasLocalPage, { signal: cont.signal });
-        clearTimeout(id);
-        if (res.ok) header_address = `${extract}:8080/www/`;
-        else throw '주소 없음';
-      } catch (e) {
-        header_address = 'http://localhost:8080/www/';
-      }
-    } else header_address = `${SERVER_PATH_ROOT}godotchat_pwa/`;
+    try {
+      let extract = `${NoSecure ? 'http' : 'https'}://` + this.client.cacheAddress.split('://')[1];
+      let HasLocalPage = `${extract}:${NoSecure ? 8080 : 8443}/www/`;
+      const cont = new AbortController();
+      const id = setTimeout(() => {
+        cont.abort();
+      }, 500);
+      let res = await fetch(HasLocalPage, { signal: cont.signal });
+      clearTimeout(id);
+      if (res.ok) header_address = `${extract}:${NoSecure ? 8080 : 8443}/www/`;
+      else throw '주소 없음';
+    } catch (e) {
+      header_address = `${SERVER_PATH_ROOT}godotchat_pwa/`;
+    }
     this.QRCodeTargetString = `${header_address}?group_dedi=${this.client.cacheAddress},${this.client.JoinedChannel || 'public'}`;
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeTargetString);
   }
@@ -382,10 +380,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       let protocol = split_fullAddress.pop();
       if (protocol) {
         protocol += ':';
-      } else {
-        let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
-        protocol = checkProtocol ? 'wss:' : 'ws:';
-      }
+      } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'wss:' : 'ws:';
       let target_address = `${protocol}//${address[0]}`;
       this.client.initialize(target_address);
     }

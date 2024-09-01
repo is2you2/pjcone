@@ -423,10 +423,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 let protocol = split_fullAddress.pop();
                 if (protocol) {
                   protocol += ':';
-                } else {
-                  let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
-                  protocol = checkProtocol ? 'https:' : 'http:';
-                }
+                } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
                 let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
                 // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
                 let target_key = `${this.info.id}_${this.nakama.users.self['display_name']}`;

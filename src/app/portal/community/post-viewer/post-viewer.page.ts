@@ -194,24 +194,21 @@ export class PostViewerPage implements OnInit, OnDestroy {
           link.onclick = async () => {
             let is_https = this.PostInfo['OutSource'].indexOf('https:') == 0;
             let targetAddress = '';
-            if (is_https) // 보안 연결인 경우 홈페이지 우회
+            // 사용자 지정 서버가 있는지 검토우회
+            let address_text: string = this.PostInfo['OutSource'];
+            let extract = address_text.substring(0, address_text.indexOf(':8'));
+            try { // 사용자 지정 서버 업로드 시도 우선
+              let HasLocalPage = `${extract}:${is_https ? 8443 : 8080}/www/`;
+              const cont = new AbortController();
+              const id = setTimeout(() => {
+                cont.abort();
+              }, 500);
+              let res = await fetch(HasLocalPage, { signal: cont.signal });
+              clearTimeout(id);
+              if (res.ok) targetAddress = `${extract}:${is_https ? 8443 : 8080}/www/?postViewer=${this.PostInfo['OutSource']}`;
+              else throw '주소 없음';
+            } catch (e) {
               targetAddress = `${SERVER_PATH_ROOT}godotchat_pwa/?postViewer=${this.PostInfo['OutSource']}`;
-            else { // 비보안 연결인 경우 연결 검토 후 우회
-              let address_text: string = this.PostInfo['OutSource'];
-              let extract = address_text.substring(0, address_text.indexOf(':8080'));
-              try { // 사용자 지정 서버 업로드 시도 우선
-                let HasLocalPage = `${extract}:8080/www/`;
-                const cont = new AbortController();
-                const id = setTimeout(() => {
-                  cont.abort();
-                }, 500);
-                let res = await fetch(HasLocalPage, { signal: cont.signal });
-                clearTimeout(id);
-                if (res.ok) targetAddress = `${extract}:8080/www/?postViewer=${this.PostInfo['OutSource']}`;
-                else throw '주소 없음';
-              } catch (e) {
-                targetAddress = `http://localhost:8080/www/?postViewer=${this.PostInfo['OutSource']}`;
-              }
             }
             this.mClipboard.copy(targetAddress)
               .catch(_e => {

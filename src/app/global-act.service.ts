@@ -690,10 +690,7 @@ export class GlobalActService {
       let protocol = split_fullAddress.pop();
       if (protocol) {
         protocol += ':';
-      } else {
-        let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
-        protocol = checkProtocol ? 'https:' : 'http:';
-      }
+      } else protocol = this.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
       CatchedAddress = `${protocol}//${address[0]}:${address[1] || 9002}/cdn/${filename}`;
       progress = setInterval(async () => {
         let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", signal: cont.signal });
@@ -715,6 +712,13 @@ export class GlobalActService {
       if (!loading) innerLoading.dismiss();
       return undefined;
     }
+  }
+
+  /** 입력된 주소가 IP주소로 구성되어있는지 검토
+   * @returns boolean: 주소가 dns 형식으로 ssl 사용이 예상되면 true, 주소가 ip 주소로 비보안이 예상되면 false
+   */
+  checkProtocolFromAddress(address: string) {
+    return Boolean(address.replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, ''));
   }
 
   /** blender 파일 읽기 후 특정 개체에 넣기 */
@@ -1315,7 +1319,7 @@ export class GlobalActService {
       let GetwithoutPort = targetAddress.split(':');
       if (GetwithoutPort.length > 2) GetwithoutPort.pop();
       if (GetwithoutPort.length == 1) {
-        let checkProtocol = targetAddress.replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
+        let checkProtocol = this.checkProtocolFromAddress(targetAddress);
         GetwithoutPort[0] = '//' + GetwithoutPort[0];
         GetwithoutPort.unshift(checkProtocol ? 'https' : 'http');
       }

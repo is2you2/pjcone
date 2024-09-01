@@ -1013,10 +1013,7 @@ export class VoidDrawPage implements OnInit {
     let protocol = split_fullAddress.pop();
     if (protocol) {
       protocol += ':';
-    } else {
-      let checkProtocol = address[0].replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, '');
-      protocol = checkProtocol ? 'wss:' : 'ws:';
-    }
+    } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'wss:' : 'ws:';
     this.IceWebRTCWsClient = new WebSocket(`${protocol}//${address[0]}:12013/`);
     let modal: HTMLIonModalElement;
     this.AddShortCut();
