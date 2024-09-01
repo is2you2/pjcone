@@ -42,6 +42,7 @@ export class AdminToolsPage implements OnInit {
     this.isOfficial = this.servers[i].isOfficial;
     this.target = this.servers[i].target;
     this.isExpanded = false;
+    this.GetRegisteredArcadeURL();
     this.refresh_all_user();
     this.refresh_all_groups();
   }
@@ -86,6 +87,36 @@ export class AdminToolsPage implements OnInit {
     this.global.p5key['KeyShortCut']['Escape'] = () => {
       this.navCtrl.pop();
     }
+  }
+
+  /** 서버에 등록된 아케이드 URL 주소 받아오기 */
+  GetRegisteredArcadeURL() {
+    this.nakama.servers[this.isOfficial][this.target].client.readStorageObjects(
+      this.nakama.servers[this.isOfficial][this.target].session, {
+      object_ids: [{
+        collection: 'arcade',
+        key: 'url',
+      }]
+    }).then(v => {
+      if (v.objects.length) this.ArcadeListURL = v.objects[0].value['data'];
+    });
+  }
+
+  /** 아케이드 주소 설정하기 */
+  async SetArcadeURL() {
+    try {
+      await this.nakama.servers[this.isOfficial][this.target].client.rpc(
+        this.nakama.servers[this.isOfficial][this.target].session, 'set_arcade_url_fn',
+        { data: this.ArcadeListURL });
+      this.p5toast.show({
+        text: this.lang.text['AdminTools']['SuccSetArcadeURL'],
+      });
+    } catch (e) {
+      this.p5toast.show({
+        text: `${this.lang.text['AdminTools']['FailedSetArcadeURL']}: ${e}`,
+      });
+    }
+    this.global.open_link(this.ArcadeListURL);
   }
 
   is_sending = false;
