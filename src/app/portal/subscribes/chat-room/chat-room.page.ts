@@ -783,17 +783,21 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.InitBrowserBackButtonOverride();
     this.useSpeaker = Boolean(localStorage.getItem('useChannelSpeaker'));
     this.toggle_speakermode(this.useSpeaker);
-    this.ChatLogs = document.getElementById('chatroom_div');
-    this.ChatLogs.onscroll = (_ev: any) => {
-      if (this.ChatLogs.scrollHeight - (this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) < 1500) {
-        // 스크롤을 제일 하단으로 내리면 사라짐
-        if (!this.ShowGoToBottom)
-          if (!this.ShowRecentMsg)
-            this.init_last_message_viewer();
-        if (this.ShowRecentMsg && !this.BlockAutoScrollDown)
-          this.pull_msg_history(false);
+    try {
+      this.ChatLogs = document.getElementById('chatroom_div');
+      this.ChatLogs.onscroll = (_ev: any) => {
+        if (this.ChatLogs.scrollHeight - (this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) < 1500) {
+          // 스크롤을 제일 하단으로 내리면 사라짐
+          if (!this.ShowGoToBottom)
+            if (!this.ShowRecentMsg)
+              this.init_last_message_viewer();
+          if (this.ShowRecentMsg && !this.BlockAutoScrollDown)
+            this.pull_msg_history(false);
+        }
+        this.ShowGoToBottom = (this.ChatLogs.scrollHeight - 220 > this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) || this.ShowRecentMsg;
       }
-      this.ShowGoToBottom = (this.ChatLogs.scrollHeight - 220 > this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) || this.ShowRecentMsg;
+    } catch (e) {
+      console.log('채팅 로그 개체 행돋 오류: ', e);
     }
     this.nakama.ChatroomLinkAct = async (c: any, _fileinfo: FileInfo) => {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
