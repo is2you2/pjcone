@@ -209,6 +209,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
     if (this.p5canvas) this.p5canvas.remove();
+    if (this.PageWillDestroy) return;
     this.canvasDiv = document.getElementById('content_viewer_canvas');
     if (this.canvasDiv)
       for (let i = 0, j = this.canvasDiv.childNodes.length; i < j; i++)
@@ -1774,7 +1775,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.ChangeToAnother(1);
   }
 
+  /** 페이지가 곧 삭제될 예정입니다  
+   * reinit 행동 중첩막기를 위해 존재함
+   */
+  PageWillDestroy = false;
   async ionViewWillLeave() {
+    this.PageWillDestroy = true;
     switch (this.FileInfo.viewer) {
       case 'video':
         try {
