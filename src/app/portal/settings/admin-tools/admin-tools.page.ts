@@ -241,7 +241,7 @@ export class AdminToolsPage implements OnInit {
           let keys = Object.keys(this.PromotableGroup[user_id]);
           this.PromotableGroup[user_id]['keys'] = keys;
         });
-        this.all_group_page = Math.ceil(this.all_groups.length / this.LIST_PAGE_SIZE);
+        this.all_group_page = Math.ceil(this.all_groups.length / this.LIST_PAGE_SIZE) || 0;
         this.current_group_page = 0;
         this.change_group_list_page(1);
       }).catch(e => {
