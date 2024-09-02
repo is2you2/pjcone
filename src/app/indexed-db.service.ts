@@ -23,6 +23,11 @@ export class IndexedDBService {
       return;
     }
     let req = indexedDB.open('/ionicfs', 10);
+    let removeSignals = () => {
+      req.onsuccess = null;
+      req.onupgradeneeded = null;
+      req.onerror = null;
+    }
     req.onsuccess = (e) => {
       let db = e.target['result'];
       db.close();
@@ -30,6 +35,7 @@ export class IndexedDBService {
       second_req.onsuccess = (e) => {
         this.ionicDB = e.target['result'];
         _CallBack();
+        removeSignals();
       }
     }
     req.onupgradeneeded = (e) => {
@@ -41,6 +47,7 @@ export class IndexedDBService {
       req.onsuccess = (e) => {
         this.ionicDB = e.target['result'];
         _CallBack();
+        removeSignals();
       }
     }
   }
@@ -52,16 +59,18 @@ export class IndexedDBService {
     if (this.godotDB) return;
     return new Promise((done, error) => {
       let req = indexedDB.open('/userfs', 21);
-      req.onsuccess = (_ev) => {
-        this.godotDB = req.result;
+      let removeSignals = () => {
         req.onsuccess = null;
         req.onerror = null;
+      }
+      req.onsuccess = (_ev) => {
+        this.godotDB = req.result;
+        removeSignals();
         done(undefined);
       }
       req.onerror = (e) => {
         console.error('IndexedDB initialized failed: ', e);
-        req.onsuccess = null;
-        req.onerror = null;
+        removeSignals();
         error(e);
       }
     });
@@ -77,17 +86,19 @@ export class IndexedDBService {
         timestamp: new Date(),
         mode: 16893,
       }, `/userfs/${dir}`);
+      let removeSignals = () => {
+        put.onsuccess = null;
+        put.onerror = null;
+      }
       put.onsuccess = (ev) => {
         if (ev.type != 'success')
           console.error('저장 실패: ', path);
         this.createRecursiveDirectory(dir, targetDB);
-        put.onsuccess = null;
-        put.onerror = null;
+        removeSignals();
       }
       put.onerror = (e) => {
         console.error('IndexedDB createRecursiveDirectory failed: ', e);
-        put.onsuccess = null;
-        put.onerror = null;
+        removeSignals();
       }
     });
   }
@@ -100,17 +111,19 @@ export class IndexedDBService {
           timestamp: new Date(),
           mode: 16893,
         }, `/userfs/${path}`);
+        let removeSignals = () => {
+          put.onsuccess = null;
+          put.onerror = null;
+        }
         put.onsuccess = (ev) => {
           if (ev.type != 'success')
             console.error('저장 실패: ', path);
-          put.onsuccess = null;
-          put.onerror = null;
+          removeSignals();
           done(undefined);
         }
         put.onerror = (e) => {
           console.error('IndexedDB createRecursiveDirectory failed: ', e);
-          put.onsuccess = null;
-          put.onerror = null;
+          removeSignals();
           err(e);
         }
       });
@@ -130,17 +143,19 @@ export class IndexedDBService {
         mode: 33206,
         contents: new TextEncoder().encode(text),
       }, `/userfs/${path}`);
+      let removeSignals = () => {
+        put.onsuccess = null;
+        put.onerror = null;
+      }
       put.onsuccess = (ev) => {
         if (ev.type != 'success')
           console.error('저장 실패: ', path);
         _CallBack(ev);
-        put.onsuccess = null;
-        put.onerror = null;
+        removeSignals();
         done(ev);
       }
       put.onerror = (e) => {
-        put.onsuccess = null;
-        put.onerror = null;
+        removeSignals();
         error(e);
       }
     });
