@@ -53,7 +53,7 @@ export class WebrtcService {
   /** 통화요청 가능 여부, 통화요청을 할 수 있고, 통화 끊기는 할 수 없음 */
   isCallable = false;
   /** 통화중 여부, 통화중일 땐 통화요청 할 수 없고, 통화 끊기를 할 수 있음 */
-  isConnected = false;
+  private isConnected = false;
   /** 응답에 반응하여 진입 후 통화 연결되기 전 */
   private JoinInited = false;
 

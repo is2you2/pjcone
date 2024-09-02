@@ -8,10 +8,10 @@
 </ion-header>
 
 <ion-content>
-  <div *ngIf="webrtc.isConnected" id="InstantCallCanvasDiv"
-    style="position: absolute; width: 100%; height: 100%; overflow: hidden;">
+  <div *ngIf="WaitingConnect" id="InstantCallCanvasDiv"
+    style="position: absolute; width: 100%; height: 100%; overflow: hidden; pointer-events: none;">
   </div>
-  <div *ngIf="!webrtc.isConnected" style="flex: 0 1 auto;">
+  <div *ngIf="!WaitingConnect" style="flex: 0 1 auto;">
     <ion-item *ngIf="ServerList.length">
       <ion-select #InstantCallServer [label]="lang.text['AddGroup']['SelectServer']"
         (ionChange)="SelectAddressTarget($event)" value="local" style="pointer-events: none;">
@@ -23,8 +23,23 @@
       <ion-input [label]="lang.text['voidDraw']['InputAddress']" [(ngModel)]="UserInputCustomAddress"
         class="ion-text-right" placeholder="(wss://)0.0.0.0"></ion-input>
     </ion-item>
+    <ion-item *ngIf="NeedInputCustomAddress">
+      <ion-input [label]="lang.text['GroupServer']['Port']" [(ngModel)]="Port" class="ion-text-right"
+        [placeholder]="lang.text['Settings']['joinDedi_placeholder']"></ion-input>
+    </ion-item>
+    <ion-item *ngIf="NeedInputCustomAddress">
+      <ion-input [label]="lang.text['WebRTCDevManager']['Username']" [(ngModel)]="Username" class="ion-text-right"
+        [placeholder]="lang.text['Settings']['joinDedi_placeholder']"></ion-input>
+    </ion-item>
+    <ion-item *ngIf="NeedInputCustomAddress">
+      <ion-input [label]="lang.text['WebRTCDevManager']['Credential']" [(ngModel)]="Password" class="ion-text-right"
+        [placeholder]="lang.text['Settings']['joinDedi_placeholder']"></ion-input>
+    </ion-item>
     <ion-item button (click)="LinkToServer()">
       <ion-label class="ion-text-center">{{lang.text['voidDraw']['ConnectToAddress']}}</ion-label>
     </ion-item>
+  </div>
+  <div *ngIf="QRCodeSRC && WaitingConnect">
+    <img [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;" (click)="copy_qr_address()" alt="Loading">
   </div>
 </ion-content>

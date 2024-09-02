@@ -293,6 +293,8 @@ cannot_join,채팅에 참가할 수 없습니다,Failed to join
 leave_chat_group,광장에서 나옵니다,You leave square
 ## InstantCall,,
 Title,즉석 통화,Instant call
+Waiting,연결 대기중,Waiting for connection
+CallEnd,통화 종료,End call
 ## GroupServer,,
 JoinedServerList,참여중인 서버 목록,List of participating servers
 ServerDetail,정보,Info
@@ -458,7 +460,6 @@ weight,선 두께,Stroke weight
 changeWeight,두께 변경,Change weight
 apply,적용,Apply
 CreateChannel,새 채널 생성,Create new channel
-default_size,기본,default
 InputAddress,주소 입력,Input address
 ChannelIdAddress,채널id 입력,Input channel id
 ConnectedToServer,서버에 연결됨,Connected
