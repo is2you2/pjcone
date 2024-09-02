@@ -1154,17 +1154,17 @@ export class GlobalActService {
   }
 
   /** 마지막에 등록된 단축키 캐싱 */
-  private CacheShortCut: any;
+  private CacheShortCut = {};
   /** 마지막에 등록된 단축키 저장하기 */
-  StoreShortCutAct() {
-    this.CacheShortCut = this.p5key['KeyShortCut'];
+  StoreShortCutAct(key: string) {
+    this.CacheShortCut[key] = this.p5key['KeyShortCut'];
     this.p5key['KeyShortCut'] = {};
   }
 
   /** 마지막에 등록된 단축키 다시 사용하기 */
-  RestoreShortCutAct() {
-    this.p5key['KeyShortCut'] = this.CacheShortCut;
-    this.CacheShortCut = undefined;
+  RestoreShortCutAct(key: string) {
+    this.p5key['KeyShortCut'] = this.CacheShortCut[key];
+    delete this.CacheShortCut[key];
   }
 
   /** 나카마 서비스 받아오기 */

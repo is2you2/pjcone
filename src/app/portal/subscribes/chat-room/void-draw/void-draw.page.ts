@@ -953,9 +953,9 @@ export class VoidDrawPage implements OnInit {
         }).then(v => {
           v.onDidDismiss().then(() => {
             if (!is_ws_on && !this.WillLeaveHere)
-              this.global.RestoreShortCutAct();
+              this.global.RestoreShortCutAct('voiddraw-remote-bridge');
           });
-          this.global.StoreShortCutAct();
+          this.global.StoreShortCutAct('voiddraw-remote-bridge');
           v.present();
         });
         break;
@@ -1062,9 +1062,9 @@ export class VoidDrawPage implements OnInit {
             cssClass: 'transparent-modal',
           });
           modal.onWillDismiss().then(() => {
-            this.global.RestoreShortCutAct();
+            this.global.RestoreShortCutAct('voiddraw-remote');
           });
-          this.global.StoreShortCutAct();
+          this.global.StoreShortCutAct('voiddraw-remote');
           modal.present();
           this.IceWebRTCWsClient.send(JSON.stringify({
             type: 'join',

@@ -39,8 +39,8 @@ export class PortalPage implements OnInit {
         this.nakama.open_profile_page();
       });
     if (this.OnInit) {
-      let StartPage = localStorage.getItem('StartPage') || 0;
-      switch (StartPage) {
+      if (!this.nakama.StartPage) this.nakama.StartPage = localStorage.getItem('StartPage') || '0';
+      switch (this.nakama.StartPage) {
         case '0':
           this.bottom_tab_selected();
           this.ionTabs.select('main');

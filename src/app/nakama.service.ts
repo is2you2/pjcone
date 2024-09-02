@@ -113,6 +113,8 @@ export class NakamaService {
   /** 채널 리스트에 서버 이름 표시 여부 */
   showServer = false;
 
+  /** 시작 페이지 지정 */
+  StartPage: string;
   async initialize() {
     // 기등록 알림 id 검토
     this.noti.GetNotificationIds((list) => {

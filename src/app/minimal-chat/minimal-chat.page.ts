@@ -205,7 +205,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
             no_edit: true,
           },
         }).then(v => {
-          this.global.StoreShortCutAct();
+          this.global.StoreShortCutAct('minimal-textedit');
           v.onWillDismiss().then(v => {
             if (v.data) {
               let result = this.global.TextEditorAfterAct(v.data, { display_name: this.client.MyUserName });
@@ -214,7 +214,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
             }
           });
           v.onDidDismiss().then(() => {
-            this.global.RestoreShortCutAct();
+            this.global.RestoreShortCutAct('minimal-textedit');
           });
           v.present();
         });
@@ -224,7 +224,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
           component: VoidDrawPage,
           cssClass: 'fullscreen',
         }).then(v => {
-          this.global.StoreShortCutAct();
+          this.global.StoreShortCutAct('minimal-image');
           v.onWillDismiss().then(async v => {
             if (v.data) {
               let result = await this.global.voidDraw_fileAct_callback(v, 'tmp_files/square/', { display_name: this.client.MyUserName });
@@ -232,7 +232,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
             }
           });
           v.onDidDismiss().then(() => {
-            this.global.RestoreShortCutAct();
+            this.global.RestoreShortCutAct('minimal-image');
           });
           v.present();
         });
@@ -283,12 +283,12 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                   }
                 }]
               }).then(v => {
-                this.global.StoreShortCutAct();
+                this.global.StoreShortCutAct('minimal-multiple-send');
                 this.global.p5key['KeyShortCut']['Escape'] = () => {
                   v.dismiss();
                 }
                 v.onDidDismiss().then(() => {
-                  this.global.RestoreShortCutAct();
+                  this.global.RestoreShortCutAct('minimal-multiple-send');
                 });
                 v.present();
               });
@@ -772,7 +772,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       },
       cssClass: 'fullscreen',
     }).then(v => {
-      this.global.StoreShortCutAct();
+      this.global.StoreShortCutAct('minimal-ionic-viewer');
       v.onDidDismiss().then(v => {
         if (v.data) {
           switch (v.data.type) {
@@ -816,7 +816,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
               return;
           }
         }
-        this.global.RestoreShortCutAct();
+        this.global.RestoreShortCutAct('minimal-ionic-viewer');
       });
       v.present();
     });

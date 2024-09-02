@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, LoadingController, NavController } from '@ionic/angular';
+import { AlertController, LoadingController, NavController, iosTransitionAnimation } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
@@ -212,6 +212,13 @@ export class SubscribesPage implements OnInit {
       && this.statusBar.settings['dedicated_groupchat'] != 'certified')
       this.statusBar.settings['dedicated_groupchat'] = 'pending';
     this.client.RejoinGroupChat();
+  }
+
+  /** 즉석 통화 페이지로 이동 */
+  JoinInstantCall() {
+    this.navCtrl.navigateForward('portal/subscribes/instant-call', {
+      animation: iosTransitionAnimation,
+    });
   }
 
   lock_chatroom = false;

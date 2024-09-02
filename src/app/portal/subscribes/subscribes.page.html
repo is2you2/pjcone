@@ -1,7 +1,10 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-title>{{lang.text['Subscribes']['Title']}}</ion-title>
-    <div (click)="JoinSmallTalk()" class="dedi_chat">
+    <div (click)="JoinInstantCall()" class="add_group" style="right: 164px;">
+      <ion-icon button style="width: 24px; height: 24px; " name="call-outline"></ion-icon>
+    </div>
+    <div (click)="JoinSmallTalk()" class="add_group" style="right: 116px;">
       <ion-icon button style="width: 24px; height: 24px; " name="chatbubbles-outline"></ion-icon>
     </div>
     <div (click)="nakama.add_new_group()" class="add_group">
