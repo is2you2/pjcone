@@ -104,7 +104,10 @@ export class WebrtcService {
       window.open(out_link, '_blank');
       throw this.lang.text['WebRTCDevManager']['SecurityError'];
     }
-    if (type != 'data') await VoiceRecorder.requestAudioRecordingPermission();
+    if (type != 'data') {
+      let answer = await VoiceRecorder.requestAudioRecordingPermission();
+      if (!answer.value) throw this.lang.text['WebRTCDevManager']['SecurityError'];
+    }
     if (this.OnUse) {
       this.p5toast.show({
         text: this.lang.text['WebRTCDevManager']['AlreadyCalling'],
