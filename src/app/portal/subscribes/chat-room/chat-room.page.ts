@@ -777,6 +777,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }
   ngOnInit() {
+    window.onblur = (_ev: any) => {
+      if (this.ChatManageMenu) this.ChatManageMenu.dismiss();
+    }
     this.InitBrowserBackButtonOverride();
     this.useSpeaker = Boolean(localStorage.getItem('useChannelSpeaker'));
     this.toggle_speakermode(this.useSpeaker);
@@ -2151,6 +2154,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }, 0);
   }
 
+  /** 채널 채팅 메시지 메뉴를 관리함 */
+  ChatManageMenu: HTMLIonAlertElement;
   /** 메시지 편집 모드 여부 검토 */
   IsMsgEditMode: any;
   /** 메시지 정보 상세 */
@@ -2271,6 +2276,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }]
     }).then(v => {
+      this.ChatManageMenu = v;
       this.global.p5key['KeyShortCut']['Escape'] = () => {
         v.dismiss();
       }
@@ -2622,6 +2628,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.route.queryParams['unsubscribe']();
     this.ChatLogs.onscroll = null;
     this.cont.abort();
+    window.onblur = null;
     delete this.nakama.opened_page_info['channel'];
     this.nakama.ChatroomLinkAct = undefined;
     if (this.p5canvas)
