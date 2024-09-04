@@ -520,34 +520,34 @@ export class WebrtcService {
     }
     this.PeerConnection = new RTCPeerConnection(servers);
 
-    this.PeerConnection.addEventListener('icecandidate', (ev: any) => this.handleConnection(ev));
-    this.PeerConnection.addEventListener(
-      'connectionstatechange', async (ev: any) => {
-        switch (ev.target.connectionState) {
-          case 'failed': // 실패
-          case 'disconnected': // 연결 끊어짐
-            await this.close_webrtc();
-            break;
-          case 'connected':
-            if (this.p5canvas) clearTimeout(this.p5canvas['waiting_act']);
-            break;
-          default:
-            console.log('연결 상태 변경됨: ', ev.target.connectionState);
-            break;
-        }
-      });
+    this.PeerConnection.onicecandidate = (ev: any) => this.handleConnection(ev);
+
+    this.PeerConnection.onconnectionstatechange = async (ev: any) => {
+      switch (ev.target.connectionState) {
+        case 'failed': // 실패
+        case 'disconnected': // 연결 끊어짐
+          await this.close_webrtc();
+          break;
+        case 'connected':
+          if (this.p5canvas) clearTimeout(this.p5canvas['waiting_act']);
+          break;
+        default:
+          console.log('연결 상태 변경됨: ', ev.target.connectionState);
+          break;
+      }
+    };
     // Add local stream to connection and create offer to connect.
     if (this.TypeIn != 'data') {
       this.localStream.getTracks().forEach((track: any) => this.PeerConnection.addTrack(track, this.localStream));
-      this.PeerConnection.addEventListener('addstream', (ev: any) => {
+      this.PeerConnection.onaddstream = (ev: any) => {
         this.remoteMedia.srcObject = ev.stream;
-      });
+      };
     } else this.createDataChannel();
-    this.PeerConnection.addEventListener('datachannel', (event: any) => {
+    this.PeerConnection.ondatachannel = (event: any) => {
       this.dataChannel = event.channel;
       this.createDataChannelListener();
-    });
-    this.PeerConnection.addEventListener('negotiationneeded', async (_ev: any) => {
+    };
+    this.PeerConnection.onnegotiationneeded = async (_ev: any) => {
       // 스트림 설정 변경시 재협상 필요, sdp 재교환해야함
       // 교환한 사람쪽에서 이 트리거가 발동됨
       if (this.JoinInited) { // 응답 받아 진입한 경우에도 동작하므로 구분에 유의한다
@@ -568,7 +568,7 @@ export class WebrtcService {
           console.log('서버정보 없음: 누구 통해서 보냄?');
         }
       }
-    })
+    }
   }
 
   dataChannel: any;
@@ -581,18 +581,18 @@ export class WebrtcService {
   }
 
   createDataChannelListener() {
-    this.dataChannel.addEventListener('open', (_ev: any) => {
+    this.dataChannel.onopen = (_ev: any) => {
       if (this.dataChannelOpenAct) this.dataChannelOpenAct();
-    });
-    this.dataChannel.addEventListener('close', (_ev: any) => {
+    };
+    this.dataChannel.onclose = (_ev: any) => {
       if (this.dataChannelOnCloseAct) this.dataChannelOnCloseAct();
       this.dataChannelOpenAct = undefined;
       this.dataChannelOnMsgAct = undefined;
       this.dataChannelOnCloseAct = undefined;
-    });
-    this.dataChannel.addEventListener('message', (event: any) => {
+    };
+    this.dataChannel.onmessage = (event: any) => {
       if (this.dataChannelOnMsgAct) this.dataChannelOnMsgAct(event.data);
-    });
+    };
   }
 
   send(msg: string) {
@@ -769,8 +769,14 @@ export class WebrtcService {
       this.p5canvas['hangup']();
     this.isCallable = true;
     this.isConnected = false;
-    if (this.PeerConnection)
+    if (this.PeerConnection) {
       this.PeerConnection.close();
+      this.PeerConnection.onicecandidate = null;
+      this.PeerConnection.onconnectionstatechange = null;
+      this.PeerConnection.onaddstream = null;
+      this.PeerConnection.ondatachannel = null;
+      this.PeerConnection.onnegotiationneeded = null;
+    }
     this.PeerConnection = undefined;
     try {
       if (leaveMatch && this.CurrentMatch.match_id != this.nakama.self_match[this.isOfficial][this.target].match_id) {
@@ -812,7 +818,12 @@ export class WebrtcService {
     this.channel_id = undefined;
     this.LocalOffer = undefined;
     this.LocalAnswer = undefined;
-    this.dataChannel = {};
+    if (this.dataChannel) {
+      this.dataChannel.onopen = null;
+      this.dataChannel.onclose = null;
+      this.dataChannel.onmessage = null;
+    }
+    this.dataChannel = undefined;
     this.ReceivedOfferPart = '';
     this.ReceivedAnswerPart = '';
     this.JoinInited = false;
