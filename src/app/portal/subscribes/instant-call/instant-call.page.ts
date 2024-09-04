@@ -18,7 +18,7 @@ import { WebrtcService } from 'src/app/webrtc.service';
 export class InstantCallPage implements OnInit, OnDestroy {
 
   constructor(
-    private global: GlobalActService,
+    public global: GlobalActService,
     public lang: LanguageSettingService,
     public webrtc: WebrtcService,
     private title: Title,
@@ -29,8 +29,6 @@ export class InstantCallPage implements OnInit, OnDestroy {
     private navCtrl: NavController,
   ) { }
 
-  QRCodeSRC: any;
-  /** QRCode를 만든 주소 문자열 */
   QRCodeAsString: string;
   p5canvas: p5;
   ServerList: any;
@@ -96,9 +94,6 @@ export class InstantCallPage implements OnInit, OnDestroy {
       this.navCtrl.pop();
       return;
     }
-    this.Port = this.Port || 3478;
-    this.Username = this.Username || 'username';
-    this.Password = this.Password || 'password';
     let sep_protocol = this.UserInputCustomAddress.split('://');
     let address_only = sep_protocol.pop();
     let protocol = sep_protocol.pop();
@@ -117,8 +112,11 @@ export class InstantCallPage implements OnInit, OnDestroy {
           channel: this.ChannelId,
         }));
         await new Promise((done) => setTimeout(done, 40));
-        this.webrtc.initialize('data')
+        this.webrtc.initialize('audio')
           .then(() => {
+            this.webrtc.HangUpCallBack = () => {
+              this.InstantCallWSClient.close();
+            }
             this.ShowWaiting();
             this.webrtc.CreateOffer();
             this.InstantCallWSClient.send(JSON.stringify({
@@ -138,19 +136,24 @@ export class InstantCallPage implements OnInit, OnDestroy {
         uuid = json['uid'];
       } else if (uuid == json['uid']) return;
       switch (json.type) {
+        case 'leave':
+          this.InstantCallWSClient.close();
+          break;
         // 채널 아이디 생성 후 수신
         case 'init_id':
-          this.QRCodeAsString = `${SERVER_PATH_ROOT}?instc=${this.UserInputCustomAddress}`;
-          this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeAsString);
           this.InstantCallWSClient.send(JSON.stringify({
             type: 'join',
             channel: json.id,
           }));
           this.ChannelId = json.id;
+          this.QRCodeAsString = `${SERVER_PATH_ROOT}?instc=${this.UserInputCustomAddress},${this.ChannelId},${this.Port || ''},${this.Username || ''},${this.Password || ''}`;
           break;
         case 'init_req':
-          this.webrtc.initialize('data')
+          this.webrtc.initialize('audio')
             .then(async () => {
+              this.webrtc.HangUpCallBack = () => {
+                this.InstantCallWSClient.close();
+              }
               this.ShowWaiting();
               this.webrtc.CreateOffer();
               await new Promise((done) => setTimeout(done, 40));
@@ -214,8 +217,9 @@ export class InstantCallPage implements OnInit, OnDestroy {
       this.InstantCallWSClient.onclose = null;
       this.InstantCallWSClient.onmessage = null;
       this.InstantCallWSClient.onerror = null;
+      this.InstantCallWSClient = undefined;
       this.webrtc.close_webrtc(false);
-      this.navCtrl.pop();
+      if (!this.PageOut) this.navCtrl.pop();
     }
   }
 
@@ -226,7 +230,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
 
   /** 웹소켓 서버에 연결된 경우 배경에 연결중임을 표현 */
   ShowWaiting() {
-    this.QRCodeSRC = undefined;
+    this.QRCodeAsString = undefined;
     if (this.p5canvas) return;
     this.p5canvas = new p5((p: p5) => {
       let canvasDiv = document.getElementById('InstantCallCanvasDiv');
@@ -249,7 +253,10 @@ export class InstantCallPage implements OnInit, OnDestroy {
     });
   }
 
+  /** 이미 페이지를 벗어났다면 통화종료시 페이지 이전을 행동하지 않음 */
+  PageOut = false;
   ionViewWillEnter() {
+    this.PageOut = false;
     if (this.p5canvas) this.p5canvas.windowResized();
     this.global.StoreShortCutAct('instant-call');
     this.global.p5key['KeyShortCut']['Escape'] = () => {
@@ -258,6 +265,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
   }
 
   ionViewWillLeave() {
+    this.PageOut = true;
     delete this.global.p5key['KeyShortCut']['Escape'];
     this.global.RestoreShortCutAct('instant-call');
   }

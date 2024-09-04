@@ -51,6 +51,10 @@ const routes: Routes = [
     loadChildren: () => import('./portal/settings/group-detail/group-detail.module').then(m => m.GroupDetailPageModule)
   },
   {
+    path: 'instant-call',
+    loadChildren: () => import('./portal/subscribes/instant-call/instant-call.module').then(m => m.InstantCallPageModule)
+  },
+  {
     path: 'add-group',
     loadChildren: () => import('./portal/settings/add-group/add-group.module').then(m => m.AddGroupPageModule)
   }

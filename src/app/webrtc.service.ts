@@ -71,6 +71,8 @@ export class WebrtcService {
   private ReceivedOfferPart = '';
   private ReceivedAnswerPart = '';
   private IceCandidates = [];
+  /** 전화끊기시 추가 행동 등록 */
+  HangUpCallBack: Function;
 
   /** 초기화 회신 반응 행동 */
   InitReplyCallback: Function;
@@ -792,6 +794,14 @@ export class WebrtcService {
     if (this.localStream) {
       this.localStream.getVideoTracks().forEach((track: any) => track.stop());
       this.localStream.getAudioTracks().forEach((track: any) => track.stop());
+    }
+    if (this.HangUpCallBack) {
+      try {
+        await this.HangUpCallBack();
+      } catch (e) {
+        console.log('전화 끊기 추가동작 오류: ', e);
+      }
+      this.HangUpCallBack = undefined;
     }
     this.localMedia = undefined;
     this.localStream = undefined;

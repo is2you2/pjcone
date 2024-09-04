@@ -27,6 +27,7 @@ export class LanguageSettingService {
     voidDraw: {},
     PostViewer: {},
     TodoDetail: {},
+    InstantCall: {},
   };
 
   constructor() {

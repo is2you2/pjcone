@@ -6,7 +6,7 @@ import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 import * as p5 from 'p5';
 import { LocalNotiService, TotalNotiForm } from './local-noti.service';
-import { AlertController, IonicSafeString, LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
+import { AlertController, IonicSafeString, LoadingController, ModalController, NavController, iosTransitionAnimation, mdTransitionAnimation } from '@ionic/angular';
 import { LanguageSettingService } from './language-setting.service';
 import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
@@ -784,7 +784,7 @@ export class NakamaService {
    * }
    */
   noti_origin = {};
-  /** 세션처리
+  /** Nakama 세션처리
    * @param _CallBack 오류시 행동방침
    * @param info.target 대상 key
    */
@@ -4255,6 +4255,17 @@ export class NakamaService {
         address: init['postViewer'][0],
       });
     }
+    if (init['instc']) {
+      let sep = init['instc'][0].split(',');
+      json.push({
+        type: 'instc',
+        address: sep[0],
+        channel: sep[1],
+        port: sep[2],
+        username: sep[3],
+        password: sep[4],
+      })
+    }
     if (NeedReturn) return json;
     else await this.act_from_QRInfo(json);
   }
@@ -4371,6 +4382,26 @@ export class NakamaService {
             this.open_post(post_info, -2);
           } else this.p5toast.show({
             text: `${this.lang.text['AddPost']['NoPostOutLink']}: ${res.statusText}`,
+          });
+          break;
+        case 'instc': // 즉석 통화
+          for (let i = 0, j = 20; i < j; i++) {
+            if (this.lang.text['InstantCall']['CallEnd']) break;
+            await new Promise((done) => setTimeout(done, 1000));
+          }
+          this.ngZone.run(() => {
+            this.global.RemoveAllModals(() => {
+              this.navCtrl.navigateForward('instant-call', {
+                animation: iosTransitionAnimation,
+                state: {
+                  address: json[i]['address'],
+                  channel: json[i]['channel'],
+                  port: json[i]['port'],
+                  username: json[i]['username'],
+                  password: json[i]['password'],
+                }
+              });
+            });
           });
           break;
         default: // 동작 미정 알림(debug)

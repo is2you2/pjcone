@@ -22,6 +22,7 @@
     <ion-item *ngIf="NeedInputCustomAddress">
       <ion-input [label]="lang.text['voidDraw']['InputAddress']" [(ngModel)]="UserInputCustomAddress"
         class="ion-text-right" placeholder="(wss://)0.0.0.0"></ion-input>
+      <ion-icon slot="end" name="open-outline" (click)="global.open_custom_site(UserInputCustomAddress)"></ion-icon>
     </ion-item>
     <ion-item *ngIf="NeedInputCustomAddress">
       <ion-input [label]="lang.text['GroupServer']['Port']" [(ngModel)]="Port" class="ion-text-right"
@@ -39,7 +40,7 @@
       <ion-label class="ion-text-center">{{lang.text['voidDraw']['ConnectToAddress']}}</ion-label>
     </ion-item>
   </div>
-  <div *ngIf="QRCodeSRC && WaitingConnect">
-    <img [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;" (click)="copy_qr_address()" alt="Loading">
-  </div>
+  <ion-item *ngIf="QRCodeAsString && WaitingConnect" button (click)="copy_qr_address()">
+    <ion-label class="ion-text-center">{{QRCodeAsString}}</ion-label>
+  </ion-item>
 </ion-content>
