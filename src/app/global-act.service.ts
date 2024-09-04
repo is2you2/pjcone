@@ -1316,13 +1316,18 @@ export class GlobalActService {
   /** FFS 등 지정된 사이트의 연결을 빠르게 허용할 수 있도록 구성 */
   open_custom_site(targetAddress: string) {
     try {
-      let GetwithoutPort = targetAddress.split(':');
+      let sep = targetAddress.split('://');
+      let without_protocol = sep.pop();
+      let GetwithoutPort = without_protocol.split(':');
       if (GetwithoutPort.length > 2) GetwithoutPort.pop();
-      if (GetwithoutPort.length == 1) {
-        let checkProtocol = this.checkProtocolFromAddress(targetAddress);
-        GetwithoutPort[0] = '//' + GetwithoutPort[0];
-        GetwithoutPort.unshift(checkProtocol ? 'https' : 'http');
+      let checkProtocol = undefined;
+      try {
+        checkProtocol = sep[0] == 'https' || sep[0] == 'wss';
+      } catch (e) {
+        checkProtocol = this.checkProtocolFromAddress(GetwithoutPort[0]);
       }
+      GetwithoutPort[0] = '//' + GetwithoutPort[0];
+      GetwithoutPort.unshift(checkProtocol ? 'https' : 'http');
       if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
         window.open(GetwithoutPort.join(':') + ':9001', '_blank');
     } catch (e) { }
