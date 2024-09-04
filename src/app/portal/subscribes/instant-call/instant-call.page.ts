@@ -152,7 +152,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
           this.webrtc.initialize('audio')
             .then(async () => {
               this.webrtc.HangUpCallBack = () => {
-                this.InstantCallWSClient.close();
+                if (this.InstantCallWSClient) this.InstantCallWSClient.close();
               }
               this.ShowWaiting();
               this.webrtc.CreateOffer();
