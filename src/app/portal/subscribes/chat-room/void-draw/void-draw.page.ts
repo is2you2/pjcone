@@ -129,11 +129,6 @@ export class VoidDrawPage implements OnInit {
 
   p5voidDraw: p5;
   QRCode: any;
-  waiting(millis: number) {
-    return new Promise((done) => setTimeout(() => {
-      done(undefined);
-    }, millis))
-  }
   isCropMode = false;
   @ViewChild('RemoteDraw') RemoteDraw: IonSelect;
   create_p5voidDraw(initData: any) {
@@ -951,6 +946,9 @@ export class VoidDrawPage implements OnInit {
             }
           }]
         }).then(v => {
+          v.onWillDismiss().then(() => {
+            this.p5voidDraw['SetDrawable'](true);
+          });
           v.onDidDismiss().then(() => {
             if (!is_ws_on && !this.WillLeaveHere)
               this.global.RestoreShortCutAct('voiddraw-remote-bridge');
@@ -992,6 +990,7 @@ export class VoidDrawPage implements OnInit {
               height: json.height,
             });
             this.p5voidDraw['setCropPos'](json.cropX, json.cropY);
+            this.p5voidDraw['SetDrawable'](false);
             this.p5voidDraw['redraw']();
           }
           this.webrtc.InitReplyCallback = async () => {
@@ -1063,8 +1062,10 @@ export class VoidDrawPage implements OnInit {
           });
           modal.onWillDismiss().then(() => {
             this.global.RestoreShortCutAct('voiddraw-remote');
+            this.p5voidDraw['SetDrawable'](true);
           });
           this.global.StoreShortCutAct('voiddraw-remote');
+          this.p5voidDraw['SetDrawable'](false);
           modal.present();
           this.IceWebRTCWsClient.send(JSON.stringify({
             type: 'join',
@@ -1148,6 +1149,7 @@ export class VoidDrawPage implements OnInit {
             height: json.height,
           });
           this.p5voidDraw['setCropPos'](json.cropX, json.cropY);
+          this.p5voidDraw['SetDrawable'](false);
           this.p5voidDraw['redraw']();
           // 그림판이 준비되었다면 WebRTC 구성을 시도
           this.webrtc.initialize('data')
@@ -1197,24 +1199,28 @@ export class VoidDrawPage implements OnInit {
       this.p5voidDraw['SetDrawable'](true);
       this.ReadyToShareAct = true;
       if (this.RemoteLoadingCtrl) this.RemoteLoadingCtrl.dismiss();
+      this.p5voidDraw['ClearCurrentDraw']();
       if (doSimple) return;
       if (AlternativeAct) await AlternativeAct();
       // 그리기 선 전부 삭제하기
-      this.p5voidDraw['ClearCurrentDraw']();
       if (this.navParams.data.path) { // 배경이미지 공유
-        let blob = await this.indexed.loadBlobFromUserPath(this.navParams.data.path, '');
-        let base64 = await this.global.GetBase64ThroughFileReader(blob);
-        let part = base64.match(/(.{1,64})/g);
-        for (let i = 0, j = part.length; i < j; i++)
+        try {
+          let blob = await this.indexed.loadBlobFromUserPath(this.navParams.data.path, '');
+          let base64 = await this.global.GetBase64ThroughFileReader(blob);
+          let part = base64.match(/(.{1,64})/g);
+          for (let i = 0, j = part.length; i < j; i++)
+            await this.webrtc.dataChannel.send(JSON.stringify({
+              type: 'background',
+              act: 'part',
+              data: part[i],
+            }));
           await this.webrtc.dataChannel.send(JSON.stringify({
             type: 'background',
-            act: 'part',
-            data: part[i],
+            act: 'EOF',
           }));
-        await this.webrtc.dataChannel.send(JSON.stringify({
-          type: 'background',
-          act: 'EOF',
-        }));
+        } catch (e) {
+          console.log('배경 그림 공유하기 오류: ', e);
+        }
       }
     }
   }
