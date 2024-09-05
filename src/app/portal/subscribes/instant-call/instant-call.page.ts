@@ -83,6 +83,8 @@ export class InstantCallPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 연결되었음 */
+  InitEnd = false;
   /** 웹 소켓 서버에 연결하기
    * @param [autoLink=false] 빠른 진입으로 실행되는지 여부
    */
@@ -183,7 +185,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
                 type: 'init_end',
                 channel: this.ChannelId,
               }));
-              if (this.p5canvas) this.p5canvas['InitEnd']();
+              this.InitEnd = true;
               break;
             case 'WEBRTC_INIT_REQ_SIGNAL':
               this.nakama.socket_reactive[json['act']]({
@@ -200,7 +202,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
           }
           break;
         case 'init_end':
-          if (this.p5canvas) this.p5canvas['InitEnd']();
+          this.InitEnd = true;
           break;
       }
     }
@@ -234,18 +236,64 @@ export class InstantCallPage implements OnInit, OnDestroy {
     if (this.p5canvas) return;
     this.p5canvas = new p5((p: p5) => {
       let canvasDiv = document.getElementById('InstantCallCanvasDiv');
+      /** 부드러운 종료 애니메이션 처리 */
+      let scaleRatio = 1;
       p.setup = () => {
-        p['InitEnd'] = () => {
-          console.log('p5 사라지기 애니메이션');
-          p.remove();
-        }
         p.pixelDensity(1);
         let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
         canvas.parent(canvasDiv);
+        p.noStroke();
       }
+      /** 대기 애니메이션용 */
+      class WaitingBubbles {
+        color = { r: 0, g: 0, b: 0 };
+        pos: p5.Vector;
+        size = 1;
+        targetSize = 100;
+        dir: p5.Vector;
+        opacity = 200;
+        constructor() {
+          this.pos = p.createVector(0, 0);
+          this.dir = p.createVector(p.random(-1.4, 1.4), p.random(-2, -4));
+          this.color.r = p.random(0, 255);
+          this.color.g = p.random(0, 255);
+          this.color.b = p.random(0, 255);
+          this.targetSize = p.random(80, 150);
+        }
+        display() {
+          if (this.size < this.targetSize) this.size += 6;
+          if (this.size > this.targetSize) this.size = this.targetSize;
+          p.push();
+          p.fill(this.color.r, this.color.g, this.color.b, this.opacity);
+          p.circle(this.pos.x, this.pos.y, this.size * scaleRatio);
+          p.pop();
+          this.pos.add(this.dir);
+          this.dir.y += .04;
+          this.opacity -= 1;
+        }
+      }
+      let bubbles: WaitingBubbles[] = [];
+      /** 이번 프레임에 버블을 추가합니다 */
+      let AddToggle = true;
       p.draw = () => {
+        if (AddToggle) {
+          bubbles.push(new WaitingBubbles());
+          AddToggle = false;
+          setTimeout(() => {
+            AddToggle = true;
+          }, 500);
+        }
         p.clear();
-        p.ellipse(50, 50, 50, 50);
+        p.push();
+        p.translate(p.width / 2, p.height / 2);
+        for (let i = bubbles.length - 1; i >= 0; i--) {
+          bubbles[i].display();
+          if (bubbles[i].opacity <= 0)
+            bubbles.splice(i, 1);
+        }
+        p.pop();
+        if (this.InitEnd) scaleRatio -= .02;
+        if (scaleRatio <= 0) p.remove();
       }
       p.windowResized = () => {
         p.resizeCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);

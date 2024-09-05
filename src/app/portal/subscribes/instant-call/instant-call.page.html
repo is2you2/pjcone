@@ -43,4 +43,13 @@
   <ion-item *ngIf="QRCodeAsString && WaitingConnect" button (click)="copy_qr_address()">
     <ion-label class="ion-text-center">{{QRCodeAsString}}</ion-label>
   </ion-item>
+  <div *ngIf="WaitingConnect || InitEnd">
+    <div class="disconnect_info">
+      <ion-icon style="width: 60px; height: 60px;" color="medium" name="call-outline"></ion-icon>
+      <div>
+        <ion-label *ngIf="!InitEnd" color="medium">{{lang.text['InstantCall']['Connecting']}}</ion-label>
+        <ion-label *ngIf="InitEnd" color="medium">{{lang.text['InstantCall']['Connected']}}</ion-label>
+      </div>
+    </div>
+  </div>
 </ion-content>

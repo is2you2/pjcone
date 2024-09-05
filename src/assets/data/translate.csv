@@ -294,6 +294,8 @@ leave_chat_group,광장에서 나옵니다,You leave square
 ## InstantCall,,
 Title,즉석 통화,Instant call
 Waiting,연결 대기중,Waiting for connection
+Connecting,연결중,Connecting
+Connected,연결됨,Connected
 CallEnd,통화 종료,End call
 ## GroupServer,,
 JoinedServerList,참여중인 서버 목록,List of participating servers
