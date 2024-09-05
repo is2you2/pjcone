@@ -549,7 +549,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
     for (let i = 0, j = servers.length; i < j; i++) {
       if (this.nakama.users.self['img']) {
         try {
-          let v = await servers[i].client.writeStorageObjects(servers[i].session, [{
+          await servers[i].client.writeStorageObjects(servers[i].session, [{
             collection: 'user_public',
             key: 'profile_image',
             value: { img: this.nakama.users.self['img'] },
@@ -558,9 +558,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
           }]);
           await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
             encodeURIComponent('image'));
-          await servers[i].client.updateAccount(servers[i].session, {
-            avatar_url: v.acks[0].version,
-          });
         } catch (e) {
           console.log('inputImageSelected_err: ', e);
         }
@@ -574,9 +571,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
           });
           await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
             encodeURIComponent('image'));
-          await servers[i].client.updateAccount(servers[i].session, {
-            avatar_url: '',
-          });
         } catch (e) {
           console.error('inputImageSelected_err: ', e);
         }
