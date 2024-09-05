@@ -118,7 +118,13 @@ export class AddGroupPage implements OnInit, OnDestroy {
         if (this.IsFocusOnThisPage)
           switch (ev['key']) {
             case 'Enter':
-              if (document.activeElement.id != 'group_desc')
+              if (document.activeElement == this.GroupNameInput)
+                setTimeout(() => {
+                  try {
+                    document.getElementById('group_desc').focus();
+                  } catch (e) { }
+                }, 0);
+              if (ev['ctrlKey'])
                 this.save();
               break;
           }
