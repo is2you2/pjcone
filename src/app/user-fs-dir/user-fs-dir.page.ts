@@ -7,7 +7,6 @@ import { IndexedDBService } from '../indexed-db.service';
 import { LanguageSettingService } from '../language-setting.service';
 import { P5ToastService } from '../p5-toast.service';
 import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ionic-viewer.page';
-import { Filesystem } from '@capacitor/filesystem';
 import { LocalNotiService } from '../local-noti.service';
 import { NakamaService } from '../nakama.service';
 import * as p5 from 'p5';
