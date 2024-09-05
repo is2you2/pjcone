@@ -60,12 +60,10 @@
                         <ion-item button (click)="toggle_all_user(key.id)">
                           <ion-label>{{lang.text['TodoDetail']['ToggleWorkers']}}</ion-label>
                         </ion-item>
-                        <div *ngIf="AvailableWorkerReady">
-                          <ion-item *ngFor="let worker of AvailableWorker[key.id]">
-                            <ion-checkbox [(ngModel)]="worker.todo_checked">{{worker.override_name ||
-                              worker.display_name}}</ion-checkbox>
-                          </ion-item>
-                        </div>
+                        <ion-item *ngFor="let worker of AvailableWorker[key.id]">
+                          <ion-checkbox [(ngModel)]="worker.todo_checked">{{worker.override_name ||
+                            worker.display_name}}</ion-checkbox>
+                        </ion-item>
                       </div>
                     </ion-accordion>
                   </ion-accordion-group>

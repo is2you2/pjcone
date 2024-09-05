@@ -1055,7 +1055,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   isManager = false;
   /** 가용 작업자 */
   AvailableWorker = {};
-  AvailableWorkerReady = false;
   /** 가용 작업자 그룹 (구분용) */
   WorkerGroups = [];
   /** 저장소 변경됨 */
@@ -1090,16 +1089,14 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                     this.AvailableWorker[groups[i].id] = [];
                   for (let k = 0, l = groups[i].users.length; k < l; k++) {
                     let user = this.nakama.load_other_user(groups[i].users[k].user.user_id,
-                      value.isOfficial, value.target);
-                    delete user.todo_checked; // 기존 정보 무시
-                    if (!user.email) {
-                      user['override_name'] = this.nakama.GetOverrideName(user.id || user.user_id, this.userInput.remote.isOfficial, this.userInput.remote.target);
+                      value.isOfficial, value.target, user => {
+                        delete user.todo_checked; // 기존 정보 무시
+                        if (!user.email)
+                          user['override_name'] = this.nakama.GetOverrideName(user.id || user.user_id, this.userInput.remote.isOfficial, this.userInput.remote.target);
+                      });
+                    if (!user.email)
                       this.AvailableWorker[groups[i].id].push(user);
-                    }
                   }
-                  setTimeout(() => {
-                    this.AvailableWorkerReady = true;
-                  }, 100);
                   if (!this.AvailableWorker[groups[i].id].length)
                     delete this.AvailableWorker[groups[i].id];
                   else this.WorkerGroups.push({
@@ -1121,17 +1118,16 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                     || (group.users[k].user.user_id || group.users[k].user.id) == this.nakama.servers[value.isOfficial][value.target].session.user_id)
                     continue;
                   let user = this.nakama.load_other_user(group.users[k].user.user_id || group.users[k].user.id,
-                    value.isOfficial, value.target);
-                  delete user.todo_checked; // 기존 정보 무시
+                    value.isOfficial, value.target, user => {
+                      delete user.todo_checked; // 기존 정보 무시
+                      if ((user.id || user.user_id) != this.nakama.servers[value.isOfficial][value.target].session.user_id
+                        && user['display_name'])
+                        user['override_name'] = this.nakama.GetOverrideName(user.id || user.user_id, this.userInput.remote.isOfficial, this.userInput.remote.target);
+                    });
                   if ((user.id || user.user_id) != this.nakama.servers[value.isOfficial][value.target].session.user_id
-                    && user['display_name']) {
-                    user['override_name'] = this.nakama.GetOverrideName(user.id || user.user_id, this.userInput.remote.isOfficial, this.userInput.remote.target);
+                    && user['display_name'])
                     this.AvailableWorker[group.id].push(user);
-                  }
                 }
-                setTimeout(() => {
-                  this.AvailableWorkerReady = true;
-                }, 100);
                 if (!this.AvailableWorker[group.id].length)
                   delete this.AvailableWorker[group.id];
                 else this.WorkerGroups.push({
