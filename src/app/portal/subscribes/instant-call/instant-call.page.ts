@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonSelect, NavController } from '@ionic/angular';
+import { VoiceRecorder } from '@langx/capacitor-voice-recorder';
 import * as p5 from 'p5';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
@@ -94,6 +95,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
    * @param [autoLink=false] 빠른 진입으로 실행되는지 여부
    */
   LinkToServer(autoLink = false) {
+    VoiceRecorder.requestAudioRecordingPermission();
     if (autoLink && !this.ChannelId) {
       this.p5toast.show({
         text: this.lang.text['InstantCall']['MissingInfo'],
@@ -162,7 +164,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
             channel: json.id,
           }));
           this.ChannelId = json.id;
-          this.QRCodeAsString = `${SERVER_PATH_ROOT}/godotchat_pwa/?instc=${this.UserInputCustomAddress},${this.ChannelId},${this.Port || ''},${this.Username || ''},${this.Password || ''}`;
+          this.QRCodeAsString = `${SERVER_PATH_ROOT}godotchat_pwa/?instc=${this.UserInputCustomAddress},${this.ChannelId},${this.Port || ''},${this.Username || ''},${this.Password || ''}`;
           break;
         case 'init_req':
           this.webrtc.initialize('audio')
