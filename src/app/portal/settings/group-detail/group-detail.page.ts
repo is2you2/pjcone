@@ -6,7 +6,6 @@ import { Notification } from '@heroiclabs/nakama-js';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
@@ -26,7 +25,6 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     public lang: LanguageSettingService,
     private global: GlobalActService,
     private p5toast: P5ToastService,
-    private mClipboard: Clipboard,
     private route: ActivatedRoute,
     private router: Router,
     private navCtrl: NavController,
@@ -194,12 +192,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
             return;
         }
       } catch (e) {
-        try {
-          let v = await this.mClipboard.paste();
-          await this.check_if_clipboard_available(v);
-        } catch (e) {
-          document.getElementById(this.file_sel_id).click();
-        }
+        document.getElementById(this.file_sel_id).click();
       }
     }
   }
@@ -409,19 +402,13 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   }
 
   copy_id() {
-    this.mClipboard.copy(this.info.id)
-      .catch(_e => {
-        this.global.WriteValueToClipboard('text/plain', this.info.id);
-      });
+    this.global.WriteValueToClipboard('text/plain', this.info.id);
   }
 
   /** 시작 진입 주소 생성 */
   copy_startup_address() {
     let startup_address = encodeURI(`https://is2you2.github.io/godotchat_pwa/?group=${this.info['name']},${this.info['id']}`);
-    this.mClipboard.copy(startup_address)
-      .catch(_e => {
-        this.global.WriteValueToClipboard('text/plain', startup_address);
-      });
+    this.global.WriteValueToClipboard('text/plain', startup_address);
   }
 
   ionViewWillLeave() {

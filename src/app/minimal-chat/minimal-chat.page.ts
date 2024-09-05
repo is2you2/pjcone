@@ -8,7 +8,6 @@ import { LanguageSettingService } from '../language-setting.service';
 import { SERVER_PATH_ROOT, isPlatform } from '../app.component';
 import { ContentCreatorInfo, FILE_BINARY_LIMIT, FileInfo, GlobalActService, isDarkMode } from '../global-act.service';
 import { P5ToastService } from '../p5-toast.service';
-import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IndexedDBService } from '../indexed-db.service';
 import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { VoidDrawPage } from '../portal/subscribes/chat-room/void-draw/void-draw.page';
@@ -34,7 +33,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     private statusBar: StatusManageService,
     public lang: LanguageSettingService,
     public global: GlobalActService,
-    private mClipboard: Clipboard,
     private p5toast: P5ToastService,
     private indexed: IndexedDBService,
     private loadingCtrl: LoadingController,
@@ -665,10 +663,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
 
   /** 보여지는 QRCode 정보 복사 */
   copy_qr_address(target_string = this.QRCodeTargetString) {
-    this.mClipboard.copy(target_string)
-      .catch(_e => {
-        this.global.WriteValueToClipboard('text/plain', target_string);
-      });
+    this.global.WriteValueToClipboard('text/plain', target_string);
   }
 
   /** 파일 첨부 버튼 클릭시 */

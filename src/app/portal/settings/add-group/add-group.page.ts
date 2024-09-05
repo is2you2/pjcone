@@ -5,7 +5,6 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { GlobalActService } from 'src/app/global-act.service';
-import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import * as p5 from 'p5';
 
@@ -22,7 +21,6 @@ export class AddGroupPage implements OnInit, OnDestroy {
     private statusBar: StatusManageService,
     public lang: LanguageSettingService,
     private global: GlobalActService,
-    private mClipboard: Clipboard,
     private indexed: IndexedDBService,
     private navCtrl: NavController,
   ) { }
@@ -69,11 +67,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
           break;
       }
     } catch (e) {
-      try {
-        copied = await this.mClipboard.paste();
-      } catch (e) {
-        return;
-      }
+      return;
     }
     const uuidPattern = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     let result = uuidPattern.test(copied);
@@ -394,12 +388,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
           return;
       }
     } catch (e) {
-      try {
-        let v = await this.mClipboard.paste();
-        await this.check_if_clipboard_available(v);
-      } catch (e) {
-        document.getElementById(this.file_sel_id).click();
-      }
+      document.getElementById(this.file_sel_id).click();
     }
   }
 

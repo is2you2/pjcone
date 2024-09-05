@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
+import { LoadingController, ModalController, NavController } from '@ionic/angular';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -9,7 +9,6 @@ import { ExtendButtonForm } from '../../subscribes/chat-room/chat-room.page';
 import { VoidDrawPage } from '../../subscribes/chat-room/void-draw/void-draw.page';
 import { DomSanitizer } from '@angular/platform-browser';
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
-import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as p5 from 'p5';
@@ -31,7 +30,6 @@ export class AddPostPage implements OnInit, OnDestroy {
     private indexed: IndexedDBService,
     private loadingCtrl: LoadingController,
     private sanitizer: DomSanitizer,
-    private mClipboard: Clipboard,
     private route: ActivatedRoute,
     private router: Router,
   ) { }
@@ -636,21 +634,17 @@ export class AddPostPage implements OnInit, OnDestroy {
           let pasted_url: any;
           if (pasted_url === undefined)
             try {
-              pasted_url = await this.mClipboard.paste();
-            } catch (e) {
-              try {
-                let pasted = await this.global.GetValueFromClipboard();
-                switch (pasted.type) {
-                  case 'text/plain':
-                    pasted_url = pasted.value;
-                    break;
-                  case 'image/png':
-                    this.inputFileSelected({ target: { files: [pasted.value] } });
-                    return;
-                }
-              } catch (e) {
-                throw e;
+              let pasted = await this.global.GetValueFromClipboard();
+              switch (pasted.type) {
+                case 'text/plain':
+                  pasted_url = pasted.value;
+                  break;
+                case 'image/png':
+                  this.inputFileSelected({ target: { files: [pasted.value] } });
+                  return;
               }
+            } catch (e) {
+              throw e;
             }
           try { // DataURL 주소인지 검토
             let blob = this.global.Base64ToBlob(pasted_url);

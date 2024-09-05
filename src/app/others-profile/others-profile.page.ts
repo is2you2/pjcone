@@ -1,11 +1,10 @@
-import { Component, OnDestroy, OnInit, input } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import * as p5 from "p5";
 import { LanguageSettingService } from '../language-setting.service';
 import { NakamaService } from '../nakama.service';
 import { P5ToastService } from '../p5-toast.service';
 import { StatusManageService } from "../status-manage.service";
-import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { GlobalActService } from '../global-act.service';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -21,7 +20,6 @@ export class OthersProfilePage implements OnInit, OnDestroy {
     public statusBar: StatusManageService,
     private p5toast: P5ToastService,
     public lang: LanguageSettingService,
-    private mClipboard: Clipboard,
     private global: GlobalActService,
     private route: ActivatedRoute,
     private router: Router,
@@ -393,10 +391,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
   }
 
   copy_id() {
-    this.mClipboard.copy(this.info['user'].id)
-      .catch(_e => {
-        this.global.WriteValueToClipboard('text/plain', this.info['user'].id);
-      });
+    this.global.WriteValueToClipboard('text/plain', this.info['user'].id);
   }
 
   ionViewWillLeave() {

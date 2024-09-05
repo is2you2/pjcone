@@ -15,7 +15,6 @@ import { ContentCreatorInfo, FILE_BINARY_LIMIT, FileInfo, GlobalActService } fro
 import { ActivatedRoute, Router } from '@angular/router';
 import { WebrtcService } from 'src/app/webrtc.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { SpeechRecognition } from "@capacitor-community/speech-recognition";
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
@@ -74,7 +73,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
     private webrtc: WebrtcService,
     private p5toast: P5ToastService,
-    private mClipboard: Clipboard,
     private alertCtrl: AlertController,
   ) { }
 
@@ -135,12 +133,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               break;
           }
         } catch (e) {
-          try {
-            let v = await this.mClipboard.paste();
-            await this.check_if_clipboard_available(v);
-          } catch (e) {
-            document.getElementById('local_channel').click();
-          }
+          document.getElementById('local_channel').click();
         }
       }
     }, { // 2
@@ -160,12 +153,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               break;
           }
         } catch (e) {
-          try {
-            let v = await this.mClipboard.paste();
-            await this.check_if_clipboard_available(v);
-          } catch (e) {
-            document.getElementById('backgroundImage_sel').click();
-          }
+          document.getElementById('backgroundImage_sel').click();
         }
       }
     }, { // 3
@@ -539,11 +527,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   return;
               }
             } catch (e) {
-              try {
-                pasted_url = await this.mClipboard.paste();
-              } catch (e) {
-                throw e;
-              }
+              throw e;
             }
           try { // DataURL 주소인지 검토
             let blob = this.global.Base64ToBlob(pasted_url);
@@ -1429,13 +1413,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     }
     try {
-      await this.mClipboard.copy(text);
+      await this.global.WriteValueToClipboard('text/plain', text);
     } catch (e) {
-      try {
-        await this.global.WriteValueToClipboard('text/plain', text);
-      } catch (e) {
-        console.log('클립보드 복사 실패: ', e);
-      }
+      console.log('클립보드 복사 실패: ', e);
     }
   }
 

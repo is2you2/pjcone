@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { AlertController, IonModal, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { IonModal, LoadingController, ModalController, NavParams } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import * as p5 from "p5";
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -8,7 +8,6 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { ContentCreatorInfo, FileInfo, GlobalActService, isDarkMode } from 'src/app/global-act.service';
 import { ShareContentToOtherPage } from 'src/app/share-content-to-other/share-content-to-other.page';
 import { NakamaService } from 'src/app/nakama.service';
-import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { IonPopover } from '@ionic/angular/common';
 import * as domtoimage from "dom-to-image";
@@ -40,11 +39,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
     private p5toast: P5ToastService,
-    private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
     public global: GlobalActService,
     public nakama: NakamaService,
-    private mClipboard: Clipboard,
     private noti: LocalNotiService,
   ) { }
   ngOnDestroy(): void {
@@ -1907,9 +1904,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   copy_url(data: string) {
-    this.mClipboard.copy(data)
-      .catch(_e => {
-        this.global.WriteValueToClipboard('text/plain', data);
-      });
+    this.global.WriteValueToClipboard('text/plain', data);
   }
 }

@@ -1,12 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { NavController } from '@ionic/angular';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
-import { P5ToastService } from 'src/app/p5-toast.service';
 
 @Component({
   selector: 'app-weblink-gen',
@@ -17,12 +15,10 @@ export class WeblinkGenPage implements OnInit {
 
   constructor(
     public lang: LanguageSettingService,
-    private mClipboard: Clipboard,
     private nakama: NakamaService,
     private indexed: IndexedDBService,
     private global: GlobalActService,
     private navCtrl: NavController,
-    private p5toast: P5ToastService,
   ) { }
 
   userInput = {
@@ -149,27 +145,20 @@ export class WeblinkGenPage implements OnInit {
   }
 
   copy_result_address() {
-    this.mClipboard.copy(this.result_address)
-      .catch(_e => {
-        this.global.WriteValueToClipboard('text/plain', this.result_address);
-      });
+    this.global.WriteValueToClipboard('text/plain', this.result_address);
   }
 
   async paste_user_id() {
     if (this.userInput.open_prv_channel)
       this.userInput.open_prv_channel = '';
-    else await this.mClipboard.paste()
-      .then(v => this.userInput.open_prv_channel = v)
-      .catch(async _e => {
-        try {
-          let clipboard = await this.global.GetValueFromClipboard();
-          switch (clipboard.type) {
-            case 'text/plain':
-              this.userInput.open_prv_channel = clipboard.value;
-              break;
-          }
-        } catch (e) { }
-      });
+    else try {
+      let clipboard = await this.global.GetValueFromClipboard();
+      switch (clipboard.type) {
+        case 'text/plain':
+          this.userInput.open_prv_channel = clipboard.value;
+          break;
+      }
+    } catch (e) { }
     this.information_changed();
   }
 

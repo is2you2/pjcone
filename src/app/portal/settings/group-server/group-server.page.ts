@@ -8,7 +8,6 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { isNativefier, isPlatform } from 'src/app/app.component';
 import * as p5 from 'p5';
 import { GlobalActService } from 'src/app/global-act.service';
-import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
@@ -25,7 +24,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
     public global: GlobalActService,
-    private mClipboard: Clipboard,
     private navCtrl: NavController,
     private alertCtrl: AlertController,
     private route: ActivatedRoute,
@@ -603,12 +601,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
           return;
       }
     } catch (e) {
-      try {
-        let v = await this.mClipboard.paste();
-        await this.check_if_clipboard_available(v);
-      } catch (e) {
-        document.getElementById(this.file_sel_id).click();
-      }
+      document.getElementById(this.file_sel_id).click();
     }
   }
 
@@ -723,9 +716,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
   }
 
   copy_id() {
-    this.mClipboard.copy(this.session_uid)
-      .catch(_e => {
-        this.global.WriteValueToClipboard('text/plain', this.session_uid);
-      });
+    this.global.WriteValueToClipboard('text/plain', this.session_uid);
   }
 }

@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { GlobalActService } from 'src/app/global-act.service';
-import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NavParams } from '@ionic/angular';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
@@ -14,7 +13,6 @@ export class LinkQrPage implements OnInit {
 
   constructor(
     private global: GlobalActService,
-    private mClipboard: Clipboard,
     public navParams: NavParams,
     public lang: LanguageSettingService,
   ) { }
@@ -47,9 +45,6 @@ export class LinkQrPage implements OnInit {
 
   /** 보여지는 QRCode 정보 복사 */
   copy_address(text: string) {
-    this.mClipboard.copy(text)
-      .catch(_e => {
-        this.global.WriteValueToClipboard('text/plain', text);
-      });
+    this.global.WriteValueToClipboard('text/plain', text);
   }
 }

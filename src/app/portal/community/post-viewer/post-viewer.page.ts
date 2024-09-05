@@ -6,7 +6,6 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { NakamaService } from 'src/app/nakama.service';
 import { GlobalActService } from 'src/app/global-act.service';
-import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -26,7 +25,6 @@ export class PostViewerPage implements OnInit, OnDestroy {
     public nakama: NakamaService,
     private alertCtrl: AlertController,
     private global: GlobalActService,
-    private mClipboard: Clipboard,
     private p5toast: P5ToastService,
     private route: ActivatedRoute,
     private router: Router,
@@ -210,10 +208,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
             } catch (e) {
               targetAddress = `${SERVER_PATH_ROOT}godotchat_pwa/?postViewer=${this.PostInfo['OutSource']}`;
             }
-            this.mClipboard.copy(targetAddress)
-              .catch(_e => {
-                this.global.WriteValueToClipboard('text/plain', targetAddress);
-              });
+            this.global.WriteValueToClipboard('text/plain', targetAddress);
           }
         }
         title.style('font-size', '32px');

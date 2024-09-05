@@ -13,7 +13,6 @@ import { P5ToastService } from './p5-toast.service';
 import { LanguageSettingService } from './language-setting.service';
 import { MatchOpCode, NakamaService } from './nakama.service';
 import { Match } from '@heroiclabs/nakama-js';
-import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IndexedDBService } from './indexed-db.service';
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
 import { isDarkMode } from './global-act.service';
@@ -29,7 +28,6 @@ export class WebrtcService {
     private indexed: IndexedDBService,
     private lang: LanguageSettingService,
     private nakama: NakamaService,
-    private mClipboard: Clipboard,
   ) {
     this.nakama.WebRTCService = this;
   }
@@ -100,9 +98,6 @@ export class WebrtcService {
         for (let i = 0, j = ServerInfos.length; i < j; i++)
           out_link += `&rtcserver=[${ServerInfos[i].urls}],${ServerInfos[i].username},${ServerInfos[i].credential}`;
       } catch (e) { }
-      try {
-        await this.mClipboard.copy(out_link);
-      } catch (error) { }
       window.open(out_link, '_blank');
       throw this.lang.text['WebRTCDevManager']['SecurityError'];
     }

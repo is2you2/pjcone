@@ -1,5 +1,4 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IonToggle, ModalController, NavParams } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -25,7 +24,6 @@ export class ServerDetailPage implements OnInit {
     private indexed: IndexedDBService,
     private nakama: NakamaService,
     private global: GlobalActService,
-    private mClipboard: Clipboard,
   ) { }
 
   dedicated_info: ServerInfo;
@@ -68,10 +66,7 @@ export class ServerDetailPage implements OnInit {
   copy_startup_address() {
     let startup_address =
       `https://is2you2.github.io/godotchat_pwa/?server=${this.dedicated_info['name'] || ''},${this.dedicated_info['address'] || ''},${this.dedicated_info.useSSL || ''},${this.dedicated_info.port || ''},${this.dedicated_info.key || ''}&open_profile=true`;
-    this.mClipboard.copy(startup_address)
-      .catch(_e => {
-        this.global.WriteValueToClipboard('text/plain', startup_address);
-      });
+    this.global.WriteValueToClipboard('text/plain', startup_address);
   }
 
   async apply_changed_info() {

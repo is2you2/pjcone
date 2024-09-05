@@ -4,7 +4,6 @@ import { LanguageSettingService } from '../language-setting.service';
 import { IndexedDBService } from '../indexed-db.service';
 import { GlobalActService } from '../global-act.service';
 import { SERVER_PATH_ROOT } from '../app.component';
-import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { P5ToastService } from '../p5-toast.service';
 import { NakamaService } from '../nakama.service';
 
@@ -21,7 +20,6 @@ export class WebrtcManageIoDevPage implements OnInit {
     public lang: LanguageSettingService,
     private indexed: IndexedDBService,
     private global: GlobalActService,
-    private mClipboard: Clipboard,
     private p5toast: P5ToastService,
     private nakama: NakamaService,
   ) { }
@@ -158,10 +156,7 @@ export class WebrtcManageIoDevPage implements OnInit {
 
   copy_info(index: number) {
     let address = `${SERVER_PATH_ROOT}godotchat_pwa/?rtcserver=[${this.ServerInfos[index].urls}],${this.ServerInfos[index].username},${this.ServerInfos[index].credential}`;
-    this.mClipboard.copy(address)
-      .catch(_e => {
-        this.global.WriteValueToClipboard('text/plain', address);
-      });
+    this.global.WriteValueToClipboard('text/plain', address);
   }
 
   async RemoveServer(index: number) {

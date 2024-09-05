@@ -4,7 +4,6 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
-import { Clipboard } from '@awesome-cordova-plugins/clipboard/ngx';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { GlobalActService } from 'src/app/global-act.service';
 
@@ -22,7 +21,6 @@ export class AdminToolsPage implements OnInit {
     private p5toast: P5ToastService,
     private alertCtrl: AlertController,
     public statusBar: StatusManageService,
-    private mClipboard: Clipboard,
     private indexed: IndexedDBService,
     public global: GlobalActService,
     private navCtrl: NavController,
@@ -414,10 +412,7 @@ export class AdminToolsPage implements OnInit {
   }
 
   copy_id(id: string) {
-    this.mClipboard.copy(id)
-      .catch(_e => {
-        this.global.WriteValueToClipboard('text/plain', id);
-      });
+    this.global.WriteValueToClipboard('text/plain', id);
   }
 
   remove_user(user: any) {
