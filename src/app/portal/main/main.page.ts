@@ -6,7 +6,7 @@ import { isPlatform } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import * as p5 from 'p5';
-import { AlertController } from '@ionic/angular';
+import { AlertController, IonicSafeString } from '@ionic/angular';
 
 /** 할 일 필터 카테고리 */
 enum TodoFilterCategory {
@@ -125,14 +125,25 @@ export class MainPage implements OnInit {
         let canvas = p.createCanvas(todo_div.clientWidth, todo_div.clientHeight);
         canvas.parent(todo_div);
         canvas.id('p5todo');
-        canvas.elt.oncontextmenu = (ev: any) => {
+        canvas.elt.oncontextmenu = async (ev: any) => {
           for (let i = 0, j = TodoKeys.length; i < j; i++) {
             if (Todos[TodoKeys[i]].json.id == 'AddButton') continue;
             let dist = Todos[TodoKeys[i]].position.dist(MappingPosition(ev.offsetX, ev.offsetY));
             if (dist < Todos[TodoKeys[i]].EllipseSize / 2) {
+              let image_form = '';
+              try {
+                let blob = await indexed.loadBlobFromUserPath(`todo/${Todos[TodoKeys[i]].json.id}/thumbnail.png`, 'image/png');
+                let FileURL = URL.createObjectURL(blob);
+                image_form = `<div style="text-align: center"><img src="${FileURL}" alt="todo_image" style="border-radius: 2px"></div>`;
+                setTimeout(() => {
+                  URL.revokeObjectURL(FileURL);
+                }, 100);
+              } catch (e) { }
+              let text_form = `<div>${Todos[TodoKeys[i]].json.description || ''}</div>`;
+              let result_form = image_form + text_form;
               this.alertCtrl.create({
                 header: Todos[TodoKeys[i]].json.title,
-                message: Todos[TodoKeys[i]].json.description,
+                message: new IonicSafeString(result_form),
                 buttons: [{
                   text: this.lang.text['TodoDetail']['TodoComplete'],
                   handler: async () => {

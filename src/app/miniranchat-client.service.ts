@@ -126,7 +126,7 @@ export class MiniranchatClientService {
           case 'tap': // 알림을 탭함, 해당 알림에 해당하는 페이지를 열기
             switch (ActType) {
               case 'AllUserNotification': // 서버 전체 공지
-                let image_form = `<img *ngIf="${ev['notification']['extra'].image}" src="${ev['notification']['extra'].image}" alt="noti_image" style="border-radius: 8px">`;
+                let image_form = `<div style="text-align: center"><img *ngIf="${ev['notification']['extra'].image}" src="${ev['notification']['extra'].image}" alt="mini_image" style="border-radius: 8px"></div`;
                 let text_form = `<div>${this.global.HTMLEncode(ev['notification']['extra'].body)}</div>`;
                 let result_form = ev['notification']['extra'].image ? image_form + text_form : text_form;
                 this.alertCtrl.create({
