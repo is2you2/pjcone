@@ -1634,7 +1634,13 @@ export class NakamaService {
    * 채널 추가에 사용하려는 경우 join_chat_with_modulation() 를 대신 사용하세요
    */
   async add_channels(channel_info: Channel, _is_official: string, _target: string) {
-    this.channels_orig[_is_official][_target][channel_info.id] = {};
+    if (!this.channels_orig[_is_official][_target][channel_info.id]) {
+      this.channels_orig[_is_official][_target][channel_info.id] = {};
+      try {
+        this.servers[_is_official][_target].socket.sendMatchState(this.self_match[_is_official][_target].match_id, MatchOpCode.ADD_CHANNEL,
+          encodeURIComponent(''));
+      } catch (e) { }
+    }
     let keys = Object.keys(channel_info);
     keys.forEach(key => this.channels_orig[_is_official][_target][channel_info.id][key] = channel_info[key]);
     if (!this.channels_orig[_is_official][_target][channel_info.id]['cnoti_id'])
@@ -1674,10 +1680,6 @@ export class NakamaService {
         break;
     }
     this.rearrange_channels();
-    try {
-      this.servers[_is_official][_target].socket.sendMatchState(this.self_match[_is_official][_target].match_id, MatchOpCode.ADD_CHANNEL,
-        encodeURIComponent(''));
-    } catch (e) { }
   }
 
   add_group_user_without_duplicate(user: GroupUser, gid: string, _is_official: string, _target: string) {
