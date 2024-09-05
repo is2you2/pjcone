@@ -132,7 +132,13 @@ export class MainPage implements OnInit {
             if (dist < Todos[TodoKeys[i]].EllipseSize / 2) {
               let image_form = '';
               try {
-                let blob = await indexed.loadBlobFromUserPath(`todo/${Todos[TodoKeys[i]].json.id}/thumbnail.png`, 'image/png');
+                let thumbnail_path: string;
+                try {
+                  thumbnail_path = `todo/${Todos[TodoKeys[i]].json.id}_${Todos[TodoKeys[i]].json.remote.isOfficial}_${Todos[TodoKeys[i]].json.remote.target}/thumbnail.png`;
+                } catch (e) {
+                  thumbnail_path = `todo/${Todos[TodoKeys[i]].json.id}/thumbnail.png`;
+                }
+                let blob = await indexed.loadBlobFromUserPath(thumbnail_path, 'image/png');
                 let FileURL = URL.createObjectURL(blob);
                 image_form = `<div style="text-align: center"><img src="${FileURL}" alt="todo_image" style="border-radius: 2px"></div>`;
                 setTimeout(() => {
