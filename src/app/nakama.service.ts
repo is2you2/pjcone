@@ -1830,6 +1830,8 @@ export class NakamaService {
             this.channels_orig[_is_official][_target][_cid]['server']['name'] = this.lang.text['Nakama']['DeletedServer'];
           }
           try {
+            if (!this.channels_orig[_is_official][_target][_cid]['info'])
+              this.channels_orig[_is_official][_target][_cid]['info'] = {};
             this.channels_orig[_is_official][_target][_cid]['info']['isOfficial'] = _is_official;
             this.channels_orig[_is_official][_target][_cid]['info']['target'] = _target;
             switch (this.channels_orig[_is_official][_target][_cid]['redirect']['type']) {
