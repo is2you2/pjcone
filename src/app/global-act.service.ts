@@ -129,6 +129,13 @@ export class GlobalActService {
   /** PIP 동작 연계를 위한 비디오 개체 기억하기 */
   PIPLinkedVideoElement: HTMLVideoElement;
 
+  /** 포털 탭 페이지를 보고있는지, 페이지를 벗어났는지 추적 */
+  FocusOnPortal = true;
+  /** 포털 화면 진입시 행동 (WillEnter) */
+  FocusOnPortalEnterAct: Function;
+  /** 포털 화면을 벗어날 때 행동 (WillLeave) */
+  FocusOnPortalLeaveAct: Function;
+
   /** 페이지별 단축키 관리자 */
   p5key: p5;
   initialize() {

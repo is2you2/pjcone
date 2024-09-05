@@ -60,6 +60,9 @@ export class InstantCallPage implements OnInit, OnDestroy {
         this.LinkToServer(true);
       }
     });
+    this.global.FocusOnPortalEnterAct = () => {
+      if (!this.PageOut && this.CallClosed) this.navCtrl.pop();
+    }
   }
 
   UserInputCustomAddress = '';
@@ -83,6 +86,8 @@ export class InstantCallPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 통화를 사설서버로 하는지 여부 */
+  isCustomServer = false;
   /** 연결되었음 */
   InitEnd = false;
   /** 웹 소켓 서버에 연결하기
@@ -98,6 +103,15 @@ export class InstantCallPage implements OnInit, OnDestroy {
     }
     let sep_protocol = this.UserInputCustomAddress.split('://');
     let address_only = sep_protocol.pop();
+    // 즉석 참여 또는 사설 서버 진입인 경우 WebRTC 서버 등록
+    this.isCustomServer = autoLink || !this.InstantCallServer || this.InstantCallServer.value == 'local';
+    if (this.isCustomServer)
+      this.nakama.SaveWebRTCServer({
+        urls: [`stun:${address_only}:${this.Port || 3478}`,
+        `turn:${address_only}:${this.Port || 3478}`],
+        username: this.Username || 'username',
+        credential: this.Password || 'password',
+      });
     let protocol = sep_protocol.pop();
     if (!protocol) protocol = this.global.checkProtocolFromAddress(address_only) ? 'wss' : 'ws';
     this.InstantCallWSClient = new WebSocket(`${protocol}://${address_only}:12013`);
@@ -221,7 +235,8 @@ export class InstantCallPage implements OnInit, OnDestroy {
       this.InstantCallWSClient.onerror = null;
       this.InstantCallWSClient = undefined;
       this.webrtc.close_webrtc(false);
-      if (!this.PageOut) this.navCtrl.pop();
+      this.CallClosed = true;
+      if (!this.PageOut && this.global.FocusOnPortal) this.navCtrl.pop();
     }
   }
 
@@ -303,6 +318,8 @@ export class InstantCallPage implements OnInit, OnDestroy {
 
   /** 이미 페이지를 벗어났다면 통화종료시 페이지 이전을 행동하지 않음 */
   PageOut = false;
+  /** 통화가 종료되었다면 다시 돌아왔을 때 페이지 나가기 */
+  CallClosed = false;
   ionViewWillEnter() {
     this.PageOut = false;
     if (this.p5canvas) this.p5canvas.windowResized();
@@ -310,6 +327,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
     this.global.p5key['KeyShortCut']['Escape'] = () => {
       this.navCtrl.pop();
     };
+    if (this.CallClosed) this.navCtrl.pop();
   }
 
   ionViewWillLeave() {
@@ -321,6 +339,8 @@ export class InstantCallPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.p5canvas) this.p5canvas.remove();
     if (this.InstantCallWSClient) this.InstantCallWSClient.close();
+    if (this.isCustomServer) this.nakama.RemoveWebRTCServer(this.UserInputCustomAddress.split('://').pop());
     this.route.queryParams['unsubscribe']();
+    this.global.FocusOnPortalEnterAct = undefined;
   }
 }

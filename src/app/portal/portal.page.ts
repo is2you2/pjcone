@@ -28,6 +28,12 @@ export class PortalPage implements OnInit {
 
   OnInit = true;
 
+  ionViewWillEnter() {
+    this.global.FocusOnPortal = true;
+    if (this.global.FocusOnPortalEnterAct)
+      this.global.FocusOnPortalEnterAct();
+  }
+
   ionViewDidEnter() {
     if (this.CacheKeyShortCut)
       this.global.p5key['KeyShortCut'] = this.CacheKeyShortCut;
@@ -140,6 +146,9 @@ export class PortalPage implements OnInit {
 
   CacheKeyShortCut: any;
   ionViewWillLeave() {
+    this.global.FocusOnPortal = false;
+    if (this.global.FocusOnPortalLeaveAct)
+      this.global.FocusOnPortalLeaveAct();
     this.CacheKeyShortCut = this.global.p5key['KeyShortCut'];
     this.global.p5key['KeyShortCut'] = {};
     if (this.global.p5todo && this.global.p5todo['StopCanvas'])
