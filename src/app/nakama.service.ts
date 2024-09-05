@@ -49,6 +49,8 @@ export enum MatchOpCode {
   MANAGE_POST = 12,
   /** 새로운 채널에 참여됨 */
   ADD_CHANNEL = 14,
+  /** 새로운 별명이 추가됨 */
+  NAME_OVERRIDED = 15,
   /** WebRTC 시작 요청 */
   WEBRTC_INIT_REQ_SIGNAL = 20,
   /** 초기 요청에 응답 */
@@ -2547,6 +2549,7 @@ export class NakamaService {
         }
         socket.onmatchdata = async (m) => {
           m['data_str'] = decodeURIComponent(new TextDecoder().decode(m.data));
+          let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
           switch (m.op_code) {
             case MatchOpCode.MANAGE_TODO: {
               let sep = m['data_str'].split(',');
@@ -2741,32 +2744,31 @@ export class NakamaService {
               this.get_group_list_from_server(_is_official, _target);
             }
               break;
+            case MatchOpCode.NAME_OVERRIDED: {
+              if (is_me) this.LoadOverrideName(_is_official, _target);
+            }
+              break;
             case MatchOpCode.WEBRTC_INIT_REQ_SIGNAL: {
-              let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
               if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.socket_reactive['WEBRTC_INIT_REQ_SIGNAL'])
                 this.socket_reactive['WEBRTC_INIT_REQ_SIGNAL']();
             }
               break;
             case MatchOpCode.WEBRTC_REPLY_INIT_SIGNAL: {
-              let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
               if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.socket_reactive['WEBRTC_REPLY_INIT_SIGNAL'])
                 this.socket_reactive['WEBRTC_REPLY_INIT_SIGNAL'](m['data_str']);
             }
               break;
             case MatchOpCode.WEBRTC_RECEIVE_ANSWER: {
-              let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
               if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.socket_reactive['WEBRTC_RECEIVE_ANSWER'])
                 this.socket_reactive['WEBRTC_RECEIVE_ANSWER'](m['data_str']);
             }
               break;
             case MatchOpCode.WEBRTC_ICE_CANDIDATES: {
-              let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
               if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.socket_reactive['WEBRTC_ICE_CANDIDATES'])
                 this.socket_reactive['WEBRTC_ICE_CANDIDATES'](m['data_str']);
             }
               break;
             case MatchOpCode.WEBRTC_NEGOCIATENEEDED: {
-              let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
               if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.socket_reactive['WEBRTC_NEGOCIATENEEDED'])
                 this.socket_reactive['WEBRTC_NEGOCIATENEEDED'](m['data_str']);
             }
@@ -4483,6 +4485,10 @@ export class NakamaService {
       path: `servers/${_is_official}/${_target}/users/override_name.json`,
     };
     await this.sync_save_file(TmpFileInfo, _is_official, _target, 'usernameOverride', 'override');
+    try {
+      this.servers[_is_official][_target].socket.sendMatchState(this.self_match[_is_official][_target].match_id, MatchOpCode.NAME_OVERRIDED,
+        encodeURIComponent(''));
+    } catch (e) { }
   }
   /** 서버에서 이름 재지정 불러오기 */
   async LoadOverrideName(_is_official: string, _target: string) {
