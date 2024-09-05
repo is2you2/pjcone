@@ -420,17 +420,13 @@ export class UserFsDirPage implements OnInit {
       let open_file = await this.indexed.loadTextFromUserPath(`${info.path}/info.todo`);
       let json = JSON.parse(open_file);
       info.name = json['title'];
-    } catch (e) {
-      console.error('SetDisplayTodoName error: ', e);
-    }
+    } catch (e) { }
   }
 
   SetDisplayUserName(info: FileDir, sep: string[]) {
     try {
       info.name = this.nakama.users[sep[1]][sep[2]][sep[4]]['display_name'];
-    } catch (e) {
-      console.log('SetDisplayUserName error: ', e);
-    }
+    } catch (e) { }
   }
 
   SetDisplayChannelName(info: FileDir, sep: string[]) {
@@ -442,9 +438,7 @@ export class UserFsDirPage implements OnInit {
   SetDisplayGroupImageName(info: FileDir, sep: string[]) {
     try {
       info.name = `${this.nakama.groups[sep[1]][sep[2]][sep[4].split('.').shift()]['name']}.img`;
-    } catch (e) {
-      console.log('SetDisplayGroupImageName error: ', e);
-    }
+    } catch (e) { }
   }
 
   SetDisplayPostWriterName(info: FileDir, sep: string[]) {
@@ -453,7 +447,6 @@ export class UserFsDirPage implements OnInit {
     } catch (e) {
       if (this.nakama.servers[sep[1]][sep[2]].session.user_id == info.name)
         info.name = this.nakama.users.self['display_name']
-      else console.log('SetDisplayPostWriterName error: ', e);
     }
   }
 
@@ -482,7 +475,6 @@ export class UserFsDirPage implements OnInit {
   async OpenFile(info: FileDir) {
     if (this.lock_modal_open) return;
     this.lock_modal_open = true;
-    if (!this.CheckIfAccessable(info.path)) return;
     let createRelevances = [];
     if (this.is_file_selector) {
       if (this.navParams.data['path'])
@@ -551,20 +543,7 @@ export class UserFsDirPage implements OnInit {
     });
   }
 
-  CheckIfAccessable(path: string) {
-    switch (path) { // 비밀번호가 포함된 파일 열람 거부
-      case 'servers/webrtc_server.json':
-      case 'servers/self/profile.json':
-        this.p5toast.show({
-          text: this.lang.text['UserFsDir']['PrivateAccessDenied'],
-        });
-        return false;
-    }
-    return true;
-  }
-
   DownloadFile(info: FileDir) {
-    if (!this.CheckIfAccessable(info.path)) return;
     this.indexed.DownloadFileFromUserPath(info.path, '', info.name);
   }
 
