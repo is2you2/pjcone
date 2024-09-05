@@ -1326,7 +1326,7 @@ export class GlobalActService {
       let sep = targetAddress.split('://');
       let without_protocol = sep.pop();
       let GetwithoutPort = without_protocol.split(':');
-      if (GetwithoutPort.length > 2) GetwithoutPort.pop();
+      if (GetwithoutPort.length > 1) GetwithoutPort.pop();
       let checkProtocol = undefined;
       try {
         checkProtocol = sep[0] == 'https' || sep[0] == 'wss';
