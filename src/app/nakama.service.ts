@@ -194,6 +194,7 @@ export class NakamaService {
       }
     });
     this.showServer = Boolean(localStorage.getItem('showServer'));
+    if (this.users.self['online']) this.toggle_all_session();
   }
 
   /** 시작시 해야할 일 알림을 설정 */
@@ -369,6 +370,26 @@ export class NakamaService {
       (_info.port || 7350).toString(),
       (_info.useSSL || false),
     );
+    if (!this.groups[_info.isOfficial])
+      this.groups[_info.isOfficial] = {};
+    if (!this.groups[_info.isOfficial][_info.target])
+      this.groups[_info.isOfficial][_info.target] = {};
+    if (!this.channels_orig[_info.isOfficial])
+      this.channels_orig[_info.isOfficial] = {};
+    if (!this.channels_orig[_info.isOfficial][_info.target])
+      this.channels_orig[_info.isOfficial][_info.target] = {};
+    if (!this.usernameOverride[_info.isOfficial])
+      this.usernameOverride[_info.isOfficial] = {};
+    if (!this.usernameOverride[_info.isOfficial][_info.target])
+      this.usernameOverride[_info.isOfficial][_info.target] = {};
+    if (!this.OnTransfer[_info.isOfficial]) this.OnTransfer[_info.isOfficial] = {};
+    if (!this.OnTransfer[_info.isOfficial][_info.target]) this.OnTransfer[_info.isOfficial][_info.target] = {};
+    if (!this.self_match[_info.isOfficial]) this.self_match[_info.isOfficial] = {};
+    if (!this.self_match[_info.isOfficial][_info.target]) this.self_match[_info.isOfficial][_info.target] = undefined;
+    if (!this.noti_origin[_info.isOfficial]) this.noti_origin[_info.isOfficial] = {};
+    if (!this.noti_origin[_info.isOfficial][_info.target]) this.noti_origin[_info.isOfficial][_info.target] = {};
+    if (!this.RemoteTodoCounter[_info.isOfficial]) this.RemoteTodoCounter[_info.isOfficial] = {};
+    if (!this.RemoteTodoCounter[_info.isOfficial][_info.target]) this.RemoteTodoCounter[_info.isOfficial][_info.target] = [];
   }
 
   /** 채팅 채널이 열려있는 경우 행동시키기 */
@@ -636,19 +657,6 @@ export class NakamaService {
     info.useSSL = info.useSSL || false;
     info.isOfficial = info.isOfficial || 'unofficial';
     info.key = info.key || 'defaultkey';
-
-    if (!this.groups[info.isOfficial])
-      this.groups[info.isOfficial] = {};
-    if (!this.groups[info.isOfficial][info.target])
-      this.groups[info.isOfficial][info.target] = {};
-    if (!this.channels_orig[info.isOfficial])
-      this.channels_orig[info.isOfficial] = {};
-    if (!this.channels_orig[info.isOfficial][info.target])
-      this.channels_orig[info.isOfficial][info.target] = {};
-    if (!this.usernameOverride[info.isOfficial])
-      this.usernameOverride[info.isOfficial] = {};
-    if (!this.usernameOverride[info.isOfficial][info.target])
-      this.usernameOverride[info.isOfficial][info.target] = {};
 
     let line = new Date().getTime().toString();
     line += `,${info.isOfficial}`;
@@ -921,8 +929,6 @@ export class NakamaService {
         }]
       }).then(async prv_match => {
         try {
-          if (!this.self_match[_is_official]) this.self_match[_is_official] = {};
-          if (!this.self_match[_is_official][_target]) this.self_match[_is_official][_target] = undefined;
           this.self_match[_is_official][_target] = await socket.joinMatch(prv_match.objects[0].value['match_id']);
         } catch (e) {
           let self_match = await socket.createMatch();
@@ -961,8 +967,6 @@ export class NakamaService {
     this.load_server_todo(_is_official, _target);
     this.RemoteTodoSelfCheck(_is_official, _target);
     this.load_posts_counter();
-    if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
-    if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
     this.update_notifications(_is_official, _target);
     this.rearrange_channels();
     this.rearrange_group_list();
@@ -977,8 +981,6 @@ export class NakamaService {
   load_server_todo(_is_official: string, _target: string) {
     try {
       let count = this.RemoteTodoCounter[_is_official][_target];
-      if (!this.RemoteTodoCounter[_is_official])
-        this.RemoteTodoCounter[_is_official] = {};
       for (let i = count.length - 1; i >= 0; i--) {
         let key = `RemoteTodo_${count[i]}`;
         this.servers[_is_official][_target].client.readStorageObjects(
@@ -1064,11 +1066,7 @@ export class NakamaService {
       let result = 0;
       if (v && v.objects.length && v.objects[0].value['data'].length) {
         result = v.objects[0].value['data'].pop() + 1;
-      } else {
-        if (!this.RemoteTodoCounter[_is_official])
-          this.RemoteTodoCounter[_is_official] = {};
-        this.RemoteTodoCounter[_is_official][_target] = [0];
-      }
+      } else this.RemoteTodoCounter[_is_official][_target] = [0];
       return result;
     }
   }
@@ -1084,8 +1082,6 @@ export class NakamaService {
           user_id: this.servers[_is_official][_target].session.user_id,
         }]
       });
-      if (!this.RemoteTodoCounter[_is_official])
-        this.RemoteTodoCounter[_is_official] = {};
       this.RemoteTodoCounter[_is_official][_target] = data.objects[0].value['data'];
       return data;
     } catch (e) { }
@@ -1097,12 +1093,7 @@ export class NakamaService {
       let find_index = this.RemoteTodoCounter[_is_official][_target].indexOf(index);
       if (find_index >= 0)
         this.RemoteTodoCounter[_is_official][_target].splice(find_index, 1);
-    } catch (e) {
-      if (!this.RemoteTodoCounter[_is_official])
-        this.RemoteTodoCounter[_is_official] = {};
-      if (!this.RemoteTodoCounter[_is_official][_target])
-        this.RemoteTodoCounter[_is_official][_target] = [];
-    }
+    } catch (e) { }
     await this.updateRemoteCounter(_is_official, _target);
   }
 
@@ -1479,10 +1470,6 @@ export class NakamaService {
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
     if (!this.users[_is_official][_target][userId])
       this.users[_is_official][_target][userId] = {};
-    if (!this.usernameOverride[_is_official])
-      this.usernameOverride[_is_official] = {};
-    if (!this.usernameOverride[_is_official][_target])
-      this.usernameOverride[_is_official][_target] = {};
     // 사용자 정보 업데이트
     let failed_update_act = () => {
       this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.json`, (e, v) => {
@@ -2196,8 +2183,6 @@ export class NakamaService {
    * 그룹 채팅 채널 접속 및 그룹 사용자 검토도 이곳에서 시도함
    */
   get_group_list_from_server(_is_official: string, _target: string) {
-    if (!this.groups[_is_official]) this.groups[_is_official] = {};
-    if (!this.groups[_is_official][_target]) this.groups[_is_official][_target] = {};
     this.servers[_is_official][_target].client.listUserGroups(
       this.servers[_is_official][_target].session,
       this.servers[_is_official][_target].session.user_id)
@@ -3833,8 +3818,6 @@ export class NakamaService {
         break;
     }
     if (is_removed) return;
-    if (!this.noti_origin[_is_official]) this.noti_origin[_is_official] = {};
-    if (!this.noti_origin[_is_official][_target]) this.noti_origin[_is_official][_target] = {};
     this.noti_origin[_is_official][_target][v.id] = v;
   }
 
@@ -3873,8 +3856,6 @@ export class NakamaService {
     let _msg = JSON.parse(JSON.stringify(msg));
     let file_info = await this.global.req_file_info(path);
     let partsize = Math.ceil(file_info.contents.length / FILE_BINARY_LIMIT);
-    if (!this.OnTransfer[_is_official]) this.OnTransfer[_is_official] = {};
-    if (!this.OnTransfer[_is_official][_target]) this.OnTransfer[_is_official][_target] = {};
     if (!this.OnTransfer[_is_official][_target][msg.channel_id]) this.OnTransfer[_is_official][_target][msg.channel_id] = {};
     if (!this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id])
       this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id] = { index: partsize };
@@ -3916,8 +3897,6 @@ export class NakamaService {
    */
   async ReadStorage_From_channel(msg: any, path: string, _is_official: string, _target: string, startFrom = 0) {
     let _msg = JSON.parse(JSON.stringify(msg));
-    if (!this.OnTransfer[_is_official]) this.OnTransfer[_is_official] = {};
-    if (!this.OnTransfer[_is_official][_target]) this.OnTransfer[_is_official][_target] = {};
     if (!this.OnTransfer[_is_official][_target][msg.channel_id]) this.OnTransfer[_is_official][_target][msg.channel_id] = {};
     if (!this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id])
       this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id] = { index: _msg.content['partsize'] };
@@ -4478,10 +4457,6 @@ export class NakamaService {
   }
   /** 서버에 이름 재지정 저장하기 */
   async SaveOverrideName(uid: string, override: string, _is_official: string, _target: string) {
-    if (!this.usernameOverride[_is_official])
-      this.usernameOverride[_is_official] = {};
-    if (!this.usernameOverride[_is_official][_target])
-      this.usernameOverride[_is_official][_target] = {};
     if (override) this.usernameOverride[_is_official][_target][uid] = override;
     else delete this.usernameOverride[_is_official][_target][uid];
     // 리스트에 없는 사용자를 검토하여 삭제함
@@ -4510,10 +4485,6 @@ export class NakamaService {
     if (res.value) {
       let asText = await res.value.text();
       let json = JSON.parse(asText);
-      if (!this.usernameOverride[_is_official])
-        this.usernameOverride[_is_official] = {};
-      if (!this.usernameOverride[_is_official][_target])
-        this.usernameOverride[_is_official][_target] = {};
       let keys = Object.keys(json);
       for (let key of keys) this.usernameOverride[_is_official][_target][key] = json[key];
     }

@@ -2413,8 +2413,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (e && v) {
             let json = JSON.parse(v);
             delete msg.content['text'];
-            if (!this.nakama.OnTransfer[this.isOfficial]) this.nakama.OnTransfer[this.isOfficial] = {};
-            if (!this.nakama.OnTransfer[this.isOfficial][this.target]) this.nakama.OnTransfer[this.isOfficial][this.target] = {};
             if (!this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id]) this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id] = {};
             if (!this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id][msg.message_id])
               this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id][msg.message_id] = { index: msg.content['partsize'] - json['index'] };
