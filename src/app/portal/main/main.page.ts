@@ -445,7 +445,7 @@ export class MainPage implements OnInit {
             this.isAddButton = isAddButton;
             // 추가 버튼 이미지 생성
             this.position = VECTOR_ZERO.copy();
-            this.defaultColor = p.color('#bbb');
+            this.defaultColor = p.color(isDarkMode ? '#bbb' : '#888');
             this.json = { id: 'AddButton', written: 0, limit: 1, longSide: 53, shortSide: 11 }
             return;
           }
