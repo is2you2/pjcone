@@ -191,8 +191,6 @@ export class NakamaService {
         });
       }
     });
-    if (this.users.self['online'])
-      this.init_all_sessions();
     this.showServer = Boolean(localStorage.getItem('showServer'));
   }
 
@@ -1779,7 +1777,6 @@ export class NakamaService {
                         this.update_from_channel_msg(c_msg.messages[0], _is_official, _target);
                     });
                 }
-                this.count_channel_online_member(this.channels_orig[_is_official][_target][channel_ids[i]], _is_official, _target);
                 break;
               default:
                 console.log('예상하지 못한 리다이렉션 타입: ', this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type']);
@@ -1998,16 +1995,16 @@ export class NakamaService {
                   || this.opened_page_info['channel']['target'] != servers[i].info.target
                   || this.opened_page_info['channel']['id'] != c.id
                 ) {
-                  try {
-                    let channel = await this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listChannelMessages(
-                      this.servers[servers[i].info.isOfficial][servers[i].info.target].session, c.id, 1, false);
-                    if (channel.messages.length)
-                      this.update_from_channel_msg(channel.messages[0], servers[i].info.isOfficial, servers[i].info.target);
-                    this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
-                    this.go_to_chatroom_without_admob_act(c);
-                  } catch (e) {
-                    console.error('채널 정보 추가 오류: ', e);
-                  }
+                  this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listChannelMessages(
+                    this.servers[servers[i].info.isOfficial][servers[i].info.target].session, c.id, 1, false)
+                    .then(channel => {
+                      if (channel.messages.length)
+                        this.update_from_channel_msg(channel.messages[0], servers[i].info.isOfficial, servers[i].info.target);
+                      this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
+                      this.go_to_chatroom_without_admob_act(c);
+                    }).catch(e => {
+                      console.error('채널 정보 추가 오류: ', e);
+                    });
                 }
               }
               done();
@@ -2018,15 +2015,15 @@ export class NakamaService {
             case 400: // 그룹에 이미 있는데 그룹추가 시도함
               console.log('이미 그룹에 가입되어 있음: 400');
               let c = await this.join_chat_with_modulation(_info.id, 3, servers[i].info.isOfficial, servers[i].info.target);
-              try {
-                let channel = await this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listChannelMessages(
-                  this.servers[servers[i].info.isOfficial][servers[i].info.target].session, c.id, 1, false);
-                if (channel.messages.length)
-                  this.update_from_channel_msg(channel.messages[0], servers[i].info.isOfficial, servers[i].info.target);
-                this.go_to_chatroom_without_admob_act(c);
-              } catch (e) {
-                console.error('채널 정보 추가 오류: ', e);
-              }
+              this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listChannelMessages(
+                this.servers[servers[i].info.isOfficial][servers[i].info.target].session, c.id, 1, false)
+                .then(channel => {
+                  if (channel.messages.length)
+                    this.update_from_channel_msg(channel.messages[0], servers[i].info.isOfficial, servers[i].info.target);
+                  this.go_to_chatroom_without_admob_act(c);
+                }).catch(e => {
+                  console.error('채널 정보 추가 오류: ', e);
+                });
               done();
               break;
             case 404: // 이 서버에는 없는 그룹
@@ -2940,14 +2937,13 @@ export class NakamaService {
         || this.opened_page_info['channel']['target'] != _target
         || this.opened_page_info['channel']['id'] != c.id
       ) {
-        try {
-          let msg = await this.servers[_is_official][_target].client.listChannelMessages(
-            this.servers[_is_official][_target].session, c.id, 1, false);
-          if (msg.messages.length)
-            this.update_from_channel_msg(msg.messages[0], _is_official, _target, isNewChannel);
-        } catch (e) {
-          console.error('마지막 메시지 받아서 업데이트 오류: ', e);
-        }
+        this.servers[_is_official][_target].client.listChannelMessages(
+          this.servers[_is_official][_target].session, c.id, 1, false).then(msg => {
+            if (msg.messages.length)
+              this.update_from_channel_msg(msg.messages[0], _is_official, _target, isNewChannel);
+          }).catch(e => {
+            console.error('마지막 메시지 받아서 업데이트 오류: ', e);
+          });
       }
       this.count_channel_online_member(c, _is_official, _target);
       this.save_groups_with_less_info();
