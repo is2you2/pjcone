@@ -26,15 +26,15 @@
     </ion-item>
     <ion-item *ngIf="NeedInputCustomAddress">
       <ion-input [label]="lang.text['GroupServer']['Port']" [(ngModel)]="Port" class="ion-text-right"
-        [placeholder]="lang.text['Settings']['joinDedi_placeholder']"></ion-input>
+        [placeholder]="lang.text['Settings']['joinDedi_placeholder'] + ' (3478)'"></ion-input>
     </ion-item>
     <ion-item *ngIf="NeedInputCustomAddress">
       <ion-input [label]="lang.text['WebRTCDevManager']['Username']" [(ngModel)]="Username" class="ion-text-right"
-        [placeholder]="lang.text['Settings']['joinDedi_placeholder']"></ion-input>
+        [placeholder]="lang.text['Settings']['joinDedi_placeholder'] + ' (username)'"></ion-input>
     </ion-item>
     <ion-item *ngIf="NeedInputCustomAddress">
       <ion-input [label]="lang.text['WebRTCDevManager']['Credential']" [(ngModel)]="Password" class="ion-text-right"
-        [placeholder]="lang.text['Settings']['joinDedi_placeholder']"></ion-input>
+        [placeholder]="lang.text['Settings']['joinDedi_placeholder'] + ' (password)'"></ion-input>
     </ion-item>
     <ion-item button (click)="LinkToServer()">
       <ion-label class="ion-text-center">{{lang.text['voidDraw']['ConnectToAddress']}}</ion-label>

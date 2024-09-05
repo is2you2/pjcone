@@ -91,7 +91,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
   LinkToServer(autoLink = false) {
     if (autoLink && !this.ChannelId) {
       this.p5toast.show({
-        text: '번역필요: 연결 정보가 누락되었습니다.',
+        text: this.lang.text['InstantCall']['MissingInfo'],
       });
       this.navCtrl.pop();
       return;

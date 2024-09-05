@@ -294,6 +294,7 @@ leave_chat_group,광장에서 나옵니다,You leave square
 ## InstantCall,,
 Title,즉석 통화,Instant call
 Waiting,연결 대기중,Waiting for connection
+MissingInfo,연결 정보가 누락되었습니다,Connection information is missing
 Connecting,연결중,Connecting
 Connected,연결됨,Connected
 CallEnd,통화 종료,End call
