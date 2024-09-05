@@ -153,6 +153,7 @@ export class NakamaService {
       if (this.users.self['online'] || has_data)
         this.toggle_all_session();
     }
+    await this.LoadOverridesOffline();
     this.catch_group_server_header('offline');
     // 서버별 그룹 정보 불러오기
     let groups = await this.indexed.loadTextFromUserPath('servers/groups.json');
@@ -190,7 +191,6 @@ export class NakamaService {
         });
       }
     });
-    await this.LoadOverridesOffline();
     if (this.users.self['online'])
       this.init_all_sessions();
     this.showServer = Boolean(localStorage.getItem('showServer'));
@@ -2647,7 +2647,7 @@ export class NakamaService {
                     this.AddTodoManageUpdateAct(sep[1], sep[2], isDelete, Number(sep[4]));
                   let userAct = isDelete ? this.lang.text['Main']['WorkerAbandon'] : this.lang.text['Main']['WorkerDone'];
                   this.p5toast.show({
-                    text: `${userAct}: ${this.users[_is_official][_target][sep[2]]['display_name']}`,
+                    text: `${userAct}: ${this.GetOverrideName(sep[2], _is_official, _target) || this.users[_is_official][_target][sep[2]]['display_name']}`,
                   });
                   // 로컬 자료를 변경해야함
                   this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, async (e, v) => {
@@ -2910,7 +2910,7 @@ export class NakamaService {
       };
       switch (type) {
         case 2: // 1:1 채팅
-          c['title'] = this.load_other_user(targetId, _is_official, _target)['display_name'];
+          c['title'] = this.GetOverrideName(targetId, _is_official, _target) || this.load_other_user(targetId, _is_official, _target)['display_name'];
           c['info'] = this.load_other_user(targetId, _is_official, _target);
           break;
         case 3: // 그룹 채팅
@@ -3028,6 +3028,7 @@ export class NakamaService {
       let PushInfo: TotalNotiForm = {
         id: this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'],
         title: this.channels_orig[_is_official][_target][msg.channel_id]['info']['name']
+          || this.GetOverrideName(this.channels_orig[_is_official][_target][msg.channel_id]['info']['id'], _is_official, _target)
           || this.channels_orig[_is_official][_target][msg.channel_id]['info']['display_name']
           || this.channels_orig[_is_official][_target][msg.channel_id]['title']
           || this.lang.text['Subscribes']['noTitiedChat'],
@@ -4443,13 +4444,22 @@ export class NakamaService {
    * usernameOverride[isOfficial][target][uid] = string;
    */
   usernameOverride = {};
+  /** 재지정된 사용자 이름 가져오기, 없다면 빈 값 */
+  GetOverrideName(uid: string, _is_official: string, _target: string) {
+    let override: string;
+    try {
+      override = this.usernameOverride[_is_official][_target][uid];
+    } catch (e) { }
+    return override;
+  }
   /** 서버에 이름 재지정 저장하기 */
   async SaveOverrideName(uid: string, override: string, _is_official: string, _target: string) {
     if (!this.usernameOverride[_is_official])
       this.usernameOverride[_is_official] = {};
     if (!this.usernameOverride[_is_official][_target])
       this.usernameOverride[_is_official][_target] = {};
-    this.usernameOverride[_is_official][_target][uid] = override;
+    if (override) this.usernameOverride[_is_official][_target][uid] = override;
+    else delete this.usernameOverride[_is_official][_target][uid];
     let json_str = JSON.stringify(this.usernameOverride[_is_official][_target]);
     let blob = new Blob([json_str], { type: 'application/json' });
     let TmpFileInfo: FileInfo = {

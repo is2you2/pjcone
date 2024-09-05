@@ -183,10 +183,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         ExceptPic.style('flex-direction', 'column');
         ExceptPic.parent(this.OtherCanvasDiv);
         // 사용자 이름 (display)
-        let override: string;
-        try {
-          override = this.nakama.usernameOverride[this.isOfficial][this.target][this.info['user']['id']];
-        } catch (e) { }
+        let override = this.nakama.GetOverrideName(this.info['user']['id'], this.isOfficial, this.target);
         nameDiv = p.createDiv(override || this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']);
         nameDiv.style('font-size', NAME_SIZE);
         nameDiv.style('font-weight', 'bold');
