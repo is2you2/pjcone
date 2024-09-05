@@ -314,7 +314,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   QRCodeTargetString: string;
   /** QR코드 이미지 생성 */
   async CreateQRCode() {
-    this.QRCodeSRC = 'loading';
+    this.QRCodeSRC = undefined;
     let NoSecure = this.client.cacheAddress.indexOf('ws:') == 0;
     let header_address: string;
     try {
