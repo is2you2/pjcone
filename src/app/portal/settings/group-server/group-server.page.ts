@@ -147,7 +147,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
         OnlineLamp.style('left', `${this.gsCanvasDiv.clientWidth / 2 + 38}px`);
         setTimeout(() => {
           OnlineLamp.style('left', `${this.gsCanvasDiv.clientWidth / 2 + 38}px`);
-        }, 0);
+        }, 100);
         OnlineLamp.style('border-radius', LAMP_SIZE);
         OnlineLamp.style('cursor', 'pointer');
         OnlineLamp.parent(this.gsCanvasDiv);

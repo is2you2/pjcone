@@ -132,7 +132,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         OnlineLamp.style('left', `${this.OtherCanvasDiv.clientWidth / 2 + 38}px`);
         setTimeout(() => {
           OnlineLamp.style('left', `${this.OtherCanvasDiv.clientWidth / 2 + 38}px`);
-        }, 0);
+        }, 100);
         OnlineLamp.style('border-radius', LAMP_SIZE);
         OnlineLamp.parent(this.OtherCanvasDiv);
         p['OnlineLamp'] = OnlineLamp;
