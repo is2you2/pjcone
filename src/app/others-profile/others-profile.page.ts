@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, input } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import * as p5 from "p5";
 import { LanguageSettingService } from '../language-setting.service';
@@ -81,12 +81,14 @@ export class OthersProfilePage implements OnInit, OnDestroy {
     });
   }
 
+  isClickDisplayNameEdit = false;
   OtherCanvasDiv: any;
   ionViewWillEnter() {
     this.OtherCanvasDiv = document.getElementById('OtherUserCanvasDiv');
     this.p5canvas = new p5((p: p5) => {
       const LERP_SIZE = .025;
       let nameDiv: p5.Element;
+      let nameEditDiv: p5.Element;
       let selected_image: p5.Element;
       /** 변경 전 이미지 */
       let trashed_image: p5.Element;
@@ -181,13 +183,54 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         ExceptPic.style('flex-direction', 'column');
         ExceptPic.parent(this.OtherCanvasDiv);
         // 사용자 이름 (display)
-        nameDiv = p.createDiv(this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']);
+        let override: string;
+        try {
+          override = this.nakama.usernameOverride[this.isOfficial][this.target][this.info['user']['id']];
+        } catch (e) { }
+        nameDiv = p.createDiv(override || this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']);
         nameDiv.style('font-size', NAME_SIZE);
         nameDiv.style('font-weight', 'bold');
         nameDiv.style('align-self', 'center');
         nameDiv.style('width', '80%');
         nameDiv.style('text-align', 'center');
+        nameDiv.elt.onclick = () => { // 편집 모드로 변경
+          nameEditDiv.value('');
+          nameEditDiv.attribute('placeholder', this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']);
+          nameEditDiv.show();
+          nameDiv.hide();
+          nameEditDiv.elt.focus();
+          this.isClickDisplayNameEdit = true;
+        }
         nameDiv.parent(ExceptPic);
+        // 사용자 이름 (input)
+        nameEditDiv = p.createInput();
+        nameEditDiv.style('font-size', NAME_SIZE);
+        nameEditDiv.style('font-weight', 'bold');
+        nameEditDiv.style('align-self', 'center');
+        nameEditDiv.style('width', '80%');
+        nameEditDiv.style('text-align', 'center');
+        nameEditDiv.attribute('placeholder', this.lang.text['Profile']['name_placeholder'])
+        nameDiv.style('text-align', 'center');
+        nameEditDiv.parent(ExceptPic);
+        nameEditDiv.hide();
+        nameEditDiv.elt.addEventListener('focusout', () => {
+          let input_value = `${nameEditDiv.value()}`;
+          this.nakama.SaveOverrideName(this.info['user']['id'], input_value, this.isOfficial, this.target);
+          if (input_value) originalName.removeAttribute('hidden');
+          else originalName.attribute('hidden', 'true');
+          nameDiv.html(`${input_value || this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']}`);
+          nameEditDiv.hide();
+          nameDiv.show();
+        });
+        // 사용자 이름 원본 표기
+        let originalName = p.createDiv(this.info['user']['display_name']);
+        originalName.style('color', 'var(--ion-color-medium)');
+        originalName.style('align-self', 'center');
+        originalName.style('margin-top', '36px');
+        originalName.style('width', '80%');
+        originalName.style('text-align', 'center');
+        if (!override) originalName.attribute('hidden', 'true');
+        originalName.parent(ExceptPic);
         // 사용자 UID
         let uuidDiv = p.createDiv(this.info['user']['id']);
         uuidDiv.style('color', 'var(--ion-color-medium)');

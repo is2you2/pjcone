@@ -190,6 +190,7 @@ export class NakamaService {
         });
       }
     });
+    await this.LoadOverridesOffline();
     if (this.users.self['online'])
       this.init_all_sessions();
     this.showServer = Boolean(localStorage.getItem('showServer'));
@@ -825,7 +826,7 @@ export class NakamaService {
           });
           if (this.users.self['img']) {
             try {
-              let image = await this.servers[info.isOfficial][info.target].client.writeStorageObjects(
+              await this.servers[info.isOfficial][info.target].client.writeStorageObjects(
                 this.servers[info.isOfficial][info.target].session, [{
                   collection: 'user_public',
                   key: 'profile_image',
@@ -901,6 +902,8 @@ export class NakamaService {
         }
       } else this.socket_reactive['profile']('');
     });
+    // 사용자 이름 재설정 정보 불러오기
+    this.LoadOverrideName(_is_official, _target);
     // 통신 소켓 연결하기
     this.connect_to(_is_official, _target, (socket: Socket) => {
       this.servers[_is_official][_target].client.readStorageObjects(
@@ -4007,6 +4010,7 @@ export class NakamaService {
       this.indexed.removeFileFromUserPath(`${info.path}.history`);
     } catch (e) {
       console.log('SyncSaveFailed: ', e);
+      throw e;
     }
   }
 
@@ -4103,7 +4107,7 @@ export class NakamaService {
       } catch (e) {
         return {
           from: 'failed',
-          value: null,
+          value: null as Blob,
           error: e,
         };
       }
@@ -4435,6 +4439,58 @@ export class NakamaService {
     }
   }
 
+  /** 사용자 이름 다시 지정하기  
+   * usernameOverride[isOfficial][target][uid] = string;
+   */
+  usernameOverride = {};
+  /** 서버에 이름 재지정 저장하기 */
+  async SaveOverrideName(uid: string, override: string, _is_official: string, _target: string) {
+    if (!this.usernameOverride[_is_official])
+      this.usernameOverride[_is_official] = {};
+    if (!this.usernameOverride[_is_official][_target])
+      this.usernameOverride[_is_official][_target] = {};
+    this.usernameOverride[_is_official][_target][uid] = override;
+    let json_str = JSON.stringify(this.usernameOverride[_is_official][_target]);
+    let blob = new Blob([json_str], { type: 'application/json' });
+    let TmpFileInfo: FileInfo = {
+      blob: blob,
+      path: `servers/${_is_official}/${_target}/users/override_name.json`,
+    };
+    await this.sync_save_file(TmpFileInfo, _is_official, _target, 'usernameOverride', 'override');
+  }
+  /** 서버에서 이름 재지정 불러오기 */
+  async LoadOverrideName(_is_official: string, _target: string) {
+    let TmpFileInfo: FileInfo = {
+      path: `servers/${_is_official}/${_target}/users/override_name.json`,
+    };
+    let res = await this.sync_load_file(TmpFileInfo, _is_official, _target, 'usernameOverride', undefined, 'override', false);
+    if (res.value) {
+      let asText = await res.value.text();
+      let json = JSON.parse(asText);
+      if (!this.usernameOverride[_is_official])
+        this.usernameOverride[_is_official] = {};
+      if (!this.usernameOverride[_is_official][_target])
+        this.usernameOverride[_is_official][_target] = {};
+      this.usernameOverride[_is_official][_target] = json;
+    }
+  }
+
+  /** 오프라인인 경우 이름 덮어쓰기 정보 종합하기 */
+  async LoadOverridesOffline() {
+    let list = await this.indexed.GetFileListFromDB('override_name.json');
+    for (let path of list) {
+      let sep = path.split('/');
+      if (!this.usernameOverride[sep[1]])
+        this.usernameOverride[sep[1]] = {};
+      if (!this.usernameOverride[sep[1]][sep[2]])
+        this.usernameOverride[sep[1]][sep[2]] = {};
+      let blob = await this.indexed.loadBlobFromUserPath(path, '');
+      let asText = await blob.text();
+      let json = JSON.parse(asText);
+      this.usernameOverride[sep[1]][sep[2]] = json;
+    }
+  }
+
   /** 사용자별 카운터 필요  
    * counter[isOfficial][target][user_id] = counter;
    */
@@ -4570,7 +4626,7 @@ export class NakamaService {
             if (other_counter.objects.length) other_exact_counter = other_counter.objects[0].value['counter'];
             this.post_counter[isOfficial][target][others[k]] = other_exact_counter;
           } catch (e) {
-            console.log('다른 사람의 카운터 불러오기 오류: ', e);
+            delete this.post_counter[isOfficial][target][others[k]];
           }
         }
       }
