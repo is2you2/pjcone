@@ -130,9 +130,6 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         OnlineLamp.style('position', 'absolute');
         OnlineLamp.style('top', '128px');
         OnlineLamp.style('left', `${this.OtherCanvasDiv.clientWidth / 2 + 38}px`);
-        setTimeout(() => {
-          OnlineLamp.style('left', `${this.OtherCanvasDiv.clientWidth / 2 + 38}px`);
-        }, 100);
         OnlineLamp.style('border-radius', LAMP_SIZE);
         OnlineLamp.parent(this.OtherCanvasDiv);
         p['OnlineLamp'] = OnlineLamp;
@@ -238,6 +235,9 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         uuidDiv.elt.onclick = () => {
           this.copy_id();
         }
+        setTimeout(() => {
+          p.windowResized();
+        }, 0);
       }
       p.draw = () => {
         if (FadeOutTrashedLerp > 0) {

@@ -143,9 +143,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
         OnlineLamp.style('position', 'absolute');
         OnlineLamp.style('top', '128px');
         OnlineLamp.style('left', `${this.gsCanvasDiv.clientWidth / 2 + 38}px`);
-        setTimeout(() => {
-          OnlineLamp.style('left', `${this.gsCanvasDiv.clientWidth / 2 + 38}px`);
-        }, 100);
         OnlineLamp.style('border-radius', LAMP_SIZE);
         OnlineLamp.style('cursor', 'pointer');
         OnlineLamp.parent(this.gsCanvasDiv);
@@ -316,6 +313,9 @@ export class GroupServerPage implements OnInit, OnDestroy {
           this.toggle_online();
         }
         p['LoginButton'] = LoginButton;
+        setTimeout(() => {
+          p.windowResized();
+        }, 0);
       }
       p.draw = () => {
         if (FadeOutTrashedLerp > 0) {
