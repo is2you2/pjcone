@@ -18,23 +18,7 @@ export class LicensesPage implements OnInit, OnDestroy {
     private navCtrl: NavController,
   ) { }
 
-  BackButtonPressed = false;
-  InitBrowserBackButtonOverride() {
-    try {
-      window.history.pushState(null, null, window.location.href);
-      if (window.onpopstate) window.onpopstate = null;
-      window.onpopstate = () => {
-        if (this.BackButtonPressed) return;
-        window.onpopstate = null;
-        this.BackButtonPressed = true;
-        this.navCtrl.back();
-      };
-    } catch (e) {
-      console.log('탐색 기록 변경시 오류 발생: ', e);
-    }
-  }
   ngOnInit() {
-    this.InitBrowserBackButtonOverride();
     this.loadTexts();
   }
 

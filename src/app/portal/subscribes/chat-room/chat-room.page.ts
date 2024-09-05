@@ -745,26 +745,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   ShowGoToBottom = false;
   isMobile = false;
 
-  BackButtonPressed = false;
-  InitBrowserBackButtonOverride() {
-    try {
-      window.history.pushState(null, null, window.location.href);
-      if (window.onpopstate) window.onpopstate = null;
-      window.onpopstate = () => {
-        if (this.BackButtonPressed) return;
-        window.onpopstate = null;
-        this.BackButtonPressed = true;
-        this.navCtrl.back();
-      };
-    } catch (e) {
-      console.log('탐색 기록 변경시 오류 발생: ', e);
-    }
-  }
   ngOnInit() {
     window.onblur = (_ev: any) => {
       if (this.ChatManageMenu) this.ChatManageMenu.dismiss();
     }
-    this.InitBrowserBackButtonOverride();
     this.useSpeaker = Boolean(localStorage.getItem('useChannelSpeaker'));
     this.toggle_speakermode(this.useSpeaker);
     try {

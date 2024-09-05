@@ -40,26 +40,10 @@ export class OthersProfilePage implements OnInit, OnDestroy {
   lerpVal: number;
   p5canvas: p5;
 
-  BackButtonPressed = false;
-  InitBrowserBackButtonOverride() {
-    try {
-      window.history.replaceState(null, null, window.location.href);
-      if (window.onpopstate) window.onpopstate = null;
-      window.onpopstate = () => {
-        if (this.BackButtonPressed) return;
-        this.BackButtonPressed = true;
-        window.onpopstate = null;
-        this.navCtrl.pop();
-      };
-    } catch (e) {
-      console.log('탐색 기록 변경시 오류 발생: ', e);
-    }
-  }
   async ngOnInit() {
     this.route.queryParams.subscribe(_p => {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
-        this.InitBrowserBackButtonOverride();
         this.info = navParams.info;
         this.has_admin = navParams.has_admin;
         this.group_info = navParams.group;

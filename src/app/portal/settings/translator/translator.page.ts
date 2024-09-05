@@ -25,23 +25,7 @@ export class TranslatorPage implements OnInit {
     text: '기능 준비중',
   };
 
-  BackButtonPressed = false;
-  InitBrowserBackButtonOverride() {
-    try {
-      window.history.pushState(null, null, window.location.href);
-      if (window.onpopstate) window.onpopstate = null;
-      window.onpopstate = () => {
-        if (this.BackButtonPressed) return;
-        window.onpopstate = null;
-        this.BackButtonPressed = true;
-        this.navCtrl.back();
-      };
-    } catch (e) {
-      console.log('탐색 기록 변경시 오류 발생: ', e);
-    }
-  }
   ngOnInit() {
-    this.InitBrowserBackButtonOverride();
     new p5((p: p5) => {
       p.setup = () => {
         p.noCanvas();

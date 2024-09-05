@@ -27,24 +27,7 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
 
   channels: any[];
 
-
-  BackButtonPressed = false;
-  InitBrowserBackButtonOverride() {
-    try {
-      window.history.replaceState(null, null, window.location.href);
-      if (window.onpopstate) window.onpopstate = null;
-      window.onpopstate = () => {
-        if (this.BackButtonPressed) return;
-        window.onpopstate = null;
-        this.BackButtonPressed = true;
-        this.modalCtrl.dismiss();
-      };
-    } catch (e) {
-      console.log('탐색 기록 변경시 오류 발생: ', e);
-    }
-  }
   ngOnInit() {
-    this.InitBrowserBackButtonOverride();
     this.channels = this.navParams.get('channels');
     this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
       if (this.nakama.channels.length > index)

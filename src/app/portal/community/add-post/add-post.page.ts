@@ -145,22 +145,6 @@ export class AddPostPage implements OnInit, OnDestroy {
     };
   }
 
-  BackButtonPressed = false;
-  InitBrowserBackButtonOverride() {
-    try {
-      window.history.pushState(null, null, window.location.href);
-      if (window.onpopstate) window.onpopstate = null;
-      window.onpopstate = () => {
-        if (this.BackButtonPressed) return;
-        this.BackButtonPressed = true;
-        window.onpopstate = null;
-        this.navCtrl.back();
-      };
-    } catch (e) {
-      console.log('탐색 기록 변경시 오류 발생: ', e);
-    }
-  }
-
   LoadListServer() {
     this.servers = this.nakama.get_all_server_info(true, true);
     /** 이 기기에 저장에 사용하는 정보 */
@@ -267,7 +251,6 @@ export class AddPostPage implements OnInit, OnDestroy {
       return false;
     }
     this.isModify = Boolean(this.userInput.id);
-    this.InitBrowserBackButtonOverride();
   }
 
   ionViewDidEnter() {

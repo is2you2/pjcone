@@ -36,22 +36,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
   /** 서버 정보가 있는 경우 uid 받기 */
   session_uid = '';
 
-  BackButtonPressed = false;
-  InitBrowserBackButtonOverride() {
-    try {
-      window.history.pushState(null, null, window.location.href);
-      if (window.onpopstate) window.onpopstate = null;
-      window.onpopstate = () => {
-        if (this.BackButtonPressed) return;
-        window.onpopstate = null;
-        this.BackButtonPressed = true;
-        this.navCtrl.back();
-      };
-    } catch (e) {
-      console.log('탐색 기록 변경시 오류 발생: ', e);
-    }
-  }
-
   gsCanvasDiv: HTMLElement;
   ngOnInit() {
     this.servers = this.nakama.get_all_server_info(true);
@@ -86,7 +70,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
   ShowServerList = false;
   isClickDisplayNameEdit = false;
   initialize() {
-    this.InitBrowserBackButtonOverride();
     this.gsCanvasDiv = document.getElementById('GroupServerCanvasDiv');
     this.OnlineToggle = this.nakama.users.self['online'];
     this.p5canvas = new p5((p: p5) => {

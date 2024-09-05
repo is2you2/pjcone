@@ -44,26 +44,10 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   isOfficial: string;
   target: string
 
-  BackButtonPressed = false;
-  InitBrowserBackButtonOverride() {
-    try {
-      window.history.replaceState(null, null, window.location.href);
-      if (window.onpopstate) window.onpopstate = null;
-      window.onpopstate = () => {
-        if (this.BackButtonPressed) return;
-        window.onpopstate = null;
-        this.BackButtonPressed = true;
-        this.navCtrl.pop();
-      };
-    } catch (e) {
-      console.log('탐색 기록 변경시 오류 발생: ', e);
-    }
-  }
   async ngOnInit() {
     this.route.queryParams.subscribe(_p => {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
-        this.InitBrowserBackButtonOverride();
         this.info = navParams.info;
         this.file_sel_id = `group_detail_${this.info.id}_${new Date().getTime()}}`;
         this.info_orig = JSON.parse(JSON.stringify(navParams.info));

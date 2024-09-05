@@ -56,23 +56,7 @@ export class AdminToolsPage implements OnInit {
   /** 서버에서 관리하는 아케이드 리스트 주소 */
   ArcadeListURL = '';
 
-  BackButtonPressed = false;
-  InitBrowserBackButtonOverride() {
-    try {
-      window.history.pushState(null, null, window.location.href);
-      if (window.onpopstate) window.onpopstate = null;
-      window.onpopstate = () => {
-        if (this.BackButtonPressed) return;
-        window.onpopstate = null;
-        this.BackButtonPressed = true;
-        this.navCtrl.back();
-      };
-    } catch (e) {
-      console.log('탐색 기록 변경시 오류 발생: ', e);
-    }
-  }
   ngOnInit() {
-    this.InitBrowserBackButtonOverride();
     this.servers = this.nakama.get_all_server_info(true, true);
     for (let i = this.servers.length - 1; i >= 0; i--) {
       if (!this.servers[i].is_admin)

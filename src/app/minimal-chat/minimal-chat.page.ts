@@ -56,22 +56,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     else this.client.RejoinGroupChat();
   }
 
-  BackButtonPressed = false;
-  InitBrowserBackButtonOverride() {
-    try {
-      window.history.replaceState(null, null, window.location.href);
-      if (window.onpopstate) window.onpopstate = null;
-      window.onpopstate = () => {
-        if (this.BackButtonPressed) return;
-        this.BackButtonPressed = true;
-        window.onpopstate = null;
-        this.navCtrl.pop();
-      };
-    } catch (e) {
-      console.log('탐색 기록 변경시 오류 발생: ', e);
-    }
-  }
-
   async open_url_link(url: string) {
     // 근데 주소가 메인 주소라면 QR행동으로 처리하기
     if (url.indexOf('https://is2you2.github.io/godotchat_pwa/?') == 0) {
@@ -105,7 +89,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     window.onfocus = () => {
       if (this.lnId) this.noti.ClearNoti(this.lnId);
     }
-    this.InitBrowserBackButtonOverride();
     this.isMobileApp = isPlatform == 'Android' || isPlatform == 'iOS';
     this.header_title = this.lang.text['MinimalChat']['header_title_group'];
     this.minimal_chat_log = document.getElementById('minimal_chat_div');

@@ -29,22 +29,6 @@ export class SettingsPage implements OnInit, OnDestroy {
   can_use_http = false;
   is_nativefier = isNativefier;
 
-  BackButtonPressed = false;
-  InitBrowserBackButtonOverride() {
-    try {
-      window.history.pushState(null, null, window.location.href);
-      if (window.onpopstate) window.onpopstate = null;
-      window.onpopstate = () => {
-        if (this.BackButtonPressed) return;
-        window.onpopstate = null;
-        this.BackButtonPressed = true;
-        this.navCtrl.back();
-      };
-    } catch (e) {
-      console.log('탐색 기록 변경시 오류 발생: ', e);
-    }
-  }
-
   ngOnInit() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
@@ -79,7 +63,6 @@ export class SettingsPage implements OnInit, OnDestroy {
   /** 프로필 썸네일 */
   profile_filter: string;
   ionViewWillEnter() {
-    this.InitBrowserBackButtonOverride();
     if (this.statusBar.settings['groupServer'] == 'online')
       this.profile_filter = "filter: grayscale(0) contrast(1);";
     else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";

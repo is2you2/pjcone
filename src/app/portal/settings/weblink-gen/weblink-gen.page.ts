@@ -35,23 +35,6 @@ export class WeblinkGenPage implements OnInit {
   groups = [];
   rtcServer = [];
 
-
-  BackButtonPressed = false;
-  InitBrowserBackButtonOverride() {
-    try {
-      window.history.pushState(null, null, window.location.href);
-      if (window.onpopstate) window.onpopstate = null;
-      window.onpopstate = () => {
-        if (this.BackButtonPressed) return;
-        window.onpopstate = null;
-        this.BackButtonPressed = true;
-        this.navCtrl.back();
-      };
-    } catch (e) {
-      console.log('탐색 기록 변경시 오류 발생: ', e);
-    }
-  }
-
   targetBaseURL: string;
   ngOnInit() {
     if (location.host.indexOf('localhost') == 0)
@@ -59,7 +42,6 @@ export class WeblinkGenPage implements OnInit {
     else this.targetBaseURL = `${location.protocol}//${location.host}${window['sub_path']}`
     this.result_address = this.targetBaseURL;
     this.update_qrcode();
-    this.InitBrowserBackButtonOverride();
     this.servers = this.nakama.get_all_server_info();
     this.groups = this.nakama.rearrange_group_list(false);
     this.indexed.loadTextFromUserPath('servers/webrtc_server.json', (e, v) => {
