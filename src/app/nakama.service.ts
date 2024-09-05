@@ -1476,53 +1476,46 @@ export class NakamaService {
     if (!this.usernameOverride[_is_official][_target])
       this.usernameOverride[_is_official][_target] = {};
     // 사용자 정보 업데이트
-    this.servers[_is_official][_target].client.getUsers(
-      this.servers[_is_official][_target].session, [userId])
-      .then(v => {
-        if (v.users.length) {
-          let keys = Object.keys(v.users[0]);
-          keys.forEach(key => this.users[_is_official][_target][userId][key] = v.users[0][key]);
+    let failed_update_act = () => {
+      this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.json`, (e, v) => {
+        if (e && v) {
+          let data = JSON.parse(v);
+          let keys = Object.keys(data);
+          keys.forEach(key => this.users[_is_official][_target][userId][key] = data[key]);
           if (!already_use_callback) {
             _CallBack(this.users[_is_official][_target][userId]);
             already_use_callback = true;
           }
-          if (!this.users[_is_official][_target][userId]['img'])
-            this.users[_is_official][_target][userId]['img'] = null;
-          this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
-        } else { // 없는 사용자 기록 삭제
-          this.indexed.removeFileFromUserPath(`${_is_official}/${_target}/users/${userId}`);
-          this.indexed.removeFileFromUserPath(`${_is_official}/${_target}/users/${userId}/profile.json`);
-          this.indexed.removeFileFromUserPath(`${_is_official}/${_target}/users/${userId}/profile.img`);
         }
-      }).catch(_e => {
-        this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.json`, (e, v) => {
-          if (e && v) {
-            let data = JSON.parse(v);
-            let keys = Object.keys(data);
-            keys.forEach(key => this.users[_is_official][_target][userId][key] = data[key]);
+      });
+    }
+    try {
+      this.servers[_is_official][_target].client.getUsers(
+        this.servers[_is_official][_target].session, [userId])
+        .then(v => {
+          if (v.users.length) {
+            let keys = Object.keys(v.users[0]);
+            keys.forEach(key => this.users[_is_official][_target][userId][key] = v.users[0][key]);
             if (!already_use_callback) {
               _CallBack(this.users[_is_official][_target][userId]);
               already_use_callback = true;
             }
+            if (!this.users[_is_official][_target][userId]['img'])
+              this.users[_is_official][_target][userId]['img'] = null;
+            this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
+          } else { // 없는 사용자 기록 삭제
+            this.indexed.removeFileFromUserPath(`${_is_official}/${_target}/users/${userId}`);
+            this.indexed.removeFileFromUserPath(`${_is_official}/${_target}/users/${userId}/profile.json`);
+            this.indexed.removeFileFromUserPath(`${_is_official}/${_target}/users/${userId}/profile.img`);
           }
+        }).catch(_e => {
+          failed_update_act();
         });
-      });
+    } catch (e) {
+      failed_update_act();
+    }
     // 사용자 이미지 업데이트
-    this.servers[_is_official][_target].client.readStorageObjects(
-      this.servers[_is_official][_target].session, {
-      object_ids: [{
-        collection: 'user_public',
-        key: 'profile_image',
-        user_id: userId,
-      }]
-    }).then(v => {
-      if (v.objects.length) this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
-      if (!already_use_callback) {
-        _CallBack(this.users[_is_official][_target][userId]);
-        already_use_callback = true;
-      }
-      this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
-    }).catch(_e => {
+    let failed_image_act = () => {
       if (this.users[_is_official][_target][userId]['img']) {
         delete this.users[_is_official][_target][userId]['img'];
         if (!already_use_callback) {
@@ -1534,8 +1527,28 @@ export class NakamaService {
       this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
         if (e && v) this.users[_is_official][_target][userId]['img'] = v.replace(/"|=|\\/g, '');
       });
-      this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
-    });
+    }
+    try {
+      this.servers[_is_official][_target].client.readStorageObjects(
+        this.servers[_is_official][_target].session, {
+        object_ids: [{
+          collection: 'user_public',
+          key: 'profile_image',
+          user_id: userId,
+        }]
+      }).then(v => {
+        if (v.objects.length) this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
+        if (!already_use_callback) {
+          _CallBack(this.users[_is_official][_target][userId]);
+          already_use_callback = true;
+        }
+        this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
+      }).catch(_e => {
+        failed_image_act();
+      });
+    } catch (e) {
+      failed_image_act();
+    }
     return this.users[_is_official][_target][userId];
   }
 
