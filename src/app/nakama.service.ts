@@ -906,7 +906,7 @@ export class NakamaService {
           this.users.self['img'] = image.objects[0].value['img'];
           this.indexed.saveTextFileToUserPath(JSON.stringify(this.users.self['img']), 'servers/self/profile.img');
         }
-      } else this.socket_reactive['profile']('');
+      } else if (this.socket_reactive['profile']) this.socket_reactive['profile']('');
     });
     // 사용자 이름 재설정 정보 불러오기
     this.LoadOverrideName(_is_official, _target);
