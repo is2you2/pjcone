@@ -449,7 +449,9 @@ export class NakamaService {
       let Targets = Object.keys(this.statusBar.groupServer[IsOfficials[i]]);
       for (let k = 0, l = Targets.length; k < l; k++) {
         if (this.statusBar.groupServer[IsOfficials[i]][Targets[k]] == 'online')
-          this.link_group(IsOfficials[i], Targets[k], false);
+          if (this.servers[IsOfficials[i]][Targets[k]].socket) {
+            this.servers[IsOfficials[i]][Targets[k]].socket.disconnect(true);
+          } else this.link_group(IsOfficials[i], Targets[k], false);
       }
     }
   }
@@ -2809,12 +2811,6 @@ export class NakamaService {
         }
         socket.ondisconnect = (_e) => {
           this.OnSocketDisconnect(_is_official, _target);
-          socket.onnotification = null;
-          socket.onmatchpresence = null;
-          socket.onchannelpresence = null;
-          socket.onmatchdata = null;
-          socket.onchannelmessage = null;
-          socket.ondisconnect = null;
         }
         callback(socket);
       });
