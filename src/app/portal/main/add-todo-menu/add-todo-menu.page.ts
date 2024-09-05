@@ -16,6 +16,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SpeechRecognition } from "@capacitor-community/speech-recognition";
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
 import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
+import { ExtendButtonForm } from '../../subscribes/chat-room/chat-room.page';
 
 /** 서버에서 생성한 경우 */
 interface RemoteInfo {
@@ -111,6 +112,146 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   /** 파일 읽기 멈추기 위한 컨트롤러 */
   cont: AbortController;
+
+  useVoiceRecording = false;
+  /** 확장 버튼 행동들 */
+  extended_buttons: ExtendButtonForm[] = [
+    { // 0
+      icon: 'document-attach-outline',
+      name: this.lang.text['ChatRoom']['attachments'],
+      act: async () => {
+        if (this.isButtonClicked) return;
+        try {
+          await this.new_attach({ detail: { value: 'link' } });
+          return; // 파일 넣기 성공시 링크 발송 기능 여전히 사용
+        } catch (e) {
+          if (e != 'done')
+            this.new_attach({ detail: { value: 'load' } });
+        }
+      }
+    }, { // 1
+      icon_img: 'voidDraw.png',
+      name: this.lang.text['ChatRoom']['voidDraw'],
+      act: async () => {
+        if (this.isButtonClicked) return;
+        let props = {}
+        let content_related_creator: ContentCreatorInfo[];
+        this.modalCtrl.create({
+          component: VoidDrawPage,
+          componentProps: props,
+          cssClass: 'fullscreen',
+        }).then(v => {
+          this.global.StoreShortCutAct('add-todo');
+          v.onWillDismiss().then(async v => {
+            if (v.data) await this.voidDraw_fileAct_callback(v, content_related_creator);
+          });
+          v.onDidDismiss().then(() => {
+            this.global.RestoreShortCutAct('add-todo');
+          });
+          delete this.global.p5key['KeyShortCut']['Escape'];
+          v.present();
+        });
+      }
+    },
+    { // 2
+      icon: 'reader-outline',
+      name: this.lang.text['ChatRoom']['newText'],
+      act: async () => {
+        let props = {
+          info: {
+            content: {
+              is_new: undefined,
+              type: 'text/plain',
+              viewer: 'text',
+              filename: undefined,
+              path: undefined,
+            },
+          },
+          no_edit: undefined,
+        };
+        props.info.content.is_new = 'text';
+        props.info.content.filename = this.global.TextEditorNewFileName();
+        props.no_edit = true;
+        this.modalCtrl.create({
+          component: IonicViewerPage,
+          componentProps: props,
+        }).then(v => {
+          this.global.StoreShortCutAct('add-todo');
+          v.onWillDismiss().then(v => {
+            if (v.data) {
+              let this_file: FileInfo = this.global.TextEditorAfterAct(v.data, {
+                display_name: this.nakama.users.self['display_name'],
+              });
+              this.userInput.attach.push(this_file);
+            }
+          });
+          v.onDidDismiss().then(() => {
+            this.global.RestoreShortCutAct('add-todo');
+          });
+          delete this.global.p5key['KeyShortCut']['Escape'];
+          v.present();
+        });
+      }
+    }, { // 3
+      icon: 'camera-outline',
+      name: this.lang.text['ChatRoom']['Camera'],
+      act: async () => {
+        if (this.isButtonClicked) return;
+        try {
+          let result = await this.global.from_camera('tmp_files/post/', {
+            user_id: this.userInput.storeAt == 'local' ? undefined : this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id,
+            display_name: this.nakama.users.self['display_name']
+          });
+          this.userInput.attach.push(result);
+        } catch (e) {
+          console.log('촬영 실패: ', e);
+          this.p5toast.show({
+            text: `${this.lang.text['GlobalAct']['ErrorFromCamera']}: ${e}`,
+          });
+        }
+      }
+    }, { // 4
+      icon: 'mic-circle-outline',
+      name: this.lang.text['ChatRoom']['Voice'],
+      act: async () => {
+        if (this.isButtonClicked) return;
+        this.useVoiceRecording = !this.useVoiceRecording;
+        if (this.useVoiceRecording) { // 녹음 시작
+          let req = await VoiceRecorder.hasAudioRecordingPermission();
+          if (req.value) { // 권한 있음
+            this.extended_buttons[4].icon = 'stop-circle-outline';
+            this.p5toast.show({
+              text: this.lang.text['ChatRoom']['StartVRecord'],
+            });
+            await VoiceRecorder.startRecording();
+          } else { // 권한이 없다면 권한 요청 및 UI 복구
+            this.useVoiceRecording = false;
+            this.extended_buttons[4].icon = 'mic-circle-outline';
+            await VoiceRecorder.requestAudioRecordingPermission();
+          }
+        } else await this.StopAndSaveVoiceRecording();
+      }
+    }];
+
+  async StopAndSaveVoiceRecording() {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
+    loading.present();
+    try {
+      let data = await VoiceRecorder.stopRecording();
+      let blob = this.global.Base64ToBlob(`${data.value.mimeType},${data.value.recordDataBase64}`);
+      blob['name'] = `${this.lang.text['ChatRoom']['VoiceRecord']}.${data.value.mimeType.split('/').pop().split(';')[0]}`;
+      blob['type_override'] = data.value.mimeType;
+      await this.selected_blobFile_callback_act(blob);
+      loading.dismiss();
+    } catch (e) {
+      this.p5toast.show({
+        text: `${this.lang.text['AddPost']['FailedToSaveVoice']}:${e}`,
+      });
+      loading.dismiss();
+    }
+    this.extended_buttons[4].icon = 'mic-circle-outline';
+    this.extended_buttons[4].name = this.lang.text['ChatRoom']['Voice'];
+  }
 
   BackButtonPressed = false;
   ngOnInit() {
@@ -572,26 +713,23 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   AddShortCut() {
-    if (!this.NewAttach) return;
-    if (!this.NewAttach.value && !this.WillLeavePage)
-      setTimeout(() => {
-        delete this.global.p5key['KeyShortCut']['Digit'];
-        this.global.p5key['KeyShortCut']['Escape'] = () => {
-          this.navCtrl.pop();
-        }
-        this.global.p5key['KeyShortCut']['AddAct'] = () => {
-          if (this.checkIfInputFocus()) return;
-          this.open_select_new();
-        }
-        this.global.p5key['KeyShortCut']['EnterAct'] = (ev: any) => {
-          if (document.activeElement == this.titleIonInput)
-            setTimeout(() => {
-              this.desc_input.focus();
-            }, 0);
-          if (ev['ctrlKey']) this.saveData();
-        }
-      }, 0);
-    this.NewAttach.value = '';
+    setTimeout(() => {
+      delete this.global.p5key['KeyShortCut']['Digit'];
+      this.global.p5key['KeyShortCut']['Escape'] = () => {
+        this.navCtrl.pop();
+      }
+      this.global.p5key['KeyShortCut']['AddAct'] = () => {
+        if (this.checkIfInputFocus()) return;
+        this.open_select_new();
+      }
+      this.global.p5key['KeyShortCut']['EnterAct'] = (ev: any) => {
+        if (document.activeElement == this.titleIonInput)
+          setTimeout(() => {
+            this.desc_input.focus();
+          }, 0);
+        if (ev['ctrlKey']) this.saveData();
+      }
+    }, 0);
   }
 
   removeShortCut() {
@@ -692,7 +830,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     });
   }
 
-  @ViewChild('NewAttach') NewAttach: IonSelect;
   /** 새 파일 타입 정하기 */
   open_select_new() {
     if (this.isCDNToggleClicked) return;
@@ -707,8 +844,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       if (NumberShortCutAct.length > index)
         this.new_attach({ detail: { value: NumberShortCutAct[index] } });
     }
-    if (this.NewAttach) this.NewAttach.open();
   }
+
   /** 할 일 제목 입력칸 */
   titleIonInput: any;
   /** 할 일 내용 입력칸 */
@@ -816,6 +953,74 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       case 'load': // 불러오기 행동 병합
         this.select_attach();
         this.AddShortCut();
+        break;
+      case 'link':
+        let file: any;
+        try {
+          let pasted_url: any;
+          if (pasted_url === undefined)
+            try {
+              let pasted = await this.global.GetValueFromClipboard();
+              switch (pasted.type) {
+                case 'text/plain':
+                  pasted_url = pasted.value;
+                  break;
+                case 'image/png':
+                  this.inputImageSelected({ target: { files: [pasted.value] } });
+                  return;
+              }
+            } catch (e) {
+              throw e;
+            }
+          try { // DataURL 주소인지 검토
+            let blob = this.global.Base64ToBlob(pasted_url);
+            let getType = pasted_url.split(';')[0].split(':')[1];
+            file = new File([blob],
+              `${this.lang.text['ChatRoom']['FileLink']}.${getType.split('/').pop()}`, {
+              type: getType,
+            });
+            await this.selected_blobFile_callback_act(file);
+            throw 'done';
+          } catch (e) {
+            switch (e) {
+              case 'done':
+                throw e;
+            }
+          }
+          try { // 정상적인 주소인지 검토
+            if (pasted_url.indexOf('http:') != 0 && pasted_url.indexOf('https:') != 0) throw '올바른 웹 주소가 아님';
+            if (file) throw '이미 파일이 첨부됨, 토글만 시도';
+          } catch (e) {
+            throw e;
+          }
+          let this_file: FileInfo = {};
+          this_file.url = pasted_url;
+          this_file['content_related_creator'] = [];
+          this_file['content_related_creator'].push({
+            user_id: this.userInput.remote.isOfficial == 'local' ? 'local' : this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id,
+            timestamp: new Date().getTime(),
+            display_name: this.nakama.users.self['display_name'],
+            various: 'link',
+          });
+          this_file['content_creator'] = {
+            user_id: this.userInput.remote.isOfficial == 'local' ? 'local' : this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id,
+            timestamp: new Date().getTime(),
+            display_name: this.nakama.users.self['display_name'],
+            various: 'link',
+          };
+          let sep = this_file.url.split('.');
+          this_file.file_ext = sep.pop().split('?').shift();
+          this_file.filename = decodeURIComponent(`${sep.pop().split('/').pop() || this.lang.text['ChatRoom']['ExternalLinkFile']}.${this_file.file_ext}`);
+          this.global.set_viewer_category_from_ext(this_file);
+          this_file.type = '';
+          this_file.typeheader = this_file.viewer;
+          this.global.modulate_thumbnail(this_file, this_file.url, this.cont);
+          this.userInput.attach.push(this_file);
+        } catch (e) {
+          if (e == 'done')
+            throw e;
+          else throw `인식 불가능한 URL 정보: ${e}`;
+        }
         break;
     }
   }
@@ -1171,6 +1376,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       return;
     }
     this.isButtonClicked = true;
+    if (this.useVoiceRecording) await this.StopAndSaveVoiceRecording();
     let has_attach = Boolean(this.userInput.attach.length);
     delete this.userInput.display_store;
     delete this.userInput.display_creator;

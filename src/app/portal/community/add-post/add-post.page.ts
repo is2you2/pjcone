@@ -625,9 +625,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   }
 
   /** 첨부 파일 타입 정하기 */
-  async new_attach(ev: any, override: FileInfo = undefined) {
-    if (override === undefined)
-      override = {};
+  async new_attach(ev: any) {
     let file: any;
     switch (ev.detail.value) {
       case 'load':
@@ -635,7 +633,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         break;
       case 'link':
         try {
-          let pasted_url = override.url;
+          let pasted_url: any;
           if (pasted_url === undefined)
             try {
               pasted_url = await this.mClipboard.paste();
@@ -671,32 +669,31 @@ export class AddPostPage implements OnInit, OnDestroy {
           }
           try { // 정상적인 주소인지 검토
             if (pasted_url.indexOf('http:') != 0 && pasted_url.indexOf('https:') != 0) throw '올바른 웹 주소가 아님';
-            if (file && override.filename === undefined) throw '이미 파일이 첨부됨, 토글만 시도';
+            if (file) throw '이미 파일이 첨부됨, 토글만 시도';
           } catch (e) {
             throw e;
           }
           let this_file: FileInfo = {};
           this_file.url = pasted_url;
           this_file['content_related_creator'] = [];
-          if (override && override.content_related_creator) this_file['content_related_creator'] = [...override.content_related_creator]
           this_file['content_related_creator'].push({
             user_id: this.isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
             timestamp: new Date().getTime(),
             display_name: this.nakama.users.self['display_name'],
-            various: override.url ? 'shared' : 'link',
+            various: 'link',
           });
           this_file['content_creator'] = {
             user_id: this.isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
             timestamp: new Date().getTime(),
             display_name: this.nakama.users.self['display_name'],
-            various: override.url ? 'shared' : 'link',
+            various: 'link',
           };
           let sep = this_file.url.split('.');
-          this_file.file_ext = override.file_ext || sep.pop().split('?').shift();
-          this_file.filename = override.filename || decodeURIComponent(`${sep.pop().split('/').pop() || this.lang.text['ChatRoom']['ExternalLinkFile']}.${this_file.file_ext}`);
+          this_file.file_ext = sep.pop().split('?').shift();
+          this_file.filename = decodeURIComponent(`${sep.pop().split('/').pop() || this.lang.text['ChatRoom']['ExternalLinkFile']}.${this_file.file_ext}`);
           this.global.set_viewer_category_from_ext(this_file);
-          this_file.type = override.type || '';
-          this_file.typeheader = override.typeheader || this_file.viewer;
+          this_file.type = '';
+          this_file.typeheader = this_file.viewer;
           this.global.modulate_thumbnail(this_file, this_file.url, this.cont);
           this.userInput.attachments.push(this_file);
         } catch (e) {
