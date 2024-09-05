@@ -1,6 +1,8 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>{{info['title'] || lang.text['ChatRoom']['noname_chatroom']}}</ion-title>
+    <ion-title>{{nakama.usernameOverride[info['info']['isOfficial']][info['info']['target']][info['info']['id']]
+      || info['title'] ||
+      lang.text['ChatRoom']['noname_chatroom']}}</ion-title>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="portal/subscribes"></ion-back-button>
     </ion-buttons>
