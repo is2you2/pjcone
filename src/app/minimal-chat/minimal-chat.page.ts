@@ -302,14 +302,14 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     let header_address: string;
     try {
       let extract = `${NoSecure ? 'http' : 'https'}://` + this.client.cacheAddress.split('://')[1];
-      let HasLocalPage = `${extract}:${NoSecure ? 8080 : 8443}/www/`;
+      let HasLocalPage = `${extract}:${NoSecure ? 8080 : 8443}${window['sub_path']}`;
       const cont = new AbortController();
       const id = setTimeout(() => {
         cont.abort();
       }, 500);
       let res = await fetch(HasLocalPage, { signal: cont.signal });
       clearTimeout(id);
-      if (res.ok) header_address = `${extract}:${NoSecure ? 8080 : 8443}/www/`;
+      if (res.ok) header_address = `${extract}:${NoSecure ? 8080 : 8443}${window['sub_path']}`;
       else throw '주소 없음';
     } catch (e) {
       header_address = `${SERVER_PATH_ROOT}godotchat_pwa/`;

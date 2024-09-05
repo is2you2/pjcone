@@ -196,14 +196,14 @@ export class PostViewerPage implements OnInit, OnDestroy {
             let address_text: string = this.PostInfo['OutSource'];
             let extract = address_text.substring(0, address_text.indexOf(':8'));
             try { // 사용자 지정 서버 업로드 시도 우선
-              let HasLocalPage = `${extract}:${is_https ? 8443 : 8080}/www/`;
+              let HasLocalPage = `${extract}:${is_https ? 8443 : 8080}${window['sub_path']}`;
               const cont = new AbortController();
               const id = setTimeout(() => {
                 cont.abort();
               }, 500);
               let res = await fetch(HasLocalPage, { signal: cont.signal });
               clearTimeout(id);
-              if (res.ok) targetAddress = `${extract}:${is_https ? 8443 : 8080}/www/?postViewer=${this.PostInfo['OutSource']}`;
+              if (res.ok) targetAddress = `${extract}:${is_https ? 8443 : 8080}${window['sub_path']}?postViewer=${this.PostInfo['OutSource']}`;
               else throw '주소 없음';
             } catch (e) {
               targetAddress = `${SERVER_PATH_ROOT}godotchat_pwa/?postViewer=${this.PostInfo['OutSource']}`;

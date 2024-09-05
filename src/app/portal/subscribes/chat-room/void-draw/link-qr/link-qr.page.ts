@@ -35,7 +35,7 @@ export class LinkQrPage implements OnInit {
       }, 500);
       let res = await fetch(HasLocalPage, { signal: cont.signal });
       clearTimeout(id);
-      if (res.ok) this.SelectedAddress = `${protocol ? 'https:' : 'http:'}//${only_address}:${protocol ? 8443 : 8080}/www/?voidDraw=${extract},${this.navParams.data.channel}`;
+      if (res.ok) this.SelectedAddress = `${protocol ? 'https:' : 'http:'}//${only_address}:${protocol ? 8443 : 8080}${window['sub_path']}?voidDraw=${extract},${this.navParams.data.channel}`;
       else throw '주소 없음';
     } catch (e) {
       this.SelectedAddress = `${SERVER_PATH_ROOT}?voidDraw=${extract},${this.navParams.data.channel}`
