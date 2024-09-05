@@ -157,14 +157,6 @@ export class CommunityPage implements OnInit {
     if (!loaded) await this.load_post_step_by_step(this.nakama.post_counter[isOfficial][target][user_id], isOfficial, target, user_id, is_me);
   }
 
-  /** 하단 탭 단축키 캐싱된 정보 */
-  BottomTabShortcut: any;
-  /** 하단 탭 단축키 캐싱 */
-  catchBottomTabShortCut() {
-    this.BottomTabShortcut = this.global.p5key['KeyShortCut']['BottomTab'];
-    delete this.global.p5key['KeyShortCut']['BottomTab'];
-  }
-
   /** 단축키 생성 */
   AddShortcut() {
     if (this.global.p5key && this.global.p5key['KeyShortCut']) {
@@ -179,10 +171,6 @@ export class CommunityPage implements OnInit {
       this.global.p5key['KeyShortCut']['AddAct'] = () => {
         this.add_post();
       };
-    if (this.BottomTabShortcut) {
-      this.global.p5key['KeyShortCut']['BottomTab'] = this.BottomTabShortcut;
-      this.BottomTabShortcut = undefined;
-    }
   }
 
   ionViewWillLeave() {

@@ -234,21 +234,12 @@ export class AddPostPage implements OnInit, OnDestroy {
       });
   }
 
-  BottomTabShortcut: any;
-  /** 하단 탭 단축키 캐싱 */
-  catchBottomTabShortCut() {
-    this.BottomTabShortcut = this.global.p5key['KeyShortCut']['BottomTab'];
-    delete this.global.p5key['KeyShortCut']['BottomTab'];
-  }
-
   ContentTextArea: HTMLTextAreaElement;
   /** 게시물 제목 작성칸 */
   TitleInput: HTMLInputElement;
   /** 기존 게시물 편집 여부 */
   isModify = false;
   ionViewWillEnter() {
-    this.AddShortcut();
-    this.catchBottomTabShortCut();
     this.TitleInput = document.getElementById('add_post_title').childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
     this.TitleInput.id = 'exact_post_title_id';
     this.TitleInput.onpaste = (ev: any) => {
@@ -279,6 +270,11 @@ export class AddPostPage implements OnInit, OnDestroy {
     }
     this.isModify = Boolean(this.userInput.id);
     this.InitBrowserBackButtonOverride();
+  }
+
+  ionViewDidEnter() {
+    this.global.StoreShortCutAct('add-post');
+    this.AddShortcut();
   }
 
   go_to_profile() {
@@ -1154,7 +1150,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   ionViewWillLeave() {
     this.cont.abort();
     delete this.global.p5key['KeyShortCut']['Escape'];
-    this.global.p5key['KeyShortCut']['BottomTab'] = this.BottomTabShortcut;
+    this.global.RestoreShortCutAct('add-post');
     this.indexed.GetFileListFromDB('tmp_files/post').then(list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     // 데이터 저장이 아니라면 기존 데이터를 다시 불러와서 게시물 정보 원복시키기
     if (!this.isApplyPostData) try {
