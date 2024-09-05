@@ -393,6 +393,16 @@ export class UserFsDirPage implements OnInit {
               this.SetDisplayUserName(_info, sep);
               SetRename = true;
             } catch (error) { }
+            try { // 게시물 작성자 재지정
+              if (SetRename || sep.length != 5 || sep[3] != 'posts') throw '게시물 작성자 폴더가 아님';
+              this.SetDisplayPostWriterName(_info, sep);
+              SetRename = true;
+            } catch (error) { }
+            try { // 게시물 이름 재지정
+              if (SetRename || sep.length != 6 || sep[3] != 'posts') throw '게시물 폴더가 아님';
+              this.SetDisplayPostName(_info, sep);
+              SetRename = true;
+            } catch (error) { }
             this.DirList.push(_info);
             break
           default: // 예외처리
@@ -418,7 +428,9 @@ export class UserFsDirPage implements OnInit {
   SetDisplayUserName(info: FileDir, sep: string[]) {
     try {
       info.name = this.nakama.users[sep[1]][sep[2]][sep[4]]['display_name'];
-    } catch (e) { }
+    } catch (e) {
+      console.log('SetDisplayUserName error: ', e);
+    }
   }
 
   SetDisplayChannelName(info: FileDir, sep: string[]) {
@@ -432,6 +444,26 @@ export class UserFsDirPage implements OnInit {
       info.name = `${this.nakama.groups[sep[1]][sep[2]][sep[4].split('.').shift()]['name']}.img`;
     } catch (e) {
       console.log('SetDisplayGroupImageName error: ', e);
+    }
+  }
+
+  SetDisplayPostWriterName(info: FileDir, sep: string[]) {
+    try {
+      info.name = this.nakama.users[sep[1]][sep[2]][sep[4]]['display_name'];
+    } catch (e) {
+      if (this.nakama.servers[sep[1]][sep[2]].session.user_id == info.name)
+        info.name = this.nakama.users.self['display_name']
+      else console.log('SetDisplayPostWriterName error: ', e);
+    }
+  }
+
+  async SetDisplayPostName(info: FileDir, sep: string[]) {
+    try {
+      let open_file = await this.indexed.loadTextFromUserPath(`${info.path}/info.json`);
+      let json = JSON.parse(open_file);
+      info.name = json['title'];
+    } catch (e) {
+      console.log('SetDisplayPostName error: ', e);
     }
   }
 
