@@ -78,25 +78,7 @@ export class SubscribesPage implements OnInit {
         } // 온라인 그룹이 아니라면 1:1 채널과 같게 처리
       case 2: // 1:1 채널
         // 온라인 상태의 1:1 채널이라면
-        if (channel['status'] == 'online' || channel['status'] == 'pending') {
-          this.alertCtrl.create({
-            header: targetHeader,
-            message: this.lang.text['ChatRoom']['UnlinkChannel'],
-            buttons: [{
-              text: this.lang.text['ChatRoom']['LogOut'],
-              handler: async () => {
-                try { // 채널 차단 처리
-                  await this.nakama.servers[isOfficial][target].socket.leaveChat(channel.id);
-                  this.nakama.channels_orig[isOfficial][target][channel.id]['status'] = 'missing';
-                } catch (e) {
-                  console.error('채널에서 나오기 실패: ', e);
-                }
-                this.nakama.rearrange_channels();
-              },
-              cssClass: 'redfont',
-            }]
-          }).then(v => v.present());
-        } else this.alertCtrl.create({ // 손상 처리된 채널이라면 (그룹, 1:1이 같은 처리를 따름)
+        this.alertCtrl.create({ // 손상 처리된 채널이라면 (그룹, 1:1이 같은 처리를 따름)
           header: targetHeader,
           message: this.lang.text['ChatRoom']['RemoveChannelLogs'],
           buttons: [{

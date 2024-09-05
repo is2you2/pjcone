@@ -4478,6 +4478,11 @@ export class NakamaService {
       this.usernameOverride[_is_official][_target] = {};
     if (override) this.usernameOverride[_is_official][_target][uid] = override;
     else delete this.usernameOverride[_is_official][_target][uid];
+    // 리스트에 없는 사용자를 검토하여 삭제함
+    let keys = Object.keys(this.usernameOverride[_is_official][_target]);
+    for (let key of keys)
+      if (!this.users[_is_official][_target][key])
+        delete this.usernameOverride[_is_official][_target][key];
     let json_str = JSON.stringify(this.usernameOverride[_is_official][_target]);
     let blob = new Blob([json_str], { type: 'application/json' });
     let TmpFileInfo: FileInfo = {
