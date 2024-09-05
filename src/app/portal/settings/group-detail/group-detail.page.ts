@@ -293,7 +293,6 @@ export class GroupDetailPage implements OnInit, OnDestroy {
           throw this.lang.text['GroupDetail']['YouAreNotCreator'];
         }
       } else { // 서버 기록이 먼저 삭제된 경우
-        await this.nakama.remove_group_list(this.info, this.info['server']['isOfficial'], this.info['server']['target']);
         this.navCtrl.pop();
       }
     } catch (e) {
@@ -307,7 +306,6 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   /** 삭제 알림 그 후에 */
   async after_remove_group() {
     this.leave_channel();
-    await this.nakama.remove_group_list(this.info, this.info['server']['isOfficial'], this.info['server']['target']);
     this.navCtrl.pop();
   }
 
