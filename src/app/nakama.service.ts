@@ -4062,9 +4062,10 @@ export class NakamaService {
           } catch (e) {
             console.log('ReadStorage_From_channel: ', e);
             isSuccessful = false;
-            this.p5toast.show({
-              text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
-            });
+            if (show_noti)
+              this.p5toast.show({
+                text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
+              });
             if (info['url']) // 링크
               info['thumbnail'] = info['url'];
             break;
