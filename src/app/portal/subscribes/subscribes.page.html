@@ -52,7 +52,7 @@
       (contextmenu)="ChannelContextMenu(channel)">
       <div class="channel_image channel_image_div">
         <img class="channel_image"
-          [src]="channel['info'] && channel['info']['img'] || ((channel['local'] || (channel['info'] && channel['info']['max_count'] == 1)) ? 'assets/data/local.svg' : 'assets/data/channel.svg')"
+          [src]="channel['info'] && channel['info']['img'] || (channel['local'] || (channel['info'] && channel['info']['max_count'] == 1) ? 'assets/data/local.svg' : 'assets/data/channel.svg')"
           alt="ch_img"
           [style]="(channel['status'] == 'online' || (channel['redirect'] && channel['redirect']['type'] == 3 && channel['status'] == 'pending')) ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'">
         <div *ngIf="!channel['local']" class="status_circle"
@@ -67,7 +67,9 @@
           <table>
             <tr>
               <td>
-                {{channel['info'] ? (channel['info']['name'] || channel['info']['display_name'] ||
+                {{channel['info'] ? (channel['info']['name'] || nakama.usernameOverride[channel['info']['isOfficial']][
+                channel['info']['target']][channel['info']['id']] ||
+                channel['info']['display_name'] ||
                 lang.text['ChatRoom']['noname_chatroom']) : (channel['title'] ||
                 lang.text['ChatRoom']['noname_chatroom'])}}
               </td>

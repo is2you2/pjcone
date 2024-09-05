@@ -53,7 +53,8 @@
                           <b>
                             <font
                               color="#{{nakama.users[isOfficial][target][msg.sender_id]['online'] ? msg.color : '888'}}">
-                              {{msg.user_display_name || lang.text['Profile']['noname_user']}}</font>
+                              {{nakama.usernameOverride[isOfficial][target][msg.sender_id] || msg.user_display_name ||
+                              lang.text['Profile']['noname_user']}}</font>
                           </b>
                         </span>
                         <!-- 시간 표시 -->

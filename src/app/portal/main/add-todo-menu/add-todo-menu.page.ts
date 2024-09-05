@@ -315,10 +315,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               }
             }
             this.isModifiable = CurrentOnline;
-            if (!CurrentOnline) { // 해당 서버가 온라인
+            if (!CurrentOnline) { // 해당 서버가 오프라인
               this.userInput.display_creator = this.lang.text['TodoDetail']['Disconnected'];
-            } else { // 해당 서버가 오프라인
-              this.userInput.display_creator = this.nakama.load_other_user(this.userInput.remote.creator_id, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name']
+            } else { // 해당 서버가 온라인
+              this.userInput.display_creator =
+                this.nakama.GetOverrideName(this.userInput.remote.creator_id, this.userInput.remote.isOfficial, this.userInput.remote.target) ||
+                this.nakama.load_other_user(this.userInput.remote.creator_id, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
             }
           } catch (e) { }
         }
@@ -639,7 +641,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           this.AmICreator =
             this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id == this.userInput.remote.creator_id;
         this.userInput.display_creator =
-          this.AmICreator ? this.lang.text['TodoDetail']['WrittenByMe'] : this.nakama.load_other_user(this.userInput.remote.creator_id, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
+          this.AmICreator ? this.lang.text['TodoDetail']['WrittenByMe'] :
+            (this.nakama.GetOverrideName(this.userInput.remote.creator_id, this.userInput.remote.isOfficial, this.userInput.remote.target) ||
+              this.nakama.load_other_user(this.userInput.remote.creator_id, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name']);
         if (this.userInput.remote.group_id)
           this.isModifiable = this.nakama.groups[this.userInput.remote.isOfficial][this.userInput.remote.target][this.userInput.remote.group_id]['status'] == 'online';
       }
@@ -661,8 +665,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (this.userInput.workers) { // 작업자 이름 동기화 시도
       for (let i = 0, j = this.userInput.workers.length; i < j; i++) {
         try {
-          this.userInput.workers[i]['name'] = this.nakama.load_other_user(this.userInput.workers[i]['id'],
-            this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
+          this.userInput.workers[i]['name'] =
+            this.nakama.GetOverrideName(this.userInput.workers[i]['id'], this.userInput.remote.isOfficial, this.userInput.remote.target) ||
+            this.nakama.load_other_user(this.userInput.workers[i]['id'],
+              this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'];
         } catch (e) { }
         if (this.userInput.workers[i].timestamp)
           this.userInput.workers[i]['displayTime'] = new Date(this.userInput.workers[i].timestamp).toLocaleString();
@@ -1049,6 +1055,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   isManager = false;
   /** 가용 작업자 */
   AvailableWorker = {};
+  AvailableWorkerReady = false;
   /** 가용 작업자 그룹 (구분용) */
   WorkerGroups = [];
   /** 저장소 변경됨 */
@@ -1085,9 +1092,14 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                     let user = this.nakama.load_other_user(groups[i].users[k].user.user_id,
                       value.isOfficial, value.target);
                     delete user.todo_checked; // 기존 정보 무시
-                    if (!user.email)
+                    if (!user.email) {
+                      user['override_name'] = this.nakama.GetOverrideName(user.id || user.user_id, this.userInput.remote.isOfficial, this.userInput.remote.target);
                       this.AvailableWorker[groups[i].id].push(user);
+                    }
                   }
+                  setTimeout(() => {
+                    this.AvailableWorkerReady = true;
+                  }, 100);
                   if (!this.AvailableWorker[groups[i].id].length)
                     delete this.AvailableWorker[groups[i].id];
                   else this.WorkerGroups.push({
@@ -1113,9 +1125,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                   delete user.todo_checked; // 기존 정보 무시
                   if ((user.id || user.user_id) != this.nakama.servers[value.isOfficial][value.target].session.user_id
                     && user['display_name']) {
+                    user['override_name'] = this.nakama.GetOverrideName(user.id || user.user_id, this.userInput.remote.isOfficial, this.userInput.remote.target);
                     this.AvailableWorker[group.id].push(user);
                   }
                 }
+                setTimeout(() => {
+                  this.AvailableWorkerReady = true;
+                }, 100);
                 if (!this.AvailableWorker[group.id].length)
                   delete this.AvailableWorker[group.id];
                 else this.WorkerGroups.push({

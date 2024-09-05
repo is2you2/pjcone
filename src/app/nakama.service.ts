@@ -1473,6 +1473,10 @@ export class NakamaService {
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
     if (!this.users[_is_official][_target][userId])
       this.users[_is_official][_target][userId] = {};
+    if (!this.usernameOverride[_is_official])
+      this.usernameOverride[_is_official] = {};
+    if (!this.usernameOverride[_is_official][_target])
+      this.usernameOverride[_is_official][_target] = {};
     // 사용자 정보 업데이트
     this.servers[_is_official][_target].client.getUsers(
       this.servers[_is_official][_target].session, [userId])
@@ -1816,6 +1820,8 @@ export class NakamaService {
             this.channels_orig[_is_official][_target][_cid]['server']['name'] = this.lang.text['Nakama']['DeletedServer'];
           }
           try {
+            this.channels_orig[_is_official][_target][_cid]['info']['isOfficial'] = _is_official;
+            this.channels_orig[_is_official][_target][_cid]['info']['target'] = _target;
             switch (this.channels_orig[_is_official][_target][_cid]['redirect']['type']) {
               case 1: // 방 대화
                 break;
@@ -1895,6 +1901,8 @@ export class NakamaService {
           delete channels_copy[_is_official][_target][_cid]['cnoti_id'];
           delete channels_copy[_is_official][_target][_cid]['status'];
           delete channels_copy[_is_official][_target][_cid]['color'];
+          delete channels_copy[_is_official][_target][_cid]['isOfficial'];
+          delete channels_copy[_is_official][_target][_cid]['target'];
           if (!channels_copy[_is_official][_target][_cid]['is_new'])
             delete channels_copy[_is_official][_target][_cid]['is_new'];
         });
@@ -4443,7 +4451,9 @@ export class NakamaService {
   /** 사용자 이름 다시 지정하기  
    * usernameOverride[isOfficial][target][uid] = string;
    */
-  usernameOverride = {};
+  usernameOverride = {
+    local: { target: {} } // 로컬 정보 불러오기를 시도하는 것을 대비
+  };
   /** 재지정된 사용자 이름 가져오기, 없다면 빈 값 */
   GetOverrideName(uid: string, _is_official: string, _target: string) {
     let override: string;
@@ -4481,7 +4491,8 @@ export class NakamaService {
         this.usernameOverride[_is_official] = {};
       if (!this.usernameOverride[_is_official][_target])
         this.usernameOverride[_is_official][_target] = {};
-      this.usernameOverride[_is_official][_target] = json;
+      let keys = Object.keys(json);
+      for (let key of keys) this.usernameOverride[_is_official][_target][key] = json[key];
     }
   }
 
