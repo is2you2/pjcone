@@ -645,6 +645,10 @@ export class NakamaService {
       this.channels_orig[info.isOfficial] = {};
     if (!this.channels_orig[info.isOfficial][info.target])
       this.channels_orig[info.isOfficial][info.target] = {};
+    if (!this.usernameOverride[info.isOfficial])
+      this.usernameOverride[info.isOfficial] = {};
+    if (!this.usernameOverride[info.isOfficial][info.target])
+      this.usernameOverride[info.isOfficial][info.target] = {};
 
     let line = new Date().getTime().toString();
     line += `,${info.isOfficial}`;
