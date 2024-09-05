@@ -1754,6 +1754,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         return;
       }
     }
+    this.userInput['is_me'] = true;
     if (this.global.p5todo && this.global.p5todo['add_todo'])
       this.global.p5todo['add_todo'](JSON.stringify(this.userInput));
     let path: string;
