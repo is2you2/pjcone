@@ -194,7 +194,6 @@ export class NakamaService {
       }
     });
     this.showServer = Boolean(localStorage.getItem('showServer'));
-    if (this.users.self['online']) this.toggle_all_session();
   }
 
   /** 시작시 해야할 일 알림을 설정 */
@@ -377,7 +376,6 @@ export class NakamaService {
   /** subscribe과 localPush의 채팅방 입장 행동을 통일함 */
   go_to_chatroom_without_admob_act(_info: any, _file?: FileInfo) {
     this.has_new_channel_msg = false;
-    this.rearrange_channels();
     if (this.ChatroomLinkAct)
       this.ChatroomLinkAct(_info, _file);
     else this.ngZone.run(() => {
@@ -543,7 +541,6 @@ export class NakamaService {
           if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
             delete this.channels_orig[_is_official][_target][_cid]['status'];
         });
-        this.rearrange_channels();
       }
       if (this.groups[_is_official] && this.groups[_is_official][_target]) {
         let groups_id = Object.keys(this.groups[_is_official][_target]);
@@ -1694,7 +1691,6 @@ export class NakamaService {
         });
       });
     }
-    this.rearrange_channels();
   }
 
   /** 알림 아이디  
@@ -1786,7 +1782,6 @@ export class NakamaService {
         }
       } catch (e) {
         // redirect 정보가 누락된 경우 행동 무시
-        console.log('무시하지 말아봐: ', e);
       }
       this.rearrange_channels();
     }
@@ -1844,9 +1839,6 @@ export class NakamaService {
                   this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/groups/${_cid}.img`, (e, v) => {
                     if (e && v) this.channels_orig[_is_official][_target][_cid]['info']['img'] = v;
                   });
-                break;
-              default:
-                console.error('예상하지 않은 대화형식: ', this.channels_orig[_is_official][_target][_cid]);
                 break;
             }
           } catch (e) { }
@@ -2370,7 +2362,6 @@ export class NakamaService {
       });
       delete this.channels_orig[_is_official][_target];
     } catch (e) { }
-    this.rearrange_channels();
     // 관련 파일들 전부 이관
     let list = await this.indexed.GetFileListFromDB(`servers/${_is_official}/${_target}`);
     for (let i = 0, j = list.length; i < j; i++) {
