@@ -971,9 +971,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 case 'text/plain':
                   pasted_url = pasted.value;
                   break;
-                case 'image/png':
-                  this.inputImageSelected({ target: { files: [pasted.value] } });
-                  return;
               }
             } catch (e) {
               throw e;
