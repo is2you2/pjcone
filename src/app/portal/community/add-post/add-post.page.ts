@@ -189,7 +189,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           let minite_calc = second_calc / 60;
           let minite = p.floor(minite_calc) % 60;
           let hour = p.floor(minite_calc / 60);
-          let result = hour ? `${hour}:${minite}:${p.nf(second, 2)}` : `${minite}:${p.nf(second, 2)}`;
+          let result = hour ? `${hour}:${p.nf(minite, 2)}:${p.nf(second, 2)}` : `${minite}:${p.nf(second, 2)}`;
           return result;
         }
         p.mouseMoved = (ev: any) => {
