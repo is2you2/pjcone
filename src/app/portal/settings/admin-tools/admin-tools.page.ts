@@ -156,21 +156,23 @@ export class AdminToolsPage implements OnInit {
         for (let i = 0, j = this.all_users.length; i < j; i++) {
           this.nakama.save_other_user(this.all_users[i], this.isOfficial, this.target);
           let user_id = this.all_users[i].id || this.all_users[i].user_id;
-          this.all_users[i] = { ...this.all_users[i], ...this.nakama.load_other_user(user_id, this.isOfficial, this.target) };
-          if (typeof this.all_users[i].metadata == 'object') {
-            if (this.all_users[i].metadata.is_manager !== undefined)
-              for (let k = 0, l = this.all_users[i].metadata.is_manager.length; k < l; k++) {
-                if (this.all_users[i].metadata.is_manager === undefined)
-                  break;
-                if (!this.PromotableGroup[user_id])
-                  this.PromotableGroup[user_id] = {};
-                if (!this.PromotableGroup[user_id][this.all_users[i].metadata.is_manager[k]])
-                  this.PromotableGroup[user_id][this.all_users[i].metadata.is_manager[k]] = { promoted: true };
-                else this.PromotableGroup[user_id][this.all_users[i].metadata.is_manager[k]]['promoted'] = true;
-              }
-          }
-          let original_time = new Date(this.all_users[i].create_time).getTime() - new Date().getTimezoneOffset() * 60 * 1000;
-          this.all_users[i]['display_created'] = new Date(original_time).toISOString().split('.')[0];
+          this.nakama.load_other_user(user_id, this.isOfficial, this.target, user => {
+            this.all_users[i] = { ...this.all_users[i], ...user };
+            if (typeof this.all_users[i].metadata == 'object') {
+              if (this.all_users[i].metadata.is_manager !== undefined)
+                for (let k = 0, l = this.all_users[i].metadata.is_manager.length; k < l; k++) {
+                  if (this.all_users[i].metadata.is_manager === undefined)
+                    break;
+                  if (!this.PromotableGroup[user_id])
+                    this.PromotableGroup[user_id] = {};
+                  if (!this.PromotableGroup[user_id][this.all_users[i].metadata.is_manager[k]])
+                    this.PromotableGroup[user_id][this.all_users[i].metadata.is_manager[k]] = { promoted: true };
+                  else this.PromotableGroup[user_id][this.all_users[i].metadata.is_manager[k]]['promoted'] = true;
+                }
+            }
+            let original_time = new Date(this.all_users[i].create_time).getTime() - new Date().getTimezoneOffset() * 60 * 1000;
+            this.all_users[i]['display_created'] = new Date(original_time).toISOString().split('.')[0];
+          });
         }
         this.all_user_page = Math.ceil(this.all_users.length / this.LIST_PAGE_SIZE);
         this.current_user_page = 0;

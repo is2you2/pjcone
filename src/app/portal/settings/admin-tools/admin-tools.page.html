@@ -71,7 +71,7 @@
             <img *ngIf="all_users[i].img" class="profile_img" [src]="all_users[i].img">
           </div>
           <div class="additional_form status_bar_single"
-            [style]="'background-color: ' + statusBar.colors[all_users[i].online === undefined ? 'pending' : all_users[i].online ? 'online' : 'offline']">
+            [style]="'background-color: ' + statusBar.colors[all_users[i].online ? 'online' : 'offline']">
           </div>
           <ion-label class="form_margin">{{all_users[i].display_name ||
             lang.text['Profile']['noname_user']}}</ion-label>

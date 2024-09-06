@@ -1464,10 +1464,11 @@ export class NakamaService {
    */
   load_other_user(userId: string, _is_official: string, _target: string, _CallBack = (_userInfo: any) => { }) {
     try {
-      if (this.servers[_is_official][_target].session.user_id == userId)
-        return this.users.self; // 만약 그게 나라면 내 정보 반환
+      if (this.servers[_is_official][_target].session.user_id == userId) {
+        _CallBack(this.users.self);
+        return this.users.self;
+      } // 만약 그게 나라면 내 정보 반환
     } catch (e) { }
-    let already_use_callback = false;
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
     if (!this.users[_is_official][_target][userId])
       this.users[_is_official][_target][userId] = {};
@@ -1478,10 +1479,6 @@ export class NakamaService {
           let data = JSON.parse(v);
           let keys = Object.keys(data);
           keys.forEach(key => this.users[_is_official][_target][userId][key] = data[key]);
-          if (!already_use_callback) {
-            _CallBack(this.users[_is_official][_target][userId]);
-            already_use_callback = true;
-          }
         }
       });
     }
@@ -1492,10 +1489,6 @@ export class NakamaService {
           if (v.users.length) {
             let keys = Object.keys(v.users[0]);
             keys.forEach(key => this.users[_is_official][_target][userId][key] = v.users[0][key]);
-            if (!already_use_callback) {
-              _CallBack(this.users[_is_official][_target][userId]);
-              already_use_callback = true;
-            }
             if (!this.users[_is_official][_target][userId]['img'])
               this.users[_is_official][_target][userId]['img'] = null;
             this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
@@ -1514,10 +1507,7 @@ export class NakamaService {
     let failed_image_act = () => {
       if (this.users[_is_official][_target][userId]['img']) {
         delete this.users[_is_official][_target][userId]['img'];
-        if (!already_use_callback) {
-          _CallBack(this.users[_is_official][_target][userId]);
-          already_use_callback = true;
-        }
+        _CallBack(this.users[_is_official][_target][userId]);
         this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
       }
       this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
@@ -1534,10 +1524,7 @@ export class NakamaService {
         }]
       }).then(v => {
         if (v.objects.length) this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
-        if (!already_use_callback) {
-          _CallBack(this.users[_is_official][_target][userId]);
-          already_use_callback = true;
-        }
+        _CallBack(this.users[_is_official][_target][userId]);
         this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
       }).catch(_e => {
         failed_image_act();
