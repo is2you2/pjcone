@@ -370,26 +370,6 @@ export class NakamaService {
       (_info.port || 7350).toString(),
       (_info.useSSL || false),
     );
-    if (!this.groups[_info.isOfficial])
-      this.groups[_info.isOfficial] = {};
-    if (!this.groups[_info.isOfficial][_info.target])
-      this.groups[_info.isOfficial][_info.target] = {};
-    if (!this.channels_orig[_info.isOfficial])
-      this.channels_orig[_info.isOfficial] = {};
-    if (!this.channels_orig[_info.isOfficial][_info.target])
-      this.channels_orig[_info.isOfficial][_info.target] = {};
-    if (!this.usernameOverride[_info.isOfficial])
-      this.usernameOverride[_info.isOfficial] = {};
-    if (!this.usernameOverride[_info.isOfficial][_info.target])
-      this.usernameOverride[_info.isOfficial][_info.target] = {};
-    if (!this.OnTransfer[_info.isOfficial]) this.OnTransfer[_info.isOfficial] = {};
-    if (!this.OnTransfer[_info.isOfficial][_info.target]) this.OnTransfer[_info.isOfficial][_info.target] = {};
-    if (!this.self_match[_info.isOfficial]) this.self_match[_info.isOfficial] = {};
-    if (!this.self_match[_info.isOfficial][_info.target]) this.self_match[_info.isOfficial][_info.target] = undefined;
-    if (!this.noti_origin[_info.isOfficial]) this.noti_origin[_info.isOfficial] = {};
-    if (!this.noti_origin[_info.isOfficial][_info.target]) this.noti_origin[_info.isOfficial][_info.target] = {};
-    if (!this.RemoteTodoCounter[_info.isOfficial]) this.RemoteTodoCounter[_info.isOfficial] = {};
-    if (!this.RemoteTodoCounter[_info.isOfficial][_info.target]) this.RemoteTodoCounter[_info.isOfficial][_info.target] = [];
   }
 
   /** 채팅 채널이 열려있는 경우 행동시키기 */
@@ -802,6 +782,27 @@ export class NakamaService {
    * @param info.target 대상 key
    */
   async init_session(info: ServerInfo) {
+    // 빈 양식 생성하기
+    if (!this.groups[info.isOfficial])
+      this.groups[info.isOfficial] = {};
+    if (!this.groups[info.isOfficial][info.target])
+      this.groups[info.isOfficial][info.target] = {};
+    if (!this.channels_orig[info.isOfficial])
+      this.channels_orig[info.isOfficial] = {};
+    if (!this.channels_orig[info.isOfficial][info.target])
+      this.channels_orig[info.isOfficial][info.target] = {};
+    if (!this.usernameOverride[info.isOfficial])
+      this.usernameOverride[info.isOfficial] = {};
+    if (!this.usernameOverride[info.isOfficial][info.target])
+      this.usernameOverride[info.isOfficial][info.target] = {};
+    if (!this.OnTransfer[info.isOfficial]) this.OnTransfer[info.isOfficial] = {};
+    if (!this.OnTransfer[info.isOfficial][info.target]) this.OnTransfer[info.isOfficial][info.target] = {};
+    if (!this.self_match[info.isOfficial]) this.self_match[info.isOfficial] = {};
+    if (!this.self_match[info.isOfficial][info.target]) this.self_match[info.isOfficial][info.target] = undefined;
+    if (!this.noti_origin[info.isOfficial]) this.noti_origin[info.isOfficial] = {};
+    if (!this.noti_origin[info.isOfficial][info.target]) this.noti_origin[info.isOfficial][info.target] = {};
+    if (!this.RemoteTodoCounter[info.isOfficial]) this.RemoteTodoCounter[info.isOfficial] = {};
+    if (!this.RemoteTodoCounter[info.isOfficial][info.target]) this.RemoteTodoCounter[info.isOfficial][info.target] = [];
     this.TogglingSession = true;
     try {
       this.servers[info.isOfficial][info.target].session
