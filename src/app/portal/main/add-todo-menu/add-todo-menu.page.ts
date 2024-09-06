@@ -231,6 +231,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           }
         } else await this.StopAndSaveVoiceRecording();
       }
+    }, { // 5
+      icon: 'cloud-done-outline',
+      name: this.lang.text['ChatRoom']['Detour'],
+      act: () => {
+        this.toggle_custom_attach();
+      }
     }];
 
   async StopAndSaveVoiceRecording() {
@@ -1343,8 +1349,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
    * 2: SQL 강제
    */
   useFirstCustomCDN = 0;
-  DisplayDBSelectedName: string;
-  DisplayDBSelector: string;
   isCDNToggleClicked = false;
   isCDNToggleAvailable = true;
   async toggle_custom_attach(force?: number) {
@@ -1357,16 +1361,16 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
     switch (this.useFirstCustomCDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
-        this.DisplayDBSelector = 'cloud-offline-outline';
-        this.DisplayDBSelectedName = this.lang.text['ChatRoom']['Detour'];
+        this.extended_buttons[5].icon = 'cloud-offline-outline';
+        this.extended_buttons[5].name = this.lang.text['ChatRoom']['Detour'];
         break;
       case 1: // FFS 서버 우선, 실패시 cdn, SQL 순
-        this.DisplayDBSelector = 'cloud-done-outline';
-        this.DisplayDBSelectedName = this.lang.text['ChatRoom']['useFSS'];
+        this.extended_buttons[5].icon = 'cloud-done-outline';
+        this.extended_buttons[5].name = this.lang.text['ChatRoom']['useFSS'];
         break;
       case 2: // SQL 강제
-        this.DisplayDBSelector = 'server-outline';
-        this.DisplayDBSelectedName = this.lang.text['ChatRoom']['forceSQL'];
+        this.extended_buttons[5].icon = 'server-outline';
+        this.extended_buttons[5].name = this.lang.text['ChatRoom']['forceSQL'];
         break;
     }
     localStorage.setItem('useFFSCDN', `${this.useFirstCustomCDN}`);
