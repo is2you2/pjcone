@@ -37,8 +37,7 @@
       <ion-item *ngIf="NeedInputCustomAddress">
         <ion-input [label]="lang.text['voidDraw']['InputAddress']" [(ngModel)]="UserInputCustomAddress"
           class="ion-text-right" placeholder="(wss://)0.0.0.0"></ion-input>
-        <ion-icon slot="end" name="open-outline"
-          (click)="global.open_custom_site(UserInputCustomAddress)"></ion-icon>
+        <ion-icon slot="end" name="open-outline" (click)="global.open_custom_site(UserInputCustomAddress)"></ion-icon>
       </ion-item>
       <ion-item>
         <ion-input [label]="lang.text['voidDraw']['ChannelIdAddress']" [(ngModel)]="client.JoinedChannel"
@@ -99,19 +98,11 @@
         </ion-input>
       </td>
       <td>
-        <ion-button expand="block" fill="clear" (click)="open_select_new()">
-          <ion-icon name="document-attach-outline"></ion-icon>
+        <ion-button expand="block" fill="clear" (click)="ToggleExtMenu()">
+          <ion-icon name="add-outline"></ion-icon>
         </ion-button>
         <input hidden type="file" id="minimal_chat_file" accept="*" (change)="SendAttachAct($event)">
       </td>
-      <ion-select style="display: none;" [label]="lang.text['TodoDetail']['new_attach']" #SQNewAttach
-        interface="action-sheet" (ionChange)="new_attach($event)" (ionDismiss)="AddShortCut()"
-        [cancelText]="lang.text['GlobalAct']['CancelText']">
-        <ion-select-option value="camera">{{lang.text['GlobalAct']['FromCamera']}}</ion-select-option>
-        <ion-select-option value="image">{{lang.text['TodoDetail']['new_draw']}}</ion-select-option>
-        <ion-select-option value="text">{{lang.text['TodoDetail']['new_text']}}</ion-select-option>
-        <ion-select-option value="load">{{lang.text['TodoDetail']['add_attach']}}</ion-select-option>
-      </ion-select>
       <td>
         <ion-button (click)="send()" expand="block" fill="clear">
           <ion-icon name="send"></ion-icon>
@@ -119,4 +110,18 @@
       </td>
     </tr>
   </table>
+  <div *ngIf="ShowExtMenus"
+    style="height: 240px; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; text-align: center; background-color: var(--chatroom-background);">
+    <div *ngFor="let button of extended_buttons" style="display: inline-block;">
+      <div class="ext_button" [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'" (click)="button['act']()"
+        [hidden]="button.isHide">
+        <ion-icon *ngIf="button['icon']" slot="icon-only" [name]="button['icon'] || 'close-circle'"
+          style="width: 36px; height: 36px;">
+        </ion-icon>
+        <img *ngIf="button['icon_img']" class="ext_icon_img" [src]="'assets/icon/' + button['icon_img']"
+          [alt]="button['title']">
+        <div>{{button['name']}}</div>
+      </div>
+    </div>
+  </div>
 </ion-footer>

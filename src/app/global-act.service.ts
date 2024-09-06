@@ -8,6 +8,7 @@ import { IndexedDBService } from './indexed-db.service';
 import { LoadingController, ModalController } from '@ionic/angular';
 import { isPlatform } from './app.component';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { VoiceRecorder } from '@langx/capacitor-voice-recorder';
 
 export var isDarkMode = false;
 /** 파일 입출 크기 제한 */
@@ -511,12 +512,9 @@ export class GlobalActService {
         break;
       // 웹 미디어 병행가능한 구성
       case 'webm':
-        if (info['type']) {
-          if (info['type'].indexOf('audio/') == 0)
-            info['viewer'] = 'audio';
-          else if (info['type'].indexOf('video/') == 0)
-            info['viewer'] = 'video';
-        } else info['viewer'] = 'disabled';
+        if (info['type'].indexOf('video/') == 0)
+          info['viewer'] = 'video';
+        else info['viewer'] = 'audio';
         break;
       // 코드류
       case 'sh': // Shell
@@ -1215,7 +1213,7 @@ export class GlobalActService {
       result.size = result.blob.size;
     } catch (e) {
       console.log('카메라 행동 실패: ', e);
-      result = undefined;
+      throw e;
     }
     loading.dismiss();
     return result;
@@ -1421,5 +1419,21 @@ export class GlobalActService {
       }
     }
     return aRet.join('');
+  }
+
+  /** 음성녹음을 멈추고 저장된 값을 돌려주기 */
+  async StopAndSaveVoiceRecording() {
+    try {
+      let data = await VoiceRecorder.stopRecording();
+      let blob = this.Base64ToBlob(`${data.value.mimeType},${data.value.recordDataBase64}`);
+      blob['name'] = `${this.lang.text['ChatRoom']['VoiceRecord']}.${data.value.mimeType.split('/').pop().split(';')[0]}`;
+      blob['type_override'] = data.value.mimeType;
+      return blob;
+    } catch (e) {
+      this.p5toast.show({
+        text: `${this.lang.text['AddPost']['FailedToSaveVoice']}:${e}`,
+      });
+      throw e;
+    }
   }
 }

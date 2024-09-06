@@ -342,17 +342,14 @@ export class AddPostPage implements OnInit, OnDestroy {
       name: this.lang.text['ChatRoom']['voidDraw'],
       act: async () => {
         if (this.isSaveClicked) return;
-        let props = {}
-        let content_related_creator: ContentCreatorInfo[];
         this.modalCtrl.create({
           component: VoidDrawPage,
-          componentProps: props,
           cssClass: 'fullscreen',
         }).then(v => {
           v.onWillDismiss().then(async v => {
             if (v.data) {
               this.AddAttachTextForm();
-              await this.voidDraw_fileAct_callback(v, content_related_creator);
+              await this.voidDraw_fileAct_callback(v);
             }
           });
           v.onDidDismiss().then(() => {
@@ -498,18 +495,10 @@ export class AddPostPage implements OnInit, OnDestroy {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
     loading.present();
     try {
-      let data = await VoiceRecorder.stopRecording();
-      let blob = this.global.Base64ToBlob(`${data.value.mimeType},${data.value.recordDataBase64}`);
-      blob['name'] = `${this.lang.text['ChatRoom']['VoiceRecord']}.${data.value.mimeType.split('/').pop().split(';')[0]}`;
-      blob['type_override'] = data.value.mimeType;
+      let blob = await this.global.StopAndSaveVoiceRecording();
       await this.selected_blobFile_callback_act(blob);
-      loading.dismiss();
-    } catch (e) {
-      this.p5toast.show({
-        text: `${this.lang.text['AddPost']['FailedToSaveVoice']}:${e}`,
-      });
-      loading.dismiss();
-    }
+    } catch (e) { }
+    loading.dismiss();
     this.extended_buttons[5].icon = 'mic-circle-outline';
     this.extended_buttons[5].name = this.lang.text['ChatRoom']['Voice'];
     this.checkVoiceLinker();

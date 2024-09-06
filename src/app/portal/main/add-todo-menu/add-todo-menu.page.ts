@@ -132,83 +132,24 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }, { // 1
       icon_img: 'voidDraw.png',
       name: this.lang.text['ChatRoom']['voidDraw'],
-      act: async () => {
+      act: () => {
         if (this.isButtonClicked) return;
-        let props = {}
-        let content_related_creator: ContentCreatorInfo[];
-        this.modalCtrl.create({
-          component: VoidDrawPage,
-          componentProps: props,
-          cssClass: 'fullscreen',
-        }).then(v => {
-          this.global.StoreShortCutAct('add-todo');
-          v.onWillDismiss().then(async v => {
-            if (v.data) await this.voidDraw_fileAct_callback(v, content_related_creator);
-          });
-          v.onDidDismiss().then(() => {
-            this.global.RestoreShortCutAct('add-todo');
-          });
-          delete this.global.p5key['KeyShortCut']['Escape'];
-          v.present();
-        });
+        this.new_attach({ detail: { value: 'image' } });
       }
     },
     { // 2
       icon: 'reader-outline',
       name: this.lang.text['ChatRoom']['newText'],
-      act: async () => {
-        let props = {
-          info: {
-            content: {
-              is_new: undefined,
-              type: 'text/plain',
-              viewer: 'text',
-              filename: undefined,
-              path: undefined,
-            },
-          },
-          no_edit: undefined,
-        };
-        props.info.content.is_new = 'text';
-        props.info.content.filename = this.global.TextEditorNewFileName();
-        props.no_edit = true;
-        this.modalCtrl.create({
-          component: IonicViewerPage,
-          componentProps: props,
-        }).then(v => {
-          this.global.StoreShortCutAct('add-todo');
-          v.onWillDismiss().then(v => {
-            if (v.data) {
-              let this_file: FileInfo = this.global.TextEditorAfterAct(v.data, {
-                display_name: this.nakama.users.self['display_name'],
-              });
-              this.userInput.attach.push(this_file);
-            }
-          });
-          v.onDidDismiss().then(() => {
-            this.global.RestoreShortCutAct('add-todo');
-          });
-          delete this.global.p5key['KeyShortCut']['Escape'];
-          v.present();
-        });
+      act: () => {
+        if (this.isButtonClicked) return;
+        this.new_attach({ detail: { value: 'text' } });
       }
     }, { // 3
       icon: 'camera-outline',
       name: this.lang.text['ChatRoom']['Camera'],
-      act: async () => {
+      act: () => {
         if (this.isButtonClicked) return;
-        try {
-          let result = await this.global.from_camera('tmp_files/post/', {
-            user_id: this.userInput.storeAt == 'local' ? undefined : this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id,
-            display_name: this.nakama.users.self['display_name']
-          });
-          this.userInput.attach.push(result);
-        } catch (e) {
-          console.log('촬영 실패: ', e);
-          this.p5toast.show({
-            text: `${this.lang.text['GlobalAct']['ErrorFromCamera']}: ${e}`,
-          });
-        }
+        this.new_attach({ detail: { value: 'camera' } });
       }
     }, { // 4
       icon: 'mic-circle-outline',
@@ -243,18 +184,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
     loading.present();
     try {
-      let data = await VoiceRecorder.stopRecording();
-      let blob = this.global.Base64ToBlob(`${data.value.mimeType},${data.value.recordDataBase64}`);
-      blob['name'] = `${this.lang.text['ChatRoom']['VoiceRecord']}.${data.value.mimeType.split('/').pop().split(';')[0]}`;
-      blob['type_override'] = data.value.mimeType;
+      let blob = await this.global.StopAndSaveVoiceRecording();
       await this.selected_blobFile_callback_act(blob);
-      loading.dismiss();
-    } catch (e) {
-      this.p5toast.show({
-        text: `${this.lang.text['AddPost']['FailedToSaveVoice']}:${e}`,
-      });
-      loading.dismiss();
-    }
+    } catch (e) { }
+    loading.dismiss();
     this.extended_buttons[4].icon = 'mic-circle-outline';
     this.extended_buttons[4].name = this.lang.text['ChatRoom']['Voice'];
   }
@@ -533,8 +466,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     let ionInput = document.getElementById('titleInput');
     this.titleIonInput = ionInput.children[0].children[1].children[0];
     setTimeout(() => {
-      if (!this.isModify && !this.checkIfInputFocus())
-        this.titleIonInput.focus();
+      if (!this.isModify) this.titleIonInput.focus();
     }, 200);
     this.ImporantSelChanged({ detail: { value: this.userInput.importance } });
     this.file_sel_id = `${this.userInput.id || 'new_todo_id'}_${new Date().getTime()}`;
@@ -726,13 +658,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   AddShortCut() {
     setTimeout(() => {
-      delete this.global.p5key['KeyShortCut']['Digit'];
       this.global.p5key['KeyShortCut']['Escape'] = () => {
         this.navCtrl.pop();
-      }
-      this.global.p5key['KeyShortCut']['AddAct'] = () => {
-        if (this.checkIfInputFocus()) return;
-        this.open_select_new();
       }
       this.global.p5key['KeyShortCut']['EnterAct'] = (ev: any) => {
         if (document.activeElement == this.titleIonInput)
@@ -746,8 +673,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   removeShortCut() {
     delete this.global.p5key['KeyShortCut']['Escape'];
-    delete this.global.p5key['KeyShortCut']['AddAct'];
-    delete this.global.p5key['KeyShortCut']['Digit'];
   }
 
   start_change(ev: any) {
@@ -842,46 +767,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     });
   }
 
-  /** 새 파일 타입 정하기 */
-  open_select_new() {
-    if (this.isCDNToggleClicked) return;
-    delete this.global.p5key['KeyShortCut']['Escape'];
-    delete this.global.p5key['KeyShortCut']['AddAct'];
-    let NumberShortCutAct = [
-      'camera', 'image', 'text', 'inapp', 'load'
-    ];
-    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-      if (this.checkIfInputFocus()) return;
-      delete this.global.p5key['KeyShortCut']['Digit'];
-      if (NumberShortCutAct.length > index)
-        this.new_attach({ detail: { value: NumberShortCutAct[index] } });
-    }
-  }
-
   /** 할 일 제목 입력칸 */
   titleIonInput: any;
   /** 할 일 내용 입력칸 */
   desc_input: HTMLInputElement;
-
-  input_ele_ids = [];
-  /** 현재 단축키를 쓸 수 있는 상황인지 검토하는 함수  
-   * @returns Title, desc에 포커싱 여부
-   */
-  checkIfInputFocus(): boolean {
-    if (!this.input_ele_ids.length) {
-      this.input_ele_ids.push(this.titleIonInput);
-      this.input_ele_ids.push(this.desc_input);
-    }
-    let result = false;
-    for (let i = 0, j = this.input_ele_ids.length; i < j; i++) {
-      let active_ele = document.activeElement;
-      if (active_ele == this.input_ele_ids[i]) {
-        result = true;
-        break;
-      }
-    }
-    return result;
-  }
 
   /** 새 파일 만들기 */
   async new_attach(ev: any) {
@@ -940,7 +829,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           cssClass: 'fullscreen',
         }).then(v => {
           this.removeShortCut();
-          v.onWillDismiss().then(async v => {
+          v.onWillDismiss().then(v => {
             if (v.data) this.voidDraw_fileAct_callback(v);
           });
           v.onDidDismiss().then(() => {

@@ -13,6 +13,8 @@ import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ion
 import { VoidDrawPage } from '../portal/subscribes/chat-room/void-draw/void-draw.page';
 import * as p5 from 'p5';
 import { ActivatedRoute, Router } from '@angular/router';
+import { VoiceRecorder } from '@langx/capacitor-voice-recorder';
+import { ExtendButtonForm } from '../portal/subscribes/chat-room/chat-room.page';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -54,6 +56,75 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     if (this.noti.Current == this.Header)
       window.focus();
     else this.client.RejoinGroupChat();
+  }
+
+  ShowExtMenus = false;
+  ToggleExtMenu(force?: boolean) {
+    this.ShowExtMenus = force ?? !this.ShowExtMenus;
+    setTimeout(() => {
+      this.scroll_down();
+    }, 0);
+  }
+  useVoiceRecording = false;
+  /** 확장 버튼 행동들 */
+  extended_buttons: ExtendButtonForm[] = [
+    { // 0
+      icon: 'document-attach-outline',
+      name: this.lang.text['ChatRoom']['attachments'],
+      act: async () => {
+        this.new_attach({ detail: { value: 'load' } });
+      }
+    }, { // 1
+      icon_img: 'voidDraw.png',
+      name: this.lang.text['ChatRoom']['voidDraw'],
+      act: () => {
+        this.new_attach({ detail: { value: 'image' } });
+      }
+    },
+    { // 2
+      icon: 'reader-outline',
+      name: this.lang.text['ChatRoom']['newText'],
+      act: () => {
+        this.new_attach({ detail: { value: 'text' } });
+      }
+    }, { // 3
+      icon: 'camera-outline',
+      name: this.lang.text['ChatRoom']['Camera'],
+      act: () => {
+        this.new_attach({ detail: { value: 'camera' } });
+      }
+    }, { // 4
+      icon: 'mic-circle-outline',
+      name: this.lang.text['ChatRoom']['Voice'],
+      act: async () => {
+        this.useVoiceRecording = !this.useVoiceRecording;
+        if (this.useVoiceRecording) { // 녹음 시작
+          let req = await VoiceRecorder.hasAudioRecordingPermission();
+          if (req.value) { // 권한 있음
+            this.extended_buttons[4].icon = 'stop-circle-outline';
+            this.p5toast.show({
+              text: this.lang.text['ChatRoom']['StartVRecord'],
+            });
+            await VoiceRecorder.startRecording();
+          } else { // 권한이 없다면 권한 요청 및 UI 복구
+            this.useVoiceRecording = false;
+            this.extended_buttons[4].icon = 'mic-circle-outline';
+            await VoiceRecorder.requestAudioRecordingPermission();
+          }
+        } else await this.StopAndSaveVoiceRecording();
+      }
+    }];
+
+  async StopAndSaveVoiceRecording() {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
+    loading.present();
+    try {
+      let blob = await this.global.StopAndSaveVoiceRecording();
+      await this.SendAttachAct({ target: { files: [blob] } });
+    } catch (e) { }
+    loading.dismiss();
+    this.extended_buttons[4].icon = 'mic-circle-outline';
+    this.extended_buttons[4].name = this.lang.text['ChatRoom']['Voice'];
   }
 
   async open_url_link(url: string) {
@@ -137,30 +208,13 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     }
   }
 
-  @ViewChild('SQNewAttach') SQNewAttach: IonSelect;
-  /** 새 파일 타입 정하기 */
-  open_select_new() {
-    delete this.global.p5key['KeyShortCut']['Escape'];
-    let NumberShortCutAct = [
-      'camera', 'image', 'text', 'load'
-    ];
-    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
-      delete this.global.p5key['KeyShortCut']['Digit'];
-      if (NumberShortCutAct.length > index)
-        this.new_attach({ detail: { value: NumberShortCutAct[index] } });
-    }
-    if (this.SQNewAttach) this.SQNewAttach.open();
-  }
-
   /** 새 파일 만들기 */
   async new_attach(ev: any) {
     switch (ev.detail.value) {
       case 'camera':
         try {
-          let result = await this.global.from_camera('tmp_files/todo/', { display_name: this.client.MyUserName });
-          result.content_creator.display_name = this.client.MyUserName;
-          result.content_related_creator[0].display_name = this.client.MyUserName;
-          this.TrySendingAttach(result);
+          let result = await this.global.from_camera('tmp_files/square/', { display_name: this.client.MyUserName });
+          if (result) this.TrySendingAttach(result);
         } catch (e) {
           console.log('촬영 실패: ', e);
           this.p5toast.show({
@@ -223,7 +277,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         this.AddShortCut();
         break;
     }
-    this.SQNewAttach.value = '';
   }
 
   p5canvas: p5;
@@ -666,13 +719,13 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     FileInfo.type = file.type;
     this.global.set_viewer_category(FileInfo);
     FileInfo['content_related_creator'] = [{
-      user_id: this.client.MyUserName,
+      user_id: this.client.uuid,
       timestamp: new Date().getTime(),
       display_name: this.client.MyUserName,
       various: 'loaded',
     }];
     FileInfo['content_creator'] = {
-      user_id: this.client.MyUserName,
+      user_id: this.client.uuid,
       timestamp: new Date().getTime(),
       display_name: this.client.MyUserName,
       various: 'loaded',
@@ -840,6 +893,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       msg: text || this.client.userInput.text,
     }
     if (!data.msg.trim()) return;
+    this.ToggleExtMenu(false);
     data['name'] = this.client.MyUserName;
     this.client.send(JSON.stringify(data));
     this.client.userInput.text = '';
@@ -879,6 +933,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     if (this.client.IsConnected) this.client.CreateRejoinButton();
     delete this.global.p5key['KeyShortCut']['EnterAct'];
     delete this.global.p5key['KeyShortCut']['Escape'];
+    if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
   }
   ngOnDestroy(): void {
     this.route.queryParams['unsubscribe']();
