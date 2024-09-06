@@ -102,6 +102,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
           let req = await VoiceRecorder.hasAudioRecordingPermission();
           if (req.value) { // 권한 있음
             this.extended_buttons[4].icon = 'stop-circle-outline';
+            this.extended_buttons[4].name = this.lang.text['ChatRoom']['VoiceStop'];
             this.p5toast.show({
               text: this.lang.text['ChatRoom']['StartVRecord'],
             });
