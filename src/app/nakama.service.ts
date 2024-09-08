@@ -1589,7 +1589,7 @@ export class NakamaService {
 
   /** 채널 추가, 채널 추가에 사용하려는 경우 join_chat_with_modulation() 를 대신 사용하세요
    */
-  async add_channels(channel_info: Channel, _is_official: string, _target: string) {
+  async add_channel(channel_info: Channel, _is_official: string, _target: string) {
     if (!this.channels_orig[_is_official][_target][channel_info.id]) {
       this.channels_orig[_is_official][_target][channel_info.id] = {};
       try {
@@ -1612,12 +1612,12 @@ export class NakamaService {
         try {
           let group_id = this.channels_orig[_is_official][_target][channel_info.id]['redirect']['id'];
           this.channels_orig[_is_official][_target][channel_info.id]['color'] = (group_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
-          delete this.channels_orig[_is_official][_target][channel_info.id]['status'];
+          if (this.channels_orig[_is_official][_target][channel_info.id]['status'] == 'missing')
+            delete this.channels_orig[_is_official][_target][channel_info.id]['status'];
           this.load_groups(_is_official, _target, group_id, true);
         } catch (e) {
           console.error('그룹 채널 생성 오류: ', e);
         }
-        this.count_channel_online_member(this.channels_orig[_is_official][_target][channel_info.id], _is_official, _target);
         break;
       default:
         console.error('예상하지 못한 채널 종류: ', this.channels_orig[_is_official][_target][channel_info.id]);
@@ -1738,7 +1738,6 @@ export class NakamaService {
                   } else targetUser['img'] = undefined;
                   this.save_other_user(targetUser, _is_official, _target);
                 });
-              case 3: // 그룹 채팅
                 if (!this.channels_orig[_is_official][_target][channel_ids[i]]['update']) {
                   this.servers[_is_official][_target].client.listChannelMessages(
                     this.servers[_is_official][_target].session, channel_ids[i], 1, false)
@@ -1747,9 +1746,6 @@ export class NakamaService {
                         this.update_from_channel_msg(c_msg.messages[0], _is_official, _target);
                     });
                 }
-                break;
-              default:
-                console.log('예상하지 못한 리다이렉션 타입: ', this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type']);
                 break;
             }
           }).catch(_e => {
@@ -2136,12 +2132,10 @@ export class NakamaService {
       this.servers[_is_official][_target].session.user_id)
       .then(targetGroup => {
         for (let i = 0, j = targetGroup.user_groups.length; i < j; i++) {
-          if (!this.groups[_is_official][_target][targetGroup.user_groups[i].group.id])
-            this.groups[_is_official][_target][targetGroup.user_groups[i].group.id] = {};
           // 업데이트할 그룹이 특정되어있다면 해당 그룹만 업데이트
           if (gid === undefined || gid == targetGroup.user_groups[i].group.id) {
-            // 나갔다가 다시 진입하는 경우를 대비해 그룹 상태 초기화
-            delete this.groups[_is_official][_target][targetGroup.user_groups[i].group.id];
+            if (!this.groups[_is_official][_target][targetGroup.user_groups[i].group.id])
+              this.groups[_is_official][_target][targetGroup.user_groups[i].group.id] = {};
             // 로컬에 없던 그룹은 이미지 확인
             this.servers[_is_official][_target].client.readStorageObjects(
               this.servers[_is_official][_target].session, {
@@ -2163,7 +2157,9 @@ export class NakamaService {
             });
             this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]
               = { ...this.groups[_is_official][_target][targetGroup.user_groups[i].group.id], ...targetGroup.user_groups[i].group };
-            this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] = 'online';
+            // 나갔다가 다시 진입하는 경우를 대비해 그룹 상태 초기화
+            if (gid && this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] == 'missing')
+              this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] = 'online';
             this.load_groups(_is_official, _target, targetGroup.user_groups[i].group.id, true);
             this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target, undefined, false)
               .then(_v => {
@@ -2224,8 +2220,13 @@ export class NakamaService {
         if (this.groups[_is_official][_target][p['group_id']]
           && this.groups[_is_official][_target][p['group_id']]['users']) {
           let user_length = this.groups[_is_official][_target][p['group_id']]['users'].length;
-          if (user_length == 1) result_status = this.users.self['online'] ? 'online' : 'offline'; // 그룹에 혼자만 있음
-          else for (let i = 0; i < user_length; i++) { // 2명 이상의 그룹원
+          // 1인용 그룹인 경우 사용자 온라인을 따라감
+          if (this.groups[_is_official][_target][p['group_id']]['max_count'] <= 1) {
+            result_status = this.users.self['online'] ? 'online' : 'offline';
+            if (this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] != 'missing')
+              this.channels_orig[_is_official][_target][p.channel_id || p.id]['status'] = result_status;
+            return;
+          } else for (let i = 0; i < user_length; i++) { // 2명 이상의 그룹원이 있다면 온라인 표시
             let userId = this.groups[_is_official][_target][p['group_id']]['users'][i]['user']['id'] || this.servers[_is_official][_target].session.user_id;
             if (userId != this.servers[_is_official][_target].session.user_id) // 다른 사람인 경우
               if (this.load_other_user(userId, _is_official, _target)['online']) {
@@ -2872,7 +2873,7 @@ export class NakamaService {
           console.error('예상하지 못한 채널 정보: ', type);
           break;
       }
-      await this.add_channels(c, _is_official, _target);
+      await this.add_channel(c, _is_official, _target);
       if (ReArrangeChannels) this.rearrange_channels();
       if (!this.opened_page_info['channel']
         || this.opened_page_info['channel']['isOfficial'] != _is_official
@@ -2887,7 +2888,6 @@ export class NakamaService {
             console.error('마지막 메시지 받아서 업데이트 오류: ', e);
           });
       }
-      this.count_channel_online_member(c, _is_official, _target);
       this.save_groups_with_less_info();
       return c;
     } catch (e) {
@@ -3259,23 +3259,14 @@ export class NakamaService {
       case 4: // 채널에 새로 들어온 사람 알림
         c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserJoin']}: ${target['display_name']}`;
-        setTimeout(() => {
-          this.count_channel_online_member(c, _is_official, _target);
-        }, 50);
         break;
       case 5: // 그룹에 있던 사용자 나감(들어오려다가 포기한 사람 포함)
         c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserOut']}: ${target['display_name']}`;
-        setTimeout(() => {
-          this.count_channel_online_member(c, _is_official, _target);
-        }, 50);
         break;
       case 6: // 누군가 그룹에서 내보내짐 (kick)
         c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserKick']}: ${target['display_name']}`;
-        setTimeout(() => {
-          this.count_channel_online_member(c, _is_official, _target);
-        }, 50);
         break;
       default:
         console.log('예상하지 못한 메시지 코드: ', c);
