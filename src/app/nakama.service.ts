@@ -1613,6 +1613,7 @@ export class NakamaService {
         try {
           let group_id = this.channels_orig[_is_official][_target][channel_info.id]['redirect']['id'];
           this.channels_orig[_is_official][_target][channel_info.id]['color'] = (group_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
+          delete this.channels_orig[_is_official][_target][channel_info.id]['status'];
           this.load_groups(_is_official, _target, group_id, true);
         } catch (e) {
           console.error('그룹 채널 생성 오류: ', e);
@@ -2134,8 +2135,11 @@ export class NakamaService {
         for (let i = 0, j = targetGroup.user_groups.length; i < j; i++) {
           if (!this.groups[_is_official][_target][targetGroup.user_groups[i].group.id])
             this.groups[_is_official][_target][targetGroup.user_groups[i].group.id] = {};
-          // 로컬에 없던 그룹은 이미지 확인
+          // 업데이트할 그룹이 특정되어있다면 해당 그룹만 업데이트
           if (gid === undefined || gid == targetGroup.user_groups[i].group.id) {
+            // 나갔다가 다시 진입하는 경우를 대비해 그룹 상태 초기화
+            delete this.groups[_is_official][_target][targetGroup.user_groups[i].group.id];
+            // 로컬에 없던 그룹은 이미지 확인
             this.servers[_is_official][_target].client.readStorageObjects(
               this.servers[_is_official][_target].session, {
               object_ids: [{
