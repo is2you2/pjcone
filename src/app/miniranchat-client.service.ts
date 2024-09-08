@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { AlertController, IonicSafeString, NavController, mdTransitionAnimation } from '@ionic/angular';
 import * as p5 from 'p5';
 import { NakamaService } from './nakama.service';
@@ -25,7 +25,6 @@ export class MiniranchatClientService {
     private noti: LocalNotiService,
     private alertCtrl: AlertController,
     private global: GlobalActService,
-    private ngZone: NgZone,
   ) { }
 
   client: WebSocket;
@@ -255,15 +254,13 @@ export class MiniranchatClientService {
 
   RejoinGroupChat() {
     this.userInput.text = '';
-    this.ngZone.run(() => {
-      this.global.RemoveAllModals(() => {
-        this.navCtrl.navigateForward('minimal-chat', {
-          animation: mdTransitionAnimation,
-          state: {
-            address: this.cacheAddress,
-            name: this.MyUserName,
-          },
-        });
+    this.global.RemoveAllModals(() => {
+      this.navCtrl.navigateForward('minimal-chat', {
+        animation: mdTransitionAnimation,
+        state: {
+          address: this.cacheAddress,
+          name: this.MyUserName,
+        },
       });
     });
   }

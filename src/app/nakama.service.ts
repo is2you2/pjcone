@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Channel, ChannelMessage, Client, Group, GroupUser, Match, Notification, Session, Socket, User } from "@heroiclabs/nakama-js";
 import { SERVER_PATH_ROOT, isPlatform } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
@@ -92,7 +92,6 @@ export class NakamaService {
     private lang: LanguageSettingService,
     private global: GlobalActService,
     private navCtrl: NavController,
-    private ngZone: NgZone,
     private loadingCtrl: LoadingController,
   ) {
     global.CallbackNakama = this;
@@ -229,38 +228,32 @@ export class NakamaService {
   open_add_todo_page(info: string = '') {
     if (this.AddTodoLinkAct)
       this.AddTodoLinkAct(info);
-    else this.ngZone.run(() => {
-      this.global.RemoveAllModals(() => {
-        this.navCtrl.navigateForward('add-todo-menu', {
-          animation: mdTransitionAnimation,
-          state: {
-            data: info,
-          },
-        });
+    else this.global.RemoveAllModals(() => {
+      this.navCtrl.navigateForward('add-todo-menu', {
+        animation: mdTransitionAnimation,
+        state: {
+          data: info,
+        },
       });
     });
   }
 
   /** 그룹 상세 정보 페이지 열기 */
   open_group_detail(_state: any) {
-    this.ngZone.run(() => {
-      this.global.RemoveAllModals(() => {
-        this.navCtrl.navigateForward('group-detail', {
-          animation: mdTransitionAnimation,
-          state: _state,
-        });
+    this.global.RemoveAllModals(() => {
+      this.navCtrl.navigateForward('group-detail', {
+        animation: mdTransitionAnimation,
+        state: _state,
       });
     });
   }
 
   /** 다른 사람의 프로필 정보 열기 */
   open_others_profile(_state: any) {
-    this.ngZone.run(() => {
-      this.global.RemoveAllModals(() => {
-        this.navCtrl.navigateForward('others-profile', {
-          animation: mdTransitionAnimation,
-          state: _state,
-        });
+    this.global.RemoveAllModals(() => {
+      this.navCtrl.navigateForward('others-profile', {
+        animation: mdTransitionAnimation,
+        state: _state,
       });
     });
   }
@@ -378,26 +371,22 @@ export class NakamaService {
     this.has_new_channel_msg = false;
     if (this.ChatroomLinkAct)
       this.ChatroomLinkAct(_info, _file);
-    else this.ngZone.run(() => {
-      this.global.RemoveAllModals(() => {
-        this.navCtrl.navigateForward('chat-room', {
-          animation: mdTransitionAnimation,
-          state: {
-            info: _info,
-            file: _file,
-          },
-        });
+    else this.global.RemoveAllModals(() => {
+      this.navCtrl.navigateForward('chat-room', {
+        animation: mdTransitionAnimation,
+        state: {
+          info: _info,
+          file: _file,
+        },
       });
     });
   }
 
   /** 새 채널 만들기 / 새 그룹 추가하기 */
   add_new_group() {
-    this.ngZone.run(() => {
-      this.global.RemoveAllModals(() => {
-        this.navCtrl.navigateForward('add-group', {
-          animation: mdTransitionAnimation,
-        });
+    this.global.RemoveAllModals(() => {
+      this.navCtrl.navigateForward('add-group', {
+        animation: mdTransitionAnimation,
       });
     });
   }
@@ -407,27 +396,23 @@ export class NakamaService {
    * @param _state { isOfficial: string, target: string }
    */
   open_profile_page(_state?: any) {
-    this.ngZone.run(() => {
-      this.global.RemoveAllModals(() => {
-        this.navCtrl.navigateForward('group-server', {
-          animation: mdTransitionAnimation,
-          state: _state,
-        });
+    this.global.RemoveAllModals(() => {
+      this.navCtrl.navigateForward('group-server', {
+        animation: mdTransitionAnimation,
+        state: _state,
       });
     });
   }
 
   /** 게시글 읽기 */
   open_post(info: any, index: number) {
-    this.ngZone.run(() => {
-      this.global.RemoveAllModals(() => {
-        this.navCtrl.navigateForward('post-viewer', {
-          animation: mdTransitionAnimation,
-          state: {
-            data: info,
-            index: index + 1,
-          },
-        });
+    this.global.RemoveAllModals(() => {
+      this.navCtrl.navigateForward('post-viewer', {
+        animation: mdTransitionAnimation,
+        state: {
+          data: info,
+          index: index + 1,
+        },
       });
     });
   }
@@ -4321,18 +4306,16 @@ export class NakamaService {
             if (this.lang.text['InstantCall']['CallEnd']) break;
             await new Promise((done) => setTimeout(done, 1000));
           }
-          this.ngZone.run(() => {
-            this.global.RemoveAllModals(() => {
-              this.navCtrl.navigateForward('instant-call', {
-                animation: iosTransitionAnimation,
-                state: {
-                  address: json[i]['address'],
-                  channel: json[i]['channel'],
-                  port: json[i]['port'],
-                  username: json[i]['username'],
-                  password: json[i]['password'],
-                }
-              });
+          this.global.RemoveAllModals(() => {
+            this.navCtrl.navigateForward('instant-call', {
+              animation: iosTransitionAnimation,
+              state: {
+                address: json[i]['address'],
+                channel: json[i]['channel'],
+                port: json[i]['port'],
+                username: json[i]['username'],
+                password: json[i]['password'],
+              }
             });
           });
           break;
