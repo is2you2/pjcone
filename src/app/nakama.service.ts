@@ -1691,6 +1691,7 @@ export class NakamaService {
         });
       });
     }
+    this.rearrange_channels();
   }
 
   /** 알림 아이디  
