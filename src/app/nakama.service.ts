@@ -2975,7 +2975,7 @@ export class NakamaService {
           || this.GetOverrideName(this.channels_orig[_is_official][_target][msg.channel_id]['info']['id'], _is_official, _target)
           || this.channels_orig[_is_official][_target][msg.channel_id]['info']['display_name']
           || this.channels_orig[_is_official][_target][msg.channel_id]['title']
-          || this.lang.text['Subscribes']['noTitiedChat'],
+          || this.lang.text['ChatRoom']['noname_chatroom'],
         body: c.content['msg'] || c.content['noti']
           || (c.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined)
           || `(${this.lang.text['ChatRoom']['attachments']})`,
