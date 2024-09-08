@@ -1639,7 +1639,6 @@ export class NakamaService {
         console.error('예상하지 못한 채널 종류: ', this.channels_orig[_is_official][_target][channel_info.id]);
         break;
     }
-    this.rearrange_channels();
   }
 
   add_group_user_without_duplicate(user: GroupUser, gid: string, _is_official: string, _target: string) {
@@ -2174,7 +2173,10 @@ export class NakamaService {
             = { ...this.groups[_is_official][_target][targetGroup.user_groups[i].group.id], ...targetGroup.user_groups[i].group };
           this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] = 'online';
           this.load_groups(_is_official, _target, targetGroup.user_groups[i].group.id, true);
-          this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target);
+          this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target, undefined, false)
+            .then(_v => {
+              if (j - i - 1 <= 0) this.rearrange_channels();
+            });
         }
         this.save_groups_with_less_info();
       }).catch(e => {
@@ -2742,6 +2744,7 @@ export class NakamaService {
               this.join_chat_with_modulation(c.group_id, 3, _is_official, _target);
           } else { // 평상시에
             this.update_from_channel_msg(c, _is_official, _target);
+            this.rearrange_channels();
             if (c.content['match'] && c.sender_id != this.servers[_is_official][_target].session.user_id)
               this.JoinWebRTCMatch(c, _is_official, _target, this.channels_orig[_is_official][_target][c.channel_id]);
           }
@@ -2848,7 +2851,7 @@ export class NakamaService {
    */
   opened_page_info = {};
   /** 채널 정보를 변형한 후 추가하기 */
-  async join_chat_with_modulation(targetId: string, type: number, _is_official: string, _target: string, isNewChannel = false) {
+  async join_chat_with_modulation(targetId: string, type: number, _is_official: string, _target: string, isNewChannel = false, ReArrangeChannels = true) {
     if (!this.channels_orig[_is_official][_target]) this.channels_orig[_is_official][_target] = {};
     let c = await this.servers[_is_official][_target].socket.joinChat(targetId, type, true, false)
     try {
@@ -2877,6 +2880,7 @@ export class NakamaService {
           break;
       }
       await this.add_channels(c, _is_official, _target);
+      if (ReArrangeChannels) this.rearrange_channels();
       if (!this.opened_page_info['channel']
         || this.opened_page_info['channel']['isOfficial'] != _is_official
         || this.opened_page_info['channel']['target'] != _target
@@ -3021,7 +3025,6 @@ export class NakamaService {
       if (c.code != 2) this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile +
         (original_msg || c.content['noti'] || (c.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined) || '');
     }
-    this.rearrange_channels();
   }
 
   /** 커뮤니티 페이지를 보고 있는지 여부 */
