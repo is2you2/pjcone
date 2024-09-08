@@ -291,7 +291,6 @@ export class AddGroupPage implements OnInit, OnDestroy {
         type: 0,
       },
       status: 'online',
-      HideAutoThumbnail: false,
       info: {
         ...this.userInput,
         status: 'online',
