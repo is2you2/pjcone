@@ -2958,10 +2958,8 @@ export class NakamaService {
             console.error('알림 삭제 오류: ', e);
           }
         }
-        if (is_me) { // 그 유입 주체가 나야
-          this.channels_orig[_is_official][_target][c.channel_id]['status'] = 'missing';
-          delete this.channels_orig[_is_official][_target][c.channel_id]['info'];
-        }
+        // 그 유입 주체가 나야
+        if (is_me) this.channels_orig[_is_official][_target][c.channel_id]['status'] = 'missing';
         break;
       default:
         console.log('예상하지 못한 채널 메시지 코드: ', c);

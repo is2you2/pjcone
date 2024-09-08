@@ -245,6 +245,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     this.need_edit = false;
     try {
       if (this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']]) { // 서버가 아직 있다면
+        // 그룹 생성자가 나라면
         if (this.info['creator_id'] == this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session.user_id) {
           if (this.info['status'] == 'online')
             this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
@@ -273,9 +274,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
               this.after_remove_group();
             });
           else this.after_remove_group();
-        } else {
-          throw this.lang.text['GroupDetail']['YouAreNotCreator'];
-        }
+        } else throw this.lang.text['GroupDetail']['YouAreNotCreator'];
       } else { // 서버 기록이 먼저 삭제된 경우
         this.navCtrl.pop();
       }
@@ -341,10 +340,11 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']]['status'] = 'missing';
         this.nakama.save_groups_with_less_info(() => this.navCtrl.pop());
       });
-    else if (this.info['status'] == 'pending') this.after_leave_group(() => {
-      this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']]['status'] = 'missing';
-      this.nakama.save_groups_with_less_info(() => this.navCtrl.pop());
-    });
+    else if (this.info['status'] == 'pending')
+      this.after_leave_group(() => {
+        this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']]['status'] = 'missing';
+        this.nakama.save_groups_with_less_info(() => this.navCtrl.pop());
+      });
   }
 
   /** 그룹 나가기 행동 */
@@ -378,9 +378,10 @@ export class GroupDetailPage implements OnInit, OnDestroy {
 
   /** 그룹 채널에서 나오기 */
   leave_channel() {
-    if (this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']] && this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']])
+    try {
       if (this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] != 'missing')
         this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] = 'missing';
+    } catch (e) { }
   }
 
   copy_id() {
