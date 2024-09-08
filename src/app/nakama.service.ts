@@ -1348,7 +1348,7 @@ export class NakamaService {
   }
 
   /** 저장된 그룹 업데이트하여 반영 */
-  async load_groups(_is_official: string, _target: string, _gid: string) {
+  async load_groups(_is_official: string, _target: string, _gid: string, only_data = false) {
     // 온라인이라면 서버정보로 덮어쓰기
     let channel_id = this.groups[_is_official][_target][_gid]['channel_id'];
     try {
@@ -1396,6 +1396,7 @@ export class NakamaService {
           if (gulist.group_users[i]['is_me'])
             gulist.group_users[i]['user'] = this.users.self;
           else try {
+            if (only_data) throw '사용자 데이터만 받음';
             let image = await this.servers[_is_official][_target].client.readStorageObjects(
               this.servers[_is_official][_target].session, {
               object_ids: [{
@@ -1409,7 +1410,7 @@ export class NakamaService {
             else delete gulist.group_users[i]['user']['img'];
             this.save_other_user(gulist.group_users[i]['user'], _is_official, _target);
           } catch (e) {
-            console.error('다른 사용자 이미지 업데이트 오류: ', e);
+            console.log('다른 사용자 이미지 업데이트 오류: ', e);
             this.save_other_user(gulist.group_users[i]['user'], _is_official, _target);
           }
         this.save_groups_with_less_info();
@@ -1628,20 +1629,7 @@ export class NakamaService {
         try {
           let group_id = this.channels_orig[_is_official][_target][channel_info.id]['redirect']['id'];
           this.channels_orig[_is_official][_target][channel_info.id]['color'] = (group_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
-          let users = await this.servers[_is_official][_target].client.listGroupUsers(
-            this.servers[_is_official][_target].session, group_id);
-          if (!this.groups[_is_official][_target][group_id]['users'])
-            this.groups[_is_official][_target][group_id]['users'] = [];
-          users.group_users.forEach(_user => {
-            if (_user.user.id != this.servers[_is_official][_target].session.user_id)
-              if (!this.users[_is_official][_target][_user.user['id']])
-                this.save_other_user(_user.user, _is_official, _target);
-            if (_user.user.id == this.servers[_is_official][_target].session.user_id)
-              _user.user['is_me'] = true;
-            else if (!this.users[_is_official][_target][_user.user['id']]) this.save_other_user(_user.user, _is_official, _target);
-            _user.user = this.load_other_user(_user.user.id, _is_official, _target);
-            this.add_group_user_without_duplicate(_user, group_id, _is_official, _target);
-          });
+          this.load_groups(_is_official, _target, group_id, true);
         } catch (e) {
           console.error('그룹 채널 생성 오류: ', e);
         }
@@ -1952,15 +1940,7 @@ export class NakamaService {
               pending_group['status'] = pending_group.open ? 'online' : 'pending';
               pending_group['server'] = this.servers[servers[i].info.isOfficial][servers[i].info.target].info;
               try {
-                let _list = await this.servers[servers[i].info.isOfficial][servers[i].info.target].client.listGroupUsers(
-                  this.servers[servers[i].info.isOfficial][servers[i].info.target].session, v.groups[k].id
-                );
-                pending_group['users'] = _list.group_users;
-                _list.group_users.forEach(_guser => {
-                  if (_guser.user.id == this.servers[servers[i].info.isOfficial][servers[i].info.target].session.user_id)
-                    _guser['is_me'] = true;
-                  else this.save_other_user(_guser.user, servers[i].info.isOfficial, servers[i].info.target);
-                });
+                await this.load_groups(servers[i].info.isOfficial, servers[i].info.target, v.groups[k].id, true);
               } catch (e) {
                 console.error('그룹 정보 검토 오류: ', e);
               }
@@ -2193,22 +2173,7 @@ export class NakamaService {
           this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]
             = { ...this.groups[_is_official][_target][targetGroup.user_groups[i].group.id], ...targetGroup.user_groups[i].group };
           this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] = 'online';
-          this.servers[_is_official][_target].client.listGroupUsers(
-            this.servers[_is_official][_target].session, targetGroup.user_groups[i].group.id
-          ).then(_guser => {
-            for (let k = 0, l = _guser.group_users.length; k < l; k++) {
-              if (_guser.group_users[k].user.id == this.servers[_is_official][_target].session.user_id)
-                _guser.group_users[k].user['is_me'] = true;
-              else {
-                _guser.group_users[k].user['img'] = null;
-                this.save_other_user(_guser.group_users[k].user, _is_official, _target);
-              }
-              _guser.group_users[k].user = this.load_other_user(_guser.group_users[k].user.id, _is_official, _target);
-              this.add_group_user_without_duplicate(_guser.group_users[k], targetGroup.user_groups[i].group.id, _is_official, _target);
-            }
-          }).catch(e => {
-            console.error('그룹 사용자 가져오기 오류: ', e);
-          });
+          this.load_groups(_is_official, _target, targetGroup.user_groups[i].group.id, true);
           this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target);
         }
         this.save_groups_with_less_info();
@@ -3718,13 +3683,7 @@ export class NakamaService {
           console.error('그룹 이미지 가져오기 오류: ', e);
         }
         try {
-          let gulist = await this.servers[_is_official][_target].client.listGroupUsers(
-            this.servers[_is_official][_target].session, v.content['group_id']);
-          if (gulist.group_users.length) {
-            gulist.group_users.forEach(user => {
-              this.load_other_user(user.user.id, _is_official, _target);
-            });
-          }
+          await this.load_groups(_is_official, _target, v.content['group_id'], true);
         } catch (e) {
           console.error('그룹 사용자 가져오기 오류: ', e);
         }
