@@ -276,19 +276,11 @@ export class AddGroupPage implements OnInit, OnDestroy {
   SaveLocalAct() {
     if (!this.nakama.channels_orig['local']) this.nakama.channels_orig['local'] = {};
     if (!this.nakama.channels_orig['local']['target']) this.nakama.channels_orig['local']['target'] = {};
-    // 아이디 중복 검토
-    if (this.nakama.channels_orig['local']['target'][this.userInput.name]) {
-      this.p5toast.show({
-        text: this.lang.text['AddGroup']['AlreadyExist'],
-      });
-      this.isSaveClicked = false;
-      return;
-    }
     let generated_id = this.CreateRandomLocalId();
     this.nakama.channels_orig['local']['target'][generated_id] = {
       id: generated_id,
       local: true,
-      title: this.userInput.name,
+      title: this.userInput.name || (this.userInput.volatile ? this.lang['text']['AddGroup']['noname_volatile'] : ''),
       redirect: {
         type: 0,
       },
