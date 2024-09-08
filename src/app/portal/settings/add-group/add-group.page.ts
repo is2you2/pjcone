@@ -115,6 +115,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
   userInput = {
     server: undefined,
     id: '',
+    volatile: false,
     name: undefined,
     description: undefined,
     max_count: undefined,
@@ -313,6 +314,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
       let randomAt = Math.floor(Math.random() * ID_GEN_CHAR.length);
       result += ID_GEN_CHAR.charAt(randomAt);
     }
+    if (this.userInput.volatile) result = 'tmp_files_' + result;
     if (!this.nakama.channels_orig['local']['target'][result])
       return result;
     else return this.CreateRandomLocalId();

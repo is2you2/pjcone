@@ -158,8 +158,7 @@ export class NakamaService {
     this.catch_group_server_header('offline');
     // 서버별 그룹 정보 불러오기
     let groups = await this.indexed.loadTextFromUserPath('servers/groups.json');
-    if (groups)
-      this.groups = JSON.parse(groups);
+    if (groups) this.groups = JSON.parse(groups);
     let all_groups = this.rearrange_group_list();
     all_groups.forEach(async group => {
       let group_img = await this.indexed.loadTextFromUserPath(`servers/${group['server']['isOfficial']}/${group['server']['target']}/groups/${group.id}.img`);
@@ -1650,6 +1649,10 @@ export class NakamaService {
           let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
           channel_ids.forEach(_cid => {
             try {
+              if (_cid.indexOf('tmp_files') >= 0) {
+                delete this.channels_orig[_is_official][_target][_cid];
+                throw '휘발성 채널 무시';
+              }
               if (this.channels_orig[_is_official][_target][_cid]['redirect']['type'] == 2)
                 this.channels_orig[_is_official][_target][_cid]['info'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
               if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
