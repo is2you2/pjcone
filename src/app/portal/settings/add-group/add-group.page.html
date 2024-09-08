@@ -27,8 +27,9 @@
     <ion-item-divider>
       <ion-label>{{lang.text['AddGroup']['JoinGroupWithId']}}</ion-label>
     </ion-item-divider>
-    <ion-item [disabled]="isSaveClicked" button>
-      <ion-input [label]="lang.text['AddGroup']['InputGroupId']" class="ion-text-right" [(ngModel)]="userInput.id"
+    <ion-item button (click)="CheckIfCopiedChannelID()">
+      <ion-input disabled [label]="lang.text['AddGroup']['InputGroupId']" class="ion-text-right"
+        style="pointer-events: none;" [(ngModel)]="userInput.id"
         placeholder="00000000-0000-0000-0000-000000000000"></ion-input>
     </ion-item>
   </div>

@@ -37,7 +37,6 @@ export class AddGroupPage implements OnInit, OnDestroy {
       this.LoadListServer();
       this.index = 0;
     };
-    this.CheckIfCopiedChannelID();
   }
 
   /** 진입시 채널 아이디를 복사해둔 상태라면 즉시 해당 아이디로 가입하기 시도 */
@@ -58,7 +57,9 @@ export class AddGroupPage implements OnInit, OnDestroy {
     if (result) {
       this.userInput.id = copied;
       this.JoinWithSpecificId();
-    }
+    } else this.p5toast.show({
+      text: `${this.lang.text['AddGroup']['DiffFormat']}: ${copied}`,
+    });
   }
 
   /** 선택할 수 있는 서버 리스트 만들기 */
@@ -323,7 +324,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
     let target_server = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target];
     try { // 그룹 채널로 시도
       await target_server.client.joinGroup(target_server.session, this.userInput.id);
-      this.nakama.get_group_list_from_server(this.servers[this.index].isOfficial, this.servers[this.index].target);
+      this.nakama.get_group_list_from_server(this.servers[this.index].isOfficial, this.servers[this.index].target, this.userInput.id);
       SuccJoinedChat = true;
     } catch (e) {
       try { // 1:1 채널로 재시도
@@ -334,6 +335,9 @@ export class AddGroupPage implements OnInit, OnDestroy {
           text: this.lang.text['AddGroup']['check_group_id'],
         });
         this.isSaveClicked = false;
+        setTimeout(() => {
+          this.userInput.id = '';
+        }, 1000);
       }
     }
     if (SuccJoinedChat) {

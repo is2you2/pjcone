@@ -1603,8 +1603,7 @@ export class NakamaService {
     'unofficial': {},
   };
 
-  /** 채널 추가, 채널 재배열 포함됨  
-   * 채널 추가에 사용하려는 경우 join_chat_with_modulation() 를 대신 사용하세요
+  /** 채널 추가, 채널 추가에 사용하려는 경우 join_chat_with_modulation() 를 대신 사용하세요
    */
   async add_channels(channel_info: Channel, _is_official: string, _target: string) {
     if (!this.channels_orig[_is_official][_target][channel_info.id]) {
@@ -2142,7 +2141,7 @@ export class NakamaService {
    * 새로 생기는 채널이 있을 때 사용  
    * 그룹 채팅 채널 접속 및 그룹 사용자 검토도 이곳에서 시도함
    */
-  get_group_list_from_server(_is_official: string, _target: string) {
+  get_group_list_from_server(_is_official: string, _target: string, gid?: string) {
     this.servers[_is_official][_target].client.listUserGroups(
       this.servers[_is_official][_target].session,
       this.servers[_is_official][_target].session.user_id)
@@ -2151,32 +2150,34 @@ export class NakamaService {
           if (!this.groups[_is_official][_target][targetGroup.user_groups[i].group.id])
             this.groups[_is_official][_target][targetGroup.user_groups[i].group.id] = {};
           // 로컬에 없던 그룹은 이미지 확인
-          this.servers[_is_official][_target].client.readStorageObjects(
-            this.servers[_is_official][_target].session, {
-            object_ids: [{
-              collection: 'group_public',
-              key: `group_${targetGroup.user_groups[i].group.id}`,
-              user_id: targetGroup.user_groups[i].group.creator_id,
-            }],
-          }).then(gimg => {
-            if (gimg.objects.length) {
-              this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['img'] = gimg.objects[0].value['img'];
-              this.indexed.saveTextFileToUserPath(gimg.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${targetGroup.user_groups[i].group.id}.img`);
-            } else {
-              delete this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['img'];
-              this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${targetGroup.user_groups[i].group.id}.img`);
-            }
-          }).catch(e => {
-            console.error('그룹 이미지 가져오기 오류: ', e);
-          });
-          this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]
-            = { ...this.groups[_is_official][_target][targetGroup.user_groups[i].group.id], ...targetGroup.user_groups[i].group };
-          this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] = 'online';
-          this.load_groups(_is_official, _target, targetGroup.user_groups[i].group.id, true);
-          this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target, undefined, false)
-            .then(_v => {
-              if (j - i - 1 <= 0) this.rearrange_channels();
+          if (gid === undefined || gid == targetGroup.user_groups[i].group.id) {
+            this.servers[_is_official][_target].client.readStorageObjects(
+              this.servers[_is_official][_target].session, {
+              object_ids: [{
+                collection: 'group_public',
+                key: `group_${targetGroup.user_groups[i].group.id}`,
+                user_id: targetGroup.user_groups[i].group.creator_id,
+              }],
+            }).then(gimg => {
+              if (gimg.objects.length) {
+                this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['img'] = gimg.objects[0].value['img'];
+                this.indexed.saveTextFileToUserPath(gimg.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${targetGroup.user_groups[i].group.id}.img`);
+              } else {
+                delete this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['img'];
+                this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${targetGroup.user_groups[i].group.id}.img`);
+              }
+            }).catch(e => {
+              console.error('그룹 이미지 가져오기 오류: ', e);
             });
+            this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]
+              = { ...this.groups[_is_official][_target][targetGroup.user_groups[i].group.id], ...targetGroup.user_groups[i].group };
+            this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] = 'online';
+            this.load_groups(_is_official, _target, targetGroup.user_groups[i].group.id, true);
+            this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target, undefined, false)
+              .then(_v => {
+                if (j - i - 1 <= 0) this.rearrange_channels();
+              });
+          }
         }
         this.save_groups_with_less_info();
       }).catch(e => {
