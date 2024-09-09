@@ -48,7 +48,10 @@
     <ion-label class="ion-text-center" (click)="send_noti_to_server()">{{lang.text['AdminTools']['Send']}}</ion-label>
   </ion-item>
   <ion-item-divider>
-    <ion-label>{{lang.text['AdminTools']['UserList']}}</ion-label>
+    <ion-label>{{lang.text['AdminTools']['UserList'] + ' (' + CurrentOnlineUser + '/' + AllUserCount + ')'}}</ion-label>
+    <ion-button style="margin-left: 8px;" (click)="refresh_all_user()">
+      {{lang.text['AdminTools']['Refresh']}}
+    </ion-button>
     <table slot="end" style="margin-right: 8px;">
       <tr>
         <td (click)="change_user_list_page(-1)">
@@ -63,6 +66,14 @@
       </tr>
     </table>
   </ion-item-divider>
+  <div *ngIf="CurrentOnlineUser == 0" style="height: 245px;">
+    <div class="disconnect_info" style="position: relative;" (click)="nakama.add_new_group()">
+      <ion-icon style="width: 60px; height: 60px;" color="medium" name="person-circle-outline"></ion-icon>
+      <div>
+        <ion-label color="medium">{{lang.text['AdminTools']['Requesting']}}</ion-label>
+      </div>
+    </div>
+  </div>
   <ion-accordion-group #UserSel>
     <div *ngFor="let i of current_user_size">
       <ion-accordion [value]="all_users[i].id || all_users[i].user_id">
@@ -122,7 +133,10 @@
     </div>
   </ion-accordion-group>
   <ion-item-divider>
-    <ion-label>{{lang.text['AdminTools']['GroupList']}}</ion-label>
+    <ion-label>{{lang.text['AdminTools']['GroupList'] + ' (' + AllGroupCount + ')'}}</ion-label>
+    <ion-button style="margin-left: 8px;" (click)="refresh_all_groups()">
+      {{lang.text['AdminTools']['Refresh']}}
+    </ion-button>
     <table slot="end" style="margin-right: 8px;">
       <tr>
         <td (click)="change_group_list_page(-1)">
@@ -137,6 +151,14 @@
       </tr>
     </table>
   </ion-item-divider>
+  <div *ngIf="AllGroupCount == 0" style="height: 245px;">
+    <div class="disconnect_info" style="position: relative;" (click)="nakama.add_new_group()">
+      <ion-icon style="width: 60px; height: 60px;" color="medium" name="people-circle-outline"></ion-icon>
+      <div>
+        <ion-label color="medium">{{lang.text['AdminTools']['Requesting']}}</ion-label>
+      </div>
+    </div>
+  </div>
   <ion-accordion-group #GroupSel>
     <div *ngFor="let i of current_group_size">
       <ion-accordion [value]="all_groups[i].name">

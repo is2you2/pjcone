@@ -132,11 +132,14 @@ export class AdminToolsPage implements OnInit {
   }
 
   all_users = [];
+  CurrentOnlineUser = 0;
+  AllUserCount = 0;
   current_user_page = 1;
   all_user_page = 1;
   current_user_size: number[] = [];
 
   all_groups = [];
+  AllGroupCount = 0;
   current_group_page = 1;
   all_group_page = 1;
   current_group_size: number[] = [];
@@ -147,6 +150,8 @@ export class AdminToolsPage implements OnInit {
   @ViewChild('GroupSel') GroupSel: IonAccordionGroup;
 
   refresh_all_user() {
+    this.CurrentOnlineUser = 0;
+    this.AllUserCount = 0;
     this.all_users.length = 0;
     this.current_user_size.length = 0;
     this.nakama.servers[this.isOfficial][this.target].client.rpc(
@@ -173,7 +178,9 @@ export class AdminToolsPage implements OnInit {
             let original_time = new Date(this.all_users[i].create_time).getTime() - new Date().getTimezoneOffset() * 60 * 1000;
             this.all_users[i]['display_created'] = new Date(original_time).toISOString().split('.')[0];
           });
+          if (this.all_users[i]['online']) this.CurrentOnlineUser++;
         }
+        this.AllUserCount = this.all_users.length;
         this.all_user_page = Math.ceil(this.all_users.length / this.LIST_PAGE_SIZE);
         this.current_user_page = 0;
         this.change_user_list_page(1);
@@ -228,6 +235,7 @@ export class AdminToolsPage implements OnInit {
   }
 
   refresh_all_groups() {
+    this.AllGroupCount = 0;
     this.all_groups.length = 0;
     this.current_group_size.length = 0;
     this.nakama.servers[this.isOfficial][this.target].client.rpc(
@@ -254,6 +262,7 @@ export class AdminToolsPage implements OnInit {
             if (e && v) this.all_groups[i].img = v;
           });
         }
+        this.AllGroupCount = this.all_groups.length;
         let user_ids = Object.keys(this.PromotableGroup);
         user_ids.forEach(user_id => {
           let keys = Object.keys(this.PromotableGroup[user_id]);
