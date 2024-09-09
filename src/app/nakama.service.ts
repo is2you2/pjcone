@@ -941,8 +941,9 @@ export class NakamaService {
         .then(v => {
           for (let i = 0, j = v.users.length; i < j; i++)
             this.save_other_user(v.users[i], _is_official, _target)
-          this.get_group_list_from_server(_is_official, _target);
-          this.redirect_channel(_is_official, _target);
+          this.redirect_channel(_is_official, _target).then(() => {
+            this.get_group_list_from_server(_is_official, _target);
+          });
         });
     });
     await this.SyncTodoCounter(_is_official, _target);
@@ -950,8 +951,6 @@ export class NakamaService {
     this.RemoteTodoSelfCheck(_is_official, _target);
     this.load_posts_counter();
     this.update_notifications(_is_official, _target);
-    this.rearrange_channels();
-    this.rearrange_group_list();
     this.set_group_statusBar('online', _is_official, _target);
   }
 
@@ -1707,55 +1706,51 @@ export class NakamaService {
   /** 세션 재접속 시 기존 정보를 이용하여 채팅방에 다시 로그인함  
    * 개인 채팅에 대해서만 검토
    */
-  redirect_channel(_is_official: string, _target: string) {
+  async redirect_channel(_is_official: string, _target: string) {
     if (this.channels_orig[_is_official][_target]) {
       let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
       for (let i = 0, j = channel_ids.length; i < j; i++) try {
         if (this.channels_orig[_is_official][_target][channel_ids[i]]['status'] != 'missing') {
-          this.servers[_is_official][_target].socket.joinChat(
+          await this.servers[_is_official][_target].socket.joinChat(
             this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['id'],
             this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type'],
             this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['persistence'],
             false
-          ).then(_v => {
-            if (!this.channels_orig[_is_official][_target][channel_ids[i]]['cnoti_id'])
-              this.channels_orig[_is_official][_target][channel_ids[i]]['cnoti_id'] = this.get_noti_id();
-            this.channels_orig[_is_official][_target][channel_ids[i]]['color'] = (this.channels_orig[_is_official][_target][channel_ids[i]]['info']['id'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
-            switch (this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type']) {
-              case 2: // 1:1 채팅
-                this.servers[_is_official][_target].client.readStorageObjects(
-                  this.servers[_is_official][_target].session, {
-                  object_ids: [{
-                    collection: 'user_public',
-                    key: 'profile_image',
-                    user_id: this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['id'],
-                  }]
-                }).then(user => {
-                  let targetUser =
-                    this.load_other_user(this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['id'], _is_official, _target);
-                  if (user.objects.length) {
-                    targetUser['img'] = user.objects[0].value['img'];
-                  } else targetUser['img'] = undefined;
-                  this.save_other_user(targetUser, _is_official, _target);
-                });
-                if (!this.channels_orig[_is_official][_target][channel_ids[i]]['update']) {
-                  this.servers[_is_official][_target].client.listChannelMessages(
-                    this.servers[_is_official][_target].session, channel_ids[i], 1, false)
-                    .then(c_msg => {
-                      if (c_msg.messages.length)
-                        this.update_from_channel_msg(c_msg.messages[0], _is_official, _target);
-                    });
-                }
-                break;
-            }
-          }).catch(_e => {
-            this.channels_orig[_is_official][_target][channel_ids[i]]['status'] = 'missing';
-          });
+          );
+          if (!this.channels_orig[_is_official][_target][channel_ids[i]]['cnoti_id'])
+            this.channels_orig[_is_official][_target][channel_ids[i]]['cnoti_id'] = this.get_noti_id();
+          this.channels_orig[_is_official][_target][channel_ids[i]]['color'] = (this.channels_orig[_is_official][_target][channel_ids[i]]['info']['id'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
+          switch (this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['type']) {
+            case 2: // 1:1 채팅
+              this.servers[_is_official][_target].client.readStorageObjects(
+                this.servers[_is_official][_target].session, {
+                object_ids: [{
+                  collection: 'user_public',
+                  key: 'profile_image',
+                  user_id: this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['id'],
+                }]
+              }).then(user => {
+                let targetUser =
+                  this.load_other_user(this.channels_orig[_is_official][_target][channel_ids[i]]['redirect']['id'], _is_official, _target);
+                if (user.objects.length) {
+                  targetUser['img'] = user.objects[0].value['img'];
+                } else targetUser['img'] = undefined;
+                this.save_other_user(targetUser, _is_official, _target);
+              });
+              if (!this.channels_orig[_is_official][_target][channel_ids[i]]['update']) {
+                this.servers[_is_official][_target].client.listChannelMessages(
+                  this.servers[_is_official][_target].session, channel_ids[i], 1, false)
+                  .then(c_msg => {
+                    if (c_msg.messages.length)
+                      this.update_from_channel_msg(c_msg.messages[0], _is_official, _target);
+                  });
+              }
+              break;
+          }
         }
       } catch (e) {
-        // redirect 정보가 누락된 경우 행동 무시
+        this.channels_orig[_is_official][_target][channel_ids[i]]['status'] = 'missing';
       }
-      this.rearrange_channels();
     }
   }
 
@@ -2131,6 +2126,7 @@ export class NakamaService {
       this.servers[_is_official][_target].session,
       this.servers[_is_official][_target].session.user_id)
       .then(targetGroup => {
+        let LastCounter = 0;
         for (let i = 0, j = targetGroup.user_groups.length; i < j; i++) {
           // 업데이트할 그룹이 특정되어있다면 해당 그룹만 업데이트
           if (gid === undefined || gid == targetGroup.user_groups[i].group.id) {
@@ -2161,10 +2157,10 @@ export class NakamaService {
             if (gid && this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] == 'missing')
               this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] = 'online';
             this.load_groups(_is_official, _target, targetGroup.user_groups[i].group.id, true);
-            this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target, undefined, false)
-              .then(_v => {
-                if (j - i - 1 <= 0) this.rearrange_channels();
-              });
+            this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target, undefined, () => {
+              LastCounter++;
+              if (LastCounter == j) this.rearrange_channels();
+            });
           }
         }
         this.save_groups_with_less_info();
@@ -2845,7 +2841,7 @@ export class NakamaService {
    */
   opened_page_info = {};
   /** 채널 정보를 변형한 후 추가하기 */
-  async join_chat_with_modulation(targetId: string, type: number, _is_official: string, _target: string, isNewChannel = false, ReArrangeChannels = true) {
+  async join_chat_with_modulation(targetId: string, type: number, _is_official: string, _target: string, isNewChannel = false, CallBack?: Function) {
     if (!this.channels_orig[_is_official][_target]) this.channels_orig[_is_official][_target] = {};
     let c = await this.servers[_is_official][_target].socket.joinChat(targetId, type, true, false)
     try {
@@ -2874,16 +2870,19 @@ export class NakamaService {
           break;
       }
       await this.add_channel(c, _is_official, _target);
-      if (ReArrangeChannels) this.rearrange_channels();
+      if (!CallBack) this.rearrange_channels();
       if (!this.opened_page_info['channel']
         || this.opened_page_info['channel']['isOfficial'] != _is_official
         || this.opened_page_info['channel']['target'] != _target
         || this.opened_page_info['channel']['id'] != c.id
       ) {
         this.servers[_is_official][_target].client.listChannelMessages(
-          this.servers[_is_official][_target].session, c.id, 1, false).then(msg => {
-            if (msg.messages.length)
-              this.update_from_channel_msg(msg.messages[0], _is_official, _target, isNewChannel);
+          this.servers[_is_official][_target].session, c.id, 1, false).then(async msg => {
+            try {
+              if (msg.messages.length)
+                await this.update_from_channel_msg(msg.messages[0], _is_official, _target, isNewChannel);
+            } catch (e) { }
+            if (CallBack) CallBack();
           }).catch(e => {
             console.error('마지막 메시지 받아서 업데이트 오류: ', e);
           });

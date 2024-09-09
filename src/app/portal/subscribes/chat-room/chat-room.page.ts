@@ -2572,9 +2572,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   ionViewWillLeave() {
     this.nakama.rearrange_channels();
-    if (this.nakama.channels_orig[this.isOfficial][this.target] &&
-      this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']])
+    try {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
+    } catch (e) { }
     this.noti.Current = undefined;
     this.removeShortCutKey();
     window.onfocus = null;
