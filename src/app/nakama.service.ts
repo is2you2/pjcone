@@ -2157,8 +2157,9 @@ export class NakamaService {
             if (gid && this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] == 'missing')
               this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] = 'online';
             this.load_groups(_is_official, _target, targetGroup.user_groups[i].group.id, true);
-            this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target, undefined, () => {
+            this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target, undefined, (channel: any) => {
               LastCounter++;
+              this.count_channel_online_member(channel, _is_official, _target);
               if (LastCounter == j) this.rearrange_channels();
             });
           }
@@ -2206,7 +2207,9 @@ export class NakamaService {
       this.StatusBarChangedCallback();
   }
 
-  /** 채널 상태 검토 */
+  /** 채널 상태 검토
+   * @param p 채널 정보 또는 onchannelpresence 로부터 받음
+   */
   async count_channel_online_member(p: any, _is_official: string, _target: string) {
     let result_status = 'pending';
     try {
@@ -2882,7 +2885,7 @@ export class NakamaService {
               if (msg.messages.length)
                 await this.update_from_channel_msg(msg.messages[0], _is_official, _target, isNewChannel);
             } catch (e) { }
-            if (CallBack) CallBack();
+            if (CallBack) CallBack(c);
           }).catch(e => {
             console.error('마지막 메시지 받아서 업데이트 오류: ', e);
           });
