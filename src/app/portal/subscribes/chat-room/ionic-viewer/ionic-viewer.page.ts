@@ -574,6 +574,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   break;
               }
             }
+            return false;
           }
           const SWIPE_SIZE = 50;
           p.touchEnded = (ev: any) => {
