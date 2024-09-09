@@ -300,6 +300,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let req = await VoiceRecorder.hasAudioRecordingPermission();
           if (req.value) { // 권한 있음
             this.extended_buttons[7].icon = 'stop-circle-outline';
+            this.extended_buttons[7].name = this.lang.text['ChatRoom']['VoiceStop'];
             await VoiceRecorder.startRecording();
             this.p5toast.show({
               text: this.lang.text['ChatRoom']['StartVRecord'],
@@ -312,6 +313,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           blob['type_override'] = data.value.mimeType;
           this.selected_blobFile_callback_act(blob);
           this.extended_buttons[7].icon = 'mic-circle-outline';
+          this.extended_buttons[7].name = this.lang.text['ChatRoom']['Voice'];
         }
       }
     }, { // 8
@@ -765,7 +767,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.ShowGoToBottom = (this.ChatLogs.scrollHeight - 220 > this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) || this.ShowRecentMsg;
       }
     } catch (e) {
-      console.log('채팅 로그 개체 행돋 오류: ', e);
+      console.log('채팅 로그 개체 행동 오류: ', e);
     }
     this.nakama.ChatroomLinkAct = async (c: any, _fileinfo: FileInfo) => {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];

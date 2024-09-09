@@ -161,6 +161,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           let req = await VoiceRecorder.hasAudioRecordingPermission();
           if (req.value) { // 권한 있음
             this.extended_buttons[4].icon = 'stop-circle-outline';
+            this.extended_buttons[4].name = this.lang.text['ChatRoom']['VoiceStop'];
             this.p5toast.show({
               text: this.lang.text['ChatRoom']['StartVRecord'],
             });
@@ -168,6 +169,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           } else { // 권한이 없다면 권한 요청 및 UI 복구
             this.useVoiceRecording = false;
             this.extended_buttons[4].icon = 'mic-circle-outline';
+            this.extended_buttons[4].name = this.lang.text['ChatRoom']['Voice'];
             await VoiceRecorder.requestAudioRecordingPermission();
           }
         } else await this.StopAndSaveVoiceRecording();
@@ -432,6 +434,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 저장소 변경이 가능한지 검토 (원격이면서 작성자가 남이 아닌지 검토) */
   isStoreAtChangable = true;
   async ionViewWillEnter() {
+    VoiceRecorder.getCurrentStatus().then(v => {
+      if (v.status == 'RECORDING') {
+        // 게시물 생성기에서 음성녹음중인 상태로 들어오면 음성녹음을 할 수 없음
+        this.extended_buttons[4].isHide = true;
+      }
+    });
     this.WillLeavePage = false;
     if (this.cont) this.cont.abort();
     this.cont = new AbortController();
