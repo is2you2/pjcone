@@ -284,6 +284,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
       redirect: {
         type: 0,
       },
+      volatile: this.userInput.volatile,
       status: 'online',
       info: {
         ...this.userInput,
