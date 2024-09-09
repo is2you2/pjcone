@@ -76,7 +76,7 @@
               </td>
               <td *ngIf="channel['volatile']" class="server_target">{{'(' + lang.text['AddGroup']['Volatile'] + ')'}}
               </td>
-              <td *ngIf="nakama.showServer" class="server_target">
+              <td *ngIf="nakama.showServer && !channel['volatile']" class="server_target">
                 {{'(' + (channel['local'] ? lang.text['AddGroup']['UseLocalStorage'] : (channel['server']['name'] ||
                 channel['server']['target'])) + ')'}}
               </td>
