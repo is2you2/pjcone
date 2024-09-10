@@ -8,10 +8,10 @@
 </ion-header>
 
 <ion-content>
-  <div *ngIf="WaitingConnect" id="InstantCallCanvasDiv"
+  <div *ngIf="global.WaitingConnect" id="InstantCallCanvasDiv"
     style="position: absolute; width: 100%; height: 100%; overflow: hidden; pointer-events: none;">
   </div>
-  <div *ngIf="!WaitingConnect" style="flex: 0 1 auto;">
+  <div *ngIf="!global.WaitingConnect" style="flex: 0 1 auto;">
     <ion-item *ngIf="ServerList.length">
       <ion-select #InstantCallServer [label]="lang.text['AddGroup']['SelectServer']"
         (ionChange)="SelectAddressTarget($event)" value="local" style="pointer-events: none;">
@@ -40,15 +40,17 @@
       <ion-label class="ion-text-center">{{lang.text['voidDraw']['ConnectToAddress']}}</ion-label>
     </ion-item>
   </div>
-  <ion-item *ngIf="QRCodeAsString && WaitingConnect" button (click)="copy_qr_address()">
+  <ion-item *ngIf="QRCodeAsString && global.WaitingConnect" button (click)="copy_qr_address()">
     <ion-label class="ion-text-center">{{QRCodeAsString}}</ion-label>
   </ion-item>
-  <div *ngIf="WaitingConnect || InitEnd">
+  <div *ngIf="global.WaitingConnect || global.InitEnd">
     <div class="disconnect_info">
       <ion-icon style="width: 60px; height: 60px;" color="medium" name="call-outline"></ion-icon>
       <div>
-        <ion-label *ngIf="!InitEnd" color="medium">{{lang.text['InstantCall']['Connecting']}}</ion-label>
-        <ion-label *ngIf="InitEnd" color="medium">{{lang.text['InstantCall']['Connected']}}</ion-label>
+        <ion-label *ngIf="!global.InitEnd && !global.PeerConnected" color="medium">{{lang.text['InstantCall']['Waiting']}}</ion-label>
+        <ion-label *ngIf="!global.InitEnd && global.PeerConnected"
+          color="medium">{{lang.text['InstantCall']['Connecting']}}</ion-label>
+        <ion-label *ngIf="global.InitEnd" color="medium">{{lang.text['InstantCall']['Connected']}}</ion-label>
       </div>
     </div>
   </div>

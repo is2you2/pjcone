@@ -40,7 +40,6 @@ export class InstantCallPage implements OnInit, OnDestroy {
   Password: string;
   /** 웹소켓 서버 채널 ID */
   ChannelId: string;
-  InstantCallWSClient: WebSocket;
   @ViewChild('InstantCallServer') InstantCallServer: IonSelect;
   ngOnInit() {
     this.ServerList = this.nakama.get_all_online_server();
@@ -61,15 +60,10 @@ export class InstantCallPage implements OnInit, OnDestroy {
         this.LinkToServer(true);
       }
     });
-    this.global.FocusOnPortalEnterAct = () => {
-      if (!this.PageOut && this.CallClosed) this.navCtrl.pop();
-    }
   }
 
   UserInputCustomAddress = '';
   NeedInputCustomAddress = false;
-  /** 웹소켓 서버에 연결한 후 다른 사용자를 기다림 */
-  WaitingConnect = false;
 
   /** 연결 대상 선택 */
   SelectAddressTarget(ev: any) {
@@ -89,8 +83,6 @@ export class InstantCallPage implements OnInit, OnDestroy {
 
   /** 통화를 사설서버로 하는지 여부 */
   isCustomServer = false;
-  /** 연결되었음 */
-  InitEnd = false;
   /** 웹 소켓 서버에 연결하기
    * @param [autoLink=false] 빠른 진입으로 실행되는지 여부
    */
@@ -116,37 +108,39 @@ export class InstantCallPage implements OnInit, OnDestroy {
       });
     let protocol = sep_protocol.pop();
     if (!protocol) protocol = this.global.checkProtocolFromAddress(address_only) ? 'wss' : 'ws';
-    this.InstantCallWSClient = new WebSocket(`${protocol}://${address_only}:12013`);
+    this.global.InstantCallWSClient = new WebSocket(`${protocol}://${address_only}:12013`);
     /** 웹소켓에서 사용하는 내 아이디 기억 */
     let uuid: string;
-    this.InstantCallWSClient.onopen = async () => {
-      this.WaitingConnect = true;
+    this.global.InstantCallWSClient.onopen = async () => {
+      this.global.WaitingConnect = true;
       this.p5toast.show({
         text: this.lang.text['InstantCall']['Waiting'],
       });
       if (this.ChannelId) { // 준비된 채널로 진입
-        this.InstantCallWSClient.send(JSON.stringify({
+        this.global.InstantCallSend(JSON.stringify({
           type: 'join',
           channel: this.ChannelId,
         }));
         await new Promise((done) => setTimeout(done, 40));
+        this.global.PeerConnected = true;
         this.webrtc.initialize('audio')
           .then(() => {
             this.webrtc.HangUpCallBack = () => {
-              this.InstantCallWSClient.close();
+              if (this.global.InstantCallWSClient) this.global.InstantCallWSClient.close();
             }
             this.ShowWaiting();
             this.webrtc.CreateOffer();
-            this.InstantCallWSClient.send(JSON.stringify({
+            this.global.PeerConnected = true;
+            this.global.InstantCallSend(JSON.stringify({
               type: 'init_req',
             }));
           });
       } else // 새 채널 생성하기
-        this.InstantCallWSClient.send(JSON.stringify({
+        this.global.InstantCallSend(JSON.stringify({
           type: 'init',
         }));
     }
-    this.InstantCallWSClient.onmessage = (ev: any) => {
+    this.global.InstantCallWSClient.onmessage = (ev: any) => {
       let json = JSON.parse(ev['data']);
       /** 서버측에서 나의 uuid 검토하여 받기 */
       // 내가 보낸 하울링 메시지 무시
@@ -155,11 +149,11 @@ export class InstantCallPage implements OnInit, OnDestroy {
       } else if (uuid == json['uid']) return;
       switch (json.type) {
         case 'leave':
-          this.InstantCallWSClient.close();
+          this.global.InstantCallWSClient.close();
           break;
         // 채널 아이디 생성 후 수신
         case 'init_id':
-          this.InstantCallWSClient.send(JSON.stringify({
+          this.global.InstantCallSend(JSON.stringify({
             type: 'join',
             channel: json.id,
           }));
@@ -167,15 +161,16 @@ export class InstantCallPage implements OnInit, OnDestroy {
           this.QRCodeAsString = `${SERVER_PATH_ROOT}pjcone_pwa/?instc=${this.UserInputCustomAddress},${this.ChannelId},${this.Port || ''},${this.Username || ''},${this.Password || ''}`;
           break;
         case 'init_req':
+          this.global.PeerConnected = true;
           this.webrtc.initialize('audio')
             .then(async () => {
               this.webrtc.HangUpCallBack = () => {
-                if (this.InstantCallWSClient) this.InstantCallWSClient.close();
+                if (this.global.InstantCallWSClient) this.global.InstantCallWSClient.close();
               }
               this.ShowWaiting();
               this.webrtc.CreateOffer();
               await new Promise((done) => setTimeout(done, 40));
-              this.InstantCallWSClient.send(JSON.stringify({
+              this.global.InstantCallSend(JSON.stringify({
                 type: 'socket_react',
                 channel: this.ChannelId,
                 act: 'WEBRTC_INIT_REQ_SIGNAL',
@@ -188,57 +183,59 @@ export class InstantCallPage implements OnInit, OnDestroy {
               this.nakama.socket_reactive[json['act']](json['data_str']);
               if (json['data_str'] == 'EOL')
                 this.webrtc.CreateAnswer({
-                  client: this.InstantCallWSClient,
+                  client: this.global.InstantCallWSClient,
                   channel: this.ChannelId,
                 });
               break;
             case 'WEBRTC_ICE_CANDIDATES':
               this.nakama.socket_reactive[json['act']](json['data_str'], {
-                client: this.InstantCallWSClient,
+                client: this.global.InstantCallWSClient,
                 channel: this.ChannelId,
               });
-              this.InstantCallWSClient.send(JSON.stringify({
+              this.global.InstantCallSend(JSON.stringify({
                 type: 'init_end',
                 channel: this.ChannelId,
               }));
-              this.InitEnd = true;
+              this.global.InitEnd = true;
               break;
             case 'WEBRTC_INIT_REQ_SIGNAL':
               this.nakama.socket_reactive[json['act']]({
-                client: this.InstantCallWSClient,
+                client: this.global.InstantCallWSClient,
                 channel: this.ChannelId,
               });
               break;
             case 'WEBRTC_RECEIVE_ANSWER':
               this.nakama.socket_reactive[json['act']](json['data_str'], {
-                client: this.InstantCallWSClient,
+                client: this.global.InstantCallWSClient,
                 channel: this.ChannelId,
               });
               break;
           }
           break;
         case 'init_end':
-          this.InitEnd = true;
+          this.global.InitEnd = true;
           break;
       }
     }
-    this.InstantCallWSClient.onerror = (e: any) => {
+    this.global.InstantCallWSClient.onerror = (e: any) => {
       console.error('즉석 통화 웹소켓 오류: ', e);
-      this.InstantCallWSClient.close();
+      this.global.InstantCallWSClient.close();
     }
-    this.InstantCallWSClient.onclose = () => {
+    this.global.InstantCallWSClient.onclose = () => {
       this.p5toast.show({
         text: this.lang.text['InstantCall']['CallEnd'],
       });
-      this.WaitingConnect = false;
-      this.InstantCallWSClient.onopen = null;
-      this.InstantCallWSClient.onclose = null;
-      this.InstantCallWSClient.onmessage = null;
-      this.InstantCallWSClient.onerror = null;
-      this.InstantCallWSClient = undefined;
+      this.global.WaitingConnect = false;
+      this.global.InitEnd = false;
+      this.global.PeerConnected = false;
+      this.global.InstantCallWSClient.onopen = null;
+      this.global.InstantCallWSClient.onclose = null;
+      this.global.InstantCallWSClient.onmessage = null;
+      this.global.InstantCallWSClient.onerror = null;
+      this.global.InstantCallWSClient = undefined;
       this.webrtc.close_webrtc(false);
       this.CallClosed = true;
-      if (!this.PageOut && this.global.FocusOnPortal) this.navCtrl.pop();
+      if (!this.PageOut) this.navCtrl.pop();
     }
   }
 
@@ -309,7 +306,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
             bubbles.splice(i, 1);
         }
         p.pop();
-        if (this.InitEnd) scaleRatio -= .02;
+        if (this.global.InitEnd) scaleRatio -= .02;
         if (scaleRatio <= 0) p.remove();
       }
       p.windowResized = () => {
@@ -340,9 +337,8 @@ export class InstantCallPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.p5canvas) this.p5canvas.remove();
-    if (this.InstantCallWSClient) this.InstantCallWSClient.close();
     if (this.isCustomServer) this.nakama.RemoveWebRTCServer(this.UserInputCustomAddress.split('://').pop());
+    if (!this.global.InitEnd && !this.global.PeerConnected && this.global.InstantCallWSClient) this.global.InstantCallWSClient.close();
     this.route.queryParams['unsubscribe']();
-    this.global.FocusOnPortalEnterAct = undefined;
   }
 }

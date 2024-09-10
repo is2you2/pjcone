@@ -132,8 +132,6 @@ export class GlobalActService {
 
   /** 포털 탭 페이지를 보고있는지, 페이지를 벗어났는지 추적 */
   FocusOnPortal = true;
-  /** 포털 화면 진입시 행동 (WillEnter) */
-  FocusOnPortalEnterAct: Function;
   /** 포털 화면을 벗어날 때 행동 (WillLeave) */
   FocusOnPortalLeaveAct: Function;
 
@@ -1446,5 +1444,18 @@ export class GlobalActService {
       });
       throw e;
     }
+  }
+  /** 즉석 통화 교신에 사용되는 웹소켓 클라이언트 */
+  InstantCallWSClient: WebSocket;
+  /** 즉석 통화에서 웹소켓 서버에 연결한 후 다른 사용자를 기다림 */
+  WaitingConnect = false;
+  /** 상대방과 통화가 연결되었음 */
+  InitEnd = false;
+  /** 상대방이 교신 준비를 위해 들어온 경우 */
+  PeerConnected = false;
+  /** 즉석 통화 정보 교신을 위해 메시지 보내기 */
+  InstantCallSend(msg: string) {
+    if (this.InstantCallWSClient && this.InstantCallWSClient.readyState == this.InstantCallWSClient.OPEN)
+      this.InstantCallWSClient.send(msg);
   }
 }

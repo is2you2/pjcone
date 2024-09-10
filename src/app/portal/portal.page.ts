@@ -30,8 +30,6 @@ export class PortalPage implements OnInit {
 
   ionViewWillEnter() {
     this.global.FocusOnPortal = true;
-    if (this.global.FocusOnPortalEnterAct)
-      this.global.FocusOnPortalEnterAct();
   }
 
   ionViewDidEnter() {

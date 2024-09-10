@@ -129,21 +129,23 @@ export class WebrtcService {
         await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
           this.CurrentMatch.match_id, MatchOpCode.WEBRTC_REPLY_INIT_SIGNAL, encodeURIComponent('EOL'));
       } else {
-        for (let i = 0, j = part.length; i < j; i++) {
+        for (let i = 0, j = part.length; i < j; i++)
+          if (_target['client'] && _target['client'].readyState == _target['client'].OPEN) {
+            _target['client'].send(JSON.stringify({
+              type: 'socket_react',
+              channel: _target['channel'],
+              act: 'WEBRTC_REPLY_INIT_SIGNAL',
+              data_str: part[i],
+            }));
+            await new Promise((done) => setTimeout(done, 40));
+          }
+        if (_target['client'] && _target['client'].readyState == _target['client'].OPEN)
           _target['client'].send(JSON.stringify({
             type: 'socket_react',
             channel: _target['channel'],
             act: 'WEBRTC_REPLY_INIT_SIGNAL',
-            data_str: part[i],
+            data_str: 'EOL',
           }));
-          await new Promise((done) => setTimeout(done, 40));
-        }
-        _target['client'].send(JSON.stringify({
-          type: 'socket_react',
-          channel: _target['channel'],
-          act: 'WEBRTC_REPLY_INIT_SIGNAL',
-          data_str: 'EOL',
-        }));
       }
     }
     this.nakama.socket_reactive['WEBRTC_REPLY_INIT_SIGNAL'] = (data_str: string) => {
@@ -628,12 +630,13 @@ export class WebrtcService {
             this.CurrentMatch.match_id, MatchOpCode.WEBRTC_ICE_CANDIDATES, encodeURIComponent(JSON.stringify(this.IceCandidates[i])));
       } else {
         for (let i = 0, j = this.IceCandidates.length; i < j; i++) {
-          _target['client'].send(JSON.stringify({
-            type: 'socket_react',
-            act: 'WEBRTC_ICE_CANDIDATES',
-            channel: _target['channel'],
-            data_str: JSON.stringify(this.IceCandidates[i]),
-          }));
+          if (_target['client'] && _target['client'].readyState == _target['client'].OPEN)
+            _target['client'].send(JSON.stringify({
+              type: 'socket_react',
+              act: 'WEBRTC_ICE_CANDIDATES',
+              channel: _target['channel'],
+              data_str: JSON.stringify(this.IceCandidates[i]),
+            }));
           await new Promise((done) => setTimeout(done, 40));
         }
       }
@@ -704,21 +707,23 @@ export class WebrtcService {
       await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
         this.nakama.self_match[this.isOfficial][this.target].match_id, MatchOpCode.WEBRTC_RECEIVED_CALL_SELF, encodeURIComponent(''));
     } else {
-      for (let i = 0, j = part.length; i < j; i++) {
+      for (let i = 0, j = part.length; i < j; i++)
+        if (_target.client && _target.client.readyState == _target.client.OPEN) {
+          _target.client.send(JSON.stringify({
+            type: 'socket_react',
+            act: 'WEBRTC_RECEIVE_ANSWER',
+            channel: _target.channel,
+            data_str: part[i],
+          }));
+          await new Promise((done) => setTimeout(done, 40));
+        }
+      if (_target.client && _target.client.readyState == _target.client.OPEN)
         _target.client.send(JSON.stringify({
           type: 'socket_react',
           act: 'WEBRTC_RECEIVE_ANSWER',
           channel: _target.channel,
-          data_str: part[i],
+          data_str: 'EOL',
         }));
-        await new Promise((done) => setTimeout(done, 40));
-      }
-      _target.client.send(JSON.stringify({
-        type: 'socket_react',
-        act: 'WEBRTC_RECEIVE_ANSWER',
-        channel: _target.channel,
-        data_str: 'EOL',
-      }));
     }
     // 스스로에게 통화 수신됨을 알림 (self_match)
     this.JoinInited = true;
@@ -736,15 +741,16 @@ export class WebrtcService {
         await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
           this.CurrentMatch.match_id, MatchOpCode.WEBRTC_ICE_CANDIDATES, encodeURIComponent(JSON.stringify(this.IceCandidates[i])));
     } else {
-      for (let i = 0, j = this.IceCandidates.length; i < j; i++) {
-        _target['client'].send(JSON.stringify({
-          type: 'socket_react',
-          channel: _target['channel'],
-          act: 'WEBRTC_ICE_CANDIDATES',
-          data_str: JSON.stringify(this.IceCandidates[i]),
-        }));
-        await new Promise((done) => setTimeout(done, 40));
-      }
+      for (let i = 0, j = this.IceCandidates.length; i < j; i++)
+        if (_target['client'] && _target['client'].readyState == _target['client'].OPEN) {
+          _target['client'].send(JSON.stringify({
+            type: 'socket_react',
+            channel: _target['channel'],
+            act: 'WEBRTC_ICE_CANDIDATES',
+            data_str: JSON.stringify(this.IceCandidates[i]),
+          }));
+          await new Promise((done) => setTimeout(done, 40));
+        }
     }
     this.IceCandidates.length = 0;
   }
