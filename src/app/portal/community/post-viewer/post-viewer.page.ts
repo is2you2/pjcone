@@ -206,7 +206,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
               if (res.ok) targetAddress = `${extract}:${is_https ? 8443 : 8080}${window['sub_path']}?postViewer=${this.PostInfo['OutSource']}`;
               else throw '주소 없음';
             } catch (e) {
-              targetAddress = `${SERVER_PATH_ROOT}godotchat_pwa/?postViewer=${this.PostInfo['OutSource']}`;
+              targetAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?postViewer=${this.PostInfo['OutSource']}`;
             }
             this.global.WriteValueToClipboard('text/plain', targetAddress);
           }

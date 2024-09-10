@@ -130,7 +130,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
 
   async open_url_link(url: string) {
     // 근데 주소가 메인 주소라면 QR행동으로 처리하기
-    if (url.indexOf('https://is2you2.github.io/godotchat_pwa/?') == 0) {
+    if (url.indexOf('https://is2you2.github.io/pjcone_pwa/?') == 0) {
       let init = this.global.CatchGETs(url) || {};
       this.global.initialize();
       try {
@@ -366,7 +366,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       if (res.ok) header_address = `${extract}:${NoSecure ? 8080 : 8443}${window['sub_path']}`;
       else throw '주소 없음';
     } catch (e) {
-      header_address = `${SERVER_PATH_ROOT}godotchat_pwa/`;
+      header_address = `${SERVER_PATH_ROOT}pjcone_pwa/`;
     }
     this.QRCodeTargetString = `${header_address}?group_dedi=${this.client.cacheAddress},${this.client.JoinedChannel || 'public'}`;
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeTargetString);
@@ -927,7 +927,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   }
 
   ionViewWillLeave() {
-    this.title.setTitle('GodotChat');
+    this.title.setTitle('Project: Cone');
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', 'assets/icon/favicon.png');
     this.noti.Current = undefined;

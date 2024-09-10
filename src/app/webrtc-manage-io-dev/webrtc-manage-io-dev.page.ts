@@ -60,7 +60,7 @@ export class WebrtcManageIoDevPage implements OnInit {
       let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
       this.ServerInfos = JSON.parse(list);
       for (let i = 0, j = this.ServerInfos.length; i < j; i++) {
-        let address = `${SERVER_PATH_ROOT}godotchat_pwa/?rtcserver=[${this.ServerInfos[i].urls}],${this.ServerInfos[i].username},${this.ServerInfos[i].credential}`;
+        let address = `${SERVER_PATH_ROOT}pjcone_pwa/?rtcserver=[${this.ServerInfos[i].urls}],${this.ServerInfos[i].username},${this.ServerInfos[i].credential}`;
         let QRCode = this.global.readasQRCodeFromString(address);
         this.QRCodes[i] = QRCode;
       }
@@ -124,7 +124,7 @@ export class WebrtcManageIoDevPage implements OnInit {
       return;
     }
     await this.nakama.SaveWebRTCServer(this.userInput);
-    let address = `${SERVER_PATH_ROOT}godotchat_pwa/?rtcserver=[${this.userInput.urls}],${this.userInput.username},${this.userInput.credential}`;
+    let address = `${SERVER_PATH_ROOT}pjcone_pwa/?rtcserver=[${this.userInput.urls}],${this.userInput.username},${this.userInput.credential}`;
     let QRCode = this.global.readasQRCodeFromString(address);
     this.QRCodes.push(QRCode);
     this.ServerInfos.push(this.userInput);
@@ -139,7 +139,7 @@ export class WebrtcManageIoDevPage implements OnInit {
   }
 
   copy_info(index: number) {
-    let address = `${SERVER_PATH_ROOT}godotchat_pwa/?rtcserver=[${this.ServerInfos[index].urls}],${this.ServerInfos[index].username},${this.ServerInfos[index].credential}`;
+    let address = `${SERVER_PATH_ROOT}pjcone_pwa/?rtcserver=[${this.ServerInfos[index].urls}],${this.ServerInfos[index].username},${this.ServerInfos[index].credential}`;
     this.global.WriteValueToClipboard('text/plain', address);
   }
 

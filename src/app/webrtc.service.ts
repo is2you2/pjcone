@@ -87,7 +87,7 @@ export class WebrtcService {
     if (type != 'data' && window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0) {
       // 보안 연결 필수, 웹 페이지로 현재 정보와 함께 던져주기
       let servers = this.nakama.get_all_online_server();
-      let out_link = 'https://is2you2.github.io/godotchat_pwa/';
+      let out_link = 'https://is2you2.github.io/pjcone_pwa/';
       out_link += `?tmp_user=${this.nakama.users.self['email']},${this.nakama.users.self['password']},${this.nakama.users.self['display_name']}`;
       for (let i = 0, j = servers.length; i < j; i++)
         out_link += `&server=${servers[i].info.name || ''},${servers[i].info.address || ''},${servers[i].info.useSSL || ''},${servers[i].info.port || ''},${servers[i].info.key || ''}`;

@@ -164,7 +164,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
             channel: json.id,
           }));
           this.ChannelId = json.id;
-          this.QRCodeAsString = `${SERVER_PATH_ROOT}godotchat_pwa/?instc=${this.UserInputCustomAddress},${this.ChannelId},${this.Port || ''},${this.Username || ''},${this.Password || ''}`;
+          this.QRCodeAsString = `${SERVER_PATH_ROOT}pjcone_pwa/?instc=${this.UserInputCustomAddress},${this.ChannelId},${this.Port || ''},${this.Username || ''},${this.Password || ''}`;
           break;
         case 'init_req':
           this.webrtc.initialize('audio')
