@@ -937,7 +937,7 @@ export class NakamaService {
       });
       // 알고 있는 사용자 정보를 토대로 온라인 여부 검토
       let keys = Object.keys(this.users[_is_official][_target] || {});
-      this.servers[_is_official][_target].client.getUsers(
+      if (keys) this.servers[_is_official][_target].client.getUsers(
         this.servers[_is_official][_target].session, keys)
         .then(v => {
           for (let i = 0, j = v.users.length; i < j; i++)
@@ -945,6 +945,8 @@ export class NakamaService {
           this.redirect_channel(_is_official, _target).then(() => {
             this.get_group_list_from_server(_is_official, _target);
           });
+        }).catch(e => {
+          console.log('사용자 정보 업데이트 실패: ', e);
         });
     });
     await this.SyncTodoCounter(_is_official, _target);
