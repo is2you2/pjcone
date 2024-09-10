@@ -148,6 +148,7 @@ export class NakamaService {
         this.servers[info.isOfficial][info.target] = {};
         this.servers[info.isOfficial][info.target].info = info;
         this.init_server(info);
+        if (this.users.self['online']) this.init_session(info);
       });
     } else { // 저장된 사설서버가 따로 없음, 사용자가 로그인을 원함
       let has_data = location.href.split('?').length > 1;
