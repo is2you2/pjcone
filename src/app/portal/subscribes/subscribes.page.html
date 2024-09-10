@@ -67,18 +67,19 @@
           <table>
             <tr>
               <td>
-                {{channel['info'] ? (channel['info']['name'] ||
-                nakama.usernameOverride[channel['info']['isOfficial']][channel['info']['target']][channel['info']['id']]
-                ||
-                channel['info']['display_name'] ||
-                lang.text['ChatRoom']['noname_chatroom']) : (channel['title'] ||
-                lang.text['ChatRoom']['noname_chatroom'])}}
-              </td>
-              <td *ngIf="channel['volatile']" class="server_target">{{'(' + lang.text['AddGroup']['Volatile'] + ')'}}
-              </td>
-              <td *ngIf="nakama.showServer && !channel['volatile']" class="server_target">
-                {{'(' + (channel['local'] ? lang.text['AddGroup']['UseLocalStorage'] : (channel['server']['name'] ||
-                channel['server']['target'])) + ')'}}
+                <span>
+                  {{channel['info'] ? (channel['info']['name'] ||
+                  nakama.usernameOverride[channel['info']['isOfficial']][channel['info']['target']][channel['info']['id']]
+                  ||
+                  channel['info']['display_name'] ||
+                  lang.text['ChatRoom']['noname_chatroom']) : (channel['title'] ||
+                  lang.text['ChatRoom']['noname_chatroom'])}}
+                </span>
+                <span *ngIf="channel['volatile']" class="server_target">{{'(' + lang.text['AddGroup']['Volatile'] + ')'}}</span>
+                <span *ngIf="nakama.showServer && !channel['volatile']" class="server_target">
+                  {{'(' + (channel['local'] ? lang.text['AddGroup']['UseLocalStorage'] : (channel['server']['name'] ||
+                  channel['server']['target'])) + ')'}}
+                </span>
               </td>
             </tr>
           </table>
