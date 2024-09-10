@@ -1395,7 +1395,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         await this.global.WriteValueToClipboard(text.type, text, msg.content.filename);
         return;
       } catch (e) { // 주소인 경우 주소로 시도
-        text = msg.content.url;
+        text = msg.content.url.replace(' ', '%20');
       }
     }
     try {
