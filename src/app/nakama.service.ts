@@ -949,6 +949,7 @@ export class NakamaService {
     await this.SyncTodoCounter(_is_official, _target);
     this.load_server_todo(_is_official, _target);
     this.RemoteTodoSelfCheck(_is_official, _target);
+    this.rearrange_group_list();
     this.load_posts_counter();
     this.update_notifications(_is_official, _target);
     this.set_group_statusBar('online', _is_official, _target);
@@ -2169,7 +2170,9 @@ export class NakamaService {
       });
   }
 
-  /** 모든 그룹 리스트를 배열로 돌려주기 */
+  /** 모든 그룹 리스트를 배열로 돌려주기  
+   * 이 과정에서 그룹에 등록된 서버를 지정해준다
+   */
   rearrange_group_list(with_deleted = true) {
     let result: Group[] = [];
     let isOfficial = Object.keys(this.groups);
