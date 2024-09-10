@@ -341,11 +341,11 @@ export class AdminToolsPage implements OnInit {
       } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
       let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
       // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-      await this.global.remove_files_from_storage_with_key(target_address, group.id);
+      this.global.remove_files_from_storage_with_key(target_address, group.id);
     } catch (e) { }
     try { // cdn 파일들 일괄 삭제처리
       let target_address = `${server_info.useSSL ? 'https' : 'http'}://${server_info.address}`;
-      await this.global.remove_files_from_storage_with_key(target_address, group.id);
+      this.global.remove_files_from_storage_with_key(target_address, group.id);
     } catch (e) {
       console.log('파일 일괄 삭제 요청 실패: ', e);
     }
@@ -455,10 +455,10 @@ export class AdminToolsPage implements OnInit {
         } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
         let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
         // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-        await this.global.remove_files_from_storage_with_key(target_address, user.user_id);
+        this.global.remove_files_from_storage_with_key(target_address, user.user_id);
       } catch (e) { }
       try { // cdn 파일들 일괄 삭제처리
-        await this.global.remove_files_from_storage_with_key(target_address, user.user_id);
+        this.global.remove_files_from_storage_with_key(target_address, user.user_id);
       } catch (e) {
         console.log('파일 일괄 삭제 요청 실패: ', e);
       }

@@ -2052,7 +2052,7 @@ export class NakamaService {
       if (this.servers[_is_official][_target] && is_creator) {
         try {
           let target_address = `${info.server.useSSL ? 'https' : 'http'}://${info.server.address}`;
-          await this.global.remove_files_from_storage_with_key(target_address, info['id']);
+          this.global.remove_files_from_storage_with_key(target_address, info['id']);
         } catch (e) { }
         let v = await this.servers[_is_official][_target].client.deleteGroup(
           this.servers[_is_official][_target].session, info['id']);
@@ -2088,11 +2088,11 @@ export class NakamaService {
         } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
         let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
         // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-        await this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`);
+        this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`);
       } catch (e) { }
       try { // cdn 파일 중 내 파일들 삭제
         let target_address = `${info.server.useSSL ? 'https' : 'http'}://${info.server.address}`;
-        await this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`);
+        this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`);
       } catch (e) { }
     }
     try { // 그룹 이미지 삭제
@@ -2275,7 +2275,7 @@ export class NakamaService {
       let my_uid = this.servers[_is_official][_target].session.user_id;
       let target_address = `${server_info.useSSL ? 'https' : 'http'}://${server_info.address}`;
       try { // cdn 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
-        await this.global.remove_files_from_storage_with_key(target_address, my_uid);
+        this.global.remove_files_from_storage_with_key(target_address, my_uid);
       } catch (e) { }
       try { // FFS 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
         let fallback = localStorage.getItem('fallback_fs');
@@ -2288,7 +2288,7 @@ export class NakamaService {
         } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
         let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
         // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-        await this.global.remove_files_from_storage_with_key(target_address, my_uid);
+        this.global.remove_files_from_storage_with_key(target_address, my_uid);
       } catch (e) { }
       this.servers[_is_official][_target].client.rpc(
         this.servers[_is_official][_target].session,

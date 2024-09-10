@@ -661,6 +661,7 @@ export class GlobalActService {
       if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
       await fetch(`${target_address}:9001/remove/${target_file_name}`, { method: "POST" });
     } catch (e) {
+      console.log('remove_file_from_storage: ', e);
       throw e;
     }
   }
@@ -671,9 +672,14 @@ export class GlobalActService {
    * @param target_id 인덱스 키 값
    */
   async remove_files_from_storage_with_key(target_address: string, target_id: string) {
-    let lastIndex = target_address.lastIndexOf(':');
-    if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
-    await fetch(`${target_address}:9001/remove_key/${target_id}`, { method: "POST" });
+    try {
+      let lastIndex = target_address.lastIndexOf(':');
+      if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
+      await fetch(`${target_address}:9001/remove_key/${target_id}`, { method: "POST" });
+    } catch (e) {
+      console.log('remove_files_from_storage_with_key: ', e);
+      throw e;
+    }
   }
 
   /** 사용자 지정 서버에 업로드 시도 */
