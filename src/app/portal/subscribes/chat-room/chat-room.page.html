@@ -1,11 +1,14 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>{{nakama.usernameOverride[info['info']['isOfficial']][info['info']['target']][info['info']['id']]
+    <ion-title>
+      {{nakama.usernameOverride[info['info']['isOfficial']][info['info']['target']][info['info']['id']]
       || info['title'] ||
       lang.text['ChatRoom']['noname_chatroom']}}</ion-title>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="portal/subscribes"></ion-back-button>
     </ion-buttons>
+    <ion-icon *ngIf="info['volatile']" slot="start" name="flame-outline" class="top_icon"
+      style="cursor: initial; padding-right: initial; margin-right: -8px;"></ion-icon>
     <ion-icon *ngIf="!info['HideAutoThumbnail']" class="top_icon" slot="end" name="eye-outline"
       (click)="toggle_thumbnail()"></ion-icon>
     <ion-icon *ngIf="info['HideAutoThumbnail']" class="top_icon" slot="end" name="eye-off-outline"
