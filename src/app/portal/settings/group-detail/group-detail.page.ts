@@ -156,14 +156,14 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     if (this.has_admin) { // 방장인 경우
       if (this.info.img) {
         this.info.img = undefined;
-        this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.deleteStorageObjects(
-          this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, {
+        this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
+          this.nakama.servers[this.isOfficial][this.target].session, {
           object_ids: [{
             collection: 'group_public',
             key: `group_${this.info.id}`,
           }],
         }).then(_info => {
-          this.indexed.removeFileFromUserPath(`servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
+          this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info['id']}.img`);
         });
       } else try {
         let clipboard = await this.global.GetValueFromClipboard();
@@ -191,8 +191,8 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   }
 
   announce_update_group_image(uri: string) {
-    this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.writeStorageObjects(
-      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, [{
+    this.nakama.servers[this.isOfficial][this.target].client.writeStorageObjects(
+      this.nakama.servers[this.isOfficial][this.target].session, [{
         collection: 'group_public',
         key: `group_${this.info.id}`,
         value: { img: uri },
@@ -200,7 +200,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         permission_write: 1,
       }]
     ).then(_info => {
-      this.indexed.saveTextFileToUserPath(JSON.stringify(uri), `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
+      this.indexed.saveTextFileToUserPath(JSON.stringify(uri), `servers/${this.isOfficial}/${this.target}/groups/${this.info['id']}.img`);
     });
   }
 
@@ -244,16 +244,16 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   async remove_group() {
     this.need_edit = false;
     try {
-      if (this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']]) { // 서버가 아직 있다면
+      if (this.nakama.servers[this.isOfficial][this.target]) { // 서버가 아직 있다면
         // 그룹 생성자가 나라면
-        if (this.info['creator_id'] == this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session.user_id) {
+        if (this.info['creator_id'] == this.nakama.servers[this.isOfficial][this.target].session.user_id) {
           if (this.info['status'] == 'online')
-            this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].socket.writeChatMessage(
+            this.nakama.servers[this.isOfficial][this.target].socket.writeChatMessage(
               this.info['channel_id'], {
               gupdate: 'remove',
             }).then(async _m => {
-              let self = await this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.getAccount(
-                this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session);
+              let self = await this.nakama.servers[this.isOfficial][this.target].client.getAccount(
+                this.nakama.servers[this.isOfficial][this.target].session);
               let user_metadata = JSON.parse(self.user.metadata);
               for (let i = 0, j = user_metadata['is_manager'].length; i < j; i++)
                 if (user_metadata['is_manager'][i] == this.info.id) {
@@ -262,10 +262,10 @@ export class GroupDetailPage implements OnInit, OnDestroy {
                 }
               if (!user_metadata['is_manager'].length) delete user_metadata['is_manager'];
               try {
-                await this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.rpc(
-                  this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session,
+                await this.nakama.servers[this.isOfficial][this.target].client.rpc(
+                  this.nakama.servers[this.isOfficial][this.target].session,
                   'update_user_metadata_fn', {
-                  user_id: this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session.user_id,
+                  user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
                   metadata: user_metadata,
                 });
               } catch (e) {
@@ -288,6 +288,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
 
   /** 삭제 알림 그 후에 */
   async after_remove_group() {
+    this.RemoveGroupFilesFromServer(`${this.info['id']}`);
     this.leave_channel();
     this.navCtrl.pop();
   }
@@ -295,16 +296,16 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   /** 그룹 편집사항이 있는지, 그래서 편집해야하는지 여부 검토 */
   need_edit = false;
   edit_group() {
-    if (this.statusBar.groupServer[this.info['server']['isOfficial']][this.info['server']['target']] == 'online' && this.info['status'] != 'missing' && this.has_admin)
-      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.updateGroup(
-        this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session,
+    if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online' && this.info['status'] != 'missing' && this.has_admin)
+      this.nakama.servers[this.isOfficial][this.target].client.updateGroup(
+        this.nakama.servers[this.isOfficial][this.target].session,
         this.info['id'], {
         name: this.info['name'],
         lang_tag: this.info['lang_tag'],
         description: this.info['description'],
         open: this.info['open'],
       });
-    this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']] = this.info;
+    this.nakama.groups[this.isOfficial][this.target][this.info['id']] = this.info;
     this.nakama.save_groups_with_less_info();
   }
 
@@ -315,8 +316,8 @@ export class GroupDetailPage implements OnInit, OnDestroy {
       this.lock_modal_open = true;
       if (userInfo['is_me']) {
         this.nakama.open_profile_page({
-          isOfficial: this.info['server']['isOfficial'],
-          target: this.info['server']['target'],
+          isOfficial: this.isOfficial,
+          target: this.target,
         });
         this.lock_modal_open = false;
       } else {
@@ -337,50 +338,54 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     if (this.info['status'] == 'online')
       this.after_leave_group(() => {
         this.leave_channel();
-        this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']]['status'] = 'missing';
+        this.nakama.groups[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
         this.nakama.save_groups_with_less_info(() => this.navCtrl.pop());
       });
     else if (this.info['status'] == 'pending')
       this.after_leave_group(() => {
-        this.nakama.groups[this.info['server']['isOfficial']][this.info['server']['target']][this.info['id']]['status'] = 'missing';
+        this.nakama.groups[this.isOfficial][this.target][this.info['id']]['status'] = 'missing';
         this.nakama.save_groups_with_less_info(() => this.navCtrl.pop());
       });
   }
 
   /** 그룹 나가기 행동 */
-  after_leave_group(_CallBack = () => console.warn('after_leave_group_announce Func Null')) {
-    this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].client.leaveGroup(
-      this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].session, this.info['id'],
-    ).then(async v => {
-      if (v) _CallBack();
-      this.nakama.remove_channel_files(this.info['server']['isOfficial'], this.info['server']['target'], this.info['channel_id']);
-      let server_info = this.nakama.servers[this.info['server']['isOfficial']][this.info['server']['target']].info;
-      try { // FFS 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
-        let fallback = localStorage.getItem('fallback_fs');
-        if (!fallback) throw '사용자 지정 서버 없음';
-        let split_fullAddress = fallback.split('://');
-        let address = split_fullAddress.pop().split(':');
-        let protocol = split_fullAddress.pop();
-        if (protocol) {
-          protocol += ':';
-        } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
-        let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
-        // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-        this.global.remove_files_from_storage_with_key(target_address, `${this.info['id']}_${this.nakama.servers[server_info.isOfficial][server_info.target].session.user_id}`);
-      } catch (e) { }
-      try { // cdn 파일들 일괄 삭제처리
-        let target_address = `${server_info.useSSL ? 'https' : 'http'}://${server_info.address}`;
-        this.global.remove_files_from_storage_with_key(target_address,
-          `${this.info['id']}_${this.nakama.servers[server_info.isOfficial][server_info.target].session.user_id}`);
-      } catch (e) { }
-    });
+  async after_leave_group(_CallBack = () => { }) {
+    try {
+      await this.nakama.servers[this.isOfficial][this.target].client.leaveGroup(
+        this.nakama.servers[this.isOfficial][this.target].session, this.info['id']);
+    } catch (e) { }
+    _CallBack();
+    this.RemoveGroupFilesFromServer(`${this.info['id']}_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`);
+  }
+
+  /** 서버에 업로드한 파일 삭제하기 */
+  RemoveGroupFilesFromServer(target_key: string) {
+    this.nakama.remove_channel_files(this.isOfficial, this.target, this.info['channel_id']);
+    let server_info = this.nakama.servers[this.isOfficial][this.target].info;
+    try { // FFS 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
+      let fallback = localStorage.getItem('fallback_fs');
+      if (!fallback) throw '사용자 지정 서버 없음';
+      let split_fullAddress = fallback.split('://');
+      let address = split_fullAddress.pop().split(':');
+      let protocol = split_fullAddress.pop();
+      if (protocol) {
+        protocol += ':';
+      } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
+      let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
+      // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
+      this.global.remove_files_from_storage_with_key(target_address, target_key);
+    } catch (e) { }
+    try { // cdn 파일들 일괄 삭제처리
+      let target_address = `${server_info.useSSL ? 'https' : 'http'}://${server_info.address}`;
+      this.global.remove_files_from_storage_with_key(target_address, target_key);
+    } catch (e) { }
   }
 
   /** 그룹 채널에서 나오기 */
   leave_channel() {
     try {
-      if (this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] != 'missing')
-        this.nakama.channels_orig[this.info['server']['isOfficial']][this.info['server']['target']][this.info['channel_id']]['status'] = 'missing';
+      if (this.nakama.channels_orig[this.isOfficial][this.target][this.info['channel_id']]['status'] != 'missing')
+        this.nakama.channels_orig[this.isOfficial][this.target][this.info['channel_id']]['status'] = 'missing';
     } catch (e) { }
   }
 
