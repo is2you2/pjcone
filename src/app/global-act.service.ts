@@ -149,6 +149,7 @@ export class GlobalActService {
         p['KeyShortCut'] = {};
       }
       p.keyPressed = (ev) => {
+        if (!p['KeyShortCut']) return;
         switch (ev['code']) {
           case 'Backquote':
             if (p['KeyShortCut']['Backquote'])
