@@ -7,6 +7,10 @@ const routes: Routes = [
   {
     path: '',
     component: ArcadePage
+  },
+  {
+    path: 'instant-call',
+    loadChildren: () => import('./instant-call/instant-call.module').then(m => m.InstantCallPageModule)
   }
 ];
 
@@ -14,4 +18,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class ArcadePageRoutingModule {}
+export class ArcadePageRoutingModule { }

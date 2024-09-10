@@ -52,7 +52,7 @@ const routes: Routes = [
   },
   {
     path: 'instant-call',
-    loadChildren: () => import('./portal/subscribes/instant-call/instant-call.module').then(m => m.InstantCallPageModule)
+    loadChildren: () => import('./portal/arcade/instant-call/instant-call.module').then(m => m.InstantCallPageModule)
   },
   {
     path: 'add-group',

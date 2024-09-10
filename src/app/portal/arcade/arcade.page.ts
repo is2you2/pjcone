@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { NavController, iosTransitionAnimation } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
+import { MiniranchatClientService } from 'src/app/miniranchat-client.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 
@@ -14,6 +16,8 @@ export class ArcadePage implements OnInit {
     public lang: LanguageSettingService,
     public statusBar: StatusManageService,
     public nakama: NakamaService,
+    private navCtrl: NavController,
+    private client: MiniranchatClientService,
   ) { }
 
   /** 아케이드 정보 수집 */
@@ -43,5 +47,20 @@ export class ArcadePage implements OnInit {
       }
     }
     this.ArcadeList = TmpList;
+  }
+
+  /** 익명성 그룹 채널에 참가하기 */
+  JoinSmallTalk() {
+    if (this.statusBar.settings['dedicated_groupchat'] != 'online'
+      && this.statusBar.settings['dedicated_groupchat'] != 'certified')
+      this.statusBar.settings['dedicated_groupchat'] = 'pending';
+    this.client.RejoinGroupChat();
+  }
+
+  /** 즉석 통화 페이지로 이동 */
+  JoinInstantCall() {
+    this.navCtrl.navigateForward('portal/arcade/instant-call', {
+      animation: iosTransitionAnimation,
+    });
   }
 }

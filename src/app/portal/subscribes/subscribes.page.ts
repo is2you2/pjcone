@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, LoadingController, NavController, iosTransitionAnimation } from '@ionic/angular';
+import { AlertController, LoadingController, NavController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
-import { MiniranchatClientService } from 'src/app/miniranchat-client.service';
 
 @Component({
   selector: 'app-subscribes',
@@ -24,7 +23,6 @@ export class SubscribesPage implements OnInit {
     private indexed: IndexedDBService,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
-    private client: MiniranchatClientService,
   ) { }
 
   ngOnInit() {
@@ -185,21 +183,6 @@ export class SubscribesPage implements OnInit {
   go_to_page(_page: string) {
     this.global.RemoveAllModals(() => {
       this.navCtrl.navigateForward(`portal/settings/${_page}`);
-    });
-  }
-
-  /** 익명성 그룹 채널에 참가하기 */
-  JoinSmallTalk() {
-    if (this.statusBar.settings['dedicated_groupchat'] != 'online'
-      && this.statusBar.settings['dedicated_groupchat'] != 'certified')
-      this.statusBar.settings['dedicated_groupchat'] = 'pending';
-    this.client.RejoinGroupChat();
-  }
-
-  /** 즉석 통화 페이지로 이동 */
-  JoinInstantCall() {
-    this.navCtrl.navigateForward('portal/subscribes/instant-call', {
-      animation: iosTransitionAnimation,
     });
   }
 

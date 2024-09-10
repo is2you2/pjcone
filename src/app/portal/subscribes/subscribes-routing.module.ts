@@ -7,11 +7,7 @@ const routes: Routes = [
   {
     path: '',
     component: SubscribesPage
-  },
-  {
-    path: 'instant-call',
-    loadChildren: () => import('./instant-call/instant-call.module').then( m => m.InstantCallPageModule)
-  },
+  }
 ];
 
 @NgModule({
