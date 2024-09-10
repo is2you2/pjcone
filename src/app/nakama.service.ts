@@ -373,7 +373,6 @@ export class NakamaService {
       this.ChatroomLinkAct(_info, _file);
     else this.global.RemoveAllModals(() => {
       this.navCtrl.navigateForward('chat-room', {
-        animation: mdTransitionAnimation,
         state: {
           info: _info,
           file: _file,
