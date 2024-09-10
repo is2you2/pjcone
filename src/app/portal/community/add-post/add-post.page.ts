@@ -1017,7 +1017,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       }
       /** 바깥 공유가 되어있다면 일단 삭제처리 */
       if (this.userInput.OutSource) {
-        await this.global.remove_file_from_storage(this.userInput.OutSource);
+        this.global.remove_file_from_storage(this.userInput.OutSource);
         this.userInput.OutSource = undefined;
       }
       // 외부링크 사용시 게시물 정보 업로드

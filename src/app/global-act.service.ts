@@ -653,12 +653,16 @@ export class GlobalActService {
 
   /** 해당 주소의 파일 삭제 요청 (cdn 기반 파일) */
   async remove_file_from_storage(url: string) {
-    let sep = url.split('/cdn/');
-    let target_file_name = sep.pop();
-    let target_address = sep.shift();
-    let lastIndex = target_address.lastIndexOf(':');
-    if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
-    await fetch(`${target_address}:9001/remove/${target_file_name}`, { method: "POST" });
+    try {
+      let sep = url.split('/cdn/');
+      let target_file_name = sep.pop();
+      let target_address = sep.shift();
+      let lastIndex = target_address.lastIndexOf(':');
+      if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
+      await fetch(`${target_address}:9001/remove/${target_file_name}`, { method: "POST" });
+    } catch (e) {
+      throw e;
+    }
   }
 
   /** 해당 키워드가 포함된 모든 파일 삭제 요청 (cdn 기반 파일)  

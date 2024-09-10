@@ -1408,7 +1408,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             if (!received_json.attach[i]['exist'] ||
               (received_json.attach[i]['exist'] && !this.userInput.attach[received_json.attach[i]['index']])) {
               if (received_json.attach[i]['url'])
-                await this.global.remove_file_from_storage(received_json.attach[i]['url']);
+                this.global.remove_file_from_storage(received_json.attach[i]['url']);
               else await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
             }
           }
@@ -1507,7 +1507,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         if (received_json['attach'])
           for (let i = 0, j = received_json.attach.length; i < j; i++) {
             if (received_json.attach[i]['url'])
-              await this.global.remove_file_from_storage(received_json.attach[i]['url']);
+              this.global.remove_file_from_storage(received_json.attach[i]['url']);
             else await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
           }
       }
@@ -1555,7 +1555,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               if (!received_json.attach[i]['exist'] ||
                 (received_json.attach[i]['exist'] && !this.userInput.attach[received_json.attach[i]['index']]))
                 if (received_json.attach[i]['url']) {
-                  await this.global.remove_file_from_storage(received_json.attach[i]['url']);
+                  this.global.remove_file_from_storage(received_json.attach[i]['url']);
                 } else try {
                   await this.nakama.sync_remove_file(received_json.attach[i]['path'],
                     this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');

@@ -1194,8 +1194,7 @@ export class NakamaService {
     }
     if (targetInfo.attach && targetInfo.attach.length)
       for (let i = 0, j = targetInfo.attach.length; i < j; i++) // 로컬 FFS 사용을 대비하여 중복 처리
-        if (targetInfo.attach[i].url)
-          await this.global.remove_file_from_storage(targetInfo.attach[i].url);
+        if (targetInfo.attach[i].url) this.global.remove_file_from_storage(targetInfo.attach[i].url);
     if (targetInfo.remote) {
       try { // 원격 할 일인 경우 원격 저장소에서 삭제
         if (!this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target])
@@ -1213,7 +1212,7 @@ export class NakamaService {
           if (targetInfo.attach)
             for (let i = 0, j = targetInfo.attach.length; i < j; i++)
               if (targetInfo.attach[i].url) {
-                await this.global.remove_file_from_storage(targetInfo.attach[i].url);
+                this.global.remove_file_from_storage(targetInfo.attach[i].url);
               } else await this.sync_remove_file(targetInfo.attach[i].path, isOfficial, target, 'todo_attach');
           if (isDelete) {
             await this.servers[isOfficial][target]
@@ -3082,13 +3081,13 @@ export class NakamaService {
       await this.indexed.removeFileFromUserPath(list[i]);
     }
     // 외부링크 처리된 게시물 정보 삭제
-    if (info['OutSource']) await this.global.remove_file_from_storage(info['OutSource']);
+    if (info['OutSource']) this.global.remove_file_from_storage(info['OutSource']);
     // 첨부파일 삭제
     if (info['attachments']) for (let i = 0, j = info['attachments'].length; i < j; i++)
       try {
         if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
         if (info['attachments'][i].url) {
-          await this.global.remove_file_from_storage(info['attachments'][i].url);
+          this.global.remove_file_from_storage(info['attachments'][i].url);
         } else {
           try {
             if (!info.server.local)
@@ -3100,7 +3099,7 @@ export class NakamaService {
     if (info['mainImage'])
       try {
         if (info['mainImage'].url) {
-          await this.global.remove_file_from_storage(info['mainImage'].url);
+          this.global.remove_file_from_storage(info['mainImage'].url);
         } else {
           try {
             if (!info.server.local)
