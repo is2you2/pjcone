@@ -44,6 +44,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
         this.PostInfo = navParams.data;
+        console.log(this.PostInfo);
         this.CurrentIndex = navParams.index;
         this.initialize();
       } catch (e) { }
