@@ -321,6 +321,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       name: this.lang.text['ChatRoom']['Detour'],
       act: () => {
         this.toggle_custom_attach();
+        this.nakama.save_channels_with_less_info();
       }
     }, { // 9
       icon: 'call-outline',
@@ -619,7 +620,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         break;
     }
     this.info['CDN'] = this.useFirstCustomCDN;
-    this.nakama.save_channels_with_less_info();
   }
 
   async toggle_speakermode(force?: boolean) {
