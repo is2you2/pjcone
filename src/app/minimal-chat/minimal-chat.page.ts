@@ -173,7 +173,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       if (this.MinimalChatServer) {
         this.MinimalChatServer.value = this.ServerList[0] || 'local';
         this.SelectAddressTarget({ detail: { value: this.MinimalChatServer.value } });
-      } else this.NeedInputCustomAddress = true;
+      } else if (this.client.NeedInputCustomAddress === undefined)
+        this.client.NeedInputCustomAddress = true;
     }, 0);
     if (this.client.cacheAddress) this.CreateQRCode();
     setTimeout(() => {
@@ -373,7 +374,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   }
 
   ServerList: any[];
-  NeedInputCustomAddress = false;
   /** 사용자가 직접 서버 주소를 입력 */
   UserInputCustomAddress = undefined;
   /** 연결 대상 선택 */
@@ -383,12 +383,12 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     switch (ev.detail.value) {
       case 'local':
         this.UserInputCustomAddress = '';
-        this.NeedInputCustomAddress = true;
+        this.client.NeedInputCustomAddress = true;
         break;
       default: // 다른 원격 서버
         let info = ev.detail.value.info;
         this.UserInputCustomAddress = info.address;
-        this.NeedInputCustomAddress = false;
+        this.client.NeedInputCustomAddress = false;
         break;
     }
   }
@@ -914,6 +914,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       let scrollHeight = this.minimal_chat_log.scrollHeight;
       this.minimal_chat_log.scrollTo({ top: scrollHeight, behavior: 'smooth' });
     }
+    this.client.NeedInputCustomAddress = undefined;
     this.UserInputCustomAddress = '';
     this.noti.ClearNoti(this.lnId);
     if (this.client.status == 'idle') this.navCtrl.pop();

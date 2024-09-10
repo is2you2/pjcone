@@ -50,7 +50,8 @@ export class MiniranchatClientService {
 
   /** 지금 연결된 사람 수 */
   ConnectedNow = 0;
-
+  /** 사설 서버를 입력하여 사용하는지 여부 */
+  NeedInputCustomAddress: boolean = undefined;
   /** 상호작용 함수들 */
   funcs = {
     onopen: (v: any) => console.warn('OnOpen 설정 안됨: ', v),
