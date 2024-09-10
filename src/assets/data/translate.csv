@@ -198,7 +198,7 @@ QRLinkFailed,정보 오류,Information error
 input_placeholder,메시지 입력...,Enter message...
 ManageChat,메시지 관리,Manage message
 EditChat,편집,Edit
-MsgEdited,편집됨,edited
+MsgEdited,편집됨,Edited
 MsgRemoved,메시지 삭제됨,Messages deleted
 cannot_open_from_mobile,모바일에서 열 수 없음,Can not open on mobile
 cannot_open_with_viewer,이 파일은 뷰어로 볼 수 없습니다,This file cannot be viewed with a viewer
