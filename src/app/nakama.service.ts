@@ -942,12 +942,12 @@ export class NakamaService {
         .then(v => {
           for (let i = 0, j = v.users.length; i < j; i++)
             this.save_other_user(v.users[i], _is_official, _target)
-          this.redirect_channel(_is_official, _target).then(() => {
-            this.get_group_list_from_server(_is_official, _target);
-          });
         }).catch(e => {
           console.log('사용자 정보 업데이트 실패: ', e);
         });
+      this.redirect_channel(_is_official, _target).then(() => {
+        this.get_group_list_from_server(_is_official, _target);
+      });
     });
     await this.SyncTodoCounter(_is_official, _target);
     this.load_server_todo(_is_official, _target);
