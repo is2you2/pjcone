@@ -241,7 +241,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   }
 
   /** 그룹 삭제 (방장 권한) */
-  async remove_group() {
+  remove_group() {
     this.need_edit = false;
     try {
       if (this.nakama.servers[this.isOfficial][this.target]) { // 서버가 아직 있다면
@@ -271,6 +271,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
               } catch (e) {
                 console.log('그룹 삭제시 생성자의 매니저 권한 박탈 동기화 오류: ', e);
               }
+              this.nakama.remove_group_list(this.info, this.isOfficial, this.target);
               this.after_remove_group();
             });
           else this.after_remove_group();

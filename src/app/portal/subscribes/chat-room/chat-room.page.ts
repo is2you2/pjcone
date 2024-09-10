@@ -390,7 +390,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 switch (this.info['redirect']['type']) {
                   case 3: // 그룹방
                     await this.nakama.remove_group_list(
-                      this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target);
+                      this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target, true);
                     break;
                   case 0: // 로컬 채널
                     await this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);

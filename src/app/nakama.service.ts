@@ -2075,11 +2075,6 @@ export class NakamaService {
         }
       } else throw "not a group creator";
     } catch (e) {
-      // 그룹 정보 삭제
-      try {
-        delete this.groups[_is_official][_target][info['id']];
-        this.save_groups_with_less_info();
-      } catch (e) { }
       try { // FFS 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
         let fallback = localStorage.getItem('fallback_fs');
         if (!fallback) throw '사용자 지정 서버 없음';
@@ -2098,9 +2093,16 @@ export class NakamaService {
         this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`);
       } catch (e) { }
     }
-    try { // 그룹 이미지 삭제
-      if (_remove_history)
+    try {
+      if (_remove_history) {
+        // 그룹 이미지 삭제
         await this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${info.id}.img`);
+        // 그룹 정보 삭제
+        try {
+          delete this.groups[_is_official][_target][info['id']];
+          this.save_groups_with_less_info();
+        } catch (e) { }
+      }
     } catch (e) { }
   }
 
