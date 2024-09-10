@@ -262,7 +262,7 @@ export class AdminToolsPage implements OnInit {
             if (e && v) this.all_groups[i].img = v;
           });
         }
-        this.AllGroupCount = this.all_groups.length;
+        this.AllGroupCount = this.all_groups.length || 0;
         let user_ids = Object.keys(this.PromotableGroup);
         user_ids.forEach(user_id => {
           let keys = Object.keys(this.PromotableGroup[user_id]);

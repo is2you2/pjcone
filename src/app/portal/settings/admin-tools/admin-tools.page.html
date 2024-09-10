@@ -67,7 +67,7 @@
     </table>
   </ion-item-divider>
   <div *ngIf="CurrentOnlineUser == 0" style="height: 245px;">
-    <div class="disconnect_info" style="position: relative;" (click)="nakama.add_new_group()">
+    <div class="disconnect_info" style="position: relative;">
       <ion-icon style="width: 60px; height: 60px;" color="medium" name="person-circle-outline"></ion-icon>
       <div>
         <ion-label color="medium">{{lang.text['AdminTools']['Requesting']}}</ion-label>
@@ -152,7 +152,7 @@
     </table>
   </ion-item-divider>
   <div *ngIf="AllGroupCount == 0" style="height: 245px;">
-    <div class="disconnect_info" style="position: relative;" (click)="nakama.add_new_group()">
+    <div class="disconnect_info" style="position: relative;">
       <ion-icon style="width: 60px; height: 60px;" color="medium" name="people-circle-outline"></ion-icon>
       <div>
         <ion-label color="medium">{{lang.text['AdminTools']['Requesting']}}</ion-label>
