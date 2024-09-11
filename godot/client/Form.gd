@@ -30,10 +30,10 @@ func download_url(args):
 	var dir:= DirAccess.open('user://')
 	if not dir.dir_exists('user://tmp_files/') or not dir.dir_exists('user://tmp_files/duplicate'):
 		dir.make_dir_recursive('user://tmp_files/duplicate/')
-	var file:= FileAccess.open('user://tmp_files/duplicate/viewer.pck', FileAccess.WRITE)
+	var file:= FileAccess.open('user://%s' % window['path'], FileAccess.WRITE)
 	file.close()
 	var http_req:= HTTPRequest.new()
-	http_req.download_file = 'user://tmp_files/duplicate/viewer.pck'
+	http_req.download_file = 'user://%s' % window['path']
 	add_child(http_req)
 	http_req.connect("request_completed", Callable(self, 'download_complete'))
 	http_req.request(window.url)
