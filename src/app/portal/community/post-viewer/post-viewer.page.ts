@@ -55,13 +55,6 @@ export class PostViewerPage implements OnInit, OnDestroy {
       this.navCtrl.pop();
     }
     this.IsFocusOnHere = true;
-    window.history.pushState(null, null, window.location.href);
-    window.onpopstate = () => {
-      if (this.BackButtonPressed) return;
-      window.onpopstate = null;
-      this.BackButtonPressed = true;
-      this.navCtrl.pop();
-    };
   }
   /** 블렌더 파일 불러오기에 사용된 개체들 */
   blenderViewers: p5[] = [];

@@ -196,13 +196,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   BackButtonPressed = false;
   ngOnInit() {
-    window.history.pushState(null, null, window.location.href);
-    window.onpopstate = () => {
-      if (this.BackButtonPressed) return;
-      window.onpopstate = null;
-      this.BackButtonPressed = true;
-      this.navCtrl.back();
-    };
     this.MainDiv = document.getElementById('main_div');
     this.isMobile = isPlatform == 'Android' || isPlatform == 'iOS';
     // 미리 지정된 데이터 정보가 있는지 검토

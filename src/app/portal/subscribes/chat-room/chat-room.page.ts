@@ -770,7 +770,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       console.log('채팅 로그 개체 행동 오류: ', e);
     }
     this.nakama.ChatroomLinkAct = async (c: any, _fileinfo: FileInfo) => {
-      delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
+      try {
+        delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
+      } catch (e) { }
       this.info = c;
       await this.init_chatroom();
       this.userInput.file = _fileinfo;
