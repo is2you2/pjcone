@@ -1728,7 +1728,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           channels: channels,
         }
       }).then(v => {
+        this.useP5Navigator = false;
         v.onDidDismiss().then((v) => {
+          this.useP5Navigator = true;
           if (v.data) this.modalCtrl.dismiss({ share: true });
         });
         v.present();
