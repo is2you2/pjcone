@@ -223,7 +223,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
         creatorForm.parent(contentDiv);
         let catch_name: string;
         try {
-          catch_name = this.nakama.usernameOverride[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']][this.PostInfo['creator_id']];
+          catch_name = this.nakama.usernameOverride[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']][this.PostInfo['creator_id']] || this.PostInfo['creator_name'];
         } catch (e) {
           catch_name = this.PostInfo['creator_name'];
         }
