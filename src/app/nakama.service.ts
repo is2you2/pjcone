@@ -4239,6 +4239,7 @@ export class NakamaService {
             state: {
               address: json[i].value.address,
               channel: json[i].value.channel,
+              quick: true,
             },
           });
           break;

@@ -34,7 +34,7 @@
           <ion-select-option *ngFor="let server of ServerList" [value]="server">{{server.info.name}}</ion-select-option>
         </ion-select>
       </ion-item>
-      <ion-item *ngIf="client.NeedInputCustomAddress">
+      <ion-item *ngIf="NeedInputCustomAddress">
         <ion-input [label]="lang.text['voidDraw']['InputAddress']" [(ngModel)]="UserInputCustomAddress"
           class="ion-text-right" placeholder="(wss://)0.0.0.0"></ion-input>
         <ion-icon slot="end" name="open-outline" (click)="global.open_custom_site(UserInputCustomAddress)"></ion-icon>
@@ -48,9 +48,9 @@
       </ion-item>
     </div>
     <div id="minimal_chat_div" class="main" style="flex: 1 1 auto;">
-      <div *ngIf="QRCodeSRC && client.NeedInputCustomAddress && client.status != 'idle'">
-        <img [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;"
-          (click)="copy_qr_address()" alt="QRCode">
+      <div *ngIf="QRCodeSRC && !JoinedQuick && client.status != 'idle'">
+        <img [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;" (click)="copy_qr_address()"
+          alt="QRCode">
         <ion-item button (click)="copy_qr_address(client.JoinedChannel)">
           <ion-label disabled class="ion-text-center" color="medium">{{client.JoinedChannel}}</ion-label>
         </ion-item>

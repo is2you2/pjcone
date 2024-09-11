@@ -144,6 +144,10 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   }
 
   @ViewChild('MinimalChatServer') MinimalChatServer: IonSelect;
+  /** 사설 서버를 입력하여 사용하는지 여부 */
+  NeedInputCustomAddress = false;
+  /** 빠른진입으로 들어온 경우 QR코드를 보여주지 않음 */
+  JoinedQuick = false;
   ngOnInit() {
     this.route.queryParams.subscribe(async _p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
@@ -151,6 +155,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       if (navParams) {
         this.client.MyUserName = navParams.name;
         this.client.JoinedChannel = navParams.channel || this.client.JoinedChannel;
+        this.JoinedQuick = navParams.quick;
         // QRCode 빠른 진입으로 들어온 경우 주소를 이미 가지고 있음
         if (navParams.address) {
           this.UserInputCustomAddress = navParams.address;
@@ -173,8 +178,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       if (this.MinimalChatServer) {
         this.MinimalChatServer.value = this.ServerList[0] || 'local';
         this.SelectAddressTarget({ detail: { value: this.MinimalChatServer.value } });
-      } else if (this.client.NeedInputCustomAddress === undefined)
-        this.client.NeedInputCustomAddress = true;
+      } else this.NeedInputCustomAddress = true;
     }, 0);
     if (this.client.cacheAddress) this.CreateQRCode();
     setTimeout(() => {
@@ -352,6 +356,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   QRCodeTargetString: string;
   /** QR코드 이미지 생성 */
   async CreateQRCode() {
+    if (this.JoinedQuick) return;
     this.QRCodeSRC = undefined;
     let NoSecure = this.client.cacheAddress.indexOf('ws:') == 0;
     let header_address: string;
@@ -383,12 +388,12 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     switch (ev.detail.value) {
       case 'local':
         this.UserInputCustomAddress = '';
-        this.client.NeedInputCustomAddress = true;
+        this.NeedInputCustomAddress = true;
         break;
       default: // 다른 원격 서버
         let info = ev.detail.value.info;
         this.UserInputCustomAddress = info.address;
-        this.client.NeedInputCustomAddress = false;
+        this.NeedInputCustomAddress = false;
         break;
     }
   }
@@ -914,7 +919,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       let scrollHeight = this.minimal_chat_log.scrollHeight;
       this.minimal_chat_log.scrollTo({ top: scrollHeight, behavior: 'smooth' });
     }
-    this.client.NeedInputCustomAddress = undefined;
     this.UserInputCustomAddress = '';
     this.noti.ClearNoti(this.lnId);
     if (this.client.status == 'idle') this.navCtrl.pop();
