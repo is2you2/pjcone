@@ -947,9 +947,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           }, 100);
         break;
       case 'blender':
-        let loading = await this.loadingCtrl.create({ message: this.lang.text['ContentViewer']['OnLoadContent'] });
-        loading.present();
-        this.p5canvas = this.global.load_blender_file(this.canvasDiv, this.FileInfo, loading,
+        this.p5canvas = this.global.load_blender_file(this.canvasDiv, this.FileInfo,
           () => {
             this.ContentOnLoad = true;
             this.ContentFailedLoad = false;

@@ -736,7 +736,7 @@ export class GlobalActService {
   }
 
   /** blender 파일 읽기 후 특정 개체에 넣기 */
-  load_blender_file(canvasDiv: HTMLElement, FileInfo: FileInfo, loading: HTMLIonLoadingElement, OnLoaded: Function, OnFailedToLoad: Function, cont?: AbortController): p5 {
+  load_blender_file(canvasDiv: HTMLElement, FileInfo: FileInfo, OnLoaded: Function, OnFailedToLoad: Function, cont?: AbortController): p5 {
     return new p5((p: p5) => {
       /** 수집된 광원 */
       let lights = [];
@@ -748,6 +748,8 @@ export class GlobalActService {
       let texture_images = {};
       let LogDiv: p5.Element;
       p.setup = async () => {
+        let init_loading = await this.loadingCtrl.create({ message: this.lang.text['ContentViewer']['OnLoadContent'] });
+        init_loading.present();
         let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight, p.WEBGL);
         canvas.parent(canvasDiv);
         p['canvas'] = canvas;
@@ -785,7 +787,6 @@ export class GlobalActService {
             this.p5toast.show({
               text: this.lang.text['ContentViewer']['CannotOpenText'],
             });
-            if (loading) loading.dismiss();
             return;
           }
           LogDiv = p.createDiv()
@@ -798,7 +799,11 @@ export class GlobalActService {
           LogDiv.style('height', '100%');
           LogDiv.style('max-height', `${canvasDiv.clientHeight}px`);
           LogDiv.style('pointer-events', 'none');
+          init_loading.dismiss();
+          // 페이지에서 처리 실패가 일어나면 코드가 멈춰버리므로 loading 구성이 분리됨
           let blend = await jsBlend.elt.contentWindow['JSBLEND'](blob);
+          let loading = await this.loadingCtrl.create({ message: this.lang.text['ContentViewer']['OnLoadContent'] });
+          loading.present();
           // 모든 개체를 돌며 개체에 맞는 생성 동작
           const RATIO = 100;
           /** 블랜더 파일 (ArrayBuffer) */
