@@ -466,7 +466,9 @@ export class NakamaService {
       try {
         let count_server = await this.init_all_sessions();
         if (!count_server) this.AccessToOfficialTestServer();
-      } catch (e) { }
+      } catch (e) {
+        console.log('테스트 서버 연결 오류: ', e);
+      }
     }
     this.TogglingSession = false;
   }
