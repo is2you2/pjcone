@@ -137,7 +137,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     });
     // 드랍이기도 하나 보이스 관리를 겸하므로 플랫폼 무관 생성
     setTimeout(() => {
-      this.CreateDrop();
+      if (this.WillLeavePage) return; this.CreateDrop();
     }, 100);
     this.nakama.StatusBarChangedCallback = () => {
       this.LoadListServer();
@@ -222,6 +222,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   /** 기존 게시물 편집 여부 */
   isModify = false;
   ionViewWillEnter() {
+    this.WillLeavePage = false;
     this.TitleInput = document.getElementById('add_post_title').childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
     this.TitleInput.id = 'exact_post_title_id';
     this.TitleInput.onpaste = (ev: any) => {
@@ -1112,7 +1113,9 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.navCtrl.navigateBack('portal/community');
   }
 
+  WillLeavePage = false;
   ionViewWillLeave() {
+    this.WillLeavePage = true;
     this.cont.abort();
     delete this.global.p5key['KeyShortCut']['Escape'];
     this.global.RestoreShortCutAct('add-post');

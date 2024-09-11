@@ -623,8 +623,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 ResizeAudio();
                 mediaObject['elt'].hidden = false;
               }
-              setTimeout(() => {
-              }, 50);
               mediaObject.showControls();
               mediaObject.play();
               this.ContentOnLoad = true;

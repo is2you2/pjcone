@@ -746,6 +746,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   ShowGoToBottom = false;
   isMobile = false;
+  WillLeave = false;
 
   ngOnInit() {
     window.onblur = (_ev: any) => {
@@ -795,7 +796,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     });
     setTimeout(() => {
-      this.CreateDrop();
+      if (!this.WillLeave) this.CreateDrop();
     }, 100);
     this.isMobile = isPlatform == 'Android' || isPlatform == 'iOS';
     this.nakama.StatusBarChangedCallback = async () => {
@@ -861,6 +862,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.global.p5key['KeyShortCut']['EnterAct'] = () => {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId))
         setTimeout(() => {
+          if (this.WillLeave) return;
           if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
           this.make_ext_hidden();
           this.userInputTextArea.focus();
@@ -910,6 +912,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           LastDropAt = _Millis;
           clearTimeout(StartAct);
           StartAct = setTimeout(async () => {
+            if (this.WillLeave) return;
             if (!isMultipleSend) {
               let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
               loading.present();
@@ -1029,6 +1032,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.userInput.qoute.user_id = target_msg['sender_id'];
               this.CancelEditText();
               setTimeout(() => {
+                if (this.WillLeave) return;
                 this.make_ext_hidden();
                 this.userInputTextArea.focus();
               }, 0);
@@ -1099,6 +1103,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         targetChat.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
       }, 100);
       setTimeout(() => {
+        if (this.WillLeave) return;
         targetChat.style.backgroundColor = null;
       }, 3500);
     } else this.p5toast.show({
@@ -1287,6 +1292,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
         if (this.useSpeaker) this.SpeechReceivedMessage(c);
         setTimeout(() => {
+          if (this.WillLeave) return;
           this.info['is_new'] = false;
           this.nakama.has_new_channel_msg = false;
           if (this.NeedScrollDown() && !this.ShowRecentMsg) {
@@ -1319,6 +1325,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     // 마지막 대화 기록을 받아온다
     await this.pull_msg_history();
     setTimeout(() => {
+      if (this.WillLeave) return;
       let scrollHeight = this.ChatLogs.scrollHeight;
       this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
     }, 500);
@@ -1576,6 +1583,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         await this.LoadLocalChatHistory();
       }
       setTimeout(() => { // 스크롤이 생기지 않았다면 메시지 더 가져오기
+        if (this.WillLeave) return;
         if (this.next_cursor !== undefined)
           if (this.ChatContDiv && this.ChatContDiv.clientHeight < this.ChatLogs.clientHeight)
             this.pull_msg_history();
@@ -2573,6 +2581,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ionViewWillLeave() {
+    this.WillLeave = true;
     this.nakama.rearrange_channels();
     try {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];

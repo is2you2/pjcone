@@ -225,7 +225,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
     if (isPlatform == 'DesktopPWA')
       setTimeout(() => {
-        this.CreateDrop();
+        if (!this.WillLeavePage) this.CreateDrop();
       }, 100);
     if (this.userInput.workers) {
       for (let i = 0, j = this.userInput.workers.length; i < j; i++)
@@ -659,6 +659,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   AddShortCut() {
     setTimeout(() => {
+      if (this.WillLeavePage) return;
       this.global.p5key['KeyShortCut']['Escape'] = () => {
         this.navCtrl.pop();
       }
