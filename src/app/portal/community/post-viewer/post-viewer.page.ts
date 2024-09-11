@@ -228,7 +228,13 @@ export class PostViewerPage implements OnInit, OnDestroy {
         let creatorForm = p.createDiv();
         creatorForm.style('padding-bottom', '8px');
         creatorForm.parent(contentDiv);
-        let creator = p.createSpan(this.nakama.usernameOverride[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']][this.PostInfo['creator_id']] || this.PostInfo['creator_name']);
+        let catch_name: string;
+        try {
+          catch_name = this.nakama.usernameOverride[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']][this.PostInfo['creator_id']];
+        } catch (e) {
+          catch_name = this.PostInfo['creator_name'];
+        }
+        let creator = p.createSpan(catch_name);
         creator.style('color', `#${this.PostInfo['UserColor']}`);
         creator.style('font-weight', 'bold');
         creator.style('font-size', '17px');
