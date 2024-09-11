@@ -376,6 +376,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     }
     this.QRCodeTargetString = `${header_address}?group_dedi=${this.client.cacheAddress},${this.client.JoinedChannel || 'public'}`;
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeTargetString);
+    this.focus_on_input();
   }
 
   ServerList: any[];
