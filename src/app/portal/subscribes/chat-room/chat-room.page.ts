@@ -756,7 +756,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     try {
       this.ChatLogs = document.getElementById('chatroom_div');
       this.ChatLogs.onscroll = (_ev: any) => {
-        if (this.ChatLogs.scrollHeight - (this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) < 1500) {
+        if (this.ChatLogs.scrollHeight - (this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) < this.ChatLogs.scrollHeight / 4) {
           // 스크롤을 제일 하단으로 내리면 사라짐
           if (!this.ShowGoToBottom)
             if (!this.ShowRecentMsg)
@@ -764,7 +764,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (this.ShowRecentMsg && !this.BlockAutoScrollDown)
             this.pull_msg_history(false);
         }
-        this.ShowGoToBottom = (this.ChatLogs.scrollHeight - 220 > this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) || this.ShowRecentMsg;
+        this.ShowGoToBottom = (this.ChatLogs.scrollHeight / 10 > this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) || this.ShowRecentMsg;
       }
     } catch (e) {
       console.log('채팅 로그 개체 행동 오류: ', e);
