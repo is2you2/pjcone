@@ -1563,6 +1563,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             }
           }
         for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
+          if (this.userInput.attach[i].url) {
+            delete this.userInput.attach[i]['path'];
+            delete this.userInput.attach[i]['size'];
+            delete this.userInput.attach[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
+            continue;
+          }
           try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
             if (this.useFirstCustomCDN == 2) throw 'ForceSQL';
             if (!this.userInput.attach[i].blob.size && this.userInput.attach[i].url)
