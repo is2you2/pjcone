@@ -735,6 +735,8 @@ export class GlobalActService {
     return Boolean(address.replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, ''));
   }
 
+  /** BlenderCtrl 사용을 기억함 */
+  BlenderLoadingCtrl: HTMLIonLoadingElement;
   /** blender 파일 읽기 후 특정 개체에 넣기 */
   load_blender_file(canvasDiv: HTMLElement, FileInfo: FileInfo, OnLoaded: Function, OnFailedToLoad: Function, cont?: AbortController): p5 {
     return new p5((p: p5) => {
@@ -748,8 +750,8 @@ export class GlobalActService {
       let texture_images = {};
       let LogDiv: p5.Element;
       p.setup = async () => {
-        let init_loading = await this.loadingCtrl.create({ message: this.lang.text['ContentViewer']['OnLoadContent'] });
-        init_loading.present();
+        this.BlenderLoadingCtrl = await this.loadingCtrl.create({ message: this.lang.text['ContentViewer']['OnLoadContent'] });
+        this.BlenderLoadingCtrl.present();
         let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight, p.WEBGL);
         canvas.parent(canvasDiv);
         p['canvas'] = canvas;
@@ -799,11 +801,11 @@ export class GlobalActService {
           LogDiv.style('height', '100%');
           LogDiv.style('max-height', `${canvasDiv.clientHeight}px`);
           LogDiv.style('pointer-events', 'none');
-          init_loading.dismiss();
+          this.BlenderLoadingCtrl.dismiss();
           // 페이지에서 처리 실패가 일어나면 코드가 멈춰버리므로 loading 구성이 분리됨
           let blend = await jsBlend.elt.contentWindow['JSBLEND'](blob);
-          let loading = await this.loadingCtrl.create({ message: this.lang.text['ContentViewer']['OnLoadContent'] });
-          loading.present();
+          this.BlenderLoadingCtrl = await this.loadingCtrl.create({ message: this.lang.text['ContentViewer']['OnLoadContent'] });
+          this.BlenderLoadingCtrl.present();
           // 모든 개체를 돌며 개체에 맞는 생성 동작
           const RATIO = 100;
           /** 블랜더 파일 (ArrayBuffer) */
@@ -843,7 +845,7 @@ export class GlobalActService {
           for (let i = 0, j = blend.file.objects.Object.length; i < j; i++) {
             /** 이 개체의 정보 */
             let obj = blend.file.objects.Object[i];
-            if (loading) loading.message = `${this.lang.text['ContentViewer']['ReadObject']}: ${obj.aname}`;
+            this.BlenderLoadingCtrl.message = `${this.lang.text['ContentViewer']['ReadObject']}: ${obj.aname}`;
             // 공통 정보
             let location = p.createVector(
               -obj.loc[0] * RATIO,
@@ -1116,7 +1118,7 @@ export class GlobalActService {
             }
             await new Promise(res => setTimeout(res, 0));
           }
-          if (loading) loading.dismiss();
+          this.BlenderLoadingCtrl.dismiss();
           setTimeout(() => {
             LogDiv.elt.remove();
           }, 8000);

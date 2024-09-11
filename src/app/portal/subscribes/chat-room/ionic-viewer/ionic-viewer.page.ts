@@ -1870,6 +1870,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         } catch (e) {
           console.log('blender 썸네일 저장 오류: ', e);
         }
+        if (this.global.BlenderLoadingCtrl) this.global.BlenderLoadingCtrl.dismiss();
         break;
       default:
         if (this.p5canvas) this.p5canvas.remove();
