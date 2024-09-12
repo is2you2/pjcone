@@ -80,6 +80,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
       let user_rgb_color = '0, 0, 0';
       let userColorLerp = 0;
       let imgDiv: p5.Element;
+      let EditingName = false;
       p.setup = () => {
         let user_color = p.color(`#${(this.info['user']['id'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6)}`);
         user_rgb_color = `${p.red(user_color)}, ${p.green(user_color)}, ${p.blue(user_color)}`;
@@ -163,14 +164,19 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         ExceptPic.parent(this.OtherCanvasDiv);
         // 사용자 이름 (display)
         let override = this.nakama.GetOverrideName(this.info['user']['id'], this.isOfficial, this.target);
-        nameDiv = p.createDiv(override || this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']);
+        nameDiv = p.createDiv();
         nameDiv.style('font-size', NAME_SIZE);
         nameDiv.style('font-weight', 'bold');
         nameDiv.style('align-self', 'center');
         nameDiv.style('width', '80%');
         nameDiv.style('text-align', 'center');
+        let nameSpan = p.createSpan(override || this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']);
+        nameSpan.parent(nameDiv);
+        let editSpan = p.createSpan('<ion-icon name="pencil-outline" style="width: 24px; height: 24px; margin-left: 8px"></ion-icon>');
+        editSpan.parent(nameDiv);
         nameDiv.elt.onclick = () => { // 편집 모드로 변경
-          nameEditDiv.value('');
+          EditingName = true;
+          nameEditDiv.value(nameSpan.html());
           nameEditDiv.attribute('placeholder', this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']);
           nameEditDiv.show();
           nameDiv.hide();
@@ -190,11 +196,12 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         nameEditDiv.parent(ExceptPic);
         nameEditDiv.hide();
         nameEditDiv.elt.addEventListener('focusout', () => {
+          EditingName = false;
           let input_value = `${nameEditDiv.value()}`;
           this.nakama.SaveOverrideName(this.info['user']['id'], input_value, this.isOfficial, this.target);
           if (input_value) originalName.removeAttribute('hidden');
           else originalName.attribute('hidden', 'true');
-          nameDiv.html(`${input_value || this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']}`);
+          nameSpan.html(`${input_value || this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']}`);
           nameEditDiv.hide();
           nameDiv.show();
         });
@@ -256,6 +263,12 @@ export class OthersProfilePage implements OnInit, OnDestroy {
       }
       p.windowResized = () => {
         p['OnlineLamp'].style('left', `${this.OtherCanvasDiv.clientWidth / 2 + 38}px`);
+      }
+      p.keyPressed = (ev: any) => {
+        if (ev.code == 'Enter') {
+          if (EditingName)
+            nameEditDiv.elt.blur();
+        }
       }
     });
   }

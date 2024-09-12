@@ -75,6 +75,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
     this.p5canvas = new p5((p: p5) => {
       const LERP_SIZE = .025;
       let nameDiv: p5.Element;
+      let nameSpan: p5.Element;
       let nameEditDiv: p5.Element;
       let selected_image: p5.Element;
       /** 변경 전 이미지 */
@@ -86,6 +87,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
       let userColorLerp = 0;
       let hasColorLerp = Boolean(this.session_uid);
       let imgDiv: p5.Element;
+      let EditingName = false;
       p.setup = () => {
         if (hasColorLerp) {
           let user_color = p.color(`#${(this.session_uid.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6)}`);
@@ -181,15 +183,20 @@ export class GroupServerPage implements OnInit, OnDestroy {
         ExceptPic.parent(this.gsCanvasDiv);
         const NAME_SIZE = '36px';
         // 사용자 이름 (display)
-        nameDiv = p.createDiv(this.nakama.users.self['display_name'] || this.lang.text['Profile']['noname_user']);
+        nameDiv = p.createDiv();
         nameDiv.style('font-size', NAME_SIZE);
         nameDiv.style('font-weight', 'bold');
         nameDiv.style('align-self', 'center');
         nameDiv.style('width', '80%');
         nameDiv.style('text-align', 'center');
         nameDiv.parent(ExceptPic);
+        nameSpan = p.createSpan(this.nakama.users.self['display_name'] || this.lang.text['Profile']['noname_user']);
+        nameSpan.parent(nameDiv);
+        let editSpan = p.createSpan('<ion-icon name="pencil-outline" style="width: 24px; height: 24px; margin-left: 8px"></ion-icon>');
+        editSpan.parent(nameDiv);
         nameDiv.elt.onclick = () => { // 편집 모드로 변경
-          nameEditDiv.value(this.nakama.users.self['display_name'] ? nameDiv.html() : '');
+          EditingName = true;
+          nameEditDiv.value(this.nakama.users.self['display_name'] ? nameSpan.html() : '');
           nameEditDiv.show();
           nameDiv.hide();
           nameEditDiv.elt.focus();
@@ -210,8 +217,9 @@ export class GroupServerPage implements OnInit, OnDestroy {
           this.nakama.users.self['display_name'] = nameEditDiv.value();
         });
         nameEditDiv.elt.addEventListener('focusout', () => {
+          EditingName = false;
           this.nakama.users.self['display_name'] = nameEditDiv.value();
-          nameDiv.html(`${nameEditDiv.value() || this.lang.text['Profile']['noname_user']}`);
+          nameSpan.html(`${nameEditDiv.value() || this.lang.text['Profile']['noname_user']}`);
           nameEditDiv.hide();
           nameDiv.show();
         });
@@ -339,7 +347,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
             p['OnlineLamp'].style('background-color', this.statusBar.colors['offline']);
           }
           if (this.nakama.users.self['display_name']) {
-            nameDiv.html(this.nakama.users.self['display_name']);
+            nameSpan.html(this.nakama.users.self['display_name']);
             nameEditDiv.value(this.nakama.users.self['display_name']);
           }
           this.ShowServerList = this.OnlineToggle;
@@ -350,6 +358,12 @@ export class GroupServerPage implements OnInit, OnDestroy {
       }
       p.windowResized = () => {
         p['OnlineLamp'].style('left', `${this.gsCanvasDiv.clientWidth / 2 + 38}px`);
+      }
+      p.keyPressed = (ev: any) => {
+        if (ev.code == 'Enter') {
+          if (EditingName)
+            nameEditDiv.elt.blur();
+        }
       }
     });
     this.ShowServerList = this.OnlineToggle;
