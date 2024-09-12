@@ -805,6 +805,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ionViewWillEnter() {
+    this.WillLeave = false;
     this.ChatContDiv = document.getElementById('chatroom_content_div');
     if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
     this.userInputTextArea.onpaste = (ev: any) => {
