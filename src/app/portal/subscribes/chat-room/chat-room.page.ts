@@ -1913,8 +1913,26 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (!isURL) throw '링크 만들기 실패';
         delete result['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
         result['url'] = savedAddress;
+        this.noti.PushLocal({
+          id: 7,
+          title: this.lang.text['ChatRoom']['SendFile'],
+          body: this.userInput.file.filename || this.userInput.file.name,
+          group_ln: 'diychat',
+          smallIcon_ln: 'diychat',
+          autoCancel_ln: true,
+          iconColor_ln: '271e38',
+        }, this.noti.Current);
       } catch (e) {
         console.log('cdn 업로드 처리 실패: ', e);
+        this.noti.PushLocal({
+          id: 7,
+          title: this.lang.text['Nakama']['FailedUpload'],
+          body: `${this.userInput.file.filename || this.userInput.file.name}: ${e}`,
+          group_ln: 'diychat',
+          smallIcon_ln: 'diychat',
+          autoCancel_ln: true,
+          iconColor_ln: '271e38',
+        }, this.noti.Current);
       }
       FileAttach = true;
       for (let i = 0, j = result['content_related_creator'].length; i < j; i++) {
@@ -1944,8 +1962,26 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             delete tmp.content['partsize'];
             tmp.content['url'] = CatchedAddress;
           } else throw '업로드 실패';
+          this.noti.PushLocal({
+            id: 7,
+            title: this.lang.text['ChatRoom']['SendFile'],
+            body: this.userInput.file.filename || this.userInput.file.name,
+            group_ln: 'diychat',
+            smallIcon_ln: 'diychat',
+            autoCancel_ln: true,
+            iconColor_ln: '271e38',
+          }, this.noti.Current);
         } catch (e) { // 사설 서버 업로드 실패시 직접 저장
           let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${local_msg_id}.${this.userInput.file.file_ext}`;
+          this.noti.PushLocal({
+            id: 7,
+            title: this.lang.text['Nakama']['FailedUpload'],
+            body: `${this.userInput.file.filename || this.userInput.file.name}: ${e}`,
+            group_ln: 'diychat',
+            smallIcon_ln: 'diychat',
+            autoCancel_ln: true,
+            iconColor_ln: '271e38',
+          }, this.noti.Current);
           await this.indexed.saveBlobToUserPath(this.userInput.file.blob, path);
         }
       }

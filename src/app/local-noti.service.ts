@@ -183,19 +183,19 @@ export class LocalNotiService {
    * @param header 지금 바라보고 있는 화면의 이름
    * @param _action_wm 클릭시 행동 (Web.Noti)
    */
-  async PushLocal(opt: TotalNotiForm, header: string = 'favicon', _action_wm: Function = () => { }) {
+  async PushLocal(opt: TotalNotiForm, header?: string, _action_wm: Function = () => { }) {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
       // 창을 바라보는 중이라면 무시됨, 바라보는 중이면서 같은 화면이면 무시됨
       if (document.hasFocus() && this.Current == header) return;
-      if (!this.settings.silent[opt.icon || opt.smallIcon_ln || header || 'icon_mono']) return;
+      if (!this.settings.silent[opt.smallIcon_ln || header || 'icon_mono']) return;
       if (opt.triggerWhen_ln) return; // 웹에는 예약 기능이 없음
       /** 기본 알림 옵션 (교체될 수 있음) */
       const input: any = {
-        badge: `assets/badge/${opt.icon || opt.smallIcon_ln || header || 'favicon'}.png`,
+        badge: opt.icon || `assets/badge/${opt.smallIcon_ln || header || 'favicon'}.png`,
         body: opt.body,
-        icon: `assets/icon/${opt.icon || opt.smallIcon_ln || header || 'favicon'}.png`,
+        icon: opt.icon || `assets/icon/${opt.smallIcon_ln || header || 'favicon'}.png`,
         image: opt.image,
-        silent: !this.settings.silent[opt.icon || opt.smallIcon_ln] || false,
+        silent: !this.settings.silent[opt.smallIcon_ln] || false,
         tag: `${opt.id}`,
         actions: opt.actions_wm,
         data: opt.data_wm,
@@ -223,7 +223,7 @@ export class LocalNotiService {
       } catch (e) { }
     } else { // 모바일 로컬 푸쉬
       if (this.Current == header) return;
-      if (!this.settings.silent[opt.icon || opt.smallIcon_ln || header || 'icon_mono']) return;
+      if (!this.settings.silent[opt.smallIcon_ln || header || 'icon_mono']) return;
       let input: LocalNotificationSchema = {
         id: opt.id,
         title: opt.title,

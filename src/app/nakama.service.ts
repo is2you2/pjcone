@@ -283,7 +283,7 @@ export class NakamaService {
             title: noti_info.title,
             body: noti_info.description,
             image: catch_image_attach,
-            icon: 'todo',
+            smallIcon_ln: 'todo',
           }, undefined, (_ev: any) => {
             this.open_add_todo_page(JSON.stringify(noti_info));
           });
@@ -3807,6 +3807,15 @@ export class NakamaService {
         this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id]['OnTransfer'] = 'upload';
       } catch (e) {
         console.log('WriteStorage_From_channel: ', e);
+        this.noti.PushLocal({
+          id: 7,
+          title: this.lang.text['Nakama']['FailedUpload'],
+          body: `${_msg.content.filename || _msg.content.name}: ${e}`,
+          group_ln: 'diychat',
+          smallIcon_ln: 'diychat',
+          autoCancel_ln: true,
+          iconColor_ln: '271e38',
+        }, this.noti.Current);
         this.p5toast.show({
           text: `${this.lang.text['Nakama']['FailedUpload']}: ${e}`,
         });
@@ -3818,6 +3827,15 @@ export class NakamaService {
       this.p5toast.show({
         text: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SendFile']}: ${_msg.content.filename}`,
       });
+      this.noti.PushLocal({
+        id: 7,
+        title: this.lang.text['ChatRoom']['SendFile'],
+        body: _msg.content.filename,
+        group_ln: 'diychat',
+        smallIcon_ln: 'diychat',
+        autoCancel_ln: true,
+        iconColor_ln: '271e38',
+      }, this.noti.Current);
     }, 100);
   }
 
@@ -3940,8 +3958,26 @@ export class NakamaService {
           }]);
       }
       this.indexed.removeFileFromUserPath(`${info.path}.history`);
+      this.noti.PushLocal({
+        id: 7,
+        title: this.lang.text['ChatRoom']['SendFile'],
+        body: info.filename || info.name,
+        group_ln: 'diychat',
+        smallIcon_ln: 'diychat',
+        autoCancel_ln: true,
+        iconColor_ln: '271e38',
+      }, this.noti.Current);
     } catch (e) {
       console.log('SyncSaveFailed: ', e);
+      this.noti.PushLocal({
+        id: 7,
+        title: this.lang.text['Nakama']['FailedUpload'],
+        body: `${info.filename || info.name}: ${e}`,
+        group_ln: 'diychat',
+        smallIcon_ln: 'diychat',
+        autoCancel_ln: true,
+        iconColor_ln: '271e38',
+      }, this.noti.Current);
       throw e;
     }
   }
