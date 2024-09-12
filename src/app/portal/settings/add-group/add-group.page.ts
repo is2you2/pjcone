@@ -368,6 +368,8 @@ export class AddGroupPage implements OnInit, OnDestroy {
         case 'image/png':
           this.inputImageSelected({ target: { files: [clipboard.value] } })
           return;
+        default:
+          throw '처리 불가능한 값';
       }
     } catch (e) {
       document.getElementById(this.file_sel_id).click();
