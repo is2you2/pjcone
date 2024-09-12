@@ -908,7 +908,7 @@ export class VoidDrawPage implements OnInit {
                 this.CreateOnOpenAct(false, async () => {
                   let crop_pos = this.p5voidDraw['getCropPos']();
                   this.nakama.VoidDrawInitCallBack = undefined;
-                  await new Promise((done) => setTimeout(done, 40));
+                  await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
                   this.IceWebRTCWsClient.send(JSON.stringify({
                     type: 'size',
                     width: this.p5voidDraw['ActualCanvas'].width,
@@ -1004,7 +1004,7 @@ export class VoidDrawPage implements OnInit {
           type: 'join',
           channel: channel_id,
         }));
-        await new Promise((done) => setTimeout(done, 40));
+        await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
         this.IceWebRTCWsClient.send(JSON.stringify({
           type: 'size_req',
           channel: channel_id,
@@ -1061,7 +1061,7 @@ export class VoidDrawPage implements OnInit {
                 this.nakama.VoidDrawInitCallBack = undefined;
               });
               this.webrtc.CreateOffer();
-              await new Promise((done) => setTimeout(done, 40));
+              await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
               this.IceWebRTCWsClient.send(JSON.stringify({
                 type: 'socket_react',
                 channel: channel_id,

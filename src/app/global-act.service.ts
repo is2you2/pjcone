@@ -1422,6 +1422,9 @@ export class GlobalActService {
     }
   }
 
+  /** 웹 소켓 클라이언트 발송 대기 시간 통합 관리용 */
+  WebsocketRetryTerm = 70;
+
   /** HTML 내 특수 문자 허용 */
   HTMLEncode(str: any) {
     str = [...str];

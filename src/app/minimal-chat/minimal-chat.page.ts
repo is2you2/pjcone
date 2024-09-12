@@ -770,7 +770,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       this.client.send(JSON.stringify(json));
       this.focus_on_input();
       for (let i = 0; i < FileInfo.partsize; i++) {
-        await new Promise((done) => setTimeout(done, 40));
+        await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
         let part = this.global.req_file_part_base64(ReqInfo, i, FileInfo.path);
         let json = {
           type: 'part',
@@ -781,7 +781,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         }
         this.client.send(JSON.stringify(json));
       }
-      await new Promise((done) => setTimeout(done, 40));
+      await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
       let EOF = {
         type: 'EOF',
         path: FileInfo.path,

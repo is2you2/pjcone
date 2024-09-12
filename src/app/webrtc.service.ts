@@ -15,7 +15,7 @@ import { MatchOpCode, NakamaService } from './nakama.service';
 import { Match } from '@heroiclabs/nakama-js';
 import { IndexedDBService } from './indexed-db.service';
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
-import { isDarkMode } from './global-act.service';
+import { GlobalActService, isDarkMode } from './global-act.service';
 
 @Injectable({
   providedIn: 'root'
@@ -28,6 +28,7 @@ export class WebrtcService {
     private indexed: IndexedDBService,
     private lang: LanguageSettingService,
     private nakama: NakamaService,
+    private global: GlobalActService,
   ) {
     this.nakama.WebRTCService = this;
   }
@@ -137,7 +138,7 @@ export class WebrtcService {
               act: 'WEBRTC_REPLY_INIT_SIGNAL',
               data_str: part[i],
             }));
-            await new Promise((done) => setTimeout(done, 40));
+            await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
           }
         if (_target['client'] && _target['client'].readyState == _target['client'].OPEN)
           _target['client'].send(JSON.stringify({
@@ -637,7 +638,7 @@ export class WebrtcService {
               channel: _target['channel'],
               data_str: JSON.stringify(this.IceCandidates[i]),
             }));
-          await new Promise((done) => setTimeout(done, 40));
+          await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
         }
       }
       this.IceCandidates.length = 0;
@@ -715,7 +716,7 @@ export class WebrtcService {
             channel: _target.channel,
             data_str: part[i],
           }));
-          await new Promise((done) => setTimeout(done, 40));
+          await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
         }
       if (_target.client && _target.client.readyState == _target.client.OPEN)
         _target.client.send(JSON.stringify({
@@ -749,7 +750,7 @@ export class WebrtcService {
             act: 'WEBRTC_ICE_CANDIDATES',
             data_str: JSON.stringify(this.IceCandidates[i]),
           }));
-          await new Promise((done) => setTimeout(done, 40));
+          await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
         }
     }
     this.IceCandidates.length = 0;

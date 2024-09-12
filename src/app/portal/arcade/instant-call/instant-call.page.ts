@@ -121,7 +121,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
           type: 'join',
           channel: this.ChannelId,
         }));
-        await new Promise((done) => setTimeout(done, 40));
+        await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
         this.global.PeerConnected = true;
         this.webrtc.initialize('audio')
           .then(() => {
@@ -169,7 +169,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
               }
               this.ShowWaiting();
               this.webrtc.CreateOffer();
-              await new Promise((done) => setTimeout(done, 40));
+              await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
               this.global.InstantCallSend(JSON.stringify({
                 type: 'socket_react',
                 channel: this.ChannelId,
