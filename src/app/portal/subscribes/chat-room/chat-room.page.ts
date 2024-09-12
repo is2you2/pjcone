@@ -839,6 +839,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   AddShortCut() {
+    if (!this.global.p5key['KeyShortCut']) return;
     this.global.p5key['KeyShortCut']['Escape'] = () => {
       this.navCtrl.pop();
     }
