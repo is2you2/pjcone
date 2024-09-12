@@ -199,7 +199,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
           nameDiv.show();
         });
         // 사용자 이름 원본 표기
-        let originalName = p.createDiv(this.info['user']['display_name']);
+        let originalName = p.createDiv(this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']);
         originalName.style('color', 'var(--ion-color-medium)');
         originalName.style('align-self', 'center');
         originalName.style('margin-top', '36px');
