@@ -749,7 +749,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   WillLeave = false;
 
   ngOnInit() {
-    window.onblur = (_ev: any) => {
+    this.global.WindowOnBlurAct['chatroom'] = () => {
       if (this.ChatManageMenu) this.ChatManageMenu.dismiss();
     }
     this.useSpeaker = Boolean(localStorage.getItem('useChannelSpeaker'));
@@ -2044,7 +2044,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     // 근데 주소가 메인 주소라면 QR행동으로 처리하기
     if (url.indexOf('https://is2you2.github.io/pjcone_pwa/?') == 0) {
       let init = this.global.CatchGETs(url) || {};
-      this.global.initialize();
       try {
         await this.nakama.AddressToQRCodeAct(init);
       } catch (e) {
@@ -2604,7 +2603,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.route.queryParams['unsubscribe']();
     this.ChatLogs.onscroll = null;
     this.cont.abort();
-    window.onblur = null;
+    delete this.global.WindowOnBlurAct['chatroom'];
     delete this.nakama.opened_page_info['channel'];
     this.nakama.ChatroomLinkAct = undefined;
     if (this.p5canvas)

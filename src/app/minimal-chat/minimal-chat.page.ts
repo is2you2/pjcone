@@ -132,7 +132,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     // 근데 주소가 메인 주소라면 QR행동으로 처리하기
     if (url.indexOf('https://is2you2.github.io/pjcone_pwa/?') == 0) {
       let init = this.global.CatchGETs(url) || {};
-      this.global.initialize();
       try {
         await this.client.nakama.AddressToQRCodeAct(init);
       } catch (e) {

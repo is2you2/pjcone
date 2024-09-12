@@ -138,6 +138,10 @@ export class GlobalActService {
   /** 페이지별 단축키 관리자 */
   p5key: p5;
   initialize() {
+    window.onblur = () => {
+      let keys = Object.keys(this.WindowOnBlurAct);
+      for (let key of keys) this.WindowOnBlurAct[key]();
+    }
     if (!this.p5toast.HTMLEncode)
       this.p5toast.HTMLEncode = this.HTMLEncode;
     this.p5key = new p5((p: p5) => {
@@ -1394,6 +1398,10 @@ export class GlobalActService {
     }
   }
 
+  /** 화면에 집중하지 않을 때 행동하는 목록 구성  
+   * WindowOnBlurAct[key] = Function
+   */
+  WindowOnBlurAct = {};
   /** 클립보드에 내용 복사하기
    * @param type 종류
    * @param value 복사하려는 값 (Blob / String)
