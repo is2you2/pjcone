@@ -28,7 +28,9 @@
         <table>
           <tr>
             <td>
-              {{channel['info'] ? (channel['info']['name'] || channel['info']['display_name'] ||
+              {{channel['info'] ? (channel['info']['name'] ||
+              nakama.usernameOverride[channel['info']['isOfficial']][channel['info']['target']][channel['info']['id']]
+              || channel['info']['display_name'] ||
               lang.text['ChatRoom']['noname_chatroom']) : (channel['title'] ||
               lang.text['ChatRoom']['noname_chatroom'])}}
             </td>
