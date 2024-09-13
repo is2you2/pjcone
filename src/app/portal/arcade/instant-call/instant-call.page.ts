@@ -335,7 +335,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
     this.global.RestoreShortCutAct('instant-call');
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     if (this.p5canvas) this.p5canvas.remove();
     if (this.isCustomServer) this.nakama.RemoveWebRTCServer(this.UserInputCustomAddress.split('://').pop());
     if (!this.global.InitEnd && !this.global.PeerConnected && this.global.InstantCallWSClient) this.global.InstantCallWSClient.close();

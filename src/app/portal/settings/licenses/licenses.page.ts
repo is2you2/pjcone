@@ -67,7 +67,7 @@ export class LicensesPage implements OnInit, OnDestroy {
     delete this.global.p5key['KeyShortCut']['Escape'];
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.p5canvas.remove();
   }
 }

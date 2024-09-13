@@ -1714,7 +1714,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       this.p5timer.remove();
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.route.queryParams['unsubscribe']();
     this.desc_input.onpaste = null;
     this.cont.abort();

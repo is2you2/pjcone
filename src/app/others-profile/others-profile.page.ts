@@ -395,7 +395,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
     delete this.global.p5key['KeyShortCut']['Escape'];
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.route.queryParams['unsubscribe']();
     delete this.nakama.socket_reactive['others-profile'];
     delete this.nakama.socket_reactive['others-online'];

@@ -941,7 +941,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     delete this.global.p5key['KeyShortCut']['Escape'];
     if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
   }
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.route.queryParams['unsubscribe']();
     window.onfocus = undefined;
     this.minimal_chat_log.onscroll = null;

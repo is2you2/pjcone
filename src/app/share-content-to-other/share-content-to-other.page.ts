@@ -21,7 +21,7 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
     private global: GlobalActService,
   ) { }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     delete this.global.p5key['KeyShortCut']['Digit'];
   }
 

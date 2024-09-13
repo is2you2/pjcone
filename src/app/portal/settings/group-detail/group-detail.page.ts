@@ -29,7 +29,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     private router: Router,
     private navCtrl: NavController,
   ) { }
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.route.queryParams['unsubscribe']();
   }
 

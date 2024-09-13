@@ -350,7 +350,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
     delete this.global.p5key['KeyShortCut']['Escape'];
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     if (this.p5canvas) this.p5canvas.remove();
     delete this.nakama.StatusBarChangedCallback;
   }

@@ -563,7 +563,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
     }).then(v => v.present());
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.route.queryParams['unsubscribe']();
     this.cont.abort();
     for (let i = 0, j = this.FileURLs.length; i < j; i++)

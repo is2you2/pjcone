@@ -44,7 +44,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     public nakama: NakamaService,
     private noti: LocalNotiService,
   ) { }
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.cont.abort();
     if (this.p5viewerkey) this.p5viewerkey.remove();
     if (this.p5canvas) this.p5canvas.remove();

@@ -232,7 +232,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.RemoveKeyShortCut();
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.Fallback_FS_input_element.onfocus = null;
     delete this.nakama.on_socket_disconnected['settings_admin_check'];
   }
