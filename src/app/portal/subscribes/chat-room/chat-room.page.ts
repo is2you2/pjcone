@@ -1083,7 +1083,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     loading.present();
     if (!targetChat) { // 메시지가 안보이면 이전 메시지에서 찾기
       let whileBreaker = false;
-      while (!targetChat && this.next_cursor !== undefined && this.pullable && !whileBreaker) {
+      while (!targetChat && this.pullable && !whileBreaker) {
         await this.pull_msg_history();
         await new Promise((done) => setTimeout(done, 200));
         for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
@@ -1101,16 +1101,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (targetChat) {
       targetChat.scrollIntoView({ block: 'center', behavior: 'smooth' });
       setTimeout(() => {
+        if (this.WillLeave) return;
         targetChat.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
       }, 100);
       setTimeout(() => {
         if (this.WillLeave) return;
         targetChat.style.backgroundColor = null;
+        this.BlockAutoScrollDown = false;
       }, 3500);
     } else this.p5toast.show({
       text: this.lang.text['ChatRoom']['LostOriginMsg'],
     });
-    this.BlockAutoScrollDown = false;
     loading.dismiss();
   }
 
@@ -1226,6 +1227,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.userInput.text = '';
     delete this.userInput.file;
     delete this.userInput.qoute;
+    this.BlockAutoScrollDown = false;
     this.ResizeTextArea();
     this.nakama.OnTransferMessage = {};
     this.ViewableMessage.length = 0;
