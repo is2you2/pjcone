@@ -117,7 +117,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     } else this.ChangeToAnother(0);
   }
 
-  async ngOnInit() {
+  ngOnInit() {
     this.fromLocalChannel = this.navParams.get('local');
     this.MessageInfo = this.navParams.get('info');
     this.OpenInChannelChat = this.MessageInfo['code'] !== undefined;

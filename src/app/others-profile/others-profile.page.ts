@@ -40,7 +40,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
   lerpVal: number;
   p5canvas: p5;
 
-  async ngOnInit() {
+  ngOnInit() {
     this.route.queryParams.subscribe(_p => {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;

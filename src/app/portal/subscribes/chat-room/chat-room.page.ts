@@ -2635,7 +2635,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     delete this.global.p5key['KeyShortCut']['EnterAct'];
   }
 
-  async ngOnDestroy(): Promise<void> {
+  ngOnDestroy() {
     this.route.queryParams['unsubscribe']();
     this.ChatLogs.onscroll = null;
     this.cont.abort();
@@ -2646,7 +2646,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.p5canvas.remove()
     this.nakama.OnTransferMessage = {};
     try {
-      if (this.useVoiceRecording) await VoiceRecorder.stopRecording();
+      if (this.useVoiceRecording) VoiceRecorder.stopRecording();
     } catch (e) { }
     delete this.nakama.StatusBarChangedCallback;
   }

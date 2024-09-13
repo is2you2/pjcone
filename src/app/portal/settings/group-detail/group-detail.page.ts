@@ -44,7 +44,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   isOfficial: string;
   target: string
 
-  async ngOnInit() {
+  ngOnInit() {
     this.route.queryParams.subscribe(_p => {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
