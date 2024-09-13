@@ -456,7 +456,7 @@ export class MainPage implements OnInit {
       class TodoElement {
         constructor(data: any, isAddButton = false) {
           this.json = data;
-          let OutPosition = p.max(p.width, p.height);
+          let OutPosition = p.max(p.width, p.height) || 1;
           let StartPosGen = p.createVector(OutPosition / (p.min(1, CamScale)), 0).setHeading(p.random(-p.PI, p.PI));
           if (isAddButton) {
             this.isAddButton = isAddButton;
