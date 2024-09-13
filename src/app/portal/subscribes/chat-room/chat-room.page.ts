@@ -1083,8 +1083,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     loading.present();
     if (!targetChat) { // 메시지가 안보이면 이전 메시지에서 찾기
       let whileBreaker = false;
-      // <ion-item [disabled]="(next_cursor === undefined && !ViewMsgIndex) || !pullable" button
-      while (!targetChat && this.next_cursor !== undefined && this.ViewMsgIndex && this.pullable && !whileBreaker) {
+      while (!targetChat && this.next_cursor !== undefined && this.pullable && !whileBreaker) {
         await this.pull_msg_history();
         await new Promise((done) => setTimeout(done, 200));
         for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
