@@ -139,7 +139,14 @@ export class AddGroupPage implements OnInit, OnDestroy {
     if (this.servers[i]['local'])
       this.userInput.id = '';
     this.isExpanded = false;
-    if (this.GroupNameInput) this.GroupNameInput.focus();
+    this.FocusOnChannelTitle();
+  }
+
+  FocusOnChannelTitle() {
+    if (this.GroupNameInput) {
+      if (!this.GroupNameInput.value)
+        this.GroupNameInput.focus();
+    }
   }
 
   async check_if_clipboard_available(v: string) {
