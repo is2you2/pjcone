@@ -330,13 +330,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       name: this.lang.text['ChatRoom']['attachments'],
       act: async () => {
         if (this.isSaveClicked) return;
-        try {
-          await this.new_attach({ detail: { value: 'link' } });
-          return; // 파일 넣기 성공시 링크 발송 기능 여전히 사용
-        } catch (e) {
-          if (e != 'done')
-            this.new_attach({ detail: { value: 'load' } });
-        }
+        this.new_attach({ detail: { value: 'load' } });
       }
     }, { // 2
       icon_img: 'voidDraw.png',
@@ -601,74 +595,6 @@ export class AddPostPage implements OnInit, OnDestroy {
     switch (ev.detail.value) {
       case 'load':
         document.getElementById('add_post_input').click();
-        break;
-      case 'link':
-        try {
-          let pasted_url: any;
-          if (pasted_url === undefined)
-            try {
-              let pasted = await this.global.GetValueFromClipboard();
-              switch (pasted.type) {
-                case 'text/plain':
-                  pasted_url = pasted.value;
-                  break;
-                case 'image/png':
-                  this.inputFileSelected({ target: { files: [pasted.value] } });
-                  return;
-              }
-            } catch (e) {
-              throw e;
-            }
-          try { // DataURL 주소인지 검토
-            let blob = this.global.Base64ToBlob(pasted_url);
-            let getType = pasted_url.split(';')[0].split(':')[1];
-            file = new File([blob],
-              `${this.lang.text['ChatRoom']['FileLink']}.${getType.split('/').pop()}`, {
-              type: getType,
-            });
-            await this.selected_blobFile_callback_act(file);
-            throw 'done';
-          } catch (e) {
-            switch (e) {
-              case 'done':
-                throw e;
-            }
-          }
-          try { // 정상적인 주소인지 검토
-            if (pasted_url.indexOf('http:') != 0 && pasted_url.indexOf('https:') != 0) throw '올바른 웹 주소가 아님';
-            if (file) throw '이미 파일이 첨부됨, 토글만 시도';
-          } catch (e) {
-            throw e;
-          }
-          let this_file: FileInfo = {};
-          this_file.url = pasted_url;
-          this_file['content_related_creator'] = [];
-          this_file['content_related_creator'].push({
-            user_id: this.isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-            timestamp: new Date().getTime(),
-            display_name: this.nakama.users.self['display_name'],
-            various: 'link',
-          });
-          this_file['content_creator'] = {
-            user_id: this.isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
-            timestamp: new Date().getTime(),
-            display_name: this.nakama.users.self['display_name'],
-            various: 'link',
-          };
-          let sep = this_file.url.split('.');
-          this_file.file_ext = sep.pop().split('?').shift();
-          this_file.filename = decodeURIComponent(`${sep.pop().split('/').pop() || this.lang.text['ChatRoom']['ExternalLinkFile']}.${this_file.file_ext}`);
-          this.global.set_viewer_category_from_ext(this_file);
-          this_file.type = '';
-          this_file.typeheader = this_file.viewer;
-          this.global.modulate_thumbnail(this_file, this_file.url, this.cont);
-          this.AddAttachTextForm();
-          this.userInput.attachments.push(this_file);
-        } catch (e) {
-          if (e == 'done')
-            throw e;
-          else throw `인식 불가능한 URL 정보: ${e}`;
-        }
         break;
     }
   }
