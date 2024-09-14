@@ -103,6 +103,8 @@ export class AddGroupPage implements OnInit, OnDestroy {
                     document.getElementById('group_desc').focus();
                   } catch (e) { }
                 }, 0);
+              if (!ev['ctrlKey'] && this.servers[this.index]['local'])
+                this.userInput.volatile = !this.userInput.volatile;
               if (ev['ctrlKey'])
                 this.save();
               break;
