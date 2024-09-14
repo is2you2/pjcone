@@ -171,6 +171,17 @@ export class SettingsPage implements OnInit, OnDestroy {
   StartPageValue: string;
   StartPageClicked() {
     this.StartPageSel.open();
+    this.global.StoreShortCutAct('startsel');
+    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+      // 설정 메뉴 정렬처리
+      if (index < 4) {
+        this.StartPageValue = `${index}`;
+        localStorage.setItem('StartPage', `${index}`);
+      }
+    }
+  }
+  SetStartPageShortCut() {
+    this.global.RestoreShortCutAct('startsel');
   }
   StartPageChanged(ev: any) {
     let value = ev.detail.value;

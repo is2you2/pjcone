@@ -21,7 +21,7 @@
   <ion-item button (click)="StartPageClicked()">
     <ion-select [label]="lang.text['Settings']['StartPageSet']" #StartPageSel style="pointer-events: none;"
       [value]="StartPageValue" [placeholder]="lang.text['Settings']['joinDedi_placeholder']"
-      (ionChange)="StartPageChanged($event)">
+      (ionChange)="StartPageChanged($event)" (ionDismiss)="SetStartPageShortCut()">
       <ion-select-option value="0">{{lang.text['Main']['Title']}}</ion-select-option>
       <ion-select-option value="1">{{lang.text['Subscribes']['Title']}}</ion-select-option>
       <ion-select-option value="2">{{lang.text['Arcade']['Title']}}</ion-select-option>
