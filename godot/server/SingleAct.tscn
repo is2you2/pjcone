@@ -1,9 +1,7 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=6 format=2]
 
-[ext_resource path="res://data/SingleAct/SendEximMail.gd" type="Script" id=1]
 [ext_resource path="res://data/SingleAct/SC_custom_manager.gd" type="Script" id=2]
 [ext_resource path="res://SingleAct.gd" type="Script" id=3]
-[ext_resource path="res://data/SingleAct/MiniRanchat.gd" type="Script" id=5]
 [ext_resource path="res://default.tres" type="Theme" id=6]
 [ext_resource path="res://data/SingleAct/SC_GuestBook.gd" type="Script" id=7]
 [ext_resource path="res://SC1_custom.gd" type="Script" id=8]
@@ -19,12 +17,6 @@ script = ExtResource( 2 )
 
 [node name="GuestBook" type="Node" parent="SC1_custom/SC_custom_manager"]
 script = ExtResource( 7 )
-
-[node name="MiniRanchat" type="Node" parent="."]
-script = ExtResource( 5 )
-
-[node name="SendExim4Mail" type="Node" parent="."]
-script = ExtResource( 1 )
 
 [node name="m" type="MarginContainer" parent="."]
 anchor_right = 1.0
@@ -42,7 +34,7 @@ margin_bottom = 352.0
 
 [node name="GridContainer" type="GridContainer" parent="m/vbox"]
 margin_right = 344.0
-margin_bottom = 132.0
+margin_bottom = 98.0
 columns = 4
 
 [node name="#" type="ColorRect" parent="m/vbox/GridContainer"]
@@ -229,181 +221,3 @@ theme = ExtResource( 6 )
 text = "0"
 align = 1
 valign = 1
-
-[node name="#4" type="ColorRect" parent="m/vbox/GridContainer"]
-margin_top = 102.0
-margin_right = 83.0
-margin_bottom = 132.0
-rect_min_size = Vector2( 83, 30 )
-color = Color( 0.227451, 0.227451, 0.227451, 1 )
-
-[node name="#" type="Label" parent="m/vbox/GridContainer/#4"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme = ExtResource( 6 )
-text = "Minichat"
-align = 1
-valign = 1
-
-[node name="Current_2" type="ColorRect" parent="m/vbox/GridContainer"]
-margin_left = 87.0
-margin_top = 102.0
-margin_right = 170.0
-margin_bottom = 132.0
-rect_min_size = Vector2( 83, 30 )
-color = Color( 0.176471, 0.176471, 0.176471, 1 )
-
-[node name="Current_0" type="Label" parent="m/vbox/GridContainer/Current_2"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme = ExtResource( 6 )
-text = "0"
-align = 1
-valign = 1
-
-[node name="Maximum_2" type="ColorRect" parent="m/vbox/GridContainer"]
-margin_left = 174.0
-margin_top = 102.0
-margin_right = 257.0
-margin_bottom = 132.0
-rect_min_size = Vector2( 83, 30 )
-color = Color( 0.176471, 0.176471, 0.176471, 1 )
-
-[node name="Maximum_0" type="Label" parent="m/vbox/GridContainer/Maximum_2"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme = ExtResource( 6 )
-text = "0"
-align = 1
-valign = 1
-
-[node name="Stack_2" type="ColorRect" parent="m/vbox/GridContainer"]
-margin_left = 261.0
-margin_top = 102.0
-margin_right = 344.0
-margin_bottom = 132.0
-rect_min_size = Vector2( 83, 30 )
-color = Color( 0.176471, 0.176471, 0.176471, 1 )
-
-[node name="Stack_0" type="Label" parent="m/vbox/GridContainer/Stack_2"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme = ExtResource( 6 )
-text = "0"
-align = 1
-valign = 1
-
-[node name="AdminInfo" type="HBoxContainer" parent="m/vbox"]
-margin_top = 136.0
-margin_right = 344.0
-margin_bottom = 170.0
-custom_constants/separation = 8
-
-[node name="IsAdmin" type="Label" parent="m/vbox/AdminInfo"]
-margin_top = 5.0
-margin_right = 61.0
-margin_bottom = 29.0
-theme = ExtResource( 6 )
-text = "관리자ID"
-
-[node name="TargetUUID" type="LineEdit" parent="m/vbox/AdminInfo"]
-margin_left = 69.0
-margin_right = 344.0
-margin_bottom = 34.0
-size_flags_horizontal = 3
-theme = ExtResource( 6 )
-placeholder_text = "00000000-0000-0000-0000-000000000000"
-
-[node name="SendAllNotiImg" type="HBoxContainer" parent="m/vbox"]
-margin_top = 174.0
-margin_right = 344.0
-margin_bottom = 208.0
-custom_constants/separation = 8
-
-[node name="Label" type="Label" parent="m/vbox/SendAllNotiImg"]
-margin_top = 5.0
-margin_right = 75.0
-margin_bottom = 29.0
-theme = ExtResource( 6 )
-text = "알림이미지"
-
-[node name="AllNotiURL" type="LineEdit" parent="m/vbox/SendAllNotiImg"]
-margin_left = 83.0
-margin_right = 344.0
-margin_bottom = 34.0
-size_flags_horizontal = 3
-theme = ExtResource( 6 )
-placeholder_text = "이미지 링크"
-
-[node name="SendAllNoti" type="HBoxContainer" parent="m/vbox"]
-margin_top = 212.0
-margin_right = 344.0
-margin_bottom = 246.0
-custom_constants/separation = 8
-
-[node name="Label" type="Label" parent="m/vbox/SendAllNoti"]
-margin_top = 5.0
-margin_right = 60.0
-margin_bottom = 29.0
-theme = ExtResource( 6 )
-text = "전체알림"
-
-[node name="AllNotiText" type="LineEdit" parent="m/vbox/SendAllNoti"]
-margin_left = 68.0
-margin_right = 294.0
-margin_bottom = 34.0
-size_flags_horizontal = 3
-theme = ExtResource( 6 )
-placeholder_text = "전체 알림 내용 작성"
-
-[node name="Button" type="Button" parent="m/vbox/SendAllNoti"]
-margin_left = 302.0
-margin_right = 344.0
-margin_bottom = 34.0
-theme = ExtResource( 6 )
-text = "발송"
-
-[node name="c" type="ColorRect" parent="m/vbox"]
-margin_top = 250.0
-margin_right = 344.0
-margin_bottom = 344.0
-size_flags_vertical = 3
-color = Color( 0.192157, 0.192157, 0.192157, 1 )
-
-[node name="m" type="MarginContainer" parent="m/vbox/c"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-custom_constants/margin_right = 8
-custom_constants/margin_top = 8
-custom_constants/margin_left = 8
-custom_constants/margin_bottom = 8
-
-[node name="log" type="RichTextLabel" parent="m/vbox/c/m"]
-margin_left = 8.0
-margin_top = 8.0
-margin_right = 336.0
-margin_bottom = 86.0
-theme = ExtResource( 6 )
-bbcode_enabled = true
-scroll_following = true
-
-[node name="bgColor" type="ColorRect" parent="m/vbox/c"]
-visible = false
-anchor_left = 1.0
-anchor_right = 1.0
-margin_left = -108.0
-margin_top = 16.0
-margin_right = -16.0
-margin_bottom = 46.0
-color = Color( 1, 0, 0, 0.431373 )
-
-[node name="Label" type="Label" parent="m/vbox/c/bgColor"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme = ExtResource( 6 )
-text = "업데이트됨"
-align = 1
-valign = 1
-
-[connection signal="text_changed" from="m/vbox/AdminInfo/TargetUUID" to="." method="_on_TargetUUID_text_changed"]
-[connection signal="pressed" from="m/vbox/SendAllNoti/Button" to="." method="_on_Button_pressed"]

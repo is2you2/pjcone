@@ -105,11 +105,6 @@ func _received(id:int, _try_left:= 5):
 					send_to(id, JSON.print(result).to_utf8())
 				{ 'act': 'req_link', 'pid': var _pid, .. }: # pid 사용자에게 메시지 보내기
 					send_to(_pid, raw_data)
-				{ 'act': 'global_noti', 'text': var _noti, .. }: # 커뮤니티 서버를 통한 알림 전파
-					if id == administrator_pid:
-						$m/vbox/SendAllNoti/AllNotiText.text = _noti
-						$m/vbox/SendAllNotiImg/AllNotiURL.text = json['img']
-						_on_Button_pressed()
 				{ 'act': 'is_admin', 'uuid': var uuid }:
 					var is_admin = uuid == $m/vbox/AdminInfo/TargetUUID.text
 					if is_admin:
@@ -180,22 +175,3 @@ func _process(_delta):
 
 func _exit_tree():
 	server.stop()
-
-func _on_Button_pressed():
-	if not $m/vbox/SendAllNoti/AllNotiText.text: return
-	for user in users:
-		var result = {
-			'act': 'all_noti',
-			'text': $m/vbox/SendAllNoti/AllNotiText.text,
-			'img': $m/vbox/SendAllNotiImg/AllNotiURL.text,
-		}
-		send_to(int(user), JSON.print(result).to_utf8())
-	$m/vbox/SendAllNoti/AllNotiText.text = ''
-	$m/vbox/SendAllNotiImg/AllNotiURL.text = ''
-
-# 관리자 아이디를 파일로 관리
-func _on_TargetUUID_text_changed(new_text):
-	var file:= File.new()
-	if file.open(admin_file, File.WRITE) == OK:
-		file.store_string(new_text)
-	file.close()
