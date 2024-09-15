@@ -177,7 +177,7 @@ export class AdminToolsPage implements OnInit {
             }
             let original_time = new Date(this.all_users[i].create_time).getTime() - new Date().getTimezoneOffset() * 60 * 1000;
             this.all_users[i]['display_created'] = new Date(original_time).toISOString().split('.')[0];
-          });
+          }, true);
           if (this.all_users[i]['online']) this.CurrentOnlineUser++;
         }
         this.AllUserCount = this.all_users.length;

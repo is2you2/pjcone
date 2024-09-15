@@ -1463,7 +1463,7 @@ export class NakamaService {
   /** 다른 사람의 정보 반환해주기 (로컬 정보 기반)
    * @returns 다른 사람 정보: User
    */
-  load_other_user(userId: string, _is_official: string, _target: string, _CallBack = (_userInfo: any) => { }) {
+  load_other_user(userId: string, _is_official: string, _target: string, _CallBack = (_userInfo: any) => { }, force = false) {
     try {
       if (this.servers[_is_official][_target].session.user_id == userId) {
         _CallBack(this.users.self);
@@ -1472,7 +1472,7 @@ export class NakamaService {
     } catch (e) { }
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
     // 이미 준비된 내용이 있으면 해당 내용 전달하기
-    if (this.users[_is_official][_target][userId]) return this.users[_is_official][_target][userId];
+    if (this.users[_is_official][_target][userId] && !force) return this.users[_is_official][_target][userId];
     else this.users[_is_official][_target][userId] = {};
     // 사용자 정보 업데이트
     let failed_update_act = () => {
