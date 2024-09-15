@@ -33,6 +33,8 @@ export interface ContentCreatorInfo {
   user_id?: string;
   /** 서버인 경우 나인지 검토 */
   is_me?: boolean;
+  /** 정보 표시 여부 */
+  hidden?: boolean;
 }
 
 /** 뷰어 동작 호완을 위한 틀 */

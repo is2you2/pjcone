@@ -139,23 +139,25 @@
           <ion-label>{{lang.text['ContentInfo']['TimeAt']}}</ion-label>
           <ion-label class="ion-text-end">{{content_creator.timeDisplay}}</ion-label>
         </ion-item>
-        <ion-item-divider>
-          <ion-label>{{lang.text['ContentInfo']['WorkHistory']}}</ion-label>
-        </ion-item-divider>
-        <div *ngFor="let worker of content_related_creator">
-          <div class="history_center">
-            {{worker.timeDisplay}}
-            <ion-chip color="secondary" mode="ios" outline="true" (click)="copy_url(worker.user_id)">
-              <ion-icon *ngIf="worker.various == 'loaded'" name="document-attach-outline"></ion-icon>
-              <ion-icon *ngIf="worker.various == 'camera'" name="camera-outline"></ion-icon>
-              <ion-icon *ngIf="worker.various == 'link'" name="link-outline"></ion-icon>
-              <ion-icon *ngIf="worker.various == 'long_text'" name="text-outline"></ion-icon>
-              <ion-icon *ngIf="worker.various == 'textedit'" name="document-text-outline"></ion-icon>
-              <ion-icon *ngIf="worker.various == 'shared'" name="share-social-outline"></ion-icon>
-              <ion-avatar *ngIf="worker.various == 'voidDraw'"> <img src="assets/icon/voidDraw.png" /> </ion-avatar>
-              <ion-label>{{worker.publisher ||
-                worker.display_name || lang.text['Profile']['noname_user']}}</ion-label>
-            </ion-chip>
+        <div *ngIf="content_related_creator.length > 1">
+          <ion-item-divider>
+            <ion-label>{{lang.text['ContentInfo']['WorkHistory']}}</ion-label>
+          </ion-item-divider>
+          <div *ngFor="let worker of content_related_creator">
+            <div *ngIf="!worker.hidden" class="history_center">
+              {{worker.timeDisplay}}
+              <ion-chip color="secondary" mode="ios" outline="true" (click)="copy_url(worker.user_id)">
+                <ion-icon *ngIf="worker.various == 'loaded'" name="document-attach-outline"></ion-icon>
+                <ion-icon *ngIf="worker.various == 'camera'" name="camera-outline"></ion-icon>
+                <ion-icon *ngIf="worker.various == 'link'" name="link-outline"></ion-icon>
+                <ion-icon *ngIf="worker.various == 'long_text'" name="text-outline"></ion-icon>
+                <ion-icon *ngIf="worker.various == 'textedit'" name="document-text-outline"></ion-icon>
+                <ion-icon *ngIf="worker.various == 'shared'" name="share-social-outline"></ion-icon>
+                <ion-avatar *ngIf="worker.various == 'voidDraw'"> <img src="assets/icon/voidDraw.png" /> </ion-avatar>
+                <ion-label>{{worker.publisher ||
+                  worker.display_name || lang.text['Profile']['noname_user']}}</ion-label>
+              </ion-chip>
+            </div>
           </div>
         </div>
         <ion-item button (click)="ShowContentInfoIonic.dismiss()">

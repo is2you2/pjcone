@@ -285,9 +285,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             this.nakama.servers[this.isOfficial][this.target].session.user_id == this.content_creator.user_id;
         } catch (e) { }
       try {
+        let CatchedName: string;
+        try {
+          CatchedName = this.nakama.GetOverrideName(this.content_creator.user_id, this.isOfficial, this.target);
+          if (!CatchedName) CatchedName = this.nakama.users[this.isOfficial][this.target][this.content_creator.user_id]['display_name'];
+        } catch (e) { }
         this.content_creator.publisher
           = this.content_creator.is_me ? this.nakama.users.self['display_name']
-            : this.nakama.users[this.isOfficial][this.target][this.content_creator.user_id]['display_name'];
+            : (CatchedName || this.content_creator.publisher || this.content_creator.display_name);
       } catch (e) { }
       this.set_various_display(this.content_creator);
       for (let i = 0, j = this.content_related_creator.length; i < j; i++) {
@@ -300,34 +305,29 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         this.content_related_creator[i].timeDisplay = new Date(this.content_related_creator[i].timestamp).toLocaleString();
       }
     } catch (e) { }
-    try { // 중복 정보 통합
-      this.content_related_creator[0].publisher
-        = this.content_related_creator[0].is_me ? this.nakama.users.self['display_name']
-          : this.nakama.users[this.isOfficial][this.target][this.content_related_creator[0].user_id]['display_name'];
-      if (this.content_related_creator[0].timestamp == this.content_related_creator[1].timestamp) { // 외부에서 가져온 파일
-        this.content_related_creator[0].publisher = this.content_related_creator[1].is_me ? this.nakama.users.self['display_name']
-          : this.nakama.users[this.isOfficial][this.target][this.content_related_creator[1].user_id]['display_name'];
-        this.content_related_creator.splice(1, 1);
-      }
-    } catch (e) {
-      try { // 오프라인 재검토
-        this.content_related_creator[0].publisher = this.content_related_creator[1].display_name;
-        if (this.content_related_creator[0].timestamp == this.content_related_creator[1].timestamp) { // 외부에서 가져온 파일
-          this.content_related_creator[0].publisher = this.content_related_creator[1].display_name;
-          this.content_related_creator.splice(1, 1);
-        }
-      } catch (e) { }
-      try {
-        if (!this.content_related_creator[0].publisher)
-          this.content_related_creator[0].publisher = this.content_related_creator[0].display_name;
-      } catch (e) { }
-    }
     try { // 시간순 정렬
       this.content_related_creator.sort((a, b) => {
         if (a.timestamp > b.timestamp) return -1;
         else if (a.timestamp < b.timestamp) return 1;
         else return 0;
       });
+    } catch (e) { }
+    for (let rel_info of this.content_related_creator)
+      delete rel_info.hidden;
+    for (let related_creator of this.content_related_creator) {
+      let CatchedName: string;
+      try {
+        CatchedName = this.nakama.GetOverrideName(related_creator.user_id, this.isOfficial, this.target);
+        if (!CatchedName) CatchedName = this.nakama.users[this.isOfficial][this.target][related_creator.user_id]['display_name'];
+      } catch (e) { }
+      try {
+        related_creator.publisher = related_creator.is_me ? this.nakama.users.self['display_name'] :
+          (CatchedName || related_creator.publisher || related_creator.display_name);
+      } catch (e) { }
+    }
+    try { // 중복 정보 통합
+      if (this.content_creator.timestamp == this.content_related_creator[0].timestamp)
+        this.content_related_creator[0].hidden = true;
     } catch (e) { }
   }
 
@@ -1719,6 +1719,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       if (channels[i]['status'] == 'missing' || channels[i]['status'] == 'offline')
         channels.splice(i, 1);
     }
+    for (let rel_info of this.content_related_creator)
+      delete rel_info.hidden;
     if (channels.length)
       this.modalCtrl.create({
         component: ShareContentToOtherPage,
