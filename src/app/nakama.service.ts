@@ -170,10 +170,11 @@ export class NakamaService {
     });
     // 채널 불러오기
     await this.load_channel_list();
+    await this.CheckIfLostLocal();
+    this.rearrange_channels();
     // 마지막 상태바 정보 불러오기: 사용자의 연결 여부 의사가 반영되어있음
     let list = await this.indexed.loadTextFromUserPath('servers/list.json');
-    if (list)
-      this.statusBar.groupServer = JSON.parse(list);
+    if (list) this.statusBar.groupServer = JSON.parse(list);
     let isOfficial = Object.keys(this.statusBar.groupServer);
     isOfficial.forEach(_is_official => {
       if (!this.servers[_is_official])
@@ -187,6 +188,36 @@ export class NakamaService {
       }
     });
     this.showServer = Boolean(localStorage.getItem('showServer'));
+  }
+
+  /** 만약 채널 정보를 불러왔는데 로컬 채널이 없다면  
+   * 로컬 채널 정보 유실인지 검토하고 불러오기를 시도
+   */
+  async CheckIfLostLocal() {
+    let list = await this.indexed.GetFileListFromDB('servers/local/target/channels');
+    for (let path of list)
+      try {
+        let sep = path.split('/');
+        if (sep.length == 5) {
+          let getChannelId = sep.pop();
+          if (!this.channels_orig['local']['target']) this.channels_orig['local']['target'] = {};
+          if (!this.channels_orig['local']['target'][getChannelId]) {
+            let regen_info = {
+              CDN: 0,
+              id: getChannelId,
+              info: { isOfficial: 'local', target: 'target', name: this.lang.text['Nakama']['DamagedChannel'] },
+              local: true,
+              redirect: { type: 0 },
+              server: { isOfficial: 'local', target: 'target', name: '삭제된 서버' },
+              status: "online",
+              title: this.lang.text['Nakama']['DamagedChannel'],
+            }
+            this.channels_orig['local']['target'][getChannelId] = regen_info;
+          }
+        }
+      } catch (e) {
+        console.log('로컬 채널 재검토 단계 오류: ', e);
+      }
   }
 
   /** 시작시 해야할 일 알림을 설정 */
@@ -1571,6 +1602,7 @@ export class NakamaService {
    * channels_orig[isOfficial][target][channel_id] = { ...info }
    */
   channels_orig = {
+    'local': {},
     'official': {},
     'unofficial': {},
   };
@@ -1637,9 +1669,9 @@ export class NakamaService {
           let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
           channel_ids.forEach(_cid => {
             try {
-              if (_cid.indexOf('tmp_files') >= 0) {
+              if (this.channels_orig[_is_official][_target][_cid]['volatile']) {
                 delete this.channels_orig[_is_official][_target][_cid];
-                throw '휘발성 채널 무시';
+                throw `휘발성 채널 무시: ${_cid}`;
               }
               if (this.channels_orig[_is_official][_target][_cid]['redirect']['type'] == 2)
                 this.channels_orig[_is_official][_target][_cid]['info'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
@@ -1649,12 +1681,13 @@ export class NakamaService {
                 this.channels_orig[_is_official][_target][_cid]['status'] = 'online';
               if (this.channels_orig[_is_official][_target][_cid]['is_new'] && !this.subscribe_lock)
                 this.has_new_channel_msg = true;
-            } catch (e) { }
+            } catch (e) {
+              console.log('채널 불러오기 취소됨: ', e);
+            }
           });
         });
       });
     }
-    this.rearrange_channels();
   }
 
   /** 알림 아이디  
