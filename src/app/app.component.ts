@@ -43,19 +43,19 @@ export class AppComponent {
     else if (platform.is('iphone'))
       isPlatform = 'iOS';
     isNativefier = platform.is('electron');
-    indexed.initialize(() => {
-      // 앱 재시작시 자동으로 동기화할 수 있도록 매번 삭제
-      let init = global.CatchGETs(location.href) || {};
-      global.initialize();
-      nakama.AddressToQRCodeAct(init);
-      noti.initialize();
-      noti.load_settings();
-      indexed.GetFileListFromDB('tmp_files', list => {
-        list.forEach(path => indexed.removeFileFromUserPath(path));
-      });
-    });
     lang.Callback_nakama = () => {
-      nakama.initialize();
+      indexed.initialize(() => {
+        nakama.initialize();
+        // 앱 재시작시 자동으로 동기화할 수 있도록 매번 삭제
+        let init = global.CatchGETs(location.href) || {};
+        global.initialize();
+        nakama.AddressToQRCodeAct(init);
+        noti.initialize();
+        noti.load_settings();
+        indexed.GetFileListFromDB('tmp_files', list => {
+          list.forEach(path => indexed.removeFileFromUserPath(path));
+        });
+      });
       lang.Callback_nakama = undefined;
     }
     // 모바일 기기 특정 설정
