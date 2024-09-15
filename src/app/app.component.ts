@@ -7,7 +7,6 @@ import { LocalNotiService } from './local-noti.service';
 import { NakamaService } from './nakama.service';
 import { LanguageSettingService } from './language-setting.service';
 import { GlobalActService } from './global-act.service';
-import { LocalNotifications } from "@capacitor/local-notifications";
 /** 페이지가 돌고 있는 플렛폼 구분자 */
 export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'DesktopPWA';
 /** Nativefier로 실행중인지 검토하기 */
@@ -50,11 +49,6 @@ export class AppComponent {
       global.initialize();
       nakama.AddressToQRCodeAct(init);
       noti.initialize();
-      if (isPlatform == 'Android') // 알림 권한 설정
-        LocalNotifications.checkPermissions().then(async v => {
-          if (v.display != 'granted')
-            await LocalNotifications.requestPermissions();
-        });
       noti.load_settings();
       indexed.GetFileListFromDB('tmp_files', list => {
         list.forEach(path => indexed.removeFileFromUserPath(path));
@@ -62,10 +56,7 @@ export class AppComponent {
     });
     lang.Callback_nakama = () => {
       nakama.initialize();
-      nakama.check_if_online();
-      lang.isFirstTime = false;
-      client.RegisterNotificationReact();
-      noti.RegisterNofiticationActionType();
+      lang.Callback_nakama = undefined;
     }
     // 모바일 기기 특정 설정
     if (isPlatform == 'Android' || isPlatform == 'iOS') {
@@ -81,12 +72,6 @@ export class AppComponent {
           // logic take over
         });
       });
-    }
-    nakama.on_socket_connected['connection_check'] = () => {
-      nakama.check_if_online();
-    }
-    nakama.on_socket_disconnected['connection_check'] = () => {
-      nakama.check_if_online();
     }
   }
 }

@@ -196,7 +196,6 @@ export class SettingsPage implements OnInit, OnDestroy {
   async LanguageChanged(ev: any) {
     this.lang.lang = ev.detail.value;
     await this.lang.load_selected_lang();
-    this.noti.RegisterNofiticationActionType();
   }
 
   go_to_page(_page: string) {

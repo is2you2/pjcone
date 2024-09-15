@@ -1,6 +1,4 @@
 import { Injectable } from '@angular/core';
-import { isPlatform } from './app.component';
-import { LocalNotificationSchema, LocalNotifications, PendingLocalNotificationSchema, Schedule } from "@capacitor/local-notifications";
 import { IndexedDBService } from './indexed-db.service';
 import { LanguageSettingService } from './language-setting.service';
 
@@ -24,42 +22,12 @@ export interface TotalNotiForm {
    */
   icon?: string;
   /** 상단바와 알림 좌측에 보이는 작은 아이콘  
-   * res/drawable 폴더에 포함되어 있는 이름. 안드로이드 전용
+   * res/drawable 폴더에 포함되어 있는 이름. 안드로이드 전용  
+   * 지금은 병합 구조와 엮인게 많아서 유일하게 남겨둠
    */
   smallIcon_ln?: string;
-  /** 언제 발동할까요? */
-  triggerWhen_ln?: Schedule;
-  /** 알림 아이콘의 색상. 안드로이드 전용  
-   * '#' 없이 hex 코드만 (ex. ff0000)
-   */
-  iconColor_ln?: string;
-  /** 안드로이드 전용. 그룹알림시 그룹 이름. 테스트 안됨  
-   * 
-   * Used to group multiple notifications.
-   *
-   * Calls setGroup() on NotificationCompat.Builder with the provided value.
-   *
-   * Only available for Android.
-   */
-  group_ln?: string;
-  /** 안드로이드 전용, 그룹 요약 사용여부 */
-  groupSummary_ln?: boolean;
-  /** 안드로이드 전용: 그룹요약 사용시 요약내용 */
-  groupSummaryText_ln?: string;
-  /** 안드로이드 전용.  
-   * 알림을 밀어서 제거할 수 있는지 여부
-   */
-  ongoing_ln?: boolean;
-  /** 안드로이드 전용.  
-   * 앱을 진입할 때 알림이 삭제됩니다  
-   */
-  autoCancel_ln?: boolean;
-  /** 알림에 저장될 추가 데이터, Json 형태로 저장됩니다 */
-  extra_ln?: any;
   /** 이미지 첨부, 가로폭에 맞추어 보여짐 */
   image?: string;
-  /** Android: 알림 액션 id (string) / 하나만 받으므로 [0]만 사용 */
-  actions_ln?: any[];
   /** 웹 알림 내 알림 행동 */
   actions_wm?: any[];
   /** 알림 내장 데이터 */
@@ -154,119 +122,51 @@ export class LocalNotiService {
       console.log('Service Worker is not supported in this browser.');
     }
   }
-  /** 알림 액션 추가하기 */
-  RegisterNofiticationActionType() {
-    // 모바일 알림 행동에 대한 것으로 웹은 무시함
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') return;
-    LocalNotifications.registerActionTypes({
-      types: [{
-        // 그룹 채널용 답장보내기
-        id: 'group_dedi',
-        actions: [{
-          id: 'reply',
-          title: this.lang.text['MinimalChat']['Noti_Reply'],
-          input: true,
-        }],
-      }, {
-        // 채널 채팅용 답장보내기
-        id: 'chatroom_reply',
-        actions: [{
-          id: 'reply',
-          title: this.lang.text['MinimalChat']['Noti_Reply'],
-          input: true,
-        }],
-      }]
-    });
-  }
   /**
    * 로컬 푸쉬 알림을 동작시킵니다
    * @param header 지금 바라보고 있는 화면의 이름
    * @param _action_wm 클릭시 행동 (Web.Noti)
    */
   async PushLocal(opt: TotalNotiForm, header?: string, _action_wm: Function = () => { }) {
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-      // 창을 바라보는 중이라면 무시됨, 바라보는 중이면서 같은 화면이면 무시됨
-      if (document.hasFocus() && this.Current == header) return;
-      if (!this.settings.silent[opt.smallIcon_ln || header || 'icon_mono']) return;
-      if (opt.triggerWhen_ln) return; // 웹에는 예약 기능이 없음
-      /** 기본 알림 옵션 (교체될 수 있음) */
-      const input: any = {
-        badge: opt.icon || `assets/badge/${opt.smallIcon_ln || header || 'favicon'}.png`,
-        body: opt.body,
-        icon: opt.icon || `assets/icon/${opt.smallIcon_ln || header || 'favicon'}.png`,
-        image: opt.image,
-        silent: !this.settings.silent[opt.smallIcon_ln] || false,
-        tag: `${opt.id}`,
-        actions: opt.actions_wm,
-        data: opt.data_wm,
-        requireInteraction: Boolean(opt.actions_wm),
-      }
-      try {
-        if (this.WebNoties[opt.id]) {
-          try {
-            this.WebNoties[opt.id].close();
-          } catch (e) { }
-          delete this.WebNoties[opt.id];
-        }
-        await this.MobileSWReg.showNotification(opt.title, { ...input });
-        let getNoties = await this.MobileSWReg.getNotifications();
-        for (let i = 0, j = getNoties.length; i < j; i++)
-          if (getNoties[i].tag == `${opt.id}`) {
-            this.WebNoties[opt.id] = getNoties[i];
-            break;
-          }
-        window['swRegListenerCallback'][opt.id] = () => {
-          _action_wm();
-          window.focus();
+    // 창을 바라보는 중이라면 무시됨, 바라보는 중이면서 같은 화면이면 무시됨
+    if (document.hasFocus() && this.Current == header) return;
+    if (!this.settings.silent[opt.smallIcon_ln || header || 'icon_mono']) return;
+    /** 기본 알림 옵션 (교체될 수 있음) */
+    const input: any = {
+      badge: opt.icon || `assets/badge/${opt.smallIcon_ln || header || 'favicon'}.png`,
+      body: opt.body,
+      icon: opt.icon || `assets/icon/${opt.smallIcon_ln || header || 'favicon'}.png`,
+      image: opt.image,
+      silent: !this.settings.silent[opt.smallIcon_ln] || false,
+      tag: `${opt.id}`,
+      actions: opt.actions_wm,
+      data: opt.data_wm,
+      requireInteraction: Boolean(opt.actions_wm),
+    }
+    try {
+      if (this.WebNoties[opt.id]) {
+        try {
           this.WebNoties[opt.id].close();
+        } catch (e) { }
+        delete this.WebNoties[opt.id];
+      }
+      await this.MobileSWReg.showNotification(opt.title, { ...input });
+      let getNoties = await this.MobileSWReg.getNotifications();
+      for (let i = 0, j = getNoties.length; i < j; i++)
+        if (getNoties[i].tag == `${opt.id}`) {
+          this.WebNoties[opt.id] = getNoties[i];
+          break;
         }
-      } catch (e) { }
-    } else { // 모바일 로컬 푸쉬
-      if (this.Current == header) return;
-      if (!this.settings.silent[opt.smallIcon_ln || header || 'icon_mono']) return;
-      let input: LocalNotificationSchema = {
-        id: opt.id,
-        title: opt.title,
-        body: opt.body,
-        schedule: opt.triggerWhen_ln,
-        iconColor: `#${opt.iconColor_ln || 'ffd94e'}`,
-        extra: opt.extra_ln,
-        autoCancel: opt.autoCancel_ln,
-        largeIcon: opt.icon,
-        smallIcon: opt.smallIcon_ln || header || 'icon_mono',
-        group: opt.group_ln,
-        groupSummary: opt.groupSummary_ln,
-        summaryText: opt.groupSummaryText_ln,
-        ongoing: opt.ongoing_ln,
-        actionTypeId: opt.actions_ln?.shift(),
-      };
-      if (opt.image)
-        input['attachments'] = [{
-          id: '0',
-          url: opt.image,
-        }];
-      let keys = Object.keys(input);
-      for (let i = 0, j = keys.length; i < j; i++)
-        if (input[keys[i]] === undefined)
-          delete input[keys[i]];
-      LocalNotifications.schedule({ notifications: [input] });
-    }
-  }
-
-  /** 기등록 id 불러오기 (Android: 예약된 알림) */
-  GetNotificationIds(_CallBack = (_list: PendingLocalNotificationSchema[]) => { }) {
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-    } else {
-      LocalNotifications.getPending().then((ids) => {
-        _CallBack(ids.notifications);
-      });
-    }
+      window['swRegListenerCallback'][opt.id] = () => {
+        _action_wm();
+        window.focus();
+        this.WebNoties[opt.id].close();
+      }
+    } catch (e) { }
   }
 
   /** 알림 제거하기 */
   ClearNoti(id: any) {
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-      if (this.WebNoties[id]) this.WebNoties[id].close();
-    } else LocalNotifications.cancel({ notifications: [{ id: id }] });
+    if (this.WebNoties[id]) this.WebNoties[id].close();
   }
 }

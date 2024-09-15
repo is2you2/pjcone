@@ -1920,10 +1920,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           id: 7,
           title: this.lang.text['ChatRoom']['SendFile'],
           body: this.userInput.file.filename || this.userInput.file.name,
-          group_ln: 'diychat',
           smallIcon_ln: 'diychat',
-          autoCancel_ln: true,
-          iconColor_ln: '271e38',
         }, this.noti.Current);
       } catch (e) {
         console.log('cdn 업로드 처리 실패: ', e);
@@ -1931,10 +1928,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           id: 7,
           title: this.lang.text['Nakama']['FailedUpload'],
           body: `${this.userInput.file.filename || this.userInput.file.name}: ${e}`,
-          group_ln: 'diychat',
           smallIcon_ln: 'diychat',
-          autoCancel_ln: true,
-          iconColor_ln: '271e38',
         }, this.noti.Current);
       }
       FileAttach = true;
@@ -1969,10 +1963,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             id: 7,
             title: this.lang.text['ChatRoom']['SendFile'],
             body: this.userInput.file.filename || this.userInput.file.name,
-            group_ln: 'diychat',
             smallIcon_ln: 'diychat',
-            autoCancel_ln: true,
-            iconColor_ln: '271e38',
           }, this.noti.Current);
         } catch (e) { // 사설 서버 업로드 실패시 직접 저장
           let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${local_msg_id}.${this.userInput.file.file_ext}`;
@@ -1980,10 +1971,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             id: 7,
             title: this.lang.text['Nakama']['FailedUpload'],
             body: `${this.userInput.file.filename || this.userInput.file.name}: ${e}`,
-            group_ln: 'diychat',
             smallIcon_ln: 'diychat',
-            autoCancel_ln: true,
-            iconColor_ln: '271e38',
           }, this.noti.Current);
           await this.indexed.saveBlobToUserPath(this.userInput.file.blob, path);
         }

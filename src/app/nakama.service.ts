@@ -118,12 +118,6 @@ export class NakamaService {
   StartPage: string;
   async initialize() {
     // 기등록 알림 id 검토
-    this.noti.GetNotificationIds((list) => {
-      let id_array = [];
-      for (let i = 0, j = list.length; i < j; i++)
-        id_array.push(list[i].id);
-      this.registered_id = id_array;
-    });
     await this.set_all_todo_notification();
     let profile = await this.indexed.loadTextFromUserPath('servers/self/profile.json');
     if (profile) this.users.self = JSON.parse(profile);
@@ -340,15 +334,6 @@ export class NakamaService {
           title: noti_info.title,
           body: noti_info.description,
           smallIcon_ln: 'todo',
-          iconColor_ln: color,
-          group_ln: 'todo',
-          triggerWhen_ln: {
-            at: new Date(targetTime),
-          },
-          extra_ln: {
-            type: 'AddTodoMenuPage',
-            data: JSON.stringify(noti_info),
-          },
         });
       }
     }
@@ -2988,16 +2973,7 @@ export class NakamaService {
         body: c.content['msg'] || c.content['noti']
           || (c.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined)
           || `(${this.lang.text['ChatRoom']['attachments']})`,
-        extra_ln: {
-          type: 'ChatRoomPage',
-          id: msg.channel_id,
-          isOfficial: _is_official,
-          target: _target,
-        },
-        group_ln: 'diychat',
         smallIcon_ln: 'diychat',
-        autoCancel_ln: true,
-        iconColor_ln: '271e38',
       }
       if (c.content['url'] && c.content['type'] && c.content['type'].indexOf('image/') == 0)
         PushInfo['image'] = c.content['url'];
@@ -3588,17 +3564,7 @@ export class NakamaService {
           title: this.servers[_is_official][_target].info.name,
           body: decode_body,
           image: decode_image,
-          extra_ln: {
-            type: 'AllUserNotification',
-            title: this.servers[_is_official][_target].info.name,
-            body: decode_body,
-            image: decode_image,
-            isOfficial: _is_official,
-            target: _target,
-          },
           smallIcon_ln: 'diychat',
-          group_ln: 'all_user_noti',
-          iconColor_ln: 'b95437',
         }, 'global_noti_all', (_ev: any) => {
           let image_form = `<div style="text-align: center"><img src="${decode_image}" alt="noti_image" style="border-radius: 2px"></div>`;
           let text_form = `<div>${this.global.HTMLEncode(decode_body)}</div>`;
@@ -3686,11 +3652,8 @@ export class NakamaService {
           id: v.code,
           title: `${this.groups[_is_official][_target][v.content['group_id']]['name']}: ${this.lang.text['Nakama']['LocalNotiTitle']}`,
           body: v.subject,
-          group_ln: 'diychat',
           icon: this.groups[_is_official][_target][v.content['group_id']['img']],
           smallIcon_ln: 'diychat',
-          autoCancel_ln: true,
-          iconColor_ln: '271e38',
         }, undefined, (_ev: any) => {
           this.check_notifications(v, _is_official, _target);
         });
@@ -3716,20 +3679,8 @@ export class NakamaService {
         this.noti.PushLocal({
           id: v.code,
           title: `${this.groups[_is_official][_target][v.content['group_id']]['name']}: ${this.lang.text['Nakama']['ReqContTitle']}`,
-          group_ln: 'diychat',
           icon: this.groups[_is_official][_target][v.content['group_id']]['img'],
-          extra_ln: {
-            type: 'NakamaReqContTitle',
-            serverName: this.servers[_is_official][_target].info.name,
-            userName: this.load_other_user(v.sender_id, _is_official, _target)['display_name'],
-            group_id: v.content['group_id'],
-            user_id: v.sender_id,
-            isOfficial: _is_official,
-            Target: _target,
-          },
           smallIcon_ln: 'diychat',
-          autoCancel_ln: true,
-          iconColor_ln: '271e38',
         }, undefined, (_ev: any) => {
           if (this.socket_reactive['group_detail'].info.id == v.content['group_id']) return;
           this.open_group_detail({ info: this.groups[_is_official][_target][v.content['group_id']] });
@@ -3811,10 +3762,7 @@ export class NakamaService {
           id: 7,
           title: this.lang.text['Nakama']['FailedUpload'],
           body: `${_msg.content.filename || _msg.content.name}: ${e}`,
-          group_ln: 'diychat',
           smallIcon_ln: 'diychat',
-          autoCancel_ln: true,
-          iconColor_ln: '271e38',
         }, this.noti.Current);
         this.p5toast.show({
           text: `${this.lang.text['Nakama']['FailedUpload']}: ${e}`,
@@ -3831,10 +3779,7 @@ export class NakamaService {
         id: 7,
         title: this.lang.text['ChatRoom']['SendFile'],
         body: _msg.content.filename,
-        group_ln: 'diychat',
         smallIcon_ln: 'diychat',
-        autoCancel_ln: true,
-        iconColor_ln: '271e38',
       }, this.noti.Current);
     }, 100);
   }
@@ -3962,10 +3907,7 @@ export class NakamaService {
         id: 7,
         title: this.lang.text['ChatRoom']['SendFile'],
         body: info.filename || info.name,
-        group_ln: 'diychat',
         smallIcon_ln: 'diychat',
-        autoCancel_ln: true,
-        iconColor_ln: '271e38',
       }, this.noti.Current);
     } catch (e) {
       console.log('SyncSaveFailed: ', e);
@@ -3973,10 +3915,7 @@ export class NakamaService {
         id: 7,
         title: this.lang.text['Nakama']['FailedUpload'],
         body: `${info.filename || info.name}: ${e}`,
-        group_ln: 'diychat',
         smallIcon_ln: 'diychat',
-        autoCancel_ln: true,
-        iconColor_ln: '271e38',
       }, this.noti.Current);
       throw e;
     }

@@ -535,19 +535,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
             id: this.lnId,
             title: target,
             body: data['msg'],
-            group_ln: 'simplechat',
-            extra_ln: {
-              type: 'MinimalChatPage',
-              componentProps: {
-                address: this.UserInputCustomAddress,
-                name: this.client.MyUserName,
-              },
-            },
-            actions_ln: ['group_dedi'],
             actions_wm: PWA_Action,
             smallIcon_ln: 'simplechat',
-            iconColor_ln: this.iconColor,
-            autoCancel_ln: true,
           }, this.Header, this.open_this);
         else if (data['type']) {
           switch (data['type']) {
@@ -556,19 +545,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                 id: this.lnId,
                 title: this.lang.text['MinimalChat']['user_join'],
                 body: target + ` | ${this.lang.text['MinimalChat']['user_join_comment']}`,
-                group_ln: 'simplechat',
-                extra_ln: {
-                  type: 'MinimalChatPage',
-                  componentProps: {
-                    address: this.UserInputCustomAddress,
-                    name: this.client.MyUserName,
-                  },
-                },
-                actions_ln: ['group_dedi'],
                 actions_wm: PWA_Action,
                 smallIcon_ln: 'simplechat',
-                iconColor_ln: this.iconColor,
-                autoCancel_ln: true,
               }, this.Header, this.open_this);
             } break;
             case 'leave': { // 사용자 나감
@@ -577,19 +555,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                 id: this.lnId,
                 title: this.lang.text['MinimalChat']['user_out'],
                 body: target + ` | ${this.lang.text['MinimalChat']['user_out_comment']}`,
-                group_ln: 'simplechat',
-                extra_ln: {
-                  type: 'MinimalChatPage',
-                  componentProps: {
-                    address: this.UserInputCustomAddress,
-                    name: this.client.MyUserName,
-                  },
-                },
-                actions_ln: ['group_dedi'],
                 actions_wm: PWA_Action,
                 smallIcon_ln: 'simplechat',
-                iconColor_ln: this.iconColor,
-                autoCancel_ln: true,
               }, this.Header, this.open_this);
             } break;
             case 'file': { // 파일 전송을 시작함
@@ -597,19 +564,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                 id: this.lnId,
                 title: target,
                 body: this.lang.text['MinimalChat']['user_send_attach'],
-                group_ln: 'simplechat',
-                extra_ln: {
-                  type: 'MinimalChatPage',
-                  componentProps: {
-                    address: this.UserInputCustomAddress,
-                    name: this.client.MyUserName,
-                  },
-                },
-                actions_ln: ['group_dedi'],
                 actions_wm: PWA_Action,
                 smallIcon_ln: 'simplechat',
-                iconColor_ln: this.iconColor,
-                autoCancel_ln: true,
               }, this.Header, this.open_this);
             } break;
           }
@@ -633,17 +589,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       this.noti.PushLocal({
         id: this.lnId,
         title: this.lang.text['MinimalChat']['failed_to_join'],
-        group_ln: 'simplechat',
-        extra_ln: {
-          type: 'MinimalChatPage',
-          componentProps: {
-            address: this.UserInputCustomAddress,
-            name: this.client.MyUserName,
-          },
-        },
-        autoCancel_ln: true,
         smallIcon_ln: 'simplechat',
-        iconColor_ln: this.iconColor,
       }, this.Header, this.open_this);
       if (this.client.p5canvas && this.client.p5canvas['OnDediMessage']) this.client.p5canvas['OnDediMessage']('ff0000');
       this.client.disconnect();
@@ -669,19 +615,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         this.noti.PushLocal({
           id: this.lnId,
           title: text,
-          group_ln: 'simplechat',
-          extra_ln: {
-            type: 'MinimalChatPage',
-            componentProps: {
-              address: this.UserInputCustomAddress,
-              name: this.client.MyUserName,
-            },
-          },
-          actions_ln: ['group_dedi'],
           actions_wm: PWA_Action,
-          autoCancel_ln: true,
           smallIcon_ln: 'simplechat',
-          iconColor_ln: this.iconColor,
         }, this.Header, this.open_this);
         if (this.client.p5canvas && this.client.p5canvas['OnDediMessage']) this.client.p5canvas['OnDediMessage']('ff0000');
       }

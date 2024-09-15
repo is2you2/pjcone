@@ -40,7 +40,6 @@ export class LanguageSettingService {
     }, 0);
   }
 
-  isFirstTime = true;
   /** 설정된 언어로 다시 불러오기 */
   async load_selected_lang() {
     return await new Promise((done, err) => {
@@ -61,8 +60,7 @@ export class LanguageSettingService {
                     this.text[tmpTitle] = {};
                 } else this.text[tmpTitle][v.rows[i]['obj']['#']] = v.rows[i]['obj'][this.lang];
               }
-              if (this.isFirstTime)
-                this.Callback_nakama();
+              if (this.Callback_nakama) this.Callback_nakama();
               done(undefined);
               p.remove();
             }, e => {

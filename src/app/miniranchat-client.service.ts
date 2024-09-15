@@ -6,7 +6,6 @@ import { P5ToastService } from './p5-toast.service';
 import { LanguageSettingService } from './language-setting.service';
 import { LocalNotiService } from './local-noti.service';
 import { isPlatform } from './app.component';
-import { LocalNotifications } from '@capacitor/local-notifications';
 import { GlobalActService } from './global-act.service';
 
 /** 기존 MiniRanchat과 서버를 공유하는 랜챗 클라이언트  
@@ -111,102 +110,6 @@ export class MiniranchatClientService {
       this.client.onerror = null;
       this.client.onmessage = null;
     }
-  }
-
-  /** 알림 클릭시 모바일앱 행동요령 등록 */
-  RegisterNotificationReact() {
-    this.noti.Sq_client = this;
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') return;
-    LocalNotifications.addListener('localNotificationActionPerformed', (ev: any) => {
-      try {
-        let ActType = ev['notification']['extra']['type'];
-        switch (ev['actionId']) {
-          case 'tap': // 알림을 탭함, 해당 알림에 해당하는 페이지를 열기
-            switch (ActType) {
-              case 'AllUserNotification': // 서버 전체 공지
-                let image_form = `<div style="text-align: center"><img *ngIf="${ev['notification']['extra'].image}" src="${ev['notification']['extra'].image}" alt="mini_image" style="border-radius: 8px"></div`;
-                let text_form = `<div>${this.global.HTMLEncode(ev['notification']['extra'].body)}</div>`;
-                let result_form = ev['notification']['extra'].image ? image_form + text_form : text_form;
-                this.alertCtrl.create({
-                  header: ev['notification']['extra'].title,
-                  message: new IonicSafeString(result_form),
-                  backdropDismiss: false,
-                  buttons: [{
-                    text: this.lang.text['Nakama']['LocalNotiOK'],
-                    handler: () => {
-                      this.nakama.servers[ev['notification']['extra'].isOfficial][ev['notification']['extra'].target].client.deleteNotifications(
-                        this.nakama.servers[ev['notification']['extra'].isOfficial][ev['notification']['extra'].target].session, [ev['notification']['extra'].noti_id]);
-                    }
-                  }]
-                }).then(v => v.present());
-                break;
-              case 'MinimalChatPage': // 그룹 채널채팅
-                this.RejoinGroupChat();
-                break;
-              case 'ChatRoomPage': // 채널 채팅
-                let _cid = ev['notification']['extra']['id'];
-                let _is_official = ev['notification']['extra']['isOfficial'];
-                let _target = ev['notification']['extra']['target'];
-                this.nakama.go_to_chatroom_without_admob_act(this.nakama.channels_orig[_is_official][_target][_cid]);
-                break;
-              case 'AddTodoMenuPage': // 해야할 일
-                this.nakama.open_add_todo_page(ev['notification']['extra']['data']);
-                break;
-              case 'NakamaReqContTitle': // 그룹 진입 알림 요청
-                let this_server = this.nakama.servers[ev['notification']['extra'].isOfficial][ev['notification']['extra'].Target];
-                let msg = '';
-                msg += `${this.lang.text['Nakama']['ReqContServer']}: ${ev['notification']['extra'].serverName}<br>`;
-                msg += `${this.lang.text['Nakama']['ReqContUserName']}: ${ev['notification']['extra'].userName}`;
-                this.alertCtrl.create({
-                  header: this.lang.text['Nakama']['ReqContTitle'],
-                  message: msg,
-                  buttons: [{
-                    text: this.lang.text['Nakama']['ReqContAccept'],
-                    handler: () => {
-                      this_server.client.addGroupUsers(this_server.session, ev['notification']['extra'].group_id, [ev['notification']['extra'].user_id])
-                        .then(v => {
-                          if (!v) console.warn('밴인 경우인 것 같음, 확인 필요');
-                          this_server.client.deleteNotifications(this_server.session, [ev['notification']['extra'].noti_id])
-                            .then(b => {
-                              if (b) this.nakama.update_notifications(ev['notification']['extra'].isOfficial, ev['notification']['extra'].Target);
-                              else console.warn('알림 지우기 실패: ', b);
-                            });
-                        });
-                    }
-                  }, {
-                    text: this.lang.text['Nakama']['ReqContReject'],
-                    handler: () => {
-                      this_server.client.kickGroupUsers(this_server.session, ev['notification']['extra'].group_id, [ev['notification']['extra'].user_id])
-                        .then(async b => {
-                          if (!b) console.warn('그룹 참여 거절을 kick한 경우 오류');
-                          await this_server.client.deleteNotifications(this_server.session, [ev['notification']['extra'].noti_id]);
-                          this.nakama.update_notifications(ev['notification']['extra'].isOfficial, ev['notification']['extra'].Target);
-                        })
-                    },
-                    cssClass: 'redfont',
-                  }],
-                }).then(v => v.present());
-                break;
-            }
-            break;
-          case 'reply': // 알림에서 답장을 보냄
-            let inputText = ev['inputValue'];
-            this.noti.ClearNoti(ev['notification']['id']);
-            switch (ActType) {
-              case 'MinimalChatPage': // 그룹 채널 채팅에 답장하기
-                let data = {
-                  msg: inputText.trim(),
-                }
-                data['name'] = this.MyUserName;
-                this.send(JSON.stringify(data));
-                break;
-            }
-            break;
-        }
-      } catch (e) {
-        console.warn('알림 실패에 대해서: ', e);
-      }
-    });
   }
 
   send(msg: string) {
