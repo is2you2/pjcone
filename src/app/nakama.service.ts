@@ -2183,7 +2183,6 @@ export class NakamaService {
             this.load_groups(_is_official, _target, targetGroup.user_groups[i].group.id, true);
             this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target, undefined, (channel: any) => {
               LastCounter++;
-              this.count_channel_online_member(channel, _is_official, _target);
               if (LastCounter == j) this.rearrange_channels();
             });
           }
