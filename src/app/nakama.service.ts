@@ -1471,8 +1471,9 @@ export class NakamaService {
       } // 만약 그게 나라면 내 정보 반환
     } catch (e) { }
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
-    if (!this.users[_is_official][_target][userId])
-      this.users[_is_official][_target][userId] = {};
+    // 이미 준비된 내용이 있으면 해당 내용 전달하기
+    if (this.users[_is_official][_target][userId]) return this.users[_is_official][_target][userId];
+    else this.users[_is_official][_target][userId] = {};
     // 사용자 정보 업데이트
     let failed_update_act = () => {
       this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.json`, (e, v) => {
