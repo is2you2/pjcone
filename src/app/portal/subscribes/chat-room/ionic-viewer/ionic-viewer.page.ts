@@ -1806,6 +1806,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           }
           if (this.p5canvas) this.p5canvas.remove();
         } catch (e) {
+          if (this.VideoMediaObject) {
+            this.VideoMediaObject.elt.src = '';
+            this.VideoMediaObject.elt.load();
+            this.VideoMediaObject.elt.remove();
+            this.VideoMediaObject.remove();
+            this.VideoMediaObject = undefined;
+          }
           console.log('비디오 썸네일 생성 취소: ', e);
         }
         break;
