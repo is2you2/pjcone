@@ -349,6 +349,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
         text: this.lang.text['AddGroup']['join_group_succ'],
       });
       setTimeout(() => {
+        this.nakama.rearrange_channels();
         this.navCtrl.pop();
       }, 500);
     }
