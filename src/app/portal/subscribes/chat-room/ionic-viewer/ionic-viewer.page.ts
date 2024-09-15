@@ -52,6 +52,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       if (this.VideoMediaObject.elt != document.pictureInPictureElement) {
         this.VideoMediaObject.elt.src = '';
         this.VideoMediaObject.elt.load();
+        this.VideoMediaObject.elt.remove();
         this.VideoMediaObject.remove();
       }
       this.VideoMediaObject = undefined;
