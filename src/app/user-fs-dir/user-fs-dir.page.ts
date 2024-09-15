@@ -552,16 +552,34 @@ export class UserFsDirPage implements OnInit {
     });
   }
 
-  RemoveDirectoryRecursive() {
+  /** 폴더 및 파일에 우클릭시 즉시 삭제 질의 절차 진행  
+   * @param index 파일 삭제시 리스트에서도 삭제하기 위한 번호처리
+   */
+  DeleteShortcut(info: any, index?: number) {
+    switch (info.mode) {
+      case 16893: // 폴더 삭제 처리
+        this.RemoveDirectoryRecursive(info.path);
+        break;
+      case 33206: // 파일 삭제처리
+        this.RemoveFile(info, index);
+        break;
+      default:
+        console.log('오류 검토용: ', info);
+        break;
+    }
+    return false;
+  }
+
+  RemoveDirectoryRecursive(dir = this.CurrentDir) {
     this.alertCtrl.create({
-      header: this.CurrentDir.substring(this.CurrentDir.lastIndexOf('/') + 1) || this.lang.text['UserFsDir']['ResetDB'],
+      header: dir.substring(dir.lastIndexOf('/') + 1) || this.lang.text['UserFsDir']['ResetDB'],
       message: this.lang.text['UserFsDir']['RemoveThisFolder'],
       buttons: [{
         text: this.lang.text['UserFsDir']['RemoveApply'],
         handler: async () => {
           let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['DeleteFile'] });
           loading.present();
-          let list = await this.indexed.GetFileListFromDB(this.CurrentDir);
+          let list = await this.indexed.GetFileListFromDB(dir);
           for (let i = 0, j = list.length; i < j; i++) {
             if (this.StopIndexing) {
               loading.dismiss();
@@ -571,12 +589,12 @@ export class UserFsDirPage implements OnInit {
             await this.indexed.removeFileFromUserPath(list[i]);
           }
           for (let i = this.DirList.length - 1; i >= 0; i--)
-            if (this.DirList[i].path.indexOf(this.CurrentDir) == 0)
+            if (this.DirList[i].path.indexOf(dir) == 0)
               this.DirList.splice(i, 1);
           for (let i = this.FileList.length - 1; i >= 0; i--)
-            if (this.FileList[i].path.indexOf(this.CurrentDir) == 0)
+            if (this.FileList[i].path.indexOf(dir) == 0)
               this.FileList.splice(i, 1);
-          this.MoveToUpDir();
+          if (dir === this.CurrentDir) this.MoveToUpDir();
           loading.dismiss();
           this.noti.ClearNoti(4);
         },
@@ -595,7 +613,7 @@ export class UserFsDirPage implements OnInit {
 
   RemoveFile(info: FileDir, i: number) {
     this.alertCtrl.create({
-      header: this.lang.text['UserFsDir']['DeleteFile'],
+      header: info.name,
       message: this.lang.text['ChatRoom']['CannotUndone'],
       buttons: [{
         text: this.lang.text['UserFsDir']['DeleteAccept'],

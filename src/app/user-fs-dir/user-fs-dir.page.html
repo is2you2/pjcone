@@ -42,14 +42,14 @@
         <ion-label>..</ion-label>
       </ion-item>
     </div>
-    <div *ngFor="let folder of DirList">
+    <div *ngFor="let folder of DirList" (contextmenu)="DeleteShortcut(folder)">
       <ion-item *ngIf="CurrentDir == folder.dir" button (click)="SelectFolder(folder)">
         <ion-icon slot="start" name="folder"></ion-icon>
         <ion-label>{{folder.name}}</ion-label>
       </ion-item>
     </div>
     <ion-accordion-group #FileSel>
-      <div *ngFor="let file of FileList; index as i">
+      <div *ngFor="let file of FileList; index as i" (contextmenu)="DeleteShortcut(file)">
         <ion-accordion *ngIf="CurrentDir == file.dir || is_file_selector" [value]="file.path">
           <ion-item slot="header">
             <ion-icon *ngIf="file.viewer == 'image'" slot="start" name="image"></ion-icon>
