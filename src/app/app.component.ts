@@ -14,7 +14,6 @@ export var isNativefier = false;
 /** 이미지 등 자료 링크용(웹 사이트 host) */
 export const SERVER_PATH_ROOT: string = 'https://is2you2.github.io/';
 import * as p5 from 'p5';
-import { MiniranchatClientService } from './miniranchat-client.service';
 window['p5'] = p5;
 
 @Component({
@@ -30,7 +29,6 @@ export class AppComponent {
     noti: LocalNotiService,
     nakama: NakamaService,
     indexed: IndexedDBService,
-    client: MiniranchatClientService,
     lang: LanguageSettingService,
     global: GlobalActService,
   ) {
@@ -43,19 +41,19 @@ export class AppComponent {
     else if (platform.is('iphone'))
       isPlatform = 'iOS';
     isNativefier = platform.is('electron');
-    lang.Callback_nakama = () => {
-      indexed.initialize(() => {
-        nakama.initialize();
-        // 앱 재시작시 자동으로 동기화할 수 있도록 매번 삭제
-        let init = global.CatchGETs(location.href) || {};
-        global.initialize();
-        nakama.AddressToQRCodeAct(init);
-        noti.initialize();
-        noti.load_settings();
-        indexed.GetFileListFromDB('tmp_files', list => {
-          list.forEach(path => indexed.removeFileFromUserPath(path));
-        });
+    indexed.initialize(() => {
+      // 앱 재시작시 자동으로 동기화할 수 있도록 매번 삭제
+      let init = global.CatchGETs(location.href) || {};
+      global.initialize();
+      nakama.AddressToQRCodeAct(init);
+      noti.initialize();
+      noti.load_settings();
+      indexed.GetFileListFromDB('tmp_files', list => {
+        list.forEach(path => indexed.removeFileFromUserPath(path));
       });
+    });
+    lang.Callback_nakama = () => {
+      nakama.initialize();
       lang.Callback_nakama = undefined;
     }
     // 모바일 기기 특정 설정
