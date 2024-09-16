@@ -763,10 +763,10 @@ export class GlobalActService {
       let texture_images = {};
       let LogDiv: p5.Element;
       p.setup = async () => {
-        this.BlenderLoadingCtrl = await this.loadingCtrl.create({ message: this.lang.text['ContentViewer']['OnLoadContent'] });
-        this.BlenderLoadingCtrl.present();
         let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight, p.WEBGL);
         canvas.parent(canvasDiv);
+        this.BlenderLoadingCtrl = await this.loadingCtrl.create({ message: this.lang.text['ContentViewer']['OnLoadContent'] });
+        this.BlenderLoadingCtrl.present();
         this.BlenderCanvasInside = canvas;
         p.textureMode(p.NORMAL);
         p.textureWrap(p.REPEAT);
