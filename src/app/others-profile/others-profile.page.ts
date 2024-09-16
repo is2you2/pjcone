@@ -39,6 +39,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
 
   lerpVal: number;
   p5canvas: p5;
+  p5ChangeImageSmooth: Function;
 
   ngOnInit() {
     this.route.queryParams.subscribe(_p => {
@@ -51,7 +52,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         this.target = this.group_info['server']['target'];
         this.nakama.load_other_user(this.info['user']['id'], this.isOfficial, this.target);
         this.nakama.socket_reactive['others-profile'] = (img_url: string) => {
-          this.p5canvas['ChangeImageSmooth'](img_url);
+          this.p5ChangeImageSmooth(img_url);
         };
         this.nakama.socket_reactive['others-online'] = () => {
           this.p5canvas.loop();
@@ -81,6 +82,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
       let userColorLerp = 0;
       let imgDiv: p5.Element;
       let EditingName = false;
+      let OnlineLamp = p.createDiv();
       p.setup = () => {
         let user_color = p.color(`#${(this.info['user']['id'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6)}`);
         user_rgb_color = `${p.red(user_color)}, ${p.green(user_color)}, ${p.blue(user_color)}`;
@@ -107,7 +109,6 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         imgDiv.style('background-size', 'cover');
         imgDiv.parent(this.OtherCanvasDiv);
         // 온라인 표시등
-        let OnlineLamp = p.createDiv();
         const LAMP_SIZE = '36px';
         OnlineLamp.style('background-color', this.info['user']['online'] ? this.statusBar.colors['online'] : this.statusBar.colors['offline']);
         OnlineLamp.style('width', LAMP_SIZE);
@@ -117,7 +118,6 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         OnlineLamp.style('left', `${this.OtherCanvasDiv.clientWidth / 2 + 38}px`);
         OnlineLamp.style('border-radius', LAMP_SIZE);
         OnlineLamp.parent(this.OtherCanvasDiv);
-        p['OnlineLamp'] = OnlineLamp;
         // 부드러운 이미지 전환
         selected_image = p.createImg(this.info['user'].img, 'profile_img');
         selected_image.style('width', IMAGE_SIZE);
@@ -136,7 +136,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         trashed_image.style('object-fit', 'cover');
         trashed_image.hide();
         trashed_image.parent(imgDiv);
-        p['ChangeImageSmooth'] = (url: string) => {
+        this.p5ChangeImageSmooth = (url: string) => {
           imgDiv.style('background-image', 'url(assets/data/avatar.svg)');
           if (!url) {
             trashed_image.elt.src = selected_image.elt.src;
@@ -257,12 +257,12 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         if (FadeOutTrashedLerp <= 0 && (this.lerpVal >= 1 || this.lerpVal <= 0) && userColorLerp >= 1) {
           // 이미지가 있다면 배경 지우기
           if (this.info['user'].img) imgDiv.style('background-image', '');
-          this.p5canvas['OnlineLamp'].style('background-color', this.info['user']['online'] ? this.statusBar.colors['online'] : this.statusBar.colors['offline']);
+          OnlineLamp.style('background-color', this.info['user']['online'] ? this.statusBar.colors['online'] : this.statusBar.colors['offline']);
           p.noLoop();
         }
       }
       p.windowResized = () => {
-        p['OnlineLamp'].style('left', `${this.OtherCanvasDiv.clientWidth / 2 + 38}px`);
+        OnlineLamp.style('left', `${this.OtherCanvasDiv.clientWidth / 2 + 38}px`);
       }
       p.keyPressed = (ev: any) => {
         if (ev.code == 'Enter') {
@@ -274,7 +274,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
+    this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     };
   }
@@ -392,7 +392,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
   }
 
   ionViewWillLeave() {
-    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5KeyShortCut['Escape'];
   }
 
   ngOnDestroy() {
@@ -400,5 +400,6 @@ export class OthersProfilePage implements OnInit, OnDestroy {
     delete this.nakama.socket_reactive['others-profile'];
     delete this.nakama.socket_reactive['others-online'];
     this.p5canvas.remove();
+    this.p5ChangeImageSmooth = undefined;
   }
 }

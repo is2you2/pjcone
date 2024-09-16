@@ -34,6 +34,9 @@ export class WebrtcService {
   }
 
   private p5canvas: p5;
+  private p5waitingAct: any;
+  private p5callButton: p5.Element;
+  private p5hangup: Function;
 
   private localMedia: any;
   private localStream: any;
@@ -250,14 +253,18 @@ export class WebrtcService {
       }
     } else this.isCallable = true;
     await this.createCall();
-    if (this.p5canvas)
-      this.p5canvas['call_button'].elt.disabled = false;
+    if (this.p5callButton)
+      this.p5callButton.elt.disabled = false;
   }
 
   createP5_panel() {
     this.OnUse = true;
     if (this.p5canvas) {
-      clearTimeout(this.p5canvas['waiting_act']);
+      clearTimeout(this.p5waitingAct);
+      this.p5waitingAct = undefined;
+      this.p5callButton.remove();
+      this.p5callButton = undefined;
+      this.p5hangup = undefined;
       this.p5canvas.remove();
     }
     this.p5canvas = new p5((p: p5) => {
@@ -286,26 +293,26 @@ export class WebrtcService {
         let waiting = () => {
           if (this.JoinInited) {
             osc.stop(.1);
-            clearTimeout(p['waiting_act']);
+            clearTimeout(this.p5waitingAct);
           } else {
             if (osc) osc.stop(.1);
             osc = new p5.Oscillator(380, 'sine');
             osc.start();
             osc.amp(1, .15);
             osc.amp(0, .75);
-            p['waiting_act'] = setTimeout(() => {
+            this.p5waitingAct = setTimeout(() => {
               waiting();
             }, 1200);
           }
         }
-        p['waiting_act'] = setTimeout(() => {
+        this.p5waitingAct = setTimeout(() => {
           waiting();
         }, 0);
         // 다른 기기에서 통화가 연결된 경우 나머지 기기에서 중복 연결 안내음 표시 제거
-        p['hangup'] = (duplicated = false) => {
+        this.p5hangup = (duplicated = false) => {
           if (!this.isConnected && !duplicated) return;
           osc.stop(.1);
-          clearTimeout(p['waiting_act']);
+          clearTimeout(this.p5waitingAct);
           osc = new p5.Oscillator(380, 'sine');
           osc.start();
           osc.freq(250, .35);
@@ -374,7 +381,7 @@ export class WebrtcService {
           this.CreateAnswer();
         });
         call_button.elt.disabled = true;
-        p['call_button'] = call_button;
+        this.p5callButton = call_button;
 
         mute_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="mic-outline"></ion-icon>');
         mute_button.parent(buttons);
@@ -467,11 +474,18 @@ export class WebrtcService {
           borderLerp -= .03;
         update_border();
         if (!this.OnUse) { // 사용하지 않게 되면 퇴장 애니메이션
-          if (this.p5canvas && !NotUsed) {
-            this.p5canvas['hangup']();
+          if (this.p5hangup && !NotUsed) {
+            this.p5hangup();
             div.hide();
             setTimeout(() => {
-              if (!this.OnUse) this.p5canvas.remove();
+              if (!this.OnUse) {
+                clearTimeout(this.p5waitingAct);
+                this.p5waitingAct = undefined;
+                this.p5callButton.remove();
+                this.p5callButton = undefined;
+                this.p5hangup = undefined;
+                this.p5canvas.remove();
+              }
             }, 1000);
             NotUsed = true;
           }
@@ -527,7 +541,8 @@ export class WebrtcService {
           await this.close_webrtc();
           break;
         case 'connected':
-          if (this.p5canvas) clearTimeout(this.p5canvas['waiting_act']);
+          if (this.p5waitingAct)
+            clearTimeout(this.p5waitingAct);
           break;
         default:
           console.log('연결 상태 변경됨: ', ev.target.connectionState);
@@ -603,8 +618,7 @@ export class WebrtcService {
 
   /** 전화 요청 생성 */
   CreateOffer() {
-    if (this.p5canvas)
-      this.p5canvas['call_button'].hide();
+    if (this.p5callButton) this.p5callButton.hide();
 
     this.PeerConnection.createOffer({
       offerToReceiveVideo: 1,
@@ -688,8 +702,7 @@ export class WebrtcService {
 
   // Logs answer to offer creation and sets peer connection session descriptions.
   private async createdAnswer(description: any, _target?: any) {
-    if (this.p5canvas)
-      this.p5canvas['call_button'].hide();
+    if (this.p5callButton) this.p5callButton.hide();
     this.LocalAnswer = description;
 
     this.PeerConnection.setLocalDescription(description)
@@ -767,8 +780,7 @@ export class WebrtcService {
 
   /** 통화 종료하기 */
   private async HangUpCall(leaveMatch: boolean) {
-    if (this.p5canvas)
-      this.p5canvas['hangup']();
+    if (this.p5hangup) this.p5hangup();
     this.isCallable = true;
     this.isConnected = false;
     if (this.PeerConnection) {

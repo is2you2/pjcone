@@ -323,7 +323,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
     this.PageOut = false;
     if (this.p5canvas) this.p5canvas.windowResized();
     this.global.StoreShortCutAct('instant-call');
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
+    this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     };
     if (this.CallClosed) this.navCtrl.pop();
@@ -331,7 +331,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
 
   ionViewWillLeave() {
     this.PageOut = true;
-    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5KeyShortCut['Escape'];
     this.global.RestoreShortCutAct('instant-call');
   }
 

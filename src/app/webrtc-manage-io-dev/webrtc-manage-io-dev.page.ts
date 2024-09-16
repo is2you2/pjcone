@@ -76,7 +76,7 @@ export class WebrtcManageIoDevPage implements OnInit {
   }
 
   ionViewDidEnter() {
-    this.global.p5key['KeyShortCut']['AddAct'] = () => {
+    this.global.p5KeyShortCut['AddAct'] = () => {
       this.OpenNewWebRTCServerForm();
     }
   }
@@ -149,6 +149,6 @@ export class WebrtcManageIoDevPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    delete this.global.p5key['KeyShortCut']['AddAct'];
+    delete this.global.p5KeyShortCut['AddAct'];
   }
 }

@@ -69,7 +69,7 @@ export class CreatorPage implements OnInit {
   }
 
   ionViewDidEnter() {
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
+    this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
   }
@@ -80,6 +80,6 @@ export class CreatorPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5KeyShortCut['Escape'];
   }
 }

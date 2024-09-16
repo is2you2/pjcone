@@ -127,10 +127,15 @@ export class MiniranchatClientService {
   DownloadPartManager = {};
   /** 재접속을 위한 빠른 버튼 보여주기 */
   p5canvas: p5;
+  p5OnDediMessage: Function;
+
   cacheAddress = '';
   /** 페이지는 벗어났으나 계속 연결을 유지중일 때 생성 */
   CreateRejoinButton() {
-    if (this.p5canvas) this.p5canvas.remove();
+    if (this.p5canvas) {
+      this.p5OnDediMessage = undefined;
+      this.p5canvas.remove();
+    }
     this.p5canvas = new p5((p: p5) => {
       p.noCanvas();
       p.setup = () => {
@@ -144,7 +149,7 @@ export class MiniranchatClientService {
         float_button.style("background-color: #8888");
         float_button.style("border-radius: 24px");
         // 메시지를 받으면 배경색이 변함
-        p['OnDediMessage'] = (color: string) => {
+        this.p5OnDediMessage = (color: string) => {
           float_button.style(`background-color: #${color}88`);
         }
         float_button.elt.onclick = () => {
@@ -185,7 +190,10 @@ export class MiniranchatClientService {
     this.IsConnected = false;
     this.cacheAddress = '';
     this.uuid = undefined;
-    if (this.p5canvas) this.p5canvas.remove();
+    if (this.p5canvas) {
+      this.p5OnDediMessage = undefined;
+      this.p5canvas.remove();
+    }
     this.RemoveListeners();
     this.FFSClient = undefined;
     this.client = undefined;

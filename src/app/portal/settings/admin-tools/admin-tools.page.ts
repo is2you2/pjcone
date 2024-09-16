@@ -66,7 +66,7 @@ export class AdminToolsPage implements OnInit {
   }
 
   ionViewDidEnter() {
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
+    this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
   }
@@ -300,11 +300,11 @@ export class AdminToolsPage implements OnInit {
         }
       }]
     }).then(v => {
-      this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.global.p5KeyShortCut['Escape'] = () => {
         v.dismiss();
       }
       v.onDidDismiss().then(() => {
-        this.global.p5key['KeyShortCut']['Escape'] = () => {
+        this.global.p5KeyShortCut['Escape'] = () => {
           this.navCtrl.pop();
         }
       });
@@ -425,11 +425,11 @@ export class AdminToolsPage implements OnInit {
         }
       }]
     }).then(v => {
-      this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.global.p5KeyShortCut['Escape'] = () => {
         v.dismiss();
       }
       v.onDidDismiss().then(() => {
-        this.global.p5key['KeyShortCut']['Escape'] = () => {
+        this.global.p5KeyShortCut['Escape'] = () => {
           this.navCtrl.pop();
         }
       });
@@ -476,6 +476,6 @@ export class AdminToolsPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5KeyShortCut['Escape'];
   }
 }

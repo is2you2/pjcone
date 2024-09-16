@@ -86,7 +86,7 @@ export class UserFsDirPage implements OnInit {
   initLoadingElement: HTMLIonLoadingElement;
 
   ionViewDidEnter() {
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
+    this.global.p5KeyShortCut['Escape'] = () => {
       if (this.is_ready) {
         if (this.CurrentDir == '') {
           this.navCtrl.pop();
@@ -185,7 +185,7 @@ export class UserFsDirPage implements OnInit {
         }
       }]
     }).then(v => {
-      this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.global.p5KeyShortCut['Escape'] = () => {
         v.dismiss();
       }
       v.onDidDismiss().then(() => {
@@ -484,8 +484,8 @@ export class UserFsDirPage implements OnInit {
       },
       cssClass: 'fullscreen',
     }).then(v => {
-      delete this.global.p5key['KeyShortCut']['Escape'];
-      delete this.global.p5key['KeyShortCut']['Digit'];
+      delete this.global.p5KeyShortCut['Escape'];
+      delete this.global.p5KeyShortCut['Digit'];
       v.onDidDismiss().then(v => {
         this.lock_modal_open = false;
         if (v.data) { // 파일 편집하기를 누른 경우
@@ -601,7 +601,7 @@ export class UserFsDirPage implements OnInit {
         cssClass: 'redfont',
       }],
     }).then(v => {
-      this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.global.p5KeyShortCut['Escape'] = () => {
         v.dismiss();
       }
       v.onDidDismiss().then(() => {
@@ -625,7 +625,7 @@ export class UserFsDirPage implements OnInit {
         cssClass: 'redfont',
       }]
     }).then(v => {
-      this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.global.p5KeyShortCut['Escape'] = () => {
         v.dismiss();
       }
       v.onDidDismiss().then(() => {
@@ -647,7 +647,7 @@ export class UserFsDirPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    delete this.global.p5key['KeyShortCut']['Escape'];
-    delete this.global.p5key['KeyShortCut']['Digit'];
+    delete this.global.p5KeyShortCut['Escape'];
+    delete this.global.p5KeyShortCut['Digit'];
   }
 }

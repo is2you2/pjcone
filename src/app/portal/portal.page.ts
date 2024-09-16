@@ -34,10 +34,10 @@ export class PortalPage implements OnInit {
 
   ionViewDidEnter() {
     if (this.CacheKeyShortCut)
-      this.global.p5key['KeyShortCut'] = this.CacheKeyShortCut;
+      this.global.p5KeyShortCut = this.CacheKeyShortCut;
     this.try_add_shortcut();
-    if (this.global.p5todo && this.global.p5todo['PlayCanvas'] && this.TodoIcon == 'checkbox')
-      this.global.p5todo['PlayCanvas']();
+    if (this.global.p5todoPlayCanvas && this.TodoIcon == 'checkbox')
+      this.global.p5todoPlayCanvas();
     if (this.nakama.AfterLoginAct.length) // 빠른 진입 행동 보완
       this.global.RemoveAllModals(() => {
         this.nakama.open_profile_page();
@@ -68,8 +68,8 @@ export class PortalPage implements OnInit {
 
   /** 포털 화면 단축키 구성 */
   try_add_shortcut() {
-    if (this.global.p5key && this.global.p5key['KeyShortCut'])
-      this.global.p5key['KeyShortCut']['BottomTab'] = (char: string) => {
+    if (this.global.p5key && this.global.p5KeyShortCut)
+      this.global.p5KeyShortCut['BottomTab'] = (char: string) => {
         switch (char) {
           case 'Q':
             this.bottom_tab_selected();
@@ -147,9 +147,9 @@ export class PortalPage implements OnInit {
     this.global.FocusOnPortal = false;
     if (this.global.FocusOnPortalLeaveAct)
       this.global.FocusOnPortalLeaveAct();
-    this.CacheKeyShortCut = this.global.p5key['KeyShortCut'];
-    this.global.p5key['KeyShortCut'] = {};
-    if (this.global.p5todo && this.global.p5todo['StopCanvas'])
-      this.global.p5todo['StopCanvas']();
+    this.CacheKeyShortCut = this.global.p5KeyShortCut;
+    this.global.p5KeyShortCut = {};
+    if (this.global.p5todoStopCanvas)
+      this.global.p5todoStopCanvas();
   }
 }

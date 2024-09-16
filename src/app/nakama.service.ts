@@ -1042,8 +1042,8 @@ export class NakamaService {
                       delete this.web_noti_id[json.noti_id];
                     }
                   this.noti.ClearNoti(json.id);
-                  if (this.global.p5todo && this.global.p5todo['remove_todo'])
-                    this.global.p5todo['remove_todo'](todo);
+                  if (this.global.p5removeTodo)
+                    this.global.p5removeTodo(todo);
                 }
               }
             }
@@ -1134,7 +1134,8 @@ export class NakamaService {
     try { // 해당 서버 기준 내가 작성한 것인지를 기록
       todo_info['is_me'] = todo_info['remote']['creator_id'] == this.servers[_is_official][_target].session.user_id;
     } catch (error) { }
-    if (this.global.p5todo && this.global.p5todo['add_todo']) this.global.p5todo['add_todo'](JSON.stringify(todo_info));
+    if (this.global.p5todoAddtodo)
+      this.global.p5todoAddtodo(JSON.stringify(todo_info));
     let v = await this.indexed.loadTextFromUserPath(`todo/${todo_info['id']}_${_is_official}_${_target}/info.todo`);
     if (v) {
       let json = JSON.parse(v);
@@ -1172,8 +1173,8 @@ export class NakamaService {
   /** 이 일을 완료했습니다 */
   async doneTodo(targetInfo: any, slient = false) {
     targetInfo.done = true;
-    if (this.global.p5todo && this.global.p5todo['add_todo'])
-      this.global.p5todo['add_todo'](JSON.stringify(targetInfo));
+    if (this.global.p5todoAddtodo)
+      this.global.p5todoAddtodo(JSON.stringify(targetInfo));
     if (targetInfo.remote) {
       let loading: HTMLIonLoadingElement;
       if (!slient) { // 알림 없이 조용히 처리할 수도 있음
@@ -1322,8 +1323,8 @@ export class NakamaService {
         await this.indexed.saveTextFileToUserPath(JSON.stringify(targetInfo), path);
         this.removeRegisteredId(targetInfo.noti_id);
         this.noti.ClearNoti(targetInfo.noti_id);
-        if (isDelete && this.global.p5todo)
-          this.global.p5todo['remove_todo'](JSON.stringify(targetInfo));
+        if (isDelete && this.global.p5removeTodo)
+          this.global.p5removeTodo(JSON.stringify(targetInfo));
         if (!slient) loading.dismiss();
         return;
       }
@@ -1346,7 +1347,7 @@ export class NakamaService {
     this.removeRegisteredId(targetInfo.noti_id);
     this.noti.ClearNoti(targetInfo.noti_id);
     if (isDelete && this.global.p5todo)
-      this.global.p5todo['remove_todo'](JSON.stringify(targetInfo));
+      this.global.p5removeTodo(JSON.stringify(targetInfo));
     if (!slient) loading.dismiss();
   }
 
@@ -2595,8 +2596,8 @@ export class NakamaService {
                           }
                         this.removeRegisteredId(todo_info.noti_id);
                         this.noti.ClearNoti(todo_info.noti_id);
-                        if (this.global.p5todo && this.global.p5todo['remove_todo'])
-                          this.global.p5todo['remove_todo'](JSON.stringify(todo_info));
+                        if (this.global.p5removeTodo)
+                          this.global.p5removeTodo(JSON.stringify(todo_info));
                       });
                       this.SyncTodoCounter(_is_official, _target);
                     } else {
@@ -2612,8 +2613,8 @@ export class NakamaService {
                               }
                             this.removeRegisteredId(todo_info.noti_id);
                             this.noti.ClearNoti(todo_info.noti_id);
-                            if (this.global.p5todo && this.global.p5todo['remove_todo'])
-                              this.global.p5todo['remove_todo'](JSON.stringify(todo_info));
+                            if (this.global.p5removeTodo)
+                              this.global.p5removeTodo(JSON.stringify(todo_info));
                           });
                           this.SyncTodoCounter(_is_official, _target);
                         }

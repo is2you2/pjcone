@@ -128,6 +128,11 @@ export class GlobalActService {
 
   /** 해야할 일 캔버스 */
   p5todo: p5;
+  p5todoStopCanvas: Function;
+  p5todoPlayCanvas: Function;
+  p5todoAddtodo: Function;
+  p5removeTodo: Function;
+  p5FilteringTodos: Function;
 
   /** PIP 동작 연계를 위한 비디오 개체 기억하기 */
   PIPLinkedVideoElement: HTMLVideoElement;
@@ -139,6 +144,7 @@ export class GlobalActService {
 
   /** 페이지별 단축키 관리자 */
   p5key: p5;
+  p5KeyShortCut: any;
   initialize() {
     window.onblur = () => {
       let keys = Object.keys(this.WindowOnBlurAct);
@@ -150,14 +156,14 @@ export class GlobalActService {
       p.setup = () => {
         p.noCanvas();
         p.noLoop();
-        p['KeyShortCut'] = {};
+        this.p5KeyShortCut = {};
       }
       p.keyPressed = (ev) => {
-        if (!p['KeyShortCut']) return;
+        if (!this.p5KeyShortCut) return;
         switch (ev['code']) {
           case 'Backquote':
-            if (p['KeyShortCut']['Backquote'])
-              p['KeyShortCut']['Backquote'](ev);
+            if (this.p5KeyShortCut['Backquote'])
+              this.p5KeyShortCut['Backquote'](ev);
             break;
           // 메뉴 나열순
           case 'Digit1': // 보여지는 리스트 메뉴 최상단부터 아래로
@@ -180,9 +186,9 @@ export class GlobalActService {
           case 'Numpad8':
           case 'Numpad9':
           case 'Numpad0':
-            if (p['KeyShortCut']['Digit']) {
+            if (this.p5KeyShortCut['Digit']) {
               let exact_index = (Number(ev['code'].slice(-1)) - 1 + 10) % 10;
-              p['KeyShortCut']['Digit'](exact_index);
+              this.p5KeyShortCut['Digit'](exact_index);
             }
             break;
           // 메인 하단 탭
@@ -191,41 +197,41 @@ export class GlobalActService {
           case 'KeyE': // 오락
           case 'KeyR': // 사설 SNS or 설정
           case 'KeyT': // 설정
-            if (p['KeyShortCut']['BottomTab'])
-              p['KeyShortCut']['BottomTab'](ev['code'].slice(-1));
+            if (this.p5KeyShortCut['BottomTab'])
+              this.p5KeyShortCut['BottomTab'](ev['code'].slice(-1));
             break;
           case 'KeyA': // 추가류 (Add)
-            if (p['KeyShortCut']['AddAct'])
-              p['KeyShortCut']['AddAct']();
+            if (this.p5KeyShortCut['AddAct'])
+              this.p5KeyShortCut['AddAct']();
             break;
           case 'KeyS': // 키간 사이 행동 (S Key)
-            if (p['KeyShortCut']['SKeyAct'])
-              p['KeyShortCut']['SKeyAct']();
+            if (this.p5KeyShortCut['SKeyAct'])
+              this.p5KeyShortCut['SKeyAct']();
             break;
           case 'KeyD': // 삭제류 (Delete)
-            if (p['KeyShortCut']['DeleteAct'])
-              p['KeyShortCut']['DeleteAct']();
+            if (this.p5KeyShortCut['DeleteAct'])
+              this.p5KeyShortCut['DeleteAct']();
             break;
           case 'KeyF': // 키간 사이 행동 (S Key)
-            if (p['KeyShortCut']['FKeyAct'])
-              p['KeyShortCut']['FKeyAct']();
+            if (this.p5KeyShortCut['FKeyAct'])
+              this.p5KeyShortCut['FKeyAct']();
             break;
           case 'Escape': // 페이지 돌아가기 (navCtrl.pop()) / modal은 기본적으로 동작함
-            if (p['KeyShortCut']['Escape'])
-              p['KeyShortCut']['Escape']();
+            if (this.p5KeyShortCut['Escape'])
+              this.p5KeyShortCut['Escape']();
             break;
           case 'KeyZ': // 되돌리기 등 그림판 하단 탭 행동
           case 'KeyX':
           case 'KeyC':
           case 'KeyV':
-            if (p['KeyShortCut']['HistoryAct'])
-              p['KeyShortCut']['HistoryAct'](ev['code'].slice(-1));
+            if (this.p5KeyShortCut['HistoryAct'])
+              this.p5KeyShortCut['HistoryAct'](ev['code'].slice(-1));
             break;
         }
         switch (ev['key']) {
           case 'Enter': // 발송 등
-            if (p['KeyShortCut']['EnterAct'])
-              p['KeyShortCut']['EnterAct'](ev);
+            if (this.p5KeyShortCut['EnterAct'])
+              this.p5KeyShortCut['EnterAct'](ev);
             break;
         }
       }
@@ -743,6 +749,7 @@ export class GlobalActService {
 
   /** BlenderCtrl 사용을 기억함 */
   BlenderLoadingCtrl: HTMLIonLoadingElement;
+  BlenderCanvasInside: p5.Renderer;
   /** blender 파일 읽기 후 특정 개체에 넣기 */
   load_blender_file(canvasDiv: HTMLElement, FileInfo: FileInfo, OnLoaded: Function, OnFailedToLoad: Function, cont?: AbortController): p5 {
     return new p5((p: p5) => {
@@ -760,7 +767,7 @@ export class GlobalActService {
         this.BlenderLoadingCtrl.present();
         let canvas = p.createCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight, p.WEBGL);
         canvas.parent(canvasDiv);
-        p['canvas'] = canvas;
+        this.BlenderCanvasInside = canvas;
         p.textureMode(p.NORMAL);
         p.textureWrap(p.REPEAT);
         p.clear(255, 255, 255, 0);
@@ -1184,13 +1191,13 @@ export class GlobalActService {
   private CacheShortCut = {};
   /** 마지막에 등록된 단축키 저장하기 */
   StoreShortCutAct(key: string) {
-    this.CacheShortCut[key] = this.p5key['KeyShortCut'];
-    this.p5key['KeyShortCut'] = {};
+    this.CacheShortCut[key] = this.p5KeyShortCut;
+    this.p5KeyShortCut = {};
   }
 
   /** 마지막에 등록된 단축키 다시 사용하기 */
   RestoreShortCutAct(key: string) {
-    this.p5key['KeyShortCut'] = this.CacheShortCut[key];
+    this.p5KeyShortCut = this.CacheShortCut[key];
     delete this.CacheShortCut[key];
   }
 

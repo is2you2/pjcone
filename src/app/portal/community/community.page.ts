@@ -114,7 +114,7 @@ export class CommunityPage implements OnInit {
   }
 
   try_add_shortcut() {
-    if (this.global.p5key && this.global.p5key['KeyShortCut'])
+    if (this.global.p5KeyShortCut)
       this.AddShortcut();
     else setTimeout(() => {
       this.try_add_shortcut();
@@ -159,23 +159,22 @@ export class CommunityPage implements OnInit {
 
   /** 단축키 생성 */
   AddShortcut() {
-    if (this.global.p5key && this.global.p5key['KeyShortCut']) {
-      this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+    if (this.global.p5KeyShortCut) {
+      this.global.p5KeyShortCut['Digit'] = (index: number) => {
         if (this.nakama.posts.length > index)
           this.nakama.open_post(this.nakama.posts[index], index);
         else this.add_post();
       };
     }
-    if (this.global.p5key && this.global.p5key['KeyShortCut']
-      && !this.global.p5key['KeyShortCut']['AddAct'])
-      this.global.p5key['KeyShortCut']['AddAct'] = () => {
+    if (this.global.p5KeyShortCut && !this.global.p5KeyShortCut['AddAct'])
+      this.global.p5KeyShortCut['AddAct'] = () => {
         this.add_post();
       };
   }
 
   ionViewWillLeave() {
-    delete this.global.p5key['KeyShortCut']['Digit'];
-    delete this.global.p5key['KeyShortCut']['AddAct'];
+    delete this.global.p5KeyShortCut['Digit'];
+    delete this.global.p5KeyShortCut['AddAct'];
     delete this.nakama.socket_reactive['try_load_post'];
     if (this.ContentScroll) this.ContentScroll.onscroll = null;
     this.nakama.is_post_lock = false;

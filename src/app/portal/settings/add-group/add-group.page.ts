@@ -77,7 +77,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
   ionViewWillEnter() {
     this.IsFocusOnThisPage = true;
     this.ChangeContentWithKeyInput();
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
+    this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
   }
@@ -357,7 +357,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
 
   ionViewWillLeave() {
     this.IsFocusOnThisPage = false;
-    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5KeyShortCut['Escape'];
   }
 
   ngOnDestroy() {

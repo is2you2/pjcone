@@ -34,7 +34,7 @@ export class SubscribesPage implements OnInit {
   cant_dedicated = false;
 
   try_add_shortcut() {
-    if (this.global.p5key && this.global.p5key['KeyShortCut'])
+    if (this.global.p5KeyShortCut)
       this.AddShortcut();
     else setTimeout(() => {
       this.try_add_shortcut();
@@ -43,16 +43,16 @@ export class SubscribesPage implements OnInit {
 
   /** 단축키 생성 */
   AddShortcut() {
-    this.global.p5key['KeyShortCut']['Backquote'] = () => {
+    this.global.p5KeyShortCut['Backquote'] = () => {
       this.nakama.open_profile_page();
     }
-    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+    this.global.p5KeyShortCut['Digit'] = (index: number) => {
       if (this.nakama.channels.length > index)
         this.go_to_chatroom(this.nakama.channels[index]);
       else this.nakama.add_new_group();
     };
-    if (!this.global.p5key['KeyShortCut']['AddAct'])
-      this.global.p5key['KeyShortCut']['AddAct'] = () => {
+    if (!this.global.p5KeyShortCut['AddAct'])
+      this.global.p5KeyShortCut['AddAct'] = () => {
         this.nakama.add_new_group();
       };
   }
@@ -208,8 +208,8 @@ export class SubscribesPage implements OnInit {
 
   ionViewWillLeave() {
     this.nakama.subscribe_lock = false;
-    delete this.global.p5key['KeyShortCut']['Backquote'];
-    delete this.global.p5key['KeyShortCut']['Digit'];
-    delete this.global.p5key['KeyShortCut']['AddAct'];
+    delete this.global.p5KeyShortCut['Backquote'];
+    delete this.global.p5KeyShortCut['Digit'];
+    delete this.global.p5KeyShortCut['AddAct'];
   }
 }

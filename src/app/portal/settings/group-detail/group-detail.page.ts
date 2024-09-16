@@ -105,7 +105,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
+    this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
   }
@@ -405,6 +405,6 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     this.need_edit = this.info['description'] != this.info_orig['description'];
     if (this.need_edit)
       this.edit_group();
-    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5KeyShortCut['Escape'];
   }
 }

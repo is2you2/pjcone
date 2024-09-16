@@ -441,11 +441,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             cssClass: 'redfont',
           }]
         }).then(v => {
-          this.global.p5key['KeyShortCut']['Escape'] = () => {
+          this.global.p5KeyShortCut['Escape'] = () => {
             v.dismiss();
           }
           v.onDidDismiss().then(() => {
-            this.global.p5key['KeyShortCut']['Escape'] = () => {
+            this.global.p5KeyShortCut['Escape'] = () => {
               this.navCtrl.pop();
             }
           });
@@ -693,7 +693,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }
           }]
         });
-        this.global.p5key['KeyShortCut']['Escape'] = () => {
+        this.global.p5KeyShortCut['Escape'] = () => {
           alert.dismiss();
         }
         alert.onDidDismiss().then(() => {
@@ -702,7 +702,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
             input.value = '';
           }, 300);
-          this.global.p5key['KeyShortCut']['Escape'] = () => {
+          this.global.p5KeyShortCut['Escape'] = () => {
             this.navCtrl.pop();
           }
         });
@@ -825,11 +825,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
         }]
       }).then(v => {
-        this.global.p5key['KeyShortCut']['Escape'] = () => {
+        this.global.p5KeyShortCut['Escape'] = () => {
           v.dismiss();
         }
         v.onDidDismiss().then(() => {
-          this.global.p5key['KeyShortCut']['Escape'] = () => {
+          this.global.p5KeyShortCut['Escape'] = () => {
             this.navCtrl.pop();
           }
         });
@@ -840,11 +840,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   AddShortCut() {
-    if (!this.global.p5key['KeyShortCut']) return;
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
+    if (!this.global.p5KeyShortCut) return;
+    this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
-    this.global.p5key['KeyShortCut']['BottomTab'] = (key: string) => {
+    this.global.p5KeyShortCut['BottomTab'] = (key: string) => {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId))
         switch (key) {
           case 'E':
@@ -857,11 +857,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (!this.extended_buttons[i].isHide)
         ExtTarget.push(this.extended_buttons[i]);
     }
-    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+    this.global.p5KeyShortCut['Digit'] = (index: number) => {
       if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && ExtTarget.length > index)
         ExtTarget[index]['act']();
     }
-    this.global.p5key['KeyShortCut']['EnterAct'] = () => {
+    this.global.p5KeyShortCut['EnterAct'] = () => {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId))
         setTimeout(() => {
           if (this.WillLeave) return;
@@ -894,6 +894,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   p5canvas: p5;
+  p5ChatMsgDragAct: Function;
   CreateDrop() {
     let parent = document.getElementById('p5Drop_chatroom');
     this.p5canvas = new p5((p: p5) => {
@@ -931,11 +932,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   }
                 }]
               }).then(v => {
-                this.global.p5key['KeyShortCut']['Escape'] = () => {
+                this.global.p5KeyShortCut['Escape'] = () => {
                   v.dismiss();
                 }
                 v.onDidDismiss().then(() => {
-                  this.global.p5key['KeyShortCut']['Escape'] = () => {
+                  this.global.p5KeyShortCut['Escape'] = () => {
                     this.navCtrl.pop();
                   }
                 });
@@ -944,7 +945,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }
           }, 400);
         });
-        p['ChatMsgDragAct'] = ChatMsgDragAct;
+        this.p5ChatMsgDragAct = ChatMsgDragAct;
       }
       let StartAct: any;
       let isMultipleSend = false;
@@ -1734,7 +1735,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.MsgClickedStartPos = ev.clientX;
       this.TargetMessageObject = document.getElementById(msg.message_id);
       this.MsgClickedStartPos = ev.clientX + 90;
-      this.p5canvas['ChatMsgDragAct'](ev.clientX);
+      this.p5ChatMsgDragAct(ev.clientX);
     }
   }
 
@@ -2280,11 +2281,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }]
     }).then(v => {
       this.ChatManageMenu = v;
-      this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.global.p5KeyShortCut['Escape'] = () => {
         v.dismiss();
       }
       v.onDidDismiss().then(() => {
-        this.global.p5key['KeyShortCut']['Escape'] = () => {
+        this.global.p5KeyShortCut['Escape'] = () => {
           this.navCtrl.pop();
         }
         URL.revokeObjectURL(FileURL);
@@ -2620,10 +2621,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   removeShortCutKey() {
-    delete this.global.p5key['KeyShortCut']['Escape'];
-    delete this.global.p5key['KeyShortCut']['BottomTab'];
-    delete this.global.p5key['KeyShortCut']['Digit'];
-    delete this.global.p5key['KeyShortCut']['EnterAct'];
+    delete this.global.p5KeyShortCut['Escape'];
+    delete this.global.p5KeyShortCut['BottomTab'];
+    delete this.global.p5KeyShortCut['Digit'];
+    delete this.global.p5KeyShortCut['EnterAct'];
   }
 
   ngOnDestroy() {

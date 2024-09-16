@@ -48,7 +48,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
       });
     }
     this.nakama.socket_reactive['profile'] = (img_url: string) => {
-      if (this.p5canvas) this.p5canvas['ChangeImageSmooth'](img_url);
+      if (this.p5canvas) this.p5ChangeImageSmooth(img_url);
     }
     this.route.queryParams.subscribe(_p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
@@ -88,6 +88,9 @@ export class GroupServerPage implements OnInit, OnDestroy {
       let hasColorLerp = Boolean(this.session_uid);
       let imgDiv: p5.Element;
       let EditingName = false;
+      let OnlineLamp: p5.Element;
+      let LoginButton: p5.Element;
+      let InputForm = p.createDiv();
       p.setup = () => {
         if (hasColorLerp) {
           let user_color = p.color(`#${(this.session_uid.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6)}`);
@@ -120,7 +123,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
           this.change_img_from_file();
         }
         // 온라인 표시등
-        let OnlineLamp = p.createDiv();
+        OnlineLamp = p.createDiv();
         const LAMP_SIZE = '36px';
         OnlineLamp.style('background-color', this.OnlineToggle ? this.statusBar.colors['online'] : this.statusBar.colors['offline']);
         OnlineLamp.style('width', LAMP_SIZE);
@@ -134,7 +137,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
         OnlineLamp.elt.onclick = () => {
           this.toggle_online();
         }
-        p['OnlineLamp'] = OnlineLamp;
         // 부드러운 이미지 전환
         selected_image = p.createImg(this.nakama.users.self['img'], 'profile_img');
         selected_image.style('width', IMAGE_SIZE);
@@ -153,7 +155,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
         trashed_image.style('object-fit', 'cover');
         trashed_image.hide();
         trashed_image.parent(imgDiv);
-        p['ChangeImageSmooth'] = (url: string) => {
+        this.p5ChangeImageSmooth = (url: string) => {
           imgDiv.style('background-image', 'url(assets/data/avatar.svg)');
           if (!url) {
             trashed_image.elt.src = selected_image.elt.src;
@@ -238,7 +240,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
           }
         }
         // 사용자 정보 입력
-        let InputForm = p.createDiv();
         InputForm.style('margin-top', '60px');
         InputForm.style('width', '80%');
         InputForm.style('align-self', 'center');
@@ -250,7 +251,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
         InputForm.style('display', 'flex');
         InputForm.style('flex-direction', 'column');
         InputForm.parent(ExceptPic);
-        p['InputForm'] = InputForm;
         if (this.OnlineToggle) InputForm.hide();
         let EmailInput = p.createInput(this.nakama.users.self['email']);
         EmailInput.style('align-self', 'center');
@@ -290,8 +290,8 @@ export class GroupServerPage implements OnInit, OnDestroy {
             this.toggle_online();
           }
         }
-        p['PasswordInput'] = PasswordInput;
-        let LoginButton = p.createButton(this.OnlineToggle ? this.lang.text['Profile']['LogOut'] : this.lang.text['Profile']['login_toggle']);
+        this.p5PasswordInput = PasswordInput;
+        LoginButton = p.createButton(this.OnlineToggle ? this.lang.text['Profile']['LogOut'] : this.lang.text['Profile']['login_toggle']);
         LoginButton.style('margin-top', '17px');
         LoginButton.style('align-self', 'center');
         LoginButton.style('text-align', 'center');
@@ -303,7 +303,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
           LoginButton.elt.disabled = true;
           this.toggle_online();
         }
-        p['LoginButton'] = LoginButton;
         setTimeout(() => {
           p.windowResized();
         }, 0);
@@ -337,27 +336,27 @@ export class GroupServerPage implements OnInit, OnDestroy {
           if (this.nakama.users.self['img']) imgDiv.style('background-image', '');
           this.OnlineToggle = this.lerpVal >= 1;
           if (this.OnlineToggle) {
-            this.p5canvas['InputForm'].hide();
-            p['LoginButton'].html(this.lang.text['Profile']['LogOut']);
-            p['OnlineLamp'].style('background-color', this.statusBar.colors['online']);
+            InputForm.hide();
+            LoginButton.html(this.lang.text['Profile']['LogOut']);
+            OnlineLamp.style('background-color', this.statusBar.colors['online']);
           } else {
-            this.p5canvas['InputForm'].show();
-            this.p5canvas['InputForm'].style('display', 'flex');
-            p['LoginButton'].html(this.lang.text['Profile']['login_toggle']);
-            p['OnlineLamp'].style('background-color', this.statusBar.colors['offline']);
+            InputForm.show();
+            InputForm.style('display', 'flex');
+            LoginButton.html(this.lang.text['Profile']['login_toggle']);
+            OnlineLamp.style('background-color', this.statusBar.colors['offline']);
           }
           if (this.nakama.users.self['display_name']) {
             nameSpan.html(this.nakama.users.self['display_name']);
             nameEditDiv.value(this.nakama.users.self['display_name']);
           }
           this.ShowServerList = this.OnlineToggle;
-          this.p5canvas['PasswordInput'].value('');
-          p['LoginButton'].elt.disabled = false;
+          this.p5PasswordInput.value('');
+          LoginButton.elt.disabled = false;
           p.noLoop();
         }
       }
       p.windowResized = () => {
-        p['OnlineLamp'].style('left', `${this.gsCanvasDiv.clientWidth / 2 + 38}px`);
+        OnlineLamp.style('left', `${this.gsCanvasDiv.clientWidth / 2 + 38}px`);
       }
       p.keyPressed = (ev: any) => {
         if (ev.code == 'Enter') {
@@ -473,7 +472,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
   announce_update_profile = false;
 
   async ionViewWillLeave() {
-    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5KeyShortCut['Escape'];
     if (this.nakama.on_socket_disconnected['group_unlink_by_user'])
       delete this.nakama.on_socket_disconnected['group_unlink_by_user'];
     delete this.nakama.socket_reactive['profile'];
@@ -530,6 +529,8 @@ export class GroupServerPage implements OnInit, OnDestroy {
   original_profile = {};
 
   p5canvas: p5;
+  p5ChangeImageSmooth: Function;
+  p5PasswordInput: p5.Element;
 
   /** 모든 서버에 프로필 이미지 변경됨을 고지 */
   async sync_to_all_server() {
@@ -586,7 +587,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
     // 클립보드로부터 받아오기 시도 후 실패시 파일 선택
     this.announce_update_profile = true;
     if (this.nakama.users.self['img']) {
-      this.p5canvas['ChangeImageSmooth']();
+      this.p5ChangeImageSmooth();
     } else try {
       let clipboard = await this.global.GetValueFromClipboard();
       switch (clipboard.type) {
@@ -609,7 +610,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
       clearInterval(updater);
     }, 1500);
     let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
-    this.nakama.limit_image_size(base64, (v: any) => { this.p5canvas['ChangeImageSmooth'](v['canvas'].toDataURL()) });
+    this.nakama.limit_image_size(base64, (v: any) => { this.p5ChangeImageSmooth(v['canvas'].toDataURL()) });
     let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
     input.value = '';
   }
@@ -618,7 +619,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
   can_auto_modified = false;
   ionViewDidEnter() {
     this.can_auto_modified = true;
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
+    this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
   }
@@ -629,7 +630,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
         this.toggle_online();
       this.nakama.users.self['online'] = false;
       delete this.nakama.users.self['password'];
-      this.p5canvas['PasswordInput'].value('');
+      this.p5PasswordInput.value('');
     }
   }
   /** 채도 변화자 */
@@ -681,7 +682,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
           let img = document.createElement('img');
           img.src = v;
           img.onload = () => {
-            this.p5canvas['ChangeImageSmooth'](v);
+            this.p5ChangeImageSmooth(v);
             img.onload = null;
             img.onerror = null;
             img.remove();
@@ -698,7 +699,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
     } catch (e) {
       try {
         if (v.indexOf('data:image') == 0) {
-          this.nakama.limit_image_size(v, (rv) => this.p5canvas['ChangeImageSmooth'](rv['canvas'].toDataURL()));
+          this.nakama.limit_image_size(v, (rv) => this.p5ChangeImageSmooth(rv['canvas'].toDataURL()));
         } else throw 'DataURL 주소가 아님';
       } catch (e) {
         throw '사용불가 이미지';

@@ -47,7 +47,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.cont.abort();
     if (this.p5viewerkey) this.p5viewerkey.remove();
-    if (this.p5canvas) this.p5canvas.remove();
+    this.RemoveP5Relative();
     if (this.VideoMediaObject) {
       if (this.VideoMediaObject.elt != document.pictureInPictureElement) {
         this.VideoMediaObject.elt.src = '';
@@ -69,7 +69,21 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   blob: Blob;
   FileInfo: FileInfo;
+
   p5canvas: p5;
+  p5canvasInside: p5.Renderer;
+  p5TextArea: HTMLTextAreaElement;
+  p5SyntaxHighlightReader: HTMLDivElement;
+  RemoveP5Relative() {
+    if (this.p5canvasInside) {
+      this.p5canvasInside.remove();
+      this.p5canvasInside = undefined;
+    }
+    if (this.p5TextArea) this.p5TextArea.remove()
+    if (this.p5SyntaxHighlightReader) this.p5SyntaxHighlightReader.remove();
+    if (this.p5canvas) this.p5canvas.remove();
+  }
+
   FileURL: string;
   ContentBox: HTMLElement;
   FileHeader: HTMLElement;
@@ -190,7 +204,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.MessageInfo = msg;
     this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
-    if (this.p5canvas) this.p5canvas.remove();
+    this.RemoveP5Relative();
     if (this.PageWillDestroy) return;
     this.canvasDiv = document.getElementById('content_viewer_canvas');
     if (this.canvasDiv)
@@ -219,7 +233,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         this.ContentOnLoad = true;
         this.ContentFailedLoad = false;
         this.CreateContentInfo();
-        if (this.p5canvas) this.p5canvas.remove();
+        this.RemoveP5Relative();
         this.p5canvas = new p5((p: p5) => {
           p.setup = () => { p.noCanvas() }
         });
@@ -237,7 +251,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.ContentChanging = false;
       return;
     }
-    if (this.p5canvas) this.p5canvas.remove();
+    this.RemoveP5Relative();
     this.RelevanceIndex = tmp_calced;
     this.FileInfo = { file_ext: '' };
     this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
@@ -418,7 +432,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     await new Promise((done) => setTimeout(done, 0));
     this.canvasDiv = document.getElementById('content_viewer_canvas');
     if (this.canvasDiv) this.canvasDiv.style.backgroundImage = '';
-    if (this.p5canvas) this.p5canvas.remove();
+    this.RemoveP5Relative();
     // 경우에 따라 로딩하는 캔버스를 구분
     switch (this.FileInfo['viewer']) {
       case 'image': // 이미지
@@ -812,7 +826,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             textArea.elt.setAttribute('style', 'height: 100%; display: block;');
             textArea.elt.textContent = '';
             this.canvasDiv.appendChild(textArea.elt);
-            p['TextArea'] = textArea.elt;
+            this.p5TextArea = textArea.elt;
             if (this.FileInfo['is_new']) {
               this.open_text_editor(textArea.elt);
             } else p.loadStrings(this.FileURL, v => {
@@ -827,7 +841,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           }
           p.windowResized = () => {
             let target_height = window.innerHeight - 45 - 56;
-            p['SyntaxHighlightReader'].setAttribute('style', `height: ${target_height}px; display: ${this.isTextEditMode ? 'none' : 'block'}; overflow-y: scroll;`);
+            this.p5SyntaxHighlightReader.setAttribute('style', `height: ${target_height}px; display: ${this.isTextEditMode ? 'none' : 'block'}; overflow-y: scroll;`);
           }
           let startPos: p5.Vector = p.createVector();
           let touches: { [id: string]: p5.Vector } = {};
@@ -1089,9 +1103,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
   /** 텍스트 편집기 상태인지 여부 */
   isTextEditMode = false;
-  open_text_editor(_textarea = this.p5canvas['TextArea']) {
-    if (this.p5canvas && this.p5canvas['SyntaxHighlightReader'])
-      this.p5canvas['SyntaxHighlightReader'].style.display = 'none';
+  open_text_editor(_textarea = this.p5TextArea) {
+    if (this.p5SyntaxHighlightReader)
+      this.p5SyntaxHighlightReader.style.display = 'none';
     _textarea.style.display = 'block';
     _textarea.disabled = false;
     setTimeout(() => {
@@ -1103,15 +1117,15 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 구문 강조가 가능한 재구성처리 */
   open_text_reader(p = this.p5canvas) {
-    if (!p['SyntaxHighlightReader']) {
+    if (!this.p5SyntaxHighlightReader) {
       let syntaxHighlightReader = p.createDiv();
       syntaxHighlightReader.elt.className = 'infobox';
-      syntaxHighlightReader.elt.setAttribute('style', `height: ${p['TextArea'].clientHeight}px; display: block; overflow-y: auto;`);
+      syntaxHighlightReader.elt.setAttribute('style', `height: ${this.p5TextArea.clientHeight}px; display: block; overflow-y: auto;`);
       this.canvasDiv.appendChild(syntaxHighlightReader.elt);
-      p['SyntaxHighlightReader'] = syntaxHighlightReader.elt;
+      this.p5SyntaxHighlightReader = syntaxHighlightReader.elt;
     }
     // 구문 강조처리용 구성 변환
-    let getText = p['TextArea'].textContent;
+    let getText = this.p5TextArea.textContent;
     let ValuePair = {
       c: c,
       cs: csharp,
@@ -1136,7 +1150,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     if (this.FileInfo.file_ext == 'json') {
       let json = JSON.parse(getText);
       getText = JSON.stringify(json, undefined, 2);
-      p['TextArea'].textContent = getText;
+      this.p5TextArea.textContent = getText;
     }
     try {
       if (!ValuePair[this.FileInfo.file_ext]) throw '등록되지 않은 언어';
@@ -1147,7 +1161,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       let line = p.createDiv(highlighted);
       line.id('ionic_viewer_text_content');
       line.style('white-space', 'pre-wrap');
-      line.parent(p['SyntaxHighlightReader']);
+      line.parent(this.p5SyntaxHighlightReader);
     } catch (e) {
       let line: p5.Element;
       // highlightjs 에서 지원하지 않는 것들을 별도 처리
@@ -1165,7 +1179,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           textArea.elt.setAttribute('style', 'height: 100%; display: block;');
           textArea.elt.textContent = '';
           this.canvasDiv.appendChild(textArea.elt);
-          p['TextArea'] = textArea.elt;
+          this.p5TextArea = textArea.elt;
           if (this.FileInfo['is_new']) {
             this.open_text_editor(textArea.elt);
           } else p.loadStrings(this.FileURL, v => {
@@ -1202,10 +1216,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       }
       line.id('ionic_viewer_text_content');
       line.style('white-space', 'pre-wrap');
-      line.parent(p['SyntaxHighlightReader']);
+      line.parent(this.p5SyntaxHighlightReader);
     }
-    p['TextArea'].style.display = 'none';
-    p['SyntaxHighlightReader'].style.display = 'block';
+    this.p5TextArea.style.display = 'none';
+    this.p5SyntaxHighlightReader.style.display = 'block';
   }
 
   // https://www.w3schools.com/howto/tryit.asp?filename=tryhow_syntax_highlight
@@ -1537,7 +1551,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   /** 저장 후 에디터 모드 종료 */
   async SaveText() {
     // 채널 채팅에서는 별도 파일첨부로 처리
-    let blob = new Blob([this.p5canvas['TextArea'].value], { type: this.FileInfo.type });
+    let blob = new Blob([this.p5TextArea.value], { type: this.FileInfo.type });
     if (!this.NewTextFileName) this.NewTextFileName = this.FileInfo.filename || this.FileInfo.name;
     if (this.NewTextFileName.indexOf('.') < 0) this.NewTextFileName += '.txt';
     blob['name'] = this.NewTextFileName || this.FileInfo.filename || this.FileInfo.name;
@@ -1599,12 +1613,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
         loading.present();
         try {
-          this.image_info['width'] = this.p5canvas['SyntaxHighlightReader'].clientWidth;
-          this.image_info['height'] = this.p5canvas['SyntaxHighlightReader'].clientHeight;
+          this.image_info['width'] = this.p5SyntaxHighlightReader.clientWidth;
+          this.image_info['height'] = this.p5SyntaxHighlightReader.clientHeight;
           this.image_info['path'] = 'tmp_files/modify_image.png';
-          this.image_info['scrollHeight'] = this.p5canvas['SyntaxHighlightReader'].scrollTop;
-          this.p5canvas['SyntaxHighlightReader'].style.height = 'fit-content';
-          let blob = await domtoimage.toBlob(this.p5canvas['SyntaxHighlightReader']);
+          this.image_info['scrollHeight'] = this.p5SyntaxHighlightReader.scrollTop;
+          this.p5SyntaxHighlightReader.style.height = 'fit-content';
+          let blob = await domtoimage.toBlob(this.p5SyntaxHighlightReader);
           await this.indexed.saveBlobToUserPath(blob, this.image_info['path']);
           this.modalCtrl.dismiss({
             type: 'image',
@@ -1653,7 +1667,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
           loading.present();
           this.p5canvas.pixelDensity(1);
-          let base64 = this.p5canvas['canvas']['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+          let base64 = this.global.BlenderCanvasInside['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
           try {
             loading.dismiss();
             this.image_info['path'] = 'tmp_files/modify_image.png';
@@ -1804,7 +1818,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           } catch (e) {
             console.log('썸네일 저장 오류: ', e);
           }
-          if (this.p5canvas) this.p5canvas.remove();
+          this.RemoveP5Relative();
         } catch (e) {
           if (this.VideoMediaObject) {
             this.VideoMediaObject.elt.src = '';
@@ -1825,10 +1839,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         } catch (e) {
           console.log('godot 썸네일 저장 오류: ', e);
         }
-        if (this.p5canvas) this.p5canvas.remove();
+        this.RemoveP5Relative();
         break;
       case 'blender':
-        let base64 = this.p5canvas['canvas']['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+        let base64 = this.global.BlenderCanvasInside['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
         try {
           new p5((p: p5) => {
             p.setup = () => {
@@ -1867,11 +1881,11 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 this.FileInfo.thumbnail = base64;
                 this.global.modulate_thumbnail(this.FileInfo, '', this.cont);
                 p.remove();
-                if (this.p5canvas) this.p5canvas.remove();
+                this.RemoveP5Relative();
               }, e => {
                 console.log('블렌더 썸네일 배경 받아오기 오류: ', e);
                 p.remove();
-                if (this.p5canvas) this.p5canvas.remove();
+                this.RemoveP5Relative();
               });
             }
           });
@@ -1881,7 +1895,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         if (this.global.BlenderLoadingCtrl) this.global.BlenderLoadingCtrl.dismiss();
         break;
       default:
-        if (this.p5canvas) this.p5canvas.remove();
+        this.RemoveP5Relative();
         break;
     }
     URL.revokeObjectURL(this.FileURL);

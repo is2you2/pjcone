@@ -514,8 +514,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                           path = `todo/${this.userInput.id}/thumbnail.png`;
                         }
                         this.indexed.saveBase64ToUserPath(base64, path, (_) => {
-                          if (this.global.p5todo && this.global.p5todo['add_todo'])
-                            this.global.p5todo['add_todo'](JSON.stringify(this.userInput));
+                          if (this.global.p5todoAddtodo)
+                            this.global.p5todoAddtodo(JSON.stringify(this.userInput));
                           done();
                         });
                         if (this.userInput.attach[i].blob) URL.revokeObjectURL(header_image);
@@ -654,10 +654,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   AddShortCut() {
     setTimeout(() => {
       if (this.WillLeavePage) return;
-      this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.global.p5KeyShortCut['Escape'] = () => {
         this.navCtrl.pop();
       }
-      this.global.p5key['KeyShortCut']['EnterAct'] = (ev: any) => {
+      this.global.p5KeyShortCut['EnterAct'] = (ev: any) => {
         if (document.activeElement == this.titleIonInput)
           setTimeout(() => {
             this.desc_input.focus();
@@ -668,7 +668,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   removeShortCut() {
-    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5KeyShortCut['Escape'];
   }
 
   start_change(ev: any) {
@@ -1576,8 +1576,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             text: this.lang.text['TodoDetail']['SaveAfterConnectServer'],
           });
           this.userInput['modified'] = true;
-          if (this.global.p5todo && this.global.p5todo['add_todo'])
-            this.global.p5todo['add_todo'](JSON.stringify(this.userInput));
+          if (this.global.p5todoAddtodo)
+            this.global.p5todoAddtodo(JSON.stringify(this.userInput));
           let path: string;
           try {
             path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/info.todo`;
@@ -1594,8 +1594,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       }
     }
     this.userInput['is_me'] = true;
-    if (this.global.p5todo && this.global.p5todo['add_todo'])
-      this.global.p5todo['add_todo'](JSON.stringify(this.userInput));
+    if (this.global.p5todoAddtodo)
+      this.global.p5todoAddtodo(JSON.stringify(this.userInput));
     let path: string;
     try { // 로컬 상황에 맞는 경로 생성
       path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/info.todo`;
@@ -1621,11 +1621,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         cssClass: 'redfont',
       }]
     }).then(v => {
-      this.global.p5key['KeyShortCut']['Escape'] = () => {
+      this.global.p5KeyShortCut['Escape'] = () => {
         v.dismiss();
       }
       v.onDidDismiss().then(() => {
-        this.global.p5key['KeyShortCut']['Escape'] = () => {
+        this.global.p5KeyShortCut['Escape'] = () => {
           this.navCtrl.pop();
         }
       });
@@ -1636,7 +1636,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   WillLeavePage = false;
   async ionViewWillLeave() {
     this.WillLeavePage = true;
-    delete this.global.p5key['KeyShortCut']['EnterAct'];
+    delete this.global.p5KeyShortCut['EnterAct'];
     this.removeShortCut();
     this.noti.Current = '';
     if (this.p5timer)

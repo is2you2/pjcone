@@ -38,6 +38,8 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.route.queryParams['unsubscribe']();
     this.TitleInput.onpaste = null;
     this.ContentTextArea.onpaste = null;
+    this.p5StartVoiceTimer = undefined;
+    this.p5StopVoiceTimer = undefined;
     if (this.p5canvas) this.p5canvas.remove();
     delete this.nakama.StatusBarChangedCallback;
     if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
@@ -158,6 +160,8 @@ export class AddPostPage implements OnInit, OnDestroy {
   }
 
   p5canvas: p5;
+  p5StartVoiceTimer: Function;
+  p5StopVoiceTimer: Function;
   CreateDrop() {
     let parent = document.getElementById('p5Drop_addPost');
     if (!this.p5canvas)
@@ -171,11 +175,11 @@ export class AddPostPage implements OnInit, OnDestroy {
             await this.selected_blobFile_callback_act(file.file);
           });
           p.noLoop();
-          p['StartVoiceTimer'] = () => {
+          this.p5StartVoiceTimer = () => {
             p.loop();
             VoiceStartTime = p.millis();
           }
-          p['StopVoiceTimer'] = () => {
+          this.p5StopVoiceTimer = () => {
             p.noLoop();
           }
         }
@@ -297,8 +301,8 @@ export class AddPostPage implements OnInit, OnDestroy {
 
   /** 단축키 생성 */
   AddShortcut() {
-    if (this.global.p5key && this.global.p5key['KeyShortCut']) {
-      this.global.p5key['KeyShortCut']['Escape'] = () => {
+    if (this.global.p5key && this.global.p5KeyShortCut) {
+      this.global.p5KeyShortCut['Escape'] = () => {
         this.navCtrl.navigateBack('portal/community');
       };
     }
@@ -350,7 +354,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           v.onDidDismiss().then(() => {
             this.AddShortcut();
           });
-          delete this.global.p5key['KeyShortCut']['Escape'];
+          delete this.global.p5KeyShortCut['Escape'];
           v.present();
         });
       }
@@ -390,7 +394,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           v.onDidDismiss().then(() => {
             this.AddShortcut();
           });
-          delete this.global.p5key['KeyShortCut']['Escape'];
+          delete this.global.p5KeyShortCut['Escape'];
           v.present();
         });
       }
@@ -426,7 +430,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             this.p5toast.show({
               text: this.lang.text['ChatRoom']['StartVRecord'],
             });
-            this.p5canvas['StartVoiceTimer']();
+            this.p5StartVoiceTimer();
             await VoiceRecorder.startRecording();
             this.CreateFloatingVoiceTimeHistoryAddButton();
           } else { // 권한이 없다면 권한 요청 및 UI 복구
@@ -501,7 +505,7 @@ export class AddPostPage implements OnInit, OnDestroy {
 
   /** 게시물 내용에 음성 시간 링크가 있는지 확인 */
   checkVoiceLinker() {
-    this.p5canvas['StopVoiceTimer']();
+    if (this.p5StopVoiceTimer) this.p5StopVoiceTimer();
     let content_as_line = this.userInput.content.split('\n');
     for (let i = 0, j = content_as_line.length; i < j; i++)
       try {
@@ -664,7 +668,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       attaches.push({ content: this.userInput.attachments[i] });
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;
-      delete this.global.p5key['KeyShortCut']['Escape'];
+      delete this.global.p5KeyShortCut['Escape'];
       this.modalCtrl.create({
         component: IonicViewerPage,
         componentProps: {
@@ -712,7 +716,7 @@ export class AddPostPage implements OnInit, OnDestroy {
                   v.onWillDismiss().then(async v => {
                     if (v.data) await this.voidDraw_fileAct_callback(v, related_creators, index);
                   });
-                  delete this.global.p5key['KeyShortCut']['Escape'];
+                  delete this.global.p5KeyShortCut['Escape'];
                   v.present();
                 });
                 return;
@@ -722,7 +726,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             }
           }
         });
-        delete this.global.p5key['KeyShortCut']['Escape'];
+        delete this.global.p5KeyShortCut['Escape'];
         v.present();
         this.lock_modal_open = false;
       });
@@ -1043,7 +1047,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   ionViewWillLeave() {
     this.WillLeavePage = true;
     this.cont.abort();
-    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5KeyShortCut['Escape'];
     this.global.RestoreShortCutAct('add-post');
     this.indexed.GetFileListFromDB('tmp_files/post').then(list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     // 데이터 저장이 아니라면 기존 데이터를 다시 불러와서 게시물 정보 원복시키기

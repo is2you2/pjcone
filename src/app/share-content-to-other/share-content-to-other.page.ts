@@ -22,14 +22,14 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
   ) { }
 
   ngOnDestroy() {
-    delete this.global.p5key['KeyShortCut']['Digit'];
+    delete this.global.p5KeyShortCut['Digit'];
   }
 
   channels: any[];
 
   ngOnInit() {
     this.channels = this.navParams.get('channels');
-    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+    this.global.p5KeyShortCut['Digit'] = (index: number) => {
       if (this.nakama.channels.length > index)
         this.go_to_chatroom(this.nakama.channels[index]);
     };

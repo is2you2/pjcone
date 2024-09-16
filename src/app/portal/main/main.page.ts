@@ -77,8 +77,8 @@ export class MainPage implements OnInit {
         break;
     }
     this.CurrentFilterValue = undefined;
-    if (this.global.p5todo && this.global.p5todo['FilteringTodos'])
-      this.global.p5todo['FilteringTodos'](TodoFilterCategory.None);
+    if (this.global.p5FilteringTodos)
+      this.global.p5FilteringTodos(TodoFilterCategory.None);
   }
   CurrentFilterValue = undefined;
   /** 해당 필터 카테고리의 값을 변경 */
@@ -87,7 +87,7 @@ export class MainPage implements OnInit {
       this.CurrentFilterValue = undefined;
     else this.CurrentFilterValue = value;
     // 모든 할 일 개체를 돌아다니며 표현 여부 변경
-    this.global.p5todo['FilteringTodos']();
+    this.global.p5FilteringTodos();
   }
   /** 모든 할 일을 완료한 경우 */
   isEmptyTodo = false;
@@ -121,6 +121,9 @@ export class MainPage implements OnInit {
       let ImageMask: p5.Image[] = [];
       /** 비활성시 인풋값 무시 */
       let BlockInput = false;
+      let isPlayingCanvas = this.isPlayingCanvas;
+      let CountTodo: Function;
+      let ListUpdate: Function;
       p.setup = async () => {
         let canvas = p.createCanvas(todo_div.clientWidth, todo_div.clientHeight);
         canvas.parent(todo_div);
@@ -192,22 +195,21 @@ export class MainPage implements OnInit {
         ViewInit();
         CamScale = InitScale;
         localStorage.setItem('p5todoScale', `${CamScale}`);
-        p['isPlayingCanvas'] = this.isPlayingCanvas;
         // 캔버스 멈추기
-        p['StopCanvas'] = () => {
+        this.global.p5todoStopCanvas = () => {
           BlockInput = true;
           if (!this.isPlayingCanvas.loop)
             p.noLoop();
         }
         // 캔버스 계속 사용
-        p['PlayCanvas'] = () => {
+        this.global.p5todoPlayCanvas = () => {
           BlockInput = false;
           p.windowResized();
           if (this.isPlayingCanvas.loop)
             p.loop();
         }
         // 할 일 추가시 행동
-        p['add_todo'] = (data: string) => {
+        this.global.p5todoAddtodo = (data: string) => {
           let json = JSON.parse(data);
           if (json.removed) return; // 삭제 예약된 할 일은 추가하지 않음
           if (json.done) { // 완료 행동
@@ -222,13 +224,13 @@ export class MainPage implements OnInit {
               Todos[json.id].initialize();
             } else Todos[json.id] = new TodoElement(json);
           }
-          if (!p['isPlayingCanvas'].loop) {
+          if (!this.isPlayingCanvas.loop) {
             AddedElement = Todos[json.id];
             p.loop();
           }
-          p['count_todo']();
+          CountTodo();
         }
-        p['count_todo'] = () => {
+        CountTodo = () => {
           TodoKeys = Object.keys(Todos);
           this.isEmptyTodo = !Boolean(TodoKeys.length);
           if (!this.isEmptyTodo) {
@@ -240,7 +242,7 @@ export class MainPage implements OnInit {
             }
           }
         }
-        p['remove_todo'] = (data: string) => {
+        this.global.p5removeTodo = (data: string) => {
           let json = JSON.parse(data);
           for (let i = 0, j = TodoKeys.length; i < j; i++)
             if (Todos[TodoKeys[i]].json.id == json.id) {
@@ -248,22 +250,22 @@ export class MainPage implements OnInit {
               break;
             }
           this.isEmptyTodo = !Boolean(Object.keys(TodoKeys).length);
-          p['count_todo']();
+          CountTodo();
           p.redraw();
         }
         // 해야할 일 리스트 업데이트
-        p['ListUpdate'] = async () => {
+        ListUpdate = async () => {
           Todos = {};
           TodoKeys.length = 0;
           let list = await this.indexed.GetFileListFromDB('todo/');
           for (let i = 0, j = list.length; i < j; i++)
             if (list[i].indexOf('/info.todo') >= 0) {
               let data = await this.indexed.loadTextFromUserPath(list[i]);
-              p['add_todo'](data);
+              this.global.p5todoAddtodo(data);
             }
           this.isEmptyTodo = !Boolean(Object.keys(TodoKeys).length);
         }
-        await p['ListUpdate']();
+        ListUpdate();
         // 필터 카테고리 정보 생성하기
         this.SwitchTargetFilter(this.TargetFilterName);
         // 필터 종류에 따라 데이터를 수집하여 준비함
@@ -323,7 +325,7 @@ export class MainPage implements OnInit {
           color: '#ba987688',
           value: 'other',
         }];
-        p['FilteringTodos'] = FilteringTodos;
+        this.global.p5FilteringTodos = FilteringTodos;
       }
       /** 할 일 객체를 순회하며 표시를 필터링함 */
       let FilteringTodos = (force?: any) => {
@@ -631,7 +633,7 @@ export class MainPage implements OnInit {
               let dist = this.position.dist(Other.position);
               let limitDist = this.EllipseSize / 2 + Other.EllipseSize / 2;
               if (dist < limitDist) { // 충분히 근접했다면 충돌로 인지
-                if (!p['isPlayingCanvas'].loop)
+                if (!isPlayingCanvas.loop)
                   if (AddedElement == this) {
                     AddedElement = undefined;
                     p.noLoop();
@@ -660,13 +662,11 @@ export class MainPage implements OnInit {
           this.OriginalProgWeight = this.ProgressWeight;
           this.json['done'] = true;
           DoneTodo.push(this);
-          if (!p['isPlayingCanvas'].loop)
-            p.loop();
+          if (!isPlayingCanvas.loop) p.loop();
         }
 
         async DoneAnim() {
-          if (!p['isPlayingCanvas'].loop)
-            p.loop();
+          if (!isPlayingCanvas.loop) p.loop();
           this.LifeTime -= .04;
           this.EllipseSize = this.OriginalEllipseSize * this.LifeTime;
           this.ProgressWeight = this.OriginalProgWeight * this.LifeTime;
@@ -679,11 +679,10 @@ export class MainPage implements OnInit {
           }
           // 완전 삭제 후 파티클 생성
           if (this.LifeTime < 0) {
-            if (!p['isPlayingCanvas'].loop) {
+            if (!isPlayingCanvas.loop)
               setTimeout(() => p.noLoop(), 1000);
-            }
             this.RemoveTodo();
-            p['count_todo']();
+            CountTodo();
             for (let i = 0; i < 20; i++)
               DoneParticles.push(new DoneBoomParticleAnim(this.position, this.json.custom_color || this.defaultColor));
           }
@@ -984,19 +983,19 @@ export class MainPage implements OnInit {
     let p5todo_canvas = document.getElementById('p5todo');
     if (!p5todo_canvas)
       this.CreateTodoManager();
-    else this.global.p5todo['PlayCanvas']();
+    else this.global.p5todoPlayCanvas();
     this.try_add_shortcut();
   }
 
   try_add_shortcut() {
-    if (this.global.p5key && this.global.p5key['KeyShortCut']) {
-      this.global.p5key['KeyShortCut']['AddAct'] = () => {
+    if (this.global.p5KeyShortCut) {
+      this.global.p5KeyShortCut['AddAct'] = () => {
         this.nakama.open_add_todo_page();
       }
-      this.global.p5key['KeyShortCut']['Backquote'] = () => {
+      this.global.p5KeyShortCut['Backquote'] = () => {
         this.SwitchTargetFilter();
       }
-      this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+      this.global.p5KeyShortCut['Digit'] = (index: number) => {
         if (this.AllCategories[this.TargetFilterName].length > index)
           this.ChangeFilterValue(this.AllCategories[this.TargetFilterName][index].value);
       };
@@ -1007,9 +1006,9 @@ export class MainPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    if (this.global.p5todo && this.global.p5todo['StopCanvas'])
-      this.global.p5todo['StopCanvas']();
-    if (this.global.p5key && this.global.p5key['KeyShortCut'])
-      delete this.global.p5key['KeyShortCut']['AddAct'];
+    if (this.global.p5todoStopCanvas)
+      this.global.p5todoStopCanvas();
+    if (this.global.p5KeyShortCut)
+      delete this.global.p5KeyShortCut['AddAct'];
   }
 }

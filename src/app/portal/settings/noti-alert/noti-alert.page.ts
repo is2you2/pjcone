@@ -21,7 +21,7 @@ export class NotiAlertPage implements OnInit {
   ngOnInit() { }
 
   ionViewDidEnter() {
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
+    this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
     let target = [
@@ -30,7 +30,7 @@ export class NotiAlertPage implements OnInit {
       'todo',
       'simplechat',
     ];
-    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+    this.global.p5KeyShortCut['Digit'] = (index: number) => {
       this.toggle_silent_set(target[index]);
     }
   }
@@ -40,7 +40,7 @@ export class NotiAlertPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    delete this.global.p5key['KeyShortCut']['Escape'];
-    delete this.global.p5key['KeyShortCut']['Digit'];
+    delete this.global.p5KeyShortCut['Escape'];
+    delete this.global.p5KeyShortCut['Digit'];
   }
 }

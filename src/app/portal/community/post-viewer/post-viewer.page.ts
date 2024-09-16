@@ -51,7 +51,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
   }
   BackButtonPressed = false;
   ionViewWillEnter() {
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
+    this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
     this.IsFocusOnHere = true;
@@ -544,7 +544,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
   }
 
   ionViewWillLeave() {
-    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5KeyShortCut['Escape'];
     this.IsFocusOnHere = false;
   }
 

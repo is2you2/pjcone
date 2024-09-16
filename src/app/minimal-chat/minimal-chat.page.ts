@@ -202,13 +202,13 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   }
 
   AddShortCut() {
-    this.global.p5key['KeyShortCut']['EnterAct'] = () => {
+    this.global.p5KeyShortCut['EnterAct'] = () => {
       if (document.activeElement != this.DomMinimalChatInput)
         setTimeout(() => {
           this.focus_on_input();
         }, 0);
     }
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
+    this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
   }
@@ -323,7 +323,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                 }]
               }).then(v => {
                 this.global.StoreShortCutAct('minimal-multiple-send');
-                this.global.p5key['KeyShortCut']['Escape'] = () => {
+                this.global.p5KeyShortCut['Escape'] = () => {
                   v.dismiss();
                 }
                 v.onDidDismiss().then(() => {
@@ -410,7 +410,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     favicon.setAttribute('href', `assets/icon/simplechat.png`);
 
     if (!this.client.client || this.client.client.readyState != this.client.client.OPEN
-      && !(this.client.p5canvas && this.client.p5canvas['OnDediMessage'])) {
+      && !this.client.p5OnDediMessage) {
       this.client.userInput.logs.length = 0;
       let joinMessage = { color: isDarkMode ? 'bbb' : '444', text: this.lang.text['MinimalChat']['joinChat_group'], isSystem: true };
       this.client.userInput.logs.push(joinMessage);
@@ -442,7 +442,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         let isMe = this.client.uuid == data['uid'];
         let target = isMe ? (this.client.MyUserName || this.lang.text['MinimalChat']['name_me']) : (data['name'] || this.lang.text['MinimalChat']['name_stranger_group']);
         let color = data['uid'] ? (data['uid'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6) : isDarkMode ? '888888' : '444444';
-        if (this.client.p5canvas && this.client.p5canvas['OnDediMessage']) this.client.p5canvas['OnDediMessage'](color);
+        if (this.client.p5OnDediMessage) this.client.p5OnDediMessage(color);
         if (data['msg']) { // 채널 메시지
           let sep: string[] = data['msg'].split(' ');
           let msg_arr = [];
@@ -591,7 +591,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         title: this.lang.text['MinimalChat']['failed_to_join'],
         smallIcon_ln: 'simplechat',
       }, this.Header, this.open_this);
-      if (this.client.p5canvas && this.client.p5canvas['OnDediMessage']) this.client.p5canvas['OnDediMessage']('ff0000');
+      if (this.client.p5OnDediMessage) this.client.p5OnDediMessage('ff0000');
       this.client.disconnect();
     }
     this.client.funcs.onopen = (_v: any) => {
@@ -618,7 +618,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
           actions_wm: PWA_Action,
           smallIcon_ln: 'simplechat',
         }, this.Header, this.open_this);
-        if (this.client.p5canvas && this.client.p5canvas['OnDediMessage']) this.client.p5canvas['OnDediMessage']('ff0000');
+        if (this.client.p5OnDediMessage) this.client.p5OnDediMessage('ff0000');
       }
     }
   }
@@ -872,8 +872,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     favicon.setAttribute('href', 'assets/icon/favicon.png');
     this.noti.Current = undefined;
     if (this.client.IsConnected) this.client.CreateRejoinButton();
-    delete this.global.p5key['KeyShortCut']['EnterAct'];
-    delete this.global.p5key['KeyShortCut']['Escape'];
+    delete this.global.p5KeyShortCut['EnterAct'];
+    delete this.global.p5KeyShortCut['Escape'];
     if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
   }
   ngOnDestroy() {
@@ -881,7 +881,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     window.onfocus = undefined;
     this.minimal_chat_log.onscroll = null;
     this.DomMinimalChatInput.onpaste = null;
-    if (this.p5canvas)
-      this.p5canvas.remove()
+    if (this.p5canvas) this.p5canvas.remove();
   }
 }

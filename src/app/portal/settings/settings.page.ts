@@ -71,7 +71,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     if (this.cant_dedicated) {
       this.Fallback_FS_input_element = document.getElementById('fallback_fs_input').childNodes[1].childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
       this.Fallback_FS_input_element.onfocus = () => {
-        delete this.global.p5key['KeyShortCut']['Digit'];
+        delete this.global.p5KeyShortCut['Digit'];
       }
       this.WillLeave = false;
       this.Fallback_FS_input_element.addEventListener('focusout', () => {
@@ -80,7 +80,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       });
     }
     this.StartPageValue = localStorage.getItem('StartPage');
-    this.global.p5key['KeyShortCut']['Escape'] = () => {
+    this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
   }
@@ -151,7 +151,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.LinkButton.push(() => this.LangClicked());
     this.LinkButton.push(() => this.go_to_page('licenses'));
     // 환경에 맞춰 단축키 구성
-    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+    this.global.p5KeyShortCut['Digit'] = (index: number) => {
       // 설정 메뉴 정렬처리
       if (this.LinkButton[index])
         this.LinkButton[index]();
@@ -172,7 +172,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   StartPageClicked() {
     this.StartPageSel.open();
     this.global.StoreShortCutAct('startsel');
-    this.global.p5key['KeyShortCut']['Digit'] = (index: number) => {
+    this.global.p5KeyShortCut['Digit'] = (index: number) => {
       // 설정 메뉴 정렬처리
       if (index < 4) {
         this.StartPageValue = `${index}`;
@@ -232,8 +232,8 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   RemoveKeyShortCut() {
-    delete this.global.p5key['KeyShortCut']['Escape'];
-    delete this.global.p5key['KeyShortCut']['Digit'];
+    delete this.global.p5KeyShortCut['Escape'];
+    delete this.global.p5KeyShortCut['Digit'];
   }
 
   WillLeave = false;
