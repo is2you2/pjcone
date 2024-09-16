@@ -424,7 +424,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   }
                   blender_frame.parent(contentDiv);
                   let blender_viewer = this.global.load_blender_file(blender_frame.elt, this.PostInfo['attachments'][index],
-                    () => { }, () => { });
+                    () => { }, () => { }, this.cont);
                   this.blenderViewers.push(blender_viewer);
                 } break;
                 case 'code':
