@@ -1063,9 +1063,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.TargetMessageObject.style.marginLeft = null;
           CurrentChatMovedSize = 0;
         }
-        this.MsgClickedStartPos = undefined;
-        this.TargetMessageObject = undefined;
-        this.IsQouteMyMessage = undefined;
+        this.MsgClickedStartPos = null;
+        this.TargetMessageObject = null;
+        this.IsQouteMyMessage = null;
       }
     });
   }
@@ -2633,7 +2633,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.cont.abort();
     delete this.global.WindowOnBlurAct['chatroom'];
     delete this.nakama.opened_page_info['channel'];
-    this.nakama.ChatroomLinkAct = undefined;
+    this.nakama.ChatroomLinkAct = null;
     if (this.p5canvas)
       this.p5canvas.remove()
     this.nakama.OnTransferMessage = {};

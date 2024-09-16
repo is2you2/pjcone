@@ -54,7 +54,7 @@ export class AppComponent {
     });
     lang.Callback_nakama = () => {
       nakama.initialize();
-      lang.Callback_nakama = undefined;
+      lang.Callback_nakama = null;
     }
     // 모바일 기기 특정 설정
     if (isPlatform == 'Android' || isPlatform == 'iOS') {

@@ -356,7 +356,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   /** QR코드 이미지 생성 */
   async CreateQRCode() {
     if (this.JoinedQuick) return;
-    this.QRCodeSRC = undefined;
+    this.QRCodeSRC = '';
     let NoSecure = this.client.cacheAddress.indexOf('ws:') == 0;
     let header_address: string;
     try {
@@ -878,7 +878,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   }
   ngOnDestroy() {
     this.route.queryParams['unsubscribe']();
-    window.onfocus = undefined;
+    window.onfocus = null;
     this.minimal_chat_log.onscroll = null;
     this.DomMinimalChatInput.onpaste = null;
     if (this.p5canvas) this.p5canvas.remove();

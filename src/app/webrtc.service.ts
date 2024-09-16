@@ -261,10 +261,10 @@ export class WebrtcService {
     this.OnUse = true;
     if (this.p5canvas) {
       clearTimeout(this.p5waitingAct);
-      this.p5waitingAct = undefined;
+      this.p5waitingAct = null;
       this.p5callButton.remove();
-      this.p5callButton = undefined;
-      this.p5hangup = undefined;
+      this.p5callButton = null;
+      this.p5hangup = null;
       this.p5canvas.remove();
     }
     this.p5canvas = new p5((p: p5) => {
@@ -480,10 +480,10 @@ export class WebrtcService {
             setTimeout(() => {
               if (!this.OnUse) {
                 clearTimeout(this.p5waitingAct);
-                this.p5waitingAct = undefined;
+                this.p5waitingAct = null;
                 this.p5callButton.remove();
-                this.p5callButton = undefined;
-                this.p5hangup = undefined;
+                this.p5callButton = null;
+                this.p5hangup = null;
                 this.p5canvas.remove();
               }
             }, 1000);
@@ -527,7 +527,7 @@ export class WebrtcService {
         this.p5toast.show({
           text: this.lang.text['WebRTCDevManager']['NoRegServer'],
         });
-        servers = undefined;
+        servers = null;
       }
     }
     this.PeerConnection = new RTCPeerConnection(servers);
@@ -599,9 +599,9 @@ export class WebrtcService {
     };
     this.dataChannel.onclose = (_ev: any) => {
       if (this.dataChannelOnCloseAct) this.dataChannelOnCloseAct();
-      this.dataChannelOpenAct = undefined;
-      this.dataChannelOnMsgAct = undefined;
-      this.dataChannelOnCloseAct = undefined;
+      this.dataChannelOpenAct = null;
+      this.dataChannelOnMsgAct = null;
+      this.dataChannelOnCloseAct = null;
     };
     this.dataChannel.onmessage = (event: any) => {
       if (this.dataChannelOnMsgAct) this.dataChannelOnMsgAct(event.data);
@@ -791,7 +791,7 @@ export class WebrtcService {
       this.PeerConnection.ondatachannel = null;
       this.PeerConnection.onnegotiationneeded = null;
     }
-    this.PeerConnection = undefined;
+    this.PeerConnection = null;
     try {
       if (leaveMatch && this.CurrentMatch.match_id != this.nakama.self_match[this.isOfficial][this.target].match_id) {
         await this.nakama.servers[this.isOfficial][this.target].socket.sendMatchState(
@@ -804,7 +804,7 @@ export class WebrtcService {
   /** webrtc 관련 개체 전부 삭제 */
   async close_webrtc(LeaveMatch = true, checkIfData = false) {
     if (checkIfData && this.TypeIn != 'data') return;
-    this.InitReplyCallback = undefined;
+    this.InitReplyCallback = null;
     await this.HangUpCall(LeaveMatch);
     if (this.localMedia) this.localMedia.remove();
     if (this.remoteMedia) this.remoteMedia.remove();
@@ -821,23 +821,23 @@ export class WebrtcService {
       } catch (e) {
         console.log('전화 끊기 추가동작 오류: ', e);
       }
-      this.HangUpCallBack = undefined;
+      this.HangUpCallBack = null;
     }
-    this.localMedia = undefined;
-    this.localStream = undefined;
-    this.remoteMedia = undefined;
-    this.isOfficial = undefined;
-    this.target = undefined;
-    this.user_id = undefined;
-    this.channel_id = undefined;
-    this.LocalOffer = undefined;
-    this.LocalAnswer = undefined;
+    this.localMedia = null;
+    this.localStream = null;
+    this.remoteMedia = null;
+    this.isOfficial = null;
+    this.target = null;
+    this.user_id = null;
+    this.channel_id = null;
+    this.LocalOffer = null;
+    this.LocalAnswer = null;
     if (this.dataChannel) {
       this.dataChannel.onopen = null;
       this.dataChannel.onclose = null;
       this.dataChannel.onmessage = null;
     }
-    this.dataChannel = undefined;
+    this.dataChannel = null;
     this.ReceivedOfferPart = '';
     this.ReceivedAnswerPart = '';
     this.JoinInited = false;

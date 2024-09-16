@@ -49,16 +49,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     if (this.p5viewerkey) this.p5viewerkey.remove();
     this.RemoveP5Relative();
     if (this.VideoMediaObject) {
-      if (this.VideoMediaObject.elt != document.pictureInPictureElement) {
-        this.VideoMediaObject.elt.src = '';
-        this.VideoMediaObject.elt.load();
-        this.VideoMediaObject.elt.remove();
+      if (this.VideoMediaObject.elt != document.pictureInPictureElement)
         this.VideoMediaObject.remove();
-      }
-      this.VideoMediaObject = undefined;
+      this.VideoMediaObject = null;
     }
     let vid_obj = document.getElementById('ionicviewer_vid_obj');
-    if (vid_obj != document.pictureInPictureElement)
+    if (vid_obj && vid_obj != document.pictureInPictureElement)
       vid_obj.remove();
     if (!document.pictureInPictureElement) {
       if (this.global.PIPLinkedVideoElement) {
@@ -66,7 +62,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         this.global.PIPLinkedVideoElement.onended = null;
         this.global.PIPLinkedVideoElement.onleavepictureinpicture = null;
       }
-      this.global.PIPLinkedVideoElement = undefined;
+      this.global.PIPLinkedVideoElement = null;
     }
   }
 
@@ -80,7 +76,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   RemoveP5Relative() {
     if (this.p5canvasInside) {
       this.p5canvasInside.remove();
-      this.p5canvasInside = undefined;
+      this.p5canvasInside = null;
     }
     if (this.p5TextArea) this.p5TextArea.remove()
     if (this.p5SyntaxHighlightReader) this.p5SyntaxHighlightReader.remove();
@@ -196,7 +192,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   canvasDiv: HTMLElement;
   async reinit_content_data(msg: any) {
-    this.CurrentFileSize = undefined;
+    this.CurrentFileSize = null;
     this.NewTextFileName = '';
     this.NeedDownloadFile = false;
     this.ContentOnLoad = false;
@@ -229,8 +225,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         this.CreateContentInfo();
         this.ionViewDidEnter();
       } catch (e) {
-        this.FileURL = undefined;
-        this.blob = undefined;
+        this.FileURL = null;
+        this.blob = null;
         this.isDownloading = false;
         this.NeedDownloadFile = true;
         this.ContentOnLoad = true;
@@ -458,6 +454,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               img.remove();
               this.ContentOnLoad = true;
               this.ContentFailedLoad = false;
+              img.elt.onload = null;
             }
             p.noLoop();
           }
@@ -634,12 +631,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               mediaObject['elt'].onended = () => {
                 if (this.AutoPlayNext)
                   this.ChangeToAnother(1);
+                mediaObject['elt'].onended = null;
               }
               ResizeAudio();
               mediaObject['elt'].hidden = false;
               mediaObject['elt'].onloadedmetadata = () => {
                 ResizeAudio();
                 mediaObject['elt'].hidden = false;
+                mediaObject['elt'].onloadedmetadata = null;
               }
               mediaObject.showControls();
               mediaObject.play();
@@ -720,15 +719,19 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   this.global.PIPLinkedVideoElement.onleavepictureinpicture = null;
                   // 페이지를 나간 상태라면 PIP 종료와 동시에 비디오 삭제
                   if (!this.VideoMediaObject) {
+                    this.global.PIPLinkedVideoElement.onplay = null;
                     this.global.PIPLinkedVideoElement.src = '';
                     this.global.PIPLinkedVideoElement.load();
                     this.global.PIPLinkedVideoElement.remove();
-                    this.global.PIPLinkedVideoElement = undefined;
+                    this.global.PIPLinkedVideoElement = null;
                   }
                 }
               }
-              if (this.canvasDiv)
-                this.canvasDiv.appendChild(mediaObject['elt']);
+              try {
+                mediaObject.parent(this.canvasDiv);
+              } catch (e) {
+                mediaObject.remove();
+              }
               this.image_info['width'] = mediaObject['elt']['videoWidth'];
               this.image_info['height'] = mediaObject['elt']['videoHeight'];
               ResizeVideo();
@@ -738,10 +741,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 this.image_info['height'] = mediaObject['elt']['videoHeight'];
                 ResizeVideo();
                 mediaObject['elt'].hidden = false;
+                mediaObject['elt'].onloadedmetadata = null;
               }
               mediaObject['elt'].onended = () => {
                 if (this.AutoPlayNext)
                   this.ChangeToAnother(1);
+                mediaObject['elt'].onended = null;
               }
               mediaObject.showControls();
               mediaObject.play();

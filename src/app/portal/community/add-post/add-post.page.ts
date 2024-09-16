@@ -38,8 +38,8 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.route.queryParams['unsubscribe']();
     this.TitleInput.onpaste = null;
     this.ContentTextArea.onpaste = null;
-    this.p5StartVoiceTimer = undefined;
-    this.p5StopVoiceTimer = undefined;
+    this.p5StartVoiceTimer = null;
+    this.p5StopVoiceTimer = null;
     if (this.p5canvas) this.p5canvas.remove();
     delete this.nakama.StatusBarChangedCallback;
     if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
@@ -310,7 +310,7 @@ export class AddPostPage implements OnInit, OnDestroy {
 
   useVoiceRecording = false;
   /** 게시물 편집기에서 보여지는 대표 이미지 링크 주소 */
-  MainPostImage = undefined;
+  MainPostImage = null;
   /** 확장 버튼 행동들 */
   extended_buttons: ExtendButtonForm[] = [
     { // 0
@@ -322,7 +322,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           document.getElementById('PostMainImage_sel').click();
         else {
           URL.revokeObjectURL(this.MainPostImage);
-          this.MainPostImage = undefined;
+          this.MainPostImage = null;
           this.userInput.mainImage = undefined;
           let input = document.getElementById('PostMainImage_sel') as HTMLInputElement;
           input.value = '';

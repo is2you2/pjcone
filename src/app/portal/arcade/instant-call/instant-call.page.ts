@@ -232,7 +232,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
       this.global.InstantCallWSClient.onclose = null;
       this.global.InstantCallWSClient.onmessage = null;
       this.global.InstantCallWSClient.onerror = null;
-      this.global.InstantCallWSClient = undefined;
+      this.global.InstantCallWSClient = null;
       this.webrtc.close_webrtc(false);
       this.CallClosed = true;
       if (!this.PageOut) this.navCtrl.pop();
@@ -246,7 +246,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
 
   /** 웹소켓 서버에 연결된 경우 배경에 연결중임을 표현 */
   ShowWaiting() {
-    this.QRCodeAsString = undefined;
+    this.QRCodeAsString = '';
     if (this.p5canvas) return;
     this.p5canvas = new p5((p: p5) => {
       let canvasDiv = document.getElementById('InstantCallCanvasDiv');

@@ -400,6 +400,6 @@ export class OthersProfilePage implements OnInit, OnDestroy {
     delete this.nakama.socket_reactive['others-profile'];
     delete this.nakama.socket_reactive['others-online'];
     this.p5canvas.remove();
-    this.p5ChangeImageSmooth = undefined;
+    this.p5ChangeImageSmooth = null;
   }
 }

@@ -80,15 +80,15 @@ export class MainPage implements OnInit {
         this.TargetFilterDisplayName = 'FilterByCreator';
         break;
     }
-    this.CurrentFilterValue = undefined;
+    this.CurrentFilterValue = null;
     if (this.global.p5FilteringTodos)
       this.global.p5FilteringTodos(TodoFilterCategory.None);
   }
-  CurrentFilterValue = undefined;
+  CurrentFilterValue = null;
   /** 해당 필터 카테고리의 값을 변경 */
   ChangeFilterValue(value: any) {
     if (this.CurrentFilterValue == value)
-      this.CurrentFilterValue = undefined;
+      this.CurrentFilterValue = null;
     else this.CurrentFilterValue = value;
     // 모든 할 일 개체를 돌아다니며 표현 여부 변경
     this.global.p5FilteringTodos();
@@ -639,7 +639,7 @@ export class MainPage implements OnInit {
               if (dist < limitDist) { // 충분히 근접했다면 충돌로 인지
                 if (!isPlayingCanvas.loop)
                   if (AddedElement == this) {
-                    AddedElement = undefined;
+                    AddedElement = null;
                     p.noLoop();
                   }
                 this.ReflectBounce(Other, dist / limitDist);
@@ -828,7 +828,7 @@ export class MainPage implements OnInit {
         if (BlockInput || !exact_target) return;
         switch (ev['which']) {
           case 1: // 왼쪽
-            MouseAct = undefined;
+            MouseAct = null;
             ReleaseAllAct();
             break;
         }
@@ -882,7 +882,7 @@ export class MainPage implements OnInit {
               GrabbedElement.isGrabbed = false;
               GrabbedElement.Velocity = VECTOR_ZERO.copy();
               GrabbedElement.Accel = VECTOR_ZERO.copy();
-              GrabbedElement = undefined;
+              GrabbedElement = null;
             }
             break;
           default: // 3개 또는 그 이상은 행동 초기화
@@ -960,13 +960,13 @@ export class MainPage implements OnInit {
           GrabbedElement.isGrabbed = false;
           GrabbedElement.Velocity = VECTOR_ZERO.copy();
           GrabbedElement.Accel = VECTOR_ZERO.copy();
-          GrabbedElement = undefined;
+          GrabbedElement = null;
         }
       }
       /** 모든 입력을 제거했을 때 공통 행동 */
       let ReleaseAllAct = () => {
         ReleaseGrabbedElement();
-        MovementStartPosition = undefined;
+        MovementStartPosition = null;
         try {
           let dist = TempStartCamPosition.dist(CamPosition);
           if (dist < 15) { // 클릭 행동으로 간주

@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
-import { AlertController, IonicSafeString, NavController, mdTransitionAnimation } from '@ionic/angular';
+import { NavController, mdTransitionAnimation } from '@ionic/angular';
 import * as p5 from 'p5';
 import { NakamaService } from './nakama.service';
 import { P5ToastService } from './p5-toast.service';
 import { LanguageSettingService } from './language-setting.service';
-import { LocalNotiService } from './local-noti.service';
 import { isPlatform } from './app.component';
 import { GlobalActService } from './global-act.service';
 
@@ -21,8 +20,6 @@ export class MiniranchatClientService {
     public nakama: NakamaService,
     private p5toast: P5ToastService,
     private lang: LanguageSettingService,
-    private noti: LocalNotiService,
-    private alertCtrl: AlertController,
     private global: GlobalActService,
   ) { }
 
@@ -133,7 +130,7 @@ export class MiniranchatClientService {
   /** 페이지는 벗어났으나 계속 연결을 유지중일 때 생성 */
   CreateRejoinButton() {
     if (this.p5canvas) {
-      this.p5OnDediMessage = undefined;
+      this.p5OnDediMessage = null;
       this.p5canvas.remove();
     }
     this.p5canvas = new p5((p: p5) => {
@@ -189,15 +186,15 @@ export class MiniranchatClientService {
     if (this.client) this.client.close(code, reason);
     this.IsConnected = false;
     this.cacheAddress = '';
-    this.uuid = undefined;
+    this.uuid = null;
     if (this.p5canvas) {
-      this.p5OnDediMessage = undefined;
+      this.p5OnDediMessage = null;
       this.p5canvas.remove();
     }
     this.RemoveListeners();
-    this.FFSClient = undefined;
-    this.client = undefined;
-    this.JoinedChannel = undefined;
+    this.FFSClient = null;
+    this.client = null;
+    this.JoinedChannel = null;
     this.status = 'idle';
   }
 }

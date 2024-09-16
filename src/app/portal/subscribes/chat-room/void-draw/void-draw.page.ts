@@ -103,11 +103,11 @@ export class VoidDrawPage implements OnInit {
     inputInfo['height'] = inputInfo['height'] || 432;
     if (this.p5ActualCanvas) {
       this.p5ActualCanvas.remove();
-      this.p5ActualCanvas = undefined;
+      this.p5ActualCanvas = null;
     }
     if (this.p5ImageCanvas) {
       this.p5ImageCanvas.remove();
-      this.p5ImageCanvas = undefined;
+      this.p5ImageCanvas = null;
     }
     if (this.p5voidDraw) this.p5voidDraw.remove();
     this.create_p5voidDraw(inputInfo);
@@ -419,7 +419,7 @@ export class VoidDrawPage implements OnInit {
         this.p5RemoteDrawingEnd = RemoteDrawingEnd;
         this.p5updateRemoteCurve = updateRemoteCurve;
         this.p5CancelCurrentDraw = () => {
-          RemoteDraw = undefined;
+          RemoteDraw = null;
           p.redraw();
         }
         if (this.navParams.data.scrollHeight)
@@ -582,7 +582,7 @@ export class VoidDrawPage implements OnInit {
           updateDrawingCurve(ActualCanvas, RemoteDraw);
         }
         HistoryPointer = this.p5DrawingStack.length;
-        RemoteDraw = undefined;
+        RemoteDraw = null;
         p.redraw();
       }
       const BUTTON_HEIGHT = 56;
@@ -781,7 +781,7 @@ export class VoidDrawPage implements OnInit {
             MovementStartPosition = One.copy().add(Two).div(2);
             TempStartCamPosition = CamPosition.copy();
             ScaleStartRatio = CamScale;
-            CurrentDraw = undefined;
+            CurrentDraw = null;
             if (this.ReadyToShareAct)
               this.webrtc.dataChannel.send(JSON.stringify({
                 type: 'draw',
@@ -864,7 +864,7 @@ export class VoidDrawPage implements OnInit {
             if (!isTouching) return;
             PanningInit();
             TouchBetween = 0;
-            CurrentDraw = undefined;
+            CurrentDraw = null;
             break;
         }
         isClickOnMenu = false;
@@ -881,9 +881,9 @@ export class VoidDrawPage implements OnInit {
           updateDrawingCurve(ActualCanvas, CurrentDraw);
         }
         HistoryPointer = this.p5DrawingStack.length;
-        MovementStartPosition = undefined;
+        MovementStartPosition = null;
         isClickOnMenu = false;
-        CurrentDraw = undefined;
+        CurrentDraw = null;
         p.redraw();
       }
     });
@@ -939,7 +939,7 @@ export class VoidDrawPage implements OnInit {
                 this.CreateOnMessageLink();
                 this.CreateOnOpenAct(false, async () => {
                   let crop_pos = this.p5getCropPos();
-                  this.nakama.VoidDrawInitCallBack = undefined;
+                  this.nakama.VoidDrawInitCallBack = null;
                   await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
                   this.IceWebRTCWsClient.send(JSON.stringify({
                     type: 'size',
@@ -982,7 +982,7 @@ export class VoidDrawPage implements OnInit {
           this.CreateOnMessageLink();
           this.CreateOnOpenAct(false, async () => {
             let crop_pos = this.p5getCropPos();
-            this.nakama.VoidDrawInitCallBack = undefined;
+            this.nakama.VoidDrawInitCallBack = null;
             await this.nakama.servers[_is_official][_target].socket
               .sendMatchState(this.nakama.self_match[_is_official][_target].match_id, MatchOpCode.VOIDDRAW_INIT,
                 encodeURIComponent(JSON.stringify({
@@ -1090,7 +1090,7 @@ export class VoidDrawPage implements OnInit {
             .then(async () => {
               this.CreateOnMessageLink();
               this.CreateOnOpenAct(false, async () => {
-                this.nakama.VoidDrawInitCallBack = undefined;
+                this.nakama.VoidDrawInitCallBack = null;
               });
               this.webrtc.CreateOffer();
               await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
@@ -1183,7 +1183,7 @@ export class VoidDrawPage implements OnInit {
       if (this.InputCustomAddress.indexOf('wss://') == 0 && (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')) {
         let GetwithoutProtocol = this.InputCustomAddress.split('://');
         this.global.open_link(`https://${GetwithoutProtocol.pop()}:9001`);
-        this.InputCustomAddress = undefined;
+        this.InputCustomAddress = null;
       }
       this.IceWebRTCWsClient.close();
       this.p5toast.show({
@@ -1304,7 +1304,7 @@ export class VoidDrawPage implements OnInit {
       this.p5toast.show({
         text: this.lang.text['TodoDetail']['Disconnected'],
       });
-      this.nakama.VoidDrawInitCallBack = undefined;
+      this.nakama.VoidDrawInitCallBack = null;
     }
   }
 
@@ -1350,11 +1350,11 @@ export class VoidDrawPage implements OnInit {
     this.RemoveShortCut();
     if (this.p5ActualCanvas) {
       this.p5ActualCanvas.remove();
-      this.p5ActualCanvas = undefined;
+      this.p5ActualCanvas = null;
     }
     if (this.p5ImageCanvas) {
       this.p5ImageCanvas.remove();
-      this.p5ImageCanvas = undefined;
+      this.p5ImageCanvas = null;
     }
     if (this.p5voidDraw) this.p5voidDraw.remove();
     if (this.IceWebRTCWsClient)

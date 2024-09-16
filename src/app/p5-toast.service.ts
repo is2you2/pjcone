@@ -172,7 +172,7 @@ export class P5ToastService {
         /** 토스트 숨기기 */
         let hide_toast = () => {
           this.stack = [...this.stack, this.AlertNow, ...this.alert];
-          this.AlertNow = undefined;
+          this.AlertNow = null;
           this.alert.length = 0;
           this.isShowing = false;
           this.CurrentToast.remove();

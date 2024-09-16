@@ -1647,11 +1647,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.route.queryParams['unsubscribe']();
     this.desc_input.onpaste = null;
     this.cont.abort();
-    this.nakama.AddTodoLinkAct = undefined;
-    this.nakama.AddTodoManageUpdateAct = undefined;
+    this.nakama.AddTodoLinkAct = null;
+    this.nakama.AddTodoManageUpdateAct = null;
     if (this.p5canvas)
       this.p5canvas.remove();
     delete this.nakama.StatusBarChangedCallback;
-    window.onfocus = undefined;
+    window.onfocus = null;
   }
 }
