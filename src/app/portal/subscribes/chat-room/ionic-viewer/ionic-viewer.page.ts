@@ -213,7 +213,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     if (this.FileInfo.url) {
       this.CreateContentInfo();
       this.NeedDownloadFile = false;
-      this.ContentOnLoad = true;
       this.ionViewDidEnter();
     } else {
       let path = this.FileInfo['alt_path'] || this.FileInfo['path'] ||
