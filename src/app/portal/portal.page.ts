@@ -45,10 +45,6 @@ export class PortalPage implements OnInit {
     if (this.OnInit) {
       if (!this.nakama.StartPage) this.nakama.StartPage = localStorage.getItem('StartPage') || '0';
       switch (this.nakama.StartPage) {
-        case '0':
-          this.bottom_tab_selected();
-          this.ionTabs.select('main');
-          break;
         case '1':
           this.subscribe_button();
           this.ionTabs.select('subscribes');
