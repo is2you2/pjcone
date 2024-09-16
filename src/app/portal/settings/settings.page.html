@@ -87,13 +87,11 @@
   <ion-item *ngIf="!cant_dedicated" button (click)="global.open_link('https://is2you2.github.io/pjcone_pwa/')">
     <ion-label>{{lang.text['Settings']['OpenPlayStore']}}</ion-label>
   </ion-item>
-  <div hidden>
-    <ion-item-divider>
-      <ion-label>{{lang.text['Settings']['Sponsorship']}}</ion-label>
-    </ion-item-divider>
-    <ion-item button (click)="open_paypal()">
-      <ion-icon class="icon_margin" name="logo-paypal"></ion-icon>
-      <ion-label>PayPal</ion-label>
-    </ion-item>
-  </div>
+  <ion-item-divider>
+    <ion-label>{{lang.text['Settings']['Sponsorship']}}</ion-label>
+  </ion-item-divider>
+  <ion-item button (click)="open_paypal()">
+    <ion-icon class="icon_margin" name="logo-paypal"></ion-icon>
+    <ion-label>{{lang.text['Settings']['Support']}}</ion-label>
+  </ion-item>
 </ion-content>
