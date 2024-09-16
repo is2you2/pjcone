@@ -267,6 +267,14 @@ export class GlobalActService {
     }
   }
 
+  /** 하단 탭을 다시 눌렀을 때 행동에 대해서 */
+  PortalBottonTabAct = {
+    Todo: undefined as Function,
+    Subscribes: undefined as Function,
+    Arcade: undefined as Function,
+    Community: undefined as Function,
+  };
+
   /** 문자열을 받아서 QR코드 이미지로 돌려주기  
    * 선택적 반환: QRCode 이미지 또는 오류 메시지
    */

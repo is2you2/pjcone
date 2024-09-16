@@ -24,6 +24,9 @@ export class CommunityPage implements OnInit {
   ngOnInit() {
     this.nakama.is_post_lock = true;
     this.nakama.CommunityGoToEditPost = this.add_post;
+    this.global.PortalBottonTabAct.Community = () => {
+      if (this.ContentScroll) this.ContentScroll.scrollTop = 0;
+    }
   }
 
   add_post(info?: any) {

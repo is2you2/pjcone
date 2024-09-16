@@ -25,10 +25,15 @@ export class SubscribesPage implements OnInit {
     private loadingCtrl: LoadingController,
   ) { }
 
+  SubscribesScrollDiv: HTMLElement;
   ngOnInit() {
     this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
       if (e && v) this.nakama.users.self['img'] = v.replace(/"|=|\\/g, '');
     });
+    this.global.PortalBottonTabAct.Subscribes = () => {
+      if (this.SubscribesScrollDiv)
+        this.SubscribesScrollDiv.scrollTop = 0;
+    }
   }
 
   cant_dedicated = false;
@@ -174,6 +179,8 @@ export class SubscribesPage implements OnInit {
   }
 
   ionViewDidEnter() {
+    if (!this.SubscribesScrollDiv)
+      this.SubscribesScrollDiv = document.getElementById('SubscribesScrollDiv');
     this.nakama.subscribe_lock = true;
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;

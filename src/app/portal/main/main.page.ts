@@ -36,7 +36,11 @@ export class MainPage implements OnInit {
     private alertCtrl: AlertController,
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.global.PortalBottonTabAct.Todo = () => {
+      this.nakama.open_add_todo_page();
+    }
+  }
 
   toggle_session() {
     this.nakama.toggle_all_session();
