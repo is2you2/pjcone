@@ -1291,7 +1291,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (this.ViewMsgIndex + this.ViewCount == this.messages.length - 1)
           this.ViewMsgIndex++;
         this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
-        this.pullable = this.ViewMsgIndex != 0 || Boolean(this.LocalHistoryList.length);
+        this.pullable = (this.info['local'] ? Boolean(this.LocalHistoryList.length) : this.next_cursor !== undefined) || this.ViewMsgIndex > 0;
         this.modulate_chatmsg(0, this.ViewableMessage.length);
         this.modulate_chatmsg(this.ViewableMessage.length - 1, this.ViewableMessage.length);
         this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
