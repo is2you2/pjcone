@@ -717,7 +717,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   this.global.PIPLinkedVideoElement.onended = null;
                   this.global.PIPLinkedVideoElement.onleavepictureinpicture = null;
                   // 페이지를 나간 상태라면 PIP 종료와 동시에 비디오 삭제
-                  if (!this.VideoMediaObject) {
+                  if (!document.getElementById('ionicviewer_vid_obj')) {
                     this.global.PIPLinkedVideoElement.onplay = null;
                     this.global.PIPLinkedVideoElement.src = '';
                     this.global.PIPLinkedVideoElement.load();
