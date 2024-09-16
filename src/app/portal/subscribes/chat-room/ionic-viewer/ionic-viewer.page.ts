@@ -707,6 +707,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             p.noCanvas();
             p.noLoop();
             mediaObject = p.createVideo([this.FileURL], () => {
+              mediaObject.id('ionicviewer_vid_obj');
               if (this.global.PIPLinkedVideoElement) {
                 mediaObject.elt.remove();
                 mediaObject.elt = this.global.PIPLinkedVideoElement;
@@ -749,7 +750,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             });
             this.VideoMediaObject = mediaObject;
           }
-          mediaObject.id('ionicviewer_vid_obj');
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let ResizeVideo = () => {
             let canvasWidth = this.ContentBox.offsetWidth;
