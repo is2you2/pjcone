@@ -57,6 +57,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       }
       this.VideoMediaObject = undefined;
     }
+    let vid_obj = document.getElementById('ionicviewer_vid_obj');
+    if (vid_obj != document.pictureInPictureElement)
+      vid_obj.remove();
     if (!document.pictureInPictureElement) {
       if (this.global.PIPLinkedVideoElement) {
         this.global.PIPLinkedVideoElement.onloadedmetadata = null;
@@ -746,6 +749,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             });
             this.VideoMediaObject = mediaObject;
           }
+          mediaObject.id('ionicviewer_vid_obj');
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let ResizeVideo = () => {
             let canvasWidth = this.ContentBox.offsetWidth;
