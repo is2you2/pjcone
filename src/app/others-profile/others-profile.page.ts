@@ -94,15 +94,15 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         p.noCanvas();
         p.pixelDensity(1);
         imgDiv = p.createDiv();
-        const IMAGE_SIZE = '156px';
+        const IMAGE_SIZE = 156;
         // 사용자 이미지
-        imgDiv.style('width', IMAGE_SIZE);
-        imgDiv.style('height', IMAGE_SIZE);
+        imgDiv.style('width', `${IMAGE_SIZE}px`);
+        imgDiv.style('height', `${IMAGE_SIZE}px`);
         imgDiv.style('position', 'absolute');
         imgDiv.style('top', '120px');
         imgDiv.style('left', '50%');
         imgDiv.style('transform', 'translateX(-50%)');
-        imgDiv.style('border-radius', IMAGE_SIZE);
+        imgDiv.style('border-radius', `${IMAGE_SIZE}px`);
         imgDiv.style('background-image', 'url(assets/data/avatar.svg)');
         imgDiv.style('background-position', 'center');
         imgDiv.style('background-repeat', 'no-repeat');
@@ -114,24 +114,25 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         OnlineLamp.style('width', LAMP_SIZE);
         OnlineLamp.style('height', LAMP_SIZE);
         OnlineLamp.style('position', 'absolute');
-        OnlineLamp.style('top', '128px');
-        OnlineLamp.style('left', `${this.OtherCanvasDiv.clientWidth / 2 + 38}px`);
+        OnlineLamp.style('top', '8px');
+        OnlineLamp.style('left', `${IMAGE_SIZE - 38}px`);
         OnlineLamp.style('border-radius', LAMP_SIZE);
-        OnlineLamp.parent(this.OtherCanvasDiv);
+        OnlineLamp.style('z-index', '1');
+        OnlineLamp.parent(imgDiv);
         // 부드러운 이미지 전환
         selected_image = p.createImg(this.info['user'].img, 'profile_img');
-        selected_image.style('width', IMAGE_SIZE);
-        selected_image.style('height', IMAGE_SIZE);
-        selected_image.style('border-radius', IMAGE_SIZE);
+        selected_image.style('width', `${IMAGE_SIZE}px`);
+        selected_image.style('height', `${IMAGE_SIZE}px`);
+        selected_image.style('border-radius', `${IMAGE_SIZE}px`);
         selected_image.style('position', 'absolute');
         selected_image.style('object-fit', 'cover');
         if (!this.info['user'].img)
           selected_image.hide();
         selected_image.parent(imgDiv);
         trashed_image = p.createImg(undefined, 'before_img');
-        trashed_image.style('width', IMAGE_SIZE);
-        trashed_image.style('height', IMAGE_SIZE);
-        trashed_image.style('border-radius', IMAGE_SIZE);
+        trashed_image.style('width', `${IMAGE_SIZE}px`);
+        trashed_image.style('height', `${IMAGE_SIZE}px`);
+        trashed_image.style('border-radius', `${IMAGE_SIZE}px`);
         trashed_image.style('position', 'absolute');
         trashed_image.style('object-fit', 'cover');
         trashed_image.hide();
@@ -226,9 +227,6 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         uuidDiv.elt.onclick = () => {
           this.copy_id();
         }
-        setTimeout(() => {
-          p.windowResized();
-        }, 0);
       }
       p.draw = () => {
         if (FadeOutTrashedLerp > 0) {
@@ -260,9 +258,6 @@ export class OthersProfilePage implements OnInit, OnDestroy {
           OnlineLamp.style('background-color', this.info['user']['online'] ? this.statusBar.colors['online'] : this.statusBar.colors['offline']);
           p.noLoop();
         }
-      }
-      p.windowResized = () => {
-        OnlineLamp.style('left', `${this.OtherCanvasDiv.clientWidth / 2 + 38}px`);
       }
       p.keyPressed = (ev: any) => {
         if (ev.code == 'Enter') {
