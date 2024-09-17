@@ -974,7 +974,7 @@ export class VoidDrawPage implements OnInit {
         let _target = target.info.target;
         this.webrtc.CurrentMatch = this.nakama.self_match[_is_official][_target];
         this.isDrawServerCreated = true;
-        this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Init'];
+        this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Waiting'];
         this.webrtc.initialize('data', undefined, {
           isOfficial: _is_official,
           target: _target,
@@ -1000,12 +1000,13 @@ export class VoidDrawPage implements OnInit {
               height: json.height,
             });
             this.p5setCropPos(json.cropX, json.cropY);
-            this.p5SetDrawable(false);
+            this.p5SetDrawable(true);
             this.p5voidDraw['redraw']();
           }
           this.webrtc.InitReplyCallback = async () => {
             // 배경이미지 공유하지 않도록 재설정
             this.CreateOnOpenAct(true);
+            this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Offer'];
             this.webrtc.CreateAnswer();
           }
           await this.nakama.servers[_is_official][_target].socket.sendMatchState(this.nakama.self_match[_is_official][_target].match_id, MatchOpCode.WEBRTC_INIT_REQ_SIGNAL,
@@ -1120,11 +1121,13 @@ export class VoidDrawPage implements OnInit {
             case 'WEBRTC_REPLY_INIT_SIGNAL':
               this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Reply'];
               this.nakama.socket_reactive[json['act']](json['data_str']);
-              if (json['data_str'] == 'EOL')
+              if (json['data_str'] == 'EOL') {
+                this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Offer'];
                 this.webrtc.CreateAnswer({
                   client: this.IceWebRTCWsClient,
                   channel: channel_id,
                 });
+              }
               this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Ice'];
               break;
             case 'WEBRTC_ICE_CANDIDATES':
@@ -1161,11 +1164,13 @@ export class VoidDrawPage implements OnInit {
           this.p5setCropPos(json.cropX, json.cropY);
           this.p5SetDrawable(false);
           this.p5voidDraw['redraw']();
+          this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Init'];
           // 그림판이 준비되었다면 WebRTC 구성을 시도
           this.webrtc.initialize('data')
             .then(() => {
               this.CreateOnOpenAct(true);
               this.CreateOnMessageLink();
+              this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Offer'];
               this.webrtc.CreateOffer();
               this.IceWebRTCWsClient.send(JSON.stringify({
                 type: 'init_req',
