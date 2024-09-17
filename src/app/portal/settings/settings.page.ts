@@ -7,6 +7,7 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { WebrtcManageIoDevPage } from 'src/app/webrtc-manage-io-dev/webrtc-manage-io-dev.page';
 import { LocalNotiService } from 'src/app/local-noti.service';
+import { IndexedDBService } from 'src/app/indexed-db.service';
 
 @Component({
   selector: 'app-settings',
@@ -22,7 +23,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     public nakama: NakamaService,
     public lang: LanguageSettingService,
     public global: GlobalActService,
-    private noti: LocalNotiService,
+    private indexed: IndexedDBService,
   ) { }
   /** 사설 서버 생성 가능 여부: 메뉴 disabled */
   cant_dedicated = false;
@@ -196,7 +197,13 @@ export class SettingsPage implements OnInit, OnDestroy {
   /** 언어 변경됨 */
   async LanguageChanged(ev: any) {
     this.lang.lang = ev.detail.value;
-    await this.lang.load_selected_lang();
+    try {
+      let blob = await this.indexed.loadBlobFromUserPath('translate.csv', '');
+      let OverrideURL = URL.createObjectURL(blob);
+      this.lang.load_selected_lang(OverrideURL);
+    } catch (e) {
+      this.lang.load_selected_lang();
+    }
   }
 
   go_to_page(_page: string) {

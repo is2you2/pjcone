@@ -159,7 +159,7 @@ export class UserFsDirPage implements OnInit {
         handler: async (ev: any) => {
           if (ev[0]) {
             try {
-              let targetPath = `${this.CurrentDir}/${ev[0]}`;
+              let targetPath = `${this.CurrentDir ? (this.CurrentDir + '/') : ''}${ev[0]}`;
               await this.indexed.createDirectory(targetPath);
               let info = await this.indexed.GetFileInfoFromDB(targetPath);
               let _info: FileDir = {
@@ -234,7 +234,7 @@ export class UserFsDirPage implements OnInit {
 
   async importSelected(file: any) {
     try {
-      let targetPath = `${this.CurrentDir}/${file.name}`;
+      let targetPath = `${this.CurrentDir ? (this.CurrentDir + '/') : ''}${file.name}`;
       await this.indexed.saveBlobToUserPath(file, targetPath);
       let info = await this.indexed.GetFileInfoFromDB(targetPath);
       let _info: FileDir = {

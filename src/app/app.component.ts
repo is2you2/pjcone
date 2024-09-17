@@ -1,6 +1,5 @@
 import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
-import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { Platform } from '@ionic/angular';
 import { IndexedDBService } from './indexed-db.service';
 import { LocalNotiService } from './local-noti.service';
@@ -24,8 +23,6 @@ window['p5'] = p5;
 export class AppComponent {
   constructor(
     platform: Platform,
-    router: Router,
-    ngZone: NgZone,
     noti: LocalNotiService,
     nakama: NakamaService,
     indexed: IndexedDBService,
@@ -41,12 +38,18 @@ export class AppComponent {
     else if (platform.is('iphone'))
       isPlatform = 'iOS';
     isNativefier = platform.is('electron');
-    indexed.initialize(() => {
+    indexed.initialize(async () => {
       lang.Callback_nakama = () => {
         nakama.initialize();
         lang.Callback_nakama = null;
       }
-      lang.load_selected_lang();
+      try {
+        let blob = await indexed.loadBlobFromUserPath('translate.csv', '');
+        let OverrideURL = URL.createObjectURL(blob);
+        lang.load_selected_lang(OverrideURL);
+      } catch (e) {
+        lang.load_selected_lang();
+      }
       // 앱 재시작시 자동으로 동기화할 수 있도록 매번 삭제
       let init = global.CatchGETs(location.href) || {};
       global.initialize();
@@ -57,20 +60,5 @@ export class AppComponent {
         list.forEach(path => indexed.removeFileFromUserPath(path));
       });
     });
-    // 모바일 기기 특정 설정
-    if (isPlatform == 'Android' || isPlatform == 'iOS') {
-      App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
-        ngZone.run(() => {
-          // Example url: https://beerswift.app/tabs/tab2
-          // slug = /tabs/tab2
-          const slug = event.url.split(".app").pop();
-          if (slug) {
-            router.navigateByUrl(slug);
-          }
-          // If no match, do nothing - let regular routing
-          // logic take over
-        });
-      });
-    }
   }
 }

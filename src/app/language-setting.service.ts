@@ -29,6 +29,10 @@ export class LanguageSettingService {
     TodoDetail: {},
     InstantCall: {},
   };
+  /** 설정가능한 언어 보여주기  
+   * setable = [{ value, display_name }, ...]
+   */
+  setable = [];
 
   constructor() {
     this.lang = navigator.language.split('-')[0];
@@ -38,32 +42,50 @@ export class LanguageSettingService {
   }
 
   /** 설정된 언어로 다시 불러오기 */
-  async load_selected_lang() {
+  async load_selected_lang(OverrideURL = 'assets/data/translate.csv') {
     return await new Promise((done, err) => {
       new p5((p: p5) => {
         p.setup = () => {
           p.noCanvas();
-          p.loadTable(`assets/data/translate.csv`, 'csv', 'header',
+          p.loadTable(OverrideURL, 'csv', 'header',
             (v: p5.Table) => {
-              // 지원하지 않는 언어라면 기본값으로 Fallback
-              if (!v.columns.includes(this.lang))
-                this.lang = 'en';
-              localStorage.setItem('lang', this.lang);
-              let tmpTitle: string;
-              for (let i = 0, j = v.rows.length; i < j; i++) {
-                if (v.rows[i]['obj']['#'].charAt(0) == '#') {
-                  tmpTitle = v.rows[i]['obj']['#'].substring(3);
-                  if (!this.text[tmpTitle])
-                    this.text[tmpTitle] = {};
-                } else this.text[tmpTitle][v.rows[i]['obj']['#']] = v.rows[i]['obj'][this.lang];
+              try {
+                // 지원하지 않는 언어라면 기본값으로 Fallback
+                let keys = Object.keys(v.rows[0]['obj']);
+                this.setable.length = 0;
+                for (let key of keys)
+                  if (key != '#')
+                    this.setable.push({
+                      value: key,
+                      display_name: v.rows[0]['obj'][key],
+                    });
+                if (!v.columns.includes(this.lang))
+                  this.lang = this.setable[0].value;
+                localStorage.setItem('lang', this.lang);
+                let tmpTitle: string;
+                for (let i = 0, j = v.rows.length; i < j; i++) {
+                  if (v.rows[i]['obj']['#'].charAt(0) == '#') {
+                    tmpTitle = v.rows[i]['obj']['#'].substring(3);
+                    if (!this.text[tmpTitle])
+                      this.text[tmpTitle] = {};
+                  } else if (tmpTitle) this.text[tmpTitle][v.rows[i]['obj']['#']] = v.rows[i]['obj'][this.lang];
+                }
+                if (this.Callback_nakama) this.Callback_nakama();
+                if (OverrideURL) URL.revokeObjectURL(OverrideURL);
+                p.remove();
+                done(undefined);
+              } catch (e) {
+                console.log('사용자 언어 불러오기 실패: ', e);
+                if (OverrideURL) URL.revokeObjectURL(OverrideURL);
+                p.remove();
+                this.load_selected_lang();
+                done(undefined);
               }
-              if (this.Callback_nakama) this.Callback_nakama();
-              done(undefined);
-              p.remove();
             }, e => {
               console.error('내부 문서 읽기 실패: ', e);
-              err(e);
+              if (OverrideURL) URL.revokeObjectURL(OverrideURL);
               p.remove();
+              err(e);
             });
         }
       });
