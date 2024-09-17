@@ -35,9 +35,6 @@ export class LanguageSettingService {
     let lang_override = localStorage.getItem('lang');
     if (lang_override)
       this.lang = lang_override;
-    setTimeout(() => {
-      this.load_selected_lang();
-    }, 0);
   }
 
   /** 설정된 언어로 다시 불러오기 */

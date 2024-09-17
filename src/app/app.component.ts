@@ -42,6 +42,11 @@ export class AppComponent {
       isPlatform = 'iOS';
     isNativefier = platform.is('electron');
     indexed.initialize(() => {
+      lang.Callback_nakama = () => {
+        nakama.initialize();
+        lang.Callback_nakama = null;
+      }
+      lang.load_selected_lang();
       // 앱 재시작시 자동으로 동기화할 수 있도록 매번 삭제
       let init = global.CatchGETs(location.href) || {};
       global.initialize();
@@ -52,10 +57,6 @@ export class AppComponent {
         list.forEach(path => indexed.removeFileFromUserPath(path));
       });
     });
-    lang.Callback_nakama = () => {
-      nakama.initialize();
-      lang.Callback_nakama = null;
-    }
     // 모바일 기기 특정 설정
     if (isPlatform == 'Android' || isPlatform == 'iOS') {
       App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {

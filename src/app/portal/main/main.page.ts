@@ -530,7 +530,9 @@ export class MainPage implements OnInit {
                 this.ThumbnailImage.mask(ImageMask[importance]);
                 URL.revokeObjectURL(FileURL);
               });
-            }).catch(_e => { });
+            }).catch(_e => {
+              this.ThumbnailImage = null;
+            });
         }
         isAddButton = false;
         EllipseSize = 96;
