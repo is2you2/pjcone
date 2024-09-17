@@ -47,10 +47,7 @@
     <div class="disconnect_info">
       <ion-icon style="width: 60px; height: 60px;" color="medium" name="call-outline"></ion-icon>
       <div>
-        <ion-label *ngIf="!global.InitEnd && !global.PeerConnected" color="medium">{{lang.text['InstantCall']['Waiting']}}</ion-label>
-        <ion-label *ngIf="!global.InitEnd && global.PeerConnected"
-          color="medium">{{lang.text['InstantCall']['Connecting']}}</ion-label>
-        <ion-label *ngIf="global.InitEnd" color="medium">{{lang.text['InstantCall']['Connected']}}</ion-label>
+        <ion-label color="medium">{{TextInfo}}</ion-label>
       </div>
     </div>
   </div>
