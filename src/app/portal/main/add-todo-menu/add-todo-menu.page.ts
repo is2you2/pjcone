@@ -1559,8 +1559,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             permission_read: 2,
             permission_write: 1,
             value: this.userInput,
-          }]).then(async v => {
-            await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+          }]).then(v => {
+            this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
               .socket.sendMatchState(this.nakama.self_match[this.userInput.remote.isOfficial][this.userInput.remote.target].match_id, MatchOpCode.MANAGE_TODO,
                 encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
           });

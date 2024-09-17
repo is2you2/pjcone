@@ -978,7 +978,7 @@ export class VoidDrawPage implements OnInit {
         this.webrtc.initialize('data', undefined, {
           isOfficial: _is_official,
           target: _target,
-        }).then(async () => {
+        }).then(() => {
           this.CreateOnMessageLink();
           this.CreateOnOpenAct(false, async () => {
             let crop_pos = this.p5getCropPos();
@@ -1009,7 +1009,7 @@ export class VoidDrawPage implements OnInit {
             this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Offer'];
             this.webrtc.CreateAnswer();
           }
-          await this.nakama.servers[_is_official][_target].socket.sendMatchState(this.nakama.self_match[_is_official][_target].match_id, MatchOpCode.WEBRTC_INIT_REQ_SIGNAL,
+          this.nakama.servers[_is_official][_target].socket.sendMatchState(this.nakama.self_match[_is_official][_target].match_id, MatchOpCode.WEBRTC_INIT_REQ_SIGNAL,
             encodeURIComponent(''));
         });
         break;

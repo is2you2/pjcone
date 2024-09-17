@@ -337,8 +337,8 @@ export class NakamaService {
                   permission_read: 2,
                   permission_write: 1,
                   value: noti_info,
-                }]).then(async v => {
-                  await this.servers[isOfficial][target]
+                }]).then(v => {
+                  this.servers[isOfficial][target]
                     .socket.sendMatchState(this.self_match[isOfficial][target].match_id, MatchOpCode.MANAGE_TODO,
                       encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
                 });
@@ -1161,8 +1161,8 @@ export class NakamaService {
             permission_read: 2,
             permission_write: 1,
             value: json,
-          }]).then(async v => {
-            await this.servers[json.remote.isOfficial][json.remote.target]
+          }]).then(v => {
+            this.servers[json.remote.isOfficial][json.remote.target]
               .socket.sendMatchState(this.self_match[json.remote.isOfficial][json.remote.target].match_id, MatchOpCode.MANAGE_TODO,
                 encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
           });
