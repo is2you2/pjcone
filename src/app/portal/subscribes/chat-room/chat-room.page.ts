@@ -1824,6 +1824,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   async send(with_key = false) {
     if (with_key && (isPlatform == 'Android' || isPlatform == 'iOS')) return;
     if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+    this.userInputTextArea.focus();
     if (!this.userInput.text.trim() && !this.userInput['file'])
       if (this.IsMsgEditMode === undefined || !this.IsMsgEditMode.content.filename) {
         setTimeout(() => {
