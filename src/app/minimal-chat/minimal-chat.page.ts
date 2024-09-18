@@ -62,7 +62,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   ToggleExtMenu(force?: boolean) {
     this.ShowExtMenus = force ?? !this.ShowExtMenus;
     setTimeout(() => {
-      this.scroll_down();
+      this.auto_scroll_down();
     }, 0);
   }
   useVoiceRecording = false;
