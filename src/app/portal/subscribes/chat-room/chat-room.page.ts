@@ -848,6 +848,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.global.p5KeyShortCut['BottomTab'] = (key: string) => {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId))
         switch (key) {
+          case 'Q':
+            this.open_last_file();
+            break;
           case 'E':
             this.open_ext_with_delay();
             break;
@@ -871,6 +874,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.userInputTextArea.focus();
         }, 0);
     }
+  }
+
+  /** 보여지는 대화 중 가장 마지막 파일 열기 */
+  open_last_file() {
+    for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
+      if (this.ViewableMessage[i].content.filename) {
+        this.open_viewer(this.ViewableMessage[i], this.ViewableMessage[i].content.url || this.ViewableMessage[i].content.path);
+        break;
+      }
   }
 
   init_noties() {
