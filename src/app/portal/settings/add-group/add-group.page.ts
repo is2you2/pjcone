@@ -225,6 +225,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
       this.nakama.save_group_info(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target);
       try {
         await this.nakama.join_chat_with_modulation(v.id, 3, this.servers[this.index].isOfficial, this.servers[this.index].target);
+        this.nakama.rearrange_channels();
         this.p5toast.show({
           text: this.lang.text['AddGroup']['group_created'],
         });
@@ -333,6 +334,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
     } catch (e) {
       try { // 1:1 채널로 재시도
         await this.nakama.join_chat_with_modulation(this.userInput.id, 2, this.servers[this.index].isOfficial, this.servers[this.index].target);
+        this.nakama.rearrange_channels();
         SuccJoinedChat = true;
       } catch (e) {
         this.p5toast.show({

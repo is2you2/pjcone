@@ -2152,22 +2152,22 @@ export class NakamaService {
     this.servers[_is_official][_target].client.listUserGroups(
       this.servers[_is_official][_target].session,
       this.servers[_is_official][_target].session.user_id)
-      .then(targetGroup => {
-        let LastCounter = 0;
+      .then(async targetGroup => {
         for (let i = 0, j = targetGroup.user_groups.length; i < j; i++) {
           // 업데이트할 그룹이 특정되어있다면 해당 그룹만 업데이트
           if (gid === undefined || gid == targetGroup.user_groups[i].group.id) {
             if (!this.groups[_is_official][_target][targetGroup.user_groups[i].group.id])
               this.groups[_is_official][_target][targetGroup.user_groups[i].group.id] = {};
             // 로컬에 없던 그룹은 이미지 확인
-            this.servers[_is_official][_target].client.readStorageObjects(
-              this.servers[_is_official][_target].session, {
-              object_ids: [{
-                collection: 'group_public',
-                key: `group_${targetGroup.user_groups[i].group.id}`,
-                user_id: targetGroup.user_groups[i].group.creator_id,
-              }],
-            }).then(gimg => {
+            try {
+              let gimg = await this.servers[_is_official][_target].client.readStorageObjects(
+                this.servers[_is_official][_target].session, {
+                object_ids: [{
+                  collection: 'group_public',
+                  key: `group_${targetGroup.user_groups[i].group.id}`,
+                  user_id: targetGroup.user_groups[i].group.creator_id,
+                }],
+              });
               if (gimg.objects.length) {
                 this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['img'] = gimg.objects[0].value['img'];
                 this.indexed.saveTextFileToUserPath(gimg.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${targetGroup.user_groups[i].group.id}.img`);
@@ -2175,21 +2175,19 @@ export class NakamaService {
                 delete this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['img'];
                 this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${targetGroup.user_groups[i].group.id}.img`);
               }
-            }).catch(e => {
+            } catch (e) {
               console.error('그룹 이미지 가져오기 오류: ', e);
-            });
+            }
             this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]
               = { ...this.groups[_is_official][_target][targetGroup.user_groups[i].group.id], ...targetGroup.user_groups[i].group };
             // 나갔다가 다시 진입하는 경우를 대비해 그룹 상태 초기화
             if (gid && this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] == 'missing')
               this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] = 'online';
-            this.load_groups(_is_official, _target, targetGroup.user_groups[i].group.id, true);
-            this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target, undefined, (channel: any) => {
-              LastCounter++;
-              if (LastCounter == j) this.rearrange_channels();
-            });
+            await this.load_groups(_is_official, _target, targetGroup.user_groups[i].group.id, true);
+            await this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target);
           }
         }
+        this.rearrange_channels();
         this.save_groups_with_less_info();
       }).catch(e => {
         console.error('사용자 그룹 가져오기 오류: ', e);
@@ -2871,7 +2869,7 @@ export class NakamaService {
    */
   opened_page_info = {};
   /** 채널 정보를 변형한 후 추가하기 */
-  async join_chat_with_modulation(targetId: string, type: number, _is_official: string, _target: string, isNewChannel = false, CallBack?: Function) {
+  async join_chat_with_modulation(targetId: string, type: number, _is_official: string, _target: string, isNewChannel = false) {
     if (!this.channels_orig[_is_official][_target]) this.channels_orig[_is_official][_target] = {};
     let c = await this.servers[_is_official][_target].socket.joinChat(targetId, type, true, false)
     try {
@@ -2900,7 +2898,7 @@ export class NakamaService {
           break;
       }
       await this.add_channel(c, _is_official, _target);
-      if (!CallBack) this.rearrange_channels();
+      if (isNewChannel) this.rearrange_channels();
       if (!this.opened_page_info['channel']
         || this.opened_page_info['channel']['isOfficial'] != _is_official
         || this.opened_page_info['channel']['target'] != _target
@@ -2912,7 +2910,6 @@ export class NakamaService {
               if (msg.messages.length)
                 await this.update_from_channel_msg(msg.messages[0], _is_official, _target, isNewChannel);
             } catch (e) { }
-            if (CallBack) CallBack(c);
           }).catch(e => {
             console.error('마지막 메시지 받아서 업데이트 오류: ', e);
           });
