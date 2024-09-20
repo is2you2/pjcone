@@ -126,32 +126,7 @@ export class NakamaService {
       let profile_image = (await this.indexed.loadTextFromUserPath('servers/self/profile.img')).replace(/"|\\|=/g, '');
       if (profile_image) this.users.self['img'] = profile_image;
     } catch (e) { }
-    // 저장된 사설서버들 정보 불러오기
-    let list_detail = await this.indexed.loadTextFromUserPath('servers/list_detail.csv');
-    if (list_detail) { // 내용이 있을 때에만 동작
-      let list: string[] = list_detail.split('\n');
-      list.forEach(ele => {
-        let sep = ele.split(',');
-        let info: ServerInfo = {
-          isOfficial: sep[1],
-          name: sep[2],
-          target: sep[3],
-          address: sep[4],
-          port: +sep[5],
-          useSSL: Boolean(sep[6] == 'true'),
-        }
-        this.servers[info.isOfficial][info.target] = {};
-        this.servers[info.isOfficial][info.target].info = info;
-        this.init_server(info);
-        if (this.users.self['online']) this.init_session(info);
-      });
-    } else { // 저장된 사설서버가 따로 없음, 사용자가 로그인을 원함
-      let has_data = location.href.split('?').length > 1;
-      if (this.users.self['online'] || has_data)
-        this.toggle_all_session();
-    }
     await this.LoadOverridesOffline();
-    this.catch_group_server_header('offline');
     // 서버별 그룹 정보 불러오기
     let groups = await this.indexed.loadTextFromUserPath('servers/groups.json');
     if (groups) this.groups = JSON.parse(groups);
@@ -189,6 +164,31 @@ export class NakamaService {
       }
     });
     this.showServer = Boolean(localStorage.getItem('showServer'));
+    this.catch_group_server_header('offline');
+    // 저장된 사설서버들 정보 불러오기
+    let list_detail = await this.indexed.loadTextFromUserPath('servers/list_detail.csv');
+    if (list_detail) { // 내용이 있을 때에만 동작
+      let list: string[] = list_detail.split('\n');
+      list.forEach(ele => {
+        let sep = ele.split(',');
+        let info: ServerInfo = {
+          isOfficial: sep[1],
+          name: sep[2],
+          target: sep[3],
+          address: sep[4],
+          port: +sep[5],
+          useSSL: Boolean(sep[6] == 'true'),
+        }
+        this.servers[info.isOfficial][info.target] = {};
+        this.servers[info.isOfficial][info.target].info = info;
+        this.init_server(info);
+        if (this.users.self['online']) this.init_session(info);
+      });
+    } else { // 저장된 사설서버가 따로 없음, 사용자가 로그인을 원함
+      let has_data = location.href.split('?').length > 1;
+      if (this.users.self['online'] || has_data)
+        this.toggle_all_session();
+    }
   }
 
   /** 만약 채널 정보를 불러왔는데 로컬 채널이 없다면  
