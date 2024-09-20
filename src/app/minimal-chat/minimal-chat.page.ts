@@ -242,8 +242,9 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                 filename: new_textfile_name,
               },
             },
-            no_edit: true,
+            noEdit: true,
           },
+          cssClass: 'fullscreen',
         }).then(v => {
           this.global.StoreShortCutAct('minimal-textedit');
           v.onWillDismiss().then(v => {

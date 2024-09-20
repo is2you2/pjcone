@@ -28,6 +28,7 @@ export class LanguageSettingService {
     PostViewer: {},
     TodoDetail: {},
     InstantCall: {},
+    ContentViewer: {},
   };
   /** 설정가능한 언어 보여주기  
    * setable = [{ value, display_name }, ...]

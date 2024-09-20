@@ -800,8 +800,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 filename: new_textfile_name,
               },
             },
-            no_edit: true,
+            noEdit: true,
           },
+          cssClass: 'fullscreen',
         }).then(v => {
           this.removeShortCut();
           v.onWillDismiss().then(v => {

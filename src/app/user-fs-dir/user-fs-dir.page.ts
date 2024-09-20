@@ -478,7 +478,6 @@ export class UserFsDirPage implements OnInit {
         info: {
           content: info,
         },
-        no_edit: true,
         path: info.path,
         relevance: createRelevances,
       },

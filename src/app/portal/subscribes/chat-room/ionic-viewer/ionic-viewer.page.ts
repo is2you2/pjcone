@@ -105,7 +105,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   CurrentViewId: string;
   OpenInChannelChat = false;
   isChannelOnline = true;
-  fromLocalChannel = false;
   /** 이미지 편집이 가능하다면 해당 메뉴를 보여주기 */
   showEdit = true;
   showEditText = false;
@@ -132,7 +131,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.fromLocalChannel = this.navParams.get('local');
     this.MessageInfo = this.navParams.get('info');
     this.OpenInChannelChat = this.MessageInfo['code'] !== undefined;
     this.CurrentViewId = this.MessageInfo.message_id;
@@ -141,6 +139,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.FileHeader = document.getElementById('FileHeader');
     this.isOfficial = this.navParams.get('isOfficial');
     this.target = this.navParams.get('target');
+    this.isQuickLaunchViewer = this.navParams.get('quick');
     try {
       this.isChannelOnline = this.nakama.channels_orig[this.isOfficial][this.target][this.MessageInfo['channel_id']].info['status'] == 'online';
       this.isChannelOnline = this.isChannelOnline || this.nakama.channels_orig[this.isOfficial][this.target][this.MessageInfo['channel_id']]['status'] == 'online'
@@ -1034,15 +1033,17 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           FileMenu.push(() => this.open_text_editor());
         if (!this.NeedDownloadFile && this.FileInfo['viewer'] != 'audio' && this.showEdit)
           FileMenu.push(() => this.modify_image());
-        if (!this.NeedDownloadFile)
+        if (!this.NeedDownloadFile && !this.isQuickLaunchViewer)
           FileMenu.push(() => this.ShareContent());
         if (!this.NeedDownloadFile && this.isPWA)
           FileMenu.push(() => this.download_file());
         FileMenu.push(() => this.open_bottom_modal());
         if (this.CurrentFileSize && this.FileInfo['url'])
           FileMenu.push(() => this.RemoveFile());
-        if (!this.CurrentFileSize && this.FileInfo.path)
+        if (!this.CurrentFileSize && this.FileInfo.path && !this.isQuickLaunchViewer)
           FileMenu.push(() => this.DownloadFileFromURL());
+        if (!this.CurrentFileSize && this.FileInfo.url && !this.isQuickLaunchViewer)
+          FileMenu.push(() => this.CopyQuickViewer());
         switch (ev['code']) {
           case 'KeyA': // 왼쪽 이동
           case 'ArrowLeft':
@@ -1732,6 +1733,16 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         }
       }
     }
+  }
+
+  /** 빠른진입으로 들어온 경우 일부 메뉴 가려짐 */
+  isQuickLaunchViewer = false;
+  /** 빠른 뷰어 링크 구성받기  
+   * 이 링크를 사용하면 즉시 파일 뷰어로 해당 파일을 열 수 있음
+   */
+  CopyQuickViewer() {
+    let result = `http://localhost:8100/?fileviewer=${this.FileInfo.url},${this.FileInfo.viewer}`;
+    this.global.WriteValueToClipboard('text/plain', result);
   }
 
   ShareContent() {

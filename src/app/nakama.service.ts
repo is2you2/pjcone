@@ -11,6 +11,7 @@ import { LanguageSettingService } from './language-setting.service';
 import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { VoidDrawPage } from './portal/subscribes/chat-room/void-draw/void-draw.page';
+import { IonicViewerPage } from './portal/subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -4186,6 +4187,14 @@ export class NakamaService {
         address: init['postViewer'][0],
       });
     }
+    if (init['fileviewer']) {
+      let sep = init['fileviewer'][0].split(',');
+      json.push({
+        type: 'fileviewer',
+        url: sep[0],
+        viewer: sep[1],
+      });
+    }
     if (init['instc']) {
       let sep = init['instc'][0].split(',');
       json.push({
@@ -4332,6 +4341,34 @@ export class NakamaService {
                 password: json[i]['password'],
               }
             });
+          });
+          break;
+        case 'fileviewer':
+          for (let i = 0, j = 20; i < j; i++) {
+            if (this.lang.text['ContentViewer']['MayGimbalLock']) break;
+            await new Promise((done) => setTimeout(done, 1000));
+          }
+          this.modalCtrl.create({
+            component: IonicViewerPage,
+            componentProps: {
+              info: {
+                content: {
+                  filename: json[i]['url'].split('_').pop(),
+                  url: json[i]['url'],
+                  viewer: json[i]['viewer'],
+                }
+              },
+              noEdit: true,
+              noTextEdit: true,
+              quick: true,
+            },
+            cssClass: 'fullscreen',
+          }).then(v => {
+            this.global.StoreShortCutAct('quick-fileviewer');
+            v.onWillDismiss().then(() => {
+              this.global.RestoreShortCutAct('quick-fileviewer');
+            });
+            v.present()
           });
           break;
         default: // 동작 미정 알림(debug)

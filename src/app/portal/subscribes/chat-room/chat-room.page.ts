@@ -255,6 +255,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.modalCtrl.create({
           component: IonicViewerPage,
           componentProps: props,
+          cssClass: 'fullscreen',
         }).then(v => {
           v.onWillDismiss().then(v => {
             if (v.data) {

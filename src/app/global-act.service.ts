@@ -1421,7 +1421,7 @@ export class GlobalActService {
   WindowOnBlurAct = {};
   /** 클립보드에 내용 복사하기
    * @param type 종류
-   * @param value 복사하려는 값 (Blob / String)
+   * @param value 복사하려는 값 (Blob / String): 기본으로 이걸 쓰세요 text/plain
    * @param filename 이미지인 경우 파일 이름 명시
    */
   async WriteValueToClipboard(type: string, value: any, filename?: string) {

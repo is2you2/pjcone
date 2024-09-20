@@ -381,6 +381,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         this.modalCtrl.create({
           component: IonicViewerPage,
           componentProps: props,
+          cssClass: 'fullscreen',
         }).then(v => {
           v.onWillDismiss().then(v => {
             if (v.data) {
@@ -678,7 +679,6 @@ export class AddPostPage implements OnInit, OnDestroy {
           isOfficial: this.isOfficial,
           target: this.target,
           relevance: attaches,
-          local: this.isOfficial == 'local',
         },
         cssClass: 'fullscreen',
       }).then(v => {
