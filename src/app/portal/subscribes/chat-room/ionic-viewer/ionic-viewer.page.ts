@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonModal, LoadingController, ModalController, NavParams } from '@ionic/angular';
-import { isPlatform } from 'src/app/app.component';
+import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 import * as p5 from "p5";
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -1741,7 +1741,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
    * 이 링크를 사용하면 즉시 파일 뷰어로 해당 파일을 열 수 있음
    */
   CopyQuickViewer() {
-    let result = `http://localhost:8100/?fileviewer=${this.FileInfo.url},${this.FileInfo.viewer}`;
+    let result = `${SERVER_PATH_ROOT}pjcone_pwa/?fileviewer=${this.FileInfo.url},${this.FileInfo.viewer}`;
     this.global.WriteValueToClipboard('text/plain', result);
   }
 
