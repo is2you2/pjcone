@@ -57,6 +57,18 @@ const routes: Routes = [
   {
     path: 'add-group',
     loadChildren: () => import('./portal/settings/add-group/add-group.module').then(m => m.AddGroupPageModule)
+  },
+  {
+    path: 'void-draw',
+    loadChildren: () => import('./portal/subscribes/chat-room/void-draw/void-draw.module').then(m => m.VoidDrawPageModule)
+  },
+  {
+    path: 'ionic-viewer',
+    loadChildren: () => import('./portal/subscribes/chat-room/ionic-viewer/ionic-viewer.module').then(m => m.IonicViewerPageModule)
+  },
+  {
+    path: 'link-qr',
+    loadChildren: () => import('./portal/subscribes/chat-room/void-draw/link-qr/link-qr.module').then( m => m.LinkQrPageModule)
   }
 ];
 

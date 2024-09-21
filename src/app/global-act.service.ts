@@ -5,7 +5,7 @@ import * as QRCode from "qrcode-svg";
 import { DomSanitizer } from '@angular/platform-browser';
 import * as p5 from "p5";
 import { IndexedDBService } from './indexed-db.service';
-import { LoadingController, ModalController } from '@ionic/angular';
+import { LoadingController, ModalController, NavController, mdTransitionAnimation } from '@ionic/angular';
 import { isPlatform } from './app.component';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { VoiceRecorder } from '@langx/capacitor-voice-recorder';
@@ -119,6 +119,7 @@ export class GlobalActService {
     private sanitizer: DomSanitizer,
     private indexed: IndexedDBService,
     private loadingCtrl: LoadingController,
+    private navCtrl: NavController,
   ) {
     isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
@@ -1496,5 +1497,27 @@ export class GlobalActService {
   InstantCallSend(msg: string) {
     if (this.InstantCallWSClient && this.InstantCallWSClient.readyState == this.InstantCallWSClient.OPEN)
       this.InstantCallWSClient.send(msg);
+  }
+
+  /** Modal.Dismiss 행동 모방을 위해 구성  
+   * 페이지를 진입할 때 state.dismiss 에 키워드를 넣으면 페이지를 벗어날 때 해당 키워드로 행동을 실행함
+   * ```js
+   * PageDismissAct[key] = Function;  
+   * ```
+   * 행동을 등록할 때 행동 끝에 해당 키값을 제거해야함
+   */
+  PageDismissAct = {};
+  /** ModalController 대체를 위한 구성
+   * @param page 라우팅 주소 입력
+   * @param _state navParams를 대체함
+   */
+  ActLikeModal(page: string, _state?: any) {
+    /** 다른 사람의 프로필 정보 열기 */
+    this.RemoveAllModals(() => {
+      this.navCtrl.navigateForward(page, {
+        animation: mdTransitionAnimation,
+        state: _state,
+      });
+    });
   }
 }

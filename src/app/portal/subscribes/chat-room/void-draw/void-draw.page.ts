@@ -1,5 +1,5 @@
-import { Component, OnInit, ViewChild, viewChild } from '@angular/core';
-import { AlertController, IonSelect, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { AlertController, IonSelect, LoadingController, NavController } from '@ionic/angular';
 import * as p5 from 'p5';
 import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
@@ -9,6 +9,7 @@ import { MatchOpCode, NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { WebrtcService } from 'src/app/webrtc.service';
 import { LinkQrPage } from './link-qr/link-qr.page';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-void-draw',
@@ -19,18 +20,39 @@ export class VoidDrawPage implements OnInit {
 
   constructor(
     public lang: LanguageSettingService,
-    public modalCtrl: ModalController,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
     public global: GlobalActService,
-    private navParams: NavParams,
     private indexed: IndexedDBService,
     private nakama: NakamaService,
     private p5toast: P5ToastService,
     private webrtc: WebrtcService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private navCtrl: NavController,
   ) { }
 
-  ngOnInit() { }
+  navParams: any;
+  ngOnInit() {
+    this.route.queryParams.subscribe(async _p => {
+      try {
+        const navParams = this.router.getCurrentNavigation().extras.state;
+        this.navParams = navParams || {};
+        await new Promise(res => setTimeout(res, 100)); // init 지연
+        this.create_new_canvas({
+          width: navParams.width,
+          height: navParams.height,
+          path: navParams.path,
+        });
+        if (navParams.remote)
+          setTimeout(() => {
+            this.CreateRemoteLocalClient(navParams.remote.address, navParams.remote.channel);
+          }, 1000);
+      } catch (e) {
+        console.log('그림판 정보 받지 못함: ', e);
+      }
+    });
+  }
   mainLoading: HTMLIonLoadingElement;
 
   isMobile = false;
@@ -38,15 +60,6 @@ export class VoidDrawPage implements OnInit {
     this.AddShortCut();
     this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
     this.isMobile = isPlatform != 'DesktopPWA';
-    this.create_new_canvas({
-      width: this.navParams.data.width,
-      height: this.navParams.data.height,
-      path: this.navParams.data.path,
-    });
-    if (this.navParams.data.remote)
-      setTimeout(() => {
-        this.CreateRemoteLocalClient(this.navParams.data.remote.address, this.navParams.data.remote.channel);
-      }, 1000);
   }
 
   AddShortCut() {
@@ -207,11 +220,13 @@ export class VoidDrawPage implements OnInit {
               if (ActualCanvas)
                 sp.image(ActualCanvas, 0, 0);
               let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
-              this.modalCtrl.dismiss({
-                name: `voidDraw_${sp.year()}-${sp.nf(sp.month(), 2)}-${sp.nf(sp.day(), 2)}_${sp.nf(sp.hour(), 2)}-${sp.nf(sp.minute(), 2)}-${sp.nf(sp.second(), 2)}.png`,
-                img: base64,
-                loadingCtrl: this.mainLoading,
-              });
+              if (this.navParams.dismiss)
+                this.global.PageDismissAct[this.navParams.dismiss]({
+                  name: `voidDraw_${sp.year()}-${sp.nf(sp.month(), 2)}-${sp.nf(sp.day(), 2)}_${sp.nf(sp.hour(), 2)}-${sp.nf(sp.minute(), 2)}-${sp.nf(sp.second(), 2)}.png`,
+                  img: base64,
+                  loadingCtrl: this.mainLoading,
+                });
+              this.navCtrl.pop();
               sp.remove();
             }
           });
@@ -266,7 +281,7 @@ export class VoidDrawPage implements OnInit {
           updateActualCanvas();
           ImageCanvas.resizeCanvas(CropSize.x, CropSize.y);
           ImageCanvas.push();
-          ImageCanvas.background(this.navParams.data['isDarkMode'] ? 26 : 255);
+          ImageCanvas.background(this.navParams.isDarkMode ? 26 : 255);
           ImageCanvas.translate(CropPosition);
           if (this.p5BaseImage)
             ImageCanvas.image(this.p5BaseImage, 0, 0);
@@ -386,7 +401,7 @@ export class VoidDrawPage implements OnInit {
         ImageCanvas.pixelDensity(PIXEL_DENSITY);
         ImageCanvas.noLoop();
         ImageCanvas.noFill();
-        ImageCanvas.background(this.navParams.data['isDarkMode'] ? 26 : 255);
+        ImageCanvas.background(this.navParams.isDarkMode ? 26 : 255);
         this.p5ImageCanvas = ImageCanvas;
         // 사용자 그리기 판넬 생성
         if (initData['path']) { // 배경 이미지 파일이 포함됨
@@ -422,8 +437,8 @@ export class VoidDrawPage implements OnInit {
           RemoteDraw = null;
           p.redraw();
         }
-        if (this.navParams.data.scrollHeight)
-          setCropPos(0, -this.navParams.data.scrollHeight);
+        if (this.navParams.scrollHeight)
+          setCropPos(0, -this.navParams.scrollHeight);
       }
       /** Viewport 행동을 위한 변수들 */
       let CamPosition = p.createVector();
@@ -1063,18 +1078,15 @@ export class VoidDrawPage implements OnInit {
       switch (json.type) {
         // 채널 아이디 생성 후 수신
         case 'init_id':
-          modal = await this.modalCtrl.create({
-            component: LinkQrPage,
-            componentProps: {
-              address: _address,
-              channel: json.id,
-            },
-            cssClass: 'transparent-modal',
+          this.global.ActLikeModal('link-qr', {
+            address: _address,
+            channel: json.id,
           });
-          modal.onWillDismiss().then(() => {
+          this.global.PageDismissAct['link-qr'] = () => {
             this.global.RestoreShortCutAct('voiddraw-remote');
             this.p5SetDrawable(true);
-          });
+            delete this.global.PageDismissAct['link-qr'];
+          }
           this.global.StoreShortCutAct('voiddraw-remote');
           this.p5SetDrawable(false);
           modal.present();
@@ -1218,9 +1230,9 @@ export class VoidDrawPage implements OnInit {
       if (doSimple) return;
       if (AlternativeAct) await AlternativeAct();
       // 그리기 선 전부 삭제하기
-      if (this.navParams.data.path) { // 배경이미지 공유
+      if (this.navParams.path) { // 배경이미지 공유
         try {
-          let blob = await this.indexed.loadBlobFromUserPath(this.navParams.data.path, '');
+          let blob = await this.indexed.loadBlobFromUserPath(this.navParams.path, '');
           let base64 = await this.global.GetBase64ThroughFileReader(blob);
           let part = base64.match(/(.{1,64})/g);
           for (let i = 0, j = part.length; i < j; i++)
