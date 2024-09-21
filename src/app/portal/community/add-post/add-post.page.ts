@@ -1,15 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { LoadingController, ModalController, NavController } from '@ionic/angular';
+import { LoadingController, NavController } from '@ionic/angular';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { ExtendButtonForm } from '../../subscribes/chat-room/chat-room.page';
-import { VoidDrawPage } from '../../subscribes/chat-room/void-draw/void-draw.page';
 import { DomSanitizer } from '@angular/platform-browser';
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
-import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as p5 from 'p5';
 import { isPlatform } from 'src/app/app.component';
@@ -25,7 +23,6 @@ export class AddPostPage implements OnInit, OnDestroy {
     public lang: LanguageSettingService,
     private navCtrl: NavController,
     private nakama: NakamaService,
-    private modalCtrl: ModalController,
     private p5toast: P5ToastService,
     private indexed: IndexedDBService,
     private loadingCtrl: LoadingController,
@@ -35,6 +32,8 @@ export class AddPostPage implements OnInit, OnDestroy {
   ) { }
 
   ngOnDestroy() {
+    this.global.RestoreShortCutAct('add-post');
+    delete this.global.p5KeyShortCut['LeaveAddPost'];
     this.route.queryParams['unsubscribe']();
     this.TitleInput.onpaste = null;
     this.ContentTextArea.onpaste = null;
@@ -88,6 +87,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.cont = new AbortController();
     this.useFirstCustomCDN = Number(localStorage.getItem('useFFSCDN')) || 0;
     this.toggle_custom_attach(this.useFirstCustomCDN);
+    this.global.StoreShortCutAct('add-post');
     this.route.queryParams.subscribe(async _p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
       let InitAct = false;
@@ -95,6 +95,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         InitAct = Boolean(navParams.act);
         if (navParams.data) this.userInput = navParams.data;
       }
+      this.lock_modal_open = false;
       if (!InitAct) return;
       this.LoadListServer();
       if (this.servers.length > 1) this.index = 1;
@@ -259,7 +260,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
-    this.global.StoreShortCutAct('add-post');
+    this.global.RestoreShortCutAct('LeaveAddPost');
     this.AddShortcut();
   }
 
@@ -341,21 +342,17 @@ export class AddPostPage implements OnInit, OnDestroy {
       name: this.lang.text['ChatRoom']['voidDraw'],
       act: async () => {
         if (this.isSaveClicked) return;
-        this.modalCtrl.create({
-          component: VoidDrawPage,
-          cssClass: 'fullscreen',
-        }).then(v => {
-          v.onWillDismiss().then(async v => {
-            if (v.data) {
-              this.AddAttachTextForm();
-              await this.voidDraw_fileAct_callback(v);
-            }
-          });
-          v.onDidDismiss().then(() => {
-            this.AddShortcut();
-          });
-          delete this.global.p5KeyShortCut['Escape'];
-          v.present();
+        this.global.PageDismissAct['add-post-new-image'] = async (v: any) => {
+          if (v.data) {
+            this.AddAttachTextForm();
+            await this.voidDraw_fileAct_callback(v);
+          }
+          this.global.RestoreShortCutAct('add-post-new-image');
+          delete this.global.PageDismissAct['add-post-new-image'];
+        }
+        this.global.StoreShortCutAct('add-post-new-image');
+        this.global.ActLikeModal('portal/community/add-post/void-draw', {
+          dismiss: 'add-post-new-image',
         });
       }
     },
@@ -378,26 +375,19 @@ export class AddPostPage implements OnInit, OnDestroy {
         props.info.content.is_new = 'text';
         props.info.content.filename = this.global.TextEditorNewFileName();
         props.no_edit = true;
-        this.modalCtrl.create({
-          component: IonicViewerPage,
-          componentProps: props,
-          cssClass: 'fullscreen',
-        }).then(v => {
-          v.onWillDismiss().then(v => {
-            if (v.data) {
-              let this_file: FileInfo = this.global.TextEditorAfterAct(v.data, {
-                display_name: this.nakama.users.self['display_name'],
-              });
-              this.AddAttachTextForm();
-              this.userInput.attachments.push(this_file);
-            }
-          });
-          v.onDidDismiss().then(() => {
-            this.AddShortcut();
-          });
-          delete this.global.p5KeyShortCut['Escape'];
-          v.present();
-        });
+        this.global.PageDismissAct['add-post-viewer'] = (v: any) => {
+          if (v.data) {
+            let this_file: FileInfo = this.global.TextEditorAfterAct(v.data, {
+              display_name: this.nakama.users.self['display_name'],
+            });
+            this.AddAttachTextForm();
+            this.userInput.attachments.push(this_file);
+          }
+          this.global.RestoreShortCutAct('add-post-viewer');
+          delete this.global.PageDismissAct['add-post-viewer'];
+        }
+        this.global.StoreShortCutAct('add-post-viewer');
+        this.global.ActLikeModal('portal/community/add-post/ionic-viewer', props);
       }
     }, { // 4
       icon: 'camera-outline',
@@ -669,66 +659,54 @@ export class AddPostPage implements OnInit, OnDestroy {
       attaches.push({ content: this.userInput.attachments[i] });
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;
-      delete this.global.p5KeyShortCut['Escape'];
-      this.modalCtrl.create({
-        component: IonicViewerPage,
-        componentProps: {
-          info: { content: info },
-          path: info.path,
-          alt_path: info.path,
-          isOfficial: this.isOfficial,
-          target: this.target,
-          relevance: attaches,
-        },
-        cssClass: 'fullscreen',
-      }).then(v => {
-        v.onDidDismiss().then((v) => {
-          this.AddShortcut();
-          if (v.data) { // 파일 편집하기를 누른 경우
-            switch (v.data.type) {
-              case 'image':
-                let related_creators: ContentCreatorInfo[] = [];
-                if (v.data.msg.content['content_related_creator'])
-                  related_creators = [...v.data.msg.content['content_related_creator']];
-                if (v.data.msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
-                  let is_already_exist = false;
-                  for (let i = 0, j = related_creators.length; i < j; i++)
-                    if (related_creators[i].user_id == v.data.msg.content['content_creator']['user_id']) {
-                      is_already_exist = true;
-                      break;
-                    }
-                  if (!is_already_exist) related_creators.push(v.data.msg.content['content_creator']);
-                }
-                this.modalCtrl.create({
-                  component: VoidDrawPage,
-                  componentProps: {
-                    path: v.data.path || info.path,
-                    width: v.data.width,
-                    height: v.data.height,
-                    isDarkMode: v.data.isDarkMode,
-                    scrollHeight: v.data.scrollHeight,
-                  },
-                  cssClass: 'fullscreen',
-                }).then(v => {
-                  v.onDidDismiss().then(() => {
-                    this.AddShortcut();
-                  });
-                  v.onWillDismiss().then(async v => {
-                    if (v.data) await this.voidDraw_fileAct_callback(v, related_creators, index);
-                  });
-                  delete this.global.p5KeyShortCut['Escape'];
-                  v.present();
-                });
-                return;
-              case 'text':
-                this.selected_blobFile_callback_act(v.data.blob, v.data.contentRelated, 'textedit', index);
-                break;
-            }
+      this.global.PageDismissAct['add-post-open-viewer'] = (v: any) => {
+        if (v.data) { // 파일 편집하기를 누른 경우
+          switch (v.data.type) {
+            case 'image':
+              let related_creators: ContentCreatorInfo[] = [];
+              if (v.data.msg.content['content_related_creator'])
+                related_creators = [...v.data.msg.content['content_related_creator']];
+              if (v.data.msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
+                let is_already_exist = false;
+                for (let i = 0, j = related_creators.length; i < j; i++)
+                  if (related_creators[i].user_id == v.data.msg.content['content_creator']['user_id']) {
+                    is_already_exist = true;
+                    break;
+                  }
+                if (!is_already_exist) related_creators.push(v.data.msg.content['content_creator']);
+              }
+              this.global.PageDismissAct['add-post-modify-image'] = async (v: any) => {
+                if (v.data) await this.voidDraw_fileAct_callback(v, related_creators, index);
+                this.global.RestoreShortCutAct('add-post-modify-image');
+                delete this.global.PageDismissAct['add-post-modify-image'];
+              }
+              this.global.StoreShortCutAct('add-post-modify-image');
+              this.global.ActLikeModal('portal/community/add-post/void-draw', {
+                path: v.data.path || info.path,
+                width: v.data.width,
+                height: v.data.height,
+                isDarkMode: v.data.isDarkMode,
+                scrollHeight: v.data.scrollHeight,
+                dismiss: 'add-post-modify-image',
+              });
+              return;
+            case 'text':
+              this.selected_blobFile_callback_act(v.data.blob, v.data.contentRelated, 'textedit', index);
+              break;
           }
-        });
-        delete this.global.p5KeyShortCut['Escape'];
-        v.present();
-        this.lock_modal_open = false;
+        }
+        this.global.RestoreShortCutAct('add-post-open-viewer');
+        delete this.global.PageDismissAct['add-post-open-viewer'];
+      }
+      this.global.StoreShortCutAct('add-post-open-viewer');
+      this.global.ActLikeModal('portal/community/add-post/ionic-viewer', {
+        info: { content: info },
+        path: info.path,
+        alt_path: info.path,
+        isOfficial: this.isOfficial,
+        target: this.target,
+        relevance: attaches,
+        dismiss: 'add-post-open-viewer',
       });
     }
   }
@@ -1047,9 +1025,8 @@ export class AddPostPage implements OnInit, OnDestroy {
   ionViewWillLeave() {
     this.WillLeavePage = true;
     this.cont.abort();
+    this.global.StoreShortCutAct('LeaveAddPost');
     delete this.global.p5KeyShortCut['Escape'];
-    this.global.RestoreShortCutAct('add-post');
-    this.indexed.GetFileListFromDB('tmp_files/post').then(list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     // 데이터 저장이 아니라면 기존 데이터를 다시 불러와서 게시물 정보 원복시키기
     if (!this.isApplyPostData) try {
       if (this.nakama.posts_orig[this.isOfficial][this.target][this.userInput.creator_id][this.userInput.id])

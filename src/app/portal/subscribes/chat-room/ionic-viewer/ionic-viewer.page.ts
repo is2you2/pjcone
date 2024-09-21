@@ -144,7 +144,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.WaitingLoaded = true;
   }
 
-  /** 정확히 이 페이지가 pop 처리되어야하는 경우 사용 */
+  /** 정확히 이 페이지에서 처리되어야하는 경우 사용 */
   async WaitingCurrent() {
     while (!this.WaitingLoaded) {
       await new Promise((done) => setTimeout(done, 0));
