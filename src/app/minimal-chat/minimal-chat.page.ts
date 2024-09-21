@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { AlertController, IonInput, IonSelect, LoadingController, ModalController, NavController } from '@ionic/angular';
+import { AlertController, IonInput, IonSelect, LoadingController, NavController } from '@ionic/angular';
 import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
 import { StatusManageService } from '../status-manage.service';
@@ -9,8 +9,6 @@ import { SERVER_PATH_ROOT, isPlatform } from '../app.component';
 import { ContentCreatorInfo, FILE_BINARY_LIMIT, FileInfo, GlobalActService, isDarkMode } from '../global-act.service';
 import { P5ToastService } from '../p5-toast.service';
 import { IndexedDBService } from '../indexed-db.service';
-import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ionic-viewer.page';
-import { VoidDrawPage } from '../portal/subscribes/chat-room/void-draw/void-draw.page';
 import * as p5 from 'p5';
 import { ActivatedRoute, Router } from '@angular/router';
 import { VoiceRecorder } from '@langx/capacitor-voice-recorder';
@@ -28,7 +26,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     public client: MiniranchatClientService,
     private noti: LocalNotiService,
     private title: Title,
-    private modalCtrl: ModalController,
     public navCtrl: NavController,
     private route: ActivatedRoute,
     private router: Router,
@@ -188,6 +185,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   /** 하단 입력칸 */
   DomMinimalChatInput: HTMLElement;
   ionViewWillEnter() {
+    this.WaitingLoaded = true;
     this.DomMinimalChatInput = document.getElementById('minimalchat_input');
     if (this.client.p5canvas) this.client.p5canvas.remove();
     this.DomMinimalChatInput.onpaste = (ev: any) => {
@@ -231,51 +229,41 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         break;
       case 'text':
         let new_textfile_name = this.global.TextEditorNewFileName();
-        this.modalCtrl.create({
-          component: IonicViewerPage,
-          componentProps: {
-            info: {
-              content: {
-                is_new: 'text',
-                type: 'text/plain',
-                viewer: 'text',
-                filename: new_textfile_name,
-              },
+        this.global.PageDismissAct['minimal-textedit'] = (v: any) => {
+          if (v.data) {
+            let result = this.global.TextEditorAfterAct(v.data, { display_name: this.client.MyUserName });
+            this.TrySendingAttach(result);
+            this.auto_scroll_down();
+          }
+          this.global.RestoreShortCutAct('minimal-textedit');
+          delete this.global.PageDismissAct['minimal-textedit'];
+        }
+        this.global.StoreShortCutAct('minimal-textedit');
+        this.global.ActLikeModal('ionic-viewer', {
+          info: {
+            content: {
+              is_new: 'text',
+              type: 'text/plain',
+              viewer: 'text',
+              filename: new_textfile_name,
             },
-            noEdit: true,
           },
-          cssClass: 'fullscreen',
-        }).then(v => {
-          this.global.StoreShortCutAct('minimal-textedit');
-          v.onWillDismiss().then(v => {
-            if (v.data) {
-              let result = this.global.TextEditorAfterAct(v.data, { display_name: this.client.MyUserName });
-              this.TrySendingAttach(result);
-              this.auto_scroll_down();
-            }
-          });
-          v.onDidDismiss().then(() => {
-            this.global.RestoreShortCutAct('minimal-textedit');
-          });
-          v.present();
+          noEdit: true,
+          dismiss: 'minimal-textedit',
         });
         break;
       case 'image':
-        this.modalCtrl.create({
-          component: VoidDrawPage,
-          cssClass: 'fullscreen',
-        }).then(v => {
-          this.global.StoreShortCutAct('minimal-image');
-          v.onWillDismiss().then(async v => {
-            if (v.data) {
-              let result = await this.global.voidDraw_fileAct_callback(v, 'tmp_files/square/', { display_name: this.client.MyUserName });
-              this.TrySendingAttach(result);
-            }
-          });
-          v.onDidDismiss().then(() => {
-            this.global.RestoreShortCutAct('minimal-image');
-          });
-          v.present();
+        this.global.PageDismissAct['minimal-image'] = async (v: any) => {
+          if (v.data) {
+            let result = await this.global.voidDraw_fileAct_callback(v, 'tmp_files/square/', { display_name: this.client.MyUserName });
+            this.TrySendingAttach(result);
+          }
+          this.global.RestoreShortCutAct('minimal-image');
+          delete this.global.PageDismissAct['minimal-image'];
+        }
+        this.global.StoreShortCutAct('minimal-image');
+        this.global.ActLikeModal('void-draw', {
+          dismiss: 'minimal-image',
         });
         break;
       case 'load': // 불러오기 행동 병합
@@ -727,6 +715,16 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 해당 페이지를 정확히 pop 처리하기 위해 기다림 */
+  WaitingLoaded = false;
+  /** 정확히 이 페이지가 pop 처리되어야하는 경우 사용 */
+  async WaitingCurrent() {
+    while (!this.WaitingLoaded) {
+      await new Promise((done) => setTimeout(done, 0));
+    }
+    return true;
+  }
+
   /** 파일 뷰어로 해당 파일 열기 */
   open_file_viewer(FileInfo: any) {
     let attaches = [];
@@ -735,63 +733,58 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         if (this.client.userInput.logs[i].file.info.filename)
           attaches.push({ content: this.client.userInput.logs[i].file.info });
       } catch (e) { }
-    this.modalCtrl.create({
-      component: IonicViewerPage,
-      componentProps: {
-        info: { content: FileInfo },
-        path: FileInfo.path,
-        relevance: attaches,
-        noTextEdit: true,
-      },
-      cssClass: 'fullscreen',
-    }).then(v => {
-      this.global.StoreShortCutAct('minimal-ionic-viewer');
-      v.onDidDismiss().then(v => {
-        if (v.data) {
-          switch (v.data.type) {
-            case 'image':
-              let related_creators: ContentCreatorInfo[] = [];
-              if (v.data.msg.content['content_related_creator'])
-                related_creators = [...v.data.msg.content['content_related_creator']];
-              if (v.data.msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
-                let is_already_exist = false;
-                for (let i = 0, j = related_creators.length; i < j; i++)
-                  if (related_creators[i].user_id == v.data.msg.content['content_creator']['user_id']) {
-                    is_already_exist = true;
-                    break;
-                  }
-                if (!is_already_exist) related_creators.push(v.data.msg.content['content_creator']);
+    this.global.PageDismissAct['minimal-ionic-viewer'] = async (v: any) => {
+      if (v.data) {
+        switch (v.data.type) {
+          case 'image':
+            let related_creators: ContentCreatorInfo[] = [];
+            if (v.data.msg.content['content_related_creator'])
+              related_creators = [...v.data.msg.content['content_related_creator']];
+            if (v.data.msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
+              let is_already_exist = false;
+              for (let i = 0, j = related_creators.length; i < j; i++)
+                if (related_creators[i].user_id == v.data.msg.content['content_creator']['user_id']) {
+                  is_already_exist = true;
+                  break;
+                }
+              if (!is_already_exist) related_creators.push(v.data.msg.content['content_creator']);
+            }
+            this.global.PageDismissAct['minimal-ionic-viewer'] = (v: any) => {
+              if (v.data) {
+                v.data['loadingCtrl'].dismiss();
+                let base64 = v.data['img'];
+                let path = `tmp_files/sqaure/${v.data['name']}`;
+                this.indexed.saveBase64ToUserPath(base64, path);
+                let blob = this.global.Base64ToBlob(base64, 'image/png');
+                blob['name'] = v.data['name'];
+                this.SendAttachAct({ target: { files: [blob] } });
               }
-              this.modalCtrl.create({
-                component: VoidDrawPage,
-                componentProps: {
-                  path: v.data.path || FileInfo.path,
-                  width: v.data.width,
-                  height: v.data.height,
-                  isDarkMode: v.data.isDarkMode,
-                  scrollHeight: v.data.scrollHeight,
-                },
-                cssClass: 'fullscreen',
-              }).then(v => {
-                v.onWillDismiss().then(async v => {
-                  if (v.data) {
-                    v.data['loadingCtrl'].dismiss();
-                    let base64 = v.data['img'];
-                    let path = `tmp_files/sqaure/${v.data['name']}`;
-                    this.indexed.saveBase64ToUserPath(base64, path);
-                    let blob = this.global.Base64ToBlob(base64, 'image/png');
-                    blob['name'] = v.data['name'];
-                    this.SendAttachAct({ target: { files: [blob] } });
-                  }
-                });
-                v.present();
-              });
-              return;
-          }
+              this.global.RestoreShortCutAct('minimal-ionic-viewer');
+              delete this.global.PageDismissAct['minimal-ionic-viewer'];
+            }
+            this.global.StoreShortCutAct('minimal-ionic-viewer');
+            await this.WaitingCurrent();
+            this.global.ActLikeModal('void-draw', {
+              path: v.data.path || FileInfo.path,
+              width: v.data.width,
+              height: v.data.height,
+              isDarkMode: v.data.isDarkMode,
+              scrollHeight: v.data.scrollHeight,
+              dismiss: 'minimal-ionic-viewer',
+            });
+            return;
         }
-        this.global.RestoreShortCutAct('minimal-ionic-viewer');
-      });
-      v.present();
+      }
+      this.global.RestoreShortCutAct('minimal-ionic-viewer');
+      delete this.global.PageDismissAct['minimal-ionic-viewer'];
+    }
+    this.global.StoreShortCutAct('minimal-ionic-viewer');
+    this.global.ActLikeModal('ionic-viewer', {
+      info: { content: FileInfo },
+      path: FileInfo.path,
+      relevance: attaches,
+      noTextEdit: true,
+      dismiss: 'minimal-ionic-viewer',
     });
   }
 
@@ -868,6 +861,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   }
 
   ionViewWillLeave() {
+    this.WaitingLoaded = false;
     this.title.setTitle('Project: Cone');
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', 'assets/icon/favicon.png');
