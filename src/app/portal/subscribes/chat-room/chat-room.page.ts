@@ -737,6 +737,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   ShowGoToBottom = false;
   isMobile = false;
   WillLeave = false;
+  /** 파일을 가지고 진입했는지 여부 */
+  InitWithFileImport = false;
+  /** 정보 초기화가 필요한지 여부  
+   * 채널 진입, 파일 공유 등이 해당되고 페이지 복귀는 해당되지 않음
+   */
+  InitWithRoomEnv = false;
 
   ngOnInit() {
     this.global.WindowOnBlurAct['chatroom'] = () => {
@@ -766,8 +772,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
       } catch (e) { }
       this.info = c;
-      await this.init_chatroom();
+      this.InitWithFileImport = Boolean(_fileinfo);
+      this.InitWithRoomEnv = true;
       this.userInput.file = _fileinfo;
+      await this.init_chatroom();
       this.CancelEditText();
       if (this.userInput.file) this.create_thumbnail_imported(_fileinfo);
     }
@@ -776,12 +784,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         const navParams = this.router.getCurrentNavigation().extras.state;
         if (navParams) this.info = navParams.info;
         await new Promise(res => setTimeout(res, 100)); // init 지연
-        await this.init_chatroom(Boolean(navParams));
+        this.InitWithFileImport = false;
+        this.InitWithRoomEnv = Boolean(navParams);
         if (this.userInput.file) {
           this.userInput.file = navParams.file;
           this.CancelEditText();
           this.create_thumbnail_imported(navParams.file);
         }
+        await this.init_chatroom();
       } catch (e) { }
     });
     setTimeout(() => {
@@ -1237,46 +1247,48 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   };
 
   /** @param [comeback=false] 페이지 복귀한 경우 일부 데이터 초기화하지 않음 */
-  async init_chatroom(common = true) {
+  async init_chatroom() {
     if (this.cont) this.cont.abort();
     this.cont = new AbortController();
-    if (common) {
+    if (!this.InitWithFileImport) {
       this.userInput.text = '';
       delete this.userInput.file;
       delete this.userInput.qoute;
     }
-    this.BlockAutoScrollDown = false;
-    this.ResizeTextArea();
-    this.nakama.OnTransferMessage = {};
-    this.ViewableMessage.length = 0;
-    this.ViewMsgIndex = 0;
-    this.ShowGoToBottom = false;
-    this.ShowRecentMsg = false;
-    this.isHistoryLoaded = false;
-    this.LocalHistoryList.length = 0;
-    this.messages.length = 0;
-    this.prev_cursor = '';
-    this.next_cursor = '';
-    this.pullable = true;
-    this.init_last_message_viewer();
-    this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
-    this.ChannelUserInputId = `chatroom_input_${this.info.id}_${new Date().getTime()}`;
-    // PWA: 윈도우 창을 다시 보게 될 때 알림 삭제
-    window.onfocus = () => {
-      if (this.info['cnoti_id'])
-        this.noti.ClearNoti(this.info['cnoti_id']);
+    if (this.InitWithRoomEnv) {
+      this.BlockAutoScrollDown = false;
+      this.ResizeTextArea();
+      this.nakama.OnTransferMessage = {};
+      this.ViewableMessage.length = 0;
+      this.ViewMsgIndex = 0;
+      this.ShowGoToBottom = false;
+      this.ShowRecentMsg = false;
+      this.isHistoryLoaded = false;
+      this.LocalHistoryList.length = 0;
+      this.messages.length = 0;
+      this.prev_cursor = '';
+      this.next_cursor = '';
+      this.pullable = true;
+      this.init_last_message_viewer();
+      this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
+      this.ChannelUserInputId = `chatroom_input_${this.info.id}_${new Date().getTime()}`;
+      // PWA: 윈도우 창을 다시 보게 될 때 알림 삭제
+      window.onfocus = () => {
+        if (this.info['cnoti_id'])
+          this.noti.ClearNoti(this.info['cnoti_id']);
+      }
+      this.isOfficial = this.info['server']['isOfficial'];
+      this.target = this.info['server']['target'];
+      this.info = this.nakama.channels_orig[this.isOfficial][this.target][this.info.id];
+      this.LoadChannelBackgroundImage();
+      this.nakama.opened_page_info['channel'] = {
+        isOfficial: this.isOfficial,
+        target: this.target,
+        id: this.info.id,
+      }
+      this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
+      await this.SetExtensionButtons();
     }
-    this.isOfficial = this.info['server']['isOfficial'];
-    this.target = this.info['server']['target'];
-    this.info = this.nakama.channels_orig[this.isOfficial][this.target][this.info.id];
-    this.LoadChannelBackgroundImage();
-    this.nakama.opened_page_info['channel'] = {
-      isOfficial: this.isOfficial,
-      target: this.target,
-      id: this.info.id,
-    }
-    this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
-    await this.SetExtensionButtons();
     // 실시간 채팅을 받는 경우 행동처리
     if (this.nakama.channels_orig[this.isOfficial][this.target] &&
       this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']] &&
@@ -1345,12 +1357,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }
     // 마지막 대화 기록을 받아온다
-    await this.pull_msg_history();
-    setTimeout(() => {
-      if (this.WillLeave) return;
-      let scrollHeight = this.ChatLogs.scrollHeight;
-      this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
-    }, 500);
+    if (this.InitWithFileImport || this.InitWithRoomEnv) {
+      await this.pull_msg_history();
+      setTimeout(() => {
+        if (this.WillLeave) return;
+        let scrollHeight = this.ChatLogs.scrollHeight;
+        this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+      }, 500);
+    }
   }
 
   /** 메시지에 인용이 포함되어있다면 인용 썸네일 생성 시도 */
