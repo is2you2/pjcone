@@ -715,9 +715,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     }
   }
 
-  /** 해당 페이지를 정확히 pop 처리하기 위해 기다림 */
   WaitingLoaded = false;
-  /** 정확히 이 페이지가 pop 처리되어야하는 경우 사용 */
+  /** 정확히 현재 페이지가 처리되어야하는 경우 사용 */
   async WaitingCurrent() {
     while (!this.WaitingLoaded) {
       await new Promise((done) => setTimeout(done, 0));

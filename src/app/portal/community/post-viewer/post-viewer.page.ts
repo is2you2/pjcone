@@ -1,9 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { AlertController, ModalController, NavController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular';
 import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
-import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { NakamaService } from 'src/app/nakama.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
@@ -18,7 +17,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 export class PostViewerPage implements OnInit, OnDestroy {
 
   constructor(
-    private modalCtrl: ModalController,
     private navCtrl: NavController,
     public lang: LanguageSettingService,
     private indexed: IndexedDBService,
@@ -49,8 +47,17 @@ export class PostViewerPage implements OnInit, OnDestroy {
       } catch (e) { }
     });
   }
+
+  WaitingLoaded = false;
+  /** 정확히 현재 페이지가 처리되어야하는 경우 사용 */
+  async WaitingCurrent() {
+    while (!this.WaitingLoaded) {
+      await new Promise((done) => setTimeout(done, 0));
+    }
+  }
   BackButtonPressed = false;
   ionViewWillEnter() {
+    this.WaitingLoaded = true;
     this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
@@ -66,15 +73,12 @@ export class PostViewerPage implements OnInit, OnDestroy {
   PlayableElements = [];
   /** 이 페이지를 보고 있는지 */
   IsFocusOnHere = true;
-  /** 파일 뷰어로 넘어간 경우 게시물 전환 단축키 막기 */
-  blockShortcut = false;
   /** PC에서 키를 눌러 컨텐츠 전환 */
   ChangeContentWithKeyInput() {
     if (this.p5canvas) {
       // 단축키 행동
       this.p5canvas.keyPressed = async (ev) => {
         if (!this.IsFocusOnHere) return;
-        if (this.blockShortcut) return;
         switch (ev['code']) {
           case 'KeyA': // 왼쪽 이동
           case 'ArrowLeft':
@@ -313,22 +317,19 @@ export class PostViewerPage implements OnInit, OnDestroy {
                     let createRelevances = [];
                     for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++)
                       createRelevances.push({ content: this.PostInfo['attachments'][i] });
-                    this.modalCtrl.create({
-                      component: IonicViewerPage,
-                      componentProps: {
-                        info: { content: this.PostInfo['attachments'][index] },
-                        path: this.PostInfo['attachments'][index]['path'],
-                        relevance: createRelevances,
-                        noEdit: true,
-                      },
-                      cssClass: 'fullscreen',
-                    }).then(v => {
-                      v.onDidDismiss().then(v => {
-                        this.blockShortcut = false;
-                        if (v.data && v.data['share']) this.navCtrl.pop();
-                      });
-                      this.blockShortcut = true;
-                      v.present();
+                    this.global.PageDismissAct['post-viewer-image-view'] = async (v: any) => {
+                      this.global.RestoreShortCutAct('post-viewer-image-view');
+                      await this.WaitingCurrent();
+                      if (v.data && v.data['share']) this.navCtrl.pop();
+                      delete this.global.PageDismissAct['post-viewer-image-view'];
+                    }
+                    this.global.StoreShortCutAct('post-viewer-image-view');
+                    this.global.ActLikeModal('ionic-viewer', {
+                      info: { content: this.PostInfo['attachments'][index] },
+                      path: this.PostInfo['attachments'][index]['path'],
+                      relevance: createRelevances,
+                      noEdit: true,
+                      dismiss: 'post-viewer-image-view',
                     });
                   }
                   img.parent(contentDiv);
@@ -460,21 +461,17 @@ export class PostViewerPage implements OnInit, OnDestroy {
                     let createRelevances = [];
                     for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++)
                       createRelevances.push({ content: this.PostInfo['attachments'][i] });
-                    this.modalCtrl.create({
-                      component: IonicViewerPage,
-                      componentProps: {
-                        info: { content: this.PostInfo['attachments'][index] },
-                        path: this.PostInfo['attachments'][index]['path'],
-                        relevance: createRelevances,
-                        noEdit: true,
-                      },
-                      cssClass: 'fullscreen',
-                    }).then(v => {
-                      v.onDidDismiss().then(() => {
-                        this.blockShortcut = false;
-                      });
-                      this.blockShortcut = true;
-                      v.present();
+                    this.global.PageDismissAct['post-viewer-file-view'] = () => {
+                      this.global.RestoreShortCutAct('post-viewer-file-view');
+                      delete this.global.PageDismissAct['post-viewer-file-view'];
+                    }
+                    this.global.StoreShortCutAct('post-viewer-file-view');
+                    this.global.ActLikeModal('ionic-viewer', {
+                      info: { content: this.PostInfo['attachments'][index] },
+                      path: this.PostInfo['attachments'][index]['path'],
+                      relevance: createRelevances,
+                      noEdit: true,
+                      dismiss: 'post-viewer-file-view',
                     });
                   }
                 }
@@ -544,6 +541,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
   }
 
   ionViewWillLeave() {
+    this.WaitingLoaded = false;
     delete this.global.p5KeyShortCut['Escape'];
     this.IsFocusOnHere = false;
   }

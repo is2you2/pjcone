@@ -436,7 +436,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     },];
 
-  /** 정확히 이 페이지가 pop 처리되어야하는 경우 사용 */
+  /** 정확히 현재 페이지가 처리되어야하는 경우 사용 */
   async WaitingCurrent() {
     while (this.WillLeave) {
       await new Promise((done) => setTimeout(done, 0));
