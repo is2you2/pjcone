@@ -145,11 +145,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   /** 정확히 이 페이지가 pop 처리되어야하는 경우 사용 */
-  async WaitingCurrentPop() {
+  async WaitingCurrent() {
     while (!this.WaitingLoaded) {
       await new Promise((done) => setTimeout(done, 0));
     }
-    this.navCtrl.pop();
   }
 
   initialize() {
@@ -955,7 +954,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                       index: this.RelevanceIndex - 1,
                     }
                   });
-                this.WaitingCurrentPop();
+                this.navCtrl.pop();
               }
             }, 'start_load_pck');
             if (!createDuplicate) {
@@ -984,7 +983,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                         index: this.RelevanceIndex - 1,
                       }
                     });
-                  this.WaitingCurrentPop();
+                  this.navCtrl.pop();
                 }
               }, 'start_load_pck');
             }
@@ -1646,7 +1645,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 index: this.RelevanceIndex - 1,
               }
             });
-          this.WaitingCurrentPop();
+          this.navCtrl.pop();
         } catch (e) {
           this.p5toast.show({
             text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
@@ -1678,7 +1677,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 isDarkMode: isDarkMode,
               }
             });
-          this.WaitingCurrentPop();
+          this.navCtrl.pop();
         } catch (e) {
           this.p5toast.show({
             text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
@@ -1709,7 +1708,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   index: this.RelevanceIndex - 1,
                 }
               });
-            this.WaitingCurrentPop();
+            this.navCtrl.pop();
           } catch (e) {
             console.log('파일 저장 오류: ', e);
           }
@@ -1739,7 +1738,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   isDarkMode: isDarkMode,
                 }
               });
-            this.WaitingCurrentPop();
+            this.navCtrl.pop();
           } catch (e) {
             console.log('파일 저장 오류: ', e);
           }
@@ -1806,14 +1805,15 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       delete rel_info.hidden;
     if (channels.length) {
       this.useP5Navigator = false;
-      this.global.PageDismissAct['share'] = (v: any) => {
+      this.global.PageDismissAct['share'] = async (v: any) => {
         this.useP5Navigator = true;
         if (v.data) {
           if (this.global.PageDismissAct[this.navParams.dismiss])
             this.global.PageDismissAct[this.navParams.dismiss]({
               data: { share: true }
             });
-          this.WaitingCurrentPop();
+          await this.WaitingCurrent();
+          this.navCtrl.pop();
         }
         delete this.global.PageDismissAct['share'];
       }

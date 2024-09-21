@@ -436,6 +436,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     },];
 
+  /** 정확히 이 페이지가 pop 처리되어야하는 경우 사용 */
+  async WaitingCurrent() {
+    while (this.WillLeave) {
+      await new Promise((done) => setTimeout(done, 0));
+    }
+  }
+
   async check_if_clipboard_available(v: string) {
     try {
       if (v.indexOf('http') == 0) {
@@ -2514,7 +2521,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         attaches.push(this.messages[i]);
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;
-      this.global.PageDismissAct['chatroom-ionicviewer'] = (v: any) => {
+      this.global.PageDismissAct['chatroom-ionicviewer'] = async (v: any) => {
         this.lock_modal_open = false;
         if (v.data) { // 파일 편집하기를 누른 경우
           switch (v.data.type) {
@@ -2537,6 +2544,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 delete this.global.PageDismissAct['modify-image'];
               }
               this.global.StoreShortCutAct('modify-image');
+              await this.WaitingCurrent();
               this.global.ActLikeModal('void-draw', {
                 path: v.data.path || _path,
                 width: v.data.width,
