@@ -1,16 +1,15 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { AlertController, IonAccordionGroup, LoadingController, ModalController, NavController, NavParams } from '@ionic/angular';
+import { AlertController, IonAccordionGroup, LoadingController, NavController } from '@ionic/angular';
 import { isPlatform } from '../app.component';
 import { GlobalActService } from '../global-act.service';
 import { IndexedDBService } from '../indexed-db.service';
 import { LanguageSettingService } from '../language-setting.service';
 import { P5ToastService } from '../p5-toast.service';
-import { IonicViewerPage } from '../portal/subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { LocalNotiService } from '../local-noti.service';
 import { NakamaService } from '../nakama.service';
 import * as p5 from 'p5';
-import { VoidDrawPage } from '../portal/subscribes/chat-room/void-draw/void-draw.page';
+import { ActivatedRoute, Router } from '@angular/router';
 
 /** userfs 의 파일과 폴더 형식 */
 interface FileDir {
@@ -48,7 +47,6 @@ export class UserFsDirPage implements OnInit {
   @ViewChild('FileSel') FileSel: IonAccordionGroup;
 
   constructor(
-    public modalCtrl: ModalController,
     private indexed: IndexedDBService,
     private loadingCtrl: LoadingController,
     public lang: LanguageSettingService,
@@ -58,13 +56,12 @@ export class UserFsDirPage implements OnInit {
     private sanitizer: DomSanitizer,
     private navCtrl: NavController,
     private noti: LocalNotiService,
-    private navParams: NavParams,
     private nakama: NakamaService,
+    private router: Router,
+    private route: ActivatedRoute,
   ) { }
 
   is_ready = false;
-  /** 할 일 등에서 파일 선택을 위해 생성되었는지 */
-  is_file_selector: boolean = false;
   /** 인앱 브라우저 내 썸네일 토글 */
   HideThumbnail = false;
   /** 모바일 웹에서는 폴더 수입 제한 */
@@ -75,12 +72,17 @@ export class UserFsDirPage implements OnInit {
     localStorage.setItem('user-fs-thumbnail', `${this.HideThumbnail ? '1' : '0'}`);
   }
 
+  navParams: any;
   ngOnInit() {
     if (isPlatform == 'DesktopPWA')
       setTimeout(() => {
         this.CreateDrop();
       }, 100);
     this.CanImportFolder = isPlatform != 'MobilePWA';
+    this.route.queryParams.subscribe(_p => {
+      const navParams = this.router.getCurrentNavigation().extras.state;
+      this.navParams = navParams || {};
+    });
   }
 
   initLoadingElement: HTMLIonLoadingElement;
@@ -272,23 +274,28 @@ export class UserFsDirPage implements OnInit {
   StopIndexing = false;
 
   ionViewWillEnter() {
+    if (this.lock_modal_open) {
+      this.lock_modal_open = false;
+      return;
+    }
     this.HideThumbnail = localStorage.getItem('user-fs-thumbnail') == '1';
     this.CurrentDir = '';
-    this.is_file_selector = Boolean(this.navParams.data.modal);
     this.LoadAllIndexedFiles();
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
       this.cant_dedicated = true;
   }
 
   async dismiss_page(file?: FileDir) {
-    if (this.is_file_selector) {
+    if (this.navParams.selector) {
       let return_data = undefined;
       if (file) {
         return_data = await this.indexed.loadBlobFromUserPath(file.path, '');
         return_data['name'] = file.name;
         return_data['file_ext'] = file.file_ext;
       }
-      this.modalCtrl.dismiss(return_data);
+      if (this.global.PageDismissAct[this.navParams.dismiss])
+        this.global.PageDismissAct[this.navParams.dismiss]();
+      this.navCtrl.pop();
     }
   }
 
@@ -298,9 +305,9 @@ export class UserFsDirPage implements OnInit {
     this.initLoadingElement.present();
     this.DirList.length = 0;
     this.FileList.length = 0;
-    if (this.is_file_selector) {
-      if (this.navParams.get('path')) { // 특정 경로 파일 보기
-        let target_list = await this.indexed.GetFileListFromDB(this.navParams.get('path'));
+    if (this.navParams.selector) {
+      if (this.navParams.path) { // 특정 경로 파일 보기
+        let target_list = await this.indexed.GetFileListFromDB(this.navParams.path);
         await this.ModulateIndexedFile(target_list);
       } else { // 인앱 파일 고르기
         let _ionic_list = await this.indexed.GetFileListFromDB('/files/');
@@ -310,7 +317,7 @@ export class UserFsDirPage implements OnInit {
       let _ionic_list = await this.indexed.GetFileListFromDB('/')
       await this.ModulateIndexedFile(_ionic_list);
     }
-    if (this.is_file_selector) {
+    if (this.navParams.selector) {
       this.FileList.sort((a, b) => {
         if (a.timestamp < b.timestamp) return 1;
         if (a.timestamp > b.timestamp) return -1;
@@ -460,8 +467,8 @@ export class UserFsDirPage implements OnInit {
     if (this.lock_modal_open) return;
     this.lock_modal_open = true;
     let createRelevances = [];
-    if (this.is_file_selector) {
-      if (this.navParams.data['path'])
+    if (this.navParams.selector) {
+      if (this.navParams.path)
         for (let i = 0, j = this.FileList.length; i < j; i++)
           createRelevances.push({ content: this.FileList[i] });
     } else {
@@ -472,57 +479,49 @@ export class UserFsDirPage implements OnInit {
       let blob = await this.indexed.loadBlobFromUserPath(info.path, '');
       info['size'] = blob.size;
     }
-    this.modalCtrl.create({
-      component: IonicViewerPage,
-      componentProps: {
-        info: {
-          content: info,
-        },
-        path: info.path,
-        relevance: createRelevances,
-      },
-      cssClass: 'fullscreen',
-    }).then(v => {
-      delete this.global.p5KeyShortCut['Escape'];
-      delete this.global.p5KeyShortCut['Digit'];
-      v.onDidDismiss().then(v => {
-        this.lock_modal_open = false;
-        if (v.data) { // 파일 편집하기를 누른 경우
-          switch (v.data.type) {
-            case 'image':
-              this.modalCtrl.create({
-                component: VoidDrawPage,
-                componentProps: {
-                  path: v.data.path,
-                  width: v.data.width,
-                  height: v.data.height,
-                  text: v.data.text,
-                  isDarkMode: v.data.isDarkMode,
-                  scrollHeight: v.data.scrollHeight,
-                },
-                cssClass: 'fullscreen',
-              }).then(v => {
-                v.onWillDismiss().then(async v => {
-                  if (v.data) {
-                    let blob = this.global.Base64ToBlob(v.data['img'], 'image/png');
-                    blob['name'] = v.data['name'];
-                    await this.importSelected(blob);
-                    v.data['loadingCtrl'].dismiss();
-                  }
-                  this.ionViewDidEnter();
-                });
-                v.present();
-              });
-              return;
-            case 'text':
-              this.importSelected(v.data['blob']);
-              break;
-          }
-        } else {
-          this.ionViewDidEnter();
+    this.global.PageDismissAct['userfs-viewer'] = (v: any) => {
+      if (v.data) { // 파일 편집하기를 누른 경우
+        switch (v.data.type) {
+          case 'image':
+            this.global.PageDismissAct['userfs-modify-image'] = async (v: any) => {
+              if (v.data) {
+                let blob = this.global.Base64ToBlob(v.data['img'], 'image/png');
+                blob['name'] = v.data['name'];
+                await this.importSelected(blob);
+                v.data['loadingCtrl'].dismiss();
+              }
+              this.ionViewDidEnter();
+              this.global.RestoreShortCutAct('userfs-modify-image');
+              delete this.global.PageDismissAct['userfs-modify-image'];
+            }
+            this.global.StoreShortCutAct('userfs-modify-image');
+            this.global.ActLikeModal('void-draw', {
+              path: v.data.path,
+              width: v.data.width,
+              height: v.data.height,
+              text: v.data.text,
+              isDarkMode: v.data.isDarkMode,
+              scrollHeight: v.data.scrollHeight,
+              dismiss: 'userfs-modify-image',
+            });
+            return;
+          case 'text':
+            this.importSelected(v.data['blob']);
+            break;
         }
-      });
-      v.present()
+      } else {
+        this.ionViewDidEnter();
+      }
+      this.global.RestoreShortCutAct('userfs-viewer');
+      delete this.global.PageDismissAct['userfs-viewer'];
+    }
+    this.global.StoreShortCutAct('userfs-viewer');
+    this.global.ActLikeModal('ionic-viewer', {
+      info: {
+        content: info,
+      },
+      path: info.path,
+      relevance: createRelevances,
     });
   }
 

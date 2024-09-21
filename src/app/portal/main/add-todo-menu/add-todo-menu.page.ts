@@ -827,6 +827,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         }
         this.global.StoreShortCutAct('todo-userfs-add');
         this.global.ActLikeModal('user-fs-dir', {
+          selector: true,
           dismiss: 'todo-userfs-add',
         });
         break;

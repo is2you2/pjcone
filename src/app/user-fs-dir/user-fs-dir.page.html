@@ -1,7 +1,7 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-title>{{lang.text['Settings']['InAppExplorer']}}</ion-title>
-    <ion-buttons slot="start" (click)="dismiss_page()">
+    <ion-buttons slot="start">
       <ion-back-button defaultHref=""></ion-back-button>
     </ion-buttons>
     <ion-icon *ngIf="!HideThumbnail" class="top_icon" slot="end" name="eye-outline"
@@ -16,7 +16,7 @@
     <input hidden type="file" id="import_file" accept="*" multiple (change)="inputFileSelected($event)">
   </div>
   <ion-list>
-    <div *ngIf="CurrentDir == '' && !is_file_selector && CanImportFolder">
+    <div *ngIf="CurrentDir == '' && !navParams.selector && CanImportFolder">
       <ion-item *ngIf="cant_dedicated" button (click)="SelectImportFolder()">
         <ion-icon slot="start" name="arrow-down-circle"></ion-icon>
         <ion-label> {{lang.text['UserFsDir']['ImportFolder']}} </ion-label>
@@ -50,7 +50,7 @@
     </div>
     <ion-accordion-group #FileSel>
       <div *ngFor="let file of FileList; index as i" (contextmenu)="DeleteShortcut(file)">
-        <ion-accordion *ngIf="CurrentDir == file.dir || is_file_selector" [value]="file.path">
+        <ion-accordion *ngIf="CurrentDir == file.dir || navParams.selector" [value]="file.path">
           <ion-item slot="header">
             <ion-icon *ngIf="file.viewer == 'image'" slot="start" name="image"></ion-icon>
             <ion-icon *ngIf="file.viewer == 'audio'" slot="start" name="musical-notes"></ion-icon>
@@ -70,10 +70,10 @@
               <ion-button *ngIf="file.viewer != 'image'" class="ion-text-right button_dist" (click)="OpenFile(file)">
                 {{lang.text['UserFsDir']['Open']}}
               </ion-button>
-              <ion-button *ngIf="is_file_selector" class="ion-text-right button_dist" (click)="dismiss_page(file)">
+              <ion-button *ngIf="navParams.selector" class="ion-text-right button_dist" (click)="dismiss_page(file)">
                 {{lang.text['UserFsDir']['Select']}}
               </ion-button>
-              <ion-button *ngIf="cant_dedicated && !is_file_selector" class="ion-text-right button_dist"
+              <ion-button *ngIf="cant_dedicated && !navParams.selector" class="ion-text-right button_dist"
                 (click)="DownloadFile(file)">
                 {{lang.text['UserFsDir']['Download']}}
               </ion-button>
