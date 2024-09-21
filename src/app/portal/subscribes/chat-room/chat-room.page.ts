@@ -201,9 +201,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
         this.global.PageDismissAct['chatroom-voiddraw'] = (v: any) => {
           if (v.data) this.voidDraw_fileAct_callback(v, content_related_creator);
+          this.global.RestoreShortCutAct('chatroom-voiddraw');
           delete this.global.PageDismissAct['chatroom-voiddraw'];
         }
-        this.removeShortCutKey();
+        this.global.StoreShortCutAct('chatroom-voiddraw');
         props['dismiss'] = 'chatroom-voiddraw';
         this.global.ActLikeModal('void-draw', props);
       }
@@ -250,9 +251,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.CancelEditText();
             this.create_thumbnail_imported(this_file);
           }
+          this.global.RestoreShortCutAct('chatroom-ionicviewer');
           delete this.global.PageDismissAct['chatroom-ionicviewer'];
         }
-        this.removeShortCutKey();
+        this.global.StoreShortCutAct('chatroom-ionicviewer');
         props['dismiss'] = 'chatroom-ionicviewer';
         this.global.ActLikeModal('ionic-viewer', props);
       }
@@ -2512,7 +2514,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         attaches.push(this.messages[i]);
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;
-      this.removeShortCutKey();
       this.global.PageDismissAct['chatroom-ionicviewer'] = (v: any) => {
         this.lock_modal_open = false;
         if (v.data) { // 파일 편집하기를 누른 경우
@@ -2532,9 +2533,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               }
               this.global.PageDismissAct['modify-image'] = (v: any) => {
                 if (v.data) this.voidDraw_fileAct_callback(v, related_creators);
+                this.global.RestoreShortCutAct('modify-image');
                 delete this.global.PageDismissAct['modify-image'];
               }
-              this.removeShortCutKey();
+              this.global.StoreShortCutAct('modify-image');
               this.global.ActLikeModal('void-draw', {
                 path: v.data.path || _path,
                 width: v.data.width,
@@ -2552,9 +2554,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.noti.Current = this.info['cnoti_id'];
         if (this.info['cnoti_id'])
           this.noti.ClearNoti(this.info['cnoti_id']);
+        this.global.RestoreShortCutAct('chatroom');
         delete this.global.PageDismissAct['chatroom-ionicviewer'];
       }
-      this.removeShortCutKey();
+      this.global.StoreShortCutAct('chatroom');
       this.noti.Current = 'IonicViewerPage';
       this.global.ActLikeModal('ionic-viewer', {
         info: msg,
