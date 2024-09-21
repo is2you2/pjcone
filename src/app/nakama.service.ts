@@ -6,11 +6,9 @@ import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 import * as p5 from 'p5';
 import { LocalNotiService, TotalNotiForm } from './local-noti.service';
-import { AlertController, IonicSafeString, LoadingController, ModalController, NavController, iosTransitionAnimation, mdTransitionAnimation } from '@ionic/angular';
+import { AlertController, IonicSafeString, LoadingController, NavController, iosTransitionAnimation, mdTransitionAnimation } from '@ionic/angular';
 import { LanguageSettingService } from './language-setting.service';
 import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
-import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
-import { VoidDrawPage } from './portal/subscribes/chat-room/void-draw/void-draw.page';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -87,7 +85,6 @@ export class NakamaService {
     private statusBar: StatusManageService,
     private indexed: IndexedDBService,
     private noti: LocalNotiService,
-    private modalCtrl: ModalController,
     private alertCtrl: AlertController,
     private lang: LanguageSettingService,
     private global: GlobalActService,
@@ -4297,15 +4294,18 @@ export class NakamaService {
           await this.indexed.saveTextFileToUserPath(JSON.stringify(ServerInfos), 'servers/webrtc_server.json');
           break;
         case 'voidDraw':
-          this.modalCtrl.create({
-            component: VoidDrawPage,
-            componentProps: {
-              remote: {
-                address: json[i].address,
-                channel: json[i].channel,
-              }
-            }
-          }).then(v => v.present());
+          this.global.PageDismissAct['voiddraw-remote'] = () => {
+            this.global.RestoreShortCutAct('voiddraw-remote');
+            delete this.global.PageDismissAct['voiddraw-remote'];
+          }
+          this.global.StoreShortCutAct('voiddraw-remote');
+          this.global.ActLikeModal('void-draw', {
+            remote: {
+              address: json[i].address,
+              channel: json[i].channel,
+            },
+            dismiss: 'voiddraw-remote',
+          });
           break;
         case 'postViewer':
           for (let i = 0, j = 20; i < j; i++) {
