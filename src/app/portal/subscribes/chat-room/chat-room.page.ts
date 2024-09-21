@@ -2444,8 +2444,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }, 100);
         return;
       } catch (e) { // 대안 썸네일이 없는 경우 썸네일 생성 시도
-        if (this.ViewableMessage[i]['content'].viewer == 'image' && this.ViewableMessage[i]['content']['url'])
-          this.ViewableMessage[i]['content']['thumbnail'] = this.ViewableMessage[i]['content']['url'];
+        try {
+          if (this.ViewableMessage[i]['content'].viewer == 'image' && this.ViewableMessage[i]['content']['url'])
+            this.ViewableMessage[i]['content']['thumbnail'] = this.ViewableMessage[i]['content']['url'];
+        } catch (e) { }
       }
     }
     // 다음 메시지와 정보를 비교하여 다음 메시지의 상태를 결정 (기록 불러오기류)
