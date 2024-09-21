@@ -4222,13 +4222,13 @@ export class NakamaService {
               text: `${this.lang.text['Nakama']['AlreadyHaveTargetName']}: ${json[i].value.name}`,
             });
             delete json[i].value.name;
-            await this.modalCtrl.create({
-              component: ServerDetailPage,
-              componentProps: {
-                data: json[i].value,
-              },
-            }).then(v => {
-              v.present();
+            this.global.PageDismissAct['quick-server-detail'] = () => {
+              this.global.RestoreShortCutAct('quick-server-detail');
+              delete this.global.PageDismissAct['quick-server-detail'];
+            }
+            this.global.StoreShortCutAct('quick-server-detail');
+            this.global.ActLikeModal('server-detail', {
+              data: json[i].value,
             });
           } else {
             let new_server_info: ServerInfo = {

@@ -68,7 +68,10 @@ const routes: Routes = [
   },
   {
     path: 'link-qr',
-    loadChildren: () => import('./portal/subscribes/chat-room/void-draw/link-qr/link-qr.module').then( m => m.LinkQrPageModule)
+    loadChildren: () => import('./portal/subscribes/chat-room/void-draw/link-qr/link-qr.module').then(m => m.LinkQrPageModule)
+  }, {
+    path: 'server-detail',
+    loadChildren: () => import('./portal/settings/group-server/server-detail/server-detail.module').then(m => m.ServerDetailPageModule)
   }
 ];
 

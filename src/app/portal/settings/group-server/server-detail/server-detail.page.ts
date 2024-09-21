@@ -1,5 +1,5 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonToggle, ModalController, NavParams } from '@ionic/angular';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { IonToggle, NavController } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -7,24 +7,29 @@ import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-server-detail',
   templateUrl: './server-detail.page.html',
   styleUrls: ['./server-detail.page.scss'],
 })
-export class ServerDetailPage implements OnInit {
+export class ServerDetailPage implements OnInit, OnDestroy {
 
   constructor(
-    public modalCtrl: ModalController,
-    private navParams: NavParams,
     public lang: LanguageSettingService,
     private p5toast: P5ToastService,
     private statusBar: StatusManageService,
     private indexed: IndexedDBService,
     private nakama: NakamaService,
     private global: GlobalActService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private navCtrl: NavController,
   ) { }
+  ngOnDestroy(): void {
+    this.route.queryParams['unsubscribe']();
+  }
 
   dedicated_info: ServerInfo;
   /** 타겟이 이미 존재한다면 타겟 수정 불가 */
@@ -32,7 +37,10 @@ export class ServerDetailPage implements OnInit {
   QRCodeSRC: any;
 
   ngOnInit() {
-    this.dedicated_info = this.navParams.get('data');
+    this.route.queryParams.subscribe(_p => {
+      const navParams = this.router.getCurrentNavigation().extras.state;
+      this.dedicated_info = navParams.data;
+    });
     let filtered = {
       name: this.dedicated_info.name,
       address: this.dedicated_info.address,
@@ -111,6 +119,7 @@ export class ServerDetailPage implements OnInit {
     try {
       this.nakama.servers[this.dedicated_info.isOfficial][this.dedicated_info.target].socket.disconnect(true);
     } catch (e) { }
-    this.modalCtrl.dismiss();
+    if (this.global.PageDismissAct['quick-server-detail']) this.global.PageDismissAct['quick-server-detail']();
+    this.navCtrl.pop();
   }
 }
