@@ -1042,7 +1042,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           FileMenu.push(() => this.RemoveFile());
         if (!this.CurrentFileSize && this.FileInfo.path && !this.isQuickLaunchViewer)
           FileMenu.push(() => this.DownloadFileFromURL());
-        if (!this.CurrentFileSize && this.FileInfo.url && !this.isQuickLaunchViewer)
+        if (this.FileInfo.url && !this.isQuickLaunchViewer)
           FileMenu.push(() => this.CopyQuickViewer());
         switch (ev['code']) {
           case 'KeyA': // 왼쪽 이동

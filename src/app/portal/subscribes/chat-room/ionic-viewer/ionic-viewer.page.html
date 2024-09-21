@@ -70,8 +70,7 @@
                     (click)="DownloadFileFromURL()">
                     <ion-label>{{lang.text['ContentViewer']['DownloadToLocal']}}</ion-label>
                   </ion-item>
-                  <ion-item button *ngIf="!CurrentFileSize && FileInfo['url'] && !isQuickLaunchViewer"
-                    (click)="CopyQuickViewer()">
+                  <ion-item button *ngIf="FileInfo['url'] && !isQuickLaunchViewer" (click)="CopyQuickViewer()">
                     <ion-label>{{lang.text['ContentViewer']['QuickViewerLink']}}</ion-label>
                   </ion-item>
                 </ion-list>
