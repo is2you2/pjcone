@@ -1742,7 +1742,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
    */
   CopyQuickViewer() {
     let result = `${SERVER_PATH_ROOT}pjcone_pwa/?fileviewer=${this.FileInfo.url},${this.FileInfo.viewer}`;
-    this.global.WriteValueToClipboard('text/plain', result);
+    this.global.WriteValueToClipboard('text/plain', result.replace(' ', '%20'));
   }
 
   ShareContent() {
