@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { AlertController, IonAccordionGroup, LoadingController, NavController } from '@ionic/angular';
 import { isPlatform } from '../app.component';
@@ -34,7 +34,7 @@ interface FileDir {
   templateUrl: './user-fs-dir.page.html',
   styleUrls: ['./user-fs-dir.page.scss'],
 })
-export class UserFsDirPage implements OnInit {
+export class UserFsDirPage implements OnInit, OnDestroy {
 
   /** 현재 디렉토리, 보여지는 파일 분류용 */
   CurrentDir: string;
@@ -60,6 +60,9 @@ export class UserFsDirPage implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
   ) { }
+  ngOnDestroy(): void {
+    this.route.queryParams['unsubscribe']();
+  }
 
   is_ready = false;
   /** 인앱 브라우저 내 썸네일 토글 */
