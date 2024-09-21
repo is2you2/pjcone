@@ -297,10 +297,11 @@
               </div>
             </td>
           </tr>
-          <tr class="thumbnail_parts" *ngIf="ShowGoToBottom && !last_message_viewer.user_id" (click)="init_chatroom()">
+          <tr class="thumbnail_parts" *ngIf="ShowGoToBottom && !last_message_viewer.user_id"
+            (click)="scroll_down_logs()">
             <td style="text-align: center; padding: 4px 0px;">{{lang.text['ChatRoom']['GoToRecent']}}</td>
           </tr>
-          <tr class="thumbnail_parts" *ngIf="last_message_viewer.user_id" (click)="init_chatroom()">
+          <tr class="thumbnail_parts" *ngIf="last_message_viewer.user_id" (click)="scroll_down_logs()">
             <td class="bottom_thumbnail imageForm">
               <span [style]="'margin-right: 8px; color: #' + last_message_viewer.color">
                 <b>{{(last_message_viewer.is_me ? nakama.users.self['display_name'] :
