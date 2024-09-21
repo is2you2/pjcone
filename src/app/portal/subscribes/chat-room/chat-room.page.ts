@@ -2195,15 +2195,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     let MsgText = orig_msg;
     let FileURL = msg.content['url'];
     if (msg.content['viewer']) {
-      try { // 파일 불러오기 실패시 그저 망치기
-        if (msg.content['viewer'] != 'image') throw '이미지 파일이 아님';
+      try { // 대안 썸네일 불러오기 (영상 등 이미지가 아닌 파일의 썸네일)
+        let blob = await this.indexed.loadBlobFromUserPath(`${msg.content['path']}_thumbnail.png`, msg.content['type']);
+        FileURL = URL.createObjectURL(blob);
+      } catch (e) { // 없으면 원본 파일 불러오기
         let blob = await this.indexed.loadBlobFromUserPath(msg.content['path'], msg.content['type']);
         FileURL = URL.createObjectURL(blob);
-      } catch (e) {
-        try { // 대안 썸네일 불러오기 (영상 등 이미지가 아닌 파일의 썸네일)
-          let blob = await this.indexed.loadBlobFromUserPath(`${msg.content['path']}_thumbnail.png`, msg.content['type']);
-          FileURL = URL.createObjectURL(blob);
-        } catch (e) { }
       }
       MsgText = `(${this.lang.text['ChatRoom']['attachments']}) ${MsgText}`
     }
