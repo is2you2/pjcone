@@ -843,6 +843,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   AddShortCut() {
     if (!this.global.p5KeyShortCut) return;
+    this.global.p5KeyShortCut['Backspace'] = () => {
+      if (document.activeElement == document.getElementById(this.ChannelUserInputId) && !this.userInput.text)
+        this.userInputTextArea.blur();
+    }
     this.global.p5KeyShortCut['Backquote'] = () => {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId))
         this.pull_msg_history();

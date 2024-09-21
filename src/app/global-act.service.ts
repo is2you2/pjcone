@@ -161,9 +161,13 @@ export class GlobalActService {
       p.keyPressed = (ev) => {
         if (!this.p5KeyShortCut) return;
         switch (ev['code']) {
+          case 'Backspace':
+            if (this.p5KeyShortCut['Backspace'])
+              this.p5KeyShortCut['Backspace']();
+            break;
           case 'Backquote':
             if (this.p5KeyShortCut['Backquote'])
-              this.p5KeyShortCut['Backquote'](ev);
+              this.p5KeyShortCut['Backquote']();
             break;
           // 메뉴 나열순
           case 'Digit1': // 보여지는 리스트 메뉴 최상단부터 아래로
