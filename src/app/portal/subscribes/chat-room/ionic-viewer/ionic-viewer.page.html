@@ -4,21 +4,22 @@
     <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
       <ion-back-button defaultHref=""></ion-back-button>
     </ion-buttons>
-    <ion-icon *ngIf="isHTML && isHTMLViewer && !isTextEditMode" class="relevance_change" style="padding-right: 16px;"
-      slot="end" name="pause-circle" (click)="ToggleHTMLViewer()"></ion-icon>
-    <ion-icon *ngIf="isHTML && !isHTMLViewer && !isTextEditMode" class="relevance_change" style="padding-right: 16px;"
-      slot="end" name="play-circle" (click)="ToggleHTMLViewer()"></ion-icon>
+    <ion-icon *ngIf="isHTML && isHTMLViewer && !isTextEditMode" class="relevance_change button_cursor"
+      style="padding-right: 16px;" slot="end" name="pause-circle" (click)="ToggleHTMLViewer()"></ion-icon>
+    <ion-icon *ngIf="isHTML && !isHTMLViewer && !isTextEditMode" class="relevance_change button_cursor"
+      style="padding-right: 16px;" slot="end" name="play-circle" (click)="ToggleHTMLViewer()"></ion-icon>
     <ion-icon *ngIf="HaveRelevances && (FileInfo.viewer == 'video' || FileInfo.viewer == 'audio') && AutoPlayNext"
       class="relevance_change" style="padding-right: 16px;" slot="end" name="pause-circle"
       (click)="AutoPlayNext = !AutoPlayNext"></ion-icon>
     <ion-icon *ngIf="HaveRelevances && (FileInfo.viewer == 'video' || FileInfo.viewer == 'audio') && !AutoPlayNext"
-      class="relevance_change" style="padding-right: 16px;" slot="end" name="play-circle"
+      class="relevance_change button_cursor" style="padding-right: 16px;" slot="end" name="play-circle"
       (click)="AutoPlayNext = !AutoPlayNext"></ion-icon>
-    <ion-icon *ngIf="HaveRelevances" class="relevance_change" style="padding-right: 4px;" slot="end"
+    <ion-icon *ngIf="HaveRelevances" class="relevance_change button_cursor" style="padding-right: 4px;" slot="end"
       name="arrow-back-circle-outline" (click)="ChangeToAnother(-1)"></ion-icon>
     <ion-label *ngIf="HaveRelevances" slot="end">{{ RelevanceIndex + ' / ' + Relevances.length}}</ion-label>
-    <ion-icon *ngIf="HaveRelevances" class="relevance_change" style="padding-right: 16px; padding-left: 4px;" slot="end"
-      name="arrow-forward-circle-outline" (click)="ChangeToAnother(1)"></ion-icon>
+    <ion-icon *ngIf="HaveRelevances" class="relevance_change button_cursor"
+      style="padding-right: 16px; padding-left: 4px;" slot="end" name="arrow-forward-circle-outline"
+      (click)="ChangeToAnother(1)"></ion-icon>
   </ion-toolbar>
 </ion-header>
 

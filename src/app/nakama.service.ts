@@ -4351,10 +4351,19 @@ export class NakamaService {
               info: {
                 content: {
                   filename: json[i]['url'].split('_').pop(),
+                  file_ext: json[i]['url'].split('.').pop(),
                   url: json[i]['url'],
                   viewer: json[i]['viewer'],
                 }
               },
+              relevance: [{
+                content: {
+                  filename: json[i]['url'].split('_').pop(),
+                  file_ext: json[i]['url'].split('.').pop(),
+                  url: json[i]['url'],
+                  viewer: json[i]['viewer'],
+                }
+              }],
               noEdit: true,
               noTextEdit: true,
               quick: true,

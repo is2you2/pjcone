@@ -78,9 +78,18 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.p5canvasInside.remove();
       this.p5canvasInside = null;
     }
-    if (this.p5TextArea) this.p5TextArea.remove()
-    if (this.p5SyntaxHighlightReader) this.p5SyntaxHighlightReader.remove();
-    if (this.p5canvas) this.p5canvas.remove();
+    if (this.p5TextArea) {
+      this.p5TextArea.remove();
+      this.p5TextArea = null;
+    }
+    if (this.p5SyntaxHighlightReader) {
+      this.p5SyntaxHighlightReader.remove();
+      this.p5SyntaxHighlightReader = null;
+    }
+    if (this.p5canvas) {
+      this.p5canvas.remove();
+      this.p5canvas = null;
+    }
   }
 
   FileURL: string;
@@ -407,7 +416,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.modalCtrl.getTop().then(self => {
       this.ModalSelf = self;
     });
-    if (this.cont) this.cont.abort();
+    if (this.cont) {
+      this.cont.abort();
+      this.cont = null;
+    }
     this.cont = new AbortController();
     try { // 로컬에서 파일 찾기 우선 작업
       this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type']);
@@ -1130,7 +1142,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       let syntaxHighlightReader = p.createDiv();
       syntaxHighlightReader.elt.className = 'infobox';
       syntaxHighlightReader.elt.setAttribute('style', `height: ${this.p5TextArea.clientHeight}px; display: block; overflow-y: auto;`);
-      this.canvasDiv.appendChild(syntaxHighlightReader.elt);
+      syntaxHighlightReader.parent(this.canvasDiv);
       this.p5SyntaxHighlightReader = syntaxHighlightReader.elt;
     }
     // 구문 강조처리용 구성 변환
