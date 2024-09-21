@@ -882,6 +882,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.make_ext_hidden();
           this.userInputTextArea.focus();
         }, 0);
+      else if (!this.userInput.text)
+        this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
     }
   }
 
@@ -1092,6 +1094,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     });
   }
 
+  /** 인용 메시지를 찾을 때 자동으로 메시지 풀링되는 것을 막기 위해 존재함 */
   BlockAutoScrollDown = false;
   /** 해당 메시지 찾기 */
   async FindQoute(id: string, timestamp: string) {
