@@ -11,7 +11,6 @@ import { LanguageSettingService } from './language-setting.service';
 import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
 import { ServerDetailPage } from './portal/settings/group-server/server-detail/server-detail.page';
 import { VoidDrawPage } from './portal/subscribes/chat-room/void-draw/void-draw.page';
-import { IonicViewerPage } from './portal/subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -4345,36 +4344,32 @@ export class NakamaService {
             if (this.lang.text['ContentViewer']['MayGimbalLock']) break;
             await new Promise((done) => setTimeout(done, 1000));
           }
-          this.modalCtrl.create({
-            component: IonicViewerPage,
-            componentProps: {
-              info: {
-                content: {
-                  filename: json[i]['url'].split('_').pop(),
-                  file_ext: json[i]['url'].split('.').pop(),
-                  url: json[i]['url'],
-                  viewer: json[i]['viewer'],
-                }
-              },
-              relevance: [{
-                content: {
-                  filename: json[i]['url'].split('_').pop(),
-                  file_ext: json[i]['url'].split('.').pop(),
-                  url: json[i]['url'],
-                  viewer: json[i]['viewer'],
-                }
-              }],
-              noEdit: true,
-              noTextEdit: true,
-              quick: true,
+          this.global.PageDismissAct['quick-fileviewer'] = (v: any) => {
+            this.global.RestoreShortCutAct('quick-fileviewer');
+            delete this.global.PageDismissAct['quick-fileviewer'];
+          }
+          this.global.StoreShortCutAct('quick-fileviewer');
+          this.global.ActLikeModal('ionic-viewer', {
+            info: {
+              content: {
+                filename: json[i]['url'].split('_').pop(),
+                file_ext: json[i]['url'].split('.').pop(),
+                url: json[i]['url'],
+                viewer: json[i]['viewer'],
+              }
             },
-            cssClass: 'fullscreen',
-          }).then(v => {
-            this.global.StoreShortCutAct('quick-fileviewer');
-            v.onWillDismiss().then(() => {
-              this.global.RestoreShortCutAct('quick-fileviewer');
-            });
-            v.present()
+            relevance: [{
+              content: {
+                filename: json[i]['url'].split('_').pop(),
+                file_ext: json[i]['url'].split('.').pop(),
+                url: json[i]['url'],
+                viewer: json[i]['viewer'],
+              }
+            }],
+            noEdit: true,
+            noTextEdit: true,
+            quick: true,
+            dismiss: 'quick-fileviewer',
           });
           break;
         default: // 동작 미정 알림(debug)
