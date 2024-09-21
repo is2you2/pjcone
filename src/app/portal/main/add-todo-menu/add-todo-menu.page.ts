@@ -1,9 +1,8 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { AlertController, IonSelect, LoadingController, ModalController, NavController } from '@ionic/angular';
+import { AlertController, IonSelect, LoadingController, NavController } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import * as p5 from "p5";
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { IonicViewerPage } from '../../subscribes/chat-room/ionic-viewer/ionic-viewer.page';
 import { DomSanitizer } from '@angular/platform-browser';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { NakamaService, MatchOpCode } from 'src/app/nakama.service';
@@ -11,11 +10,9 @@ import { LocalNotiService } from 'src/app/local-noti.service';
 import { isPlatform } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
-import { VoidDrawPage } from '../../subscribes/chat-room/void-draw/void-draw.page';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SpeechRecognition } from "@capacitor-community/speech-recognition";
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
-import { UserFsDirPage } from 'src/app/user-fs-dir/user-fs-dir.page';
 import { ExtendButtonForm } from '../../subscribes/chat-room/chat-room.page';
 
 /** 서버에서 생성한 경우 */
@@ -44,7 +41,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    public modalCtrl: ModalController,
     public lang: LanguageSettingService,
     private p5toast: P5ToastService,
     private sanitizer: DomSanitizer,
@@ -188,6 +184,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.extended_buttons[4].name = this.lang.text['ChatRoom']['Voice'];
   }
 
+  /** 여기서는 페이지에 값이 들어왔는지 검토만 한다 */
+  navParams: boolean;
   BackButtonPressed = false;
   ngOnInit() {
     this.MainDiv = document.getElementById('main_div');
@@ -195,6 +193,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     // 미리 지정된 데이터 정보가 있는지 검토
     this.route.queryParams.subscribe(_p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
+      this.navParams = Boolean(navParams);
       if (navParams) this.received_data = navParams.data;
       if (this.received_data) this.userInput = { ...this.userInput, ...JSON.parse(this.received_data) };
     });
@@ -372,26 +371,19 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               }
             if (!is_already_exist) related_creators.push(_FileInfo['content_creator']);
           }
-          this.modalCtrl.create({
-            component: VoidDrawPage,
-            componentProps: {
-              path: _FileInfo.alt_path || _FileInfo.path,
-              width: v.width,
-              height: v.height,
-            },
-            cssClass: 'fullscreen',
-          }).then(v => {
-            this.removeShortCut();
-            v.onDidDismiss().then(_w => {
-              this.AddShortCut();
-            });
-            v.onWillDismiss().then(async v => {
-              if (v.data) this.voidDraw_fileAct_callback(v, related_creators, index);
-            });
-            v.present();
+          this.global.PageDismissAct['quick-modify-image'] = (v: any) => {
+            if (v.data) this.voidDraw_fileAct_callback(v, related_creators, index);
+            this.global.RestoreShortCutAct('quick-modify-image');
+            delete this.global.PageDismissAct['quick-modify-image'];
+          }
+          this.global.StoreShortCutAct('quick-modify-image');
+          this.global.ActLikeModal('void-draw', {
+            path: _FileInfo.alt_path || _FileInfo.path,
+            width: v.width,
+            height: v.height,
+            dismiss: 'quick-modify-image',
           });
-          if (!_FileInfo.url)
-            URL.revokeObjectURL(FileURL);
+          if (!_FileInfo.url) URL.revokeObjectURL(FileURL);
           p.remove();
         }, e => {
           console.log('빠른 편집기 이동 실패: ', e);
@@ -421,6 +413,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 저장소 변경이 가능한지 검토 (원격이면서 작성자가 남이 아닌지 검토) */
   isStoreAtChangable = true;
   async ionViewWillEnter() {
+    this.lock_modal_open = false;
+    if (!this.navParams) return;
     VoiceRecorder.getCurrentStatus().then(v => {
       if (v.status == 'RECORDING') {
         // 게시물 생성기에서 음성녹음중인 상태로 들어오면 음성녹음을 할 수 없음
@@ -789,63 +783,51 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         break;
       case 'text':
         let new_textfile_name = this.global.TextEditorNewFileName();
-        this.modalCtrl.create({
-          component: IonicViewerPage,
-          componentProps: {
-            info: {
-              content: {
-                is_new: 'text',
-                type: 'text/plain',
-                viewer: 'text',
-                filename: new_textfile_name,
-              },
+        this.global.PageDismissAct['todo-text-add'] = (v: any) => {
+          if (v.data) {
+            let this_file: FileInfo = this.global.TextEditorAfterAct(v.data, {
+              display_name: this.nakama.users.self['display_name'],
+            });
+            this.userInput.attach.push(this_file);
+            this.auto_scroll_down();
+          }
+          this.global.RestoreShortCutAct('todo-text-add');
+          delete this.global.PageDismissAct['todo-text-add'];
+        }
+        this.global.StoreShortCutAct('todo-text-add');
+        this.global.ActLikeModal('ionic-viewer', {
+          info: {
+            content: {
+              is_new: 'text',
+              type: 'text/plain',
+              viewer: 'text',
+              filename: new_textfile_name,
             },
-            noEdit: true,
           },
-          cssClass: 'fullscreen',
-        }).then(v => {
-          this.removeShortCut();
-          v.onWillDismiss().then(v => {
-            if (v.data) {
-              let this_file: FileInfo = this.global.TextEditorAfterAct(v.data, {
-                display_name: this.nakama.users.self['display_name'],
-              });
-              this.userInput.attach.push(this_file);
-              this.auto_scroll_down();
-            }
-          });
-          v.onDidDismiss().then(() => {
-            this.AddShortCut();
-          });
-          v.present();
+          noEdit: true,
+          dismiss: 'todo-text-add',
         });
         break;
       case 'image':
-        this.modalCtrl.create({
-          component: VoidDrawPage,
-          cssClass: 'fullscreen',
-        }).then(v => {
-          this.removeShortCut();
-          v.onWillDismiss().then(v => {
-            if (v.data) this.voidDraw_fileAct_callback(v);
-          });
-          v.onDidDismiss().then(() => {
-            this.AddShortCut();
-          });
-          v.present();
+        this.global.PageDismissAct['todo-image-add'] = (v: any) => {
+          if (v.data) this.voidDraw_fileAct_callback(v);
+          this.global.RestoreShortCutAct('todo-image-add');
+          delete this.global.PageDismissAct['todo-image-add'];
+        }
+        this.global.StoreShortCutAct('todo-image-add');
+        this.global.ActLikeModal('void-draw', {
+          dismiss: 'todo-image-add',
         });
         break;
       case 'inapp': // 인앱 탐색기에서 가져오기
-        this.modalCtrl.create({
-          component: UserFsDirPage,
-        }).then(v => {
-          v.onWillDismiss().then(async v => {
-            if (v.data) this.selected_blobFile_callback_act(v.data);
-          });
-          v.onDidDismiss().then(() => {
-            this.AddShortCut();
-          });
-          v.present();
+        this.global.PageDismissAct['todo-userfs-add'] = (v: any) => {
+          if (v.data) this.selected_blobFile_callback_act(v.data);
+          this.global.RestoreShortCutAct('todo-userfs-add');
+          delete this.global.PageDismissAct['todo-userfs-add'];
+        }
+        this.global.StoreShortCutAct('todo-userfs-add');
+        this.global.ActLikeModal('user-fs-dir', {
+          dismiss: 'todo-userfs-add',
         });
         break;
       case 'load': // 불러오기 행동 병합
@@ -1058,84 +1040,75 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     let createRelevances = [];
     for (let i = 0, j = this.userInput.attach.length; i < j; i++)
       createRelevances.push({ content: this.userInput.attach[i] });
-    this.modalCtrl.create({
-      component: IonicViewerPage,
-      componentProps: {
-        info: { content: this.userInput.attach[index] },
-        path: this.userInput.attach[index]['alt_path'] || this.userInput.attach[index]['path'],
-        relevance: createRelevances,
-        noEdit: !this.isModifiable,
-      },
-      cssClass: 'fullscreen',
-    }).then(v => {
-      this.removeShortCut();
-      v.onDidDismiss().then((v) => {
-        this.lock_modal_open = false;
-        this.AddShortCut();
-        if (v.data) { // 파일 편집하기를 누른 경우
-          switch (v.data.type) {
-            case 'image':
-              let related_creators: ContentCreatorInfo[] = [];
-              if (this.userInput.attach[v.data.index]['content_related_creator'])
-                related_creators = [...this.userInput.attach[v.data.index]['content_related_creator']];
-              if (this.userInput.attach[v.data.index]['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
-                let is_already_exist = false;
-                for (let i = 0, j = related_creators.length; i < j; i++)
-                  if (related_creators[i].user_id !== undefined && this.userInput.attach[v.data.index]['content_creator']['user_id'] !== undefined
-                    && related_creators[i].user_id == this.userInput.attach[v.data.index]['content_creator']['user_id']) {
-                    is_already_exist = true;
+    this.global.PageDismissAct['todo-ionicivewer'] = (v: any) => {
+      this.lock_modal_open = false;
+      this.AddShortCut();
+      if (v.data) { // 파일 편집하기를 누른 경우
+        switch (v.data.type) {
+          case 'image':
+            let related_creators: ContentCreatorInfo[] = [];
+            if (this.userInput.attach[v.data.index]['content_related_creator'])
+              related_creators = [...this.userInput.attach[v.data.index]['content_related_creator']];
+            if (this.userInput.attach[v.data.index]['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
+              let is_already_exist = false;
+              for (let i = 0, j = related_creators.length; i < j; i++)
+                if (related_creators[i].user_id !== undefined && this.userInput.attach[v.data.index]['content_creator']['user_id'] !== undefined
+                  && related_creators[i].user_id == this.userInput.attach[v.data.index]['content_creator']['user_id']) {
+                  is_already_exist = true;
+                  break;
+                }
+              if (!is_already_exist) related_creators.push(this.userInput.attach[v.data.index]['content_creator']);
+            }
+            delete this.userInput.attach[v.data.index]['exist'];
+            this.global.PageDismissAct['todo-modify-image'] = (w: any) => {
+              if (w.data) {
+                switch (v.data.msg.content.viewer) {
+                  case 'image':
+                    this.voidDraw_fileAct_callback(w, related_creators, v.data.index);
                     break;
-                  }
-                if (!is_already_exist) related_creators.push(this.userInput.attach[v.data.index]['content_creator']);
+                  default:
+                    this.voidDraw_fileAct_callback(w, related_creators);
+                    break;
+                }
               }
-              delete this.userInput.attach[v.data.index]['exist'];
-              this.modalCtrl.create({
-                component: VoidDrawPage,
-                componentProps: {
-                  path: v.data.path || this.userInput.attach[v.data.index]['alt_path'] || this.userInput.attach[v.data.index]['path'],
-                  width: v.data.width,
-                  height: v.data.height,
-                  text: v.data.text,
-                },
-                cssClass: 'fullscreen',
-              }).then(w => {
-                this.removeShortCut();
-                w.onWillDismiss().then(w => {
-                  if (w.data) {
-                    switch (v.data.msg.content.viewer) {
-                      case 'image':
-                        this.voidDraw_fileAct_callback(w, related_creators, v.data.index);
-                        break;
-                      default:
-                        this.voidDraw_fileAct_callback(w, related_creators);
-                        break;
-                    }
-                  }
-                });
-                w.onDidDismiss().then(_w => {
-                  this.AddShortCut();
-                });
-                w.present();
-              });
-              return;
-            case 'text':
-              this.userInput.attach[v.data.index].content_related_creator.push(this.userInput.attach[v.data.index].content_creator);
-              this.userInput.attach[v.data.index].content_creator = {
-                timestamp: new Date().getTime(),
-                display_name: this.nakama.users.self['display_name'],
-                various: 'textedit',
-              };
-              this.userInput.attach[v.data.index].blob = v.data.blob;
-              this.userInput.attach[v.data.index].path = v.data.path;
-              this.userInput.attach[v.data.index].size = v.data.blob['size'];
-              this.userInput.attach[v.data.index].filename = v.data.blob.name || this.userInput.attach[v.data.index].filename;
-              delete this.userInput.attach[v.data.index]['exist'];
-              break;
-          }
+              this.global.RestoreShortCutAct('todo-modify-image');
+              delete this.global.PageDismissAct['todo-modify-image'];
+            }
+            this.global.StoreShortCutAct('todo-modify-image');
+            this.global.ActLikeModal('void-draw', {
+              path: v.data.path || this.userInput.attach[v.data.index]['alt_path'] || this.userInput.attach[v.data.index]['path'],
+              width: v.data.width,
+              height: v.data.height,
+              text: v.data.text,
+              dismiss: 'todo-modify-image',
+            });
+            return;
+          case 'text':
+            this.userInput.attach[v.data.index].content_related_creator.push(this.userInput.attach[v.data.index].content_creator);
+            this.userInput.attach[v.data.index].content_creator = {
+              timestamp: new Date().getTime(),
+              display_name: this.nakama.users.self['display_name'],
+              various: 'textedit',
+            };
+            this.userInput.attach[v.data.index].blob = v.data.blob;
+            this.userInput.attach[v.data.index].path = v.data.path;
+            this.userInput.attach[v.data.index].size = v.data.blob['size'];
+            this.userInput.attach[v.data.index].filename = v.data.blob.name || this.userInput.attach[v.data.index].filename;
+            delete this.userInput.attach[v.data.index]['exist'];
+            break;
         }
-      });
-      this.noti.Current = 'IonicViewerPage';
-      v.present();
+      }
+      this.global.RestoreShortCutAct('todo-ionicivewer');
+      delete this.global.PageDismissAct['todo-ionicivewer'];
+    }
+    this.global.StoreShortCutAct('todo-ionicivewer');
+    this.noti.Current = 'IonicViewerPage';
+    this.global.ActLikeModal('ionic-viewer', {
+      info: { content: this.userInput.attach[index] },
+      path: this.userInput.attach[index]['alt_path'] || this.userInput.attach[index]['path'],
+      relevance: createRelevances,
+      noEdit: !this.isModifiable,
+      dismiss: 'todo-ionicivewer',
     });
   }
 

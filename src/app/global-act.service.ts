@@ -536,9 +536,14 @@ export class GlobalActService {
         break;
       // 웹 미디어 병행가능한 구성
       case 'webm':
-        if (info['type'].indexOf('video/') == 0)
-          info['viewer'] = 'video';
-        else info['viewer'] = 'audio';
+        try {
+          if (info['type'].indexOf('video/') == 0)
+            info['viewer'] = 'video';
+          else info['viewer'] = 'audio';
+        } catch (e) {
+          console.log('파일 확장자 검토 오류: ', e, '/', info);
+          info['viewer'] = 'disabled';
+        }
         break;
       // 코드류
       case 'sh': // Shell
