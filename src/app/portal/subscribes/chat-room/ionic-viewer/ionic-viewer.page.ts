@@ -198,6 +198,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.showEdit = !Boolean(this.navParams.noEdit);
     this.ChangeContentWithKeyInput();
     this.isPWA = isPlatform != 'Android' && isPlatform != 'iOS';
+    this.init_viewer();
   }
 
   /** 콘텐츠를 우클릭시 메뉴 발현 */
@@ -231,7 +232,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     if (this.FileInfo.url) {
       this.CreateContentInfo();
       this.NeedDownloadFile = false;
-      this.ionViewDidEnter();
+      this.init_viewer();
     } else {
       let path = this.FileInfo['alt_path'] || this.FileInfo['path'] ||
         `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
@@ -240,7 +241,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       try {
         this.blob = await this.indexed.loadBlobFromUserPath(path, this.FileInfo['type']);
         this.CreateContentInfo();
-        this.ionViewDidEnter();
+        this.init_viewer();
       } catch (e) {
         this.FileURL = null;
         this.blob = null;
@@ -422,7 +423,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   /** 비디오/오디오 콘텐츠가 종료되면 끝에서 다음 콘텐츠로 자동 넘김 */
   AutoPlayNext = false;
   @ViewChild('FileMenu') FileMenu: IonPopover;
-  async ionViewDidEnter() {
+  async init_viewer() {
     if (this.cont) {
       this.cont.abort();
       this.cont = null;
