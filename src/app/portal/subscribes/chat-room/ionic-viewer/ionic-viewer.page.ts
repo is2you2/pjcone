@@ -131,7 +131,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         this.navParams = navParams;
         this.initialize();
       } catch (e) {
-        console.log('그림판 정보 받지 못함: ', e);
         this.WaitingLoaded = false;
         this.ChangeContentWithKeyInput();
       }
