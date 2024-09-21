@@ -782,9 +782,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.CancelEditText();
           this.create_thumbnail_imported(navParams.file);
         }
-      } catch (e) {
-        console.log('채널 정보 받지 못함: ', e);
-      }
+      } catch (e) { }
     });
     setTimeout(() => {
       if (!this.WillLeave) this.CreateDrop();
@@ -2199,8 +2197,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         let blob = await this.indexed.loadBlobFromUserPath(`${msg.content['path']}_thumbnail.png`, msg.content['type']);
         FileURL = URL.createObjectURL(blob);
       } catch (e) { // 없으면 원본 파일 불러오기
-        let blob = await this.indexed.loadBlobFromUserPath(msg.content['path'], msg.content['type']);
-        FileURL = URL.createObjectURL(blob);
+        try {
+          let blob = await this.indexed.loadBlobFromUserPath(msg.content['path'], msg.content['type']);
+          FileURL = URL.createObjectURL(blob);
+        } catch (e) { }
       }
       MsgText = `(${this.lang.text['ChatRoom']['attachments']}) ${MsgText}`
     }
