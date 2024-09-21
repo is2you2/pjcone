@@ -1,28 +1,33 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonModal, IonRadioGroup, ModalController, NavParams } from '@ionic/angular';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { IonModal, IonRadioGroup, NavController } from '@ionic/angular';
 import { LanguageSettingService } from '../language-setting.service';
 import { IndexedDBService } from '../indexed-db.service';
 import { GlobalActService } from '../global-act.service';
 import { SERVER_PATH_ROOT } from '../app.component';
 import { P5ToastService } from '../p5-toast.service';
 import { NakamaService } from '../nakama.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-webrtc-manage-io-dev',
   templateUrl: './webrtc-manage-io-dev.page.html',
   styleUrls: ['./webrtc-manage-io-dev.page.scss'],
 })
-export class WebrtcManageIoDevPage implements OnInit {
+export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
 
   constructor(
-    private navParams: NavParams,
-    public modalCtrl: ModalController,
     public lang: LanguageSettingService,
     private indexed: IndexedDBService,
     private global: GlobalActService,
     private p5toast: P5ToastService,
     private nakama: NakamaService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private navCtrl: NavController,
   ) { }
+  ngOnDestroy(): void {
+    this.route.queryParams['unsubscribe']();
+  }
 
   InOut = [];
   VideoInputs = [];
@@ -44,15 +49,18 @@ export class WebrtcManageIoDevPage implements OnInit {
   UserInputUrlsLength = [0];
 
   ngOnInit() {
-    this.InOut = this.navParams.get('list') || [];
-    for (let i = 0, j = this.InOut.length; i < j; i++) {
-      if (this.InOut[i].kind.indexOf('videoinput') >= 0)
-        this.VideoInputs.push(this.InOut[i]);
-      if (this.InOut[i].kind.indexOf('audioinput') >= 0)
-        this.AudioInputs.push(this.InOut[i]);
-      if (this.InOut[i].kind.indexOf('audiooutput') >= 0)
-        this.AudioOutputs.push(this.InOut[i]);
-    }
+    this.route.queryParams.subscribe(_p => {
+      const navParams = this.router.getCurrentNavigation().extras.state;
+      this.InOut = navParams.list || [];
+      for (let i = 0, j = this.InOut.length; i < j; i++) {
+        if (this.InOut[i].kind.indexOf('videoinput') >= 0)
+          this.VideoInputs.push(this.InOut[i]);
+        if (this.InOut[i].kind.indexOf('audioinput') >= 0)
+          this.AudioInputs.push(this.InOut[i]);
+        if (this.InOut[i].kind.indexOf('audiooutput') >= 0)
+          this.AudioOutputs.push(this.InOut[i]);
+      }
+    });
   }
 
   async ionViewWillEnter() {
@@ -93,7 +101,8 @@ export class WebrtcManageIoDevPage implements OnInit {
     }
     if (this.AudioOutput && this.AudioOutput.value !== undefined)
       result['audiooutput'] = this.AudioOutputs[this.AudioOutput.value];
-    this.modalCtrl.dismiss(result);
+    if (this.global.PageDismissAct['webrtc-manage']) this.global.PageDismissAct['webrtc-manage'](result);
+    this.navCtrl.pop();
   }
 
   AddServerUrl() {

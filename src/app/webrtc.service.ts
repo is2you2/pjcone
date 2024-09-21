@@ -427,33 +427,34 @@ export class WebrtcService {
         dev_button.mouseClicked(async () => {
           dev_button.elt.disabled = true;
           let list = await this.getDeviceList();
-          this.modalCtrl.create({
-            component: WebrtcManageIoDevPage,
-            componentProps: {
-              list: list,
-            },
-          }).then(v => {
-            v.onDidDismiss().then(async v => {
-              dev_button.elt.disabled = false;
-              try {
-                let info: MediaStreamConstraints = {};
-                if (v.data.videoinput) {
-                  info['video'] = {
-                    deviceId: v.data.videoinput.deviceId,
-                  }
+          this.global.PageDismissAct['webrtc-manage'] = async (v: any) => {
+            dev_button.elt.disabled = false;
+            try {
+              let info: MediaStreamConstraints = {};
+              if (v.data.videoinput) {
+                info['video'] = {
+                  deviceId: v.data.videoinput.deviceId,
                 }
-                if (v.data.audioinput) {
-                  info['audio'] = {
-                    deviceId: v.data.audioinput.deviceId,
-                  }
+              }
+              if (v.data.audioinput) {
+                info['audio'] = {
+                  deviceId: v.data.audioinput.deviceId,
                 }
-                this.PeerConnection.removeStream(this.localStream);
-                this.localStream = await navigator.mediaDevices.getUserMedia(info);
-                this.localMedia.srcObject = this.localStream;
-                this.localStream.getTracks().forEach((track: any) => this.PeerConnection.addTrack(track, this.localStream));
-              } catch (e) { }
-            });
-            v.present()
+              }
+              this.PeerConnection.removeStream(this.localStream);
+              this.localStream = await navigator.mediaDevices.getUserMedia(info);
+              this.localMedia.srcObject = this.localStream;
+              this.localStream.getTracks().forEach((track: any) => this.PeerConnection.addTrack(track, this.localStream));
+            } catch (e) {
+              console.log('미디어 스트림 변경 오류: ', e);
+            }
+            this.global.RestoreShortCutAct('webrtc-manage');
+            delete this.global.PageDismissAct['webrtc-manage'];
+          }
+          this.global.StoreShortCutAct('webrtc-manage');
+          this.global.ActLikeModal('webrtc-manage-io-dev', {
+            list: list,
+            dismiss: 'webrtc-manage',
           });
         });
 
