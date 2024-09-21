@@ -27,6 +27,7 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
   ) { }
   ngOnDestroy(): void {
     this.route.queryParams['unsubscribe']();
+    if (this.global.PageDismissAct['webrtc-manage']) this.global.PageDismissAct['webrtc-manage']({});
   }
 
   InOut = [];

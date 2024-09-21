@@ -47,6 +47,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   ) { }
   ngOnDestroy() {
     this.route.queryParams['unsubscribe']();
+    if (this.global.PageDismissAct[this.navParams.dismiss])
+      this.global.PageDismissAct[this.navParams.dismiss]({});
   }
 
   blob: Blob;

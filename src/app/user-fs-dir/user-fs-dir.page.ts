@@ -62,6 +62,8 @@ export class UserFsDirPage implements OnInit, OnDestroy {
   ) { }
   ngOnDestroy(): void {
     this.route.queryParams['unsubscribe']();
+    if (this.global.PageDismissAct[this.navParams.dismiss])
+      this.global.PageDismissAct[this.navParams.dismiss]({});
   }
 
   is_ready = false;

@@ -29,6 +29,7 @@ export class ServerDetailPage implements OnInit, OnDestroy {
   ) { }
   ngOnDestroy(): void {
     this.route.queryParams['unsubscribe']();
+    if (this.global.PageDismissAct['quick-server-detail']) this.global.PageDismissAct['quick-server-detail']();
   }
 
   dedicated_info: ServerInfo;

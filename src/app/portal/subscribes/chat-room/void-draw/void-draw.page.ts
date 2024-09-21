@@ -34,6 +34,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   ) { }
   ngOnDestroy(): void {
     this.route.queryParams['unsubscribe']();
+    if (this.global.PageDismissAct[this.navParams.dismiss])
+      this.global.PageDismissAct[this.navParams.dismiss]({});
   }
 
   navParams: any;
@@ -1089,8 +1091,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           modal = await this.modalCtrl.create({
             component: LinkQrPage,
             componentProps: {
-            address: _address,
-            channel: json.id,
+              address: _address,
+              channel: json.id,
             },
             cssClass: 'transparent-modal',
           });

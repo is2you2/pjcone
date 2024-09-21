@@ -27,6 +27,8 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
     delete this.global.p5KeyShortCut['Digit'];
     delete this.global.PageDismissAct['share'];
     this.route.queryParams['unsubscribe']();
+    if (this.global.PageDismissAct['share'])
+      this.global.PageDismissAct['share']({});
   }
 
   channels: any[];
