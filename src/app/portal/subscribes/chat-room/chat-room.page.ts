@@ -843,6 +843,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   AddShortCut() {
     if (!this.global.p5KeyShortCut) return;
+    this.global.p5KeyShortCut['Backquote'] = () => {
+      if (document.activeElement != document.getElementById(this.ChannelUserInputId))
+        this.pull_msg_history();
+    }
     this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
@@ -2638,6 +2642,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   removeShortCutKey() {
     delete this.global.p5KeyShortCut['Escape'];
     delete this.global.p5KeyShortCut['BottomTab'];
+    delete this.global.p5KeyShortCut['Backquote'];
     delete this.global.p5KeyShortCut['Digit'];
     delete this.global.p5KeyShortCut['EnterAct'];
   }
