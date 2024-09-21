@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { AlertController, IonSelect, LoadingController, NavController } from '@ionic/angular';
+import { AlertController, IonSelect, LoadingController, ModalController, NavController } from '@ionic/angular';
 import * as p5 from 'p5';
 import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
@@ -9,6 +9,7 @@ import { MatchOpCode, NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { WebrtcService } from 'src/app/webrtc.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { LinkQrPage } from './link-qr/link-qr.page';
 
 @Component({
   selector: 'app-void-draw',
@@ -19,6 +20,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   constructor(
     public lang: LanguageSettingService,
+    public modalCtrl: ModalController,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
     public global: GlobalActService,
@@ -26,8 +28,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     private nakama: NakamaService,
     private p5toast: P5ToastService,
     private webrtc: WebrtcService,
-    private route: ActivatedRoute,
     private router: Router,
+    private route: ActivatedRoute,
     private navCtrl: NavController,
   ) { }
   ngOnDestroy(): void {
@@ -1084,15 +1086,18 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       switch (json.type) {
         // 채널 아이디 생성 후 수신
         case 'init_id':
-          this.global.ActLikeModal('link-qr', {
+          modal = await this.modalCtrl.create({
+            component: LinkQrPage,
+            componentProps: {
             address: _address,
             channel: json.id,
+            },
+            cssClass: 'transparent-modal',
           });
-          this.global.PageDismissAct['link-qr'] = () => {
+          modal.onWillDismiss().then(() => {
             this.global.RestoreShortCutAct('voiddraw-remote');
             this.p5SetDrawable(true);
-            delete this.global.PageDismissAct['link-qr'];
-          }
+          });
           this.global.StoreShortCutAct('voiddraw-remote');
           this.p5SetDrawable(false);
           modal.present();
