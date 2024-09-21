@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { ModalController } from '@ionic/angular';
 import * as p5 from 'p5';
 function import_p5sound() {
   if (window.location.protocol != 'http:' || window.location.host.indexOf('localhost') == 0) {
@@ -8,7 +7,6 @@ function import_p5sound() {
   }
 }
 import_p5sound();
-import { WebrtcManageIoDevPage } from './webrtc-manage-io-dev/webrtc-manage-io-dev.page';
 import { P5ToastService } from './p5-toast.service';
 import { LanguageSettingService } from './language-setting.service';
 import { MatchOpCode, NakamaService } from './nakama.service';
@@ -23,7 +21,6 @@ import { GlobalActService, isDarkMode } from './global-act.service';
 export class WebrtcService {
 
   constructor(
-    private modalCtrl: ModalController,
     private p5toast: P5ToastService,
     private indexed: IndexedDBService,
     private lang: LanguageSettingService,

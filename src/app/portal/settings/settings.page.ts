@@ -1,12 +1,10 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { IonAccordionGroup, IonSelect, iosTransitionAnimation, ModalController, NavController } from '@ionic/angular';
+import { IonAccordionGroup, IonSelect, iosTransitionAnimation, NavController } from '@ionic/angular';
 import { isNativefier, isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { GlobalActService } from 'src/app/global-act.service';
-import { WebrtcManageIoDevPage } from 'src/app/webrtc-manage-io-dev/webrtc-manage-io-dev.page';
-import { LocalNotiService } from 'src/app/local-noti.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 
 @Component({
@@ -17,7 +15,6 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 export class SettingsPage implements OnInit, OnDestroy {
 
   constructor(
-    private modalCtrl: ModalController,
     private navCtrl: NavController,
     public statusBar: StatusManageService,
     public nakama: NakamaService,
@@ -227,14 +224,13 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   go_to_webrtc_manager() {
-    this.modalCtrl.create({
-      component: WebrtcManageIoDevPage,
-    }).then(v => {
-      this.RemoveKeyShortCut();
-      v.onDidDismiss().then(() => {
-        this.ionViewDidEnter();
-      });
-      v.present()
+    this.global.PageDismissAct['webrtc-manage'] = (v: any) => {
+      this.global.RestoreShortCutAct('webrtc-manage');
+      delete this.global.PageDismissAct['webrtc-manage'];
+    }
+    this.global.StoreShortCutAct('webrtc-manage');
+    this.global.ActLikeModal('webrtc-manage-io-dev', {
+      dismiss: 'webrtc-manage',
     });
   }
 
