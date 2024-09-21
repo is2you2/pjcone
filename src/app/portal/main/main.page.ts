@@ -36,9 +36,11 @@ export class MainPage implements OnInit {
     private alertCtrl: AlertController,
   ) { }
 
+  /** 가운데 마우스를 눌러 뷰 초기화하기 함수 */
+  ViewInitFunc: Function;
   ngOnInit() {
     this.global.PortalBottonTabAct.Todo = () => {
-      this.nakama.open_add_todo_page();
+      if (this.ViewInitFunc) this.ViewInitFunc();
     }
   }
 
@@ -197,6 +199,7 @@ export class MainPage implements OnInit {
         p.imageMode(p.CENTER);
         let InitScale = Number(localStorage.getItem('p5todoScale') || 1);
         ViewInit();
+        this.ViewInitFunc = ViewInit;
         CamScale = InitScale;
         localStorage.setItem('p5todoScale', `${CamScale}`);
         // 캔버스 멈추기
