@@ -1,7 +1,7 @@
 <ion-header class="ion-no-border">
   <ion-toolbar id="Toolbar">
     <ion-title>{{lang.text['ContentViewer']['Title']}}</ion-title>
-    <ion-buttons slot="start" (click)="modalCtrl.dismiss()">
+    <ion-buttons slot="start">
       <ion-back-button defaultHref=""></ion-back-button>
     </ion-buttons>
     <ion-icon *ngIf="isHTML && isHTMLViewer && !isTextEditMode" class="relevance_change button_cursor"

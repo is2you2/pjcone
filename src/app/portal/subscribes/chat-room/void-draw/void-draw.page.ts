@@ -8,7 +8,6 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { WebrtcService } from 'src/app/webrtc.service';
-import { LinkQrPage } from './link-qr/link-qr.page';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({

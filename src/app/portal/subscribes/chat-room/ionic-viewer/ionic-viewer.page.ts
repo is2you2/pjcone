@@ -1,15 +1,14 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { IonModal, LoadingController, ModalController, NavParams } from '@ionic/angular';
+import { IonModal, LoadingController } from '@ionic/angular';
 import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 import * as p5 from "p5";
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { ContentCreatorInfo, FileInfo, GlobalActService, isDarkMode } from 'src/app/global-act.service';
-import { ShareContentToOtherPage } from 'src/app/share-content-to-other/share-content-to-other.page';
 import { NakamaService } from 'src/app/nakama.service';
 import { LocalNotiService } from 'src/app/local-noti.service';
-import { IonPopover } from '@ionic/angular/common';
+import { IonPopover, NavController } from '@ionic/angular/common';
 import * as domtoimage from "dom-to-image";
 import hljs from "highlight.js";
 import c from 'highlight.js/lib/languages/c';
@@ -25,6 +24,7 @@ import java from 'highlight.js/lib/languages/java';
 import perl from 'highlight.js/lib/languages/perl';
 import basic from 'highlight.js/lib/languages/basic';
 import properties from 'highlight.js/lib/languages/properties';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -34,8 +34,6 @@ import properties from 'highlight.js/lib/languages/properties';
 export class IonicViewerPage implements OnInit, OnDestroy {
 
   constructor(
-    public modalCtrl: ModalController,
-    private navParams: NavParams,
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
     private p5toast: P5ToastService,
@@ -43,6 +41,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     public global: GlobalActService,
     public nakama: NakamaService,
     private noti: LocalNotiService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private navCtrl: NavController,
   ) { }
   ngOnDestroy() {
     this.cont.abort();
@@ -139,28 +140,41 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     } else this.ChangeToAnother(0);
   }
 
+  navParams: any;
   ngOnInit() {
-    this.MessageInfo = this.navParams.get('info');
+    this.route.queryParams.subscribe(async _p => {
+      try {
+        const navParams = this.router.getCurrentNavigation().extras.state;
+        this.navParams = navParams || {};
+        this.initialize();
+      } catch (e) {
+        console.log('그림판 정보 받지 못함: ', e);
+      }
+    });
+  }
+
+  initialize() {
+    this.MessageInfo = this.navParams.info;
     this.OpenInChannelChat = this.MessageInfo['code'] !== undefined;
     this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
     this.ContentBox = document.getElementById('ContentBox');
     this.FileHeader = document.getElementById('FileHeader');
-    this.isOfficial = this.navParams.get('isOfficial');
-    this.target = this.navParams.get('target');
-    this.isQuickLaunchViewer = this.navParams.get('quick');
+    this.isOfficial = this.navParams.isOfficial;
+    this.target = this.navParams.target;
+    this.isQuickLaunchViewer = this.navParams.quick;
     try {
       this.isChannelOnline = this.nakama.channels_orig[this.isOfficial][this.target][this.MessageInfo['channel_id']].info['status'] == 'online';
       this.isChannelOnline = this.isChannelOnline || this.nakama.channels_orig[this.isOfficial][this.target][this.MessageInfo['channel_id']]['status'] == 'online'
         || this.nakama.channels_orig[this.isOfficial][this.target][this.MessageInfo['channel_id']]['status'] == 'pending';
     } catch (e) { }
-    this.FromUserFsDir = this.navParams.get('no_edit') || false;
+    this.FromUserFsDir = this.navParams.no_edit || false;
     switch (this.FileInfo['is_new']) {
       case 'code':
       case 'text':
         break;
       default:
-        this.Relevances = this.navParams.get('relevance') || [];
+        this.Relevances = this.navParams.relevance || [];
         if (this.Relevances) {
           for (let i = 0, j = this.Relevances.length; i < j; i++)
             if (this.Relevances[i]['message_id'] && this.MessageInfo['message_id']) {
@@ -185,7 +199,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         this.CreateContentInfo();
         break;
     }
-    this.showEdit = !Boolean(this.navParams.get('noEdit'));
+    this.showEdit = !Boolean(this.navParams.noEdit);
     this.ChangeContentWithKeyInput();
     this.isPWA = isPlatform != 'Android' && isPlatform != 'iOS';
   }
@@ -382,7 +396,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   close_text_edit() {
     if (this.FileInfo['is_new']) {
-      this.modalCtrl.dismiss();
+      this.navCtrl.pop();
     } else this.reinit_content_data(this.MessageInfo);
   }
 
@@ -413,9 +427,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   AutoPlayNext = false;
   @ViewChild('FileMenu') FileMenu: IonPopover;
   async ionViewDidEnter() {
-    this.modalCtrl.getTop().then(self => {
-      this.ModalSelf = self;
-    });
     if (this.cont) {
       this.cont.abort();
       this.cont = null;
@@ -833,7 +844,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         break;
       case 'code':
       case 'text': // 텍스트 파일
-        this.showEditText = !Boolean(this.navParams.get('noTextEdit'));
+        this.showEditText = !Boolean(this.navParams.noTextEdit);
         this.isHTML = this.FileInfo.file_ext?.toLowerCase() == 'html';
         this.p5canvas = new p5((p: p5) => {
           p.setup = () => {
@@ -908,7 +919,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         let ThumbnailURL: string;
         let GetViewId = this.MessageInfo.message_id;
         try {
-          let thumbnail = await this.indexed.loadBlobFromUserPath((this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.get('path'))
+          let thumbnail = await this.indexed.loadBlobFromUserPath((this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path)
             + '_thumbnail.png', '');
           ThumbnailURL = URL.createObjectURL(thumbnail);
         } catch (e) { }
@@ -918,7 +929,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             if (this.indexed.godotDB) {
               try {
                 let blob = await this.indexed.loadBlobFromUserPath(
-                  this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
+                  this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path, '', undefined, this.indexed.ionicDB);
                 await this.indexed.GetGodotIndexedDB();
                 await this.indexed.saveBlobToUserPath(blob, 'godot/app_userdata/Client/tmp_files/duplicate/viewer.pck', undefined, this.indexed.godotDB);
                 createDuplicate = true;
@@ -928,38 +939,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             }
             await this.global.CreateGodotIFrame('content_viewer_canvas', {
               path: 'tmp_files/duplicate/viewer.pck',
-              alt_path: this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.get('path'),
+              alt_path: this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path,
               url: this.FileInfo.url,
               background: ThumbnailURL,
               receive_image: async (base64: string, width: number, height: number) => {
                 let tmp_path = 'tmp_files/modify_image.png';
                 await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path);
-                this.modalCtrl.dismiss({
-                  type: 'image',
-                  path: tmp_path,
-                  width: width,
-                  height: height,
-                  msg: this.MessageInfo,
-                  index: this.RelevanceIndex - 1,
-                });
-              }
-            }, 'start_load_pck');
-            if (!createDuplicate) {
-              try { // 내부에 파일이 있는지 검토
-                let blob = await this.indexed.loadBlobFromUserPath(
-                  this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.get('path'), '', undefined, this.indexed.ionicDB);
-                await this.indexed.GetGodotIndexedDB();
-                await this.indexed.saveBlobToUserPath(blob, 'godot/app_userdata/Client/tmp_files/duplicate/viewer.pck', undefined, this.indexed.godotDB);
-              } catch (e) { }
-              await this.global.CreateGodotIFrame('content_viewer_canvas', {
-                path: 'tmp_files/duplicate/viewer.pck',
-                alt_path: this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.get('path'),
-                url: this.FileInfo.url,
-                background: ThumbnailURL,
-                receive_image: async (base64: string, width: number, height: number) => {
-                  let tmp_path = 'tmp_files/modify_image.png';
-                  await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path);
-                  this.modalCtrl.dismiss({
+                if (this.global.PageDismissAct[this.navParams.dismiss])
+                  this.global.PageDismissAct[this.navParams.dismiss]({
                     type: 'image',
                     path: tmp_path,
                     width: width,
@@ -967,6 +954,34 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                     msg: this.MessageInfo,
                     index: this.RelevanceIndex - 1,
                   });
+                this.navCtrl.pop();
+              }
+            }, 'start_load_pck');
+            if (!createDuplicate) {
+              try { // 내부에 파일이 있는지 검토
+                let blob = await this.indexed.loadBlobFromUserPath(
+                  this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path, '', undefined, this.indexed.ionicDB);
+                await this.indexed.GetGodotIndexedDB();
+                await this.indexed.saveBlobToUserPath(blob, 'godot/app_userdata/Client/tmp_files/duplicate/viewer.pck', undefined, this.indexed.godotDB);
+              } catch (e) { }
+              await this.global.CreateGodotIFrame('content_viewer_canvas', {
+                path: 'tmp_files/duplicate/viewer.pck',
+                alt_path: this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path,
+                url: this.FileInfo.url,
+                background: ThumbnailURL,
+                receive_image: async (base64: string, width: number, height: number) => {
+                  let tmp_path = 'tmp_files/modify_image.png';
+                  await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path);
+                  if (this.global.PageDismissAct[this.navParams.dismiss])
+                    this.global.PageDismissAct[this.navParams.dismiss]({
+                      type: 'image',
+                      path: tmp_path,
+                      width: width,
+                      height: height,
+                      msg: this.MessageInfo,
+                      index: this.RelevanceIndex - 1,
+                    });
+                  this.navCtrl.pop();
                 }
               }, 'start_load_pck');
             }
@@ -1020,16 +1035,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     }
   }
 
-  /** 이 modal 페이지 (this) */
-  ModalSelf: HTMLIonModalElement;
   /** 단축키 행동용 p5 개체 분리 */
   p5viewerkey: p5;
   /** PC에서 키를 눌러 컨텐츠 전환 */
   ChangeContentWithKeyInput() {
     this.p5viewerkey = new p5((p: p5) => {
       p.keyPressed = async (ev) => {
-        let getTop = await this.modalCtrl.getTop();
-        if (this.ModalSelf != getTop) return;
         if (this.isHTMLViewer) return;
         if (this.isTextEditMode) {
           switch (ev['key']) {
@@ -1081,7 +1092,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             if (ev['ctrlKey'])
               this.open_bottom_modal();
             break;
-          // 메뉴가 열려있지 않더라도 메뉴 내용을 행동함
           case 'Digit1':
           case 'Digit2':
           case 'Digit3':
@@ -1577,11 +1587,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     if (this.NewTextFileName.indexOf('.') < 0) this.NewTextFileName += '.txt';
     blob['name'] = this.NewTextFileName || this.FileInfo.filename || this.FileInfo.name;
     if (this.OpenInChannelChat) { // 채널 채팅에서 열람
-      this.modalCtrl.dismiss({
-        type: 'text',
-        blob: blob,
-        contentRelated: this.FileInfo.content_related_creator,
-      });
+      if (this.global.PageDismissAct[this.navParams.dismiss])
+        this.global.PageDismissAct[this.navParams.dismiss]({
+          type: 'text',
+          blob: blob,
+          contentRelated: this.FileInfo.content_related_creator,
+        });
+      this.navCtrl.pop();
     } else { // 할 일에서는 직접 파일 수정 후 임시 교체
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
@@ -1589,12 +1601,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       if (!this.FileInfo.path) this.FileInfo.path = tmp_path;
       await this.indexed.saveBlobToUserPath(blob, tmp_path);
       loading.dismiss();
-      this.modalCtrl.dismiss({
-        type: 'text',
-        blob: blob,
-        path: tmp_path,
-        index: this.RelevanceIndex - 1,
-      });
+      if (this.global.PageDismissAct[this.navParams.dismiss])
+        this.global.PageDismissAct[this.navParams.dismiss]({
+          type: 'text',
+          blob: blob,
+          path: tmp_path,
+          index: this.RelevanceIndex - 1,
+        });
+      this.navCtrl.pop();
     }
   }
 
@@ -1608,19 +1622,21 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         loading.present();
         try {
           let blob: Blob;
-          this.image_info['path'] = this.FileInfo.alt_path || this.FileInfo.path || this.navParams.get('path');
+          this.image_info['path'] = this.FileInfo.alt_path || this.FileInfo.path || this.navParams.path;
           if (this.FileInfo['url']) {
             this.image_info['path'] = 'tmp_files/modify_image.png';
             blob = await fetch(this.FileInfo['url'], { signal: this.cont.signal }).then(r => r.blob(),);
             await this.indexed.saveBlobToUserPath(blob, this.image_info['path']);
           }
-          this.modalCtrl.dismiss({
-            type: 'image',
-            ...this.image_info,
-            path: this.image_info['path'],
-            msg: this.MessageInfo,
-            index: this.RelevanceIndex - 1,
-          });
+          if (this.global.PageDismissAct[this.navParams.dismiss])
+            this.global.PageDismissAct[this.navParams.dismiss]({
+              type: 'image',
+              ...this.image_info,
+              path: this.image_info['path'],
+              msg: this.MessageInfo,
+              index: this.RelevanceIndex - 1,
+            });
+          this.navCtrl.pop();
         } catch (e) {
           this.p5toast.show({
             text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
@@ -1641,14 +1657,16 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           this.p5SyntaxHighlightReader.style.height = 'fit-content';
           let blob = await domtoimage.toBlob(this.p5SyntaxHighlightReader);
           await this.indexed.saveBlobToUserPath(blob, this.image_info['path']);
-          this.modalCtrl.dismiss({
-            type: 'image',
-            ...this.image_info,
-            path: this.image_info['path'],
-            msg: this.MessageInfo,
-            index: this.RelevanceIndex - 1,
-            isDarkMode: isDarkMode,
-          });
+          if (this.global.PageDismissAct[this.navParams.dismiss])
+            this.global.PageDismissAct[this.navParams.dismiss]({
+              type: 'image',
+              ...this.image_info,
+              path: this.image_info['path'],
+              msg: this.MessageInfo,
+              index: this.RelevanceIndex - 1,
+              isDarkMode: isDarkMode,
+            });
+          this.navCtrl.pop();
         } catch (e) {
           this.p5toast.show({
             text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
@@ -1670,12 +1688,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             loading.dismiss();
             this.image_info['path'] = 'tmp_files/modify_image.png';
             await this.indexed.saveBase64ToUserPath(base64, this.image_info['path']);
-            this.modalCtrl.dismiss({
-              type: 'image',
-              ...this.image_info,
-              msg: this.MessageInfo,
-              index: this.RelevanceIndex - 1,
-            });
+            if (this.global.PageDismissAct[this.navParams.dismiss])
+              this.global.PageDismissAct[this.navParams.dismiss]({
+                type: 'image',
+                ...this.image_info,
+                msg: this.MessageInfo,
+                index: this.RelevanceIndex - 1,
+              });
+            this.navCtrl.pop();
           } catch (e) {
             console.log('파일 저장 오류: ', e);
           }
@@ -1695,13 +1715,15 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             this.image_info['width'] = this.p5canvas.width;
             this.image_info['height'] = this.p5canvas.height;
             await this.indexed.saveBase64ToUserPath(base64, this.image_info['path']);
-            this.modalCtrl.dismiss({
-              type: 'image',
-              ...this.image_info,
-              msg: this.MessageInfo,
-              index: this.RelevanceIndex - 1,
-              isDarkMode: isDarkMode,
-            });
+            if (this.global.PageDismissAct[this.navParams.dismiss])
+              this.global.PageDismissAct[this.navParams.dismiss]({
+                type: 'image',
+                ...this.image_info,
+                msg: this.MessageInfo,
+                index: this.RelevanceIndex - 1,
+                isDarkMode: isDarkMode,
+              });
+            this.navCtrl.pop();
           } catch (e) {
             console.log('파일 저장 오류: ', e);
           }
@@ -1766,22 +1788,24 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     }
     for (let rel_info of this.content_related_creator)
       delete rel_info.hidden;
-    if (channels.length)
-      this.modalCtrl.create({
-        component: ShareContentToOtherPage,
-        componentProps: {
-          file: this.FileInfo,
-          channels: channels,
+    if (channels.length) {
+      this.useP5Navigator = false;
+      this.global.PageDismissAct['share'] = (v: any) => {
+        this.useP5Navigator = true;
+        if (v.data) {
+          if (this.global.PageDismissAct[this.navParams.dismiss])
+            this.global.PageDismissAct[this.navParams.dismiss]({
+              share: true
+            });
+          this.navCtrl.pop();
         }
-      }).then(v => {
-        this.useP5Navigator = false;
-        v.onDidDismiss().then((v) => {
-          this.useP5Navigator = true;
-          if (v.data) this.modalCtrl.dismiss({ share: true });
-        });
-        v.present();
+        delete this.global.PageDismissAct['share'];
+      }
+      this.global.ActLikeModal('share-content-to-other', {
+        file: this.FileInfo,
+        channels: channels,
       });
-    else this.p5toast.show({
+    } else this.p5toast.show({
       text: this.lang.text['ShareContentToOther']['NoChannelToShare'],
     });
   }

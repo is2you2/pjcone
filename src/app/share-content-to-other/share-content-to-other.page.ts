@@ -4,6 +4,7 @@ import { ModalController, NavParams } from '@ionic/angular';
 import { StatusManageService } from '../status-manage.service';
 import { NakamaService } from '../nakama.service';
 import { GlobalActService } from '../global-act.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-share-content-to-other',
@@ -14,31 +15,39 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
 
   constructor(
     public lang: LanguageSettingService,
-    private navParams: NavParams,
-    public modalCtrl: ModalController,
     public statusBar: StatusManageService,
     public nakama: NakamaService,
     private global: GlobalActService,
+    private router: Router,
+    private route: ActivatedRoute,
   ) { }
 
   ngOnDestroy() {
     delete this.global.p5KeyShortCut['Digit'];
+    delete this.global.PageDismissAct['share'];
   }
 
   channels: any[];
 
+  navParams: any;
+
   ngOnInit() {
-    this.channels = this.navParams.get('channels');
-    this.global.p5KeyShortCut['Digit'] = (index: number) => {
-      if (this.nakama.channels.length > index)
-        this.go_to_chatroom(this.nakama.channels[index]);
-    };
+    this.route.queryParams.subscribe(async _p => {
+      const navParams = this.router.getCurrentNavigation().extras.state;
+      this.navParams = navParams || {};
+      this.channels = this.navParams.channels;
+      this.global.p5KeyShortCut['Digit'] = (index: number) => {
+        if (this.nakama.channels.length > index)
+          this.go_to_chatroom(this.nakama.channels[index]);
+      };
+    });
   }
 
   go_to_chatroom(channel: any) {
-    let FileInfo = this.navParams.get('file');
+    let FileInfo = this.navParams.file;
     delete FileInfo['db'];
     this.nakama.go_to_chatroom_without_admob_act(channel, FileInfo);
-    this.modalCtrl.dismiss(true);
+    if (this.global.PageDismissAct['share'])
+      this.global.PageDismissAct['share']({ data: true });
   }
 }
