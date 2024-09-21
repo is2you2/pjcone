@@ -772,6 +772,11 @@ export class MinimalChatPage implements OnInit, OnDestroy {
               dismiss: 'minimal-ionic-viewer',
             });
             return;
+          case 'text':
+            v.data.blob['name'] = this.global.TextEditorNewFileName();
+            v.data.path = `tmp_files/texteditor/${v.data.blob['name']}`;
+            this.SendAttachAct({ target: { files: [v.data.blob] } });
+            break;
         }
       }
       this.global.RestoreShortCutAct('minimal-ionic-viewer');
@@ -782,7 +787,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       info: { content: FileInfo },
       path: FileInfo.path,
       relevance: attaches,
-      noTextEdit: true,
       dismiss: 'minimal-ionic-viewer',
     });
   }
