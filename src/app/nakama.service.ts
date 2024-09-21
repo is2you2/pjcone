@@ -4465,15 +4465,17 @@ export class NakamaService {
   async LoadOverridesOffline() {
     let list = await this.indexed.GetFileListFromDB('override_name.json');
     for (let path of list) {
-      let sep = path.split('/');
-      if (!this.usernameOverride[sep[1]])
-        this.usernameOverride[sep[1]] = {};
-      if (!this.usernameOverride[sep[1]][sep[2]])
-        this.usernameOverride[sep[1]][sep[2]] = {};
-      let blob = await this.indexed.loadBlobFromUserPath(path, '');
-      let asText = await blob.text();
-      let json = JSON.parse(asText);
-      this.usernameOverride[sep[1]][sep[2]] = json;
+      try {
+        let sep = path.split('/');
+        if (!this.usernameOverride[sep[1]])
+          this.usernameOverride[sep[1]] = {};
+        if (!this.usernameOverride[sep[1]][sep[2]])
+          this.usernameOverride[sep[1]][sep[2]] = {};
+        let blob = await this.indexed.loadBlobFromUserPath(path, '');
+        let asText = await blob.text();
+        let json = JSON.parse(asText);
+        this.usernameOverride[sep[1]][sep[2]] = json;
+      } catch (e) { }
     }
   }
 
