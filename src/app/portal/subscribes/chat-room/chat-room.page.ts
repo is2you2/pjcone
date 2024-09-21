@@ -1,16 +1,14 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChannelMessage } from '@heroiclabs/nakama-js';
-import { AlertController, IonicSafeString, LoadingController, ModalController, NavController } from '@ionic/angular';
+import { AlertController, IonicSafeString, LoadingController, NavController } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { NakamaService } from 'src/app/nakama.service';
 import * as p5 from "p5";
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { isNativefier, isPlatform } from 'src/app/app.component';
-import { IonicViewerPage } from './ionic-viewer/ionic-viewer.page';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { DomSanitizer } from '@angular/platform-browser';
-import { VoidDrawPage } from './void-draw/void-draw.page';
 import { ContentCreatorInfo, FILE_BINARY_LIMIT, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WebrtcService } from 'src/app/webrtc.service';
@@ -59,7 +57,6 @@ interface QouteMessage {
 export class ChatRoomPage implements OnInit, OnDestroy {
 
   constructor(
-    public modalCtrl: ModalController,
     private navCtrl: NavController,
     private route: ActivatedRoute,
     private router: Router,
@@ -202,21 +199,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               break;
           }
         }
-        this.modalCtrl.create({
-          component: VoidDrawPage,
-          componentProps: props,
-          cssClass: 'fullscreen',
-        }).then(v => {
-          v.onWillDismiss().then(async v => {
-            if (v.data) await this.voidDraw_fileAct_callback(v, content_related_creator);
-          });
-          v.onDidDismiss().then(() => {
-            this.AddShortCut();
-            this.init_noties();
-          });
-          this.removeShortCutKey();
-          v.present();
-        });
+        this.global.PageDismissAct['chatroom-voiddraw'] = (v: any) => {
+          if (v.data) this.voidDraw_fileAct_callback(v, content_related_creator);
+          delete this.global.PageDismissAct['chatroom-voiddraw'];
+        }
+        this.removeShortCutKey();
+        props['dismiss'] = 'chatroom-voiddraw';
+        this.global.ActLikeModal('void-draw', props);
       }
     }, { // 5
       icon: 'reader-outline',
@@ -252,28 +241,20 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           props.info.content.filename = this.global.TextEditorNewFileName();
           props.no_edit = true;
         }
-        this.modalCtrl.create({
-          component: IonicViewerPage,
-          componentProps: props,
-          cssClass: 'fullscreen',
-        }).then(v => {
-          v.onWillDismiss().then(v => {
-            if (v.data) {
-              let this_file: FileInfo = this.global.TextEditorAfterAct(v.data, {
-                display_name: this.nakama.users.self['display_name'],
-              });
-              this.userInput.file = this_file;
-              this.CancelEditText();
-              this.create_thumbnail_imported(this_file);
-            }
-          });
-          v.onDidDismiss().then(() => {
-            this.AddShortCut();
-            this.init_noties();
-          });
-          this.removeShortCutKey();
-          v.present();
-        });
+        this.global.PageDismissAct['chatroom-ionicviewer'] = (v: any) => {
+          if (v.data) {
+            let this_file: FileInfo = this.global.TextEditorAfterAct(v.data, {
+              display_name: this.nakama.users.self['display_name'],
+            });
+            this.userInput.file = this_file;
+            this.CancelEditText();
+            this.create_thumbnail_imported(this_file);
+          }
+          delete this.global.PageDismissAct['chatroom-ionicviewer'];
+        }
+        this.removeShortCutKey();
+        props['dismiss'] = 'chatroom-ionicviewer';
+        this.global.ActLikeModal('ionic-viewer', props);
       }
     },
     { // 6
@@ -370,8 +351,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         } else {
           this.extended_buttons[11].isHide = true;
         }
-        this.AddShortCut();
-        this.init_noties();
       }
     }, { // 12
       isHide: true,
@@ -503,6 +482,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.extended_buttons[7].isHide = true;
       }
     });
+    this.lock_modal_open = false;
     this.init_noties();
     this.AddShortCut();
   }
@@ -787,7 +767,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         const navParams = this.router.getCurrentNavigation().extras.state;
         if (navParams) this.info = navParams.info;
         await new Promise(res => setTimeout(res, 100)); // init 지연
-        await this.init_chatroom();
+        await this.init_chatroom(Boolean(navParams));
         if (this.userInput.file) {
           this.userInput.file = navParams.file;
           this.CancelEditText();
@@ -1249,12 +1229,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     is_me: undefined,
   };
 
-  async init_chatroom() {
+  /** @param [comeback=false] 페이지 복귀한 경우 일부 데이터 초기화하지 않음 */
+  async init_chatroom(common = true) {
     if (this.cont) this.cont.abort();
     this.cont = new AbortController();
-    this.userInput.text = '';
-    delete this.userInput.file;
-    delete this.userInput.qoute;
+    if (common) {
+      this.userInput.text = '';
+      delete this.userInput.file;
+      delete this.userInput.qoute;
+    }
     this.BlockAutoScrollDown = false;
     this.ResizeTextArea();
     this.nakama.OnTransferMessage = {};
@@ -1436,7 +1419,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         await this.global.WriteValueToClipboard(text.type, text, msg.content.filename);
         return;
       } catch (e) { // 주소인 경우 주소로 시도
-        text = msg.content.url.replace(' ', '%20');
+        try {
+          text = msg.content.url.replace(' ', '%20');
+        } catch (e) { }
       }
     }
     try {
@@ -2528,72 +2513,58 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;
       this.removeShortCutKey();
-      this.modalCtrl.create({
-        component: IonicViewerPage,
-        componentProps: {
-          info: msg,
-          path: _path,
-          alt_path: _path,
-          isOfficial: this.isOfficial,
-          target: this.target,
-          relevance: attaches,
-          local: this.info['local'],
-        },
-        cssClass: 'fullscreen',
-      }).then(v => {
-        v.onDidDismiss().then((v) => {
-          this.lock_modal_open = false;
-          this.AddShortCut();
-          this.init_noties();
-          if (v.data) { // 파일 편집하기를 누른 경우
-            switch (v.data.type) {
-              case 'image':
-                let related_creators: ContentCreatorInfo[] = [];
-                if (v.data.msg.content['content_related_creator'])
-                  related_creators = [...v.data.msg.content['content_related_creator']];
-                if (v.data.msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
-                  let is_already_exist = false;
-                  for (let i = 0, j = related_creators.length; i < j; i++)
-                    if (related_creators[i].user_id == v.data.msg.content['content_creator']['user_id']) {
-                      is_already_exist = true;
-                      break;
-                    }
-                  if (!is_already_exist) related_creators.push(v.data.msg.content['content_creator']);
-                }
-                this.modalCtrl.create({
-                  component: VoidDrawPage,
-                  componentProps: {
-                    path: v.data.path || _path,
-                    width: v.data.width,
-                    height: v.data.height,
-                    isDarkMode: v.data.isDarkMode,
-                    scrollHeight: v.data.scrollHeight,
-                  },
-                  cssClass: 'fullscreen',
-                }).then(v => {
-                  v.onDidDismiss().then(() => {
-                    this.AddShortCut();
-                    this.init_noties();
-                  });
-                  v.onWillDismiss().then(async v => {
-                    if (v.data) await this.voidDraw_fileAct_callback(v, related_creators);
-                  });
-                  this.removeShortCutKey();
-                  v.present();
-                });
-                return;
-              case 'text':
-                this.selected_blobFile_callback_act(v.data.blob, v.data.contentRelated, 'textedit');
-                break;
-            }
+      this.global.PageDismissAct['chatroom-ionicviewer'] = (v: any) => {
+        this.lock_modal_open = false;
+        if (v.data) { // 파일 편집하기를 누른 경우
+          switch (v.data.type) {
+            case 'image':
+              let related_creators: ContentCreatorInfo[] = [];
+              if (v.data.msg.content['content_related_creator'])
+                related_creators = [...v.data.msg.content['content_related_creator']];
+              if (v.data.msg.content['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
+                let is_already_exist = false;
+                for (let i = 0, j = related_creators.length; i < j; i++)
+                  if (related_creators[i].user_id == v.data.msg.content['content_creator']['user_id']) {
+                    is_already_exist = true;
+                    break;
+                  }
+                if (!is_already_exist) related_creators.push(v.data.msg.content['content_creator']);
+              }
+              this.global.PageDismissAct['modify-image'] = (v: any) => {
+                if (v.data) this.voidDraw_fileAct_callback(v, related_creators);
+                delete this.global.PageDismissAct['modify-image'];
+              }
+              this.removeShortCutKey();
+              this.global.ActLikeModal('void-draw', {
+                path: v.data.path || _path,
+                width: v.data.width,
+                height: v.data.height,
+                isDarkMode: v.data.isDarkMode,
+                scrollHeight: v.data.scrollHeight,
+                dismiss: 'modify-image',
+              });
+              return;
+            case 'text':
+              this.selected_blobFile_callback_act(v.data.blob, v.data.contentRelated, 'textedit');
+              break;
           }
-          this.noti.Current = this.info['cnoti_id'];
-          if (this.info['cnoti_id'])
-            this.noti.ClearNoti(this.info['cnoti_id']);
-        });
-        this.removeShortCutKey();
-        this.noti.Current = 'IonicViewerPage';
-        v.present();
+        }
+        this.noti.Current = this.info['cnoti_id'];
+        if (this.info['cnoti_id'])
+          this.noti.ClearNoti(this.info['cnoti_id']);
+        delete this.global.PageDismissAct['chatroom-ionicviewer'];
+      }
+      this.removeShortCutKey();
+      this.noti.Current = 'IonicViewerPage';
+      this.global.ActLikeModal('ionic-viewer', {
+        info: msg,
+        path: _path,
+        alt_path: _path,
+        isOfficial: this.isOfficial,
+        target: this.target,
+        relevance: attaches,
+        local: this.info['local'],
+        dismiss: 'chatroom-ionicviewer',
       });
     }
   }

@@ -1,22 +1,27 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-link-qr',
   templateUrl: './link-qr.page.html',
   styleUrls: ['./link-qr.page.scss'],
 })
-export class LinkQrPage implements OnInit {
+export class LinkQrPage implements OnInit, OnDestroy {
 
   constructor(
     private global: GlobalActService,
     public lang: LanguageSettingService,
     private router: Router,
     private route: ActivatedRoute,
+    private navCtrl: NavController,
   ) { }
+  ngOnDestroy(): void {
+    this.route.queryParams['unsubscribe']();
+  }
 
   QRCodeSRC: any;
   SelectedAddress: string;
@@ -34,6 +39,9 @@ export class LinkQrPage implements OnInit {
         console.log('그림판 정보 받지 못함: ', e);
       }
     });
+    this.global.p5KeyShortCut['Escape'] = () => {
+      this.navCtrl.pop();
+    }
   }
 
   async initialize() {
@@ -64,5 +72,6 @@ export class LinkQrPage implements OnInit {
 
   ionViewWillLeave() {
     if (this.global.PageDismissAct['link-qr']) this.global.PageDismissAct['link-qr']();
+    delete this.global.p5KeyShortCut['Escape'];
   }
 }

@@ -1,10 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { LanguageSettingService } from '../language-setting.service';
-import { ModalController, NavParams } from '@ionic/angular';
 import { StatusManageService } from '../status-manage.service';
 import { NakamaService } from '../nakama.service';
 import { GlobalActService } from '../global-act.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-share-content-to-other',
@@ -20,11 +20,13 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
     private global: GlobalActService,
     private router: Router,
     private route: ActivatedRoute,
+    private navCtrl: NavController,
   ) { }
 
   ngOnDestroy() {
     delete this.global.p5KeyShortCut['Digit'];
     delete this.global.PageDismissAct['share'];
+    this.route.queryParams['unsubscribe']();
   }
 
   channels: any[];
@@ -41,6 +43,9 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
           this.go_to_chatroom(this.nakama.channels[index]);
       };
     });
+    this.global.p5KeyShortCut['Escape'] = () => {
+      this.navCtrl.pop();
+    }
   }
 
   go_to_chatroom(channel: any) {
@@ -49,5 +54,10 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
     this.nakama.go_to_chatroom_without_admob_act(channel, FileInfo);
     if (this.global.PageDismissAct['share'])
       this.global.PageDismissAct['share']({ data: true });
+    this.navCtrl.pop();
+  }
+
+  ionViewWillLeave() {
+    delete this.global.p5KeyShortCut['Escape'];
   }
 }

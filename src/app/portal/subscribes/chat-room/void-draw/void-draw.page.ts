@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AlertController, IonSelect, LoadingController, NavController } from '@ionic/angular';
 import * as p5 from 'p5';
 import { isPlatform } from 'src/app/app.component';
@@ -15,7 +15,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   templateUrl: './void-draw.page.html',
   styleUrls: ['./void-draw.page.scss'],
 })
-export class VoidDrawPage implements OnInit {
+export class VoidDrawPage implements OnInit, OnDestroy {
 
   constructor(
     public lang: LanguageSettingService,
@@ -30,12 +30,16 @@ export class VoidDrawPage implements OnInit {
     private router: Router,
     private navCtrl: NavController,
   ) { }
+  ngOnDestroy(): void {
+    this.route.queryParams['unsubscribe']();
+  }
 
   navParams: any;
   ngOnInit() {
     this.route.queryParams.subscribe(async _p => {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
+        if (!navParams) throw '페이지 복귀';
         this.navParams = navParams || {};
         await new Promise(res => setTimeout(res, 100)); // init 지연
         this.create_new_canvas({
@@ -97,6 +101,7 @@ export class VoidDrawPage implements OnInit {
     this.global.p5KeyShortCut['Escape'] = () => {
       if (this.isDrawServerCreated)
         this.CancelRemoteAct();
+      else this.navCtrl.pop();
     }
   }
 
@@ -221,9 +226,11 @@ export class VoidDrawPage implements OnInit {
               let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
               if (this.navParams.dismiss)
                 this.global.PageDismissAct[this.navParams.dismiss]({
-                  name: `voidDraw_${sp.year()}-${sp.nf(sp.month(), 2)}-${sp.nf(sp.day(), 2)}_${sp.nf(sp.hour(), 2)}-${sp.nf(sp.minute(), 2)}-${sp.nf(sp.second(), 2)}.png`,
-                  img: base64,
-                  loadingCtrl: this.mainLoading,
+                  data: {
+                    name: `voidDraw_${sp.year()}-${sp.nf(sp.month(), 2)}-${sp.nf(sp.day(), 2)}_${sp.nf(sp.hour(), 2)}-${sp.nf(sp.minute(), 2)}-${sp.nf(sp.second(), 2)}.png`,
+                    img: base64,
+                    loadingCtrl: this.mainLoading,
+                  }
                 });
               this.navCtrl.pop();
               sp.remove();

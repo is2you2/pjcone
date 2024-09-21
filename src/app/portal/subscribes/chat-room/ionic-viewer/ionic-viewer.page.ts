@@ -46,25 +46,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     private navCtrl: NavController,
   ) { }
   ngOnDestroy() {
-    this.cont.abort();
-    if (this.p5viewerkey) this.p5viewerkey.remove();
-    this.RemoveP5Relative();
-    if (this.VideoMediaObject) {
-      if (this.VideoMediaObject.elt != document.pictureInPictureElement)
-        this.VideoMediaObject.remove();
-      this.VideoMediaObject = null;
-    }
-    let vid_obj = document.getElementById('ionicviewer_vid_obj');
-    if (vid_obj && vid_obj != document.pictureInPictureElement)
-      vid_obj.remove();
-    if (!document.pictureInPictureElement) {
-      if (this.global.PIPLinkedVideoElement) {
-        this.global.PIPLinkedVideoElement.onloadedmetadata = null;
-        this.global.PIPLinkedVideoElement.onended = null;
-        this.global.PIPLinkedVideoElement.onleavepictureinpicture = null;
-      }
-      this.global.PIPLinkedVideoElement = null;
-    }
+    this.route.queryParams['unsubscribe']();
   }
 
   blob: Blob;
@@ -145,12 +127,28 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.route.queryParams.subscribe(async _p => {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
-        this.navParams = navParams || {};
+        if (!navParams) throw '페이지 복귀';
+        this.navParams = navParams;
         this.initialize();
       } catch (e) {
         console.log('그림판 정보 받지 못함: ', e);
+        this.WaitingLoaded = false;
       }
     });
+  }
+
+  /** 해당 페이지를 정확히 pop 처리하기 위해 기다림 */
+  WaitingLoaded = false;
+  ionViewWillEnter() {
+    this.WaitingLoaded = true;
+  }
+
+  /** 정확히 이 페이지가 pop 처리되어야하는 경우 사용 */
+  async WaitingCurrentPop() {
+    while (!this.WaitingLoaded) {
+      await new Promise((done) => setTimeout(done, 0));
+    }
+    this.navCtrl.pop();
   }
 
   initialize() {
@@ -947,14 +945,16 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path);
                 if (this.global.PageDismissAct[this.navParams.dismiss])
                   this.global.PageDismissAct[this.navParams.dismiss]({
-                    type: 'image',
-                    path: tmp_path,
-                    width: width,
-                    height: height,
-                    msg: this.MessageInfo,
-                    index: this.RelevanceIndex - 1,
+                    data: {
+                      type: 'image',
+                      path: tmp_path,
+                      width: width,
+                      height: height,
+                      msg: this.MessageInfo,
+                      index: this.RelevanceIndex - 1,
+                    }
                   });
-                this.navCtrl.pop();
+                this.WaitingCurrentPop();
               }
             }, 'start_load_pck');
             if (!createDuplicate) {
@@ -974,14 +974,16 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path);
                   if (this.global.PageDismissAct[this.navParams.dismiss])
                     this.global.PageDismissAct[this.navParams.dismiss]({
-                      type: 'image',
-                      path: tmp_path,
-                      width: width,
-                      height: height,
-                      msg: this.MessageInfo,
-                      index: this.RelevanceIndex - 1,
+                      data: {
+                        type: 'image',
+                        path: tmp_path,
+                        width: width,
+                        height: height,
+                        msg: this.MessageInfo,
+                        index: this.RelevanceIndex - 1,
+                      }
                     });
-                  this.navCtrl.pop();
+                  this.WaitingCurrentPop();
                 }
               }, 'start_load_pck');
             }
@@ -1101,7 +1103,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           case 'Digit7':
           case 'Digit8':
           case 'Digit9':
-          case 'Digit0':
             if (this.isFileMenuOpened) {
               let GetNumber = Number(ev['code'].split('Digit')[1]);
               let index = (GetNumber + 9) % 10;
@@ -1110,6 +1111,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               this.FileMenu.dismiss();
             }
             break;
+          case 'Escape':
+            this.navCtrl.pop();
         }
       }
     });
@@ -1589,9 +1592,11 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     if (this.OpenInChannelChat) { // 채널 채팅에서 열람
       if (this.global.PageDismissAct[this.navParams.dismiss])
         this.global.PageDismissAct[this.navParams.dismiss]({
-          type: 'text',
-          blob: blob,
-          contentRelated: this.FileInfo.content_related_creator,
+          data: {
+            type: 'text',
+            blob: blob,
+            contentRelated: this.FileInfo.content_related_creator,
+          }
         });
       this.navCtrl.pop();
     } else { // 할 일에서는 직접 파일 수정 후 임시 교체
@@ -1603,10 +1608,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       loading.dismiss();
       if (this.global.PageDismissAct[this.navParams.dismiss])
         this.global.PageDismissAct[this.navParams.dismiss]({
-          type: 'text',
-          blob: blob,
-          path: tmp_path,
-          index: this.RelevanceIndex - 1,
+          data: {
+            type: 'text',
+            blob: blob,
+            path: tmp_path,
+            index: this.RelevanceIndex - 1,
+          }
         });
       this.navCtrl.pop();
     }
@@ -1630,13 +1637,15 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           }
           if (this.global.PageDismissAct[this.navParams.dismiss])
             this.global.PageDismissAct[this.navParams.dismiss]({
-              type: 'image',
-              ...this.image_info,
-              path: this.image_info['path'],
-              msg: this.MessageInfo,
-              index: this.RelevanceIndex - 1,
+              data: {
+                type: 'image',
+                ...this.image_info,
+                path: this.image_info['path'],
+                msg: this.MessageInfo,
+                index: this.RelevanceIndex - 1,
+              }
             });
-          this.navCtrl.pop();
+          this.WaitingCurrentPop();
         } catch (e) {
           this.p5toast.show({
             text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
@@ -1659,14 +1668,16 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           await this.indexed.saveBlobToUserPath(blob, this.image_info['path']);
           if (this.global.PageDismissAct[this.navParams.dismiss])
             this.global.PageDismissAct[this.navParams.dismiss]({
-              type: 'image',
-              ...this.image_info,
-              path: this.image_info['path'],
-              msg: this.MessageInfo,
-              index: this.RelevanceIndex - 1,
-              isDarkMode: isDarkMode,
+              data: {
+                type: 'image',
+                ...this.image_info,
+                path: this.image_info['path'],
+                msg: this.MessageInfo,
+                index: this.RelevanceIndex - 1,
+                isDarkMode: isDarkMode,
+              }
             });
-          this.navCtrl.pop();
+          this.WaitingCurrentPop();
         } catch (e) {
           this.p5toast.show({
             text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
@@ -1690,12 +1701,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             await this.indexed.saveBase64ToUserPath(base64, this.image_info['path']);
             if (this.global.PageDismissAct[this.navParams.dismiss])
               this.global.PageDismissAct[this.navParams.dismiss]({
-                type: 'image',
-                ...this.image_info,
-                msg: this.MessageInfo,
-                index: this.RelevanceIndex - 1,
+                data: {
+                  type: 'image',
+                  ...this.image_info,
+                  msg: this.MessageInfo,
+                  index: this.RelevanceIndex - 1,
+                }
               });
-            this.navCtrl.pop();
+            this.WaitingCurrentPop();
           } catch (e) {
             console.log('파일 저장 오류: ', e);
           }
@@ -1717,13 +1730,15 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             await this.indexed.saveBase64ToUserPath(base64, this.image_info['path']);
             if (this.global.PageDismissAct[this.navParams.dismiss])
               this.global.PageDismissAct[this.navParams.dismiss]({
-                type: 'image',
-                ...this.image_info,
-                msg: this.MessageInfo,
-                index: this.RelevanceIndex - 1,
-                isDarkMode: isDarkMode,
+                data: {
+                  type: 'image',
+                  ...this.image_info,
+                  msg: this.MessageInfo,
+                  index: this.RelevanceIndex - 1,
+                  isDarkMode: isDarkMode,
+                }
               });
-            this.navCtrl.pop();
+            this.WaitingCurrentPop();
           } catch (e) {
             console.log('파일 저장 오류: ', e);
           }
@@ -1795,9 +1810,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         if (v.data) {
           if (this.global.PageDismissAct[this.navParams.dismiss])
             this.global.PageDismissAct[this.navParams.dismiss]({
-              share: true
+              data: { share: true }
             });
-          this.navCtrl.pop();
+          this.WaitingCurrentPop();
         }
         delete this.global.PageDismissAct['share'];
       }
@@ -1831,6 +1846,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
    */
   PageWillDestroy = false;
   async ionViewWillLeave() {
+    this.WaitingLoaded = false;
     this.PageWillDestroy = true;
     switch (this.FileInfo.viewer) {
       case 'video':
@@ -1956,6 +1972,25 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   ionViewDidLeave() {
+    this.cont.abort();
+    if (this.p5viewerkey) this.p5viewerkey.remove();
+    this.RemoveP5Relative();
+    if (this.VideoMediaObject) {
+      if (this.VideoMediaObject.elt != document.pictureInPictureElement)
+        this.VideoMediaObject.remove();
+      this.VideoMediaObject = null;
+    }
+    let vid_obj = document.getElementById('ionicviewer_vid_obj');
+    if (vid_obj && vid_obj != document.pictureInPictureElement)
+      vid_obj.remove();
+    if (!document.pictureInPictureElement) {
+      if (this.global.PIPLinkedVideoElement) {
+        this.global.PIPLinkedVideoElement.onloadedmetadata = null;
+        this.global.PIPLinkedVideoElement.onended = null;
+        this.global.PIPLinkedVideoElement.onleavepictureinpicture = null;
+      }
+      this.global.PIPLinkedVideoElement = null;
+    }
     this.noti.ClearNoti(6);
   }
 
