@@ -201,10 +201,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
         this.global.PageDismissAct['chatroom-voiddraw'] = (v: any) => {
           if (v.data) this.voidDraw_fileAct_callback(v, content_related_creator);
-          this.global.RestoreShortCutAct('chatroom-voiddraw');
           delete this.global.PageDismissAct['chatroom-voiddraw'];
         }
-        this.global.StoreShortCutAct('chatroom-voiddraw');
         props['dismiss'] = 'chatroom-voiddraw';
         this.global.ActLikeModal('void-draw', props);
       }
@@ -251,10 +249,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.CancelEditText();
             this.create_thumbnail_imported(this_file);
           }
-          this.global.RestoreShortCutAct('chatroom-ionicviewer');
           delete this.global.PageDismissAct['chatroom-ionicviewer'];
         }
-        this.global.StoreShortCutAct('chatroom-ionicviewer');
         props['dismiss'] = 'chatroom-ionicviewer';
         this.global.ActLikeModal('ionic-viewer', props);
       }
@@ -2553,11 +2549,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               }
               this.global.PageDismissAct['modify-image'] = (v: any) => {
                 if (v.data) this.voidDraw_fileAct_callback(v, related_creators);
-                this.global.RestoreShortCutAct('modify-image');
                 delete this.global.PageDismissAct['modify-image'];
               }
-              this.global.RestoreShortCutAct('chatroom', true);
-              this.global.StoreShortCutAct('modify-image');
               await this.WaitingCurrent();
               this.global.ActLikeModal('void-draw', {
                 path: v.data.path || _path,
@@ -2576,10 +2569,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.noti.Current = this.info['cnoti_id'];
         if (this.info['cnoti_id'])
           this.noti.ClearNoti(this.info['cnoti_id']);
-        this.global.RestoreShortCutAct('chatroom');
         delete this.global.PageDismissAct['chatroom-ionicviewer'];
       }
-      this.global.StoreShortCutAct('chatroom');
       this.noti.Current = 'IonicViewerPage';
       this.global.ActLikeModal('ionic-viewer', {
         info: msg,

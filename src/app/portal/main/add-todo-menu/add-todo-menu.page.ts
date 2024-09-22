@@ -373,10 +373,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           }
           this.global.PageDismissAct['quick-modify-image'] = (v: any) => {
             if (v.data) this.voidDraw_fileAct_callback(v, related_creators, index);
-            this.global.RestoreShortCutAct('quick-modify-image');
             delete this.global.PageDismissAct['quick-modify-image'];
           }
-          this.global.StoreShortCutAct('quick-modify-image');
           this.global.ActLikeModal('void-draw', {
             path: _FileInfo.alt_path || _FileInfo.path,
             width: v.width,
@@ -791,10 +789,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             this.userInput.attach.push(this_file);
             this.auto_scroll_down();
           }
-          this.global.RestoreShortCutAct('todo-text-add');
           delete this.global.PageDismissAct['todo-text-add'];
         }
-        this.global.StoreShortCutAct('todo-text-add');
         this.global.ActLikeModal('ionic-viewer', {
           info: {
             content: {
@@ -811,10 +807,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       case 'image':
         this.global.PageDismissAct['todo-image-add'] = (v: any) => {
           if (v.data) this.voidDraw_fileAct_callback(v);
-          this.global.RestoreShortCutAct('todo-image-add');
           delete this.global.PageDismissAct['todo-image-add'];
         }
-        this.global.StoreShortCutAct('todo-image-add');
         this.global.ActLikeModal('void-draw', {
           dismiss: 'todo-image-add',
         });
@@ -822,10 +816,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       case 'inapp': // 인앱 탐색기에서 가져오기
         this.global.PageDismissAct['todo-userfs-add'] = (v: any) => {
           if (v.data) this.selected_blobFile_callback_act(v.data);
-          this.global.RestoreShortCutAct('todo-userfs-add');
           delete this.global.PageDismissAct['todo-userfs-add'];
         }
-        this.global.StoreShortCutAct('todo-userfs-add');
         this.global.ActLikeModal('user-fs-dir', {
           selector: true,
           dismiss: 'todo-userfs-add',
@@ -1072,10 +1064,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                     break;
                 }
               }
-              this.global.RestoreShortCutAct('todo-modify-image');
               delete this.global.PageDismissAct['todo-modify-image'];
             }
-            this.global.StoreShortCutAct('todo-modify-image');
             this.global.ActLikeModal('void-draw', {
               path: v.data.path || this.userInput.attach[v.data.index]['alt_path'] || this.userInput.attach[v.data.index]['path'],
               width: v.data.width,
@@ -1099,10 +1089,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             break;
         }
       }
-      this.global.RestoreShortCutAct('todo-ionicivewer');
       delete this.global.PageDismissAct['todo-ionicivewer'];
     }
-    this.global.StoreShortCutAct('todo-ionicivewer');
     this.noti.Current = 'IonicViewerPage';
     this.global.ActLikeModal('ionic-viewer', {
       info: { content: this.userInput.attach[index] },

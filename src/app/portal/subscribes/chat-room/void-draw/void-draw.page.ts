@@ -77,6 +77,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   isMobile = false;
   async ionViewDidEnter() {
+    this.global.StoreShortCutAct('void-draw')
     this.AddShortCut();
     this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
     this.isMobile = isPlatform != 'DesktopPWA';
@@ -1390,6 +1391,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   WillLeaveHere = false;
   ionViewWillLeave() {
     this.WillLeaveHere = true;
+    this.global.RestoreShortCutAct('void-draw')
   }
 
   WithoutSave = true;

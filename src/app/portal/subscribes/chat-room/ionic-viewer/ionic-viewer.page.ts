@@ -150,6 +150,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     }
   }
 
+  ionViewDidEnter() {
+    this.global.StoreShortCutAct('ionic-viewer');
+  }
+
   initialize() {
     this.MessageInfo = this.navParams.info;
     this.OpenInChannelChat = this.MessageInfo['code'] !== undefined;
@@ -1847,6 +1851,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
    */
   PageWillDestroy = false;
   async ionViewWillLeave() {
+    this.global.RestoreShortCutAct('ionic-viewer');
     this.WaitingLoaded = false;
     this.PageWillDestroy = true;
     switch (this.FileInfo.viewer) {

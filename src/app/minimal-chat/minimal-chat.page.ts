@@ -235,10 +235,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
             this.TrySendingAttach(result);
             this.auto_scroll_down();
           }
-          this.global.RestoreShortCutAct('minimal-textedit');
           delete this.global.PageDismissAct['minimal-textedit'];
         }
-        this.global.StoreShortCutAct('minimal-textedit');
         this.global.ActLikeModal('ionic-viewer', {
           info: {
             content: {
@@ -258,10 +256,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
             let result = await this.global.voidDraw_fileAct_callback(v, 'tmp_files/square/', { display_name: this.client.MyUserName });
             this.TrySendingAttach(result);
           }
-          this.global.RestoreShortCutAct('minimal-image');
           delete this.global.PageDismissAct['minimal-image'];
         }
-        this.global.StoreShortCutAct('minimal-image');
         this.global.ActLikeModal('void-draw', {
           dismiss: 'minimal-image',
         });
@@ -758,10 +754,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                 blob['name'] = v.data['name'];
                 this.SendAttachAct({ target: { files: [blob] } });
               }
-              this.global.RestoreShortCutAct('minimal-ionic-viewer');
               delete this.global.PageDismissAct['minimal-ionic-viewer'];
             }
-            this.global.StoreShortCutAct('minimal-ionic-viewer');
             await this.WaitingCurrent();
             this.global.ActLikeModal('void-draw', {
               path: v.data.path || FileInfo.path,
@@ -779,10 +773,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
             break;
         }
       }
-      this.global.RestoreShortCutAct('minimal-ionic-viewer');
       delete this.global.PageDismissAct['minimal-ionic-viewer'];
     }
-    this.global.StoreShortCutAct('minimal-ionic-viewer');
     this.global.ActLikeModal('ionic-viewer', {
       info: { content: FileInfo },
       path: FileInfo.path,

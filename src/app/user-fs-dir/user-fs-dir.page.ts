@@ -496,10 +496,8 @@ export class UserFsDirPage implements OnInit, OnDestroy {
                 v.data['loadingCtrl'].dismiss();
               }
               this.ionViewDidEnter();
-              this.global.RestoreShortCutAct('userfs-modify-image');
               delete this.global.PageDismissAct['userfs-modify-image'];
             }
-            this.global.StoreShortCutAct('userfs-modify-image');
             this.global.ActLikeModal('void-draw', {
               path: v.data.path,
               width: v.data.width,
@@ -517,10 +515,8 @@ export class UserFsDirPage implements OnInit, OnDestroy {
       } else {
         this.ionViewDidEnter();
       }
-      this.global.RestoreShortCutAct('userfs-viewer');
       delete this.global.PageDismissAct['userfs-viewer'];
     }
-    this.global.StoreShortCutAct('userfs-viewer');
     this.global.ActLikeModal('ionic-viewer', {
       info: {
         content: info,

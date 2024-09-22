@@ -346,10 +346,8 @@ export class AddPostPage implements OnInit, OnDestroy {
             this.AddAttachTextForm();
             await this.voidDraw_fileAct_callback(v);
           }
-          this.global.RestoreShortCutAct('add-post-new-image');
           delete this.global.PageDismissAct['add-post-new-image'];
         }
-        this.global.StoreShortCutAct('add-post-new-image');
         this.global.ActLikeModal('portal/community/add-post/void-draw', {
           dismiss: 'add-post-new-image',
         });
@@ -383,10 +381,8 @@ export class AddPostPage implements OnInit, OnDestroy {
             this.AddAttachTextForm();
             this.userInput.attachments.push(this_file);
           }
-          this.global.RestoreShortCutAct('add-post-viewer');
           delete this.global.PageDismissAct['add-post-viewer'];
         }
-        this.global.StoreShortCutAct('add-post-viewer');
         this.global.ActLikeModal('portal/community/add-post/ionic-viewer', props);
       }
     }, { // 4
@@ -677,10 +673,8 @@ export class AddPostPage implements OnInit, OnDestroy {
               }
               this.global.PageDismissAct['add-post-modify-image'] = async (v: any) => {
                 if (v.data) await this.voidDraw_fileAct_callback(v, related_creators, index);
-                this.global.RestoreShortCutAct('add-post-modify-image');
                 delete this.global.PageDismissAct['add-post-modify-image'];
               }
-              this.global.StoreShortCutAct('add-post-modify-image');
               this.global.ActLikeModal('portal/community/add-post/void-draw', {
                 path: v.data.path || info.path,
                 width: v.data.width,
@@ -695,10 +689,8 @@ export class AddPostPage implements OnInit, OnDestroy {
               break;
           }
         }
-        this.global.RestoreShortCutAct('add-post-open-viewer');
         delete this.global.PageDismissAct['add-post-open-viewer'];
       }
-      this.global.StoreShortCutAct('add-post-open-viewer');
       this.global.ActLikeModal('portal/community/add-post/ionic-viewer', {
         info: { content: info },
         path: info.path,

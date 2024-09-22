@@ -4295,10 +4295,8 @@ export class NakamaService {
           break;
         case 'voidDraw':
           this.global.PageDismissAct['voiddraw-remote'] = () => {
-            this.global.RestoreShortCutAct('voiddraw-remote');
             delete this.global.PageDismissAct['voiddraw-remote'];
           }
-          this.global.StoreShortCutAct('voiddraw-remote');
           this.global.ActLikeModal('void-draw', {
             remote: {
               address: json[i].address,
@@ -4345,10 +4343,8 @@ export class NakamaService {
             await new Promise((done) => setTimeout(done, 1000));
           }
           this.global.PageDismissAct['quick-fileviewer'] = (v: any) => {
-            this.global.RestoreShortCutAct('quick-fileviewer');
             delete this.global.PageDismissAct['quick-fileviewer'];
           }
-          this.global.StoreShortCutAct('quick-fileviewer');
           this.global.ActLikeModal('ionic-viewer', {
             info: {
               content: {
