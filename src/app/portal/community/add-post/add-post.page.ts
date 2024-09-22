@@ -32,7 +32,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   ) { }
 
   ngOnDestroy() {
-    this.global.RestoreShortCutAct('add-post');
+    this.global.RestoreShortCutAct('LeaveAddPost');
     delete this.global.p5KeyShortCut['LeaveAddPost'];
     this.route.queryParams['unsubscribe']();
     this.TitleInput.onpaste = null;
@@ -140,7 +140,8 @@ export class AddPostPage implements OnInit, OnDestroy {
     });
     // 드랍이기도 하나 보이스 관리를 겸하므로 플랫폼 무관 생성
     setTimeout(() => {
-      if (this.WillLeavePage) return; this.CreateDrop();
+      if (this.WillLeavePage) return;
+      this.CreateDrop();
     }, 100);
     this.nakama.StatusBarChangedCallback = () => {
       this.LoadListServer();
@@ -207,6 +208,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           }
         }
         p.keyPressed = async (ev) => {
+          if (this.WillLeavePage) return;
           switch (ev['key']) {
             case 'Enter':
               if (document.activeElement.id == 'exact_post_title_id')
