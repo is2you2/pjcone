@@ -88,6 +88,26 @@ export class PostViewerPage implements OnInit, OnDestroy {
           case 'ArrowRight':
             this.ChangeToAnother(1);
             break;
+          case 'KeyQ': // 첫번째 첨부파일 열기
+            let createRelevances = [];
+            for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++)
+              createRelevances.push({ content: this.PostInfo['attachments'][i] });
+            if (!createRelevances.length) return;
+            this.global.PageDismissAct['post-viewer-image-view'] = async (v: any) => {
+              this.global.RestoreShortCutAct('post-viewer-image-view');
+              await this.WaitingCurrent();
+              if (v.data && v.data['share']) this.navCtrl.pop();
+              delete this.global.PageDismissAct['post-viewer-image-view'];
+            }
+            this.global.StoreShortCutAct('post-viewer-image-view');
+            this.global.ActLikeModal('ionic-viewer', {
+              info: { content: this.PostInfo['attachments'][0] },
+              path: this.PostInfo['attachments'][0]['path'],
+              relevance: createRelevances,
+              noEdit: true,
+              dismiss: 'post-viewer-image-view',
+            });
+            break;
         }
       }
       // 터치 행동
