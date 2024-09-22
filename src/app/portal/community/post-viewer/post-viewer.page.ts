@@ -113,6 +113,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
       let startPos: p5.Vector = this.p5canvas.createVector();
       let touches: { [id: string]: p5.Vector } = {};
       this.p5canvas.touchStarted = (ev: any) => {
+        if (!this.IsFocusOnHere) return;
         if ('changedTouches' in ev) {
           for (let i = 0, j = ev.changedTouches.length; i < j; i++)
             touches[ev.changedTouches[i].identifier] =
@@ -129,6 +130,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
       }
       const SWIPE_SIZE = 100;
       this.p5canvas.touchEnded = (ev: any) => {
+        if (!this.IsFocusOnHere) return;
         if ('changedTouches' in ev) {
           let lastPos: p5.Vector;
           for (let i = 0, j = ev.changedTouches.length; i < j; i++) {
