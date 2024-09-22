@@ -652,7 +652,7 @@ export class GlobalActService {
       };
       let upload_time = new Date().getTime();
       let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
-      let filename = `${user_id}_${only_filename}_${upload_time}.${file.file_ext}`;
+      let filename = `${user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
       CatchedAddress = `${protocol}//${address}:9002/cdn/${filename}`;
       progress = setInterval(async () => {
         let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", signal: cont.signal });
@@ -718,7 +718,7 @@ export class GlobalActService {
     else innerLoading = loading;
     let upload_time = new Date().getTime();
     let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
-    let filename = `${user_id}_${only_filename}_${upload_time}.${file.file_ext}`;
+    let filename = `${user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
     let formData = new FormData();
     let _file = new File([file.blob], filename);
     formData.append("files", _file);
