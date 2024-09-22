@@ -32,8 +32,6 @@ export class AddPostPage implements OnInit, OnDestroy {
   ) { }
 
   ngOnDestroy() {
-    this.global.RestoreShortCutAct('LeaveAddPost');
-    delete this.global.p5KeyShortCut['LeaveAddPost'];
     this.route.queryParams['unsubscribe']();
     this.TitleInput.onpaste = null;
     this.ContentTextArea.onpaste = null;
@@ -87,7 +85,6 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.cont = new AbortController();
     this.useFirstCustomCDN = Number(localStorage.getItem('useFFSCDN')) || 0;
     this.toggle_custom_attach(this.useFirstCustomCDN);
-    this.global.StoreShortCutAct('add-post');
     this.route.queryParams.subscribe(async _p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
       let InitAct = false;
@@ -262,7 +259,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
-    this.global.RestoreShortCutAct('LeaveAddPost');
+    this.global.StoreShortCutAct('AddPostPage');
     this.AddShortcut();
   }
 
@@ -1028,7 +1025,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   ionViewWillLeave() {
     this.WillLeavePage = true;
     this.cont.abort();
-    this.global.StoreShortCutAct('LeaveAddPost');
+    this.global.RestoreShortCutAct('AddPostPage');
     delete this.global.p5KeyShortCut['Escape'];
     // 데이터 저장이 아니라면 기존 데이터를 다시 불러와서 게시물 정보 원복시키기
     if (!this.isApplyPostData) try {
