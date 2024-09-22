@@ -13,9 +13,11 @@
 </ion-header>
 
 <ion-content>
-  <img *ngIf="PostInfo['mainImage'] && PostInfo['mainImage']['MainThumbnail']" style="width: 100%; height: auto;"
-    [src]="PostInfo['mainImage']['MainThumbnail']" alt="MainImage">
-  <div id="PostContent" style="padding: 16px; height: 100%;"></div>
+  <div id="ScrollPost">
+    <img *ngIf="PostInfo['mainImage'] && PostInfo['mainImage']['MainThumbnail']" style="width: 100%; height: auto;"
+      [src]="PostInfo['mainImage']['MainThumbnail']" alt="MainImage">
+    <div id="PostContent" style="padding: 16px; height: 100%;"></div>
+  </div>
 </ion-content>
 
 <ion-footer *ngIf="isOwner && CurrentIndex >= 0">

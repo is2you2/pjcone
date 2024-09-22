@@ -63,6 +63,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
     }
     this.IsFocusOnHere = true;
   }
+  ScrollDiv: HTMLDivElement;
   /** 블렌더 파일 불러오기에 사용된 개체들 */
   blenderViewers: p5[] = [];
   /** 동영상, 음성 파일은 URL을 기록하고 있기 */
@@ -187,6 +188,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
       this.ContentChanging = false;
       return;
     }
+    if (!this.ScrollDiv) this.ScrollDiv = document.getElementById('ScrollPost') as HTMLDivElement;
+    this.ScrollDiv.scrollTo({ top: 0 });
     if (this.p5canvas) this.p5canvas.remove();
     this.CurrentIndex = tmp_calced;
     this.PostInfo = this.nakama.posts[this.CurrentIndex - 1];
