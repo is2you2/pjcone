@@ -373,6 +373,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             },
           },
           no_edit: undefined,
+          dismiss: 'add-post-viewer',
         };
         props.info.content.is_new = 'text';
         props.info.content.filename = this.global.TextEditorNewFileName();
