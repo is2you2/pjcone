@@ -36,6 +36,19 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     this.route.queryParams['unsubscribe']();
     if (this.global.PageDismissAct[this.navParams.dismiss])
       this.global.PageDismissAct[this.navParams.dismiss]({});
+    this.RemoveShortCut();
+    if (this.p5ActualCanvas) {
+      this.p5ActualCanvas.remove();
+      this.p5ActualCanvas = null;
+    }
+    if (this.p5ImageCanvas) {
+      this.p5ImageCanvas.remove();
+      this.p5ImageCanvas = null;
+    }
+    if (this.p5voidDraw) this.p5voidDraw.remove();
+    if (this.IceWebRTCWsClient)
+      this.IceWebRTCWsClient.close();
+    this.CancelRemoteAct();
   }
 
   navParams: any;
@@ -1377,19 +1390,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   WillLeaveHere = false;
   ionViewWillLeave() {
     this.WillLeaveHere = true;
-    this.RemoveShortCut();
-    if (this.p5ActualCanvas) {
-      this.p5ActualCanvas.remove();
-      this.p5ActualCanvas = null;
-    }
-    if (this.p5ImageCanvas) {
-      this.p5ImageCanvas.remove();
-      this.p5ImageCanvas = null;
-    }
-    if (this.p5voidDraw) this.p5voidDraw.remove();
-    if (this.IceWebRTCWsClient)
-      this.IceWebRTCWsClient.close();
-    this.CancelRemoteAct();
   }
 
   WithoutSave = true;
