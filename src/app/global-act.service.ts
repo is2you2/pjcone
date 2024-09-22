@@ -1213,10 +1213,12 @@ export class GlobalActService {
     this.p5KeyShortCut = {};
   }
 
-  /** 마지막에 등록된 단축키 다시 사용하기 */
-  RestoreShortCutAct(key: string) {
+  /** 마지막에 등록된 단축키 다시 사용하기  
+   * @param [save=false] 가져오긴 하나 기록은 삭제하지 않을 경우 true
+   */
+  RestoreShortCutAct(key: string, save = false) {
     this.p5KeyShortCut = this.CacheShortCut[key];
-    delete this.CacheShortCut[key];
+    if (!save) delete this.CacheShortCut[key];
   }
 
   /** 나카마 서비스 받아오기 */

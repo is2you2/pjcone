@@ -2556,6 +2556,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 this.global.RestoreShortCutAct('modify-image');
                 delete this.global.PageDismissAct['modify-image'];
               }
+              this.global.RestoreShortCutAct('chatroom', true);
               this.global.StoreShortCutAct('modify-image');
               await this.WaitingCurrent();
               this.global.ActLikeModal('void-draw', {
