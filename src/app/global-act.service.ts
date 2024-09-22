@@ -83,6 +83,8 @@ interface GodotFrameKeys {
    * 고도 프레임을 새로 생성할 때 자동으로 실행됨
    */
   quit_godot?: Function;
+  /** 고도 프레임이 종료될 때 콜백 */
+  quit_ionic?: Function;
   /** **사용금지**  
    * 패키지 불러오기 상태를 반환함 (Client 기본값)
    */
@@ -333,6 +335,8 @@ export class GlobalActService {
       }
       if (this.godot_window && this.godot_window['quit_godot'])
         this.godot_window.quit_godot();
+      if (this.godot_window && this.godot_window['quit_ionic'])
+        this.godot_window.quit_ionic();
       if (this.godot_splash) this.godot_splash.remove();
       if (this.godot) this.godot.remove();
       window['godot'] = '';

@@ -333,8 +333,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   img.style('cursor', 'pointer');
                   img.elt.onclick = () => {
                     let createRelevances = [];
-                    for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++)
-                      createRelevances.push({ content: this.PostInfo['attachments'][i] });
+                    for (let attach of this.PostInfo['attachments'])
+                      createRelevances.push({ content: attach });
                     this.global.PageDismissAct['post-viewer-image-view'] = async (v: any) => {
                       await this.WaitingCurrent();
                       if (v.data && v.data['share']) this.navCtrl.pop();
@@ -409,6 +409,30 @@ export class PostViewerPage implements OnInit, OnDestroy {
                     await this.global.CreateGodotIFrame(targetFrameId, {
                       path: `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`,
                       url: this.PostInfo['attachments'][index].url,
+                      quit_ionic: () => {
+                        if (createDuplicate) {
+                          try {
+                            CreateClickPanel(godot_frame, index);
+                            godot_frame.elt.onclick = () => {
+                              let createRelevances = [];
+                              for (let attach of this.PostInfo['attachments'])
+                                createRelevances.push({ content: attach });
+                              this.global.PageDismissAct['post-viewer-file-view'] = () => {
+                                delete this.global.PageDismissAct['post-viewer-file-view'];
+                              }
+                              this.global.ActLikeModal('ionic-viewer', {
+                                info: { content: this.PostInfo['attachments'][index] },
+                                path: this.PostInfo['attachments'][index]['path'],
+                                relevance: createRelevances,
+                                noEdit: true,
+                                dismiss: 'post-viewer-file-view',
+                              });
+                            }
+                          } catch (e) {
+                            console.log('프레임 삭제 행동실패: ', e);
+                          }
+                        }
+                      }
                     }, 'start_load_pck');
                     if (!createDuplicate) {
                       try { // 내부에 파일이 있는지 검토
@@ -420,6 +444,28 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       await this.global.CreateGodotIFrame(targetFrameId, {
                         path: `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`,
                         url: this.PostInfo['attachments'][index].url,
+                        quit_ionic: () => {
+                          try {
+                            CreateClickPanel(godot_frame, index);
+                            godot_frame.elt.onclick = () => {
+                              let createRelevances = [];
+                              for (let attach of this.PostInfo['attachments'])
+                                createRelevances.push({ content: attach });
+                              this.global.PageDismissAct['post-viewer-file-view'] = () => {
+                                delete this.global.PageDismissAct['post-viewer-file-view'];
+                              }
+                              this.global.ActLikeModal('ionic-viewer', {
+                                info: { content: this.PostInfo['attachments'][index] },
+                                path: this.PostInfo['attachments'][index]['path'],
+                                relevance: createRelevances,
+                                noEdit: true,
+                                dismiss: 'post-viewer-file-view',
+                              });
+                            }
+                          } catch (e) {
+                            console.log('프레임 삭제 행동실패: ', e);
+                          }
+                        }
                       }, 'start_load_pck');
                     }
                     if (this.PostInfo['attachments'][index].url)
@@ -449,34 +495,12 @@ export class PostViewerPage implements OnInit, OnDestroy {
                 case 'disabled': // 사용 불가
                 default: { // 읽을 수 없는 파일들은 클릭시 뷰어 연결 div 생성 (채널 채팅 썸네일과 비슷함)
                   let EmptyDiv = p.createDiv();
-                  EmptyDiv.style('width', '160px');
-                  EmptyDiv.style('height', '112px');
-                  EmptyDiv.style('overflow', 'hidden');
-                  EmptyDiv.style('background-color', 'grey');
-                  EmptyDiv.style('margin-top', '4px');
-                  EmptyDiv.style('border-radius', '8px');
-                  EmptyDiv.style('cursor', 'pointer');
                   EmptyDiv.parent(contentDiv);
-                  let FileName = p.createP(this.PostInfo['attachments'][index]['filename']);
-                  FileName.style('margin', '0px 4px');
-                  FileName.style('text-align', 'start');
-                  FileName.parent(EmptyDiv);
-                  let Seperator = p.createDiv();
-                  Seperator.style('background-color', 'white');
-                  Seperator.style('margin-top', '2px');
-                  Seperator.style('position', 'relative');
-                  Seperator.style('width', '100%');
-                  Seperator.style('height', '2px');
-                  Seperator.parent(EmptyDiv);
-                  let OpenViewerInfo = p.createSpan(this.lang.text['PostViewer']['OpenFromViewer']);
-                  OpenViewerInfo.style('margin', '2px 4px 0px 4px');
-                  OpenViewerInfo.style('text-align', 'start');
-                  OpenViewerInfo.style('display', 'grid');
-                  OpenViewerInfo.parent(EmptyDiv);
+                  CreateClickPanel(EmptyDiv, index);
                   EmptyDiv.elt.onclick = () => {
                     let createRelevances = [];
-                    for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++)
-                      createRelevances.push({ content: this.PostInfo['attachments'][i] });
+                    for (let attach of this.PostInfo['attachments'])
+                      createRelevances.push({ content: attach });
                     this.global.PageDismissAct['post-viewer-file-view'] = () => {
                       delete this.global.PageDismissAct['post-viewer-file-view'];
                     }
@@ -545,6 +569,32 @@ export class PostViewerPage implements OnInit, OnDestroy {
             AfterAllAct[i]();
         }
         this.ContentChanging = false;
+      }
+      /** 클릭하여 파일 뷰어에 진입할 수 있도록 구조 구성해주기 */
+      let CreateClickPanel = (target: p5.Element, index: number) => {
+        target.style('width', '160px');
+        target.style('height', '112px');
+        target.style('overflow', 'hidden');
+        target.style('background-color', 'grey');
+        target.style('margin-top', '4px');
+        target.style('border-radius', '8px');
+        target.style('cursor', 'pointer');
+        let FileName = p.createP(this.PostInfo['attachments'][index]['filename']);
+        FileName.style('margin', '0px 4px');
+        FileName.style('text-align', 'start');
+        FileName.parent(target);
+        let Seperator = p.createDiv();
+        Seperator.style('background-color', 'white');
+        Seperator.style('margin-top', '2px');
+        Seperator.style('position', 'relative');
+        Seperator.style('width', '100%');
+        Seperator.style('height', '2px');
+        Seperator.parent(target);
+        let OpenViewerInfo = p.createSpan(this.lang.text['PostViewer']['OpenFromViewer']);
+        OpenViewerInfo.style('margin', '2px 4px 0px 4px');
+        OpenViewerInfo.style('text-align', 'start');
+        OpenViewerInfo.style('display', 'grid');
+        OpenViewerInfo.parent(target);
       }
     });
   }
