@@ -261,7 +261,7 @@ export class WebrtcService {
     if (this.p5canvas) {
       clearTimeout(this.p5waitingAct);
       this.p5waitingAct = null;
-      this.p5callButton.remove();
+      if (this.p5callButton) this.p5callButton.remove();
       this.p5callButton = null;
       this.p5hangup = null;
       this.p5canvas.remove();
@@ -278,7 +278,6 @@ export class WebrtcService {
       // 통신 관련 버튼
       /** 버튼 줄 관리 */
       let buttons: p5.Element;
-      let call_button: p5.Element;
       let mute_button: p5.Element;
       let unmute_button: p5.Element;
       /** 입력 기기 선택용 */
@@ -369,18 +368,18 @@ export class WebrtcService {
         buttons.style("align-self", "center");
         buttons.style("width: fit-content; height: fit-content");
 
-        call_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="call-outline"></ion-icon>');
-        call_button.parent(buttons);
-        call_button.style('padding', '0px');
-        call_button.style('margin', '4px');
-        call_button.style('border-radius', `${BORDER_RADIUS / 2}px`);
-        call_button.style('width', '40px');
-        call_button.style('height', '40px');
-        call_button.mouseClicked(() => {
+        this.p5callButton = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="call-outline"></ion-icon>');
+        this.p5callButton.parent(buttons);
+        this.p5callButton.style('padding', '0px');
+        this.p5callButton.style('margin', '4px');
+        this.p5callButton.style('border-radius', `${BORDER_RADIUS / 2}px`);
+        this.p5callButton.style('width', '40px');
+        this.p5callButton.style('height', '40px');
+        this.p5callButton.mouseClicked(() => {
           this.CreateAnswer();
         });
-        call_button.elt.disabled = true;
-        this.p5callButton = call_button;
+        this.p5callButton.elt.disabled = true;
+        this.p5callButton = this.p5callButton;
 
         mute_button = p.createButton('<ion-icon style="width: 32px; height: 32px;" name="mic-outline"></ion-icon>');
         mute_button.parent(buttons);
