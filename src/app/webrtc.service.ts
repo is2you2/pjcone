@@ -449,7 +449,7 @@ export class WebrtcService {
           }
           this.global.StoreShortCutAct('webrtc-manage');
           this.global.ActLikeModal('webrtc-manage-io-dev', {
-            list: list,
+            list: JSON.parse(JSON.stringify(list)),
             dismiss: 'webrtc-manage',
           });
         });

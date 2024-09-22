@@ -102,7 +102,7 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
     }
     if (this.AudioOutput && this.AudioOutput.value !== undefined)
       result['audiooutput'] = this.AudioOutputs[this.AudioOutput.value];
-    if (this.global.PageDismissAct['webrtc-manage']) this.global.PageDismissAct['webrtc-manage'](result);
+    if (this.global.PageDismissAct['webrtc-manage']) this.global.PageDismissAct['webrtc-manage']({ data: result });
     this.navCtrl.pop();
   }
 
