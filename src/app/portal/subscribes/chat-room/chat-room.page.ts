@@ -419,13 +419,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             cssClass: 'redfont',
           }]
         }).then(v => {
+          this.global.StoreShortCutAct('chatroom-alert');
           this.global.p5KeyShortCut['Escape'] = () => {
             v.dismiss();
           }
           v.onDidDismiss().then(() => {
-            this.global.p5KeyShortCut['Escape'] = () => {
-              this.navCtrl.pop();
-            }
+            this.global.RestoreShortCutAct('chatroom-alert');
           });
           v.present();
         });
@@ -679,6 +678,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }
           }]
         });
+        this.global.StoreShortCutAct('chatroom-alert');
         this.global.p5KeyShortCut['Escape'] = () => {
           alert.dismiss();
         }
@@ -688,9 +688,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
             input.value = '';
           }, 300);
-          this.global.p5KeyShortCut['Escape'] = () => {
-            this.navCtrl.pop();
-          }
+          this.global.RestoreShortCutAct('chatroom-alert');
         });
         alert.present();
       } else {
@@ -820,13 +818,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
         }]
       }).then(v => {
-        this.global.p5KeyShortCut['Escape'] = () => {
-          v.dismiss();
-        }
+        this.global.StoreShortCutAct('chatroom-alert');
         v.onDidDismiss().then(() => {
-          this.global.p5KeyShortCut['Escape'] = () => {
-            this.navCtrl.pop();
-          }
+          this.global.RestoreShortCutAct('chatroom-alert');
         });
         v.present();
       });
@@ -951,13 +945,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   }
                 }]
               }).then(v => {
+                this.global.StoreShortCutAct('chatroom-alert');
                 this.global.p5KeyShortCut['Escape'] = () => {
                   v.dismiss();
                 }
                 v.onDidDismiss().then(() => {
-                  this.global.p5KeyShortCut['Escape'] = () => {
-                    this.navCtrl.pop();
-                  }
+                  this.global.RestoreShortCutAct('chatroom-alert');
                 });
                 v.present();
               });
@@ -2310,13 +2303,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }]
     }).then(v => {
       this.ChatManageMenu = v;
+      this.global.StoreShortCutAct('chatroom-alert');
       this.global.p5KeyShortCut['Escape'] = () => {
         v.dismiss();
       }
       v.onDidDismiss().then(() => {
-        this.global.p5KeyShortCut['Escape'] = () => {
-          this.navCtrl.pop();
-        }
+        this.global.RestoreShortCutAct('chatroom-alert');
         URL.revokeObjectURL(FileURL);
         this.isOtherAct = false;
       });

@@ -36,7 +36,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     this.route.queryParams['unsubscribe']();
     if (this.global.PageDismissAct[this.navParams.dismiss])
       this.global.PageDismissAct[this.navParams.dismiss]({});
-    this.RemoveShortCut();
     if (this.p5ActualCanvas) {
       this.p5ActualCanvas.remove();
       this.p5ActualCanvas = null;
@@ -1391,6 +1390,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   WillLeaveHere = false;
   ionViewWillLeave() {
     this.WillLeaveHere = true;
+    this.RemoveShortCut();
     this.global.RestoreShortCutAct('void-draw')
   }
 
