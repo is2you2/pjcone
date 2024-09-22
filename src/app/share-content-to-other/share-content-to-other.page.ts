@@ -40,11 +40,14 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
       const navParams = this.router.getCurrentNavigation().extras.state;
       this.navParams = navParams || {};
       this.channels = this.navParams.channels;
-      this.global.p5KeyShortCut['Digit'] = (index: number) => {
-        if (this.nakama.channels.length > index)
-          this.go_to_chatroom(this.nakama.channels[index]);
-      };
     });
+  }
+
+  ionViewWillEnter() {
+    this.global.p5KeyShortCut['Digit'] = (index: number) => {
+      if (this.nakama.channels.length > index)
+        this.go_to_chatroom(this.nakama.channels[index]);
+    };
     this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
