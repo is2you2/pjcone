@@ -7,7 +7,6 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { ContentCreatorInfo, FileInfo, GlobalActService, isDarkMode } from 'src/app/global-act.service';
 import { NakamaService } from 'src/app/nakama.service';
-import { LocalNotiService } from 'src/app/local-noti.service';
 import { IonPopover, NavController } from '@ionic/angular/common';
 import * as domtoimage from "dom-to-image";
 import hljs from "highlight.js";
@@ -40,7 +39,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
     public global: GlobalActService,
     public nakama: NakamaService,
-    private noti: LocalNotiService,
     private router: Router,
     private route: ActivatedRoute,
     private navCtrl: NavController,
@@ -49,6 +47,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.route.queryParams['unsubscribe']();
     if (this.global.PageDismissAct[this.navParams.dismiss])
       this.global.PageDismissAct[this.navParams.dismiss]({});
+    this.RemoveP5Relative();
   }
 
   blob: Blob;
@@ -227,7 +226,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.MessageInfo = msg;
     this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
-    this.RemoveP5Relative();
     if (this.PageWillDestroy) return;
     this.canvasDiv = document.getElementById('content_viewer_canvas');
     if (this.canvasDiv)
@@ -273,7 +271,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.ContentChanging = false;
       return;
     }
-    this.RemoveP5Relative();
     this.RelevanceIndex = tmp_calced;
     this.FileInfo = { file_ext: '' };
     this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
@@ -1895,7 +1892,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           } catch (e) {
             console.log('썸네일 저장 오류: ', e);
           }
-          this.RemoveP5Relative();
         } catch (e) {
           setTimeout(() => {
             const videos = document.querySelectorAll('video');
@@ -1915,7 +1911,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         } catch (e) {
           console.log('godot 썸네일 저장 오류: ', e);
         }
-        this.RemoveP5Relative();
         break;
       case 'blender':
         let base64 = this.global.BlenderCanvasInside['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
@@ -1957,11 +1952,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 this.FileInfo.thumbnail = base64;
                 this.global.modulate_thumbnail(this.FileInfo, '', this.cont);
                 p.remove();
-                this.RemoveP5Relative();
               }, e => {
                 console.log('블렌더 썸네일 배경 받아오기 오류: ', e);
                 p.remove();
-                this.RemoveP5Relative();
               });
             }
           });
@@ -1971,7 +1964,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         if (this.global.BlenderLoadingCtrl) this.global.BlenderLoadingCtrl.dismiss();
         break;
       default:
-        this.RemoveP5Relative();
         break;
     }
     URL.revokeObjectURL(this.FileURL);
@@ -1980,7 +1972,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   ionViewDidLeave() {
     this.cont.abort();
     if (this.p5viewerkey) this.p5viewerkey.remove();
-    this.RemoveP5Relative();
     if (this.VideoMediaObject) {
       if (this.VideoMediaObject.elt != document.pictureInPictureElement)
         this.VideoMediaObject.remove();
@@ -1997,7 +1988,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       }
       this.global.PIPLinkedVideoElement = null;
     }
-    this.noti.ClearNoti(6);
   }
 
   /** 파일이 URL로 구성되어있는 경우 URL 주소를 복사함 */
