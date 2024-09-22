@@ -158,6 +158,13 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.servers.unshift(local_info);
   }
 
+  /** 정확히 현재 페이지가 처리되어야하는 경우 사용 */
+  async WaitingCurrent() {
+    while (this.WillLeavePage) {
+      await new Promise((done) => setTimeout(done, 0));
+    }
+  }
+
   p5canvas: p5;
   p5StartVoiceTimer: Function;
   p5StopVoiceTimer: Function;
@@ -655,7 +662,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       attaches.push({ content: this.userInput.attachments[i] });
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;
-      this.global.PageDismissAct['add-post-open-viewer'] = (v: any) => {
+      this.global.PageDismissAct['add-post-open-viewer'] = async (v: any) => {
         if (v.data) { // 파일 편집하기를 누른 경우
           switch (v.data.type) {
             case 'image':
@@ -675,6 +682,7 @@ export class AddPostPage implements OnInit, OnDestroy {
                 if (v.data) await this.voidDraw_fileAct_callback(v, related_creators, index);
                 delete this.global.PageDismissAct['add-post-modify-image'];
               }
+              await this.WaitingCurrent();
               this.global.ActLikeModal('portal/community/add-post/void-draw', {
                 path: v.data.path || info.path,
                 width: v.data.width,
