@@ -382,6 +382,7 @@ export class NakamaService {
   /** subscribe과 localPush의 채팅방 입장 행동을 통일함 */
   go_to_chatroom_without_admob_act(_info: any, _file?: FileInfo) {
     this.has_new_channel_msg = false;
+    if (_info['update']) delete _info['update'];
     if (this.ChatroomLinkAct)
       this.ChatroomLinkAct(_info, _file);
     else this.global.RemoveAllModals(() => {
