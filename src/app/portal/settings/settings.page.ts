@@ -102,7 +102,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   ToggleAccordion() {
     if (this.Devkit.value) { // 닫기
       let count_menu = (!this.cant_dedicated && this.can_use_http) ? 6 : 5;
-      this.LinkButton.splice(5, count_menu);
+      this.LinkButton.splice(4, count_menu);
       this.Devkit.value = undefined;
     } else { // 열기
       this.Devkit.value = 'Devkit';

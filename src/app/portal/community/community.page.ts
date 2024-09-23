@@ -22,7 +22,6 @@ export class CommunityPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.nakama.is_post_lock = true;
     this.nakama.CommunityGoToEditPost = this.add_post;
     this.global.PortalBottonTabAct.Community = () => {
       if (this.ContentScroll) this.ContentScroll.scrollTop = 0;
@@ -180,6 +179,5 @@ export class CommunityPage implements OnInit {
     delete this.global.p5KeyShortCut['AddAct'];
     delete this.nakama.socket_reactive['try_load_post'];
     if (this.ContentScroll) this.ContentScroll.onscroll = null;
-    this.nakama.is_post_lock = false;
   }
 }

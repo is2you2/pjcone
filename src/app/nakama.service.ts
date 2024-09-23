@@ -3032,8 +3032,6 @@ export class NakamaService {
     }
   }
 
-  /** 커뮤니티 페이지를 보고 있는지 여부 */
-  is_post_lock = false;
   /** 사설 SNS에 새 글이 게시된 경우 뱃지 표시 */
   has_new_post = false;
   /** 내가 참여한 채널의 게시물들  
