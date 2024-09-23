@@ -4488,6 +4488,7 @@ export class NakamaService {
     try { // 서버에 직접 요청하여 읽기 시도
       let info = {
         path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/info.json`,
+        alt_path: `tmp_files/posts/${isOfficial}/${target}/posts/${user_id}/${post_id}/info.json`,
         type: 'application/json',
       }
       let res = await this.sync_load_file(info, isOfficial, target, 'server_post', user_id, post_id, false);
@@ -4496,7 +4497,10 @@ export class NakamaService {
       // 내 게시물인지 여부를 로컬에 추가로 저장
       if (is_me) json['is_me'] = true;
       let blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
-      this.indexed.saveBlobToUserPath(blob, info.path);
+      // 다른 사람의 외부 노출 포스트는 기록하지 않음
+      if (!json.OutSource || is_me)
+        this.indexed.saveBlobToUserPath(blob, info.path);
+      else throw '다른 사람의 외부 게시물 정보 무시';
       json['server'] = {
         isOfficial: isOfficial,
         target: target,
