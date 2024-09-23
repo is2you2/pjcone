@@ -670,6 +670,17 @@ export class GroupServerPage implements OnInit, OnDestroy {
       this.nakama.channels_orig['official'] = {};
       this.nakama.channels_orig['unofficial'] = {};
       this.nakama.rearrange_channels();
+      this.nakama.posts_orig['official'] = {};
+      this.nakama.posts_orig['unofficial'] = {};
+      this.nakama.rearrange_posts();
+      this.nakama.post_counter['official'] = {};
+      this.nakama.post_counter['unofficial'] = {};
+      this.nakama.save_post_counter();
+      // 로컬에 저장된 서버 연관 파일들 전부 삭제
+      let official_list = await this.indexed.GetFileListFromDB('servers/official');
+      official_list.forEach(path => this.indexed.removeFileFromUserPath(path));
+      let unofficial_list = await this.indexed.GetFileListFromDB('servers/unofficial');
+      unofficial_list.forEach(path => this.indexed.removeFileFromUserPath(path));
     }
     this.p5canvas.loop();
   }

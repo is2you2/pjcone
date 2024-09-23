@@ -4618,9 +4618,14 @@ export class NakamaService {
         }
       }
       if (last_counting != JSON.stringify(this.post_counter)) {
-        await this.indexed.saveTextFileToUserPath(JSON.stringify(this.post_counter), 'servers/post_counter.json');
+        await this.save_post_counter();
         this.has_new_post = true;
       }
     }
+  }
+
+  /** 게시물 갯수 저장하기 */
+  async save_post_counter() {
+    await this.indexed.saveTextFileToUserPath(JSON.stringify(this.post_counter), 'servers/post_counter.json');
   }
 }
