@@ -1818,9 +1818,11 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         }
         delete this.global.PageDismissAct['share'];
       }
+      let channel_copied = JSON.parse(JSON.stringify(channels));
+      delete channel_copied['update'];
       this.global.ActLikeModal('share-content-to-other', {
         file: this.FileInfo,
-        channels: channels,
+        channels: channel_copied,
       });
     } else this.p5toast.show({
       text: this.lang.text['ShareContentToOther']['NoChannelToShare'],
