@@ -47,21 +47,15 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.route.queryParams['unsubscribe']();
     if (this.global.PageDismissAct[this.navParams.dismiss])
       this.global.PageDismissAct[this.navParams.dismiss]({});
-    this.RemoveP5Relative();
   }
 
   blob: Blob;
   FileInfo: FileInfo;
 
   p5canvas: p5;
-  p5canvasInside: p5.Renderer;
   p5TextArea: HTMLTextAreaElement;
   p5SyntaxHighlightReader: HTMLDivElement;
   RemoveP5Relative() {
-    if (this.p5canvasInside) {
-      this.p5canvasInside.remove();
-      this.p5canvasInside = null;
-    }
     if (this.p5TextArea) {
       this.p5TextArea.remove();
       this.p5TextArea = null;
@@ -151,6 +145,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   ionViewDidEnter() {
     this.global.StoreShortCutAct('ionic-viewer');
+    this.initialize();
   }
 
   initialize() {
@@ -200,7 +195,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         break;
     }
     this.showEdit = !Boolean(this.navParams.noEdit);
-    this.ChangeContentWithKeyInput();
     this.isPWA = isPlatform != 'Android' && isPlatform != 'iOS';
     this.init_viewer();
   }
@@ -452,11 +446,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.canvasDiv = document.getElementById('content_viewer_canvas');
     if (this.canvasDiv) this.canvasDiv.style.backgroundImage = '';
     this.RemoveP5Relative();
+    if (!this.WaitingLoaded) return;
     // 경우에 따라 로딩하는 캔버스를 구분
     switch (this.FileInfo['viewer']) {
       case 'image': // 이미지
         this.p5canvas = new p5((p: p5) => {
-          p.setup = async () => {
+          p.setup = () => {
             this.canvasDiv.style.maxWidth = '100%';
             this.canvasDiv.style.overflow = 'hidden';
             this.ContentBox.style.overflow = 'hidden';
@@ -722,7 +717,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       case 'video': // 비디오
         this.p5canvas = new p5((p: p5) => {
           let mediaObject: p5.MediaElement;
-          p.setup = async () => {
+          p.setup = () => {
             p.noCanvas();
             p.noLoop();
             mediaObject = p.createVideo([this.FileURL], () => {
@@ -1036,14 +1031,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         this.ContentOnLoad = true;
         break;
     }
+    this.ChangeContentWithKeyInput();
   }
 
-  /** 단축키 행동용 p5 개체 분리 */
-  p5viewerkey: p5;
   /** PC에서 키를 눌러 컨텐츠 전환 */
   ChangeContentWithKeyInput() {
-    this.p5viewerkey = new p5((p: p5) => {
-      p.keyPressed = async (ev) => {
+    if (this.p5canvas)
+      this.p5canvas.keyPressed = async (ev) => {
         if (this.isHTMLViewer) return;
         if (this.isTextEditMode) {
           switch (ev['key']) {
@@ -1116,7 +1110,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             this.navCtrl.pop();
         }
       }
-    });
   }
 
   /** 파일 메뉴가 열렸는지 검토 */
@@ -1807,13 +1800,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     if (channels.length) {
       this.useP5Navigator = false;
       this.global.PageDismissAct['share'] = async (v: any) => {
+        await this.WaitingCurrent();
         this.useP5Navigator = true;
         if (v.data) {
           if (this.global.PageDismissAct[this.navParams.dismiss])
             this.global.PageDismissAct[this.navParams.dismiss]({
               data: { share: true }
             });
-          await this.WaitingCurrent();
           this.navCtrl.pop();
         }
         delete this.global.PageDismissAct['share'];
@@ -1851,6 +1844,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   PageWillDestroy = false;
   async ionViewWillLeave() {
     this.global.RestoreShortCutAct('ionic-viewer');
+    this.RemoveP5Relative();
     this.WaitingLoaded = false;
     this.PageWillDestroy = true;
     switch (this.FileInfo.viewer) {
@@ -1973,7 +1967,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   ionViewDidLeave() {
     this.cont.abort();
-    if (this.p5viewerkey) this.p5viewerkey.remove();
     if (this.VideoMediaObject) {
       if (this.VideoMediaObject.elt != document.pictureInPictureElement)
         this.VideoMediaObject.remove();
