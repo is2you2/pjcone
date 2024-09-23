@@ -441,8 +441,8 @@ export class AddPostPage implements OnInit, OnDestroy {
         this.toggle_custom_attach();
       }
     }, { // 7
-      icon: 'eye-off-outline',
-      name: this.lang.text['AddPost']['UseOutLink'],
+      icon: 'people-circle-outline',
+      name: this.lang.text['AddPost']['NoOutLink'],
       act: () => {
         this.toggle_open_link();
       }
@@ -746,9 +746,13 @@ export class AddPostPage implements OnInit, OnDestroy {
   /** 외부 완전 공개 여부를 검토 */
   async toggle_open_link(force?: boolean) {
     this.UseOutLink = force ?? !this.UseOutLink;
-    if (this.UseOutLink)
-      this.extended_buttons[7].icon = 'eye-outline';
-    else this.extended_buttons[7].icon = 'eye-off-outline';
+    if (this.UseOutLink) {
+      this.extended_buttons[7].icon = 'link-outline';
+      this.extended_buttons[7].name = this.lang.text['AddPost']['UseOutLink'];
+    } else {
+      this.extended_buttons[7].icon = 'people-circle-outline';
+      this.extended_buttons[7].name = this.lang.text['AddPost']['NoOutLink'];
+    }
   }
 
   /** 게시물 등록하기 버튼을 눌러 데이터 변경하기가 이루어졌는지 여부 */
