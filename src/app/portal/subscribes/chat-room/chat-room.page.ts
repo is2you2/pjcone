@@ -2115,7 +2115,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.nakama.ModulateTimeDate(msg);
     this.nakama.channels_orig[this.isOfficial][this.target][msg.channel_id]['last_comment_time'] = msg.update_time;
     this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment_id'] = msg.message_id;
-    this.nakama.rearrange_channels();
     this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'](msg);
     this.nakama.saveListedMessage([msg], this.info, this.isOfficial, this.target);
     let hasFile = msg.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
@@ -2617,10 +2616,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   ionViewWillLeave() {
     this.WillLeave = true;
-    this.nakama.rearrange_channels();
-    try {
-      delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
-    } catch (e) { }
     this.noti.Current = undefined;
     this.removeShortCutKey();
     window.onfocus = null;
@@ -2637,6 +2632,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.route.queryParams['unsubscribe']();
+    try {
+      delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];
+    } catch (e) { }
+    this.nakama.rearrange_channels();
     this.ChatLogs.onscroll = null;
     this.cont.abort();
     delete this.global.WindowOnBlurAct['chatroom'];
