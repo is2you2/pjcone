@@ -74,14 +74,13 @@ export class CommunityPage implements OnInit {
     setTimeout(() => {
       try {
         if (!this.ContentDiv) this.ContentDiv = document.getElementById('CommunityMainContent') as HTMLDivElement;
-        if (!this.ContentScroll) {
+        if (!this.ContentScroll)
           this.ContentScroll = document.getElementById('CommunityScrollDiv') as HTMLDivElement;
-          if (!this.ContentScroll.onscroll)
-            this.ContentScroll.onscroll = (_ev: any) => {
-              if (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 450)
-                this.load_post_cycles();
-            }
-        }
+        if (!this.ContentScroll.onscroll)
+          this.ContentScroll.onscroll = (_ev: any) => {
+            if (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 450)
+              this.load_post_cycles();
+          }
         if (this.is_loadable && (this.ContentDiv.clientHeight - (this.ContentScroll.scrollTop + this.ContentScroll.clientHeight) < 450))
           this.load_post_cycles();
       } catch (e) {
