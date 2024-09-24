@@ -850,17 +850,11 @@ export class MainPage implements OnInit {
         let exact_target = ev.target == document.getElementById('p5todo');
         if (BlockInput || !exact_target) return;
         if (!this.isPlayingCanvas.loop) p.redraw();
-        PrepareZoomAct(MappingPosition());
         let delta = ev['deltaY'];
         if (delta < 0)
           CamScale *= 1.1;
         else CamScale *= .9;
         localStorage.setItem('p5todoScale', `${CamScale}`);
-      }
-      /** 확대 중심점을 조정 */
-      let PrepareZoomAct = (center: p5.Vector) => {
-        ScaleCenter = p.createVector(p.mouseX, p.mouseY);
-        CamPosition = center.mult(-1);
       }
       let touches = [];
       /** 터치 중인지 여부, 3손가락 터치시 행동 제약을 걸기 위해서 존재 */
