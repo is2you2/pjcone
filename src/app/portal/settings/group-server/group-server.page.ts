@@ -269,14 +269,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
             PasswordInput.elt.focus();
           }
         }
-        setTimeout(() => {
-          if (!this.nakama.users.self['email'])
-            EmailInput.elt.focus();
-        }, 500);
-        setTimeout(() => {
-          if (!this.nakama.users.self['email'])
-            EmailInput.elt.focus();
-        }, 150);
         let PasswordInput = p.createInput();
         PasswordInput.style('margin-top', '10px');
         PasswordInput.style('align-self', 'center');
@@ -296,6 +288,18 @@ export class GroupServerPage implements OnInit, OnDestroy {
           }
         }
         this.p5PasswordInput = PasswordInput;
+        setTimeout(() => {
+          if (!this.nakama.users.self['email'])
+            EmailInput.elt.focus();
+          else if (!this.nakama.users.self['password'])
+            PasswordInput.elt.focus();
+        }, 500);
+        setTimeout(() => {
+          if (!this.nakama.users.self['email'])
+            EmailInput.elt.focus();
+          else if (!this.nakama.users.self['password'])
+            PasswordInput.elt.focus();
+        }, 150);
         LoginButton = p.createButton(this.OnlineToggle ? this.lang.text['Profile']['LogOut'] : this.lang.text['Profile']['login_toggle']);
         LoginButton.style('margin-top', '17px');
         LoginButton.style('align-self', 'center');
