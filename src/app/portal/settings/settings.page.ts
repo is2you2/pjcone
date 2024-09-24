@@ -148,7 +148,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.LinkButton.push(() => this.go_to_page('translator'));
     this.LinkButton.push(() => this.LangClicked());
     this.LinkButton.push(() => this.go_to_page('licenses'));
-    this.LinkButton.push(() => this.open_paypal());
+    this.LinkButton.push(() => this.open_patreon());
     // 환경에 맞춰 단축키 구성
     this.global.p5KeyShortCut['Digit'] = (index: number) => {
       // 설정 메뉴 정렬처리
@@ -219,8 +219,8 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   /** 페이팔 페이지 열기 */
-  open_paypal() {
-    window.open('https://paypal.me/pjcone?country.x=KR&locale.x=ko_KR', '_blank');
+  open_patreon() {
+    window.open('https://www.patreon.com/is2you2', '_blank');
   }
 
   go_to_webrtc_manager() {

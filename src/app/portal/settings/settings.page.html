@@ -90,8 +90,7 @@
   <ion-item-divider>
     <ion-label>{{lang.text['Settings']['Sponsorship']}}</ion-label>
   </ion-item-divider>
-  <ion-item button (click)="open_paypal()">
-    <ion-icon class="icon_margin" name="logo-paypal"></ion-icon>
-    <ion-label>{{lang.text['Settings']['Support']}}</ion-label>
-  </ion-item>
+  <img src="assets/data/asset-preview.png"
+    style="cursor: pointer; padding: 16px; border-radius: 32px; max-height: 300px;" alt="patreon_link"
+    (click)="open_patreon()">
 </ion-content>
