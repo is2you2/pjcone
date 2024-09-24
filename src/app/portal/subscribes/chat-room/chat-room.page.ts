@@ -1296,7 +1296,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (c.content['filename']) this.ModulateFileEmbedMessage(c);
         this.info['last_read_id'] = c.message_id;
         if (!is_local) this.check_if_send_msg(c);
-        if (!(c.code == 1 || c.code == 2)) this.messages.push(c);
+        if (!(c.code == 1 || c.code == 2))
+          // 마지막 메시지가 중복 추가되는게 아니라면
+          try {
+            if (this.messages[this.messages.length - 1].message_id != c.message_id)
+              this.messages.push(c);
+          } catch (e) {
+            this.messages.push(c);
+          }
         if (c.code == 2) { // 메시지 삭제하기 동작
           for (let i = this.messages.length - 1; i >= 0; i--)
             if (this.messages[i].message_id == c.message_id) {
@@ -1579,7 +1586,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.nakama.CatchQouteMsgUserName(msg, this.isOfficial, this.target);
           this.nakama.ModulateTimeDate(msg);
           this.nakama.content_to_hyperlink(msg);
-          if (msg.code != 2) this.messages.unshift(msg);
+          // 삭제한 메시지가 아니라면 추가
+          if (msg.code != 2) {
+            // 중복 추가되는 메시지 검토
+            let confirm = true;
+            for (let i = this.messages.length - 1; (i >= (this.messages.length - this.RefreshCount - 1) && i >= 0); i--)
+              if (this.messages[i].message_id == msg.message_id) {
+                confirm = false;
+                break;
+              }
+            if (confirm) this.messages.unshift(msg);
+          }
         });
         this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
         for (let i = 0, j = this.ViewableMessage.length; i < j; i++) {
