@@ -1844,7 +1844,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   PageWillDestroy = false;
   async ionViewWillLeave() {
     this.global.RestoreShortCutAct('ionic-viewer');
-    this.RemoveP5Relative();
     this.WaitingLoaded = false;
     this.PageWillDestroy = true;
     switch (this.FileInfo.viewer) {
@@ -1963,6 +1962,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         break;
     }
     URL.revokeObjectURL(this.FileURL);
+    this.RemoveP5Relative();
   }
 
   ionViewDidLeave() {
