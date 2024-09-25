@@ -10,10 +10,10 @@
     <ion-icon *ngIf="info['local'] && !info['volatile']" slot="start" name="file-tray-full-outline"
       class="top_icon title_override"></ion-icon>
     <ion-icon *ngIf="info['volatile']" slot="start" name="flame-outline" class="top_icon title_override"></ion-icon>
-    <ion-icon *ngIf="!info['HideAutoThumbnail']" class="top_icon" slot="end" name="eye-outline"
-      (click)="toggle_thumbnail()"></ion-icon>
-    <ion-icon *ngIf="info['HideAutoThumbnail']" class="top_icon" slot="end" name="eye-off-outline"
-      (click)="toggle_thumbnail()"></ion-icon>
+    <ion-icon *ngIf="!info['HideAutoThumbnail']" class="top_icon" style="padding-right: 68px;" slot="end"
+      name="eye-outline" (click)="toggle_thumbnail()"></ion-icon>
+    <ion-icon *ngIf="info['HideAutoThumbnail']" class="top_icon" style="padding-right: 68px;" slot="end"
+      name="eye-off-outline" (click)="toggle_thumbnail()"></ion-icon>
     <div class="header_online_circle" [style]="'background-color: ' + statusBar.colors[info['status'] || 'offline']">
     </div>
   </ion-toolbar>

@@ -58,6 +58,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
   BackButtonPressed = false;
   ionViewWillEnter() {
     this.WaitingLoaded = true;
+    this.global.StoreShortCutAct('post-viewer');
     this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
@@ -612,6 +613,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
   ionViewWillLeave() {
     this.WaitingLoaded = false;
     delete this.global.p5KeyShortCut['Escape'];
+    this.global.RestoreShortCutAct('post-viewer');
     this.IsFocusOnHere = false;
   }
 

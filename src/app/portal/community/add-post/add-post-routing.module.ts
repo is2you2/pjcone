@@ -15,11 +15,15 @@ const routes: Routes = [
   {
     path: 'ionic-viewer',
     loadChildren: () => import('../../subscribes/chat-room/ionic-viewer/ionic-viewer.module').then(m => m.IonicViewerPageModule)
-  }
+  },
+  {
+    path: 'post-viewer',
+    loadChildren: () => import('../post-viewer/post-viewer.module').then(m => m.PostViewerPageModule)
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class AddPostPageRoutingModule {}
+export class AddPostPageRoutingModule { }

@@ -755,6 +755,18 @@ export class AddPostPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 작성중이던 내용을 뷰어에서 열어보기 */
+  showPreview() {
+    this.global.RemoveAllModals(() => {
+      this.navCtrl.navigateForward('portal/community/add-post/post-viewer', {
+        state: {
+          data: this.userInput,
+          index: -1,
+        },
+      });
+    });
+  }
+
   /** 게시물 등록하기 버튼을 눌러 데이터 변경하기가 이루어졌는지 여부 */
   isApplyPostData = false;
   /** 게시물 등록하기  
