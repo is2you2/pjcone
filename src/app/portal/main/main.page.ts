@@ -873,6 +873,7 @@ export class MainPage implements OnInit {
           case 2: // 스케일
             let One = p.createVector(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT);
             let Two = p.createVector(touches[1].clientX, touches[1].clientY - HEADER_HEIGHT);
+            isClickable = false;
             TouchBetween = One.dist(Two);
             MovementStartPosition = One.copy().add(Two).div(2);
             TempStartCamPosition = CamPosition.copy();
