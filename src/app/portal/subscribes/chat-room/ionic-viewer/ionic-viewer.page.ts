@@ -224,7 +224,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.canvasDiv = document.getElementById('content_viewer_canvas');
     if (this.canvasDiv)
       for (let i = 0, j = this.canvasDiv.childNodes.length; i < j; i++)
-        this.canvasDiv.removeChild(this.canvasDiv.childNodes[i]);
+        try {
+          this.canvasDiv.removeChild(this.canvasDiv.childNodes[i]);
+        } catch (e) { }
     URL.revokeObjectURL(this.FileURL);
     if (this.FileInfo.url) {
       this.CreateContentInfo();
