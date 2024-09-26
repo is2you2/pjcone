@@ -805,7 +805,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             if (res.ok) this.userInput.attachments[i].blob = await res.blob();
           } catch (e) { }
         }
-      await this.nakama.RemovePost(this.userInput);
+      await this.nakama.RemovePost(this.userInput, true);
     }
     try {
       // 게시물 아이디 구성하기

@@ -3098,7 +3098,7 @@ export class NakamaService {
       try {
         if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
         if (info['attachments'][i].url) {
-          this.global.remove_file_from_storage(info['attachments'][i].url);
+          if (!slient) this.global.remove_file_from_storage(info['attachments'][i].url);
         } else {
           try {
             if (!info.server.local)
@@ -3110,7 +3110,7 @@ export class NakamaService {
     if (info['mainImage'])
       try {
         if (info['mainImage'].url) {
-          this.global.remove_file_from_storage(info['mainImage'].url);
+          if (!slient) this.global.remove_file_from_storage(info['mainImage'].url);
         } else {
           try {
             if (!info.server.local)
@@ -3121,14 +3121,12 @@ export class NakamaService {
     // 게시물 정보 삭제하기
     try {
       if (!info.server.local)
-        await this.sync_remove_file(info['id'], isOfficial, target, 'server_post', '', `${info['id']}`);
+        if (!slient) await this.sync_remove_file(info['id'], isOfficial, target, 'server_post', '', `${info['id']}`);
     } catch (e) { }
     if (loading) loading.dismiss();
     try {
       delete this.posts_orig[isOfficial][target][info['creator_id']][info['id']];
     } catch (e) { }
-    this.rearrange_posts();
-    if (this.socket_reactive['try_load_post']) this.socket_reactive['try_load_post']();
     if (!slient) try {
       await this.servers[isOfficial][target].client.rpc(
         this.servers[isOfficial][target].session,
@@ -3140,6 +3138,8 @@ export class NakamaService {
         persistent: false,
       });
     } catch (e) { }
+    this.rearrange_posts();
+    if (this.socket_reactive['try_load_post']) this.socket_reactive['try_load_post']();
   }
 
   /** WebRTC 통화 채널에 참가하기 */
