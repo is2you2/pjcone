@@ -111,6 +111,14 @@ export class MinimalChatPage implements OnInit, OnDestroy {
           }
         } else await this.StopAndSaveVoiceRecording();
       }
+    }, { // 5
+      icon: 'trash-outline',
+      name: this.lang.text['MinimalChat']['TrashChat'],
+      act: () => {
+        this.client.userInput.logs.length = 0;
+        let resetLog = { color: isDarkMode ? 'bbb' : '444', text: this.lang.text['MinimalChat']['TrashChatLog'], isSystem: true };
+        this.client.userInput.logs.push(resetLog);
+      },
     }];
 
   async StopAndSaveVoiceRecording() {
