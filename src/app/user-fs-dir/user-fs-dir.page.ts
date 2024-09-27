@@ -475,11 +475,11 @@ export class UserFsDirPage implements OnInit, OnDestroy {
     if (this.navParams.selector) {
       if (this.navParams.path)
         for (let i = 0, j = this.FileList.length; i < j; i++)
-          createRelevances.push({ content: this.FileList[i] });
+          createRelevances.push({ content: JSON.parse(JSON.stringify(this.FileList[i])) });
     } else {
       for (let i = 0, j = this.FileList.length; i < j; i++)
         if (this.FileList[i]['dir'] == this.CurrentDir)
-          createRelevances.push({ content: this.FileList[i] });
+          createRelevances.push({ content: JSON.parse(JSON.stringify(this.FileList[i])) });
     } {
       let blob = await this.indexed.loadBlobFromUserPath(info.path, '');
       info['size'] = blob.size;

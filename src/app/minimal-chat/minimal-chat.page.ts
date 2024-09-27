@@ -726,7 +726,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     for (let i = 0, j = this.client.userInput.logs.length; i < j; i++)
       try {
         if (this.client.userInput.logs[i].file.info.filename)
-          attaches.push({ content: this.client.userInput.logs[i].file.info });
+          attaches.push({ content: JSON.parse(JSON.stringify(this.client.userInput.logs[i].file.info)) });
       } catch (e) { }
     this.global.PageDismissAct['minimal-ionic-viewer'] = async (v: any) => {
       if (v.data) {

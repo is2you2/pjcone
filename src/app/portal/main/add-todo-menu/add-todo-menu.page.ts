@@ -1032,7 +1032,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.lock_modal_open = true;
     let createRelevances = [];
     for (let i = 0, j = this.userInput.attach.length; i < j; i++)
-      createRelevances.push({ content: this.userInput.attach[i] });
+      createRelevances.push({ content: JSON.parse(JSON.stringify(this.userInput.attach[i])) });
     this.global.PageDismissAct['todo-ionicivewer'] = (v: any) => {
       this.lock_modal_open = false;
       this.AddShortCut();

@@ -2535,7 +2535,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     let attaches = [];
     for (let i = 0, j = this.messages.length; i < j; i++)
       if (this.messages[i].content.filename)
-        attaches.push(this.messages[i]);
+        attaches.push(JSON.parse(JSON.stringify(this.messages[i])));
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;
       this.global.PageDismissAct['chatroom-ionicviewer'] = async (v: any) => {

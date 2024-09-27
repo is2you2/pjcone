@@ -93,7 +93,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
           case 'KeyQ': // 첫번째 첨부파일 열기
             let createRelevances = [];
             for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++)
-              createRelevances.push({ content: this.PostInfo['attachments'][i] });
+              createRelevances.push({ content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][i])) });
             if (!createRelevances.length) return;
             this.global.PageDismissAct['post-viewer-image-view'] = async (v: any) => {
               await this.WaitingCurrent();
@@ -340,7 +340,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   img.elt.onclick = () => {
                     let createRelevances = [];
                     for (let attach of this.PostInfo['attachments'])
-                      createRelevances.push({ content: attach });
+                      createRelevances.push({ content: JSON.parse(JSON.stringify(attach)) });
                     this.global.PageDismissAct['post-viewer-image-view'] = async (v: any) => {
                       await this.WaitingCurrent();
                       if (v.data && v.data['share']) this.navCtrl.pop();
@@ -427,7 +427,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                                 delete this.global.PageDismissAct['post-viewer-file-view'];
                               }
                               this.global.ActLikeModal('ionic-viewer', {
-                                info: { content: this.PostInfo['attachments'][index] },
+                                info: { content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])) },
                                 path: this.PostInfo['attachments'][index]['path'],
                                 relevance: createRelevances,
                                 noEdit: true,
@@ -461,7 +461,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                                 delete this.global.PageDismissAct['post-viewer-file-view'];
                               }
                               this.global.ActLikeModal('ionic-viewer', {
-                                info: { content: this.PostInfo['attachments'][index] },
+                                info: { content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])) },
                                 path: this.PostInfo['attachments'][index]['path'],
                                 relevance: createRelevances,
                                 noEdit: true,
@@ -511,7 +511,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       delete this.global.PageDismissAct['post-viewer-file-view'];
                     }
                     this.global.ActLikeModal('ionic-viewer', {
-                      info: { content: this.PostInfo['attachments'][index] },
+                      info: { content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])) },
                       path: this.PostInfo['attachments'][index]['path'],
                       relevance: createRelevances,
                       noEdit: true,
