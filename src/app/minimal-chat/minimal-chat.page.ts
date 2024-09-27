@@ -194,7 +194,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   DomMinimalChatInput: HTMLElement;
   ionViewWillEnter() {
     this.WaitingLoaded = true;
-    this.DomMinimalChatInput = document.getElementById('minimalchat_input');
+    this.DomMinimalChatInput = document.getElementById('minimalchat_input').childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
     if (this.client.p5canvas) this.client.p5canvas.remove();
     this.DomMinimalChatInput.onpaste = (ev: any) => {
       let stack = [];
@@ -209,10 +209,11 @@ export class MinimalChatPage implements OnInit, OnDestroy {
 
   AddShortCut() {
     this.global.p5KeyShortCut['EnterAct'] = () => {
-      if (document.activeElement != this.DomMinimalChatInput)
-        setTimeout(() => {
-          this.focus_on_input();
-        }, 0);
+      if (document.activeElement == this.DomMinimalChatInput) {
+        this.scroll_down();
+      } else setTimeout(() => {
+        this.focus_on_input();
+      }, 0);
     }
     this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
