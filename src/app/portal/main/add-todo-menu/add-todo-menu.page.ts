@@ -1089,9 +1089,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             break;
         }
       }
+      this.global.RestoreShortCutAct('add-todo-viewer');
       delete this.global.PageDismissAct['todo-ionicivewer'];
     }
     this.noti.Current = 'IonicViewerPage';
+    this.global.StoreShortCutAct('add-todo-viewer');
     this.global.ActLikeModal('ionic-viewer', {
       info: { content: this.userInput.attach[index] },
       path: this.userInput.attach[index]['alt_path'] || this.userInput.attach[index]['path'],
