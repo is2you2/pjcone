@@ -1394,6 +1394,8 @@ export class GlobalActService {
   /** 웹 사이트 주소 열기 */
   open_link(_link: string) {
     if (_link) window.open(_link, '_blank');
+    const activeElement = document.activeElement;
+    if (activeElement) activeElement['blur']();
   }
 
   /** 클립보드에 기록된 정보 불러오기 (이미지/텍스트)
