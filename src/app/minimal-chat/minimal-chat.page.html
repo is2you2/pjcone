@@ -60,7 +60,7 @@
           <span *ngIf="!msg.target" [style]="'color: #' + msg.color">{{' ' + msg.text}}</span>
           <span *ngIf="msg.target" class="default_text">
             <span [style]="'color: #' + msg.color"><b *ngIf="msg.target">{{msg.target}}:</b></span>
-            <span *ngIf="msg.text">
+            <span *ngIf="msg.text" [style]="msg.isSystem ? 'color: var(--miniranchat-system-text)' : ''">
               <span *ngFor="let text of msg.text">
                 <span *ngIf="!text.href">{{text.text}}</span>
                 <a *ngIf="text.href" [href]="text.text" target="_system" onclick="return false;"
