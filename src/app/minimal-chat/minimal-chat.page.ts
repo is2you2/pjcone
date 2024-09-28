@@ -621,7 +621,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   FFSOverrideConnect() {
     let sep = this.client.FallbackOverrideAddress.split('://');
     let address_without_protocol = sep.pop();
-    this.client.FFSClient = new WebSocket(`${sep.pop() ? 'wss:' : 'ws:'}//${address_without_protocol}:12013`);
+    let check_prot = this.global.checkProtocolFromAddress(address_without_protocol);
+    this.client.FFSClient = new WebSocket(`${check_prot ? 'wss:' : 'ws:'}//${address_without_protocol}:12013`);
     this.client.FFSClient.onopen = () => {
       this.client.FFSClient.send(JSON.stringify({
         type: 'override',
