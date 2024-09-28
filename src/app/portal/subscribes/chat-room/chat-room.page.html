@@ -39,7 +39,7 @@
                 <!-- 날짜 표시 -->
                 <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
                   style="text-align: center; font-size: 16px; padding-top: 8px;" (click)="SetOtherAct()">
-                  <font color="#888"> {{msg['displayDate']}} </font>
+                  <span style="color: #888"> {{msg['displayDate']}} </span>
                 </div>
                 <table>
                   <tr>
@@ -57,10 +57,10 @@
                       <div class="message_form" *ngIf="msg['showInfo'] && msg['showInfo']['sender']">
                         <span (click)="user_detail(msg)" style="cursor: pointer;">
                           <b>
-                            <font
-                              color="#{{nakama.users[isOfficial][target][msg.sender_id]['online'] ? msg.color : '888'}}">
+                            <span
+                              [style]="'color: #' + (nakama.users[isOfficial][target][msg.sender_id]['online'] ? msg.color : '888')">
                               {{nakama.usernameOverride[isOfficial][target][msg.sender_id] || msg.user_display_name ||
-                              lang.text['Profile']['noname_user']}}</font>
+                              lang.text['Profile']['noname_user']}}</span>
                           </b>
                         </span>
                         <!-- 시간 표시 -->
@@ -129,7 +129,7 @@
                 <!-- 날짜 표시 -->
                 <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
                   style="text-align: center; font-size: 16px; padding-top: 8px;" (click)="SetOtherAct()">
-                  <font color="#888"> {{msg['displayDate']}} </font>
+                  <span style="color: #888;"> {{msg['displayDate']}} </span>
                 </div>
                 <table style="display: inline-flex;">
                   <tr>
@@ -140,8 +140,8 @@
                         <span class="time_form message_span_form_me" (click)="SetOtherAct()">{{msg['msgTime']}}</span>
                         <span (click)="user_detail(msg)" style="cursor: pointer;">
                           <b>
-                            <font color="#{{nakama.users.self['online'] ? msg.color : '888'}}">
-                              {{msg.user_display_name || lang.text['Profile']['noname_user']}}</font>
+                            <span [style]="'color: #' + (nakama.users.self['online'] ? msg.color : '888')">
+                              {{msg.user_display_name || lang.text['Profile']['noname_user']}}</span>
                           </b>
                         </span>
                       </div>
