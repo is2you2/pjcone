@@ -28,7 +28,7 @@
       </ion-item>
     </ion-radio-group>
   </div>
-  <!-- <div *ngIf="AudioOutputs.length">
+  <div *ngIf="AudioOutputs.length">
     <ion-item-divider>
       <ion-label>{{lang.text['WebRTCDevManager']['AudioOut']}}</ion-label>
     </ion-item-divider>
@@ -37,7 +37,7 @@
         <ion-radio [value]="i">{{output.label || output.deviceId}}</ion-radio>
       </ion-item>
     </ion-radio-group>
-  </div> -->
+  </div>
   <ion-item *ngIf="InOut.length" button (click)="saveSetup()">
     <ion-label class="ion-text-center">{{lang.text['WebRTCDevManager']['saveSetup']}}</ion-label>
   </ion-item>

@@ -36,8 +36,8 @@ export class WebrtcService {
   private p5hangup: Function;
 
   private localMedia: any;
-  private localStream: any;
-  private PeerConnection: any;
+  private localStream: MediaStream;
+  private PeerConnection: RTCPeerConnection;
 
   private remoteMedia: any;
 
@@ -439,10 +439,12 @@ export class WebrtcService {
                   deviceId: v.data.audioinput.deviceId,
                 }
               }
-              this.PeerConnection.removeStream(this.localStream);
+              this.PeerConnection.getSenders().forEach(sender => {
+                if (sender.track) this.PeerConnection.removeTrack(sender);
+              });
               this.localStream = await navigator.mediaDevices.getUserMedia(info);
               this.localMedia.srcObject = this.localStream;
-              this.localStream.getTracks().forEach((track: any) => this.PeerConnection.addTrack(track, this.localStream));
+              this.localStream.getTracks().forEach(track => this.PeerConnection.addTrack(track, this.localStream));
             } catch (e) {
               console.log('미디어 스트림 변경 오류: ', e);
             }
@@ -533,7 +535,7 @@ export class WebrtcService {
     }
     this.PeerConnection = new RTCPeerConnection(servers);
 
-    this.PeerConnection.onicecandidate = (ev: any) => this.handleConnection(ev);
+    this.PeerConnection.onicecandidate = (ev) => this.handleConnection(ev);
 
     this.PeerConnection.onconnectionstatechange = async (ev: any) => {
       switch (ev.target.connectionState) {
@@ -553,8 +555,8 @@ export class WebrtcService {
     // Add local stream to connection and create offer to connect.
     if (this.TypeIn != 'data') {
       this.localStream.getTracks().forEach((track: any) => this.PeerConnection.addTrack(track, this.localStream));
-      this.PeerConnection.onaddstream = (ev: any) => {
-        this.remoteMedia.srcObject = ev.stream;
+      this.PeerConnection.ontrack = (ev: any) => {
+        this.remoteMedia.srcObject = ev.streams[0];
       };
     } else this.createDataChannel();
     this.PeerConnection.ondatachannel = (event: any) => {
@@ -566,7 +568,7 @@ export class WebrtcService {
       // 교환한 사람쪽에서 이 트리거가 발동됨
       if (this.JoinInited) { // 응답 받아 진입한 경우에도 동작하므로 구분에 유의한다
         await this.PeerConnection.createOffer({
-          offerToReceiveVideo: 1,
+          offerToReceiveVideo: true,
         }).then((ev: any) => this.createdOffer(ev))
           .catch((e: any) => this.setSessionDescriptionError(e));
 
@@ -587,11 +589,11 @@ export class WebrtcService {
     }
   }
 
-  dataChannel: any;
+  dataChannel: RTCDataChannel;
   dataChannelOpenAct: Function;
   dataChannelOnMsgAct: Function;
   dataChannelOnCloseAct: Function;
-  createDataChannel(option?: RTCDataChannelInit) {
+  createDataChannel(option?: string) {
     this.dataChannel = this.PeerConnection.createDataChannel(option);
     this.createDataChannelListener();
   }
@@ -624,9 +626,9 @@ export class WebrtcService {
     if (this.p5callButton) this.p5callButton.hide();
 
     this.PeerConnection.createOffer({
-      offerToReceiveVideo: 1,
-    }).then((ev: any) => this.createdOffer(ev))
-      .catch((e: any) => this.setSessionDescriptionError(e));
+      offerToReceiveVideo: true,
+    }).then(ev => this.createdOffer(ev))
+      .catch(e => this.setSessionDescriptionError(e));
   }
 
   private handleConnection(event: any) {
@@ -797,7 +799,7 @@ export class WebrtcService {
       this.PeerConnection.close();
       this.PeerConnection.onicecandidate = null;
       this.PeerConnection.onconnectionstatechange = null;
-      this.PeerConnection.onaddstream = null;
+      this.PeerConnection.ontrack = null;
       this.PeerConnection.ondatachannel = null;
       this.PeerConnection.onnegotiationneeded = null;
     }
