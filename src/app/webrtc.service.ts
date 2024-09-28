@@ -429,22 +429,21 @@ export class WebrtcService {
             dev_button.elt.disabled = false;
             try {
               let info: MediaStreamConstraints = {};
-              if (v.data.videoinput) {
+              if (this.TypeIn == 'video' && v.data.videoinput)
                 info['video'] = {
-                  deviceId: v.data.videoinput.deviceId,
+                  deviceId: { exact: v.data.videoinput.deviceId },
                 }
-              }
-              if (v.data.audioinput) {
+              if (v.data.audioinput)
                 info['audio'] = {
-                  deviceId: v.data.audioinput.deviceId,
+                  deviceId: { exact: v.data.audioinput.deviceId },
                 }
-              }
-              this.PeerConnection.getSenders().forEach(sender => {
-                if (sender.track) this.PeerConnection.removeTrack(sender);
-              });
+              this.localStream.getTracks().forEach(track => track.stop());
               this.localStream = await navigator.mediaDevices.getUserMedia(info);
               this.localMedia.srcObject = this.localStream;
-              this.localStream.getTracks().forEach(track => this.PeerConnection.addTrack(track, this.localStream));
+              this.PeerConnection.getSenders().forEach(sender => {
+                if (sender.track) sender.replaceTrack(this.localStream.getTracks()[0])
+              });
+              this.CreateOffer();
             } catch (e) {
               console.log('미디어 스트림 변경 오류: ', e);
             }
@@ -454,6 +453,7 @@ export class WebrtcService {
           this.global.StoreShortCutAct('webrtc-manage');
           this.global.ActLikeModal('webrtc-manage-io-dev', {
             list: JSON.parse(JSON.stringify(list)),
+            typein: this.TypeIn,
             dismiss: 'webrtc-manage',
           });
         });

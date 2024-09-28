@@ -54,7 +54,7 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
       const navParams = this.router.getCurrentNavigation().extras.state;
       this.InOut = navParams.list || [];
       for (let i = 0, j = this.InOut.length; i < j; i++) {
-        if (this.InOut[i].kind.indexOf('videoinput') >= 0)
+        if (navParams.typein == 'video' && this.InOut[i].kind.indexOf('videoinput') >= 0)
           this.VideoInputs.push(this.InOut[i]);
         if (this.InOut[i].kind.indexOf('audioinput') >= 0)
           this.AudioInputs.push(this.InOut[i]);
