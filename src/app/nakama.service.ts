@@ -1681,9 +1681,7 @@ export class NakamaService {
                 this.channels_orig[_is_official][_target][_cid]['status'] = 'online';
               if (this.channels_orig[_is_official][_target][_cid]['is_new'] && !this.subscribe_lock)
                 this.has_new_channel_msg = true;
-            } catch (e) {
-              console.log('채널 불러오기 취소됨: ', e);
-            }
+            } catch (e) { }
           });
         });
       });
