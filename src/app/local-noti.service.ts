@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { IndexedDBService } from './indexed-db.service';
-import { LanguageSettingService } from './language-setting.service';
 
 /** 웹에서도, 앱에서도 동작하는 요소로 구성된 알림폼 재구성  
  * 실험을 거쳐 차례로 병합해가기
@@ -42,7 +41,6 @@ export class LocalNotiService {
 
   constructor(
     private indexed: IndexedDBService,
-    private lang: LanguageSettingService,
   ) { }
 
   /** settings에 해당하는 값을 변경한 후 저장함 */

@@ -6,6 +6,7 @@ import { P5ToastService } from './p5-toast.service';
 import { LanguageSettingService } from './language-setting.service';
 import { isPlatform } from './app.component';
 import { GlobalActService } from './global-act.service';
+import { LocalNotiService } from './local-noti.service';
 
 /** 기존 MiniRanchat과 서버를 공유하는 랜챗 클라이언트  
  * 해당 프로젝트의 동작 방식 역시 모방되어있다.
@@ -21,7 +22,10 @@ export class MiniranchatClientService {
     private p5toast: P5ToastService,
     private lang: LanguageSettingService,
     private global: GlobalActService,
-  ) { }
+    private noti: LocalNotiService,
+  ) {
+    this.noti.Sq_client = this;
+  }
 
   client: WebSocket;
   /** pid */
