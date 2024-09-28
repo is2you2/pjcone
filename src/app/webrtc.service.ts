@@ -70,9 +70,10 @@ export class WebrtcService {
   private ReceivedOfferPart = '';
   private ReceivedAnswerPart = '';
   private IceCandidates = [];
+  /** 상태를 표시하는 문구 */
+  StatusText = '';
   /** 전화끊기시 추가 행동 등록 */
   HangUpCallBack: Function;
-
   /** 초기화 회신 반응 행동 */
   InitReplyCallback: Function;
 
@@ -254,6 +255,7 @@ export class WebrtcService {
     await this.createCall();
     if (this.p5callButton)
       this.p5callButton.elt.disabled = false;
+    this.StatusText = this.lang.text['InstantCall']['Connecting'];
   }
 
   createP5_panel() {

@@ -60,6 +60,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
         this.LinkToServer(true);
       }
     });
+    if (!this.webrtc.StatusText) this.webrtc.StatusText = this.lang.text['InstantCall']['Waiting'];
   }
 
   UserInputCustomAddress = '';
@@ -83,8 +84,6 @@ export class InstantCallPage implements OnInit, OnDestroy {
 
   /** 통화를 사설서버로 하는지 여부 */
   isCustomServer = false;
-  /** 화면에 보여지는 안내 문구 */
-  TextInfo = this.lang.text['InstantCall']['Waiting'];
   /** 웹 소켓 서버에 연결하기
    * @param [autoLink=false] 빠른 진입으로 실행되는지 여부
    */
@@ -124,7 +123,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
           channel: this.ChannelId,
         }));
         await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
-        this.TextInfo = this.lang.text['InstantCall']['Connecting'];
+        this.webrtc.StatusText = this.lang.text['InstantCall']['Connecting'];
         this.global.PeerConnected = true;
         this.webrtc.initialize('audio')
           .then(() => {
@@ -133,7 +132,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
             }
             this.ShowWaiting();
             this.webrtc.CreateOffer();
-            this.TextInfo = this.lang.text['InstantCall']['Connecting'];
+            this.webrtc.StatusText = this.lang.text['InstantCall']['Connecting'];
             this.global.PeerConnected = true;
             this.global.InstantCallSend(JSON.stringify({
               type: 'init_req',
@@ -165,7 +164,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
           this.QRCodeAsString = `${SERVER_PATH_ROOT}pjcone_pwa/?instc=${this.UserInputCustomAddress},${this.ChannelId},${this.Port || ''},${this.Username || ''},${this.Password || ''}`;
           break;
         case 'init_req':
-          this.TextInfo = this.lang.text['InstantCall']['Connecting'];
+          this.webrtc.StatusText = this.lang.text['InstantCall']['Connecting'];
           this.global.PeerConnected = true;
           this.webrtc.initialize('audio')
             .then(async () => {
@@ -202,7 +201,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
                 channel: this.ChannelId,
               }));
               this.global.InitEnd = true;
-              this.TextInfo = this.lang.text['InstantCall']['Connected'];
+              this.webrtc.StatusText = this.lang.text['InstantCall']['Connected'];
               break;
             case 'WEBRTC_INIT_REQ_SIGNAL':
               this.nakama.socket_reactive[json['act']]({
@@ -220,7 +219,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
           break;
         case 'init_end':
           this.global.InitEnd = true;
-          this.TextInfo = this.lang.text['InstantCall']['Connected'];
+          this.webrtc.StatusText = this.lang.text['InstantCall']['Connected'];
           break;
       }
     }
