@@ -118,6 +118,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         this.client.userInput.logs.length = 0;
         let resetLog = { color: isDarkMode ? 'bbb' : '444', text: this.lang.text['MinimalChat']['TrashChatLog'], isSystem: true };
         this.client.userInput.logs.push(resetLog);
+        this.ShowExtMenus = false;
       },
     }];
 
