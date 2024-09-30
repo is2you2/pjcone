@@ -21,7 +21,7 @@
         <ion-icon slot="end" name="open-outline"
           (click)="global.open_custom_site(client.FallbackOverrideAddress)"></ion-icon>
       </ion-item>
-      <ion-item button [disabled]="client.status != 'idle'">
+      <ion-item button>
         <ion-input [label]="lang.text['Profile']['name_placeholder']" class="ion-text-right"
           [placeholder]="lang.text['Profile']['noname_user']" [(ngModel)]="client.MyUserName"></ion-input>
       </ion-item>
