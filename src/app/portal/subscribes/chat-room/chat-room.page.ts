@@ -837,7 +837,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.global.p5KeyShortCut['Backquote'] = () => {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId)) {
         this.ChatLogs.scrollTo({ top: 0, behavior: 'smooth' });
-        this.pull_msg_history();
+        if (!(this.next_cursor === undefined && !this.ViewMsgIndex || !this.pullable))
+          this.pull_msg_history();
       }
     }
     this.global.p5KeyShortCut['Escape'] = () => {
