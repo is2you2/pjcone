@@ -2467,13 +2467,18 @@ export class NakamaService {
             });
           }
         }
+        /** 다른 기기에서 접근시 접속자 수 재측정 방지용 */
+        let BlockSelfCount = [];
         socket.onchannelpresence = (p) => {
           if (p.joins !== undefined) { // 참여 검토
             p.joins.forEach(info => {
               if (this.servers[_is_official][_target].session.user_id != info.user_id)
                 this.load_other_user(info.user_id, _is_official, _target)['online'] = true;
             });
-            this.count_channel_online_member(p, _is_official, _target);
+            if (!BlockSelfCount.includes(p.channel_id)) {
+              BlockSelfCount.push(p.channel_id);
+              this.count_channel_online_member(p, _is_official, _target);
+            }
           } else if (p.leaves !== undefined) { // 떠남 검토
             let others = [];
             p.leaves.forEach(info => {
