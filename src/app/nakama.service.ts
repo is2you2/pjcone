@@ -2183,7 +2183,6 @@ export class NakamaService {
           }
         }
         this.rearrange_channels();
-        this.save_groups_with_less_info();
       }).catch(e => {
         console.error('사용자 그룹 가져오기 오류: ', e);
       });
@@ -2904,15 +2903,12 @@ export class NakamaService {
         || this.opened_page_info['channel']['target'] != _target
         || this.opened_page_info['channel']['id'] != c.id
       ) {
-        this.servers[_is_official][_target].client.listChannelMessages(
-          this.servers[_is_official][_target].session, c.id, 1, false).then(async msg => {
-            try {
-              if (msg.messages.length)
-                await this.update_from_channel_msg(msg.messages[0], _is_official, _target, isNewChannel);
-            } catch (e) { }
-          }).catch(e => {
-            console.error('마지막 메시지 받아서 업데이트 오류: ', e);
-          });
+        let msg = await this.servers[_is_official][_target].client.listChannelMessages(
+          this.servers[_is_official][_target].session, c.id, 1, false);
+        try {
+          if (msg.messages.length)
+            await this.update_from_channel_msg(msg.messages[0], _is_official, _target, isNewChannel);
+        } catch (e) { }
       }
       this.save_groups_with_less_info();
       return c;
