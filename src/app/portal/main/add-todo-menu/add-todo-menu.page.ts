@@ -1617,6 +1617,5 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (this.p5canvas)
       this.p5canvas.remove();
     delete this.nakama.StatusBarChangedCallback;
-    window.onfocus = null;
   }
 }

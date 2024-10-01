@@ -1263,6 +1263,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
       this.ChannelUserInputId = `chatroom_input_${this.info.id}_${new Date().getTime()}`;
       // PWA: 윈도우 창을 다시 보게 될 때 알림 삭제
+      window.onfocus = null;
       window.onfocus = () => {
         if (this.info['cnoti_id'])
           this.noti.ClearNoti(this.info['cnoti_id']);

@@ -170,6 +170,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     });
     window.onfocus = () => {
       if (this.lnId) this.noti.ClearNoti(this.lnId);
+      this.noti.Current = this.Header;
     }
     this.isMobileApp = isPlatform == 'Android' || isPlatform == 'iOS';
     this.header_title = this.lang.text['MinimalChat']['header_title_group'];
