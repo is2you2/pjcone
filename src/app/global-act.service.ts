@@ -769,6 +769,10 @@ export class GlobalActService {
     return Boolean(address.replace(/(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/g, ''));
   }
 
+  /** JSBlend 파일 캐싱  
+   * URL 주소를 기억하고 있다가 제거될 때 링크 제거
+   */
+  JSBlendCache = {};
   /** BlenderCtrl 사용을 기억함 */
   BlenderLoadingCtrl: HTMLIonLoadingElement;
   BlenderCanvasInside: p5.Renderer;
@@ -807,9 +811,32 @@ export class GlobalActService {
           }
         }
         // js.blend 페이지 불러오기
+        let keys = Object.keys(this.JSBlendCache);
+        keys.forEach(key => {
+          URL.revokeObjectURL(this.JSBlendCache[key]);
+          delete this.JSBlendCache[key];
+        });
+        try { // 오프라인 동작 호환을 위해 iframe 에 필요한 구성요소를 blob URL 로 구성함
+          let js = await fetch('assets/js.blend/build/js.blend.js', { signal: cont?.signal });
+          let jsBlob = await js.blob();
+          let jsURL = URL.createObjectURL(jsBlob);
+          this.JSBlendCache['js'] = jsURL;
+          let three = await fetch('assets/js.blend/example/three.js', { signal: cont?.signal });
+          let threeBlob = await three.blob();
+          let threeURL = URL.createObjectURL(threeBlob);
+          this.JSBlendCache['three'] = threeURL;
+          let index = await fetch('assets/js.blend/index.html', { signal: cont?.signal });
+          let indexText = await index.text();
+          indexText = indexText.replace('src="./build/js.blend.js"', `src="${jsURL}"`).replace('src="./example/three.js"', `src="${threeURL}"`);
+          let indexBlob = new Blob([indexText], { type: 'text/html' });
+          let indexURL = URL.createObjectURL(indexBlob);
+          this.JSBlendCache['index'] = indexURL;
+        } catch (e) {
+          console.log('블렌더 페이지 불러오기 실패: ', e);
+        }
         let jsBlend = p.createElement('iframe');
         jsBlend.elt.id = 'jsBlend';
-        jsBlend.elt.setAttribute("src", "assets/js.blend/index.html");
+        jsBlend.elt.setAttribute("src", this.JSBlendCache['index']);
         jsBlend.elt.setAttribute("frameborder", "0");
         jsBlend.elt.setAttribute('class', 'full_screen');
         jsBlend.elt.setAttribute('allow', 'fullscreen; encrypted-media');
@@ -1158,6 +1185,11 @@ export class GlobalActService {
             LogDiv.elt.remove();
           }, 8000);
           OnLoaded();
+          let keys = Object.keys(this.JSBlendCache);
+          keys.forEach(key => {
+            URL.revokeObjectURL(this.JSBlendCache[key]);
+            delete this.JSBlendCache[key];
+          });
           jsBlend.elt.onload = null;
         };
         p.camera(0, 0, -(p.height / 2) / p.tan(p.PI * 30.0 / 180.0), 0, 0, 0, 0, 1, 0);
