@@ -309,6 +309,8 @@ export class GlobalActService {
   /** 실행중인 iframe-godot 개체를 기억하여 2개 이상 생성될 경우 이전에 진행중인 객체를 삭제, 마지막 실행기만 기억하기 */
   godot: HTMLIFrameElement;
   godot_window: any;
+  /** 고도엔진 URL 주소 기억 */
+  GodotCache = {};
   /** 고도엔진이 시작하자마자 로딩할 내용과 고도 결과물을 담을 iframe id를 전달  
    * 이 함수는 고도엔진이 실행되는 페이지의 ionViewWillEnter()에서 진행되어야 합니다
    * @param _act_name 로딩할 pck 파일의 이름
@@ -340,9 +342,43 @@ export class GlobalActService {
       if (this.godot_splash) this.godot_splash.remove();
       if (this.godot) this.godot.remove();
       window['godot'] = '';
+      // 고도엔진 직접 불러오기 처리
+      {
+        let keys = Object.keys(this.GodotCache);
+        keys.forEach(key => {
+          URL.revokeObjectURL(this.GodotCache[key]);
+          delete this.GodotCache[key];
+        });
+        let audio = await fetch('assets/html/index.audio.worklet.js');
+        let audioBlob = await audio.blob();
+        let audioURL = URL.createObjectURL(audioBlob);
+        this.GodotCache['audio'] = audioURL;
+        let wasm = await fetch('assets/html/index.wasm');
+        let wasmBlob = await wasm.blob();
+        let wasmURL = URL.createObjectURL(wasmBlob);
+        this.GodotCache['wasm'] = wasmURL;
+        let pck = await fetch('assets/html/index.pck');
+        let pckBlob = await pck.blob();
+        let pckURL = URL.createObjectURL(pckBlob);
+        this.GodotCache['pck'] = pckURL;
+        let js = await fetch('assets/html/index.js');
+        let jsText = await js.text();
+        jsText = jsText.replace('`${loadPath}.audio.worklet.js`', `'${audioURL}'`)
+          .replace(/`\${loadPath}\.wasm`/g, `'${wasmURL}'`)
+          .replace('this.config.mainPack || `${exe}.pck`;', `'${pckURL}'`);
+        let jsBlob = new Blob([jsText], { type: 'application/javascript' });
+        let jsURL = URL.createObjectURL(jsBlob);
+        this.GodotCache['js'] = jsURL;
+        let html = await fetch('assets/html/index.html');
+        let htmlText = await html.text();
+        htmlText = htmlText.replace('<script src="index.js"></script>', `<script src="${jsURL}"></script>`);
+        let htmlBlob = new Blob([htmlText], { type: 'text/html' });
+        let htmlURL = URL.createObjectURL(htmlBlob);
+        this.GodotCache['html'] = htmlURL;
+      }
       let _godot = document.createElement('iframe');
       _godot.id = 'godot';
-      _godot.setAttribute("src", "assets/html/index.html");
+      _godot.setAttribute("src", this.GodotCache['html']);
       _godot.setAttribute("frameborder", "0");
       _godot.setAttribute('class', 'full_screen');
       _godot.setAttribute('allow', 'fullscreen; encrypted-media');
