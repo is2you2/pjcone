@@ -361,6 +361,10 @@ export class GlobalActService {
         let pckBlob = await pck.blob();
         let pckURL = URL.createObjectURL(pckBlob);
         this.GodotCache['pck'] = pckURL;
+        let png = await fetch('assets/html/index.png');
+        let pngBlob = await png.blob();
+        let pngURL = URL.createObjectURL(pngBlob);
+        this.GodotCache['png'] = pngURL;
         let js = await fetch('assets/html/index.js');
         let jsText = await js.text();
         jsText = jsText.replace('`${loadPath}.audio.worklet.js`', `'${audioURL}'`)
@@ -371,7 +375,8 @@ export class GlobalActService {
         this.GodotCache['js'] = jsURL;
         let html = await fetch('assets/html/index.html');
         let htmlText = await html.text();
-        htmlText = htmlText.replace('<script src="index.js"></script>', `<script src="${jsURL}"></script>`);
+        htmlText = htmlText.replace('<script src="index.js"></script>', `<script src="${jsURL}"></script>`)
+          .replace('src="index.png"', `src="${pngURL}"`);
         let htmlBlob = new Blob([htmlText], { type: 'text/html' });
         let htmlURL = URL.createObjectURL(htmlBlob);
         this.GodotCache['html'] = htmlURL;
@@ -386,6 +391,11 @@ export class GlobalActService {
       _godot.setAttribute('withCredentials', 'true');
       if (_frame_name == 'content_viewer_canvas')
         keys['create_thumbnail_p5'] = async (base64: string, info: FileInfo = undefined) => {
+          let keys = Object.keys(this.GodotCache);
+          keys.forEach(key => {
+            URL.revokeObjectURL(this.GodotCache[key]);
+            delete this.GodotCache[key];
+          });
           new p5((p: p5) => {
             p.setup = () => {
               p.noCanvas();
