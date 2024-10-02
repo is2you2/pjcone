@@ -50,7 +50,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   blob: Blob;
-  FileInfo: FileInfo;
+  FileInfo: FileInfo = {};
 
   p5canvas: p5;
   p5TextArea: HTMLTextAreaElement;
@@ -124,7 +124,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         const navParams = this.router.getCurrentNavigation().extras.state;
         if (!navParams) throw '페이지 복귀';
         this.navParams = navParams;
-        this.initialize();
       } catch (e) {
         this.WaitingLoaded = false;
         this.ChangeContentWithKeyInput();
@@ -148,10 +147,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.initialize();
   }
 
-  isInited = false;
   initialize() {
-    if (this.isInited) return;
-    this.isInited = true;
     this.MessageInfo = this.navParams.info;
     this.OpenInChannelChat = this.MessageInfo['code'] !== undefined;
     this.CurrentViewId = this.MessageInfo.message_id;
