@@ -453,7 +453,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     let ionInput = document.getElementById('titleInput');
     this.titleIonInput = ionInput.children[0].children[1].children[0];
     setTimeout(() => {
-      if (!this.isModify) this.titleIonInput.focus();
+      if (!this.isModify && !this.titleIonInput.value) this.titleIonInput.focus();
     }, 200);
     this.ImporantSelChanged({ detail: { value: this.userInput.importance } });
     this.file_sel_id = `${this.userInput.id || 'new_todo_id'}_${new Date().getTime()}`;
@@ -949,7 +949,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         });
     }
     setTimeout(() => {
-      if (!this.isModify && this.titleIonInput) this.titleIonInput.focus();
+      if (!this.isModify && this.titleIonInput && !this.titleIonInput.value) this.titleIonInput.focus();
     }, 200);
   }
 
