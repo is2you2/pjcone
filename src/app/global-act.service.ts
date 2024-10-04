@@ -348,11 +348,13 @@ export class GlobalActService {
       window['godot'] = '';
       // 고도엔진 직접 불러오기 처리
       {
+        {
         let keys = Object.keys(this.GodotCache);
         keys.forEach(key => {
           URL.revokeObjectURL(this.GodotCache[key]);
           delete this.GodotCache[key];
         });
+        }
         let audio = await fetch('assets/html/index.audio.worklet.js');
         let audioBlob = await audio.blob();
         let audioURL = URL.createObjectURL(audioBlob);
@@ -396,11 +398,13 @@ export class GlobalActService {
       keys['isMobile'] = isPlatform != 'DesktopPWA';
       if (_frame_name == 'content_viewer_canvas')
         keys['create_thumbnail_p5'] = async (base64: string, info: FileInfo = undefined) => {
+          {
           let keys = Object.keys(this.GodotCache);
           keys.forEach(key => {
             URL.revokeObjectURL(this.GodotCache[key]);
             delete this.GodotCache[key];
           });
+          }
           new p5((p: p5) => {
             p.setup = () => {
               p.noCanvas();
