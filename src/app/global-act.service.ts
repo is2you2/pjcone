@@ -96,6 +96,10 @@ interface GodotFrameKeys {
    * received_msg(_msg) => { ...수신된 메시지로 고도엔진에서 행동함 }
    */
   received_msg?: Function;
+  /** **사용금지**  
+   * 플랫폼 검토: 데스크탑/모바일 여부
+   */
+  isMobile?: boolean;
   /** 고도엔진과 상호작용하기 위한 값들, 고도엔진에서 JavaScript.get_interface('window')[id]로 접근 */
   [id: string]: any;
 }
@@ -389,6 +393,7 @@ export class GlobalActService {
       _godot.setAttribute('allow', 'fullscreen; encrypted-media');
       _godot.setAttribute('scrolling', 'no');
       _godot.setAttribute('withCredentials', 'true');
+      keys['isMobile'] = isPlatform != 'DesktopPWA';
       if (_frame_name == 'content_viewer_canvas')
         keys['create_thumbnail_p5'] = async (base64: string, info: FileInfo = undefined) => {
           let keys = Object.keys(this.GodotCache);
