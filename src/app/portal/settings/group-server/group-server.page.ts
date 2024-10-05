@@ -448,6 +448,15 @@ export class GroupServerPage implements OnInit, OnDestroy {
     }, 1000);
   }
 
+  /** 서버 정보 편집하기 */
+  edit_server_info(_is_official: string, _target: string) {
+    this.navCtrl.navigateForward('server-detail', {
+      state: {
+        data: this.nakama.servers[_is_official][_target].info,
+      },
+    });
+  }
+
   /** 버튼이 눌렸는지를 검토하여 행동을 분리 */
   isOverrideButtonPressed = false;
   async remove_server(_is_official: string, _target: string) {

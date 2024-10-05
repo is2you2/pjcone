@@ -28,6 +28,9 @@
               <h2>{{server.name}}</h2>
               <p>{{(server.useSSL ? 'https://' : 'http://') + server.address + ':' + server.port}}</p>
             </ion-label>
+            <ion-button style="padding-right: 4px" (click)="edit_server_info(server.isOfficial, server.target)">
+              {{lang.text['GroupServer']['EditInfo']}}
+            </ion-button>
             <ion-button (click)="remove_server(server.isOfficial, server.target)">
               {{statusBar.groupServer[server.isOfficial][server.target] == 'online' ?
               lang.text['GroupServer']['RemoveAccount']

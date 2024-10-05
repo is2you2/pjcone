@@ -4202,6 +4202,11 @@ export class NakamaService {
   }
 
   async act_from_QRInfo(json: any) {
+    // 번역 준비가 끝날 때까지 기다리기
+    for (let i = 0, j = 20; i < j; i++) {
+      if (this.lang.text['WebRTCDevManager']['SecurityError']) break;
+      await new Promise((done) => setTimeout(done, 1000));
+    }
     /** QRCode에 서버 정보가 포함되어 있습니까 */
     for (let i = 0, j = json.length; i < j; i++)
       switch (json[i].type) {
@@ -4240,10 +4245,6 @@ export class NakamaService {
           }
           break;
         case 'group_dedi': // 그룹사설 채팅 접근
-          for (let i = 0, j = 20; i < j; i++) {
-            if (this.lang.text['MinimalChat']['leave_chat_group']) break;
-            await new Promise((done) => setTimeout(done, 1000));
-          }
           await this.global.RemoveAllModals();
           this.navCtrl.navigateForward('minimal-chat', {
             animation: mdTransitionAnimation,
@@ -4282,10 +4283,6 @@ export class NakamaService {
           break;
         case 'rtcserver':
           let ServerInfos = [];
-          for (let i = 0, j = 20; i < j; i++) {
-            if (this.lang.text['WebRTCDevManager']['NoRegServer']) break;
-            await new Promise((done) => setTimeout(done, 1000));
-          }
           let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
           ServerInfos = JSON.parse(list);
           ServerInfos.push(json[i].value);
@@ -4304,10 +4301,6 @@ export class NakamaService {
           });
           break;
         case 'postViewer':
-          for (let i = 0, j = 20; i < j; i++) {
-            if (this.lang.text['PostViewer']['OpenFromViewer']) break;
-            await new Promise((done) => setTimeout(done, 1000));
-          }
           let res = await fetch(json[i].address);
           if (res.ok) {
             let text = await res.text();
@@ -4318,10 +4311,6 @@ export class NakamaService {
           });
           break;
         case 'instc': // 즉석 통화
-          for (let i = 0, j = 20; i < j; i++) {
-            if (this.lang.text['InstantCall']['CallEnd']) break;
-            await new Promise((done) => setTimeout(done, 1000));
-          }
           this.global.RemoveAllModals(() => {
             this.navCtrl.navigateForward('instant-call', {
               animation: iosTransitionAnimation,
@@ -4336,10 +4325,6 @@ export class NakamaService {
           });
           break;
         case 'fileviewer':
-          for (let i = 0, j = 20; i < j; i++) {
-            if (this.lang.text['ContentViewer']['MayGimbalLock']) break;
-            await new Promise((done) => setTimeout(done, 1000));
-          }
           this.global.PageDismissAct['quick-fileviewer'] = (v: any) => {
             delete this.global.PageDismissAct['quick-fileviewer'];
           }
