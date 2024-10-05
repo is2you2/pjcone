@@ -290,7 +290,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
     this.nakama.channels_orig['local']['target'][generated_id] = {
       id: generated_id,
       local: true,
-      title: this.userInput.name || (this.userInput.volatile ? this.lang['text']['AddGroup']['noname_volatile'] : ''),
+      title: this.userInput.name,
       redirect: {
         type: 0,
       },
