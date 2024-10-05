@@ -2406,7 +2406,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           v => {
             msg.content['path'] = path;
             let url = URL.createObjectURL(v);
-            this.global.modulate_thumbnail(msg.content, url, this.cont);
+            if (!msg.content['thumbnail']) this.global.modulate_thumbnail(msg.content, url, this.cont);
             if (this.NeedScrollDown())
               setTimeout(() => {
                 this.scroll_down_logs();
