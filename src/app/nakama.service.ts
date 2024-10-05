@@ -4241,6 +4241,9 @@ export class NakamaService {
               key: decodeURIComponent(json[i].value.key),
             };
             await this.add_group_server(new_server_info);
+            this.p5toast.show({
+              text: `${this.lang.text['Nakama']['ServerAdded']}: ${json[i].value.name}`,
+            });
             await this.init_session(new_server_info);
           }
           break;

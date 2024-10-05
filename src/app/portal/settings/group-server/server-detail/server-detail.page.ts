@@ -36,13 +36,14 @@ export class ServerDetailPage implements OnInit, OnDestroy {
   /** 타겟이 이미 존재한다면 타겟 수정 불가 */
   isTargetAlreadyExist = true;
   QRCodeSRC: any;
+  FilteredInfo: ServerInfo;
 
   ngOnInit() {
     this.route.queryParams.subscribe(_p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
       this.dedicated_info = navParams.data;
     });
-    let filtered = {
+    this.FilteredInfo = {
       name: this.dedicated_info.name,
       address: this.dedicated_info.address,
       port: this.dedicated_info.port,
@@ -50,15 +51,15 @@ export class ServerDetailPage implements OnInit, OnDestroy {
       useSSL: this.dedicated_info.useSSL,
     };
     if (this.dedicated_info.address == '192.168.0.1')
-      delete filtered.address;
+      delete this.FilteredInfo.address;
     if (this.dedicated_info.key == 'defaultkey')
-      delete filtered.key;
+      delete this.FilteredInfo.key;
     if (this.dedicated_info.port == 7350)
-      delete filtered.port;
+      delete this.FilteredInfo.port;
     if (!this.dedicated_info.useSSL)
-      delete filtered.useSSL;
+      delete this.FilteredInfo.useSSL;
     this.QRCodeSRC = this.global.readasQRCodeFromString(
-      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${filtered.name || ''},${filtered.address || ''},${filtered.useSSL ? 'true' : ''},${filtered.port || 7350},${filtered.key || ''}`);
+      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${this.FilteredInfo.name || ''},${this.FilteredInfo.address || ''},${this.FilteredInfo.useSSL ? 'true' : ''},${this.FilteredInfo.port || ''},${this.FilteredInfo.key || ''}`);
     // 이미 target값이 등록되었는지 검토
     this.isTargetAlreadyExist = Boolean(this.statusBar.groupServer['unofficial'][this.dedicated_info.target]);
   }
@@ -69,12 +70,15 @@ export class ServerDetailPage implements OnInit, OnDestroy {
 
   ionViewDidEnter() {
     this.ServerDetailuseSSL.checked = this.dedicated_info.useSSL;
+    this.global.p5KeyShortCut['Escape'] = () => {
+      this.navCtrl.pop();
+    }
   }
 
   /** 시작 진입 주소 생성 */
   copy_startup_address() {
     let startup_address =
-      `https://is2you2.github.io/pjcone_pwa/?server=${this.dedicated_info['name'] || ''},${this.dedicated_info['address'] || ''},${this.dedicated_info.useSSL || ''},${this.dedicated_info.port || ''},${this.dedicated_info.key || ''}&open_profile=true`;
+      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${this.FilteredInfo.name || ''},${this.FilteredInfo.address || ''},${this.FilteredInfo.useSSL ? 'true' : ''},${this.FilteredInfo.port || ''},${this.FilteredInfo.key || ''}`;
     this.global.WriteValueToClipboard('text/plain', startup_address);
   }
 
@@ -122,5 +126,9 @@ export class ServerDetailPage implements OnInit, OnDestroy {
     } catch (e) { }
     if (this.global.PageDismissAct['quick-server-detail']) this.global.PageDismissAct['quick-server-detail']();
     this.navCtrl.pop();
+  }
+
+  ionViewWillLeave() {
+    delete this.global.p5KeyShortCut['Escape'];
   }
 }
