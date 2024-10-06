@@ -9,3 +9,4 @@ data/public.crt
 
 uploader/node_modules
 uploader/package-lock.json
+uploader/www/*
