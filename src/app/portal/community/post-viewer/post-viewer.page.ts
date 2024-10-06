@@ -555,18 +555,21 @@ export class PostViewerPage implements OnInit, OnDestroy {
                 line.parent(contentDiv);
                 // 문자열을 띄어쓰기 단위로 나누기
                 let sep = content[i].split(' ');
-                for (let k = 0, l = sep.length; k < l; k++) {
+                let normal_text = '';
+                for (let k = 0, l = sep.length; k < l; k++)
                   // 웹 주소라면 하이퍼링크 처리
                   if (sep[k].indexOf('http:') == 0 || sep[k].indexOf('https:') == 0) {
+                    let word = p.createSpan(normal_text);
+                    word.parent(line);
+                    normal_text = '';
                     let link = p.createA(sep[k], sep[k]);
                     link.attribute('target', '_blank');
                     link.parent(line);
-                    let word = p.createSpan('&nbsp');
-                    word.parent(line);
-                  } else {
-                    let word = p.createSpan(sep[k] + '&nbsp');
-                    word.parent(line);
-                  }
+                    normal_text += '&nbsp';
+                  } else normal_text += sep[k] + '&nbsp';
+                if (normal_text) {
+                  let word = p.createSpan(normal_text);
+                  word.parent(line);
                 }
               }
             }
