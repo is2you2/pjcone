@@ -27,15 +27,14 @@ export class LinkQrPage implements OnInit {
     try { // 사용자 지정 서버 업로드 시도 우선
       let sep = extract.split('://');
       let only_address = sep.pop();
-      let protocol = sep.pop() == 'wss' || this.global.checkProtocolFromAddress(only_address);
-      let HasLocalPage = `${protocol ? 'https:' : 'http:'}//${only_address}:${protocol ? 8443 : 8080}/`;
+      let HasLocalPage = `http://${only_address}:12000/`;
       const cont = new AbortController();
       const id = setTimeout(() => {
         cont.abort();
       }, 500);
       let res = await fetch(HasLocalPage, { signal: cont.signal });
       clearTimeout(id);
-      if (res.ok) this.SelectedAddress = `${protocol ? 'https:' : 'http:'}//${only_address}:${protocol ? 8443 : 8080}${window['sub_path']}?voidDraw=${extract},${this.navParams.data.channel}`;
+      if (res.ok) this.SelectedAddress = `http://${only_address}:12000${window['sub_path']}?voidDraw=${extract},${this.navParams.data.channel}`;
       else throw '주소 없음';
     } catch (e) {
       this.SelectedAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?voidDraw=${extract},${this.navParams.data.channel}`

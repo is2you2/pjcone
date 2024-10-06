@@ -211,20 +211,19 @@ export class PostViewerPage implements OnInit, OnDestroy {
         if (this.PostInfo['OutSource']) {
           let link = document.getElementById('title_link');
           link.onclick = async () => {
-            let is_https = this.PostInfo['OutSource'].indexOf('https:') == 0;
             let targetAddress = '';
             // 사용자 지정 서버가 있는지 검토우회
             let address_text: string = this.PostInfo['OutSource'];
             let extract = address_text.substring(0, address_text.indexOf(':8'));
             try { // 사용자 지정 서버 업로드 시도 우선
-              let HasLocalPage = `${extract}:${is_https ? 8443 : 8080}${window['sub_path']}`;
+              let HasLocalPage = `${extract}:12000${window['sub_path']}`;
               const cont = new AbortController();
               const id = setTimeout(() => {
                 cont.abort();
               }, 500);
               let res = await fetch(HasLocalPage, { signal: cont.signal });
               clearTimeout(id);
-              if (res.ok) targetAddress = `${extract}:${is_https ? 8443 : 8080}${window['sub_path']}?postViewer=${this.PostInfo['OutSource']}`;
+              if (res.ok) targetAddress = `${extract}:12000${window['sub_path']}?postViewer=${this.PostInfo['OutSource']}`;
               else throw '주소 없음';
             } catch (e) {
               targetAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?postViewer=${this.PostInfo['OutSource']}`;
