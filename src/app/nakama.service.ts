@@ -2220,8 +2220,9 @@ export class NakamaService {
   StatusBarChangedCallback: Function;
   /** 그룹 서버 및 설정-그룹서버의 상태 조정 */
   set_group_statusBar(_status: 'offline' | 'missing' | 'pending' | 'online' | 'certified', _is_official: string, _target: string) {
-    if (this.statusBar.groupServer[_is_official][_target])
-      this.statusBar.groupServer[_is_official][_target] = _status;
+    if (!this.statusBar.groupServer[_is_official])
+      this.statusBar.groupServer[_is_official] = {};
+    this.statusBar.groupServer[_is_official][_target] = _status;
     this.catch_group_server_header(_status);
     if (this.StatusBarChangedCallback)
       this.StatusBarChangedCallback();
