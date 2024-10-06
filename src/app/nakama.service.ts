@@ -4475,7 +4475,6 @@ export class NakamaService {
     try { // 서버에 직접 요청하여 읽기 시도
       let info = {
         path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/info.json`,
-        alt_path: `tmp_files/posts/${isOfficial}/${target}/posts/${user_id}/${post_id}/info.json`,
         type: 'application/json',
       }
       let res = await this.sync_load_file(info, isOfficial, target, 'server_post', user_id, post_id, false);
