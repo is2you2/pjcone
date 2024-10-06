@@ -2343,6 +2343,7 @@ export class NakamaService {
       });
       delete this.channels_orig[_is_official][_target];
     } catch (e) { }
+    this.save_channels_with_less_info();
     // 관련 파일들 전부 이관
     let list = await this.indexed.GetFileListFromDB(`servers/${_is_official}/${_target}`);
     for (let i = 0, j = list.length; i < j; i++) {
@@ -2367,6 +2368,7 @@ export class NakamaService {
       });
       delete this.groups[_is_official][_target];
     } catch (e) { }
+    this.save_groups_with_less_info();
     // 그룹서버 정리
     loading.message = this.lang.text['Nakama']['DeletingServerInfo'];
     this.set_group_statusBar('offline', _is_official, _target);

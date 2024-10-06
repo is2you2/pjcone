@@ -462,23 +462,31 @@ export class GroupServerPage implements OnInit, OnDestroy {
   isOverrideButtonPressed = false;
   async remove_server(_is_official: string, _target: string) {
     this.isOverrideButtonPressed = true;
-    this.alertCtrl.create({
-      header: this.lang.text['GroupServer']['RemoveAccountReally'],
-      message: this.lang.text['ChatRoom']['CannotUndone'],
-      buttons: [{
-        text: this.lang.text['UserFsDir']['OK'],
-        cssClass: 'redfont',
-        handler: async () => {
-          try {
-            await this.nakama.remove_server(_is_official, _target);
-          } catch (e) {
-            console.log('서버 삭제 오류: ', e);
-          }
-          // 그룹서버 리스트 정리
-          this.servers = this.nakama.get_all_server_info(true);
-        }
-      }]
-    }).then(v => v.present());
+    let removeServerAct = async () => {
+      try {
+        await this.nakama.remove_server(_is_official, _target);
+      } catch (e) {
+        console.log('서버 삭제 오류: ', e);
+      }
+      // 그룹서버 리스트 정리
+      this.servers = this.nakama.get_all_server_info(true);
+    }
+    switch (this.statusBar.groupServer[_is_official][_target]) {
+      case 'online':
+        this.alertCtrl.create({
+          header: this.lang.text['GroupServer']['RemoveAccountReally'],
+          message: this.lang.text['ChatRoom']['CannotUndone'],
+          buttons: [{
+            text: this.lang.text['UserFsDir']['OK'],
+            cssClass: 'redfont',
+            handler: removeServerAct,
+          }]
+        }).then(v => v.present());
+        break;
+      default:
+        removeServerAct();
+        break;
+    }
   }
 
   /** 프로필이 변경됨 알림이 필요한지 여부 */
