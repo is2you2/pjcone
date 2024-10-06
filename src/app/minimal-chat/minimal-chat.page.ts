@@ -442,12 +442,14 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         if (data['msg']) { // 채널 메시지
           let sep: string[] = data['msg'].split(' ');
           let msg_arr = [];
-          for (let i = 0, j = sep.length; i < j; i++) {
+          let normal_text = '';
+          for (let i = 0, j = sep.length; i < j; i++)
             if (sep[i].indexOf('http://') == 0 || sep[i].indexOf('https://') == 0) {
-              msg_arr.push({ text: ' ' });
+              msg_arr.push({ text: ' ' + normal_text + ' ' });
+              normal_text = '';
               msg_arr.push({ href: true, text: sep[i] });
-            } else msg_arr.push({ text: ' ' + sep[i] });
-          }
+            } else normal_text += ' ' + sep[i];
+          if (normal_text) msg_arr.push({ text: ' ' + normal_text });
           let getMessage = { color: color, text: msg_arr, target: target, isMe: isMe };
           this.client.userInput.logs.push(getMessage);
           this.client.userInput.last_message = getMessage;
