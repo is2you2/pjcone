@@ -22,7 +22,7 @@ export class ServerDetailPage implements OnInit, OnDestroy {
     private statusBar: StatusManageService,
     private indexed: IndexedDBService,
     private nakama: NakamaService,
-    public global: GlobalActService,
+    private global: GlobalActService,
     private route: ActivatedRoute,
     private router: Router,
     private navCtrl: NavController,
@@ -62,6 +62,12 @@ export class ServerDetailPage implements OnInit, OnDestroy {
       `${SERVER_PATH_ROOT}pjcone_pwa/?server=${this.FilteredInfo.name || ''},${this.FilteredInfo.address || ''},${this.FilteredInfo.useSSL ? 'true' : ''},${this.FilteredInfo.port || ''},${this.FilteredInfo.key || ''}`);
     // 이미 target값이 등록되었는지 검토
     this.isTargetAlreadyExist = Boolean(this.statusBar.groupServer['unofficial'][this.dedicated_info.target]);
+  }
+
+  /** 사설서버 SSL 체크용 페이지 열람 */
+  open_custom_check() {
+    let address = (this.dedicated_info.useSSL ? 'https://' : 'http://') + this.dedicated_info.address;
+    this.global.open_custom_site(address);
   }
 
   index = 0;
