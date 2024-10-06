@@ -857,7 +857,7 @@ export class NakamaService {
           break;
         default:
           this.p5toast.show({
-            text: `(${info.name}) ${this.lang.text['Nakama']['UnexpectedLoginErr']}: ${e}`,
+            text: `(${info.name}) ${this.lang.text['Nakama']['UnexpectedLoginErr']}: ${(e.statusText ? `${e.statusText}(${e.status})` : e.status) || e}`,
           });
           this.set_group_statusBar('offline', info.isOfficial, info.target);
           break;
