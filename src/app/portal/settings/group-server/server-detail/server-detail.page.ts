@@ -22,7 +22,7 @@ export class ServerDetailPage implements OnInit, OnDestroy {
     private statusBar: StatusManageService,
     private indexed: IndexedDBService,
     private nakama: NakamaService,
-    private global: GlobalActService,
+    public global: GlobalActService,
     private route: ActivatedRoute,
     private router: Router,
     private navCtrl: NavController,
