@@ -69,9 +69,12 @@
         [style]="'filter: ' + (user.user['online'] ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
         [src]="user.user.img">
     </div>
-    <ion-label class="form_margin">{{nakama.usernameOverride[isOfficial][target][user.user.id] ||
-      user.user.display_name ||
-      lang.text['Profile']['noname_user']}}</ion-label>
+    <ion-label class="form_margin">{{
+      info['info'] ? (info['info']['name'] ||
+      nakama.usernameOverride[info['info']['isOfficial']][info['info']['target']][info['info']['id']]
+      || info['info']['display_name'] ||
+      lang.text['ChatRoom']['noname_chatroom']) : (info['title'] ||
+      lang.text['ChatRoom']['noname_chatroom'])}}</ion-label>
   </ion-item>
   <ion-item *ngIf="(info['status'] == 'online' || info['status'] == 'pending') && has_admin" button
     (click)="remove_group()">

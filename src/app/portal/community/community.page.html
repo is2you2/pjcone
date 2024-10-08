@@ -24,8 +24,12 @@
           <ion-card-header>
             <ion-card-subtitle class="cardCreator">
               <span [style]="'color: #' + post['UserColor']"> {{
-                nakama.usernameOverride[post['server']['isOfficial']][post['server']['target']][post['creator_id']] ||
-                post['creator_name']
+                nakama.usernameOverride[post['server']['isOfficial']] ?
+                (nakama.usernameOverride[post['server']['isOfficial']][post['server']['target']]
+                ? (nakama.usernameOverride[post['server']['isOfficial']][post['server']['target']][post['creator_id']]
+                || post['creator_name']) :
+                post['creator_name'])
+                : post['creator_name']
                 }}
               </span>
               <span *ngIf="nakama.showServer" style="color: #888; font-weight: normal;">

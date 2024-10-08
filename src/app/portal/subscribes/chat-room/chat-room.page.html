@@ -1,9 +1,11 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-title>
-      {{nakama.usernameOverride[info['info']['isOfficial']][info['info']['target']][info['info']['id']]
-      || info['title'] ||
-      lang.text['ChatRoom']['noname_chatroom']}}</ion-title>
+      {{info['info'] ? (info['info']['name'] ||
+      nakama.usernameOverride[info['info']['isOfficial']][info['info']['target']][info['info']['id']]
+      || info['info']['display_name'] ||
+      lang.text['ChatRoom']['noname_chatroom']) : (info['title'] ||
+      lang.text['ChatRoom']['noname_chatroom'])}}</ion-title>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="portal/subscribes"></ion-back-button>
     </ion-buttons>
