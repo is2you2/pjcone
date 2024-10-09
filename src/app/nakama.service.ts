@@ -4487,7 +4487,7 @@ export class NakamaService {
       if (is_me) json['is_me'] = true;
       let blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
       // 다른 사람의 외부 노출 포스트는 기록하지 않음
-      if (!json.OutSource || is_me)
+      if (!json.OutSource || json['is_me'])
         this.indexed.saveBlobToUserPath(blob, info.path);
       else throw '다른 사람의 외부 게시물 정보 무시';
       json['server'] = {
