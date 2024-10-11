@@ -185,7 +185,7 @@
                         <div *ngIf="msg.content['edited']" class="edited_form">
                           {{'(' + lang.text['ChatRoom']['MsgEdited'] + ')'}}</div>
                         <div class="msg_balloon qouteOnChatBalloon"
-                          [style]="msg.content['msg'][0][0].size ? 'padding: 0; margin: 0' : ('background-color: #' + msg.color + '88')">
+                          [style]="(msg.content['msg'][0] && msg.content['msg'][0][0].size) ? 'padding: 0; margin: 0' : ('background-color: #' + msg.color + '88')">
                           <div *ngFor="let line of msg.content['msg']" class="msg_inside_balloon">
                             <span>
                               <span *ngFor="let part of line">
