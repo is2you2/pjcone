@@ -741,7 +741,14 @@ export class GroupServerPage implements OnInit, OnDestroy {
 
   @ViewChild('RegisterNewServer') RegisterNewServer: IonModal;
 
+  ionViewWillEnter() {
+    this.RegisterNewServer.onDidDismiss().then(() => {
+      this.global.RestoreShortCutAct('group-server');
+    });
+  }
+
   OpenNewServerForm() {
+    this.global.StoreShortCutAct('group-server');
     this.RegisterNewServer.present();
   }
 
