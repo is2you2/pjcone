@@ -459,11 +459,6 @@ export class NakamaService {
    * 단일 세션 전환일 때에도 막힘
    */
   TogglingSession = false;
-  /** 리워드 광고 발동 여부  
-   * 리워드 광고를 통해 리워드를 받았다면 광고를 틀지 않습니다.  
-   * 리워드 광고로 리워드를 받았다면 개발 테스트 서버에 연결시킵니다.
-   */
-  isRewardAdsUsed = false;
   /** 모든 세션을 토글 */
   async toggle_all_session() {
     if (this.TogglingSession) return;
@@ -479,7 +474,13 @@ export class NakamaService {
       });
       try {
         let count_server = await this.init_all_sessions();
-        if (!count_server) this.AccessToOfficialTestServer();
+        if (!count_server) {
+          if (this.isRewardAdsUsed) {
+            this.AccessToOfficialTestServer();
+          } else this.p5toast.show({
+            text: this.lang.text['Nakama']['NoLoginServer'],
+          });
+        }
       } catch (e) {
         console.log('테스트 서버 연결 오류: ', e);
       }
@@ -487,6 +488,11 @@ export class NakamaService {
     this.TogglingSession = false;
   }
 
+  /** 리워드 광고 발동 여부  
+   * 리워드 광고를 통해 리워드를 받았다면 광고를 틀지 않습니다.  
+   * 리워드 광고로 리워드를 받았다면 개발 테스트 서버에 연결시킵니다.
+   */
+  isRewardAdsUsed = false;
   /** 광고 시청 후 개발자 테스트 서버에 참여하기 */
   async WatchAdsAndGetDevServerInfo(force = false) {
     if ((!this.isRewardAdsUsed) || force) {
