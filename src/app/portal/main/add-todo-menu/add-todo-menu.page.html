@@ -42,7 +42,6 @@
           <ion-item>
             <ion-input id="titleInput" [label]="lang.text['TodoDetail']['DisplayName']" [(ngModel)]="userInput.title"
               class="ion-text-right" [placeholder]="lang.text['TodoDetail']['DisplayName_placeholder']"></ion-input>
-            <ion-icon *ngIf="isMobile" slot="end" name="mic-outline" (click)="SpeechToTitleText()"></ion-icon>
           </ion-item>
           <div *ngIf="userInput.storeAt != 'local' && isManager && WorkerGroups.length">
             <ion-accordion-group #ManageWorker>
@@ -134,10 +133,6 @@
               </div>
             </ion-accordion>
           </ion-accordion-group>
-          <ion-item-divider *ngIf="isMobile">
-            <ion-label>{{lang.text['TodoDetail']['description']}}</ion-label>
-            <ion-icon slot="end" name="mic-outline" (click)="SpeechToDetailText()"></ion-icon>
-          </ion-item-divider>
           <textarea id="descInput" class="infobox" style="height: 240px;" [(ngModel)]="userInput.description"
             [placeholder]="lang.text['TodoDetail']['description']"></textarea>
           <div *ngFor="let attach of userInput.attach; index as i">

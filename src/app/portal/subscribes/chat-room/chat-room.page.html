@@ -338,11 +338,6 @@
                   (keydown)="check_key($event)" class="TextAreaInput imageForm" (click)="make_ext_hidden()"
                   [placeholder]="inputPlaceholder"></textarea>
               </td>
-              <td *ngIf="isMobile">
-                <ion-button fill="clear" expand="block" (click)="GetSpeechToText()">
-                  <ion-icon name="mic-outline"></ion-icon>
-                </ion-button>
-              </td>
               <td>
                 <ion-button fill="clear" mode="md" (click)="send(false)" expand="block"
                   [disabled]="block_send || !info['status'] || info['status'] == 'missing' || info['status'] == 'offline'">

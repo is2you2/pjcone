@@ -11,7 +11,6 @@ import { isPlatform } from 'src/app/app.component';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SpeechRecognition } from "@capacitor-community/speech-recognition";
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
 import { ExtendButtonForm } from '../../subscribes/chat-room/chat-room.page';
 
@@ -988,32 +987,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.AlertLerpStartFrom = .4;
         break;
     }
-  }
-
-  async SpeechToTitleText() {
-    await VoiceRecorder.requestAudioRecordingPermission();
-    let result = await SpeechRecognition.start({
-      language: this.lang.lang,
-      maxResults: 1,
-      prompt: this.lang.text['ChatRoom']['TalkMessage'],
-      partialResults: true,
-      popup: true,
-    });
-    this.userInput.title = result['matches'][0];
-  }
-
-  async SpeechToDetailText() {
-    await VoiceRecorder.requestAudioRecordingPermission();
-    let result = await SpeechRecognition.start({
-      language: this.lang.lang,
-      maxResults: 1,
-      prompt: this.lang.text['ChatRoom']['TalkMessage'],
-      partialResults: true,
-      popup: true,
-    });
-    if (!this.userInput.description) this.userInput.description = '';
-    else this.userInput.description += '\n';
-    this.userInput.description += result['matches'][0];
   }
 
   toggle_custom_color() {

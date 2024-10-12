@@ -14,7 +14,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { WebrtcService } from 'src/app/webrtc.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
-import { SpeechRecognition } from "@capacitor-community/speech-recognition";
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
 
 export interface ExtendButtonForm {
@@ -894,18 +893,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.isOtherAct = false;
     this.useFirstCustomCDN = this.info['CDN'] || 0;
     this.toggle_custom_attach(this.useFirstCustomCDN);
-  }
-
-  async GetSpeechToText() {
-    await VoiceRecorder.requestAudioRecordingPermission();
-    let result = await SpeechRecognition.start({
-      language: this.lang.lang,
-      maxResults: 1,
-      prompt: this.lang.text['ChatRoom']['TalkMessage'],
-      partialResults: true,
-      popup: true,
-    });
-    this.userInput.text = result['matches'][0];
   }
 
   p5canvas: p5;
