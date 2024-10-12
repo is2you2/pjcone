@@ -214,8 +214,8 @@ export class SettingsPage implements OnInit, OnDestroy {
   /** 지금은 안내서로 연결해줍니다 */
   download_serverfile() {
     if (this.lang.lang == 'ko')
-      window.open('https://is2you2.github.io/posts/how-to-use-pjcone-server/', '_blank');
-    else window.open('https://is2you2.github.io/posts/how-to-use-pjcone-server-en/', '_blank');
+      window.open('https://is2you2.github.io/posts/how-to-use-pjcone/', '_blank');
+    else window.open('https://is2you2.github.io/posts/how-to-use-pjcone-en/', '_blank');
   }
 
   /** 페이팔 페이지 열기 */
