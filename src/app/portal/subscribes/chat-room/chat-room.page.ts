@@ -2201,7 +2201,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 메시지 정보 상세 */
   async message_detail(msg: any, index: number) {
     if (this.isOtherAct) return; // 다른 행동과 중첩 방지
-    if (this.info['status'] == 'offline' || this.info['status'] == 'missing') return;
     if (msg.content['user_update']) return; // 시스템 메시지 관리 불가
     if (msg.content['gupdate']) return; // 시스템 메시지 관리 불가 (그룹)
     if (!msg['is_me']) return;
@@ -2224,7 +2223,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     let text_form = FileURL ? `<div style="text-align: center;">${Encoded}</div>` : `<div>${Encoded}</div>`;
     let image_form = `<div style="width: 100%;"><img src="${FileURL}" alt="${msg.content['filename']}" style="border-radius: 8px; max-height: 230px; position: relative; left: 50%; transform: translateX(-50%); ${this.info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''}"></div>`;
     let result_form = FileURL ? image_form + text_form : text_form;
-    this.alertCtrl.create({
+    let opt = {
       header: this.lang.text['ChatRoom']['ManageChat'],
       message: new IonicSafeString(result_form),
       buttons: [{
@@ -2314,7 +2313,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           });
         }
       }]
-    }).then(v => {
+    };
+    if (this.info['status'] == 'offline' || this.info['status'] == 'missing')
+      delete opt['buttons'];
+    this.alertCtrl.create(opt).then(v => {
       this.ChatManageMenu = v;
       this.global.StoreShortCutAct('chatroom-alert');
       this.global.p5KeyShortCut['Escape'] = () => {
