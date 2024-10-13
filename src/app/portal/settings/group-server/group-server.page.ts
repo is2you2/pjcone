@@ -450,6 +450,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
 
   /** 서버 정보 편집하기 */
   edit_server_info(_is_official: string, _target: string) {
+    this.RegisterNewServer.dismiss();
     this.isOverrideButtonPressed = true;
     this.navCtrl.navigateForward('server-detail', {
       state: {
