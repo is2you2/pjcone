@@ -2546,7 +2546,7 @@ export class NakamaService {
                       this.noti.ClearNoti(json.noti_id);
                       this.set_todo_notification(json);
                       this.p5toast.show({
-                        text: `${this.lang.text['Main']['RequestTodo']}: ${json.title}`,
+                        text: `${this.lang.text['Main']['Title']}: ${json.title}`,
                       });
                     }
                   });
