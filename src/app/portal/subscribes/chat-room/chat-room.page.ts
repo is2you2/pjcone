@@ -1147,19 +1147,26 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.userInput.file['size'] = blob.size;
     this.userInput.file['type'] = blob.type || blob.type_override;
     if (path) this.userInput.file.path = path;
-    this.userInput.file['content_related_creator'] = [
-      ...contentRelated, {
+    this.userInput.file['content_related_creator'] = [...contentRelated];
+    try {
+      this.userInput.file['content_related_creator'].push({
         user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
         timestamp: new Date().getTime(),
         display_name: this.nakama.users.self['display_name'],
         various: various as any,
-      }];
+      });
+    } catch (e) { }
     this.userInput.file['content_creator'] = {
-      user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
       timestamp: new Date().getTime(),
-      display_name: this.nakama.users.self['display_name'],
-      various: various as any,
     };
+    try {
+      this.userInput.file['content_creator'] = {
+        user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
+        timestamp: new Date().getTime(),
+        display_name: this.nakama.users.self['display_name'],
+        various: various as any,
+      };
+    } catch (e) { }
     this.userInput.file.blob = blob;
     this.create_selected_thumbnail();
     this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
