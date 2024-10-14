@@ -114,7 +114,7 @@
     style="height: 240px; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; text-align: center; background-color: var(--chatroom-background);">
     <div *ngFor="let button of extended_buttons" style="display: inline-block;">
       <div class="ext_button" [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'" (click)="button['act']()"
-        [hidden]="button.isHide">
+        (contextmenu)="button['context'] ? button['context']() : null" [hidden]="button.isHide">
         <ion-icon *ngIf="button['icon']" slot="icon-only" [name]="button['icon'] || 'close-circle'"
           style="width: 36px; height: 36px;">
         </ion-icon>

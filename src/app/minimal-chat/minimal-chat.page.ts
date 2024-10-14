@@ -70,6 +70,10 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       name: this.lang.text['ChatRoom']['attachments'],
       act: async () => {
         this.new_attach({ detail: { value: 'load' } });
+      },
+      context: () => {
+        this.new_attach({ detail: { value: 'link' } });
+        return false;
       }
     }, { // 1
       icon_img: 'voidDraw.png',
@@ -276,6 +280,71 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       case 'load': // 불러오기 행동 병합
         this.SelectAttach();
         this.AddShortCut();
+        break;
+      case 'link':
+        let pasted_url: string;
+        try {
+          try {
+            let clipboard = await this.global.GetValueFromClipboard();
+            switch (clipboard.type) {
+              case 'text/plain':
+                pasted_url = clipboard.value;
+                break;
+              case 'image/png':
+                this.SendAttachAct({ target: { files: [clipboard.value] } });
+                return;
+            }
+          } catch (e) {
+            throw e;
+          }
+          try { // DataURL 주소인지 검토
+            let blob = this.global.Base64ToBlob(pasted_url);
+            let getType = pasted_url.split(';')[0].split(':')[1];
+            let file = new File([blob],
+              `${this.lang.text['ChatRoom']['FileLink']}.${getType.split('/').pop()}`, {
+              type: getType,
+            });
+            this.SendAttachAct({ target: { files: [file] } });
+            throw 'done';
+          } catch (e) {
+            switch (e) {
+              case 'done':
+                throw e;
+            }
+          }
+          try { // 정상적인 주소인지 검토
+            if (pasted_url.indexOf('http:') != 0 && pasted_url.indexOf('https:') != 0) throw '올바른 웹 주소가 아님';
+          } catch (e) {
+            throw e;
+          }
+          let this_file: FileInfo = {};
+          this_file.url = pasted_url;
+          this_file['content_related_creator'] = [];
+          this_file['content_related_creator'].push({
+            user_id: this.client.uuid,
+            timestamp: new Date().getTime(),
+            display_name: this.client.MyUserName,
+            various: 'link',
+          });
+          this_file['content_creator'] = {
+            user_id: this.client.uuid,
+            timestamp: new Date().getTime(),
+            display_name: this.client.MyUserName,
+            various: 'link',
+          };
+          let sep = this_file.url.split('.');
+          this_file.file_ext = sep.pop().split('?').shift();
+          this_file.filename = decodeURIComponent(`${sep.pop().split('/').pop() || this.lang.text['ChatRoom']['ExternalLinkFile']}.${this_file.file_ext}`).split('_').pop();
+          this.global.set_viewer_category_from_ext(this_file);
+          this_file.type = '';
+          this_file.typeheader = this_file.viewer;
+          this.global.modulate_thumbnail(this_file, this_file.url);
+          this.TrySendingAttach(this_file);
+        } catch (e) {
+          if (e == 'done')
+            throw e;
+          else throw `인식 불가능한 URL 정보: ${e}`;
+        }
         break;
     }
   }
@@ -694,6 +763,13 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         this.focus_on_input();
       }
     } catch (e) { // 분할 전송처리
+      if (FileInfo.url) {
+        let res = await fetch(FileInfo.url);
+        if (res.ok) {
+          let blob = await res.blob();
+          FileInfo.blob = blob;
+        }
+      }
       FileInfo.path = `tmp_files/sqaure/${TempId}.${FileInfo.file_ext}`;
       await this.indexed.saveBlobToUserPath(FileInfo.blob, FileInfo.path);
       let ReqInfo = await this.indexed.GetFileInfoFromDB(FileInfo.path);
