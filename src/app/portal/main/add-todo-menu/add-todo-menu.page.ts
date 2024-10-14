@@ -118,11 +118,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         if (this.isButtonClicked) return;
         this.new_attach({ detail: { value: 'load' } });
       },
-      context: async () => {
+      context: () => {
         if (this.isButtonClicked) return;
-        try {
-          await this.new_attach({ detail: { value: 'link' } });
-        } catch (e) { }
+        this.new_attach({ detail: { value: 'link' } });
+        return false;
       }
     }, { // 1
       icon_img: 'voidDraw.png',

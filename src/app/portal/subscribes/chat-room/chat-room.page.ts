@@ -162,11 +162,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
         this.new_attach({ detail: { value: 'load' } });
       },
-      context: async () => {
-        try {
-          await this.new_attach({ detail: { value: 'link' } });
-          return; // 파일 넣기 성공시 링크 발송 기능 여전히 사용
-        } catch (e) { }
+      context: () => {
+        if (!this.userInputTextArea)
+          this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+        this.new_attach({ detail: { value: 'link' } });
         return false;
       }
     }, { // 4
