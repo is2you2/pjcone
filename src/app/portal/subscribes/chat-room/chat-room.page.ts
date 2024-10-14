@@ -28,6 +28,8 @@ export interface ExtendButtonForm {
   /** 메뉴 이름 (문자열) */
   name: string;
   act: Function;
+  /** 우클릭시 행동 */
+  context?: Function;
 }
 
 /** 메시지 인용시 양식 */
@@ -155,16 +157,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }, { // 3
       icon: 'document-attach-outline',
       name: this.lang.text['ChatRoom']['attachments'],
-      act: async () => {
+      act: () => {
         if (!this.userInputTextArea)
           this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+        this.new_attach({ detail: { value: 'load' } });
+      },
+      context: async () => {
         try {
           await this.new_attach({ detail: { value: 'link' } });
           return; // 파일 넣기 성공시 링크 발송 기능 여전히 사용
-        } catch (e) {
-          if (e != 'done')
-            this.new_attach({ detail: { value: 'load' } });
-        }
+        } catch (e) { }
+        return false;
       }
     }, { // 4
       icon_img: 'voidDraw.png',
