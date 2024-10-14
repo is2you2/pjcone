@@ -644,6 +644,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   ionViewDidEnter() {
     this.show_count_timer();
+    this.WillLeavePage = false;
     this.AddShortCut();
   }
 
@@ -664,6 +665,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   removeShortCut() {
+    delete this.global.p5KeyShortCut['Escape'];
     delete this.global.p5KeyShortCut['Escape'];
   }
 
