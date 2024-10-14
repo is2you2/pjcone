@@ -133,6 +133,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         } catch (e) {
           document.getElementById('local_channel').click();
         }
+      },
+      context: () => {
+        document.getElementById('local_channel').click();
+        return false;
       }
     }, { // 2
       icon: 'image-outline',
@@ -153,6 +157,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         } catch (e) {
           document.getElementById('backgroundImage_sel').click();
         }
+      },
+      context: () => {
+        document.getElementById('backgroundImage_sel').click();
+        return false;
       }
     }, { // 3
       icon: 'document-attach-outline',
