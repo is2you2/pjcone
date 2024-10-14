@@ -12,7 +12,7 @@
     [value]="isExpanded" #accordionGroup (click)="isExpanded = true">
     <ion-accordion value="colors">
       <ion-item slot="header">
-        <ion-label>{{lang.text['AddGroup']['SelectServer']}}</ion-label>
+        <ion-label style="display: contents">{{lang.text['AddGroup']['SelectServer']}}</ion-label>
         <ion-label class="ion-text-right">{{servers[index].name}}</ion-label>
         <ion-icon class="ion-accordion-toggle-icon hide_accordion_icon"></ion-icon>
       </ion-item>

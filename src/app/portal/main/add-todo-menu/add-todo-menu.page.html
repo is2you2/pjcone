@@ -35,7 +35,7 @@
           </ion-item>
           <div *ngIf="!isStoreAtChangable || !AmICreator">
             <ion-item (click)="ChangeDisconnectStatus()">
-              <ion-label color="medium">{{ userInput.display_store || lang.text['TodoDetail']['WIP'] }}</ion-label>
+              <ion-label style="display: contents" color="medium">{{ userInput.display_store || lang.text['TodoDetail']['WIP'] }}</ion-label>
               <ion-label color="medium" class="ion-text-right">{{ userInput.display_creator }}</ion-label>
             </ion-item>
           </div>
@@ -82,7 +82,7 @@
             <ion-accordion-group #ManageWorker>
               <ion-accordion>
                 <ion-item button slot="header">
-                  <ion-label>{{lang.text['TodoDetail']['ManageWorker']}}</ion-label>
+                  <ion-label style="display: contents">{{lang.text['TodoDetail']['ManageWorker']}}</ion-label>
                   <ion-label class="ion-text-end">{{worker_done + ' / ' + userInput.workers.length}}</ion-label>
                 </ion-item>
                 <div slot="content">
@@ -111,7 +111,7 @@
           <ion-accordion-group #DateTime>
             <ion-accordion *ngIf="isLimitUsable" value="Start">
               <ion-item button slot="header">
-                <ion-label>{{lang.text['TodoDetail']['startFrom']}}</ion-label>
+                <ion-label style="display: contents">{{lang.text['TodoDetail']['startFrom']}}</ion-label>
                 <ion-label class="ion-text-right uneditable_data">{{startDisplay ||
                   lang.text['TodoDetail']['startImmediatly']}}</ion-label>
                 <ion-icon class="ion-accordion-toggle-icon hide_accordion_icon"></ion-icon>
@@ -123,7 +123,7 @@
             </ion-accordion>
             <ion-accordion value="Limit">
               <ion-item button slot="header">
-                <ion-label>{{lang.text['TodoDetail']['limit']}}</ion-label>
+                <ion-label style="display: contents">{{lang.text['TodoDetail']['limit']}}</ion-label>
                 <ion-label class="ion-text-right uneditable_data">{{limitDisplay}}</ion-label>
                 <ion-icon class="ion-accordion-toggle-icon hide_accordion_icon"></ion-icon>
               </ion-item>
