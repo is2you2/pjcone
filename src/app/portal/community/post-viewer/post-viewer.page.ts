@@ -293,12 +293,14 @@ export class PostViewerPage implements OnInit, OnDestroy {
         if (this.PostInfo['server']['local'])
           for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++) {
             try {
+              if (this.PostInfo['attachments'][i]['blob']) throw 'blob 준비되어있음';
               let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][i]['path'], this.PostInfo['attachments'][i]['type']);
               this.PostInfo['attachments'][i]['blob'] = blob;
             } catch (e) { }
           }
         else for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++) {
           try {
+            if (this.PostInfo['attachments'][i]['blob']) throw 'blob 준비되어있음';
             this.PostInfo['attachments'][i].alt_path = `servers/${this.PostInfo['server']['isOfficial']}/${this.PostInfo['server']['target']}/posts/${this.PostInfo.creator_id}/${this.PostInfo.id}/[${i}]${this.PostInfo['attachments'][i].filename}`;
             let blob = await this.nakama.sync_load_file(
               this.PostInfo['attachments'][i], this.PostInfo['server']['isOfficial'], this.PostInfo['server']['target'], 'server_post',
