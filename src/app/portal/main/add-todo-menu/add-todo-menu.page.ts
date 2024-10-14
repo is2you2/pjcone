@@ -114,9 +114,15 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     { // 0
       icon: 'document-attach-outline',
       name: this.lang.text['ChatRoom']['attachments'],
-      act: async () => {
+      act: () => {
         if (this.isButtonClicked) return;
         this.new_attach({ detail: { value: 'load' } });
+      },
+      context: async () => {
+        if (this.isButtonClicked) return;
+        try {
+          await this.new_attach({ detail: { value: 'link' } });
+        } catch (e) { }
       }
     }, { // 1
       icon_img: 'voidDraw.png',
@@ -825,6 +831,71 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       case 'load': // 불러오기 행동 병합
         this.select_attach();
         this.AddShortCut();
+        break;
+      case 'link':
+        let pasted_url: string;
+        try {
+          try {
+            let clipboard = await this.global.GetValueFromClipboard();
+            switch (clipboard.type) {
+              case 'text/plain':
+                pasted_url = clipboard.value;
+                break;
+              case 'image/png':
+                this.inputImageSelected({ target: { files: [clipboard.value] } });
+                return;
+            }
+          } catch (e) {
+            throw e;
+          }
+          try { // DataURL 주소인지 검토
+            let blob = this.global.Base64ToBlob(pasted_url);
+            let getType = pasted_url.split(';')[0].split(':')[1];
+            let file = new File([blob],
+              `${this.lang.text['ChatRoom']['FileLink']}.${getType.split('/').pop()}`, {
+              type: getType,
+            });
+            await this.selected_blobFile_callback_act(file);
+            throw 'done';
+          } catch (e) {
+            switch (e) {
+              case 'done':
+                throw e;
+            }
+          }
+          try { // 정상적인 주소인지 검토
+            if (pasted_url.indexOf('http:') != 0 && pasted_url.indexOf('https:') != 0) throw '올바른 웹 주소가 아님';
+          } catch (e) {
+            throw e;
+          }
+          let this_file: FileInfo = {};
+          this_file.url = pasted_url;
+          this_file['content_related_creator'] = [];
+          this_file['content_related_creator'].push({
+            user_id: this.userInput.storeAt == 'local' ? 'local' : this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id,
+            timestamp: new Date().getTime(),
+            display_name: this.nakama.users.self['display_name'],
+            various: 'link',
+          });
+          this_file['content_creator'] = {
+            user_id: this.userInput.storeAt == 'local' ? 'local' : this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id,
+            timestamp: new Date().getTime(),
+            display_name: this.nakama.users.self['display_name'],
+            various: 'link',
+          };
+          let sep = this_file.url.split('.');
+          this_file.file_ext = sep.pop().split('?').shift();
+          this_file.filename = decodeURIComponent(`${sep.pop().split('/').pop() || this.lang.text['ChatRoom']['ExternalLinkFile']}.${this_file.file_ext}`).split('_').pop();
+          this.global.set_viewer_category_from_ext(this_file);
+          this_file.type = '';
+          this_file.typeheader = this_file.viewer;
+          this.global.modulate_thumbnail(this_file, this_file.url, this.cont);
+          this.userInput.attach.push(this_file);
+        } catch (e) {
+          if (e == 'done')
+            throw e;
+          else throw `인식 불가능한 URL 정보: ${e}`;
+        }
         break;
     }
   }

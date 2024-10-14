@@ -559,6 +559,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let sep = this_file.url.split('.');
           this_file.file_ext = override.file_ext || sep.pop().split('?').shift();
           this_file.filename = override.filename || decodeURIComponent(`${sep.pop().split('/').pop() || this.lang.text['ChatRoom']['ExternalLinkFile']}.${this_file.file_ext}`);
+          this_file.filename = this_file.filename.split('_').pop();
           this.global.set_viewer_category_from_ext(this_file);
           this_file.type = override.type || '';
           this_file.typeheader = override.typeheader || this_file.viewer;

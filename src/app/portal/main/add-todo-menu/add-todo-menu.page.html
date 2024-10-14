@@ -154,7 +154,8 @@
           <div style="width: 100%; text-align: center; padding-bottom: 16px;">
             <div *ngFor="let button of extended_buttons" style="display: inline-block;">
               <div class="ext_button ext_button_override" [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'"
-                (click)="button['act']()" [hidden]="button.isHide">
+                (click)="button['act']()" (contextmenu)="button['context'] ? button['context']() : null"
+                [hidden]="button.isHide">
                 <ion-icon *ngIf="button['icon']" slot="icon-only" [name]="button['icon'] || 'close-circle'"
                   style="width: 36px; height: 36px;">
                 </ion-icon>
