@@ -44,6 +44,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     private navCtrl: NavController,
   ) { }
   ngOnDestroy() {
+    this.global.RestoreShortCutAct('ionic-viewer');
     this.route.queryParams['unsubscribe']();
     if (this.global.PageDismissAct[this.navParams.dismiss])
       this.global.PageDismissAct[this.navParams.dismiss]({});
@@ -119,6 +120,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   navParams: any;
   ngOnInit() {
+    this.global.StoreShortCutAct('ionic-viewer');
     this.route.queryParams.subscribe(async _p => {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
@@ -143,7 +145,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
-    this.global.StoreShortCutAct('ionic-viewer');
     this.initialize();
   }
 
@@ -1108,7 +1109,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             }
             break;
           case 'Escape':
-            this.navCtrl.pop();
+            if (!this.OpenModal)
+              this.navCtrl.pop();
         }
       }
   }
@@ -1125,10 +1127,18 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   @ViewChild('ShowContentInfoIonic') ShowContentInfoIonic: IonModal;
 
+  /** 하단 모달이 열린 경우 */
+  OpenModal = false;
   open_bottom_modal() {
     this.FileMenu.dismiss();
     this.useP5Navigator = false;
+    this.global.StoreShortCutAct('ionic-modal');
     this.ShowContentInfoIonic.present();
+    this.OpenModal = true;
+    this.ShowContentInfoIonic.onDidDismiss().then(() => {
+      this.OpenModal = false;
+      this.global.RestoreShortCutAct('ionic-modal');
+    });
   }
   /** 텍스트 편집기 상태인지 여부 */
   isTextEditMode = false;
@@ -1844,7 +1854,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
    */
   PageWillDestroy = false;
   async ionViewWillLeave() {
-    this.global.RestoreShortCutAct('ionic-viewer');
     this.WaitingLoaded = false;
     this.PageWillDestroy = true;
     switch (this.FileInfo.viewer) {
