@@ -21,7 +21,7 @@
   <ion-item style="cursor: copy;" (click)="copy_id()">
     <ion-label text-wrap color="medium" class="ion-text-center">{{info.id}}</ion-label>
   </ion-item>
-  <ion-item button (click)="buttonClickInputFile()">
+  <ion-item button (click)="buttonClickInputFile()" (contextmenu)="changeImageContextmenu()">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[(info['status'] || 'offline')]">
     </div>

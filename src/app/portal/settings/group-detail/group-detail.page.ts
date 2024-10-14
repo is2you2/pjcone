@@ -165,21 +165,43 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         }).then(_info => {
           this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info['id']}.img`);
         });
-      } else try {
-        let clipboard = await this.global.GetValueFromClipboard();
-        switch (clipboard.type) {
-          case 'text/plain':
-            await this.check_if_clipboard_available(clipboard.value);
-            break;
-          case 'image/png':
-            this.inputImageSelected({ target: { files: [clipboard.value] } });
-            return;
-        }
-      } catch (e) {
-        document.getElementById(this.file_sel_id).click();
-      }
+      } else document.getElementById(this.file_sel_id).click();
     }
   }
+
+  changeImageContextmenu() {
+    let contextAct = async () => {
+      if (this.has_admin) { // 방장인 경우
+        if (this.info.img) {
+          this.info.img = undefined;
+          this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
+            this.nakama.servers[this.isOfficial][this.target].session, {
+            object_ids: [{
+              collection: 'group_public',
+              key: `group_${this.info.id}`,
+            }],
+          }).then(_info => {
+            this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info['id']}.img`);
+          });
+        } else try {
+          let clipboard = await this.global.GetValueFromClipboard();
+          switch (clipboard.type) {
+            case 'text/plain':
+              await this.check_if_clipboard_available(clipboard.value);
+              break;
+            case 'image/png':
+              this.inputImageSelected({ target: { files: [clipboard.value] } });
+              return;
+          }
+        } catch (e) {
+          document.getElementById(this.file_sel_id).click();
+        }
+      }
+    }
+    contextAct();
+    return false;
+  }
+
   async inputImageSelected(ev: any) {
     let base64 = await this.global.GetBase64ThroughFileReader(ev.target.files[0]);
     this.nakama.limit_image_size(base64, (v) => {
