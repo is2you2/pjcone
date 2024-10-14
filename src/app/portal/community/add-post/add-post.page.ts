@@ -85,6 +85,8 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.cont = new AbortController();
     this.useFirstCustomCDN = Number(localStorage.getItem('useFFSCDN')) || 0;
     this.toggle_custom_attach(this.useFirstCustomCDN);
+    this.UseOutLink = true;
+    this.toggle_open_link(this.UseOutLink);
     this.route.queryParams.subscribe(async _p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
       let InitAct = false;
