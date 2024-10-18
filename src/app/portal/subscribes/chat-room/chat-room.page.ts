@@ -168,13 +168,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       icon: 'document-attach-outline',
       name: this.lang.text['ChatRoom']['attachments'],
       act: () => {
-        if (!this.userInputTextArea)
-          this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
         this.new_attach({ detail: { value: 'load' } });
       },
       context: () => {
-        if (!this.userInputTextArea)
-          this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
         this.new_attach({ detail: { value: 'link' } });
         return false;
       }
@@ -182,7 +178,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       icon_img: 'voidDraw.png',
       name: this.lang.text['ChatRoom']['voidDraw'],
       act: async () => {
-        if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
         let props = {};
         let content_related_creator: ContentCreatorInfo[];
         if (this.userInput.file) { // 선택한 파일을 편집하는 경우
@@ -221,7 +216,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       icon: 'reader-outline',
       name: this.lang.text['ChatRoom']['newText'],
       act: async () => {
-        if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
         let props = {
           info: {
             content: {
@@ -508,7 +502,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       override = {};
     switch (ev.detail.value) {
       case 'load':
-        if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
         document.getElementById(this.file_sel_id).click();
         break;
       case 'link':
@@ -813,6 +806,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.WillLeave = false;
     this.ChatContDiv = document.getElementById('chatroom_content_div');
     if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+    this.userInputTextArea.onblur = () => {
+      this.CheckIfFocusOnInput = false;
+    }
+    this.userInputTextArea.onfocus = () => {
+      this.CheckIfFocusOnInput = true;
+    }
     this.userInputTextArea.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
@@ -881,7 +880,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId))
         setTimeout(() => {
           if (this.WillLeave) return;
-          if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
           this.make_ext_hidden();
           this.userInputTextArea.focus();
         }, 0);
@@ -1852,14 +1850,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 플랫폼별 높이 관리를 위한 함수 분리, 사용자 입력칸 높이 조정 함수 */
   ResizeTextArea() {
-    if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
     this.userInputTextArea.style.height = '36px';
   }
 
+  /** 입력칸에 포커싱되어있는지 검토 */
+  CheckIfFocusOnInput = false;
   userInputTextArea: HTMLElement;
   ChannelUserInputId = 'ChannelUserInputId';
   check_key(ev: any) {
-    if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
     if (isPlatform == 'DesktopPWA') {
       if (ev.key == 'Enter' && !ev.shiftKey && ev.type == 'keydown') {
         this.send(true);
@@ -1880,7 +1878,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   block_send = false;
   async send(with_key = false) {
     if (with_key && (isPlatform == 'Android' || isPlatform == 'iOS')) return;
-    if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
     this.userInputTextArea.focus();
     if (!this.userInput.text.trim() && !this.userInput['file'])
       if (this.IsMsgEditMode === undefined || !this.IsMsgEditMode.content.filename) {
@@ -2157,7 +2154,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       (MsgText || msg.content['noti'] || (msg.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined) || '');
     setTimeout(() => {
       this.userInput.text = '';
-      if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
       this.ResizeTextArea();
       this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
       if (this.NeedScrollDown())
@@ -2657,6 +2653,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.removeShortCutKey();
     window.onfocus = null;
     this.userInputTextArea.onpaste = null;
+    this.userInputTextArea.onblur = null;
+    this.userInputTextArea.onfocus = null;
   }
 
   removeShortCutKey() {

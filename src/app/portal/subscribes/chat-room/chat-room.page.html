@@ -24,6 +24,8 @@
 <ion-content scrollY="false">
   <div id="p5Drop_chatroom" style="position: absolute; width: 100%; height: 100%; display: flex; pointer-events: none;">
   </div>
+  <div *ngIf="global.ShowHint && !CheckIfFocusOnInput" class="shortcut_hint" style="left: auto; right: 0px; border-radius: 0px 0px 0px 4px;">Backspace
+  </div>
   <table id="main_table" class="channel_bg"
     style="width: 100%; height: 100%; background-color: var(--chatroom-background);">
     <tr style="height: 100%;">
@@ -31,7 +33,7 @@
         <div id="chatroom_div" class="main" style="max-width: 100vw;">
           <div id="chatroom_content_div">
             <div style="position: relative;">
-              <div *ngIf="global.ShowHint" class="shortcut_hint">`</div>
+              <div *ngIf="global.ShowHint && !CheckIfFocusOnInput" class="shortcut_hint">`</div>
               <ion-item [disabled]="(next_cursor === undefined && !ViewMsgIndex) || !pullable" button
                 (click)="pull_msg_history()">
                 <ion-label>{{lang.text['ChatRoom']['fetch_previous_chat']}}</ion-label>
@@ -90,7 +92,8 @@
                       <div *ngIf="msg.content['filename']" class="file_message_form">
                         <div *ngIf="!msg.content['thumbnail']" class="file_button imageForm borderRadiusDefault"
                           (click)="file_detail(msg)" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
-                          <div *ngIf="global.ShowHint && i == ViewableMessage.length - 1" class="shortcut_hint">Q</div>
+                          <div *ngIf="global.ShowHint && !CheckIfFocusOnInput && i == ViewableMessage.length - 1"
+                            class="shortcut_hint">Q</div>
                           <p class="file_info"> {{msg.content['filename']}} </p>
                           <div *ngIf="msg.content['text']" class="text_seperator"></div>
                           <span *ngFor="let line of msg.content['text']" class="file_info file_text_thumbnail"> {{line}}
@@ -98,7 +101,8 @@
                         </div>
                         <div *ngIf="msg.content['thumbnail']" class="file_name_form imageForm borderRadiusDefault"
                           (click)="file_detail(msg)">
-                          <div *ngIf="global.ShowHint && i == ViewableMessage.length - 1" class="shortcut_hint">Q</div>
+                          <div *ngIf="global.ShowHint && !CheckIfFocusOnInput && i == ViewableMessage.length - 1"
+                            class="shortcut_hint">Q</div>
                           <img class="file_thumbnail imageForm"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
                             [src]="msg.content['thumbnail']" [alt]="msg.content['filename']" />
@@ -172,7 +176,8 @@
                       <div *ngIf="msg.content['filename']" class="my_file_message_form">
                         <div *ngIf="!msg.content['thumbnail']" class="file_button imageForm borderRadiusDefault"
                           (click)="file_detail(msg)" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
-                          <div *ngIf="global.ShowHint && i == ViewableMessage.length - 1" class="shortcut_hint">Q</div>
+                          <div *ngIf="global.ShowHint && !CheckIfFocusOnInput && i == ViewableMessage.length - 1"
+                            class="shortcut_hint">Q</div>
                           <p class="file_info"> {{msg.content['filename']}} </p>
                           <div *ngIf="msg.content['text']" class="text_seperator"></div>
                           <span *ngFor="let line of msg.content['text']" class="file_info file_text_thumbnail"> {{line}}
@@ -180,7 +185,8 @@
                         </div>
                         <div *ngIf="msg.content['thumbnail']" class="file_name_form imageForm borderRadiusDefault"
                           (click)="file_detail(msg)">
-                          <div *ngIf="global.ShowHint && i == ViewableMessage.length - 1" class="shortcut_hint">Q</div>
+                          <div *ngIf="global.ShowHint && !CheckIfFocusOnInput && i == ViewableMessage.length - 1"
+                            class="shortcut_hint">Q</div>
                           <img class="file_thumbnail imageForm"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
                             [src]="msg.content['thumbnail']" [alt]="msg.content['filename']" />
@@ -311,7 +317,8 @@
           <tr class="thumbnail_parts" *ngIf="ShowGoToBottom && !last_message_viewer.user_id"
             (click)="scroll_down_logs()">
             <td style="text-align: center; padding: 4px 0px; position: relative;">
-              <div *ngIf="global.ShowHint" class="shortcut_hint" style="border-radius: 4px;">Enter</div>
+              <div *ngIf="global.ShowHint && CheckIfFocusOnInput" class="shortcut_hint" style="border-radius: 4px;">
+                Enter</div>
               {{lang.text['ChatRoom']['GoToRecent']}}
             </td>
           </tr>
@@ -340,11 +347,15 @@
             <tr>
               <td>
                 <ion-button fill="clear" mode="md" (click)="open_ext_with_delay()" class="ion-text-center">
-                  <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_hint_menu">E</div>
+                  <div *ngIf="global.ShowHint && !CheckIfFocusOnInput" class="shortcut_hint shortcut_hint_menu">E</div>
                   <ion-icon name="add"></ion-icon>
                 </ion-button>
               </td>
-              <td style="width: 100%; vertical-align: bottom;">
+              <td style="width: 100%; vertical-align: bottom; position: relative;">
+                <div *ngIf="global.ShowHint && !CheckIfFocusOnInput" class="shortcut_hint shortcut_hint_menu">Enter
+                </div>
+                <div *ngIf="global.ShowHint && CheckIfFocusOnInput" class="shortcut_hint shortcut_hint_menu">Backspace
+                </div>
                 <textarea [id]="ChannelUserInputId" [(ngModel)]="userInput.text" (keyup)="check_key($event)"
                   (keydown)="check_key($event)" class="TextAreaInput imageForm" (click)="make_ext_hidden()"
                   [placeholder]="inputPlaceholder"></textarea>
@@ -372,7 +383,8 @@
             <div class="ext_button" [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'"
               (click)="button['act']()" (contextmenu)="button['context'] ? button['context']() : null"
               [hidden]="button.isHide">
-              <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_hint_ext_menu">{{button['index']}}</div>
+              <div *ngIf="global.ShowHint && !CheckIfFocusOnInput" class="shortcut_hint shortcut_hint_ext_menu">
+                {{button['index']}}</div>
               <ion-icon *ngIf="button['icon']" slot="icon-only" [name]="button['icon'] || 'close-circle'"
                 style="width: 36px; height: 36px;">
               </ion-icon>
