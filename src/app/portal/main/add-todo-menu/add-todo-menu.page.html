@@ -35,7 +35,8 @@
           </ion-item>
           <div *ngIf="!isStoreAtChangable || !AmICreator">
             <ion-item (click)="ChangeDisconnectStatus()">
-              <ion-label style="display: contents" color="medium">{{ userInput.display_store || lang.text['TodoDetail']['WIP'] }}</ion-label>
+              <ion-label style="display: contents" color="medium">{{ userInput.display_store ||
+                lang.text['TodoDetail']['WIP'] }}</ion-label>
               <ion-label color="medium" class="ion-text-right">{{ userInput.display_creator }}</ion-label>
             </ion-item>
           </div>
@@ -144,7 +145,7 @@
             </ion-item>
             <div *ngIf="attach['viewer']" (click)="open_content_viewer(i)">
               <img *ngIf="attach['thumbnail']" (contextmenu)="AttachmentContextMenu(attach, i)" class="image_thumbnail"
-                [src]="attach['thumbnail']" [alt]="attach['filename']"/>
+                [src]="attach['thumbnail']" [alt]="attach['filename']" />
               <ion-item button *ngIf="!attach['thumbnail']">
                 <ion-label color="medium">{{lang.text['TodoDetail']['open_content_viewer']}}</ion-label>
               </ion-item>
@@ -160,7 +161,7 @@
                   style="width: 36px; height: 36px;">
                 </ion-icon>
                 <img *ngIf="button['icon_img']" class="ext_icon_img" [src]="'assets/icon/' + button['icon_img']"
-                  [alt]="button['title']"/>
+                  [alt]="button['title']" />
                 <div>{{button['name']}}</div>
               </div>
             </div>
@@ -175,9 +176,12 @@
           <table id="bottom_buttons" style="width: 100%; background-color: black;">
             <tr>
               <td>
-                <ion-button [disabled]="isButtonClicked" (click)="saveData()" expand="block">
-                  {{buttonDisplay.saveTodo}}
-                </ion-button>
+                <div>
+                  <div *ngIf="global.ShowHint" class="shortcut_hint">Ctrl + Enter</div>
+                  <ion-button [disabled]="isButtonClicked" (click)="saveData()" expand="block">
+                    {{buttonDisplay.saveTodo}}
+                  </ion-button>
+                </div>
               </td>
               <td *ngIf="isModify">
                 <ion-button color="danger" [disabled]="isButtonClicked" (click)="deleteData()" expand="block">

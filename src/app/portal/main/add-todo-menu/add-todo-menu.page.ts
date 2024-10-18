@@ -49,7 +49,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     private noti: LocalNotiService,
     private statusBar: StatusManageService,
     private loadingCtrl: LoadingController,
-    private global: GlobalActService,
+    public global: GlobalActService,
     private navCtrl: NavController,
   ) { }
 
