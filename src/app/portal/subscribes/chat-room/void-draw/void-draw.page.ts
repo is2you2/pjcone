@@ -196,6 +196,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       let change_checkmark: Function;
       const PIXEL_DENSITY = 1;
       p.setup = async () => {
+        p5ColorPicker.style('position', 'absolute');
         p.pixelDensity(PIXEL_DENSITY);
         p.noLoop();
         p.noFill();
@@ -335,26 +336,38 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         TopMenu.parent(targetDiv);
         let top_row = TopMenu.elt.insertRow(0); // 상단 메뉴
         let AddTextCell = top_row.insertCell(0); // 추가
-        AddTextCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
+        if (this.global.ShowHint)
+          AddTextCell.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">A</div><ion-icon style="width: 27px; height: 27px" name="wifi-outline"></ion-icon></div>`;
+        else AddTextCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
         AddTextCell.style.textAlign = 'center';
         AddTextCell.style.cursor = 'pointer';
         AddTextCell.onclick = () => {
           this.ClickRemoteAddButton();
         } // 동작 준비중 // A 단축키 기능 재연결과 new_image() 삭제
         let CropCell = top_row.insertCell(1); // Crop
-        CropCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="crop"></ion-icon>`;
+        if (this.global.ShowHint)
+          CropCell.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">S</div><ion-icon style="width: 27px; height: 27px" name="crop"></ion-icon></div>`;
+        else CropCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="crop"></ion-icon>`;
         CropCell.style.textAlign = 'center';
         CropCell.style.cursor = 'pointer';
         CropCell.onclick = () => { this.open_crop_tool() }
         let ApplyCell = top_row.insertCell(2);
-        ApplyCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="checkmark"></ion-icon>`;
+        if (this.global.ShowHint)
+          ApplyCell.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">D</div><ion-icon style="width: 27px; height: 27px" name="checkmark"></ion-icon></div>`;
+        else ApplyCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="checkmark"></ion-icon>`;
         ApplyCell.style.textAlign = 'center';
         ApplyCell.style.cursor = 'pointer';
         ApplyCell.onclick = () => { this.dismiss_draw() }
         change_checkmark = () => {
           if (this.isCropMode) {
-            ApplyCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="cut-sharp"></ion-icon>`;
-          } else ApplyCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="checkmark"></ion-icon>`;
+            if (this.global.ShowHint)
+              ApplyCell.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">D</div><ion-icon style="width: 27px; height: 27px" name="cut-sharp"></ion-icon></div>`;
+            else ApplyCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="cut-sharp"></ion-icon>`;
+          } else {
+            if (this.global.ShowHint)
+              ApplyCell.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">D</div><ion-icon style="width: 27px; height: 27px" name="checkmark"></ion-icon></div>`;
+            else ApplyCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="checkmark"></ion-icon>`;
+          }
         }
 
         BottomMenu = p.createElement('table');
@@ -364,21 +377,27 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         BottomMenu.parent(targetDiv);
         let bottom_row = BottomMenu.elt.insertRow(0); // 하단 메뉴
         let UndoCell = bottom_row.insertCell(0); // Undo
-        UndoCell.innerHTML = `<ion-icon id="undoIcon" style="width: 27px; height: 27px" name="arrow-undo"></ion-icon>`;
+        if (this.global.ShowHint)
+          UndoCell.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">Z</div><ion-icon id="undoIcon" style="width: 27px; height: 27px" name="arrow-undo"></ion-icon></div>`;
+        else UndoCell.innerHTML = `<ion-icon id="undoIcon" style="width: 27px; height: 27px" name="arrow-undo"></ion-icon>`;
         UndoButton = document.getElementById('undoIcon');
         UndoButton.style.fill = 'var(--ion-color-medium)';
         UndoCell.style.textAlign = 'center';
         UndoCell.style.cursor = 'pointer';
         UndoCell.onclick = () => { this.p5history_act(-1); }
         let RedoCell = bottom_row.insertCell(1); // Redo
-        RedoCell.innerHTML = `<ion-icon id="redoIcon" style="width: 27px; height: 27px" name="arrow-redo"></ion-icon>`;
+        if (this.global.ShowHint)
+          RedoCell.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">X</div><ion-icon id="redoIcon" style="width: 27px; height: 27px" name="arrow-redo"></ion-icon></div>`;
+        else RedoCell.innerHTML = `<ion-icon id="redoIcon" style="width: 27px; height: 27px" name="arrow-redo"></ion-icon>`;
         RedoButton = document.getElementById('redoIcon');
         RedoButton.style.fill = 'var(--ion-color-medium)';
         RedoCell.style.textAlign = 'center';
         RedoCell.style.cursor = 'pointer';
         RedoCell.onclick = () => { this.p5history_act(1); }
         let ColorCell = bottom_row.insertCell(2); // 선 색상 변경
-        ColorCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="color-palette"></ion-icon>`;
+        if (this.global.ShowHint)
+          ColorCell.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">C</div><ion-icon style="width: 27px; height: 27px" name="color-palette"></ion-icon></div>`;
+        else ColorCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="color-palette"></ion-icon>`;
         p5ColorPicker.style('width: 0px; height: 0px; opacity: 0;');
         p5ColorPicker.parent(ColorCell);
         p5ColorPicker.elt.oninput = () => {
@@ -394,7 +413,9 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         ColorCell.style.cursor = 'pointer';
         ColorCell.onclick = () => { p5ColorPicker.elt.click() }
         let WeightCell = bottom_row.insertCell(3); // 선 두께 변경
-        WeightCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="pencil"></ion-icon>`;
+        if (this.global.ShowHint)
+          WeightCell.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">V</div><ion-icon style="width: 27px; height: 27px" name="pencil"></ion-icon></div>`;
+        else WeightCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="pencil"></ion-icon>`;
         WeightCell.style.textAlign = 'center';
         WeightCell.style.cursor = 'pointer';
         WeightCell.onclick = () => { this.change_line_weight() }
