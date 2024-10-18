@@ -18,7 +18,7 @@ export class PortalPage implements OnInit {
   constructor(
     private navCtrl: NavController,
     public nakama: NakamaService,
-    private global: GlobalActService,
+    public global: GlobalActService,
     public indexed: IndexedDBService,
     private _webrtc: WebrtcService, // constructor 단계 수행을 위해 로드만 함
     public statusBar: StatusManageService,

@@ -282,6 +282,11 @@ button.alert-button.redfont {
     background-color: var(--list-shortcut-hint-background);
 }
 
+.shortcut_main {
+    top: 0px;
+    padding: 0px 4px;
+}
+
 .shortcut_hint_menu {
     left: auto;
     padding: 0px 8px;

@@ -31,14 +31,17 @@
     <ion-item-divider>
       <ion-label>{{lang.text['Subscribes']['myProfile']}}</ion-label>
     </ion-item-divider>
-    <ion-item button (click)="nakama.open_profile_page()">
-      <div class="additional_form bg_img_form">
-        <img class="profile_img"
-          [style]="nakama.users.self['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'"
-          [src]="nakama.users.self['img']">
-      </div>
-      <ion-label>{{nakama.users.self['display_name'] || lang.text['Profile']['noname_user']}}</ion-label>
-    </ion-item>
+    <div>
+      <div class="shortcut_hint">`</div>
+      <ion-item button (click)="nakama.open_profile_page()">
+        <div class="additional_form bg_img_form">
+          <img class="profile_img"
+            [style]="nakama.users.self['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'"
+            [src]="nakama.users.self['img']">
+        </div>
+        <ion-label>{{nakama.users.self['display_name'] || lang.text['Profile']['noname_user']}}</ion-label>
+      </ion-item>
+    </div>
     <div *ngIf="nakama.channels.length">
       <ion-item-divider>
         <ion-label>{{lang.text['Subscribes']['JoinedChannels']}}</ion-label>
