@@ -150,14 +150,14 @@ export class GlobalActService {
   FocusOnPortalLeaveAct: Function;
 
   /** 데스크탑 환경인지 여부 */
-  isDesktop: boolean;
+  ShowHint: boolean;
   /** 페이지별 단축키 관리자 */
   p5key: p5;
   p5KeyShortCut: any;
   initialize() {
-    let load_env = localStorage.getItem('isDesktop');
-    if (load_env !== null) this.isDesktop = load_env == '1';
-    if (this.isDesktop === undefined) this.isDesktop = isPlatform == 'DesktopPWA';
+    let load_env = localStorage.getItem('ShowHint');
+    if (load_env !== null) this.ShowHint = load_env == '1';
+    if (this.ShowHint === undefined) this.ShowHint = isPlatform == 'DesktopPWA';
     window.onblur = () => {
       let keys = Object.keys(this.WindowOnBlurAct);
       for (let key of keys) this.WindowOnBlurAct[key]();

@@ -11,90 +11,136 @@
   <ion-item-divider>
     <ion-label>{{lang.text['Settings']['env_info']}}</ion-label>
   </ion-item-divider>
-  <ion-item button (click)="go_to_page('noti-alert')">
-    <ion-label>{{lang.text['Settings']['NotificationSetting']}}</ion-label>
-  </ion-item>
-  <ion-item button (ionChange)="toggle_ShowServer()">
-    <ion-toggle style="pointer-events: none;"
-      [(ngModel)]="nakama.showServer">{{lang.text['Settings']['ShowChnServer']}}</ion-toggle>
-  </ion-item>
-  <ion-item button (click)="StartPageClicked()">
-    <ion-select [label]="lang.text['Settings']['StartPageSet']" #StartPageSel style="pointer-events: none;"
-      [value]="StartPageValue" [placeholder]="lang.text['Settings']['joinDedi_placeholder']"
-      (ionChange)="StartPageChanged($event)" (ionDismiss)="SetStartPageShortCut()">
-      <ion-select-option value="0">{{lang.text['Main']['Title']}}</ion-select-option>
-      <ion-select-option value="1">{{lang.text['Subscribes']['Title']}}</ion-select-option>
-      <ion-select-option value="2">{{lang.text['Arcade']['Title']}}</ion-select-option>
-      <ion-select-option value="3">{{lang.text['Community']['Title']}}</ion-select-option>
-    </ion-select>
-  </ion-item>
-  <ion-item button (ionChange)="toggle_show_shortcut_hint()">
-    <ion-toggle style="pointer-events: none;"
-      [(ngModel)]="global.isDesktop">{{lang.text['Settings']['ShowShortCutHint']}}</ion-toggle>
-  </ion-item>
-  <ion-accordion-group #Devkit>
-    <ion-accordion value="Devkit">
-      <ion-item slot="header">
-        <ion-label>{{lang.text['Settings']['DevKit']}}</ion-label>
-      </ion-item>
-      <div slot="content">
-        <ion-item button (click)="open_inapp_explorer()">
-          <ion-label>{{lang.text['Settings']['InAppExplorer']}}</ion-label>
+  <div>
+    <div *ngIf="global.ShowHint" class="shortcut_hint">1</div>
+    <ion-item button (click)="go_to_page('noti-alert')">
+      <ion-label>{{lang.text['Settings']['NotificationSetting']}}</ion-label>
+    </ion-item>
+  </div>
+  <div>
+    <div *ngIf="global.ShowHint" class="shortcut_hint">2</div>
+    <ion-item button (ionChange)="toggle_ShowServer()">
+      <ion-toggle style="pointer-events: none;"
+        [(ngModel)]="nakama.showServer">{{lang.text['Settings']['ShowChnServer']}}</ion-toggle>
+    </ion-item>
+  </div>
+  <div>
+    <div *ngIf="global.ShowHint" class="shortcut_hint">3</div>
+    <ion-item button (click)="StartPageClicked()">
+      <ion-select [label]="lang.text['Settings']['StartPageSet']" #StartPageSel style="pointer-events: none;"
+        [value]="StartPageValue" [placeholder]="lang.text['Settings']['joinDedi_placeholder']"
+        (ionChange)="StartPageChanged($event)" (ionDismiss)="SetStartPageShortCut()">
+        <ion-select-option value="0">{{lang.text['Main']['Title']}}</ion-select-option>
+        <ion-select-option value="1">{{lang.text['Subscribes']['Title']}}</ion-select-option>
+        <ion-select-option value="2">{{lang.text['Arcade']['Title']}}</ion-select-option>
+        <ion-select-option value="3">{{lang.text['Community']['Title']}}</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </div>
+  <div>
+    <div *ngIf="global.ShowHint" class="shortcut_hint">4</div>
+    <ion-item button (ionChange)="toggle_show_shortcut_hint()">
+      <ion-toggle style="pointer-events: none;"
+        [(ngModel)]="global.ShowHint">{{lang.text['Settings']['ShowShortCutHint']}}</ion-toggle>
+    </ion-item>
+  </div>
+  <div>
+    <div *ngIf="global.ShowHint" class="shortcut_hint">5</div>
+    <ion-accordion-group #Devkit (ionChange)="AccordionToggled()">
+      <ion-accordion value="Devkit">
+        <ion-item slot="header">
+          <ion-label>{{lang.text['Settings']['DevKit']}}</ion-label>
         </ion-item>
-        <ion-item button (click)="go_to_page('weblink-gen')">
-          <ion-label>{{lang.text['Settings']['WebLinkGen']}}</ion-label>
-        </ion-item>
-        <ion-item *ngIf="cant_dedicated" button id="fallback_fs_input">
-          <ion-icon class="icon_margin" name="cloud-done-outline"></ion-icon>
-          <ion-input [label]="lang.text['Settings']['FallbackFS']" class="ion-text-right"
-            [(ngModel)]="FallbackServerAddress" placeholder="(https://)0.0.0.0(:0)"
-            (ionInput)="fallback_fs_input()"></ion-input>
-          <ion-icon slot="end" name="open-outline" (click)="global.open_custom_site(FallbackServerAddress)"></ion-icon>
-        </ion-item>
-        <ion-item button (click)="go_to_webrtc_manager()">
-          <ion-label>{{lang.text['WebRTCDevManager']['Title']}}</ion-label>
-        </ion-item>
-        <ion-item button (click)="download_serverfile()">
-          <ion-label>{{lang.text['Settings']['ServerFiles']}}</ion-label>
-        </ion-item>
-      </div>
-    </ion-accordion>
-  </ion-accordion-group>
+        <div slot="content">
+          <div>
+            <div *ngIf="global.ShowHint" class="shortcut_hint">6</div>
+            <ion-item button (click)="open_inapp_explorer()">
+              <ion-label>{{lang.text['Settings']['InAppExplorer']}}</ion-label>
+            </ion-item>
+          </div>
+          <div>
+            <div *ngIf="global.ShowHint" class="shortcut_hint">7</div>
+            <ion-item button (click)="go_to_page('weblink-gen')">
+              <ion-label>{{lang.text['Settings']['WebLinkGen']}}</ion-label>
+            </ion-item>
+          </div>
+          <div>
+            <div *ngIf="global.ShowHint" class="shortcut_hint">8</div>
+            <ion-item button id="fallback_fs_input">
+              <ion-icon class="icon_margin" name="cloud-done-outline"></ion-icon>
+              <ion-input [label]="lang.text['Settings']['FallbackFS']" class="ion-text-right"
+                [(ngModel)]="FallbackServerAddress" placeholder="(https://)0.0.0.0(:0)"
+                (ionInput)="fallback_fs_input()"></ion-input>
+              <ion-icon slot="end" name="open-outline"
+                (click)="global.open_custom_site(FallbackServerAddress)"></ion-icon>
+            </ion-item>
+          </div>
+          <div>
+            <div *ngIf="global.ShowHint" class="shortcut_hint">9</div>
+            <ion-item button (click)="go_to_webrtc_manager()">
+              <ion-label>{{lang.text['WebRTCDevManager']['Title']}}</ion-label>
+            </ion-item>
+          </div>
+          <div>
+            <div *ngIf="global.ShowHint" class="shortcut_hint">0</div>
+            <ion-item button (click)="download_serverfile()">
+              <ion-label>{{lang.text['Settings']['ServerFiles']}}</ion-label>
+            </ion-item>
+          </div>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+  </div>
   <div *ngIf="as_admin.length">
     <ion-item-divider>
       <ion-label>{{lang.text['Settings']['admin_tools']}}</ion-label>
     </ion-item-divider>
-    <ion-item button (click)="go_to_page('admin-tools')">
-      <ion-label>{{lang.text['Settings']['ServerAdmin']}}</ion-label>
-    </ion-item>
+    <div>
+      <div *ngIf="global.ShowHint" class="shortcut_hint">{{ShortcutHint['admin']}}</div>
+      <ion-item button (click)="go_to_page('admin-tools')">
+        <ion-label>{{lang.text['Settings']['ServerAdmin']}}</ion-label>
+      </ion-item>
+    </div>
   </div>
   <ion-item-divider>
     <ion-label>{{lang.text['Settings']['AppInfo']}}</ion-label>
   </ion-item-divider>
-  <ion-item button (click)="go_to_page('creator')">
-    <ion-label>{{lang.text['Settings']['AppCreator']}}</ion-label>
-  </ion-item>
-  <ion-item *ngIf="lang.lang != 'ko'" button (click)="go_to_page('translator')">
-    <ion-label>{{lang.text['Settings']['AppTranslator']}}</ion-label>
-  </ion-item>
-  <ion-item button (click)="LangClicked()">
-    <ion-icon class="icon_margin" name="language"></ion-icon>
-    <ion-select [label]="lang.text['Settings']['AppLanguage']" #LangSel style="pointer-events: none;"
-      [value]="lang.lang" [placeholder]="lang.lang" (ionChange)="LanguageChanged($event)">
-      <ion-select-option *ngFor="let language of lang.setable"
-        [value]="language.value">{{language.display_name}}</ion-select-option>
-    </ion-select>
-  </ion-item>
-  <ion-item button (click)="go_to_page('licenses')">
-    <ion-label>{{lang.text['Settings']['LicenseNotice']}}</ion-label>
-  </ion-item>
-  <ion-item *ngIf="!cant_dedicated" button (click)="global.open_link('https://is2you2.github.io/pjcone_pwa/')">
-    <ion-label>{{lang.text['Settings']['OpenPlayStore']}}</ion-label>
-  </ion-item>
+  <div>
+    <div *ngIf="global.ShowHint" class="shortcut_hint">{{ShortcutHint['creator']}}</div>
+    <ion-item button (click)="go_to_page('creator')">
+      <ion-label>{{lang.text['Settings']['AppCreator']}}</ion-label>
+    </ion-item>
+  </div>
+  <div>
+    <div *ngIf="global.ShowHint" class="shortcut_hint">{{ShortcutHint['translator']}}</div>
+    <ion-item *ngIf="lang.lang != 'ko'" button (click)="go_to_page('translator')">
+      <ion-label>{{lang.text['Settings']['AppTranslator']}}</ion-label>
+    </ion-item>
+  </div>
+  <div>
+    <div *ngIf="global.ShowHint" class="shortcut_hint">{{ShortcutHint['lang']}}</div>
+    <ion-item button (click)="LangClicked()">
+      <ion-icon class="icon_margin" name="language"></ion-icon>
+      <ion-select [label]="lang.text['Settings']['AppLanguage']" #LangSel style="pointer-events: none;"
+        [value]="lang.lang" [placeholder]="lang.lang" (ionChange)="LanguageChanged($event)">
+        <ion-select-option *ngFor="let language of lang.setable"
+          [value]="language.value">{{language.display_name}}</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </div>
+  <div>
+    <div *ngIf="global.ShowHint" class="shortcut_hint">{{ShortcutHint['license']}}</div>
+    <ion-item button (click)="go_to_page('licenses')">
+      <ion-label>{{lang.text['Settings']['LicenseNotice']}}</ion-label>
+    </ion-item>
+  </div>
   <ion-item-divider>
     <ion-label>{{lang.text['Settings']['Sponsorship']}}</ion-label>
   </ion-item-divider>
-  <img src="assets/data/asset-preview.png"
-    style="cursor: pointer; padding: 16px; border-radius: 32px; max-height: 300px;" alt="patreon_link"
-    (click)="open_patreon()">
+  <div>
+    <div *ngIf="global.ShowHint" class="shortcut_hint">{{ShortcutHint['sponsor']}}</div>
+    <img src="assets/data/asset-preview.png"
+      style="cursor: pointer; padding: 16px; border-radius: 32px; max-height: 300px;" alt="patreon_link"
+      (click)="open_patreon()">
+  </div>
 </ion-content>

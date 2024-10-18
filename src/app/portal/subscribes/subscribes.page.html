@@ -44,7 +44,7 @@
         <ion-label>{{lang.text['Subscribes']['JoinedChannels']}}</ion-label>
       </ion-item-divider>
       <div *ngFor="let channel of nakama.channels; let i = index" style="position: relative;">
-        <div *ngIf="global.isDesktop && i < 10" class="shortcut_hint">{{(i + 1) % 10}}</div>
+        <div *ngIf="global.ShowHint && i < 10" class="shortcut_hint">{{(i + 1) % 10}}</div>
         <ion-item button (click)="go_to_chatroom(channel)" (contextmenu)="ChannelContextMenu(channel)">
           <div class="channel_image channel_image_div">
             <img class="channel_image"

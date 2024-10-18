@@ -22,14 +22,10 @@ export class SettingsPage implements OnInit, OnDestroy {
     public global: GlobalActService,
     private indexed: IndexedDBService,
   ) { }
-  /** 사설 서버 생성 가능 여부: 메뉴 disabled */
-  cant_dedicated = false;
   can_use_http = false;
   is_nativefier = isNativefier;
 
   ngOnInit() {
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
-      this.cant_dedicated = true;
     this.check_if_admin();
     this.nakama.on_socket_disconnected['settings_admin_check'] = () => {
       this.check_if_admin();
@@ -46,9 +42,9 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   /** 리스트 단축키 힌트 보여주기 토글 */
   toggle_show_shortcut_hint() {
-    if (this.global.isDesktop)
-      localStorage.setItem('isDesktop', '1');
-    else localStorage.setItem('isDesktop', '0');
+    if (this.global.ShowHint)
+      localStorage.setItem('ShowHint', '1');
+    else localStorage.setItem('ShowHint', '0');
   }
 
   /** 관리자로 등록된 서버들 */
@@ -73,21 +69,20 @@ export class SettingsPage implements OnInit, OnDestroy {
     else this.profile_filter = "filter: grayscale(.9) contrast(1.4);";
     this.check_if_admin();
     this.FallbackServerAddress = localStorage.getItem('fallback_fs');
-    if (this.cant_dedicated) {
-      this.Fallback_FS_input_element = document.getElementById('fallback_fs_input').childNodes[1].childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
-      this.Fallback_FS_input_element.onfocus = () => {
-        delete this.global.p5KeyShortCut['Digit'];
-      }
-      this.WillLeave = false;
-      this.Fallback_FS_input_element.addEventListener('focusout', () => {
-        if (!this.WillLeave)
-          this.ionViewDidEnter();
-      });
+    this.Fallback_FS_input_element = document.getElementById('fallback_fs_input').childNodes[1].childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
+    this.Fallback_FS_input_element.onfocus = () => {
+      delete this.global.p5KeyShortCut['Digit'];
     }
+    this.WillLeave = false;
+    this.Fallback_FS_input_element.addEventListener('focusout', () => {
+      if (!this.WillLeave)
+        this.ionViewDidEnter();
+    });
     this.StartPageValue = localStorage.getItem('StartPage');
     this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
+    this.CreateHint();
   }
 
   Fallback_FS_input_element: HTMLInputElement;
@@ -105,30 +100,76 @@ export class SettingsPage implements OnInit, OnDestroy {
     } else localStorage.removeItem('fallback_fs')
   }
 
+  /** 단축키 힌트로 보여지는 숫자들 */
+  ShortcutHint = {
+    admin: 0,
+    creator: 0,
+    translator: 0,
+    lang: 0,
+    license: 0,
+    sponsor: 0,
+  };
+  /** 현재 상황에 맞게 단축키 힌트 만들기 */
+  CreateHint() {
+    let keys = Object.keys(this.ShortcutHint);
+    keys.forEach(key => this.ShortcutHint[key] = undefined);
+    if (this.Devkit.value == 'Devkit') return;
+    let StartNumber = 6;
+    if (this.as_admin.length) {
+      this.ShortcutHint.admin = (StartNumber) % 10;
+      StartNumber++;
+    }
+    this.ShortcutHint.creator = (StartNumber) % 10;
+    StartNumber++;
+    if (this.lang.lang != 'ko') {
+      this.ShortcutHint.translator = (StartNumber) % 10;
+      StartNumber++;
+    }
+    if (StartNumber > 10) return;
+    this.ShortcutHint.lang = (StartNumber) % 10;
+    StartNumber++;
+    if (StartNumber > 10) return;
+    this.ShortcutHint.license = (StartNumber) % 10;
+    StartNumber++;
+    if (StartNumber > 10) return;
+    this.ShortcutHint.sponsor = (StartNumber) % 10;
+    StartNumber++;
+  }
+  /** 보조도구 메뉴의 순서를 적으면 됨 */
+  spliceStartFrom = 5;
+  ExpandMenuAct() {
+    this.Devkit.value = 'Devkit';
+    this.LinkButton.splice(this.spliceStartFrom, 0,
+      () => this.open_inapp_explorer(),
+      () => this.go_to_page('weblink-gen'),
+      () => this.focus_to_fallback_fs_input(),
+      () => this.go_to_webrtc_manager(),
+      () => this.download_serverfile(),
+    );
+    let keys = Object.keys(this.ShortcutHint);
+    keys.forEach(key => this.ShortcutHint[key] = undefined);
+  }
+  CollapseMenuAct() {
+    /** 숨겨진 메뉴 수 */
+    let count_menu = 5;
+    this.LinkButton.splice(this.spliceStartFrom, count_menu);
+    this.Devkit.value = undefined;
+    this.CreateHint();
+  }
+  /** 마우스 클릭을 통해 아코디언이 변경됨 */
+  AccordionToggled() {
+    if (this.Devkit.value) // 열기
+      this.ExpandMenuAct();
+    else // 닫기
+      this.CollapseMenuAct();
+  }
+
   LinkButton = [];
   ToggleAccordion() {
-    const spliceStartFrom = 5;
-    if (this.Devkit.value) { // 닫기
-      let count_menu = (!this.cant_dedicated && this.can_use_http) ? 6 : 5;
-      this.LinkButton.splice(spliceStartFrom, count_menu);
-      this.Devkit.value = undefined;
-    } else { // 열기
-      this.Devkit.value = 'Devkit';
-      if (this.cant_dedicated)
-        this.LinkButton.splice(spliceStartFrom, 0,
-          () => this.open_inapp_explorer(),
-          () => this.go_to_page('weblink-gen'),
-          () => this.focus_to_fallback_fs_input(),
-          () => this.go_to_webrtc_manager(),
-          () => this.download_serverfile(),
-        );
-      else this.LinkButton.splice(spliceStartFrom, 0,
-        () => this.open_inapp_explorer(),
-        () => this.go_to_page('weblink-gen'),
-        () => this.go_to_webrtc_manager(),
-        () => this.download_serverfile(),
-      );
-    }
+    if (this.Devkit.value)  // 닫기
+      this.CollapseMenuAct();
+    else // 열기
+      this.ExpandMenuAct();
   }
 
   /** AddKeyShortcut() 으로 사용할 수 있음 */
@@ -141,15 +182,14 @@ export class SettingsPage implements OnInit, OnDestroy {
     });
     this.LinkButton.push(() => this.StartPageClicked());
     this.LinkButton.push(() => {
-      this.global.isDesktop = !this.global.isDesktop;
+      this.global.ShowHint = !this.global.ShowHint;
       this.toggle_show_shortcut_hint();
     });
     this.LinkButton.push(() => this.ToggleAccordion());
     if (this.Devkit.value) {
       this.LinkButton.push(() => this.open_inapp_explorer());
       this.LinkButton.push(() => this.go_to_page('weblink-gen'));
-      if (this.cant_dedicated)
-        this.LinkButton.push(() => this.focus_to_fallback_fs_input());
+      this.LinkButton.push(() => this.focus_to_fallback_fs_input());
       this.LinkButton.push(() => this.go_to_webrtc_manager());
       this.LinkButton.push(() => this.download_serverfile());
     }
@@ -213,6 +253,8 @@ export class SettingsPage implements OnInit, OnDestroy {
     } catch (e) {
       this.lang.load_selected_lang();
     }
+    this.ionViewDidEnter();
+    this.CreateHint();
   }
 
   go_to_page(_page: string) {

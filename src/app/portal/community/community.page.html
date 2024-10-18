@@ -17,7 +17,7 @@
       <div *ngIf="nakama.posts.length" class="CardContainerDiv CardContainerDivShared">
         <ion-card *ngFor="let post of nakama.posts; let i = index" button class="card_style"
           (click)="nakama.open_post(post, i)" (contextmenu)="PostContextMenu(i)">
-          <div *ngIf="global.isDesktop && i < 10" class="shortcut_hint">{{(i + 1) % 10}}</div>
+          <div *ngIf="global.ShowHint && i < 10" class="shortcut_hint">{{(i + 1) % 10}}</div>
           <div class="thumbnail_image">
             <img *ngIf="post['mainImage']" [src]="post['mainImage']['thumbnail']"
               [style]="post['isNSFW'] ? 'filter: blur(16px);' : ''" alt="">

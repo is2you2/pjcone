@@ -12,7 +12,7 @@
     <ion-label>{{lang.text['ShareContentToOther']['AvailableChannels']}}</ion-label>
   </ion-item-divider>
   <div *ngFor="let channel of channels; let i = index">
-    <div *ngIf="global.isDesktop && i < 10" class="shortcut_hint">{{(i + 1) % 10}}</div>
+    <div *ngIf="global.ShowHint && i < 10" class="shortcut_hint">{{(i + 1) % 10}}</div>
     <ion-item button (click)="go_to_chatroom(channel)">
       <div class="channel_image channel_image_div">
         <img *ngIf="channel['info']" class="channel_image" [src]="channel['info']['img'] || 'assets/data/channel.svg'"
