@@ -43,15 +43,18 @@
         [(ngModel)]="userInput.isNSFW">{{lang.text['AddPost']['NSFW']}}</ion-toggle>
     </ion-item>
     <div class="thumbnail_image" style="width: 400px; padding-top: 8px;">
-      <img [style]="userInput['isNSFW'] ? 'filter: blur(16px);' : ''" [src]="MainPostImage" alt="MainPostImage"/>
+      <img [style]="userInput['isNSFW'] ? 'filter: blur(16px);' : ''" [src]="MainPostImage" alt="MainPostImage" />
     </div>
   </div>
   <ion-item button>
     <ion-input id="add_post_title" [disabled]="isSaveClicked" [placeholder]="lang.text['AddPost']['TitlePlaceholder']"
       [(ngModel)]="userInput.title"></ion-input>
   </ion-item>
-  <textarea id="add_post_content" class="infobox" style="height: 50%;" [disabled]="isSaveClicked"
-    [placeholder]="lang.text['AddPost']['ContentPlaceHolder']" [(ngModel)]="userInput.content"></textarea>
+  <div style="position: relative;">
+    <div *ngIf="global.ShowHint && CheckIfTitleInputFocus" class="shortcut_hint">Enter</div>
+    <textarea id="add_post_content" class="infobox" style="height: 360px;" [disabled]="isSaveClicked"
+      [placeholder]="lang.text['AddPost']['ContentPlaceHolder']" [(ngModel)]="userInput.content"></textarea>
+  </div>
   <input hidden type="file" id="add_post_input" accept="*" multiple (change)="inputFileSelected($event)">
   <input hidden type="file" id="PostMainImage_sel" accept="image/*" (change)="ChangeMainPostImage($event)">
   <div style="width: 100%; text-align: center; padding-bottom: 16px;">
@@ -63,7 +66,7 @@
           style="width: 36px; height: 36px;">
         </ion-icon>
         <img *ngIf="button['icon_img']" class="ext_icon_img" [src]="'assets/icon/' + button['icon_img']"
-          [alt]="button['title']"/>
+          [alt]="button['title']" />
         <div>{{button['name']}}</div>
       </div>
     </div>
@@ -72,7 +75,7 @@
     (click)="open_viewer(attach, i)" (contextmenu)="PostAttachContextMenu(i)">
     <ion-label>{{'['+ i + '] ' + attach.filename}}</ion-label>
     <div class="additional_form bg_img_form">
-      <img class="profile_img" [src]="attach.thumbnail"/>
+      <img class="profile_img" [src]="attach.thumbnail" />
     </div>
   </ion-item>
   <div>

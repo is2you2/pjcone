@@ -34,6 +34,8 @@ export class AddPostPage implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.route.queryParams['unsubscribe']();
     this.TitleInput.onpaste = null;
+    this.TitleInput.onfocus = null;
+    this.TitleInput.onblur = null;
     this.ContentTextArea.onpaste = null;
     this.p5StartVoiceTimer = null;
     this.p5StopVoiceTimer = null;
@@ -217,7 +219,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           if (this.WillLeavePage) return;
           switch (ev['key']) {
             case 'Enter':
-              if (document.activeElement.id == 'exact_post_title_id')
+              if (document.activeElement == this.TitleInput)
                 setTimeout(() => {
                   this.ContentTextArea.focus();
                 }, 0);
@@ -232,21 +234,31 @@ export class AddPostPage implements OnInit, OnDestroy {
   ContentTextArea: HTMLTextAreaElement;
   /** 게시물 제목 작성칸 */
   TitleInput: HTMLInputElement;
+  /** 타이틀 입력칸에 포커스되어있는지 여부 */
+  CheckIfTitleInputFocus = true;
   /** 기존 게시물 편집 여부 */
   isModify = false;
   ionViewWillEnter() {
     this.WillLeavePage = false;
     this.TitleInput = document.getElementById('add_post_title').childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
-    this.TitleInput.id = 'exact_post_title_id';
-    this.TitleInput.onpaste = (ev: any) => {
-      let stack = [];
-      for (const clipboardItem of ev.clipboardData.files)
-        stack.push({ file: clipboardItem });
-      if (!stack.length) return;
-      if (stack.length == 1)
-        this.ChangeMainPostImage({ target: { files: [stack[0].file] } });
-      return false;
-    }
+    if (!this.TitleInput.onblur)
+      this.TitleInput.onblur = () => {
+        this.CheckIfTitleInputFocus = false;
+      }
+    if (!this.TitleInput.onfocus)
+      this.TitleInput.onfocus = () => {
+        this.CheckIfTitleInputFocus = true;
+      }
+    if (!this.TitleInput.onpaste)
+      this.TitleInput.onpaste = (ev: any) => {
+        let stack = [];
+        for (const clipboardItem of ev.clipboardData.files)
+          stack.push({ file: clipboardItem });
+        if (!stack.length) return;
+        if (stack.length == 1)
+          this.ChangeMainPostImage({ target: { files: [stack[0].file] } });
+        return false;
+      }
     this.ContentTextArea = document.getElementById('add_post_content') as HTMLTextAreaElement;
     setTimeout(() => {
       if (!this.userInput.title)
