@@ -51,7 +51,7 @@
                         <img class="avatar_image"
                           [src]="nakama.users[isOfficial][target][msg.sender_id].img || 'assets/data/avatar.svg'"
                           alt="img"
-                          [style]="nakama.users[isOfficial][target][msg.sender_id]['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'">
+                          [style]="nakama.users[isOfficial][target][msg.sender_id]['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'"/>
                       </div>
                     </td>
                     <td>
@@ -79,7 +79,7 @@
                           (msg.content['qoute']['username'] || msg.content['qoute']['display_name'])}}</div>
                         <div *ngIf="msg.content['qoute'].url" class="imageForm borderRadiusDefault qouteImageHeight">
                           <img [src]="msg.content['qoute'].url" class="qouteImage qouteImageHeight"
-                            [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt="">
+                            [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt=""/>
                         </div>
                         <div *ngIf="msg.content['qoute'].text" class="qouteDiv qouteOnChatBalloon qouteBalloonBottom">
                           {{msg.content['qoute'].text}}</div>
@@ -96,7 +96,7 @@
                           (click)="file_detail(msg)">
                           <img class="file_thumbnail imageForm"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
-                            [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
+                            [src]="msg.content['thumbnail']" [alt]="msg.content['filename']"/>
                         </div>
                         <div *ngIf="msg.content['transfer_index']" class="transfer_count">
                           {{msg.content['transfer_index']['index']}}</div>
@@ -159,7 +159,7 @@
                           (msg.content['qoute']['username'] || msg.content['qoute']['display_name'])}}</div>
                         <div *ngIf="msg.content['qoute'].url" class="imageForm borderRadiusDefault qouteImageHeight">
                           <img [src]="msg.content['qoute'].url" class="qouteImage qouteImageHeight"
-                            [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt="">
+                            [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt=""/>
                         </div>
                         <div *ngIf="msg.content['qoute'].text" class="qouteDiv qouteOnChatBalloon qouteBalloonBottom">
                           {{msg.content['qoute'].text}}</div>
@@ -176,7 +176,7 @@
                           (click)="file_detail(msg)">
                           <img class="file_thumbnail imageForm"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
-                            [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
+                            [src]="msg.content['thumbnail']" [alt]="msg.content['filename']"/>
                         </div>
                         <div *ngIf="msg.content['transfer_index']" class="transfer_count">
                           {{msg.content['transfer_index']['index']}}</div>
@@ -205,7 +205,7 @@
                         (click)="user_detail(msg)">
                         <img class="avatar_image" [src]="nakama.users.self['img'] || 'assets/data/avatar.svg'"
                           alt="my_img"
-                          [style]="nakama.users.self['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'">
+                          [style]="nakama.users.self['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'"/>
                       </div>
                     </td>
                   </tr>
@@ -226,7 +226,7 @@
                   (msg.content['qoute']['username'] || msg.content['qoute']['display_name'])}}</div>
                 <div *ngIf="msg.content['qoute'].url" class="imageForm borderRadiusDefault qouteImageHeight">
                   <img [src]="msg.content['qoute'].url" class="qouteImage qouteImageHeight"
-                    [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt="">
+                    [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" alt=""/>
                 </div>
                 <div *ngIf="msg.content['qoute'].text" class="qouteDiv qouteOnChatBalloon qouteBalloonBottom">
                   {{msg.content['qoute'].text}}</div>
@@ -240,7 +240,7 @@
                 </div>
                 <div *ngIf="msg.content['thumbnail']" class="file_name_form imageForm borderRadiusDefault">
                   <img class="file_thumbnail imageForm" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
-                    [src]="msg.content['thumbnail']" [alt]="msg.content['filename']">
+                    [src]="msg.content['thumbnail']" [alt]="msg.content['filename']"/>
                 </div>
               </div>
               <div *ngIf="msg.content['msg']" class="message_content_form my_file_message_form">
@@ -271,7 +271,7 @@
             <div *ngIf="userInput['qoute'].url" class="imageForm borderRadiusDefault qouteImageHeight"
               style="max-height: 84px;">
               <img [src]="userInput['qoute'].url" class="qouteImage qouteImageHeight"
-                [style]="'max-height: 84px;' + (info['HideAutoThumbnail'] ? 'filter: blur(6px);' : '')" alt="">
+                [style]="'max-height: 84px;' + (info['HideAutoThumbnail'] ? 'filter: blur(6px);' : '')" alt=""/>
             </div>
           </tr>
           <tr *ngIf="IsMsgEditMode" class="qoute_text" (click)="IsMsgEditMode = undefined">
@@ -280,7 +280,7 @@
             <div *ngIf="IsMsgEditMode.thumbnail" class="imageForm borderRadiusDefault qouteImageHeight"
               style="max-height: 84px;">
               <img [src]="IsMsgEditMode.thumbnail" class="qouteImage qouteImageHeight"
-                [style]="'max-height: 84px;' + (info['HideAutoThumbnail'] ? 'filter: blur(6px);' : '')" alt="">
+                [style]="'max-height: 84px;' + (info['HideAutoThumbnail'] ? 'filter: blur(6px);' : '')" alt=""/>
             </div>
           </tr>
           <tr *ngIf="userInput.file" class="thumbnail_parts" style="cursor: pointer;">
@@ -290,7 +290,7 @@
                 </div>
                 <div *ngIf="userInput.file['thumbnail']">
                   <img id="ChatroomSelectedImage" *ngIf="userInput.file['viewer'] == 'image'" class="image_thumbnail"
-                    [src]="userInput.file['thumbnail']" [alt]="userInput.file['name']">
+                    [src]="userInput.file['thumbnail']" [alt]="userInput.file['name']"/>
                 </div>
                 <div *ngIf="userInput.file['viewer'] == 'code' || userInput.file['viewer'] == 'text'"
                   style="display: grid;" class="thumbnail_parts">
@@ -367,7 +367,7 @@
                 style="width: 36px; height: 36px;">
               </ion-icon>
               <img *ngIf="button['icon_img']" class="ext_icon_img" [src]="'assets/icon/' + button['icon_img']"
-                [alt]="button['title']">
+                [alt]="button['title']"/>
               <div>{{button['name']}}</div>
             </div>
           </div>

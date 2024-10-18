@@ -52,7 +52,7 @@
       </ion-item>
       <div slot="content">
         <img *ngIf="QRCodes[i]" [src]="QRCodes[i]" style="width: 100%; height: auto;" alt="Loading"
-          (click)="copy_info(i)">
+          (click)="copy_info(i)"/>
         <ion-item button (click)="RemoveServer(i)">
           <ion-label color="danger" class="ion-text-center">{{lang.text['WebRTCDevManager']['Remove']}}</ion-label>
         </ion-item>

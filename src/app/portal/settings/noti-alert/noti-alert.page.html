@@ -14,7 +14,7 @@
   <div>
     <div *ngIf="global.ShowHint" class="shortcut_hint">1</div>
     <ion-item button (click)="toggle_silent_set('icon_mono')">
-      <img class="img_icon_size" src="assets/icon/favicon.png" alt="">
+      <img class="img_icon_size" src="assets/icon/favicon.png" alt=""/>
       <ion-toggle [(ngModel)]="noti.settings.silent.icon_mono" class="ignore_toggles">
         {{lang.text['NotificationSettings']['icon_mono']}}
       </ion-toggle>
@@ -23,7 +23,7 @@
   <div>
     <div *ngIf="global.ShowHint" class="shortcut_hint">2</div>
     <ion-item button (click)="toggle_silent_set('diychat')">
-      <img class="img_icon_size" src="assets/icon/diychat.png" alt="">
+      <img class="img_icon_size" src="assets/icon/diychat.png" alt=""/>
       <ion-toggle [(ngModel)]="noti.settings.silent.diychat"
         class="ignore_toggles">{{lang.text['NotificationSettings']['diychat']}}</ion-toggle>
     </ion-item>
@@ -31,7 +31,7 @@
   <div>
     <div *ngIf="global.ShowHint" class="shortcut_hint">3</div>
     <ion-item button (click)="toggle_silent_set('todo')">
-      <img class="img_icon_size" src="assets/icon/todo.png" alt="">
+      <img class="img_icon_size" src="assets/icon/todo.png" alt=""/>
       <ion-toggle [(ngModel)]="noti.settings.silent.todo"
         class="ignore_toggles">{{lang.text['Main']['Title']}}</ion-toggle>
     </ion-item>
@@ -39,7 +39,7 @@
   <div>
     <div *ngIf="global.ShowHint" class="shortcut_hint">4</div>
     <ion-item button (click)="toggle_silent_set('simplechat')">
-      <img class="img_icon_size" src="assets/icon/simplechat.png" alt="">
+      <img class="img_icon_size" src="assets/icon/simplechat.png" alt=""/>
       <ion-toggle [(ngModel)]="noti.settings.silent.simplechat"
         class="ignore_toggles">{{lang.text['NotificationSettings']['simplechat']}}</ion-toggle>
     </ion-item>

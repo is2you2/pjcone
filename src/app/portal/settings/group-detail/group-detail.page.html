@@ -10,7 +10,7 @@
 <ion-content>
   <div *ngIf="info['status'] != 'missing'">
     <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;" alt="Loading"
-      (click)="copy_startup_address()">
+      (click)="copy_startup_address()"/>
   </div>
   <ion-item *ngIf="info['status'] == 'pending'" color="warning">
     <ion-label class="ion-text-center">{{lang.text['GroupDetail']['NotAcceptYet']}}</ion-label>
@@ -28,7 +28,7 @@
     <div class="additional_form bg_img_form">
       <img class="profile_img"
         [style]="'filter: ' + (info['status'] == 'online' ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
-        [src]="info['img']">
+        [src]="info['img']"/>
     </div>
     <ion-label class="form_margin">
       <div>
@@ -67,7 +67,7 @@
     <div class="additional_form bg_img_form">
       <img class="profile_img"
         [style]="'filter: ' + (user.user['online'] ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
-        [src]="user.user.img">
+        [src]="user.user.img"/>
     </div>
     <ion-label class="form_margin">{{
       info['info'] ? (info['info']['name'] ||

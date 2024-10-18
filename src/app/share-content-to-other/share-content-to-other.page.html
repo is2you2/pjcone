@@ -17,7 +17,7 @@
       <div class="channel_image channel_image_div">
         <img *ngIf="channel['info']" class="channel_image" [src]="channel['info']['img'] || 'assets/data/channel.svg'"
           alt="ch_img"
-          [style]="(channel['status'] == 'online' || (channel['redirect']['type'] == 3 && channel['status'] == 'pending')) ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'">
+          [style]="(channel['status'] == 'online' || (channel['redirect']['type'] == 3 && channel['status'] == 'pending')) ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'"/>
         <div *ngIf="!channel['local']" class="status_circle"
           [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']">
         </div>

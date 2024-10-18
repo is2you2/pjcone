@@ -79,7 +79,7 @@
       <ion-accordion [value]="all_users[i].id || all_users[i].user_id">
         <ion-item button slot="header">
           <div class="additional_form bg_img_form">
-            <img *ngIf="all_users[i].img" class="profile_img" [src]="all_users[i].img">
+            <img *ngIf="all_users[i].img" class="profile_img" [src]="all_users[i].img"/>
           </div>
           <div class="additional_form status_bar_single"
             [style]="'background-color: ' + statusBar.colors[all_users[i].online ? 'online' : 'offline']">
@@ -164,7 +164,7 @@
       <ion-accordion [value]="all_groups[i].name">
         <ion-item button slot="header">
           <div class="additional_form bg_img_form">
-            <img *ngIf="all_groups[i].img" class="profile_img" [src]="all_groups[i].img">
+            <img *ngIf="all_groups[i].img" class="profile_img" [src]="all_groups[i].img" />
           </div>
           <div class="additional_form status_bar_single"
             [style]="'background-color: ' + statusBar.colors[all_groups[i].open ? 'online' : 'pending']">
@@ -204,7 +204,7 @@
                       <img
                         *ngIf="user.is_me ? nakama.users.self['img'] : nakama.users[isOfficial][target][user.user.id]['img']"
                         class="profile_img"
-                        [src]="user.is_me ? nakama.users.self['img'] : nakama.users[isOfficial][target][user.user.id]['img']">
+                        [src]="user.is_me ? nakama.users.self['img'] : nakama.users[isOfficial][target][user.user.id]['img']"/>
                     </div>
                     <ion-label>{{(user.is_me ? nakama.users.self['display_name'] :
                       user.user.display_name) || lang.text['Profile']['noname_user']}}</ion-label>

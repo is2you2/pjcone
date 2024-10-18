@@ -144,7 +144,7 @@
             </ion-item>
             <div *ngIf="attach['viewer']" (click)="open_content_viewer(i)">
               <img *ngIf="attach['thumbnail']" (contextmenu)="AttachmentContextMenu(attach, i)" class="image_thumbnail"
-                [src]="attach['thumbnail']" [alt]="attach['filename']">
+                [src]="attach['thumbnail']" [alt]="attach['filename']"/>
               <ion-item button *ngIf="!attach['thumbnail']">
                 <ion-label color="medium">{{lang.text['TodoDetail']['open_content_viewer']}}</ion-label>
               </ion-item>
@@ -160,7 +160,7 @@
                   style="width: 36px; height: 36px;">
                 </ion-icon>
                 <img *ngIf="button['icon_img']" class="ext_icon_img" [src]="'assets/icon/' + button['icon_img']"
-                  [alt]="button['title']">
+                  [alt]="button['title']"/>
                 <div>{{button['name']}}</div>
               </div>
             </div>

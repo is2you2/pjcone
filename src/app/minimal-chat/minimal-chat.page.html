@@ -50,7 +50,7 @@
     <div id="minimal_chat_div" class="main" style="flex: 1 1 auto;">
       <div *ngIf="QRCodeSRC && !JoinedQuick && client.status != 'idle'">
         <img [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;" (click)="copy_qr_address()"
-          alt="QRCode">
+          alt="QRCode"/>
         <ion-item button (click)="copy_qr_address(client.JoinedChannel)">
           <ion-label disabled class="ion-text-center" color="medium">{{client.JoinedChannel}}</ion-label>
         </ion-item>
@@ -119,7 +119,7 @@
           style="width: 36px; height: 36px;">
         </ion-icon>
         <img *ngIf="button['icon_img']" class="ext_icon_img" [src]="'assets/icon/' + button['icon_img']"
-          [alt]="button['title']">
+          [alt]="button['title']"/>
         <div>{{button['name']}}</div>
       </div>
     </div>

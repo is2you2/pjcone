@@ -42,7 +42,7 @@
   </ion-item>
   <ion-item button [disabled]="isSaveClicked || userInput.id != ''" (click)="buttonClickLinkInputFile()">
     <div class="additional_form bg_img_form">
-      <img class="profile_img" style="filter: grayscale(0) contrast(1);" [src]="userInput.img">
+      <img class="profile_img" style="filter: grayscale(0) contrast(1);" [src]="userInput.img"/>
     </div>
     <ion-label>
       <p>{{(userInput.name || lang.text['AddGroup']['DisplayName_placeholder']) + ' (' + (userInput.server.name ||

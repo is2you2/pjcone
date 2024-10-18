@@ -3404,7 +3404,7 @@ export class NakamaService {
       case -2: // 친구 요청 받음
         break;
       case 1: // 전체 알림 수신
-        let image_form = `<div style="text-align: center"><img src="${decodeURIComponent(this_noti.content['uri'])}" alt="noti_image" style="border-radius: 2px"></div>`;
+        let image_form = `<div style="text-align: center"><img src="${decodeURIComponent(this_noti.content['uri'])}" alt="noti_image" style="border-radius: 2px"/></div>`;
         let text_form = `<div>${decodeURIComponent(this.global.HTMLEncode(this_noti.content['msg']))}</div>`;
         let result_form = this_noti.content['uri'] ? image_form + text_form : text_form;
         this.alertCtrl.create({ // 전체 알림 알람 내용보기
@@ -3601,7 +3601,7 @@ export class NakamaService {
           image: decode_image,
           smallIcon_ln: 'diychat',
         }, 'global_noti_all', (_ev: any) => {
-          let image_form = `<div style="text-align: center"><img src="${decode_image}" alt="noti_image" style="border-radius: 2px"></div>`;
+          let image_form = `<div style="text-align: center"><img src="${decode_image}" alt="noti_image" style="border-radius: 2px"/></div>`;
           let text_form = `<div>${this.global.HTMLEncode(decode_body)}</div>`;
           let result_form = decode_image ? image_form + text_form : text_form;
           this.alertCtrl.create({ // 전체 알림 알람 내용보기
