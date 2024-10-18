@@ -42,7 +42,7 @@
   </ion-item>
   <ion-item button [disabled]="isSaveClicked || userInput.id != ''" (click)="buttonClickLinkInputFile()">
     <div class="additional_form bg_img_form">
-      <img class="profile_img" style="filter: grayscale(0) contrast(1);" [src]="userInput.img"/>
+      <img class="profile_img" style="filter: grayscale(0) contrast(1);" [src]="userInput.img" />
     </div>
     <ion-label>
       <p>{{(userInput.name || lang.text['AddGroup']['DisplayName_placeholder']) + ' (' + (userInput.server.name ||
@@ -53,6 +53,7 @@
   </ion-item>
   <input hidden type="file" [id]="file_sel_id" accept="image/*" (change)="inputImageSelected($event)">
   <div *ngIf="userInput.server['local']">
+    <div *ngIf="global.ShowHint" class="shortcut_hint">Enter</div>
     <ion-item button [disabled]="isSaveClicked" (click)="FocusOnChannelTitle()">
       <ion-checkbox [(ngModel)]="userInput.volatile">{{lang.text['AddGroup']['Volatile']}}</ion-checkbox>
     </ion-item>
@@ -72,7 +73,10 @@
         {{lang.text['AddGroup']['IsOpen']}}</ion-toggle>
     </ion-item>
   </div>
-  <ion-item button (click)="save()" [disabled]="isSaveClicked">
-    <ion-label class="ion-text-center">{{lang.text['AddGroup']['submit']}}</ion-label>
-  </ion-item>
+  <div>
+    <div *ngIf="global.ShowHint" class="shortcut_hint">Ctrl + Enter</div>
+    <ion-item button (click)="save()" [disabled]="isSaveClicked">
+      <ion-label class="ion-text-center">{{lang.text['AddGroup']['submit']}}</ion-label>
+    </ion-item>
+  </div>
 </ion-content>

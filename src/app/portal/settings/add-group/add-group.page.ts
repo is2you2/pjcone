@@ -20,7 +20,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
     private nakama: NakamaService,
     private statusBar: StatusManageService,
     public lang: LanguageSettingService,
-    private global: GlobalActService,
+    public global: GlobalActService,
     private indexed: IndexedDBService,
     private navCtrl: NavController,
   ) { }
