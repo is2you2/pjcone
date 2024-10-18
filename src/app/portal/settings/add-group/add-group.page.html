@@ -62,8 +62,11 @@
     <ion-item-divider>
       <ion-label>{{lang.text['AddGroup']['GroupDetail']}}</ion-label>
     </ion-item-divider>
-    <textarea id="group_desc" class="infobox" [disabled]="isSaveClicked || userInput.id != ''"
-      [(ngModel)]="userInput.description" [placeholder]="lang.text['AddGroup']['GroupDetail_placeholder']"></textarea>
+    <div style="position: relative;">
+      <div *ngIf="global.ShowHint && CheckIfTitleFocus" class="shortcut_hint">Enter</div>
+      <textarea id="group_desc" class="infobox" [disabled]="isSaveClicked || userInput.id != ''"
+        [(ngModel)]="userInput.description" [placeholder]="lang.text['AddGroup']['GroupDetail_placeholder']"></textarea>
+    </div>
     <ion-item [disabled]="isSaveClicked || userInput.id != ''">
       <ion-input [label]="lang.text['AddGroup']['MemberMaxLimit']" type="number" class="ion-text-right" min="1"
         [(ngModel)]="userInput.max_count" placeholder="1"></ion-input>

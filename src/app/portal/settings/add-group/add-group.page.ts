@@ -86,9 +86,19 @@ export class AddGroupPage implements OnInit, OnDestroy {
   GroupNameInput: HTMLInputElement;
   IsFocusOnThisPage = true;
   p5canvas: p5;
+  /** 제목 입력칸에 포커스중인지 검토 */
+  CheckIfTitleFocus = true;
   ChangeContentWithKeyInput() {
     let group_name = document.getElementById('group_name');
     this.GroupNameInput = group_name.childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
+    if (!this.GroupNameInput.onfocus)
+      this.GroupNameInput.onfocus = () => {
+        this.CheckIfTitleFocus = true;
+      }
+    if (!this.GroupNameInput.onblur)
+      this.GroupNameInput.onblur = () => {
+        this.CheckIfTitleFocus = false;
+      }
     setTimeout(() => {
       this.GroupNameInput.focus();
     }, 200);
@@ -359,6 +369,8 @@ export class AddGroupPage implements OnInit, OnDestroy {
 
   ionViewWillLeave() {
     this.IsFocusOnThisPage = false;
+    this.GroupNameInput.onfocus = null;
+    this.GroupNameInput.onblur = null;
     delete this.global.p5KeyShortCut['Escape'];
   }
 
