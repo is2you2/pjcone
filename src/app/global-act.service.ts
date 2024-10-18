@@ -157,7 +157,6 @@ export class GlobalActService {
   initialize() {
     let load_env = localStorage.getItem('ShowHint');
     if (load_env !== null) this.ShowHint = load_env == '1';
-    if (this.ShowHint === undefined) this.ShowHint = isPlatform == 'DesktopPWA';
     window.onblur = () => {
       let keys = Object.keys(this.WindowOnBlurAct);
       for (let key of keys) this.WindowOnBlurAct[key]();
