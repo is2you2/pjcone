@@ -647,6 +647,5 @@ export class UserFsDirPage implements OnInit, OnDestroy {
 
   ionViewWillLeave() {
     delete this.global.p5KeyShortCut['Escape'];
-    delete this.global.p5KeyShortCut['Digit'];
   }
 }
