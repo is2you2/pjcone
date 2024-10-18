@@ -1109,7 +1109,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             }
             break;
           case 'Escape':
-            if (!this.OpenModal)
+            if (!this.OpenModal && !this.isFileMenuOpened)
               this.navCtrl.pop();
         }
       }
@@ -1119,9 +1119,11 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   isFileMenuOpened = false;
   OpenFileMenu() {
     this.isFileMenuOpened = true;
-    this.FileMenu.onWillDismiss().then(() => {
+    this.FileMenu.onDidDismiss().then(() => {
       this.isFileMenuOpened = false;
+      this.global.RestoreShortCutAct('ionic-menu');
     });
+    this.global.StoreShortCutAct('ionic-menu');
     this.FileMenu.present();
   }
 
