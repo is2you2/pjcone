@@ -414,6 +414,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   isStoreAtChanged = false;
   /** 저장소 변경이 가능한지 검토 (원격이면서 작성자가 남이 아닌지 검토) */
   isStoreAtChangable = true;
+  /** 타이틀에 포커스중인지 검토 */
+  CheckIfTitleFocus = true;
   async ionViewWillEnter() {
     this.lock_modal_open = false;
     if (!this.navParams) return;
@@ -456,6 +458,14 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
     let ionInput = document.getElementById('titleInput');
     this.titleIonInput = ionInput.children[0].children[1].children[0];
+    if (!this.titleIonInput.onblur)
+      this.titleIonInput.onblur = () => {
+        this.CheckIfTitleFocus = false;
+      }
+    if (!this.titleIonInput.onfocus)
+      this.titleIonInput.onfocus = () => {
+        this.CheckIfTitleFocus = true;
+      }
     setTimeout(() => {
       if (!this.isModify && !this.titleIonInput.value) this.titleIonInput.focus();
     }, 200);
@@ -1648,6 +1658,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.WillLeavePage = true;
     delete this.global.p5KeyShortCut['EnterAct'];
     this.removeShortCut();
+    this.titleIonInput.onblur = null;
+    this.titleIonInput.onfocus = null;
     this.noti.Current = '';
     if (this.p5timer)
       this.p5timer.remove();

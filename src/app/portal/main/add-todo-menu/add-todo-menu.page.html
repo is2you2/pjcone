@@ -134,8 +134,11 @@
               </div>
             </ion-accordion>
           </ion-accordion-group>
-          <textarea id="descInput" class="infobox" style="height: 240px;" [(ngModel)]="userInput.description"
-            [placeholder]="lang.text['TodoDetail']['description']"></textarea>
+          <div style="position: relative;">
+            <div *ngIf="global.ShowHint && CheckIfTitleFocus" class="shortcut_hint">Enter</div>
+            <textarea id="descInput" class="infobox" style="height: 240px;" [(ngModel)]="userInput.description"
+              [placeholder]="lang.text['TodoDetail']['description']"></textarea>
+          </div>
           <div *ngFor="let attach of userInput.attach; index as i">
             <ion-item>
               <ion-label text-wrap>{{attach.filename}}</ion-label>

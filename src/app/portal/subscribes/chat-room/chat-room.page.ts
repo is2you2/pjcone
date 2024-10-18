@@ -806,12 +806,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.WillLeave = false;
     this.ChatContDiv = document.getElementById('chatroom_content_div');
     if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
-    this.userInputTextArea.onblur = () => {
-      this.CheckIfFocusOnInput = false;
-    }
-    this.userInputTextArea.onfocus = () => {
-      this.CheckIfFocusOnInput = true;
-    }
+    if (!this.userInputTextArea.onblur)
+      this.userInputTextArea.onblur = () => {
+        this.CheckIfFocusOnInput = false;
+      }
+    if (!this.userInputTextArea.onfocus)
+      this.userInputTextArea.onfocus = () => {
+        this.CheckIfFocusOnInput = true;
+      }
     this.userInputTextArea.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
