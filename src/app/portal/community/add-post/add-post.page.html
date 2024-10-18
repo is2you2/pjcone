@@ -75,7 +75,10 @@
       <img class="profile_img" [src]="attach.thumbnail"/>
     </div>
   </ion-item>
-  <ion-item button [disabled]="isSaveClicked" (click)="postData()">
-    <ion-label class="ion-text-center">{{lang.text['AddPost']['Post']}}</ion-label>
-  </ion-item>
+  <div>
+    <div *ngIf="global.ShowHint" class="shortcut_hint">Ctrl + Enter</div>
+    <ion-item button [disabled]="isSaveClicked" (click)="postData()">
+      <ion-label class="ion-text-center">{{lang.text['AddPost']['Post']}}</ion-label>
+    </ion-item>
+  </div>
 </ion-content>

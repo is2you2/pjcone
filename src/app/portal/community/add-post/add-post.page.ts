@@ -19,7 +19,7 @@ import { isPlatform } from 'src/app/app.component';
 })
 export class AddPostPage implements OnInit, OnDestroy {
   constructor(
-    private global: GlobalActService,
+    public global: GlobalActService,
     public lang: LanguageSettingService,
     private navCtrl: NavController,
     private nakama: NakamaService,
@@ -1088,6 +1088,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         this.global.remove_file_from_storage(this.userInput.OutSource);
         this.userInput.OutSource = undefined;
       }
+      this.UseOutLink = this.UseOutLink && this.userInput.creator_id != 'me';
       // 외부링크 사용시 게시물 정보 업로드
       if (this.UseOutLink) {
         let blob = new Blob([JSON.stringify(this.userInput)], { type: 'text/plain' });
