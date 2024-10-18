@@ -88,6 +88,12 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
     this.global.p5KeyShortCut['AddAct'] = () => {
       this.OpenNewWebRTCServerForm();
     }
+    this.global.p5KeyShortCut['Escape'] = () => {
+      this.navCtrl.pop();
+    }
+    this.RegisterServer.onDidDismiss().then(() => {
+      this.global.RestoreShortCutAct('webrtc-manage-io');
+    });
   }
 
   saveSetup() {
@@ -119,6 +125,7 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
   @ViewChild('RegisterNewWebRTCServer') RegisterServer: IonModal;
 
   OpenNewWebRTCServerForm() {
+    this.global.StoreShortCutAct('webrtc-manage-io');
     this.RegisterServer.present();
   }
 
@@ -160,5 +167,6 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
 
   ionViewWillLeave() {
     delete this.global.p5KeyShortCut['AddAct'];
+    delete this.global.p5KeyShortCut['Escape'];
   }
 }
