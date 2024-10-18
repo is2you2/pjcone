@@ -28,7 +28,7 @@ enum TodoFilterCategory {
 export class MainPage implements OnInit {
 
   constructor(
-    private global: GlobalActService,
+    public global: GlobalActService,
     public lang: LanguageSettingService,
     public nakama: NakamaService,
     public statusBar: StatusManageService,

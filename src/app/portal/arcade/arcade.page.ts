@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController, iosTransitionAnimation } from '@ionic/angular';
+import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MiniranchatClientService } from 'src/app/miniranchat-client.service';
 import { NakamaService } from 'src/app/nakama.service';
@@ -18,6 +19,7 @@ export class ArcadePage implements OnInit {
     public nakama: NakamaService,
     private navCtrl: NavController,
     private client: MiniranchatClientService,
+    public global: GlobalActService,
   ) { }
 
   /** 아케이드 정보 수집 */

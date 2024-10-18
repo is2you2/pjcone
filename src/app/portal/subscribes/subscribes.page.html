@@ -2,6 +2,7 @@
   <ion-toolbar>
     <ion-title>{{lang.text['Subscribes']['Title']}}</ion-title>
     <div (click)="nakama.add_new_group()" class="add_group">
+      <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_top_add">A</div>
       <ion-icon button style="width: 24px; height: 24px; " name="add-circle-outline"></ion-icon>
     </div>
     <div class="header_online_circle"
@@ -32,7 +33,7 @@
       <ion-label>{{lang.text['Subscribes']['myProfile']}}</ion-label>
     </ion-item-divider>
     <div>
-      <div class="shortcut_hint">`</div>
+      <div *ngIf="global.ShowHint" class="shortcut_hint">`</div>
       <ion-item button (click)="nakama.open_profile_page()">
         <div class="additional_form bg_img_form">
           <img class="profile_img"
