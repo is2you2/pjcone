@@ -14,7 +14,7 @@ export class NotiAlertPage implements OnInit {
   constructor(
     public noti: LocalNotiService,
     public lang: LanguageSettingService,
-    private global: GlobalActService,
+    public global: GlobalActService,
     private navCtrl: NavController,
   ) { }
 
