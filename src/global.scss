@@ -271,3 +271,12 @@ button.alert-button.redfont {
     padding-right: 28px;
     cursor: pointer;
 }
+
+.shortcut_hint {
+    position: absolute;
+    z-index: 2;
+    left: 0px;
+    padding: 0px 2px;
+    border-bottom-right-radius: 4px;
+    background-color: var(--list-shortcut-hint-background);
+}

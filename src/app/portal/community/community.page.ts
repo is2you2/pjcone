@@ -16,7 +16,7 @@ export class CommunityPage implements OnInit {
     public statusBar: StatusManageService,
     public nakama: NakamaService,
     public lang: LanguageSettingService,
-    private global: GlobalActService,
+    public global: GlobalActService,
     private navCtrl: NavController,
     private alertCtrl: AlertController,
   ) { }
