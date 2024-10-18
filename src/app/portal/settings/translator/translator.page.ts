@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import * as p5 from "p5";
+import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 
 @Component({
@@ -12,6 +13,7 @@ export class TranslatorPage implements OnInit {
 
   constructor(
     public lang: LanguageSettingService,
+    private global: GlobalActService,
     private navCtrl: NavController,
   ) { }
 
@@ -38,5 +40,15 @@ export class TranslatorPage implements OnInit {
         });
       }
     });
+  }
+
+  ionViewDidEnter() {
+    this.global.p5KeyShortCut['Escape'] = () => {
+      this.navCtrl.pop();
+    }
+  }
+
+  ionViewWillLeave() {
+    delete this.global.p5KeyShortCut['Escape'];
   }
 }
