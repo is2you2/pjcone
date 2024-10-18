@@ -239,9 +239,21 @@ export class SettingsPage implements OnInit, OnDestroy {
     localStorage.setItem('StartPage', `${value}`);
   }
 
-  @ViewChild('LangSel') LangSel: any;
+  @ViewChild('LangSel') LangSel: IonSelect;
   LangClicked() {
     this.LangSel.open();
+    this.global.StoreShortCutAct('langsel');
+    this.global.p5KeyShortCut['Digit'] = (index: number) => {
+      // 설정 메뉴 정렬처리
+      if (index < this.lang.setable.length) {
+        this.LanguageChanged({ detail: { value: this.lang.setable[index].value } });
+        this.CreateHint();
+      }
+    }
+  }
+  SetLangShortCut() {
+    this.global.RestoreShortCutAct('langsel');
+    this.ionViewDidEnter();
   }
   /** 언어 변경됨 */
   async LanguageChanged(ev: any) {
@@ -253,7 +265,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     } catch (e) {
       this.lang.load_selected_lang();
     }
-    this.ionViewDidEnter();
     this.CreateHint();
   }
 

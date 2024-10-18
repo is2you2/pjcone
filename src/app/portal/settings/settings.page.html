@@ -122,7 +122,8 @@
     <ion-item button (click)="LangClicked()">
       <ion-icon class="icon_margin" name="language"></ion-icon>
       <ion-select [label]="lang.text['Settings']['AppLanguage']" #LangSel style="pointer-events: none;"
-        [value]="lang.lang" [placeholder]="lang.lang" (ionChange)="LanguageChanged($event)">
+        [value]="lang.lang" [placeholder]="lang.lang" (ionChange)="LanguageChanged($event)"
+        (ionDismiss)="SetLangShortCut()">
         <ion-select-option *ngFor="let language of lang.setable"
           [value]="language.value">{{language.display_name}}</ion-select-option>
       </ion-select>
