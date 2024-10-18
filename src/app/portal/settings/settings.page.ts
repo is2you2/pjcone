@@ -44,6 +44,13 @@ export class SettingsPage implements OnInit, OnDestroy {
     else localStorage.removeItem('showServer');
   }
 
+  /** 리스트 단축키 힌트 보여주기 토글 */
+  toggle_show_shortcut_hint() {
+    if (this.global.isDesktop)
+      localStorage.setItem('isDesktop', '1');
+    else localStorage.setItem('isDesktop', '0');
+  }
+
   /** 관리자로 등록된 서버들 */
   as_admin = [];
 
@@ -100,21 +107,22 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   LinkButton = [];
   ToggleAccordion() {
+    const spliceStartFrom = 5;
     if (this.Devkit.value) { // 닫기
       let count_menu = (!this.cant_dedicated && this.can_use_http) ? 6 : 5;
-      this.LinkButton.splice(4, count_menu);
+      this.LinkButton.splice(spliceStartFrom, count_menu);
       this.Devkit.value = undefined;
     } else { // 열기
       this.Devkit.value = 'Devkit';
       if (this.cant_dedicated)
-        this.LinkButton.splice(4, 0,
+        this.LinkButton.splice(spliceStartFrom, 0,
           () => this.open_inapp_explorer(),
           () => this.go_to_page('weblink-gen'),
           () => this.focus_to_fallback_fs_input(),
           () => this.go_to_webrtc_manager(),
           () => this.download_serverfile(),
         );
-      else this.LinkButton.splice(4, 0,
+      else this.LinkButton.splice(spliceStartFrom, 0,
         () => this.open_inapp_explorer(),
         () => this.go_to_page('weblink-gen'),
         () => this.go_to_webrtc_manager(),
@@ -129,9 +137,13 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.LinkButton.push(() => this.go_to_page('noti-alert'));
     this.LinkButton.push(() => {
       this.nakama.showServer = !this.nakama.showServer;
-      this.toggle_ShowServer()
+      this.toggle_ShowServer();
     });
     this.LinkButton.push(() => this.StartPageClicked());
+    this.LinkButton.push(() => {
+      this.global.isDesktop = !this.global.isDesktop;
+      this.toggle_show_shortcut_hint();
+    });
     this.LinkButton.push(() => this.ToggleAccordion());
     if (this.Devkit.value) {
       this.LinkButton.push(() => this.open_inapp_explorer());

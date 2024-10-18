@@ -28,6 +28,10 @@
       <ion-select-option value="3">{{lang.text['Community']['Title']}}</ion-select-option>
     </ion-select>
   </ion-item>
+  <ion-item button (ionChange)="toggle_show_shortcut_hint()">
+    <ion-toggle style="pointer-events: none;"
+      [(ngModel)]="global.isDesktop">{{lang.text['Settings']['ShowShortCutHint']}}</ion-toggle>
+  </ion-item>
   <ion-accordion-group #Devkit>
     <ion-accordion value="Devkit">
       <ion-item slot="header">

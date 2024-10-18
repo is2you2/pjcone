@@ -156,7 +156,7 @@ export class GlobalActService {
   p5KeyShortCut: any;
   initialize() {
     let load_env = localStorage.getItem('isDesktop');
-    if (load_env !== null) this.isDesktop = Boolean(load_env);
+    if (load_env !== null) this.isDesktop = load_env == '1';
     if (this.isDesktop === undefined) this.isDesktop = isPlatform == 'DesktopPWA';
     window.onblur = () => {
       let keys = Object.keys(this.WindowOnBlurAct);
