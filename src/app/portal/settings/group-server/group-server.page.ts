@@ -495,6 +495,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
 
   async ionViewWillLeave() {
     delete this.global.p5KeyShortCut['Escape'];
+    delete this.global.p5KeyShortCut['AddAct'];
     if (this.nakama.on_socket_disconnected['group_unlink_by_user'])
       delete this.nakama.on_socket_disconnected['group_unlink_by_user'];
     delete this.nakama.socket_reactive['profile'];
@@ -641,6 +642,9 @@ export class GroupServerPage implements OnInit, OnDestroy {
   can_auto_modified = false;
   ionViewDidEnter() {
     this.can_auto_modified = true;
+    this.global.p5KeyShortCut['AddAct'] = () => {
+      this.OpenNewServerForm();
+    }
     this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
@@ -740,14 +744,11 @@ export class GroupServerPage implements OnInit, OnDestroy {
 
   @ViewChild('RegisterNewServer') RegisterNewServer: IonModal;
 
-  ionViewWillEnter() {
+  OpenNewServerForm() {
+    this.global.StoreShortCutAct('group-server');
     this.RegisterNewServer.onDidDismiss().then(() => {
       this.global.RestoreShortCutAct('group-server');
     });
-  }
-
-  OpenNewServerForm() {
-    this.global.StoreShortCutAct('group-server');
     this.RegisterNewServer.present();
   }
 
