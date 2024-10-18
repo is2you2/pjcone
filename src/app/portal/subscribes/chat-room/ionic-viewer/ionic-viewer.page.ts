@@ -1046,6 +1046,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             case 'Enter': // 텍스트 편집기 저장하기
               if (ev['ctrlKey']) this.SaveText();
               break;
+            case 'Escape':
+              this.navCtrl.pop();
+              break;
           }
           return;
         }
