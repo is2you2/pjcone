@@ -11,40 +11,43 @@
   <ion-item-divider>
     <ion-label>{{lang.text['ShareContentToOther']['AvailableChannels']}}</ion-label>
   </ion-item-divider>
-  <ion-item *ngFor="let channel of channels" button (click)="go_to_chatroom(channel)">
-    <div class="channel_image channel_image_div">
-      <img *ngIf="channel['info']" class="channel_image" [src]="channel['info']['img'] || 'assets/data/channel.svg'"
-        alt="ch_img"
-        [style]="(channel['status'] == 'online' || (channel['redirect']['type'] == 3 && channel['status'] == 'pending')) ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'">
-      <div *ngIf="!channel['local']" class="status_circle"
-        [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']">
+  <div *ngFor="let channel of channels; let i = index">
+    <div *ngIf="global.isDesktop && i < 10" class="shortcut_hint">{{(i + 1) % 10}}</div>
+    <ion-item button (click)="go_to_chatroom(channel)">
+      <div class="channel_image channel_image_div">
+        <img *ngIf="channel['info']" class="channel_image" [src]="channel['info']['img'] || 'assets/data/channel.svg'"
+          alt="ch_img"
+          [style]="(channel['status'] == 'online' || (channel['redirect']['type'] == 3 && channel['status'] == 'pending')) ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'">
+        <div *ngIf="!channel['local']" class="status_circle"
+          [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']">
+        </div>
       </div>
-    </div>
-    <div *ngIf="channel['is_new']" class="additional_form new_bg_form"
-      [style]="'background-image: linear-gradient(to right, #0000, #' + (channel['color'] || 'abcdef') + '44)'">
-    </div>
-    <ion-label>
-      <div class="channel_text_form header">
-        <table>
-          <tr>
-            <td>
-              {{channel['info'] ? (channel['info']['name'] ||
-              nakama.usernameOverride[channel['info']['isOfficial']][channel['info']['target']][channel['info']['id']]
-              || channel['info']['display_name'] ||
-              lang.text['ChatRoom']['noname_chatroom']) : (channel['title'] ||
-              lang.text['ChatRoom']['noname_chatroom'])}}
-            </td>
-            <span *ngIf="channel['volatile']" class="server_target">{{'(' + lang.text['AddGroup']['Volatile'] +
-              ')'}}</span>
-            <span *ngIf="nakama.showServer && !channel['volatile']" class="server_target">
-              {{'(' + (channel['local'] ? lang.text['AddGroup']['UseLocalStorage'] : (channel['server']['name'] ||
-              channel['server']['target'])) + ')'}}
-            </span>
-          </tr>
-        </table>
+      <div *ngIf="channel['is_new']" class="additional_form new_bg_form"
+        [style]="'background-image: linear-gradient(to right, #0000, #' + (channel['color'] || 'abcdef') + '44)'">
       </div>
-      <div class="channel_text_form content"> {{channel['last_comment'] || channel['noti'] ||
-        lang.text['Subscribes']['noMessageHistory']}} </div>
-    </ion-label>
-  </ion-item>
+      <ion-label>
+        <div class="channel_text_form header">
+          <table>
+            <tr>
+              <td>
+                {{channel['info'] ? (channel['info']['name'] ||
+                nakama.usernameOverride[channel['info']['isOfficial']][channel['info']['target']][channel['info']['id']]
+                || channel['info']['display_name'] ||
+                lang.text['ChatRoom']['noname_chatroom']) : (channel['title'] ||
+                lang.text['ChatRoom']['noname_chatroom'])}}
+              </td>
+              <span *ngIf="channel['volatile']" class="server_target">{{'(' + lang.text['AddGroup']['Volatile'] +
+                ')'}}</span>
+              <span *ngIf="nakama.showServer && !channel['volatile']" class="server_target">
+                {{'(' + (channel['local'] ? lang.text['AddGroup']['UseLocalStorage'] : (channel['server']['name'] ||
+                channel['server']['target'])) + ')'}}
+              </span>
+            </tr>
+          </table>
+        </div>
+        <div class="channel_text_form content"> {{channel['last_comment'] || channel['noti'] ||
+          lang.text['Subscribes']['noMessageHistory']}} </div>
+      </ion-label>
+    </ion-item>
+  </div>
 </ion-content>

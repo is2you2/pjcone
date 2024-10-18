@@ -149,10 +149,15 @@ export class GlobalActService {
   /** 포털 화면을 벗어날 때 행동 (WillLeave) */
   FocusOnPortalLeaveAct: Function;
 
+  /** 데스크탑 환경인지 여부 */
+  isDesktop: boolean;
   /** 페이지별 단축키 관리자 */
   p5key: p5;
   p5KeyShortCut: any;
   initialize() {
+    let load_env = localStorage.getItem('isDesktop');
+    if (load_env !== null) this.isDesktop = Boolean(load_env);
+    if (this.isDesktop === undefined) this.isDesktop = isPlatform == 'DesktopPWA';
     window.onblur = () => {
       let keys = Object.keys(this.WindowOnBlurAct);
       for (let key of keys) this.WindowOnBlurAct[key]();
@@ -349,11 +354,11 @@ export class GlobalActService {
       // 고도엔진 직접 불러오기 처리
       {
         {
-        let keys = Object.keys(this.GodotCache);
-        keys.forEach(key => {
-          URL.revokeObjectURL(this.GodotCache[key]);
-          delete this.GodotCache[key];
-        });
+          let keys = Object.keys(this.GodotCache);
+          keys.forEach(key => {
+            URL.revokeObjectURL(this.GodotCache[key]);
+            delete this.GodotCache[key];
+          });
         }
         let audio = await fetch('assets/html/index.audio.worklet.js');
         let audioBlob = await audio.blob();
@@ -399,11 +404,11 @@ export class GlobalActService {
       if (_frame_name == 'content_viewer_canvas')
         keys['create_thumbnail_p5'] = async (base64: string, info: FileInfo = undefined) => {
           {
-          let keys = Object.keys(this.GodotCache);
-          keys.forEach(key => {
-            URL.revokeObjectURL(this.GodotCache[key]);
-            delete this.GodotCache[key];
-          });
+            let keys = Object.keys(this.GodotCache);
+            keys.forEach(key => {
+              URL.revokeObjectURL(this.GodotCache[key]);
+              delete this.GodotCache[key];
+            });
           }
           new p5((p: p5) => {
             p.setup = () => {

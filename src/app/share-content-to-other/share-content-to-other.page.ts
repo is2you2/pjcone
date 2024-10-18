@@ -17,7 +17,7 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
     public lang: LanguageSettingService,
     public statusBar: StatusManageService,
     public nakama: NakamaService,
-    private global: GlobalActService,
+    public global: GlobalActService,
     private router: Router,
     private route: ActivatedRoute,
     private navCtrl: NavController,

@@ -18,7 +18,7 @@ export class SubscribesPage implements OnInit {
     public nakama: NakamaService,
     public statusBar: StatusManageService,
     public lang: LanguageSettingService,
-    private global: GlobalActService,
+    public global: GlobalActService,
     private navCtrl: NavController,
     private indexed: IndexedDBService,
     private alertCtrl: AlertController,
