@@ -643,7 +643,8 @@ export class GroupServerPage implements OnInit, OnDestroy {
   ionViewDidEnter() {
     this.can_auto_modified = true;
     this.global.p5KeyShortCut['AddAct'] = () => {
-      this.OpenNewServerForm();
+      if (this.ShowServerList)
+        this.OpenNewServerForm();
     }
     this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
