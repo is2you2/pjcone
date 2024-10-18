@@ -330,7 +330,7 @@
             <tr>
               <td>
                 <ion-button fill="clear" mode="md" (click)="open_ext_with_delay()" class="ion-text-center">
-                  <div *ngIf="global.ShowHint" class="shortcut_hint" style="left: -10px; top: -6px; padding: 4px; border-radius: 4px;">E</div>
+                  <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_hint_menu">E</div>
                   <ion-icon name="add"></ion-icon>
                 </ion-button>
               </td>
@@ -362,7 +362,7 @@
             <div class="ext_button" [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'"
               (click)="button['act']()" (contextmenu)="button['context'] ? button['context']() : null"
               [hidden]="button.isHide">
-              <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_hint_menu">{{button['index']}}</div>
+              <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_hint_ext_menu">{{button['index']}}</div>
               <ion-icon *ngIf="button['icon']" slot="icon-only" [name]="button['icon'] || 'close-circle'"
                 style="width: 36px; height: 36px;">
               </ion-icon>
