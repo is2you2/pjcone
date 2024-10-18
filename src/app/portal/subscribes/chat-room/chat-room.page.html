@@ -30,10 +30,13 @@
       <td style="vertical-align: top;">
         <div id="chatroom_div" class="main" style="max-width: 100vw;">
           <div id="chatroom_content_div">
-            <ion-item [disabled]="(next_cursor === undefined && !ViewMsgIndex) || !pullable" button
-              (click)="pull_msg_history()">
-              <ion-label>{{lang.text['ChatRoom']['fetch_previous_chat']}}</ion-label>
-            </ion-item>
+            <div style="position: relative;">
+              <div *ngIf="global.ShowHint" class="shortcut_hint">`</div>
+              <ion-item [disabled]="(next_cursor === undefined && !ViewMsgIndex) || !pullable" button
+                (click)="pull_msg_history()">
+                <ion-label>{{lang.text['ChatRoom']['fetch_previous_chat']}}</ion-label>
+              </ion-item>
+            </div>
             <div *ngFor="let msg of ViewableMessage; let i = index" [id]="msg.message_id"
               (contextmenu)="ChatBalloonContextMenu(msg)" (mousedown)="ChatBalloonMouseDown($event, msg)"
               (touchstart)="ChatBalloonOnTouchStart($event, msg)">
@@ -307,7 +310,10 @@
           </tr>
           <tr class="thumbnail_parts" *ngIf="ShowGoToBottom && !last_message_viewer.user_id"
             (click)="scroll_down_logs()">
-            <td style="text-align: center; padding: 4px 0px;">{{lang.text['ChatRoom']['GoToRecent']}}</td>
+            <td style="text-align: center; padding: 4px 0px; position: relative;">
+              <div *ngIf="global.ShowHint" class="shortcut_hint" style="border-radius: 4px;">Enter</div>
+              {{lang.text['ChatRoom']['GoToRecent']}}
+            </td>
           </tr>
           <tr class="thumbnail_parts" *ngIf="last_message_viewer.user_id" (click)="scroll_down_logs()">
             <td class="bottom_thumbnail imageForm">
