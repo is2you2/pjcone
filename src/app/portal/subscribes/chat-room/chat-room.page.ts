@@ -30,6 +30,8 @@ export interface ExtendButtonForm {
   act: Function;
   /** 우클릭시 행동 */
   context?: Function;
+  /** 단축키 힌트로 표시되는 숫자 */
+  index?: number;
 }
 
 /** 메시지 인용시 양식 */
@@ -67,7 +69,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
     private sanitizer: DomSanitizer,
-    private global: GlobalActService,
+    public global: GlobalActService,
     private loadingCtrl: LoadingController,
     private webrtc: WebrtcService,
     private p5toast: P5ToastService,
@@ -1391,6 +1393,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   async SetExtensionButtons() {
     this.extended_buttons.forEach(button => {
       button.isHide = false;
+      button.index = undefined;
     });
     switch (this.info['redirect']['type']) {
       case 2: // 1:1 대화라면
@@ -1430,6 +1433,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.extended_buttons[0].isHide = false;
     } else this.extended_buttons[10].isHide = isNativefier || this.info['status'] == 'missing';
     this.extended_buttons[2].isHide = false;
+    let startFrom = 1;
+    this.extended_buttons.forEach(button => {
+      if (!button.isHide && startFrom < 11) {
+        button.index = startFrom % 10;
+        startFrom++;
+      }
+    });
   }
 
   /** 선택한 메시지 복사 */

@@ -361,6 +361,7 @@
             <div class="ext_button" [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'"
               (click)="button['act']()" (contextmenu)="button['context'] ? button['context']() : null"
               [hidden]="button.isHide">
+              <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_hint_menu">{{button['index']}}</div>
               <ion-icon *ngIf="button['icon']" slot="icon-only" [name]="button['icon'] || 'close-circle'"
                 style="width: 36px; height: 36px;">
               </ion-icon>
