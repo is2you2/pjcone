@@ -894,7 +894,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 보여지는 가장 첫번째 파일 열기 */
   open_first_file() {
-    for (let i = 0, j = this.ViewableMessage.length - 1; i < j; i++)
+    for (let i = 0, j = this.ViewableMessage.length; i < j; i++)
       if (this.ViewableMessage[i].content.filename) {
         this.open_viewer(this.ViewableMessage[i], this.ViewableMessage[i].content.url || this.ViewableMessage[i].content.path);
         break;
