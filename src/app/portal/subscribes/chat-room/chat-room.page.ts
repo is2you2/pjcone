@@ -862,7 +862,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId))
         switch (key) {
           case 'Q':
-            this.open_last_file();
+            if (this.ChatLogs.scrollTop == 0)
+              this.open_first_file();
+            else this.open_last_file();
             break;
           case 'E':
             this.open_ext_with_delay();
@@ -890,6 +892,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 보여지는 가장 첫번째 파일 열기 */
+  open_first_file() {
+    for (let i = 0, j = this.ViewableMessage.length - 1; i < j; i++)
+      if (this.ViewableMessage[i].content.filename) {
+        this.open_viewer(this.ViewableMessage[i], this.ViewableMessage[i].content.url || this.ViewableMessage[i].content.path);
+        break;
+      }
+  }
   /** 보여지는 대화 중 가장 마지막 파일 열기 */
   open_last_file() {
     for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
