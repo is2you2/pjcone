@@ -45,9 +45,12 @@
             placeholder="defaultkey">
           </ion-input>
         </ion-item>
-        <ion-item button (click)="add_custom_dedicated()" [disabled]="add_custom_tog">
-          <ion-label class="ion-text-center">{{lang.text['GroupServer']['submit']}}</ion-label>
-        </ion-item>
+        <div style="position: relative;">
+          <div *ngIf="global.ShowHint" class="shortcut_hint">Ctrl + Enter</div>
+          <ion-item button (click)="add_custom_dedicated()" [disabled]="add_custom_tog">
+            <ion-label class="ion-text-center">{{lang.text['GroupServer']['submit']}}</ion-label>
+          </ion-item>
+        </div>
         <ion-item-divider>
           <ion-label>{{lang.text['GroupServer']['JoinedServerList']}}</ion-label>
         </ion-item-divider>
