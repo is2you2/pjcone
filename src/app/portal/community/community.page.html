@@ -21,7 +21,7 @@
           <div *ngIf="global.ShowHint && i < 10" class="shortcut_hint">{{(i + 1) % 10}}</div>
           <div class="thumbnail_image">
             <img *ngIf="post['mainImage']" [src]="post['mainImage']['thumbnail']"
-              [style]="post['isNSFW'] ? 'filter: blur(16px);' : ''" alt=""/>
+              [style]="post['isNSFW'] ? 'filter: blur(16px);' : ''" alt="" />
           </div>
           <ion-card-header>
             <ion-card-subtitle class="cardCreator">
@@ -39,7 +39,9 @@
                 lang.text['AddGroup']['UseLocalStorage']) + ')'}}
               </span>
             </ion-card-subtitle>
-            <ion-card-title class="cardTitle">{{post['title']}}</ion-card-title>
+            <ion-card-title class="cardTitle">
+              <ion-icon *ngIf="post['OutSource']" name="link-outline"></ion-icon>
+              {{post['title']}}</ion-card-title>
           </ion-card-header>
           <ion-card-content class="cardContent">
             {{post['content']}}
