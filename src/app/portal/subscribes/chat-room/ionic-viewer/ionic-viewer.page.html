@@ -14,9 +14,15 @@
     <ion-icon *ngIf="HaveRelevances && (FileInfo.viewer == 'video' || FileInfo.viewer == 'audio') && !AutoPlayNext"
       class="relevance_change button_cursor" style="padding-right: 16px;" slot="end" name="play-circle"
       (click)="AutoPlayNext = !AutoPlayNext"></ion-icon>
+    <div *ngIf="global.ShowHint && HaveRelevances" style="position: relative;" slot="end">
+      <div class="shortcut_hint shortcut_change_viewer" style="right: -4px">A</div>
+    </div>
     <ion-icon *ngIf="HaveRelevances" class="relevance_change button_cursor" style="padding-right: 4px;" slot="end"
       name="arrow-back-circle-outline" (click)="ChangeToAnother(-1)"></ion-icon>
     <ion-label *ngIf="HaveRelevances" slot="end">{{ RelevanceIndex + ' / ' + Relevances.length}}</ion-label>
+    <div *ngIf="global.ShowHint && HaveRelevances" style="position: relative;" slot="end">
+      <div class="shortcut_hint shortcut_change_viewer">D</div>
+    </div>
     <ion-icon *ngIf="HaveRelevances" class="relevance_change button_cursor"
       style="padding-right: 16px; padding-left: 4px;" slot="end" name="arrow-forward-circle-outline"
       (click)="ChangeToAnother(1)"></ion-icon>

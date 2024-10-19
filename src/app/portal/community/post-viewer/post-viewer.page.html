@@ -4,9 +4,15 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="portal/community"></ion-back-button>
     </ion-buttons>
+    <div *ngIf="global.ShowHint && HavePosts" style="position: relative;" slot="end">
+      <div class="shortcut_hint shortcut_change_viewer" style="right: -4px">A</div>
+    </div>
     <ion-icon *ngIf="HavePosts" class="relevance_change" style="padding-right: 4px;" slot="end"
       name="arrow-back-circle-outline" (click)="ChangeToAnother(-1)"></ion-icon>
     <ion-label *ngIf="HavePosts" slot="end">{{ CurrentIndex + ' / ' + nakama.posts.length}}</ion-label>
+    <div *ngIf="global.ShowHint && HavePosts" style="position: relative;" slot="end">
+      <div class="shortcut_hint shortcut_change_viewer">D</div>
+    </div>
     <ion-icon *ngIf="HavePosts" class="relevance_change" style="padding-right: 16px; padding-left: 4px;" slot="end"
       name="arrow-forward-circle-outline" (click)="ChangeToAnother(1)"></ion-icon>
   </ion-toolbar>
@@ -15,7 +21,7 @@
 <ion-content>
   <div id="ScrollPost">
     <img *ngIf="PostInfo['mainImage'] && PostInfo['mainImage']['MainThumbnail']" style="width: 100%; height: auto;"
-      [src]="PostInfo['mainImage']['MainThumbnail']" alt="MainImage"/>
+      [src]="PostInfo['mainImage']['MainThumbnail']" alt="MainImage" />
     <div id="PostContent" style="padding: 16px; height: 100%;"></div>
   </div>
 </ion-content>

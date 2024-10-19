@@ -22,7 +22,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
     private indexed: IndexedDBService,
     public nakama: NakamaService,
     private alertCtrl: AlertController,
-    private global: GlobalActService,
+    public global: GlobalActService,
     private p5toast: P5ToastService,
     private route: ActivatedRoute,
     private router: Router,
