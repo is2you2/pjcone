@@ -94,7 +94,7 @@
                         <div *ngIf="!msg.content['thumbnail']" class="file_button imageForm borderRadiusDefault"
                           (click)="file_detail(msg)" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
                           <div
-                            *ngIf="global.ShowHint && !CheckIfFocusOnInput && ((ChatLogs.scrollTop == 0 && i == 0) || (ChatLogs.scrollTop != 0 && i == ViewableMessage.length - 1))"
+                            *ngIf="global.ShowHint && !CheckIfFocusOnInput && ((ChatLogs.scrollTop == 0 && msg == Attach.first) || (ChatLogs.scrollTop != 0 && msg == Attach.last))"
                             class="shortcut_hint">Q</div>
                           <p class="file_info"> {{msg.content['filename']}} </p>
                           <div *ngIf="msg.content['text']" class="text_seperator"></div>
@@ -104,7 +104,7 @@
                         <div *ngIf="msg.content['thumbnail']" class="file_name_form imageForm borderRadiusDefault"
                           (click)="file_detail(msg)">
                           <div
-                            *ngIf="global.ShowHint && !CheckIfFocusOnInput && ((ChatLogs.scrollTop == 0 && i == 0) || (ChatLogs.scrollTop != 0 && i == ViewableMessage.length - 1))"
+                            *ngIf="global.ShowHint && !CheckIfFocusOnInput && ((ChatLogs.scrollTop == 0 && msg == Attach.first) || (ChatLogs.scrollTop != 0 && msg == Attach.last))"
                             class="shortcut_hint">Q</div>
                           <img class="file_thumbnail imageForm"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
@@ -180,7 +180,7 @@
                         <div *ngIf="!msg.content['thumbnail']" class="file_button imageForm borderRadiusDefault"
                           (click)="file_detail(msg)" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
                           <div
-                            *ngIf="global.ShowHint && !CheckIfFocusOnInput && ((ChatLogs.scrollTop == 0 && i == 0) || (ChatLogs.scrollTop != 0 && i == ViewableMessage.length - 1))"
+                            *ngIf="global.ShowHint && !CheckIfFocusOnInput && ((ChatLogs.scrollTop == 0 && msg == Attach.first) || (ChatLogs.scrollTop != 0 && msg == Attach.last))"
                             class="shortcut_hint">Q</div>
                           <p class="file_info"> {{msg.content['filename']}} </p>
                           <div *ngIf="msg.content['text']" class="text_seperator"></div>
@@ -190,7 +190,7 @@
                         <div *ngIf="msg.content['thumbnail']" class="file_name_form imageForm borderRadiusDefault"
                           (click)="file_detail(msg)">
                           <div
-                            *ngIf="global.ShowHint && !CheckIfFocusOnInput && ((ChatLogs.scrollTop == 0 && i == 0) || (ChatLogs.scrollTop != 0 && i == ViewableMessage.length - 1))"
+                            *ngIf="global.ShowHint && !CheckIfFocusOnInput && ((ChatLogs.scrollTop == 0 && msg == Attach.first) || (ChatLogs.scrollTop != 0 && msg == Attach.last))"
                             class="shortcut_hint">Q</div>
                           <img class="file_thumbnail imageForm"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"

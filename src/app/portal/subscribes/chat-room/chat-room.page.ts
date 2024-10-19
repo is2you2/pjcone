@@ -892,6 +892,25 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }
 
+  Attach = {
+    first: undefined,
+    last: undefined,
+  }
+  /** 단축키로 진입 가능한 첨부파일이 포함된 메시지인지 검토 */
+  CheckIfShortcutLinkFile() {
+    delete this.Attach.first;
+    delete this.Attach.last;
+    for (let i = 0, j = this.ViewableMessage.length; i < j; i++)
+      if (this.ViewableMessage[i].content.filename) {
+        this.Attach.first = this.ViewableMessage[i];
+        break;
+      }
+    for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
+      if (this.ViewableMessage[i].content.filename) {
+        this.Attach.last = this.ViewableMessage[i];
+        break;
+      }
+  }
   /** 보여지는 가장 첫번째 파일 열기 */
   open_first_file() {
     for (let i = 0, j = this.ViewableMessage.length; i < j; i++)
@@ -1336,6 +1355,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (this.ViewMsgIndex + this.ViewCount == this.messages.length - 1)
           this.ViewMsgIndex++;
         this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+        this.CheckIfShortcutLinkFile();
         this.pullable = (this.info['local'] ? Boolean(this.LocalHistoryList.length) : this.next_cursor !== undefined) || this.ViewMsgIndex > 0;
         this.modulate_chatmsg(0, this.ViewableMessage.length);
         this.modulate_chatmsg(this.ViewableMessage.length - 1, this.ViewableMessage.length);
@@ -1573,6 +1593,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let ShowMeAgainCount = Math.min(this.ViewMsgIndex, this.RefreshCount)
           this.ViewMsgIndex -= ShowMeAgainCount;
           this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+          this.CheckIfShortcutLinkFile();
           for (let i = 0; i < ShowMeAgainCount; i++) {
             let FileURL: any;
             try {
@@ -1627,6 +1648,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
         });
         this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+        this.CheckIfShortcutLinkFile();
         for (let i = 0, j = this.ViewableMessage.length; i < j; i++) {
           let FileURL: any;
           try {
@@ -1665,6 +1687,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.ShowRecentMsg = !(subtract == 0);
       this.ViewMsgIndex += Math.min(this.RefreshCount, subtract);
       this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+      this.CheckIfShortcutLinkFile();
       for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
         let FileURL: any;
         try {
@@ -1719,6 +1742,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       let ShowMeAgainCount = Math.min(this.ViewableMessage.length, Math.min(this.ViewMsgIndex, this.RefreshCount));
       this.ViewMsgIndex -= ShowMeAgainCount;
       this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+      this.CheckIfShortcutLinkFile();
       for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
         let FileURL: any;
         try {
@@ -1770,6 +1794,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
           this.ViewMsgIndex = Math.max(0, ExactAddedChatCount - this.RefreshCount);
           this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
+          this.CheckIfShortcutLinkFile();
           let ShowMeAgainCount = Math.min(Math.min(ExactAddedChatCount, this.RefreshCount), this.ViewableMessage.length);
           for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
             let FileURL: any;
