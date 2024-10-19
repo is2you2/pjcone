@@ -191,6 +191,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 여기서는 페이지에 값이 들어왔는지 검토만 한다 */
   navParams: boolean;
   BackButtonPressed = false;
+  AlreadyInited = false;
   ngOnInit() {
     this.MainDiv = document.getElementById('main_div');
     this.isMobile = isPlatform == 'Android' || isPlatform == 'iOS';
@@ -199,7 +200,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       const navParams = this.router.getCurrentNavigation().extras.state;
       this.navParams = Boolean(navParams);
       if (navParams) this.received_data = navParams.data;
-      if (this.received_data) this.userInput = { ...this.userInput, ...JSON.parse(this.received_data) };
+      if (this.received_data && !this.AlreadyInited)
+        this.userInput = { ...this.userInput, ...JSON.parse(this.received_data) };
+      this.AlreadyInited = true;
     });
     this.nakama.AddTodoLinkAct = async (info: string) => {
       if (this.p5timer) this.p5timer.remove();
