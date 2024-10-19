@@ -235,7 +235,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   /** 게시물 제목 작성칸 */
   TitleInput: HTMLInputElement;
   /** 타이틀 입력칸에 포커스되어있는지 여부 */
-  CheckIfTitleInputFocus = true;
+  CheckIfTitleInputFocus = false;
   /** 기존 게시물 편집 여부 */
   isModify = false;
   ionViewWillEnter() {

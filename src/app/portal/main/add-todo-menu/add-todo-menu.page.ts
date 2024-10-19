@@ -418,7 +418,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 저장소 변경이 가능한지 검토 (원격이면서 작성자가 남이 아닌지 검토) */
   isStoreAtChangable = true;
   /** 타이틀에 포커스중인지 검토 */
-  CheckIfTitleFocus = true;
+  CheckIfTitleFocus = false;
   async ionViewWillEnter() {
     this.lock_modal_open = false;
     if (!this.navParams) return;

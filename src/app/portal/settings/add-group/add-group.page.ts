@@ -87,7 +87,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
   IsFocusOnThisPage = true;
   p5canvas: p5;
   /** 제목 입력칸에 포커스중인지 검토 */
-  CheckIfTitleFocus = true;
+  CheckIfTitleFocus = false;
   ChangeContentWithKeyInput() {
     let group_name = document.getElementById('group_name');
     this.GroupNameInput = group_name.childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
