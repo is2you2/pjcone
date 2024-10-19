@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { AlertController, IonModal, NavController } from '@ionic/angular';
+import { Component, OnDestroy, OnInit, ViewChild, viewChild } from '@angular/core';
+import { AlertController, IonInput, IonModal, NavController } from '@ionic/angular';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -745,6 +745,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
   }
 
   @ViewChild('RegisterNewServer') RegisterNewServer: IonModal;
+  @ViewChild('ServerDisplayName') ServerDisplayName: IonInput;
 
   OpenNewServerForm() {
     this.global.StoreShortCutAct('group-server');
@@ -756,7 +757,11 @@ export class GroupServerPage implements OnInit, OnDestroy {
       if (ev['ctrlKey'])
         this.add_custom_dedicated();
     }
-    this.RegisterNewServer.present();
+    this.RegisterNewServer.present()
+      .then(() => {
+        if (!this.dedicated_info.name)
+          this.ServerDisplayName.setFocus();
+      });
   }
 
   copy_id() {

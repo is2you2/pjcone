@@ -31,7 +31,7 @@
           <ion-label>{{lang.text['GroupServer']['RegisterServer']}}</ion-label>
         </ion-item-divider>
         <ion-item button [disabled]="add_custom_tog">
-          <ion-input [label]="lang.text['GroupServer']['DisplayName']" class="ion-text-right"
+          <ion-input #ServerDisplayName [label]="lang.text['GroupServer']['DisplayName']" class="ion-text-right"
             [(ngModel)]="dedicated_info.name"
             [placeholder]="lang.text['GroupServer']['DisplayName_placeholder']"></ion-input>
         </ion-item>
