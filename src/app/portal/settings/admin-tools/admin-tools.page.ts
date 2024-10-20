@@ -81,6 +81,7 @@ export class AdminToolsPage implements OnInit {
       }]
     }).then(v => {
       if (v.objects.length) this.ArcadeListURL = v.objects[0].value['data'];
+      else this.ArcadeListURL = '';
     });
   }
 
