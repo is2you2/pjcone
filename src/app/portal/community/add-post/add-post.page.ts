@@ -949,7 +949,9 @@ export class AddPostPage implements OnInit, OnDestroy {
           let res = await fetch(this.userInput.mainImage.url, { signal: this.cont.signal });
           if (res.ok) this.userInput.mainImage.blob = await res.blob();
         } catch (e) { }
-        this.userInput.mainImage.blob = await (await fetch(this.userInput.mainImage.url, { signal: this.cont.signal })).blob();
+        delete this.userInput.mainImage.thumbnail;
+        delete this.userInput.mainImage.alt_path;
+        delete this.userInput.mainImage.url;
       }
       for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
         if (this.userInput.attachments[i].url && !this.userInput.attachments[i].blob) {
@@ -957,6 +959,9 @@ export class AddPostPage implements OnInit, OnDestroy {
             let res = await fetch(this.userInput.attachments[i].url, { signal: this.cont.signal });
             if (res.ok) this.userInput.attachments[i].blob = await res.blob();
           } catch (e) { }
+          delete this.userInput.attachments[i].thumbnail;
+          delete this.userInput.attachments[i].alt_path;
+          delete this.userInput.attachments[i].url;
         }
       await this.nakama.RemovePost(this.userInput, true);
     }
