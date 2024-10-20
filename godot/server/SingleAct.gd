@@ -1,9 +1,6 @@
 extends Node
 # 웹 소켓으로 DB 운용
 
-# 사용자가 반드시 연결 시도하는 사용자 카운터 서버
-var server:= WebSocketServer.new()
-const PORT:= 12000
 const HEADER:= 'Counter'
 
 # 사용자 pid로 접속 카운트
@@ -23,19 +20,6 @@ var counter:= {
 var admin_file:String
 
 func _ready():
-	server.connect("data_received", self, '_received')
-	server.connect('client_connected', self, '_connected')
-	server.connect('client_disconnected', self, '_disconnected')
-	server.connect('client_close_request', self, '_disconnected')
-	if Root.private:
-		server.private_key = Root.private
-	if Root.public:
-		server.ssl_certificate = Root.public
-	var err:= server.listen(PORT)
-	if err != OK:
-		Root.logging(HEADER, str('init error: ', err), Root.LOG_ERR)
-	else:
-		Root.logging(HEADER, str('Opened: ', PORT))
 	admin_file = Root.html_path + 'admin.txt'
 	var file:= File.new()
 	if file.open(admin_file, File.READ) == OK:
@@ -84,92 +68,3 @@ func display_counter_value():
 	$m/vbox/GridContainer/Current_0/Current_0.text = str(counter['current']);
 	$m/vbox/GridContainer/Maximum_0/Maximum_0.text = str(counter['maximum']);
 	$m/vbox/GridContainer/Stack_0/Stack_0.text = str(counter['stack']);
-
-
-# 자료를 받아서 행동 코드별로 자식 노드에게 일처리 넘김
-func _received(id:int, _try_left:= 5):
-	var err:= server.get_peer(id).get_packet_error()
-	if err == OK:
-		var raw_data:= server.get_peer(id).get_packet()
-		var data:= raw_data.get_string_from_utf8()
-		var json = JSON.parse(data).result
-		if json is Dictionary:
-			match(json):
-				{ 'act': 'req_pid' }: # pid 요청
-					var result = {
-						'act': 'req_pid',
-						'pid': id,
-					}
-					send_to(id, JSON.print(result).to_utf8())
-				{ 'act': 'req_link', 'pid': var _pid, .. }: # pid 사용자에게 메시지 보내기
-					send_to(_pid, raw_data)
-				{ 'act': 'is_admin', 'uuid': var uuid }:
-					var is_admin = uuid == $m/vbox/AdminInfo/TargetUUID.text
-					if is_admin:
-						administrator_pid = id
-					if is_admin and administrator_pid:
-						var result = {
-							'act': 'admin_noti',
-							'text': 'CanUseAsAdmin',
-						}
-						send_to(administrator_pid, JSON.print(result).to_utf8())
-				{ 'act': 'req_count' }:
-					if id == administrator_pid:
-						var count_data = {
-							'assistant': JSON.print(counter),
-							'sc1_custom': JSON.print($SC1_custom.counter),
-							'minichat': JSON.print($MiniRanchat.counter),
-						}
-						var result = {
-							'act': 'req_count',
-							'data': JSON.print(count_data),
-						}
-						send_to(administrator_pid, JSON.print(result).to_utf8())
-				{ 'act': 'req_battery' }:
-					if id == administrator_pid:
-						var battery_data = {
-							'percent': OS.get_power_percent_left(),
-							'time': OS.get_power_seconds_left(),
-							'state': OS.get_power_state(),
-						}
-						var result = {
-							'act': 'req_battery',
-							'data': JSON.print(battery_data),
-						}
-						send_to(administrator_pid, JSON.print(result).to_utf8())
-				_: # 준비되지 않은 행동
-					Root.logging(HEADER, str('UnExpected Act: ', data), Root.LOG_ERR)
-		else: # 형식 오류
-			Root.logging(HEADER, str('UnExpected form: ', data), Root.LOG_ERR)
-	else: # 패킷 오류
-		Root.logging(HEADER, str('packet error: ', err), Root.LOG_ERR)
-		if _try_left > 0:
-			Root.logging(HEADER, str('receive packet error with _try_left: ', _try_left))
-			yield(get_tree(), 'idle_frame')
-			_received(id, _try_left - 1)
-		else:
-			Root.logging(HEADER, str('receive packet error and try left out.'), Root.LOG_ERR)
-			server.disconnect_peer(id, 1011, 'MainServer packet receive try left out.')
-
-
-# 특정 사용자에게 보내기
-func send_to(id:int, msg:PoolByteArray, _try_left:= 5):
-	var is_exist:= server.get_peer(id)
-	if is_exist:
-		var err:= is_exist.put_packet(msg)
-		if err != OK:
-			if _try_left > 0:
-				Root.logging(HEADER, str('send packet error with _try_left: ', _try_left))
-				yield(get_tree(), 'idle_frame')
-				send_to(id, msg, _try_left - 1)
-			else:
-				Root.logging(HEADER, str('send packet error and try left out.'), Root.LOG_ERR)
-				server.disconnect_peer(id, 1011, 'MainServer packet send try left out.')
-
-
-func _process(_delta):
-	server.poll()
-
-
-func _exit_tree():
-	server.stop()

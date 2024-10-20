@@ -34,7 +34,7 @@ margin_bottom = 352.0
 
 [node name="GridContainer" type="GridContainer" parent="m/vbox"]
 margin_right = 344.0
-margin_bottom = 98.0
+margin_bottom = 64.0
 columns = 4
 
 [node name="#" type="ColorRect" parent="m/vbox/GridContainer"]
@@ -96,73 +96,10 @@ text = "누적"
 align = 1
 valign = 1
 
-[node name="#2" type="ColorRect" parent="m/vbox/GridContainer"]
-margin_top = 34.0
-margin_right = 83.0
-margin_bottom = 64.0
-rect_min_size = Vector2( 83, 30 )
-color = Color( 0.227451, 0.227451, 0.227451, 1 )
-
-[node name="#" type="Label" parent="m/vbox/GridContainer/#2"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme = ExtResource( 6 )
-text = "Counter"
-align = 1
-valign = 1
-
-[node name="Current_0" type="ColorRect" parent="m/vbox/GridContainer"]
-margin_left = 87.0
-margin_top = 34.0
-margin_right = 170.0
-margin_bottom = 64.0
-rect_min_size = Vector2( 83, 30 )
-color = Color( 0.176471, 0.176471, 0.176471, 1 )
-
-[node name="Current_0" type="Label" parent="m/vbox/GridContainer/Current_0"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme = ExtResource( 6 )
-text = "0"
-align = 1
-valign = 1
-
-[node name="Maximum_0" type="ColorRect" parent="m/vbox/GridContainer"]
-margin_left = 174.0
-margin_top = 34.0
-margin_right = 257.0
-margin_bottom = 64.0
-rect_min_size = Vector2( 83, 30 )
-color = Color( 0.176471, 0.176471, 0.176471, 1 )
-
-[node name="Maximum_0" type="Label" parent="m/vbox/GridContainer/Maximum_0"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme = ExtResource( 6 )
-text = "0"
-align = 1
-valign = 1
-
-[node name="Stack_0" type="ColorRect" parent="m/vbox/GridContainer"]
-margin_left = 261.0
-margin_top = 34.0
-margin_right = 344.0
-margin_bottom = 64.0
-rect_min_size = Vector2( 83, 30 )
-color = Color( 0.176471, 0.176471, 0.176471, 1 )
-
-[node name="Stack_0" type="Label" parent="m/vbox/GridContainer/Stack_0"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme = ExtResource( 6 )
-text = "0"
-align = 1
-valign = 1
-
 [node name="#3" type="ColorRect" parent="m/vbox/GridContainer"]
-margin_top = 68.0
+margin_top = 34.0
 margin_right = 83.0
-margin_bottom = 98.0
+margin_bottom = 64.0
 rect_min_size = Vector2( 83, 30 )
 color = Color( 0.227451, 0.227451, 0.227451, 1 )
 
@@ -176,9 +113,9 @@ valign = 1
 
 [node name="Current_1" type="ColorRect" parent="m/vbox/GridContainer"]
 margin_left = 87.0
-margin_top = 68.0
+margin_top = 34.0
 margin_right = 170.0
-margin_bottom = 98.0
+margin_bottom = 64.0
 rect_min_size = Vector2( 83, 30 )
 color = Color( 0.176471, 0.176471, 0.176471, 1 )
 
@@ -192,9 +129,9 @@ valign = 1
 
 [node name="Maximum_1" type="ColorRect" parent="m/vbox/GridContainer"]
 margin_left = 174.0
-margin_top = 68.0
+margin_top = 34.0
 margin_right = 257.0
-margin_bottom = 98.0
+margin_bottom = 64.0
 rect_min_size = Vector2( 83, 30 )
 color = Color( 0.176471, 0.176471, 0.176471, 1 )
 
@@ -208,9 +145,9 @@ valign = 1
 
 [node name="Stack_1" type="ColorRect" parent="m/vbox/GridContainer"]
 margin_left = 261.0
-margin_top = 68.0
+margin_top = 34.0
 margin_right = 344.0
-margin_bottom = 98.0
+margin_bottom = 64.0
 rect_min_size = Vector2( 83, 30 )
 color = Color( 0.176471, 0.176471, 0.176471, 1 )
 
