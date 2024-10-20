@@ -84,7 +84,7 @@ export class MainPage implements OnInit {
     }
     this.CurrentFilterValue = null;
     if (this.global.p5FilteringTodos)
-      this.global.p5FilteringTodos(TodoFilterCategory.None);
+      this.global.p5FilteringTodos(TodoFilterCategory.None, this.TargetFilterDisplayName);
   }
   CurrentFilterValue = null;
   /** 해당 필터 카테고리의 값을 변경 */
@@ -334,8 +334,11 @@ export class MainPage implements OnInit {
         }];
         this.global.p5FilteringTodos = FilteringTodos;
       }
+      /** 선택된 카테고리 */
+      let CategoryTarget: string;
       /** 할 일 객체를 순회하며 표시를 필터링함 */
-      let FilteringTodos = (force?: any) => {
+      let FilteringTodos = (force?: any, category?: string) => {
+        if (category) CategoryTarget = category;
         let ActWith = force ?? this.TargetFilterName;
         switch (ActWith) {
           case TodoFilterCategory.None:
@@ -578,7 +581,7 @@ export class MainPage implements OnInit {
           if (this.isHidden) {
             p.fill(128, 40);
           } else {
-            if (this.json.remote)
+            if (CategoryTarget == 'FilterByCreator' && this.json.remote)
               p.fill((StatusBar.colors[StatusBar.groupServer[this.json.remote.isOfficial][this.json.remote.target] || 'offline'])
                 + p.hex(p.floor(p.lerp(34, 96, this.LerpProgress)), 2));
             else p.fill((this.json.custom_color || this.defaultColor.toString('#rrggbb'))
