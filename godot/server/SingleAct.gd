@@ -36,8 +36,6 @@ func _ready():
 		Root.logging(HEADER, str('init error: ', err), Root.LOG_ERR)
 	else:
 		Root.logging(HEADER, str('Opened: ', PORT))
-	Root.rich_node = $m/vbox/c/m/log
-	Root.rich_node.bbcode_text = Root.rich_log
 	admin_file = Root.html_path + 'admin.txt'
 	var file:= File.new()
 	if file.open(admin_file, File.READ) == OK:

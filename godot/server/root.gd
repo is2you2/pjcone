@@ -4,9 +4,6 @@ extends Node
 # 이 색깔로 로그 발생시 오류로 처리
 const LOG_ERR:= 'faa'
 
-# 이번 부팅의 로그 기록
-var rich_log:= '-- Server program started.'
-var rich_node:RichTextLabel
 
 # csv 분할자
 const SEP_CHAR:= '，'
@@ -74,6 +71,3 @@ func logging(header:String, content:String, _con_col:= 'bbb'):
 	var result_gui:= '[color=#888]%s[/color][color=#%s]%s[/color] | [color=#bbb]%s[/color]' % [
 		stamp, _con_col, header, content
 	]
-	rich_log += '\n' + result_gui
-	if rich_node != null:
-		rich_node.bbcode_text = rich_log
