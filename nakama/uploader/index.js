@@ -127,7 +127,8 @@ wss.on('connection', (ws) => {
             let json = JSON.parse(msg);
             let channel_id = json['channel'] || joined_channel[clientId];
             switch (json['type']) {
-                case 'init': // 사용자에게 새 채널 id를 구성하여 전달
+                // 사용자에게 새 채널 id를 구성하여 전달
+                case 'init':
                     let new_channel_id = uuidv4();
                     let init = {
                         type: 'init_id',
@@ -137,10 +138,17 @@ wss.on('connection', (ws) => {
                     dedi_client[new_channel_id] = {};
                     ws.send(JSON.stringify(init));
                     return;
+                // 게임 채널로 사용하기
+                // 인스턴스 게임 서버와 관련된 정보를 저장함
+                // 게임 채널은 방장이 존재하지 않음, 모든 사용자가 떠날 때까지 유지된다
+                case 'rules':
+                    dedi_client[channel_id]['rules'] = json['rules'];
+                    break;
                 // 광장 채널에서 FFS 우선처리가 된 경우 별도 클라이언트 연결
                 case 'override':
                     clientId = json['clientId'];
-                case 'join': // 새로운 사용자 참여
+                // 새로운 사용자 참여
+                case 'join':
                     // 참여 예정 채널이 없다면 사용자 아이디로 새 채널 만들기
                     if (!json['channel'])
                         channel_id = clientId;
@@ -153,8 +161,11 @@ wss.on('connection', (ws) => {
                         dedi_client[channel_id][clientId]['ws'] = ws;
                         dedi_client[channel_id][clientId]['name'] = json['name'];
                     }
+                    // 게임 채널에 진입했다면 게임 룰을 공유
+                    if (dedi_client[channel_id]['rules'])
+                        ws.send(JSON.stringify(dedi_client[channel_id]['rules']));
                     json['channel'] = channel_id;
-                    { // 진입시 모든 사용자에게 현재 총 인원 수를 브로드캐스트
+                    { // 진입시 채널 내 사용자에게 현재 총 인원 수를 전파
                         let keys = Object.keys(dedi_client[channel_id]);
                         for (let i = 0, j = keys.length; i < j; i++)
                             dedi_client[channel_id][keys[i]]['ws'].send(JSON.stringify({ count: j }));
@@ -165,7 +176,7 @@ wss.on('connection', (ws) => {
             }
             json['uid'] = clientId;
             json = JSON.stringify(json);
-            { // 메시지 브로드캐스트
+            { // 채널 내 메시지 전파
                 let keys = Object.keys(dedi_client[channel_id]);
                 for (let i = 0, j = keys.length; i < j; i++)
                     dedi_client[channel_id][keys[i]]['ws'].send(json);
@@ -178,7 +189,8 @@ wss.on('connection', (ws) => {
     });
 
     // 연결이 종료되었을 때 실행되는 콜백 함수
-    ws.on('close', () => { // 모든 사용자에게 사용자 나감 브로드캐스트
+    ws.on('close', () => {
+        // 모든 사용자에게 사용자 나감 전파
         try {
             const channel_id = joined_channel[clientId];
             // 이 서버에 파일을 직접 게시했다면 해당 사용자의 파일 삭제
@@ -202,6 +214,7 @@ wss.on('connection', (ws) => {
                 if (isHostLeft) {
                     dedi_client[channel_id][key]['ws'].close();
                 } else {
+                    // 그게 아니라면 사용자 퇴장 알림처리
                     let count = {
                         uid: clientId,
                         name: catch_name,
