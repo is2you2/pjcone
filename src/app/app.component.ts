@@ -1,5 +1,4 @@
-import { Component, NgZone } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { IndexedDBService } from './indexed-db.service';
 import { LocalNotiService } from './local-noti.service';
@@ -12,8 +11,6 @@ export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'Desktop
 export var isNativefier = false;
 /** 이미지 등 자료 링크용(웹 사이트 host) */
 export const SERVER_PATH_ROOT: string = 'https://is2you2.github.io/';
-import * as p5 from 'p5';
-window['p5'] = p5;
 
 @Component({
   selector: 'app-root',
