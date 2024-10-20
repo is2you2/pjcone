@@ -38,7 +38,7 @@
         <div class="additional_form bg_img_form">
           <img class="profile_img"
             [style]="nakama.users.self['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'"
-            [src]="nakama.users.self['img']"/>
+            [src]="nakama.users.self['img']" />
         </div>
         <ion-label>{{nakama.users.self['display_name'] || lang.text['Profile']['noname_user']}}</ion-label>
       </ion-item>
@@ -54,7 +54,7 @@
             <img class="channel_image"
               [src]="channel['info'] && channel['info']['img'] || ((channel['local'] || (channel['info'] && channel['info']['max_count'] == 1)) ? 'assets/data/local.svg' : 'assets/data/channel.svg')"
               alt="ch_img"
-              [style]="(channel['status'] == 'online' || (channel['redirect'] && channel['redirect']['type'] == 3 && channel['status'] == 'pending')) ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'"/>
+              [style]="(channel['status'] == 'online' || (channel['redirect'] && channel['redirect']['type'] == 3 && channel['status'] == 'pending')) ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'" />
             <div *ngIf="!channel['local']" class="status_circle"
               [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']">
             </div>
@@ -77,7 +77,7 @@
                     </span>
                     <span *ngIf="channel['volatile']" class="server_target">{{'(' + lang.text['AddGroup']['Volatile'] +
                       ')'}}</span>
-                    <span *ngIf="nakama.showServer && !channel['volatile']" class="server_target">
+                    <span *ngIf="(nakama.showServer || channel['local']) && !channel['volatile']" class="server_target">
                       {{'(' + (channel['local'] ? lang.text['AddGroup']['UseLocalStorage'] : (channel['server']['name']
                       ||
                       channel['server']['target'])) + ')'}}
