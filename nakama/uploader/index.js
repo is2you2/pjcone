@@ -10,8 +10,10 @@ const fs = require('node:fs');
 const ws = require('ws');
 const { v4: uuidv4 } = require('uuid');
 
-/** 페이지 서버 포트 */
+/** 로컬 웹 페이지 서버 포트 */
 const port = 12000;
+/** 보안 프로토콜을 이용하지 않는 경우 false로 변경하세요 */
+const UseSSL = true;
 
 app.use(cors());
 
@@ -73,26 +75,30 @@ app.use('/remove_key/', (req, res) => {
     res.end();
 });
 
+if (UseSSL) {
+    const options = {
+        key: fs.readFileSync('/usr/local/apache2/conf/private.key'),
+        cert: fs.readFileSync('/usr/local/apache2/conf/public.crt'),
+    };
 
-const options = {
-    key: fs.readFileSync('/usr/local/apache2/conf/private.key'),
-    cert: fs.readFileSync('/usr/local/apache2/conf/public.crt'),
-};
+    https.createServer(options, app).listen(9001, "0.0.0.0", () => {
+        console.log("Working on port 9001");
+    });
+} else {
+    app.listen(9001, "0.0.0.0", () => {
+        console.log("Working on port 9001: No Secure");
+    });
+}
 
-https.createServer(options, app).listen(9001, "0.0.0.0", () => {
-    console.log("Working on port 9001");
-});
-
-// app.listen(9001, "0.0.0.0", () => {
-//     console.log("Working on port 9001: No Secure");
-// });
-
-const secure_server = https.createServer(options);
-const wss = new ws.Server({ server: secure_server });
-
-// const wss = new ws.Server({ port: 12013 }, () => {
-//     console.log("Working on port 12013: No Secure");
-// });
+let wss;
+if (UseSSL) {
+    const secure_server = https.createServer(options);
+    wss = new ws.Server({ server: secure_server });
+} else {
+    wss = new ws.Server({ port: 12013 }, () => {
+        console.log("Working on port 12013: No Secure");
+    });
+}
 
 
 /** 사설 그룹채팅 클라이언트 맵
@@ -223,12 +229,13 @@ wss.on('connection', (ws) => {
     });
 });
 
-secure_server.listen(12013, () => {
-    console.log("Working on port 12013");
-});
+if (UseSSL)
+    secure_server.listen(12013, () => {
+        console.log("Working on port 12013");
+    });
 
 // 이 서버를 이용하면 http://localhost:{port} 로 페이지를 이용할 수 있고
-// 비보안 서버에 접속할 때 기능에 제한 없이 사용할 수 있습니다.
+// 앱에서 비보안 서버에 접속할 때 기능에 제한 없이 사용할 수 있습니다.
 try {
     app.use(express.static(path.join(__dirname, './www')));
     app.listen(port, () => {
