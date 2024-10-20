@@ -362,8 +362,8 @@
                 <div *ngIf="global.ShowHint && CheckIfFocusOnInput" class="shortcut_hint shortcut_hint_menu">Backspace
                 </div>
                 <textarea [id]="ChannelUserInputId" [(ngModel)]="userInput.text" (keyup)="check_key($event)"
-                  (keydown)="check_key($event)" class="TextAreaInput imageForm" (click)="make_ext_hidden()"
-                  [placeholder]="inputPlaceholder"></textarea>
+                  (keydown)="check_key($event)" class="TextAreaInput imageForm" style="overflow: auto;"
+                  (click)="make_ext_hidden()" [placeholder]="inputPlaceholder"></textarea>
               </td>
               <td>
                 <ion-button fill="clear" mode="md" (click)="send(false)" expand="block"
