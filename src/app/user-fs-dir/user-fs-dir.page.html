@@ -49,9 +49,9 @@
       </ion-item>
     </div>
     <ion-accordion-group #FileSel>
-      <div *ngFor="let file of FileList; index as i" (contextmenu)="DeleteShortcut(file)">
+      <div *ngFor="let file of FileList; index as i">
         <ion-accordion *ngIf="CurrentDir == file.dir || navParams.selector" [value]="file.path">
-          <ion-item slot="header">
+          <ion-item slot="header" (contextmenu)="DeleteShortcut(file)">
             <ion-icon *ngIf="file.viewer == 'image'" slot="start" name="image"></ion-icon>
             <ion-icon *ngIf="file.viewer == 'audio'" slot="start" name="musical-notes"></ion-icon>
             <ion-icon *ngIf="file.viewer == 'video'" slot="start" name="play-circle"></ion-icon>
@@ -83,7 +83,7 @@
             </ion-item>
             <div *ngIf="file.viewer == 'image'" class="image_front_form" (click)="OpenFile(file)">
               <img class="image_front_view" [style]="HideThumbnail ? 'filter: blur(6px);' : ''" [src]="file.thumbnail"
-                [alt]="file.name"/>
+                [alt]="file.name" />
             </div>
           </div>
         </ion-accordion>
