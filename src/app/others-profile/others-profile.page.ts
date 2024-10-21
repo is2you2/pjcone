@@ -89,6 +89,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         UserColorGradient = p.createDiv();
         UserColorGradient.style('width', '100%');
         UserColorGradient.style('height', '100%');
+        UserColorGradient.style('position', 'fixed');
         UserColorGradient.style('background-image', `linear-gradient(to top, rgba(${user_rgb_color}, 0), rgba(${user_rgb_color}, 0))`);
         UserColorGradient.parent(this.OtherCanvasDiv);
         p.noCanvas();

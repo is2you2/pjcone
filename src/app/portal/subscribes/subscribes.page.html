@@ -103,8 +103,8 @@
   </div>
   <ion-modal #PersonalChat initialBreakpoint=".8" [breakpoints]="[0, .8, 1]">
     <ng-template>
-      <ion-content>
-        <div id="SelfColorBg" style="position: absolute; width: 100%; height: 100%; pointer-events: none;"></div>
+      <ion-content style="position: relative;">
+        <div id="SelfColorBg" style="position: fixed; width: 100%; height: 100%; pointer-events: none;"></div>
         <div style="padding: 16px;">
           <ion-item-divider>
             <ion-label>{{lang.text['Subscribes']['OnebyOneChat']}}</ion-label>
