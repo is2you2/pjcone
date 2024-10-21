@@ -97,6 +97,15 @@ export class LocalNotiService {
     this.ClearNoti(11);
     if ('serviceWorker' in navigator) {
       this.MobileSWReg = window['swReg'];
+      Notification.requestPermission().then(v => {
+        if (v === 'granted') {
+          console.log('알림 권한이 허용됨.');
+        } else {
+          console.log('알림 권한이 거부됨.');
+        }
+      }, e => {
+        console.error('지원하지 않는 브라우저: ', e);
+      });
       navigator.serviceWorker.addEventListener('message', ev => {
         // 인라인 텍스트 입력이 있는 경우
         if (ev.data.reply) {
