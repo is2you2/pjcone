@@ -121,10 +121,10 @@ useDeviceAsServer,이 기기를 기능 서버로,Use this device as a functional
 ShowChnServer,서버 표시,Show servers
 ShowShortCutHint,단축키 힌트 표시,Show shortcut hints
 DevKit,보조 도구,Auxiliary tools
-WebLinkGen,웹 링크 생성기,Weblink generator
 FallbackFS,첫번째 파일 서버,First file server
 TryToFallbackFS,FFS 업로드 시도,Try with FFS
 OverrideFallbackFS,FFS 우선 적용,Override FFS
+BugReport,오류 보고,Bug Report
 ServerFiles,사용 설명서,User Manual
 InAppExplorer,인앱 탐색기,InApp Explorer
 EnginePPT,내부망 WebRTC,Internal network WebRTC
@@ -551,14 +551,6 @@ RemovedGroup,삭제된 그룹,Removed group
 Title,파일 공유하기,Share file
 NoChannelToShare,가용 채널이 없습니다,No channels available
 AvailableChannels,공유 가능한 채널,Shareable channels
-## WebLinkGen,,
-subtitle,빠른 진입 주소 생성하기,Generate a fast entry address
-baseURL,주소 기반,Address based
-CustomInfo,정보 지정,Set information
-AutoOpenChannel,채널 열기,Open channel
-OpenGroupChannel,선택한 채널 열기,Open selected channel
-OpenPrivateChannel,1:1 채널 열기,Open private channel
-ClickToPaste,사용자 id 붙여넣기,Paste user id
 ## ContentInfo,,
 WorkLogs,작업 기록,Work logs
 LastPost,최종 게시자,Last post by

@@ -141,9 +141,9 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.Devkit.value = 'Devkit';
     this.LinkButton.splice(this.spliceStartFrom, 0,
       () => this.open_inapp_explorer(),
-      () => this.go_to_page('weblink-gen'),
       () => this.focus_to_fallback_fs_input(),
       () => this.go_to_webrtc_manager(),
+      () => this.global.open_link('https://www.reddit.com/r/ProjectCone/'),
       () => this.download_serverfile(),
     );
     let keys = Object.keys(this.ShortcutHint);
@@ -188,9 +188,9 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.LinkButton.push(() => this.ToggleAccordion());
     if (this.Devkit.value) {
       this.LinkButton.push(() => this.open_inapp_explorer());
-      this.LinkButton.push(() => this.go_to_page('weblink-gen'));
       this.LinkButton.push(() => this.focus_to_fallback_fs_input());
       this.LinkButton.push(() => this.go_to_webrtc_manager());
+      this.LinkButton.push(() => this.global.open_link('https://www.reddit.com/r/ProjectCone/'));
       this.LinkButton.push(() => this.download_serverfile());
     }
     if (this.as_admin.length)

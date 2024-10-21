@@ -60,12 +60,6 @@
           </div>
           <div>
             <div *ngIf="global.ShowHint" class="shortcut_hint">7</div>
-            <ion-item button (click)="go_to_page('weblink-gen')">
-              <ion-label>{{lang.text['Settings']['WebLinkGen']}}</ion-label>
-            </ion-item>
-          </div>
-          <div>
-            <div *ngIf="global.ShowHint" class="shortcut_hint">8</div>
             <ion-item button id="fallback_fs_input">
               <ion-icon class="icon_margin" name="cloud-done-outline"></ion-icon>
               <ion-input [label]="lang.text['Settings']['FallbackFS']" class="ion-text-right"
@@ -76,14 +70,22 @@
             </ion-item>
           </div>
           <div>
-            <div *ngIf="global.ShowHint" class="shortcut_hint">9</div>
+            <div *ngIf="global.ShowHint" class="shortcut_hint">8</div>
             <ion-item button (click)="go_to_webrtc_manager()">
               <ion-label>{{lang.text['WebRTCDevManager']['Title']}}</ion-label>
             </ion-item>
           </div>
           <div>
+            <div *ngIf="global.ShowHint" class="shortcut_hint">9</div>
+            <ion-item button (click)="global.open_link('https://www.reddit.com/r/ProjectCone/')">
+              <ion-icon class="icon_margin" name="logo-reddit"></ion-icon>
+              <ion-label>{{lang.text['Settings']['BugReport']}}</ion-label>
+            </ion-item>
+          </div>
+          <div>
             <div *ngIf="global.ShowHint" class="shortcut_hint">0</div>
             <ion-item button (click)="download_serverfile()">
+              <ion-icon class="icon_margin" name="logo-github"></ion-icon>
               <ion-label>{{lang.text['Settings']['ServerFiles']}}</ion-label>
             </ion-item>
           </div>
@@ -142,6 +144,6 @@
     <div *ngIf="global.ShowHint" class="shortcut_hint">{{ShortcutHint['sponsor']}}</div>
     <img src="assets/data/asset-preview.png"
       style="cursor: pointer; padding: 16px; border-radius: 32px; max-height: 300px;" alt="patreon_link"
-      (click)="open_patreon()"/>
+      (click)="open_patreon()" />
   </div>
 </ion-content>

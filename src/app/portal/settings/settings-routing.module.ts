@@ -28,10 +28,6 @@ const routes: Routes = [
     path: 'admin-tools',
     loadChildren: () => import('./admin-tools/admin-tools.module').then( m => m.AdminToolsPageModule)
   },
-  {
-    path: 'weblink-gen',
-    loadChildren: () => import('./weblink-gen/weblink-gen.module').then( m => m.WeblinkGenPageModule)
-  },
 ];
 
 @NgModule({
