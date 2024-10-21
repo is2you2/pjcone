@@ -841,6 +841,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 페이지가 스크롤을 가지는지 여부 검토 */
+  CheckIfHasScroll = false;
   AddShortCut() {
     if (!this.global.p5KeyShortCut) return;
     this.global.p5KeyShortCut['Backspace'] = () => {
@@ -862,7 +864,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId))
         switch (key) {
           case 'Q':
-            if (this.ChatLogs.scrollTop == 0)
+            if (this.ChatLogs.scrollTop == 0 && this.CheckIfHasScroll)
               this.open_first_file();
             else this.open_last_file();
             break;
@@ -1331,6 +1333,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }
           return;
         }
+        this.CheckIfHasScroll = this.ChatLogs.scrollHeight > this.ChatLogs.clientHeight;
         let is_local = c['sender_id'] == 'local';
         if (c.content['filename']) this.ModulateFileEmbedMessage(c);
         this.info['last_read_id'] = c.message_id;
@@ -1399,6 +1402,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (this.WillLeave) return;
         let scrollHeight = this.ChatLogs.scrollHeight;
         this.ChatLogs.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+        this.CheckIfHasScroll = this.ChatLogs.scrollHeight > this.ChatLogs.clientHeight;
       }, 500);
     }
   }
@@ -1879,8 +1883,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   ScrollNearLogs() {
     if (this.NeedScrollDown()) {
       this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
+      this.CheckIfHasScroll = this.ChatLogs.scrollHeight > this.ChatLogs.clientHeight;
       setTimeout(() => {
         this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
+        this.CheckIfHasScroll = this.ChatLogs.scrollHeight > this.ChatLogs.clientHeight;
       }, 150);
     }
   }
