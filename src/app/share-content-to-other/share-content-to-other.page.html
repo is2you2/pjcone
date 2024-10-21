@@ -17,9 +17,8 @@
       <div class="channel_image channel_image_div">
         <img *ngIf="channel['info']" class="channel_image" [src]="channel['info']['img'] || 'assets/data/channel.svg'"
           alt="ch_img"
-          [style]="(channel['status'] == 'online' || (channel['redirect']['type'] == 3 && channel['status'] == 'pending')) ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'"/>
-        <div *ngIf="!channel['local']" class="status_circle"
-          [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']">
+          [style]="(channel['status'] == 'online' || channel['status'] == 'certified' || (channel['redirect']['type'] == 3 && channel['status'] == 'pending')) ? 'filter: grayscale(0) contrast(1)' : 'filter: grayscale(.9) contrast(1.4)'" />
+        <div class="status_circle" [style]="'background-color: ' + statusBar.colors[channel['status'] || 'offline']">
         </div>
       </div>
       <div *ngIf="channel['is_new']" class="additional_form new_bg_form"
@@ -38,7 +37,7 @@
               </td>
               <span *ngIf="channel['volatile']" class="server_target">{{'(' + lang.text['AddGroup']['Volatile'] +
                 ')'}}</span>
-              <span *ngIf="nakama.showServer && !channel['volatile']" class="server_target">
+              <span *ngIf="(nakama.showServer || channel['local']) && !channel['volatile']" class="server_target">
                 {{'(' + (channel['local'] ? lang.text['AddGroup']['UseLocalStorage'] : (channel['server']['name'] ||
                 channel['server']['target'])) + ')'}}
               </span>

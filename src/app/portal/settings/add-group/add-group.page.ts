@@ -307,10 +307,10 @@ export class AddGroupPage implements OnInit, OnDestroy {
         type: 0,
       },
       volatile: this.userInput.volatile,
-      status: 'online',
+      status: 'certified',
       info: {
         ...this.userInput,
-        status: 'online',
+        status: 'certified',
       }
     };
     if (this.userInput.img)

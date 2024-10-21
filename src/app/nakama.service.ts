@@ -1681,10 +1681,11 @@ export class NakamaService {
               }
               if (this.channels_orig[_is_official][_target][_cid]['redirect']['type'] == 2)
                 this.channels_orig[_is_official][_target][_cid]['info'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
-              if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing')
+              if (this.channels_orig[_is_official][_target][_cid]['status'] != 'missing') {
                 delete this.channels_orig[_is_official][_target][_cid]['status'];
-              if (this.channels_orig[_is_official][_target][_cid]['redirect']['type'] == 0)
-                this.channels_orig[_is_official][_target][_cid]['status'] = 'online';
+                if (this.channels_orig[_is_official][_target][_cid]['redirect']['type'] == 0)
+                  this.channels_orig[_is_official][_target][_cid]['status'] = 'certified';
+              }
               if (this.channels_orig[_is_official][_target][_cid]['is_new'] && !this.subscribe_lock)
                 this.has_new_channel_msg = true;
             } catch (e) { }
@@ -1882,7 +1883,6 @@ export class NakamaService {
           delete channels_copy[_is_official][_target][_cid]['update'];
           delete channels_copy[_is_official][_target][_cid]['presences'];
           delete channels_copy[_is_official][_target][_cid]['cnoti_id'];
-          delete channels_copy[_is_official][_target][_cid]['status'];
           delete channels_copy[_is_official][_target][_cid]['color'];
           delete channels_copy[_is_official][_target][_cid]['isOfficial'];
           delete channels_copy[_is_official][_target][_cid]['target'];
