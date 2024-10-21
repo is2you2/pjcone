@@ -34,7 +34,7 @@
     </ion-item-divider>
     <div>
       <div *ngIf="global.ShowHint" class="shortcut_hint">`</div>
-      <ion-item button (click)="nakama.open_profile_page()">
+      <ion-item button (click)="nakama.open_profile_page()" (contextmenu)="OpenOneByOneLink()">
         <div class="additional_form bg_img_form">
           <img class="profile_img"
             [style]="nakama.users.self['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'"
@@ -101,4 +101,36 @@
       </div>
     </div>
   </div>
+  <ion-modal #PersonalChat initialBreakpoint=".8" [breakpoints]="[0, .8, 1]">
+    <ng-template>
+      <ion-content>
+        <div id="SelfColorBg" style="position: absolute; width: 100%; height: 100%; pointer-events: none;"></div>
+        <div style="padding: 16px;">
+          <ion-item-divider>
+            <ion-label>{{lang.text['Subscribes']['OnebyOneChat']}}</ion-label>
+          </ion-item-divider>
+          <ion-accordion-group value="colors" expand="inset" [value]="isExpanded" #OnebyOneServerList
+            (click)="isExpanded = true">
+            <ion-accordion value="colors">
+              <ion-item slot="header">
+                <ion-label style="display: contents">{{lang.text['AddGroup']['SelectServer']}}</ion-label>
+                <ion-label class="ion-text-right">{{servers[index].name}}</ion-label>
+                <ion-icon class="ion-accordion-toggle-icon hide_accordion_icon"></ion-icon>
+              </ion-item>
+              <div slot="content">
+                <ion-item *ngFor="let server of servers; index as i" button (click)="select_server(i)">
+                  <ion-label>{{server.name}}</ion-label>
+                </ion-item>
+              </div>
+            </ion-accordion>
+          </ion-accordion-group>
+          <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;" alt="Loading"
+            (click)="copy_info(InvitationAddress)" />
+          <ion-item button (click)="copy_info(user_id)">
+            <ion-label class="ion-text-center">{{user_id}}</ion-label>
+          </ion-item>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

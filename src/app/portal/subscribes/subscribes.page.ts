@@ -1,11 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { AlertController, LoadingController, NavController } from '@ionic/angular';
-import { isPlatform } from 'src/app/app.component';
+import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
-import { NakamaService } from 'src/app/nakama.service';
+import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
+import { IonModal } from '@ionic/angular/common';
 
 @Component({
   selector: 'app-subscribes',
@@ -60,6 +61,42 @@ export class SubscribesPage implements OnInit {
       this.global.p5KeyShortCut['AddAct'] = () => {
         this.nakama.add_new_group();
       };
+  }
+
+
+  /** 1:1 대화 QR링크 제공페이지 */
+  @ViewChild('PersonalChat') PersonalChat: IonModal;
+  servers: ServerInfo[] = [];
+  isExpanded = false;
+  index = 0;
+  QRCodeSRC: any;
+  InvitationAddress: string;
+  user_id: string;
+  /** 1:1 대화 QR링크 제공 페이지 열기 */
+  OpenOneByOneLink() {
+    this.servers = this.nakama.get_all_server_info(true, true);
+    if (this.servers.length) {
+      this.PersonalChat.present();
+      this.select_server(0);
+    }
+    return false;
+  }
+  select_server(i: number) {
+    this.user_id = this.nakama.servers[this.servers[i].isOfficial][this.servers[i].target].session.user_id;
+    this.isExpanded = false;
+    this.InvitationAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?open_prv_channel=${this.user_id},,`.replace(' ', '%20');
+    this.QRCodeSRC = this.global.readasQRCodeFromString(this.InvitationAddress);
+    let userColor = `${(this.user_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6)}`;
+    const r = parseInt(userColor.slice(0, 2), 16);
+    const g = parseInt(userColor.slice(2, 4), 16);
+    const b = parseInt(userColor.slice(4, 6), 16);
+    let color = `${r},${g},${b}`;
+    setTimeout(() => {
+      document.getElementById('SelfColorBg').style.backgroundImage = `linear-gradient(to top, rgba(${color}, .5), rgba(${color}, 0))`;
+    }, 0);
+  }
+  copy_info(target: string) {
+    this.global.WriteValueToClipboard('text/plain', target);
   }
 
   /** 채널 우클릭 행동 */
