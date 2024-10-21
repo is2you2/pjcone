@@ -489,14 +489,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         loading.present();
         try {
           if (this.userInput.remote) {
-            if (this.userInput.attach[i].url) {
-              this.userInput.attach[i].thumbnail = this.userInput.attach[i].url;
-            } else {
-              try {
-                this.userInput.attach[i].alt_path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/${this.userInput.attach[i].filename}`;
-                this.userInput.attach[i].blob = (await this.nakama.sync_load_file(this.userInput.attach[i],
-                  this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id)).value;
-              } catch (e) { }
+            try {
+              this.userInput.attach[i].alt_path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/${this.userInput.attach[i].filename}`;
+              this.userInput.attach[i].blob = (await this.nakama.sync_load_file(this.userInput.attach[i],
+                this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id)).value;
+            } catch (e) {
+              if (this.userInput.attach[i].url)
+                this.userInput.attach[i].thumbnail = this.userInput.attach[i].url;
             }
             if (!has_thumbnail) { // 썸네일 이미지가 없다면 만들기
               if (this.userInput.attach[i].viewer == 'image') {
