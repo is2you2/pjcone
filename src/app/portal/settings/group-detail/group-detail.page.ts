@@ -89,7 +89,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
               this.nakama.groups[this.isOfficial][this.target][this.info.id]['img'] = v.objects[0].value['img'].replace(/"|=|\\/g, '');
               this.indexed.saveTextFileToUserPath(v.objects[0].value['img'], `servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
             } else {
-              if (this.info['status']) {
+              if (this.info['status'] != 'missing') {
                 delete this.nakama.groups[this.isOfficial][this.target][this.info.id]['img'];
                 this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
               }
