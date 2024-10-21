@@ -1457,9 +1457,17 @@ export class GlobalActService {
     this_file.size = data.blob['size'];
     this_file.filename = data.blob.name || this.TextEditorNewFileName();
     this_file.file_ext = this_file.filename.split('.').pop();
-    this_file.type = 'text/plain';
-    this_file.typeheader = 'text';
     this_file.viewer = 'text';
+    switch (this_file.file_ext) {
+      case 'html':
+        this_file.type = 'text/html';
+        this_file.viewer = 'code';
+        break;
+      default: // 구분이 없다면 평문으로 처리
+        this_file.type = 'text/plain';
+        break;
+    }
+    this_file.typeheader = 'text';
     return this_file;
   }
 
