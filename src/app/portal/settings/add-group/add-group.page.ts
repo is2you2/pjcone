@@ -385,7 +385,11 @@ export class AddGroupPage implements OnInit, OnDestroy {
   /** ionic 버튼을 눌러 input-file 동작 */
   async buttonClickLinkInputFile() {
     if (this.userInput.img) this.userInput.img = undefined;
-    else try {
+    else document.getElementById(this.file_sel_id).click();
+  }
+
+  AddChannelImageContextMenu() {
+    let ContextAct = async () => {
       let clipboard = await this.global.GetValueFromClipboard();
       switch (clipboard.type) {
         case 'text/plain':
@@ -394,12 +398,10 @@ export class AddGroupPage implements OnInit, OnDestroy {
         case 'image/png':
           this.inputImageSelected({ target: { files: [clipboard.value] } })
           return;
-        default:
-          throw '처리 불가능한 값';
       }
-    } catch (e) {
-      document.getElementById(this.file_sel_id).click();
     }
+    ContextAct();
+    return false;
   }
 
   /** 파일 선택시 로컬에서 반영 */
