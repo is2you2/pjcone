@@ -282,7 +282,9 @@ export class AddPostPage implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
-    this.global.StoreShortCutAct('AddPostPage');
+    if (!this.WillLeavePageInside)
+      this.global.StoreShortCutAct('AddPostPage');
+    this.WillLeavePageInside = false;
     this.AddShortcut();
   }
 
@@ -440,6 +442,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       name: this.lang.text['ChatRoom']['voidDraw'],
       act: async () => {
         if (this.isSaveClicked) return;
+        this.WillLeavePageInside = true;
         this.global.PageDismissAct['add-post-new-image'] = async (v: any) => {
           if (v.data) {
             this.AddAttachTextForm();
@@ -472,6 +475,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         props.info.content.is_new = 'text';
         props.info.content.filename = this.global.TextEditorNewFileName();
         props.no_edit = true;
+        this.WillLeavePageInside = true;
         this.global.PageDismissAct['add-post-viewer'] = (v: any) => {
           if (v.data) {
             let this_file: FileInfo = this.global.TextEditorAfterAct(v.data, {
@@ -839,6 +843,7 @@ export class AddPostPage implements OnInit, OnDestroy {
                 delete this.global.PageDismissAct['add-post-modify-image'];
               }
               await this.WaitingCurrent();
+              this.WillLeavePageInside = true;
               this.global.ActLikeModal('portal/community/add-post/void-draw', {
                 path: v.data.path || info.path,
                 width: v.data.width,
@@ -855,6 +860,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         }
         delete this.global.PageDismissAct['add-post-open-viewer'];
       }
+      this.WillLeavePageInside = true;
       this.global.ActLikeModal('portal/community/add-post/ionic-viewer', {
         info: { content: info },
         path: info.path,
@@ -1199,11 +1205,15 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.navCtrl.navigateBack('portal/community');
   }
 
+  /** 이 페이지를 떠날 예정 */
   WillLeavePage = false;
+  /** 이 페이지 내에서 페이지가 전환됨 */
+  WillLeavePageInside = false;
   ionViewWillLeave() {
     this.WillLeavePage = true;
     this.cont.abort();
-    this.global.RestoreShortCutAct('AddPostPage');
+    if (!this.WillLeavePageInside)
+      this.global.RestoreShortCutAct('AddPostPage');
     delete this.global.p5KeyShortCut['Escape'];
     // 데이터 저장이 아니라면 기존 데이터를 다시 불러와서 게시물 정보 원복시키기
     if (!this.isApplyPostData) try {
