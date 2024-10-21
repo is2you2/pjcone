@@ -14,13 +14,13 @@
     <ion-icon *ngIf="HaveRelevances && (FileInfo.viewer == 'video' || FileInfo.viewer == 'audio') && !AutoPlayNext"
       class="relevance_change button_cursor" style="padding-right: 16px;" slot="end" name="play-circle"
       (click)="AutoPlayNext = !AutoPlayNext"></ion-icon>
-    <div *ngIf="global.ShowHint && HaveRelevances" style="position: relative;" slot="end">
+    <div *ngIf="global.ShowHint && !isHTMLViewer && HaveRelevances" style="position: relative;" slot="end">
       <div class="shortcut_hint shortcut_change_viewer" style="right: -4px">A</div>
     </div>
     <ion-icon *ngIf="HaveRelevances" class="relevance_change button_cursor" style="padding-right: 4px;" slot="end"
       name="arrow-back-circle-outline" (click)="ChangeToAnother(-1)"></ion-icon>
     <ion-label *ngIf="HaveRelevances" slot="end">{{ RelevanceIndex + ' / ' + Relevances.length}}</ion-label>
-    <div *ngIf="global.ShowHint && HaveRelevances" style="position: relative;" slot="end">
+    <div *ngIf="global.ShowHint && !isHTMLViewer && HaveRelevances" style="position: relative;" slot="end">
       <div class="shortcut_hint shortcut_change_viewer">D</div>
     </div>
     <ion-icon *ngIf="HaveRelevances" class="relevance_change button_cursor"
@@ -46,7 +46,7 @@
             <ion-icon name="save-outline"></ion-icon>
           </ion-button>
           <ion-button *ngIf="!isTextEditMode" id="menu_trigger" (click)="OpenFileMenu()">
-            <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_hint_menu">F</div>
+            <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint shortcut_hint_menu">F</div>
             <ion-icon name="ellipsis-vertical"></ion-icon>
           </ion-button>
           <ion-popover *ngIf="!isTextEditMode" #FileMenu trigger="menu_trigger" dismissOnSelect>
@@ -65,19 +65,19 @@
                     </ion-item>
                   </div>
                   <div>
-                    <div *ngIf="global.ShowHint" class="shortcut_hint">Shift + S</div>
+                    <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">Shift + S</div>
                     <ion-item button *ngIf="!NeedDownloadFile && !isQuickLaunchViewer" (click)="ShareContent()">
                       <ion-label>{{lang.text['ContentViewer']['ShareContent']}}</ion-label>
                     </ion-item>
                   </div>
                   <div>
-                    <div *ngIf="global.ShowHint" class="shortcut_hint">S</div>
+                    <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">S</div>
                     <ion-item button *ngIf="!NeedDownloadFile && isPWA" (click)="download_file()">
                       <ion-label>{{lang.text['ContentViewer']['Download']}}</ion-label>
                     </ion-item>
                   </div>
                   <div>
-                    <div *ngIf="global.ShowHint" class="shortcut_hint">Ctrl + I</div>
+                    <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">Ctrl + I</div>
                     <ion-item button (click)="open_bottom_modal()">
                       <ion-label>{{lang.text['ContentViewer']['ContentInfo']}}</ion-label>
                     </ion-item>
