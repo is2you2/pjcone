@@ -54,12 +54,14 @@
               <ion-content>
                 <ion-list>
                   <div>
-                    <ion-item button *ngIf="!NeedDownloadFile && showEditText && showEdit" (click)="open_text_editor()">
+                    <ion-item button *ngIf="!NeedDownloadFile && !isHTMLViewer && showEditText && showEdit"
+                      (click)="open_text_editor()">
                       <ion-label>{{lang.text['ContentViewer']['EditText']}}</ion-label>
                     </ion-item>
                   </div>
                   <div>
-                    <ion-item button *ngIf="!NeedDownloadFile && FileInfo['viewer'] != 'audio' && showEdit"
+                    <ion-item button
+                      *ngIf="!NeedDownloadFile && !isHTMLViewer && FileInfo['viewer'] != 'audio' && showEdit"
                       (click)="modify_image()">
                       <ion-label>{{lang.text['ContentViewer']['Edit']}}</ion-label>
                     </ion-item>
