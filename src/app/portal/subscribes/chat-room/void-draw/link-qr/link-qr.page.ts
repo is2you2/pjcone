@@ -39,7 +39,7 @@ export class LinkQrPage implements OnInit {
     } catch (e) {
       this.SelectedAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?voidDraw=${extract},${this.navParams.data.channel}`
     }
-    this.QRCodeSRC = this.global.readasQRCodeFromString(this.SelectedAddress);
+    this.QRCodeSRC = this.global.readasQRCodeFromString(this.SelectedAddress.replace(' ', '%20'));
   }
 
   /** 보여지는 QRCode 정보 복사 */

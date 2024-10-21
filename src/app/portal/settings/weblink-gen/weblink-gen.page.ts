@@ -123,7 +123,7 @@ export class WeblinkGenPage implements OnInit {
   }
 
   update_qrcode(_ev?: any) {
-    this.QRCodeSRC = this.global.readasQRCodeFromString(this.result_address);
+    this.QRCodeSRC = this.global.readasQRCodeFromString(this.result_address.replace(' ', '%20'));
   }
 
   copy_result_address() {

@@ -53,7 +53,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         this.info_orig = JSON.parse(JSON.stringify(navParams.info));
         this.nakama.socket_reactive['group_detail'] = this;
         this.QRCodeSRC = this.global.readasQRCodeFromString(
-          `${SERVER_PATH_ROOT}pjcone_pwa/?group=${this.info.name},${this.info.id}`);
+          `${SERVER_PATH_ROOT}pjcone_pwa/?group=${this.info.name},${this.info.id}`.replace(' ', '%20'));
         if (!this.info.server) this.info.server = navParams.server;
         this.isOfficial = this.info.server['isOfficial'];
         this.target = this.info.server['target'];

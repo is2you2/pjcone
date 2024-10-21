@@ -59,7 +59,7 @@ export class ServerDetailPage implements OnInit, OnDestroy {
     if (!this.dedicated_info.useSSL)
       delete this.FilteredInfo.useSSL;
     this.QRCodeSRC = this.global.readasQRCodeFromString(
-      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${this.FilteredInfo.name || ''},${this.FilteredInfo.address || ''},${this.FilteredInfo.useSSL ? 'true' : ''},${this.FilteredInfo.port || ''},${this.FilteredInfo.key || ''}`);
+      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${this.FilteredInfo.name || ''},${this.FilteredInfo.address || ''},${this.FilteredInfo.useSSL ? 'true' : ''},${this.FilteredInfo.port || ''},${this.FilteredInfo.key || ''}`.replace(' ', '%20'));
     // 이미 target값이 등록되었는지 검토
     this.isTargetAlreadyExist = Boolean(this.statusBar.groupServer['unofficial'][this.dedicated_info.target]);
   }
@@ -85,7 +85,7 @@ export class ServerDetailPage implements OnInit, OnDestroy {
   copy_startup_address() {
     let startup_address =
       `${SERVER_PATH_ROOT}pjcone_pwa/?server=${this.FilteredInfo.name || ''},${this.FilteredInfo.address || ''},${this.FilteredInfo.useSSL ? 'true' : ''},${this.FilteredInfo.port || ''},${this.FilteredInfo.key || ''}`;
-    this.global.WriteValueToClipboard('text/plain', startup_address);
+    this.global.WriteValueToClipboard('text/plain', startup_address.replace(' ', '%20'));
   }
 
   async apply_changed_info() {
