@@ -4,7 +4,7 @@ SystemLangTarget,한국어,English
 HeaderLabel,브라우저앱 설치 안내,Browser app installation instructions
 UseAnyway,어쨌든 앱 실행,Run app anyway
 ## Main,,
-Title,해야할 일,Todo
+Title,해야할 일,Todos
 NoTodo,할 일 추가하기,Add todo
 WorkerDone,할 일 완료,Todo completed
 WorkerAbandon,할 일 포기,Give up todo
@@ -73,7 +73,7 @@ noMessageHistory,기록된 메시지 없음,No messages logged
 CameraPermissionDenied,카메라 권한을 얻지 못했습니다,Failed to get camera permission
 Disconnected,연결된 서버가 없습니다,No server connected
 ## Community,,
-Title,게시물,Post
+Title,게시물,Posts
 NoPosts,게시물 추가하기,Add posts
 ## Arcade,,
 Title,아케이드,Arcade
@@ -301,8 +301,8 @@ Connected,연결됨,Connected
 CallEnd,통화 종료,End call
 ## GroupServer,,
 JoinedServerList,참여중인 서버 목록,List of participating servers
-ServerDetail,정보,Info
-EditInfo,편집,Edit
+ServerDetail,서버 정보,Server info
+EditInfo,정보,Info
 RemoveUnofficial,삭제,Delete
 RemoveAccount,탈퇴,Leave
 RemoveAccountReally,서버 탈퇴,Leave server
