@@ -81,6 +81,7 @@ export class MiniranchatClientService {
       this.funcs.onclose(ev);
       this.IsConnected = false;
       this.status = 'idle';
+      this.RemoveListeners();
     }
     this.client.onerror = (e) => {
       console.error('MiniranchatClientService 오류 발생: ', e);
@@ -195,7 +196,6 @@ export class MiniranchatClientService {
       this.p5OnDediMessage = null;
       this.p5canvas.remove();
     }
-    this.RemoveListeners();
     this.FFSClient = null;
     this.client = null;
     this.JoinedChannel = null;
