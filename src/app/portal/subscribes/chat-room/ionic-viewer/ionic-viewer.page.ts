@@ -44,6 +44,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     private navCtrl: NavController,
   ) { }
   ngOnDestroy() {
+    if (this.FilenameElement) {
+      this.FilenameElement.onblur = null;
+      this.FilenameElement.onfocus = null;
+    }
     this.global.RestoreShortCutAct('ionic-viewer');
     this.route.queryParams['unsubscribe']();
     if (this.global.PageDismissAct[this.navParams.dismiss])
@@ -423,6 +427,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   AutoPlayNext = false;
   @ViewChild('FileMenu') FileMenu: IonPopover;
   async init_viewer() {
+    if (this.FilenameElement) {
+      this.FilenameElement.onblur = null;
+      this.FilenameElement.onfocus = null;
+    }
     if (this.cont) {
       this.cont.abort();
       this.cont = null;
@@ -852,10 +860,20 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             textArea.elt.className = 'infobox';
             textArea.elt.setAttribute('style', 'height: 100%; display: block;');
             textArea.elt.textContent = '';
+            let hint = p.createDiv('Enter');
+            hint.style('position', 'absolute');
+            hint.style('border-radius', '8px');
+            hint.style('padding', '2px 8px');
+            hint.style('margin', '4px');
+            hint.style('pointer-events', 'none');
+            hint.elt.className = 'shortcut_hint';
+            hint.hide();
+            hint.parent(this.canvasDiv);
+            this.ShowEditShortcutHint = hint.elt;
             this.canvasDiv.appendChild(textArea.elt);
             this.p5TextArea = textArea.elt;
             if (this.FileInfo['is_new']) {
-              this.open_text_editor(textArea.elt);
+              this.open_text_editor();
             } else p.loadStrings(this.FileURL, v => {
               textArea.elt.textContent = v.join('\n');
               this.open_text_reader(p);
@@ -1037,6 +1055,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.ChangeContentWithKeyInput();
   }
 
+  /** 파일 이름 입력칸 */
+  FilenameElement: HTMLElement;
   /** PC에서 키를 눌러 컨텐츠 전환 */
   ChangeContentWithKeyInput() {
     if (this.p5canvas)
@@ -1045,6 +1065,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         if (this.isTextEditMode) {
           switch (ev['key']) {
             case 'Enter': // 텍스트 편집기 저장하기
+              if (document.activeElement == this.FilenameElement)
+                setTimeout(() => {
+                  this.p5TextArea.focus();
+                }, 0);
               if (ev['ctrlKey']) this.SaveText();
               break;
             case 'Escape':
@@ -1148,15 +1172,27 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
   /** 텍스트 편집기 상태인지 여부 */
   isTextEditMode = false;
-  open_text_editor(_textarea = this.p5TextArea) {
+  ShowEditShortcutHint: HTMLElement;
+  open_text_editor() {
     if (this.p5SyntaxHighlightReader)
       this.p5SyntaxHighlightReader.style.display = 'none';
-    _textarea.style.display = 'block';
-    _textarea.disabled = false;
+    this.p5TextArea.style.display = 'block';
+    this.p5TextArea.disabled = false;
+    this.isTextEditMode = true;
+    this.isHTMLViewer = false;
     setTimeout(() => {
-      this.isTextEditMode = true;
-      this.isHTMLViewer = false;
-      _textarea.focus();
+      let filename = document.getElementById('TextEditorFileName');
+      this.FilenameElement = filename.childNodes[1].childNodes[1].childNodes[1] as HTMLElement;
+      if (!this.FilenameElement.onblur)
+        this.FilenameElement.onblur = () => {
+          this.ShowEditShortcutHint.style.display = 'none';
+        }
+      if (!this.FilenameElement.onfocus)
+        this.FilenameElement.onfocus = () => {
+          this.ShowEditShortcutHint.style.display = 'inherit';
+        }
+      if (isPlatform == 'DesktopPWA')
+        this.FilenameElement.focus();
     }, 500);
   }
 
@@ -1223,10 +1259,20 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           textArea.elt.className = 'infobox';
           textArea.elt.setAttribute('style', 'height: 100%; display: block;');
           textArea.elt.textContent = '';
+          let hint = p.createDiv('Enter');
+          hint.style('position', 'absolute');
+          hint.style('border-radius', '8px');
+          hint.style('padding', '2px 8px');
+          hint.style('margin', '4px');
+          hint.style('pointer-events', 'none');
+          hint.elt.className = 'shortcut_hint';
+          hint.hide();
+          hint.parent(this.canvasDiv);
+          this.ShowEditShortcutHint = hint.elt;
           this.canvasDiv.appendChild(textArea.elt);
           this.p5TextArea = textArea.elt;
           if (this.FileInfo['is_new']) {
-            this.open_text_editor(textArea.elt);
+            this.open_text_editor();
           } else p.loadStrings(this.FileURL, v => {
             textArea.elt.textContent = v.join('\n');
             this.open_text_reader(p);
