@@ -7,6 +7,7 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import * as p5 from 'p5';
+import { isPlatform } from 'src/app/app.component';
 
 @Component({
   selector: 'app-add-group',
@@ -100,7 +101,8 @@ export class AddGroupPage implements OnInit, OnDestroy {
         this.CheckIfTitleFocus = false;
       }
     setTimeout(() => {
-      this.GroupNameInput.focus();
+      if (isPlatform == 'DesktopPWA')
+        this.GroupNameInput.focus();
     }, 200);
     this.p5canvas = new p5((p: p5) => {
       p.keyPressed = async (ev) => {
@@ -153,7 +155,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
   }
 
   FocusOnChannelTitle() {
-    if (this.GroupNameInput) {
+    if (isPlatform == 'DesktopPWA' && this.GroupNameInput) {
       if (!this.GroupNameInput.value)
         this.GroupNameInput.focus();
     }

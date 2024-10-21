@@ -470,7 +470,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.CheckIfTitleFocus = true;
       }
     setTimeout(() => {
-      if (!this.isModify && !this.titleIonInput.value) this.titleIonInput.focus();
+      if (isPlatform == 'DesktopPWA' && !this.isModify && !this.titleIonInput.value)
+        this.titleIonInput.focus();
     }, 200);
     this.ImporantSelChanged({ detail: { value: this.userInput.importance } });
     this.file_sel_id = `${this.userInput.id || 'new_todo_id'}_${new Date().getTime()}`;
@@ -1033,7 +1034,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         });
     }
     setTimeout(() => {
-      if (!this.isModify && this.titleIonInput && !this.titleIonInput.value) this.titleIonInput.focus();
+      if (isPlatform == 'DesktopPWA' && !this.isModify && this.titleIonInput && !this.titleIonInput.value)
+        this.titleIonInput.focus();
     }, 200);
   }
 

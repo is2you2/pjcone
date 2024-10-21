@@ -261,9 +261,11 @@ export class AddPostPage implements OnInit, OnDestroy {
       }
     this.ContentTextArea = document.getElementById('add_post_content') as HTMLTextAreaElement;
     setTimeout(() => {
-      if (!this.userInput.title)
-        this.TitleInput.focus();
-      else this.ContentTextArea.focus();
+      if (isPlatform == 'DesktopPWA') {
+        if (!this.userInput.title)
+          this.TitleInput.focus();
+        else this.ContentTextArea.focus();
+      }
     }, 200);
     this.ContentTextArea.onpaste = (ev: any) => {
       let stack = [];
@@ -317,7 +319,8 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.userInput.UserColor = '888888';
       this.extended_buttons[7].isHide = this.useFirstCustomCDN != 1;
     }
-    if (this.TitleInput) this.TitleInput.focus();
+    if (isPlatform == 'DesktopPWA' && this.TitleInput)
+      this.TitleInput.focus();
   }
 
   /** 단축키 생성 */

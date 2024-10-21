@@ -759,7 +759,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
     }
     this.RegisterNewServer.present()
       .then(() => {
-        if (!this.dedicated_info.name)
+        if (isPlatform == 'DesktopPWA' && !this.dedicated_info.name)
           this.ServerDisplayName.setFocus();
       });
   }
