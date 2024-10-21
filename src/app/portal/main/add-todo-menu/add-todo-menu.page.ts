@@ -493,6 +493,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               this.userInput.attach[i].alt_path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/${this.userInput.attach[i].filename}`;
               this.userInput.attach[i].blob = (await this.nakama.sync_load_file(this.userInput.attach[i],
                 this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id)).value;
+              if (!this.userInput.attach[i].blob) throw '불러오기 실패함';
             } catch (e) {
               if (this.userInput.attach[i].url)
                 this.userInput.attach[i].thumbnail = this.userInput.attach[i].url;
@@ -500,7 +501,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             if (!has_thumbnail) { // 썸네일 이미지가 없다면 만들기
               if (this.userInput.attach[i].viewer == 'image') {
                 let header_image = this.userInput.attach[i].url;
-                if (this.userInput.attach[i].blob.size) header_image = URL.createObjectURL(this.userInput.attach[i].blob);
+                if (!header_image && this.userInput.attach[i].blob.size)
+                  header_image = URL.createObjectURL(this.userInput.attach[i].blob);
                 await new Promise((done: any) => {
                   new p5((p: p5) => {
                     p.setup = () => {
