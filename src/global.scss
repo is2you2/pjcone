@@ -203,6 +203,7 @@ button.alert-button.redfont {
 
 // 확장메뉴의 각 버튼들
 .ext_button {
+    position: relative;
     width: 64px;
     height: 48px;
     margin: 24px 12px 0px 12px;
