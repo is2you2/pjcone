@@ -123,6 +123,21 @@ export class GroupServerPage implements OnInit, OnDestroy {
         imgDiv.elt.onclick = () => {
           this.change_img_from_file();
         }
+        imgDiv.elt.oncontextmenu = () => {
+          let contextmenuAct = async () => {
+            let clipboard = await this.global.GetValueFromClipboard();
+            switch (clipboard.type) {
+              case 'text/plain':
+                await this.check_if_clipboard_available(clipboard.value);
+                break;
+              case 'image/png':
+                this.inputImageSelected({ target: { files: [clipboard.value] } })
+                return;
+            }
+          }
+          contextmenuAct();
+          return false;
+        }
         // 온라인 표시등
         OnlineLamp = p.createDiv();
         const LAMP_SIZE = '36px';
@@ -613,19 +628,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
     this.announce_update_profile = true;
     if (this.nakama.users.self['img']) {
       this.p5ChangeImageSmooth();
-    } else try {
-      let clipboard = await this.global.GetValueFromClipboard();
-      switch (clipboard.type) {
-        case 'text/plain':
-          await this.check_if_clipboard_available(clipboard.value);
-          break;
-        case 'image/png':
-          this.inputImageSelected({ target: { files: [clipboard.value] } })
-          return;
-      }
-    } catch (e) {
-      document.getElementById(this.file_sel_id).click();
-    }
+    } else document.getElementById(this.file_sel_id).click();
   }
 
   /** 파일 선택시 로컬에서 반영 */
