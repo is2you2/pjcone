@@ -888,7 +888,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
 
   /** 모바일 키보드 높이 맞추기용 */
   focus_on_input(force?: number) {
-    this.minimalchat_input.setFocus();
+    if (isPlatform == 'DesktopPWA')
+      this.minimalchat_input.setFocus();
     this.auto_scroll_down(force);
   }
 
