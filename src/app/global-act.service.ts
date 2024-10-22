@@ -755,7 +755,6 @@ export class GlobalActService {
       await fetch(`${target_address}:9001/remove/${target_file_name}`, { method: "POST" });
     } catch (e) {
       console.log('remove_file_from_storage: ', e);
-      throw e;
     }
   }
 
