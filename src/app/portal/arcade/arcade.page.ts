@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { NavController, iosTransitionAnimation } from '@ionic/angular';
+import { IonModal } from '@ionic/angular/common';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MiniranchatClientService } from 'src/app/miniranchat-client.service';
@@ -65,4 +66,6 @@ export class ArcadePage implements OnInit {
       animation: iosTransitionAnimation,
     });
   }
+
+  @ViewChild('ArcadeQRShare') ArcadeQRShare: IonModal;
 }
