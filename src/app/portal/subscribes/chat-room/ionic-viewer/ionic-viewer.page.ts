@@ -52,6 +52,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.route.queryParams['unsubscribe']();
     if (this.global.PageDismissAct[this.navParams.dismiss])
       this.global.PageDismissAct[this.navParams.dismiss]({});
+    this.RemoveP5Relative();
   }
 
   blob: Blob;
@@ -134,6 +135,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       } catch (e) {
         this.WaitingLoaded = false;
         this.ChangeContentWithKeyInput();
+        this.BlockReinit = true;
       }
     });
   }
@@ -153,7 +155,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.initialize();
   }
 
+  /** 재진입시 초기화 행동 무시하기 */
+  BlockReinit = false;
   initialize() {
+    if (this.BlockReinit) return;
     this.MessageInfo = this.navParams.info;
     this.OpenInChannelChat = this.MessageInfo['code'] !== undefined;
     this.CurrentViewId = this.MessageInfo.message_id;
@@ -2028,7 +2033,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         break;
     }
     URL.revokeObjectURL(this.FileURL);
-    this.RemoveP5Relative();
+    if (!this.isTextEditMode)
+      this.RemoveP5Relative();
   }
 
   ionViewDidLeave() {
