@@ -319,7 +319,8 @@ export class AddPostPage implements OnInit, OnDestroy {
     } catch (e) { // 그게 아니라면 로컬입니다
       this.userInput.creator_id = 'me';
       this.userInput.UserColor = '888888';
-      this.extended_buttons[7].isHide = this.useFirstCustomCDN != 1;
+      this.extended_buttons[7].isHide = true;
+      this.toggle_open_link(true);
     }
     if (isPlatform == 'DesktopPWA' && this.TitleInput)
       this.TitleInput.focus();
@@ -537,7 +538,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         this.toggle_custom_attach();
       }
     }, { // 7
-      icon: 'people-circle-outline',
+      icon: 'notifications-circle-outline',
       name: this.lang.text['AddPost']['NoOutLink'],
       act: () => {
         this.toggle_open_link();
@@ -886,7 +887,6 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.useFirstCustomCDN = 2;
       this.extended_buttons[6].isHide = true;
     }
-    this.extended_buttons[7].isHide = !((this.userInput.creator_id != 'me' && this.useFirstCustomCDN != 2) || this.useFirstCustomCDN == 1) && !this.userInput.OutSource;
     switch (this.useFirstCustomCDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
         this.extended_buttons[6].icon = 'cloud-offline-outline';
@@ -912,7 +912,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.extended_buttons[7].icon = 'link-outline';
       this.extended_buttons[7].name = this.lang.text['AddPost']['UseOutLink'];
     } else {
-      this.extended_buttons[7].icon = 'people-circle-outline';
+      this.extended_buttons[7].icon = 'notifications-circle-outline';
       this.extended_buttons[7].name = this.lang.text['AddPost']['NoOutLink'];
     }
   }

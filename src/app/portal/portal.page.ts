@@ -102,7 +102,7 @@ export class PortalPage implements OnInit {
     }
     this.SubscribesIcon = 'chatbubble';
     this.TodoIcon = 'checkbox-outline';
-    this.CommunityIcon = 'newspaper-outline';
+    this.CommunityIcon = 'notifications-outline';
     this.ArcadeIcon = 'game-controller-outline';
   }
 
@@ -118,7 +118,7 @@ export class PortalPage implements OnInit {
   TodoIcon = 'checkbox';
   SubscribesIcon = 'chatbubble-outline';
   ArcadeIcon = 'game-controller-outline';
-  CommunityIcon = 'newspaper-outline';
+  CommunityIcon = 'notifications-outline';
 
   /** 구 버전 함수 이름이 계승됨, 할 일이 눌렸을 때 */
   bottom_tab_selected() {
@@ -128,7 +128,7 @@ export class PortalPage implements OnInit {
         this.global.PortalBottonTabAct.Todo();
     }
     this.TodoIcon = 'checkbox';
-    this.CommunityIcon = 'newspaper-outline';
+    this.CommunityIcon = 'notifications-outline';
     this.ArcadeIcon = 'game-controller-outline';
   }
 
@@ -140,17 +140,17 @@ export class PortalPage implements OnInit {
         this.global.PortalBottonTabAct.Arcade();
     }
     this.ArcadeIcon = 'game-controller';
-    this.CommunityIcon = 'newspaper-outline';
+    this.CommunityIcon = 'notifications-outline';
   }
 
   community_tab_selected() {
     this.SubscribesIcon = 'chatbubble-outline';
     this.TodoIcon = 'checkbox-outline';
-    if (this.CommunityIcon == 'newspaper') {
+    if (this.CommunityIcon == 'notifications') {
       if (this.global.PortalBottonTabAct.Community)
         this.global.PortalBottonTabAct.Community();
     }
-    this.CommunityIcon = 'newspaper';
+    this.CommunityIcon = 'notifications';
     this.ArcadeIcon = 'game-controller-outline';
   }
 
