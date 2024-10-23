@@ -1151,8 +1151,10 @@ export class AddPostPage implements OnInit, OnDestroy {
         }
       }
       let make_copy_info = JSON.parse(JSON.stringify(this.userInput))
-      if (make_copy_info.mainImage)
+      if (make_copy_info.mainImage) {
         delete make_copy_info.mainImage.blob;
+        delete make_copy_info.mainImage.thumbnail;
+      }
       for (let i = make_copy_info.attachments.length - 1; i >= 0; i--)
         delete make_copy_info.attachments[i].blob;
       delete make_copy_info.server;
