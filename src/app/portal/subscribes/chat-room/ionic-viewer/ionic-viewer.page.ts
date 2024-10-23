@@ -1647,6 +1647,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   NewTextFileName = '';
   /** 저장 후 에디터 모드 종료 */
   async SaveText() {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    loading.present();
     // 채널 채팅에서는 별도 파일첨부로 처리
     if (!this.NewTextFileName) this.NewTextFileName = this.FileInfo.filename || this.FileInfo.name;
     if (this.NewTextFileName.indexOf('.') < 0) this.NewTextFileName += '.txt';
@@ -1664,14 +1666,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             contentRelated: this.FileInfo.content_related_creator,
           }
         });
-      this.navCtrl.pop();
     } else { // 할 일에서는 직접 파일 수정 후 임시 교체
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      loading.present();
       let tmp_path = `tmp_files/texteditor/${this.FileInfo.filename || this.FileInfo.name}`;
       if (!this.FileInfo.path) this.FileInfo.path = tmp_path;
       await this.indexed.saveBlobToUserPath(blob, tmp_path);
-      loading.dismiss();
       if (this.global.PageDismissAct[this.navParams.dismiss])
         this.global.PageDismissAct[this.navParams.dismiss]({
           data: {
@@ -1681,8 +1679,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             index: this.RelevanceIndex - 1,
           }
         });
-      this.navCtrl.pop();
     }
+    loading.dismiss();
+    this.navCtrl.pop();
   }
 
   image_info = {};
