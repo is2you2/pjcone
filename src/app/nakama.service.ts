@@ -2350,12 +2350,24 @@ export class NakamaService {
     this.save_channels_with_less_info();
     // 관련 파일들 전부 이관
     let list = await this.indexed.GetFileListFromDB(`servers/${_is_official}/${_target}`);
-    for (let i = 0, j = list.length; i < j; i++) {
-      let file = await this.indexed.GetFileInfoFromDB(list[i]);
-      let targetPath = list[i].replace('/official/', '/deleted/').replace(`/${_is_official}/`, '/deleted/');
-      await this.indexed.saveFileToUserPath(file, targetPath);
-      await this.indexed.removeFileFromUserPath(list[i]);
-      loading.message = `${this.lang.text['Nakama']['MissingChannelFiles']}: ${list[i]}`;
+    for (let i = 0, j = list.length; i < j; i++)
+      try {
+        let file = await this.indexed.GetFileInfoFromDB(list[i]);
+        let targetPath = list[i].replace('/official/', '/deleted/').replace(`/${_is_official}/`, '/deleted/');
+        await this.indexed.saveFileToUserPath(file, targetPath);
+        await this.indexed.removeFileFromUserPath(list[i]);
+        loading.message = `${this.lang.text['Nakama']['MissingChannelFiles']}: ${list[i]}`;
+      } catch (e) {
+        console.log('파일 이관 실패: ', e);
+      }
+    { // 게시물 정보 이관
+      if (!this.post_counter['deleted'])
+        this.post_counter['deleted'] = {};
+      let text_file = await this.indexed.loadTextFromUserPath('servers/post_counter.json');
+      let counter_json = JSON.parse(text_file);
+      this.post_counter['deleted'][_target] = counter_json[_is_official][_target];
+      delete this.post_counter[_is_official][_target];
+      this.save_post_counter();
     }
     // 예하 그룹들 손상처리
     loading.message = this.lang.text['Nakama']['MissingGroups'];
@@ -4524,11 +4536,14 @@ export class NakamaService {
       try { // 사용자 이름 덮어쓰기 시도
         json['creator_name'] = this.load_other_user(user_id, isOfficial, target)['display_name'] || json['creator_name'];
       } catch (e) { }
+      if (!this.posts_orig[isOfficial])
+        this.posts_orig[isOfficial] = {};
       if (!this.posts_orig[isOfficial][target])
         this.posts_orig[isOfficial][target] = {};
       if (!this.posts_orig[isOfficial][target][user_id])
         this.posts_orig[isOfficial][target][user_id] = {};
-      this.posts_orig[isOfficial][target][user_id][post_id] = json;
+      if (isOfficial != 'deleted' || json['is_me'])
+        this.posts_orig[isOfficial][target][user_id][post_id] = json;
       // 로컬에서 불러왔다면 원격에 남은 정보인지 검토
       if (res.from == 'local') {
         try {

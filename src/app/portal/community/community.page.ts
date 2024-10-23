@@ -151,7 +151,7 @@ export class CommunityPage implements OnInit {
   async load_post_step_by_step(index: number, isOfficial: string, target: string, user_id: string, is_me: boolean) {
     if (index < 0) return;
     let loaded = await this.nakama.load_local_post_with_id(`LocalPost_${index}`, isOfficial, target, user_id);
-    if (!loaded && user_id != 'me') try { // 로컬에서 불러오기를 실패했다면 서버에서 불러오기를 시도 (서버 게시물만)
+    if (!loaded && user_id != 'me') try { // 로컬에서 불러오기를 실패했다면 서버에서 불러오기를 시도 (서버 게시물만) / deleted 포함됨
       loaded = await this.nakama.load_server_post_with_id(`ServerPost_${index}`, isOfficial, target, user_id, is_me);
     } catch (e) { }
     this.nakama.post_counter[isOfficial][target][user_id]--;
