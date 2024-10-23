@@ -2367,7 +2367,9 @@ export class NakamaService {
       let counter_json = JSON.parse(text_file);
       this.post_counter['deleted'][_target] = counter_json[_is_official][_target];
       delete this.post_counter[_is_official][_target];
-      this.save_post_counter();
+      delete this.posts_orig[_is_official][_target];
+      this.rearrange_posts();
+      await this.save_post_counter();
     }
     // 예하 그룹들 손상처리
     loading.message = this.lang.text['Nakama']['MissingGroups'];
