@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { AlertController, IonSelect, LoadingController, ModalController, NavController } from '@ionic/angular';
+import { AlertController, IonSelect, LoadingController, NavController } from '@ionic/angular';
 import * as p5 from 'p5';
-import { isPlatform } from 'src/app/app.component';
+import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -9,7 +9,7 @@ import { MatchOpCode, NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { WebrtcService } from 'src/app/webrtc.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LinkQrPage } from './link-qr/link-qr.page';
+import { IonModal } from '@ionic/angular/common';
 
 @Component({
   selector: 'app-void-draw',
@@ -20,7 +20,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   constructor(
     public lang: LanguageSettingService,
-    public modalCtrl: ModalController,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
     public global: GlobalActService,
@@ -1084,7 +1083,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       protocol += ':';
     } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'wss:' : 'ws:';
     this.IceWebRTCWsClient = new WebSocket(`${protocol}//${address[0]}:12013/`);
-    let modal: HTMLIonModalElement;
     this.AddShortCut();
     this.isDrawServerCreated = true;
     this.IceWebRTCWsClient.onopen = async () => {
@@ -1122,21 +1120,18 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       switch (json.type) {
         // 채널 아이디 생성 후 수신
         case 'init_id':
-          modal = await this.modalCtrl.create({
-            component: LinkQrPage,
-            componentProps: {
-              address: _address,
-              channel: json.id,
-            },
-            cssClass: 'transparent-modal',
-          });
-          modal.onWillDismiss().then(() => {
+          this.QRNavParams = {
+            address: _address,
+            channel: json.id,
+          };
+          this.init_gen_qrcode();
+          this.AddrQRShare.onWillDismiss().then(() => {
             this.global.RestoreShortCutAct('voiddraw-remote');
             this.p5SetDrawable(true);
           });
           this.global.StoreShortCutAct('voiddraw-remote');
           this.p5SetDrawable(false);
-          modal.present();
+          this.AddrQRShare.present();
           this.IceWebRTCWsClient.send(JSON.stringify({
             type: 'join',
             channel: json.id,
@@ -1162,7 +1157,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             });
           break;
         case 'size_req':
-          if (modal) modal.dismiss();
+          this.AddrQRShare.dismiss();
           this.RemoteLoadingCtrl = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['WaitingConnection'] });
           this.RemoteLoadingCtrl.present();
           let crop_pos = this.p5getCropPos();
@@ -1255,7 +1250,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       });
     }
     this.IceWebRTCWsClient.onclose = () => {
-      if (modal) modal.dismiss();
+      this.AddrQRShare.dismiss();
       this.isDrawServerCreated = false;
       this.webrtc.close_webrtc(false);
       this.IceWebRTCWsClient.onopen = null;
@@ -1419,5 +1414,35 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   ionViewDidLeave() {
     if (this.WithoutSave)
       this.mainLoading.remove();
+  }
+  // 아래, LinkQRPage 병합
+  @ViewChild('AddrQRShare') AddrQRShare: IonModal;
+  QRCodeSRC: any;
+  SelectedAddress: string;
+  QRNavParams: any;
+
+  async init_gen_qrcode() {
+    let extract = this.QRNavParams.address;
+    try { // 사용자 지정 서버 업로드 시도 우선
+      let sep = extract.split('://');
+      let only_address = sep.pop();
+      let HasLocalPage = `http://${only_address}:12000/`;
+      const cont = new AbortController();
+      const id = setTimeout(() => {
+        cont.abort();
+      }, 500);
+      let res = await fetch(HasLocalPage, { signal: cont.signal });
+      clearTimeout(id);
+      if (res.ok) this.SelectedAddress = `http://${only_address}:12000${window['sub_path']}?voidDraw=${extract},${this.QRNavParams.channel}`;
+      else throw '주소 없음';
+    } catch (e) {
+      this.SelectedAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?voidDraw=${extract},${this.QRNavParams.channel}`;
+    }
+    this.QRCodeSRC = this.global.readasQRCodeFromString(this.SelectedAddress.replace(' ', '%20'));
+  }
+
+  /** 보여지는 QRCode 정보 복사 */
+  copy_address(text: string) {
+    this.global.WriteValueToClipboard('text/plain', text);
   }
 }

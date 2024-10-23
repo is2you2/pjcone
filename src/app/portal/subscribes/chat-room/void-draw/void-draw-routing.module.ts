@@ -8,14 +8,10 @@ const routes: Routes = [
     path: '',
     component: VoidDrawPage
   },
-  {
-    path: 'link-qr',
-    loadChildren: () => import('./link-qr/link-qr.module').then( m => m.LinkQrPageModule)
-  }
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class VoidDrawPageRoutingModule {}
+export class VoidDrawPageRoutingModule { }
