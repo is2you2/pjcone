@@ -91,26 +91,32 @@ export class CommunityPage implements OnInit {
 
   /** 포스트 우클릭시 행동 */
   PostContextMenu(index: number) {
+    let CheckManagable = false;
     try {
-      if (this.nakama.posts[index]['server']['local'] ||
-        this.nakama.posts[index]['creator_id'] == this.nakama.servers[this.nakama.posts[index]['server']['isOfficial']][this.nakama.posts[index]['server']['target']].session.user_id)
-        this.alertCtrl.create({
-          header: this.nakama.posts[index]['title'],
-          message: this.nakama.posts[index]['content'],
-          buttons: [{
-            text: this.lang.text['ChatRoom']['EditChat'],
-            handler: () => {
-              this.nakama.EditPost(this.nakama.posts[index]);
-            }
-          }, {
-            text: this.lang.text['ChatRoom']['Delete'],
-            handler: () => {
-              this.nakama.RemovePost(this.nakama.posts[index]);
-            },
-            cssClass: 'redfont',
-          }],
-        }).then(v => v.present());
-    } catch (e) { } // 온라인 상태가 아님
+      // 내가 작성한 게시물이라면 삭제 허용
+      CheckManagable = this.nakama.posts[index]['server']['local'] ||
+        this.nakama.posts[index]['creator_id'] == this.nakama.servers[this.nakama.posts[index]['server']['isOfficial']][this.nakama.posts[index]['server']['target']].session.user_id;
+    } catch (e) {
+      // 삭제된 서버의 내 게시물이라면 삭제 허용
+      CheckManagable = this.nakama.posts[index].server.isOfficial == 'deleted' && this.nakama.posts[index].is_me;
+    }
+    if (CheckManagable)
+      this.alertCtrl.create({
+        header: this.nakama.posts[index]['title'],
+        message: this.nakama.posts[index]['content'],
+        buttons: [{
+          text: this.lang.text['ChatRoom']['EditChat'],
+          handler: () => {
+            this.nakama.EditPost(this.nakama.posts[index]);
+          }
+        }, {
+          text: this.lang.text['ChatRoom']['Delete'],
+          handler: () => {
+            this.nakama.RemovePost(this.nakama.posts[index]);
+          },
+          cssClass: 'redfont',
+        }],
+      }).then(v => v.present());
     return false;
   }
 
