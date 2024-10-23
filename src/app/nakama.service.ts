@@ -4017,6 +4017,7 @@ export class NakamaService {
         let GatheringInt8Array = [];
         let ByteSize = 0;
         await new Promise(async (done, err) => {
+          let isBreakedFile = false;
           for (let i = 0, j = info_json['partsize']; i < j; i++)
             try {
               let part = await this.indexed.GetFileInfoFromDB(`${info.alt_path || info.path}_part/${i}.part`);
@@ -4024,9 +4025,11 @@ export class NakamaService {
               GatheringInt8Array[i] = part;
             } catch (e) {
               console.log('파일 병합하기 오류: ', e);
+              isBreakedFile = true;
               break;
             }
           try {
+            if (isBreakedFile) throw '파일 병합 실패';
             let SaveForm: Int8Array = new Int8Array(ByteSize);
             let offset = 0;
             for (let i = 0, j = GatheringInt8Array.length; i < j; i++) {
@@ -4521,10 +4524,11 @@ export class NakamaService {
         } else { // URL 주소가 아니라면 이미지 직접 불러오기
           let info = {
             path: json['mainImage']['path'],
-            alt_path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/mainImage.png`,
+            alt_path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/MainImage.png`,
             type: 'image/png',
           }
-          let blob = (await this.sync_load_file(info, isOfficial, target, 'server_post', user_id, `${post_id}_mainImage`, false)).value;
+          let synced = await this.sync_load_file(info, isOfficial, target, 'server_post', user_id, `${post_id}_mainImage`, false);
+          let blob = synced.value;
           json['mainImage']['blob'] = blob;
           let FileURL = URL.createObjectURL(blob);
           json['mainImage']['thumbnail'] = FileURL;

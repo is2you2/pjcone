@@ -134,18 +134,18 @@ export class CommunityPage implements OnInit {
   async load_posts() {
     let has_counter = false;
     let isOfficial = Object.keys(this.nakama.post_counter);
-    for (let i = 0, j = isOfficial.length; i < j; i++) {
-      let target = Object.keys(this.nakama.post_counter[isOfficial[i]]);
-      for (let k = 0, l = target.length; k < l; k++) {
-        let user_id = Object.keys(this.nakama.post_counter[isOfficial[i]][target[k]]);
-        for (let m = 0, n = user_id.length; m < n; m++) {
-          let is_me = user_id[m] == 'me';
+    for (let _is_official of isOfficial) {
+      let target = Object.keys(this.nakama.post_counter[_is_official]);
+      for (let _target of target) {
+        let user_id = Object.keys(this.nakama.post_counter[_is_official][_target]);
+        for (let _userId of user_id) {
+          let is_me = _userId == 'me';
           try { // 나인지 여부를 사전에 검토
-            if (user_id[m] != 'me') is_me = user_id[m] == this.nakama.servers[isOfficial[i]][target[k]].session.user_id;
+            if (_userId != 'me') is_me = _userId == this.nakama.servers[_is_official][_target].session.user_id;
           } catch (e) { }
-          let counter = this.nakama.post_counter[isOfficial[i]][target[k]][user_id[m]];
-          await this.load_post_step_by_step(counter, isOfficial[i], target[k], user_id[m], is_me);
-          if (!has_counter && this.nakama.post_counter[isOfficial[i]][target[k]][user_id[m]] >= 0) has_counter = true;
+          let counter = this.nakama.post_counter[_is_official][_target][_userId];
+          await this.load_post_step_by_step(counter, _is_official, _target, _userId, is_me);
+          if (!has_counter && this.nakama.post_counter[_is_official][_target][_userId] >= 0) has_counter = true;
         }
       }
     }
