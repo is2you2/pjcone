@@ -942,13 +942,13 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.TitleInput.focus();
       return;
     }
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['WIP'] });
+    loading.present();
     // 음성 녹음중이라면 녹음을 마무리하여 파일로 저장한 후 게시물 저장처리 진행
     if (this.useVoiceRecording) await this.StopAndSaveVoiceRecording();
     /** 로컬 서버인지 여부 */
     let is_local = Boolean(this.userInput.server['local']);
     this.isApplyPostData = true;
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['WIP'] });
-    loading.present();
     this.isSaveClicked = true;
     let isOfficial = this.userInput.server['isOfficial'];
     let target = this.userInput.server['target'];
