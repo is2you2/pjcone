@@ -104,8 +104,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     this.global.p5KeyShortCut['AddAct'] = () => {
       this.ClickRemoteAddButton();
     }
-    this.global.p5KeyShortCut['SKeyAct'] = () => {
-      this.open_crop_tool();
+    this.global.p5KeyShortCut['SKeyAct'] = (ev: any) => {
+      if (ev['shiftKey']) {
+        this.p5save_image(true);
+      } else this.open_crop_tool();
     }
     this.global.p5KeyShortCut['DeleteAct'] = () => {
       if (this.isCropMode) {
@@ -231,7 +233,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         this.p5change_color = () => {
           p5ColorPicker.elt.click();
         }
-        this.p5save_image = () => {
+        this.p5save_image = (only_save = false) => {
           new p5((sp: p5) => {
             sp.setup = () => {
               let canvas = sp.createCanvas(ActualCanvas.width, ActualCanvas.height);
@@ -241,15 +243,29 @@ export class VoidDrawPage implements OnInit, OnDestroy {
               if (ActualCanvas)
                 sp.image(ActualCanvas, 0, 0);
               let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
-              if (this.navParams.dismiss)
-                this.global.PageDismissAct[this.navParams.dismiss]({
-                  data: {
-                    name: `voidDraw_${sp.year()}-${sp.nf(sp.month(), 2)}-${sp.nf(sp.day(), 2)}_${sp.nf(sp.hour(), 2)}-${sp.nf(sp.minute(), 2)}-${sp.nf(sp.second(), 2)}.png`,
-                    img: base64,
-                    loadingCtrl: this.mainLoading,
-                  }
+              let tmp_filename = `voidDraw_${sp.year()}-${sp.nf(sp.month(), 2)}-${sp.nf(sp.day(), 2)}_${sp.nf(sp.hour(), 2)}-${sp.nf(sp.minute(), 2)}-${sp.nf(sp.second(), 2)}.png`;
+              // 다른 환경과 연대하여 결과물을 돌려줌
+              if (!only_save) {
+                if (this.navParams.dismiss)
+                  this.global.PageDismissAct[this.navParams.dismiss]({
+                    data: {
+                      name: tmp_filename,
+                      img: base64,
+                      loadingCtrl: this.mainLoading,
+                    }
+                  });
+                this.navCtrl.pop();
+              } else {
+                this.p5toast.show({
+                  text: `${this.lang.text['ContentViewer']['DownloadThisFile']}: ${tmp_filename}`,
                 });
-              this.navCtrl.pop();
+                // 그냥 지금 그림 저장하기
+                let link = sp.createA(base64, null);
+                link.elt.download = tmp_filename;
+                link.hide();
+                link.parent(targetDiv);
+                link.elt.click();
+              }
               sp.remove();
             }
           });

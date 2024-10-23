@@ -222,7 +222,7 @@ export class GlobalActService {
             break;
           case 'KeyS': // 키간 사이 행동 (S Key)
             if (this.p5KeyShortCut['SKeyAct'])
-              this.p5KeyShortCut['SKeyAct']();
+              this.p5KeyShortCut['SKeyAct'](ev);
             break;
           case 'KeyD': // 삭제류 (Delete)
             if (this.p5KeyShortCut['DeleteAct'])
