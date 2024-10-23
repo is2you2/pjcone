@@ -1192,7 +1192,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           if (this.global.ShowHint)
             this.ShowEditShortcutHint.style.display = 'inherit';
         }
-      if (isPlatform == 'DesktopPWA')
+      if (isPlatform == 'DesktopPWA' || this.FileInfo['is_new'])
         this.FilenameElement.focus();
     }, 500);
   }
