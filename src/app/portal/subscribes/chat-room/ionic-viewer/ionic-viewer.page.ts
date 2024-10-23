@@ -143,6 +143,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   WaitingLoaded = false;
   ionViewWillEnter() {
     this.WaitingLoaded = true;
+    this.PageWillDestroy = false;
   }
   /** 정확히 현재 페이지에서 처리되어야하는 경우 사용 */
   async WaitingCurrent() {
@@ -152,6 +153,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
+    this.InnerChangedPage = false;
     this.initialize();
   }
 
@@ -1067,6 +1069,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     if (this.p5canvas)
       this.p5canvas.keyPressed = async (ev) => {
         if (this.isHTMLViewer) return;
+        if (this.InnerChangedPage) return;
         if (this.isTextEditMode) {
           switch (ev['key']) {
             case 'Enter': // 텍스트 편집기 저장하기
@@ -1859,7 +1862,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.global.WriteValueToClipboard('text/plain', result.replace(' ', '%20'));
   }
 
+  /** 파일 공유 등 이 페이지 안에서 추가 페이지 작업이 있는 경우 */
+  InnerChangedPage = false;
   ShareContent() {
+    this.InnerChangedPage = true;
     this.FileMenu.dismiss();
     let channels = this.nakama.rearrange_channels();
     for (let i = channels.length - 1; i >= 0; i--) {
@@ -2032,7 +2038,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         break;
     }
     URL.revokeObjectURL(this.FileURL);
-    if (!this.isTextEditMode)
+    if (!this.isTextEditMode && !this.InnerChangedPage)
       this.RemoveP5Relative();
   }
 
