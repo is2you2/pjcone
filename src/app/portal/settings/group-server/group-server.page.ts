@@ -480,9 +480,9 @@ export class GroupServerPage implements OnInit, OnDestroy {
   isOverrideButtonPressed = false;
   async remove_server(_is_official: string, _target: string) {
     this.isOverrideButtonPressed = true;
-    let removeServerAct = async () => {
+    let removeServerAct = async (only_remove = false) => {
       try {
-        await this.nakama.remove_server(_is_official, _target);
+        await this.nakama.remove_server(_is_official, _target, only_remove);
       } catch (e) {
         console.log('서버 삭제 오류: ', e);
       }
@@ -502,7 +502,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
         }).then(v => v.present());
         break;
       default:
-        removeServerAct();
+        removeServerAct(true);
         break;
     }
   }

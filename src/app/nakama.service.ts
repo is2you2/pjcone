@@ -2291,7 +2291,7 @@ export class NakamaService {
   }
 
   /** 사설 서버 삭제 */
-  async remove_server(_is_official: string, _target: string) {
+  async remove_server(_is_official: string, _target: string, only_remove: boolean) {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
     loading.message = this.lang.text['Nakama']['RemovingAccount'];
@@ -2300,9 +2300,11 @@ export class NakamaService {
       let my_uid = this.servers[_is_official][_target].session.user_id;
       let target_address = `${server_info.useSSL ? 'https' : 'http'}://${server_info.address}`;
       try { // cdn 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
+        if (only_remove) throw '클라이언트에서 리스트만 삭제';
         this.global.remove_files_from_storage_with_key(target_address, my_uid);
       } catch (e) { }
       try { // FFS 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
+        if (only_remove) throw '클라이언트에서 리스트만 삭제';
         let fallback = localStorage.getItem('fallback_fs');
         if (!fallback) throw '사용자 지정 서버 없음';
         let split_fullAddress = fallback.split('://');
@@ -3529,7 +3531,7 @@ export class NakamaService {
     v['server'] = this.servers[_is_official][_target].info;
     switch (v.code) {
       case 404: // 관리자에 의해 사용자 강제 탈퇴되어 서버를 삭제당함
-        this.remove_server(_is_official, _target);
+        this.remove_server(_is_official, _target, false);
         break;
       case MatchOpCode.USER_PROFILE_CHANGED:
         break;
