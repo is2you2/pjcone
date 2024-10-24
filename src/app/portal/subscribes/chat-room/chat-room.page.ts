@@ -1893,7 +1893,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 플랫폼별 높이 관리를 위한 함수 분리, 사용자 입력칸 높이 조정 함수 */
   ResizeTextArea() {
-    this.userInputTextArea.style.height = '36px';
+    if (this.userInputTextArea)
+      this.userInputTextArea.style.height = '36px';
   }
 
   /** 입력칸에 포커싱되어있는지 검토 */
