@@ -303,7 +303,7 @@
           </tr>
           <tr *ngIf="userInput.file" class="thumbnail_parts" style="cursor: pointer;">
             <td>
-              <div *ngIf="userInput.file" (click)="removeAttach()">
+              <div (click)="removeAttach()">
                 <div style="text-align: center; margin: 4px; max-width: 95vw;"> {{userInput.file['filename']}}
                 </div>
                 <div *ngIf="userInput.file['thumbnail']">

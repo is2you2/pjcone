@@ -1879,7 +1879,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.global.PageDismissAct['share'] = async (v: any) => {
         await this.WaitingCurrent();
         this.useP5Navigator = true;
-        if (v.data) {
+        if (this.BlockReinit && v.data) {
           if (this.global.PageDismissAct[this.navParams.dismiss])
             this.global.PageDismissAct[this.navParams.dismiss]({
               data: { share: true }

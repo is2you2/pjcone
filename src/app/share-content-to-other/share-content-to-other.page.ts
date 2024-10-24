@@ -34,12 +34,15 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
   channels: any[];
 
   navParams: any;
+  /** 이 페이지가 해야할 일을 끝냈음 */
+  Done = false;
 
   ngOnInit() {
     this.route.queryParams.subscribe(async _p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
       this.navParams = navParams || {};
       this.channels = this.navParams.channels;
+      this.Done = false;
     });
   }
 
@@ -51,6 +54,7 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
     this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
+    if (this.Done) this.navCtrl.pop();
   }
 
   go_to_chatroom(channel: any) {
@@ -60,6 +64,7 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
     if (this.global.PageDismissAct['share'])
       this.global.PageDismissAct['share']({ data: true });
     this.navCtrl.pop();
+    this.Done = true;
   }
 
   ionViewWillLeave() {

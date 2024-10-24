@@ -773,24 +773,26 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.info = c;
       this.InitWithFileImport = Boolean(_fileinfo);
       this.InitWithRoomEnv = true;
-      this.userInput.file = _fileinfo;
       await this.init_chatroom();
       this.CancelEditText();
-      if (this.userInput.file) this.create_thumbnail_imported(_fileinfo);
+      if (_fileinfo) {
+        this.userInput.file = _fileinfo;
+        this.create_thumbnail_imported(_fileinfo);
+      }
     }
     this.route.queryParams.subscribe(async _p => {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
         if (navParams) this.info = navParams.info;
         await new Promise(res => setTimeout(res, 100)); // init 지연
-        this.InitWithFileImport = false;
+        this.InitWithFileImport = Boolean(navParams.file);
         this.InitWithRoomEnv = Boolean(navParams);
-        if (this.userInput.file) {
+        await this.init_chatroom();
+        this.CancelEditText();
+        if (navParams.file) {
           this.userInput.file = navParams.file;
-          this.CancelEditText();
           this.create_thumbnail_imported(navParams.file);
         }
-        await this.init_chatroom();
       } catch (e) { }
     });
     setTimeout(() => {
@@ -1237,35 +1239,33 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       } catch (e) { }
       this.userInput.file.typeheader = this.userInput.file.viewer;
       return;
-    } else try {
-      this.userInput.file.thumbnail = await this.indexed.loadBlobFromUserPath(this.userInput.file.path, this.userInput.file.type);
-    } catch (e) { }
+    }
     let FileURL = URL.createObjectURL(this.userInput.file.blob);
     this.userInput.file['typeheader'] = this.userInput.file.blob.type.split('/')[0] || this.userInput.file.viewer;
     setTimeout(() => {
       URL.revokeObjectURL(FileURL);
     }, 0);
-    this.userInput.file['thumbnail'] = undefined;
-    switch (this.userInput.file['viewer']) {
-      case 'image': // 이미지인 경우 사용자에게 보여주기
-        this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
-        break;
-      case 'code':
-      case 'text':
-        new p5((p: p5) => {
-          p.setup = () => {
-            p.noCanvas();
-            p.loadStrings(FileURL, v => {
-              this.userInput.file['thumbnail'] = v;
-              p.remove();
-            }, e => {
-              console.error('문자열 불러오기 실패: ', e);
-              p.remove();
-            });
-          }
-        });
-        break;
-    }
+    if (!this.userInput.file.thumbnail)
+      switch (this.userInput.file['viewer']) {
+        case 'image': // 이미지인 경우 사용자에게 보여주기
+          this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
+          break;
+        case 'code':
+        case 'text':
+          new p5((p: p5) => {
+            p.setup = () => {
+              p.noCanvas();
+              p.loadStrings(FileURL, v => {
+                this.userInput.file['thumbnail'] = v;
+                p.remove();
+              }, e => {
+                console.error('문자열 불러오기 실패: ', e);
+                p.remove();
+              });
+            }
+          });
+          break;
+      }
   }
 
   last_message_viewer = {
