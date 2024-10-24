@@ -122,22 +122,31 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.p5toast.show({
             text: this.lang.text['ChatRoom']['LocalImageRemoved'],
           });
-        } else try {
-          let fromClipboard = await this.global.GetValueFromClipboard();
-          switch (fromClipboard.type) {
-            case 'image/png':
-              this.LocalChannelImageChanged({ target: { files: [fromClipboard.value] } });
-              break;
-            case 'text/plain':
-              await this.check_if_clipboard_available(fromClipboard.value);
-              break;
-          }
-        } catch (e) {
-          document.getElementById('local_channel').click();
-        }
+        } else document.getElementById('local_channel').click();
       },
       context: () => {
-        document.getElementById('local_channel').click();
+        let contextAct = async () => {
+          if (this.info['info']['img']) {
+            delete this.info['info']['img'];
+            this.indexed.removeFileFromUserPath(`servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
+            this.p5toast.show({
+              text: this.lang.text['ChatRoom']['LocalImageRemoved'],
+            });
+          } else try {
+            let fromClipboard = await this.global.GetValueFromClipboard();
+            switch (fromClipboard.type) {
+              case 'image/png':
+                this.LocalChannelImageChanged({ target: { files: [fromClipboard.value] } });
+                break;
+              case 'text/plain':
+                await this.check_if_clipboard_available(fromClipboard.value);
+                break;
+            }
+          } catch (e) {
+            document.getElementById('local_channel').click();
+          }
+        }
+        contextAct();
         return false;
       }
     }, { // 2
@@ -146,22 +155,27 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       act: async () => {
         if (this.HasBackgroundImage) {
           this.RemoveChannelBackgroundImage();
-        } else try {
-          let fromClipboard = await this.global.GetValueFromClipboard();
-          switch (fromClipboard.type) {
-            case 'image/png':
-              this.ChangeBackgroundImage({ target: { files: [fromClipboard.value] } });
-              break;
-            case 'text/plain':
-              await this.check_if_clipboard_available(fromClipboard.value);
-              break;
-          }
-        } catch (e) {
-          document.getElementById('backgroundImage_sel').click();
-        }
+        } else document.getElementById('backgroundImage_sel').click();
       },
       context: () => {
-        document.getElementById('backgroundImage_sel').click();
+        let contextAct = async () => {
+          if (this.HasBackgroundImage) {
+            this.RemoveChannelBackgroundImage();
+          } else try {
+            let fromClipboard = await this.global.GetValueFromClipboard();
+            switch (fromClipboard.type) {
+              case 'image/png':
+                this.ChangeBackgroundImage({ target: { files: [fromClipboard.value] } });
+                break;
+              case 'text/plain':
+                await this.check_if_clipboard_available(fromClipboard.value);
+                break;
+            }
+          } catch (e) {
+            document.getElementById('backgroundImage_sel').click();
+          }
+        }
+        contextAct();
         return false;
       }
     }, { // 3
@@ -882,7 +896,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
     this.global.p5KeyShortCut['Digit'] = (index: number) => {
       if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && ExtTarget.length > index)
-        ExtTarget[index]['act']();
+        ExtTarget[index]['context'] ? ExtTarget[index]['context']() : ExtTarget[index]['act']();
     }
     this.global.p5KeyShortCut['EnterAct'] = () => {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId))
