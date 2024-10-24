@@ -473,6 +473,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
         data: this.nakama.servers[_is_official][_target].info,
       },
     });
+    return false;
   }
 
   /** 버튼이 눌렸는지를 검토하여 행동을 분리 */
