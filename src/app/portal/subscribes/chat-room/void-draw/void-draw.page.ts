@@ -971,7 +971,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     if (this.ServerList.length) {
       this.p5SetDrawable(false);
       this.RemoteDraw.open();
-    } else this.RemoteBridgeServerSelected({ detail: { value: 'local' } });
+    } else {
+      this.p5SetDrawable(false);
+      this.RemoteBridgeServerSelected({ detail: { value: 'local' } });
+    }
   }
 
   /** 중계서버 사용 가능한 서버 */
